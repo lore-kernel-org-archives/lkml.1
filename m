@@ -1,45 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759217AbZBFXqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbZBFXqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759217AbZBFXqS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 18:46:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbZBFXpd
+	id S1754622AbZBFXqj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 18:46:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754363AbZBFXpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 18:45:33 -0500
-Received: from kroah.org ([198.145.64.141]:53282 "EHLO coco.kroah.org"
+	Fri, 6 Feb 2009 18:45:38 -0500
+Received: from kroah.org ([198.145.64.141]:53286 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753437AbZBFXp3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 18:45:29 -0500
-Date: Fri, 6 Feb 2009 15:44:58 -0800
+	id S1753749AbZBFXpa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 18:45:30 -0500
+Date: Fri, 6 Feb 2009 15:45:16 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.28.4
-Message-ID: <20090206234458.GC30958@kroah.com>
-References: <20090206234356.GA30958@kroah.com>
+Subject: Re: Linux 2.6.27.15
+Message-ID: <20090206234516.GD30958@kroah.com>
+References: <20090206234439.GB30958@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090206234356.GA30958@kroah.com>
+In-Reply-To: <20090206234439.GB30958@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 diff --git a/Makefile b/Makefile
-index 00d1f9a..02df3c2 100644
+index b2263f8..a2dcd97 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1,7 +1,7 @@
  VERSION = 2
  PATCHLEVEL = 6
- SUBLEVEL = 28
--EXTRAVERSION = .3
-+EXTRAVERSION = .4
- NAME = Erotic Pickled Herring
+ SUBLEVEL = 27
+-EXTRAVERSION = .14
++EXTRAVERSION = .15
+ NAME = Trembling Tortoise
  
  # *DOCUMENTATION*
+diff --git a/arch/ia64/sn/kernel/io_acpi_init.c b/arch/ia64/sn/kernel/io_acpi_init.c
+index 6568942..a15baac 100644
+--- a/arch/ia64/sn/kernel/io_acpi_init.c
++++ b/arch/ia64/sn/kernel/io_acpi_init.c
+@@ -232,7 +232,7 @@ exit:
+ static unsigned int
+ get_host_devfn(acpi_handle device_handle, acpi_handle rootbus_handle)
+ {
+-	unsigned long adr;
++	unsigned long long adr;
+ 	acpi_handle child;
+ 	unsigned int devfn;
+ 	int function;
+@@ -292,8 +292,8 @@ get_host_devfn(acpi_handle device_handle, acpi_handle rootbus_handle)
+ static acpi_status
+ find_matching_device(acpi_handle handle, u32 lvl, void *context, void **rv)
+ {
+-	unsigned long bbn = -1;
+-	unsigned long adr;
++	unsigned long long bbn = -1;
++	unsigned long long adr;
+ 	acpi_handle parent = NULL;
+ 	acpi_status status;
+ 	unsigned int devfn;
+@@ -348,7 +348,7 @@ sn_acpi_get_pcidev_info(struct pci_dev *dev, struct pcidev_info **pcidev_info,
+ 	unsigned int host_devfn;
+ 	struct sn_pcidev_match pcidev_match;
+ 	acpi_handle rootbus_handle;
+-	unsigned long segment;
++	unsigned long long segment;
+ 	acpi_status status;
+ 
+ 	rootbus_handle = PCI_CONTROLLER(dev)->acpi_handle;
 diff --git a/arch/m68knommu/Kconfig b/arch/m68knommu/Kconfig
-index 76b66fe..d532687 100644
+index 2e7515e..04aa00b 100644
 --- a/arch/m68knommu/Kconfig
 +++ b/arch/m68knommu/Kconfig
 @@ -14,6 +14,10 @@ config MMU
@@ -53,6 +86,20 @@ index 76b66fe..d532687 100644
  config FPU
  	bool
  	default n
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 388bae2..d0561fe 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -123,6 +123,9 @@ config GENERIC_TIME_VSYSCALL
+ config ARCH_HAS_CPU_RELAX
+ 	def_bool y
+ 
++config ARCH_HAS_DEFAULT_IDLE
++	def_bool y
++
+ config ARCH_HAS_CACHE_LINE_SIZE
+ 	def_bool y
+ 
 diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
 index c2502eb..a4805b3 100644
 --- a/arch/x86/kernel/acpi/cstate.c
@@ -76,10 +123,10 @@ index c2502eb..a4805b3 100644
  	num_cstate_subtype = edx_part & MWAIT_SUBSTATE_MASK;
  
 diff --git a/arch/x86/lib/usercopy_32.c b/arch/x86/lib/usercopy_32.c
-index 9e68075..44a4921 100644
+index 24e6094..dbeab3c 100644
 --- a/arch/x86/lib/usercopy_32.c
 +++ b/arch/x86/lib/usercopy_32.c
-@@ -56,7 +56,7 @@ do {									   \
+@@ -49,7 +49,7 @@ do {									   \
  		"	jmp 2b\n"					   \
  		".previous\n"						   \
  		_ASM_EXTABLE(0b,3b)					   \
@@ -88,7 +135,7 @@ index 9e68075..44a4921 100644
  		  "=&D" (__d2)						   \
  		: "i"(-EFAULT), "0"(count), "1"(count), "3"(src), "4"(dst) \
  		: "memory");						   \
-@@ -218,7 +218,7 @@ long strnlen_user(const char __user *s, long n)
+@@ -211,7 +211,7 @@ long strnlen_user(const char __user *s, long n)
  		"	.align 4\n"
  		"	.long 0b,2b\n"
  		".previous"
@@ -119,8 +166,84 @@ index f4df6e7..500b930 100644
  		: [size1] "r"(size & 7), "[size8]" (size / 8), "[dst]"(addr),
  		  [zero] "r" (0UL), [eight] "r" (8UL));
  	return size;
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index 43e2f84..5b719a0 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -582,6 +582,36 @@ out_unlock:
+ 	return 0;
+ }
+ 
++static int __cpa_process_fault(struct cpa_data *cpa, unsigned long vaddr,
++			       int primary)
++{
++	/*
++	 * Ignore all non primary paths.
++	 */
++	if (!primary)
++		return 0;
++
++	/*
++	 * Ignore the NULL PTE for kernel identity mapping, as it is expected
++	 * to have holes.
++	 * Also set numpages to '1' indicating that we processed cpa req for
++	 * one virtual address page and its pfn. TBD: numpages can be set based
++	 * on the initial value and the level returned by lookup_address().
++	 */
++	if (within(vaddr, PAGE_OFFSET,
++		   PAGE_OFFSET + (max_pfn_mapped << PAGE_SHIFT))) {
++		cpa->numpages = 1;
++		cpa->pfn = __pa(vaddr) >> PAGE_SHIFT;
++		return 0;
++	} else {
++		WARN(1, KERN_WARNING "CPA: called for zero pte. "
++			"vaddr = %lx cpa->vaddr = %lx\n", vaddr,
++			cpa->vaddr);
++
++		return -EINVAL;
++	}
++}
++
+ static int __change_page_attr(struct cpa_data *cpa, int primary)
+ {
+ 	unsigned long address = cpa->vaddr;
+@@ -592,17 +622,11 @@ static int __change_page_attr(struct cpa_data *cpa, int primary)
+ repeat:
+ 	kpte = lookup_address(address, &level);
+ 	if (!kpte)
+-		return 0;
++		return __cpa_process_fault(cpa, address, primary);
+ 
+ 	old_pte = *kpte;
+-	if (!pte_val(old_pte)) {
+-		if (!primary)
+-			return 0;
+-		WARN(1, KERN_WARNING "CPA: called for zero pte. "
+-		       "vaddr = %lx cpa->vaddr = %lx\n", address,
+-		       cpa->vaddr);
+-		return -EINVAL;
+-	}
++	if (!pte_val(old_pte))
++		return __cpa_process_fault(cpa, address, primary);
+ 
+ 	if (level == PG_LEVEL_4K) {
+ 		pte_t new_pte;
+@@ -676,12 +700,7 @@ static int cpa_process_alias(struct cpa_data *cpa)
+ 	 * mapping already:
+ 	 */
+ 	if (!(within(cpa->vaddr, PAGE_OFFSET,
+-		    PAGE_OFFSET + (max_low_pfn_mapped << PAGE_SHIFT))
+-#ifdef CONFIG_X86_64
+-		|| within(cpa->vaddr, PAGE_OFFSET + (1UL<<32),
+-		    PAGE_OFFSET + (max_pfn_mapped << PAGE_SHIFT))
+-#endif
+-	)) {
++		    PAGE_OFFSET + (max_pfn_mapped << PAGE_SHIFT)))) {
+ 
+ 		alias_cpa = *cpa;
+ 		alias_cpa.vaddr = (unsigned long) __va(cpa->pfn << PAGE_SHIFT);
 diff --git a/arch/x86/pci/irq.c b/arch/x86/pci/irq.c
-index bf69dbe..4656c2c 100644
+index 8e07718..95e76ce 100644
 --- a/arch/x86/pci/irq.c
 +++ b/arch/x86/pci/irq.c
 @@ -573,6 +573,7 @@ static __init int intel_router_probe(struct irq_router *r, struct pci_dev *route
@@ -131,11 +254,69 @@ index bf69dbe..4656c2c 100644
  	case PCI_DEVICE_ID_INTEL_ESB2_0:
  	case PCI_DEVICE_ID_INTEL_ICH8_0:
  	case PCI_DEVICE_ID_INTEL_ICH8_1:
+diff --git a/drivers/acpi/ac.c b/drivers/acpi/ac.c
+index 831883b..5e57a80 100644
+--- a/drivers/acpi/ac.c
++++ b/drivers/acpi/ac.c
+@@ -85,7 +85,7 @@ struct acpi_ac {
+ 	struct power_supply charger;
+ #endif
+ 	struct acpi_device * device;
+-	unsigned long state;
++	unsigned long long state;
+ };
+ 
+ #define to_acpi_ac(x) container_of(x, struct acpi_ac, charger);
+diff --git a/drivers/acpi/acpi_memhotplug.c b/drivers/acpi/acpi_memhotplug.c
+index 5f1127a..2b77316 100644
+--- a/drivers/acpi/acpi_memhotplug.c
++++ b/drivers/acpi/acpi_memhotplug.c
+@@ -194,8 +194,7 @@ acpi_memory_get_device(acpi_handle handle,
+ 
+ static int acpi_memory_check_device(struct acpi_memory_device *mem_device)
+ {
+-	unsigned long current_status;
+-
++	unsigned long long current_status;
+ 
+ 	/* Get device present/absent information from the _STA */
+ 	if (ACPI_FAILURE(acpi_evaluate_integer(mem_device->device->handle, "_STA",
+@@ -264,7 +263,7 @@ static int acpi_memory_powerdown_device(struct acpi_memory_device *mem_device)
+ 	acpi_status status;
+ 	struct acpi_object_list arg_list;
+ 	union acpi_object arg;
+-	unsigned long current_status;
++	unsigned long long current_status;
+ 
+ 
+ 	/* Issue the _EJ0 command */
+diff --git a/drivers/acpi/asus_acpi.c b/drivers/acpi/asus_acpi.c
+index d3d0886..e2ab023 100644
+--- a/drivers/acpi/asus_acpi.c
++++ b/drivers/acpi/asus_acpi.c
+@@ -753,7 +753,7 @@ static int get_lcd_state(void)
+ 			/* That's what the AML code does */
+ 			lcd = out_obj.integer.value >> 8;
+ 	} else if (hotk->model == F3Sa) {
+-		unsigned long tmp;
++		unsigned long long tmp;
+ 		union acpi_object param;
+ 		struct acpi_object_list input;
+ 		acpi_status status;
+@@ -1244,6 +1244,8 @@ static int asus_hotk_get_info(void)
+ 			       "default values\n", string);
+ 			printk(KERN_NOTICE
+ 			       "  send /proc/acpi/dsdt to the developers\n");
++			kfree(model);
++			return -ENODEV;
+ 		}
+ 		hotk->methods = &model_conf[hotk->model];
+ 		return AE_OK;
 diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
-index 1423b0c..65132f9 100644
+index b1c723f..e5ca3a0 100644
 --- a/drivers/acpi/battery.c
 +++ b/drivers/acpi/battery.c
-@@ -471,7 +471,7 @@ static void sysfs_remove_battery(struct acpi_battery *battery)
+@@ -472,7 +472,7 @@ static void sysfs_remove_battery(struct acpi_battery *battery)
  
  static int acpi_battery_update(struct acpi_battery *battery)
  {
@@ -144,7 +325,7 @@ index 1423b0c..65132f9 100644
  	result = acpi_battery_get_status(battery);
  	if (result)
  		return result;
-@@ -482,7 +482,8 @@ static int acpi_battery_update(struct acpi_battery *battery)
+@@ -483,7 +483,8 @@ static int acpi_battery_update(struct acpi_battery *battery)
  		return 0;
  	}
  #endif
@@ -154,6 +335,148 @@ index 1423b0c..65132f9 100644
  		result = acpi_battery_get_info(battery);
  		if (result)
  			return result;
+diff --git a/drivers/acpi/bay.c b/drivers/acpi/bay.c
+index 61b6c5b..23a51e4 100644
+--- a/drivers/acpi/bay.c
++++ b/drivers/acpi/bay.c
+@@ -90,7 +90,7 @@ static int is_ejectable(acpi_handle handle)
+  */
+ static int bay_present(struct bay *bay)
+ {
+-	unsigned long sta;
++	unsigned long long sta;
+ 	acpi_status status;
+ 
+ 	if (bay) {
+diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
+index c54f38e..60c34ed 100644
+--- a/drivers/acpi/bus.c
++++ b/drivers/acpi/bus.c
+@@ -77,7 +77,7 @@ EXPORT_SYMBOL(acpi_bus_get_device);
+ int acpi_bus_get_status(struct acpi_device *device)
+ {
+ 	acpi_status status = AE_OK;
+-	unsigned long sta = 0;
++	unsigned long long sta = 0;
+ 
+ 
+ 	if (!device)
+@@ -155,7 +155,7 @@ int acpi_bus_get_power(acpi_handle handle, int *state)
+ 	int result = 0;
+ 	acpi_status status = 0;
+ 	struct acpi_device *device = NULL;
+-	unsigned long psc = 0;
++	unsigned long long psc = 0;
+ 
+ 
+ 	result = acpi_bus_get_device(handle, &device);
+diff --git a/drivers/acpi/button.c b/drivers/acpi/button.c
+index 59352d9..9e8e8a6 100644
+--- a/drivers/acpi/button.c
++++ b/drivers/acpi/button.c
+@@ -145,7 +145,7 @@ static int acpi_button_state_seq_show(struct seq_file *seq, void *offset)
+ {
+ 	struct acpi_button *button = seq->private;
+ 	acpi_status status;
+-	unsigned long state;
++	unsigned long long state;
+ 
+ 	if (!button || !button->device)
+ 		return 0;
+@@ -253,7 +253,7 @@ static int acpi_button_remove_fs(struct acpi_device *device)
+    -------------------------------------------------------------------------- */
+ static int acpi_lid_send_state(struct acpi_button *button)
+ {
+-	unsigned long state;
++	unsigned long long state;
+ 	acpi_status status;
+ 
+ 	status = acpi_evaluate_integer(button->device->handle, "_LID", NULL,
+diff --git a/drivers/acpi/container.c b/drivers/acpi/container.c
+index 3c25ec7..cfa5fd6 100644
+--- a/drivers/acpi/container.c
++++ b/drivers/acpi/container.c
+@@ -76,7 +76,7 @@ static int is_device_present(acpi_handle handle)
+ {
+ 	acpi_handle temp;
+ 	acpi_status status;
+-	unsigned long sta;
++	unsigned long long sta;
+ 
+ 
+ 	status = acpi_get_handle(handle, "_STA", &temp);
+diff --git a/drivers/acpi/dispatcher/dsmethod.c b/drivers/acpi/dispatcher/dsmethod.c
+index 4613b9c..279a5a6 100644
+--- a/drivers/acpi/dispatcher/dsmethod.c
++++ b/drivers/acpi/dispatcher/dsmethod.c
+@@ -103,6 +103,9 @@ acpi_ds_method_error(acpi_status status, struct acpi_walk_state *walk_state)
+ 						    NULL);
+ 		acpi_ex_enter_interpreter();
+ 	}
++
++	acpi_ds_clear_implicit_return(walk_state);
++
+ #ifdef ACPI_DISASSEMBLER
+ 	if (ACPI_FAILURE(status)) {
+ 
+diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
+index 25d2161..e28469e 100644
+--- a/drivers/acpi/dock.c
++++ b/drivers/acpi/dock.c
+@@ -229,7 +229,7 @@ EXPORT_SYMBOL_GPL(is_dock_device);
+  */
+ static int dock_present(struct dock_station *ds)
+ {
+-	unsigned long sta;
++	unsigned long long sta;
+ 	acpi_status status;
+ 
+ 	if (ds) {
+@@ -730,13 +730,13 @@ static DEVICE_ATTR(undock, S_IWUSR, NULL, write_undock);
+ static ssize_t show_dock_uid(struct device *dev,
+ 			     struct device_attribute *attr, char *buf)
+ {
+-	unsigned long lbuf;
++	unsigned long long lbuf;
+ 	acpi_status status = acpi_evaluate_integer(dock_station->handle,
+ 					"_UID", NULL, &lbuf);
+ 	if (ACPI_FAILURE(status))
+ 	    return 0;
+ 
+-	return snprintf(buf, PAGE_SIZE, "%lx\n", lbuf);
++	return snprintf(buf, PAGE_SIZE, "%llx\n", lbuf);
+ }
+ static DEVICE_ATTR(uid, S_IRUGO, show_dock_uid, NULL);
+ 
+diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
+index 9ab3fb9..566206a 100644
+--- a/drivers/acpi/ec.c
++++ b/drivers/acpi/ec.c
+@@ -769,6 +769,7 @@ static acpi_status
+ ec_parse_device(acpi_handle handle, u32 Level, void *context, void **retval)
+ {
+ 	acpi_status status;
++	unsigned long long tmp = 0;
+ 
+ 	struct acpi_ec *ec = context;
+ 	status = acpi_walk_resources(handle, METHOD_NAME__CRS,
+@@ -778,11 +779,14 @@ ec_parse_device(acpi_handle handle, u32 Level, void *context, void **retval)
+ 
+ 	/* Get GPE bit assignment (EC events). */
+ 	/* TODO: Add support for _GPE returning a package */
+-	status = acpi_evaluate_integer(handle, "_GPE", NULL, &ec->gpe);
++	status = acpi_evaluate_integer(handle, "_GPE", NULL, &tmp);
+ 	if (ACPI_FAILURE(status))
+ 		return status;
++	ec->gpe = tmp;
+ 	/* Use the global lock for all EC transactions? */
+-	acpi_evaluate_integer(handle, "_GLK", NULL, &ec->global_lock);
++	tmp = 0;
++	acpi_evaluate_integer(handle, "_GLK", NULL, &tmp);
++	ec->global_lock = tmp;
+ 	ec->handle = handle;
+ 	return AE_CTRL_TERMINATE;
+ }
 diff --git a/drivers/acpi/namespace/nsutils.c b/drivers/acpi/namespace/nsutils.c
 index b0817e1..337fb04 100644
 --- a/drivers/acpi/namespace/nsutils.c
@@ -175,8 +498,74 @@ index b0817e1..337fb04 100644
  	} else {
  		/*
  		 * Handle Carat prefixes
+diff --git a/drivers/acpi/namespace/nsxfname.c b/drivers/acpi/namespace/nsxfname.c
+index a287ed5..3cb910d 100644
+--- a/drivers/acpi/namespace/nsxfname.c
++++ b/drivers/acpi/namespace/nsxfname.c
+@@ -253,6 +253,7 @@ acpi_get_object_info(acpi_handle handle, struct acpi_buffer * buffer)
+ 	node = acpi_ns_map_handle_to_node(handle);
+ 	if (!node) {
+ 		(void)acpi_ut_release_mutex(ACPI_MTX_NAMESPACE);
++		status = AE_BAD_PARAMETER;
+ 		goto cleanup;
+ 	}
+ 
+diff --git a/drivers/acpi/numa.c b/drivers/acpi/numa.c
+index cb9864e..25ceae9 100644
+--- a/drivers/acpi/numa.c
++++ b/drivers/acpi/numa.c
+@@ -258,7 +258,7 @@ int __init acpi_numa_init(void)
+ 
+ int acpi_get_pxm(acpi_handle h)
+ {
+-	unsigned long pxm;
++	unsigned long long pxm;
+ 	acpi_status status;
+ 	acpi_handle handle;
+ 	acpi_handle phandle = h;
+diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
+index b0d40aa..f5beb8a 100644
+--- a/drivers/acpi/osl.c
++++ b/drivers/acpi/osl.c
+@@ -608,7 +608,7 @@ static void acpi_os_derive_pci_id_2(acpi_handle rhandle,	/* upper bound  */
+ 	acpi_handle handle;
+ 	struct acpi_pci_id *pci_id = *id;
+ 	acpi_status status;
+-	unsigned long temp;
++	unsigned long long temp;
+ 	acpi_object_type type;
+ 
+ 	acpi_get_parent(chandle, &handle);
+@@ -620,8 +620,7 @@ static void acpi_os_derive_pci_id_2(acpi_handle rhandle,	/* upper bound  */
+ 		if ((ACPI_FAILURE(status)) || (type != ACPI_TYPE_DEVICE))
+ 			return;
+ 
+-		status =
+-		    acpi_evaluate_integer(handle, METHOD_NAME__ADR, NULL,
++		status = acpi_evaluate_integer(handle, METHOD_NAME__ADR, NULL,
+ 					  &temp);
+ 		if (ACPI_SUCCESS(status)) {
+ 			u32 val;
+diff --git a/drivers/acpi/parser/psparse.c b/drivers/acpi/parser/psparse.c
+index 15e1702..a05e2a3 100644
+--- a/drivers/acpi/parser/psparse.c
++++ b/drivers/acpi/parser/psparse.c
+@@ -641,10 +641,12 @@ acpi_status acpi_ps_parse_aml(struct acpi_walk_state *walk_state)
+ 					    ACPI_WALK_METHOD_RESTART;
+ 				}
+ 			} else {
+-				/* On error, delete any return object */
++				/* On error, delete any return object or implicit return */
+ 
+ 				acpi_ut_remove_reference(previous_walk_state->
+ 							 return_desc);
++				acpi_ds_clear_implicit_return
++				    (previous_walk_state);
+ 			}
+ 		}
+ 
 diff --git a/drivers/acpi/pci_link.c b/drivers/acpi/pci_link.c
-index e52ad91..e33c0bc 100644
+index cf47805..0ea8a9f 100644
 --- a/drivers/acpi/pci_link.c
 +++ b/drivers/acpi/pci_link.c
 @@ -796,10 +796,6 @@ static int irqrouter_resume(struct sys_device *dev)
@@ -190,11 +579,450 @@ index e52ad91..e33c0bc 100644
  	list_for_each(node, &acpi_link.entries) {
  		link = list_entry(node, struct acpi_pci_link, node);
  		if (!link) {
+diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
+index c3fed31..18ff4e5 100644
+--- a/drivers/acpi/pci_root.c
++++ b/drivers/acpi/pci_root.c
+@@ -190,7 +190,7 @@ static int __devinit acpi_pci_root_add(struct acpi_device *device)
+ 	struct acpi_pci_root *root = NULL;
+ 	struct acpi_pci_root *tmp;
+ 	acpi_status status = AE_OK;
+-	unsigned long value = 0;
++	unsigned long long value = 0;
+ 	acpi_handle handle = NULL;
+ 	struct acpi_device *child;
+ 
+diff --git a/drivers/acpi/pci_slot.c b/drivers/acpi/pci_slot.c
+index 8d4a568..cd1f446 100644
+--- a/drivers/acpi/pci_slot.c
++++ b/drivers/acpi/pci_slot.c
+@@ -76,10 +76,10 @@ static struct acpi_pci_driver acpi_pci_slot_driver = {
+ };
+ 
+ static int
+-check_slot(acpi_handle handle, unsigned long *sun)
++check_slot(acpi_handle handle, unsigned long long *sun)
+ {
+ 	int device = -1;
+-	unsigned long adr, sta;
++	unsigned long long adr, sta;
+ 	acpi_status status;
+ 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
+ 
+@@ -132,7 +132,7 @@ static acpi_status
+ register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
+ {
+ 	int device;
+-	unsigned long sun;
++	unsigned long long sun;
+ 	char name[SLOT_NAME_SIZE];
+ 	struct acpi_pci_slot *slot;
+ 	struct pci_slot *pci_slot;
+@@ -182,7 +182,7 @@ static acpi_status
+ walk_p2p_bridge(acpi_handle handle, u32 lvl, void *context, void **rv)
+ {
+ 	int device, function;
+-	unsigned long adr;
++	unsigned long long adr;
+ 	acpi_status status;
+ 	acpi_handle dummy_handle;
+ 	acpi_walk_callback user_function;
+@@ -239,7 +239,7 @@ static int
+ walk_root_bridge(acpi_handle handle, acpi_walk_callback user_function)
+ {
+ 	int seg, bus;
+-	unsigned long tmp;
++	unsigned long long tmp;
+ 	acpi_status status;
+ 	acpi_handle dummy_handle;
+ 	struct pci_bus *pci_bus;
+diff --git a/drivers/acpi/power.c b/drivers/acpi/power.c
+index 4ab21cb..89e5d2a 100644
+--- a/drivers/acpi/power.c
++++ b/drivers/acpi/power.c
+@@ -131,7 +131,7 @@ acpi_power_get_context(acpi_handle handle,
+ static int acpi_power_get_state(struct acpi_power_resource *resource, int *state)
+ {
+ 	acpi_status status = AE_OK;
+-	unsigned long sta = 0;
++	unsigned long long sta = 0;
+ 
+ 
+ 	if (!resource || !state)
+diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
+index ee68ac5..8a27871 100644
+--- a/drivers/acpi/processor_core.c
++++ b/drivers/acpi/processor_core.c
+@@ -563,7 +563,7 @@ static int acpi_processor_get_info(struct acpi_processor *pr, unsigned has_uid)
+ 
+ 	/* Check if it is a Device with HID and UID */
+ 	if (has_uid) {
+-		unsigned long value;
++		unsigned long long value;
+ 		status = acpi_evaluate_integer(pr->handle, METHOD_NAME__UID,
+ 						NULL, &value);
+ 		if (ACPI_FAILURE(status)) {
+@@ -875,7 +875,7 @@ static int acpi_processor_remove(struct acpi_device *device, int type)
+ static int is_processor_present(acpi_handle handle)
+ {
+ 	acpi_status status;
+-	unsigned long sta = 0;
++	unsigned long long sta = 0;
+ 
+ 
+ 	status = acpi_evaluate_integer(handle, "_STA", NULL, &sta);
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index cf5b1b7..81b40ed 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -1587,6 +1587,7 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+ 
+ 	if (acpi_idle_bm_check()) {
+ 		if (dev->safe_state) {
++			dev->last_state = dev->safe_state;
+ 			return dev->safe_state->enter(dev, dev->safe_state);
+ 		} else {
+ 			local_irq_disable();
+diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+index 80c251e..f8129c7 100644
+--- a/drivers/acpi/processor_perflib.c
++++ b/drivers/acpi/processor_perflib.c
+@@ -126,7 +126,7 @@ static struct notifier_block acpi_ppc_notifier_block = {
+ static int acpi_processor_get_platform_limit(struct acpi_processor *pr)
+ {
+ 	acpi_status status = 0;
+-	unsigned long ppc = 0;
++	unsigned long long ppc = 0;
+ 
+ 
+ 	if (!pr)
+diff --git a/drivers/acpi/processor_throttling.c b/drivers/acpi/processor_throttling.c
+index a56fc6c..3097b75 100644
+--- a/drivers/acpi/processor_throttling.c
++++ b/drivers/acpi/processor_throttling.c
+@@ -274,7 +274,7 @@ static int acpi_processor_throttling_notifier(unsigned long event, void *data)
+ static int acpi_processor_get_platform_limit(struct acpi_processor *pr)
+ {
+ 	acpi_status status = 0;
+-	unsigned long tpc = 0;
++	unsigned long long tpc = 0;
+ 
+ 	if (!pr)
+ 		return -EINVAL;
+diff --git a/drivers/acpi/sbshc.c b/drivers/acpi/sbshc.c
+index a4e3767..81d23d3 100644
+--- a/drivers/acpi/sbshc.c
++++ b/drivers/acpi/sbshc.c
+@@ -258,7 +258,7 @@ extern int acpi_ec_add_query_handler(struct acpi_ec *ec, u8 query_bit,
+ static int acpi_smbus_hc_add(struct acpi_device *device)
+ {
+ 	int status;
+-	unsigned long val;
++	unsigned long long val;
+ 	struct acpi_smb_hc *hc;
+ 
+ 	if (!device)
+diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+index 0450761..afa66f4 100644
+--- a/drivers/acpi/scan.c
++++ b/drivers/acpi/scan.c
+@@ -1262,6 +1262,16 @@ acpi_add_single_object(struct acpi_device **child,
+ 	acpi_device_set_id(device, parent, handle, type);
+ 
+ 	/*
++	 * The ACPI device is attached to acpi handle before getting
++	 * the power/wakeup/peformance flags. Otherwise OS can't get
++	 * the corresponding ACPI device by the acpi handle in the course
++	 * of getting the power/wakeup/performance flags.
++	 */
++	result = acpi_device_set_context(device, type);
++	if (result)
++		goto end;
++
++	/*
+ 	 * Power Management
+ 	 * ----------------
+ 	 */
+@@ -1291,8 +1301,6 @@ acpi_add_single_object(struct acpi_device **child,
+ 			goto end;
+ 	}
+ 
+-	if ((result = acpi_device_set_context(device, type)))
+-		goto end;
+ 
+ 	result = acpi_device_register(device, parent);
+ 
+diff --git a/drivers/acpi/sleep/main.c b/drivers/acpi/sleep/main.c
+index 3706469..e7e0aac 100644
+--- a/drivers/acpi/sleep/main.c
++++ b/drivers/acpi/sleep/main.c
+@@ -344,6 +344,14 @@ static struct dmi_system_id __initdata acpisleep_dmi_table[] = {
+ 		DMI_MATCH(DMI_PRODUCT_NAME, "Macmini1,1"),
+ 		},
+ 	},
++	{
++	.callback = init_old_suspend_ordering,
++	.ident = "HP xw4600 Workstation",
++	.matches = {
++		DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
++		DMI_MATCH(DMI_PRODUCT_NAME, "HP xw4600 Workstation"),
++		},
++	},
+ 	{},
+ };
+ #endif /* CONFIG_SUSPEND */
+@@ -492,7 +500,7 @@ int acpi_pm_device_sleep_state(struct device *dev, int *d_min_p)
+ 	acpi_handle handle = DEVICE_ACPI_HANDLE(dev);
+ 	struct acpi_device *adev;
+ 	char acpi_method[] = "_SxD";
+-	unsigned long d_min, d_max;
++	unsigned long long d_min, d_max;
+ 
+ 	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &adev))) {
+ 		printk(KERN_DEBUG "ACPI handle has no context!\n");
+diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+index 9127036..47abb94 100644
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -246,18 +246,18 @@ static const struct file_operations acpi_thermal_polling_fops = {
+ static int acpi_thermal_get_temperature(struct acpi_thermal *tz)
+ {
+ 	acpi_status status = AE_OK;
+-
++	unsigned long long tmp;
+ 
+ 	if (!tz)
+ 		return -EINVAL;
+ 
+ 	tz->last_temperature = tz->temperature;
+ 
+-	status =
+-	    acpi_evaluate_integer(tz->device->handle, "_TMP", NULL, &tz->temperature);
++	status = acpi_evaluate_integer(tz->device->handle, "_TMP", NULL, &tmp);
+ 	if (ACPI_FAILURE(status))
+ 		return -ENODEV;
+ 
++	tz->temperature = tmp;
+ 	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Temperature is %lu dK\n",
+ 			  tz->temperature));
+ 
+@@ -267,17 +267,16 @@ static int acpi_thermal_get_temperature(struct acpi_thermal *tz)
+ static int acpi_thermal_get_polling_frequency(struct acpi_thermal *tz)
+ {
+ 	acpi_status status = AE_OK;
+-
++	unsigned long long tmp;
+ 
+ 	if (!tz)
+ 		return -EINVAL;
+ 
+-	status =
+-	    acpi_evaluate_integer(tz->device->handle, "_TZP", NULL,
+-				  &tz->polling_frequency);
++	status = acpi_evaluate_integer(tz->device->handle, "_TZP", NULL, &tmp);
+ 	if (ACPI_FAILURE(status))
+ 		return -ENODEV;
+ 
++	tz->polling_frequency = tmp;
+ 	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Polling frequency is %lu dS\n",
+ 			  tz->polling_frequency));
+ 
+@@ -356,6 +355,7 @@ do {	\
+ static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
+ {
+ 	acpi_status status = AE_OK;
++	unsigned long long tmp;
+ 	struct acpi_handle_list devices;
+ 	int valid = 0;
+ 	int i;
+@@ -363,7 +363,8 @@ static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
+ 	/* Critical Shutdown (required) */
+ 	if (flag & ACPI_TRIPS_CRITICAL) {
+ 		status = acpi_evaluate_integer(tz->device->handle,
+-				"_CRT", NULL, &tz->trips.critical.temperature);
++				"_CRT", NULL, &tmp);
++		tz->trips.critical.temperature = tmp;
+ 		/*
+ 		 * Treat freezing temperatures as invalid as well; some
+ 		 * BIOSes return really low values and cause reboots at startup.
+@@ -399,12 +400,13 @@ static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
+ 	/* Critical Sleep (optional) */
+ 	if (flag & ACPI_TRIPS_HOT) {
+ 		status = acpi_evaluate_integer(tz->device->handle,
+-				"_HOT", NULL, &tz->trips.hot.temperature);
++				"_HOT", NULL, &tmp);
+ 		if (ACPI_FAILURE(status)) {
+ 			tz->trips.hot.flags.valid = 0;
+ 			ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+ 					"No hot threshold\n"));
+ 		} else {
++			tz->trips.hot.temperature = tmp;
+ 			tz->trips.hot.flags.valid = 1;
+ 			ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+ 					"Found hot threshold [%lu]\n",
+@@ -418,33 +420,40 @@ static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
+ 		if (psv == -1) {
+ 			status = AE_SUPPORT;
+ 		} else if (psv > 0) {
+-			tz->trips.passive.temperature = CELSIUS_TO_KELVIN(psv);
++			tmp = CELSIUS_TO_KELVIN(psv);
+ 			status = AE_OK;
+ 		} else {
+ 			status = acpi_evaluate_integer(tz->device->handle,
+-				"_PSV", NULL, &tz->trips.passive.temperature);
++				"_PSV", NULL, &tmp);
+ 		}
+ 
+ 		if (ACPI_FAILURE(status))
+ 			tz->trips.passive.flags.valid = 0;
+ 		else {
++			tz->trips.passive.temperature = tmp;
+ 			tz->trips.passive.flags.valid = 1;
+ 			if (flag == ACPI_TRIPS_INIT) {
+ 				status = acpi_evaluate_integer(
+ 						tz->device->handle, "_TC1",
+-						NULL, &tz->trips.passive.tc1);
++						NULL, &tmp);
+ 				if (ACPI_FAILURE(status))
+ 					tz->trips.passive.flags.valid = 0;
++				else
++					tz->trips.passive.tc1 = tmp;
+ 				status = acpi_evaluate_integer(
+ 						tz->device->handle, "_TC2",
+-						NULL, &tz->trips.passive.tc2);
++						NULL, &tmp);
+ 				if (ACPI_FAILURE(status))
+ 					tz->trips.passive.flags.valid = 0;
++				else
++					tz->trips.passive.tc2 = tmp;
+ 				status = acpi_evaluate_integer(
+ 						tz->device->handle, "_TSP",
+-						NULL, &tz->trips.passive.tsp);
++						NULL, &tmp);
+ 				if (ACPI_FAILURE(status))
+ 					tz->trips.passive.flags.valid = 0;
++				else
++					tz->trips.passive.tsp = tmp;
+ 			}
+ 		}
+ 	}
+@@ -479,7 +488,7 @@ static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
+ 
+ 		if (flag & ACPI_TRIPS_ACTIVE) {
+ 			status = acpi_evaluate_integer(tz->device->handle,
+-				name, NULL, &tz->trips.active[i].temperature);
++							name, NULL, &tmp);
+ 			if (ACPI_FAILURE(status)) {
+ 				tz->trips.active[i].flags.valid = 0;
+ 				if (i == 0)
+@@ -500,8 +509,10 @@ static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
+ 						tz->trips.active[i - 2].temperature :
+ 						CELSIUS_TO_KELVIN(act));
+ 				break;
+-			} else
++			} else {
++				tz->trips.active[i].temperature = tmp;
+ 				tz->trips.active[i].flags.valid = 1;
++			}
+ 		}
+ 
+ 		name[2] = 'L';
+diff --git a/drivers/acpi/utils.c b/drivers/acpi/utils.c
+index 1009261..e827be3 100644
+--- a/drivers/acpi/utils.c
++++ b/drivers/acpi/utils.c
+@@ -256,7 +256,7 @@ EXPORT_SYMBOL(acpi_extract_package);
+ acpi_status
+ acpi_evaluate_integer(acpi_handle handle,
+ 		      acpi_string pathname,
+-		      struct acpi_object_list *arguments, unsigned long *data)
++		      struct acpi_object_list *arguments, unsigned long long *data)
+ {
+ 	acpi_status status = AE_OK;
+ 	union acpi_object *element;
+@@ -288,7 +288,7 @@ acpi_evaluate_integer(acpi_handle handle,
+ 	*data = element->integer.value;
+ 	kfree(element);
+ 
+-	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Return value [%lu]\n", *data));
++	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Return value [%llu]\n", *data));
+ 
+ 	return AE_OK;
+ }
 diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
-index baa4419..66a610d 100644
+index e8a51a1..42e1e84 100644
 --- a/drivers/acpi/video.c
 +++ b/drivers/acpi/video.c
-@@ -481,6 +481,7 @@ acpi_video_device_lcd_set_level(struct acpi_video_device *device, int level)
+@@ -291,20 +291,20 @@ static int acpi_video_device_lcd_set_level(struct acpi_video_device *device,
+ 			int level);
+ static int acpi_video_device_lcd_get_level_current(
+ 			struct acpi_video_device *device,
+-			unsigned long *level);
++			unsigned long long *level);
+ static int acpi_video_get_next_level(struct acpi_video_device *device,
+ 				     u32 level_current, u32 event);
+ static void acpi_video_switch_brightness(struct acpi_video_device *device,
+ 					 int event);
+ static int acpi_video_device_get_state(struct acpi_video_device *device,
+-			    unsigned long *state);
++			    unsigned long long *state);
+ static int acpi_video_output_get(struct output_device *od);
+ static int acpi_video_device_set_state(struct acpi_video_device *device, int state);
+ 
+ /*backlight device sysfs support*/
+ static int acpi_video_get_brightness(struct backlight_device *bd)
+ {
+-	unsigned long cur_level;
++	unsigned long long cur_level;
+ 	int i;
+ 	struct acpi_video_device *vd =
+ 		(struct acpi_video_device *)bl_get_data(bd);
+@@ -336,7 +336,7 @@ static struct backlight_ops acpi_backlight_ops = {
+ /*video output device sysfs support*/
+ static int acpi_video_output_get(struct output_device *od)
+ {
+-	unsigned long state;
++	unsigned long long state;
+ 	struct acpi_video_device *vd =
+ 		(struct acpi_video_device *)dev_get_drvdata(&od->dev);
+ 	acpi_video_device_get_state(vd, &state);
+@@ -370,7 +370,7 @@ static int video_get_cur_state(struct thermal_cooling_device *cdev, char *buf)
+ {
+ 	struct acpi_device *device = cdev->devdata;
+ 	struct acpi_video_device *video = acpi_driver_data(device);
+-	unsigned long level;
++	unsigned long long level;
+ 	int state;
+ 
+ 	acpi_video_device_lcd_get_level_current(video, &level);
+@@ -410,7 +410,7 @@ static struct thermal_cooling_device_ops video_cooling_ops = {
+ /* device */
+ 
+ static int
+-acpi_video_device_query(struct acpi_video_device *device, unsigned long *state)
++acpi_video_device_query(struct acpi_video_device *device, unsigned long long *state)
+ {
+ 	int status;
+ 
+@@ -421,7 +421,7 @@ acpi_video_device_query(struct acpi_video_device *device, unsigned long *state)
+ 
+ static int
+ acpi_video_device_get_state(struct acpi_video_device *device,
+-			    unsigned long *state)
++			    unsigned long long *state)
+ {
+ 	int status;
+ 
+@@ -436,7 +436,7 @@ acpi_video_device_set_state(struct acpi_video_device *device, int state)
+ 	int status;
+ 	union acpi_object arg0 = { ACPI_TYPE_INTEGER };
+ 	struct acpi_object_list args = { 1, &arg0 };
+-	unsigned long ret;
++	unsigned long long ret;
+ 
+ 
+ 	arg0.integer.value = state;
+@@ -482,6 +482,7 @@ acpi_video_device_lcd_set_level(struct acpi_video_device *device, int level)
  	int status = AE_OK;
  	union acpi_object arg0 = { ACPI_TYPE_INTEGER };
  	struct acpi_object_list args = { 1, &arg0 };
@@ -202,7 +1030,7 @@ index baa4419..66a610d 100644
  
  
  	arg0.integer.value = level;
-@@ -489,6 +490,10 @@ acpi_video_device_lcd_set_level(struct acpi_video_device *device, int level)
+@@ -490,12 +491,16 @@ acpi_video_device_lcd_set_level(struct acpi_video_device *device, int level)
  		status = acpi_evaluate_object(device->dev->handle, "_BCM",
  					      &args, NULL);
  	device->brightness->curr = level;
@@ -213,8 +1041,135 @@ index baa4419..66a610d 100644
  	return status;
  }
  
+ static int
+ acpi_video_device_lcd_get_level_current(struct acpi_video_device *device,
+-					unsigned long *level)
++					unsigned long long *level)
+ {
+ 	if (device->cap._BQC)
+ 		return acpi_evaluate_integer(device->dev->handle, "_BQC", NULL,
+@@ -549,7 +554,7 @@ static int
+ acpi_video_bus_set_POST(struct acpi_video_bus *video, unsigned long option)
+ {
+ 	int status;
+-	unsigned long tmp;
++	unsigned long long tmp;
+ 	union acpi_object arg0 = { ACPI_TYPE_INTEGER };
+ 	struct acpi_object_list args = { 1, &arg0 };
+ 
+@@ -564,7 +569,7 @@ acpi_video_bus_set_POST(struct acpi_video_bus *video, unsigned long option)
+ }
+ 
+ static int
+-acpi_video_bus_get_POST(struct acpi_video_bus *video, unsigned long *id)
++acpi_video_bus_get_POST(struct acpi_video_bus *video, unsigned long long *id)
+ {
+ 	int status;
+ 
+@@ -575,7 +580,7 @@ acpi_video_bus_get_POST(struct acpi_video_bus *video, unsigned long *id)
+ 
+ static int
+ acpi_video_bus_POST_options(struct acpi_video_bus *video,
+-			    unsigned long *options)
++			    unsigned long long *options)
+ {
+ 	int status;
+ 
+@@ -918,7 +923,7 @@ static int acpi_video_device_state_seq_show(struct seq_file *seq, void *offset)
+ {
+ 	int status;
+ 	struct acpi_video_device *dev = seq->private;
+-	unsigned long state;
++	unsigned long long state;
+ 
+ 
+ 	if (!dev)
+@@ -927,14 +932,14 @@ static int acpi_video_device_state_seq_show(struct seq_file *seq, void *offset)
+ 	status = acpi_video_device_get_state(dev, &state);
+ 	seq_printf(seq, "state:     ");
+ 	if (ACPI_SUCCESS(status))
+-		seq_printf(seq, "0x%02lx\n", state);
++		seq_printf(seq, "0x%02llx\n", state);
+ 	else
+ 		seq_printf(seq, "<not supported>\n");
+ 
+ 	status = acpi_video_device_query(dev, &state);
+ 	seq_printf(seq, "query:     ");
+ 	if (ACPI_SUCCESS(status))
+-		seq_printf(seq, "0x%02lx\n", state);
++		seq_printf(seq, "0x%02llx\n", state);
+ 	else
+ 		seq_printf(seq, "<not supported>\n");
+ 
+@@ -1217,7 +1222,7 @@ static int acpi_video_bus_ROM_open_fs(struct inode *inode, struct file *file)
+ static int acpi_video_bus_POST_info_seq_show(struct seq_file *seq, void *offset)
+ {
+ 	struct acpi_video_bus *video = seq->private;
+-	unsigned long options;
++	unsigned long long options;
+ 	int status;
+ 
+ 
+@@ -1232,7 +1237,7 @@ static int acpi_video_bus_POST_info_seq_show(struct seq_file *seq, void *offset)
+ 			printk(KERN_WARNING PREFIX
+ 			       "This indicates a BIOS bug. Please contact the manufacturer.\n");
+ 		}
+-		printk("%lx\n", options);
++		printk("%llx\n", options);
+ 		seq_printf(seq, "can POST: <integrated video>");
+ 		if (options & 2)
+ 			seq_printf(seq, " <PCI video>");
+@@ -1256,7 +1261,7 @@ static int acpi_video_bus_POST_seq_show(struct seq_file *seq, void *offset)
+ {
+ 	struct acpi_video_bus *video = seq->private;
+ 	int status;
+-	unsigned long id;
++	unsigned long long id;
+ 
+ 
+ 	if (!video)
+@@ -1303,7 +1308,7 @@ acpi_video_bus_write_POST(struct file *file,
+ 	struct seq_file *m = file->private_data;
+ 	struct acpi_video_bus *video = m->private;
+ 	char str[12] = { 0 };
+-	unsigned long opt, options;
++	unsigned long long opt, options;
+ 
+ 
+ 	if (!video || count + 1 > sizeof str)
+@@ -1473,7 +1478,7 @@ static int
+ acpi_video_bus_get_one_device(struct acpi_device *device,
+ 			      struct acpi_video_bus *video)
+ {
+-	unsigned long device_id;
++	unsigned long long device_id;
+ 	int status;
+ 	struct acpi_video_device *data;
+ 	struct acpi_video_device_attrib* attribute;
+@@ -1724,7 +1729,7 @@ acpi_video_get_next_level(struct acpi_video_device *device,
+ static void
+ acpi_video_switch_brightness(struct acpi_video_device *device, int event)
+ {
+-	unsigned long level_current, level_next;
++	unsigned long long level_current, level_next;
+ 	if (!device->brightness)
+ 		return;
+ 	acpi_video_device_lcd_get_level_current(device, &level_current);
+diff --git a/drivers/ata/libata-acpi.c b/drivers/ata/libata-acpi.c
+index 9330b79..ae45187 100644
+--- a/drivers/ata/libata-acpi.c
++++ b/drivers/ata/libata-acpi.c
+@@ -180,7 +180,7 @@ static void ata_acpi_handle_hotplug(struct ata_port *ap, struct ata_device *dev,
+ 	int wait = 0;
+ 	unsigned long flags;
+ 	acpi_handle handle, tmphandle;
+-	unsigned long sta;
++	unsigned long long sta;
+ 	acpi_status status;
+ 
+ 	if (dev) {
 diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
-index 2b24ae5..8092e2b 100644
+index c815f8e..394cb0c 100644
 --- a/drivers/ata/sata_mv.c
 +++ b/drivers/ata/sata_mv.c
 @@ -669,8 +669,8 @@ static const struct pci_device_id mv_pci_tbl[] = {
@@ -238,12 +1193,12 @@ index 2b24ae5..8092e2b 100644
  
  		/* clear EDMA event indicators, if any */
 diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
-index 6f14606..444af04 100644
+index 8714c36..89e3b7f 100644
 --- a/drivers/ata/sata_nv.c
 +++ b/drivers/ata/sata_nv.c
 @@ -305,10 +305,10 @@ static irqreturn_t nv_ck804_interrupt(int irq, void *dev_instance);
- static int nv_scr_read(struct ata_link *link, unsigned int sc_reg, u32 *val);
- static int nv_scr_write(struct ata_link *link, unsigned int sc_reg, u32 val);
+ static int nv_scr_read(struct ata_port *ap, unsigned int sc_reg, u32 *val);
+ static int nv_scr_write(struct ata_port *ap, unsigned int sc_reg, u32 val);
  
 +static int nv_noclassify_hardreset(struct ata_link *link, unsigned int *class,
 +				   unsigned long deadline);
@@ -336,7 +1291,7 @@ index 6f14606..444af04 100644
  	/* SWNCQ */
  	{
  		.flags	        = ATA_FLAG_SATA | ATA_FLAG_NO_LEGACY |
-@@ -1530,6 +1556,17 @@ static int nv_scr_write(struct ata_link *link, unsigned int sc_reg, u32 val)
+@@ -1530,6 +1556,17 @@ static int nv_scr_write(struct ata_port *ap, unsigned int sc_reg, u32 val)
  	return 0;
  }
  
@@ -403,6 +1358,35 @@ index 2978a49..caf3fa2 100644
  	if (!bp) {
  		printk(KERN_WARNING "selection: kmalloc() failed\n");
  		clear_selection();
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 5ce07b5..bb6e3b3 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -56,7 +56,11 @@ static void cpuidle_idle_call(void)
+ 		if (pm_idle_old)
+ 			pm_idle_old();
+ 		else
++#if defined(CONFIG_ARCH_HAS_DEFAULT_IDLE)
++			default_idle();
++#else
+ 			local_irq_enable();
++#endif
+ 		return;
+ 	}
+ 
+@@ -67,8 +71,11 @@ static void cpuidle_idle_call(void)
+ 	target_state = &dev->states[next_state];
+ 
+ 	/* enter the state and update stats */
+-	dev->last_residency = target_state->enter(dev, target_state);
+ 	dev->last_state = target_state;
++	dev->last_residency = target_state->enter(dev, target_state);
++	if (dev->last_state)
++		target_state = dev->last_state;
++
+ 	target_state->time += (unsigned long long)dev->last_residency;
+ 	target_state->usage++;
+ 
 diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
 index 8d7cf3f..f1df59f 100644
 --- a/drivers/cpuidle/governors/menu.c
@@ -445,7 +1429,7 @@ index 8d7cf3f..f1df59f 100644
  	if (last_idle_us + BREAK_FUZZ <
  	    data->expected_us - target->exit_latency) {
 diff --git a/drivers/input/keyboard/atkbd.c b/drivers/input/keyboard/atkbd.c
-index 379b7ff..159dbb6 100644
+index c694eaa..191f01b 100644
 --- a/drivers/input/keyboard/atkbd.c
 +++ b/drivers/input/keyboard/atkbd.c
 @@ -884,6 +884,22 @@ static void atkbd_inventec_keymap_fixup(struct atkbd *atkbd)
@@ -471,7 +1455,23 @@ index 379b7ff..159dbb6 100644
   * atkbd_set_keycode_table() initializes keyboard's keycode table
   * according to the selected scancode set
   */
-@@ -1493,6 +1509,15 @@ static struct dmi_system_id atkbd_dmi_quirk_table[] __initdata = {
+@@ -1486,6 +1502,15 @@ static struct dmi_system_id atkbd_dmi_quirk_table[] __initdata = {
+ 		.driver_data = atkbd_dell_laptop_keymap_fixup,
+ 	},
+ 	{
++		.ident = "Dell Laptop",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Computer Corporation"),
++			DMI_MATCH(DMI_CHASSIS_TYPE, "8"), /* Portable */
++		},
++		.callback = atkbd_setup_fixup,
++		.driver_data = atkbd_dell_laptop_keymap_fixup,
++	},
++	{
+ 		.ident = "HP 2133",
+ 		.matches = {
+ 			DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
+@@ -1503,6 +1528,15 @@ static struct dmi_system_id atkbd_dmi_quirk_table[] __initdata = {
  		.callback = atkbd_setup_fixup,
  		.driver_data = atkbd_inventec_keymap_fixup,
  	},
@@ -487,482 +1487,399 @@ index 379b7ff..159dbb6 100644
  	{ }
  };
  
-diff --git a/drivers/net/wireless/iwlwifi/iwl-3945-rs.c b/drivers/net/wireless/iwlwifi/iwl-3945-rs.c
-index 6fc5e73..6500599 100644
---- a/drivers/net/wireless/iwlwifi/iwl-3945-rs.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-3945-rs.c
-@@ -647,12 +647,16 @@ static void rs_get_rate(void *priv_r, struct ieee80211_supported_band *sband,
- 	s8 scale_action = 0;
- 	unsigned long flags;
- 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)skb->data;
--	u16 fc, rate_mask;
-+	u16 fc;
-+	u16 rate_mask = 0;
- 	struct iwl3945_priv *priv = (struct iwl3945_priv *)priv_r;
- 	DECLARE_MAC_BUF(mac);
+diff --git a/drivers/misc/asus-laptop.c b/drivers/misc/asus-laptop.c
+index 7c6dfd0..95965a7 100644
+--- a/drivers/misc/asus-laptop.c
++++ b/drivers/misc/asus-laptop.c
+@@ -139,6 +139,7 @@ ASUS_HANDLE(lcd_switch, "\\_SB.PCI0.SBRG.EC0._Q10",	/* All new models */
+ 	    "\\_SB.PCI0.PX40.ECD0._Q10",	/* L3C */
+ 	    "\\_SB.PCI0.PX40.EC0.Q10",	/* M1A */
+ 	    "\\_SB.PCI0.LPCB.EC0._Q10",	/* P30 */
++	    "\\_SB.PCI0.LPCB.EC0._Q0E", /* P30/P35 */
+ 	    "\\_SB.PCI0.PX40.Q10",	/* S1x */
+ 	    "\\Q10");		/* A2x, L2D, L3D, M2E */
  
- 	IWL_DEBUG_RATE("enter\n");
+@@ -280,7 +281,7 @@ static int write_acpi_int(acpi_handle handle, const char *method, int val,
  
-+	if (sta)
-+		rate_mask = sta->supp_rates[sband->band];
-+
- 	/* Send management frames and broadcast/multicast data using lowest
- 	 * rate. */
- 	fc = le16_to_cpu(hdr->frame_control);
-@@ -660,11 +664,13 @@ static void rs_get_rate(void *priv_r, struct ieee80211_supported_band *sband,
- 	    is_multicast_ether_addr(hdr->addr1) ||
- 	    !sta || !priv_sta) {
- 		IWL_DEBUG_RATE("leave: No STA priv data to update!\n");
--		sel->rate_idx = rate_lowest_index(sband, sta);
-+		if (!rate_mask)
-+			sel->rate_idx = rate_lowest_index(sband, NULL);
-+		else
-+			sel->rate_idx = rate_lowest_index(sband, sta);
- 		return;
- 	}
+ static int read_wireless_status(int mask)
+ {
+-	ulong status;
++	unsigned long long status;
+ 	acpi_status rv = AE_OK;
  
--	rate_mask = sta->supp_rates[sband->band];
- 	index = min(rs_sta->last_txrate_idx & 0xffff, IWL_RATE_COUNT - 1);
+ 	if (!wireless_status_handle)
+@@ -297,7 +298,7 @@ static int read_wireless_status(int mask)
  
- 	if (sband->band == IEEE80211_BAND_5GHZ)
-diff --git a/drivers/net/wireless/iwlwifi/iwl-agn-rs.c b/drivers/net/wireless/iwlwifi/iwl-agn-rs.c
-index e2a58e4..af2354d 100644
---- a/drivers/net/wireless/iwlwifi/iwl-agn-rs.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-agn-rs.c
-@@ -951,7 +951,8 @@ static void rs_tx_status(void *priv_r, struct ieee80211_supported_band *sband,
- 	}
+ static int read_gps_status(void)
+ {
+-	ulong status;
++	unsigned long long status;
+ 	acpi_status rv = AE_OK;
  
- 	/* See if there's a better rate or modulation mode to try. */
--	rs_rate_scale_perform(priv, hdr, sta, lq_sta);
-+	if (sta && sta->supp_rates[sband->band])
-+		rs_rate_scale_perform(priv, hdr, sta, lq_sta);
- out:
- 	return;
+ 	rv = acpi_evaluate_integer(gps_status_handle, NULL, NULL, &status);
+@@ -350,7 +351,7 @@ static void write_status(acpi_handle handle, int out, int mask)
+ 	static void object##_led_set(struct led_classdev *led_cdev,	\
+ 				     enum led_brightness value)		\
+ 	{								\
+-		object##_led_wk = value;				\
++		object##_led_wk = (value > 0) ? 1 : 0;			\
+ 		queue_work(led_workqueue, &object##_led_work);		\
+ 	}								\
+ 	static void object##_led_update(struct work_struct *ignored)	\
+@@ -404,7 +405,7 @@ static void lcd_blank(int blank)
+ 
+ static int read_brightness(struct backlight_device *bd)
+ {
+-	ulong value;
++	unsigned long long value;
+ 	acpi_status rv = AE_OK;
+ 
+ 	rv = acpi_evaluate_integer(brightness_get_handle, NULL, NULL, &value);
+@@ -455,7 +456,7 @@ static ssize_t show_infos(struct device *dev,
+ 			  struct device_attribute *attr, char *page)
+ {
+ 	int len = 0;
+-	ulong temp;
++	unsigned long long temp;
+ 	char buf[16];		//enough for all info
+ 	acpi_status rv = AE_OK;
+ 
+@@ -603,7 +604,7 @@ static void set_display(int value)
+ 
+ static int read_display(void)
+ {
+-	ulong value = 0;
++	unsigned long long value = 0;
+ 	acpi_status rv = AE_OK;
+ 
+ 	/* In most of the case, we know how to set the display, but sometime
+@@ -849,7 +850,7 @@ static int asus_hotk_get_info(void)
+ {
+ 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
+ 	union acpi_object *model = NULL;
+-	ulong bsts_result, hwrs_result;
++	unsigned long long bsts_result, hwrs_result;
+ 	char *string = NULL;
+ 	acpi_status status;
+ 
+diff --git a/drivers/misc/eeepc-laptop.c b/drivers/misc/eeepc-laptop.c
+index 1ee8501..616bcbd 100644
+--- a/drivers/misc/eeepc-laptop.c
++++ b/drivers/misc/eeepc-laptop.c
+@@ -204,7 +204,7 @@ static int write_acpi_int(acpi_handle handle, const char *method, int val,
+ static int read_acpi_int(acpi_handle handle, const char *method, int *val)
+ {
+ 	acpi_status status;
+-	ulong result;
++	unsigned long long result;
+ 
+ 	status = acpi_evaluate_integer(handle, (char *)method, NULL, &result);
+ 	if (ACPI_FAILURE(status)) {
+diff --git a/drivers/misc/fujitsu-laptop.c b/drivers/misc/fujitsu-laptop.c
+index 3e56203..efd395a 100644
+--- a/drivers/misc/fujitsu-laptop.c
++++ b/drivers/misc/fujitsu-laptop.c
+@@ -224,7 +224,7 @@ static int set_lcd_level_alt(int level)
+ 
+ static int get_lcd_level(void)
+ {
+-	unsigned long state = 0;
++	unsigned long long state = 0;
+ 	acpi_status status = AE_OK;
+ 
+ 	vdbg_printk(FUJLAPTOP_DBG_TRACE, "get lcd level via GBLL\n");
+@@ -246,7 +246,7 @@ static int get_lcd_level(void)
+ 
+ static int get_max_brightness(void)
+ {
+-	unsigned long state = 0;
++	unsigned long long state = 0;
+ 	acpi_status status = AE_OK;
+ 
+ 	vdbg_printk(FUJLAPTOP_DBG_TRACE, "get max lcd level via RBLL\n");
+@@ -263,7 +263,7 @@ static int get_max_brightness(void)
+ 
+ static int get_lcd_level_alt(void)
+ {
+-	unsigned long state = 0;
++	unsigned long long state = 0;
+ 	acpi_status status = AE_OK;
+ 
+ 	vdbg_printk(FUJLAPTOP_DBG_TRACE, "get lcd level via GBLS\n");
+@@ -384,7 +384,7 @@ static ssize_t store_lcd_level(struct device *dev,
+ 
+ static int get_irb(void)
+ {
+-	unsigned long state = 0;
++	unsigned long long state = 0;
+ 	acpi_status status = AE_OK;
+ 
+ 	vdbg_printk(FUJLAPTOP_DBG_TRACE, "Get irb\n");
+diff --git a/drivers/misc/intel_menlow.c b/drivers/misc/intel_menlow.c
+index 80a1363..f2257a7 100644
+--- a/drivers/misc/intel_menlow.c
++++ b/drivers/misc/intel_menlow.c
+@@ -57,7 +57,7 @@ static int memory_get_int_max_bandwidth(struct thermal_cooling_device *cdev,
+ {
+ 	struct acpi_device *device = cdev->devdata;
+ 	acpi_handle handle = device->handle;
+-	unsigned long value;
++	unsigned long long value;
+ 	struct acpi_object_list arg_list;
+ 	union acpi_object arg;
+ 	acpi_status status = AE_OK;
+@@ -90,7 +90,7 @@ static int memory_get_cur_bandwidth(struct thermal_cooling_device *cdev,
+ {
+ 	struct acpi_device *device = cdev->devdata;
+ 	acpi_handle handle = device->handle;
+-	unsigned long value;
++	unsigned long long value;
+ 	struct acpi_object_list arg_list;
+ 	union acpi_object arg;
+ 	acpi_status status = AE_OK;
+@@ -104,7 +104,7 @@ static int memory_get_cur_bandwidth(struct thermal_cooling_device *cdev,
+ 	if (ACPI_FAILURE(status))
+ 		return -EFAULT;
+ 
+-	return sprintf(buf, "%ld\n", value);
++	return sprintf(buf, "%lld\n", value);
  }
-@@ -2114,15 +2115,22 @@ static void rs_get_rate(void *priv_r, struct ieee80211_supported_band *sband,
- 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)skb->data;
- 	__le16 fc;
- 	struct iwl_lq_sta *lq_sta;
-+	u64 mask_bit = 0;
  
- 	IWL_DEBUG_RATE_LIMIT("rate scale calculate new rate for skb\n");
+ static int memory_set_cur_bandwidth(struct thermal_cooling_device *cdev,
+@@ -115,7 +115,7 @@ static int memory_set_cur_bandwidth(struct thermal_cooling_device *cdev,
+ 	struct acpi_object_list arg_list;
+ 	union acpi_object arg;
+ 	acpi_status status;
+-	int temp;
++	unsigned long long temp;
+ 	unsigned long max_state;
  
-+	if (sta)
-+		mask_bit = sta->supp_rates[sband->band];
-+
- 	/* Send management frames and broadcast/multicast data using lowest
- 	 * rate. */
- 	fc = hdr->frame_control;
- 	if (!ieee80211_is_data(fc) || is_multicast_ether_addr(hdr->addr1) ||
- 	    !sta || !priv_sta) {
--		sel->rate_idx = rate_lowest_index(sband, sta);
-+		if (!mask_bit)
-+			sel->rate_idx = rate_lowest_index(sband, NULL);
-+		else
-+			sel->rate_idx = rate_lowest_index(sband, sta);
- 		return;
- 	}
+ 	if (memory_get_int_max_bandwidth(cdev, &max_state))
+@@ -131,7 +131,7 @@ static int memory_set_cur_bandwidth(struct thermal_cooling_device *cdev,
  
-diff --git a/drivers/net/wireless/orinoco.c b/drivers/net/wireless/orinoco.c
-index e0512e4..65c4faf 100644
---- a/drivers/net/wireless/orinoco.c
-+++ b/drivers/net/wireless/orinoco.c
-@@ -4938,32 +4938,29 @@ static int orinoco_ioctl_set_genie(struct net_device *dev,
- 	struct orinoco_private *priv = netdev_priv(dev);
- 	u8 *buf;
- 	unsigned long flags;
--	int err = 0;
+ 	status =
+ 	    acpi_evaluate_integer(handle, MEMORY_SET_BANDWIDTH, &arg_list,
+-				  (unsigned long *)&temp);
++				  &temp);
  
- 	if ((wrqu->data.length > MAX_WPA_IE_LEN) ||
- 	    (wrqu->data.length && (extra == NULL)))
+ 	printk(KERN_INFO
+ 	       "Bandwidth value was %d: status is %d\n", state, status);
+@@ -252,7 +252,8 @@ static DEFINE_MUTEX(intel_menlow_attr_lock);
+  * @auxtype : AUX0/AUX1
+  * @buf: syfs buffer
+  */
+-static int sensor_get_auxtrip(acpi_handle handle, int index, int *value)
++static int sensor_get_auxtrip(acpi_handle handle, int index,
++							unsigned long long *value)
+ {
+ 	acpi_status status;
+ 
+@@ -260,7 +261,7 @@ static int sensor_get_auxtrip(acpi_handle handle, int index, int *value)
  		return -EINVAL;
  
--	if (orinoco_lock(priv, &flags) != 0)
--		return -EBUSY;
--
- 	if (wrqu->data.length) {
- 		buf = kmalloc(wrqu->data.length, GFP_KERNEL);
--		if (buf == NULL) {
--			err = -ENOMEM;
--			goto out;
--		}
-+		if (buf == NULL)
-+			return -ENOMEM;
+ 	status = acpi_evaluate_integer(handle, index ? GET_AUX1 : GET_AUX0,
+-				       NULL, (unsigned long *)value);
++				       NULL, value);
+ 	if (ACPI_FAILURE(status))
+ 		return -EIO;
  
- 		memcpy(buf, extra, wrqu->data.length);
--		kfree(priv->wpa_ie);
--		priv->wpa_ie = buf;
--		priv->wpa_ie_len = wrqu->data.length;
--	} else {
--		kfree(priv->wpa_ie);
--		priv->wpa_ie = NULL;
--		priv->wpa_ie_len = 0;
-+	} else
-+		buf = NULL;
-+
-+	if (orinoco_lock(priv, &flags) != 0) {
-+		kfree(buf);
-+		return -EBUSY;
- 	}
+@@ -282,13 +283,13 @@ static int sensor_set_auxtrip(acpi_handle handle, int index, int value)
+ 	struct acpi_object_list args = {
+ 		1, &arg
+ 	};
+-	int temp;
++	unsigned long long temp;
  
-+	kfree(priv->wpa_ie);
-+	priv->wpa_ie = buf;
-+	priv->wpa_ie_len = wrqu->data.length;
-+
- 	if (priv->wpa_ie) {
- 		/* Looks like wl_lkm wants to check the auth alg, and
- 		 * somehow pass it to the firmware.
-@@ -4972,9 +4969,8 @@ static int orinoco_ioctl_set_genie(struct net_device *dev,
- 		 */
- 	}
+ 	if (index != 0 && index != 1)
+ 		return -EINVAL;
  
--out:
- 	orinoco_unlock(priv, &flags);
--	return err;
-+	return 0;
- }
+ 	status = acpi_evaluate_integer(handle, index ? GET_AUX0 : GET_AUX1,
+-				       NULL, (unsigned long *)&temp);
++				       NULL, &temp);
+ 	if (ACPI_FAILURE(status))
+ 		return -EIO;
+ 	if ((index && value < temp) || (!index && value > temp))
+@@ -296,7 +297,7 @@ static int sensor_set_auxtrip(acpi_handle handle, int index, int value)
  
- static int orinoco_ioctl_get_genie(struct net_device *dev,
-diff --git a/drivers/net/wireless/p54/p54common.c b/drivers/net/wireless/p54/p54common.c
-index 827ca03..b4831fd 100644
---- a/drivers/net/wireless/p54/p54common.c
-+++ b/drivers/net/wireless/p54/p54common.c
-@@ -741,17 +741,19 @@ static void p54_assign_address(struct ieee80211_hw *dev, struct sk_buff *skb,
- int p54_read_eeprom(struct ieee80211_hw *dev)
+ 	arg.integer.value = value;
+ 	status = acpi_evaluate_integer(handle, index ? SET_AUX1 : SET_AUX0,
+-				       &args, (unsigned long *)&temp);
++				       &args, &temp);
+ 	if (ACPI_FAILURE(status))
+ 		return -EIO;
+ 
+@@ -312,7 +313,7 @@ static ssize_t aux0_show(struct device *dev,
+ 			 struct device_attribute *dev_attr, char *buf)
  {
- 	struct p54_common *priv = dev->priv;
--	struct p54_control_hdr *hdr = NULL;
-+	struct p54_control_hdr *hdr = NULL, *org_hdr;
- 	struct p54_eeprom_lm86 *eeprom_hdr;
- 	size_t eeprom_size = 0x2020, offset = 0, blocksize;
- 	int ret = -ENOMEM;
- 	void *eeprom = NULL;
+ 	struct intel_menlow_attribute *attr = to_intel_menlow_attr(dev_attr);
+-	int value;
++	unsigned long long value;
+ 	int result;
  
--	hdr = (struct p54_control_hdr *)kzalloc(sizeof(*hdr) +
--		sizeof(*eeprom_hdr) + EEPROM_READBACK_LEN, GFP_KERNEL);
--	if (!hdr)
-+	org_hdr = kzalloc(priv->tx_hdr_len + sizeof(*hdr) +
-+			  sizeof(*eeprom_hdr) + EEPROM_READBACK_LEN,
-+			  GFP_KERNEL);
-+	if (!org_hdr)
- 		goto free;
- 
-+	hdr = (void *) org_hdr + priv->tx_hdr_len;
- 	priv->eeprom = kzalloc(EEPROM_READBACK_LEN, GFP_KERNEL);
- 	if (!priv->eeprom)
- 		goto free;
-@@ -790,7 +792,7 @@ int p54_read_eeprom(struct ieee80211_hw *dev)
- free:
- 	kfree(priv->eeprom);
- 	priv->eeprom = NULL;
--	kfree(hdr);
-+	kfree(org_hdr);
- 	kfree(eeprom);
- 
- 	return ret;
-diff --git a/drivers/net/wireless/p54/p54usb.c b/drivers/net/wireless/p54/p54usb.c
-index 8a2e32d..c61d8bd 100644
---- a/drivers/net/wireless/p54/p54usb.c
-+++ b/drivers/net/wireless/p54/p54usb.c
-@@ -85,13 +85,13 @@ static void p54u_rx_cb(struct urb *urb)
- 	struct ieee80211_hw *dev = info->dev;
- 	struct p54u_priv *priv = dev->priv;
- 
-+	skb_unlink(skb, &priv->rx_queue);
-+
- 	if (unlikely(urb->status)) {
--		info->urb = NULL;
--		usb_free_urb(urb);
-+		dev_kfree_skb_irq(skb);
- 		return;
- 	}
- 
--	skb_unlink(skb, &priv->rx_queue);
- 	skb_put(skb, urb->actual_length);
- 
- 	if (priv->hw_type == P54U_NET2280)
-@@ -104,7 +104,6 @@ static void p54u_rx_cb(struct urb *urb)
- 	if (p54_rx(dev, skb)) {
- 		skb = dev_alloc_skb(priv->common.rx_mtu + 32);
- 		if (unlikely(!skb)) {
--			usb_free_urb(urb);
- 			/* TODO check rx queue length and refill *somewhere* */
- 			return;
- 		}
-@@ -114,7 +113,6 @@ static void p54u_rx_cb(struct urb *urb)
- 		info->dev = dev;
- 		urb->transfer_buffer = skb_tail_pointer(skb);
- 		urb->context = skb;
--		skb_queue_tail(&priv->rx_queue, skb);
- 	} else {
- 		if (priv->hw_type == P54U_NET2280)
- 			skb_push(skb, priv->common.tx_hdr_len);
-@@ -129,22 +127,23 @@ static void p54u_rx_cb(struct urb *urb)
- 			WARN_ON(1);
- 			urb->transfer_buffer = skb_tail_pointer(skb);
- 		}
--
--		skb_queue_tail(&priv->rx_queue, skb);
- 	}
- 
--	usb_submit_urb(urb, GFP_ATOMIC);
-+	usb_anchor_urb(urb, &priv->submitted);
-+	if (usb_submit_urb(urb, GFP_ATOMIC)) {
-+		usb_unanchor_urb(urb);
-+		dev_kfree_skb_irq(skb);
-+	} else
-+		skb_queue_tail(&priv->rx_queue, skb);
- }
- 
--static void p54u_tx_cb(struct urb *urb)
--{
--	usb_free_urb(urb);
--}
-+static void p54u_tx_cb(struct urb *urb) { }
- 
--static void p54u_tx_free_cb(struct urb *urb)
-+static void p54u_free_urbs(struct ieee80211_hw *dev)
+ 	result = sensor_get_auxtrip(attr->handle, 0, &value);
+@@ -324,7 +325,7 @@ static ssize_t aux1_show(struct device *dev,
+ 			 struct device_attribute *dev_attr, char *buf)
  {
--	kfree(urb->transfer_buffer);
--	usb_free_urb(urb);
-+	struct p54u_priv *priv = dev->priv;
-+
-+	usb_kill_anchored_urbs(&priv->submitted);
- }
+ 	struct intel_menlow_attribute *attr = to_intel_menlow_attr(dev_attr);
+-	int value;
++	unsigned long long value;
+ 	int result;
  
- static int p54u_init_urbs(struct ieee80211_hw *dev)
-@@ -153,15 +152,18 @@ static int p54u_init_urbs(struct ieee80211_hw *dev)
- 	struct urb *entry;
- 	struct sk_buff *skb;
- 	struct p54u_rx_info *info;
-+	int ret = 0;
+ 	result = sensor_get_auxtrip(attr->handle, 1, &value);
+@@ -376,7 +377,7 @@ static ssize_t bios_enabled_show(struct device *dev,
+ 				 struct device_attribute *attr, char *buf)
+ {
+ 	acpi_status status;
+-	unsigned long bios_enabled;
++	unsigned long long bios_enabled;
  
- 	while (skb_queue_len(&priv->rx_queue) < 32) {
- 		skb = __dev_alloc_skb(priv->common.rx_mtu + 32, GFP_KERNEL);
--		if (!skb)
--			break;
-+		if (!skb) {
-+			ret = -ENOMEM;
-+			goto err;
+ 	status = acpi_evaluate_integer(NULL, BIOS_ENABLED, NULL, &bios_enabled);
+ 	if (ACPI_FAILURE(status))
+@@ -492,7 +493,7 @@ static int __init intel_menlow_module_init(void)
+ {
+ 	int result = -ENODEV;
+ 	acpi_status status;
+-	unsigned long enable;
++	unsigned long long enable;
+ 
+ 	if (acpi_disabled)
+ 		return result;
+diff --git a/drivers/net/ixgb/ixgb_main.c b/drivers/net/ixgb/ixgb_main.c
+index aa75385..be3c7dc 100644
+--- a/drivers/net/ixgb/ixgb_main.c
++++ b/drivers/net/ixgb/ixgb_main.c
+@@ -977,15 +977,17 @@ ixgb_clean_rx_ring(struct ixgb_adapter *adapter)
+ 
+ 	for (i = 0; i < rx_ring->count; i++) {
+ 		buffer_info = &rx_ring->buffer_info[i];
+-		if (buffer_info->skb) {
+-
++		if (buffer_info->dma) {
+ 			pci_unmap_single(pdev,
+ 					 buffer_info->dma,
+ 					 buffer_info->length,
+ 					 PCI_DMA_FROMDEVICE);
++			buffer_info->dma = 0;
++			buffer_info->length = 0;
 +		}
- 		entry = usb_alloc_urb(0, GFP_KERNEL);
- 		if (!entry) {
--			kfree_skb(skb);
--			break;
-+			ret = -ENOMEM;
-+			goto err;
+ 
++		if (buffer_info->skb) {
+ 			dev_kfree_skb(buffer_info->skb);
+-
+ 			buffer_info->skb = NULL;
  		}
- 		usb_fill_bulk_urb(entry, priv->udev,
- 				  usb_rcvbulkpipe(priv->udev, P54U_PIPE_DATA),
-@@ -171,26 +173,25 @@ static int p54u_init_urbs(struct ieee80211_hw *dev)
- 		info->urb = entry;
- 		info->dev = dev;
- 		skb_queue_tail(&priv->rx_queue, skb);
--		usb_submit_urb(entry, GFP_KERNEL);
-+
-+		usb_anchor_urb(entry, &priv->submitted);
-+		ret = usb_submit_urb(entry, GFP_KERNEL);
-+		if (ret) {
-+			skb_unlink(skb, &priv->rx_queue);
-+			usb_unanchor_urb(entry);
-+			goto err;
-+		}
-+		usb_free_urb(entry);
-+		entry = NULL;
  	}
+diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
+index a3e4705..3baee56 100644
+--- a/drivers/pci/hotplug/acpiphp_glue.c
++++ b/drivers/pci/hotplug/acpiphp_glue.c
+@@ -180,7 +180,7 @@ register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
+ 	struct acpiphp_func *newfunc;
+ 	acpi_handle tmp;
+ 	acpi_status status = AE_OK;
+-	unsigned long adr, sun;
++	unsigned long long adr, sun;
+ 	int device, function, retval;
  
+ 	status = acpi_evaluate_integer(handle, "_ADR", NULL, &adr);
+@@ -528,7 +528,7 @@ find_p2p_bridge(acpi_handle handle, u32 lvl, void *context, void **rv)
+ {
+ 	acpi_status status;
+ 	acpi_handle dummy_handle;
+-	unsigned long tmp;
++	unsigned long long tmp;
+ 	int device, function;
+ 	struct pci_dev *dev;
+ 	struct pci_bus *pci_bus = context;
+@@ -573,7 +573,7 @@ find_p2p_bridge(acpi_handle handle, u32 lvl, void *context, void **rv)
+ static int add_bridge(acpi_handle handle)
+ {
+ 	acpi_status status;
+-	unsigned long tmp;
++	unsigned long long tmp;
+ 	int seg, bus;
+ 	acpi_handle dummy_handle;
+ 	struct pci_bus *pci_bus;
+@@ -767,7 +767,7 @@ static int get_gsi_base(acpi_handle handle, u32 *gsi_base)
+ {
+ 	acpi_status status;
+ 	int result = -1;
+-	unsigned long gsb;
++	unsigned long long gsb;
+ 	struct acpi_buffer buffer = {ACPI_ALLOCATE_BUFFER, NULL};
+ 	union acpi_object *obj;
+ 	void *table;
+@@ -808,7 +808,7 @@ static acpi_status
+ ioapic_add(acpi_handle handle, u32 lvl, void *context, void **rv)
+ {
+ 	acpi_status status;
+-	unsigned long sta;
++	unsigned long long sta;
+ 	acpi_handle tmp;
+ 	struct pci_dev *pdev;
+ 	u32 gsi_base;
+@@ -872,7 +872,7 @@ static acpi_status
+ ioapic_remove(acpi_handle handle, u32 lvl, void *context, void **rv)
+ {
+ 	acpi_status status;
+-	unsigned long sta;
++	unsigned long long sta;
+ 	acpi_handle tmp;
+ 	u32 gsi_base;
+ 	struct acpiphp_ioapic *pos, *n, *ioapic = NULL;
+@@ -1264,7 +1264,7 @@ static int disable_device(struct acpiphp_slot *slot)
+ static unsigned int get_slot_status(struct acpiphp_slot *slot)
+ {
+ 	acpi_status status;
+-	unsigned long sta = 0;
++	unsigned long long sta = 0;
+ 	u32 dvid;
+ 	struct list_head *l;
+ 	struct acpiphp_func *func;
+diff --git a/drivers/pci/hotplug/acpiphp_ibm.c b/drivers/pci/hotplug/acpiphp_ibm.c
+index 2b7c45e..881fdd2 100644
+--- a/drivers/pci/hotplug/acpiphp_ibm.c
++++ b/drivers/pci/hotplug/acpiphp_ibm.c
+@@ -183,7 +183,7 @@ static int ibm_set_attention_status(struct hotplug_slot *slot, u8 status)
+ 	union acpi_object args[2]; 
+ 	struct acpi_object_list params = { .pointer = args, .count = 2 };
+ 	acpi_status stat; 
+-	unsigned long rc;
++	unsigned long long rc;
+ 	union apci_descriptor *ibm_slot;
+ 
+ 	ibm_slot = ibm_slot_from_id(hpslot_to_sun(slot));
+@@ -204,7 +204,7 @@ static int ibm_set_attention_status(struct hotplug_slot *slot, u8 status)
+ 		err("APLS evaluation failed:  0x%08x\n", stat);
+ 		return -ENODEV;
+ 	} else if (!rc) {
+-		err("APLS method failed:  0x%08lx\n", rc);
++		err("APLS method failed:  0x%08llx\n", rc);
+ 		return -ERANGE;
+ 	}
  	return 0;
--}
- 
--static void p54u_free_urbs(struct ieee80211_hw *dev)
--{
--	struct p54u_priv *priv = dev->priv;
--	struct p54u_rx_info *info;
--	struct sk_buff *skb;
--
--	while ((skb = skb_dequeue(&priv->rx_queue))) {
--		info = (struct p54u_rx_info *) skb->cb;
--		if (!info->urb)
--			continue;
--
--		usb_kill_urb(info->urb);
--		kfree_skb(skb);
--	}
-+err:
-+	usb_free_urb(entry);
-+	kfree_skb(skb);
-+	p54u_free_urbs(dev);
-+	return ret;
- }
- 
- static void p54u_tx_3887(struct ieee80211_hw *dev, struct p54_control_hdr *data,
-@@ -210,25 +211,38 @@ static void p54u_tx_3887(struct ieee80211_hw *dev, struct p54_control_hdr *data,
- 	}
- 
- 	usb_fill_bulk_urb(addr_urb, priv->udev,
--		usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA), &data->req_id,
--		sizeof(data->req_id), p54u_tx_cb, dev);
-+			  usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA),
-+			  &data->req_id, sizeof(data->req_id), p54u_tx_cb,
-+			  dev);
- 	usb_fill_bulk_urb(data_urb, priv->udev,
--		usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA), data, len,
--		free_on_tx ? p54u_tx_free_cb : p54u_tx_cb, dev);
-+			  usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA),
-+			  data, len, p54u_tx_cb, dev);
- 	addr_urb->transfer_flags |= URB_ZERO_PACKET;
--	data_urb->transfer_flags |= URB_ZERO_PACKET;
-+	data_urb->transfer_flags |= URB_ZERO_PACKET |
-+				    (free_on_tx ? URB_FREE_BUFFER : 0);
-+
-+	usb_anchor_urb(addr_urb, &priv->submitted);
-+	if (usb_submit_urb(addr_urb, GFP_ATOMIC)) {
-+		usb_unanchor_urb(addr_urb);
-+		goto out;
-+	}
-+
-+	usb_anchor_urb(data_urb, &priv->submitted);
-+	if (usb_submit_urb(data_urb, GFP_ATOMIC))
-+		usb_unanchor_urb(data_urb);
- 
--	usb_submit_urb(addr_urb, GFP_ATOMIC);
--	usb_submit_urb(data_urb, GFP_ATOMIC);
-+out:
-+	usb_free_urb(addr_urb);
-+	usb_free_urb(data_urb);
- }
- 
--static __le32 p54u_lm87_chksum(const u32 *data, size_t length)
-+static __le32 p54u_lm87_chksum(const __le32 *data, size_t length)
- {
- 	u32 chk = 0;
- 
- 	length >>= 2;
- 	while (length--) {
--		chk ^= *data++;
-+		chk ^= le32_to_cpu(*data++);
- 		chk = (chk >> 5) ^ (chk << 3);
- 	}
- 
-@@ -247,16 +261,20 @@ static void p54u_tx_lm87(struct ieee80211_hw *dev,
- 	if (!data_urb)
- 		return;
- 
--	hdr->chksum = p54u_lm87_chksum((u32 *)data, len);
-+	hdr->chksum = p54u_lm87_chksum((__le32 *) data, len);
- 	hdr->device_addr = data->req_id;
- 
- 	usb_fill_bulk_urb(data_urb, priv->udev,
--		usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA), hdr,
--		len + sizeof(*hdr), free_on_tx ? p54u_tx_free_cb : p54u_tx_cb,
--		dev);
--	data_urb->transfer_flags |= URB_ZERO_PACKET;
-+			  usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA), hdr,
-+			  len + sizeof(*hdr), p54u_tx_cb, dev);
-+	data_urb->transfer_flags |= URB_ZERO_PACKET |
-+				    (free_on_tx ? URB_FREE_BUFFER : 0);
- 
--	usb_submit_urb(data_urb, GFP_ATOMIC);
-+	usb_anchor_urb(data_urb, &priv->submitted);
-+	if (usb_submit_urb(data_urb, GFP_ATOMIC))
-+		usb_unanchor_urb(data_urb);
-+
-+	usb_free_urb(data_urb);
- }
- 
- static void p54u_tx_net2280(struct ieee80211_hw *dev, struct p54_control_hdr *data,
-@@ -295,16 +313,30 @@ static void p54u_tx_net2280(struct ieee80211_hw *dev, struct p54_control_hdr *da
- 	hdr->len = cpu_to_le16(len);
- 
- 	usb_fill_bulk_urb(int_urb, priv->udev,
--		usb_sndbulkpipe(priv->udev, P54U_PIPE_DEV), reg, sizeof(*reg),
--		p54u_tx_free_cb, dev);
--	int_urb->transfer_flags |= URB_ZERO_PACKET;
--	usb_submit_urb(int_urb, GFP_ATOMIC);
-+			  usb_sndbulkpipe(priv->udev, P54U_PIPE_DEV),
-+			  reg, sizeof(*reg), p54u_tx_cb, dev);
-+	int_urb->transfer_flags |= URB_ZERO_PACKET | URB_FREE_BUFFER;
-+	usb_anchor_urb(int_urb, &priv->submitted);
-+	if (usb_submit_urb(int_urb, GFP_ATOMIC)) {
-+		usb_unanchor_urb(int_urb);
-+		goto out;
-+	}
- 
- 	usb_fill_bulk_urb(data_urb, priv->udev,
--		usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA), hdr, len + sizeof(*hdr),
--		free_on_tx ? p54u_tx_free_cb : p54u_tx_cb, dev);
--	data_urb->transfer_flags |= URB_ZERO_PACKET;
--	usb_submit_urb(data_urb, GFP_ATOMIC);
-+			  usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA), hdr,
-+			  len + sizeof(*hdr), p54u_tx_cb, dev);
-+	data_urb->transfer_flags |= URB_ZERO_PACKET |
-+				    (free_on_tx ? URB_FREE_BUFFER : 0);
-+
-+	usb_anchor_urb(int_urb, &priv->submitted);
-+	if (usb_submit_urb(data_urb, GFP_ATOMIC)) {
-+		usb_unanchor_urb(data_urb);
-+		goto out;
-+	}
-+
-+out:
-+	usb_free_urb(int_urb);
-+	usb_free_urb(data_urb);
- }
- 
- static int p54u_write(struct p54u_priv *priv,
-@@ -805,6 +837,7 @@ static int __devinit p54u_probe(struct usb_interface *intf,
- 	SET_IEEE80211_DEV(dev, &intf->dev);
- 	usb_set_intfdata(intf, dev);
- 	priv->udev = udev;
-+	init_usb_anchor(&priv->submitted);
- 
- 	usb_get_dev(udev);
- 
-diff --git a/drivers/net/wireless/p54/p54usb.h b/drivers/net/wireless/p54/p54usb.h
-index 5b8fe91..54ee738 100644
---- a/drivers/net/wireless/p54/p54usb.h
-+++ b/drivers/net/wireless/p54/p54usb.h
-@@ -133,6 +133,7 @@ struct p54u_priv {
- 
- 	spinlock_t lock;
- 	struct sk_buff_head rx_queue;
-+	struct usb_anchor submitted;
- };
- 
- #endif /* P54USB_H */
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 74801f7..5aee7ee 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -378,21 +378,19 @@ static int msi_capability_init(struct pci_dev *dev)
- 	entry->msi_attrib.masked = 1;
- 	entry->msi_attrib.default_irq = dev->irq;	/* Save IOAPIC IRQ */
- 	entry->msi_attrib.pos = pos;
--	if (entry->msi_attrib.maskbit) {
--		entry->mask_base = (void __iomem *)(long)msi_mask_bits_reg(pos,
--				entry->msi_attrib.is_64);
--	}
- 	entry->dev = dev;
- 	if (entry->msi_attrib.maskbit) {
--		unsigned int maskbits, temp;
-+		unsigned int base, maskbits, temp;
-+
-+		base = msi_mask_bits_reg(pos, entry->msi_attrib.is_64);
-+		entry->mask_base = (void __iomem *)(long)base;
-+
- 		/* All MSIs are unmasked by default, Mask them all */
--		pci_read_config_dword(dev,
--			msi_mask_bits_reg(pos, entry->msi_attrib.is_64),
--			&maskbits);
-+		pci_read_config_dword(dev, base, &maskbits);
- 		temp = (1 << multi_msi_capable(control));
- 		temp = ((temp - 1) & ~temp);
- 		maskbits |= temp;
--		pci_write_config_dword(dev, entry->msi_attrib.is_64, maskbits);
-+		pci_write_config_dword(dev, base, maskbits);
- 		entry->msi_attrib.maskbits_mask = temp;
- 	}
- 	list_add_tail(&entry->list, &dev->msi_list);
+diff --git a/drivers/pci/hotplug/sgi_hotplug.c b/drivers/pci/hotplug/sgi_hotplug.c
+index d748698..3eee709 100644
+--- a/drivers/pci/hotplug/sgi_hotplug.c
++++ b/drivers/pci/hotplug/sgi_hotplug.c
+@@ -413,7 +413,7 @@ static int enable_slot(struct hotplug_slot *bss_hotplug_slot)
+ 	/*
+ 	 * Add the slot's devices to the ACPI infrastructure */
+ 	if (SN_ACPI_BASE_SUPPORT() && ssdt) {
+-		unsigned long adr;
++		unsigned long long adr;
+ 		struct acpi_device *pdevice;
+ 		struct acpi_device *device;
+ 		acpi_handle phandle;
+@@ -505,7 +505,7 @@ static int disable_slot(struct hotplug_slot *bss_hotplug_slot)
+ 	/* free the ACPI resources for the slot */
+ 	if (SN_ACPI_BASE_SUPPORT() &&
+             PCI_CONTROLLER(slot->pci_bus)->acpi_handle) {
+-		unsigned long adr;
++		unsigned long long adr;
+ 		struct acpi_device *device;
+ 		acpi_handle phandle;
+ 		acpi_handle chandle = NULL;
 diff --git a/drivers/serial/jsm/jsm_tty.c b/drivers/serial/jsm/jsm_tty.c
 index a697914..3fc7e0f 100644
 --- a/drivers/serial/jsm/jsm_tty.c
@@ -987,6 +1904,168 @@ index a697914..3fc7e0f 100644
  	.break_ctl	= jsm_tty_break,
  	.startup	= jsm_tty_open,
  	.shutdown	= jsm_tty_close,
+diff --git a/drivers/usb/host/isp1760-if.c b/drivers/usb/host/isp1760-if.c
+index d8b0ba5..9c4a76a 100644
+--- a/drivers/usb/host/isp1760-if.c
++++ b/drivers/usb/host/isp1760-if.c
+@@ -129,23 +129,23 @@ static struct of_platform_driver isp1760_of_driver = {
+ #endif
+ 
+ #ifdef CONFIG_PCI
+-static u32 nxp_pci_io_base;
+-static u32 iolength;
+-static u32 pci_mem_phy0;
+-static u32 length;
+-static u8 __iomem *chip_addr;
+-static u8 __iomem *iobase;
+-
+ static int __devinit isp1761_pci_probe(struct pci_dev *dev,
+ 		const struct pci_device_id *id)
+ {
+ 	u8 latency, limit;
+ 	__u32 reg_data;
+ 	int retry_count;
+-	int length;
+-	int status = 1;
+ 	struct usb_hcd *hcd;
+ 	unsigned int devflags = 0;
++	int ret_status = 0;
++
++	resource_size_t pci_mem_phy0;
++	resource_size_t memlength;
++
++	u8 __iomem *chip_addr;
++	u8 __iomem *iobase;
++	resource_size_t nxp_pci_io_base;
++	resource_size_t iolength;
+ 
+ 	if (usb_disabled())
+ 		return -ENODEV;
+@@ -168,26 +168,30 @@ static int __devinit isp1761_pci_probe(struct pci_dev *dev,
+ 	iobase = ioremap_nocache(nxp_pci_io_base, iolength);
+ 	if (!iobase) {
+ 		printk(KERN_ERR "ioremap #1\n");
+-		release_mem_region(nxp_pci_io_base, iolength);
+-		return -ENOMEM;
++		ret_status = -ENOMEM;
++		goto cleanup1;
+ 	}
+ 	/* Grab the PLX PCI shared memory of the ISP 1761 we need  */
+ 	pci_mem_phy0 = pci_resource_start(dev, 3);
+-	length = pci_resource_len(dev, 3);
+-
+-	if (length < 0xffff) {
+-		printk(KERN_ERR "memory length for this resource is less than "
+-				"required\n");
+-		release_mem_region(nxp_pci_io_base, iolength);
+-		iounmap(iobase);
+-		return  -ENOMEM;
++	memlength = pci_resource_len(dev, 3);
++	if (memlength < 0xffff) {
++		printk(KERN_ERR "memory length for this resource is wrong\n");
++		ret_status = -ENOMEM;
++		goto cleanup2;
+ 	}
+ 
+-	if (!request_mem_region(pci_mem_phy0, length, "ISP-PCI")) {
++	if (!request_mem_region(pci_mem_phy0, memlength, "ISP-PCI")) {
+ 		printk(KERN_ERR "host controller already in use\n");
+-		release_mem_region(nxp_pci_io_base, iolength);
+-		iounmap(iobase);
+-		return -EBUSY;
++		ret_status = -EBUSY;
++		goto cleanup2;
++	}
++
++	/* map available memory */
++	chip_addr = ioremap_nocache(pci_mem_phy0,memlength);
++	if (!chip_addr) {
++		printk(KERN_ERR "Error ioremap failed\n");
++		ret_status = -ENOMEM;
++		goto cleanup3;
+ 	}
+ 
+ 	/* bad pci latencies can contribute to overruns */
+@@ -210,38 +214,54 @@ static int __devinit isp1761_pci_probe(struct pci_dev *dev,
+ 		 * */
+ 		writel(0xface, chip_addr + HC_SCRATCH_REG);
+ 		udelay(100);
+-		reg_data = readl(chip_addr + HC_SCRATCH_REG);
++		reg_data = readl(chip_addr + HC_SCRATCH_REG) & 0x0000ffff;
+ 		retry_count--;
+ 	}
+ 
++	iounmap(chip_addr);
++
+ 	/* Host Controller presence is detected by writing to scratch register
+ 	 * and reading back and checking the contents are same or not
+ 	 */
+ 	if (reg_data != 0xFACE) {
+ 		err("scratch register mismatch %x", reg_data);
+-		goto clean;
++		ret_status = -ENOMEM;
++		goto cleanup3;
+ 	}
+ 
+ 	pci_set_master(dev);
+ 
+-	status = readl(iobase + 0x68);
+-	status |= 0x900;
+-	writel(status, iobase + 0x68);
++	/* configure PLX PCI chip to pass interrupts */
++#define PLX_INT_CSR_REG 0x68
++	reg_data = readl(iobase + PLX_INT_CSR_REG);
++	reg_data |= 0x900;
++	writel(reg_data, iobase + PLX_INT_CSR_REG);
+ 
+ 	dev->dev.dma_mask = NULL;
+-	hcd = isp1760_register(pci_mem_phy0, length, dev->irq,
++	hcd = isp1760_register(pci_mem_phy0, memlength, dev->irq,
+ 		IRQF_SHARED | IRQF_DISABLED, &dev->dev, dev_name(&dev->dev),
+ 		devflags);
++	if (IS_ERR(hcd)) {
++		ret_status = -ENODEV;
++		goto cleanup3;
++	}
++
++	/* done with PLX IO access */
++	iounmap(iobase);
++	release_mem_region(nxp_pci_io_base, iolength);
++
+ 	pci_set_drvdata(dev, hcd);
+-	if (!hcd)
+-		return 0;
+-clean:
+-	status = -ENODEV;
++	return 0;
++
++cleanup3:
++	release_mem_region(pci_mem_phy0, memlength);
++cleanup2:
+ 	iounmap(iobase);
+-	release_mem_region(pci_mem_phy0, length);
++cleanup1:
+ 	release_mem_region(nxp_pci_io_base, iolength);
+-	return status;
++	return ret_status;
+ }
++
+ static void isp1761_pci_remove(struct pci_dev *dev)
+ {
+ 	struct usb_hcd *hcd;
+@@ -254,12 +274,6 @@ static void isp1761_pci_remove(struct pci_dev *dev)
+ 	usb_put_hcd(hcd);
+ 
+ 	pci_disable_device(dev);
+-
+-	iounmap(iobase);
+-	iounmap(chip_addr);
+-
+-	release_mem_region(nxp_pci_io_base, iolength);
+-	release_mem_region(pci_mem_phy0, length);
+ }
+ 
+ static void isp1761_pci_shutdown(struct pci_dev *dev)
 diff --git a/drivers/video/aty/mach64_ct.c b/drivers/video/aty/mach64_ct.c
 index c50c7cf..2745b85 100644
 --- a/drivers/video/aty/mach64_ct.c
@@ -1016,64 +2095,11 @@ index c50c7cf..2745b85 100644
  #ifdef DEBUG
  	pllmclk = (1000000 * pll->ct.mclk_fb_mult * pll->ct.mclk_fb_div) /
  			(par->ref_clk_per * pll->ct.pll_ref_div);
-diff --git a/drivers/xen/balloon.c b/drivers/xen/balloon.c
-index 526c191..ae2e3f8 100644
---- a/drivers/xen/balloon.c
-+++ b/drivers/xen/balloon.c
-@@ -488,7 +488,7 @@ static ssize_t store_target_kb(struct sys_device *dev,
- 	if (!capable(CAP_SYS_ADMIN))
- 		return -EPERM;
- 
--	target_bytes = memparse(buf, &endchar);
-+	target_bytes = simple_strtoull(buf, &endchar, 0) * 1024;
- 
- 	balloon_set_new_target(target_bytes >> PAGE_SHIFT);
- 
-@@ -498,8 +498,39 @@ static ssize_t store_target_kb(struct sys_device *dev,
- static SYSDEV_ATTR(target_kb, S_IRUGO | S_IWUSR,
- 		   show_target_kb, store_target_kb);
- 
-+
-+static ssize_t show_target(struct sys_device *dev, struct sysdev_attribute *attr,
-+			      char *buf)
-+{
-+	return sprintf(buf, "%llu\n",
-+		       (u64)balloon_stats.target_pages << PAGE_SHIFT);
-+}
-+
-+static ssize_t store_target(struct sys_device *dev,
-+			    struct sysdev_attribute *attr,
-+			    const char *buf,
-+			    size_t count)
-+{
-+	char *endchar;
-+	unsigned long long target_bytes;
-+
-+	if (!capable(CAP_SYS_ADMIN))
-+		return -EPERM;
-+
-+	target_bytes = memparse(buf, &endchar);
-+
-+	balloon_set_new_target(target_bytes >> PAGE_SHIFT);
-+
-+	return count;
-+}
-+
-+static SYSDEV_ATTR(target, S_IRUGO | S_IWUSR,
-+		   show_target, store_target);
-+
-+
- static struct sysdev_attribute *balloon_attrs[] = {
- 	&attr_target_kb,
-+	&attr_target,
- };
- 
- static struct attribute *balloon_info_attrs[] = {
 diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
-index c7d3417..b5b8649 100644
+index 223647f..f254235 100644
 --- a/fs/cifs/connect.c
 +++ b/fs/cifs/connect.c
-@@ -1356,7 +1356,7 @@ cifs_parse_mount_options(char *options, const char *devname,
+@@ -1349,7 +1349,7 @@ cifs_parse_mount_options(char *options, const char *devname,
  }
  
  static struct TCP_Server_Info *
@@ -1082,7 +2108,7 @@ index c7d3417..b5b8649 100644
  {
  	struct list_head *tmp;
  	struct TCP_Server_Info *server;
-@@ -1376,11 +1376,11 @@ cifs_find_tcp_session(struct sockaddr *addr)
+@@ -1369,11 +1369,11 @@ cifs_find_tcp_session(struct sockaddr *addr)
  		if (server->tcpStatus == CifsNew)
  			continue;
  
@@ -1096,7 +2122,7 @@ index c7d3417..b5b8649 100644
  			 memcmp(&server->addr.sockAddr6.sin6_addr,
  				&addr6->sin6_addr, sizeof(addr6->sin6_addr)))
  			continue;
-@@ -2036,7 +2036,7 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
+@@ -2027,7 +2027,7 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
  	int rc = 0;
  	int xid;
  	struct socket *csocket = NULL;
@@ -1105,7 +2131,7 @@ index c7d3417..b5b8649 100644
  	struct sockaddr_in *sin_server = (struct sockaddr_in *) &addr;
  	struct sockaddr_in6 *sin_server6 = (struct sockaddr_in6 *) &addr;
  	struct smb_vol volume_info;
-@@ -2048,7 +2048,7 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
+@@ -2039,7 +2039,7 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
  
  /* cFYI(1, ("Entering cifs_mount. Xid: %d with: %s", xid, mount_data)); */
  
@@ -1114,7 +2140,7 @@ index c7d3417..b5b8649 100644
  	memset(&volume_info, 0, sizeof(struct smb_vol));
  	if (cifs_parse_mount_options(mount_data, devname, &volume_info)) {
  		rc = -EINVAL;
-@@ -2078,9 +2078,9 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
+@@ -2069,9 +2069,9 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
  			rc = cifs_inet_pton(AF_INET6, volume_info.UNCip,
  					    &sin_server6->sin6_addr.in6_u);
  			if (rc > 0)
@@ -1126,7 +2152,7 @@ index c7d3417..b5b8649 100644
  		}
  
  		if (rc <= 0) {
-@@ -2122,7 +2122,7 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
+@@ -2113,7 +2113,7 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
  
  	srvTcp = cifs_find_tcp_session(&addr);
  	if (!srvTcp) { /* create socket */
@@ -1135,7 +2161,7 @@ index c7d3417..b5b8649 100644
  			cFYI(1, ("attempting ipv6 connect"));
  			/* BB should we allow ipv6 on port 139? */
  			/* other OS never observed in Wild doing 139 with v6 */
-@@ -2153,7 +2153,7 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
+@@ -2144,7 +2144,7 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
  		} else {
  			srvTcp->noblocksnd = volume_info.noblocksnd;
  			srvTcp->noautotune = volume_info.noautotune;
@@ -1159,10 +2185,10 @@ index eba87ff..ca46f11 100644
  		fl->fl_start = op->info.start;
  		fl->fl_end = op->info.end;
 diff --git a/fs/nfsd/nfs4state.c b/fs/nfsd/nfs4state.c
-index 1a052ac..f3f871d 100644
+index 1578d7a..ddcbed8 100644
 --- a/fs/nfsd/nfs4state.c
 +++ b/fs/nfsd/nfs4state.c
-@@ -2769,6 +2769,25 @@ out:
+@@ -2767,6 +2767,25 @@ out:
  }
  
  /*
@@ -1188,7 +2214,7 @@ index 1a052ac..f3f871d 100644
   * LOCKT operation
   */
  __be32
-@@ -2776,7 +2795,6 @@ nfsd4_lockt(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
+@@ -2774,7 +2793,6 @@ nfsd4_lockt(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
  	    struct nfsd4_lockt *lockt)
  {
  	struct inode *inode;
@@ -1196,7 +2222,7 @@ index 1a052ac..f3f871d 100644
  	struct file_lock file_lock;
  	int error;
  	__be32 status;
-@@ -2824,7 +2842,6 @@ nfsd4_lockt(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
+@@ -2822,7 +2840,6 @@ nfsd4_lockt(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
  		file_lock.fl_owner = (fl_owner_t)lockt->lt_stateowner;
  	file_lock.fl_pid = current->tgid;
  	file_lock.fl_flags = FL_POSIX;
@@ -1204,7 +2230,7 @@ index 1a052ac..f3f871d 100644
  
  	file_lock.fl_start = lockt->lt_offset;
  	if ((lockt->lt_length == ~(u64)0) || LOFF_OVERFLOW(lockt->lt_offset, lockt->lt_length))
-@@ -2834,16 +2851,8 @@ nfsd4_lockt(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
+@@ -2832,16 +2849,8 @@ nfsd4_lockt(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
  
  	nfs4_transform_lock_offset(&file_lock);
  
@@ -1222,11 +2248,63 @@ index 1a052ac..f3f871d 100644
  	if (error) {
  		status = nfserrno(error);
  		goto out;
+diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
+index a5ac0bc..c52f10d 100644
+--- a/include/acpi/acpi_bus.h
++++ b/include/acpi/acpi_bus.h
+@@ -46,7 +46,7 @@ acpi_extract_package(union acpi_object *package,
+ acpi_status
+ acpi_evaluate_integer(acpi_handle handle,
+ 		      acpi_string pathname,
+-		      struct acpi_object_list *arguments, unsigned long *data);
++		      struct acpi_object_list *arguments, unsigned long long *data);
+ acpi_status
+ acpi_evaluate_reference(acpi_handle handle,
+ 			acpi_string pathname,
+diff --git a/include/acpi/actypes.h b/include/acpi/actypes.h
+index 4ea4f40..73d6b1c 100644
+--- a/include/acpi/actypes.h
++++ b/include/acpi/actypes.h
+@@ -1225,8 +1225,8 @@ struct acpi_resource {
+ 
+ #pragma pack()
+ 
+-#define ACPI_RS_SIZE_MIN                    12
+ #define ACPI_RS_SIZE_NO_DATA                8	/* Id + Length fields */
++#define ACPI_RS_SIZE_MIN                    (u32) ACPI_ROUND_UP_TO_NATIVE_WORD (12)
+ #define ACPI_RS_SIZE(type)                  (u32) (ACPI_RS_SIZE_NO_DATA + sizeof (type))
+ 
+ #define ACPI_NEXT_RESOURCE(res)             (struct acpi_resource *)((u8 *) res + res->length)
+diff --git a/include/linux/if_vlan.h b/include/linux/if_vlan.h
+index 9e7b49b..a5cb0c3 100644
+--- a/include/linux/if_vlan.h
++++ b/include/linux/if_vlan.h
+@@ -114,6 +114,8 @@ extern u16 vlan_dev_vlan_id(const struct net_device *dev);
+ 
+ extern int __vlan_hwaccel_rx(struct sk_buff *skb, struct vlan_group *grp,
+ 			     u16 vlan_tci, int polling);
++extern int vlan_hwaccel_do_receive(struct sk_buff *skb);
++
+ #else
+ static inline struct net_device *vlan_dev_real_dev(const struct net_device *dev)
+ {
+@@ -133,6 +135,11 @@ static inline int __vlan_hwaccel_rx(struct sk_buff *skb, struct vlan_group *grp,
+ 	BUG();
+ 	return NET_XMIT_SUCCESS;
+ }
++
++static inline int vlan_hwaccel_do_receive(struct sk_buff *skb)
++{
++	return 0;
++}
+ #endif
+ 
+ /**
 diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index 52df0cb..00953e0 100644
+index 391cbf3..26b59cb 100644
 --- a/include/linux/pci_ids.h
 +++ b/include/linux/pci_ids.h
-@@ -2418,6 +2418,7 @@
+@@ -2384,6 +2384,7 @@
  #define PCI_DEVICE_ID_INTEL_ICH7_0	0x27b8
  #define PCI_DEVICE_ID_INTEL_ICH7_1	0x27b9
  #define PCI_DEVICE_ID_INTEL_ICH7_30	0x27b0
@@ -1234,168 +2312,104 @@ index 52df0cb..00953e0 100644
  #define PCI_DEVICE_ID_INTEL_ICH7_31	0x27bd
  #define PCI_DEVICE_ID_INTEL_ICH7_17	0x27da
  #define PCI_DEVICE_ID_INTEL_ICH7_19	0x27dd
-diff --git a/include/linux/slab_def.h b/include/linux/slab_def.h
-index 39c3a5e..6ca6a7b 100644
---- a/include/linux/slab_def.h
-+++ b/include/linux/slab_def.h
-@@ -43,10 +43,7 @@ static inline void *kmalloc(size_t size, gfp_t flags)
- 			i++;
- #include <linux/kmalloc_sizes.h>
- #undef CACHE
--		{
--			extern void __you_cannot_kmalloc_that_much(void);
--			__you_cannot_kmalloc_that_much();
--		}
-+		return NULL;
- found:
- #ifdef CONFIG_ZONE_DMA
- 		if (flags & GFP_DMA)
-@@ -77,10 +74,7 @@ static inline void *kmalloc_node(size_t size, gfp_t flags, int node)
- 			i++;
- #include <linux/kmalloc_sizes.h>
- #undef CACHE
--		{
--			extern void __you_cannot_kmalloc_that_much(void);
--			__you_cannot_kmalloc_that_much();
--		}
-+		return NULL;
- found:
- #ifdef CONFIG_ZONE_DMA
- 		if (flags & GFP_DMA)
-diff --git a/mm/mlock.c b/mm/mlock.c
-index d35fe89..13e0f9a 100644
---- a/mm/mlock.c
-+++ b/mm/mlock.c
-@@ -293,14 +293,10 @@ static inline int __mlock_posix_error_return(long retval)
-  *
-  * return number of pages [> 0] to be removed from locked_vm on success
-  * of "special" vmas.
-- *
-- * return negative error if vma spanning @start-@range disappears while
-- * mmap semaphore is dropped.  Unlikely?
-  */
- long mlock_vma_pages_range(struct vm_area_struct *vma,
- 			unsigned long start, unsigned long end)
+diff --git a/net/8021q/vlan_core.c b/net/8021q/vlan_core.c
+index 916061f..68ced4b 100644
+--- a/net/8021q/vlan_core.c
++++ b/net/8021q/vlan_core.c
+@@ -3,11 +3,20 @@
+ #include <linux/if_vlan.h>
+ #include "vlan.h"
+ 
++struct vlan_hwaccel_cb {
++	struct net_device	*dev;
++};
++
++static inline struct vlan_hwaccel_cb *vlan_hwaccel_cb(struct sk_buff *skb)
++{
++	return (struct vlan_hwaccel_cb *)skb->cb;
++}
++
+ /* VLAN rx hw acceleration helper.  This acts like netif_{rx,receive_skb}(). */
+ int __vlan_hwaccel_rx(struct sk_buff *skb, struct vlan_group *grp,
+ 		      u16 vlan_tci, int polling)
  {
--	struct mm_struct *mm = vma->vm_mm;
- 	int nr_pages = (end - start) / PAGE_SIZE;
- 	BUG_ON(!(vma->vm_flags & VM_LOCKED));
+-	struct net_device_stats *stats;
++	struct vlan_hwaccel_cb *cb = vlan_hwaccel_cb(skb);
  
-@@ -313,20 +309,8 @@ long mlock_vma_pages_range(struct vm_area_struct *vma,
- 	if (!((vma->vm_flags & (VM_DONTEXPAND | VM_RESERVED)) ||
- 			is_vm_hugetlb_page(vma) ||
- 			vma == get_gate_vma(current))) {
--		long error;
--		downgrade_write(&mm->mmap_sem);
--
--		error = __mlock_vma_pages_range(vma, start, end, 1);
- 
--		up_read(&mm->mmap_sem);
--		/* vma can change or disappear */
--		down_write(&mm->mmap_sem);
--		vma = find_vma(mm, start);
--		/* non-NULL vma must contain @start, but need to check @end */
--		if (!vma ||  end > vma->vm_end)
--			return -ENOMEM;
--
--		return 0;	/* hide other errors from mmap(), et al */
-+		return __mlock_vma_pages_range(vma, start, end, 1);
+ 	if (skb_bond_should_drop(skb)) {
+ 		dev_kfree_skb_any(skb);
+@@ -15,23 +24,35 @@ int __vlan_hwaccel_rx(struct sk_buff *skb, struct vlan_group *grp,
  	}
  
- 	/*
-@@ -437,41 +421,14 @@ success:
- 	vma->vm_flags = newflags;
+ 	skb->vlan_tci = vlan_tci;
++	cb->dev = vlan_group_get_device(grp, vlan_tci & VLAN_VID_MASK);
++
++	return (polling ? netif_receive_skb(skb) : netif_rx(skb));
++}
++EXPORT_SYMBOL(__vlan_hwaccel_rx);
++
++int vlan_hwaccel_do_receive(struct sk_buff *skb)
++{
++	struct vlan_hwaccel_cb *cb = vlan_hwaccel_cb(skb);
++	struct net_device *dev = cb->dev;
++	struct net_device_stats *stats;
++
+ 	netif_nit_deliver(skb);
  
- 	if (lock) {
--		/*
--		 * mmap_sem is currently held for write.  Downgrade the write
--		 * lock to a read lock so that other faults, mmap scans, ...
--		 * while we fault in all pages.
--		 */
--		downgrade_write(&mm->mmap_sem);
--
- 		ret = __mlock_vma_pages_range(vma, start, end, 1);
- 
--		/*
--		 * Need to reacquire mmap sem in write mode, as our callers
--		 * expect this.  We have no support for atomically upgrading
--		 * a sem to write, so we need to check for ranges while sem
--		 * is unlocked.
--		 */
--		up_read(&mm->mmap_sem);
--		/* vma can change or disappear */
--		down_write(&mm->mmap_sem);
--		*prev = find_vma(mm, start);
--		/* non-NULL *prev must contain @start, but need to check @end */
--		if (!(*prev) || end > (*prev)->vm_end)
--			ret = -ENOMEM;
--		else if (ret > 0) {
-+		if (ret > 0) {
- 			mm->locked_vm -= ret;
- 			ret = 0;
- 		} else
- 			ret = __mlock_posix_error_return(ret); /* translate if needed */
- 	} else {
--		/*
--		 * TODO:  for unlocking, pages will already be resident, so
--		 * we don't need to wait for allocations/reclaim/pagein, ...
--		 * However, unlocking a very large region can still take a
--		 * while.  Should we downgrade the semaphore for both lock
--		 * AND unlock ?
--		 */
- 		__mlock_vma_pages_range(vma, start, end, 0);
+-	skb->dev = vlan_group_get_device(grp, vlan_tci & VLAN_VID_MASK);
+-	if (skb->dev == NULL) {
+-		dev_kfree_skb_any(skb);
+-		/* Not NET_RX_DROP, this is not being dropped
+-		 * due to congestion. */
+-		return NET_RX_SUCCESS;
++	if (dev == NULL) {
++		kfree_skb(skb);
++		return -1;
  	}
+-	skb->dev->last_rx = jiffies;
++
++	skb->dev = dev;
++	skb->priority = vlan_get_ingress_priority(dev, skb->vlan_tci);
+ 	skb->vlan_tci = 0;
  
-diff --git a/net/mac80211/rc80211_minstrel.c b/net/mac80211/rc80211_minstrel.c
-index f6d69da..8b702d0 100644
---- a/net/mac80211/rc80211_minstrel.c
-+++ b/net/mac80211/rc80211_minstrel.c
-@@ -389,13 +389,15 @@ minstrel_rate_init(void *priv, struct ieee80211_supported_band *sband,
+-	stats = &skb->dev->stats;
++	dev->last_rx = jiffies;
++
++	stats = &dev->stats;
+ 	stats->rx_packets++;
+ 	stats->rx_bytes += skb->len;
+ 
+-	skb->priority = vlan_get_ingress_priority(skb->dev, vlan_tci);
+ 	switch (skb->pkt_type) {
+ 	case PACKET_BROADCAST:
+ 		break;
+@@ -43,13 +64,12 @@ int __vlan_hwaccel_rx(struct sk_buff *skb, struct vlan_group *grp,
+ 		 * This allows the VLAN to have a different MAC than the
+ 		 * underlying device, and still route correctly. */
+ 		if (!compare_ether_addr(eth_hdr(skb)->h_dest,
+-					skb->dev->dev_addr))
++					dev->dev_addr))
+ 			skb->pkt_type = PACKET_HOST;
+ 		break;
+ 	};
+-	return (polling ? netif_receive_skb(skb) : netif_rx(skb));
++	return 0;
+ }
+-EXPORT_SYMBOL(__vlan_hwaccel_rx);
+ 
+ struct net_device *vlan_dev_real_dev(const struct net_device *dev)
  {
- 	struct minstrel_sta_info *mi = priv_sta;
- 	struct minstrel_priv *mp = priv;
--	struct minstrel_rate *mr_ctl;
-+	struct ieee80211_local *local = hw_to_local(mp->hw);
-+	struct ieee80211_rate *ctl_rate;
- 	unsigned int i, n = 0;
- 	unsigned int t_slot = 9; /* FIXME: get real slot time */
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 5a25896..f7a30f2 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -2187,6 +2187,9 @@ int netif_receive_skb(struct sk_buff *skb)
+ 	int ret = NET_RX_DROP;
+ 	__be16 type;
  
- 	mi->lowest_rix = rate_lowest_index(sband, sta);
--	mr_ctl = &mi->r[rix_to_ndx(mi, mi->lowest_rix)];
--	mi->sp_ack_dur = mr_ctl->ack_time;
-+	ctl_rate = &sband->bitrates[mi->lowest_rix];
-+	mi->sp_ack_dur = ieee80211_frame_duration(local, 10, ctl_rate->bitrate,
-+				!!(ctl_rate->flags & IEEE80211_RATE_ERP_G), 1);
- 
- 	for (i = 0; i < sband->n_bitrates; i++) {
- 		struct minstrel_rate *mr = &mi->r[n];
-@@ -410,7 +412,7 @@ minstrel_rate_init(void *priv, struct ieee80211_supported_band *sband,
- 
- 		mr->rix = i;
- 		mr->bitrate = sband->bitrates[i].bitrate / 5;
--		calc_rate_durations(mi, hw_to_local(mp->hw), mr,
-+		calc_rate_durations(mi, local, mr,
- 				&sband->bitrates[i]);
- 
- 		/* calculate maximum number of retransmissions before
-diff --git a/net/netfilter/nf_conntrack_netlink.c b/net/netfilter/nf_conntrack_netlink.c
-index 5f4a651..8e9a303 100644
---- a/net/netfilter/nf_conntrack_netlink.c
-+++ b/net/netfilter/nf_conntrack_netlink.c
-@@ -825,13 +825,16 @@ ctnetlink_parse_nat_setup(struct nf_conn *ct,
- 	if (!parse_nat_setup) {
- #ifdef CONFIG_MODULES
- 		rcu_read_unlock();
-+		spin_unlock_bh(&nf_conntrack_lock);
- 		nfnl_unlock();
- 		if (request_module("nf-nat-ipv4") < 0) {
- 			nfnl_lock();
-+			spin_lock_bh(&nf_conntrack_lock);
- 			rcu_read_lock();
- 			return -EOPNOTSUPP;
- 		}
- 		nfnl_lock();
-+		spin_lock_bh(&nf_conntrack_lock);
- 		rcu_read_lock();
- 		if (nfnetlink_parse_nat_setup_hook)
- 			return -EAGAIN;
++	if (skb->vlan_tci && vlan_hwaccel_do_receive(skb))
++		return NET_RX_SUCCESS;
++
+ 	/* if we've gotten here through NAPI, check netpoll */
+ 	if (netpoll_receive_skb(skb))
+ 		return NET_RX_DROP;
