@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757316AbZBFBmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757437AbZBFBnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757316AbZBFBmg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 20:42:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbZBFBm2
+	id S1757437AbZBFBnd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 20:43:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbZBFBnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 20:42:28 -0500
-Received: from www262.sakura.ne.jp ([202.181.97.72]:63028 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752650AbZBFBm1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 20:42:27 -0500
-Message-Id: <200902060141.n161fBl6043702@www262.sakura.ne.jp>
-Subject: Re: [TOMOYO #15 6/8] LSM adapter functions.
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: adobriyan@gmail.com
-Cc: jmorris@namei.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       haradats@nttdata.co.jp, takedakn@nttdata.co.jp
+	Thu, 5 Feb 2009 20:43:25 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:38221 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752659AbZBFBnY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 20:43:24 -0500
+Date: Thu, 5 Feb 2009 23:43:08 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ring_buffer: remove unused flags parameter, fix
+Message-ID: <20090206014308.GD9846@ghostprotocols.net>
+References: <20090205181256.GH17653@ghostprotocols.net> <20090206000223.GB16040@elte.hu> <20090206001500.GA30095@elte.hu>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Date: Fri, 06 Feb 2009 10:41:11 +0900
-References: <20090205081810.331987920@nttdata.co.jp> <20090205082232.562805442@nttdata.co.jp> <20090205171055.GA2809@x200.localdomain>
-In-Reply-To: <20090205171055.GA2809@x200.localdomain>
-Content-Type: text/plain; charset="ISO-2022-JP"
-X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 06022009 #1583542, status: clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090206001500.GA30095@elte.hu>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> > +	if (tomoyo_prepend(&end, &buflen, "/proc/sys"))
+Em Fri, Feb 06, 2009 at 01:15:00AM +0100, Ingo Molnar escreveu:
 > 
-> Hardcoded path?
+> Small fixlet below, applied to tip:tracing/ftrace.
 > 
-Yes.
+> 	Ingo
+> 
+> --------------->
+> >From 304cc6ae1bf7a8e6d00053fbe0b7e2b26cdddda2 Mon Sep 17 00:00:00 2001
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Fri, 6 Feb 2009 01:12:02 +0100
+> Subject: [PATCH] ring_buffer: remove unused flags parameter, fix
+> 
+> Oprofile's ring-buffer use was not considered.
 
-The sysctl's table tree is accessible via sys/ directory of proc filesystem.
-Since this function is called by sysctl(2), we don't have a mount point.
-On the assumption that proc filesystem is mounted on /proc/ , TOMOYO pretends
-as if corresponding sysctl table entry under sys/ directory of proc filesystem
-is accessed.
+Thank you, adding oprofile to my kvm minimal config for tracing devel.
 
-Regards.
+- Arnaldo
