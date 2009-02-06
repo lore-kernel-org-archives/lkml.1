@@ -1,51 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760053AbZBFRmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760284AbZBFRmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760053AbZBFRmZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 12:42:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbZBFRmO
+	id S1760284AbZBFRmk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 12:42:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759041AbZBFRmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 12:42:14 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:46544 "EHLO mx2.redhat.com"
+	Fri, 6 Feb 2009 12:42:21 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56708 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753014AbZBFRmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 12:42:13 -0500
-Message-ID: <498C7671.1050309@redhat.com>
-Date: Fri, 06 Feb 2009 11:42:09 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1757079AbZBFRmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 12:42:19 -0500
+Date: Fri, 6 Feb 2009 18:41:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, hskinnemoen@atmel.com,
+       cooloney@kernel.org, tony.luck@intel.com, ralf@linux-mips.org,
+       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-next <linux-next@vger.kernel.org>,
+       linux-ia64 <linux-ia64@vger.kernel.org>
+Subject: Re: [linux-next][PATCH] revert headers_check fix: ia64, fpu.h
+Message-ID: <20090206174148.GB19148@elte.hu>
+References: <20090206164546.6291.KOSAKI.MOTOHIRO@jp.fujitsu.com> <3f9a31f40902060053x18dacf58u40c739ab89f13860@mail.gmail.com> <20090206180957.6294.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090206145556.GH18368@elte.hu> <1233934141.3209.20.camel@localhost.localdomain> <20090206153315.GD13758@n2100.arm.linux.org.uk> <1233935328.3209.30.camel@localhost.localdomain> <20090206155512.GF13758@n2100.arm.linux.org.uk> <20090206173249.GC11299@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Alexander Beregalov <a.beregalov@gmail.com>
-CC: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: next-20090206: deadlock on ext4
-References: <a4423d670902060935y59e540beta417144935416560@mail.gmail.com>
-In-Reply-To: <a4423d670902060935y59e540beta417144935416560@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090206173249.GC11299@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander Beregalov wrote:
-> Hi
+
+* Sam Ravnborg <sam@ravnborg.org> wrote:
+
+> On Fri, Feb 06, 2009 at 03:55:12PM +0000, Russell King - ARM Linux wrote:
+> > On Fri, Feb 06, 2009 at 09:18:48PM +0530, Jaswinder Singh Rajput wrote:
+> > > On Fri, 2009-02-06 at 15:33 +0000, Russell King - ARM Linux wrote:
+> > > > On Fri, Feb 06, 2009 at 08:59:01PM +0530, Jaswinder Singh Rajput wrote:
+> > > > > Jaswinder Singh Rajput (2):
+> > > > >       Neither asm/types.h nor linux/types.h is required for arch/ia64/include/asm/fpu.h
+> > > > >       make linux/types.h as assembly safe
+> > > > 
+> > > > I continue to disagree with the need for the second patch.
+> > > 
+> > > Like Ingo suggested:
+> > > 
+> > > On Fri, 2009-02-06 at 15:58 +0100, Ingo Molnar wrote:
+> > > >  Well types.h easily gets included in other files though, which might be 
+> > > > partially suited for assembly - and have !__ASSEMBLY__ portions that rely on 
+> > > > a types.h include.
+> > > > 
+> > > > So making this file an invariant in .S files does not sound like a bad idea 
+> > > > to me. Is there any downside?
+> > > > 
+> > > 
+> > > We cannot see any downside of this patch.
+> > > 
+> > > But we can see upside of this patch is:
+> > > 1. No need to protect linux/types.h with #ifndef __ASSEMBLY__ in many
+> > > files
+> > > 2. So we trying to replace multiple #ifndef __ASSEMBLY__ with one.
+> > 
+> > The point is:
+> > 
+> > 1. If the parent include needs to include linux/types.h to get at C
+> >    types _and_ the include file needs to also be included by assembly
+> >    code, it itself needs to have #ifndef __ASSEMBLY__ to protect those
+> >    uses from the assembly code.
+> > 
+> >    In that case, the linux/types.h include should be contained within
+> >    the #ifndef __ASSEMBLY__ .. #endif block along with all C only
+> >    parts of the header file.
+> > 
+> > 2. if it doesn't need C types from linux/types.h, then that header has
+> >    no business including linux/types.h, and the include should be
+> >    eliminated to save the already dirbolically slow compiler from
+> >    having to read and parse that file, and more importantly allowing
+> >    it to eliminate linux/types.h from the build dependencies.
+> > 
+> > Yes, you can wrap linux/types.h with that ifndef, and yes it will fix
+> > any problems, but I view it as a hack rather than fixing the real problem
+> > which is lazyness by code writers to get their include dependencies right.
 > 
-> I run dbench on ext4 on loop device.
-> 
-> EXT4-fs: barriers enabled
-> kjournald2 starting: pid 2420, dev loop0:8, commit interval 5 seconds
-> EXT4 FS on loop0, internal journal on loop0:8
-> EXT4-fs: delayed allocation enabled
-> EXT4-fs: file extents enabled
-> EXT4-fs: mballoc enabled
-> EXT4-fs: mounted filesystem loop0 with ordered data mode
-> JBD: barrier-based sync failed on loop0:8 - disabling barriers
-> 
-> INFO: task pdflush:2339 blocked for more than 120 seconds.
+> You guys are getting this wrong.
+> The patch from Jaswinder needs to be fixed so we unconditionally
+> include <asm/types.h> from linux/types.h.
 
-Looks a lot like a bug I filed:
+Yeah, that's true.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12579
+> And then ll users can safely include linux/types.h and when we one
+> day realize we can move some stuff used in .S files from
+> asm/types.h to linux/types.h then we are all safe and no breakage.
 
-but I'm having trouble reproducing it, now.  I'll try dbench!
+Yeah.
 
--Eric
+	Ingo
