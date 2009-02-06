@@ -1,98 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760037AbZBFRLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752796AbZBFRPB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760037AbZBFRLq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 12:11:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759624AbZBFRLe
+	id S1752796AbZBFRPB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 12:15:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbZBFROv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 12:11:34 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36644 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759611AbZBFRLd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 12:11:33 -0500
-Date: Fri, 6 Feb 2009 09:10:39 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/4] nmi: add generic nmi tracking state
-Message-Id: <20090206091039.d0acb680.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.10.0902060822440.10059@gandalf.stny.rr.com>
-References: <20090206065352.940088243@goodmis.org>
-	<20090206065437.986292747@goodmis.org>
-	<20090205231215.412def47.akpm@linux-foundation.org>
-	<alpine.DEB.1.10.0902060822440.10059@gandalf.stny.rr.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Feb 2009 12:14:51 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38050 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751633AbZBFROu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 12:14:50 -0500
+Date: Fri, 6 Feb 2009 18:14:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>, hskinnemoen@atmel.com,
+       cooloney@kernel.org, tony.luck@intel.com, ralf@linux-mips.org,
+       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-next <linux-next@vger.kernel.org>,
+       linux-ia64 <linux-ia64@vger.kernel.org>
+Subject: Re: [linux-next][PATCH] revert headers_check fix: ia64, fpu.h
+Message-ID: <20090206171400.GA14818@elte.hu>
+References: <20090206180957.6294.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090206145556.GH18368@elte.hu> <1233934141.3209.20.camel@localhost.localdomain> <20090206153315.GD13758@n2100.arm.linux.org.uk> <1233935328.3209.30.camel@localhost.localdomain> <20090206155512.GF13758@n2100.arm.linux.org.uk> <20090206161229.GA8256@elte.hu> <20090206162352.GI13758@n2100.arm.linux.org.uk> <20090206163314.GA11216@elte.hu> <20090206163857.GJ13758@n2100.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090206163857.GJ13758@n2100.arm.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Feb 2009 08:25:52 -0500 (EST) Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> 
-> On Thu, 5 Feb 2009, Andrew Morton wrote:
-> > >  
-> > > +/*
-> > > + * Are we in NMI context?
-> > > + */
-> > > +#define in_nmi()	(preempt_count() & NMI_OFFSET)
-> > > +
-> > >  #if defined(CONFIG_PREEMPT)
-> > >  # define PREEMPT_INATOMIC_BASE kernel_locked()
-> > >  # define PREEMPT_CHECK_OFFSET 1
-> > > @@ -167,6 +178,8 @@ extern void irq_exit(void);
-> > >  #define nmi_enter()				\
-> > >  	do {					\
-> > >  		ftrace_nmi_enter();		\
-> > > +		BUG_ON(in_nmi());		\
-> > > +		add_preempt_count(NMI_OFFSET);	\
-> > >  		lockdep_off();			\
-> > >  		rcu_nmi_enter();		\
-> > >  		__irq_enter();			\
-> > > @@ -177,6 +190,8 @@ extern void irq_exit(void);
-> > >  		__irq_exit();			\
-> > >  		rcu_nmi_exit();			\
-> > >  		lockdep_on();			\
-> > > +		BUG_ON(!in_nmi());		\
-> > > +		sub_preempt_count(NMI_OFFSET);	\
-> > >  		ftrace_nmi_exit();		\
-> > >  	} while (0)
-> > >  
+* Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+
+> On Fri, Feb 06, 2009 at 05:33:14PM +0100, Ingo Molnar wrote:
 > > 
-> > Well that was tidy.
+> > * Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
 > > 
-> > We're sure that no present or future architecture will for some weird
-> > reason nest NMIs?
+> > > On Fri, Feb 06, 2009 at 05:12:29PM +0100, Ingo Molnar wrote:
+> > > > 
+> > > > * Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+> > > > 
+> > > > > > We cannot see any downside of this patch.
+> > > > > > 
+> > > > > > But we can see upside of this patch is:
+> > > > > > 1. No need to protect linux/types.h with #ifndef __ASSEMBLY__ in many
+> > > > > > files
+> > > > > > 2. So we trying to replace multiple #ifndef __ASSEMBLY__ with one.
+> > > > > 
+> > > > > The point is:
+> > > > > 
+> > > > > 1. If the parent include needs to include linux/types.h to get at C
+> > > > >    types _and_ the include file needs to also be included by assembly
+> > > > >    code, it itself needs to have #ifndef __ASSEMBLY__ to protect those
+> > > > >    uses from the assembly code.
+> > > > > 
+> > > > >    In that case, the linux/types.h include should be contained within
+> > > > >    the #ifndef __ASSEMBLY__ .. #endif block along with all C only
+> > > > >    parts of the header file.
+> > > > 
+> > > > That makes the code much less clean: putting #include's in the middle of a 
+> > > > header is poor style and leads to people failing to consider dependencies. 
+> > > > We generally put them to the header portion.
+> > > > 
+> > > > Putting an #include line in the middle of a header file is a receipe for a 
+> > > > dependency hell (it can easily fall inside #ifdefs, can be overlooked, 
+> > > > etc.), so it's _strongly_ discouraged (at least on arch/x86).
+> > > 
+> > > Put them at the top then with an additional ifndef.
+> > 
+> > So you advocate 40 stupid pairs of #ifdefs spread out, instead of a 
+> > _single_, obvious #ifdef in a commonly used header?
 > 
-> That would be fun to implement. Not the in_nmi code, but the handling of 
-> nested NMIs. How would you be able to save the state when the NMI occurred 
-> without being preempted by another NMI?
+> As I see it, if you want all your style points to be adhered to, then yes.
+> And I do believe it to be a valid solution.
+> 
+> Personally, I'd put them nearer the C code.
+> 
+> That's precisely what I do with the ARM include files.  Never been a
+> problem.
 
-Like with normal interrupts?
+I take this that you kind of agree that that removing ugly #ifdefs spread 
+out is an upside. You failed to point out any downsides - you just seem to 
+claim that you can live without the upsides. That is fine.
 
-As long as the number of sources is finite, nested NMIs could work OK.
-
-> I think the arch that has nested NMIs will have many more issues to solve 
-> in the kernel than this one.
-
-I have a vague memory that x86 can do this.
-
-<googles a bit>
-
-What's all this about?
-https://www.x86-64.org/pipermail/discuss/2005-October/007010.html
-http://kerneltrap.org/index.php?q=mailarchive/linux-kernel/2008/2/12/830704/thread
-
-I expect that even if it is possible, we can live without it.
-
-And if I'm wrong, it'll be easy to accommodate by adding a new counter
-into the task_struct or thread_struct.
-
-Does your above implementation make in_interrupt() return true if
-in_nmi()?  I think it doesn't, but should?
-
+	Ingo
