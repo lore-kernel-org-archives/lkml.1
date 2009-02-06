@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbZBFNyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758069AbZBFNzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757583AbZBFNyq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 08:54:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756864AbZBFNyg
+	id S1758069AbZBFNzi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 08:55:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbZBFNzb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 08:54:36 -0500
-Received: from mga09.intel.com ([134.134.136.24]:17971 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756096AbZBFNyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 08:54:35 -0500
+	Fri, 6 Feb 2009 08:55:31 -0500
+Received: from mga07.intel.com ([143.182.124.22]:10703 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754238AbZBFNza (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 08:55:30 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.37,391,1231142400"; 
-   d="scan'208";a="384639530"
-Date: Fri, 6 Feb 2009 14:56:59 +0100
+   d="scan'208";a="107941563"
+Date: Fri, 6 Feb 2009 14:57:53 +0100
 From: Samuel Ortiz <sameo@openedhand.com>
 To: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mfd: Mark WM835x USB_SLV_500MA bit as accessible
-Message-ID: <20090206135658.GB3341@sortiz.org>
+Subject: Re: [PATCH 1/3] mfd: Mark WM835x USB_SLV_500MA bit as accessible
+Message-ID: <20090206135753.GC3341@sortiz.org>
 Reply-To: Samuel Ortiz <sameo@openedhand.com>
-References: <1231944901-4901-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1232727516-5049-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1231944901-4901-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1232727516-5049-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 14, 2009 at 02:55:01PM +0000, Mark Brown wrote:
+On Fri, Jan 23, 2009 at 04:18:34PM +0000, Mark Brown wrote:
+> Brings the data table into sync with the silicon.
+All 3 patches applied, thanks.
+
+Cheers,
+Samuel.
+
+ 
 > Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 > ---
 >  drivers/mfd/wm8350-regmap.c |    2 +-
 >  1 files changed, 1 insertions(+), 1 deletions(-)
-Applied, thanks.
-
- 
+> 
 > diff --git a/drivers/mfd/wm8350-regmap.c b/drivers/mfd/wm8350-regmap.c
 > index 68887b8..9a4cc95 100644
 > --- a/drivers/mfd/wm8350-regmap.c
