@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753346AbZBFFBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbZBFFC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753346AbZBFFBU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 00:01:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbZBFFBD
+	id S1756230AbZBFFC0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 00:02:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbZBFFCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 00:01:03 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60937 "EHLO hera.kernel.org"
+	Fri, 6 Feb 2009 00:02:03 -0500
+Received: from hera.kernel.org ([140.211.167.34]:32770 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750818AbZBFFBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 00:01:01 -0500
-Message-ID: <498BC3A8.9040203@kernel.org>
-Date: Thu, 05 Feb 2009 20:59:20 -0800
+	id S1750818AbZBFFCA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 00:02:00 -0500
+Message-ID: <498BC3EE.3070209@kernel.org>
+Date: Thu, 05 Feb 2009 21:00:30 -0800
 From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
@@ -20,7 +20,9 @@ To: Jeff Garzik <jeff@garzik.org>, Ingo Molnar <mingo@elte.hu>,
        "David S. Miller" <davem@davemloft.net>
 CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        NetDev <netdev@vger.kernel.org>
-Subject: [PATCH] forcedeth: make msi-x different name for rx-tx
+Subject: [PATCH] forcedeth: don't clear nic_poll_irq too early
+References: <498BC3A8.9040203@kernel.org>
+In-Reply-To: <498BC3A8.9040203@kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -28,60 +30,62 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Impact: make /proc/interrupts could show more info which irq is rx or other for msi-x
+Impact: fix bug
 
-add three name fields for rx, tx, other
+for msix, we still need that flag to enable irq respectively
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
 ---
- drivers/net/forcedeth.c |   17 ++++++++++++++---
- 1 file changed, 14 insertions(+), 3 deletions(-)
+ drivers/net/forcedeth.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
 Index: linux-2.6/drivers/net/forcedeth.c
 ===================================================================
 --- linux-2.6.orig/drivers/net/forcedeth.c
 +++ linux-2.6/drivers/net/forcedeth.c
-@@ -812,6 +812,11 @@ struct fe_priv {
+@@ -4057,8 +4057,6 @@ static void nv_do_nic_poll(unsigned long
+ 			mask |= NVREG_IRQ_OTHER;
+ 		}
+ 	}
+-	np->nic_poll_irq = 0;
+-
+ 	/* disable_irq() contains synchronize_irq, thus no irq handler can run now */
  
- 	/* power saved state */
- 	u32 saved_config_space[NV_PCI_REGSZ_MAX/4];
+ 	if (np->recover_error) {
+@@ -4096,11 +4094,11 @@ static void nv_do_nic_poll(unsigned long
+ 		}
+ 	}
+ 
+-
+ 	writel(mask, base + NvRegIrqMask);
+ 	pci_push(base);
+ 
+ 	if (!using_multi_irqs(dev)) {
++		np->nic_poll_irq = 0;
+ 		if (nv_optimized(np))
+ 			nv_nic_irq_optimized(0, dev);
+ 		else
+@@ -4111,18 +4109,22 @@ static void nv_do_nic_poll(unsigned long
+ 			enable_irq_lockdep(np->pci_dev->irq);
+ 	} else {
+ 		if (np->nic_poll_irq & NVREG_IRQ_RX_ALL) {
++			np->nic_poll_irq &= ~NVREG_IRQ_RX_ALL;
+ 			nv_nic_irq_rx(0, dev);
+ 			enable_irq_lockdep(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector);
+ 		}
+ 		if (np->nic_poll_irq & NVREG_IRQ_TX_ALL) {
++			np->nic_poll_irq &= ~NVREG_IRQ_TX_ALL;
+ 			nv_nic_irq_tx(0, dev);
+ 			enable_irq_lockdep(np->msi_x_entry[NV_MSI_X_VECTOR_TX].vector);
+ 		}
+ 		if (np->nic_poll_irq & NVREG_IRQ_OTHER) {
++			np->nic_poll_irq &= ~NVREG_IRQ_OTHER;
+ 			nv_nic_irq_other(0, dev);
+ 			enable_irq_lockdep(np->msi_x_entry[NV_MSI_X_VECTOR_OTHER].vector);
+ 		}
+ 	}
 +
-+	/* for different msi-x irq type */
-+	char name_rx[IFNAMSIZ + 3];       /* -rx    */
-+	char name_tx[IFNAMSIZ + 3];       /* -tx    */
-+	char name_other[IFNAMSIZ + 6];    /* -other */
- };
+ }
  
- /*
-@@ -3918,21 +3923,27 @@ static int nv_request_irq(struct net_dev
- 			np->msi_flags |= NV_MSI_X_ENABLED;
- 			if (optimization_mode == NV_OPTIMIZATION_MODE_THROUGHPUT && !intr_test) {
- 				/* Request irq for rx handling */
--				if (request_irq(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector, &nv_nic_irq_rx, IRQF_SHARED, dev->name, dev) != 0) {
-+				sprintf(np->name_rx, "%s-rx", dev->name);
-+				if (request_irq(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector,
-+						&nv_nic_irq_rx, IRQF_SHARED, np->name_rx, dev) != 0) {
- 					printk(KERN_INFO "forcedeth: request_irq failed for rx %d\n", ret);
- 					pci_disable_msix(np->pci_dev);
- 					np->msi_flags &= ~NV_MSI_X_ENABLED;
- 					goto out_err;
- 				}
- 				/* Request irq for tx handling */
--				if (request_irq(np->msi_x_entry[NV_MSI_X_VECTOR_TX].vector, &nv_nic_irq_tx, IRQF_SHARED, dev->name, dev) != 0) {
-+				sprintf(np->name_tx, "%s-tx", dev->name);
-+				if (request_irq(np->msi_x_entry[NV_MSI_X_VECTOR_TX].vector,
-+						&nv_nic_irq_tx, IRQF_SHARED, np->name_tx, dev) != 0) {
- 					printk(KERN_INFO "forcedeth: request_irq failed for tx %d\n", ret);
- 					pci_disable_msix(np->pci_dev);
- 					np->msi_flags &= ~NV_MSI_X_ENABLED;
- 					goto out_free_rx;
- 				}
- 				/* Request irq for link and timer handling */
--				if (request_irq(np->msi_x_entry[NV_MSI_X_VECTOR_OTHER].vector, &nv_nic_irq_other, IRQF_SHARED, dev->name, dev) != 0) {
-+				sprintf(np->name_other, "%s-other", dev->name);
-+				if (request_irq(np->msi_x_entry[NV_MSI_X_VECTOR_OTHER].vector,
-+						&nv_nic_irq_other, IRQF_SHARED, np->name_other, dev) != 0) {
- 					printk(KERN_INFO "forcedeth: request_irq failed for link %d\n", ret);
- 					pci_disable_msix(np->pci_dev);
- 					np->msi_flags &= ~NV_MSI_X_ENABLED;
+ #ifdef CONFIG_NET_POLL_CONTROLLER
