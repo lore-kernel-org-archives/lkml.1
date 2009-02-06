@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756017AbZBFI0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753619AbZBFInh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756017AbZBFI0T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 03:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753145AbZBFI0H
+	id S1753619AbZBFInh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 03:43:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbZBFIn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 03:26:07 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:12424 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752889AbZBFI0G (ORCPT
+	Fri, 6 Feb 2009 03:43:26 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:16589 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751117AbZBFIn0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 03:26:06 -0500
-X-IronPort-AV: E=Sophos;i="4.37,390,1231131600"; 
-   d="scan'208";a="82424721"
-From: Bryan Wu <cooloney@kernel.org>
-To: alan@lxorguk.ukuu.org.uk
-Cc: linux-kernel@vger.kernel.org, Sonic Zhang <sonic.zhang@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH] tty: fix bug - kernel can't be pinged through when bootargs console=null
-Date: Fri,  6 Feb 2009 16:27:57 +0800
-Message-Id: <1233908877-7729-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6.3
+	Fri, 6 Feb 2009 03:43:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=cFIXmH3aAZVY3lCNlerTUHwjej0qIxwqPNDZMOJUqRz6v7g4YOqQdBps1DRoPU8Vsa
+         REqeFHQynlJPB1fTCLE5fOPWiw97eZXf/T+s94HyiNRcWOFGZsaq7RahDRtGy6L6sLdy
+         kB0zqoNUld1ztV2nalMarAL3QaVxy2gwYr2/A=
+MIME-Version: 1.0
+Date: Fri, 6 Feb 2009 09:43:23 +0100
+Message-ID: <4dcf7d360902060043y7d11b9d7m94af9f7d06862660@mail.gmail.com>
+Subject: Strange traffic control behaviour?
+From: Lorenzo Allegrucci <l.allegrucci@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-net@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sonic Zhang <sonic.zhang@analog.com>
+Hi, I noticed a strange behaviour on a small sample network I used to test my
+traffic control setup.
+Below is the network setup (sorry for my ascii art..):
 
-when pass bootargs console=null into kernel from u-boot, the booted up
-kernel can't be pinged through. This happens after the kernel is upgraded
-to 2.6.28.
+end user1|------------|router1|------------|router2|------------|end user2|
+        eth0         eth1     eth0        eth0    eth1         eth0
 
-Should check if tty_driver is NULL before call kref_get() in tty_driver_kref_get().
+(Static routes on router1 and router2).
 
-Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- include/linux/tty_driver.h |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+Test1:
 
-diff --git a/include/linux/tty_driver.h b/include/linux/tty_driver.h
-index 08e0883..2a602a8 100644
---- a/include/linux/tty_driver.h
-+++ b/include/linux/tty_driver.h
-@@ -312,7 +312,8 @@ extern struct tty_driver *tty_find_polling_driver(char *name, int *line);
- extern void tty_driver_kref_put(struct tty_driver *driver);
- extern inline struct tty_driver *tty_driver_kref_get(struct tty_driver *d)
- {
--	kref_get(&d->kref);
-+	if (d)
-+		kref_get(&d->kref);
- 	return d;
- }
- 
+I applied the following tc rules on eth1 of router1 to limit the bandwidth
+to 3Mbit for a download flux (by wget or scp) from "end user2" to "end user1":
+
+tc qdisc add dev eth1 root handle 1:0 htb default 100
+tc class add dev eth1 parent 1:0 classid 1:1 htb rate 3Mbit ceil 3Mbit
+tc class add dev eth1 parent 1:1 classid 1:100 htb rate 2Mbit ceil 3Mbit
+tc class add dev eth1 parent 1:1 classid 1:200 htb rate 1Mbit ceil 3Mbit
+
+Theoretically "end user1" should get about 375kbyte/s (3Mbit), but instead
+I get bit less, about 330 kbye/s and the flux tends to fluctuate a bit.
+(all other interfaces are "clean", no tc rules).
+
+Test2:
+
+However, if I apply the same tc rules to the router2's eth0 instead, I get
+a *stable* flux of *exactly* 3Mbit (375kbyte/s), to be more precise what
+I should have gotten on test1!
+
+How can this be explained?
+
+In general, noticed that tc applied "upstream" gives better results than
+tc applied downstream.  In other words, it's better to limit network
+traffic near the source, can you confirm?
+
+Thanks.
+
 -- 
-1.5.6.3
+Lorenzo
