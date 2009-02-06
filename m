@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755077AbZBFGfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbZBFGjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755077AbZBFGfq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 01:35:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbZBFGfh
+	id S1755381AbZBFGjq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 01:39:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbZBFGji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 01:35:37 -0500
-Received: from mga10.intel.com ([192.55.52.92]:3056 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751491AbZBFGfg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 01:35:36 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,390,1231142400"; 
-   d="scan'208";a="663360325"
-Subject: Re: [PATCH] perf_counter: Prevent oopses from per-cpu software
-	counters
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <18827.48582.613391.869829@cargo.ozlabs.ibm.com>
-References: <18826.28805.120988.303819@drongo.ozlabs.ibm.com>
-	 <20090205142229.GB28443@elte.hu>
-	 <18827.48582.613391.869829@cargo.ozlabs.ibm.com>
+	Fri, 6 Feb 2009 01:39:38 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:55703 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751049AbZBFGjh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 01:39:37 -0500
+Message-ID: <498BDB15.6050609@cn.fujitsu.com>
+Date: Fri, 06 Feb 2009 14:39:17 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Gautham R Shenoy <ego@in.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] cpu hotplug: remove unused cpuhotplug_mutex_lock()
 Content-Type: text/plain; charset=UTF-8
-Date: Fri, 06 Feb 2009 14:35:25 +0800
-Message-Id: <1233902125.2604.328.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-02-06 at 15:34 +1100, Paul Mackerras wrote:
-> Ingo Molnar writes:
-> 
-> > So how about fixing these sw counts to properly work as percpu counters too? 
-> 
-> OK, so for page faults it looks like I want to look at
-> 
-> 	get_cpu_var(vm_event_states).event[PGFAULT]
-> 
-> to get the per-cpu page fault count, as long as
-> CONFIG_VM_EVENT_COUNTERS is set.
-> 
-> It looks like the scheduler doesn't keep per-cpu counts of context
-> switches
-rq->sched_switch or sched_count? ﻿sched_switch is defined, but not used. They
-all depends on CONFIG_SCHEDSTATS=y.
 
->  or task migrations, or if it does I couldn't find them.  We
-> could do stuff in perf_counter_task_sched_in/out to implement per-cpu
-> context switch and migration counters by adding up the delta values
-> for each task that gets scheduled onto the cpu.  Or we could add
-> explicit per-cpu counters for these things in the scheduler.
-> 
-> What do you think?
-> 
-> Paul.
+cpuhotplug_mutex_lock() is not used. this patch remove it.
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+ cpu.h |   16 ----------------
+ 1 file changed, 16 deletions(-)
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index c2747ac..2643d84 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -23,7 +23,6 @@
+ #include <linux/node.h>
+ #include <linux/compiler.h>
+ #include <linux/cpumask.h>
+-#include <linux/mutex.h>
+ 
+ struct cpu {
+ 	int node_id;		/* The node which contains the CPU */
+@@ -103,16 +102,6 @@ extern struct sysdev_class cpu_sysdev_class;
+ #ifdef CONFIG_HOTPLUG_CPU
+ /* Stop CPUs going up and down. */
+ 
+-static inline void cpuhotplug_mutex_lock(struct mutex *cpu_hp_mutex)
+-{
+-	mutex_lock(cpu_hp_mutex);
+-}
+-
+-static inline void cpuhotplug_mutex_unlock(struct mutex *cpu_hp_mutex)
+-{
+-	mutex_unlock(cpu_hp_mutex);
+-}
+-
+ extern void get_online_cpus(void);
+ extern void put_online_cpus(void);
+ #define hotcpu_notifier(fn, pri) {				\
+@@ -126,11 +115,6 @@ int cpu_down(unsigned int cpu);
+ 
+ #else		/* CONFIG_HOTPLUG_CPU */
+ 
+-static inline void cpuhotplug_mutex_lock(struct mutex *cpu_hp_mutex)
+-{ }
+-static inline void cpuhotplug_mutex_unlock(struct mutex *cpu_hp_mutex)
+-{ }
+-
+ #define get_online_cpus()	do { } while (0)
+ #define put_online_cpus()	do { } while (0)
+ #define hotcpu_notifier(fn, pri)	do { (void)(fn); } while (0)
+
 
