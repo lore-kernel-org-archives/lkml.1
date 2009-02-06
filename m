@@ -1,34 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760601AbZBFRz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760758AbZBFR4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760601AbZBFRz5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 12:55:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755874AbZBFRzY
+	id S1760758AbZBFR4m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 12:56:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760645AbZBFR4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 12:55:24 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:51618 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753640AbZBFRzX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 12:55:23 -0500
-Date: Fri, 6 Feb 2009 18:55:18 +0100
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Greg KH <greg@kroah.com>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       mtk.manpages@gmail.com, linux-man@vger.kernel.org,
+	Fri, 6 Feb 2009 12:56:19 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40080 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760488AbZBFR4R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 12:56:17 -0500
+Date: Fri, 6 Feb 2009 17:56:35 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Ondrej Zary <linux@rainbow-software.org>, linux-ide@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: open(2) says O_DIRECT works on 512 byte boundries?
-Message-ID: <20090206175517.GR14011@random.random>
-References: <20090128213322.GA15789@kroah.com> <20090129141338.34e44a1f.kamezawa.hiroyu@jp.fujitsu.com> <20090129160826.701E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090130061714.GC31209@kroah.com> <20090202220856.GY20323@random.random> <20090203102920.684e7b67.kamezawa.hiroyu@jp.fujitsu.com> <20090203023147.GZ20323@random.random> <20090203115540.86a01273.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090203115540.86a01273.kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] [resend] Resume from hibernation fails with pata_it821x
+ RAID volume
+Message-ID: <20090206175635.5344ce37@lxorguk.ukuu.org.uk>
+In-Reply-To: <498C778B.7020309@ru.mvista.com>
+References: <200902061412.09839.linux@rainbow-software.org>
+	<498C778B.7020309@ru.mvista.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 03, 2009 at 11:55:40AM +0900, KAMEZAWA Hiroyuki wrote:
-> No need to make a patch for copy_hugetlb_page_range() ?
-> IMHO, HugeTLB can be write-protected at fork().
+>     See CodingStyle chapter 8 for the preferred multiline comment style.
+> 
+> > +		memset(&id[ATA_ID_SERNO], 0x20, ATA_ID_SERNO_LEN);
+> 
+>     Why not ' '?
+> 
+> MBR, Sergei
 
-Yeah that was entirely correct, thanks Kame! I reproduced it with
-libhugetlbfs and verified it fixed it now.
+
+Digging into the docs the RAID serial number (and what that means isn't
+defined anywhere I can see) is byte offset 54-73 in each of the 4 128
+byte blocks returned by the chip status query we do at boot
+(it821x_probe_firmware).
+
+Alan
