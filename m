@@ -1,58 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756898AbZBFBos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756267AbZBFBrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756898AbZBFBos (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 20:44:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbZBFBok
+	id S1756267AbZBFBrJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 20:47:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZBFBq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 20:44:40 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:38241 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752650AbZBFBok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 20:44:40 -0500
-Date: Fri, 6 Feb 2009 02:44:00 +0100
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Robin Holt <holt@sgi.com>, linux-mm@kvack.org,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [Patch] mmu_notifiers destroyed by __mmu_notifier_release()
-	retain extra mm_count.
-Message-ID: <20090206014400.GM14011@random.random>
-References: <20090205172303.GB8559@sgi.com> <alpine.DEB.1.10.0902051427280.13692@qirst.com> <20090205200214.GN8577@sgi.com> <alpine.DEB.1.10.0902051844390.17441@qirst.com> <20090206013805.GL14011@random.random>
+	Thu, 5 Feb 2009 20:46:56 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:57402 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751065AbZBFBq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 20:46:56 -0500
+Message-ID: <498B9675.3000202@cn.fujitsu.com>
+Date: Fri, 06 Feb 2009 09:46:29 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090206013805.GL14011@random.random>
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
+CC: =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] workqueue: not allow recursion run_workqueue
+References: <497838F0.7020408@cn.fujitsu.com>	 <20090122093046.GC5891@nowhere> <20090122093649.GD24758@elte.hu>	 <c62985530901220306p78ea541cs28912a844297b304@mail.gmail.com> <1232622615.4890.114.camel@laptop> <498AA0F1.2030003@cn.fujitsu.com>
+In-Reply-To: <498AA0F1.2030003@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 06, 2009 at 02:38:05AM +0100, Andrea Arcangeli wrote:
-> It all boils down if unregister is mandatory or not. If it's mandatory
+Hi, Ingo
 
-Oh I just found I documented it too!! ;)
+This is new changelog, I didn't change the patch,
+except use WARN_ON instead BUG_ON.
 
-/*
- * Must not hold mmap_sem nor any other VM related lock when calling
- * this registration function. Must also ensure mm_users can't go down
- * to zero while this runs to avoid races with mmu_notifier_release,
- * so mm has to be current->mm or the mm should be pinned safely such
- * as with get_task_mm(). If the mm is not current->mm, the mm_users
- * pin should be released by calling mmput after mmu_notifier_register
- * returns. mmu_notifier_unregister must be always called to
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
- * unregister the notifier. mm_count is automatically pinned to allow
-   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
- * mmu_notifier_unregister to safely run at any time later, before or 
-   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* after exit_mmap. ->release will always be called before exit_mmap
- * frees the pages.
- */
+Thanks, Lai
 
-So in short the current code has no bugs and the fact you have to call
-unregister is intentional. Not patch required unless you request to
-change API. If you don't call unregister mm will be leaked,
-simply. For a moment I thought unregister wasn't mandatory because at
-some point in one of the dozen versions of the api it wasn't, but in
-the end I thought having an mm_count auto-pinning leaving no window
-for corrupted mmu_notifier list was preferable ;).
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+
+1) lockdep will complain when recursion run_workqueue()
+2) The recursive implement of run_workqueue() makes flush_workqueue()
+   and it's doc are inconsistent. It may hide deadlock and other bugs.
+3) recursion run_workqueue() will poison cwq->current_work,
+   but flush_work() and __cancel_work_timer() ...etc. need
+   reliable cwq->current_work.
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index 2f44583..1129cde 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -48,8 +48,6 @@ struct cpu_workqueue_struct {
+ 
+ 	struct workqueue_struct *wq;
+ 	struct task_struct *thread;
+-
+-	int run_depth;		/* Detect run_workqueue() recursion depth */
+ } ____cacheline_aligned;
+ 
+ /*
+@@ -262,13 +260,6 @@ EXPORT_SYMBOL_GPL(queue_delayed_work_on);
+ static void run_workqueue(struct cpu_workqueue_struct *cwq)
+ {
+ 	spin_lock_irq(&cwq->lock);
+-	cwq->run_depth++;
+-	if (cwq->run_depth > 3) {
+-		/* morton gets to eat his hat */
+-		printk("%s: recursion depth exceeded: %d\n",
+-			__func__, cwq->run_depth);
+-		dump_stack();
+-	}
+ 	while (!list_empty(&cwq->worklist)) {
+ 		struct work_struct *work = list_entry(cwq->worklist.next,
+ 						struct work_struct, entry);
+@@ -311,7 +302,6 @@ static void run_workqueue(struct cpu_workqueue_struct *cwq)
+ 		spin_lock_irq(&cwq->lock);
+ 		cwq->current_work = NULL;
+ 	}
+-	cwq->run_depth--;
+ 	spin_unlock_irq(&cwq->lock);
+ }
+ 
+@@ -368,29 +358,20 @@ static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
+ 
+ static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
+ {
+-	int active;
++	int active = 0;
++	struct wq_barrier barr;
+ 
+-	if (cwq->thread == current) {
+-		/*
+-		 * Probably keventd trying to flush its own queue. So simply run
+-		 * it by hand rather than deadlocking.
+-		 */
+-		run_workqueue(cwq);
+-		active = 1;
+-	} else {
+-		struct wq_barrier barr;
++	WARN_ON(cwq->thread == current);
+ 
+-		active = 0;
+-		spin_lock_irq(&cwq->lock);
+-		if (!list_empty(&cwq->worklist) || cwq->current_work != NULL) {
+-			insert_wq_barrier(cwq, &barr, &cwq->worklist);
+-			active = 1;
+-		}
+-		spin_unlock_irq(&cwq->lock);
+-
+-		if (active)
+-			wait_for_completion(&barr.done);
++	spin_lock_irq(&cwq->lock);
++	if (!list_empty(&cwq->worklist) || cwq->current_work != NULL) {
++		insert_wq_barrier(cwq, &barr, &cwq->worklist);
++		active = 1;
+ 	}
++	spin_unlock_irq(&cwq->lock);
++
++	if (active)
++		wait_for_completion(&barr.done);
+ 
+ 	return active;
+ }
+
