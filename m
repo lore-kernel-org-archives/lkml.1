@@ -1,68 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759983AbZBFQck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759781AbZBFQeB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759983AbZBFQck (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 11:32:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbZBFQca
+	id S1759781AbZBFQeB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 11:34:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbZBFQdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 11:32:30 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:57689 "EHLO mx2.redhat.com"
+	Fri, 6 Feb 2009 11:33:52 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52297 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752776AbZBFQc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 11:32:29 -0500
-Message-ID: <498C6613.1030400@redhat.com>
-Date: Fri, 06 Feb 2009 10:32:19 -0600
-From: David Smith <dsmith@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1752776AbZBFQdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 11:33:50 -0500
+Date: Fri, 6 Feb 2009 17:33:14 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>, hskinnemoen@atmel.com,
+       cooloney@kernel.org, tony.luck@intel.com, ralf@linux-mips.org,
+       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-next <linux-next@vger.kernel.org>,
+       linux-ia64 <linux-ia64@vger.kernel.org>
+Subject: Re: [linux-next][PATCH] revert headers_check fix: ia64, fpu.h
+Message-ID: <20090206163314.GA11216@elte.hu>
+References: <20090206164546.6291.KOSAKI.MOTOHIRO@jp.fujitsu.com> <3f9a31f40902060053x18dacf58u40c739ab89f13860@mail.gmail.com> <20090206180957.6294.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090206145556.GH18368@elte.hu> <1233934141.3209.20.camel@localhost.localdomain> <20090206153315.GD13758@n2100.arm.linux.org.uk> <1233935328.3209.30.camel@localhost.localdomain> <20090206155512.GF13758@n2100.arm.linux.org.uk> <20090206161229.GA8256@elte.hu> <20090206162352.GI13758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-CC: jmorris@namei.org, linux-kernel@vger.kernel.org, roland@redhat.com,
-       fche@redhat.com, oleg@redhat.com, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH] CRED: Fix SUID exec regression
-References: <20090206114546.4255.74054.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20090206114546.4255.74054.stgit@warthog.procyon.org.uk>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090206162352.GI13758@n2100.arm.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells wrote:
-> The patch:
+
+* Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+
+> On Fri, Feb 06, 2009 at 05:12:29PM +0100, Ingo Molnar wrote:
+> > 
+> > * Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+> > 
+> > > > We cannot see any downside of this patch.
+> > > > 
+> > > > But we can see upside of this patch is:
+> > > > 1. No need to protect linux/types.h with #ifndef __ASSEMBLY__ in many
+> > > > files
+> > > > 2. So we trying to replace multiple #ifndef __ASSEMBLY__ with one.
+> > > 
+> > > The point is:
+> > > 
+> > > 1. If the parent include needs to include linux/types.h to get at C
+> > >    types _and_ the include file needs to also be included by assembly
+> > >    code, it itself needs to have #ifndef __ASSEMBLY__ to protect those
+> > >    uses from the assembly code.
+> > > 
+> > >    In that case, the linux/types.h include should be contained within
+> > >    the #ifndef __ASSEMBLY__ .. #endif block along with all C only
+> > >    parts of the header file.
+> > 
+> > That makes the code much less clean: putting #include's in the middle of a 
+> > header is poor style and leads to people failing to consider dependencies. 
+> > We generally put them to the header portion.
+> > 
+> > Putting an #include line in the middle of a header file is a receipe for a 
+> > dependency hell (it can easily fall inside #ifdefs, can be overlooked, 
+> > etc.), so it's _strongly_ discouraged (at least on arch/x86).
 > 
-> 	commit a6f76f23d297f70e2a6b3ec607f7aeeea9e37e8d
-> 	CRED: Make execve() take advantage of copy-on-write credentials
-> 
-> moved the place in which the 'safeness' of a SUID/SGID exec was performed to
-> before de_thread() was called.  This means that LSM_UNSAFE_SHARE is now
-> calculated incorrectly.  This flag is set if any of the usage counts for
-> fs_struct, files_struct and sighand_struct are greater than 1 at the time the
-> determination is made.  All of which are true for threads created by the
-> pthread library.
-> 
-> However, since we wish to make the security calculation before irrevocably
-> damaging the process so that we can return it an error code in the case where
-> we decide we want to reject the exec request on this basis, we have to make the
-> determination before calling de_thread().
-> 
-> So, instead, we count up the number of threads (CLONE_THREAD) that are sharing
-> our fs_struct (CLONE_FS), files_struct (CLONE_FILES) and sighand_structs
-> (CLONE_SIGHAND/CLONE_THREAD) with us.  These will be killed by de_thread() and
-> so can be discounted by check_unsafe_exec().
+> Put them at the top then with an additional ifndef.
 
-...
+So you advocate 40 stupid pairs of #ifdefs spread out, instead of a 
+_single_, obvious #ifdef in a commonly used header?
 
-> Reported-by: David Smith <dsmith@redhat.com>
-> Signed-off-by: David Howells <dhowells@redhat.com>
+Case closed.
 
-I've tested this patch (applied on top of v2.6.29-rc3-634-g9be260a) and
-it applies correctly and fixes the problem.  David, thanks for fixing this.
-
-Acked-by: David Smith <dsmith@redhat.com>
-
--- 
-David Smith
-dsmith@redhat.com
-Red Hat
-http://www.redhat.com
-256.217.0141 (direct)
-256.837.0057 (fax)
+	Ingo
