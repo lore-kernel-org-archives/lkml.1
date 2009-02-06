@@ -1,68 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755762AbZBFXkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757221AbZBFXkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755762AbZBFXkm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 18:40:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbZBFXke
+	id S1757221AbZBFXkz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 18:40:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757443AbZBFXkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 18:40:34 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:33361 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751661AbZBFXkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 18:40:33 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: hannes@cmpxchg.org
-Subject: Re: [PATCH 0/3] swsusp: shrink file cache first
-Date: Sat, 7 Feb 2009 00:39:53 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-References: <E1LVFiv-00032p-HX@cmpxchg.org>
-In-Reply-To: <E1LVFiv-00032p-HX@cmpxchg.org>
+	Fri, 6 Feb 2009 18:40:42 -0500
+Received: from outbound-mail-13.bluehost.com ([69.89.18.113]:44679 "HELO
+	outbound-mail-13.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755762AbZBFXkl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 18:40:41 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=c7vJFqDdjKnSCqUSXoMXD5PS7pNun729cPaWGKV8BZ2f/n/Jo5ncHDhzlEeUecmtF/cy9TVts5jNY6+tM5/wUeCmu+LdrVb40zb5rFU30D3ixCW3DdK9s5MZFkVlA9Ia;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [Bug #12491] i915 lockdep warning
+Date: Fri, 6 Feb 2009 15:40:34 -0800
+User-Agent: KMail/1.9.10
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Eric Anholt <eric@anholt.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Brandeburg\, Jesse" <jesse.brandeburg@intel.com>,
+       drivers_video-dri@kernel-bugs.osdl.org
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <200902050203.40535.rjw@sisk.pl> <adar62bchfw.fsf@cisco.com>
+In-Reply-To: <adar62bchfw.fsf@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-2"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200902070039.54402.rjw@sisk.pl>
+Message-Id: <200902061540.38042.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hello!
+On Friday, February 6, 2009 2:46 pm Roland Dreier wrote:
+>  > i915: Fix potential AB-BA deadlock in i915_gem_execbuffer()
+>
+> Jesse, Eric, or anybody -- does this look correct to you?  This seems to
+> be triggering for several people, eg
+> https://bugzilla.redhat.com/show_bug.cgi?id=481687
 
-Hi Hannes,
- 
-> here are three patches that adjust the memory shrinking code used for
-> suspend-to-disk.
-> 
-> The first two patches are cleanups only and can probably go in
-> regardless of the third one.
-> 
-> The third patch changes the shrink_all_memory() logic to drop the file
-> cache first before touching any mapped files and only then goes for
-> anon pages.
-> 
-> The reason is that everything not shrunk before suspension has to go
-> into the image and will be 'prefaulted' before the processes can
-> resume and the system is usable again, so the image should be small
-> and contain only pages that are likely to be used right after resume
-> again.  And this in turn means that the inactive file cache is the
-> best point to start decimating used memory.
-> 
-> Also, right now, subsequent faults of contiguously mapped files are
-> likely to perform better than swapin (see
-> http://kernelnewbies.org/KernelProjects/SwapoutClustering), so not
-> only file cache is preferred over other pages, but file pages over
-> anon pages in general.
-> 
-> Testing up to this point shows that the patch does what is intended,
-> shrinking file cache in favor of anon pages.  But whether the idea is
-> correct to begin with is a bit hard to quantify and I am still working
-> on it, so RFC only.
+Eric's been looking at this issue, and there's some discussion about it on the 
+intel-gfx list, but I'm not sure what the latest is (Eric is travelling atm).
 
-Thanks a lot for the patches, I'll review them as soon as I can.
-
-I've got them with broken headers, but that's not a big deal.
-
-Best,
-Rafael
+-- 
+Jesse Barnes, Intel Open Source Technology Center
