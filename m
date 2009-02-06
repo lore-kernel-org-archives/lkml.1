@@ -1,137 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759912AbZBFRBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753552AbZBFRCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759912AbZBFRBj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 12:01:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758603AbZBFRBB
+	id S1753552AbZBFRCX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 12:02:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbZBFRCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 12:01:01 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:55294 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758600AbZBFRA7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 12:00:59 -0500
-Date: Fri, 6 Feb 2009 09:00:55 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Alex Chiang <achiang@hp.com>, tony.luck@intel.com, stable@kernel.org,
-       linux-ia64@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ia64: prevent irq migration race in __cpu_disable path
-Message-ID: <20090206170055.GI10918@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090206162213.GD8208@ldl.fc.hp.com>
+	Fri, 6 Feb 2009 12:02:13 -0500
+Received: from outbound-mail-319.bluehost.com ([67.222.54.251]:40506 "HELO
+	outbound-mail-319.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751633AbZBFRCM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 12:02:12 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=i2nb4UcV9aB03Oy6McthjgXBpi6iusGPPKJIkIxoluA7w0JKZv8A27rt4CEuejGFXWAmZXrm4rWYTMDqBo0F+QmDIa0RTbx/Tv5wbhUeTmvLghc6BMcbuSlguP3GcnaL;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Hugh Dickins <hugh@veritas.com>
+Subject: Re: [Bug #12608] 2.6.29-rc powerpc G5 Xorg legacy_mem regression
+Date: Fri, 6 Feb 2009 08:49:44 -0800
+User-Agent: KMail/1.9.10
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <1233898836.4612.116.camel@pasglop> <Pine.LNX.4.64.0902061248010.14011@blonde.anvils>
+In-Reply-To: <Pine.LNX.4.64.0902061248010.14011@blonde.anvils>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090206162213.GD8208@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200902060849.45851.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 06, 2009 at 09:22:13AM -0700, Alex Chiang wrote:
-> Commit e7b14036 (prevent ia64 from invoking irq handlers on
-> offline CPUs) introduced a bug, where we call fixup_irqs before
-> removing the CPU from the cpu_online_map.
-> 
-> This is wrong because fixup_irqs calls migrate_irqs, and in
-> migrate_irqs, we use the cpu_online_map to:
-> 
-> 	1. look for interrupts on current CPU
-> 	2. if we find one, move it to the first available CPU in
-> 	the cpu_online_map
-> 
-> This means we can potentially migrate an interrupt off ourself
-> back to... ourself. Uh oh.
-> 
-> We hit a NULL deref later which causes us to oops (output trimmed):
-> 
-> Unable to handle kernel NULL pointer dereference (address 0000000000000040)
-> ip is at profile_tick+0xd0/0x1c0
-> 
-> Call Trace:
->  [<a00000010003c700>] die+0x1a0/0x2e0
->                                 sp=e0000009c922fbd0 bsp=e0000009c9221438
->  [<a0000001006e92f0>] ia64_do_page_fault+0x950/0xa80
->                                 sp=e0000009c922fbd0 bsp=e0000009c92213d8
->  [<a00000010000c7a0>] ia64_native_leave_kernel+0x0/0x270
->                                 sp=e0000009c922fc60 bsp=e0000009c92213d8
->  [<a0000001000ecdb0>] profile_tick+0xd0/0x1c0
->                                 sp=e0000009c922fe30 bsp=e0000009c9221398
->  [<a00000010003bb90>] timer_interrupt+0x170/0x3e0
->                                 sp=e0000009c922fe30 bsp=e0000009c9221330
->  [<a00000010013a800>] handle_IRQ_event+0x80/0x120
->                                 sp=e0000009c922fe30 bsp=e0000009c92212f8
->  [<a00000010013aa00>] __do_IRQ+0x160/0x4a0
->                                 sp=e0000009c922fe30 bsp=e0000009c9221290
->  [<a000000100012290>] ia64_process_pending_intr+0x2b0/0x360
->                                 sp=e0000009c922fe30 bsp=e0000009c9221208
->  [<a0000001000112d0>] fixup_irqs+0xf0/0x2a0
->                                 sp=e0000009c922fe30 bsp=e0000009c92211a8
->  [<a00000010005bd80>] __cpu_disable+0x140/0x240
->                                 sp=e0000009c922fe30 bsp=e0000009c9221168
->  [<a0000001006c5870>] take_cpu_down+0x50/0xa0
->                                 sp=e0000009c922fe30 bsp=e0000009c9221148
->  [<a000000100122610>] stop_cpu+0xd0/0x200
->                                 sp=e0000009c922fe30 bsp=e0000009c92210f0
-> 
-> Reading through the original thread:
-> 
-> 	http://lkml.org/lkml/2008/8/31/116
-> 
-> It looks like Paul fixed his original issue correctly, put in a
-> new call to cpu_clear() in the wrong spot, and then was convinced
-> to remove the _correct_ call to cpu_clear().
-> 
-> Cc: stable@kernel.org
-> Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> Signed-off-by: Alex Chiang <achiang@hp.com>
-> ---
-> In my opinion, this is .29 material.
-> 
-> Sorry for the huge changelog:patch ratio, but this area is tricky
-> enough that more explanation is better than less, I think.
-> 
-> Also, I'm still a little troubled by Paul's original patch. What
-> happens if we're trying to offline the CPEI target? The code in
-> migrate_platform_irqs() uses cpu_online_map to select the new
-> CPEI target, and it seems like we can end up in the same
-> situation as the problem I'm trying to fix now.
-> 
-> Paul?
-> 
-> My patch has held up for over 24 hours of stress testing, where
-> we put the system under a heavy load and then randomly
-> offline/online CPUs every 2 seconds. Without this patch, the
-> machine would crash reliably within 15 minutes.
+On Friday, February 6, 2009 4:56 am Hugh Dickins wrote:
+> On Fri, 6 Feb 2009, Benjamin Herrenschmidt wrote:
+> > On Thu, 2009-02-05 at 14:33 -0800, Jesse Barnes wrote:
+> > > One option there would be to provide the file but just use anonymous
+> > > memory to back it.  X will happily think it's messing with legacy VGA
+> > > memory, but it shouldn't matter that it's not actually affecting hw.
+> >
+> > What about this (untested) patch ?
+> >
+> > powerpc/pci: mmap anonymous memory when legacy_mem doesn't exist
+> >
+> > The new legacy_mem file in sysfs is causing problems with X on machines
+> > that don't support legacy memory access. The way I initially implemented
+> > it, we would fail with -ENXIO when trying to mmap it, thus exposing to
+> > X that we do support the API but there is no legacy memory.
+> >
+> > Unfortunately, X poor error handling is causing it to fail to start when
+> > it gets this error.
+> >
+> > This implements a workaround hack that instead maps anonymous memory
+> > instead (using shmem if VM_SHARED is set, just like /dev/zero does).
+> >
+> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > ---
+>
+> Beautiful idea, works very nicely for me.
+> Put a dummy in the baby's mouth to stop it crying.
+>
+> I still don't understand the point of this legacy_mem file at all,
+> and why X should want to mmap it, if it works so well when it's
+> thus divorced from reality.  But I won't worry my pretty little
+> head over it any further - please don't waste your time trying
+> to explain it to me!
 
-I don't claim much expertise on IA64 low-level architectural details,
-so am reduced to asking the usual question...  Does this patch guarantee
-that a given CPU won't be executing irq handlers while marked offline?
-If there is no such guarantee, things can break.  (See below.)
+Hugh, did you get a chance to try my X patch (w/o Ben's patch applied)?  If it 
+also works, we should apply it to X too, if only to make porting to future 
+platforms a little easier.
 
-In any case, apologies for failing to correctly fix the original
-problem!!!
+Since you probably don't want to know, you can skip this paragraph as it 
+describes the motivation behind the legacy_mem file. :)  The motivation for 
+it was to support machines with multihead video card configurations, but 
+which could also support multiple legacy port I/O and memory spaces (e.g. on 
+a per PCI domain basis).  It allows X to run option ROMs on multiple devices 
+simultaneously, and can also help with hardware that can't route legacy space 
+from a given host bus to arbitrary system addresses.  When we put this in 
+initially, Ben knew there were some platforms where legacy memory simply 
+wasn't available, but we figured that shouldn't be a problem, since X didn't 
+really *need* that space to function (most ROMs just put splash screens 
+there).  Unfortunately in the interim, X made the lack of an mmap'able 
+legacy_mem file into a fatal error.
 
-> ---
-> 
-> diff --git a/arch/ia64/kernel/smpboot.c b/arch/ia64/kernel/smpboot.c
-> index 1146399..2a17d1c 100644
-> --- a/arch/ia64/kernel/smpboot.c
-> +++ b/arch/ia64/kernel/smpboot.c
-> @@ -742,8 +742,8 @@ int __cpu_disable(void)
->  	}
-> 
->  	remove_siblinginfo(cpu);
-> -	fixup_irqs();
->  	cpu_clear(cpu, cpu_online_map);
-> +	fixup_irqs();
+In the past, doing Linux bringup on a platform with a complex I/O topology 
+(sparc, ia64, alpha, etc.) usually meant doing X bring up as well, often by 
+adding new interfaces or hacks to X.  With the legacy_mem and io files, 
+there's a chance that X won't have to be modified at bring up time, so in 
+that sense the APIs are a step forward.  However that also means your 
+platform has to support the APIs in a way consistent with how X uses them, as 
+you discovered. :)
 
-So you argument is that because we are running in the context of
-stop_machine(), even though fixup_irqs() does in fact cause irq handlers
-to run on the current CPU which is marked offline, the fact that there
-is no one running to notice this misbehavior makes it OK?  (Which
-perhaps it is, just asking the question.)
-
-							Thanx, Paul
-
->  	local_flush_tlb_all();
->  	cpu_clear(cpu, cpu_callin_map);
->  	return 0;
+-- 
+Jesse Barnes, Intel Open Source Technology Center
