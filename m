@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbZBFPTA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757268AbZBFPTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755932AbZBFPTA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 10:19:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbZBFPSs
+	id S1757268AbZBFPTa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 10:19:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbZBFPTA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 10:18:48 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58756 "EHLO mx3.mail.elte.hu"
+	Fri, 6 Feb 2009 10:19:00 -0500
+Received: from marge.padd.com ([99.188.165.110]:35061 "EHLO marge.padd.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752227AbZBFPSs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 10:18:48 -0500
-Date: Fri, 6 Feb 2009 16:18:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, tglx@linutronix.de,
-       oleg@redhat.com, linux-kernel@vger.kernel.org,
-       seto.hidetoshi@jp.fujitsu.com, ming.m.lin@intel.com
-Subject: Re: [PATCH 0/2] fix the itimer regression (BZ 12618)
-Message-ID: <20090206151832.GL18368@elte.hu>
-References: <20090205112414.104100700@chello.nl> <20090205120608.GB8799@elte.hu> <1233895919.2604.323.camel@ymzhang>
+	id S1755932AbZBFPS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 10:18:59 -0500
+X-Greylist: delayed 612 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Feb 2009 10:18:59 EST
+Date: Fri, 6 Feb 2009 07:08:58 -0800
+From: Pete Wyckoff <pw@padd.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: sam@ravnborg.org, akpm@osdl.org, albcamus@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tags: fix config symbols generation
+Message-ID: <20090206150858.GA15565@padd.com>
+References: <20090129102618.GB4425@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1233895919.2604.323.camel@ymzhang>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090129102618.GB4425@x200.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+adobriyan@gmail.com wrote on Thu, 29 Jan 2009 13:26 +0300:
+> commit 4f628248a578585472e19e4cba2c604643af8c6c aka
+> "kbuild: reintroduce ALLSOURCE_ARCHS support for tags/cscope"
+> breaks tags generation for Kconfig symbols.
+> 
+> Steps to reproduce:
+> 
+> 	make tags
+> 	vi -t PROC_FS
+> 
+> It should jump to 'config PROC_FS' line.
+> 
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+> ---
+> 
+>  scripts/tags.sh |    5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+> 
+> --- a/scripts/tags.sh
+> +++ b/scripts/tags.sh
+> @@ -76,7 +76,10 @@ all_sources()
+>  
+>  all_kconfigs()
+>  {
+> -	find_sources $ALLSOURCE_ARCHS 'Kconfig*'
+> +	for arch in $ALLSOURCE_ARCHS; do
+> +		find_sources $arch 'Kconfig*'
+> +	done
+> +	find_other_sources 'Kconfig*'
+>  }
+>  
+>  all_defconfigs()
 
-* Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
+Yes, this is necessary.  It fixes the problem introduced by
+4f628248a578585472e19e4cba2c604643af8c6c (kbuild: reintroduce
+ALLSOURCE_ARCHS support for tags/cscope).
 
-> On Thu, 2009-02-05 at 13:06 +0100, Ingo Molnar wrote:
-> > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > 
-> > > This should hopefully address all the itimer borkage.
-> > 
-> > Applied to tip:timers/urgent, thanks Peter!
-> > 
-> > Yanmin: could you check hacbench_pth with latest tip/master, do
-> > these fixes resolve that 3% regression you reported?
->
-> Lin Ming tested it and hackbench_pth/volanoMark regression all disappear. 
-> But oltp has a regression. We think oltp new regression isn't related to 
-> the patch. Ming is investigating it.
+Tested-by: Pete Wyckoff <pw@padd.com>
 
-Potential suspects for oltp regression would be:
-
- 3d39870: sched_rt: don't use first_cpu on cpumask created with cpumask_and
- a571bbe: sched: fix buddie group latency
- a9f3e2b: sched: clear buddies more aggressively
- 1596e29: sched: symmetric sync vs avg_overlap
- d942fb6: sched: fix sync wakeups
-
-	Ingo
