@@ -1,84 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755869AbZBFQkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756345AbZBFQpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755869AbZBFQkd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 11:40:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbZBFQkV
+	id S1756345AbZBFQpM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 11:45:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbZBFQo5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 11:40:21 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:53889 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751564AbZBFQkU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 11:40:20 -0500
-Date: Fri, 6 Feb 2009 16:38:57 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>, hskinnemoen@atmel.com,
-       cooloney@kernel.org, tony.luck@intel.com, ralf@linux-mips.org,
-       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-next <linux-next@vger.kernel.org>,
-       linux-ia64 <linux-ia64@vger.kernel.org>
-Subject: Re: [linux-next][PATCH] revert headers_check fix: ia64, fpu.h
-Message-ID: <20090206163857.GJ13758@n2100.arm.linux.org.uk>
-References: <3f9a31f40902060053x18dacf58u40c739ab89f13860@mail.gmail.com> <20090206180957.6294.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090206145556.GH18368@elte.hu> <1233934141.3209.20.camel@localhost.localdomain> <20090206153315.GD13758@n2100.arm.linux.org.uk> <1233935328.3209.30.camel@localhost.localdomain> <20090206155512.GF13758@n2100.arm.linux.org.uk> <20090206161229.GA8256@elte.hu> <20090206162352.GI13758@n2100.arm.linux.org.uk> <20090206163314.GA11216@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090206163314.GA11216@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 6 Feb 2009 11:44:57 -0500
+Received: from gate.crashing.org ([63.228.1.57]:51975 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752051AbZBFQo5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 11:44:57 -0500
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Message-Id: <67331C84-5400-4FE5-B6FA-395F13A482F8@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Julia Lawall <julia@diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0902042236200.3091@ask.diku.dk>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] arch/powerpc: Eliminate double sizeof
+Date: Fri, 6 Feb 2009 10:44:44 -0600
+References: <Pine.LNX.4.64.0902042236200.3091@ask.diku.dk>
+X-Mailer: Apple Mail (2.930.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 06, 2009 at 05:33:14PM +0100, Ingo Molnar wrote:
-> 
-> * Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
-> 
-> > On Fri, Feb 06, 2009 at 05:12:29PM +0100, Ingo Molnar wrote:
-> > > 
-> > > * Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
-> > > 
-> > > > > We cannot see any downside of this patch.
-> > > > > 
-> > > > > But we can see upside of this patch is:
-> > > > > 1. No need to protect linux/types.h with #ifndef __ASSEMBLY__ in many
-> > > > > files
-> > > > > 2. So we trying to replace multiple #ifndef __ASSEMBLY__ with one.
-> > > > 
-> > > > The point is:
-> > > > 
-> > > > 1. If the parent include needs to include linux/types.h to get at C
-> > > >    types _and_ the include file needs to also be included by assembly
-> > > >    code, it itself needs to have #ifndef __ASSEMBLY__ to protect those
-> > > >    uses from the assembly code.
-> > > > 
-> > > >    In that case, the linux/types.h include should be contained within
-> > > >    the #ifndef __ASSEMBLY__ .. #endif block along with all C only
-> > > >    parts of the header file.
-> > > 
-> > > That makes the code much less clean: putting #include's in the middle of a 
-> > > header is poor style and leads to people failing to consider dependencies. 
-> > > We generally put them to the header portion.
-> > > 
-> > > Putting an #include line in the middle of a header file is a receipe for a 
-> > > dependency hell (it can easily fall inside #ifdefs, can be overlooked, 
-> > > etc.), so it's _strongly_ discouraged (at least on arch/x86).
-> > 
-> > Put them at the top then with an additional ifndef.
-> 
-> So you advocate 40 stupid pairs of #ifdefs spread out, instead of a 
-> _single_, obvious #ifdef in a commonly used header?
 
-As I see it, if you want all your style points to be adhered to, then yes.
-And I do believe it to be a valid solution.
+On Feb 4, 2009, at 3:43 PM, Julia Lawall wrote:
 
-Personally, I'd put them nearer the C code.
+> From: Julia Lawall <julia@diku.dk>
+>
+> Taking sizeof the result of sizeof is quite strange and does not  
+> seem to be
+> what is wanted here.
+>
+> This was fixed using the following semantic patch.
+> (http://www.emn.fr/x-info/coccinelle/)
+>
+> // <smpl>
+> @@
+> expression E;
+> @@
+>
+> - sizeof (
+>  sizeof (E)
+> - )
+>
+> @@
+> type T;
+> @@
+>
+> - sizeof (
+>  sizeof (T)
+> - )
+> // </smpl>
+>
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> ---
+> arch/powerpc/platforms/82xx/pq2ads-pci-pic.c |    2 +-
+> 1 file changed, 1 insertion(+), 1 deletion(-)
 
-That's precisely what I do with the ARM include files.  Never been a
-problem.
+applied
+
+- k
