@@ -1,112 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbZBFL4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757559AbZBFL5r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756642AbZBFL4i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 06:56:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbZBFL43
+	id S1757559AbZBFL5r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 06:57:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754569AbZBFL5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 06:56:29 -0500
-Received: from tango.lnet.fi ([86.50.38.234]:50225 "EHLO tango.lnet.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752150AbZBFL42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 06:56:28 -0500
-X-Greylist: delayed 1642 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Feb 2009 06:56:27 EST
-Date: Fri, 6 Feb 2009 13:29:02 +0200
-From: Ilkka Virta <itvirta@iki.fi>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Soft lockup in sungem on Netra AC200 when switching interface up
-Message-ID: <20090206112902.GS4362@tango.lnet.fi>
+	Fri, 6 Feb 2009 06:57:39 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:59615 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751046AbZBFL5i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 06:57:38 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: "Dirk DeSchepper" <ddeschepper@nvtl.com>,
+       USB development list <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH 001/001]  usbserial: New mobile broadband modems to be supported through option module
+Date: Fri, 6 Feb 2009 12:58:39 +0100
+User-Agent: KMail/1.9.10
+Cc: "Greg KH" <greg@kroah.com>, smurf@smurf.noris.de,
+       linux-kernel@vger.kernel.org
+References: <12047829252365@kroah.org> <20090206003352.GA22530@kroah.com> <B29F014DE7B1F949B0BC4C1EBCF29DD6C6D2A3@Vectra.nvtl.local>
+In-Reply-To: <B29F014DE7B1F949B0BC4C1EBCF29DD6C6D2A3@Vectra.nvtl.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200902061258.40303.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What ho, chaps
+Am Friday 06 February 2009 12:29:06 schrieb Dirk DeSchepper:
+> From: Dirk De Schepper <ddeschepper@nvtl.com>
+> 
+> Patch for option.c, based on kernel v2.6.28.3
+> - New Novatel and Dell mobile broadband modem products added
+> - Dell pid variables used in stead of numerical PIDs for known products
 
-The sungem network driver seems to be broken with the integrated
-Ethernet ports of a Sun Netra T1 AC200. On that machine, switching the
-interface up when link is up leads to a soft lockup. However,
-switching the interface up with no link, and only then connecting the
-cable works; as does the same driver on seemingly same hardware on a
-Sun Blade 1000.
+This is not really an advantage. You usually get the nummeric IDs
+just fine from lsusb. And you could easily see the nummeric order of entries.
+These symbolic names do not appear in code, just in the macros
+where their meaning is clear. You introduce a useless level of indirection.
 
-lspci doesn't show any real differences between the gems on the Netra
-and on the Blade, both are these: 
-0000:00:05.1 Ethernet controller [0200]: Sun Microsystems Computer
-             Corp. RIO 10/100 Ethernet [eri] [108e:1101] (rev 01)
-
-Earlier reports of the same problem indicate that the driver was
-broken by commit bea3348eef27e6044b6161fd04c3152215f96411 in around
-2.6.24, but the problem still exists in 2.6.28.
-
-http://kerneltrap.org/mailarchive/linux-kernel/2008/8/7/2856094
-http://bugzilla.kernel.org/show_bug.cgi?id=10309
-http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=508151
-
-Now, I didn't find any ready-made cure for this, so I poked around the
-driver a bit to see what happens. What follows is very much only
-guesswork, since I don't really know anything about Linux network
-drivers.
-
-In the lockup situation the driver seems to go off in an eternal storm
-of interrupts right after calling request_irq(). It doesn't actually
-do anything interesting in the interrupt handler. Since connecting the link
-afterwards works, something later in initialization must fix this.
-
-Looking at gem_do_start() and gem_open(), it seems that the only thing
-done while opening the device after the request_irq(), is a call to
-napi_enable().
-
-I don't know what the ordering requirements are for the
-initialization, but I boldly tried to move the napi_enable() call
-inside gem_do_start() before the link state is checked and interrupts
-subsequently enabled, and it seems to work for me. Doesn't even break
-anything too obvious...
-
-Any ideas on how this really should be fixed?
-
---- linux-2.6.28.2/drivers/net/sungem.c.orig	2009-01-25 02:42:07.000000000 +0200
-+++ linux-2.6.28.2/drivers/net/sungem.c	2009-02-05 20:46:23.000000000 +0200
-@@ -2222,6 +2222,8 @@ static int gem_do_start(struct net_devic
- 
- 	gp->running = 1;
- 
-+	napi_enable(&gp->napi);
-+
- 	if (gp->lstate == link_up) {
- 		netif_carrier_on(gp->dev);
- 		gem_set_link_modes(gp);
-@@ -2239,6 +2241,8 @@ static int gem_do_start(struct net_devic
- 		spin_lock_irqsave(&gp->lock, flags);
- 		spin_lock(&gp->tx_lock);
- 
-+		napi_disable(&gp->napi);
-+
- 		gp->running =  0;
- 		gem_reset(gp);
- 		gem_clean_rings(gp);
-@@ -2339,8 +2343,6 @@ static int gem_open(struct net_device *d
- 	if (!gp->asleep)
- 		rc = gem_do_start(dev);
- 	gp->opened = (rc == 0);
--	if (gp->opened)
--		napi_enable(&gp->napi);
- 
- 	mutex_unlock(&gp->pm_mutex);
- 
-@@ -2477,8 +2479,6 @@ static int gem_resume(struct pci_dev *pd
- 
- 		/* Re-attach net device */
- 		netif_device_attach(dev);
--
--		napi_enable(&gp->napi);
- 	}
- 
- 	spin_lock_irqsave(&gp->lock, flags);
-
--- 
-Ilkka Virta / itvirta at iki dot fi / ilkkachu@IRCNet
- ()  ascii ribbon campaign - against HTML mail and attachments in 
- /\                          closed file formats
+	Regards
+		Oliver
