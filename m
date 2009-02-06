@@ -1,86 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbZBFBtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754969AbZBFBx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757304AbZBFBtS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 20:49:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbZBFBtB
+	id S1754969AbZBFBx7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 20:53:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbZBFBxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 20:49:01 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:50538 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751783AbZBFBtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 20:49:00 -0500
-Date: Thu, 5 Feb 2009 23:48:40 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH tip 1/2] ring_buffer: remove unused flags parameter
-Message-ID: <20090206014840.GE9846@ghostprotocols.net>
-References: <20090205181256.GH17653@ghostprotocols.net> <20090205221701.GA23999@nowhere>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090205221701.GA23999@nowhere>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 5 Feb 2009 20:53:51 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36855 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752103AbZBFBxu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 20:53:50 -0500
+Date: Thu, 5 Feb 2009 17:53:21 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/2] ring-buffer: add NMI protection for spinlocks
+Message-Id: <20090205175321.e1455c0e.akpm@linux-foundation.org>
+In-Reply-To: <20090206011350.976972261@goodmis.org>
+References: <20090206011315.360405659@goodmis.org>
+	<20090206011350.976972261@goodmis.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Thu, Feb 05, 2009 at 11:17:02PM +0100, Frederic Weisbecker escreveu:
-> On Thu, Feb 05, 2009 at 04:12:56PM -0200, Arnaldo Carvalho de Melo wrote:
-> > Impact: API change, cleanup
-> > 
-> > From ring_buffer_{lock_reserve,unlock_commit}.
-> > 
-> > Cc: Ingo Molnar <mingo@elte.hu>
-> > Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-> > Cc: Jens Axboe <jens.axboe@oracle.com>
-> > Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> > ---
-> >  block/blktrace.c                 |    8 +++---
-> >  include/linux/ring_buffer.h      |    9 ++----
-> >  kernel/trace/kmemtrace.c         |   12 +++-----
-> >  kernel/trace/ring_buffer.c       |    9 +-----
-> >  kernel/trace/trace.c             |   56 +++++++++++++------------------------
-> >  kernel/trace/trace_boot.c        |   12 +++-----
-> >  kernel/trace/trace_branch.c      |    7 ++---
-> >  kernel/trace/trace_hw_branches.c |    6 ++--
-> >  kernel/trace/trace_mmiotrace.c   |   12 +++-----
-> >  kernel/trace/trace_power.c       |   12 +++-----
-> >  10 files changed, 51 insertions(+), 92 deletions(-)
-> > 
-> > $ codiff /tmp/vmlinux.before /tmp/vmlinux.after
-> > linux-2.6-tip/kernel/trace/trace.c:
-> >   trace_vprintk              |  -14
-> >   trace_graph_return         |  -14
-> >   trace_graph_entry          |  -10
-> >   trace_function             |   -8
-> >   __ftrace_trace_stack       |   -8
-> >   ftrace_trace_userstack     |   -8
-> >   tracing_sched_switch_trace |   -8
-> >   ftrace_trace_special       |  -12
-> >   tracing_sched_wakeup_trace |   -8
-> >  9 functions changed, 90 bytes removed, diff: -90
-> > 
-> > linux-2.6-tip/block/blktrace.c:
-> >   __blk_add_trace |   -1
-> >  1 function changed, 1 bytes removed, diff: -1
-> > 
-> > /tmp/vmlinux.after:
-> >  10 functions changed, 91 bytes removed, diff: -91
+On Thu, 05 Feb 2009 20:13:16 -0500 Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> From: Steven Rostedt <srostedt@redhat.com>
 > 
+> Impact: prevent deadlock in NMI
 > 
-> codiff... I didn't know this great tool! :-)
+> The ring buffers are not yet totally lockless with writing to
+> the buffer. When a writer crosses a page, it grabs a per cpu spinlock
+> to protect against a reader. The spinlocks taken by a writer are not
+> to protect against other writers, since a writer can only write to
+> its own per cpu buffer. The spinlocks protect against readers that
+> can touch any cpu buffer. The writers are made to be reentrant
+> with the spinlocks disabling interrupts.
+> 
+> The problem arises when an NMI writes to the buffer, and that write
+> crosses a page boundary. If it grabs a spinlock, it can be racing
+> with another writer (since disabling interrupts does not protect
+> against NMIs) or with a reader on the same CPU. Luckily, most of the
+> users are not reentrant and protects against this issue. But if a
+> user of the ring buffer becomes reentrant (which is what the ring
+> buffers do allow), if the NMI also writes to the ring buffer then
+> we risk the chance of a deadlock.
+> 
+> This patch moves the ftrace_nmi_enter called by nmi_enter() to the
+> ring buffer code. It replaces the current ftrace_nmi_enter that is
+> used by arch specific code to arch_ftrace_nmi_enter and updates
+> the Kconfig to handle it.
+> 
+> When an NMI is called, it will set a per cpu variable in the ring buffer
+> code and will clear it when the NMI exits. If a write to the ring buffer
+> crosses page boundaries inside an NMI, a trylock is used on the spin
+> lock instead. If the spinlock fails to be acquired, then the entry
+> is discarded.
+> 
+> This bug appeared in the ftrace work in the RT tree, where event tracing
+> is reentrant. This workaround solved the deadlocks that appeared there.
+> 
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> ---
+>  arch/x86/Kconfig           |    1 +
+>  arch/x86/kernel/ftrace.c   |    8 +++---
+>  include/linux/ftrace_irq.h |   10 ++++++++-
+>  kernel/trace/Kconfig       |    8 +++++++
+>  kernel/trace/ring_buffer.c |   48 ++++++++++++++++++++++++++++++++++++++++++-
+>  5 files changed, 68 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index 4277640..3da7121 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -34,6 +34,7 @@ config X86
+>  	select HAVE_FUNCTION_TRACER
+>  	select HAVE_FUNCTION_GRAPH_TRACER
+>  	select HAVE_FUNCTION_TRACE_MCOUNT_TEST
+> +	select HAVE_FTRACE_NMI_ENTER if DYNAMIC_FTRACE || FUNCTION_GRAPH_TRACER
+>  	select HAVE_KVM
+>  	select HAVE_ARCH_KGDB
+>  	select HAVE_ARCH_TRACEHOOK
+> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+> index 4d33224..4c68358 100644
+> --- a/arch/x86/kernel/ftrace.c
+> +++ b/arch/x86/kernel/ftrace.c
+> @@ -113,7 +113,7 @@ static void ftrace_mod_code(void)
+>  					     MCOUNT_INSN_SIZE);
+>  }
+>  
+> -void ftrace_nmi_enter(void)
+> +void arch_ftrace_nmi_enter(void)
+>  {
+>  	atomic_inc(&in_nmi);
 
-My marketing dept is not so good, but since you liked it, I guess its
-appropriate to point you to this, that is the only documentation
-available about it and some of its friends, like pahole:
+This in_nmi thing looks a bit awkward.  It's not very clear from the
+code what it does or why it exists, but it looks like I'm going to have
+to get used to that...
 
-https://ols2006.108.redhat.com/2007/Reprints/melo-Reprint.pdf
+Surely it is buggy?  It's incremented by _any_ cpu, so code which reads
+it (eg, prepare_ftrace_return()) will bale out if some other CPU
+happened to be in the middle of taking an NMI.
 
-Now back to the Rostedts extended TODO list.
+Would it not be better to make in_nmi a per-cpu thing, make it a piece
+of first-class kernel infrastructure, add a nice interface to it, hoist
+it up into generic code, call that code from arch NMI handlers, call
+that interface from ftrace, etc?  Or perhaps it could be implemented in
+task_struct, alongside in_irq(), in_softirq(), etc.  There are three bits
+left in ->preempt_count.
 
-- Arnaldo
+This approach would remove the duplication which this patch is
+attempting to add.
+
+Plus there's already quite a bit of duplication in
+arch/x86/kernel/ftrace.c between the
+CONFIG_DYNAMIC_FTRACE/!CONFIG_DYNAMIC_FTRACE hunks.  Two definitions of
+in_nmi, duplicated inc/dec thereof?
+
+
+
