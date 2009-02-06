@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755026AbZBFNGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549AbZBFNHO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755026AbZBFNGw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 08:06:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbZBFNGn
+	id S1753549AbZBFNHO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 08:07:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbZBFNGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 08:06:43 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:48005 "EHLO e9.ny.us.ibm.com"
+	Fri, 6 Feb 2009 08:06:46 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:60141 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752089AbZBFNGm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 08:06:42 -0500
-Date: Fri, 6 Feb 2009 05:06:40 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
-       Robert Wisniewski <bob@watson.ibm.com>
-Subject: Re: [RFC git tree] Userspace RCU (urcu) for Linux (repost)
-Message-ID: <20090206130640.GB10918@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090206030543.GB8560@Krystal> <20090206045841.GA12995@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090206045841.GA12995@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S1753463AbZBFNGo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 08:06:44 -0500
+Date: Sat, 7 Feb 2009 00:06:36 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Sachin P. Sant" <sachinp@in.ibm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-s390@vger.kernel.org,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       Mel Gorman <mel@csn.ul.ie>, Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: Next 0205 build break : drivers/s390/block/dasd_proc.o
+Message-Id: <20090207000636.ee67c759.sfr@canb.auug.org.au>
+In-Reply-To: <498C03E1.1040204@in.ibm.com>
+References: <498C03E1.1040204@in.ibm.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__7_Feb_2009_00_06_36_+1100_KnxsDh.GvvIKdnh2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 11:58:41PM -0500, Mathieu Desnoyers wrote:
-> (sorry for repost, I got the ltt-dev email wrong in the previous one)
-> 
-> Hi Paul,
-> 
-> I figured out I needed some userspace RCU for the userspace tracing part
-> of LTTng (for quick read access to the control variables) to trace
-> userspace pthread applications. So I've done a quick-and-dirty userspace
-> RCU implementation.
-> 
-> It works so far, but I have not gone through any formal verification
-> phase. It seems to work on paper, and the tests are also OK (so far),
-> but I offer no guarantee for this 300-lines-ish 1-day hack. :-) If you
-> want to comment on it, it would be welcome. It's a userland-only
-> library. It's also currently x86-only, but only a few basic definitions
-> must be adapted in urcu.h to port it.
-> 
-> Here is the link to my git tree :
-> 
-> git://lttng.org/userspace-rcu.git
-> 
-> http://lttng.org/cgi-bin/gitweb.cgi?p=userspace-rcu.git;a=summary
+--Signature=_Sat__7_Feb_2009_00_06_36_+1100_KnxsDh.GvvIKdnh2
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Very cool!!!  I will take a look!
+On Fri, 06 Feb 2009 15:03:21 +0530 "Sachin P. Sant" <sachinp@in.ibm.com> wr=
+ote:
+>
+> Next 0205 defconfig build on s390x fails with :
+>=20
+>   CC      drivers/s390/block/dasd_proc.o
+> drivers/s390/block/dasd_proc.c: In function dasd_proc_init:
+> drivers/s390/block/dasd_proc.c:321: error: struct proc_dir_entry has no m=
+ember named owner
+> drivers/s390/block/dasd_proc.c:335: error: struct proc_dir_entry has no m=
+ember named owner
+> make[1]: *** [drivers/s390/block/dasd_proc.o] Error 1
+> make: *** [drivers/s390/block/dasd_proc.o] Error 2
 
-I will also point you at a few that I have put together:
+Looks like commit 4d38a69c6bc847828ae89c2249e82671ed4061c5 ("proc 2/2:
+remove struct prioc_dir_entry::owner") from the proc tree missed at least
+a couple.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/perfbook.git
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-(In the CodeSamples/defer directory.)
+--Signature=_Sat__7_Feb_2009_00_06_36_+1100_KnxsDh.GvvIKdnh2
+Content-Type: application/pgp-signature
 
-							Thanx, Paul
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmMNdwACgkQjjKRsyhoI8zbvgCgvX/BRPjilCD6rvtji++cXeNa
+I1IAoLe9h1V9uGyHBaFnABLIXSmvYHMR
+=vWP2
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__7_Feb_2009_00_06_36_+1100_KnxsDh.GvvIKdnh2--
