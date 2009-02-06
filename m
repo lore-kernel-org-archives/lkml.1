@@ -1,122 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbZBFSdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755077AbZBFSfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754825AbZBFSdT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 13:33:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbZBFSdI
+	id S1755077AbZBFSfz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 13:35:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750882AbZBFSfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 13:33:08 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:34756 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751368AbZBFSdF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 13:33:05 -0500
-Date: Fri, 6 Feb 2009 10:33:04 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Alex Chiang <achiang@hp.com>, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ia64: prevent irq migration race in __cpu_disable path
-Message-ID: <20090206183304.GJ10918@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090206162213.GD8208@ldl.fc.hp.com> <20090206170055.GI10918@linux.vnet.ibm.com> <20090206180742.GC2445@ldl.fc.hp.com>
+	Fri, 6 Feb 2009 13:35:46 -0500
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:49462 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750831AbZBFSfq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 13:35:46 -0500
+Date: Fri, 6 Feb 2009 19:35:42 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@strlen.de>
+To: Frank Seidel <fseidel@suse.de>
+Cc: linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       khali@linux-fr.org, ben-linux@fluff.org, linux-i2c@vger.kernel.org,
+       frank@f-seidel.de, w.sang@pengutronix.de,
+       "David S. Miller" <davem@davemloft.net>, Frans Pop <elendil@planet.nl>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH] i2c: add missing KERN_* constants to printks
+Message-ID: <20090206183542.GB6361@strlen.de>
+References: <498C3EEA.5060508@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090206180742.GC2445@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <498C3EEA.5060508@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 06, 2009 at 11:07:42AM -0700, Alex Chiang wrote:
-> 
-> [removing stable@kernel.org for now while we figure this out]
-> 
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com>:
-> > On Fri, Feb 06, 2009 at 09:22:13AM -0700, Alex Chiang wrote:
-> > > ---
-> > > In my opinion, this is .29 material.
-> > > 
-> > > Sorry for the huge changelog:patch ratio, but this area is tricky
-> > > enough that more explanation is better than less, I think.
-> > > 
-> > > Also, I'm still a little troubled by Paul's original patch. What
-> > > happens if we're trying to offline the CPEI target? The code in
-> > > migrate_platform_irqs() uses cpu_online_map to select the new
-> > > CPEI target, and it seems like we can end up in the same
-> > > situation as the problem I'm trying to fix now.
-> > > 
-> > > Paul?
-> > > 
-> > > My patch has held up for over 24 hours of stress testing, where
-> > > we put the system under a heavy load and then randomly
-> > > offline/online CPUs every 2 seconds. Without this patch, the
-> > > machine would crash reliably within 15 minutes.
-> > 
-> > I don't claim much expertise on IA64 low-level architectural details,
-> 
-> I'm starting to get a bit out of my depth here too... :-/
-> 
-> > so am reduced to asking the usual question...  Does this patch guarantee
-> > that a given CPU won't be executing irq handlers while marked offline?
-> > If there is no such guarantee, things can break.  (See below.)
-> 
-> My patch makes no guarantee. What it does do is prevent a NULL
-> deref while we are, in fact, executing an irq handler while
-> marked offline.
-> 
-> > In any case, apologies for failing to correctly fix the original
-> > problem!!!
-> 
-> I'm curious, reading through your old change log:
-> 
->     Make ia64 refrain from clearing a given to-be-offlined CPU's
->     bit in the cpu_online_mask until it has processed pending
->     irqs.  This change prevents other CPUs from being blindsided
->     by an apparently offline CPU nevertheless changing globally
->     visible state. 
-> 
-> Was your patch fixing a theoretical problem or a real bug? What
-> globally visible state were you referencing there?
-> 
-> > > ---
-> > > 
-> > > diff --git a/arch/ia64/kernel/smpboot.c b/arch/ia64/kernel/smpboot.c
-> > > index 1146399..2a17d1c 100644
-> > > --- a/arch/ia64/kernel/smpboot.c
-> > > +++ b/arch/ia64/kernel/smpboot.c
-> > > @@ -742,8 +742,8 @@ int __cpu_disable(void)
-> > >  	}
-> > > 
-> > >  	remove_siblinginfo(cpu);
-> > > -	fixup_irqs();
-> > >  	cpu_clear(cpu, cpu_online_map);
-> > > +	fixup_irqs();
-> > 
-> > So you argument is that because we are running in the context of
-> > stop_machine(), even though fixup_irqs() does in fact cause irq handlers
-> > to run on the current CPU which is marked offline, the fact that there
-> > is no one running to notice this misbehavior makes it OK?  (Which
-> > perhaps it is, just asking the question.)
-> 
-> I wouldn't say that I have a solid argument, per se, just fixing
-> symptoms. ;)
-> 
-> My reading of the cpu_down() path makes it seem like we need to
-> process pending interrupts on the current CPU, and the original
-> author certainly thought it was ok to call an irq handler on the
-> current CPU. We don't disable local irqs until the very last step
-> of fixup_irqs().
-> 
-> So the actual design of this path assumed it was ok to call an
-> irq handler on a marked-offline CPU.
-> 
-> Can you educate me on the danger of doing such a thing? That
-> might help in how I interpret the code.
+Hello,
 
-Well, RCU happily ignores CPUs that don't have their bits set in
-cpu_online_map, so if there are RCU read-side critical sections in the
-irq handlers being run, RCU will ignore them.  If the other CPUs were
-running, they might sequence through the RCU state machine, which could
-result in data structures being yanked out from under those irq handlers,
-which in turn could result in oopses or worse.
+On Fri, Feb 06, 2009 at 02:45:14PM +0100, Frank Seidel wrote:
+> From: Frank Seidel <frank@f-seidel.de>
+> 
+> According to kerneljanitors todo list all printk calls (beginning
+> a new line) should have an according KERN_* constant.
+> Those are the missing pieces here for the i2c subsystem.
+OK in principle.  Still *I* prefer the pr_debug, pr_emerg etc. macros.
+Looks a bit nicer ...
 
-							Thanx, Paul
+> --- a/drivers/i2c/algos/i2c-algo-pca.c
+> +++ b/drivers/i2c/algos/i2c-algo-pca.c
+> @@ -51,7 +51,7 @@ static int i2c_debug;
+>  static void pca_start(struct i2c_algo_pca_data *adap)
+>  {
+>  	int sta = pca_get_con(adap);
+> -	DEB2("=== START\n");
+> +	DEB2(KERN_WARNING "=== START\n");
+Are you sure about KERN_WARNING?  I havn't looked deeper, but DEB2
+suggests KERN_DEBUG?  What about fixing DEB[1-3] directly instead of
+each "call".  e.g.
+
+-#define DEB2(fmt, args...) do { if (i2c_debug>=2) printk(fmt, ## args); } while(0)
++#define DEB2(fmt, args...) do { if (i2c_debug>=2) pr_warning(fmt, ## args); } while(0)
+
+Best regards,
+Uwe
