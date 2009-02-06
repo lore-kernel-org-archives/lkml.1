@@ -1,60 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758805AbZBFPqB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759146AbZBFPqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758805AbZBFPqB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 10:46:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbZBFPpx
+	id S1759146AbZBFPqZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 10:46:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758871AbZBFPqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 10:45:53 -0500
-Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:18525 "EHLO
-	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750699AbZBFPpw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 10:45:52 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       the arch/x86 maintainers <x86@kernel.org>
-In-Reply-To: <1233934150.20597.26.camel@zakaz.uk.xensource.com>
-References: <patchbomb.1233862242@abulafia.goop.org>
-	 <ab45a6865df539a36a75.1233862277@abulafia.goop.org>
-	 <1233934150.20597.26.camel@zakaz.uk.xensource.com>
-Content-Type: text/plain
-Date: Fri, 06 Feb 2009 15:45:01 +0000
-Message-Id: <1233935101.20597.28.camel@zakaz.uk.xensource.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 62.200.22.2
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [PATCH 35 of 36] x86: make pgd/pud/pmd/pte_none consistent
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
-X-Cloudmark-Analysis: v=1.0 c=1 a=NkRAZMAOj8gA:10 a=x2RMdOTEVusA:10 a=7QJnBGmzxH6UZBSdJk4A:9 a=TuIEQKtVA0vH2HvDnEvMuqz7GzIA:4 a=LY0hPdMaydYA:10
+	Fri, 6 Feb 2009 10:46:11 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42940 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751766AbZBFPqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 10:46:09 -0500
+Date: Fri, 6 Feb 2009 16:45:39 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>, hskinnemoen@atmel.com,
+       cooloney@kernel.org, tony.luck@intel.com, ralf@linux-mips.org,
+       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-next <linux-next@vger.kernel.org>,
+       linux-ia64 <linux-ia64@vger.kernel.org>
+Subject: Re: [linux-next][PATCH] revert headers_check fix: ia64, fpu.h
+Message-ID: <20090206154539.GP18368@elte.hu>
+References: <20090206164546.6291.KOSAKI.MOTOHIRO@jp.fujitsu.com> <3f9a31f40902060053x18dacf58u40c739ab89f13860@mail.gmail.com> <20090206180957.6294.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090206145556.GH18368@elte.hu> <1233934141.3209.20.camel@localhost.localdomain> <20090206153315.GD13758@n2100.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090206153315.GD13758@n2100.arm.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-02-06 at 15:29 +0000, Ian Campbell wrote:
-> On Thu, 2009-02-05 at 11:31 -0800, Jeremy Fitzhardinge wrote:
-> > The _none test is done differently for every level of the pagetable.
-> > Standardize them by:
+
+* Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+
+> On Fri, Feb 06, 2009 at 08:59:01PM +0530, Jaswinder Singh Rajput wrote:
+> > On Fri, 2009-02-06 at 15:55 +0100, Ingo Molnar wrote:
+> > > * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > > 
+> > > > > > Index: b/arch/ia64/include/asm/fpu.h
+> > > > > > ===================================================================
+> > > > > > --- a/arch/ia64/include/asm/fpu.h
+> > > > > > +++ b/arch/ia64/include/asm/fpu.h
+> > > > > > @@ -6,7 +6,7 @@
+> > > > > >  *     David Mosberger-Tang <davidm@hpl.hp.com>
+> > > > > >  */
+> > > > > >
+> > > > > > -#include <linux/types.h>
+> > > > > > +#include <asm/types.h>
+> > > > > >
+> > > > > 
+> > > > > No , we do not even need asm/types.h
+> > > > > 
+> > > > > Subject: [PATCH] Neither asm/types.h nor linux/types.h is not required
+> > > > > for arch/ia64/include/asm/fpu.h
+> > > > > 
+> > > > > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > > > 
+> > > > ok. I confirmed.
+> > > > 	Tested-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > > > 	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > > 
+> > > Thanks.
+> > > 
+> > > Jaswinder, mind adding these tags to the commit and sending a pull request 
+> > > with all fixes?
 > > 
-> >  1: Use the native_X_val to extract the raw entry, with no need to go
-> >     via paravirt_ops, diff -r 1d0646d0d319 arch/x86/include/asm/pgtable.h, and
-> >  2: Compare with 0 rather than using a boolean !, since they are actually values
-> >     and not booleans.
+> > The following changes since commit 0b86a4e34d885e734a4c4e46293376f3f1c639eb:
+> >   Ingo Molnar (1):
+> >         Merge branch 'core/header-fixes' of git://git.kernel.org/.../jaswinder/linux-2.6-tip into core/header-fixes
+> > 
+> > are available in the git repository at:
+> > 
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git core/header-fixes
+> > 
+> > Jaswinder Singh Rajput (2):
+> >       Neither asm/types.h nor linux/types.h is required for arch/ia64/include/asm/fpu.h
+> >       make linux/types.h as assembly safe
 > 
-> In a 32 bit Xen guest this one causes
-> 
->         [    8.354898] 1 multicall(s) failed: cpu 1
+> I continue to disagree with the need for the second patch.
 
-Spoke too soon, it's not as 100% reliably reproducing as I thought which
-confused my bisection attempt. Will try and locate the real culprit...
+But have not replied to my mail about that so far.
 
-Ian.
+Why is it wrong to make types.h an assembly-invariant? It is positively 
+helpful for mixed-mode headers and has no downsides whatsoever.
 
--- 
-Ian Campbell
-
-For a man to truly understand rejection, he must first be ignored by a cat.
-
+	Ingo
