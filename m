@@ -1,54 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbZBFFDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980AbZBFF0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757883AbZBFFDr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 00:03:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZBFFDf
+	id S1752980AbZBFF0l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 00:26:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZBFF0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 00:03:35 -0500
-Received: from hera.kernel.org ([140.211.167.34]:32834 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752234AbZBFFDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 00:03:34 -0500
-Message-ID: <498BC46D.5080505@kernel.org>
-Date: Thu, 05 Feb 2009 21:02:37 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ayaz Abdulla <aabdulla@nvidia.com>,
-       "David S. Miller" <davem@davemloft.net>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>
-Subject: [PATCH] forcedeth: enable msix to default
-References: <498BC3A8.9040203@kernel.org>
-In-Reply-To: <498BC3A8.9040203@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 6 Feb 2009 00:26:30 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59302
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750894AbZBFF03 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 00:26:29 -0500
+Date: Thu, 05 Feb 2009 21:26:25 -0800 (PST)
+Message-Id: <20090205.212625.200550175.davem@davemloft.net>
+To: cooloney@kernel.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, graf.yang@analog.com
+Subject: Re: [PATCH] net: fix some trailing whitespaces
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1233821144-8764-1-git-send-email-cooloney@kernel.org>
+References: <1233821144-8764-1-git-send-email-cooloney@kernel.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Bryan Wu <cooloney@kernel.org>
+Date: Thu,  5 Feb 2009 16:05:44 +0800
 
-Impact: change default
+> From: Graf Yang <graf.yang@analog.com>
+> 
+> Signed-off-by: Graf Yang <graf.yang@analog.com>
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
 
-msix and napic can work again
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
----
- drivers/net/forcedeth.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/net/forcedeth.c
-===================================================================
---- linux-2.6.orig/drivers/net/forcedeth.c
-+++ linux-2.6/drivers/net/forcedeth.c
-@@ -862,7 +862,7 @@ enum {
- 	NV_MSIX_INT_DISABLED,
- 	NV_MSIX_INT_ENABLED
- };
--static int msix = NV_MSIX_INT_DISABLED;
-+static int msix = NV_MSIX_INT_ENABLED;
- 
- /*
-  * DMA 64bit
+Applied, thanks.
