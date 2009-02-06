@@ -1,75 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757147AbZBFWM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757020AbZBFWSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757147AbZBFWM7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 17:12:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753593AbZBFWMv
+	id S1757020AbZBFWSh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 17:18:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937AbZBFWS2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 17:12:51 -0500
-Received: from mailout.artfiles.de ([80.252.97.80]:57420 "EHLO
-	mailout.artfiles.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753254AbZBFWMu convert rfc822-to-8bit (ORCPT
+	Fri, 6 Feb 2009 17:18:28 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:38126 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753597AbZBFWS1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 17:12:50 -0500
+	Fri, 6 Feb 2009 17:18:27 -0500
+Date: Fri, 6 Feb 2009 22:17:41 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #12608] 2.6.29-rc powerpc G5 Xorg legacy_mem regression
+In-Reply-To: <200902060849.45851.jbarnes@virtuousgeek.org>
+Message-ID: <Pine.LNX.4.64.0902062205540.5710@blonde.anvils>
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <1233898836.4612.116.camel@pasglop>
+ <Pine.LNX.4.64.0902061248010.14011@blonde.anvils> <200902060849.45851.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Subject: AW:  Re: linux 2.6.29-rc3 kernel failure with mptsas
-Content-class: urn:content-classes:message
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Date: Fri, 6 Feb 2009 23:12:46 +0100
-Message-ID: <B4ED8DE8E195E84A872496A085BC07822F13@exchange01.corp.win-professional.com>
-In-Reply-To: <gmhsk4$4ht$2@ger.gmane.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Re: linux 2.6.29-rc3 kernel failure with mptsas
-Thread-Index: AcmIggqG3poM/JQ1RKeimaJMua330QAJP9pQ
-References: <B4ED8DE8E195E84A872496A085BC07822F11@exchange01.corp.win-professional.com> <gmhsk4$4ht$2@ger.gmane.org>
-From: "Morten P.D. Stevens" <mstevens@win-professional.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 06 Feb 2009 22:12:47.0672 (UTC) FILETIME=[0AF8A380:01C988A8]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> See what it does without the tainted kernel?
-
-Same problem without a tainted kernel. (2.6.29-rc3)
-
------Ursprüngliche Nachricht-----
-Von: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-owner@vger.kernel.org] Im Auftrag von Bill Davidsen
-Gesendet: Freitag, 6. Februar 2009 18:39
-An: linux-kernel@vger.kernel.org
-Betreff: Re: linux 2.6.29-rc3 kernel failure with mptsas
-
-Morten P.D. Stevens wrote:
-> Hi,
+On Fri, 6 Feb 2009, Jesse Barnes wrote:
 > 
-> I get a kernel failure with linux 2.6.29-rc3 on my Dell T7400
-> Workstation.
-> 
-> failure message:
-> 
-> WARNING: at lib/debugobjects.c:253 __debug_object_init+0x2a8/0x353()
-> (Tainted: G        W )
-> Hardware name: Precision WorkStation T7400  
-> Modules linked in: ata_generic pata_acpi mptsas(+) mptscsih mptbase
-> scsi_transport_sas
-> Pid: 35, comm: work_on_cpu/0 Tainted: G        W
-> 2.6.29-0.66.rc3.fc11.x86_64 #1
+> Hugh, did you get a chance to try my X patch (w/o Ben's patch applied)?  If it 
+> also works, we should apply it to X too, if only to make porting to future 
+> platforms a little easier.
 
-> 
-> Any ideas about the problem?
-> 
-See what it does without the tainted kernel?
+I have tried it now: I'm sorry to say it does not work, fails with
+(WW) xf86MapDomainMem():  mmap() failure: No such device or address
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Fatal server error:
+AddScreen/ScreenInit failed for driver 0
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+The "mmap() failure" line is of course the one you're intentionally
+showing, but the AddScreen/ScreenInit one is not what you want.
+Presumably it demands something other than a NULL addr returned,
+but I haven't followed that up at all.
+
+I have tried the obvious patch below, which reverts to the original
+code if the mmap fails: this works, but presumably negates much of
+what you intended to achieve with legacy_mem.
+
+Easy for me to try something else, fire away.
+
+Hugh
+
+--- a/hw/xfree86/os-support/bus/linuxPci.c
++++ b/hw/xfree86/os-support/bus/linuxPci.c
+@@ -501,8 +501,10 @@ xf86MapDomainMemory(int ScreenNum, int F
+     if (fd >= 0)
+ 	close(fd);
+     if (addr == NULL || addr == MAP_FAILED) {
+-	perror("mmap failure");
+-	FatalError("xf86MapDomainMem():  mmap() failure\n");
++	xf86Msg(X_WARNING, "xf86MapDomainMem():  mmap() failure: %s\n",
++		strerror(errno));
++	return linuxMapPci(ScreenNum, Flags, dev, Base, Size,
++			   PCIIOC_MMAP_IS_MEM);
+     }
+     return addr;
+ }
