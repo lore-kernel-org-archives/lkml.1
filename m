@@ -1,137 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758087AbZBFTV7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758848AbZBFTW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758087AbZBFTV7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 14:21:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZBFTVv
+	id S1758848AbZBFTW0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 14:22:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757233AbZBFTWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 14:21:51 -0500
-Received: from mail.candelatech.com ([208.74.158.172]:53806 "EHLO
-	ns3.lanforge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753512AbZBFTVu (ORCPT
+	Fri, 6 Feb 2009 14:22:14 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:43114 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753566AbZBFTWN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 14:21:50 -0500
-Message-ID: <498C8DB7.3000005@candelatech.com>
-Date: Fri, 06 Feb 2009 11:21:27 -0800
-From: Ben Greear <greearb@candelatech.com>
-Organization: Candela Technologies
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Fri, 6 Feb 2009 14:22:13 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 001/001]  usbserial: New mobile broadband modems to be supported through option module
+Date: Fri, 6 Feb 2009 20:23:06 +0100
+User-Agent: KMail/1.9.10
+Cc: Dirk DeSchepper <ddeschepper@nvtl.com>,
+       USB development list <linux-usb@vger.kernel.org>, smurf@smurf.noris.de,
+       linux-kernel@vger.kernel.org
+References: <12047829252365@kroah.org> <200902061258.40303.oliver@neukum.org> <20090206185130.GB8517@kroah.com>
+In-Reply-To: <20090206185130.GB8517@kroah.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, len.brown@intel.com
-Subject: Re: PATCH:  (v2) Allow over-ride of smp_found_cfg with kernel cmd-line
- option.
-References: <498B421D.9090609@candelatech.com> <20090205195832.GD3129@elte.hu>
-In-Reply-To: <20090205195832.GD3129@elte.hu>
-Content-Type: multipart/mixed;
- boundary="------------020605020806080604030100"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902062023.07759.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020605020806080604030100
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Ingo Molnar wrote:
-> * Ben Greear <greearb@candelatech.com> wrote:
+Am Friday 06 February 2009 19:51:30 schrieben Sie:
+> On Fri, Feb 06, 2009 at 12:58:39PM +0100, Oliver Neukum wrote:
+> > Am Friday 06 February 2009 12:29:06 schrieb Dirk DeSchepper:
+> > > From: Dirk De Schepper <ddeschepper@nvtl.com>
+> > > 
+> > > Patch for option.c, based on kernel v2.6.28.3
+> > > - New Novatel and Dell mobile broadband modem products added
+> > > - Dell pid variables used in stead of numerical PIDs for known products
+> > 
+> > This is not really an advantage. You usually get the nummeric IDs
+> > just fine from lsusb. And you could easily see the nummeric order of entries.
+> > These symbolic names do not appear in code, just in the macros
+> > where their meaning is clear. You introduce a useless level of indirection.
 > 
->> Allow user to keep smp_found_cfg set to 1 even if MADT
->> cannot be parsed.  This works around funky BIOS on FWA-7304
->> (VIA CN700 chipset) system, and possibly other systems as well.
->> Without this override, performance drops by around 15% on
->> network throughput tests on this system.
+> No, it's fine, we can use all of the descriptive information that we can
 
-> I'd _much_ rather have a warning message printed and have a default, 
-> unconditional fallback to mptable parsing in this case.
-> 
-> I.e. same end result just no ugly and inconvenient force_smp_found_cfg.
-> 
-> The mptable works fine in most such cases to enumerate apic details. (as it 
-> does in your case, evidently)
-> 
-> And if both the ACPI and the MPTABLE is hosed on a box, it cannot be of much 
-> use on other OSs either, right?
-> 
-> So please do a patch that removes the 'smp_found_config' and which changes 
-> the warning message to warn about no ACPI table in the MADT table. Ok?
+Which descriptive information? The symbolic names used are internal
+to the kernel.
 
-An updated patch is attached.  It's also inline below, but I'm sure the
-inline version is white-space corrupted.
+> get at times.  So changing the defines from a generic one, to a specific
+> one to match the device type, only helps out in the end.
 
-Do not disable mptable parsing just because there is no ACPI table
-in the MADT table.  This effectively backs out changeset
-7b37b5fd9ba32c0c5afc3537eed7e7466f2173e2
+The specifity is not affected at all.
 
-Signed-Off-By:  Ben Greear<greearb@candelatech.com>
-
-Thanks,
-Ben
-
-
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index d37593c..74a50b6 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -1379,12 +1379,14 @@ static void __init acpi_process_madt(void)
-   		 * ACPI found no MADT, and so ACPI wants UP PIC mode.
-   		 * In the event an MPS table was found, forget it.
-   		 * Boot with "acpi=off" to use MPS on such a system.
-+		 *
-+		 * NOTE:  This assumption seems wrong in at least some cases, perhaps
-+		 *  when ACPI is off in the BIOS.  Changing to a warning without
-+		 *  setting smp_found_config to zero.
-   		 */
--		if (smp_found_config) {
-+		if (smp_found_config)
-  			printk(KERN_WARNING PREFIX
--				"No APIC-table, disabling MPS\n");
--			smp_found_config = 0;
--		}
-+				"WARNING: No ACPI-table found in the MADT\n");
-  	}
-
-  	/*
-
-
-
--- 
-Ben Greear <greearb@candelatech.com>
-Candela Technologies Inc  http://www.candelatech.com
-
-
---------------020605020806080604030100
-Content-Type: text/plain;
- name="madt_patch.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="madt_patch.txt"
-
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index d37593c..74a50b6 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -1379,12 +1379,14 @@ static void __init acpi_process_madt(void)
-  		 * ACPI found no MADT, and so ACPI wants UP PIC mode.
-  		 * In the event an MPS table was found, forget it.
-  		 * Boot with "acpi=off" to use MPS on such a system.
-+		 *
-+		 * NOTE:  This assumption seems wrong in at least some cases, perhaps
-+		 *  when ACPI is off in the BIOS.  Changing to a warning without
-+		 *  setting smp_found_config to zero.
-  		 */
--		if (smp_found_config) {
-+		if (smp_found_config)
- 			printk(KERN_WARNING PREFIX
--				"No APIC-table, disabling MPS\n");
--			smp_found_config = 0;
--		}
-+				"WARNING: No ACPI-table found in the MADT\n");
- 	}
- 
- 	/*
-
---------------020605020806080604030100--
+	Regards
+		Oliver
