@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755159AbZBFOuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756982AbZBFOu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755159AbZBFOuX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 09:50:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750722AbZBFOuI
+	id S1756982AbZBFOu4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 09:50:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751108AbZBFOur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 09:50:08 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59795 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750699AbZBFOuH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 09:50:07 -0500
-Date: Fri, 6 Feb 2009 15:49:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Ayaz Abdulla <aabdulla@nvidia.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>
-Subject: Re: [PATCH] forcedeth: make msi-x different name for rx-tx
-Message-ID: <20090206144948.GD18368@elte.hu>
-References: <498BC3A8.9040203@kernel.org>
+	Fri, 6 Feb 2009 09:50:47 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:62324 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751149AbZBFOuq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 09:50:46 -0500
+Date: Fri, 6 Feb 2009 09:50:43 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH 2/4] nmi: add generic nmi tracking state
+In-Reply-To: <20090206144609.GB18368@elte.hu>
+Message-ID: <alpine.DEB.1.10.0902060950250.10059@gandalf.stny.rr.com>
+References: <20090206065352.940088243@goodmis.org> <20090206065437.986292747@goodmis.org> <1233912891.4731.1.camel@laptop> <20090206144609.GB18368@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <498BC3A8.9040203@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Cool cleanups!
 
-Would you mind to also fix the following - on all my systems that have 
-forcedeth gigabit ethernet i've been getting these bogus warnings for 
-_years_, under moderate load:
+On Fri, 6 Feb 2009, Ingo Molnar wrote:
 
-  eth2: too many iterations (16) in nv_nic_irq.
+> 
+> * Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> > On Fri, 2009-02-06 at 01:53 -0500, Steven Rostedt wrote:
+> > 
+> > > This code adds an in_nmi() macro that uses the current tasks preempt count
+> > > to track when it is in NMI context. Other parts of the kernel can
+> > > use this to determine if the context is in NMI context or not.
+> > > 
+> > > This code was inspired by the -rt patch in_nmi version that was
+> > > written by Peter Zijlstra.
+> > 
+> > Which in turn I borrowed from Mathieu.
+> 
+> Steve, could you please fix the attribution?
 
-I think a 64 iterations limit will work much better. (i tried a limit of 50 
-a year ago for a while and it worked fine and had no side effects - and the 
-bogus warnings were done.)
+Is it OK to rebase the branch to do so?
 
-	Ingo
+-- Steve
 
