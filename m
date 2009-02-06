@@ -1,212 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757317AbZBFNst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756657AbZBFNwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757317AbZBFNst (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 08:48:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755135AbZBFNsh
+	id S1756657AbZBFNwZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 08:52:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbZBFNwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 08:48:37 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:56777 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756818AbZBFNsf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 08:48:35 -0500
-Date: Fri, 6 Feb 2009 05:48:33 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Trilok Soni <soni.trilok@gmail.com>, ltt-dev@lists.casi.polymtl.ca,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] LTTng 0.89 for Linux 2.6.29-rc3
-Message-ID: <20090206134833.GC10918@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090205155854.GG6915@linux.vnet.ibm.com> <5d5443650902050822r2e4d08ffg2322b45a5e009fb8@mail.gmail.com> <20090205180132.GJ6915@linux.vnet.ibm.com> <20090205183158.GA1969@Krystal> <20090205184456.GK6915@linux.vnet.ibm.com> <20090205202249.GA26964@Krystal> <20090205210415.GM6915@linux.vnet.ibm.com> <20090205210627.GA1313@Krystal> <20090206003308.GO6915@linux.vnet.ibm.com> <20090206020005.GA8560@Krystal>
+	Fri, 6 Feb 2009 08:52:17 -0500
+Received: from mga05.intel.com ([192.55.52.89]:23990 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751997AbZBFNwR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 08:52:17 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,391,1231142400"; 
+   d="scan'208";a="663431260"
+Date: Fri, 6 Feb 2009 14:54:32 +0100
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] mfd: Support active high IRQs on WM835x
+Message-ID: <20090206135431.GA3341@sortiz.org>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+References: <1232997799-18943-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20090202135650.838a3ddd.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090206020005.GA8560@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20090202135650.838a3ddd.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 09:00:05PM -0500, Mathieu Desnoyers wrote:
-> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > On Thu, Feb 05, 2009 at 04:06:27PM -0500, Mathieu Desnoyers wrote:
-> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > On Thu, Feb 05, 2009 at 03:22:49PM -0500, Mathieu Desnoyers wrote:
-> > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > > > On Thu, Feb 05, 2009 at 01:31:59PM -0500, Mathieu Desnoyers wrote:
-> > > > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > > > > > On Thu, Feb 05, 2009 at 09:52:16PM +0530, Trilok Soni wrote:
-> > > > > > > > > Hi Paul,
-> > > > > > > > > 
-> > > > > > > > > On Thu, Feb 5, 2009 at 9:28 PM, Paul E. McKenney
-> > > > > > > > > <paulmck@linux.vnet.ibm.com> wrote:
-> > > > > > > > > >>
-> > > > > > > > > >> Are you using quilt to apply the patchset series file in the right order ?
-> > > > > > > > > >
-> > > > > > > > > > Ummm...  No.  I never have used quilt.
-> > > > > > > > > >
-> > > > > > > > > > Ah, there is a series file.  I guess it would not be too hard to make
-> > > > > > > > > > an appropriate "sh" command:
-> > > > > > > > > 
-> > > > > > > > > How about trying?
-> > > > > > > > > 
-> > > > > > > > > #quilt push -a
-> > > > > > > > 
-> > > > > > > > Is the appropriate incantation as follows?
-> > > > > > > > 
-> > > > > > > > 	cd <top of git tree>
-> > > > > > > > 	mkdir patches
-> > > > > > > > 	cp /tmp/patch-2.6.29-rc3-lttng-0.92/* patches
-> > > > > > > > 	quilt push -a
-> > > > > > > > 
-> > > > > > > 
-> > > > > > > Yes, exactly.
-> > > > > > 
-> > > > > > Whew!  ;-)
-> > > > > > 
-> > > > > > > And from there you can follow the LTTng manual here :
-> > > > > > > 
-> > > > > > > http://ltt.polymtl.ca/svn/trunk/lttv/LTTngManual.html
-> > > > > > 
-> > > > > > I get some fuzz and the following:
-> > > > > > 
-> > > > > > 	patching file kernel/trace/trace-clock-32-to-64.c
-> > > > > > 	Patch attempted to create file kernel/trace/trace-clock-32-to-64.c,
-> > > > > > 	which already exists.
-> > > > > > 	Hunk #1 FAILED at 1.
-> > > > > > 	1 out of 1 hunk FAILED -- rejects in file
-> > > > > > 	kernel/trace/trace-clock-32-to-64.c
-> > > > > > 
-> > > > > > Should I be starting from somewhere other than v2.6.29-rc3?
-> > > > > > 
-> > > > > 
-> > > > > Let's see it step by step, that should get us there.
-> > > > > 
-> > > > > With patches :
-> > > > > 
-> > > > > mkdir ~/lttng
-> > > > > cd ~/lttng
-> > > > > wget http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc3.tar.bz2
-> > > > > wget http://lttng.org/files/lttng/patch-2.6.29-rc3-lttng-0.92.tar.bz2
-> > > > > bzip2 -cd linux-2.6.29-rc3.tar.bz2 |tar xvof -
-> > > > > bzip2 -cd patch-2.6.29-rc3-lttng-0.92.tar.bz2  |tar xvof -
-> > > > > cd linux-2.6.29-rc3
-> > > > > mkdir patches
-> > > > > ln -s ../patch-2.6.29-rc3-lttng-0.92 patches
-> > > > > quilt push -a
-> > > > > 
-> > > > > Does this work ?
-> > > > 
-> > > > Leaving out the "mkdir", yes.
-> > > 
-> > > Ah, yes, my mistake.
-> > > 
-> > > > My apologies -- I was forgetting that
-> > > > "git reset --hard" doesn't get rid of untracked files.  I do see fuzz
-> > > > in a few places, but hopefully this is non-fatal.  And in any case, I
-> > > > can now make the patch required to actually try this out.  ;-)
-> > > > 
-> > > 
-> > > Great !
-> > > 
-> > > Don't hesitate to ask if you have any question.
-> > > 
-> > > Mathieu
-> > 
-> > Fails to build on Power, so trying x86...  (Stock 2.6.29-rc3 does
-> > build and boot, FWIW.)
-> > 
-> > Looks like misplaced file.
-> > 
-> > 							Thanx, Paul
-> > 
-> > ------------------------------------------------------------------------
-> > 
-> >   CHK     include/linux/version.h
-> >   UPD     include/linux/version.h
-> >   CHK     include/linux/utsrelease.h
-> >   UPD     include/linux/utsrelease.h
-> >   SYMLINK include/asm -> include/asm-powerpc
-> >   HOSTCC  scripts/ihex2fw
-> >   HOSTCC  scripts/kallsyms
-> >   HOSTCC  scripts/pnmtologo
-> >   HOSTCC  scripts/genksyms/genksyms.o
-> >   HOSTCC  scripts/conmakehash
-> >   HOSTCC  scripts/bin2c
-> >   CC      scripts/mod/empty.o
-> >   HOSTCC  scripts/mod/mk_elfconfig
-> >   SHIPPED scripts/genksyms/lex.c
-> >   SHIPPED scripts/genksyms/parse.h
-> >   SHIPPED scripts/genksyms/keywords.c
-> >   SHIPPED scripts/genksyms/parse.c
-> >   HOSTCC  scripts/genksyms/parse.o
-> >   HOSTCC  scripts/genksyms/lex.o
-> >   MKELF   scripts/mod/elfconfig.h
-> >   HOSTCC  scripts/mod/file2alias.o
-> >   HOSTCC  scripts/mod/modpost.o
-> >   HOSTCC  scripts/mod/sumversion.o
-> >   HOSTLD  scripts/genksyms/genksyms
-> >   HOSTLD  scripts/mod/modpost
-> >   CC      kernel/bounds.s
-> >   GEN     include/linux/bounds.h
-> >   CC      arch/powerpc/kernel/asm-offsets.s
-> > In file included from include/linux/module.h:18,
-> >                  from include/linux/sysdev.h:25,
-> >                  from include/linux/node.h:22,
-> >                  from include/linux/swap.h:10,
-> >                  from include/linux/suspend.h:7,
-> >                  from arch/powerpc/kernel/asm-offsets.c:24:
-> > include/linux/immediate.h:15:27: error: asm/immediate.h: No such file or directory
-> > In file included from include/linux/module.h:18,
-> >                  from include/linux/sysdev.h:25,
-> >                  from include/linux/node.h:22,
-> >                  from include/linux/swap.h:10,
-> >                  from include/linux/suspend.h:7,
-> >                  from arch/powerpc/kernel/asm-offsets.c:24:
-> > include/linux/immediate.h:37: warning: â€˜struct __imvâ€™ declared
-> > inside parameter list
-> > include/linux/immediate.h:37: warning: its scope is only this definition
-> > or declaration, which is probably not what you want
-> > include/linux/immediate.h:40: warning: â€˜struct __imvâ€™ declared
-> > inside parameter list
-> > make[1]: *** [arch/powerpc/kernel/asm-offsets.s] Error 1
-> > make: *** [prepare0] Error 2
-> > 02/05/2009-17:57:41 Build the kernel. Failed rc = 2
-> > 02/05/2009-17:57:41 build: Building kernel... Failed rc = 1
-> > 
-> 
-> Hrm, does the file
-> 
-> arch/powerpc/include/asm/immediate.h exist in your tree ?
-> 
-> Here, with the setup done following the commands I gave you (minus the
-> mkdir patch), I get :
-> 
-> 
-> compudj@ok:~$ head testpaulmck/linux-2.6.29-rc3/arch/powerpc/include/asm/immediate.h 
-> #ifndef _ASM_POWERPC_IMMEDIATE_H
-> #define _ASM_POWERPC_IMMEDIATE_H
-> 
-> /*
->  * Immediate values. PowerPC architecture optimizations.
->  *
->  * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
->  *
->  * This file is released under the GPLv2.
->  * See the file COPYING for more details.
-> 
-> ....
-> 
-> Which defines struct __imv. So hrm, normally the header should be there.
-> (/me still confused) :)
+Hi Andrew,
 
-It does indeed, see the patch I generated against 2.6.29-rc3:
+On Mon, Feb 02, 2009 at 01:56:50PM -0800, Andrew Morton wrote:
+> On Mon, 26 Jan 2009 19:23:18 +0000
+> Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
+> 
+> > Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> > ---
+> >  drivers/mfd/wm8350-core.c       |   16 +++++++++++++++-
+> >  include/linux/mfd/wm8350/core.h |    2 ++
+> >  2 files changed, 17 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
+> > index e5e82c7..908284c 100644
+> > --- a/drivers/mfd/wm8350-core.c
+> > +++ b/drivers/mfd/wm8350-core.c
+> > @@ -1423,7 +1423,21 @@ int wm8350_device_init(struct wm8350 *wm8350, int irq,
+> >  	mutex_init(&wm8350->irq_mutex);
+> >  	INIT_WORK(&wm8350->irq_work, wm8350_irq_worker);
+> >  	if (irq) {
+> > -		ret = request_irq(irq, wm8350_irq, 0,
+> > +		int flags = 0;
+> > +
+> > +		if (pdata && pdata->irq_high) {
+> > +			flags |= IRQF_TRIGGER_HIGH;
+> > +
+> > +			wm8350_set_bits(wm8350, WM8350_SYSTEM_CONTROL_1,
+> > +					WM8350_IRQ_POL);
+> > +		} else {
+> > +			flags |= IRQF_TRIGGER_LOW;
+> > +
+> > +			wm8350_clear_bits(wm8350, WM8350_SYSTEM_CONTROL_1,
+> > +					  WM8350_IRQ_POL);
+> > +		}
+> > +
+> > +		ret = request_irq(irq, wm8350_irq, flags,
+> >  				  "wm8350", wm8350);
+> >  		if (ret != 0) {
+> >  			dev_err(wm8350->dev, "Failed to request IRQ: %d\n",
+> 
+> This conflicts a bit with your earlier
+> mfd-initialise-wm8350-interrupts-earlier.patch.
+> 
+> I had marked mfd-initialise-wm8350-interrupts-earlier.patch as
+> needed-in-2.6.29 so I reworked this patch to fit.
+> 
+> afacit we haven't heard from Sam in a couple of weeks.  If he's having
+> a bit of downtime I guess I'll merge
+Sorry for the latency. Our mailserver had some issues, and I was quite busy
+fixing wireless drivers myself :/
+I'm back on track now. Mark, I havent got those 2 mfd patches. Did you send
+them to me for merging ? If that's so, could you please resend them ?
 
-	http://www.rdrop.com/users/paulmck/patches/2.6.29-rc3-ltt-1.patch
+Cheers,
+Samuel.
 
-I get a similar failure on x86 -- perhaps my tools or build environment
-does not match yours?
 
-							Thanx, Paul
+> mfd-initialise-wm8350-interrupts-earlier.patch
+> mfd-mark-wm835x-usb_slv_500ma-bit-as-accessible.patch
+> mfd-pcf50633-terminate-i2c_device_id-list.patch
+> 
+> myself.  But I'll leave that a week or two yet.
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
