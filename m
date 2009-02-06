@@ -1,43 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758585AbZBFDLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758087AbZBFDM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758585AbZBFDLX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 22:11:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758437AbZBFDLD
+	id S1758087AbZBFDM7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 22:12:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbZBFDMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 22:11:03 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:57680 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758418AbZBFDLC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 22:11:02 -0500
-Message-ID: <498BAA22.50709@cn.fujitsu.com>
-Date: Fri, 06 Feb 2009 11:10:26 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [-mm patch] Show memcg information during OOM (v3)
-References: <20090203172135.GF918@balbir.in.ibm.com> <498BA857.3080809@cn.fujitsu.com>
-In-Reply-To: <498BA857.3080809@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Feb 2009 22:12:51 -0500
+Received: from cmpxchg.org ([85.214.51.133]:57470 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752098AbZBFDMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 22:12:51 -0500
+Message-Id: <20090206031125.693559239@cmpxchg.org>
+User-Agent: quilt/0.47-1
+Date: Fri, 06 Feb 2009 04:11:25 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Rik van Riel <riel@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH 0/3] [PATCH 0/3] swsusp: shrink file cache first
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
->> +	mem_cgrp = memcg->css.cgroup;
->> +	task_cgrp = mem_cgroup_from_task(p)->css.cgroup;
-> 
-> I just noticed since v2, task's cgroup is also printed. Then 2 issues here:
-> 
-> 1. this is better: task_cgrp = task_subsys_state(p, mem_cgroup_subsys_id);
+[ grumble.  always check software for new behaviour after upgrade.
+  sorry for the mess up :/ ]
 
-sorry, s/task_subsys_state/task_cgroup/
+Hello!
 
-> 2. getting cgroup from a task should be protected by task_lock or rcu_read_lock,
->    so we can put the above statement inside rcu_read_lock below.
+here are three patches that adjust the memory shrinking code used for
+suspend-to-disk.
+
+The first two patches are cleanups only and can probably go in
+regardless of the third one.
+
+The third patch changes the shrink_all_memory() logic to drop the file
+cache first before touching any mapped files and only then goes for
+anon pages.
+
+The reason is that everything not shrunk before suspension has to go
+into the image and will be 'prefaulted' before the processes can
+resume and the system is usable again, so the image should be small
+and contain only pages that are likely to be used right after resume
+again.  And this in turn means that the inactive file cache is the
+best point to start decimating used memory.
+
+Also, right now, subsequent faults of contiguously mapped files are
+likely to perform better than swapin (see
+http://kernelnewbies.org/KernelProjects/SwapoutClustering), so not
+only file cache is preferred over other pages, but file pages over
+anon pages in general.
+
+Testing up to this point shows that the patch does what is intended,
+shrinking file cache in favor of anon pages.  But whether the idea is
+correct to begin with is a bit hard to quantify and I am still working
+on it, so RFC only.
+
+	Hannes
+
