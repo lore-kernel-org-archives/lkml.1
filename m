@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbZBFHQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759824AbZBFHQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753071AbZBFHQO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 02:16:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756608AbZBFHL1
+	id S1759824AbZBFHQb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 02:16:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756626AbZBFHL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 02:11:27 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:44045 "EHLO
+	Fri, 6 Feb 2009 02:11:28 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:1470 "EHLO
 	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754230AbZBFHLU (ORCPT
+	with ESMTP id S1754437AbZBFHLV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 02:11:20 -0500
+	Fri, 6 Feb 2009 02:11:21 -0500
 X-IronPort-AV: E=Sophos;i="4.37,390,1231131600"; 
-   d="scan'208";a="82422019"
+   d="scan'208";a="82422020"
 From: Bryan Wu <cooloney@kernel.org>
 To: dbrownell@users.sourceforge.net, akpm@linux-foundation.org
 Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 14/20] Blackfin SPI Driver: tweak magic spi dma sequence to get it working on BF54x
-Date: Fri,  6 Feb 2009 15:13:02 +0800
-Message-Id: <1233904388-5765-15-git-send-email-cooloney@kernel.org>
+       Yi Li <yi.li@analog.com>, Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 15/20] Blackfin SPI Driver: fix bug - spi controller driver does not assert/deassert CS correctly
+Date: Fri,  6 Feb 2009 15:13:03 +0800
+Message-Id: <1233904388-5765-16-git-send-email-cooloney@kernel.org>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <1233904388-5765-1-git-send-email-cooloney@kernel.org>
 References: <1233904388-5765-1-git-send-email-cooloney@kernel.org>
@@ -26,31 +26,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Frysinger <vapier.adi@gmail.com>
+From: Yi Li <yi.li@analog.com>
 
-Without this changes, SPI DMA is not reliably under stress tests.
-Obiviously it's a hardware issue which is not addressed by any document.
+This bug can be observed when two SPI devices are sharing the spi bus:
+One device is set as SPI CS 7, another one is using SPI CS 4.
 
-Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
+In spi_bfin5xx.c: cs_active(), cs_deactive() are used to control SPI_FLG
+register. From the debug bellow:
+
+cs_active: flag: 0x7f91, chip->flag: 0x7f80, cs: 7
+cs_active: flag: 0xef91, chip->flag: 0xef10, cs: 4
+
+When device A (cs_7) activate CS 7, SPI_FLG is set as 0x7f91 (however,
+SPI_FLG should be set as 0x7f80, or 0x6f91 if in broadcast mode).
+
+Due to some HW bug (very possibly), if SPI_FLG is set as 0x7f91,
+SPISSEL7 is asserted, however SPISSEL4 will be asserted too (I can see
+this using the scope). This is unreasonable according to HRM.
+
+Signed-off-by: Yi Li <yi.li@analog.com>
 Signed-off-by: Bryan Wu <cooloney@kernel.org>
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 ---
- drivers/spi/spi_bfin5xx.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/spi/spi_bfin5xx.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/spi/spi_bfin5xx.c b/drivers/spi/spi_bfin5xx.c
-index 748e98f..d8c4be1 100644
+index d8c4be1..ed6a4c1 100644
 --- a/drivers/spi/spi_bfin5xx.c
 +++ b/drivers/spi/spi_bfin5xx.c
-@@ -862,8 +862,9 @@ static void pump_transfers(unsigned long data)
- 		set_dma_start_addr(drv_data->dma_channel, dma_start_addr);
- 		set_dma_config(drv_data->dma_channel, dma_config);
- 		local_irq_save(flags);
--		enable_dma(drv_data->dma_channel);
-+		SSYNC();
- 		write_CTRL(drv_data, cr);
-+		enable_dma(drv_data->dma_channel);
- 		dma_enable_irq(drv_data->dma_channel);
- 		local_irq_restore(flags);
+@@ -189,6 +189,7 @@ static void cs_deactive(struct driver_data *drv_data, struct chip_data *chip)
+ {
+ 	u16 flag = read_FLAG(drv_data);
  
++	flag &= ~chip->flag;
+ 	flag |= (chip->flag << 8);
+ 
+ 	write_FLAG(drv_data, flag);
+@@ -1036,7 +1037,6 @@ static int setup(struct spi_device *spi)
+ 	struct bfin5xx_spi_chip *chip_info = NULL;
+ 	struct chip_data *chip;
+ 	struct driver_data *drv_data = spi_master_get_devdata(spi->master);
+-	u8 spi_flg;
+ 
+ 	/* Abort device setup if requested features are not supported */
+ 	if (spi->mode & ~(SPI_CPOL | SPI_CPHA | SPI_LSB_FIRST)) {
+@@ -1119,8 +1119,7 @@ static int setup(struct spi_device *spi)
+ 	 * SPI_BAUD, not the real baudrate
+ 	 */
+ 	chip->baud = hz_to_spi_baud(spi->max_speed_hz);
+-	spi_flg = ~(1 << (spi->chip_select));
+-	chip->flag = ((u16) spi_flg << 8) | (1 << (spi->chip_select));
++	chip->flag = 1 << (spi->chip_select);
+ 	chip->chip_select_num = spi->chip_select;
+ 
+ 	switch (chip->bits_per_word) {
 -- 
 1.5.6.3
