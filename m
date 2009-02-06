@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbZBFS4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753031AbZBFS6I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756664AbZBFS4g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 13:56:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbZBFS4V
+	id S1753031AbZBFS6I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 13:58:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbZBFS5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 13:56:21 -0500
-Received: from aun.it.uu.se ([130.238.12.36]:38052 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751953AbZBFS4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 13:56:20 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18828.34746.639582.20441@harpo.it.uu.se>
-Date: Fri, 6 Feb 2009 19:55:54 +0100
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Mikael Pettersson <mikpe@it.uu.se>
-Subject: Re: [Bug #12508] "powerpc/pci: Reserve legacy regions on PCI"
- broke my G3
-In-Reply-To: <1233783867.4612.9.camel@pasglop>
-References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
-	<pWZw1SZjMCH.A.ZIG.YvYiJB@chimera>
-	<1233783867.4612.9.camel@pasglop>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+	Fri, 6 Feb 2009 13:57:55 -0500
+Received: from vms173009pub.verizon.net ([206.46.173.9]:57672 "EHLO
+	vms173009pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751641AbZBFS5y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 13:57:54 -0500
+Date: Fri, 06 Feb 2009 13:57:47 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Ben Greear <greearb@candelatech.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>, linux-acpi@vger.kernel.org
+Subject: Re: Regression on VIA C3 motherboard, commit: 66f2173e2
+In-reply-to: <498A93E5.2080509@candelatech.com>
+Message-id: <alpine.LFD.2.00.0902061350470.26256@localhost.localdomain>
+References: <498A93E5.2080509@candelatech.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt writes:
- > On Wed, 2009-02-04 at 11:24 +0100, Rafael J. Wysocki wrote:
- > > This message has been generated automatically as a part of a report
- > > of recent regressions.
- > > 
- > > The following bug entry is on the current list of known regressions
- > > from 2.6.28.  Please verify if it still should be listed and let me know
- > > (either way).
- > 
- > Can you check if it's still broken ?
- > 
- > 59b608c2c33feacc8be281ec3ba9ca2a3a5cb9a7 might have fixed it...
- > 
- > Cheers,
- > Ben.
+Thanks for the bisect, Ben.
 
-Confirmed. Adding 59b608c2c33feacc8be281ec3ba9ca2a3a5cb9a7 to
-2.6.29-rc3 makes it boot fine on my G3.
+Please test the patch below.
 
-Thanks,
+I assume even without the patch, booting with "acpi=off" on your
+BIOS-ACPI-disabled box works?  (if no, this patch will not solve
+all your problems, for you have additional trouble elsewhere)
 
-/Mikael
+I am curious why you're running a CONFIG_ACPI=y kernel
+for a box with ACPI disabled. (though yes, it is supposed to work)
 
- > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12508
- > > Subject		: "powerpc/pci: Reserve legacy regions on PCI" broke my G3
- > > Submitter	: Mikael Pettersson <mikpe@it.uu.se>
- > > Date		: 2009-01-17 22:46 (19 days old)
- > > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=c1f343028d35ba4e88cd4a3c44e0d8b8a84264ee
- > > References	: http://marc.info/?l=linux-kernel&m=123223247325452&w=4
- > > Handled-By	: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+I'm even more curious what bad things happen when
+you enable ACPI in the BIOS -- can you let me know
+and we can try to fix them so the machine can run as shipped?
+
+thanks,
+-Len Brown
+Intel Open Source Technology Center
+
+diff --git a/drivers/acpi/tables.c b/drivers/acpi/tables.c
+index 775c97a..a885295 100644
+--- a/drivers/acpi/tables.c
++++ b/drivers/acpi/tables.c
+@@ -293,7 +293,12 @@ static void __init check_multiple_madt(void)
+ 
+ int __init acpi_table_init(void)
+ {
+-	acpi_initialize_tables(initial_tables, ACPI_MAX_TABLES, 0);
++	acpi_status status;
++
++	status = acpi_initialize_tables(initial_tables, ACPI_MAX_TABLES, 0);
++	if (ACPI_FAILURE(status))
++		return 1;
++
+ 	check_multiple_madt();
+ 	return 0;
+ }
