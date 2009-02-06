@@ -1,30 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757098AbZBFADw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756182AbZBFAFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757098AbZBFADw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 19:03:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbZBFADn
+	id S1756182AbZBFAFT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 19:05:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbZBFAFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 19:03:43 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49411 "EHLO mx2.mail.elte.hu"
+	Thu, 5 Feb 2009 19:05:04 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55975 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753335AbZBFADm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 19:03:42 -0500
-Date: Fri, 6 Feb 2009 01:03:33 +0100
+	id S1753069AbZBFAFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 19:05:03 -0500
+Date: Fri, 6 Feb 2009 01:04:55 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
        Steven Rostedt <rostedt@goodmis.org>,
        Jens Axboe <jens.axboe@oracle.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH tip 1/1] trace: Call tracing_reset_online_cpus before
-	tracer->init()
-Message-ID: <20090206000333.GD16040@elte.hu>
-References: <20090205200200.GB9846@ghostprotocols.net> <20090205231236.GC23999@nowhere>
+Subject: Re: [PATCH tip 1/2] ring_buffer: remove unused flags parameter
+Message-ID: <20090206000455.GE16040@elte.hu>
+References: <20090205181256.GH17653@ghostprotocols.net> <20090205221701.GA23999@nowhere>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090205231236.GC23999@nowhere>
+In-Reply-To: <20090205221701.GA23999@nowhere>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,36 +39,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> On Thu, Feb 05, 2009 at 06:02:00PM -0200, Arnaldo Carvalho de Melo wrote:
-> > Impact: cleanup
+> > $ codiff /tmp/vmlinux.before /tmp/vmlinux.after
+> > linux-2.6-tip/kernel/trace/trace.c:
+> >   trace_vprintk              |  -14
+> >   trace_graph_return         |  -14
+> >   trace_graph_entry          |  -10
+> >   trace_function             |   -8
+> >   __ftrace_trace_stack       |   -8
+> >   ftrace_trace_userstack     |   -8
+> >   tracing_sched_switch_trace |   -8
+> >   ftrace_trace_special       |  -12
+> >   tracing_sched_wakeup_trace |   -8
+> >  9 functions changed, 90 bytes removed, diff: -90
 > > 
-> > To make it easy for ftrace plugin writers, as this was open coded in
-> > the existing plugins
+> > linux-2.6-tip/block/blktrace.c:
+> >   __blk_add_trace |   -1
+> >  1 function changed, 1 bytes removed, diff: -1
 > > 
-> > Cc: Ingo Molnar <mingo@elte.hu>
-> > Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-> > Cc: Jens Axboe <jens.axboe@oracle.com>
-> > Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> > ---
-> >  block/blktrace.c                     |    2 --
-> >  kernel/trace/trace.c                 |    8 +++++++-
-> >  kernel/trace/trace.h                 |    1 +
-> >  kernel/trace/trace_branch.c          |    1 -
-> >  kernel/trace/trace_functions.c       |   17 +++--------------
-> >  kernel/trace/trace_functions_graph.c |    1 -
-> >  kernel/trace/trace_hw_branches.c     |    1 -
-> >  kernel/trace/trace_nop.c             |    1 -
-> >  kernel/trace/trace_sched_switch.c    |    8 +-------
-> >  kernel/trace/trace_selftest.c        |   18 +++++++++---------
-> >  kernel/trace/trace_sysprof.c         |   14 ++++----------
-> >  11 files changed, 25 insertions(+), 47 deletions(-)
-> > 
+> > /tmp/vmlinux.after:
+> >  10 functions changed, 91 bytes removed, diff: -91
 > 
-> Heh, I will have to manage an "arnaldo" topic in my local git tree
-> if I want to stay synced :-)
 > 
-> Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+> codiff... I didn't know this great tool! :-)
 
-Applied to tip:tracing/ftrace, thanks guys!
+yes, very nice!
+
+I've moved all the codiff output from the (discarded) diffstat
+section into the commit log, they are very much worth preserving.
 
 	Ingo
