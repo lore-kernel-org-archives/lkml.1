@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756708AbZBFI5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbZBFI6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756708AbZBFI5n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 03:57:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbZBFI5d
+	id S1752912AbZBFI6A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 03:58:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756867AbZBFI5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 03:57:33 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:36320 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752068AbZBFI5c (ORCPT
+	Fri, 6 Feb 2009 03:57:48 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44123 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752090AbZBFI5r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 03:57:32 -0500
-Subject: Re: [patch] SLQB slab allocator
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0902051839540.1445@blonde.anvils>
-References: <20090121143008.GV24891@wotan.suse.de>
-	 <Pine.LNX.4.64.0901211705570.7020@blonde.anvils>
-	 <84144f020901220201g6bdc2d5maf3395fc8b21fe67@mail.gmail.com>
-	 <Pine.LNX.4.64.0901221239260.21677@blonde.anvils>
-	 <Pine.LNX.4.64.0901231357250.9011@blonde.anvils>
-	 <1233545923.2604.60.camel@ymzhang>
-	 <1233565214.17835.13.camel@penberg-laptop>
-	 <1233646145.2604.137.camel@ymzhang>
-	 <Pine.LNX.4.64.0902031150110.5290@blonde.anvils>
-	 <1233714090.2604.186.camel@ymzhang>
-	 <Pine.LNX.4.64.0902051839540.1445@blonde.anvils>
-Date: Fri, 06 Feb 2009 10:57:29 +0200
-Message-Id: <1233910649.29891.26.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Fri, 6 Feb 2009 03:57:47 -0500
+Message-ID: <498BFB82.5000605@jp.fujitsu.com>
+Date: Fri, 06 Feb 2009 17:57:38 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Frank Seidel <fseidel@suse.de>
+CC: linux kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org,
+       jbarnes@virtuousgeek.org, greg@kroah.com, kristen.c.accardi@intel.com,
+       ashok.raj@intel.com, shaohua.li@intel.com,
+       anil.s.keshavamurthy@intel.com, fenghua.yu@intel.com,
+       akpm@linux-foundation.org, frank@f-seidel.de,
+       Frans Pop <elendil@planet.nl>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCHv2] PCI: add missing KERN_* constants to printks
+References: <498B2116.6010707@suse.de> <498B29CC.2030000@suse.de> <498BEEF6.2040803@jp.fujitsu.com> <498BEFAD.8070102@suse.de>
+In-Reply-To: <498BEFAD.8070102@suse.de>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hugh,
-
-On Thu, 2009-02-05 at 19:04 +0000, Hugh Dickins wrote:
-> I then tried a patch I thought obviously better than yours: just mask
-> off __GFP_WAIT in that __GFP_NOWARN|__GFP_NORETRY preliminary call to
-> alloc_slab_page(): so we're not trying to infer anything about high-
-> order availability from the number of free order-0 pages, but actually
-> going to look for it and taking it if it's free, forgetting it if not.
+Frank Seidel wrote:
+> Kenji Kaneshige wrote:
+>> How about below. I think we can write printk in one line.
+>>
+>> #define dbg(format, arg...)						\
+>> do {									\
+>> 	if (pciehp_debug)						\
+>> 		printk(KERN_DEBUG "%s: " format, MY_NAME, ## arg);	\
+>> } while (0)
 > 
-> That didn't work well at all: almost as bad as the unmodified slub.c.
-> I decided that was due to __alloc_pages_internal()'s
-> wakeup_kswapd(zone, order): just expressing an interest in a high-
-> order page was enough to send it off trying to reclaim them, though
-> not directly.  Hacked in a condition to suppress that in this case:
-> worked a lot better, but not nearly as well as yours.  I supposed
-> that was somehow(?) due to the subsequent get_page_from_freelist()
-> calls with different watermarking: hacked in another __GFP flag to
-> break out to nopage just like the NUMA_BUILD GFP_THISNODE case does.
-> Much better, getting close, but still not as good as yours.  
+> I wanted to keep the change as simple as possible and didn't wanna
+> play with surrounding indentation. But yes, if thats preferred...
+> i gonna change the patch to this. Shall i?
+> 
 
-Did you look at it with oprofile? One thing to keep in mind is that if
-there are 4K allocations going on, your approach will get double the
-overhead of page allocations (which can be substantial performance hit
-for slab).
+I prefer it. I don't think it's so complex. And I can review and test
+shpchp/pciehp part of your patch on my machine.
 
-			Pekka
+Thanks,
+Kenji Kaneshige
+
+
 
