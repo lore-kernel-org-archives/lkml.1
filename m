@@ -1,77 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758373AbZBFC3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758039AbZBFCar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758373AbZBFC3e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 21:29:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753297AbZBFC3O
+	id S1758039AbZBFCar (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 21:30:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbZBFCaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 21:29:14 -0500
-Received: from web33401.mail.mud.yahoo.com ([68.142.206.133]:42674 "HELO
-	web33401.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752592AbZBFC3N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 21:29:13 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:In-Reply-To:MIME-Version:Content-Type:Message-ID;
-  b=QceXEfUAGec6Za251A/tZVD6T1V4djHjjnwuo6h0HqCUEzuBfo11m6T7rKWYh17bFZ44ZnCynv56cyKOO74O0EsSl+74yL1V/ehLLgZQOR2zfd++aFe+/DLYdxukZpPiveVX4y+idbrOLDvaKkgd0CPexegyLr7ityC8z4mgN/E=;
-X-YMail-OSG: OYQ4wywVM1nXw7kVn9hfnjPbRyATNe9D5mVUnNKL6oOl.lSdGPriz2KgYmHYmF4LygUcLHDtoH_42tH4ThQG.SyTt6yyRofHqKFiKVE4TP64EuMUblJYC1P1x0JZQC1Aer3h8E0GOaSDmpU04VblWudXHVsA3.PenHmXU2jbiivVhQf8hpeFmJSgrR28nxTLJjnr4zN69M8WdnV65p_.Q_QgtA--
-X-Mailer: YahooMailWebService/0.7.260.1
-Date: Thu, 5 Feb 2009 18:29:11 -0800 (PST)
-From: Vira <sri1369_s@yahoo.com>
-Reply-To: sri1369_s@yahoo.com
-Subject: Re: Mapping non-page aligned data to user
-To: linux-kernel@vger.kernel.org
-In-Reply-To: <498B83EA.4040608@gmail.com>
+	Thu, 5 Feb 2009 21:30:39 -0500
+Received: from gw.goop.org ([64.81.55.164]:50322 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751751AbZBFCai (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 21:30:38 -0500
+Message-ID: <498BA0CA.2040603@goop.org>
+Date: Thu, 05 Feb 2009 18:30:34 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <242952.40744.qm@web33401.mail.mud.yahoo.com>
+To: akataria@vmware.com
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Rohit Jain <rjain@vmware.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PARAVIRT/x86] BUGFIX: Put a missing paravirt_release_pmd in
+ pgd_dtor
+References: <1233885731.29693.26.camel@alok-dev1>
+In-Reply-To: <1233885731.29693.26.camel@alok-dev1>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am trying to map DMAed packets directly to contiguous user buffer (avoiding the copy)- thinking of how to skip the packet headers here.
+Alok Kataria wrote:
+> [PARAVIRT/x86] Put a missing paravirt_release_pmd in pgd_dtor.
+>
+> From: Alok N Kataria <akataria@vmware.com>
+>
+> The commit...
+> -----------------------------
+> commit 6194ba6ff6ccf8d5c54c857600843c67aa82c407
+> Author: Jeremy Fitzhardinge <jeremy@goop.org>
+> Date:   Wed Jan 30 13:34:11 2008 +0100
+>
+>     x86: don't special-case pmd allocations as much
+> ------------------------------
+> ...made changes to the way we handle pmd allocations, and while doing that
+> it (accidently ?) dropped a call to  paravirt_release_pd from the pgd_dtor
+> code path.
+>   
 
-Thx,
--- vira
+Well, any fallout to VMI was accidental - but I'm surprised it took you 
+over a year to notice a problem here...
 
---- On Thu, 2/5/09, Robert Hancock <hancockrwd@gmail.com> wrote:
+> As a result of this missing release, the hypervisor is now unaware of the
+> pgd page being freed, and as a result it ends up tracking this page as a
+> page table page.
+> After this the guest may start using the same page for other purposes, and
+> depending on what use the page is put to, it may result in various performance
+> and/or functional issues ( hangs, reboots).
+>   
 
-> From: Robert Hancock <hancockrwd@gmail.com>
-> Subject: Re: Mapping non-page aligned data to user
-> To: linux-kernel@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Date: Thursday, February 5, 2009, 4:27 PM
-> Vira wrote:
-> > Hi, 
-> > Is there a way to map a non-page aligned kernel
-> physical address to user virtual address? remap_pfn_range
-> and vm_insert_page operate only on page-aligned physical
-> addresses.
-> > 
-> > If there is no such support, would it be too
-> complicated to try out
-> > writing something on my own to map non-page aligned
-> addresses (the data
-> > size is under my control - so I can make that a
-> multiple of page size)?
-> > 
-> > Any suggestions appreciated.
-> 
-> The CPU, and therefore the kernel, couldn't ensure that
-> the user doesn't write outside the mapped region of
-> kernel memory if it's not page aligned (the access
-> control is page granularity only). That seems like it would
-> be a show-stopper in most cases.
-> 
-> What exactly is it you're trying to achieve with this?
-> 
-> --
-> To unsubscribe from this list: send the line
-> "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at 
-> http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+In Xen we're critically dependent on getting calls to 
+paravirt_release_pmd right, with rather immediate and bad results if its 
+wrong.  So I suspect something else is up here.
 
+(I assume we're talking 32-bit PAE here, since VMI is 32-bit only and 
+the pmd only comes into play with PAE.)
 
-      
+Right now, paravirt_release_pmd is being called from __pmd_free_tlb and 
+pgd_mop_up_pmds.
+
+__pmd_free_tlb is called on all the free paths of mappings being removed 
+via munmap or exit.
+pgd_mop_up_pmds is called to clear out any opportunistically allocated 
+pmds which were never used for process-created mappings.
+
+In either case, it will be called before the page is freed back to the 
+kernel's heap and reused.
+
+> The patch below adds a paravirt_release_pmd call for the PGD page.
+> Patch on top of 2.6.29-rc3 (mainline-git).
+>
+> Signed-off-by: Alok N Kataria <akataria@vmware.com>
+> Signed-off-by: Rohit Jain <rjain@vmware.com>
+> Cc: Zachary Amsden <zach@vmware.com>
+> Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+> Cc: stable@kernel.org
+> ---
+>
+>  arch/x86/mm/pgtable.c |    6 ++++++
+>  1 files changed, 6 insertions(+), 0 deletions(-)
+>
+>
+> diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
+> index 86f2ffc..c23cd7e 100644
+> --- a/arch/x86/mm/pgtable.c
+> +++ b/arch/x86/mm/pgtable.c
+> @@ -89,6 +89,12 @@ static void pgd_dtor(pgd_t *pgd)
+>  {
+>  	unsigned long flags; /* can be called from interrupt context */
+>  
+> +	if (PAGETABLE_LEVELS == 2 ||
+> +            (PAGETABLE_LEVELS == 3 && SHARED_KERNEL_PMD) ||
+> +            PAGETABLE_LEVELS == 4) {
+> +		paravirt_release_pmd(__pa(pgd) >> PAGE_SHIFT);
+> +	}
+>   
+
+Ah, you want release_pmd to be called on pgds as well...  Why?  Do you 
+track the page type for pgds?  Why not just make a copy of the entries 
+on cr3 reload like the real hardware does?
+
+Alternatively you could hook pv_mmu_ops.exit_mmap to get a call when the 
+last reference to the pagetable has been dropped.
+
+Or, if you really must, introduce paravirt_release_pgd and hook that.
+
+But either way, calling release_pmd here is wrong, since its only meant 
+to be applied to pmds, and it would break the Xen code.
+
+    J
