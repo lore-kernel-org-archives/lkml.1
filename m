@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757437AbZBFBnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756898AbZBFBos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757437AbZBFBnd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 20:43:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbZBFBnZ
+	id S1756898AbZBFBos (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 20:44:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbZBFBok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 20:43:25 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:38221 "EHLO mx2.redhat.com"
+	Thu, 5 Feb 2009 20:44:40 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:38241 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752659AbZBFBnY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 20:43:24 -0500
-Date: Thu, 5 Feb 2009 23:43:08 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ring_buffer: remove unused flags parameter, fix
-Message-ID: <20090206014308.GD9846@ghostprotocols.net>
-References: <20090205181256.GH17653@ghostprotocols.net> <20090206000223.GB16040@elte.hu> <20090206001500.GA30095@elte.hu>
+	id S1752650AbZBFBok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 20:44:40 -0500
+Date: Fri, 6 Feb 2009 02:44:00 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Robin Holt <holt@sgi.com>, linux-mm@kvack.org,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [Patch] mmu_notifiers destroyed by __mmu_notifier_release()
+	retain extra mm_count.
+Message-ID: <20090206014400.GM14011@random.random>
+References: <20090205172303.GB8559@sgi.com> <alpine.DEB.1.10.0902051427280.13692@qirst.com> <20090205200214.GN8577@sgi.com> <alpine.DEB.1.10.0902051844390.17441@qirst.com> <20090206013805.GL14011@random.random>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090206001500.GA30095@elte.hu>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090206013805.GL14011@random.random>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, Feb 06, 2009 at 01:15:00AM +0100, Ingo Molnar escreveu:
-> 
-> Small fixlet below, applied to tip:tracing/ftrace.
-> 
-> 	Ingo
-> 
-> --------------->
-> >From 304cc6ae1bf7a8e6d00053fbe0b7e2b26cdddda2 Mon Sep 17 00:00:00 2001
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Fri, 6 Feb 2009 01:12:02 +0100
-> Subject: [PATCH] ring_buffer: remove unused flags parameter, fix
-> 
-> Oprofile's ring-buffer use was not considered.
+On Fri, Feb 06, 2009 at 02:38:05AM +0100, Andrea Arcangeli wrote:
+> It all boils down if unregister is mandatory or not. If it's mandatory
 
-Thank you, adding oprofile to my kvm minimal config for tracing devel.
+Oh I just found I documented it too!! ;)
 
-- Arnaldo
+/*
+ * Must not hold mmap_sem nor any other VM related lock when calling
+ * this registration function. Must also ensure mm_users can't go down
+ * to zero while this runs to avoid races with mmu_notifier_release,
+ * so mm has to be current->mm or the mm should be pinned safely such
+ * as with get_task_mm(). If the mm is not current->mm, the mm_users
+ * pin should be released by calling mmput after mmu_notifier_register
+ * returns. mmu_notifier_unregister must be always called to
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ * unregister the notifier. mm_count is automatically pinned to allow
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ * mmu_notifier_unregister to safely run at any time later, before or 
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* after exit_mmap. ->release will always be called before exit_mmap
+ * frees the pages.
+ */
+
+So in short the current code has no bugs and the fact you have to call
+unregister is intentional. Not patch required unless you request to
+change API. If you don't call unregister mm will be leaked,
+simply. For a moment I thought unregister wasn't mandatory because at
+some point in one of the dozen versions of the api it wasn't, but in
+the end I thought having an mm_count auto-pinning leaving no window
+for corrupted mmu_notifier list was preferable ;).
