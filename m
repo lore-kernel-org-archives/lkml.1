@@ -1,122 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759286AbZBFQWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759888AbZBFQW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759286AbZBFQWY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 11:22:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbZBFQWQ
+	id S1759888AbZBFQW5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 11:22:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbZBFQWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 11:22:16 -0500
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:48036 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753165AbZBFQWO (ORCPT
+	Fri, 6 Feb 2009 11:22:49 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:46258 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753491AbZBFQWs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 11:22:14 -0500
-Date: Fri, 6 Feb 2009 09:22:13 -0700
-From: Alex Chiang <achiang@hp.com>
-To: tony.luck@intel.com
-Cc: paulmck@linux.vnet.ibm.com, stable@kernel.org, linux-ia64@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ia64: prevent irq migration race in __cpu_disable path
-Message-ID: <20090206162213.GD8208@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>, tony.luck@intel.com,
-	paulmck@linux.vnet.ibm.com, stable@kernel.org,
-	linux-ia64@vger.kernel.org,
-	linux-kernel <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 6 Feb 2009 11:22:48 -0500
+Subject: [GIT PULL] Btrfs updates for 2.6.29-rc
+From: Chris Mason <chris.mason@oracle.com>
+To: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 06 Feb 2009 11:22:29 -0500
+Message-Id: <1233937349.17551.18.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt703.oracle.com [141.146.40.81]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.498C63CB.0284:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit e7b14036 (prevent ia64 from invoking irq handlers on
-offline CPUs) introduced a bug, where we call fixup_irqs before
-removing the CPU from the cpu_online_map.
+Hello everyone,
 
-This is wrong because fixup_irqs calls migrate_irqs, and in
-migrate_irqs, we use the cpu_online_map to:
+The current btrfs unstable tree should be ready for 2.6.29-rc:
 
-	1. look for interrupts on current CPU
-	2. if we find one, move it to the first available CPU in
-	the cpu_online_map
+git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-unstable.git
 
-This means we can potentially migrate an interrupt off ourself
-back to... ourself. Uh oh.
+We've been busy working on cleanups and improvements based on the
+feedback for Btrfs.  There are still lots of cleanups left to do,
+especially the ones pointed out by Andrew.
 
-We hit a NULL deref later which causes us to oops (output trimmed):
+Some of them I've been holding on to as starter tasks for people that
+are interested in the project.
 
-Unable to handle kernel NULL pointer dereference (address 0000000000000040)
-ip is at profile_tick+0xd0/0x1c0
+The current btrfs unstable tree also has a number of fixes hit by
+testers and by the Fedora alpha integration.  These include selinux
+support, an oops in the compression code, and a few different IO stalls.
 
-Call Trace:
- [<a00000010003c700>] die+0x1a0/0x2e0
-                                sp=e0000009c922fbd0 bsp=e0000009c9221438
- [<a0000001006e92f0>] ia64_do_page_fault+0x950/0xa80
-                                sp=e0000009c922fbd0 bsp=e0000009c92213d8
- [<a00000010000c7a0>] ia64_native_leave_kernel+0x0/0x270
-                                sp=e0000009c922fc60 bsp=e0000009c92213d8
- [<a0000001000ecdb0>] profile_tick+0xd0/0x1c0
-                                sp=e0000009c922fe30 bsp=e0000009c9221398
- [<a00000010003bb90>] timer_interrupt+0x170/0x3e0
-                                sp=e0000009c922fe30 bsp=e0000009c9221330
- [<a00000010013a800>] handle_IRQ_event+0x80/0x120
-                                sp=e0000009c922fe30 bsp=e0000009c92212f8
- [<a00000010013aa00>] __do_IRQ+0x160/0x4a0
-                                sp=e0000009c922fe30 bsp=e0000009c9221290
- [<a000000100012290>] ia64_process_pending_intr+0x2b0/0x360
-                                sp=e0000009c922fe30 bsp=e0000009c9221208
- [<a0000001000112d0>] fixup_irqs+0xf0/0x2a0
-                                sp=e0000009c922fe30 bsp=e0000009c92211a8
- [<a00000010005bd80>] __cpu_disable+0x140/0x240
-                                sp=e0000009c922fe30 bsp=e0000009c9221168
- [<a0000001006c5870>] take_cpu_down+0x50/0xa0
-                                sp=e0000009c922fe30 bsp=e0000009c9221148
- [<a000000100122610>] stop_cpu+0xd0/0x200
-                                sp=e0000009c922fe30 bsp=e0000009c92210f0
+There are two big performance related changes in the tree.  I got rid of
+the adaptive mutex implementation and switched to a lock that explicitly
+switches between a spinlock and a waitqueue.  This is faster and it
+allows us to pick off the blocking lock points one by one over time in a
+controlled fashion.
 
-Reading through the original thread:
+The second big performance fix deals with snapshot deletion.  It makes
+progress much more effectively and is able to keep up with bigger
+workloads.  This is important because every transaction ends up deleting
+a snapshot.
 
-	http://lkml.org/lkml/2008/8/31/116
+There wasn't much code involved in the snapshot deletion improvements,
+it is basically just sorting the block pointers before updating their
+reference counts, and working on leaves in bulk instead of one by one.
 
-It looks like Paul fixed his original issue correctly, put in a
-new call to cpu_clear() in the wrong spot, and then was convinced
-to remove the _correct_ call to cpu_clear().
+Here's the shortlog:
 
-Cc: stable@kernel.org
-Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
-In my opinion, this is .29 material.
+Chris Ball (1):
+      Btrfs: Handle SGID bit when creating inodes
 
-Sorry for the huge changelog:patch ratio, but this area is tricky
-enough that more explanation is better than less, I think.
+Chris Mason (14):
+      Btrfs: Catch missed bios in the async bio submission thread
+      Btrfs: async threads should try harder to find work
+      Btrfs: sort references by byte number during btrfs_inc_ref
+      Btrfs: disable leak debugging checks in extent_io.c
+      Btrfs: hash_lock is no longer needed
+      Btrfs: Change btree locking to use explicit blocking points
+      Btrfs: Make btrfs_drop_snapshot work in larger and more efficient chunks
+      Btrfs: Don't try to compress pages past i_size
+      Btrfs: Change btrfs_truncate_inode_items to stop when it hits the inode
+      Btrfs: change btrfs_del_leaf to drop locks earlier
+      Btrfs: fix btrfs_unlock_up_safe to walk the entire path
+      Btrfs: Only prep for btree deletion balances when nodes are mostly empty
+      Btrfs: don't return congestion in write_cache_pages as often
+      Btrfs: Fix memory leak in cache_drop_leaf_ref
 
-Also, I'm still a little troubled by Paul's original patch. What
-happens if we're trying to offline the CPEI target? The code in
-migrate_platform_irqs() uses cpu_online_map to select the new
-CPEI target, and it seems like we can end up in the same
-situation as the problem I'm trying to fix now.
+Christian Hesse (1):
+      Btrfs: make btrfs acls selectable
 
-Paul?
+Jim Owens (1):
+      Btrfs: selinux support
 
-My patch has held up for over 24 hours of stress testing, where
-we put the system under a heavy load and then randomly
-offline/online CPUs every 2 seconds. Without this patch, the
-machine would crash reliably within 15 minutes.
+Josef Bacik (1):
+      Btrfs: join the transaction in __btrfs_setxattr
 
----
 
-diff --git a/arch/ia64/kernel/smpboot.c b/arch/ia64/kernel/smpboot.c
-index 1146399..2a17d1c 100644
---- a/arch/ia64/kernel/smpboot.c
-+++ b/arch/ia64/kernel/smpboot.c
-@@ -742,8 +742,8 @@ int __cpu_disable(void)
- 	}
- 
- 	remove_siblinginfo(cpu);
--	fixup_irqs();
- 	cpu_clear(cpu, cpu_online_map);
-+	fixup_irqs();
- 	local_flush_tlb_all();
- 	cpu_clear(cpu, cpu_callin_map);
- 	return 0;
+
