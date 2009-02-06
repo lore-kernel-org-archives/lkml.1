@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758887AbZBFPvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758930AbZBFPxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758887AbZBFPvT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 10:51:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbZBFPvF
+	id S1758930AbZBFPxW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 10:53:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753617AbZBFPxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 10:51:05 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53370 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753222AbZBFPvC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 10:51:02 -0500
-Subject: Re: [linux-next][PATCH] revert headers_check fix: ia64, fpu.h
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Ingo Molnar <mingo@elte.hu>,
+	Fri, 6 Feb 2009 10:53:11 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:42606 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752547AbZBFPxJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 10:53:09 -0500
+Date: Fri, 6 Feb 2009 15:49:17 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -23,91 +24,35 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        LKML <linux-kernel@vger.kernel.org>,
        linux-next <linux-next@vger.kernel.org>,
        linux-ia64 <linux-ia64@vger.kernel.org>
-In-Reply-To: <20090206153315.GD13758@n2100.arm.linux.org.uk>
-References: <20090206164546.6291.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <3f9a31f40902060053x18dacf58u40c739ab89f13860@mail.gmail.com>
-	 <20090206180957.6294.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20090206145556.GH18368@elte.hu>
-	 <1233934141.3209.20.camel@localhost.localdomain>
-	 <20090206153315.GD13758@n2100.arm.linux.org.uk>
-Content-Type: text/plain
-Date: Fri, 06 Feb 2009 21:18:48 +0530
-Message-Id: <1233935328.3209.30.camel@localhost.localdomain>
+Subject: Re: [linux-next][PATCH] revert headers_check fix: ia64, fpu.h
+Message-ID: <20090206154917.GE13758@n2100.arm.linux.org.uk>
+References: <20090206164546.6291.KOSAKI.MOTOHIRO@jp.fujitsu.com> <3f9a31f40902060053x18dacf58u40c739ab89f13860@mail.gmail.com> <20090206180957.6294.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090206145556.GH18368@elte.hu> <1233934141.3209.20.camel@localhost.localdomain> <20090206153315.GD13758@n2100.arm.linux.org.uk> <20090206154539.GP18368@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090206154539.GP18368@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-02-06 at 15:33 +0000, Russell King - ARM Linux wrote:
-> On Fri, Feb 06, 2009 at 08:59:01PM +0530, Jaswinder Singh Rajput wrote:
-> > On Fri, 2009-02-06 at 15:55 +0100, Ingo Molnar wrote:
-> > > * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> > > 
-> > > > > > Index: b/arch/ia64/include/asm/fpu.h
-> > > > > > ===================================================================
-> > > > > > --- a/arch/ia64/include/asm/fpu.h
-> > > > > > +++ b/arch/ia64/include/asm/fpu.h
-> > > > > > @@ -6,7 +6,7 @@
-> > > > > >  *     David Mosberger-Tang <davidm@hpl.hp.com>
-> > > > > >  */
-> > > > > >
-> > > > > > -#include <linux/types.h>
-> > > > > > +#include <asm/types.h>
-> > > > > >
-> > > > > 
-> > > > > No , we do not even need asm/types.h
-> > > > > 
-> > > > > Subject: [PATCH] Neither asm/types.h nor linux/types.h is not required
-> > > > > for arch/ia64/include/asm/fpu.h
-> > > > > 
-> > > > > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > > > 
-> > > > ok. I confirmed.
-> > > > 	Tested-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > > > 	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > > 
-> > > Thanks.
-> > > 
-> > > Jaswinder, mind adding these tags to the commit and sending a pull request 
-> > > with all fixes?
-> > 
-> > The following changes since commit 0b86a4e34d885e734a4c4e46293376f3f1c639eb:
-> >   Ingo Molnar (1):
-> >         Merge branch 'core/header-fixes' of git://git.kernel.org/.../jaswinder/linux-2.6-tip into core/header-fixes
-> > 
-> > are available in the git repository at:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git core/header-fixes
-> > 
-> > Jaswinder Singh Rajput (2):
-> >       Neither asm/types.h nor linux/types.h is required for arch/ia64/include/asm/fpu.h
-> >       make linux/types.h as assembly safe
+On Fri, Feb 06, 2009 at 04:45:39PM +0100, Ingo Molnar wrote:
 > 
-> I continue to disagree with the need for the second patch.
-
-Like Ingo suggested:
-
-On Fri, 2009-02-06 at 15:58 +0100, Ingo Molnar wrote:
->  Well types.h easily gets included in other files though, which might be 
-> partially suited for assembly - and have !__ASSEMBLY__ portions that rely on 
-> a types.h include.
+> * Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
 > 
-> So making this file an invariant in .S files does not sound like a bad idea 
-> to me. Is there any downside?
+> > On Fri, Feb 06, 2009 at 08:59:01PM +0530, Jaswinder Singh Rajput wrote:
+> > > Jaswinder Singh Rajput (2):
+> > >       Neither asm/types.h nor linux/types.h is required for arch/ia64/include/asm/fpu.h
+> > >       make linux/types.h as assembly safe
+> > 
+> > I continue to disagree with the need for the second patch.
 > 
+> But have not replied to my mail about that so far.
 
-We cannot see any downside of this patch.
+Sigh.  No I didn't - because I also got a reply from Jaswinder and
+covered all points in _that_ reply.
 
-But we can see upside of this patch is:
-1. No need to protect linux/types.h with #ifndef __ASSEMBLY__ in many
-files
-2. So we trying to replace multiple #ifndef __ASSEMBLY__ with one.
+Would you like me to re-send my reply so that you can appear in the To:
+header?
 
-Thanks,
-
---
-JSR
-
-
+Stop making this discussion stupidly obtuse.
