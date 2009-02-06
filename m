@@ -1,86 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759781AbZBFQeB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760083AbZBFQe1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759781AbZBFQeB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 11:34:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbZBFQdw
+	id S1760083AbZBFQe1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 11:34:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756036AbZBFQdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 11:33:52 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52297 "EHLO mx3.mail.elte.hu"
+	Fri, 6 Feb 2009 11:33:55 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:57720 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752776AbZBFQdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 11:33:50 -0500
-Date: Fri, 6 Feb 2009 17:33:14 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>, hskinnemoen@atmel.com,
-       cooloney@kernel.org, tony.luck@intel.com, ralf@linux-mips.org,
-       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-next <linux-next@vger.kernel.org>,
-       linux-ia64 <linux-ia64@vger.kernel.org>
-Subject: Re: [linux-next][PATCH] revert headers_check fix: ia64, fpu.h
-Message-ID: <20090206163314.GA11216@elte.hu>
-References: <20090206164546.6291.KOSAKI.MOTOHIRO@jp.fujitsu.com> <3f9a31f40902060053x18dacf58u40c739ab89f13860@mail.gmail.com> <20090206180957.6294.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090206145556.GH18368@elte.hu> <1233934141.3209.20.camel@localhost.localdomain> <20090206153315.GD13758@n2100.arm.linux.org.uk> <1233935328.3209.30.camel@localhost.localdomain> <20090206155512.GF13758@n2100.arm.linux.org.uk> <20090206161229.GA8256@elte.hu> <20090206162352.GI13758@n2100.arm.linux.org.uk>
+	id S1755265AbZBFQdx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 11:33:53 -0500
+From: Steve Grubb <sgrubb@redhat.com>
+Organization: Red Hat
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Subject: Re: integrity: audit
+Date: Fri, 6 Feb 2009 11:33:12 -0500
+User-Agent: KMail/1.9.10
+Cc: Linux Audit <linux-audit@redhat.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>, Serge Hallyn <serue@us.ibm.com>
+References: <1233924230.3135.5.camel@localhost.localdomain> <200902061001.06040.sgrubb@redhat.com> <1233936914.3135.19.camel@localhost.localdomain>
+In-Reply-To: <1233936914.3135.19.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090206162352.GI13758@n2100.arm.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200902061133.13358.sgrubb@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 06 February 2009 11:15:14 am Mimi Zohar wrote:
+> The integrity auditing discussions took place a while ago in August 2007
+> (http://osdir.com/ml/linux.redhat.security.audit/2007-09/msg00007.html).
 
-* Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+Thanks for the refresh. Its been so long, I forgot about this. :)  Re-reading 
+the thread, we never had closure on the audit event format.
 
-> On Fri, Feb 06, 2009 at 05:12:29PM +0100, Ingo Molnar wrote:
-> > 
-> > * Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
-> > 
-> > > > We cannot see any downside of this patch.
-> > > > 
-> > > > But we can see upside of this patch is:
-> > > > 1. No need to protect linux/types.h with #ifndef __ASSEMBLY__ in many
-> > > > files
-> > > > 2. So we trying to replace multiple #ifndef __ASSEMBLY__ with one.
-> > > 
-> > > The point is:
-> > > 
-> > > 1. If the parent include needs to include linux/types.h to get at C
-> > >    types _and_ the include file needs to also be included by assembly
-> > >    code, it itself needs to have #ifndef __ASSEMBLY__ to protect those
-> > >    uses from the assembly code.
-> > > 
-> > >    In that case, the linux/types.h include should be contained within
-> > >    the #ifndef __ASSEMBLY__ .. #endif block along with all C only
-> > >    parts of the header file.
-> > 
-> > That makes the code much less clean: putting #include's in the middle of a 
-> > header is poor style and leads to people failing to consider dependencies. 
-> > We generally put them to the header portion.
-> > 
-> > Putting an #include line in the middle of a header file is a receipe for a 
-> > dependency hell (it can easily fall inside #ifdefs, can be overlooked, 
-> > etc.), so it's _strongly_ discouraged (at least on arch/x86).
-> 
-> Put them at the top then with an additional ifndef.
 
-So you advocate 40 stupid pairs of #ifdefs spread out, instead of a 
-_single_, obvious #ifdef in a commonly used header?
+> The integrity patches are in security-testing-2.6/#next and the auditd
+> patch I just posted to linux-audit. How do you suggest we go forward?
 
-Case closed.
+We need to go over the event format and make sure its got everything we need 
+in it. We also need to review the code that touches the audit system and make 
+sure its using the audit API the way we intended. I'd like to do this on the 
+linux-audit mail list so there is a record of it in the audit archives.
 
-	Ingo
+Thanks,
+-Steve
