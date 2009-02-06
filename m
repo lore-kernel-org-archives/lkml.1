@@ -1,106 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757951AbZBFOK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758547AbZBFOLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757951AbZBFOK0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 09:10:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753833AbZBFOKG
+	id S1758547AbZBFOLT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 09:11:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbZBFOLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 09:10:06 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50308 "EHLO mx2.mail.elte.hu"
+	Fri, 6 Feb 2009 09:11:09 -0500
+Received: from mx2.compro.net ([216.54.166.4]:24264 "EHLO mx2.compro.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753108AbZBFOKD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 09:10:03 -0500
-Date: Fri, 6 Feb 2009 15:09:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kirill Korotaev <dev@openvz.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: clean up hpet timer reinit
-Message-ID: <20090206140943.GD3415@elte.hu>
-References: <498BF9DA.5030302@openvz.org>
+	id S1752245AbZBFOLI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 09:11:08 -0500
+X-IronPort-AV: E=Sophos;i="4.37,391,1231131600"; 
+   d="scan'208";a="3359232"
+Message-ID: <498C44FA.1010106@compro.net>
+Date: Fri, 06 Feb 2009 09:11:06 -0500
+From: Mark Hounschell <markh@compro.net>
+Reply-To: markh@compro.net
+Organization: Compro Computer Svcs.
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <498BF9DA.5030302@openvz.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Borislav Petkov <borislav.petkov@amd.com>
+CC: Mark Hounschell <dmarkh@cfl.rr.com>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       john stultz <johnstul@us.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: PROBLEM: Can't boot a (HZ = 1000) kernel using an AMD Phenom-II
+ processor
+References: <49798F33.8070906@cfl.rr.com> <20090123130416.GA27616@alberich.amd.com> <497A48D5.9040904@cfl.rr.com> <497E0072.7000500@compro.net> <20090127163843.GA1628@aftab> <497FA725.7020503@cfl.rr.com> <497FA7F2.3060709@cfl.rr.com> <20090203151137.GB12017@aftab> <498897C1.2090802@compro.net> <498B1FA9.2050203@cfl.rr.com> <20090206135248.GB23459@aftab>
+In-Reply-To: <20090206135248.GB23459@aftab>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Borislav Petkov wrote:
+> Hi,
+> 
+> On Thu, Feb 05, 2009 at 12:19:37PM -0500, Mark Hounschell wrote:
+>> A tickless kernel didn't change anything. I did get a serial console connected
+>> and below is what I got. I don't see much usefull. Attached is the config.
+> 
+> Nope, not really. It happens really early in the process for initcalls.
+> By the way, is the system then completely locked up or you can enter
+> characters from the keyboard?
+> 
 
-* Pavel Emelyanov <xemul@openvz.org> wrote:
+No. When it happens the keyboard is dead.
 
-> Sorry for late response - took some time to re-check this...
+>> Press any key to continue.
+>> root (hd0,0)
+>>  Filesystem type is ext2fs, partition type 0x83
+>> kernel /vmlinuz-2.6.26.8-1000Hz  root=/dev/sda5 hwprobe=-modules.pata apm=off s
+>> elinux=0 noresume splash=silent debug initcall_debug log_buf_len=10M console=tt
+>> yS0,19200n8 vga=normal
+>>    [Linux-bzImage, setup=0x2e00, size=0x1827c0]
+>> initrd /initrd-2.6.26.8-1000Hz
+>>    [Linux-initrd @ 0x37622000, 0x9cdf42 bytes]
+>>
+>> Initializing cgroup subsys cpuset
+>> Linux version 2.6.26.8-1000Hz (root@harley) (gcc version 4.3.1 20080507
+>> (prerelease) [gcc-4_3-branch revision 135036] (SUSE Linux) ) #5 SMP PREEMPT Wed Feb9
+> 
+> Is this actually a Suse distribution kernel (with a lot of patches on it) or a stock one?
+> 
 
-Applied to tip:timers/urgent, thanks Pavel!
+I don't use SuSE's kernels, just the dist. Every thing I'll be using while your
+helping me will be
+stock and not tainted.
 
-Note, since i've already queued up the minimal fix i've created a delta 
-cleanup patch from your v2 patch - see it below. (It is the exact same end 
-result in terms of code, just a nicer splitup.)
+>> BIOS-provided physical RAM map:
+>>  BIOS-e820: 0000000000000000 - 000000000009f400 (usable)
+>>  BIOS-e820: 000000000009f400 - 00000000000a0000 (reserved)
+>>  BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+>>  BIOS-e820: 0000000000100000 - 00000000bffe0000 (usable)
+>>  BIOS-e820: 00000000bffe0000 - 00000000bffe3000 (ACPI NVS)
+>>  BIOS-e820: 00000000bffe3000 - 00000000bfff0000 (ACPI data)
+>>  BIOS-e820: 00000000bfff0000 - 00000000c0000000 (reserved)
+>>  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
+>>  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
+>>  BIOS-e820: 0000000100000000 - 0000000140000000 (usable)
+>> x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+>> Warning only 4GB will be used.
+>> Use a HIGHMEM64G enabled kernel.
+>> 3200MB HIGHMEM available.
+>> 896MB LOWMEM available.
+>> found SMP MP-table at [c00f3f00] 000f3f00
+>> Entering add_active_range(0, 0, 1048576) 0 entries of 256 used
+>> Zone PFN ranges:
+>>   DMA             0 ->     4096
+>>   Normal       4096 ->   229376
+>>   HighMem    229376 ->  1048576
+>> Movable zone start PFN for each node
+>> early_node_map[1] active PFN ranges
+>>     0:        0 ->  1048576
+>> On node 0 totalpages: 1048576
+>>   DMA zone: 32 pages used for memmap
+>>   DMA zone: 0 pages reserved
+>>   DMA zone: 4064 pages, LIFO batch:0
+>>   Normal zone: 1760 pages used for memmap
+>>   Normal zone: 223520 pages, LIFO batch:31
+>>   HighMem zone: 6400 pages used for memmap
+>>   HighMem zone: 812800 pages, LIFO batch:31
+>>   Movable zone: 0 pages used for memmap
+>> DMI 2.5 present.
+>> ACPI: RSDP 000F7FB0, 0024 (r2 RX780 )
+>> ACPI: XSDT BFFE3080, 0044 (r1 RX780  AWRDACPI 42302E31 AWRD        0)
+>> ACPI: FACP BFFE8C80, 00F4 (r3 RX780  AWRDACPI 42302E31 AWRD        0)
+>> ACPI: DSDT BFFE3200, 5A71 (r1 RX780  AWRDACPI     1000 MSFT  100000E)
+>> ACPI: FACS BFFE0000, 0040
+>> ACPI: HPET BFFE8E40, 0038 (r1 RX780  AWRDACPI 42302E31 AWRD       98)
+>> ACPI: MCFG BFFE8E80, 003C (r1 RX780  AWRDACPI 42302E31 AWRD        0)
+>> ACPI: APIC BFFE8D80, 0084 (r1 RX780  AWRDACPI 42302E31 AWRD        0)
+>> ATI board detected. Disabling timer routing over 8254.
+>> ACPI: PM-Timer IO Port: 0x4008
+>> ACPI: Local APIC address 0xfee00000
+>> ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+>> ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
+>> ACPI: LAPIC (acpi_id[0x02] lapic_id[0x02] enabled)
+>> ACPI: LAPIC (acpi_id[0x03] lapic_id[0x03] enabled)
+>> ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
+>> ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
+>> ACPI: LAPIC_NMI (acpi_id[0x02] high edge lint[0x1])
+>> ACPI: LAPIC_NMI (acpi_id[0x03] high edge lint[0x1])
+>> ACPI: IOAPIC (id[0x04] address[0xfec00000] gsi_base[0])
+>> IOAPIC[0]: apic_id 4, version 33, address 0xfec00000, GSI 0-23
+>> ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+>> ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 low level)
+>> ACPI: IRQ0 used by override.
+>> ACPI: IRQ2 used by override.
+>> ACPI: IRQ9 used by override.
+>> Enabling APIC mode:  Flat.  Using 1 I/O APICs
+>> ACPI: HPET id: 0x10b9a201 base: 0xfed00000
+>> Using ACPI (MADT) for SMP configuration information
+>> Allocating PCI resources starting at c2000000 (gap: c0000000:20000000)
+>> SMP: Allowing 4 CPUs, 0 hotplug CPUs
+>> PERCPU: Allocating 38788 bytes of per cpu data
+>> NR_CPUS: 32, nr_cpu_ids: 4
+>> Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 1040384
+>> Kernel command line: root=/dev/sda5 hwprobe=-modules.pata apm=off selinux=0
+>> noresume splash=silent debug initcall_debug log_buf_len=10M console=ttyS0,19200l
+>> log_buf_len: 16777216
+>> mapped APIC to ffffb000 (fee00000)
+>> mapped IOAPIC to ffffa000 (fec00000)
+>> Enabling fast FPU save and restore... done.
+>> Enabling unmasked SIMD FPU exception support... done.
+>> Initializing CPU#0
+>> Preemptible RCU implementation.
+>> PID hash table entries: 4096 (order: 12, 16384 bytes)
+>> Detected 3360.327 MHz processor.
+> 
+> Is your CPU overclocked?
+> 
 
-	Ingo
+It is as of yesterday. I am not a gamer though.
 
-------------------->
->From ff08f76d738d0ec0f334b187f61e160caa321d54 Mon Sep 17 00:00:00 2001
-From: Pavel Emelyanov <xemul@openvz.org>
-Date: Wed, 4 Feb 2009 13:40:31 +0300
-Subject: [PATCH] x86: clean up hpet timer reinit
+>> Console: colour VGA+ 80x25
+>> console [ttyS0] enabled
+>> Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
+>> Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
+>> Memory: 3080904k/4194304k available (1751k kernel code, 63472k reserved, 730k
+>> data, 216k init, 2228096k highmem)
+>> virtual kernel memory layout:
+>>     fixmap  : 0xffe15000 - 0xfffff000   (1960 kB)
+>>     pkmap   : 0xff800000 - 0xffc00000   (4096 kB)
+>>     vmalloc : 0xf8800000 - 0xff7fe000   ( 111 MB)
+>>     lowmem  : 0xc0000000 - 0xf8000000   ( 896 MB)
+>>       .init : 0xc0373000 - 0xc03a9000   ( 216 kB)
+>>       .data : 0xc02b5ca2 - 0xc036c6d0   ( 730 kB)
+>>       .text : 0xc0100000 - 0xc02b5ca2   (1751 kB)
+>> Checking if this processor honours the WP bit even in supervisor mode...Ok.
+>> CPA: page pool initialized 1 of 1 pages preallocated
+>> SLUB: Genslabs=12, HWalign=64, Order=0-3, MinObjects=0, CPUs=4, Nodes=1
+> 
+> Ok, here are two things you could try:
+> 
+> Disable CONFIG_HIGH_RES_TIMERS (high resolution timers support in
+> "Processor type and features"), boot with "apic=debug" and send me the
+> output. I'd like to see how the lapic timer gets programmed. It would
+> be better for that exercise to get the latest stable kernel, 2.6.28.3,
+> imho.
+> 
+> The other thing you could do is get x86info tools from here:
+> http://www.codemonkey.org.uk/projects/x86info/. However, get either a
+> daily snapshot or a checkout from the git repository and build it on
+> your system. Then do
+> 
+> x86info -a > x86info.txt
+> 
+> lsmsr -V3 -a > lsmsr.txt
+> 
+> and send me those text files - we might be able to get a clue what's going on
+> from them.
+> 
+> Thanks.
+> 
 
-Implement Linus's suggestion: introduce the hpet_cnt_ahead()
-helper function to compare hpet time values - like other
-wrapping counter comparisons are abstracted away elsewhere.
-(jiffies, ktime_t, etc.)
+Ok, I'll do the rest of what you asked tonight.
 
-Reported-by: Kirill Korotaev <dev@openvz.org>
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/hpet.c |   12 ++++++++++--
- 1 files changed, 10 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
-index c761f91..388254f 100644
---- a/arch/x86/kernel/hpet.c
-+++ b/arch/x86/kernel/hpet.c
-@@ -897,7 +897,7 @@ static unsigned long hpet_rtc_flags;
- static int hpet_prev_update_sec;
- static struct rtc_time hpet_alarm_time;
- static unsigned long hpet_pie_count;
--static unsigned long hpet_t1_cmp;
-+static u32 hpet_t1_cmp;
- static unsigned long hpet_default_delta;
- static unsigned long hpet_pie_delta;
- static unsigned long hpet_pie_limit;
-@@ -905,6 +905,14 @@ static unsigned long hpet_pie_limit;
- static rtc_irq_handler irq_handler;
- 
- /*
-+ * Check that the hpet counter c1 is ahead of the c2
-+ */
-+static inline int hpet_cnt_ahead(u32 c1, u32 c2)
-+{
-+	return (s32)(c2 - c1) < 0;
-+}
-+
-+/*
-  * Registers a IRQ handler.
-  */
- int hpet_register_irq_handler(rtc_irq_handler handler)
-@@ -1075,7 +1083,7 @@ static void hpet_rtc_timer_reinit(void)
- 		hpet_t1_cmp += delta;
- 		hpet_writel(hpet_t1_cmp, HPET_T1_CMP);
- 		lost_ints++;
--	} while ((s32)(hpet_readl(HPET_COUNTER) - hpet_t1_cmp) > 0);
-+	} while (!hpet_cnt_ahead(hpet_t1_cmp, hpet_readl(HPET_COUNTER)));
- 
- 	if (lost_ints) {
- 		if (hpet_rtc_flags & RTC_PIE)
+Regards
+Mark
