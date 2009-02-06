@@ -1,84 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757707AbZBFOXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbZBFO1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757707AbZBFOXj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 09:23:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755347AbZBFOX1
+	id S1755217AbZBFO1n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 09:27:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbZBFO1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 09:23:27 -0500
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:45757 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755268AbZBFOXZ (ORCPT
+	Fri, 6 Feb 2009 09:27:36 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:1493 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885AbZBFO1f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 09:23:25 -0500
-Message-ID: <498C47D4.1010305@in.ibm.com>
-Date: Fri, 06 Feb 2009 19:53:16 +0530
-From: "Sachin P. Sant" <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Fri, 6 Feb 2009 09:27:35 -0500
+Date: Fri, 6 Feb 2009 14:27:25 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: Samuel Ortiz <sameo@openedhand.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Message-ID: <20090206142725.GA9455@sirena.org.uk>
+References: <1232997799-18943-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20090202135650.838a3ddd.akpm@linux-foundation.org> <20090206135431.GA3341@sortiz.org>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-s390@vger.kernel.org,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       Mel Gorman <mel@csn.ul.ie>, Alexey Dobriyan <adobriyan@gmail.com>
-Subject: [Patch] Remove remaining ref to proc_dir_entry::owner
-References: <498C03E1.1040204@in.ibm.com> <20090207000636.ee67c759.sfr@canb.auug.org.au>
-In-Reply-To: <20090207000636.ee67c759.sfr@canb.auug.org.au>
-Content-Type: multipart/mixed;
- boundary="------------000109000202070209030003"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090206135431.GA3341@sortiz.org>
+X-Cookie: Snow Day -- stay home.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [PATCH 1/2] mfd: Support active high IRQs on WM835x
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000109000202070209030003
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Fri, Feb 06, 2009 at 02:54:32PM +0100, Samuel Ortiz wrote:
 
-Thanks Stephen.
+> Sorry for the latency. Our mailserver had some issues, and I was quite busy
+> fixing wireless drivers myself :/
 
-Here is a patch to fix this issue.
+No problem.
 
-* Remove remaining references to struct proc_dir_entry::owner
+> I'm back on track now. Mark, I havent got those 2 mfd patches. Did you send
+> them to me for merging ? If that's so, could you please resend them ?
 
-Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
-Cc : Alexey Dobriyan <adobriyan@gmail.com>
----
-
-Thanks
--Sachin
-
-
-
---------------000109000202070209030003
-Content-Type: text/x-patch;
- name="remove-remaining-proc-dir-entry-owner-refs.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="remove-remaining-proc-dir-entry-owner-refs.patch"
-
-* Remove remaining references to struct proc_dir_entry::owner
-
-Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
-Cc : Alexey Dobriyan <adobriyan@gmail.com>
----
-
-diff -Naurp a/drivers/s390/block/dasd_proc.c b/drivers/s390/block/dasd_proc.c
---- a/drivers/s390/block/dasd_proc.c	2009-02-06 21:58:57.000000000 +0530
-+++ b/drivers/s390/block/dasd_proc.c	2009-02-06 22:01:48.000000000 +0530
-@@ -318,7 +318,6 @@ dasd_proc_init(void)
- 	dasd_proc_root_entry = proc_mkdir("dasd", NULL);
- 	if (!dasd_proc_root_entry)
- 		goto out_nodasd;
--	dasd_proc_root_entry->owner = THIS_MODULE;
- 	dasd_devices_entry = proc_create("devices",
- 					 S_IFREG | S_IRUGO | S_IWUSR,
- 					 dasd_proc_root_entry,
-@@ -332,7 +331,6 @@ dasd_proc_init(void)
- 		goto out_nostatistics;
- 	dasd_statistics_entry->read_proc = dasd_statistics_read;
- 	dasd_statistics_entry->write_proc = dasd_statistics_write;
--	dasd_statistics_entry->owner = THIS_MODULE;
- 	return 0;
- 
-  out_nostatistics:
-
---------------000109000202070209030003--
+I resent the patches that you hadn't merged yesterday when the commits
+showed up in -next - I figured they must've slipped through the cracks
+when you were catching up.  It was just those two.
