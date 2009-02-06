@@ -1,92 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754345AbZBFIvJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754474AbZBFIyF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754345AbZBFIvJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 03:51:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZBFIuy
+	id S1754474AbZBFIyF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 03:54:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261AbZBFIxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 03:50:54 -0500
-Received: from mailhub.sw.ru ([195.214.232.25]:47846 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752288AbZBFIux (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 03:50:53 -0500
-Message-ID: <498BF9DA.5030302@openvz.org>
-Date: Fri, 06 Feb 2009 11:50:34 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 6 Feb 2009 03:53:52 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:19017 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751878AbZBFIxv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 03:53:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=ZK3vJc9bYue9HhFwJNsm3F7ghepMXpXcLtlk5jc8v/7P19YP+yn5i2GfR/x/UN/uHI
+         Qc2KGW96JymDV+ANI1ytoOHibSbTMjBt3k2Ic8AIt3UeOh1FU+xnR4/BF8EZtgcomtcN
+         u+qg9YfEJynLMmEHTYqwQkMGhtje9l+4SvmcY=
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kirill Korotaev <dev@openvz.org>
-Subject: [PATCH] x86: fix hpet timer reinit for x86_64 (v2)
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090206164546.6291.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <1233385816.17794.16.camel@localhost.localdomain>
+	 <20090206164546.6291.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Date: Fri, 6 Feb 2009 14:23:50 +0530
+Message-ID: <3f9a31f40902060053x18dacf58u40c739ab89f13860@mail.gmail.com>
+Subject: Re: [linux-next][PATCH] revert headers_check fix: ia64, fpu.h
+From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       hskinnemoen@atmel.com, cooloney@kernel.org, tony.luck@intel.com,
+       ralf@linux-mips.org, dhowells@redhat.com, matthew@wil.cx,
+       chris@zankel.net, LKML <linux-kernel@vger.kernel.org>,
+       linux-next <linux-next@vger.kernel.org>,
+       linux-ia64 <linux-ia64@vger.kernel.org>
+Content-Type: multipart/mixed; boundary=0016364c716be025b504623c2806
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for late response - took some time to re-check this...
+--0016364c716be025b504623c2806
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-There's a small problem with hpet_rtc_reinit function - it checks
-for the
-	hpet_readl(HPET_COUNTER) - hpet_t1_cmp > 0
-to continue increasing both the HPET_T1_CMP (register) and the 
-hpet_t1_cmp (variable).
+On Fri, Feb 6, 2009 at 1:49 PM, KOSAKI Motohiro
+<kosaki.motohiro@jp.fujitsu.com> wrote:
+>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: linux-next <linux-next@vger.kernel.org>
+> Cc: linux-ia64 <linux-ia64@vger.kernel.org>
+> Cc: Tony Luck <tony.luck@intel.com>
+> ---
+>  arch/ia64/include/asm/fpu.h |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> Index: b/arch/ia64/include/asm/fpu.h
+> ===================================================================
+> --- a/arch/ia64/include/asm/fpu.h
+> +++ b/arch/ia64/include/asm/fpu.h
+> @@ -6,7 +6,7 @@
+>  *     David Mosberger-Tang <davidm@hpl.hp.com>
+>  */
+>
+> -#include <linux/types.h>
+> +#include <asm/types.h>
+>
 
-But since the HPET_COUNTER is always 32-bit, if the hpet_t1_cmp
-is 64-bit this condition will always be FALSE once the latter hits
-the 32-bit boundary, and we can have a situation, when we don't
-increase the HPET_T1_CMP register high enough.
+No , we do not even need asm/types.h
 
-The result - timer stops ticking, since HPET_T1_CMP becomes less, 
-than the COUNTER and never increased again. Symptoms were observed
-in user space. An application doing read() on /dev/rtc blocked 
-sometimes for a long periods of time (as turned out - until the
-counter gets wrap around).
+Subject: [PATCH] Neither asm/types.h nor linux/types.h is not required
+for arch/ia64/include/asm/fpu.h
 
-The fix is to properly check for one counter being ahead of another
-the way it's done for jiffies.
-
-Plush, change the hpet_t1_cmp to u32 to save 4 bytes from .bss ;)
-
-Reported-by: Kirill Korotaev <dev@openvz.org>
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
+ arch/ia64/include/asm/fpu.h |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
-index 64d5ad0..388254f 100644
---- a/arch/x86/kernel/hpet.c
-+++ b/arch/x86/kernel/hpet.c
-@@ -897,7 +897,7 @@ static unsigned long hpet_rtc_flags;
- static int hpet_prev_update_sec;
- static struct rtc_time hpet_alarm_time;
- static unsigned long hpet_pie_count;
--static unsigned long hpet_t1_cmp;
-+static u32 hpet_t1_cmp;
- static unsigned long hpet_default_delta;
- static unsigned long hpet_pie_delta;
- static unsigned long hpet_pie_limit;
-@@ -905,6 +905,14 @@ static unsigned long hpet_pie_limit;
- static rtc_irq_handler irq_handler;
- 
- /*
-+ * Check that the hpet counter c1 is ahead of the c2
-+ */
-+static inline int hpet_cnt_ahead(u32 c1, u32 c2)
-+{
-+	return (s32)(c2 - c1) < 0;
-+}
-+
-+/*
-  * Registers a IRQ handler.
+diff --git a/arch/ia64/include/asm/fpu.h b/arch/ia64/include/asm/fpu.h
+index b6395ad..0c26157 100644
+--- a/arch/ia64/include/asm/fpu.h
++++ b/arch/ia64/include/asm/fpu.h
+@@ -6,8 +6,6 @@
+  *     David Mosberger-Tang <davidm@hpl.hp.com>
   */
- int hpet_register_irq_handler(rtc_irq_handler handler)
-@@ -1075,7 +1083,7 @@ static void hpet_rtc_timer_reinit(void)
- 		hpet_t1_cmp += delta;
- 		hpet_writel(hpet_t1_cmp, HPET_T1_CMP);
- 		lost_ints++;
--	} while ((long)(hpet_readl(HPET_COUNTER) - hpet_t1_cmp) > 0);
-+	} while (!hpet_cnt_ahead(hpet_t1_cmp, hpet_readl(HPET_COUNTER)));
- 
- 	if (lost_ints) {
- 		if (hpet_rtc_flags & RTC_PIE)
+
+-#include <linux/types.h>
+-
+ /* floating point status register: */
+ #define FPSR_TRAP_VD   (1 << 0)        /* invalid op trap disabled */
+ #define FPSR_TRAP_DD   (1 << 1)        /* denormal trap disabled */
+-- 
+1.6.1.1
+
+--0016364c716be025b504623c2806
+Content-Type: text/x-patch; charset=US-ASCII; 
+	name="0001-Neither-asm-types.h-nor-linux-types.h-is-not-require.patch"
+Content-Disposition: attachment; 
+	filename="0001-Neither-asm-types.h-nor-linux-types.h-is-not-require.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fqw1smqb0
+
+RnJvbSA2NGUxOWRjYzYwY2Y5Y2QxNDU1YWY1YjBhOWFhZjQ1ZTdmMDBkZGU4IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBKYXN3aW5kZXIgU2luZ2ggUmFqcHV0IDxqYXN3aW5kZXJyYWpw
+dXRAZ21haWwuY29tPgpEYXRlOiBGcmksIDYgRmViIDIwMDkgMDg6NDM6MjkgKzAwMDAKU3ViamVj
+dDogW1BBVENIXSBOZWl0aGVyIGFzbS90eXBlcy5oIG5vciBsaW51eC90eXBlcy5oIGlzIG5vdCBy
+ZXF1aXJlZCBmb3IgYXJjaC9pYTY0L2luY2x1ZGUvYXNtL2ZwdS5oCgpTaWduZWQtb2ZmLWJ5OiBK
+YXN3aW5kZXIgU2luZ2ggUmFqcHV0IDxqYXN3aW5kZXJyYWpwdXRAZ21haWwuY29tPgotLS0KIGFy
+Y2gvaWE2NC9pbmNsdWRlL2FzbS9mcHUuaCB8ICAgIDIgLS0KIDEgZmlsZXMgY2hhbmdlZCwgMCBp
+bnNlcnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2FyY2gvaWE2NC9pbmNs
+dWRlL2FzbS9mcHUuaCBiL2FyY2gvaWE2NC9pbmNsdWRlL2FzbS9mcHUuaAppbmRleCBiNjM5NWFk
+Li4wYzI2MTU3IDEwMDY0NAotLS0gYS9hcmNoL2lhNjQvaW5jbHVkZS9hc20vZnB1LmgKKysrIGIv
+YXJjaC9pYTY0L2luY2x1ZGUvYXNtL2ZwdS5oCkBAIC02LDggKzYsNiBAQAogICoJRGF2aWQgTW9z
+YmVyZ2VyLVRhbmcgPGRhdmlkbUBocGwuaHAuY29tPgogICovCiAKLSNpbmNsdWRlIDxsaW51eC90
+eXBlcy5oPgotCiAvKiBmbG9hdGluZyBwb2ludCBzdGF0dXMgcmVnaXN0ZXI6ICovCiAjZGVmaW5l
+IEZQU1JfVFJBUF9WRAkoMSA8PCAwKQkvKiBpbnZhbGlkIG9wIHRyYXAgZGlzYWJsZWQgKi8KICNk
+ZWZpbmUgRlBTUl9UUkFQX0RECSgxIDw8IDEpCS8qIGRlbm9ybWFsIHRyYXAgZGlzYWJsZWQgKi8K
+LS0gCjEuNi4xLjEKCg==
+--0016364c716be025b504623c2806--
