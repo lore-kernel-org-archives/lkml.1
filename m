@@ -1,259 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757880AbZBFBOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757975AbZBFBPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757880AbZBFBOr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 20:14:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753418AbZBFBN4
+	id S1757975AbZBFBPV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 20:15:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756432AbZBFBO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 20:13:56 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:62890 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753166AbZBFBNx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 20:13:53 -0500
-Message-Id: <20090206011350.976972261@goodmis.org>
-References: <20090206011315.360405659@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Thu, 05 Feb 2009 20:13:16 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 1/2] ring-buffer: add NMI protection for spinlocks
-Content-Disposition: inline; filename=0001-ring-buffer-add-NMI-protection-for-spinlocks.patch
+	Thu, 5 Feb 2009 20:14:59 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:54011 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754543AbZBFBO6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 20:14:58 -0500
+Message-ID: <498B8EEB.7050104@cn.fujitsu.com>
+Date: Fri, 06 Feb 2009 09:14:19 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: David Howells <dhowells@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] fork.c: fix NULL pointer dereference when nr_threads == threads-max
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+I happened to forked lots of processes, and hit NULL pointer dereference.
+It is because in copy_process() after checking max_threads, 0 is returned
+but not -EAGAIN.
 
-Impact: prevent deadlock in NMI
+The bug is introduced by this patch:
 
-The ring buffers are not yet totally lockless with writing to
-the buffer. When a writer crosses a page, it grabs a per cpu spinlock
-to protect against a reader. The spinlocks taken by a writer are not
-to protect against other writers, since a writer can only write to
-its own per cpu buffer. The spinlocks protect against readers that
-can touch any cpu buffer. The writers are made to be reentrant
-with the spinlocks disabling interrupts.
+| commit f1752eec6145c97163dbce62d17cf5d928e28a27
+| Author: David Howells <dhowells@redhat.com>
+| Date:   Fri Nov 14 10:39:17 2008 +1100
+|
+|    CRED: Detach the credentials from task_struct
 
-The problem arises when an NMI writes to the buffer, and that write
-crosses a page boundary. If it grabs a spinlock, it can be racing
-with another writer (since disabling interrupts does not protect
-against NMIs) or with a reader on the same CPU. Luckily, most of the
-users are not reentrant and protects against this issue. But if a
-user of the ring buffer becomes reentrant (which is what the ring
-buffers do allow), if the NMI also writes to the ring buffer then
-we risk the chance of a deadlock.
-
-This patch moves the ftrace_nmi_enter called by nmi_enter() to the
-ring buffer code. It replaces the current ftrace_nmi_enter that is
-used by arch specific code to arch_ftrace_nmi_enter and updates
-the Kconfig to handle it.
-
-When an NMI is called, it will set a per cpu variable in the ring buffer
-code and will clear it when the NMI exits. If a write to the ring buffer
-crosses page boundaries inside an NMI, a trylock is used on the spin
-lock instead. If the spinlock fails to be acquired, then the entry
-is discarded.
-
-This bug appeared in the ftrace work in the RT tree, where event tracing
-is reentrant. This workaround solved the deadlocks that appeared there.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- arch/x86/Kconfig           |    1 +
- arch/x86/kernel/ftrace.c   |    8 +++---
- include/linux/ftrace_irq.h |   10 ++++++++-
- kernel/trace/Kconfig       |    8 +++++++
- kernel/trace/ring_buffer.c |   48 ++++++++++++++++++++++++++++++++++++++++++-
- 5 files changed, 68 insertions(+), 7 deletions(-)
+ kernel/fork.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 4277640..3da7121 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -34,6 +34,7 @@ config X86
- 	select HAVE_FUNCTION_TRACER
- 	select HAVE_FUNCTION_GRAPH_TRACER
- 	select HAVE_FUNCTION_TRACE_MCOUNT_TEST
-+	select HAVE_FTRACE_NMI_ENTER if DYNAMIC_FTRACE || FUNCTION_GRAPH_TRACER
- 	select HAVE_KVM
- 	select HAVE_ARCH_KGDB
- 	select HAVE_ARCH_TRACEHOOK
-diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-index 4d33224..4c68358 100644
---- a/arch/x86/kernel/ftrace.c
-+++ b/arch/x86/kernel/ftrace.c
-@@ -113,7 +113,7 @@ static void ftrace_mod_code(void)
- 					     MCOUNT_INSN_SIZE);
- }
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 242a706..6d5dbb7 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -1005,6 +1005,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+ 	 * triggers too late. This doesn't hurt, the check is only there
+ 	 * to stop root fork bombs.
+ 	 */
++	retval = -EAGAIN;
+ 	if (nr_threads >= max_threads)
+ 		goto bad_fork_cleanup_count;
  
--void ftrace_nmi_enter(void)
-+void arch_ftrace_nmi_enter(void)
- {
- 	atomic_inc(&in_nmi);
- 	/* Must have in_nmi seen before reading write flag */
-@@ -124,7 +124,7 @@ void ftrace_nmi_enter(void)
- 	}
- }
- 
--void ftrace_nmi_exit(void)
-+void arch_ftrace_nmi_exit(void)
- {
- 	/* Finish all executions before clearing in_nmi */
- 	smp_wmb();
-@@ -376,12 +376,12 @@ int ftrace_disable_ftrace_graph_caller(void)
-  */
- static atomic_t in_nmi;
- 
--void ftrace_nmi_enter(void)
-+void arch_ftrace_nmi_enter(void)
- {
- 	atomic_inc(&in_nmi);
- }
- 
--void ftrace_nmi_exit(void)
-+void arch_ftrace_nmi_exit(void)
- {
- 	atomic_dec(&in_nmi);
- }
-diff --git a/include/linux/ftrace_irq.h b/include/linux/ftrace_irq.h
-index 366a054..29de677 100644
---- a/include/linux/ftrace_irq.h
-+++ b/include/linux/ftrace_irq.h
-@@ -2,7 +2,15 @@
- #define _LINUX_FTRACE_IRQ_H
- 
- 
--#if defined(CONFIG_DYNAMIC_FTRACE) || defined(CONFIG_FUNCTION_GRAPH_TRACER)
-+#ifdef CONFIG_FTRACE_NMI_ENTER
-+extern void arch_ftrace_nmi_enter(void);
-+extern void arch_ftrace_nmi_exit(void);
-+#else
-+static inline void arch_ftrace_nmi_enter(void) { }
-+static inline void arch_ftrace_nmi_exit(void) { }
-+#endif
-+
-+#ifdef CONFIG_RING_BUFFER
- extern void ftrace_nmi_enter(void);
- extern void ftrace_nmi_exit(void);
- #else
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index 28f2644..25131a5 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -9,6 +9,9 @@ config USER_STACKTRACE_SUPPORT
- config NOP_TRACER
- 	bool
- 
-+config HAVE_FTRACE_NMI_ENTER
-+	bool
-+
- config HAVE_FUNCTION_TRACER
- 	bool
- 
-@@ -37,6 +40,11 @@ config TRACER_MAX_TRACE
- config RING_BUFFER
- 	bool
- 
-+config FTRACE_NMI_ENTER
-+       bool
-+       depends on HAVE_FTRACE_NMI_ENTER
-+       default y
-+
- config TRACING
- 	bool
- 	select DEBUG_FS
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index b36d737..a60a6a8 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -4,6 +4,7 @@
-  * Copyright (C) 2008 Steven Rostedt <srostedt@redhat.com>
-  */
- #include <linux/ring_buffer.h>
-+#include <linux/ftrace_irq.h>
- #include <linux/spinlock.h>
- #include <linux/debugfs.h>
- #include <linux/uaccess.h>
-@@ -19,6 +20,35 @@
- #include "trace.h"
- 
- /*
-+ * Since the write to the buffer is still not fully lockless,
-+ * we must be careful with NMIs. The locks in the writers
-+ * are taken when a write crosses to a new page. The locks
-+ * protect against races with the readers (this will soon
-+ * be fixed with a lockless solution).
-+ *
-+ * Because we can not protect against NMIs, and we want to
-+ * keep traces reentrant, we need to manage what happens
-+ * when we are in an NMI.
-+ */
-+static DEFINE_PER_CPU(int, rb_in_nmi);
-+
-+void ftrace_nmi_enter(void)
-+{
-+	__get_cpu_var(rb_in_nmi)++;
-+	/* call arch specific handler too */
-+	arch_ftrace_nmi_enter();
-+}
-+
-+void ftrace_nmi_exit(void)
-+{
-+	arch_ftrace_nmi_exit();
-+	__get_cpu_var(rb_in_nmi)--;
-+	/* NMIs are not recursive */
-+	WARN_ON_ONCE(__get_cpu_var(rb_in_nmi));
-+}
-+
-+
-+/*
-  * A fast way to enable or disable all ring buffers is to
-  * call tracing_on or tracing_off. Turning off the ring buffers
-  * prevents all ring buffers from being recorded to.
-@@ -982,6 +1012,7 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
- 	struct ring_buffer *buffer = cpu_buffer->buffer;
- 	struct ring_buffer_event *event;
- 	unsigned long flags;
-+	bool lock_taken = false;
- 
- 	commit_page = cpu_buffer->commit_page;
- 	/* we just need to protect against interrupts */
-@@ -995,7 +1026,19 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
- 		struct buffer_page *next_page = tail_page;
- 
- 		local_irq_save(flags);
--		__raw_spin_lock(&cpu_buffer->lock);
-+		/*
-+		 * NMIs can happen after we take the lock.
-+		 * If we are in an NMI, only take the lock
-+		 * if it is not already taken. Otherwise
-+		 * simply fail.
-+		 */
-+		if (unlikely(__get_cpu_var(rb_in_nmi))) {
-+			if (!__raw_spin_trylock(&cpu_buffer->lock))
-+				goto out_unlock;
-+		} else
-+			__raw_spin_lock(&cpu_buffer->lock);
-+
-+		lock_taken = true;
- 
- 		rb_inc_page(cpu_buffer, &next_page);
- 
-@@ -1097,7 +1140,8 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
- 	if (tail <= BUF_PAGE_SIZE)
- 		local_set(&tail_page->write, tail);
- 
--	__raw_spin_unlock(&cpu_buffer->lock);
-+	if (likely(lock_taken))
-+		__raw_spin_unlock(&cpu_buffer->lock);
- 	local_irq_restore(flags);
- 	return NULL;
- }
 -- 
-1.5.6.5
+1.5.4.rc3
 
--- 
