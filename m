@@ -1,215 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbZBFCA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757085AbZBFCCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754530AbZBFCA2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 21:00:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbZBFCAN
+	id S1757085AbZBFCCU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 21:02:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbZBFCCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 21:00:13 -0500
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:46962 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752205AbZBFCAK convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 21:00:10 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsIEALsni0lMQWt2/2dsb2JhbACBbs10hBYG
-Date: Thu, 5 Feb 2009 21:00:05 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Trilok Soni <soni.trilok@gmail.com>, ltt-dev@lists.casi.polymtl.ca,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] LTTng 0.89 for Linux 2.6.29-rc3
-Message-ID: <20090206020005.GA8560@Krystal>
-References: <20090205153825.GA30255@Krystal> <20090205155854.GG6915@linux.vnet.ibm.com> <5d5443650902050822r2e4d08ffg2322b45a5e009fb8@mail.gmail.com> <20090205180132.GJ6915@linux.vnet.ibm.com> <20090205183158.GA1969@Krystal> <20090205184456.GK6915@linux.vnet.ibm.com> <20090205202249.GA26964@Krystal> <20090205210415.GM6915@linux.vnet.ibm.com> <20090205210627.GA1313@Krystal> <20090206003308.GO6915@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20090206003308.GO6915@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 20:58:09 up 36 days,  1:56,  8 users,  load average: 1.02, 0.57,
-	0.38
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 5 Feb 2009 21:02:13 -0500
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:44404 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752288AbZBFCCM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 21:02:12 -0500
+Subject: [PARAVIRT/x86] BUGFIX: Put a missing paravirt_release_pmd in
+	pgd_dtor
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Rohit Jain <rjain@vmware.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Thu, 05 Feb 2009 18:02:11 -0800
+Message-Id: <1233885731.29693.26.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> On Thu, Feb 05, 2009 at 04:06:27PM -0500, Mathieu Desnoyers wrote:
-> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > On Thu, Feb 05, 2009 at 03:22:49PM -0500, Mathieu Desnoyers wrote:
-> > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > > On Thu, Feb 05, 2009 at 01:31:59PM -0500, Mathieu Desnoyers wrote:
-> > > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > > > > On Thu, Feb 05, 2009 at 09:52:16PM +0530, Trilok Soni wrote:
-> > > > > > > > Hi Paul,
-> > > > > > > > 
-> > > > > > > > On Thu, Feb 5, 2009 at 9:28 PM, Paul E. McKenney
-> > > > > > > > <paulmck@linux.vnet.ibm.com> wrote:
-> > > > > > > > >>
-> > > > > > > > >> Are you using quilt to apply the patchset series file in the right order ?
-> > > > > > > > >
-> > > > > > > > > Ummm...  No.  I never have used quilt.
-> > > > > > > > >
-> > > > > > > > > Ah, there is a series file.  I guess it would not be too hard to make
-> > > > > > > > > an appropriate "sh" command:
-> > > > > > > > 
-> > > > > > > > How about trying?
-> > > > > > > > 
-> > > > > > > > #quilt push -a
-> > > > > > > 
-> > > > > > > Is the appropriate incantation as follows?
-> > > > > > > 
-> > > > > > > 	cd <top of git tree>
-> > > > > > > 	mkdir patches
-> > > > > > > 	cp /tmp/patch-2.6.29-rc3-lttng-0.92/* patches
-> > > > > > > 	quilt push -a
-> > > > > > > 
-> > > > > > 
-> > > > > > Yes, exactly.
-> > > > > 
-> > > > > Whew!  ;-)
-> > > > > 
-> > > > > > And from there you can follow the LTTng manual here :
-> > > > > > 
-> > > > > > http://ltt.polymtl.ca/svn/trunk/lttv/LTTngManual.html
-> > > > > 
-> > > > > I get some fuzz and the following:
-> > > > > 
-> > > > > 	patching file kernel/trace/trace-clock-32-to-64.c
-> > > > > 	Patch attempted to create file kernel/trace/trace-clock-32-to-64.c,
-> > > > > 	which already exists.
-> > > > > 	Hunk #1 FAILED at 1.
-> > > > > 	1 out of 1 hunk FAILED -- rejects in file
-> > > > > 	kernel/trace/trace-clock-32-to-64.c
-> > > > > 
-> > > > > Should I be starting from somewhere other than v2.6.29-rc3?
-> > > > > 
-> > > > 
-> > > > Let's see it step by step, that should get us there.
-> > > > 
-> > > > With patches :
-> > > > 
-> > > > mkdir ~/lttng
-> > > > cd ~/lttng
-> > > > wget http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc3.tar.bz2
-> > > > wget http://lttng.org/files/lttng/patch-2.6.29-rc3-lttng-0.92.tar.bz2
-> > > > bzip2 -cd linux-2.6.29-rc3.tar.bz2 |tar xvof -
-> > > > bzip2 -cd patch-2.6.29-rc3-lttng-0.92.tar.bz2  |tar xvof -
-> > > > cd linux-2.6.29-rc3
-> > > > mkdir patches
-> > > > ln -s ../patch-2.6.29-rc3-lttng-0.92 patches
-> > > > quilt push -a
-> > > > 
-> > > > Does this work ?
-> > > 
-> > > Leaving out the "mkdir", yes.
-> > 
-> > Ah, yes, my mistake.
-> > 
-> > > My apologies -- I was forgetting that
-> > > "git reset --hard" doesn't get rid of untracked files.  I do see fuzz
-> > > in a few places, but hopefully this is non-fatal.  And in any case, I
-> > > can now make the patch required to actually try this out.  ;-)
-> > > 
-> > 
-> > Great !
-> > 
-> > Don't hesitate to ask if you have any question.
-> > 
-> > Mathieu
-> 
-> Fails to build on Power, so trying x86...  (Stock 2.6.29-rc3 does
-> build and boot, FWIW.)
-> 
-> Looks like misplaced file.
-> 
-> 							Thanx, Paul
-> 
-> ------------------------------------------------------------------------
-> 
->   CHK     include/linux/version.h
->   UPD     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   UPD     include/linux/utsrelease.h
->   SYMLINK include/asm -> include/asm-powerpc
->   HOSTCC  scripts/ihex2fw
->   HOSTCC  scripts/kallsyms
->   HOSTCC  scripts/pnmtologo
->   HOSTCC  scripts/genksyms/genksyms.o
->   HOSTCC  scripts/conmakehash
->   HOSTCC  scripts/bin2c
->   CC      scripts/mod/empty.o
->   HOSTCC  scripts/mod/mk_elfconfig
->   SHIPPED scripts/genksyms/lex.c
->   SHIPPED scripts/genksyms/parse.h
->   SHIPPED scripts/genksyms/keywords.c
->   SHIPPED scripts/genksyms/parse.c
->   HOSTCC  scripts/genksyms/parse.o
->   HOSTCC  scripts/genksyms/lex.o
->   MKELF   scripts/mod/elfconfig.h
->   HOSTCC  scripts/mod/file2alias.o
->   HOSTCC  scripts/mod/modpost.o
->   HOSTCC  scripts/mod/sumversion.o
->   HOSTLD  scripts/genksyms/genksyms
->   HOSTLD  scripts/mod/modpost
->   CC      kernel/bounds.s
->   GEN     include/linux/bounds.h
->   CC      arch/powerpc/kernel/asm-offsets.s
-> In file included from include/linux/module.h:18,
->                  from include/linux/sysdev.h:25,
->                  from include/linux/node.h:22,
->                  from include/linux/swap.h:10,
->                  from include/linux/suspend.h:7,
->                  from arch/powerpc/kernel/asm-offsets.c:24:
-> include/linux/immediate.h:15:27: error: asm/immediate.h: No such file or directory
-> In file included from include/linux/module.h:18,
->                  from include/linux/sysdev.h:25,
->                  from include/linux/node.h:22,
->                  from include/linux/swap.h:10,
->                  from include/linux/suspend.h:7,
->                  from arch/powerpc/kernel/asm-offsets.c:24:
-> include/linux/immediate.h:37: warning: â€˜struct __imvâ€™ declared
-> inside parameter list
-> include/linux/immediate.h:37: warning: its scope is only this definition
-> or declaration, which is probably not what you want
-> include/linux/immediate.h:40: warning: â€˜struct __imvâ€™ declared
-> inside parameter list
-> make[1]: *** [arch/powerpc/kernel/asm-offsets.s] Error 1
-> make: *** [prepare0] Error 2
-> 02/05/2009-17:57:41 Build the kernel. Failed rc = 2
-> 02/05/2009-17:57:41 build: Building kernel... Failed rc = 1
-> 
+[PARAVIRT/x86] Put a missing paravirt_release_pmd in pgd_dtor.
 
-Hrm, does the file
+From: Alok N Kataria <akataria@vmware.com>
 
-arch/powerpc/include/asm/immediate.h exist in your tree ?
+The commit...
+-----------------------------
+commit 6194ba6ff6ccf8d5c54c857600843c67aa82c407
+Author: Jeremy Fitzhardinge <jeremy@goop.org>
+Date:   Wed Jan 30 13:34:11 2008 +0100
 
-Here, with the setup done following the commands I gave you (minus the
-mkdir patch), I get :
+    x86: don't special-case pmd allocations as much
+------------------------------
+...made changes to the way we handle pmd allocations, and while doing that
+it (accidently ?) dropped a call to  paravirt_release_pd from the pgd_dtor
+code path.
+
+As a result of this missing release, the hypervisor is now unaware of the
+pgd page being freed, and as a result it ends up tracking this page as a
+page table page.
+After this the guest may start using the same page for other purposes, and
+depending on what use the page is put to, it may result in various performance
+and/or functional issues ( hangs, reboots).
+
+The patch below adds a paravirt_release_pmd call for the PGD page.
+Patch on top of 2.6.29-rc3 (mainline-git).
+
+Signed-off-by: Alok N Kataria <akataria@vmware.com>
+Signed-off-by: Rohit Jain <rjain@vmware.com>
+Cc: Zachary Amsden <zach@vmware.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: stable@kernel.org
+---
+
+ arch/x86/mm/pgtable.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
 
-compudj@ok:~$ head testpaulmck/linux-2.6.29-rc3/arch/powerpc/include/asm/immediate.h 
-#ifndef _ASM_POWERPC_IMMEDIATE_H
-#define _ASM_POWERPC_IMMEDIATE_H
+diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
+index 86f2ffc..c23cd7e 100644
+--- a/arch/x86/mm/pgtable.c
++++ b/arch/x86/mm/pgtable.c
+@@ -89,6 +89,12 @@ static void pgd_dtor(pgd_t *pgd)
+ {
+ 	unsigned long flags; /* can be called from interrupt context */
+ 
++	if (PAGETABLE_LEVELS == 2 ||
++            (PAGETABLE_LEVELS == 3 && SHARED_KERNEL_PMD) ||
++            PAGETABLE_LEVELS == 4) {
++		paravirt_release_pmd(__pa(pgd) >> PAGE_SHIFT);
++	}
++
+ 	if (SHARED_KERNEL_PMD)
+ 		return;
+ 
 
-/*
- * Immediate values. PowerPC architecture optimizations.
- *
- * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
- *
- * This file is released under the GPLv2.
- * See the file COPYING for more details.
 
-....
 
-Which defines struct __imv. So hrm, normally the header should be there.
-(/me still confused) :)
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
