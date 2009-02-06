@@ -1,124 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbZBFCTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbZBFCU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756933AbZBFCTe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 21:19:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbZBFCT0
+	id S1756869AbZBFCU6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 21:20:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbZBFCUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 21:19:26 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54315 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750885AbZBFCT0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 21:19:26 -0500
-Date: Fri, 6 Feb 2009 11:18:12 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] Reduce size of swap_cgroup by CSS ID
-Message-Id: <20090206111812.da1de0d8.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <498B9B6C.3000808@cn.fujitsu.com>
-References: <20090205185959.7971dee4.kamezawa.hiroyu@jp.fujitsu.com>
-	<498B9B6C.3000808@cn.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Feb 2009 21:20:50 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34326 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750885AbZBFCUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 21:20:49 -0500
+Date: Fri, 6 Feb 2009 03:20:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Tony Luck <tony.luck@intel.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       hskinnemoen@atmel.com, cooloney@kernel.org, ralf@linux-mips.org,
+       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull -tip] headers_check fixes for other architectures
+Message-ID: <20090206022025.GA8317@elte.hu>
+References: <1233385816.17794.16.camel@localhost.localdomain> <12c511ca0902050955x1acb3907jdbfc1d0e6392cb91@mail.gmail.com> <alpine.LFD.2.00.0902051101040.3247@localhost.localdomain> <20090205191907.GA27422@elte.hu> <1233886017.3463.26.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1233886017.3463.26.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 06 Feb 2009 10:07:40 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-> > +/*
-> > + * A helper function to get mem_cgroup from ID. must be called under
-> > + * rcu_read_lock(). Because css_tryget() is called under this, css_put
-> > + * should be called later.
-> > + */
-> > +static struct mem_cgroup *mem_cgroup_lookup_get(unsigned short id)
-> > +{
-> > +	struct cgroup_subsys_state *css;
-> > +
-> > +	/* ID 0 is unused ID */
-> > +	if (!id)
-> > +		return NULL;
-> > +	css = css_lookup(&mem_cgroup_subsys, id);
-> > +	if (css && css_tryget(css))
-> > +		return container_of(css, struct mem_cgroup, css);
-> > +	return NULL;
-> > +}
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+
+> On Thu, 2009-02-05 at 20:19 +0100, Ingo Molnar wrote:
 > 
-> the returned mem_cgroup needn't be protected by rcu_read_lock(), so I
-> think this is better:
-> 	rcu_read_lock();
-> 	css = css_lookup(&mem_cgroup_subsys, id);
-> 	rcu_read_unlock();
-> and no lock is needed when calling mem_cgroup_lookup_get().
+> > Jaswinder, because they can break the build we should proactively drop all 
+> > architecture patches that do asm/types.h conversions.
+> > 
+> > I did build all the affected architectures via their defconfigs and they 
+> > built just fine - but i cannot do wide coverage testing of them.
+> > 
+> > So i think we should drop these bits:
+> > 
+> >  earth4:~/tip> gll --grep='asm/types.h' linus..core/header-fixes
+> >  1ff8f73: headers_check fix: xtensa, swab.h
+> >  4810987: headers_check fix: powerpc, swab.h
+> >  9f2cd96: headers_check fix: powerpc, kvm.h
+> >  785857f: headers_check fix: powerpc, elf.h
+> >  4be2c7f: headers_check fix: powerpc, bootx.h
+> >  726da1e: headers_check fix: parisc, swab.h
+> >  bef53ca: headers_check fix: mn10300, swab.h
+> >  a9f6acc: headers_check fix: mips, swab.h
+> >  d8cbec1: headers_check fix: m32r, swab.h
+> >  040c92b: headers_check fix: ia64, swab.h
+> >  6ce7950: headers_check fix: ia64, kvm.h
+> >  fa9ea6c: headers_check fix: ia64, fpu.h
+> >  295803e: headers_check fix: h8300, swab.h
+> >  dacd762: headers_check fix: frv, swab.h
+> >  350eb8b: headers_check fix: blackfin, swab.h
+> >  1c6ce70: headers_check fix: avr32, swab.h
+> >  e42ec24: headers_check fix: arm, swab.h
+> >  4af3bf6: headers_check fix: arm, setup.h
+> >  f100e6d: headers_check fix: arm, a.out.h
+> >  3fd5906: headers_check fix: alpha, swab.h
+> > 
+> > and send the rest to Linus if all outstanding observations have been 
+> > addressed. What do you think?
+> > 
 > 
-Hmm, maybe you're right.
-
-> >   * Returns old value at success, NULL at failure.
-> >   * (Of course, old value can be NULL.)
-> >   */
-> > -struct mem_cgroup *swap_cgroup_record(swp_entry_t ent, struct mem_cgroup *mem)
-> > +unsigned short swap_cgroup_record(swp_entry_t ent, unsigned short id)
+> The problem is if we include linux/types.h in assembly file we will get
+> error.
 > 
-> kernel-doc needs to be updated
+> We can solve this problem by four options (or may be more):
+> 1. by wrapping #ifndef __ASSEMBLY__ files which are used by assembly
+> code as suggested by Tony.
 > 
-ok.
-
-> >   * lookup_swap_cgroup - lookup mem_cgroup tied to swap entry
-> >   * @ent: swap entry to be looked up.
-> >   *
-> > - * Returns pointer to mem_cgroup at success. NULL at failure.
-> > + * Returns CSS ID of mem_cgroup at success. NULL at failure.
+> 2. fix linux/types.h so that assembly file can also use it
 > 
-> s/NULL/0/
+> 3. drop patches which are used by assembly files
 > 
-yes.
+> 4. drop all architecture patches as you suggested.
 
-Okay, thanks.
+hm, the highest quality approach seems to be #2, right?
 
-BTW, this patch is totally buggy ;( Sorry. Below is my memo.
-==
-
- - mem_cgroup can by destroyed() while there are swap_cgroup point to mem_cgroup.
-   If there are reference from swap_cgroup, kfree() is delayed.
- - But this patch just uses css_tryget(). css_tryget() returnes false if
-   mem_cgroup is destroyed.
- - So, refcnt for destroyed mem_cgroup will not be decreased and memory for
-   mem_cgroup will be never freed.
-
- - Even if we use ID instead of pointer, the situation does not change.
-   we have to prevent ID to be reused....
- - One choice for removing all swap_account at destroy() is forget all swap
-   accounts. But this may need "scan" all swap_cgroup in the system at rmdir().
-   This will be unacceptably slow on large swap systems. 
-==
-
-I'll post v2 but it will be still tricky. 
-
-Thanks,
--Kame
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	Ingo
