@@ -1,63 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756657AbZBFNsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757317AbZBFNst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756657AbZBFNsd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 08:48:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbZBFNsY
+	id S1757317AbZBFNst (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 08:48:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755135AbZBFNsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 08:48:24 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:32804 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751776AbZBFNsY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 08:48:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=lYGYOvpyI4Vl335mbaOn4Wbs0Anm81q4oN6PAS4+0C81rTvmNzFawPBg5dAvj86m5E
-         jQlyoFp5sxJG+MFkOdbbXo/IczBGnv6xZpQ502K5hAz5zFn9o22V8hZ2CLiGzK7L2pEf
-         Rqk2+ZPpOAY9w22BsR7cwPxu58IdlAsp5U5fA=
+	Fri, 6 Feb 2009 08:48:37 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:56777 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756818AbZBFNsf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 08:48:35 -0500
+Date: Fri, 6 Feb 2009 05:48:33 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: Trilok Soni <soni.trilok@gmail.com>, ltt-dev@lists.casi.polymtl.ca,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org
+Subject: Re: [ltt-dev] LTTng 0.89 for Linux 2.6.29-rc3
+Message-ID: <20090206134833.GC10918@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090205155854.GG6915@linux.vnet.ibm.com> <5d5443650902050822r2e4d08ffg2322b45a5e009fb8@mail.gmail.com> <20090205180132.GJ6915@linux.vnet.ibm.com> <20090205183158.GA1969@Krystal> <20090205184456.GK6915@linux.vnet.ibm.com> <20090205202249.GA26964@Krystal> <20090205210415.GM6915@linux.vnet.ibm.com> <20090205210627.GA1313@Krystal> <20090206003308.GO6915@linux.vnet.ibm.com> <20090206020005.GA8560@Krystal>
 MIME-Version: 1.0
-In-Reply-To: <1233921904.17724.181.camel@macbook.infradead.org>
-References: <20090204184029.881610776@mini.kroah.org>
-	 <20090204184602.GH25246@kroah.com> <1233791475.4612.24.camel@pasglop>
-	 <1233921904.17724.181.camel@macbook.infradead.org>
-Date: Fri, 6 Feb 2009 15:48:21 +0200
-Message-ID: <46e1c7760902060548j6d5b12dcp25c443007507c9c8@mail.gmail.com>
-Subject: Re: [patch 07/41] fbdev/atyfb: Fix DSP config on some PowerMacs & 
-	PowerBooks
-From: Risto Suominen <risto.suominen@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090206020005.GA8560@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/2/6 David Woodhouse <dwmw2@infradead.org>:
-> On Thu, 2009-02-05 at 10:51 +1100, Benjamin Herrenschmidt wrote:
->> My only possible worry with that one is the first generation clamshell
->> iBook which uses a Mobility M1 chip, for which we haven't had anybody
->> testing whether this would break it or not ...
->>
->> So if anybody with such a machine is reading this, please holler...
->
-> I think I have one in the shed. That's a PowerBook1,1?
->
+On Thu, Feb 05, 2009 at 09:00:05PM -0500, Mathieu Desnoyers wrote:
+> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > On Thu, Feb 05, 2009 at 04:06:27PM -0500, Mathieu Desnoyers wrote:
+> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > > On Thu, Feb 05, 2009 at 03:22:49PM -0500, Mathieu Desnoyers wrote:
+> > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > > > > On Thu, Feb 05, 2009 at 01:31:59PM -0500, Mathieu Desnoyers wrote:
+> > > > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > > > > > > On Thu, Feb 05, 2009 at 09:52:16PM +0530, Trilok Soni wrote:
+> > > > > > > > > Hi Paul,
+> > > > > > > > > 
+> > > > > > > > > On Thu, Feb 5, 2009 at 9:28 PM, Paul E. McKenney
+> > > > > > > > > <paulmck@linux.vnet.ibm.com> wrote:
+> > > > > > > > > >>
+> > > > > > > > > >> Are you using quilt to apply the patchset series file in the right order ?
+> > > > > > > > > >
+> > > > > > > > > > Ummm...  No.  I never have used quilt.
+> > > > > > > > > >
+> > > > > > > > > > Ah, there is a series file.  I guess it would not be too hard to make
+> > > > > > > > > > an appropriate "sh" command:
+> > > > > > > > > 
+> > > > > > > > > How about trying?
+> > > > > > > > > 
+> > > > > > > > > #quilt push -a
+> > > > > > > > 
+> > > > > > > > Is the appropriate incantation as follows?
+> > > > > > > > 
+> > > > > > > > 	cd <top of git tree>
+> > > > > > > > 	mkdir patches
+> > > > > > > > 	cp /tmp/patch-2.6.29-rc3-lttng-0.92/* patches
+> > > > > > > > 	quilt push -a
+> > > > > > > > 
+> > > > > > > 
+> > > > > > > Yes, exactly.
+> > > > > > 
+> > > > > > Whew!  ;-)
+> > > > > > 
+> > > > > > > And from there you can follow the LTTng manual here :
+> > > > > > > 
+> > > > > > > http://ltt.polymtl.ca/svn/trunk/lttv/LTTngManual.html
+> > > > > > 
+> > > > > > I get some fuzz and the following:
+> > > > > > 
+> > > > > > 	patching file kernel/trace/trace-clock-32-to-64.c
+> > > > > > 	Patch attempted to create file kernel/trace/trace-clock-32-to-64.c,
+> > > > > > 	which already exists.
+> > > > > > 	Hunk #1 FAILED at 1.
+> > > > > > 	1 out of 1 hunk FAILED -- rejects in file
+> > > > > > 	kernel/trace/trace-clock-32-to-64.c
+> > > > > > 
+> > > > > > Should I be starting from somewhere other than v2.6.29-rc3?
+> > > > > > 
+> > > > > 
+> > > > > Let's see it step by step, that should get us there.
+> > > > > 
+> > > > > With patches :
+> > > > > 
+> > > > > mkdir ~/lttng
+> > > > > cd ~/lttng
+> > > > > wget http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc3.tar.bz2
+> > > > > wget http://lttng.org/files/lttng/patch-2.6.29-rc3-lttng-0.92.tar.bz2
+> > > > > bzip2 -cd linux-2.6.29-rc3.tar.bz2 |tar xvof -
+> > > > > bzip2 -cd patch-2.6.29-rc3-lttng-0.92.tar.bz2  |tar xvof -
+> > > > > cd linux-2.6.29-rc3
+> > > > > mkdir patches
+> > > > > ln -s ../patch-2.6.29-rc3-lttng-0.92 patches
+> > > > > quilt push -a
+> > > > > 
+> > > > > Does this work ?
+> > > > 
+> > > > Leaving out the "mkdir", yes.
+> > > 
+> > > Ah, yes, my mistake.
+> > > 
+> > > > My apologies -- I was forgetting that
+> > > > "git reset --hard" doesn't get rid of untracked files.  I do see fuzz
+> > > > in a few places, but hopefully this is non-fatal.  And in any case, I
+> > > > can now make the patch required to actually try this out.  ;-)
+> > > > 
+> > > 
+> > > Great !
+> > > 
+> > > Don't hesitate to ask if you have any question.
+> > > 
+> > > Mathieu
+> > 
+> > Fails to build on Power, so trying x86...  (Stock 2.6.29-rc3 does
+> > build and boot, FWIW.)
+> > 
+> > Looks like misplaced file.
+> > 
+> > 							Thanx, Paul
+> > 
+> > ------------------------------------------------------------------------
+> > 
+> >   CHK     include/linux/version.h
+> >   UPD     include/linux/version.h
+> >   CHK     include/linux/utsrelease.h
+> >   UPD     include/linux/utsrelease.h
+> >   SYMLINK include/asm -> include/asm-powerpc
+> >   HOSTCC  scripts/ihex2fw
+> >   HOSTCC  scripts/kallsyms
+> >   HOSTCC  scripts/pnmtologo
+> >   HOSTCC  scripts/genksyms/genksyms.o
+> >   HOSTCC  scripts/conmakehash
+> >   HOSTCC  scripts/bin2c
+> >   CC      scripts/mod/empty.o
+> >   HOSTCC  scripts/mod/mk_elfconfig
+> >   SHIPPED scripts/genksyms/lex.c
+> >   SHIPPED scripts/genksyms/parse.h
+> >   SHIPPED scripts/genksyms/keywords.c
+> >   SHIPPED scripts/genksyms/parse.c
+> >   HOSTCC  scripts/genksyms/parse.o
+> >   HOSTCC  scripts/genksyms/lex.o
+> >   MKELF   scripts/mod/elfconfig.h
+> >   HOSTCC  scripts/mod/file2alias.o
+> >   HOSTCC  scripts/mod/modpost.o
+> >   HOSTCC  scripts/mod/sumversion.o
+> >   HOSTLD  scripts/genksyms/genksyms
+> >   HOSTLD  scripts/mod/modpost
+> >   CC      kernel/bounds.s
+> >   GEN     include/linux/bounds.h
+> >   CC      arch/powerpc/kernel/asm-offsets.s
+> > In file included from include/linux/module.h:18,
+> >                  from include/linux/sysdev.h:25,
+> >                  from include/linux/node.h:22,
+> >                  from include/linux/swap.h:10,
+> >                  from include/linux/suspend.h:7,
+> >                  from arch/powerpc/kernel/asm-offsets.c:24:
+> > include/linux/immediate.h:15:27: error: asm/immediate.h: No such file or directory
+> > In file included from include/linux/module.h:18,
+> >                  from include/linux/sysdev.h:25,
+> >                  from include/linux/node.h:22,
+> >                  from include/linux/swap.h:10,
+> >                  from include/linux/suspend.h:7,
+> >                  from arch/powerpc/kernel/asm-offsets.c:24:
+> > include/linux/immediate.h:37: warning: â€˜struct __imvâ€™ declared
+> > inside parameter list
+> > include/linux/immediate.h:37: warning: its scope is only this definition
+> > or declaration, which is probably not what you want
+> > include/linux/immediate.h:40: warning: â€˜struct __imvâ€™ declared
+> > inside parameter list
+> > make[1]: *** [arch/powerpc/kernel/asm-offsets.s] Error 1
+> > make: *** [prepare0] Error 2
+> > 02/05/2009-17:57:41 Build the kernel. Failed rc = 2
+> > 02/05/2009-17:57:41 build: Building kernel... Failed rc = 1
+> > 
+> 
+> Hrm, does the file
+> 
+> arch/powerpc/include/asm/immediate.h exist in your tree ?
+> 
+> Here, with the setup done following the commands I gave you (minus the
+> mkdir patch), I get :
+> 
+> 
+> compudj@ok:~$ head testpaulmck/linux-2.6.29-rc3/arch/powerpc/include/asm/immediate.h 
+> #ifndef _ASM_POWERPC_IMMEDIATE_H
+> #define _ASM_POWERPC_IMMEDIATE_H
+> 
+> /*
+>  * Immediate values. PowerPC architecture optimizations.
+>  *
+>  * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+>  *
+>  * This file is released under the GPLv2.
+>  * See the file COPYING for more details.
+> 
+> ....
+> 
+> Which defines struct __imv. So hrm, normally the header should be there.
+> (/me still confused) :)
 
-I think it should be either PowerBook2,1 or 2,2.
+It does indeed, see the patch I generated against 2.6.29-rc3:
 
-Risto
+	http://www.rdrop.com/users/paulmck/patches/2.6.29-rc3-ltt-1.patch
+
+I get a similar failure on x86 -- perhaps my tools or build environment
+does not match yours?
+
+							Thanx, Paul
