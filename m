@@ -1,153 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754264AbZBFHqn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755429AbZBFHrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754264AbZBFHqn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 02:46:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbZBFHqc
+	id S1755429AbZBFHrv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 02:47:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZBFHrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 02:46:32 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:13912 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752530AbZBFHqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 02:46:31 -0500
-Date: Fri, 6 Feb 2009 08:44:28 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       ISS StorageDev <iss_storagedev@hp.com>,
-       scsi <linux-scsi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: cciss: WARNING/BUG in do_cciss_intr (it's back)
-Message-ID: <20090206074427.GR30821@kernel.dk>
-References: <4989D435.7010003@oracle.com> <0F5B06BAB751E047AB5C87D1F77A778859F9EAD9D5@GVW0547EXC.americas.hpqcorp.net>
+	Fri, 6 Feb 2009 02:47:41 -0500
+Received: from wf-out-1314.google.com ([209.85.200.171]:21768 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752440AbZBFHrj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 02:47:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=RvORWOJHwesGMfbtXULKIafCrjvsKJJZkPav7VQphibNo0qMEQhWjSbHOQLUIsVvn/
+         amSfDb0kMPOdNiw6akHdAsP1iaTsWMjd8ihvG3hflHxmObLbO7rKGXUN5dLfiIWUBD0W
+         i9TaMBXjllgViuMa3o9MUdOH+aDj7UPAM3xoQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0F5B06BAB751E047AB5C87D1F77A778859F9EAD9D5@GVW0547EXC.americas.hpqcorp.net>
+In-Reply-To: <1233846195.3028.14.camel@localhost>
+References: <1233819002-6912-1-git-send-email-cooloney@kernel.org>
+	 <1233846195.3028.14.camel@localhost>
+Date: Fri, 6 Feb 2009 15:47:38 +0800
+X-Google-Sender-Auth: 9113663995d30063
+Message-ID: <386072610902052347m5754262bif18339809a00cb9f@mail.gmail.com>
+Subject: Re: [PATCH] wireless: introduce POWEROF2_BLOCKSIZE_ONLY option
+From: Bryan Wu <cooloney@kernel.org>
+To: Dan Williams <dcbw@redhat.com>
+Cc: linville@tuxdriver.com, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Cliff Cai <cliff.cai@analog.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05 2009, Miller, Mike (OS Dev) wrote:
->  
-> 
-> > -----Original Message-----
-> > From: Randy Dunlap [mailto:randy.dunlap@oracle.com] 
-> > Sent: Wednesday, February 04, 2009 11:45 AM
-> > To: Miller, Mike (OS Dev); ISS StorageDev; scsi; Linux Kernel 
-> > Mailing List
-> > Subject: cciss: WARNING/BUG in do_cciss_intr (it's back)
-> > 
-> > Hi Mike,
-> > 
-> > Was there any debugging code added to try to help with this problem?
-> > or is that the WARNING before the BUG?
-> > 
-> 
-> Randy,
-> I think this is a different bug than the one you reported previously.
-> Please open a new bugzilla.
+On Thu, Feb 5, 2009 at 11:03 PM, Dan Williams <dcbw@redhat.com> wrote:
+> On Thu, 2009-02-05 at 15:30 +0800, Bryan Wu wrote:
+>> From: Cliff Cai <cliff.cai@analog.com>
+>>
+>> Introduce POWEROF2_BLOCKSIZE_ONLY option for those SD/SDIO host
+>> which only support transferring block with size of power-of-2
+>
+> Is the point here to avoid copying in the controller code?  As with the
+> other patches on libertas-dev, I really dislike adding code to *every
+> SDIO driver* just because the host has certain restrictions.  I'd much
+> rather that the host/controller code became aware of it's own
+> restrictions, and exposed those generically to drivers above it.
+> Without a KConfig option.
+>
+> Seriously.  The host knows what it needs.  The code to handle that
+> should go in the host.
+>
 
-I think it's the same one. The first warning that now triggers is:
+I agree here.
 
-WARNING: at drivers/block/cciss.c:225 
+> How about adding a method like "sdio_align_size" that takes the
+> controller's constraints into account?  That seems a lot cleaner than
+> adding #define/KConfig junk to every SDIO driver in the kernel.  One
+> less codepath to test, makes your life and all our lives easier.
+>
 
-which is
+So we plan to add method ".sdio_align_size" to SDIO stack.
+And Blackfin host driver will implement this method while others will
+implement this as a dummy function.
 
-        if (WARN_ON(hlist_unhashed(&c->list)))
+In libertas, we need to call this method to take this constraints into account.
 
-removeQ(), this is where we would have crashed before due to trying to
-remove a command from a list it didn't belong to. And then we crash
-right after in the interrupt handler. So I'm pretty sure this is 100%
-the same bug.
-
-Randy, is this still using kexec? Perhaps cciss needs a better
-kick-in-the-pants reset on driver load to clear EVERYTHING, there's
-clearly something very bad happening there.
+Thanks
+-Bryan
 
 
-> 
-> Thanks,
-> -- mikem
-> 
-> > 
-> > Booting 2.6.29-rc3-git6 oopsed with:
-> > 
-> > calling  cciss_init+0x0/0x2e [cciss] @ 733 HP CISS Driver (v 3.6.20)
-> > ACPI: PCI Interrupt Link [LNKA] enabled at IRQ 54 cciss 
-> > 0000:42:08.0: PCI INT A -> Link[LNKA] -> GSI 54 (level, high) 
-> > -> IRQ 54 cciss 0000:42:08.0: irq 56 for MSI/MSI-X IRQ 
-> > 56/cciss0: IRQF_DISABLED is not guaranteed on shared IRQs
-> > cciss0: <0x3238> at PCI 0000:42:08.0 IRQ 56 using DAC 
-> > ------------[ cut here ]------------
-> > WARNING: at drivers/block/cciss.c:225 
-> > do_cciss_intr+0x58f/0x99a [cciss]() Hardware name: ProLiant 
-> > BL685c G1 Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
-> > Pid: 0, comm: swapper Not tainted 2.6.29-rc3-git6 #1 Call Trace:
-> >  <IRQ>  [<ffffffff8023a741>] warn_slowpath+0xd3/0xf2  
-> > [<ffffffff80243a44>] ? __mod_timer+0xc1/0xd3  
-> > [<ffffffff8041469f>] ? smi_timeout+0xd9/0xe5  
-> > [<ffffffff8024f86a>] ? ktime_get_ts+0x49/0x4e  
-> > [<ffffffff804145c6>] ? smi_timeout+0x0/0xe5  
-> > [<ffffffffa0024c4b>] do_cciss_intr+0x58f/0x99a [cciss]  
-> > [<ffffffff8026ed21>] handle_IRQ_event+0x27/0x57  
-> > [<ffffffff8027057d>] handle_edge_irq+0xde/0x11f  
-> > [<ffffffff8020e302>] do_IRQ+0xdc/0x152  [<ffffffff8020ca13>] 
-> > ret_from_intr+0x0/0xa  <EOI> <4>---[ end trace a8b437cd48391e28 ]---
-> > BUG: unable to handle kernel NULL pointer dereference at 
-> > 00000000000000f4
-> > IP: [<ffffffffa0024c93>] do_cciss_intr+0x5d7/0x99a [cciss] PGD 0
-> > Oops: 0002 [#1] SMP
-> > last sysfs file: /sys/block/ram15/dev
-> > CPU 2
-> > Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
-> > Pid: 0, comm: swapper Tainted: G        W  2.6.29-rc3-git6 #1
-> > RIP: 0010:[<ffffffffa0024c93>]  [<ffffffffa0024c93>] 
-> > do_cciss_intr+0x5d7/0x99a [cciss]
-> > RSP: 0018:ffff88027f12fef0  EFLAGS: 00010046
-> > RAX: 0000000000000000 RBX: ffff88007f840270 RCX: 0000000000013888
-> > RDX: 0000000000008080 RSI: 0000000000000046 RDI: 0000000000000009
-> > RBP: ffff88027f12ff20 R08: 000000447f12fa70 R09: ffff88017e540700
-> > R10: 0000000000000000 R11: 0000000000000000 R12: ffff88007f8404b0
-> > R13: ffff88027e1a0000 R14: 0000000000000000 R15: 0000000000000086
-> > FS:  0000000000680850(0000) GS:ffff88017f121380(0000) 
-> > knlGS:0000000000000000
-> > CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> > CR2: 00000000000000f4 CR3: 0000000000201000 CR4: 00000000000006e0
-> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-> > 0000000000000400 Process swapper (pid: 0, threadinfo 
-> > ffff88017f164000, task ffff88017fa5d4c0)
-> > Stack:
-> >  0000000000000001 ffff88027f126280 0000000000000000 0000000000000000
-> >  0000000000000038 0000000000000000 ffff88027f12ff50 
-> > ffffffff8026ed21  ffffffff8076e000 0000000000000038 
-> > ffff88027f126280 ffffffff8076e054 Call Trace:
-> >  <IRQ> <0> [<ffffffff8026ed21>] handle_IRQ_event+0x27/0x57  
-> > [<ffffffff8027057d>] handle_edge_irq+0xde/0x11f  
-> > [<ffffffff8020e302>] do_IRQ+0xdc/0x152  [<ffffffff8020ca13>] 
-> > ret_from_intr+0x0/0xa  <EOI> <0>Code: 50 08 48 c7 83 40 02 00 
-> > 00 00 00 00 00 49 c7 44 24 08 00 00 00 00 8b 83 34 02 00 00 
-> > 85 c0 0f 85 49 03 00 00 4c 8b b3 50 02 00 00 <41> c7 86 f4 00 
-> > 00 00 00 00 00 00 4c 8b 83 28 02 00 00 66 41 8b RIP  
-> > [<ffffffffa0024c93>] do_cciss_intr+0x5d7/0x99a [cciss]  RSP 
-> > <ffff88027f12fef0>
-> > CR2: 00000000000000f4
-> > ---[ end trace a8b437cd48391e29 ]---
-> > Kernel panic - not syncing: Fatal exception in interrupt
-> > 
-> > 
-> > 
-> > This is on an HP ProLiant BL685c G1, 4-proc system with
-> > 8 GB of RAM.  (same as previous reports)
-> > 
-> > 
-> > Rebooting worked successfully.
-> > 
-> > Thanks,
-> > --
-> > ~Randy
-> > 
--- 
-Jens Axboe
-
+>> [ Bryan Wu <cooloney@kernel.org>:
+>>  - remove some useless coding style cleanup
+>>  - using roundup() function as upstream does
+>> ]
+>>
+>> Signed-off-by: Cliff Cai <cliff.cai@analog.com>
+>> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+>> ---
+>>  drivers/net/wireless/Kconfig            |    6 ++++++
+>>  drivers/net/wireless/libertas/if_sdio.c |   16 ++++++++++++++++
+>>  2 files changed, 22 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/drivers/net/wireless/Kconfig b/drivers/net/wireless/Kconfig
+>> index e4f9f74..a2685fa 100644
+>> --- a/drivers/net/wireless/Kconfig
+>> +++ b/drivers/net/wireless/Kconfig
+>> @@ -151,6 +151,12 @@ config LIBERTAS_SDIO
+>>       ---help---
+>>         A driver for Marvell Libertas 8385 and 8686 SDIO devices.
+>>
+>> +config POWEROF2_BLOCKSIZE_ONLY
+>> +     bool "Support transferring block with size of power-of-2 only"
+>> +     depends on LIBERTAS_SDIO
+>> +     ---help---
+>> +       For SD/SDIO host which only supports transferring block with size of power-of-2.
+>> +
+>>  config LIBERTAS_DEBUG
+>>       bool "Enable full debugging output in the Libertas module."
+>>       depends on LIBERTAS
+>> diff --git a/drivers/net/wireless/libertas/if_sdio.c b/drivers/net/wireless/libertas/if_sdio.c
+>> index 4519d73..5efc056 100644
+>> --- a/drivers/net/wireless/libertas/if_sdio.c
+>> +++ b/drivers/net/wireless/libertas/if_sdio.c
+>> @@ -272,6 +272,11 @@ static int if_sdio_card_to_host(struct if_sdio_card *card)
+>>        */
+>>       chunk = sdio_align_size(card->func, size);
+>>
+>> +/* For SD/SDIO host which only supports transferring block with size of power-of-2 */
+>> +#if defined(CONFIG_POWEROF2_BLOCKSIZE_ONLY)
+>> +     chunk = (chunk + card->func->cur_blksize - 1) /
+>> +                     card->func->cur_blksize * card->func->cur_blksize;
+>> +#endif
+>>       ret = sdio_readsb(card->func, card->buffer, card->ioport, chunk);
+>>       if (ret)
+>>               goto out;
+>> @@ -581,8 +586,14 @@ static int if_sdio_prog_real(struct if_sdio_card *card)
+>>                       lbs_deb_sdio("sending %d bytes (%d bytes) chunk\n",
+>>                               chunk_size, (chunk_size + 31) / 32 * 32);
+>>  */
+>> +/* For SD/SDIO host which only supports transferring block with size of power-of-2 */
+>> +#if defined(CONFIG_POWEROF2_BLOCKSIZE_ONLY)
+>> +                     ret = sdio_writesb(card->func, card->ioport,
+>> +                             chunk_buffer, roundup(chunk_size, 256);
+>> +#else
+>>                       ret = sdio_writesb(card->func, card->ioport,
+>>                               chunk_buffer, roundup(chunk_size, 32));
+>> +#endif
+>>                       if (ret)
+>>                               goto release;
+>>
+>> @@ -699,6 +710,11 @@ static int if_sdio_host_to_card(struct lbs_private *priv,
+>>        */
+>>       size = sdio_align_size(card->func, nb + 4);
+>>
+>> +/* For SD/SDIO host which only supports transferring block with size of power-of-2 */
+>> +#if defined(CONFIG_POWEROF2_BLOCKSIZE_ONLY)
+>> +     size = (size + card->func->cur_blksize - 1) /
+>> +                     card->func->cur_blksize * card->func->cur_blksize;
+>> +#endif
+>>       packet = kzalloc(sizeof(struct if_sdio_packet) + size,
+>>                       GFP_ATOMIC);
+>>       if (!packet) {
+>
+>
