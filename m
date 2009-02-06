@@ -1,100 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759146AbZBFPqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759139AbZBFPr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759146AbZBFPqZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 10:46:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758871AbZBFPqL
+	id S1759139AbZBFPr3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 10:47:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754805AbZBFPrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 10:46:11 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42940 "EHLO mx3.mail.elte.hu"
+	Fri, 6 Feb 2009 10:47:10 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:56632 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751766AbZBFPqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 10:46:09 -0500
-Date: Fri, 6 Feb 2009 16:45:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>, hskinnemoen@atmel.com,
-       cooloney@kernel.org, tony.luck@intel.com, ralf@linux-mips.org,
-       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-next <linux-next@vger.kernel.org>,
-       linux-ia64 <linux-ia64@vger.kernel.org>
-Subject: Re: [linux-next][PATCH] revert headers_check fix: ia64, fpu.h
-Message-ID: <20090206154539.GP18368@elte.hu>
-References: <20090206164546.6291.KOSAKI.MOTOHIRO@jp.fujitsu.com> <3f9a31f40902060053x18dacf58u40c739ab89f13860@mail.gmail.com> <20090206180957.6294.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090206145556.GH18368@elte.hu> <1233934141.3209.20.camel@localhost.localdomain> <20090206153315.GD13758@n2100.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090206153315.GD13758@n2100.arm.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1754429AbZBFPrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 10:47:07 -0500
+From: Glauber Costa <glommer@redhat.com>
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, avi@redhat.com,
+       akataria@vmware.com
+Subject: [PATCH 1/2] tell cpuinfo if we're running on top of KVM
+Date: Fri,  6 Feb 2009 10:46:56 -0500
+Message-Id: <1233935217-24090-2-git-send-email-glommer@redhat.com>
+In-Reply-To: <1233935217-24090-1-git-send-email-glommer@redhat.com>
+References: <1233935217-24090-1-git-send-email-glommer@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+KVM has a specific cpuid signature, for a long time now. It's currently
+used in the kernel to advertise the possible availability of paravirt
+functions, but it's safe to assume that any reasonably recent kvm
+hypervisor will sign cpuid this way, regardless of any pv capability.
 
-* Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+Signed-off-by: Glauber Costa <glommer@redhat.com>
+---
+ arch/x86/include/asm/processor.h |    1 +
+ arch/x86/kernel/cpu/hypervisor.c |    3 +++
+ 2 files changed, 4 insertions(+), 0 deletions(-)
 
-> On Fri, Feb 06, 2009 at 08:59:01PM +0530, Jaswinder Singh Rajput wrote:
-> > On Fri, 2009-02-06 at 15:55 +0100, Ingo Molnar wrote:
-> > > * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> > > 
-> > > > > > Index: b/arch/ia64/include/asm/fpu.h
-> > > > > > ===================================================================
-> > > > > > --- a/arch/ia64/include/asm/fpu.h
-> > > > > > +++ b/arch/ia64/include/asm/fpu.h
-> > > > > > @@ -6,7 +6,7 @@
-> > > > > >  *     David Mosberger-Tang <davidm@hpl.hp.com>
-> > > > > >  */
-> > > > > >
-> > > > > > -#include <linux/types.h>
-> > > > > > +#include <asm/types.h>
-> > > > > >
-> > > > > 
-> > > > > No , we do not even need asm/types.h
-> > > > > 
-> > > > > Subject: [PATCH] Neither asm/types.h nor linux/types.h is not required
-> > > > > for arch/ia64/include/asm/fpu.h
-> > > > > 
-> > > > > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > > > 
-> > > > ok. I confirmed.
-> > > > 	Tested-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > > > 	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > > 
-> > > Thanks.
-> > > 
-> > > Jaswinder, mind adding these tags to the commit and sending a pull request 
-> > > with all fixes?
-> > 
-> > The following changes since commit 0b86a4e34d885e734a4c4e46293376f3f1c639eb:
-> >   Ingo Molnar (1):
-> >         Merge branch 'core/header-fixes' of git://git.kernel.org/.../jaswinder/linux-2.6-tip into core/header-fixes
-> > 
-> > are available in the git repository at:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git core/header-fixes
-> > 
-> > Jaswinder Singh Rajput (2):
-> >       Neither asm/types.h nor linux/types.h is required for arch/ia64/include/asm/fpu.h
-> >       make linux/types.h as assembly safe
-> 
-> I continue to disagree with the need for the second patch.
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index 091cd88..919c08d 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -126,6 +126,7 @@ struct cpuinfo_x86 {
+ 
+ #define X86_HYPER_VENDOR_NONE  0
+ #define X86_HYPER_VENDOR_VMWARE 1
++#define X86_HYPER_VENDOR_KVM	2
+ 
+ /*
+  * capabilities of CPUs
+diff --git a/arch/x86/kernel/cpu/hypervisor.c b/arch/x86/kernel/cpu/hypervisor.c
+index fb5b86a..ee1b228 100644
+--- a/arch/x86/kernel/cpu/hypervisor.c
++++ b/arch/x86/kernel/cpu/hypervisor.c
+@@ -23,6 +23,7 @@
+ 
+ #include <asm/processor.h>
+ #include <asm/vmware.h>
++#include <asm/kvm_para.h>
+ #include <asm/hypervisor.h>
+ 
+ static inline void __cpuinit
+@@ -30,6 +31,8 @@ detect_hypervisor_vendor(struct cpuinfo_x86 *c)
+ {
+ 	if (vmware_platform()) {
+ 		c->x86_hyper_vendor = X86_HYPER_VENDOR_VMWARE;
++	} else if (kvm_para_available()) {
++		c->x86_hyper_vendor = X86_HYPER_VENDOR_KVM;
+ 	} else {
+ 		c->x86_hyper_vendor = X86_HYPER_VENDOR_NONE;
+ 	}
+-- 
+1.5.6.5
 
-But have not replied to my mail about that so far.
-
-Why is it wrong to make types.h an assembly-invariant? It is positively 
-helpful for mixed-mode headers and has no downsides whatsoever.
-
-	Ingo
