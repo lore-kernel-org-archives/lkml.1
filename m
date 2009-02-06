@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758087AbZBFDM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758520AbZBFDNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758087AbZBFDM7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 22:12:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbZBFDMv
+	id S1758520AbZBFDNX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 22:13:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755535AbZBFDM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 22:12:51 -0500
-Received: from cmpxchg.org ([85.214.51.133]:57470 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752098AbZBFDMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 22:12:51 -0500
-Message-Id: <20090206031125.693559239@cmpxchg.org>
-User-Agent: quilt/0.47-1
-Date: Fri, 06 Feb 2009 04:11:25 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH 0/3] [PATCH 0/3] swsusp: shrink file cache first
+	Thu, 5 Feb 2009 22:12:56 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:56481 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754317AbZBFDMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 22:12:55 -0500
+Message-ID: <498BAAB1.5030104@cn.fujitsu.com>
+Date: Fri, 06 Feb 2009 11:12:49 +0800
+From: Wei Yongjun <yjwei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: fs/jffs2/malloc.c: kmem_cache_alloc/memset -> kmem_cache_zalloc
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ grumble.  always check software for new behaviour after upgrade.
-  sorry for the mess up :/ ]
+Used kmem_cache_zalloc instead of kmem_cache_alloc/memset.
 
-Hello!
+Signed-off-by: Wei Yongjun <yjwei@cn.fujitsu.com>
+---
+ fs/jffs2/malloc.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-here are three patches that adjust the memory shrinking code used for
-suspend-to-disk.
+diff --git a/fs/jffs2/malloc.c b/fs/jffs2/malloc.c
+index f921125..9eff2bd 100644
+--- a/fs/jffs2/malloc.c
++++ b/fs/jffs2/malloc.c
+@@ -284,10 +284,9 @@ void jffs2_free_inode_cache(struct jffs2_inode_cache *x)
+ struct jffs2_xattr_datum *jffs2_alloc_xattr_datum(void)
+ {
+ 	struct jffs2_xattr_datum *xd;
+-	xd = kmem_cache_alloc(xattr_datum_cache, GFP_KERNEL);
++	xd = kmem_cache_zalloc(xattr_datum_cache, GFP_KERNEL);
+ 	dbg_memalloc("%p\n", xd);
+ 
+-	memset(xd, 0, sizeof(struct jffs2_xattr_datum));
+ 	xd->class = RAWNODE_CLASS_XATTR_DATUM;
+ 	xd->node = (void *)xd;
+ 	INIT_LIST_HEAD(&xd->xindex);
+@@ -303,10 +302,9 @@ void jffs2_free_xattr_datum(struct jffs2_xattr_datum *xd)
+ struct jffs2_xattr_ref *jffs2_alloc_xattr_ref(void)
+ {
+ 	struct jffs2_xattr_ref *ref;
+-	ref = kmem_cache_alloc(xattr_ref_cache, GFP_KERNEL);
++	ref = kmem_cache_zalloc(xattr_ref_cache, GFP_KERNEL);
+ 	dbg_memalloc("%p\n", ref);
+ 
+-	memset(ref, 0, sizeof(struct jffs2_xattr_ref));
+ 	ref->class = RAWNODE_CLASS_XATTR_REF;
+ 	ref->node = (void *)ref;
+ 	return ref;
+-- 
+1.5.3.8
 
-The first two patches are cleanups only and can probably go in
-regardless of the third one.
 
-The third patch changes the shrink_all_memory() logic to drop the file
-cache first before touching any mapped files and only then goes for
-anon pages.
-
-The reason is that everything not shrunk before suspension has to go
-into the image and will be 'prefaulted' before the processes can
-resume and the system is usable again, so the image should be small
-and contain only pages that are likely to be used right after resume
-again.  And this in turn means that the inactive file cache is the
-best point to start decimating used memory.
-
-Also, right now, subsequent faults of contiguously mapped files are
-likely to perform better than swapin (see
-http://kernelnewbies.org/KernelProjects/SwapoutClustering), so not
-only file cache is preferred over other pages, but file pages over
-anon pages in general.
-
-Testing up to this point shows that the patch does what is intended,
-shrinking file cache in favor of anon pages.  But whether the idea is
-correct to begin with is a bit hard to quantify and I am still working
-on it, so RFC only.
-
-	Hannes
 
