@@ -1,98 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757779AbZBFBjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756990AbZBFBkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757779AbZBFBjo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 20:39:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753577AbZBFBjM
+	id S1756990AbZBFBkA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 20:40:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbZBFBjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 20:39:12 -0500
-Received: from cmpxchg.org ([85.214.51.133]:33747 "EHLO cmpxchg.org"
+	Thu, 5 Feb 2009 20:39:14 -0500
+Received: from cmpxchg.org ([85.214.51.133]:33748 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757256AbZBFBjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 20:39:11 -0500
-Message-Id: <E1LVFiy-00032t-Nh@cmpxchg.org>
+	id S1753944AbZBFBjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 20:39:13 -0500
+Message-Id: <E1LVFj4-000335-Cx@cmpxchg.org>
 From: hannes@cmpxchg.org
-Date: Fri, 06 Feb 2009 02:41:44 +0100
+Date: Fri, 06 Feb 2009 02:41:50 +0100
 To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From hannes@cmpxchg.org Fri Feb  6 02:28:54 2009
-Message-Id: <20090206012854.688444313@cmpxchg.org>
+>From hannes@cmpxchg.org Fri Feb  6 02:28:55 2009
+Message-Id: <20090206012854.901599170@cmpxchg.org>
 User-Agent: quilt/0.47-1
-Date: Fri, 06 Feb 2009 02:26:06 +0100
+Date: Fri, 06 Feb 2009 02:26:08 +0100
 From: Johannes Weiner <hannes@cmpxchg.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
  Rik van Riel <riel@redhat.com>,
  linux-kernel@vger.kernel.org,
  linux-mm@kvack.org
-Subject: [PATCH 1/3] swsusp: clean up shrink_all_zones()
+Subject: [PATCH 3/3][RFC] swsusp: shrink file cache first
 References: <20090206012605.378214179@cmpxchg.org>
-Content-Disposition: inline; filename=swsusp-clean-up-shrink_all_zones.patch
+Content-Disposition: inline; filename=swsusp-shrink-file-cache-first.patch
 
-Move local variables to innermost possible scopes and use local
-variables to cache calculations/reads done more than once.
+File cache pages are saved to disk either through normal writeback by
+reclaim or by including them in the suspend image written to a
+swapfile.
 
-No change in functionality (intended).
+Writing them either way should take the same amount of time but doing
+normal writeback and unmap changes the fault behaviour on resume from
+prefault to on-demand paging, smoothening out resume and giving
+previously cached pages the chance to stay out of memory completely if
+they are not used anymore.
+
+Another reason for preferring file page eviction is that the locality
+principle is visible in fault patterns and swap might perform really
+bad with subsequent faulting of contiguously mapped pages.
+
+Since anon and file pages now live on different lists, selectively
+scanning one type only is straight-forward.
+
+This patch also removes the scanning of anon pages without allowing to
+swap, which does not make much sense.
+
+The five memory shrinking passes now look like this:
+
+Pass 0:  shrink inactive file cache
+This has the best chances of not being used any time soon again after
+resume, so trade inactive file cache against space for anon pages.
+
+Pass 1:  shrink file cache
+Essentially the same as before but replenish the inactive file list
+with borderline active pages.
+
+Pass 2:  shrink all file pages and inactive anon
+Reclaim mapped pages file pages and go for aged anon pages as well.
+
+Pass 3:  shrink all file pages and anon
+Same as before but also shrink the active anon list to have enough
+anon pages for actual reclaim should we need pass 4.
+
+Pass 4:  repeat pass 3
 
 Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
 ---
- mm/vmscan.c |   23 +++++++++++------------
- 1 file changed, 11 insertions(+), 12 deletions(-)
+ mm/vmscan.c |   34 ++++++++++++++++++++++------------
+ 1 file changed, 22 insertions(+), 12 deletions(-)
 
 --- a/mm/vmscan.c
 +++ b/mm/vmscan.c
-@@ -2057,31 +2057,31 @@ static unsigned long shrink_all_zones(un
- 				      int pass, struct scan_control *sc)
- {
- 	struct zone *zone;
--	unsigned long nr_to_scan, ret = 0;
--	enum lru_list l;
-+	unsigned long ret = 0;
- 
- 	for_each_zone(zone) {
-+		enum lru_list l;
- 
- 		if (!populated_zone(zone))
- 			continue;
--
- 		if (zone_is_all_unreclaimable(zone) && prio != DEF_PRIORITY)
- 			continue;
+@@ -2069,13 +2069,23 @@ static unsigned long shrink_all_zones(un
  
  		for_each_evictable_lru(l) {
-+			enum zone_stat_item ls = NR_LRU_BASE + l;
-+			unsigned long lru_pages = zone_page_state(zone, ls);
-+
- 			/* For pass = 0, we don't shrink the active list */
--			if (pass == 0 &&
--				(l == LRU_ACTIVE || l == LRU_ACTIVE_FILE))
-+			if (pass == 0 && (l == LRU_ACTIVE_ANON ||
-+						l == LRU_ACTIVE_FILE))
- 				continue;
+ 			enum zone_stat_item ls = NR_LRU_BASE + l;
+-			unsigned long lru_pages = zone_page_state(zone, ls);
++			unsigned long lru_pages;
  
--			zone->lru[l].nr_scan +=
--				(zone_page_state(zone, NR_LRU_BASE + l)
--								>> prio) + 1;
-+			zone->lru[l].nr_scan += (lru_pages >> prio) + 1;
+-			/* For pass = 0, we don't shrink the active list */
+-			if (pass == 0 && (l == LRU_ACTIVE_ANON ||
+-						l == LRU_ACTIVE_FILE))
+-				continue;
++			switch (pass) {
++			case 0:
++				if (l == LRU_ACTIVE_FILE)
++					continue;
++			case 1:
++				if (l == LRU_INACTIVE_ANON)
++					continue;
++			case 2:
++				if (l == LRU_ACTIVE_ANON)
++					continue;
++			default:
++				break;
++			}
+ 
++			lru_pages = zone_page_state(zone, ls);
+ 			zone->lru[l].nr_scan += (lru_pages >> prio) + 1;
  			if (zone->lru[l].nr_scan >= nr_pages || pass > 3) {
-+				unsigned long nr_to_scan;
-+
- 				zone->lru[l].nr_scan = 0;
--				nr_to_scan = min(nr_pages,
--					zone_page_state(zone,
--							NR_LRU_BASE + l));
-+				nr_to_scan = min(nr_pages, lru_pages);
- 				ret += shrink_list(l, nr_to_scan, zone,
- 								sc, prio);
- 				if (ret >= nr_pages)
-@@ -2089,7 +2089,6 @@ static unsigned long shrink_all_zones(un
- 			}
- 		}
- 	}
--
- 	return ret;
- }
+ 				unsigned long nr_to_scan;
+@@ -2134,17 +2144,17 @@ unsigned long shrink_all_memory(unsigned
  
+ 	/*
+ 	 * We try to shrink LRUs in 5 passes:
+-	 * 0 = Reclaim from inactive_list only
+-	 * 1 = Reclaim from active list but don't reclaim mapped
+-	 * 2 = 2nd pass of type 1
+-	 * 3 = Reclaim mapped (normal reclaim)
+-	 * 4 = 2nd pass of type 3
++	 * 0 = Reclaim unmapped inactive file pages
++	 * 1 = Reclaim unmapped file pages
++	 * 2 = Reclaim file and inactive anon pages
++	 * 3 = Reclaim file and anon pages
++	 * 4 = Second pass 3
+ 	 */
+ 	for (pass = 0; pass < 5; pass++) {
+ 		int prio;
+ 
+-		/* Force reclaiming mapped pages in the passes #3 and #4 */
+-		if (pass > 2)
++		/* Reclaim mapped pages in higher passes */
++		if (pass > 1)
+ 			sc.may_swap = 1;
+ 
+ 		for (prio = DEF_PRIORITY; prio >= 0; prio--) {
 
 
