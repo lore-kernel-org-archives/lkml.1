@@ -1,122 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759524AbZBFPa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758843AbZBFPcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759524AbZBFPa6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 10:30:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755967AbZBFPap
+	id S1758843AbZBFPcQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 10:32:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbZBFPb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 10:30:45 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34692 "EHLO hera.kernel.org"
+	Fri, 6 Feb 2009 10:31:56 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38548 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753866AbZBFPan (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 10:30:43 -0500
-Subject: Re: [linux-next][PATCH] revert headers_check fix: ia64, fpu.h
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       hskinnemoen@atmel.com, cooloney@kernel.org, tony.luck@intel.com,
-       ralf@linux-mips.org, dhowells@redhat.com, matthew@wil.cx,
-       chris@zankel.net, LKML <linux-kernel@vger.kernel.org>,
-       linux-next <linux-next@vger.kernel.org>,
-       linux-ia64 <linux-ia64@vger.kernel.org>
-In-Reply-To: <20090206145556.GH18368@elte.hu>
-References: <20090206164546.6291.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <3f9a31f40902060053x18dacf58u40c739ab89f13860@mail.gmail.com>
-	 <20090206180957.6294.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20090206145556.GH18368@elte.hu>
-Content-Type: text/plain
-Date: Fri, 06 Feb 2009 20:59:01 +0530
-Message-Id: <1233934141.3209.20.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1750699AbZBFPbz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 10:31:55 -0500
+Date: Fri, 6 Feb 2009 16:31:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mackerras <paulus@samba.org>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] perf_counter: Prevent oopses from per-cpu software
+	counters
+Message-ID: <20090206153138.GM18368@elte.hu>
+References: <18826.28805.120988.303819@drongo.ozlabs.ibm.com> <20090205142229.GB28443@elte.hu> <18827.48582.613391.869829@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18827.48582.613391.869829@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-02-06 at 15:55 +0100, Ingo Molnar wrote:
-> * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+
+* Paul Mackerras <paulus@samba.org> wrote:
+
+> Ingo Molnar writes:
 > 
-> > > > Index: b/arch/ia64/include/asm/fpu.h
-> > > > ===================================================================
-> > > > --- a/arch/ia64/include/asm/fpu.h
-> > > > +++ b/arch/ia64/include/asm/fpu.h
-> > > > @@ -6,7 +6,7 @@
-> > > >  *     David Mosberger-Tang <davidm@hpl.hp.com>
-> > > >  */
-> > > >
-> > > > -#include <linux/types.h>
-> > > > +#include <asm/types.h>
-> > > >
-> > > 
-> > > No , we do not even need asm/types.h
-> > > 
-> > > Subject: [PATCH] Neither asm/types.h nor linux/types.h is not required
-> > > for arch/ia64/include/asm/fpu.h
-> > > 
-> > > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > 
-> > ok. I confirmed.
-> > 	Tested-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > 	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > So how about fixing these sw counts to properly work as percpu counters too? 
 > 
-> Thanks.
+> OK, so for page faults it looks like I want to look at
 > 
-> Jaswinder, mind adding these tags to the commit and sending a pull request 
-> with all fixes?
+> 	get_cpu_var(vm_event_states).event[PGFAULT]
+> 
+> to get the per-cpu page fault count, as long as
+> CONFIG_VM_EVENT_COUNTERS is set.
 
-The following changes since commit 0b86a4e34d885e734a4c4e46293376f3f1c639eb:
-  Ingo Molnar (1):
-        Merge branch 'core/header-fixes' of git://git.kernel.org/.../jaswinder/linux-2.6-tip into core/header-fixes
+Yeah - i'd suggest that. Note hat VM_EVENT_COUNTERS is default enabled on 
+99.99% of kernels:
 
-are available in the git repository at:
+ config VM_EVENT_COUNTERS
+        default y
+        bool "Enable VM event counters for /proc/vmstat" if EMBEDDED
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git core/header-fixes
+> It looks like the scheduler doesn't keep per-cpu counts of context 
+> switches or task migrations, or if it does I couldn't find them.  We could 
+> do stuff in perf_counter_task_sched_in/out to implement per-cpu context 
+> switch and migration counters by adding up the delta values for each task 
+> that gets scheduled onto the cpu.  Or we could add explicit per-cpu 
+> counters for these things in the scheduler.
+> 
+> What do you think?
 
-Jaswinder Singh Rajput (2):
-      Neither asm/types.h nor linux/types.h is required for arch/ia64/include/asm/fpu.h
-      make linux/types.h as assembly safe
+For per-cpu counts of context switches we already have rq->nr_switches. 
 
- arch/ia64/include/asm/fpu.h |    2 --
- include/linux/types.h       |    3 ++-
- 2 files changed, 2 insertions(+), 3 deletions(-)
+We dont have per-cpu counts of migrations - but could add them.
 
-Complete diff:
-diff --git a/arch/ia64/include/asm/fpu.h b/arch/ia64/include/asm/fpu.h
-index b6395ad..0c26157 100644
---- a/arch/ia64/include/asm/fpu.h
-+++ b/arch/ia64/include/asm/fpu.h
-@@ -6,8 +6,6 @@
-  *	David Mosberger-Tang <davidm@hpl.hp.com>
-  */
- 
--#include <linux/types.h>
--
- /* floating point status register: */
- #define FPSR_TRAP_VD	(1 << 0)	/* invalid op trap disabled */
- #define FPSR_TRAP_DD	(1 << 1)	/* denormal trap disabled */
-diff --git a/include/linux/types.h b/include/linux/types.h
-index 712ca53..c30973a 100644
---- a/include/linux/types.h
-+++ b/include/linux/types.h
-@@ -1,6 +1,7 @@
- #ifndef _LINUX_TYPES_H
- #define _LINUX_TYPES_H
- 
-+#ifndef __ASSEMBLY__
- #ifdef	__KERNEL__
- 
- #define DECLARE_BITMAP(name,bits) \
-@@ -212,5 +213,5 @@ struct ustat {
- };
- 
- #endif	/* __KERNEL__ */
--
-+#endif /*  __ASSEMBLY__ */
- #endif /* _LINUX_TYPES_H */
+We should do it this way becaue it would be nice to make per-cpu counters 
+work just fine even if they are never switched in and out during context 
+switches. That turns per-cpu counters into even lower-overhead ways of 
+monitoring those values.
 
-
+	Ingo
