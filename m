@@ -1,58 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755739AbZBFB3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbZBFBhM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755739AbZBFB3S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 20:29:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbZBFB3H
+	id S1755196AbZBFBhM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 20:37:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbZBFBg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 20:29:07 -0500
-Received: from byss.tchmachines.com ([208.76.80.75]:53715 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751129AbZBFB3G (ORCPT
+	Thu, 5 Feb 2009 20:36:58 -0500
+Received: from anchor-post-2.mail.demon.net ([195.173.77.133]:52885 "EHLO
+	anchor-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751684AbZBFBg5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 20:29:06 -0500
-Date: Thu, 5 Feb 2009 17:28:58 -0800
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: wli@movementarian.org
-Cc: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, shai@scalex86.org
-Subject: Re: [patch] mm: Fix SHM_HUGETLB to work with users in
-	hugetlb_shm_group
-Message-ID: <20090206012858.GB8946@localdomain>
-References: <20090204220428.GA6794@localdomain> <20090204221121.GD10229@movementarian.org> <20090205004157.GC6794@localdomain> <20090205132529.GA12132@csn.ul.ie> <20090205190851.GA6692@localdomain> <20090205233257.GH10229@movementarian.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090205233257.GH10229@movementarian.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
+	Thu, 5 Feb 2009 20:36:57 -0500
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, snakebyte@gmx.de, sliedes@cc.hut.fi
+Subject: [PATCH V2] Squashfs: Fix oops when reading fsfuzzer corrupted filesystems
+Cc: phillip@lougher.demon.co.uk
+Message-Id: <E1LVFfH-0007Ak-PK@dylan.lougher.demon.co.uk>
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+Date: Fri, 06 Feb 2009 01:37:55 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 06:32:57PM -0500, wli@movementarian.org wrote:
->On Thu, Feb 05, 2009 at 11:08:51AM -0800, Ravikiran G Thirumalai wrote:
->> I totally agree.  In fact yesterday I was thinking of resending
->> this patch to not account for shm memory when a user is not
->> validated against rlimits (when he has CAP_IPC_LOCK or if he
->> belongs to the sysctl_hugetlb_shm_group).
->> As I see it there must be two parts:
->> 1. Free ticket to CAP_IPC_LOCK and users belonging to
->>    sysctl_hugetlb_shm_group
->> 2. Patch to have users not having CAP_IPC_LOCK or
->>    sysctl_hugetlb_shm_group to check against memlock
->>    rlimits, and account it.  Also mark this deprecated in
->>    feature-removal-schedule.txt
->> Would this be OK?
->
->This is the ideal scenario, except I thought the rlimit was destined
->to replace the other methods, not vice-versa. I don't really mind
->going this way, but maybe we should check in with the rlimit authors.
 
-RLIMIT_MEMLOCK for SHM_HUGETLB seems bad and unrelated!  And as Mel rightly
-pointed out,  currently rlimits are checked for hugetlb shm but not for
-hugetlb mmaps.  Unless whoever authored the rlimit limitation comes forward
-with a good explanation, I think it should be deprecated.
+This fixes a code regression caused by the recent mainlining changes.
+Zlib sometimes tries to output more data than expected when
+decompressing corrupted data.   The recent code changes call
+zlib_inflate repeatedly, decompressing into separate 4K buffers, this
+code didn't check for the possibility that zlib_inflate might ask
+for too many buffers.
+
+Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
+---
+ fs/squashfs/block.c    |   13 +++++++++++--
+ fs/squashfs/cache.c    |    4 ++--
+ fs/squashfs/squashfs.h |    2 +-
+ fs/squashfs/super.c    |    2 +-
+ 4 files changed, 15 insertions(+), 6 deletions(-)
+
+diff --git a/fs/squashfs/block.c b/fs/squashfs/block.c
+index c837dfc..321728f 100644
+--- a/fs/squashfs/block.c
++++ b/fs/squashfs/block.c
+@@ -80,7 +80,7 @@ static struct buffer_head *get_block_length(struct super_block *sb,
+  * generated a larger block - this does occasionally happen with zlib).
+  */
+ int squashfs_read_data(struct super_block *sb, void **buffer, u64 index,
+-			int length, u64 *next_index, int srclength)
++			int length, u64 *next_index, int srclength, int pages)
+ {
+ 	struct squashfs_sb_info *msblk = sb->s_fs_info;
+ 	struct buffer_head **bh;
+@@ -185,6 +185,14 @@ int squashfs_read_data(struct super_block *sb, void **buffer, u64 index,
+ 			}
+ 
+ 			if (msblk->stream.avail_out == 0) {
++				if (page == pages) {
++					ERROR("zlib_inflate tried to "
++						"decompress too much data, "
++						"expected %d bytes.  Zlib "
++						"data probably corrupt\n",
++						srclength);
++					goto release_mutex;
++				}
+ 				msblk->stream.next_out = buffer[page++];
+ 				msblk->stream.avail_out = PAGE_CACHE_SIZE;
+ 			}
+@@ -268,7 +276,8 @@ block_release:
+ 		put_bh(bh[k]);
+ 
+ read_failure:
+-	ERROR("sb_bread failed reading block 0x%llx\n", cur_index);
++	ERROR("squashfs_read_data failed to read block 0x%llx\n",
++					(unsigned long long) index);
+ 	kfree(bh);
+ 	return -EIO;
+ }
+diff --git a/fs/squashfs/cache.c b/fs/squashfs/cache.c
+index f29eda1..1c4739e 100644
+--- a/fs/squashfs/cache.c
++++ b/fs/squashfs/cache.c
+@@ -119,7 +119,7 @@ struct squashfs_cache_entry *squashfs_cache_get(struct super_block *sb,
+ 
+ 			entry->length = squashfs_read_data(sb, entry->data,
+ 				block, length, &entry->next_index,
+-				cache->block_size);
++				cache->block_size, cache->pages);
+ 
+ 			spin_lock(&cache->lock);
+ 
+@@ -406,7 +406,7 @@ int squashfs_read_table(struct super_block *sb, void *buffer, u64 block,
+ 	for (i = 0; i < pages; i++, buffer += PAGE_CACHE_SIZE)
+ 		data[i] = buffer;
+ 	res = squashfs_read_data(sb, data, block, length |
+-		SQUASHFS_COMPRESSED_BIT_BLOCK, NULL, length);
++		SQUASHFS_COMPRESSED_BIT_BLOCK, NULL, length, pages);
+ 	kfree(data);
+ 	return res;
+ }
+diff --git a/fs/squashfs/squashfs.h b/fs/squashfs/squashfs.h
+index 6b2515d..0e9feb6 100644
+--- a/fs/squashfs/squashfs.h
++++ b/fs/squashfs/squashfs.h
+@@ -34,7 +34,7 @@ static inline struct squashfs_inode_info *squashfs_i(struct inode *inode)
+ 
+ /* block.c */
+ extern int squashfs_read_data(struct super_block *, void **, u64, int, u64 *,
+-				int);
++				int, int);
+ 
+ /* cache.c */
+ extern struct squashfs_cache *squashfs_cache_init(char *, int, int);
+diff --git a/fs/squashfs/super.c b/fs/squashfs/super.c
+index a0466d7..f0d82a9 100644
+--- a/fs/squashfs/super.c
++++ b/fs/squashfs/super.c
+@@ -388,7 +388,7 @@ static int __init init_squashfs_fs(void)
+ 		return err;
+ 	}
+ 
+-	printk(KERN_INFO "squashfs: version 4.0 (2009/01/03) "
++	printk(KERN_INFO "squashfs: version 4.0 (2009/01/31) "
+ 		"Phillip Lougher\n");
+ 
+ 	return 0;
+-- 
+1.5.6.3
+
