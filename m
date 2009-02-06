@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758200AbZBFCek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758650AbZBFCe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758200AbZBFCek (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 21:34:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbZBFCe2
+	id S1758650AbZBFCe5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 21:34:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758468AbZBFCeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 21:34:28 -0500
-Received: from mga14.intel.com ([143.182.124.37]:51972 "EHLO mga14.intel.com"
+	Thu, 5 Feb 2009 21:34:44 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:55745 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752089AbZBFCe1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 21:34:27 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,389,1231142400"; 
-   d="scan'208";a="107766109"
-Subject: Re: [PATCH v2] NOHZ: fix nohz on cpu unplug
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-In-Reply-To: <498B43D9.2080800@rtr.ca>
-References: <200901301729.30284.borntraeger@de.ibm.com>
-	 <200902030948.13519.borntraeger@de.ibm.com>
-	 <20090203122847.GG19979@elte.hu>
-	 <200902040719.25593.borntraeger@de.ibm.com>
-	 <1233777584.16238.16.camel@vayu> <20090204213202.GP22608@elte.hu>
-	 <498B43D9.2080800@rtr.ca>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Thu, 05 Feb 2009 18:33:27 -0800
-Message-Id: <1233887607.16238.47.camel@vayu>
+	id S1758472AbZBFCen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 21:34:43 -0500
+Date: Fri, 6 Feb 2009 13:34:36 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Bryan Wu <cooloney@kernel.org>, dbrownell@users.sourceforge.net,
+       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       vapier.adi@gmail.com
+Subject: Re: [PATCH 1/5] Blackfin SPI Driver: use bfin_spi_ prefix on all
+ functions
+Message-Id: <20090206133436.199d9282.sfr@canb.auug.org.au>
+In-Reply-To: <20090205141245.2945141e.akpm@linux-foundation.org>
+References: <1233828453-13311-1-git-send-email-cooloney@kernel.org>
+	<1233828453-13311-2-git-send-email-cooloney@kernel.org>
+	<20090205141245.2945141e.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__6_Feb_2009_13_34_36_+1100_rZTiWukMNBdTrftt"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-05 at 11:54 -0800, Mark Lord wrote:
-> How far back in (kernel release) time does this problem exist?
-> Candidate for -stable ?
+--Signature=_Fri__6_Feb_2009_13_34_36_+1100_rZTiWukMNBdTrftt
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Problem is present for a while now. But I don't think this is a common
-case scenario (as the issue happens only for the duration when we leave
-a cpu offline, and it should get fixed the moment that logical cpu is
-back online).
+Hi Andrew,
 
-thanks,
-suresh
+On Thu, 5 Feb 2009 14:12:45 -0800 Andrew Morton <akpm@linux-foundation.org>=
+ wrote:
+>
+> As usual, the driver core guys have gone trompling all over other people'=
+s code
+> and your patch doesn't apply to linux-next.
+>=20
+> 11 out of 61 hunks FAILED -- saving rejects to file drivers/spi/spi_bfin5=
+xx.c.rej
 
+To be fair, next-20090206 has one patch to that file it is a single hunk
+and only affects 2 lines and the patch was cc'd to the spi folks (I can't
+easily tell when as the driver-core stuff (being a quilt tree) gets
+rebased often).
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__6_Feb_2009_13_34_36_+1100_rZTiWukMNBdTrftt
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmLobwACgkQjjKRsyhoI8xamwCfcM69c1gbjcLP45NDeSbHkaB/
+r8AAnR9SsDd6OnlxHOMGxF/DhLXfh2GO
+=QCn8
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__6_Feb_2009_13_34_36_+1100_rZTiWukMNBdTrftt--
