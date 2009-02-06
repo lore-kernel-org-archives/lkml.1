@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756345AbZBFTtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757023AbZBFTxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756345AbZBFTtS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 14:49:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbZBFTtG
+	id S1757023AbZBFTxR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 14:53:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbZBFTxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 14:49:06 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:57890 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751690AbZBFTtF (ORCPT
+	Fri, 6 Feb 2009 14:53:05 -0500
+Received: from mail.candelatech.com ([208.74.158.172]:50594 "EHLO
+	ns3.lanforge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751259AbZBFTxE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 14:49:05 -0500
-Date: Fri, 6 Feb 2009 14:49:02 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH v2 1/7] ring-buffer: add NMI protection for spinlocks
-In-Reply-To: <20090206194030.GB32652@Krystal>
-Message-ID: <alpine.DEB.1.10.0902061446390.22636@gandalf.stny.rr.com>
-References: <20090206152151.962749733@goodmis.org> <20090206152720.441757059@goodmis.org> <20090206194030.GB32652@Krystal>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 6 Feb 2009 14:53:04 -0500
+X-Greylist: delayed 1971 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Feb 2009 14:53:03 EST
+Message-ID: <498C951A.3070101@candelatech.com>
+Date: Fri, 06 Feb 2009 11:52:58 -0800
+From: Ben Greear <greearb@candelatech.com>
+Organization: Candela Technologies
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Len Brown <lenb@kernel.org>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>, linux-acpi@vger.kernel.org
+Subject: Re: Regression on VIA C3 motherboard, commit: 66f2173e2
+References: <498A93E5.2080509@candelatech.com> <alpine.LFD.2.00.0902061350470.26256@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0902061350470.26256@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 6 Feb 2009, Mathieu Desnoyers wrote:
-> >  
-> >  	commit_page = cpu_buffer->commit_page;
-> >  	/* we just need to protect against interrupts */
-> > @@ -995,7 +1026,19 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
-> >  		struct buffer_page *next_page = tail_page;
-> >  
-> >  		local_irq_save(flags);
-> > -		__raw_spin_lock(&cpu_buffer->lock);
-> > +		/*
-> > +		 * NMIs can happen after we take the lock.
-> > +		 * If we are in an NMI, only take the lock
-> > +		 * if it is not already taken. Otherwise
-> > +		 * simply fail.
-> > +		 */
-> > +		if (unlikely(__get_cpu_var(rb_in_nmi))) {
-> > +			if (!__raw_spin_trylock(&cpu_buffer->lock))
-> > +				goto out_unlock;
+Len Brown wrote:
+> Thanks for the bisect, Ben.
 > 
-> Hi Steven,
-> 
-> You're not silently discarding an event, aren't you ? ;)
-> 
-> Please keep at least a count of "events_lost" so it can be reported
-> later by a printk().
+> Please test the patch below.
 
-I could add a counter here, but it is not a silent discard. The tracer 
-would receive a "NULL" pointer in this case. Then the tracer can do what 
-it wants with this information. The ring buffer will never discard data 
-(otherwise it is a bug) without letting the tracer know that it did so.
+With this patch, performance is fine, and I do not see
+my smp hack being exercised.  I still have ACPI off
+in the BIOS, and on in the kernel (ie, no change
+from the original test case).
 
--- Steve
+So, this very well could be the fix.
+
+Thanks,
+Ben
+
+> diff --git a/drivers/acpi/tables.c b/drivers/acpi/tables.c
+> index 775c97a..a885295 100644
+> --- a/drivers/acpi/tables.c
+> +++ b/drivers/acpi/tables.c
+> @@ -293,7 +293,12 @@ static void __init check_multiple_madt(void)
+>  
+>  int __init acpi_table_init(void)
+>  {
+> -	acpi_initialize_tables(initial_tables, ACPI_MAX_TABLES, 0);
+> +	acpi_status status;
+> +
+> +	status = acpi_initialize_tables(initial_tables, ACPI_MAX_TABLES, 0);
+> +	if (ACPI_FAILURE(status))
+> +		return 1;
+> +
+>  	check_multiple_madt();
+>  	return 0;
+>  }
+
+
+-- 
+Ben Greear <greearb@candelatech.com>
+Candela Technologies Inc  http://www.candelatech.com
 
