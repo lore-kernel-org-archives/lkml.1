@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757653AbZBFOCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbZBFOEH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757653AbZBFOCv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 09:02:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752310AbZBFOCo
+	id S1757933AbZBFOEH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 09:04:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753297AbZBFODz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 09:02:44 -0500
-Received: from mga07.intel.com ([143.182.124.22]:12823 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751986AbZBFOCn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 09:02:43 -0500
+	Fri, 6 Feb 2009 09:03:55 -0500
+Received: from mga09.intel.com ([134.134.136.24]:37060 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752310AbZBFODy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 09:03:54 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.37,391,1231142400"; 
-   d="scan'208";a="107943422"
-Date: Fri, 6 Feb 2009 15:05:06 +0100
+   d="scan'208";a="487861988"
+Date: Fri, 6 Feb 2009 15:06:18 +0100
 From: Samuel Ortiz <sameo@openedhand.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] drivers/mfd: Adjust NULL test
-Message-ID: <20090206140505.GH3341@sortiz.org>
+To: Huang Weiyi <weiyi.huang@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: mfd: PCF50633: remove duplicated #include
+Message-ID: <20090206140617.GI3341@sortiz.org>
 Reply-To: Samuel Ortiz <sameo@openedhand.com>
-References: <Pine.LNX.4.64.0812211907400.9555@pc-004.diku.dk>
+References: <20090115064950.1F10.WEIYI.HUANG@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0812211907400.9555@pc-004.diku.dk>
+In-Reply-To: <20090115064950.1F10.WEIYI.HUANG@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 21, 2008 at 07:08:09PM +0100, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> Since ei is already known to be non-NULL, I assume that what was intended
-> was to test the result of kzalloc.
-Makes sense, thanks. Applied to my for-linus branch.
+On Thu, Jan 15, 2009 at 06:53:29AM +0800, Huang Weiyi wrote:
+> Removed duplicated #include <linux/device.h> in
+>   drivers/mfd/pcf50633-core.c
+Applied to my for-next branch, thanks.
 
 Cheers,
 Samuel.
 
  
-> The semantic patch that makes this change is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
+> Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
 > 
-> // <smpl>
-> @@
-> expression E,E1;
-> identifier f,fld,fld1;
-> statement S1,S2;
-> @@
+> diff --git a/drivers/mfd/pcf50633-core.c b/drivers/mfd/pcf50633-core.c
+> index 24508e2..feb8ddd 100644
+> --- a/drivers/mfd/pcf50633-core.c
+> +++ b/drivers/mfd/pcf50633-core.c
+> @@ -15,7 +15,6 @@
+>  #include <linux/kernel.h>
+>  #include <linux/device.h>
+>  #include <linux/sysfs.h>
+> -#include <linux/device.h>
+>  #include <linux/module.h>
+>  #include <linux/types.h>
+>  #include <linux/interrupt.h>
 > 
-> E->fld = f(...);
-> ... when != E = E1
->     when != E->fld1 = E1
-> if (
-> -   E
-> +   E->fld
->            == NULL) S1 else S2
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> 
-> ---
->  drivers/mfd/htc-egpio.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff -u -p a/drivers/mfd/htc-egpio.c b/drivers/mfd/htc-egpio.c
-> --- a/drivers/mfd/htc-egpio.c
-> +++ b/drivers/mfd/htc-egpio.c
-> @@ -307,7 +307,7 @@ static int __init egpio_probe(struct pla
->  
->  	ei->nchips = pdata->num_chips;
->  	ei->chip = kzalloc(sizeof(struct egpio_chip) * ei->nchips, GFP_KERNEL);
-> -	if (!ei) {
-> +	if (!ei->chip) {
->  		ret = -ENOMEM;
->  		goto fail;
->  	}
 
 -- 
 Intel Open Source Technology Centre
