@@ -1,104 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757650AbZBFDKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758389AbZBFDLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757650AbZBFDKp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 22:10:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbZBFDKg
+	id S1758389AbZBFDLA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 22:11:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbZBFDKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 22:10:36 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:52899 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752479AbZBFDKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 22:10:35 -0500
-Date: Fri, 6 Feb 2009 01:10:15 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH tip 2/2] tracing: Introduce
-	trace_buffer_{lock_reserve,unlock_commit}
-Message-ID: <20090206031015.GH9846@ghostprotocols.net>
-References: <20090205181413.GI17653@ghostprotocols.net> <20090205225835.GB23999@nowhere> <20090206015416.GF9846@ghostprotocols.net> <20090206023944.GA24546@nowhere>
+	Thu, 5 Feb 2009 22:10:42 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:33941 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753305AbZBFDKl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 22:10:41 -0500
+Date: Fri, 6 Feb 2009 14:10:25 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: commit 64ff3b938ec6782e6585a83d5459b98b0c3f6eb8 breaks rlogin
+Message-ID: <20090206031025.GA3281@gondor.apana.org.au>
+References: <b6a2187b0902050641h7943816ds26275a320e724440@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090206023944.GA24546@nowhere>
-X-Url: http://oops.ghostprotocols.net:81/blog
+In-Reply-To: <b6a2187b0902050641h7943816ds26275a320e724440@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, Feb 06, 2009 at 03:39:45AM +0100, Frederic Weisbecker escreveu:
-> On Thu, Feb 05, 2009 at 11:54:16PM -0200, Arnaldo Carvalho de Melo wrote:
-> > Em Thu, Feb 05, 2009 at 11:58:37PM +0100, Frederic Weisbecker escreveu:
-> > > > +void trace_buffer_unlock_commit(struct trace_array *tr,
-> > > > +				struct ring_buffer_event *event,
-> > > > +				unsigned long flags, int pc)
-> > > > +{
-> > > > +	ring_buffer_unlock_commit(tr->buffer, event);
-> > > > +
-> > > > +	ftrace_trace_stack(tr, flags, 6, pc);
-> > > > +	ftrace_trace_userstack(tr, flags, pc);
-> > > > +	trace_wake_up();
-> > > > +}
-> > > 
-> > > 
-> > > I have mitigate feelings about this part. The name of this function could
-> > > have some sense if _most_ of the tracers were using the stack traces. But that's
-> > > not the case.
-> > > 
-> > > We have now this couple:
-> > > 
-> > > _ trace_buffer_lock_reserve() -> handles the ring-buffer reservation, the context info, and the type
-> > > _ trace_buffer_unlock_commit() -> unlock, commit, wake and... stacktraces?
-> > > 
-> > > In my opinion, the latter doesn't follow the logic meaning of the first.
-> > > And the result is a mixup of (trace_buffer | ring_buffer)(lock/unlock/reserve/commit).
-> > > 
-> > > You are sometimes using trace_buffer_lock_reserve followed by ring_buffer_unlock_commit.
-> > > That looks a bit weird: we are using a high level function followed by its conclusion
-> > > on the form of the low lovel function.
-> > > 
-> > > I think the primary role of this new couple should be to simplify the low level ring buffer
-> > > bits as it does. But the stack things should stay separated.
-> > 
-> > Well, the whole reason for this cset was to provide a way to check for
-> > things like stacktrace while reducing the number of explicit calls the
-> > poor driver, oops, ftrace plugin writers had to keep in mind.
+On Thu, Feb 05, 2009 at 10:41:52PM +0800, Jeff Chua wrote:
+> The following commit breaks "rlogin". Symptom is the terminal just
+> hangs before login to the remote machine. No error, just the cursor
+> never come back. "~." or type "exit" will exit from remote session.
+> Only happens "sometimes". Happens more often if you try many times.
 > 
-> 
-> I agree, but that forces those who don't need stacktraces to use
-> a paired trace_buffer_lock_reserve() / ring_buffer_unlock_commit()
-> The poor newcomers will become dizzy with these different namespaces...
-> And it's like managing a file with fopen() and then close() ... :-)
-> 
->  
-> > So it may well be the case for a better name, but frankly I think that
-> > this is something better left _hidden_, a magic that the plugin writers
-> > doesn't have to deal with.
-> 
-> I agree with you, the stacktraces are used by several tracers, and then
-> it deserves some code factoring.
-> What I would suggest is to have two different trace_buffer_unlock_commit()
-> 
-> Thinking about the name of these functions, since they are in a higher layer
-> than the ring buffer which performs some things with locking and buffers, we could
-> let this latter do his tricky low level work and simply offer some magic functions
-> with magic names:
-> 
-> _ trace_reserve()
-> _ trace_commit()
-> _ trace_commit_stacktrace()
+> I've reverted the commit, and rlogin works now.
 
-The point I was trying to make is that the magic is not just
-stacktraces, it may well be some other whizbangfoobar that I don't know
-right now.
+Could you please try a strace on both sides, with and without
+this patch applied?
 
-So perhaps, we indeed need some per tracer flags where the driver writer
-can state which kind of magic it _doesn't_ want performed.
- 
-The default would be: magic is in the air... I.e. do whatever magic you
-may find interesting, as I can't foretell.
+This breakage may well be unintentional since I can't see rlogin
+producing more than 64K of data in urgent mode.
 
-- Arnaldo
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
