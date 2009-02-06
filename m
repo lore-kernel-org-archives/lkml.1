@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbZBFNxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757032AbZBFNyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758126AbZBFNxt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 08:53:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757426AbZBFNxZ
+	id S1757032AbZBFNyR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 08:54:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758159AbZBFNxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 08:53:25 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:47666 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757370AbZBFNxX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 08:53:23 -0500
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] =?utf-8?q?add=20another=20mailmap=20entry=20for=20Uwe=20Kleine-K=C3=B6nig?=
-Date: Fri,  6 Feb 2009 14:53:19 +0100
-Message-Id: <1233928399-22012-2-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1233928399-22012-1-git-send-email-u.kleine-koenig@pengutronix.de>
-References: <1233928399-22012-1-git-send-email-u.kleine-koenig@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Fri, 6 Feb 2009 08:53:50 -0500
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:41200 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758109AbZBFNxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 08:53:49 -0500
+Date: Fri, 6 Feb 2009 14:53:43 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Jean Pihet <jpihet@mvista.com>, tony@atomide.com
+Cc: Paul Walmsley <paul@pwsan.com>, Andrew Morton <akpm@linux-foundation.org>,
+       ext-adrian.hunter@nokia.com, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-omap@vger.kernel.org, jarkko.lavinen@nokia.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] OMAP: MMC: recover from transfer failures - Resend
+Message-ID: <20090206145343.2b8a5353@mjolnir.drzeus.cx>
+In-Reply-To: <200902061422.32689.jpihet@mvista.com>
+References: <20081207213617.10456.43951.stgit@localhost>
+	<20090205121045.4022c319.akpm@linux-foundation.org>
+	<alpine.DEB.2.00.0902051323090.8131@utopia.booyaka.com>
+	<200902061422.32689.jpihet@mvista.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I created commit 7971db5a4b4176ad5df590fce07a962c643a2740 on a machine
-where I forgot to set user.name and user.email before.  The default
-values were not optimal.
+On Fri, 6 Feb 2009 14:22:32 +0100
+Jean Pihet <jpihet@mvista.com> wrote:
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Acked-by: Wolfram Sang <w.sang@pengutronix.de>
----
- .mailmap |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+> On Thursday 05 February 2009 21:32:03 Paul Walmsley wrote:
+> > On Thu, 5 Feb 2009, Andrew Morton wrote:
+> > > An infinite loop which assumes the hardware is perfect is always a
+> > > worry.  But I see the driver already does that, so we're no worse off..
+> Do you want a finite loop with udelay in it? I located 4 places were this 
+> could be used. If so I can generate a new patch for that.
+> 
 
-diff --git a/.mailmap b/.mailmap
-index aa934d1..a62e6a8 100644
---- a/.mailmap
-+++ b/.mailmap
-@@ -101,6 +101,7 @@ Tejun Heo <htejun@gmail.com>
- Thomas Graf <tgraf@suug.ch>
- Tony Luck <tony.luck@intel.com>
- Tsuneo Yoshioka <Tsuneo.Yoshioka@f-secure.com>
--Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
- Uwe Kleine-König <ukleinek@informatik.uni-freiburg.de>
-+Uwe Kleine-König <ukl@pengutronix.de>
-+Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
- Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
+Even if Andrew doesn't, I'd sure like it. (the finite bit at least) :)
+
+
+Related, who is the maintainer of this driver? Tony? I'd like to have
+someone who checks patches before I queue them up.
+
+
+Rgds
 -- 
-1.5.6.5
+     -- Pierre Ossman
 
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
