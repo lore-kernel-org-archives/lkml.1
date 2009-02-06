@@ -1,134 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755387AbZBFGYJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755077AbZBFGfq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755387AbZBFGYJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 01:24:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbZBFGX4
+	id S1755077AbZBFGfq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 01:35:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbZBFGfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 01:23:56 -0500
-Received: from ozlabs.org ([203.10.76.45]:43785 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751491AbZBFGX4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 01:23:56 -0500
-From: Michael Neuling <mikey@neuling.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/2] powerpc, ftrace: fix compile error when modules not configured 
-In-reply-to: <20090206060527.369616736@goodmis.org> 
-References: <20090206060328.181057235@goodmis.org> <20090206060527.369616736@goodmis.org>
-Comments: In-reply-to Steven Rostedt <rostedt@goodmis.org>
-   message dated "Fri, 06 Feb 2009 01:03:30 -0500."
-X-Mailer: MH-E 8.0.3; nmh 1.2; GNU Emacs 22.2.1
-Date: Fri, 06 Feb 2009 17:23:52 +1100
-Message-ID: <12951.1233901432@neuling.org>
+	Fri, 6 Feb 2009 01:35:37 -0500
+Received: from mga10.intel.com ([192.55.52.92]:3056 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751491AbZBFGfg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 01:35:36 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,390,1231142400"; 
+   d="scan'208";a="663360325"
+Subject: Re: [PATCH] perf_counter: Prevent oopses from per-cpu software
+	counters
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <18827.48582.613391.869829@cargo.ozlabs.ibm.com>
+References: <18826.28805.120988.303819@drongo.ozlabs.ibm.com>
+	 <20090205142229.GB28443@elte.hu>
+	 <18827.48582.613391.869829@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 06 Feb 2009 14:35:25 +0800
+Message-Id: <1233902125.2604.328.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <20090206060527.369616736@goodmis.org> you wrote:
-> From: Steven Rostedt <srostedt@redhat.com>
+On Fri, 2009-02-06 at 15:34 +1100, Paul Mackerras wrote:
+> Ingo Molnar writes:
 > 
-> Michael Neuling reported a compile bug when dynamic ftrace was
-> configured in and modules were not. This was due to the ftrace
-> code referencing module specific structures.
+> > So how about fixing these sw counts to properly work as percpu counters too? 
 > 
-> Reported-by: Michael Neuling <mikey@neuling.org>
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-
-Steve,
-
-Thanks, fixes the error I was seeing.  
-
-As an aside, is there anyway we can merge some of the code in
-arch/powerpc/kernel/ftrace.c between 32 and 64bit?  There seems to be a
-lot of repeated code in there with only minor changes.
-
-Mikey
-
-> ---
->  arch/powerpc/kernel/ftrace.c |   16 +++++++++++++++-
->  1 files changed, 15 insertions(+), 1 deletions(-)
+> OK, so for page faults it looks like I want to look at
 > 
-> diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-> index a913f91..88c641d 100644
-> --- a/arch/powerpc/kernel/ftrace.c
-> +++ b/arch/powerpc/kernel/ftrace.c
-> @@ -113,6 +113,8 @@ static int test_24bit_addr(unsigned long ip, unsigned lon
-g addr)
->  	return create_branch((unsigned int *)ip, addr, 0);
->  }
->  
-> +#ifdef CONFIG_MODULES
-> +
->  static int is_bl_op(unsigned int op)
->  {
->  	return (op & 0xfc000003) == 0x48000001;
-> @@ -323,6 +325,7 @@ __ftrace_make_nop(struct module *mod,
->  	return 0;
->  }
->  #endif /* PPC64 */
-> +#endif /* CONFIG_MODULES */
->  
->  int ftrace_make_nop(struct module *mod,
->  		    struct dyn_ftrace *rec, unsigned long addr)
-> @@ -342,6 +345,7 @@ int ftrace_make_nop(struct module *mod,
->  		return ftrace_modify_code(ip, old, new);
->  	}
->  
-> +#ifdef CONFIG_MODULES
->  	/*
->  	 * Out of range jumps are called from modules.
->  	 * We should either already have a pointer to the module
-> @@ -366,9 +370,13 @@ int ftrace_make_nop(struct module *mod,
->  		mod = rec->arch.mod;
->  
->  	return __ftrace_make_nop(mod, rec, addr);
-> -
-> +#else
-> +	/* We should not get here without modules */
-> +	return -EINVAL;
-> +#endif /* CONFIG_MODULES */
->  }
->  
-> +#ifdef CONFIG_MODULES
->  #ifdef CONFIG_PPC64
->  static int
->  __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-> @@ -457,6 +465,7 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long 
-addr)
->  	return 0;
->  }
->  #endif /* CONFIG_PPC64 */
-> +#endif /* CONFIG_MODULES */
->  
->  int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
->  {
-> @@ -475,6 +484,7 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned lon
-g addr)
->  		return ftrace_modify_code(ip, old, new);
->  	}
->  
-> +#ifdef CONFIG_MODULES
->  	/*
->  	 * Out of range jumps are called from modules.
->  	 * Being that we are converting from nop, it had better
-> @@ -486,6 +496,10 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned lo
-ng addr)
->  	}
->  
->  	return __ftrace_make_call(rec, addr);
-> +#else
-> +	/* We should not get here without modules */
-> +	return -EINVAL;
-> +#endif /* CONFIG_MODULES */
->  }
->  
->  int ftrace_update_ftrace_func(ftrace_func_t func)
-> -- 
-> 1.5.6.5
+> 	get_cpu_var(vm_event_states).event[PGFAULT]
 > 
-> -- 
+> to get the per-cpu page fault count, as long as
+> CONFIG_VM_EVENT_COUNTERS is set.
 > 
+> It looks like the scheduler doesn't keep per-cpu counts of context
+> switches
+rq->sched_switch or sched_count? ﻿sched_switch is defined, but not used. They
+all depends on CONFIG_SCHEDSTATS=y.
+
+>  or task migrations, or if it does I couldn't find them.  We
+> could do stuff in perf_counter_task_sched_in/out to implement per-cpu
+> context switch and migration counters by adding up the delta values
+> for each task that gets scheduled onto the cpu.  Or we could add
+> explicit per-cpu counters for these things in the scheduler.
+> 
+> What do you think?
+> 
+> Paul.
+
