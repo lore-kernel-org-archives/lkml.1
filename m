@@ -1,50 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251AbZBFJnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753939AbZBFJnf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757251AbZBFJnU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 04:43:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbZBFJnB
+	id S1753939AbZBFJnf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 04:43:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757300AbZBFJnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 04:43:01 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:45213 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752278AbZBFJnA (ORCPT
+	Fri, 6 Feb 2009 04:43:21 -0500
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:37069 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756776AbZBFJnT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 04:43:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=kxvwYh/Q2J8hzUVxJ3adSjhxJdXKB6qZglWUX3R5QOJGv/CIF6YGFZOklNUt6V04lt
-         WivCg5vtmOQlHWEC5WGrFLu36v+Zb57nwdbBtp7pyJVIZm7aC5N2SRuNkmOecOlOFWNr
-         ImMkFm0ApQdf9Kt5Gd5k9Hsn11f9agmRnmKHQ=
-Date: Fri, 6 Feb 2009 09:42:53 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: herbert@gondor.apana.org.au, zbr@ioremap.net, w@1wt.eu,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
-Message-ID: <20090206094253.GB4879@ff.dom.local>
-References: <20090203094108.GA4639@ff.dom.local> <20090205.235258.257422341.davem@davemloft.net> <20090206091034.GA4879@ff.dom.local> <20090206.011722.41272682.davem@davemloft.net>
+	Fri, 6 Feb 2009 04:43:19 -0500
+Message-ID: <498C062C.201@vmware.com>
+Date: Fri, 06 Feb 2009 10:43:08 +0100
+From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thellstrom@vmware.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080926)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090206.011722.41272682.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Subject: Re: 2.6.29 pat issue
+References: <498ADFE3.9020907@vmware.com>	<1233856988.4286.83.camel@localhost.localdomain>	<498B5ADE.3090602@vmware.com> <m1tz78pdwy.fsf@fess.ebiederm.org>
+In-Reply-To: <m1tz78pdwy.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 06, 2009 at 01:17:22AM -0800, David Miller wrote:
-...
-> And all I'm saying is that since the page allocator provides that
-> facility, and using pages solves all of the splice() et al.  problems,
-> building something extremely simple on top of the page allocator seems
-> to be a good way to go.
+Eric W. Biederman wrote:
+> Thomas Hellstrom <thellstrom@vmware.com> writes:
+>
+>
+>   
+>> Indeed, it's crucial to keep the mappings consistent, but failure to do so is a
+>> kernel driver bug, it should never be the result of invalid user data.
+>>     
+>
+> It easily can be.  Think of an X server mmaping frame buffers. Or other
+> device bars.
+>
+>   
+Hmm, Yes  you're right, although I'm still a bit doubtful about RAM pages.
 
-This all is absolutely right if we can afford it: more simple - more
-memory wasted. I hope you're right, but on the other hand, people
-don't use slob by default.
+Wait. Now I see what's causing the problems. The code is  assuming that  
+VM_PFNMAP vmas never map RAM pages. That's also an invalid assumption. 
+See comments in mm/memory.c
 
-Jarek P.
+So probably the attribute check should be done for the insert_pfn path 
+of VM_MIXEDMAP as well. That's not done today.
+
+So there are three distinct bugs at this point:
+
+1) VMAs with VM_PFNMAP are incorrectly assumed to be linear if 
+vma->vm_pgoff non-null.
+2) VM_PFNMAP VMA PTEs are incorrectly assumed to never point to physical 
+RAM.
+3) There is no check for the insert_pfn  path of vm_insert_mixed().
+
+>   
+>> IMHO checking each vm_insert_pfn() for caching attribute correctness is not
+>> something that should be enabled by default, due to the CPU overhead. Production
+>> drivers should never violate this.
+>>     
+>
+> If it is a problem the implementation should become more efficient.  Userspace
+> as well as drivers can generate these mappings so even with a perfect driver
+> you cannot guarantee that someone else does not have that area of memory
+> mapped differently.
+>   
+OK, So there seems to be a couple of things that can be done for 
+performance here:
+
+1) A fastpath for single pages.
+2) RAM pages are tracked with a page bit today.
+Why not say "all memory backed by a struct page" should be tracked with 
+a page bit. Then pfn_valid() could be used instead of page_is_ram(). 
+This, combined with 1) should make tracking struct page backed pages 
+extremely fast.
+3) If vm_insert_pfn() happens to be used on a linear VMA, it looks like 
+the whole VMA is being validated for each vm_insert_pfn(), which seems 
+extremely inefficient, considering the extensive tests in pagerame_is_ram().
+
+/Thomas
+
+> Eric
+>   
+
+
