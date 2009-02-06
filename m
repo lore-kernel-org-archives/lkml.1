@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757393AbZBFAfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbZBFAp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757393AbZBFAfW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 19:35:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbZBFAe7
+	id S1756135AbZBFAp1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 19:45:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbZBFApK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 19:34:59 -0500
-Received: from casper.infradead.org ([85.118.1.10]:34500 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753723AbZBFAe6 (ORCPT
+	Thu, 5 Feb 2009 19:45:10 -0500
+Received: from an-out-0708.google.com ([209.85.132.247]:35394 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752491AbZBFApI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 19:34:58 -0500
-Date: Thu, 5 Feb 2009 16:35:13 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] input: introduce a tougher i8042.reset
-Message-ID: <20090205163513.1a5d7308@infradead.org>
-In-Reply-To: <20090205135229.e4d5efc3.akpm@linux-foundation.org>
-References: <20090204191540.2d6abd87@infradead.org>
-	<20090204191631.21783c62@infradead.org>
-	<20090205135229.e4d5efc3.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 5 Feb 2009 19:45:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
+         :subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        b=Abm1/ka6LwDvUp4WQ4txVY1X2VaNNR/uFcFjz9+0AZBusi8yo4oTxTaNSHCM/YQYAz
+         QwHcWUDRUwwd8VOmzzwBdSjSZpdqd4D2hZKxRhURsOb6msOHci1fPDrIvZftju+fiwRC
+         jGThVrfxwNcDvffDgpGtrZ8gcFp/8LmU8gw5Q=
+Message-ID: <498B880E.6070001@gmail.com>
+Date: Thu, 05 Feb 2009 18:45:02 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+Newsgroups: gmane.linux.ide,gmane.linux.kernel
+To: =?ISO-8859-1?Q?Pasi_K=E4rkk=E4inen?= <pasik@iki.fi>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Suggestions for debugging ata_piix and ahci driver failures on
+ Xen pv_ops dom0 kernel (2.6.29-rcX)
+References: <20090205082843.GD15052@edu.joroinen.fi>
+In-Reply-To: <20090205082843.GD15052@edu.joroinen.fi>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Feb 2009 13:52:29 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Wed, 4 Feb 2009 19:16:31 -0800
-> Arjan van de Ven <arjan@infradead.org> wrote:
+Pasi Kärkkäinen wrote:
+> Hello!
 > 
-> > Some touchpads don't reset right the first time (MSI Wind U-100 for
-> > example). This patch will retry the reset up to 5 times.
+> I'm trying to figure out what's wrong with the pv_ops dom0 kernel/patches [1]
+> causing at least ata_piix and ahci drivers to fail to work.
 > 
-> Sigh, real life sucks.  I wonder what the windows driver does.
-
-I have no idea; but this worked for me.
-I bet the windows driver just retries as well.
-
+> There was legacy IRQ enabling problem earlier with the pv_ops dom0 patches, 
+> which pretty much prevented the disks from being detected.. but that got fixed. 
+> It could still be something related to Xen/dom0 irq handling.. 
 > 
-> > In addition, this patch also adds a module parameter to not treat
-> > reset failures as fatal to the usage of the device. This prevents
-> > a touchpad failure from also disabling the keyboard....
-> > 
+> I'd be glad if someone could take a look at this 2.6.29-rc3-tip pv_ops dom0 kernel boot log
+> and comment about _possible_ causes for such behaviour of ata_piix and ahci:
 > 
-> Is there any reason why we shouldn't just do this all the time?
+> http://pasik.reaktio.net/xen/pv_ops-dom0-debug/pv_ops-dom0-bootlog-11-xen331-linux-2.6.29-rc3-atadebug3.txt
 > 
-> IOW, is there any benefit in marking the 8042 as dead?
+> In that testing box I have just one IDE hdd attached to ata_piix controller, the AHCI controller doesn't
+> have any disks attached.
+> 
+> The exact same kernel works OK without problems on baremetal without Xen
+> hypervisor. 
 
-if it really is not there, then the kernel later will stall talking to
-it.... for the "normal" headless server case.
-At least I suppose. The input people need to jump in on this one.. I
-didn't want to do a mass behavior change on something this fragile.
+Seems like me like ata_piix is not receiving any interrupts.. the 
+polling-based IDENTIFY and SET FEATURES work, but the READ NATIVE MAX 
+ADDRESS times out and so does the READ DMA that gets tried next.
 
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Note that the ata_piix controller is in legacy mode, not native mode, so 
+it's using IRQ 14 and 15, not whatever the hardware may otherwise 
+indicate. Could be the problem is related to that.
