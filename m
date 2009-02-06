@@ -1,55 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759511AbZBFQhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755869AbZBFQkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759511AbZBFQhc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 11:37:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbZBFQhY
+	id S1755869AbZBFQkd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 11:40:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbZBFQkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 11:37:24 -0500
-Received: from gw.goop.org ([64.81.55.164]:38473 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750936AbZBFQhX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 11:37:23 -0500
-Message-ID: <498C6741.8000605@goop.org>
-Date: Fri, 06 Feb 2009 08:37:21 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Ingo Molnar <mingo@elte.hu>, Zachary Amsden <zach@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Ian Campbell <ian.campbell@citrix.com>,
-       the arch/x86 maintainers <x86@kernel.org>, linux-kernel@vger.kernel.org,
-       Ravikiran Thirumalai <kiran@scalemp.com>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [PATCH 5 of 7] x86/paravirt: add register-saving thunks to reduce
- caller register pressure
-References: <patchbomb.1233182100@abulafia.goop.org>	<7d4a052c499dbfe5e816.1233182105@abulafia.goop.org> <87fxisvxb9.fsf@basil.nowhere.org>
-In-Reply-To: <87fxisvxb9.fsf@basil.nowhere.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Feb 2009 11:40:21 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:53889 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751564AbZBFQkU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 11:40:20 -0500
+Date: Fri, 6 Feb 2009 16:38:57 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>, hskinnemoen@atmel.com,
+       cooloney@kernel.org, tony.luck@intel.com, ralf@linux-mips.org,
+       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-next <linux-next@vger.kernel.org>,
+       linux-ia64 <linux-ia64@vger.kernel.org>
+Subject: Re: [linux-next][PATCH] revert headers_check fix: ia64, fpu.h
+Message-ID: <20090206163857.GJ13758@n2100.arm.linux.org.uk>
+References: <3f9a31f40902060053x18dacf58u40c739ab89f13860@mail.gmail.com> <20090206180957.6294.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090206145556.GH18368@elte.hu> <1233934141.3209.20.camel@localhost.localdomain> <20090206153315.GD13758@n2100.arm.linux.org.uk> <1233935328.3209.30.camel@localhost.localdomain> <20090206155512.GF13758@n2100.arm.linux.org.uk> <20090206161229.GA8256@elte.hu> <20090206162352.GI13758@n2100.arm.linux.org.uk> <20090206163314.GA11216@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090206163314.GA11216@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> I had something like this (but not as generic) for the old pre
-> unification semaphores on x86-64 too. I think it's a generally useful
-> facility for lots of things (in fact I've been asking gcc developers
-> for providing this in a general way for some time).
->   
+On Fri, Feb 06, 2009 at 05:33:14PM +0100, Ingo Molnar wrote:
+> 
+> * Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+> 
+> > On Fri, Feb 06, 2009 at 05:12:29PM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+> > > 
+> > > > > We cannot see any downside of this patch.
+> > > > > 
+> > > > > But we can see upside of this patch is:
+> > > > > 1. No need to protect linux/types.h with #ifndef __ASSEMBLY__ in many
+> > > > > files
+> > > > > 2. So we trying to replace multiple #ifndef __ASSEMBLY__ with one.
+> > > > 
+> > > > The point is:
+> > > > 
+> > > > 1. If the parent include needs to include linux/types.h to get at C
+> > > >    types _and_ the include file needs to also be included by assembly
+> > > >    code, it itself needs to have #ifndef __ASSEMBLY__ to protect those
+> > > >    uses from the assembly code.
+> > > > 
+> > > >    In that case, the linux/types.h include should be contained within
+> > > >    the #ifndef __ASSEMBLY__ .. #endif block along with all C only
+> > > >    parts of the header file.
+> > > 
+> > > That makes the code much less clean: putting #include's in the middle of a 
+> > > header is poor style and leads to people failing to consider dependencies. 
+> > > We generally put them to the header portion.
+> > > 
+> > > Putting an #include line in the middle of a header file is a receipe for a 
+> > > dependency hell (it can easily fall inside #ifdefs, can be overlooked, 
+> > > etc.), so it's _strongly_ discouraged (at least on arch/x86).
+> > 
+> > Put them at the top then with an additional ifndef.
+> 
+> So you advocate 40 stupid pairs of #ifdefs spread out, instead of a 
+> _single_, obvious #ifdef in a commonly used header?
 
-What other users do you have in mind?
+As I see it, if you want all your style points to be adhered to, then yes.
+And I do believe it to be a valid solution.
 
-> So I would suggest to move the necessary macros to do that outside
-> paravirt.h into a separate include so that it can be used independently
-> and not call it PV_*.
+Personally, I'd put them nearer the C code.
 
-That wouldn't be too hard to do, but I don't think its something we 
-should do lightly.  There are quite a few pitfalls, and the bugs can get 
-pretty obscure.  It would also mean bringing out a lot of the PV_CALL 
-machinery, and I'm not sure we really want to give that too much 
-exposure in the light of day.
-
-    J
-
+That's precisely what I do with the ARM include files.  Never been a
+problem.
