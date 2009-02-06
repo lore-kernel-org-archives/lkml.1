@@ -1,54 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755485AbZBFXLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbZBFXRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755485AbZBFXLW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 18:11:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZBFXLN
+	id S1754638AbZBFXRU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 18:17:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbZBFXRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 18:11:13 -0500
-Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:41605 "EHLO
-	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752239AbZBFXLM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 18:11:12 -0500
-Message-ID: <498CC380.1070705@lwfinger.net>
-Date: Fri, 06 Feb 2009 17:10:56 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Fri, 6 Feb 2009 18:17:12 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:33997 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750936AbZBFXRK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 18:17:10 -0500
+Date: Fri, 6 Feb 2009 15:17:09 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Alex Chiang <achiang@hp.com>, "Luck, Tony" <tony.luck@intel.com>,
+       "stable@kernel.org" <stable@kernel.org>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ia64: prevent irq migration race in __cpu_disable path
+Message-ID: <20090206231709.GP10918@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090206162213.GD8208@ldl.fc.hp.com> <57C9024A16AD2D4C97DC78E552063EA36121A469@orsmsx505.amr.corp.intel.com> <20090206210550.GF2445@ldl.fc.hp.com>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Hugh Dickins <hugh@veritas.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Mikael Pettersson <mikpe@it.uu.se>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [Bug #12609] v2.6.29-rc2 libata sff 32bit PIO regression
-References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <pWZw1SZjMCH.A.o-D.uuYiJB@chimera> <Pine.LNX.4.64.0902051723520.1445@blonde.anvils> <200902052354.16361.rjw@sisk.pl>
-In-Reply-To: <200902052354.16361.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090206210550.GF2445@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Thursday 05 February 2009, Hugh Dickins wrote:
->> On Wed, 4 Feb 2009, Rafael J. Wysocki wrote:
->>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12609
->>> Subject		: v2.6.29-rc2 libata sff 32bit PIO regression
->>> Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
->>> Date		: 2009-01-23 23:52 (13 days old)
->>> References	: http://marc.info/?l=linux-kernel&m=123275478111406&w=4
->>> 		  http://marc.info/?l=linux-kernel&m=123254501314058&w=4
->>> Handled-By	: Mikael Pettersson <mikpe@it.uu.se>
->>> 		  Hugh Dickins <hugh@veritas.com>
->>> Patch		: http://marc.info/?l=linux-kernel&m=123254501314058&w=2
->> Yes, this does still need to be listed.  My initial patch for it was
->> not enough, but I think the three patches necessary have all now been
->> posted (though Sergei may rewrite mine).  I'm expecting Alan to gather
->> them together and send them in due course, but I believe he's occupied
->> with other stuff just at the moment.
+On Fri, Feb 06, 2009 at 02:05:50PM -0700, Alex Chiang wrote:
+> * Luck, Tony <tony.luck@intel.com>:
+> > > This is wrong because fixup_irqs calls migrate_irqs, and in
+> > > migrate_irqs, we use the cpu_online_map to:
+> > >
+> > >       1. look for interrupts on current CPU
+> > >       2. if we find one, move it to the first available CPU in
+> > >       the cpu_online_map
+> > >
+> > > This means we can potentially migrate an interrupt off ourself
+> > > back to... ourself. Uh oh.
+> > 
+> > Should we make migrate_irqs smarter then ... does any caller really
+> > expect that it would "migrate" the irq to the same cpu?
+> 
+> The only thing migrate_irqs does is locate irqs that have their
+> CPU affinity set to the current CPU, and if so, changes the
+> affinity.
+> 
+> We still have possible pending timer interrupts that we need to
+> handle, so I'm not seeing how changing the migrate_irqs
+> implementation (to avoid migrating to ourself) will handle that.
+> 
+> On one hand, I think the only irq handler that can be called at
+> this point is our timer_interrupt, which doesn't seem to be using
+> any RCU APIs.
+> 
+> On the other hand, if we really want to make sure that we're not
+> calling interrupt handlers with our CPU marked as 'offline', then
+> we need to fix ia64_process_pending_intr() so that we're not
+> firing our timer_interrupt with a NULL pt_regs.
+> 
+> Add in to the mix that x86 seems to have the same assumption that
+> we do (that it's ok to call our timer interrupt handler even if
+> we're already marked as 'offline').
+> 
+> I'm leaning towards reverting Paul's previous commit entirely
+> because
+> 
+> 	- migrate_platform_irqs() doesn't cause any interrupt
+> 	  handlers to be fired by itself
+> 
+> 	- it also uses cpu_online)map to find a new CPU to assign
+> 	  CPEI to
+> 
+> Thoughts?
 
-I still have the problem as of 2.6.29-rc3-00634-g9be260a
+I would suggest at least a comment stating why it is safe to take the
+interrupts on a CPU marked offline.  As to the eventual solution, you
+guys are the experts on your architecture.
 
-Larry
-
+							Thanx, Paul
