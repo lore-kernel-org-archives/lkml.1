@@ -1,72 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758650AbZBFCe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757685AbZBFCj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758650AbZBFCe5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 21:34:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758468AbZBFCeo
+	id S1757685AbZBFCj7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 21:39:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbZBFCjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 21:34:44 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:55745 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758472AbZBFCen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 21:34:43 -0500
-Date: Fri, 6 Feb 2009 13:34:36 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Bryan Wu <cooloney@kernel.org>, dbrownell@users.sourceforge.net,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       vapier.adi@gmail.com
-Subject: Re: [PATCH 1/5] Blackfin SPI Driver: use bfin_spi_ prefix on all
- functions
-Message-Id: <20090206133436.199d9282.sfr@canb.auug.org.au>
-In-Reply-To: <20090205141245.2945141e.akpm@linux-foundation.org>
-References: <1233828453-13311-1-git-send-email-cooloney@kernel.org>
-	<1233828453-13311-2-git-send-email-cooloney@kernel.org>
-	<20090205141245.2945141e.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__6_Feb_2009_13_34_36_+1100_rZTiWukMNBdTrftt"
+	Thu, 5 Feb 2009 21:39:51 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:56898 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752288AbZBFCju (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 21:39:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=LOcpwp69WQiNmyzHbRWJCkxFLlOUkaLpWEEy4UerUceB0mWukTKYPXweLIpUnDEsM3
+         zUiqGhjs7EP+gWZ2WFkDUT3Q6ghHllNTE6Vq1pcA3oNQkgJ+bPLAjkTxvxUHthVtOX8/
+         rtz5JW/2cAoYjeHI+Yev59t8h9f41v3p6+MsE=
+Date: Fri, 6 Feb 2009 03:39:45 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH tip 2/2] tracing: Introduce
+	trace_buffer_{lock_reserve,unlock_commit}
+Message-ID: <20090206023944.GA24546@nowhere>
+References: <20090205181413.GI17653@ghostprotocols.net> <20090205225835.GB23999@nowhere> <20090206015416.GF9846@ghostprotocols.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090206015416.GF9846@ghostprotocols.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__6_Feb_2009_13_34_36_+1100_rZTiWukMNBdTrftt
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Feb 05, 2009 at 11:54:16PM -0200, Arnaldo Carvalho de Melo wrote:
+> Em Thu, Feb 05, 2009 at 11:58:37PM +0100, Frederic Weisbecker escreveu:
+> > > +void trace_buffer_unlock_commit(struct trace_array *tr,
+> > > +				struct ring_buffer_event *event,
+> > > +				unsigned long flags, int pc)
+> > > +{
+> > > +	ring_buffer_unlock_commit(tr->buffer, event);
+> > > +
+> > > +	ftrace_trace_stack(tr, flags, 6, pc);
+> > > +	ftrace_trace_userstack(tr, flags, pc);
+> > > +	trace_wake_up();
+> > > +}
+> > 
+> > 
+> > I have mitigate feelings about this part. The name of this function could
+> > have some sense if _most_ of the tracers were using the stack traces. But that's
+> > not the case.
+> > 
+> > We have now this couple:
+> > 
+> > _ trace_buffer_lock_reserve() -> handles the ring-buffer reservation, the context info, and the type
+> > _ trace_buffer_unlock_commit() -> unlock, commit, wake and... stacktraces?
+> > 
+> > In my opinion, the latter doesn't follow the logic meaning of the first.
+> > And the result is a mixup of (trace_buffer | ring_buffer)(lock/unlock/reserve/commit).
+> > 
+> > You are sometimes using trace_buffer_lock_reserve followed by ring_buffer_unlock_commit.
+> > That looks a bit weird: we are using a high level function followed by its conclusion
+> > on the form of the low lovel function.
+> > 
+> > I think the primary role of this new couple should be to simplify the low level ring buffer
+> > bits as it does. But the stack things should stay separated.
+> 
+> Well, the whole reason for this cset was to provide a way to check for
+> things like stacktrace while reducing the number of explicit calls the
+> poor driver, oops, ftrace plugin writers had to keep in mind.
 
-Hi Andrew,
 
-On Thu, 5 Feb 2009 14:12:45 -0800 Andrew Morton <akpm@linux-foundation.org>=
- wrote:
->
-> As usual, the driver core guys have gone trompling all over other people'=
-s code
-> and your patch doesn't apply to linux-next.
->=20
-> 11 out of 61 hunks FAILED -- saving rejects to file drivers/spi/spi_bfin5=
-xx.c.rej
+I agree, but that forces those who don't need stacktraces to use
+a paired trace_buffer_lock_reserve() / ring_buffer_unlock_commit()
+The poor newcomers will become dizzy with these different namespaces...
+And it's like managing a file with fopen() and then close() ... :-)
 
-To be fair, next-20090206 has one patch to that file it is a single hunk
-and only affects 2 lines and the patch was cc'd to the spi folks (I can't
-easily tell when as the driver-core stuff (being a quilt tree) gets
-rebased often).
+ 
+> So it may well be the case for a better name, but frankly I think that
+> this is something better left _hidden_, a magic that the plugin writers
+> doesn't have to deal with.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+I agree with you, the stacktraces are used by several tracers, and then
+it deserves some code factoring.
+What I would suggest is to have two different trace_buffer_unlock_commit()
 
---Signature=_Fri__6_Feb_2009_13_34_36_+1100_rZTiWukMNBdTrftt
-Content-Type: application/pgp-signature
+Thinking about the name of these functions, since they are in a higher layer
+than the ring buffer which performs some things with locking and buffers, we could
+let this latter do his tricky low level work and simply offer some magic functions
+with magic names:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+_ trace_reserve()
+_ trace_commit()
+_ trace_commit_stacktrace()
 
-iEYEARECAAYFAkmLobwACgkQjjKRsyhoI8xamwCfcM69c1gbjcLP45NDeSbHkaB/
-r8AAnR9SsDd6OnlxHOMGxF/DhLXfh2GO
-=QCn8
------END PGP SIGNATURE-----
+Even if the stack traces layer can be somewhat hidden to the user, we can still
+let him decide what he really wants but in an easier way.
 
---Signature=_Fri__6_Feb_2009_13_34_36_+1100_rZTiWukMNBdTrftt--
+Hm?
+
+> 
+> But... if they feel lucky and smart, they can just call
+> ring_buffer_unlock_commit(tr->buffer, event) and do any other things in
+> a open coded way, as was done in other cases where
+> trace_buffer_lock_reserve was paired with ring_buffer_unlock_commit.
+
+
+Right! And with our three above functions, the new magic way can
+be completely performed without beeing harassed by some bits from the
+...lucky way :-)
+
+
+Frederic.
+
