@@ -1,45 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbZBFJYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756265AbZBFJbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753432AbZBFJYh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 04:24:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbZBFJYL
+	id S1756265AbZBFJbf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 04:31:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbZBFJbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 04:24:11 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:41056 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753937AbZBFJYJ (ORCPT
+	Fri, 6 Feb 2009 04:31:25 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59552
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752138AbZBFJbY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 04:24:09 -0500
-Date: Fri, 6 Feb 2009 20:23:26 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: David Miller <davem@davemloft.net>, zbr@ioremap.net, w@1wt.eu,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
-Message-ID: <20090206092326.GC6645@gondor.apana.org.au>
-References: <20090202084358.GB4129@ff.dom.local> <20090202.235017.253437221.davem@davemloft.net> <20090203094108.GA4639@ff.dom.local> <20090205.235258.257422341.davem@davemloft.net> <20090206091034.GA4879@ff.dom.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090206091034.GA4879@ff.dom.local>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 6 Feb 2009 04:31:24 -0500
+Date: Fri, 06 Feb 2009 01:31:20 -0800 (PST)
+Message-Id: <20090206.013120.70515789.davem@davemloft.net>
+To: yinghai@kernel.org
+Cc: jeff@garzik.org, mingo@elte.hu, akpm@linux-foundation.org,
+       aabdulla@nvidia.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] forcedeth: make msi-x different name for rx-tx
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <498BC3A8.9040203@kernel.org>
+References: <498BC3A8.9040203@kernel.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 06, 2009 at 09:10:34AM +0000, Jarek Poplawski wrote:
+From: Yinghai Lu <yinghai@kernel.org>
+Date: Thu, 05 Feb 2009 20:59:20 -0800
+
 > 
-> Looks fine, except: you mentioned dumb NICs, which would need this
-> page space on receive, anyway. BTW, don't they need this on transmit
-> again?
+> Impact: make /proc/interrupts could show more info which irq is rx or other for msi-x
+> 
+> add three name fields for rx, tx, other
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-A lot more NICs support SG on tx than rx.
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Applied to net-next-2.6
