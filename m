@@ -1,41 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbZBFAIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757202AbZBFAJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756383AbZBFAIn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 19:08:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbZBFAIf
+	id S1757202AbZBFAJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 19:09:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbZBFAJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 19:08:35 -0500
-Received: from gw.goop.org ([64.81.55.164]:47566 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752462AbZBFAIe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 19:08:34 -0500
-Message-ID: <498B7F7F.3090701@goop.org>
-Date: Thu, 05 Feb 2009 16:08:31 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
+	Thu, 5 Feb 2009 19:09:17 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:61913 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753236AbZBFAJQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 19:09:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=SZgp3I99GxHWH+ox4YUVfykTT0NFfjfbkU/UoNH383y6reecHnGuX82h33KyW8rha1
+         2I6O49ZKDOgvNyDTqI0Gf6TsRt6/2VdZ7lh61CJkq+O0Eh21PGdR6XvarnpehVKmHCZZ
+         b9W8Jhcopehut7Dga7ibYB/0828Dg5RjBRthA=
+Date: Fri, 6 Feb 2009 01:09:12 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Hugh Dickins <hugh@veritas.com>,
-       William Lee Irwin III <wli@movementarian.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: pud_bad vs pud_bad
-References: <498B2EBC.60700@goop.org> <20090205184355.GF5661@elte.hu> <498B35F9.601@goop.org> <20090205191017.GF20470@elte.hu> <Pine.LNX.4.64.0902051921150.30938@blonde.anvils> <498B4F1F.5070306@goop.org> <Pine.LNX.4.64.0902052046240.18431@blonde.anvils> <498B54A0.7040005@goop.org> <20090205215050.GB28097@elte.hu> <498B6325.1040401@goop.org> <20090205234241.GA14203@elte.hu>
-In-Reply-To: <20090205234241.GA14203@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Cc: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH tip 1/2] ring_buffer: remove unused flags parameter
+Message-ID: <20090206000911.GE23999@nowhere>
+References: <20090205181256.GH17653@ghostprotocols.net> <20090205221701.GA23999@nowhere> <20090206000455.GE16040@elte.hu> <20090206000630.GA23475@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090206000630.GA23475@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> just the act of using PAE was measured to cause multi-percent slowdown in 
-> fork() and exec() latencies, etc. The pagetables are twice as large so is 
-> that really surprising?
->   
+On Fri, Feb 06, 2009 at 01:06:30AM +0100, Ingo Molnar wrote:
+> 
+> > > codiff... I didn't know this great tool! :-)
+> 
+> Btw., you can find this tool in the 'dwarves' package on most distros.
+> 
+> 	Ingo
 
-Is there a similar slowdown running the CPU in 32 vs 64 bit mode?  Or 
-does having more/wider registers mitigate it?
+Exact, I just installed it.
+Thanks.
 
-    J
