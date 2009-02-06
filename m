@@ -1,57 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758059AbZBFLvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbZBFL4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758059AbZBFLvb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 06:51:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753818AbZBFLvX
+	id S1756642AbZBFL4i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 06:56:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbZBFL43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 06:51:23 -0500
-Received: from cmpxchg.org ([85.214.51.133]:46678 "EHLO cmpxchg.org"
+	Fri, 6 Feb 2009 06:56:29 -0500
+Received: from tango.lnet.fi ([86.50.38.234]:50225 "EHLO tango.lnet.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754162AbZBFLvW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 06:51:22 -0500
-Date: Fri, 6 Feb 2009 12:50:46 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: MinChan Kim <minchan.kim@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 3/3][RFC] swsusp: shrink file cache first
-Message-ID: <20090206115045.GA1580@cmpxchg.org>
-References: <20090206031125.693559239@cmpxchg.org> <20090206031324.004715023@cmpxchg.org> <20090206080354.GA6516@barrios-desktop> <28c262360902060206h78c15a1dsf52b481c5cc1bc74@mail.gmail.com>
-Mime-Version: 1.0
+	id S1752150AbZBFL42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 06:56:28 -0500
+X-Greylist: delayed 1642 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Feb 2009 06:56:27 EST
+Date: Fri, 6 Feb 2009 13:29:02 +0200
+From: Ilkka Virta <itvirta@iki.fi>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Soft lockup in sungem on Netra AC200 when switching interface up
+Message-ID: <20090206112902.GS4362@tango.lnet.fi>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <28c262360902060206h78c15a1dsf52b481c5cc1bc74@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 06, 2009 at 07:06:34PM +0900, MinChan Kim wrote:
-> On Fri, Feb 6, 2009 at 5:03 PM, MinChan Kim <minchan.kim@gmail.com> wrote:
-> >> Another reason for preferring file page eviction is that the locality
-> >> principle is visible in fault patterns and swap might perform really
-> >> bad with subsequent faulting of contiguously mapped pages.
-> >
-> > Why do you think that swap might perform bad with subsequent faulting
-> > of contiguusly mapped page ?
-> > You mean normal file system is faster than swap due to readahead and
-> > smart block of allocation ?
-> 
-> But, I still can't understand this issue.
-> what mean "page eviction" ? Is it reclaim or swap out ?
+What ho, chaps
 
-Reclaim evicts pages from memory by swap out (and writeback).
+The sungem network driver seems to be broken with the integrated
+Ethernet ports of a Sun Netra T1 AC200. On that machine, switching the
+interface up when link is up leads to a soft lockup. However,
+switching the interface up with no link, and only then connecting the
+cable works; as does the same driver on seemingly same hardware on a
+Sun Blade 1000.
 
-In the suspend case, "reclaim" is perhaps not 100% correct.  We are
-not directly interested in the amount of free pages as you are with
-reclaim, but interested in the amount of pages in use as those are the
-pages we have to write to disk.  So "shrinking" is the better term.
+lspci doesn't show any real differences between the gems on the Netra
+and on the Blade, both are these: 
+0000:00:05.1 Ethernet controller [0200]: Sun Microsystems Computer
+             Corp. RIO 10/100 Ethernet [eri] [108e:1101] (rev 01)
 
-But yes, I mean what you said:
+Earlier reports of the same problem indicate that the driver was
+broken by commit bea3348eef27e6044b6161fd04c3152215f96411 in around
+2.6.24, but the problem still exists in 2.6.28.
 
-	You mean normal file system is faster than swap due to
-	readahead and smart block of allocation ?
+http://kerneltrap.org/mailarchive/linux-kernel/2008/8/7/2856094
+http://bugzilla.kernel.org/show_bug.cgi?id=10309
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=508151
 
-Yes.
+Now, I didn't find any ready-made cure for this, so I poked around the
+driver a bit to see what happens. What follows is very much only
+guesswork, since I don't really know anything about Linux network
+drivers.
 
-	Hannes
+In the lockup situation the driver seems to go off in an eternal storm
+of interrupts right after calling request_irq(). It doesn't actually
+do anything interesting in the interrupt handler. Since connecting the link
+afterwards works, something later in initialization must fix this.
+
+Looking at gem_do_start() and gem_open(), it seems that the only thing
+done while opening the device after the request_irq(), is a call to
+napi_enable().
+
+I don't know what the ordering requirements are for the
+initialization, but I boldly tried to move the napi_enable() call
+inside gem_do_start() before the link state is checked and interrupts
+subsequently enabled, and it seems to work for me. Doesn't even break
+anything too obvious...
+
+Any ideas on how this really should be fixed?
+
+--- linux-2.6.28.2/drivers/net/sungem.c.orig	2009-01-25 02:42:07.000000000 +0200
++++ linux-2.6.28.2/drivers/net/sungem.c	2009-02-05 20:46:23.000000000 +0200
+@@ -2222,6 +2222,8 @@ static int gem_do_start(struct net_devic
+ 
+ 	gp->running = 1;
+ 
++	napi_enable(&gp->napi);
++
+ 	if (gp->lstate == link_up) {
+ 		netif_carrier_on(gp->dev);
+ 		gem_set_link_modes(gp);
+@@ -2239,6 +2241,8 @@ static int gem_do_start(struct net_devic
+ 		spin_lock_irqsave(&gp->lock, flags);
+ 		spin_lock(&gp->tx_lock);
+ 
++		napi_disable(&gp->napi);
++
+ 		gp->running =  0;
+ 		gem_reset(gp);
+ 		gem_clean_rings(gp);
+@@ -2339,8 +2343,6 @@ static int gem_open(struct net_device *d
+ 	if (!gp->asleep)
+ 		rc = gem_do_start(dev);
+ 	gp->opened = (rc == 0);
+-	if (gp->opened)
+-		napi_enable(&gp->napi);
+ 
+ 	mutex_unlock(&gp->pm_mutex);
+ 
+@@ -2477,8 +2479,6 @@ static int gem_resume(struct pci_dev *pd
+ 
+ 		/* Re-attach net device */
+ 		netif_device_attach(dev);
+-
+-		napi_enable(&gp->napi);
+ 	}
+ 
+ 	spin_lock_irqsave(&gp->lock, flags);
+
+-- 
+Ilkka Virta / itvirta at iki dot fi / ilkkachu@IRCNet
+ ()  ascii ribbon campaign - against HTML mail and attachments in 
+ /\                          closed file formats
