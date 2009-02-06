@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757225AbZBFTTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758321AbZBFTUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757225AbZBFTTl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 14:19:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753186AbZBFTTd
+	id S1758321AbZBFTUa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 14:20:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZBFTUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 14:19:33 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:19745 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753144AbZBFTTc (ORCPT
+	Fri, 6 Feb 2009 14:20:13 -0500
+Received: from mail.candelatech.com ([208.74.158.172]:55937 "EHLO
+	ns3.lanforge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753489AbZBFTUM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 14:19:32 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:
-	x-gmailtapped-by:x-gmailtapped;
-	b=ZoAen+FoQ5kNl51DHlAMCWXzOZVx76GMWjOvdtkwS2uqKTmX+5LkcaWdGyztW998z
-	XiLv6832NEVWmn2jHqe2A==
+	Fri, 6 Feb 2009 14:20:12 -0500
+Message-ID: <498C8D68.3040504@candelatech.com>
+Date: Fri, 06 Feb 2009 11:20:08 -0800
+From: Ben Greear <greearb@candelatech.com>
+Organization: Candela Technologies
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-In-Reply-To: <4989606F.9030804@cn.fujitsu.com>
-References: <4976D77C.3020107@cn.fujitsu.com>
-	 <20090127144233.18cf9b3f.akpm@linux-foundation.org>
-	 <4987B925.1010405@cn.fujitsu.com>
-	 <20090203141645.91c7ea18.akpm@linux-foundation.org>
-	 <6599ad830902031449j1fa3dd08re842b57f8700b389@mail.gmail.com>
-	 <4989606F.9030804@cn.fujitsu.com>
-Date: Fri, 6 Feb 2009 11:19:27 -0800
-Message-ID: <6599ad830902061119t2d82c782pb6442f9a35fbb01c@mail.gmail.com>
-Subject: Re: [PATCH] cpuset: fix allocating page cache/slab object on the 
-	unallowed node when memory spread is set
-From: Paul Menage <menage@google.com>
-To: miaox@cn.fujitsu.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, cl@linux-foundation.org,
-       nickpiggin@yahoo.com.au
-Content-Type: text/plain; charset=ISO-8859-1
+To: Len Brown <lenb@kernel.org>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>, linux-acpi@vger.kernel.org
+Subject: Re: Regression on VIA C3 motherboard, commit: 66f2173e2
+References: <498A93E5.2080509@candelatech.com> <alpine.LFD.2.00.0902061350470.26256@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0902061350470.26256@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.25.146.38
-X-GMailtapped: menage
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 4, 2009 at 1:31 AM, Miao Xie <miaox@cn.fujitsu.com> wrote:
->> AFAICS this patch still has a race between a thread reading its
->> mems_allowed, and another thread updating it. The current architecture
->> of having task->mems_allowed be only updatable by current was PaulJ's
->> code originally, and I'm a bit loathe to touch it. But if we're going
->> to, we'll need at the minimum to add a lock for any code that touches
->> current->mems_allowed.
->
-> Agree! But mems_allowed is touched in the module of memory management
-> in general, adding a lock to protect mems_allowed may lead to performance
-> regression.
->
+Len Brown wrote:
+> Thanks for the bisect, Ben.
+> 
+> Please test the patch below.
+> 
+> I assume even without the patch, booting with "acpi=off" on your
+> BIOS-ACPI-disabled box works?  (if no, this patch will not solve
+> all your problems, for you have additional trouble elsewhere)
+> 
+> I am curious why you're running a CONFIG_ACPI=y kernel
+> for a box with ACPI disabled. (though yes, it is supposed to work)
+> 
+> I'm even more curious what bad things happen when
+> you enable ACPI in the BIOS -- can you let me know
+> and we can try to fix them so the machine can run as shipped?
 
-I've asked Andrew to remove this from -mm until we can figure out:
+At one time, these boxes would actually burn out their power
+supply if you did an 'init 0' with the BIOS configured to
+shut down the system.  It would just suck more and more power
+(we measured) until the brick smoked, and the motherboard components
+got very hot as well.  I think we were just lucky that the PS died
+before the MB did.
 
-- whether it's needed
-- how to do it safely.
+This was a while back, but I believe part of the fix was to disable
+ACPI so the system couldn't possibly try to power itself down
+in this manner.
 
-Basically the problem that you're seeing is that when you move a task
-into a cpuset that has memory_spread_page=1, it fails to call
-cpuset_update_task_memory_state()?
+I will try your patch, but I'm about to go off for a ~2week vacation,
+so I probably won't have time to test enabling ACPI and/or compiling
+a kernel w/out it to see what shakes out.
 
-One thing missing from your test - can you verify that the test
-program really did get migrated into the child cpuset? If it failed
-(and echo failed to report the error) that would explain what you're
-seeing.
+I re-worked my previous patch per Ingo's suggestion and am
+about to send it off..but please feel free to NAK it if you
+think it's wrong.  I don't really know enough about this area
+to argue one way or another.
 
-Paul
+Thanks,
+Ben
+
+-- 
+Ben Greear <greearb@candelatech.com>
+Candela Technologies Inc  http://www.candelatech.com
+
