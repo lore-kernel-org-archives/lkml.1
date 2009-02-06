@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756780AbZBFJkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251AbZBFJnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756780AbZBFJkx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 04:40:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZBFJkn
+	id S1757251AbZBFJnU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 04:43:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbZBFJnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 04:40:43 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:42655 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751208AbZBFJkm (ORCPT
+	Fri, 6 Feb 2009 04:43:01 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:45213 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752278AbZBFJnA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 04:40:42 -0500
-X-IronPort-AV: E=Sophos;i="4.37,390,1231131600"; 
-   d="scan'208";a="82428291"
-From: Bryan Wu <cooloney@kernel.org>
-To: greg@kroah.com
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ivan Kuten <ivan.kuten@promwad.com>,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH] usb: Correct Makefile to make isp1760 buildable
-Date: Fri,  6 Feb 2009 17:42:34 +0800
-Message-Id: <1233913354-13755-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6.3
+	Fri, 6 Feb 2009 04:43:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=kxvwYh/Q2J8hzUVxJ3adSjhxJdXKB6qZglWUX3R5QOJGv/CIF6YGFZOklNUt6V04lt
+         WivCg5vtmOQlHWEC5WGrFLu36v+Zb57nwdbBtp7pyJVIZm7aC5N2SRuNkmOecOlOFWNr
+         ImMkFm0ApQdf9Kt5Gd5k9Hsn11f9agmRnmKHQ=
+Date: Fri, 6 Feb 2009 09:42:53 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: herbert@gondor.apana.org.au, zbr@ioremap.net, w@1wt.eu,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+Message-ID: <20090206094253.GB4879@ff.dom.local>
+References: <20090203094108.GA4639@ff.dom.local> <20090205.235258.257422341.davem@davemloft.net> <20090206091034.GA4879@ff.dom.local> <20090206.011722.41272682.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090206.011722.41272682.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ivan Kuten <ivan.kuten@promwad.com>
+On Fri, Feb 06, 2009 at 01:17:22AM -0800, David Miller wrote:
+...
+> And all I'm saying is that since the page allocator provides that
+> facility, and using pages solves all of the splice() et al.  problems,
+> building something extremely simple on top of the page allocator seems
+> to be a good way to go.
 
-Signed-off-by: Ivan Kuten <ivan.kuten@promwad.com>
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/usb/Makefile |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+This all is absolutely right if we can afford it: more simple - more
+memory wasted. I hope you're right, but on the other hand, people
+don't use slob by default.
 
-diff --git a/drivers/usb/Makefile b/drivers/usb/Makefile
-index 8bcde8c..b2ceb4a 100644
---- a/drivers/usb/Makefile
-+++ b/drivers/usb/Makefile
-@@ -11,6 +11,7 @@ obj-$(CONFIG_USB_MON)		+= mon/
- obj-$(CONFIG_PCI)		+= host/
- obj-$(CONFIG_USB_EHCI_HCD)	+= host/
- obj-$(CONFIG_USB_ISP116X_HCD)	+= host/
-+obj-$(CONFIG_USB_ISP1760_HCD)	+= host/
- obj-$(CONFIG_USB_OHCI_HCD)	+= host/
- obj-$(CONFIG_USB_UHCI_HCD)	+= host/
- obj-$(CONFIG_USB_FHCI_HCD)	+= host/
--- 
-1.5.6.3
+Jarek P.
