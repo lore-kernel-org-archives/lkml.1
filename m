@@ -1,97 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753567AbZBFQuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758361AbZBFQum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753567AbZBFQuX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 11:50:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbZBFQuF
+	id S1758361AbZBFQum (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 11:50:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbZBFQuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 11:50:05 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:4900 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752051AbZBFQuB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 11:50:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=LL9kWsx/+5jmxpGDAOQ3GVZ2fhlMQFzmqMOJoQoEWzGlsFQQLiKYpcC68y/rCSnFKF
-         ngtvsi7qpznHqpDh4w6dt9gPLh5Qs8OFzlIkPSuJoYGMftF4+xHQuVggRrYJnVtUm8RU
-         qrYTy+3wdnml7Hx0hcoZRU3S8aS2CyjqE2Euw=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 01/15] ide: include <asm/ide.h> only when needed
-Date: Fri, 6 Feb 2009 17:21:46 +0100
-User-Agent: KMail/1.10.4 (Linux/2.6.29-rc3-next-20090206; KDE/4.1.4; i686; ; )
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, geert@linux-m68k.org,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       apw@canonical.com
-References: <20090201174916.19144.11318.sendpatchset@localhost.localdomain> <200902052214.31483.bzolnier@gmail.com> <498B7D09.6040100@ru.mvista.com>
-In-Reply-To: <498B7D09.6040100@ru.mvista.com>
+	Fri, 6 Feb 2009 11:50:06 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:56535 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752521AbZBFQuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 11:50:04 -0500
+Date: Fri, 6 Feb 2009 17:46:49 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] workqueue: not allow recursion run_workqueue
+Message-ID: <20090206164649.GA24887@redhat.com>
+References: <497838F0.7020408@cn.fujitsu.com> <20090122093046.GC5891@nowhere> <20090122093649.GD24758@elte.hu> <c62985530901220306p78ea541cs28912a844297b304@mail.gmail.com> <1232622615.4890.114.camel@laptop> <498AA0F1.2030003@cn.fujitsu.com> <20090205170156.GA25517@redhat.com> <498B9055.8020407@cn.fujitsu.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902061721.46813.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <498B9055.8020407@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi,
-
-On Friday 06 February 2009, Sergei Shtylyov wrote:
-> Hello.
-> 
-> Bartlomiej Zolnierkiewicz wrote:
-> 
-> >>>>> +#include <asm/ide.h>
-> >>>>>           
-> >>>> Did you try checkpatch.pl?
-> >>>>         
-> >>> Sure.
-> >>>
-> >>> This driver uses stuff from <asm-mips/ide.h>.
-> >>>
-> >>> [ I guess I could put '-mips' there to silence warnings on tx493{8,9}.c,
-> >>>   however I don't know of the way to get rid of ide-io-std.c's one... ]
-> >>>       
-> >> BTW, tx4939ide_{in,out}put_data_swap and
-> >> tx4939ide_{in,out}put_data_swap do exactly same thing.
+On 02/06, Lai Jiangshan wrote:
+>
+> Oleg Nesterov wrote:
+> > On 02/05, Lai Jiangshan wrote:
+> >> DEADLOCK EXAMPLE for explain my above option:
 > >>
-> >> If byte-swapped version of ide_{in,out}put_data() were available by
-> >> ide core, they can be used instead.  The byte-swapped version of
-> >> default_tp_ops would much helps such queer big-endian platforms.  Is
-> >> it worth to bloat ide core? ;-)
-> >>     
+> >> (work_func0() and work_func1() are work callback, and they
+> >> calls flush_workqueue())
+> >>
+> >> CPU#0					CPU#1
+> >> run_workqueue()                         run_workqueue()
+> >>   work_func0()                            work_func1()
+> >>     flush_workqueue()                       flush_workqueue()
+> >>       flush_cpu_workqueue(0)                  .
+> >>       flush_cpu_workqueue(cpu#1)              flush_cpu_workqueue(cpu#0)
+> >>         waiting work_func1() in cpu#1           waiting work_func0 in cpu#0
+> >>
+> >> DEADLOCK!
 > >
-> > Seems to be a good idea and it may also help some other host drivers
-> > (ide-h8300.c?).
-> >   
-> 
->    I'm not sure we need to carry the extra little used code just to help 
-> some exotic driver.
+> > I am not sure. Note that when work_func0() calls run_workqueue(),
+> > it will clear cwq->current_work, so another flush_ on CPU#1 will
+> > not wait for work_func0, no?
+>
+> cwq->current_work is changed only when
+> !list_empty(&cwq->worklist)
+> in run_workqueue().
+>
+> so cwq->current_work may not be changed.
 
-It doesn't seem like we would need to carry any extra extra code for host
-drivers that don't need it because we have flexible Kconfig language to take
-care of such cases, i.e.
+Ah, indeed.
 
-...
-config CONFIG_IDE_BE_IO
-	bool
-...
-config BLK_DEV_IDE_TX4938
-	tristate "TX4938 internal IDE support"
-	depends on SOC_TX4938
-	select IDE_TIMINGS
-	select IDE_BE_IO
-...
+Thanks for correcting me!
 
-Thus having be_tp_ops would decrease code duplication [ I now also see that
-m68k host drivers would benefit from it.  I haven't noticed it before because
-readw()/writew() are redefined in <asm-m68k/ide.h> ] and decrease total IDE
-subsystem maintainance costs.
+Oleg.
 
-Thanks,
-Bart
