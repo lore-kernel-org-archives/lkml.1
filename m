@@ -1,51 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbZBFWHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756427AbZBFWJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756702AbZBFWHl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 17:07:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbZBFWHd
+	id S1756427AbZBFWJV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 17:09:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbZBFWJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 17:07:33 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53177 "EHLO mx1.redhat.com"
+	Fri, 6 Feb 2009 17:09:08 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35541 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753972AbZBFWHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 17:07:33 -0500
+	id S1752063AbZBFWJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 17:09:07 -0500
+Message-ID: <498CB4DC.2010108@kernel.org>
+Date: Fri, 06 Feb 2009 14:08:28 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       tglx@linutronix.de, hpa@zytor.com
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] irq: clear kstat_irqs v2
+References: <498CB0B7.8030009@kernel.org> <20090206140005.44b4bb50.akpm@linux-foundation.org>
+In-Reply-To: <20090206140005.44b4bb50.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>, linux-kernel@vger.kernel.org,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       torvalds@linux-foundation.org
-Subject: Re: [BUG] binfmt_elf: get_user() called in vma_dump_size() after
- set_fs(KERNEL_DS)
-In-Reply-To: Andrew Morton's message of  Friday, 6 February 2009 13:44:10 -0800 <20090206134410.d548b72c.akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-References: <1233940235.22140.9.camel@localhost.localdomain>
-	<20090206134410.d548b72c.akpm@linux-foundation.org>
-Emacs: Lovecraft was an optimist.
-Message-Id: <20090206220717.AE750FC3AD@magilla.sf.frob.com>
-Date: Fri,  6 Feb 2009 14:07:17 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The address in question comes from a user vma's vm_start, so by definition
-it has to be in the user part of the address space.  This code path is
-excluded for VM_IO and the like by checks earlier in vma_dump_size.
-So, is this problem purely theoretical?  I guess not on machines where
-set_fs actually changes the meaning of the lower address space.
 
-I think get_user_pages would certainly be overkill for this.  It's a check
-to decide whether you need to pay the cost of get_user_pages, after all.
+Impact: get correct kstat_irqs for msi/msi-x etc
 
-set_fs is quite cheap at least on most machines.  So a pair of set_fs calls
-around that get_user call doesn't seem so bad.  OTOH, on the machines where
-this actually matters at all (maybe just sparc, arm, s390?) it is
-presumably (much?) more costly.  But it seems like the best solution, and
-certainly is straightforward.
+need to call clear_kstat_irqs(), so when reuse that irq_desc, could get correct
+kstat in /proc/interrupts
 
+also could make /proc/interrupts don't have none-<NULL> entries
 
-Thanks,
-Roland
+don't need to worry about arch that doesn't support genirq, because they
+will not call dynamic_irq_cleanup().
+
+v2: simplify and make clear_kstat_irqs more rebust accord to Andrew
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ kernel/irq/chip.c      |    1 +
+ kernel/irq/handle.c    |    5 +++++
+ kernel/irq/internals.h |    1 +
+ 3 files changed, 7 insertions(+)
+
+Index: linux-2.6/kernel/irq/chip.c
+===================================================================
+--- linux-2.6.orig/kernel/irq/chip.c
++++ linux-2.6/kernel/irq/chip.c
+@@ -81,6 +81,7 @@ void dynamic_irq_cleanup(unsigned int ir
+ 	desc->handle_irq = handle_bad_irq;
+ 	desc->chip = &no_irq_chip;
+ 	desc->name = NULL;
++	clear_kstat_irqs(desc);
+ 	spin_unlock_irqrestore(&desc->lock, flags);
+ }
+ 
+Index: linux-2.6/kernel/irq/handle.c
+===================================================================
+--- linux-2.6.orig/kernel/irq/handle.c
++++ linux-2.6/kernel/irq/handle.c
+@@ -270,6 +270,11 @@ struct irq_desc *irq_to_desc_alloc_cpu(u
+ }
+ #endif /* !CONFIG_SPARSE_IRQ */
+ 
++void clear_kstat_irqs(struct irq_desc *desc)
++{
++	memset(desc->kstat_irqs, 0, nr_cpu_ids * sizeof(*(desc->kstat_irqs)));
++}
++
+ /*
+  * What should we do if we get a hw irq event on an illegal vector?
+  * Each architecture has to answer this themself.
+Index: linux-2.6/kernel/irq/internals.h
+===================================================================
+--- linux-2.6.orig/kernel/irq/internals.h
++++ linux-2.6/kernel/irq/internals.h
+@@ -15,6 +15,7 @@ extern int __irq_set_trigger(struct irq_
+ 
+ extern struct lock_class_key irq_desc_lock_class;
+ extern void init_kstat_irqs(struct irq_desc *desc, int cpu, int nr);
++extern void clear_kstat_irqs(struct irq_desc *desc);
+ extern spinlock_t sparse_irq_lock;
+ 
+ #ifdef CONFIG_SPARSE_IRQ
