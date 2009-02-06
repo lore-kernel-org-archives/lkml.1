@@ -1,78 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757390AbZBFAQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbZBFAR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757390AbZBFAQW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 19:16:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757252AbZBFAQF
+	id S1756753AbZBFAR4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 19:17:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbZBFARs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 19:16:05 -0500
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:48924 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757253AbZBFAQE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 19:16:04 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=H3e2B+FuoBV16MQBOfuNYLOy5KX0ZSCalsgeEoLcOQRvDt8z/jcbMsa89adZf/qNklGWJVFSWf8DgXLfJFWVO3J2TOgBccVVfnqofL9A+wE3UQ+uhjTyF6k9URS8uM1HIJ+8vCyKqgQqcjmr//SNTlikWiIqmPrwjT/WaD3R5qY=  ;
-X-YMail-OSG: nCegNFUVM1mVKZYtBHpgYsv.zU9aZcGUMJlExjANzbDL.e5W8ScoTtOdZpPJGRZE2JTL_vlrGiZW7mQ_DnQGgESreE_XKgYJSD7A1h9LpFnF3L_GP_NKPjjCwIeLvkBJBAK061x0SSTCFNKaY760M9oEe5xzYIbGhtEuuM2iWNNrxGQ3O_e5ndIfSpF8
-X-Yahoo-Newman-Property: ymail-5
-From: David Brownell <david-b@pacbell.net>
-To: Alessandro Zummo <azummo-lists@towertech.it>
-Subject: Re: [PATCH] AMD Geode CS5535/5536 GPIO driver
-Date: Thu, 5 Feb 2009 16:12:20 -0800
-User-Agent: KMail/1.9.10
-Cc: jordan@cosmicpenguin.net, linux-geode@lists.infradead.org,
-       dilinger@queued.net, dsaxena@laptop.org,
-       "=?iso-8859-1?q?Martin-=C9ric?= Racine" <q-funk@iki.fi>,
-       lkml <linux-kernel@vger.kernel.org>, rpurdie@rpsys.net,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-References: <20090205161007.4d121cbf@i1501.lan.towertech.it>
-In-Reply-To: <20090205161007.4d121cbf@i1501.lan.towertech.it>
+	Thu, 5 Feb 2009 19:17:48 -0500
+Received: from olc-12.verat.net ([62.108.127.38]:47531 "EHLO olc-12.verat.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753069AbZBFARr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 19:17:47 -0500
+Message-ID: <31854.41.220.75.3.1233879464.squirrel@webmail.verat.net>
+Date: Fri, 6 Feb 2009 01:17:44 +0100 (CET)
+Subject: =?iso-8859-1?Q?Kj=E6re_uio.no_konto_Bruker?=
+From: "Universitetet i Oslo Help Desk" <helpdesk@uio.no>
+Reply-To: desk.help500@gmail.com
+User-Agent: SquirrelMail/1.4.13
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902051612.20475.david-b@pacbell.net>
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 05 February 2009, Alessandro Zummo wrote:
-> --- linux-2.6.28.orig/arch/x86/Kconfig	2009-02-03 19:38:43.000000000 +0100
-> +++ linux-2.6.28/arch/x86/Kconfig	2009-02-03 20:15:25.000000000 +0100
-> @@ -1911,6 +1911,16 @@ config GEODE_MFGPT_TIMER
->  	  MFGPTs have a better resolution and max interval than the
->  	  generic PIT, and are suitable for use as high-res timers.
->  
-> +config GEODE_GPIO
-> +	bool "Geode GPIO support"
-> +	depends on MGEODE_LX && !CS5535_GPIO
+Kjære uio.no konto Bruker,
 
-and also GPIOLIB ... maybe can you just "select GPIOLIB".
+Det vil være en generell oppgradering i systemet mellom Februray 2 til 20
+2009.På grunn av anonym registrering av uio.no kontoer og antall
+av sovende kontoer, vil vi kjøre denne oppgraderingen for å fastslå
+nøyaktige antallet abonnenter vi har i dag.
 
+Du blir bedt om å logge deg inn på uio.no og bekrefte hvis
+Kontoen er fortsatt gyldig og sender umiddelbart den folowing:
 
-> +	default n
-> +	help
+Brukernavn: :................................( Obligatorisk)
+Passord :...................................( Obligatorisk)
+Fødselsdato :..............................( Valgfritt)
+Staten :........................................( Valgfritt)
 
+Før du sender kontoopplysningene dine til oss, er du råd til å logge inn i
+denne Koblingen nedenfor: https://webmail.uio.no/src/login.php
 
-> +static int cs5535_direction_output(struct gpio_chip *chip, unsigned offset,
-> +					int value)
-> +{
-> +	cs5535_gpio_set(chip, offset, value);
-> +
-> +	geode_gpio_set(geode_gpio(offset), GPIO_OUTPUT_ENABLE);
-> +	geode_gpio_clear(geode_gpio(offset), GPIO_INPUT_ENABLE);
+Merk at hvis kontoen din gjøre Login sende oss detaljene eller det betyr
+det har vært deleted.beklager den inconvinences dette kan føre til at du
+vi bare prøver å kontrollere at du ikke mister informasjon i regnskapet.
 
-Unless this hardware misbehaves when both output and input
-modes are enabled (e.g. in the window between those two calls),
-I'd suggest just not clearing INPUT_ENABLE.  It's legit to
-ask for the *actual* value of an output line, e.g. for when
-it uses open drain mode.  (And didn't this hardware have an
-option for open drain GPIO signaling?)
+Alt du trenger å gjøre er å Klikk Svar og levere ut informasjonen ovenfor,
+Kontoen din vil ikke bli avbrutt og vil fortsette som normalt.
 
+Takk for din oppmerksomhet til denne forespørselen. Igjen Vi beklager
+eventuelle
+inconveniences. Advarsel! Konto brukere som nekter å oppdatere kontoen sin
+etter 5 dager etter å ha mottatt denne advarselen, brukeren mister sin konto
+permanent.
 
-Otherwise this has about the right shape for platform GPIOs.
+2009© Universitetet i Oslo (uio.no)
 
-- Dave
