@@ -1,32 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757597AbZBFPnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758332AbZBFPpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757597AbZBFPnN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 10:43:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbZBFPmz
+	id S1758332AbZBFPpA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 10:45:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbZBFPow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 10:42:55 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34319 "EHLO mx3.mail.elte.hu"
+	Fri, 6 Feb 2009 10:44:52 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42800 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752467AbZBFPmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 10:42:53 -0500
-Date: Fri, 6 Feb 2009 16:42:31 +0100
+	id S1750699AbZBFPov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 10:44:51 -0500
+Date: Fri, 6 Feb 2009 16:43:50 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
-Cc: Ed Swierk <eswierk@aristanetworks.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "lenb@kernel.org" <lenb@kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: Re: [PATCH] Detect mmconfig on nVidia MCP55
-Message-ID: <20090206154231.GN18368@elte.hu>
-References: <1233765552.16414.6.camel@localhost.localdomain> <200902051705.33410.tvrtko.ursulin@sophos.com> <20090205180019.GC9233@elte.hu> <200902061130.05740.tvrtko.ursulin@sophos.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH 2/4] nmi: add generic nmi tracking state
+Message-ID: <20090206154350.GO18368@elte.hu>
+References: <20090206065352.940088243@goodmis.org> <20090206065437.986292747@goodmis.org> <1233912891.4731.1.camel@laptop> <20090206144609.GB18368@elte.hu> <alpine.DEB.1.10.0902060950250.10059@gandalf.stny.rr.com> <20090206145431.GG18368@elte.hu> <20090206153340.GA5033@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902061130.05740.tvrtko.ursulin@sophos.com>
+In-Reply-To: <20090206153340.GA5033@nowhere>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,49 +38,48 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Tvrtko Ursulin <tvrtko.ursulin@sophos.com> wrote:
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> On Thursday 05 February 2009 18:00:19 Ingo Molnar wrote:
-> > * Tvrtko Ursulin <tvrtko.ursulin@sophos.com> wrote:
-> > > On Wednesday 04 February 2009 17:04:40 Ingo Molnar wrote:
-> > > > 2) Please use vertical spaces when initializing structure fields.
-> > > > Instead of the messy looking (and over-long-line generating) construct
-> > > > of:
-> > > >
-> > > >         pci_mmcfg_config[0].address = (extcfg & 0x00007fff) << 25;
-> > > >         pci_mmcfg_config[0].pci_segment = 0;
-> > > >         pci_mmcfg_config[0].start_bus_number = 0;
-> > > >         pci_mmcfg_config[0].end_bus_number = (1 << (8 - ((extcfg >> 28)
-> > > > & 3))) - 1; pci_mmcfg_config_num = 1;
-> > > >
-> > > >    You will get something like:
-> > > >
-> > > >         config->address                 = (extcfg & 0x00007fff) << 25;
-> > > >         config->pci_segment             = 0;
-> > > >         config->start_bus_number        = 0;
-> > > >         config->end_bus_number          = (1 << (8 - ((extcfg >> 28) &
-> > > > 3)));
-> > > >
-> > > >         pci_mmcfg_config = config;
-> > > >         pci_mmcfg_config_num = 1;
-> > > >
-> > > >    Which makes it more structured, more reviewable - and more pleasant
-> > > > to look at as well.
-> >
-> > It is arch/x86/ and scheduler / etc. policy for new code - and we follow
-> > that principle when we clean up code as well.
+> On Fri, Feb 06, 2009 at 03:54:31PM +0100, Ingo Molnar wrote:
+> > 
+> > * Steven Rostedt <rostedt@goodmis.org> wrote:
+> > 
+> > > On Fri, 6 Feb 2009, Ingo Molnar wrote:
+> > > 
+> > > > 
+> > > > * Peter Zijlstra <peterz@infradead.org> wrote:
+> > > > 
+> > > > > On Fri, 2009-02-06 at 01:53 -0500, Steven Rostedt wrote:
+> > > > > 
+> > > > > > This code adds an in_nmi() macro that uses the current tasks preempt count
+> > > > > > to track when it is in NMI context. Other parts of the kernel can
+> > > > > > use this to determine if the context is in NMI context or not.
+> > > > > > 
+> > > > > > This code was inspired by the -rt patch in_nmi version that was
+> > > > > > written by Peter Zijlstra.
+> > > > > 
+> > > > > Which in turn I borrowed from Mathieu.
+> > > > 
+> > > > Steve, could you please fix the attribution?
+> > > 
+> > > Is it OK to rebase the branch to do so?
+> > 
+> > Sure, that's necessary.
+> > 
+> > And note that unless you base your tree against tip:tracing/ftrace i cannot 
+> > do a straight pull anyway. (your trees are usually based against tip:master 
+> > - which brings in all other branches)
 > 
-> You also didn't say anything about variable declarations I asked about? 
-> And I can add structure definition to that question as well.
+> 
+> Oh really? I always base my tracing patches against tip/master, assuming 
+> tracing/ftrace is about always quickly merged into master. But the 
+> opposite is not necessarily true, I guess you don't merge master into 
+> tracing/ftrace so quickly to not break the history right? And I guess it's 
+> better to catch bugs if each individual topics is not too quickly synced 
+> against tip/master.
 
-Firstly, when posting on lkml please use proper line length breaks. Your 
-email was almost unreadable in my mailer, so i had to stop reading it.
-
-Also, i'm surprised you see the need to try to influence things here - i 
-dont see a single upstream contribution from you in the past ~4 years of git 
-log so how can you have any knowledge and experience about such details?
-
-Both of those issues pretty materially weaken your standing to be taken 
-seriously when it comes to fine details of Linux kernel coding style.
+email submissions are perfectly OK against tip:master - please keep doing it 
+that way. It is Git pull requests (which Steve is sending) that should be 
+against pure topics.
 
 	Ingo
