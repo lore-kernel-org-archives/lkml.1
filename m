@@ -1,54 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756710AbZBFGST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755387AbZBFGYJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756710AbZBFGST (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 01:18:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbZBFGSI
+	id S1755387AbZBFGYJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 01:24:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbZBFGX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 01:18:08 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:31456 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752402AbZBFGSH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 01:18:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=YPbrW+nTWIvRE2jI7puJnxNtVR6x3tJ98fDZtATxGsdMVdiQO6Dtd0CRHWa7g+/Vgo
-         do1H1W6F2AA3M/UbPfsKJq4Sigz4HPxJ1YNDi+ZndlOgduYp289jEC7+S+U3R5+L6FeQ
-         fl89K9TSUNmPsuZOvqE93oc6lOtqx/wV8ceSA=
-MIME-Version: 1.0
-Date: Fri, 6 Feb 2009 15:18:04 +0900
-Message-ID: <b294a32a0902052218y6f4f9f75h5616f285d306e9d9@mail.gmail.com>
-Subject: [PATCH] jbd header comment typo fix
-From: Kazuo Moriwaka <moriwaka@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Feb 2009 01:23:56 -0500
+Received: from ozlabs.org ([203.10.76.45]:43785 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751491AbZBFGX4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 01:23:56 -0500
+From: Michael Neuling <mikey@neuling.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/2] powerpc, ftrace: fix compile error when modules not configured 
+In-reply-to: <20090206060527.369616736@goodmis.org> 
+References: <20090206060328.181057235@goodmis.org> <20090206060527.369616736@goodmis.org>
+Comments: In-reply-to Steven Rostedt <rostedt@goodmis.org>
+   message dated "Fri, 06 Feb 2009 01:03:30 -0500."
+X-Mailer: MH-E 8.0.3; nmh 1.2; GNU Emacs 22.2.1
+Date: Fri, 06 Feb 2009 17:23:52 +1100
+Message-ID: <12951.1233901432@neuling.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sighned-off-by: Kazuo Moriwaka <moriwaka@redhat.com>
+In message <20090206060527.369616736@goodmis.org> you wrote:
+> From: Steven Rostedt <srostedt@redhat.com>
+> 
+> Michael Neuling reported a compile bug when dynamic ftrace was
+> configured in and modules were not. This was due to the ftrace
+> code referencing module specific structures.
+> 
+> Reported-by: Michael Neuling <mikey@neuling.org>
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 
-    jbd header comment typo fix
+Steve,
 
----
- jbd.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-diff --git a/include/linux/jbd.h b/include/linux/jbd.h
-index 64246dc..e8ca681 100644
---- a/include/linux/jbd.h
-+++ b/include/linux/jbd.h
-@@ -35,7 +35,7 @@
- #define journal_oom_retry 1
+Thanks, fixes the error I was seeing.  
 
- /*
-- * Define JBD_PARANIOD_IOFAIL to cause a kernel BUG() if ext3 finds
-+ * Define JBD_PARANOID_IOFAIL to cause a kernel BUG() if ext3 finds
-  * certain classes of error which can occur due to failed IOs.  Under
-  * normal use we want ext3 to continue after such errors, because
-  * hardware _can_ fail, but for debugging purposes when running tests on
+As an aside, is there anyway we can merge some of the code in
+arch/powerpc/kernel/ftrace.c between 32 and 64bit?  There seems to be a
+lot of repeated code in there with only minor changes.
 
---
-Kazuo Moriwaka
+Mikey
+
+> ---
+>  arch/powerpc/kernel/ftrace.c |   16 +++++++++++++++-
+>  1 files changed, 15 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+> index a913f91..88c641d 100644
+> --- a/arch/powerpc/kernel/ftrace.c
+> +++ b/arch/powerpc/kernel/ftrace.c
+> @@ -113,6 +113,8 @@ static int test_24bit_addr(unsigned long ip, unsigned lon
+g addr)
+>  	return create_branch((unsigned int *)ip, addr, 0);
+>  }
+>  
+> +#ifdef CONFIG_MODULES
+> +
+>  static int is_bl_op(unsigned int op)
+>  {
+>  	return (op & 0xfc000003) == 0x48000001;
+> @@ -323,6 +325,7 @@ __ftrace_make_nop(struct module *mod,
+>  	return 0;
+>  }
+>  #endif /* PPC64 */
+> +#endif /* CONFIG_MODULES */
+>  
+>  int ftrace_make_nop(struct module *mod,
+>  		    struct dyn_ftrace *rec, unsigned long addr)
+> @@ -342,6 +345,7 @@ int ftrace_make_nop(struct module *mod,
+>  		return ftrace_modify_code(ip, old, new);
+>  	}
+>  
+> +#ifdef CONFIG_MODULES
+>  	/*
+>  	 * Out of range jumps are called from modules.
+>  	 * We should either already have a pointer to the module
+> @@ -366,9 +370,13 @@ int ftrace_make_nop(struct module *mod,
+>  		mod = rec->arch.mod;
+>  
+>  	return __ftrace_make_nop(mod, rec, addr);
+> -
+> +#else
+> +	/* We should not get here without modules */
+> +	return -EINVAL;
+> +#endif /* CONFIG_MODULES */
+>  }
+>  
+> +#ifdef CONFIG_MODULES
+>  #ifdef CONFIG_PPC64
+>  static int
+>  __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+> @@ -457,6 +465,7 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long 
+addr)
+>  	return 0;
+>  }
+>  #endif /* CONFIG_PPC64 */
+> +#endif /* CONFIG_MODULES */
+>  
+>  int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+>  {
+> @@ -475,6 +484,7 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned lon
+g addr)
+>  		return ftrace_modify_code(ip, old, new);
+>  	}
+>  
+> +#ifdef CONFIG_MODULES
+>  	/*
+>  	 * Out of range jumps are called from modules.
+>  	 * Being that we are converting from nop, it had better
+> @@ -486,6 +496,10 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned lo
+ng addr)
+>  	}
+>  
+>  	return __ftrace_make_call(rec, addr);
+> +#else
+> +	/* We should not get here without modules */
+> +	return -EINVAL;
+> +#endif /* CONFIG_MODULES */
+>  }
+>  
+>  int ftrace_update_ftrace_func(ftrace_func_t func)
+> -- 
+> 1.5.6.5
+> 
+> -- 
+> 
