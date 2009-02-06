@@ -1,48 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756681AbZBFXYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbZBFX2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756681AbZBFXYn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 18:24:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbZBFXYf
+	id S1756971AbZBFX2g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 18:28:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZBFX22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 18:24:35 -0500
-Received: from styx.suse.cz ([82.119.242.94]:41619 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751780AbZBFXYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 18:24:35 -0500
-Date: Sat, 7 Feb 2009 00:24:33 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Ben Greear <greearb@candelatech.com>
-cc: linux-kernel <linux-kernel@vger.kernel.org>, rusty@rustcorp.com.au
-Subject: Re: PATCH:  Allow user to force 'tsc' to be treated as stable.
-In-Reply-To: <498C78C9.5090405@candelatech.com>
-Message-ID: <alpine.LNX.1.10.0902070022190.11630@jikos.suse.cz>
-References: <498B42C5.7010905@candelatech.com> <alpine.LRH.1.10.0902061531560.22097@twin.jikos.cz> <498C78C9.5090405@candelatech.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 6 Feb 2009 18:28:28 -0500
+Received: from cmpxchg.org ([85.214.51.133]:38862 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751212AbZBFX21 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 18:28:27 -0500
+Date: Sat, 7 Feb 2009 00:27:47 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: kosaki.motohiro@jp.fujitsu.com, rjw@sisk.pl, riel@redhat.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 3/3][RFC] swsusp: shrink file cache first
+Message-ID: <20090206232747.GA3539@cmpxchg.org>
+References: <20090206031125.693559239@cmpxchg.org> <20090206031324.004715023@cmpxchg.org> <20090206122129.79CC.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090206044907.GA18467@cmpxchg.org> <20090206130009.99400d43.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090206130009.99400d43.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Feb 2009, Ben Greear wrote:
+On Fri, Feb 06, 2009 at 01:00:09PM -0800, Andrew Morton wrote:
+> On Fri, 6 Feb 2009 05:49:07 +0100
+> Johannes Weiner <hannes@cmpxchg.org> wrote:
+> 
+> > > and, I think you should mesure performence result.
+> > 
+> > Yes, I'm still thinking about ideas how to quantify it properly.  I
+> > have not yet found a reliable way to check for whether the working set
+> > is intact besides seeing whether the resumed applications are
+> > responsive right away or if they first have to swap in their pages
+> > again.
+> 
+> Describing your subjective non-quantitative impressions would be better
+> than nothing...
 
-> > How do you know that the TSC is stable on such system? What was the 
-> > reason for kernel marking it unstable?
-> I've used it for a timing source in my own modules and it has worked 
-> well.  It could still be broken in some way, but if so, I'm not sure how 
-> to detect it.  Ingo sent me a program to test the tsc, and at least for 
-> short runs, it showed no problem.
-> Another person suggested the system might think it is unstable because I 
-> have ACPI disabled in my BIOS and that might cause the kernel not to 
-> have a 'PM timer' that it uses to check the tsc?
-> Other than that, I have no idea why the kernel thinks the tsc is 
-> unstable.
+Okay.
 
-Normally the reason should be indicated by kernel in dmesg output, could 
-you please provide that?
+> The patch bugs me.
 
-Thanks,
+Please ignore it, it is broken as is.  My verbal cortex got obviously
+disconnected from my code cortex when writing the changelog...  And I
+will reconsider the actual change bits, I still think that we
+shouldn't scan anon page lists while may_swap is zero.
 
--- 
-Jiri Kosina
-SUSE Labs
+> The whole darn point behind the whole darn page reclaim is "reclaim the
+> pages which we aren't likely to need soon".  There's nothing special
+> about the swsusp code at all!  We want it to do exactly what page
+> reclaim normally does, only faster.
+> 
+> So why do we need to write special hand-rolled code to implement
+> something which we've already spent ten years writing?
+> 
+> hm?  And if this approach leads to less-than-optimum performance after
+> resume then the fault lies with core page reclaim - it reclaimed the
+> wrong pages!
+> 
+> That actually was my thinking when I first worked on
+> shrink_all_memory() and it did turn out to be surprisingly hard to
+> simply reuse the existing reclaim code for this application.  Things
+> kept on going wrong.  IIRC this was because we were freeing pages as we
+> were reclaiming, so the page reclaim logic kept on seeing all these
+> free pages and kept on wanting to bale out.
+> 
+> Now, the simple and obvious fix to this is not to free the pages - just
+> keep on allocating pages and storing them locally until we have
+> "enough" memory.  Then when we're all done, dump them all straight onto
+> to the freelists.
+> 
+> But for some reason which I do not recall, we couldn't do that.
+> 
+> It would be good to revisit all this.
+
+Thanks for the comments, I will see what I can come up with.
+
+	Hannes
