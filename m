@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756736AbZBFBi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbZBFBjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756736AbZBFBi1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 20:38:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbZBFBiT
+	id S1757255AbZBFBjK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 20:39:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbZBFBi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 20:38:19 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:56224 "EHLO mx2.redhat.com"
+	Thu, 5 Feb 2009 20:38:56 -0500
+Received: from cmpxchg.org ([85.214.51.133]:33740 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751690AbZBFBiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 20:38:18 -0500
-Date: Fri, 6 Feb 2009 02:38:05 +0100
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Robin Holt <holt@sgi.com>, linux-mm@kvack.org,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [Patch] mmu_notifiers destroyed by __mmu_notifier_release()
-	retain extra mm_count.
-Message-ID: <20090206013805.GL14011@random.random>
-References: <20090205172303.GB8559@sgi.com> <alpine.DEB.1.10.0902051427280.13692@qirst.com> <20090205200214.GN8577@sgi.com> <alpine.DEB.1.10.0902051844390.17441@qirst.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0902051844390.17441@qirst.com>
+	id S1752838AbZBFBiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 20:38:55 -0500
+Message-Id: <E1LVFiv-00032p-HX@cmpxchg.org>
+From: hannes@cmpxchg.org
+Date: Fri, 06 Feb 2009 02:41:41 +0100
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 06:54:33PM -0500, Christoph Lameter wrote:
-> One also needs to wonder why we acquire the refcount for the mmu
-> notifier on the mmstruct at all. Maybe remove the
-> 
-> 	atomic_inc()
-> 
-> from mmu_notifier_register() instead? Looks strange there especially since
-> we have a BUG_ON there as well that verifies that the number of refcount
-> is already above 0.
-> 
-> How about this patch instead?
+>From hannes@cmpxchg.org Fri Feb  6 02:28:54 2009
+Message-Id: <20090206012605.378214179@cmpxchg.org>
+User-Agent: quilt/0.47-1
+Date: Fri, 06 Feb 2009 02:26:05 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+ Rik van Riel <riel@redhat.com>,
+ linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org
+Subject: [PATCH 0/3] swsusp: shrink file cache first
 
-Surely you have to remove mmdrop from mmu_notifier_unregister if you
-do that. But with the other patch that mmdrop should also be mvoed up
-now that I think about it. So both patches looks wrong.
+Hello!
 
+here are three patches that adjust the memory shrinking code used for
+suspend-to-disk.
 
-Ok I think the issue here is that with the current code the unregister
-call is mandatory to avoid memleak, if you do like KVM does everything
-is fine, even if ->release fires through exit_mmap, later unregister
-is called when the fd is closed so all works fine then.
+The first two patches are cleanups only and can probably go in
+regardless of the third one.
 
-The reason of the mm_count pin is to avoid the driver having to
-increase mm_count itself _before_ mmu_notifier_register, basically the
-mm has to exist as long as any mmu notifier is attached to an mm, if
-mm goes away, clearly the notifier list gets corrupted.
+The third patch changes the shrink_all_memory() logic to drop the file
+cache first before touching any mapped files and only then goes for
+anon pages.
 
-It all boils down if unregister is mandatory or not. If it's mandatory
-current code is ok, if it's not, then you've to decide if to remove
-both mmdrop and atomic_inc and have the caller handle it (which is
-likely ok with kvm) or to add mmdrop to the auto-disarming code, and
-then move the mmdrop up in the !hlist_unhashed path of unregister
-(which was missing from Robin's patch and could trigger a double
-mmdrop if one always calls unregister unconditionally which is meant
-to be allowed with current code and that's the kvm usage model too).
+The reason is that everything not shrunk before suspension has to go
+into the image and will be 'prefaulted' before the processes can
+resume and the system is usable again, so the image should be small
+and contain only pages that are likely to be used right after resume
+again.  And this in turn means that the inactive file cache is the
+best point to start decimating used memory.
+
+Also, right now, subsequent faults of contiguously mapped files are
+likely to perform better than swapin (see
+http://kernelnewbies.org/KernelProjects/SwapoutClustering), so not
+only file cache is preferred over other pages, but file pages over
+anon pages in general.
+
+Testing up to this point shows that the patch does what is intended,
+shrinking file cache in favor of anon pages.  But whether the idea is
+correct to begin with is a bit hard to quantify and I am still working
+on it, so RFC only.
+
+	Hannes
+
