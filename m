@@ -1,78 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbZBFGRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756815AbZBFGRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755536AbZBFGRY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 01:17:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZBFGRP
+	id S1756815AbZBFGRi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 01:17:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756143AbZBFGRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 01:17:15 -0500
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:55103 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750990AbZBFGRO (ORCPT
+	Fri, 6 Feb 2009 01:17:25 -0500
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:36003 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755673AbZBFGRY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 01:17:14 -0500
-Date: Fri, 6 Feb 2009 11:47:03 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Chris Friesen <cfriesen@nortel.com>,
-       Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org>,
-       containers@lists.linux-foundation.org, debian-devel@lists.debian.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: cgroup mount point
-Message-ID: <20090206061703.GA26902@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090202200013.GU3643@vespa.holoscopio.com> <1233606371.15779.32.camel@radis.liafa.jussieu.fr> <20090202205246.GA28593@glandium.org> <20090202214153.GV3643@vespa.holoscopio.com> <498779C2.2060908@nortel.com> <20090203121524.cdff11ae.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090203121524.cdff11ae.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 6 Feb 2009 01:17:24 -0500
+Subject: Re: [PARAVIRT/x86] BUGFIX: Put a missing paravirt_release_pmd in
+	pgd_dtor
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Zach Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Rohit Jain <rjain@vmware.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <498BA0CA.2040603@goop.org>
+References: <1233885731.29693.26.camel@alok-dev1>
+	 <498BA0CA.2040603@goop.org>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Thu, 05 Feb 2009 22:17:23 -0800
+Message-Id: <1233901043.8943.6.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-02-03 12:15:24]:
+On Thu, 2009-02-05 at 18:30 -0800, Jeremy Fitzhardinge wrote: 
+> >  
+> > +	if (PAGETABLE_LEVELS == 2 ||
+> > +            (PAGETABLE_LEVELS == 3 && SHARED_KERNEL_PMD) ||
+> > +            PAGETABLE_LEVELS == 4) {
+> > +		paravirt_release_pmd(__pa(pgd) >> PAGE_SHIFT);
+> > +	}
+> >   
+> 
+> Ah, you want release_pmd to be called on pgds as well...  Why?  Do you 
+> track the page type for pgds? 
 
-> On Mon, 02 Feb 2009 16:54:58 -0600
-> "Chris Friesen" <cfriesen@nortel.com> wrote:
+VMI didn't/still doesn't differentiate between a *release* of pgd or
+pmd. 
+>  Why not just make a copy of the entries 
+> on cr3 reload like the real hardware does?
 > 
-> > Thadeu Lima de Souza Cascardo wrote:
-> > 
-> > > Linux Documentation is not consistent and have some funny options. In
-> > > Documentation/cgroups/*, we have:
-> > 
-> > > So, we have some more options now: /cgroups, /containers, /dev/cpuset,
-> > > /dev/cpuctl, /opt/cgroup, /opt/cpuset.
-> > > 
-> > > I am copying the container and the kernel guys. Perhaps, we can find an
-> > > agreement (if we want to find one at all) and change all that
-> > > Documentation to get consistent.
-> > 
-> > I'd vote for "cgroups" or "containers", mounted at / or /sys/.
-> > 
-> me, too.
-> 
-> But single mount point just assumes "all necessary subsystems are mounter at once"
-> So,
->     /cgroup/<subsys>/       #this cannot handle multiple subsyses.
->     or 
->     /cgroup/some_nick_name  #just depends on users.
-> 
-> Hmm. Making documentation to use the same mount point is not so bad. But in real
-> usage, cgroup's mount point seems case-by-case. 
-> If libcgroup or libvirt shows some policy, it's good for users.
-> 
->   /cgroup/<libcgroup's grouping nick name>/ ...
-> 
-> or some.
-> 
+> Alternatively you could hook pv_mmu_ops.exit_mmap to get a call when the 
+> last reference to the pagetable has been dropped.
 
-FYI for everyone
+> 
+> Or, if you really must, introduce paravirt_release_pgd and hook that.
 
-Please take a look at libcgroup (libcg.sf.net). Through the
-configuration mechanism, we allow the controllers to be mounted at any
-desired location and provide configuration persistence across machine
-reboots. The configuration (as in created cgroups and controller mount
-points) is controlled via a configuration file.
+As it affects only VMI, instead of adding another callback, i have
+hooked on the paravirt_pgd_free call for vmi to release the pgd page.
+Below is the patch. I will run some overnight tests with this patch and
+get back if there are any errors.
+
+> 
+> But either way, calling release_pmd here is wrong, since its only meant 
+> to be applied to pmds,
+Maybe i misunderstand, but that's how it used to work before that
+commit, we had a single call to release_*pd*, no ?
+>  and it would break the Xen code.
+
+i see xen doesn't define the alloc_pmd_clone call. 
+
+Thanks,
+Alok
 
 -- 
-	Balbir
+[VMI/x86] Release the pgd page in pgd_dtor.
+
+From: Alok N Kataria <akataria@vmware.com>
+
+The commit...
+-----------------------------
+commit 6194ba6ff6ccf8d5c54c857600843c67aa82c407
+Author: Jeremy Fitzhardinge <jeremy@goop.org>
+Date:   Wed Jan 30 13:34:11 2008 +0100
+
+    x86: don't special-case pmd allocations as much
+------------------------------
+...made changes to the way we handle pmd allocations, and while doing that
+it dropped a call to  paravirt_release_pd on the pgd page from the pgd_dtor
+code path.
+
+As a result of this missing release, the hypervisor is now unaware of the
+pgd page being freed, and as a result it ends up tracking this page as a
+page table page.
+After this the guest may start using the same page for other purposes, and
+depending on what use the page is put to, it may result in various performance
+and/or functional issues ( hangs, reboots).
+
+Since this bug affects only VMI, instead of adding another pgd_release hook,
+I now release the pgd page in the (vmi)_pgd_free hook.
+
+Patch on top of 2.6.29-rc3 (mainline head).
+
+Signed-off-by: Alok N Kataria <akataria@vmware.com>
+Cc: Rohit Jain <rjain@vmware.com>
+Cc: Zachary Amsden <zach@vmware.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: stable@kernel.org
+---
+
+ arch/x86/kernel/vmi_32.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
+
+
+diff --git a/arch/x86/kernel/vmi_32.c b/arch/x86/kernel/vmi_32.c
+index 1d3302c..dfed18f 100644
+--- a/arch/x86/kernel/vmi_32.c
++++ b/arch/x86/kernel/vmi_32.c
+@@ -321,6 +321,16 @@ static void vmi_release_pmd(unsigned long pfn)
+ }
+ 
+ /*
++ * We hack the pgd_free hook for releasing the pgd page.
++ */
++static void vmi_pgd_free(struct mm_struct *mm, pgd_t *pgd)
++{
++	unsigned long pfn = __pa(pgd) >> PAGE_SHIFT;
++
++	vmi_ops.release_page(pfn, VMI_PAGE_L2);
++}
++
++/*
+  * Helper macros for MMU update flags.  We can defer updates until a flush
+  * or page invalidation only if the update is to the current address space
+  * (otherwise, there is no flush).  We must check against init_mm, since
+@@ -762,6 +772,7 @@ static inline int __init activate_vmi(void)
+ 	if (vmi_ops.release_page) {
+ 		pv_mmu_ops.release_pte = vmi_release_pte;
+ 		pv_mmu_ops.release_pmd = vmi_release_pmd;
++		pv_mmu_ops.pgd_free = vmi_pgd_free;
+ 	}
+ 
+ 	/* Set linear is needed in all cases */
+
+
