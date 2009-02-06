@@ -1,220 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757941AbZBFOwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758134AbZBFOxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757941AbZBFOwu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 09:52:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129AbZBFOwk
+	id S1758134AbZBFOxa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 09:53:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbZBFOxV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 09:52:40 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:42327 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750945AbZBFOwj (ORCPT
+	Fri, 6 Feb 2009 09:53:21 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:49429 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750945AbZBFOxV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 09:52:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=isc4FgA925FLfyhP8Esm+xgsIIDUnTLR1Dywf+UWQmu2r1Z3vHSwlnKLuQjohn07NF
-         V7c/n938hY7KRRaAsaj9/z+a0C5Q9vws8Wrwh2pQdIS0VeJoMtYZvwzk2OqATzf23aKf
-         Ivim0waO3bDiijCjKvDClnuPB2UBqEqNzy7UA=
-Date: Fri, 6 Feb 2009 17:58:38 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Frank Seidel <fseidel@suse.de>
-Cc: linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
-       frank@f-seidel.de, herbert@gondor.apana.org.au, jarod@redhat.com
-Subject: Re: [PATCH] crypto: add missing KERN_* constants to printks
-Message-ID: <20090206145838.GA28197@x200.localdomain>
-References: <498C46DE.8040700@suse.de>
-MIME-Version: 1.0
+	Fri, 6 Feb 2009 09:53:21 -0500
+Date: Fri, 6 Feb 2009 14:51:19 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Tony Luck <tony.luck@intel.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>, hskinnemoen@atmel.com,
+       cooloney@kernel.org, ralf@linux-mips.org, dhowells@redhat.com,
+       matthew@wil.cx, chris@zankel.net, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull -tip] headers_check fixes for other architectures
+Message-ID: <20090206145119.GB13758@n2100.arm.linux.org.uk>
+References: <1233385816.17794.16.camel@localhost.localdomain> <12c511ca0902050955x1acb3907jdbfc1d0e6392cb91@mail.gmail.com> <alpine.LFD.2.00.0902051101040.3247@localhost.localdomain> <20090205191907.GA27422@elte.hu> <1233886017.3463.26.camel@localhost.localdomain> <20090206022025.GA8317@elte.hu> <1233929922.3209.6.camel@localhost.localdomain> <20090206142134.GA13758@n2100.arm.linux.org.uk> <1233930860.3209.13.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <498C46DE.8040700@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1233930860.3209.13.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 06, 2009 at 03:19:10PM +0100, Frank Seidel wrote:
-> According to kerneljanitors todo list all printk calls (beginning
-> a new line) should have an according KERN_* constant.
+On Fri, Feb 06, 2009 at 08:04:20PM +0530, Jaswinder Singh Rajput wrote:
+> On Fri, 2009-02-06 at 14:21 +0000, Russell King - ARM Linux wrote:
+> > On Fri, Feb 06, 2009 at 07:48:42PM +0530, Jaswinder Singh Rajput wrote:
+> > > diff --git a/include/linux/types.h b/include/linux/types.h
+> > > index 712ca53..c30973a 100644
+> > > --- a/include/linux/types.h
+> > > +++ b/include/linux/types.h
+> > > @@ -1,6 +1,7 @@
+> > >  #ifndef _LINUX_TYPES_H
+> > >  #define _LINUX_TYPES_H
+> > >  
+> > > +#ifndef __ASSEMBLY__
+> > >  #ifdef	__KERNEL__
+> > >  
+> > >  #define DECLARE_BITMAP(name,bits) \
+> > > @@ -212,5 +213,5 @@ struct ustat {
+> > >  };
+> > >  
+> > >  #endif	/* __KERNEL__ */
+> > > -
+> > > +#endif /*  __ASSEMBLY__ */
+> > >  #endif /* _LINUX_TYPES_H */
+> > 
+> > So no point including this file in assembly with this patch - the ifndef
+> > disables the entire file.
+> 
+> Truth Table of linux/types.h :
+> 
+> If Assembly then N
+> otherwise Y
+> 
+> what your table says.
 
-Forget about kernel janitors todo list, fix a bug instead.
-
-> Those are the missing pieces here for the crypto subsystem.
-
-You're inserting KERN_WARNING everywhere, what for?
-
-> --- a/crypto/tcrypt.c
-> +++ b/crypto/tcrypt.c
-> @@ -74,7 +74,7 @@ static int test_cipher_jiffies(struct bl
->  			return ret;
->  	}
->  
-> -	printk("%d operations in %d seconds (%ld bytes)\n",
-> +	printk(KERN_WARNING "%d operations in %d seconds (%ld bytes)\n",
->  	       bcount, sec, (long)bcount * blen);
->  	return 0;
->  }
-> @@ -122,7 +122,7 @@ out:
->  	local_bh_enable();
->  
->  	if (ret == 0)
-> -		printk("1 operation in %lu cycles (%d bytes)\n",
-> +		printk(KERN_WARNING "1 operation in %lu cycles (%d bytes)\n",
->  		       (cycles + 4) / 8, blen);
->  
->  	return ret;
-> @@ -146,13 +146,13 @@ static void test_cipher_speed(const char
->  	else
->  		e = "decryption";
->  
-> -	printk("\ntesting speed of %s %s\n", algo, e);
-> +	printk(KERN_WARNING "\ntesting speed of %s %s\n", algo, e);
->  
->  	tfm = crypto_alloc_blkcipher(algo, 0, CRYPTO_ALG_ASYNC);
->  
->  	if (IS_ERR(tfm)) {
-> -		printk("failed to load transform for %s: %ld\n", algo,
-> -		       PTR_ERR(tfm));
-> +		printk(KERN_WARNING "failed to load transform for %s: %ld\n",
-> +		       algo, PTR_ERR(tfm));
->  		return;
->  	}
->  	desc.tfm = tfm;
-> @@ -166,14 +166,16 @@ static void test_cipher_speed(const char
->  			struct scatterlist sg[TVMEMSIZE];
->  
->  			if ((*keysize + *b_size) > TVMEMSIZE * PAGE_SIZE) {
-> -				printk("template (%u) too big for "
-> +				printk(KERN_WARNING
-> +				       "template (%u) too big for "
->  				       "tvmem (%lu)\n", *keysize + *b_size,
->  				       TVMEMSIZE * PAGE_SIZE);
->  				goto out;
->  			}
->  
-> -			printk("test %u (%d bit key, %d byte blocks): ", i,
-> -					*keysize * 8, *b_size);
-> +			printk(KERN_WARNING
-> +					"test %u (%d bit key, %d byte blocks): ",
-> +					i, *keysize * 8, *b_size);
->  
->  			memset(tvmem[0], 0xff, PAGE_SIZE);
->  
-> @@ -188,7 +190,8 @@ static void test_cipher_speed(const char
->  
->  			ret = crypto_blkcipher_setkey(tfm, key, *keysize);
->  			if (ret) {
-> -				printk("setkey() failed flags=%x\n",
-> +				printk(KERN_WARNING
-> +						"setkey() failed flags=%x\n",
->  						crypto_blkcipher_get_flags(tfm));
->  				goto out;
->  			}
-> @@ -215,7 +218,8 @@ static void test_cipher_speed(const char
->  							 *b_size);
->  
->  			if (ret) {
-> -				printk("%s() failed flags=%x\n", e, desc.flags);
-> +				printk(KERN_WARNING "%s() failed flags=%x\n",
-> +				       e, desc.flags);
->  				break;
->  			}
->  			b_size++;
-> @@ -243,7 +247,7 @@ static int test_hash_jiffies_digest(stru
->  			return ret;
->  	}
->  
-> -	printk("%6u opers/sec, %9lu bytes/sec\n",
-> +	printk(KERN_WARNING "%6u opers/sec, %9lu bytes/sec\n",
->  	       bcount / sec, ((long)bcount * blen) / sec);
->  
->  	return 0;
-> @@ -275,7 +279,7 @@ static int test_hash_jiffies(struct hash
->  			return ret;
->  	}
->  
-> -	printk("%6u opers/sec, %9lu bytes/sec\n",
-> +	printk(KERN_WARNING "%6u opers/sec, %9lu bytes/sec\n",
->  	       bcount / sec, ((long)bcount * blen) / sec);
->  
->  	return 0;
-> @@ -320,7 +324,7 @@ out:
->  	if (ret)
->  		return ret;
->  
-> -	printk("%6lu cycles/operation, %4lu cycles/byte\n",
-> +	printk(KERN_WARNING "%6lu cycles/operation, %4lu cycles/byte\n",
->  	       cycles / 8, cycles / (8 * blen));
->  
->  	return 0;
-> @@ -384,7 +388,7 @@ out:
->  	if (ret)
->  		return ret;
->  
-> -	printk("%6lu cycles/operation, %4lu cycles/byte\n",
-> +	printk(KERN_WARNING "%6lu cycles/operation, %4lu cycles/byte\n",
->  	       cycles / 8, cycles / (8 * blen));
->  
->  	return 0;
-> @@ -400,13 +404,13 @@ static void test_hash_speed(const char *
->  	int i;
->  	int ret;
->  
-> -	printk("\ntesting speed of %s\n", algo);
-> +	printk(KERN_WARNING "\ntesting speed of %s\n", algo);
->  
->  	tfm = crypto_alloc_hash(algo, 0, CRYPTO_ALG_ASYNC);
->  
->  	if (IS_ERR(tfm)) {
-> -		printk("failed to load transform for %s: %ld\n", algo,
-> -		       PTR_ERR(tfm));
-> +		printk(KERN_WARNING "failed to load transform for %s: %ld\n",
-> +		       algo, PTR_ERR(tfm));
->  		return;
->  	}
->  
-> @@ -414,7 +418,7 @@ static void test_hash_speed(const char *
->  	desc.flags = 0;
->  
->  	if (crypto_hash_digestsize(tfm) > sizeof(output)) {
-> -		printk("digestsize(%u) > outputbuffer(%zu)\n",
-> +		printk(KERN_WARNING "digestsize(%u) > outputbuffer(%zu)\n",
->  		       crypto_hash_digestsize(tfm), sizeof(output));
->  		goto out;
->  	}
-> @@ -427,12 +431,14 @@ static void test_hash_speed(const char *
->  
->  	for (i = 0; speed[i].blen != 0; i++) {
->  		if (speed[i].blen > TVMEMSIZE * PAGE_SIZE) {
-> -			printk("template (%u) too big for tvmem (%lu)\n",
-> +			printk(KERN_WARNING
-> +			       "template (%u) too big for tvmem (%lu)\n",
->  			       speed[i].blen, TVMEMSIZE * PAGE_SIZE);
->  			goto out;
->  		}
->  
-> -		printk("test%3u (%5u byte blocks,%5u bytes per update,%4u updates): ",
-> +		printk(KERN_WARNING
-> +		       "test%3u (%5u byte blocks,%5u bytes per update,%4u updates): ",
->  		       i, speed[i].blen, speed[i].plen, speed[i].blen / speed[i].plen);
->  
->  		if (sec)
-> @@ -443,7 +449,7 @@ static void test_hash_speed(const char *
->  					       speed[i].plen, output);
->  
->  		if (ret) {
-> -			printk("hashing failed ret=%d\n", ret);
-> +			printk(KERN_WARNING "hashing failed ret=%d\n", ret);
->  			break;
->  		}
->  	}
-> --- a/crypto/ansi_cprng.c
-> +++ b/crypto/ansi_cprng.c
-> @@ -167,7 +167,7 @@ static int _get_more_prng_bytes(struct p
->  			break;
->  	}
->  
-> -	dbgprint("Returning new block for context %p\n", ctx);
-> +	dbgprint(KERN_WARNING "Returning new block for context %p\n", ctx);
+If the entire file is not suitable for assembly, don't include the file
+in assembly files.  Nice and simple, and no need to add additional ifdefs.
