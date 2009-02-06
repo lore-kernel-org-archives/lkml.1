@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756982AbZBFOu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbZBFOwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756982AbZBFOu4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 09:50:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751108AbZBFOur
+	id S1756170AbZBFOwU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 09:52:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbZBFOwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 09:50:47 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:62324 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751149AbZBFOuq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 09:50:46 -0500
-Date: Fri, 6 Feb 2009 09:50:43 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH 2/4] nmi: add generic nmi tracking state
-In-Reply-To: <20090206144609.GB18368@elte.hu>
-Message-ID: <alpine.DEB.1.10.0902060950250.10059@gandalf.stny.rr.com>
-References: <20090206065352.940088243@goodmis.org> <20090206065437.986292747@goodmis.org> <1233912891.4731.1.camel@laptop> <20090206144609.GB18368@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 6 Feb 2009 09:52:11 -0500
+Received: from rtr.ca ([76.10.145.34]:45045 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752694AbZBFOwK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 09:52:10 -0500
+Message-ID: <498C4E98.3010006@rtr.ca>
+Date: Fri, 06 Feb 2009 09:52:08 -0500
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH v2] NOHZ: fix nohz on cpu unplug
+References: <200901301729.30284.borntraeger@de.ibm.com>	 <200902030948.13519.borntraeger@de.ibm.com>	 <20090203122847.GG19979@elte.hu>	 <200902040719.25593.borntraeger@de.ibm.com>	 <1233777584.16238.16.camel@vayu> <20090204213202.GP22608@elte.hu>	 <498B43D9.2080800@rtr.ca> <1233887607.16238.47.camel@vayu>
+In-Reply-To: <1233887607.16238.47.camel@vayu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 6 Feb 2009, Ingo Molnar wrote:
-
+Suresh Siddha wrote:
+> On Thu, 2009-02-05 at 11:54 -0800, Mark Lord wrote:
+>> How far back in (kernel release) time does this problem exist?
+>> Candidate for -stable ?
 > 
-> * Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > On Fri, 2009-02-06 at 01:53 -0500, Steven Rostedt wrote:
-> > 
-> > > This code adds an in_nmi() macro that uses the current tasks preempt count
-> > > to track when it is in NMI context. Other parts of the kernel can
-> > > use this to determine if the context is in NMI context or not.
-> > > 
-> > > This code was inspired by the -rt patch in_nmi version that was
-> > > written by Peter Zijlstra.
-> > 
-> > Which in turn I borrowed from Mathieu.
-> 
-> Steve, could you please fix the attribution?
+> Problem is present for a while now. But I don't think this is a common
+> case scenario (as the issue happens only for the duration when we leave
+> a cpu offline, and it should get fixed the moment that logical cpu is
+> back online).
+..
 
-Is it OK to rebase the branch to do so?
+There is an existing bug (for some time now) in the kernel shutdown
+for multi-CPUs.  Once in a while, perhaps every 20-30 halts,
+the kernel fails to power-off the machine.
 
--- Steve
+I've seen this problem here since 2.6.18 or so, on multiple different
+machines with Core2duo and Core2quad processors.
 
+It comes and goes, depending upon the kernel version and exact .config
+that is used.  Any attempt to instrument it generally changes the race
+conditions enough that it stops happening.
+
+I'm just wondering if this bug might explain some of that.
+
+Cheers
