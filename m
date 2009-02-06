@@ -1,74 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbZBFWkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757922AbZBFWlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756028AbZBFWkZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 17:40:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZBFWkM
+	id S1757922AbZBFWlZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 17:41:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbZBFWlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 17:40:12 -0500
-Received: from relay.gothnet.se ([82.193.160.251]:64514 "EHLO
-	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750831AbZBFWkL convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 17:40:11 -0500
-Message-ID: <498CBC3B.6010609@shipmail.org>
-Date: Fri, 06 Feb 2009 23:39:55 +0100
-From: =?ISO-8859-15?Q?Thomas_Hellstr=F6m?= <thomas@shipmail.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
-MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: Eric Anholt <eric@anholt.net>, DRI <dri-devel@lists.sourceforge.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Gem GTT mmaps..
-References: <498A1760.7010108@shipmail.org> <200902060914.59956.jbarnes@virtuousgeek.org> <498CAD2F.5070806@shipmail.org> <200902061424.02906.jbarnes@virtuousgeek.org>
-In-Reply-To: <200902061424.02906.jbarnes@virtuousgeek.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-X-BitDefender-Scanner: Mail not scanned due to license constraints
-Content-Transfer-Encoding: 8BIT
+	Fri, 6 Feb 2009 17:41:08 -0500
+Received: from ns2.suse.de ([195.135.220.15]:33333 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751986AbZBFWlG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 17:41:06 -0500
+Date: Fri, 6 Feb 2009 23:41:00 +0100
+From: Karsten Keil <kkeil@suse.de>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, Michal Hocko <mhocko@suse.cz>,
+       richard kennedy <richard@rsk.demon.co.uk>,
+       Dan Williams <dan.j.williams@intel.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>, dwmw2@infradead.org,
+       Scott Wood <scottwood@freescale.com>, netdev@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>, gregkh@suse.de
+Subject: Re: [RFC] Suspicious bug in module refcounting
+Message-ID: <20090206224059.GA9080@pingi.kke.suse.de>
+References: <20090203134721.GA11069@pingi.kke.suse.de> <200902041418.09630.rusty@rustcorp.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200902041418.09630.rusty@rustcorp.com.au>
+Organization: SuSE Linux AG
+X-Operating-System: Linux 2.6.16.60-0.34-smp x86_64
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
-> On Friday, February 6, 2009 1:35 pm Thomas Hellström wrote:
->   
->> Jesse Barnes wrote:
->>     
->>> On Thursday, February 5, 2009 10:37 am Jesse Barnes wrote:
->>>       
->>>> So if we leave the lookup reference around from the GTT mapping ioctl,
->>>> that would take care of new mappings.  And if we added/removed
->>>> references at VM open/close time, we should be covered for fork.  But is
->>>> it ok to add a new unref in the finish ioctl for GTT mapped objects?  I
->>>> don't think so, because we don't know for sure if the caller was the one
->>>> that created the new fake offset (which would be one way of detecting
->>>> whether it was GTT mapped). Seems like we need a new unmap ioctl?  Or we
->>>> could put the mapping ref/unref in libdrm, where it would be tracked on
->>>> a per-process basis...
->>>>         
->>> Ah but maybe we should just tear down the fake offset at unmap time; then
->>> we'd be able to use it as an existence test for the mapping and get the
->>> refcounting right.  The last thing I thought of was whether we'd be ok in
->>> a map_gtt -> crash case.  I *think* the vm_close code will deal with
->>> that, if we do a deref there?
->>>       
->> Yes, an mmap() is always paired with a vm_close(), and the vm_close()
->> also happens in a crash situation.
->>     
->
-> This one should cover the cases you found.
->   - ref at map time will keep the object around so fault shouldn't fail
->   - additional threads will take their refs in vm_open/close
->   - unmap will unref and remove mmap_offset allowing object to be freed
->
->   
-Jesse,
+Hi Rusty,
 
-Yes, it looks OK to me.
-A short question, though, when is i915_gem_sw_finish_ioctl called? Is it 
-possible that the client may still think its mmap offset is valid?
+On Wed, Feb 04, 2009 at 02:18:08PM +1030, Rusty Russell wrote:
+> On Wednesday 04 February 2009 00:17:21 Karsten Keil wrote:
+> > The refcount is a per CPU atomic variable, module_refcount() simple add
+> > in a fully unprotected loop (not disabled irqs, not protected against
+> > scheduling) all per cpu values.
+> 
+> Hi Karsten,
+> 
+>    Yes, the BUG_ON() is overly aggressive.  And I really hate __module_get,
+> and it looks like most of the callers are completely bogus.  The watchdog
+> drivers use it to nail themselves in place in their open routines: this is
+> OK, if a bit weird.
+> 
 
-Thomas
+...
+> 
+> Meanwhile, I'll remove the BUG_ON for 2.6.29.
+> 
+> Thanks,
+> Rusty.
 
+Seems that this was not picked up yet for 2.6.29, but I think it really should
+go in random triggering BUG() is not very nice, maybe it should also added to
+the stable trees.
 
+Can you please submit it again ?
 
+> 
+> module: remove over-zealous check in __module_get()
+> 
+> module_refcount() isn't reliable outside stop_machine(), as demonstrated
+> by Karsten Keil <kkeil@suse.de>, networking can trigger it under load
+> (an inc on one cpu and dec on another while module_refcount() is tallying
+>  can give false results, for example).
+> 
+> Almost noone should be using __module_get, but that's another issue.
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> 
+> diff --git a/include/linux/module.h b/include/linux/module.h
+> --- a/include/linux/module.h
+> +++ b/include/linux/module.h
+> @@ -407,7 +407,6 @@ static inline void __module_get(struct m
+>  static inline void __module_get(struct module *module)
+>  {
+>  	if (module) {
+> -		BUG_ON(module_refcount(module) == 0);
+>  		local_inc(__module_ref_addr(module, get_cpu()));
+>  		put_cpu();
+>  	}
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
+-- 
+Karsten Keil
+SuSE Labs
+ISDN and VOIP development
+SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
