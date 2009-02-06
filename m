@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757032AbZBFNyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbZBFNyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757032AbZBFNyR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 08:54:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758159AbZBFNxu
+	id S1757583AbZBFNyq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 08:54:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756864AbZBFNyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 08:53:50 -0500
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:41200 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758109AbZBFNxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 08:53:49 -0500
-Date: Fri, 6 Feb 2009 14:53:43 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Jean Pihet <jpihet@mvista.com>, tony@atomide.com
-Cc: Paul Walmsley <paul@pwsan.com>, Andrew Morton <akpm@linux-foundation.org>,
-       ext-adrian.hunter@nokia.com, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-omap@vger.kernel.org, jarkko.lavinen@nokia.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] OMAP: MMC: recover from transfer failures - Resend
-Message-ID: <20090206145343.2b8a5353@mjolnir.drzeus.cx>
-In-Reply-To: <200902061422.32689.jpihet@mvista.com>
-References: <20081207213617.10456.43951.stgit@localhost>
-	<20090205121045.4022c319.akpm@linux-foundation.org>
-	<alpine.DEB.2.00.0902051323090.8131@utopia.booyaka.com>
-	<200902061422.32689.jpihet@mvista.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Feb 2009 08:54:36 -0500
+Received: from mga09.intel.com ([134.134.136.24]:17971 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756096AbZBFNyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 08:54:35 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,391,1231142400"; 
+   d="scan'208";a="384639530"
+Date: Fri, 6 Feb 2009 14:56:59 +0100
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mfd: Mark WM835x USB_SLV_500MA bit as accessible
+Message-ID: <20090206135658.GB3341@sortiz.org>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+References: <1231944901-4901-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1231944901-4901-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Feb 2009 14:22:32 +0100
-Jean Pihet <jpihet@mvista.com> wrote:
+On Wed, Jan 14, 2009 at 02:55:01PM +0000, Mark Brown wrote:
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> ---
+>  drivers/mfd/wm8350-regmap.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+Applied, thanks.
 
-> On Thursday 05 February 2009 21:32:03 Paul Walmsley wrote:
-> > On Thu, 5 Feb 2009, Andrew Morton wrote:
-> > > An infinite loop which assumes the hardware is perfect is always a
-> > > worry.  But I see the driver already does that, so we're no worse off..
-> Do you want a finite loop with udelay in it? I located 4 places were this 
-> could be used. If so I can generate a new patch for that.
+ 
+> diff --git a/drivers/mfd/wm8350-regmap.c b/drivers/mfd/wm8350-regmap.c
+> index 68887b8..9a4cc95 100644
+> --- a/drivers/mfd/wm8350-regmap.c
+> +++ b/drivers/mfd/wm8350-regmap.c
+> @@ -3188,7 +3188,7 @@ const struct wm8350_reg_access wm8350_reg_io_map[] = {
+>  	{ 0x7CFF, 0x0C00, 0x7FFF }, /* R1   - ID */
+>  	{ 0x0000, 0x0000, 0x0000 }, /* R2 */
+>  	{ 0xBE3B, 0xBE3B, 0x8000 }, /* R3   - System Control 1 */
+> -	{ 0xFCF7, 0xFCF7, 0xF800 }, /* R4   - System Control 2 */
+> +	{ 0xFEF7, 0xFEF7, 0xF800 }, /* R4   - System Control 2 */
+>  	{ 0x80FF, 0x80FF, 0x8000 }, /* R5   - System Hibernate */
+>  	{ 0xFB0E, 0xFB0E, 0x0000 }, /* R6   - Interface Control */
+>  	{ 0x0000, 0x0000, 0x0000 }, /* R7 */
+> -- 
+> 1.5.6.5
 > 
 
-Even if Andrew doesn't, I'd sure like it. (the finite bit at least) :)
-
-
-Related, who is the maintainer of this driver? Tony? I'd like to have
-someone who checks patches before I queue them up.
-
-
-Rgds
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+Intel Open Source Technology Centre
+http://oss.intel.com/
