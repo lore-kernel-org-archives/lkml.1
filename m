@@ -1,61 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbZBFC0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757831AbZBFC2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758136AbZBFC0t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 21:26:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752402AbZBFC0j
+	id S1757831AbZBFC2k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 21:28:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752402AbZBFC22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 21:26:39 -0500
-Received: from rv-out-0506.google.com ([209.85.198.238]:54535 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751371AbZBFC0h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 21:26:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=UollXS8sObQ/RNBYMNh38KouOk54FQwY7IzmmTQOFslYStk5c2scELJte6kDzNv+WE
-         4A+RjEcrk2Yj12Bv34jtO/sq+T693TDV8G6std3rRM6ix+viowBW7mwN/KGws/IZ3x8z
-         uwYCC7xBQryQykbtHSY8YzNCGveuj5fgHgxvY=
+	Thu, 5 Feb 2009 21:28:28 -0500
+Received: from sous-sol.org ([216.99.217.87]:53246 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750885AbZBFC22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 21:28:28 -0500
+Date: Thu, 5 Feb 2009 18:27:59 -0800
+From: Chris Wright <chrisw@sous-sol.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, fujita.tomonori@lab.ntt.co.jp,
+       netdev@vger.kernel.org, iommu@lists.linux-foundation.org,
+       mingo@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/16] DMA-API debugging facility v2
+Message-ID: <20090206022759.GF27684@sequoia.sous-sol.org>
+References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1233874352.8135.12.camel@macbook.infradead.org>
 MIME-Version: 1.0
-In-Reply-To: <20090205141245.2945141e.akpm@linux-foundation.org>
-References: <1233828453-13311-1-git-send-email-cooloney@kernel.org>
-	 <1233828453-13311-2-git-send-email-cooloney@kernel.org>
-	 <20090205141245.2945141e.akpm@linux-foundation.org>
-Date: Fri, 6 Feb 2009 10:26:35 +0800
-X-Google-Sender-Auth: 855b3917368a923b
-Message-ID: <386072610902051826q23b806b8u6980be0ff83edf53@mail.gmail.com>
-Subject: Re: [PATCH 1/5] Blackfin SPI Driver: use bfin_spi_ prefix on all 
-	functions
-From: Bryan Wu <cooloney@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dbrownell@users.sourceforge.net, spi-devel-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, vapier.adi@gmail.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1233874352.8135.12.camel@macbook.infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 6, 2009 at 6:12 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Thu,  5 Feb 2009 18:07:29 +0800
-> Bryan Wu <cooloney@kernel.org> wrote:
->
->> Do this because when things crash, we get simple names like "setup" and
->> "start_queue" which is pretty difficult to trace back to the real thing:
->> the spi driver
->>
->
-> As usual, the driver core guys have gone trompling all over other people's code
-> and your patch doesn't apply to linux-next.
->
-> 11 out of 61 hunks FAILED -- saving rejects to file drivers/spi/spi_bfin5xx.c.rej
->
+* David Woodhouse (dwmw2@infradead.org) wrote:
+> This adds a function to dump the DMA mappings that the debugging code is
+> aware of -- either for a single device, or for _all_ devices.
+> 
+> This can be useful for debugging -- sticking a call to it in the DMA
+> page fault handler, for example, to see if the faulting address _should_
+> be mapped or not, and hence work out whether it's IOMMU bugs we're
+> seeing, or driver bugs.
 
-That is because our earlier 16 spi patches not merged. As David
-request, I will fold those 16 spi patches with these 5 patches and
-send them out later.
+BTW, here's how I hooked it up:
 
-Thanks a lot
--Bryan
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index c933980..df593d1 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -1072,6 +1072,34 @@ void dmar_msi_read(int irq, struct msi_msg *msg)
+ 	spin_unlock_irqrestore(&iommu->register_lock, flag);
+ }
+ 
++static struct pci_dev *domain_find_pdev(u8 bus, u8 devfn)
++{
++	unsigned long flags;
++	struct pci_dev *pdev = NULL;
++	struct device_domain_info *info;
++
++	spin_lock_irqsave(&device_domain_lock, flags);
++	list_for_each_entry(info, &device_domain_list, global) {
++		if (info->bus == bus && info->devfn == devfn) {
++			pdev = info->dev;
++			break;
++		}
++	}
++	spin_unlock_irqrestore(&device_domain_lock, flags);
++	return pdev;
++}
++
++static void dump_mappings(u16 source_id)
++{
++	struct pci_dev *pdev;
++	u8 bus = source_id >> 8;
++	u8 devfn = source_id & 0xff;
++
++	pdev = domain_find_pdev(bus, devfn);
++	if (pdev)
++		debug_dma_dump_mappings(&pdev->dev);
++}
++
+ static int iommu_page_fault_do_one(struct intel_iommu *iommu, int type,
+ 		u8 fault_reason, u16 source_id, unsigned long long addr)
+ {
+@@ -1086,6 +1114,8 @@ static int iommu_page_fault_do_one(struct intel_iommu *iommu, int type,
+ 		(type ? "DMA Read" : "DMA Write"),
+ 		(source_id >> 8), PCI_SLOT(source_id & 0xFF),
+ 		PCI_FUNC(source_id & 0xFF), addr, fault_reason, reason);
++
++	dump_mappings(source_id);
+ 	return 0;
+ }
+ 
