@@ -1,97 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbZBFGKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbZBFGRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755999AbZBFGKl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 01:10:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbZBFGKW
+	id S1755536AbZBFGRY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 01:17:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZBFGRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 01:10:22 -0500
-Received: from mail.candelatech.com ([208.74.158.172]:58699 "EHLO
-	ns3.lanforge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751915AbZBFGKV (ORCPT
+	Fri, 6 Feb 2009 01:17:15 -0500
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:55103 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750990AbZBFGRO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 01:10:21 -0500
-Message-ID: <498BD448.80102@candelatech.com>
-Date: Thu, 05 Feb 2009 22:10:16 -0800
-From: Ben Greear <greearb@candelatech.com>
-Organization: Candela Technologies
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 6 Feb 2009 01:17:14 -0500
+Date: Fri, 6 Feb 2009 11:47:03 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Chris Friesen <cfriesen@nortel.com>,
+       Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org>,
+       containers@lists.linux-foundation.org, debian-devel@lists.debian.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: cgroup mount point
+Message-ID: <20090206061703.GA26902@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090202200013.GU3643@vespa.holoscopio.com> <1233606371.15779.32.camel@radis.liafa.jussieu.fr> <20090202205246.GA28593@glandium.org> <20090202214153.GV3643@vespa.holoscopio.com> <498779C2.2060908@nortel.com> <20090203121524.cdff11ae.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Robert Hancock <hancockrwd@gmail.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Regression on VIA C3 motherboard, commit: 66f2173e2
-References: <498A93E5.2080509@candelatech.com> <498B8547.1010803@gmail.com>
-In-Reply-To: <498B8547.1010803@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090203121524.cdff11ae.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Ben Greear wrote:
->> I have a via motherboard with C3 processor and some real-tek NICs.  I 
->> noticed
->> when using the top-of-tree that performance on it sucked (30Mbps v/s 
->> 54Mbps
->> network throughput in one pertinent test).
->>
->> After several hours of bisecting, I see this as the culprit:
->>
->> 7b37b5fd9ba32c0c5afc3537eed7e7466f2173e2 is first bad commit
->> commit 7b37b5fd9ba32c0c5afc3537eed7e7466f2173e2
->> Author: Len Brown <len.brown@intel.com>
->> Date:   Tue Dec 23 01:47:42 2008 -0500
->>
->>    ACPI: disable MPS when NO APIC-table found
->>      When ACPI is asked to find an MADT (APIC table)
->>    and fails, then ACPI expects to run in PIC mode.
->>      However, if an MP Table is was found, IRQs will be
->>    registered as if an IOAPIC is being used, even
->>    though ACPI is configuring interrupt links links for PIC mode.
->>      In this scenario, disable MPS so that IRQs
->>    are registered in PIC mode, consistent with ACPI.
->>      http://bugzilla.kernel.org/show_bug.cgi?id=12257
->>      Signed-off-by: Len Brown <len.brown@intel.com>
->>
->> :040000 040000 86ce74daee3a9fe6ff21ef7f8fb364af23ec0c1e 
->> 364933dfec0df34e63b1aeff6aff4092d421886b M      arch
->>
->>
->> In addition, I see this warning in my logs, which is likely the symptom:
->>
->> ACPI Exception (tbxface-0627): AE_NO_ACPI_TABLES, While loading 
->> namespace from ACPI tables ]
->> ACPI: Unable to load the System Description Tables
->
-> You're getting this on boot:
->
-> ACPI Error (tbxfroot-0218): A valid RSDP was not found [20080926]
->
-> That essentially means ACPI isn't working at all, I think. Did 
-> previous kernels produce this error? Do you have ACPI disabled in the 
-> BIOS or something?
->
-Er, yes...I have ACPI disabled in the BIOS.  I seem to recall now that 
-it worked around
-some instability, but it's been a few years since we set that up.   
-Still, it was working
-fine before, and fine again when I comment out the change in this commit 
-(and another
-change to force the 'tsc' to be considered stable).
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-02-03 12:15:24]:
 
-The same error message happens as far back as 2.6.25 at least.
+> On Mon, 02 Feb 2009 16:54:58 -0600
+> "Chris Friesen" <cfriesen@nortel.com> wrote:
+> 
+> > Thadeu Lima de Souza Cascardo wrote:
+> > 
+> > > Linux Documentation is not consistent and have some funny options. In
+> > > Documentation/cgroups/*, we have:
+> > 
+> > > So, we have some more options now: /cgroups, /containers, /dev/cpuset,
+> > > /dev/cpuctl, /opt/cgroup, /opt/cpuset.
+> > > 
+> > > I am copying the container and the kernel guys. Perhaps, we can find an
+> > > agreement (if we want to find one at all) and change all that
+> > > Documentation to get consistent.
+> > 
+> > I'd vote for "cgroups" or "containers", mounted at / or /sys/.
+> > 
+> me, too.
+> 
+> But single mount point just assumes "all necessary subsystems are mounter at once"
+> So,
+>     /cgroup/<subsys>/       #this cannot handle multiple subsyses.
+>     or 
+>     /cgroup/some_nick_name  #just depends on users.
+> 
+> Hmm. Making documentation to use the same mount point is not so bad. But in real
+> usage, cgroup's mount point seems case-by-case. 
+> If libcgroup or libvirt shows some policy, it's good for users.
+> 
+>   /cgroup/<libcgroup's grouping nick name>/ ...
+> 
+> or some.
+> 
 
-Thanks,
-Ben
+FYI for everyone
 
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+Please take a look at libcgroup (libcg.sf.net). Through the
+configuration mechanism, we allow the controllers to be mounted at any
+desired location and provide configuration persistence across machine
+reboots. The configuration (as in created cgroups and controller mount
+points) is controlled via a configuration file.
 
 -- 
-Ben Greear <greearb@candelatech.com> 
-Candela Technologies Inc  http://www.candelatech.com
-
-
+	Balbir
