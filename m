@@ -1,82 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbZBFMeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755052AbZBFMoH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755002AbZBFMeS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 07:34:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbZBFMeG
+	id S1755052AbZBFMoH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 07:44:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751775AbZBFMn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 07:34:06 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:43697 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751245AbZBFMeF (ORCPT
+	Fri, 6 Feb 2009 07:43:57 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:50017 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751245AbZBFMn4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 07:34:05 -0500
-Date: Fri, 6 Feb 2009 12:33:22 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator
-In-Reply-To: <1233910649.29891.26.camel@penberg-laptop>
-Message-ID: <Pine.LNX.4.64.0902061216001.23313@blonde.anvils>
-References: <20090121143008.GV24891@wotan.suse.de> 
- <Pine.LNX.4.64.0901211705570.7020@blonde.anvils> 
- <84144f020901220201g6bdc2d5maf3395fc8b21fe67@mail.gmail.com> 
- <Pine.LNX.4.64.0901221239260.21677@blonde.anvils> 
- <Pine.LNX.4.64.0901231357250.9011@blonde.anvils>  <1233545923.2604.60.camel@ymzhang>
-  <1233565214.17835.13.camel@penberg-laptop>  <1233646145.2604.137.camel@ymzhang>
-  <Pine.LNX.4.64.0902031150110.5290@blonde.anvils>  <1233714090.2604.186.camel@ymzhang>
-  <Pine.LNX.4.64.0902051839540.1445@blonde.anvils> <1233910649.29891.26.camel@penberg-laptop>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 6 Feb 2009 07:43:56 -0500
+Subject: integrity: audit
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Steve Grubb <sgrubb@redhat.com>, Linux Audit <linux-audit@redhat.com>
+Cc: linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>
+Content-Type: text/plain
+Date: Fri, 06 Feb 2009 07:43:50 -0500
+Message-Id: <1233924230.3135.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Feb 2009, Pekka Enberg wrote:
-> On Thu, 2009-02-05 at 19:04 +0000, Hugh Dickins wrote:
-> > I then tried a patch I thought obviously better than yours: just mask
-> > off __GFP_WAIT in that __GFP_NOWARN|__GFP_NORETRY preliminary call to
-> > alloc_slab_page(): so we're not trying to infer anything about high-
-> > order availability from the number of free order-0 pages, but actually
-> > going to look for it and taking it if it's free, forgetting it if not.
-> > 
-> > That didn't work well at all: almost as bad as the unmodified slub.c.
-> > I decided that was due to __alloc_pages_internal()'s
-> > wakeup_kswapd(zone, order): just expressing an interest in a high-
-> > order page was enough to send it off trying to reclaim them, though
-> > not directly.  Hacked in a condition to suppress that in this case:
-> > worked a lot better, but not nearly as well as yours.  I supposed
-> > that was somehow(?) due to the subsequent get_page_from_freelist()
-> > calls with different watermarking: hacked in another __GFP flag to
-> > break out to nopage just like the NUMA_BUILD GFP_THISNODE case does.
-> > Much better, getting close, but still not as good as yours.  
-> 
-> Did you look at it with oprofile?
+integrity: audit
 
-No, I didn't.  I didn't say so, but again it was elapsed time that
-I was focussing on, so I don't think oprofile would be relevant.
-There are some differences in system time, of course, consistent
-with your point; but they're generally an order of magnitude less,
-so didn't excite my interest.
+This patch adds support to auditd for integrity messages, which are 
+issued as a result of the integrity patchset that was applied to the 
+security-testing-2.6/#next tree.
 
-> One thing to keep in mind is that if
-> there are 4K allocations going on, your approach will get double the
-> overhead of page allocations (which can be substantial performance hit
-> for slab).
+Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
 
-Sure, and even the current allocate_slab() is inefficient in that
-respect: I've followed it because I do for now have an interest in
-the stats, but if stats are configured off then there's no point in
-dividing it into two stages; and if they are really intended to be
-ORDER_FALLBACK stats, then it shouldn't divide into two stages when
-oo_order(s->oo) == oo_order(s->min).  On the other hand, I find it
-interesting to see how often the __GFP_NORETRY fails, even when
-the order is the same each time (and usually 0).
+Index: audit-1.7.11/src/ausearch-parse.c
+===================================================================
+--- audit-1.7.11.orig/src/ausearch-parse.c
++++ audit-1.7.11/src/ausearch-parse.c
+@@ -49,6 +49,7 @@ static int parse_login(const lnode *n, s
+ static int parse_daemon(const lnode *n, search_items *s);
+ static int parse_sockaddr(const lnode *n, search_items *s);
+ static int parse_avc(const lnode *n, search_items *s);
++static int parse_integrity(const lnode *n, search_items *s);
+ static int parse_kernel_anom(const lnode *n, search_items *s);
+ static int parse_simple_message(const lnode *n, search_items *s);
+ static int parse_tty(const lnode *n, search_items *s);
+@@ -123,6 +124,9 @@ int extract_search_items(llist *l)
+ 			case AUDIT_MAC_POLICY_LOAD...AUDIT_MAC_UNLBL_STCDEL:
+ 				ret = parse_simple_message(n, s);
+ 				break;
++			case AUDIT_INTEGRITY_DATA...AUDIT_INTEGRITY_PCR:
++				ret = parse_integrity(n, s);
++				break;
+ 			case AUDIT_KERNEL:
+ 			case AUDIT_IPC:
+ 			case AUDIT_SELINUX_ERR:
+@@ -1150,6 +1154,105 @@ static int parse_sockaddr(const lnode *n
+ 	return 0;
+ }
+ 
++
++static int parse_integrity(const lnode *n, search_items *s)
++{
++	char *ptr, *str, *term;
++	int rc=0;
++
++	term = n->message;
++	// get integrity:
++	str = strstr(term, "integrity: ");
++	if (str) {
++		ptr = str + 11;
++	}
++
++	// get pid
++	str = strstr(term, "pid=");
++	if (str) {
++		ptr = str + 4;
++		term = strchr(ptr, ' ');
++		if (term == NULL)
++			return 2;
++		*term = 0;
++		errno = 0;
++		s->pid = strtoul(ptr, NULL, 10);
++		if (errno)
++			return 3;
++		*term = ' ';
++	}
++
++	// get uid
++	str = strstr(term, " uid=");
++	if (str) {
++		ptr = str + 4;
++		term = strchr(ptr, ' ');
++		if (term == NULL)
++			return 4;
++		*term = 0;
++		errno = 0;
++		s->uid = strtoul(ptr, NULL, 10);
++		if (errno)
++			return 5;
++		*term = ' ';
++	}
++
++	// get loginuid
++	str = strstr(n->message, "auid=");
++	if (str) {
++		ptr = str + 5;
++		term = strchr(ptr, ' ');
++		if (term == NULL)
++			return 6;
++		*term = 0;
++		errno = 0;
++		s->loginuid = strtoul(ptr, NULL, 10);
++		if (errno)
++			return 7;
++		*term = ' ';
++	}
++
++	str = strstr(term, "comm=");
++	if (str) {
++		str += 5;
++		if (*str == '"') {
++			str++;
++			term = strchr(str, '"');
++			if (term == NULL)
++				return 8;
++			*term = 0;
++			s->comm = strdup(str);
++			*term = '"';
++		} else
++			s->comm = unescape(str);
++	}
++
++	str = strstr(term, " name=");
++	if (str) {
++		str += 6;
++		if (common_path_parser(s, str))
++			return 9;
++	}
++
++	// and results (usually last)
++	str = strstr(term, "res=");
++	if (str != NULL) {
++		ptr = str + 4;
++		term = strchr(ptr, ' ');
++		if (term)
++			*term = 0;
++		errno = 0;
++		s->success = strtoul(ptr, NULL, 10);
++		if (errno)
++			return 10;
++		if (term)
++			*term = ' ';
++	}
++
++	return 0;
++}
++
++
+ /* FIXME: If they are in permissive mode or hit an auditallow, there can 
+  * be more that 1 avc in the same syscall. For now, we pickup just the first.
+  */
+Index: audit-1.7.11/lib/libaudit.h
+===================================================================
+--- audit-1.7.11.orig/lib/libaudit.h
++++ audit-1.7.11/lib/libaudit.h
+@@ -174,6 +174,11 @@ extern "C" {
+ #ifndef AUDIT_ANOM_ABEND
+ #define AUDIT_ANOM_ABEND		1701 /* Process ended abnormally */
+ #endif
++#define AUDIT_INTEGRITY_DATA	    1800 /* Data integrity verification */
++#define AUDIT_INTEGRITY_METADATA    1801 /* Metadata integrity verification */
++#define AUDIT_INTEGRITY_STATUS	    1802 /* Integrity enable status */
++#define AUDIT_INTEGRITY_HASH	    1803 /* Integrity HASH type */
++#define AUDIT_INTEGRITY_PCR	    1804 /* PCR invalidation msgs */
+ #define AUDIT_FIRST_ANOM_MSG		2100
+ #define AUDIT_LAST_ANOM_MSG		2199
+ #define AUDIT_ANOM_LOGIN_FAILURES	2100 // Failed login limit reached
+Index: audit-1.7.11/lib/msg_typetab.h
+===================================================================
+--- audit-1.7.11.orig/lib/msg_typetab.h
++++ audit-1.7.11/lib/msg_typetab.h
+@@ -122,6 +122,12 @@ _S(AUDIT_MAC_UNLBL_STCADD,           "MA
+ _S(AUDIT_MAC_UNLBL_STCDEL,           "MAC_UNLBL_STCDEL"              )
+ _S(AUDIT_ANOM_PROMISCUOUS,           "ANOM_PROMISCUOUS"              )
+ _S(AUDIT_ANOM_ABEND,                 "ANOM_ABEND"                    )
++_S(AUDIT_INTEGRITY_DATA,             "INTEGRITY_DATA"                )
++_S(AUDIT_INTEGRITY_METADATA,         "INTEGRITY_METADATA"            )
++_S(AUDIT_INTEGRITY_STATUS,           "INTEGRITY_STATUS"              )
++_S(AUDIT_INTEGRITY_HASH,             "INTEGRITY_HASH"                )
++_S(AUDIT_INTEGRITY_PCR,              "INTEGRITY_PCR"                 )
++
+ #ifdef WITH_APPARMOR
+ _S(AUDIT_AA,                         "APPARMOR"                      )
+ _S(AUDIT_APPARMOR_AUDIT,             "APPARMOR_AUDIT"                )
+Index: audit-1.7.11/system-config-audit/src/lists.py
+===================================================================
+--- audit-1.7.11.orig/system-config-audit/src/lists.py
++++ audit-1.7.11/system-config-audit/src/lists.py
+@@ -160,6 +160,11 @@ audit.AUDIT_LAST_KERN_ANOM_MSG,
+ audit.AUDIT_ANOM_PROMISCUOUS,
+ audit.AUDIT_ANOM_ABEND,
+ audit.AUDIT_KERNEL,
++audit.AUDIT_INTEGRITY_DATA,
++audit.AUDIT_INTEGRITY_METADATA,
++audit.AUDIT_INTEGRITY_STATUS,
++audit.AUDIT_INTEGRITY_HASH,
++audit.AUDIT_INTEGRITY_PCR,
+ )
+ 
+ # From code in src/auditctl.c
+Index: audit-1.7.11/lib/netlink.c
+===================================================================
+--- audit-1.7.11.orig/lib/netlink.c
++++ audit-1.7.11/lib/netlink.c
+@@ -182,7 +182,8 @@ static int adjust_reply(struct audit_rep
+ 		case AUDIT_FIRST_USER_MSG...AUDIT_LAST_USER_MSG:
+ 		case AUDIT_FIRST_USER_MSG2...AUDIT_LAST_USER_MSG2:
+ 		case AUDIT_FIRST_EVENT...AUDIT_LAST_KERN_ANOM_MSG:
+-			rep->message = NLMSG_DATA(rep->nlh); 
++		case AUDIT_INTEGRITY_DATA...AUDIT_INTEGRITY_PCR:
++			rep->message = NLMSG_DATA(rep->nlh);
+ 			break;
+ 		case AUDIT_SIGNAL_INFO:
+ 			rep->signal_info = NLMSG_DATA(rep->nlh);
 
-Hugh
+
