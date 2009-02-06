@@ -1,144 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755379AbZBFKo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbZBFKvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755379AbZBFKo2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 05:44:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbZBFKoU
+	id S1756100AbZBFKvW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 05:51:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbZBFKvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 05:44:20 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:36718 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750707AbZBFKoT (ORCPT
+	Fri, 6 Feb 2009 05:51:14 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:46047 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753818AbZBFKvN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 05:44:19 -0500
+	Fri, 6 Feb 2009 05:51:13 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=K8rHUWS/DJkiPN4ZDPG+3iXOHVzSczTayEoKNV41NcOW5dz5ZpB39ph1wVHM0S1f+q
-         tfiDKB/cf2WExFo6dgSz7Le7IZjsx85RSckgile20sDX0HoCy0zPGRHokPW3itQmM5DG
-         VDmn9xvAqyvluWaUiGBL+5LqVCzarmi0U5+z0=
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=tvg9DvT+8pwsm8/zq+7sKo53QnFYN4HCfsPlPCqp0CCWScIF2D/lQbuN50W6jWz+33
+         lhN/mLqaL5VZsascogNjttXAYJvYJHZ755FF5xb2le2fOooTRn5UVqgojBC2KYcPRS9z
+         nlCTUcSnCHzkkXBQ5MycB1RyfmH8KNUxn0fSc=
 MIME-Version: 1.0
-In-Reply-To: <498B797C.4060202@gmail.com>
-References: <56e1b5710902050641l5ece10e5hedd11fb3f4292886@mail.gmail.com>
-	 <adak584jzw3.fsf@cisco.com> <498B797C.4060202@gmail.com>
-Date: Fri, 6 Feb 2009 11:36:02 +0100
-Message-ID: <56e1b5710902060236l549c0f21v38db9ab236b88505@mail.gmail.com>
-Subject: Re: [PATCH]: Cleanup: Remove gcc format string warnings when 
-	compiling with -Wformat-security
-From: Floris Kraak <randakar@gmail.com>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: Roland Dreier <rdreier@cisco.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Trivial Patch Monkey <trivial@kernel.org>,
-       Andreas Schwab <schwab@suse.de>
+In-Reply-To: <C06938CA40642541A159EE5590146C9AAC5742@EXCHANGESERVER.exchange.artec.org>
+References: <C06938CA40642541A159EE5590146C9AAC5742@EXCHANGESERVER.exchange.artec.org>
+Date: Fri, 6 Feb 2009 12:51:11 +0200
+X-Google-Sender-Auth: e5eedb5e5689f2dd
+Message-ID: <84144f020902060251j246baf79r9f3b326e3d172629@mail.gmail.com>
+Subject: Re: System hangs (after some hours of working) since kernel 2.6.22.19
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Alexander Naumann <A.Naumann@artec-it.de>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 6, 2009 at 12:42 AM, Robert Hancock <hancockrwd@gmail.com> wrote:
-> Roland Dreier wrote:
->>
->>  > Here's the patch that I get when I blindly patch every single location
->>  > that emits this warning.
->>
->> I would strongly prefer to do this with a little more care.  For example
->> the b43/main.c change:
->>
->>  > --- a/drivers/net/wireless/b43/main.c
->>  > +++ b/drivers/net/wireless/b43/main.c
->>  > @@ -2005,9 +2005,9 @@ static void b43_print_fw_helptext(struct b43_wl
->>  > *wl, bool error)
->>  >
->> "http://linuxwireless.org/en/users/Drivers/b43#devicefirmware "
->>  >             "and download the latest firmware (version 4).\n";
->>  >      if (error)
->>  > -            b43err(wl, text);
->>  > +            b43err(wl, "%s", text);
->>  >      else
->>  > -            b43warn(wl, text);
->>  > +            b43warn(wl, "%s", text);
->>  >  }
->> would probably be better solved by doing
->>
->> --- a/drivers/net/wireless/b43/main.c
->> +++ b/drivers/net/wireless/b43/main.c
->> @@ -1999,11 +1999,11 @@ static void b43_release_firmware(struct b43_wldev
->> *dev)
->>   static void b43_print_fw_helptext(struct b43_wl *wl, bool error)
->>  {
->> -       const char *text;
->> +       static const char text[] =
->> +               "You must go to "
->> +
->> "http://linuxwireless.org/en/users/Drivers/b43#devicefirmware "
->> +               "and download the latest firmware (version 4).\n";
->>  -       text = "You must go to "
->> -
->>  "http://linuxwireless.org/en/users/Drivers/b43#devicefirmware "
->> -              "and download the latest firmware (version 4).\n";
->>        if (error)
->>                b43err(wl, text);
->>        else
+Hi Alexander,
+
+On Fri, Feb 6, 2009 at 11:06 AM, Alexander Naumann
+<A.Naumann@artec-it.de> wrote:
+> Summary of this bug ist hat system stops working after  a couple of hours (between 30 minutes and 6 hours).
+> There are no messages at all ☹
+> It just stops, I even cannot use some keys like SysRq (this ALT-PrintScreen thing).
 >
-
-Applied this to my tree.
-
-> "const char* const" text would likely work as well..
->>
->> and in any case I'm not totally convinced that we want to add the bloat
->> for trivial cases like
->>
->>        char *safe = "foo";
->>        printk(safe);
+> The only thing I am running is tiobench (to force system halt):
+> „tiobench --numruns 10000“
+> If I am running nothing, the system does not stop working or it takres verly long until it hangs.
 >
-> Well, in that case, printk("foo") would be the obvious solution :-)
+> It cannot be a hardware defect because I have several equal machines and they all have the same problem.
 >
+> This error occures since Kernel version 2.6.22.19.
+> I have tried several kernels like 2.6.23, 2.6.24., 2.6.24.7, 2.6.25, 2.6.26, 2.6.28.2
+> With all of them the system hangs without any message.
+> Before 2.6.22.19 I had no problems at all.
 
-Neither of that works for __initdata sections though.
-Take for instance the patch below. Yes, it gets rid of the warning
-without using %s .. but we lose the __initdata attribute.
-I've tried using __initconst instead - but that doesn't remove the
-warning either.
+Does this mean that, for example, 2.6.22.18 works? Or do you mean
+2.6.21.x worked and it stopped working starting from 2.6.22.x?
 
-Signed-off-by: Floris Kraak <randakar@gmail.com>
----
-diff --git a/drivers/char/hw_random/intel-rng.c
-b/drivers/char/hw_random/intel-rng.c
-index 5dcbe60..aa84183 100644
---- a/drivers/char/hw_random/intel-rng.c
-+++ b/drivers/char/hw_random/intel-rng.c
-@@ -304,15 +304,15 @@ static int __init intel_init_hw_struct(struct
-intel_rng_hw *intel_rng_hw,
- 	if ((intel_rng_hw->bios_cntl_val &
- 	     (BIOS_CNTL_LOCK_ENABLE_MASK|BIOS_CNTL_WRITE_ENABLE_MASK))
- 	    == BIOS_CNTL_LOCK_ENABLE_MASK) {
--		static __initdata /*const*/ char warning[] =
-+
-+		if (no_fwh_detect)
-+			return -ENODEV;
-+		printk(
- 			KERN_WARNING PFX "Firmware space is locked read-only. If you can't or\n"
- 			KERN_WARNING PFX "don't want to disable this in firmware setup, and if\n"
- 			KERN_WARNING PFX "you are certain that your system has a functional\n"
--			KERN_WARNING PFX "RNG, try using the 'no_fwh_detect' option.\n";
-+			KERN_WARNING PFX "RNG, try using the 'no_fwh_detect' option.\n");
+On Fri, Feb 6, 2009 at 11:06 AM, Alexander Naumann
+<A.Naumann@artec-it.de> wrote:
+> I have found some configuration of linux kernel so that this hang up does not occur:
+> In 2.6.24.7 I have enabled ALL kernel debug options, the system did not crash.
 
--		if (no_fwh_detect)
--			return -ENODEV;
--		printk(warning);
- 		return -EBUSY;
- 	}
----
-Regards,
-Floris
----
-"They that give up essential liberty to obtain temporary safety,
-deserve neither liberty nor safety."
-  -- Ben Franklin
+I guess 'crashing.config' is _not_ the config you mention here (it
+doesn't enable any of the kernel debugging options)?
 
-"The course of history shows that as a government grows, liberty
-decreases."
-  -- Thomas Jefferson
+On Fri, Feb 6, 2009 at 11:06 AM, Alexander Naumann
+<A.Naumann@artec-it.de> wrote:
+> Also I have included two config files for kernel 2.6.22.19.
+> With one of them the system chrashes (crashing.config) with the other one it does not (working.config).
+> The only difference between these two config files is that I enabled „Kernel Debug“.
+>
+> With all other tested kernel version I cannot see the same behaviour, they all crash after some hours, it does not matter how kernel is configured.
+
+Just enabling CONFIG_DEBUG_KERNEL doesn't change anything so it's
+probably just that the bug is hard to trigger.
+
+On Fri, Feb 6, 2009 at 11:06 AM, Alexander Naumann
+<A.Naumann@artec-it.de> wrote:
+> cat /proc/cpuinfo:
+> processor       : 0
+> vendor_id       : CentaurHauls
+> cpu family      : 6
+> model           : 9
+> model name      : VIA Nehemiah
+> stepping        : 8
+> cpu MHz         : 998.537
+> cache size      : 64 KB
+> fdiv_bug        : no
+> hlt_bug         : no
+> f00f_bug        : no
+> coma_bug        : no
+> fpu             : yes
+> fpu_exception   : yes
+> cpuid level     : 1
+> wp              : yes
+> flags           : fpu vme de pse tsc msr cx8 sep mtrr pge cmov pat mmx fxsr sse up rng rng_en ace ace_en
+> bogomips        : 1997.07
+> clflush size    : 32
+> power management:
+
+This makes me wonder if there's some generic x86 change that's
+behaving badly on VIA CPUs that don't get as much test coverage. One
+thing you might want to try out is to disable CONFIG_X86_GENERIC and
+use CONFIG_MVIAC3_2 instead of CONFIG_M586.
+
+If that doesn't work out, you might want to strip your config to bare
+minimum to see if the hang goes away. Looking at your config, at least
+CONFIG_SMP, CONFIG_AGP, and CONFIG_DRM strike as good suspects.
+
+Hope this helps,
+
+                                           Pekka
