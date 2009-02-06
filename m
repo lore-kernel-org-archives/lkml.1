@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbZBFNWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbZBFNXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755483AbZBFNWb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 08:22:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbZBFNWX
+	id S1754613AbZBFNXR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 08:23:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbZBFNXB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 08:22:23 -0500
-Received: from mail.atlantis.sk ([80.94.52.35]:46018 "EHLO mail.atlantis.sk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753141AbZBFNWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 08:22:23 -0500
-From: Ondrej Zary <linux@rainbow-software.org>
-Subject: 3c509 resume from hibernation broken somewhere between 2.6.25 and 2.6.28
-Date: Fri, 6 Feb 2009 14:22:13 +0100
-User-Agent: KMail/1.9.10
+	Fri, 6 Feb 2009 08:23:01 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:49784 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753141AbZBFNXA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 08:23:00 -0500
+From: Jean Pihet <jpihet@mvista.com>
+Organization: MontaVista
+To: Paul Walmsley <paul@pwsan.com>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] OMAP: MMC: recover from transfer failures - Resend
+Date: Fri, 6 Feb 2009 14:22:32 +0100
+User-Agent: KMail/1.9.9
+Cc: tony@atomide.com, ext-adrian.hunter@nokia.com,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-omap@vger.kernel.org,
+       jarkko.lavinen@nokia.com, drzeus-mmc@drzeus.cx,
+       linux-kernel@vger.kernel.org
+References: <20081207213617.10456.43951.stgit@localhost> <20090205121045.4022c319.akpm@linux-foundation.org> <alpine.DEB.2.00.0902051323090.8131@utopia.booyaka.com>
+In-Reply-To: <alpine.DEB.2.00.0902051323090.8131@utopia.booyaka.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 1312
-To: netdev@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200902061422.14746.linux@rainbow-software.org>
+Content-Disposition: inline
+Message-Id: <200902061422.32689.jpihet@mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-last year, I posted a patch which fixed hibernation on 3c509 cards. That was 
-back in 2.6.24. It worked fine in 2.6.25. But then I stopped using 
-hibernation (as it did not work with my new IT8212 RAID controller).
+On Thursday 05 February 2009 21:32:03 Paul Walmsley wrote:
+> On Thu, 5 Feb 2009, Andrew Morton wrote:
+> > On Tue, 3 Feb 2009 15:05:58 +0100
+> >
+> > Jean Pihet <jpihet@mvista.com> wrote:
+> > > +	while (OMAP_HSMMC_READ(host->base,
+> > > + 			SYSCTL) & SRD)
+> > > + 		;
+> >
+> > Is a __raw_readl() sufficient to prevent the cpu from burning up here,
+> > or should we add cpu_relax()?
+>
+> The __raw_readl() should be sufficient.  The MMC controller is located on
+> the L4 CORE interconnect, so the round trip latency for the read from MMC
+> is at least 90 ns, while the CPU cycle time is only about 1 to 2 ns.
+Ok.
+>
+> > An infinite loop which assumes the hardware is perfect is always a
+> > worry.  But I see the driver already does that, so we're no worse off..
+Do you want a finite loop with udelay in it? I located 4 places were this 
+could be used. If so I can generate a new patch for that.
 
-Now I fixed it and noticed that 3c509 does not wake up properly anymore (in 
-2.6.28) - neither in PnP nor in ISA modes. ifconfig down/up makes the card 
-work again in PnP mode. However, in ISA mode, ifconfig up ends with "No such 
-device" error.
+>
+> - Paul
 
-Comparing the 3c509 driver between 2.6.25 and 2.6.28, there's only some 
-statistics-related change. So the cause of the problem must be somewhere 
-else.
-
-This patch makes the resume work in PnP mode, but it's still not enough for 
-ISA mode.
-
---- linux-2.6.28-orig/drivers/net/3c509.c	2009-01-02 17:19:07.000000000 +0100
-+++ linux/drivers/net/3c509.c	2009-02-05 22:36:20.000000000 +0100
-@@ -1477,6 +1477,7 @@
- 	spin_lock_irqsave(&lp->lock, flags);
- 
- 	outw(PowerUp, ioaddr + EL3_CMD);
-+	EL3WINDOW(0);
- 	el3_up(dev);
- 
- 	if (netif_running(dev))
-
--- 
-Ondrej Zary
+Regards,
+Jean
