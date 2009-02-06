@@ -1,61 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbZBFNXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbZBFN0C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754613AbZBFNXR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 08:23:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbZBFNXB
+	id S1756199AbZBFN0C (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 08:26:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbZBFNZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 08:23:01 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:49784 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753141AbZBFNXA (ORCPT
+	Fri, 6 Feb 2009 08:25:55 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:34251 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753767AbZBFNZz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 08:23:00 -0500
-From: Jean Pihet <jpihet@mvista.com>
-Organization: MontaVista
-To: Paul Walmsley <paul@pwsan.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] OMAP: MMC: recover from transfer failures - Resend
-Date: Fri, 6 Feb 2009 14:22:32 +0100
-User-Agent: KMail/1.9.9
-Cc: tony@atomide.com, ext-adrian.hunter@nokia.com,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-omap@vger.kernel.org,
-       jarkko.lavinen@nokia.com, drzeus-mmc@drzeus.cx,
-       linux-kernel@vger.kernel.org
-References: <20081207213617.10456.43951.stgit@localhost> <20090205121045.4022c319.akpm@linux-foundation.org> <alpine.DEB.2.00.0902051323090.8131@utopia.booyaka.com>
-In-Reply-To: <alpine.DEB.2.00.0902051323090.8131@utopia.booyaka.com>
+	Fri, 6 Feb 2009 08:25:55 -0500
+Date: Fri, 6 Feb 2009 08:25:52 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/4] nmi: add generic nmi tracking state
+In-Reply-To: <20090205231215.412def47.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0902060822440.10059@gandalf.stny.rr.com>
+References: <20090206065352.940088243@goodmis.org> <20090206065437.986292747@goodmis.org> <20090205231215.412def47.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902061422.32689.jpihet@mvista.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 05 February 2009 21:32:03 Paul Walmsley wrote:
-> On Thu, 5 Feb 2009, Andrew Morton wrote:
-> > On Tue, 3 Feb 2009 15:05:58 +0100
-> >
-> > Jean Pihet <jpihet@mvista.com> wrote:
-> > > +	while (OMAP_HSMMC_READ(host->base,
-> > > + 			SYSCTL) & SRD)
-> > > + 		;
-> >
-> > Is a __raw_readl() sufficient to prevent the cpu from burning up here,
-> > or should we add cpu_relax()?
->
-> The __raw_readl() should be sufficient.  The MMC controller is located on
-> the L4 CORE interconnect, so the round trip latency for the read from MMC
-> is at least 90 ns, while the CPU cycle time is only about 1 to 2 ns.
-Ok.
->
-> > An infinite loop which assumes the hardware is perfect is always a
-> > worry.  But I see the driver already does that, so we're no worse off..
-Do you want a finite loop with udelay in it? I located 4 places were this 
-could be used. If so I can generate a new patch for that.
 
->
-> - Paul
+On Thu, 5 Feb 2009, Andrew Morton wrote:
+> >  
+> > +/*
+> > + * Are we in NMI context?
+> > + */
+> > +#define in_nmi()	(preempt_count() & NMI_OFFSET)
+> > +
+> >  #if defined(CONFIG_PREEMPT)
+> >  # define PREEMPT_INATOMIC_BASE kernel_locked()
+> >  # define PREEMPT_CHECK_OFFSET 1
+> > @@ -167,6 +178,8 @@ extern void irq_exit(void);
+> >  #define nmi_enter()				\
+> >  	do {					\
+> >  		ftrace_nmi_enter();		\
+> > +		BUG_ON(in_nmi());		\
+> > +		add_preempt_count(NMI_OFFSET);	\
+> >  		lockdep_off();			\
+> >  		rcu_nmi_enter();		\
+> >  		__irq_enter();			\
+> > @@ -177,6 +190,8 @@ extern void irq_exit(void);
+> >  		__irq_exit();			\
+> >  		rcu_nmi_exit();			\
+> >  		lockdep_on();			\
+> > +		BUG_ON(!in_nmi());		\
+> > +		sub_preempt_count(NMI_OFFSET);	\
+> >  		ftrace_nmi_exit();		\
+> >  	} while (0)
+> >  
+> 
+> Well that was tidy.
+> 
+> We're sure that no present or future architecture will for some weird
+> reason nest NMIs?
 
-Regards,
-Jean
+That would be fun to implement. Not the in_nmi code, but the handling of 
+nested NMIs. How would you be able to save the state when the NMI occurred 
+without being preempted by another NMI?
+
+I think the arch that has nested NMIs will have many more issues to solve 
+in the kernel than this one.
+
+-- Steve
+
