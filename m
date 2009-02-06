@@ -1,124 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756254AbZBFGzD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbZBFGzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756254AbZBFGzD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 01:55:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbZBFGyk
+	id S1755381AbZBFGzc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 01:55:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbZBFGyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 6 Feb 2009 01:54:40 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60665 "EHLO
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:34616 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750745AbZBFGyj (ORCPT
+	with ESMTP id S1751491AbZBFGyj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Feb 2009 01:54:39 -0500
-Message-Id: <20090206065437.600251891@goodmis.org>
+Message-Id: <20090206065437.986292747@goodmis.org>
 References: <20090206065352.940088243@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 06 Feb 2009 01:53:53 -0500
+Date: Fri, 06 Feb 2009 01:53:54 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 1/4] ftrace, x86: rename in_nmi variable
-Content-Disposition: inline; filename=0001-ftrace-x86-rename-in_nmi-variable.patch
+Subject: [PATCH 2/4] nmi: add generic nmi tracking state
+Content-Disposition: inline; filename=0002-nmi-add-generic-nmi-tracking-state.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Impact: clean up
+This code adds an in_nmi() macro that uses the current tasks preempt count
+to track when it is in NMI context. Other parts of the kernel can
+use this to determine if the context is in NMI context or not.
 
-The in_nmi variable in x86 arch ftrace.c is a misnomer.
-Andrew Morton pointed out that the in_nmi variable is incremented
-by all CPUS. It can be set when another CPU is running an NMI.
+This code was inspired by the -rt patch in_nmi version that was
+written by Peter Zijlstra.
 
-Since this is actually intentional, the fix is to rename it to
-what it really is: "nmi_running"
-
+Reported-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/x86/kernel/ftrace.c |   22 +++++++++++-----------
- 1 files changed, 11 insertions(+), 11 deletions(-)
+ include/linux/hardirq.h |   15 +++++++++++++++
+ 1 files changed, 15 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-index 4c68358..e3fad2e 100644
---- a/arch/x86/kernel/ftrace.c
-+++ b/arch/x86/kernel/ftrace.c
-@@ -82,7 +82,7 @@ static unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
-  * are the same as what exists.
-  */
+diff --git a/include/linux/hardirq.h b/include/linux/hardirq.h
+index f832883..f3cf86e 100644
+--- a/include/linux/hardirq.h
++++ b/include/linux/hardirq.h
+@@ -61,6 +61,12 @@
+ #error PREEMPT_ACTIVE is too low!
+ #endif
  
--static atomic_t in_nmi = ATOMIC_INIT(0);
-+static atomic_t nmi_running = ATOMIC_INIT(0);
- static int mod_code_status;		/* holds return value of text write */
- static int mod_code_write;		/* set when NMI should do the write */
- static void *mod_code_ip;		/* holds the IP to write to */
-@@ -115,8 +115,8 @@ static void ftrace_mod_code(void)
++#define NMI_OFFSET	(PREEMPT_ACTIVE << 1)
++
++#if NMI_OFFSET >= 0x80000000
++#error PREEMPT_ACTIVE too high!
++#endif
++
+ #define hardirq_count()	(preempt_count() & HARDIRQ_MASK)
+ #define softirq_count()	(preempt_count() & SOFTIRQ_MASK)
+ #define irq_count()	(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK))
+@@ -73,6 +79,11 @@
+ #define in_softirq()		(softirq_count())
+ #define in_interrupt()		(irq_count())
  
- void arch_ftrace_nmi_enter(void)
- {
--	atomic_inc(&in_nmi);
--	/* Must have in_nmi seen before reading write flag */
-+	atomic_inc(&nmi_running);
-+	/* Must have nmi_running seen before reading write flag */
- 	smp_mb();
- 	if (mod_code_write) {
- 		ftrace_mod_code();
-@@ -126,19 +126,19 @@ void arch_ftrace_nmi_enter(void)
++/*
++ * Are we in NMI context?
++ */
++#define in_nmi()	(preempt_count() & NMI_OFFSET)
++
+ #if defined(CONFIG_PREEMPT)
+ # define PREEMPT_INATOMIC_BASE kernel_locked()
+ # define PREEMPT_CHECK_OFFSET 1
+@@ -167,6 +178,8 @@ extern void irq_exit(void);
+ #define nmi_enter()				\
+ 	do {					\
+ 		ftrace_nmi_enter();		\
++		BUG_ON(in_nmi());		\
++		add_preempt_count(NMI_OFFSET);	\
+ 		lockdep_off();			\
+ 		rcu_nmi_enter();		\
+ 		__irq_enter();			\
+@@ -177,6 +190,8 @@ extern void irq_exit(void);
+ 		__irq_exit();			\
+ 		rcu_nmi_exit();			\
+ 		lockdep_on();			\
++		BUG_ON(!in_nmi());		\
++		sub_preempt_count(NMI_OFFSET);	\
+ 		ftrace_nmi_exit();		\
+ 	} while (0)
  
- void arch_ftrace_nmi_exit(void)
- {
--	/* Finish all executions before clearing in_nmi */
-+	/* Finish all executions before clearing nmi_running */
- 	smp_wmb();
--	atomic_dec(&in_nmi);
-+	atomic_dec(&nmi_running);
- }
- 
- static void wait_for_nmi(void)
- {
--	if (!atomic_read(&in_nmi))
-+	if (!atomic_read(&nmi_running))
- 		return;
- 
- 	do {
- 		cpu_relax();
--	} while(atomic_read(&in_nmi));
-+	} while (atomic_read(&nmi_running));
- 
- 	nmi_wait_count++;
- }
-@@ -374,16 +374,16 @@ int ftrace_disable_ftrace_graph_caller(void)
-  * this page for dynamic ftrace. They have been
-  * simplified to ignore all traces in NMI context.
-  */
--static atomic_t in_nmi;
-+static atomic_t nmi_running;
- 
- void arch_ftrace_nmi_enter(void)
- {
--	atomic_inc(&in_nmi);
-+	atomic_inc(&nmi_running);
- }
- 
- void arch_ftrace_nmi_exit(void)
- {
--	atomic_dec(&in_nmi);
-+	atomic_dec(&nmi_running);
- }
- 
- #endif /* !CONFIG_DYNAMIC_FTRACE */
-@@ -475,7 +475,7 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
- 				&return_to_handler;
- 
- 	/* Nmi's are currently unsupported */
--	if (unlikely(atomic_read(&in_nmi)))
-+	if (unlikely(atomic_read(&nmi_running)))
- 		return;
- 
- 	if (unlikely(atomic_read(&current->tracing_graph_pause)))
 -- 
 1.5.6.5
 
