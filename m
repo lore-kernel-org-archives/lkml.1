@@ -1,82 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbZBFX2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757014AbZBFXfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756971AbZBFX2g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 18:28:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZBFX22
+	id S1757014AbZBFXfg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 18:35:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbZBFXf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 18:28:28 -0500
-Received: from cmpxchg.org ([85.214.51.133]:38862 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751212AbZBFX21 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 18:28:27 -0500
-Date: Sat, 7 Feb 2009 00:27:47 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
+	Fri, 6 Feb 2009 18:35:27 -0500
+Received: from mx0.towertech.it ([213.215.222.73]:46852 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753087AbZBFXf0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 18:35:26 -0500
+Date: Sat, 7 Feb 2009 00:35:22 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: kosaki.motohiro@jp.fujitsu.com, rjw@sisk.pl, riel@redhat.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 3/3][RFC] swsusp: shrink file cache first
-Message-ID: <20090206232747.GA3539@cmpxchg.org>
-References: <20090206031125.693559239@cmpxchg.org> <20090206031324.004715023@cmpxchg.org> <20090206122129.79CC.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090206044907.GA18467@cmpxchg.org> <20090206130009.99400d43.akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, rpurdie@rpsys.net, mingo@elte.hu,
+       tglx@linutronix.de, hpa@zytor.com
+Subject: Re: [PATCH] Soekris net5501 board support code
+Message-ID: <20090207003522.32049f4f@i1501.lan.towertech.it>
+In-Reply-To: <20090206152121.3ae5208a.akpm@linux-foundation.org>
+References: <20090205161319.32219d93@i1501.lan.towertech.it>
+	<20090206152121.3ae5208a.akpm@linux-foundation.org>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090206130009.99400d43.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 06, 2009 at 01:00:09PM -0800, Andrew Morton wrote:
-> On Fri, 6 Feb 2009 05:49:07 +0100
-> Johannes Weiner <hannes@cmpxchg.org> wrote:
-> 
-> > > and, I think you should mesure performence result.
-> > 
-> > Yes, I'm still thinking about ideas how to quantify it properly.  I
-> > have not yet found a reliable way to check for whether the working set
-> > is intact besides seeing whether the resumed applications are
-> > responsive right away or if they first have to swap in their pages
-> > again.
-> 
-> Describing your subjective non-quantitative impressions would be better
-> than nothing...
+On Fri, 6 Feb 2009 15:21:21 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Okay.
+> > +	rombase = ioremap(0xffff0000, 0xffff);
+> > +	if (!rombase)
+> > +		return 0;  
+> 
+> Is it appropriate to silently "succeed" if the ioremap() failed?
 
-> The patch bugs me.
+ maybe not.. I'll add a printk. ty.
 
-Please ignore it, it is broken as is.  My verbal cortex got obviously
-disconnected from my code cortex when writing the changelog...  And I
-will reconsider the actual change bits, I still think that we
-shouldn't scan anon page lists while may_swap is zero.
+-- 
 
-> The whole darn point behind the whole darn page reclaim is "reclaim the
-> pages which we aren't likely to need soon".  There's nothing special
-> about the swsusp code at all!  We want it to do exactly what page
-> reclaim normally does, only faster.
-> 
-> So why do we need to write special hand-rolled code to implement
-> something which we've already spent ten years writing?
-> 
-> hm?  And if this approach leads to less-than-optimum performance after
-> resume then the fault lies with core page reclaim - it reclaimed the
-> wrong pages!
-> 
-> That actually was my thinking when I first worked on
-> shrink_all_memory() and it did turn out to be surprisingly hard to
-> simply reuse the existing reclaim code for this application.  Things
-> kept on going wrong.  IIRC this was because we were freeing pages as we
-> were reclaiming, so the page reclaim logic kept on seeing all these
-> free pages and kept on wanting to bale out.
-> 
-> Now, the simple and obvious fix to this is not to free the pages - just
-> keep on allocating pages and storing them locally until we have
-> "enough" memory.  Then when we're all done, dump them all straight onto
-> to the freelists.
-> 
-> But for some reason which I do not recall, we couldn't do that.
-> 
-> It would be good to revisit all this.
+ Best regards,
 
-Thanks for the comments, I will see what I can come up with.
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
 
-	Hannes
+  http://www.towertech.it
+
