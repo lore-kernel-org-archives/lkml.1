@@ -1,176 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760597AbZBFR5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760473AbZBFR7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760597AbZBFR5r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 12:57:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755875AbZBFR5i
+	id S1760473AbZBFR7e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 12:59:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbZBFR7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 12:57:38 -0500
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:8263 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755986AbZBFR5h (ORCPT
+	Fri, 6 Feb 2009 12:59:25 -0500
+Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:25603 "HELO
+	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751690AbZBFR7Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 12:57:37 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Philippe De Muyter <phdm@macqel.be>
-Subject: Re: [PATCH] floppy: release only the ports we actually requested
-Date: Fri, 6 Feb 2009 10:57:06 -0700
+	Fri, 6 Feb 2009 12:59:24 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=wTcTY/qGHRb1suNw3KbYjvfo+yDfC6bZ+ypPQBro4NgUj0l8WpYLbGTQCWtQmfXXYJ82NFrJvDDVxu+di4MUGbUjVX/6J/N290sWcVF3MwdTv/XF9Ue3zXVfBnOxY63RaGiSCo4PqgaZyv4r/XIwdkq+Ws1NehJB8ecQ+/5aEA4=  ;
+X-YMail-OSG: FzRf8HAVM1ntuR0qFkMcEEh2yrHr8hl8Do4znX._HlT4F.iF9q3Nwx_cr.RAueCVSxfb3BeKJA3U1v15dzuTLpx8IP11WzAqrb2_1wx77xxruRUmgPuhzaEFwXfLMko69k7c6KyvI1eTdIXxJuADDtONe4xqkIyCX_r2kq19ThsaZkP2lJIqrjhDeoFRkA5uUjUmk7kj95dGUFlVpmWi0iF.6hwmFw--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: tom.leiming@gmail.com
+Subject: Re: [PATCH] platform driver:fix incorrect use of 'platform_bus_type' with 'struct device_driver'
+Date: Fri, 6 Feb 2009 09:59:22 -0800
 User-Agent: KMail/1.9.10
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       hancockrwd@gmail.com, abelay@mit.edu, lenb@kernel.org,
-       stable@kernel.org
-References: <20090205174859.18396.68512.stgit@bob.kio> <20090206085501.GA18125@frolo.macqel> <200902060920.14194.bjorn.helgaas@hp.com>
-In-Reply-To: <200902060920.14194.bjorn.helgaas@hp.com>
+Cc: greg@kroah.com, kay.sievers@vrfy.org, LW@karo-electronics.de,
+       hmh@hmh.eng.br, linux-kernel@vger.kernel.org
+References: <1233934812-20628-1-git-send-email-tom.leiming@gmail.com>
+In-Reply-To: <1233934812-20628-1-git-send-email-tom.leiming@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200902061057.07223.bjorn.helgaas@hp.com>
+Message-Id: <200902060959.22413.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 06 February 2009 09:20:13 am Bjorn Helgaas wrote:
-> On Friday 06 February 2009 01:55:01 am Philippe De Muyter wrote:
-> > Bjorn, Andrew,
-> > 
-> > --
-> > 
-> > With the last floppy patch, the floppy driver requests only the ports that
-> > it really uses, but the code contains yet places where it releases those
-> > unrequested ports.  I don't know if it is harmfull, but I think it is cleaner
-> > that the parameters of the release_region calls match the request_region ones.
+On Friday 06 February 2009, tom.leiming@gmail.com wrote:
+> From: Ming Lei <tom.leiming@gmail.com>
 > 
-> Doh!  Boy, do I feel stupid.  I doubt this is in any git trees yet,
-> so I'll combine the two patches and send a cleaner one.
+> This patch fixes the bug reported in
+>         http://bugzilla.kernel.org/show_bug.cgi?id=11681.
+> 
+> "Lots of device drivers register a 'struct device_driver' with
+> the '.bus' member set to '&platform_bus_type'. This is wrong,
+> since the platform_bus functions expect the 'struct device_driver'
+> to be wrapped up in a 'struct platform_driver' which provides
+> some additional callbacks (like suspend_late, resume_early).
+> The effect may be that platform_suspend_late() uses bogus data
+> outside the device_driver struct as a pointer pointer to the
+> device driver's suspend_late() function or other hard to
+> reproduce failures."(Lothar Wassmann)
+> 
+> Signed-off-by: Ming Lei <tom.leiming@gmail.com>
 
-Philippe, can you give this a once-over?  I can compile it, but I don't
-have a machine with a floppy drive handy to test it.  Since you pointed
-out all the places I forgot to change, I went ahead and factored out
-the request/release stuff so they're all in one place now.
+I just glanced at this ... but those parts looked like
+good fixes to this family of bugs.  Thanks.
 
-Bjorn
+- Dave
 
-
-diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
-index cf29cc4..c2b3db4 100644
---- a/drivers/block/floppy.c
-+++ b/drivers/block/floppy.c
-@@ -558,6 +558,8 @@ static void process_fd_request(void);
- static void recalibrate_floppy(void);
- static void floppy_shutdown(unsigned long);
- 
-+static int floppy_request_regions(int);
-+static void floppy_release_regions(int);
- static int floppy_grab_irq_and_dma(void);
- static void floppy_release_irq_and_dma(void);
- 
-@@ -4274,8 +4276,7 @@ static int __init floppy_init(void)
- 		FDCS->rawcmd = 2;
- 		if (user_reset_fdc(-1, FD_RESET_ALWAYS, 0)) {
- 			/* free ioports reserved by floppy_grab_irq_and_dma() */
--			release_region(FDCS->address + 2, 4);
--			release_region(FDCS->address + 7, 1);
-+			floppy_release_regions(fdc);
- 			FDCS->address = -1;
- 			FDCS->version = FDC_NONE;
- 			continue;
-@@ -4284,8 +4285,7 @@ static int __init floppy_init(void)
- 		FDCS->version = get_fdc_version();
- 		if (FDCS->version == FDC_NONE) {
- 			/* free ioports reserved by floppy_grab_irq_and_dma() */
--			release_region(FDCS->address + 2, 4);
--			release_region(FDCS->address + 7, 1);
-+			floppy_release_regions(fdc);
- 			FDCS->address = -1;
- 			continue;
- 		}
-@@ -4358,6 +4358,38 @@ out_put_disk:
- 
- static DEFINE_SPINLOCK(floppy_usage_lock);
- 
-+static int floppy_request_regions(int fdc)
-+{
-+	if (!request_region(FDCS->address + 2, 1, "floppy")) {
-+		DPRINT("Floppy io-port 0x%04lx in use\n", FDCS->address + 2);
-+		return -EBUSY;
-+	}
-+	if (!request_region(FDCS->address + 4, 2, "floppy")) {
-+		DPRINT("Floppy io-port 0x%04lx in use\n", FDCS->address + 4);
-+		goto cleanup1;
-+	}
-+	if (!request_region(FDCS->address + 7, 1, "floppy DIR")) {
-+		DPRINT("Floppy io-port 0x%04lx in use\n", FDCS->address + 7);
-+		goto cleanup2;
-+	}
-+	/* address + 6 is reserved, and may be taken by IDE.
-+	 * Unfortunately, Adaptec doesn't know this :-(, */
-+	return 0;
-+
-+cleanup2:
-+	release_region(FDCS->address + 4, 2);
-+cleanup1:
-+	release_region(FDCS->address + 2, 1);
-+	return -EBUSY;
-+}
-+
-+static void floppy_release_regions(int fdc)
-+{
-+	release_region(FDCS->address + 2, 1);
-+	release_region(FDCS->address + 4, 2);
-+	release_region(FDCS->address + 7, 1);
-+}
-+
- static int floppy_grab_irq_and_dma(void)
- {
- 	unsigned long flags;
-@@ -4399,18 +4431,8 @@ static int floppy_grab_irq_and_dma(void)
- 
- 	for (fdc = 0; fdc < N_FDC; fdc++) {
- 		if (FDCS->address != -1) {
--			if (!request_region(FDCS->address + 2, 4, "floppy")) {
--				DPRINT("Floppy io-port 0x%04lx in use\n",
--				       FDCS->address + 2);
--				goto cleanup1;
--			}
--			if (!request_region(FDCS->address + 7, 1, "floppy DIR")) {
--				DPRINT("Floppy io-port 0x%04lx in use\n",
--				       FDCS->address + 7);
--				goto cleanup2;
--			}
--			/* address + 6 is reserved, and may be taken by IDE.
--			 * Unfortunately, Adaptec doesn't know this :-(, */
-+			if (floppy_request_regions(fdc))
-+				goto cleanup;
- 		}
- 	}
- 	for (fdc = 0; fdc < N_FDC; fdc++) {
-@@ -4432,15 +4454,11 @@ static int floppy_grab_irq_and_dma(void)
- 	fdc = 0;
- 	irqdma_allocated = 1;
- 	return 0;
--cleanup2:
--	release_region(FDCS->address + 2, 4);
--cleanup1:
-+cleanup:
- 	fd_free_irq();
- 	fd_free_dma();
--	while (--fdc >= 0) {
--		release_region(FDCS->address + 2, 4);
--		release_region(FDCS->address + 7, 1);
--	}
-+	while (--fdc >= 0)
-+		floppy_release_regions(fdc);
- 	spin_lock_irqsave(&floppy_usage_lock, flags);
- 	usage_count--;
- 	spin_unlock_irqrestore(&floppy_usage_lock, flags);
-@@ -4502,8 +4520,7 @@ static void floppy_release_irq_and_dma(void)
- 	old_fdc = fdc;
- 	for (fdc = 0; fdc < N_FDC; fdc++)
- 		if (FDCS->address != -1) {
--			release_region(FDCS->address + 2, 4);
--			release_region(FDCS->address + 7, 1);
-+			floppy_release_regions(fdc);
- 		}
- 	fdc = old_fdc;
- }
