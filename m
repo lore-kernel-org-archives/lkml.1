@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756851AbZBFVpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757742AbZBFVp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756851AbZBFVpV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 16:45:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbZBFVpE
+	id S1757742AbZBFVp5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 16:45:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753737AbZBFVpt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 16:45:04 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:33790 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752063AbZBFVpB (ORCPT
+	Fri, 6 Feb 2009 16:45:49 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37998 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753243AbZBFVps (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 16:45:01 -0500
-Date: Fri, 6 Feb 2009 21:44:50 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Paul Walmsley <paul@pwsan.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH D 11/11] Fix omap1 clock issues
-Message-ID: <20090206214450.GN13758@n2100.arm.linux.org.uk>
-References: <20090128191638.16688.33452.stgit@localhost.localdomain> <20090128191844.16688.39372.stgit@localhost.localdomain> <20090129143733.GB18233@n2100.arm.linux.org.uk> <alpine.DEB.2.00.0902061417390.26737@utopia.booyaka.com>
+	Fri, 6 Feb 2009 16:45:48 -0500
+Date: Fri, 6 Feb 2009 13:44:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Cc: roland@redhat.com, linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, torvalds@linux-foundation.org
+Subject: Re: [BUG] binfmt_elf: get_user() called in vma_dump_size() after
+ set_fs(KERNEL_DS)
+Message-Id: <20090206134410.d548b72c.akpm@linux-foundation.org>
+In-Reply-To: <1233940235.22140.9.camel@localhost.localdomain>
+References: <1233940235.22140.9.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0902061417390.26737@utopia.booyaka.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 06, 2009 at 02:19:34PM -0700, Paul Walmsley wrote:
-> [paul@pwsan.com: This patch has been updated to use offsets for OMAP1 
-> clock enable registers, to resolve all current sparse warnings with the 
-> clock code, and to convert most magic constants into symbolic macros.  
+On Fri, 06 Feb 2009 18:10:35 +0100
+Gerald Schaefer <gerald.schaefer@de.ibm.com> wrote:
 
-Wish you hadn't; I've been avoiding the patches changing the way registers
-are accessed for the time being - until I have an opportunity to think
-about them for a bit.
+> Hi,
+> 
+> elf_core_dump() does a set_fs(KERNEL_DS) and then calls vma_dump_size(),
+> which uses get_user() to check for an ELF header at vma->vm_start in the
+> user mapping. This is a bug because vm_start is a user virtual address and
+> get_user() will fail or even read from a kernel address (KERNEL_DS).
+> 
+> Maybe a get_user_pages() should be used to get the user data, or a temporary
+> set_fs(USER_DS)?
+> 
 
-As can be seen in the OMAP2 updates, this approach causes additional
-struct clk's to appear for mcbsp clocks because they have controlling
-registers split across two subsystems.  This is contary to one of your
-other statements about wanting the struct clk's to reflect the real
-clock structure without virtual clocks.
+Could use __get_user() to skip the access_ok() check?
+
+We'd need to be sure that the address isn't a kernel address or iomem
+or something. 
