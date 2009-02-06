@@ -1,128 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbZBFGIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbZBFGKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756147AbZBFGIS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 01:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZBFGID
+	id S1755999AbZBFGKl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 01:10:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbZBFGKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 01:08:03 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:55216 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751491AbZBFGIB (ORCPT
+	Fri, 6 Feb 2009 01:10:22 -0500
+Received: from mail.candelatech.com ([208.74.158.172]:58699 "EHLO
+	ns3.lanforge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751915AbZBFGKV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 01:08:01 -0500
-Date: Fri, 6 Feb 2009 01:07:59 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
-cc: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Michael Neuling <mikey@neuling.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/2] powerpc, ftrace: fix compile error when modules not
- configured
-In-Reply-To: <20090206060527.369616736@goodmis.org>
-Message-ID: <alpine.DEB.1.10.0902060107350.5262@gandalf.stny.rr.com>
-References: <20090206060328.181057235@goodmis.org> <20090206060527.369616736@goodmis.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 6 Feb 2009 01:10:21 -0500
+Message-ID: <498BD448.80102@candelatech.com>
+Date: Thu, 05 Feb 2009 22:10:16 -0800
+From: Ben Greear <greearb@candelatech.com>
+Organization: Candela Technologies
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Robert Hancock <hancockrwd@gmail.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Regression on VIA C3 motherboard, commit: 66f2173e2
+References: <498A93E5.2080509@candelatech.com> <498B8547.1010803@gmail.com>
+In-Reply-To: <498B8547.1010803@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Robert Hancock wrote:
+> Ben Greear wrote:
+>> I have a via motherboard with C3 processor and some real-tek NICs.  I 
+>> noticed
+>> when using the top-of-tree that performance on it sucked (30Mbps v/s 
+>> 54Mbps
+>> network throughput in one pertinent test).
+>>
+>> After several hours of bisecting, I see this as the culprit:
+>>
+>> 7b37b5fd9ba32c0c5afc3537eed7e7466f2173e2 is first bad commit
+>> commit 7b37b5fd9ba32c0c5afc3537eed7e7466f2173e2
+>> Author: Len Brown <len.brown@intel.com>
+>> Date:   Tue Dec 23 01:47:42 2008 -0500
+>>
+>>    ACPI: disable MPS when NO APIC-table found
+>>      When ACPI is asked to find an MADT (APIC table)
+>>    and fails, then ACPI expects to run in PIC mode.
+>>      However, if an MP Table is was found, IRQs will be
+>>    registered as if an IOAPIC is being used, even
+>>    though ACPI is configuring interrupt links links for PIC mode.
+>>      In this scenario, disable MPS so that IRQs
+>>    are registered in PIC mode, consistent with ACPI.
+>>      http://bugzilla.kernel.org/show_bug.cgi?id=12257
+>>      Signed-off-by: Len Brown <len.brown@intel.com>
+>>
+>> :040000 040000 86ce74daee3a9fe6ff21ef7f8fb364af23ec0c1e 
+>> 364933dfec0df34e63b1aeff6aff4092d421886b M      arch
+>>
+>>
+>> In addition, I see this warning in my logs, which is likely the symptom:
+>>
+>> ACPI Exception (tbxface-0627): AE_NO_ACPI_TABLES, While loading 
+>> namespace from ACPI tables ]
+>> ACPI: Unable to load the System Description Tables
+>
+> You're getting this on boot:
+>
+> ACPI Error (tbxfroot-0218): A valid RSDP was not found [20080926]
+>
+> That essentially means ACPI isn't working at all, I think. Did 
+> previous kernels produce this error? Do you have ACPI disabled in the 
+> BIOS or something?
+>
+Er, yes...I have ACPI disabled in the BIOS.  I seem to recall now that 
+it worked around
+some instability, but it's been a few years since we set that up.   
+Still, it was working
+fine before, and fine again when I comment out the change in this commit 
+(and another
+change to force the 'tsc' to be considered stable).
 
-[ forgot to add linuxppc ]
+The same error message happens as far back as 2.6.25 at least.
 
+Thanks,
+Ben
 
-On Fri, 6 Feb 2009, Steven Rostedt wrote:
-
-> From: Steven Rostedt <srostedt@redhat.com>
-> 
-> Michael Neuling reported a compile bug when dynamic ftrace was
-> configured in and modules were not. This was due to the ftrace
-> code referencing module specific structures.
-> 
-> Reported-by: Michael Neuling <mikey@neuling.org>
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  arch/powerpc/kernel/ftrace.c |   16 +++++++++++++++-
->  1 files changed, 15 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-> index a913f91..88c641d 100644
-> --- a/arch/powerpc/kernel/ftrace.c
-> +++ b/arch/powerpc/kernel/ftrace.c
-> @@ -113,6 +113,8 @@ static int test_24bit_addr(unsigned long ip, unsigned long addr)
->  	return create_branch((unsigned int *)ip, addr, 0);
->  }
->  
-> +#ifdef CONFIG_MODULES
-> +
->  static int is_bl_op(unsigned int op)
->  {
->  	return (op & 0xfc000003) == 0x48000001;
-> @@ -323,6 +325,7 @@ __ftrace_make_nop(struct module *mod,
->  	return 0;
->  }
->  #endif /* PPC64 */
-> +#endif /* CONFIG_MODULES */
->  
->  int ftrace_make_nop(struct module *mod,
->  		    struct dyn_ftrace *rec, unsigned long addr)
-> @@ -342,6 +345,7 @@ int ftrace_make_nop(struct module *mod,
->  		return ftrace_modify_code(ip, old, new);
->  	}
->  
-> +#ifdef CONFIG_MODULES
->  	/*
->  	 * Out of range jumps are called from modules.
->  	 * We should either already have a pointer to the module
-> @@ -366,9 +370,13 @@ int ftrace_make_nop(struct module *mod,
->  		mod = rec->arch.mod;
->  
->  	return __ftrace_make_nop(mod, rec, addr);
-> -
-> +#else
-> +	/* We should not get here without modules */
-> +	return -EINVAL;
-> +#endif /* CONFIG_MODULES */
->  }
->  
-> +#ifdef CONFIG_MODULES
->  #ifdef CONFIG_PPC64
->  static int
->  __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-> @@ -457,6 +465,7 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
->  	return 0;
->  }
->  #endif /* CONFIG_PPC64 */
-> +#endif /* CONFIG_MODULES */
->  
->  int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
->  {
-> @@ -475,6 +484,7 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
->  		return ftrace_modify_code(ip, old, new);
->  	}
->  
-> +#ifdef CONFIG_MODULES
->  	/*
->  	 * Out of range jumps are called from modules.
->  	 * Being that we are converting from nop, it had better
-> @@ -486,6 +496,10 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
->  	}
->  
->  	return __ftrace_make_call(rec, addr);
-> +#else
-> +	/* We should not get here without modules */
-> +	return -EINVAL;
-> +#endif /* CONFIG_MODULES */
->  }
->  
->  int ftrace_update_ftrace_func(ftrace_func_t func)
 > -- 
-> 1.5.6.5
-> 
-> -- 
-> 
-> 
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
+-- 
+Ben Greear <greearb@candelatech.com> 
+Candela Technologies Inc  http://www.candelatech.com
+
+
