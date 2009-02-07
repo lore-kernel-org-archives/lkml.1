@@ -1,64 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbZBGXPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755465AbZBGXUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755242AbZBGXPd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 18:15:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbZBGXPY
+	id S1755465AbZBGXUx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 18:20:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbZBGXUp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 18:15:24 -0500
-Received: from outbound-mail-39.bluehost.com ([69.89.20.193]:34164 "HELO
-	outbound-mail-39.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752389AbZBGXPX (ORCPT
+	Sat, 7 Feb 2009 18:20:45 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:44641 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752280AbZBGXUo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 18:15:23 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=n2yrsNnIyl51E/kGf5Gem4d2SzE9ZNxGck6nxmy//YGKqF2FGIPBOYpTUSRTA6FVupCLKGDG1lsjztnBjHyR0qIMPAQdMVrT1OtFgzYryaBB9emcczWRAIk31krerRc4;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Bug #12608] 2.6.29-rc powerpc G5 Xorg legacy_mem regression
-Date: Sat, 7 Feb 2009 15:15:20 -0800
-User-Agent: KMail/1.9.10
-Cc: Hugh Dickins <hugh@veritas.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <200902061445.11379.jbarnes@virtuousgeek.org> <1233975910.31963.56.camel@pasglop>
-In-Reply-To: <1233975910.31963.56.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902071515.20560.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+	Sat, 7 Feb 2009 18:20:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:from:date:to:cc:subject;
+        b=sd9wIOItYPH/Z4VpIEZyTVHgGlrGQC+y0tsmOXF1I88Vfi1q3zzF22KIeBks/8mPNG
+         BstukeVfS8Bm8GRGCxQER6VfGF0/0SrQ4zOwhqWPwJtlq9Ba8nbfTPBs2vxHWaID2AuG
+         m4KlBhRh56Oc4gG0qXszfFjAZ0cjd3bWOTE4E=
+Message-ID: <498e1747.1f145e0a.126a.ffffdf3b@mx.google.com>
+From: Frederic Weisbecker <fweisbec@gmail.com>
+Date: Sat, 7 Feb 2009 20:46:45 +0100
+To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/5] tracing/blktrace: move the tracing file to kernel/trace
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, February 6, 2009 7:05 pm Benjamin Herrenschmidt wrote:
-> On Fri, 2009-02-06 at 14:45 -0800, Jesse Barnes wrote:
-> > +    if (Base <= 1024*1024) {
-> > +        /* Try legacy_mem (may not be available or implemented) */
-> > +        if ((fd = linuxOpenLegacy(dev, "legacy_mem")) < 0) {
-> > +            addr = mmap(NULL, Size, PROT_READ|PROT_WRITE, MAP_SHARED,
-> > fd, Base); +            close(fd);
-> > +            if (addr && addr != MAP_FAILED)
-> > +                return addr;
-> > +        }
-> >      }
-> > -    return addr;
-> > +
-> > +    /* Fall back to old method if legacy_mem fails or Base >= 1M */
-> > +    return linuxMapPci(ScreenNum, Flags, dev, Base, Size,
-> > PCIIOC_MMAP_IS_MEM); }
->
-> I don't like the fallback if legacy_mem exists and returns an error,
-> that's an indication that legacy memory is -not- available and thus
-> whatever 'fallback' X will try (supposedly using /dev/mem) will be
-> horribly broken and will probably end up scribbling all over system
-> memory :-)
+Impact: cleanup
 
-Yeah, but unless we fix all the callers (and possibly their callers), not 
-falling back will keep X from starting...
+Move blktrace.c to kernel/trace, also move its config entry.
 
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ block/Kconfig                      |   24 ------------------------
+ block/Makefile                     |    1 -
+ kernel/trace/Kconfig               |   23 +++++++++++++++++++++++
+ kernel/trace/Makefile              |    1 +
+ {block => kernel/trace}/blktrace.c |    2 +-
+ 5 files changed, 25 insertions(+), 26 deletions(-)
+ rename {block => kernel/trace}/blktrace.c (99%)
+
+diff --git a/block/Kconfig b/block/Kconfig
+index 7cdaa1d..e7d1278 100644
+--- a/block/Kconfig
++++ b/block/Kconfig
+@@ -44,30 +44,6 @@ config LBD
+ 
+ 	  If unsure, say N.
+ 
+-config BLK_DEV_IO_TRACE
+-	bool "Support for tracing block io actions"
+-	depends on SYSFS
+-	select RELAY
+-	select DEBUG_FS
+-	select TRACEPOINTS
+-	select TRACING
+-	select STACKTRACE
+-	help
+-	  Say Y here if you want to be able to trace the block layer actions
+-	  on a given queue. Tracing allows you to see any traffic happening
+-	  on a block device queue. For more information (and the userspace
+-	  support tools needed), fetch the blktrace tools from:
+-
+-	  git://git.kernel.dk/blktrace.git
+-
+-	  Tracing also is possible using the ftrace interface, e.g.:
+-
+-	    echo 1 > /sys/block/sda/sda1/trace/enable
+-	    echo blk > /sys/kernel/debug/tracing/current_tracer
+-	    cat /sys/kernel/debug/tracing/trace_pipe
+-
+-	  If unsure, say N.
+-
+ config BLK_DEV_BSG
+ 	bool "Block layer SG support v4 (EXPERIMENTAL)"
+ 	depends on EXPERIMENTAL
+diff --git a/block/Makefile b/block/Makefile
+index bfe7304..e9fa4dd 100644
+--- a/block/Makefile
++++ b/block/Makefile
+@@ -13,6 +13,5 @@ obj-$(CONFIG_IOSCHED_AS)	+= as-iosched.o
+ obj-$(CONFIG_IOSCHED_DEADLINE)	+= deadline-iosched.o
+ obj-$(CONFIG_IOSCHED_CFQ)	+= cfq-iosched.o
+ 
+-obj-$(CONFIG_BLK_DEV_IO_TRACE)	+= blktrace.o
+ obj-$(CONFIG_BLOCK_COMPAT)	+= compat_ioctl.o
+ obj-$(CONFIG_BLK_DEV_INTEGRITY)	+= blk-integrity.o
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index 28f2644..0e920e2 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -294,6 +294,29 @@ config WORKQUEUE_TRACER
+           For example it can help a developer to decide whether he should
+           choose a per cpu workqueue instead of a singlethreaded one.
+ 
++config BLK_DEV_IO_TRACE
++	bool "Support for tracing block io actions"
++	depends on SYSFS
++	select RELAY
++	select DEBUG_FS
++	select TRACEPOINTS
++	select TRACING
++	select STACKTRACE
++	help
++	  Say Y here if you want to be able to trace the block layer actions
++	  on a given queue. Tracing allows you to see any traffic happening
++	  on a block device queue. For more information (and the userspace
++	  support tools needed), fetch the blktrace tools from:
++
++	  git://git.kernel.dk/blktrace.git
++
++	  Tracing also is possible using the ftrace interface, e.g.:
++
++	    echo 1 > /sys/block/sda/sda1/trace/enable
++	    echo blk > /sys/kernel/debug/tracing/current_tracer
++	    cat /sys/kernel/debug/tracing/trace_pipe
++
++	  If unsure, say N.
+ 
+ config DYNAMIC_FTRACE
+ 	bool "enable/disable ftrace tracepoints dynamically"
+diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
+index f76d48f..627090b 100644
+--- a/kernel/trace/Makefile
++++ b/kernel/trace/Makefile
+@@ -37,5 +37,6 @@ obj-$(CONFIG_HW_BRANCH_TRACER) += trace_hw_branches.o
+ obj-$(CONFIG_POWER_TRACER) += trace_power.o
+ obj-$(CONFIG_KMEMTRACE) += kmemtrace.o
+ obj-$(CONFIG_WORKQUEUE_TRACER) += trace_workqueue.o
++obj-$(CONFIG_BLK_DEV_IO_TRACE)	+= blktrace.o
+ 
+ libftrace-y := ftrace.o
+diff --git a/block/blktrace.c b/kernel/trace/blktrace.c
+similarity index 99%
+rename from block/blktrace.c
+rename to kernel/trace/blktrace.c
+index ca6d320..3b91da0 100644
+--- a/block/blktrace.c
++++ b/kernel/trace/blktrace.c
+@@ -25,7 +25,7 @@
+ #include <linux/time.h>
+ #include <trace/block.h>
+ #include <linux/uaccess.h>
+-#include <../kernel/trace/trace_output.h>
++#include "trace_output.h"
+ 
+ static unsigned int blktrace_seq __read_mostly = 1;
+ 
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+1.6.1
+
+
