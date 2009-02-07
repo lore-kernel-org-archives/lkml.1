@@ -1,119 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755677AbZBGDXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756253AbZBGD1K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755677AbZBGDXb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 22:23:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbZBGDXX
+	id S1756253AbZBGD1K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 22:27:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbZBGD0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 22:23:23 -0500
-Received: from ozlabs.org ([203.10.76.45]:57541 "EHLO ozlabs.org"
+	Fri, 6 Feb 2009 22:26:54 -0500
+Received: from gate.crashing.org ([63.228.1.57]:54779 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753242AbZBGDXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 22:23:22 -0500
-To: Richard Henderson <rth@twiddle.net>
-Cc: linux-kernel@vger.kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Richard Henderson <rth@twiddle.net>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Travis <travis@sgi.com>
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Sat, 7 Feb 2009 13:53:11 +1030
-Subject: [PATCH] cpumask: Use cpu_*_mask accessors code: alpha
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Richard Henderson <rth@twiddle.net>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Mike Travis <travis@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	id S1751661AbZBGD0x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 22:26:53 -0500
+Subject: Re: 2.6.29-rc3: tg3 dead after resume
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Parag Warudkar <parag.lkml@gmail.com>,
+       Matt Carlson <mcarlson@broadcom.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0901311450550.2978@localhost.localdomain>
+References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop>
+	 <200901312208.20850.rjw@sisk.pl>
+	 <alpine.LFD.2.00.0901311318570.4064@localhost.localdomain>
+	 <200901312346.35265.rjw@sisk.pl>
+	 <alpine.LFD.2.00.0901311450550.2978@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 07 Feb 2009 14:26:06 +1100
+Message-Id: <1233977166.31963.63.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902071353.12571.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: use new API, fix SMP bug.
 
-Use the new accessors rather than frobbing bits directly.
+> 
+> Here's a big hint: YOU DO NOT KNOW. YOU MUST NOT TURN OFF THE BRIDGE AT 
+> SUSPEND TIME!
 
-This also removes the bug introduced in ee0c468b (alpha: compile
-fixes) which had Alpha setting bits on an on-stack cpumask, not the
-cpu_online_map.
+A quick catch up on old emails ....
 
-(Trivial, but untested!)
+A good reason not to turn bridges off is that behind bridges, you'll
+find more than your "normal" PCI devices. You'll find system devices,
+things like your motherboard GPIO & clock control, i2c controllers,
+service processors, your PIC, etc... 
 
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Richard Henderson <rth@twiddle.net>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- arch/alpha/kernel/process.c |    8 ++++----
- arch/alpha/kernel/smp.c     |   11 ++++++-----
- 2 files changed, 10 insertions(+), 9 deletions(-)
+And your BIOS will need them. Your ACPI stuff will indirectly access
+these things, for example to get the machine into actual suspend state
+etc...
 
-diff --git a/arch/alpha/kernel/process.c b/arch/alpha/kernel/process.c
---- a/arch/alpha/kernel/process.c
-+++ b/arch/alpha/kernel/process.c
-@@ -93,8 +93,8 @@ common_shutdown_1(void *generic_ptr)
- 	if (cpuid != boot_cpuid) {
- 		flags |= 0x00040000UL; /* "remain halted" */
- 		*pflags = flags;
--		cpu_clear(cpuid, cpu_present_map);
--		cpu_clear(cpuid, cpu_possible_map);
-+		set_cpu_present(cpuid, false);
-+		set_cpu_possible(cpuid, false);
- 		halt();
- 	}
- #endif
-@@ -120,8 +120,8 @@ common_shutdown_1(void *generic_ptr)
- 
- #ifdef CONFIG_SMP
- 	/* Wait for the secondaries to halt. */
--	cpu_clear(boot_cpuid, cpu_present_map);
--	cpu_clear(boot_cpuid, cpu_possible_map);
-+	set_cpu_present(boot_cpuid, false);
-+	set_cpu_possible(boot_cpuid, false);
- 	while (cpus_weight(cpu_present_map))
- 		barrier();
- #endif
-diff --git a/arch/alpha/kernel/smp.c b/arch/alpha/kernel/smp.c
---- a/arch/alpha/kernel/smp.c
-+++ b/arch/alpha/kernel/smp.c
-@@ -120,12 +120,12 @@ smp_callin(void)
- smp_callin(void)
- {
- 	int cpuid = hard_smp_processor_id();
--	cpumask_t mask = cpu_online_map;
- 
--	if (cpu_test_and_set(cpuid, mask)) {
-+	if (cpu_online(cpuid)) {
- 		printk("??, cpu 0x%x already present??\n", cpuid);
- 		BUG();
- 	}
-+	set_cpu_online(cpuid, true);
- 
- 	/* Turn on machine checks.  */
- 	wrmces(7);
-@@ -436,8 +436,8 @@ setup_smp(void)
- 				((char *)cpubase + i*hwrpb->processor_size);
- 			if ((cpu->flags & 0x1cc) == 0x1cc) {
- 				smp_num_probed++;
--				cpu_set(i, cpu_possible_map);
--				cpu_set(i, cpu_present_map);
-+				set_cpu_possible(i, true);
-+				set_cpu_present(i, true);
- 				cpu->pal_revision = boot_cpu_palrev;
- 			}
- 
-@@ -470,8 +470,8 @@ smp_prepare_cpus(unsigned int max_cpus)
- 
- 	/* Nothing to do on a UP box, or when told not to.  */
- 	if (smp_num_probed == 1 || max_cpus == 0) {
--		cpu_possible_map = cpumask_of_cpu(boot_cpuid);
--		cpu_present_map = cpumask_of_cpu(boot_cpuid);
-+		init_cpu_possible(cpumask_of(boot_cpuid));
-+		init_cpu_present(cpumask_of(boot_cpuid));
- 		printk(KERN_INFO "SMP mode deactivated.\n");
- 		return;
- 	}
+Disabling bridges is bad :-)
+
+If they have to be disabled for power management purposes, then it's
+likely that ACPI/BIOS itself will do it at the very last minute when
+going into S3, and bring them back itself on the way back.
+
+For embedded platforms who want to override that, they can always stick
+a driver there or do it manually from a sysdev or platform code.
+
+IE. I very very much doubt windows does anything to bridges, appart
+-maybe- saving/restoring the standard window settings -just-in-case-
+they got wiped out and the BIOS didn't restore them.
+
+Ben.
+
 
