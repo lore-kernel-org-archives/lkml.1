@@ -1,58 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755148AbZBGGFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbZBGGNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755148AbZBGGFq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 01:05:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbZBGGFf
+	id S1754009AbZBGGNr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 01:13:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbZBGGNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 01:05:35 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35951
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751083AbZBGGFe (ORCPT
+	Sat, 7 Feb 2009 01:13:37 -0500
+Received: from rv-out-0506.google.com ([209.85.198.234]:57826 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750869AbZBGGNg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 01:05:34 -0500
-Date: Fri, 06 Feb 2009 22:05:31 -0800 (PST)
-Message-Id: <20090206.220531.81492830.davem@davemloft.net>
-To: dan.j.williams@intel.com
-Cc: anemo@mba.ocn.ne.jp, maciej.sosnowski@intel.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] net_dma: call dmaengine_get only if NET_DMA enabled
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <498D241F.4080005@intel.com>
-References: <20090206.192910.42610645.davem@davemloft.net>
-	<20090206.215533.166740686.davem@davemloft.net>
-	<498D241F.4080005@intel.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sat, 7 Feb 2009 01:13:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=SCLRA6vVY2KS9NbXMgsdsorHloc/92Ln+VulBncPjW+eKGEWfMAdhXOEZuVOrfbCyu
+         366xO5rJDxFBb/0Ic2XlSF1dg6jvoMFXMqjksso6WWWvmrJ1Ymli1w3LGdGPULJLVaV8
+         dFpsAoFfWFIVgjgk5oHNHWNeCruesrwUA70IQ=
+MIME-Version: 1.0
+Date: Sat, 7 Feb 2009 15:13:35 +0900
+Message-ID: <4e1455be0902062213o769a4d15ha0c892508839dbad@mail.gmail.com>
+Subject: [PATCH] twl4030-gpio: Fix getting the value of the TWL4030 GPIO 
+	output pin
+From: Joonyoung Shim <dofmind@gmail.com>
+To: Tony Lindgren <tony@atomide.com>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Fri, 06 Feb 2009 23:03:11 -0700
+If TWL4030 GPIO pin is output, must read the value from REG_GPIODATAOUTx
+register in twl4030_get_gpio_datainout().
 
-> David Miller wrote:
-> > From: David Miller <davem@davemloft.net>
-> > Date: Fri, 06 Feb 2009 19:29:10 -0800 (PST)
-> > 
-> >> From: Dan Williams <dan.j.williams@intel.com>
-> >> Date: Fri, 6 Feb 2009 15:52:35 -0700
-> >>
-> >>> Yes, it has been on the todo list for a while, but I eventually want
-> >>> the net case to look more like the raid case.  I.e. have one code path
-> >>> that picks async versus sync at runtime, with the option to compile
-> >>> out async support with header file ifdefs only.
-> >> And how does any of that get us any closer to a fix right now
-> >> for this problem that doesn't require an ifdef?
-> >>
-> >> Someone please work on this.
-> > I guess that'd end up being me....
-> 
-> Not necessarily, you did snap me back into reality with that comment.
-> 
-> > How about something like this?
-> 
-> Looks good.
+Signed-off-by: Joonyoung Shim <jy0922.shim@samsung.com>
+---
 
-Ok, I'll add this to net-2.6 then, thanks.
+diff --git a/drivers/gpio/twl4030-gpio.c b/drivers/gpio/twl4030-gpio.c
+index afad147..890518a 100644
+--- a/drivers/gpio/twl4030-gpio.c
++++ b/drivers/gpio/twl4030-gpio.c
+@@ -183,7 +183,7 @@ static int twl4030_set_gpio_dataout(int gpio, int enable)
+ 	return gpio_twl4030_write(base, d_msk);
+ }
+
+-static int twl4030_get_gpio_datain(int gpio)
++static int twl4030_get_gpio_datainout(int gpio)
+ {
+ 	u8 d_bnk = gpio >> 3;
+ 	u8 d_off = gpio & 0x7;
+@@ -194,7 +194,17 @@ static int twl4030_get_gpio_datain(int gpio)
+ 		|| !(gpio_usage_count & BIT(gpio))))
+ 		return -EPERM;
+
+-	base = REG_GPIODATAIN1 + d_bnk;
++	base = REG_GPIODATADIR1 + d_bnk;
++	ret = gpio_twl4030_read(base);
++	if (ret > 0)
++		ret = (ret >> d_off) & 0x1;
++	else
++		return ret;
++
++	if (ret)
++		base = REG_GPIODATAOUT1 + d_bnk;
++	else
++		base = REG_GPIODATAIN1 + d_bnk;
+ 	ret = gpio_twl4030_read(base);
+ 	if (ret > 0)
+ 		ret = (ret >> d_off) & 0x1;
