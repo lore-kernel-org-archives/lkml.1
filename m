@@ -1,105 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbZBGArj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756239AbZBGAsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754192AbZBGArj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 19:47:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbZBGArb
+	id S1756239AbZBGAsU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 19:48:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbZBGAsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 19:47:31 -0500
-Received: from mga01.intel.com ([192.55.52.88]:41169 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752051AbZBGAra (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 19:47:30 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,394,1231142400"; 
-   d="scan'208";a="663590156"
-Date: Fri, 6 Feb 2009 16:47:29 -0800
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: H Peter Anvin <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       thomas@linux-os.sc.intel.com
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: Add clflush before monitor for Intel 7400 series - v2
-Message-ID: <20090207004728.GA17586@linux-os.sc.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+	Fri, 6 Feb 2009 19:48:09 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:42880 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752051AbZBGAsG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 19:48:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=hjuoxEM63R0VDQZVL7CLwXmZhgQSaBcImAcJCR9AmnpCUxbijH7VR3aj11ZtekRReF
+         bRWeWJtzab7U0wlmgiL2qyMIeOG2F19SctcuPXKzpzWF/K59E4bqvbXwfvIbpmS5VCmj
+         3K/n69ly4YIzHTQHCOuBsR25rNCzkbzT9694o=
+From: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: <linux-kernel@vger.kernel.org>,
+       Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+Subject: [PATCH] lis3lv02d: add axes knowledge of HP Pavilion dv5 models
+Date: Sat,  7 Feb 2009 01:48:01 +0100
+Message-Id: <1233967681-6378-1-git-send-email-giuseppe.bilotta@gmail.com>
+X-Mailer: git-send-email 1.6.1.399.g0d272
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Add support for HP Pavlion dv5 models, whose sensor has an inverted x
+axis.
 
-
-For Intel 7400 series CPUs, the recommendation is to use a clflush on the
-monitored address just before monitor and mwait pair [1]. This clflush makes
-sure that there are no false wakeups from mwait when the monitored address
-was recently written to.
-
-[1] "MONITOR/MWAIT Recommendations for Intel Xeon Processor 7400 series"
-section in specification update document of 7400 series
-http://download.intel.com/design/xeon/specupdt/32033601.pdf
-
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-
+Signed-off-by: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
 ---
+My HP Pavilion dv5 has an inverted x axis of the accelerometer, so this
+patch marks the inversion for all the dv5. I can include the full
+dmidecode output if this is deemed necessary.
 
-Earlier patch:
-http://marc.info/?l=linux-kernel&m=122341330606025&w=2
+With the laptop standing still on my desk jstest reports X and Y values
+fluctuating from -8k to +8k (more or less). I assume this is normal?
 
-Current changes:
-Minor modification based on Peter's comment
+ drivers/hwmon/hp_accel.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
- arch/x86/include/asm/cpufeature.h |    1 +
- arch/x86/kernel/cpu/intel.c       |    3 +++
- arch/x86/kernel/process.c         |    6 ++++++
- 3 files changed, 10 insertions(+)
+diff --git a/drivers/hwmon/hp_accel.c b/drivers/hwmon/hp_accel.c
+index abf4dfc..5a379bd 100644
+--- a/drivers/hwmon/hp_accel.c
++++ b/drivers/hwmon/hp_accel.c
+@@ -179,6 +179,7 @@ static struct dmi_system_id lis3lv02d_dmi_ids[] = {
+ 	AXIS_DMI_MATCH("NC673x", "HP Compaq 673", xy_rotated_left_usd),
+ 	AXIS_DMI_MATCH("NC651xx", "HP Compaq 651", xy_rotated_right),
+ 	AXIS_DMI_MATCH("NC671xx", "HP Compaq 671", xy_swap_yz_inverted),
++	AXIS_DMI_MATCH("HPDV5", "HP Pavilion dv5", x_inverted),
+ 	{ NULL, }
+ /* Laptop models without axis info (yet):
+  * "NC6910" "HP Compaq 6910"
+-- 
+1.6.1.399.g0d272
 
-Index: linux-2.6/arch/x86/kernel/cpu/intel.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/intel.c	2009-02-06 15:58:25.000000000 -0800
-+++ linux-2.6/arch/x86/kernel/cpu/intel.c	2009-02-06 16:11:41.000000000 -0800
-@@ -291,6 +291,9 @@ static void __cpuinit init_intel(struct 
- 		ds_init_intel(c);
- 	}
- 
-+	if (c->x86 == 6 && c->x86_model == 29 && cpu_has_clflush)
-+		set_cpu_cap(c, X86_FEATURE_CLFLUSH_MONITOR);
-+
- #ifdef CONFIG_X86_64
- 	if (c->x86 == 15)
- 		c->x86_cache_alignment = c->x86_clflush_size * 2;
-Index: linux-2.6/arch/x86/kernel/process.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/process.c	2009-02-03 12:58:38.000000000 -0800
-+++ linux-2.6/arch/x86/kernel/process.c	2009-02-06 16:11:41.000000000 -0800
-@@ -180,6 +180,9 @@ void mwait_idle_with_hints(unsigned long
- 
- 	trace_power_start(&it, POWER_CSTATE, (ax>>4)+1);
- 	if (!need_resched()) {
-+		if (cpu_has(&current_cpu_data, X86_FEATURE_CLFLUSH_MONITOR))
-+			clflush((void *)&current_thread_info()->flags);
-+
- 		__monitor((void *)&current_thread_info()->flags, 0, 0);
- 		smp_mb();
- 		if (!need_resched())
-@@ -194,6 +197,9 @@ static void mwait_idle(void)
- 	struct power_trace it;
- 	if (!need_resched()) {
- 		trace_power_start(&it, POWER_CSTATE, 1);
-+		if (cpu_has(&current_cpu_data, X86_FEATURE_CLFLUSH_MONITOR))
-+			clflush((void *)&current_thread_info()->flags);
-+
- 		__monitor((void *)&current_thread_info()->flags, 0, 0);
- 		smp_mb();
- 		if (!need_resched())
-Index: linux-2.6/arch/x86/include/asm/cpufeature.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/cpufeature.h	2009-02-06 16:11:12.000000000 -0800
-+++ linux-2.6/arch/x86/include/asm/cpufeature.h	2009-02-06 16:40:44.000000000 -0800
-@@ -93,6 +93,7 @@
- #define X86_FEATURE_XTOPOLOGY	(3*32+22) /* cpu topology enum extensions */
- #define X86_FEATURE_TSC_RELIABLE (3*32+23) /* TSC is known to be reliable */
- #define X86_FEATURE_NONSTOP_TSC	(3*32+24) /* TSC does not stop in C states */
-+#define X86_FEATURE_CLFLUSH_MONITOR (3*32+25) /* "" clflush reqd with monitor */
- 
- /* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */
- #define X86_FEATURE_XMM3	(4*32+ 0) /* "pni" SSE-3 */
