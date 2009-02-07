@@ -1,140 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753879AbZBGMAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbZBGM1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753879AbZBGMAT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 07:00:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZBGMAF
+	id S1754019AbZBGM1S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 07:27:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbZBGM1D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 07:00:05 -0500
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:57039 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752478AbZBGMAB (ORCPT
+	Sat, 7 Feb 2009 07:27:03 -0500
+Received: from lazybastard.de ([212.112.238.170]:44342 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752420AbZBGM1B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 07:00:01 -0500
-Date: Sat, 7 Feb 2009 12:59:56 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Greg KH <gregkh@suse.de>, Shane Hathaway <shane@hathawaymix.org>,
-       Daolong Wang <ahlongxp@gmail.com>,
-       User-mode Linux Kernel Development 
-	<user-mode-linux-devel@lists.sourceforge.net>,
-       Jeff Dike <jdike@addtoit.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Rob Landley <rob@landley.net>, Am?rico Wang <xiyou.wangcong@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [uml-devel] [Patch] uml: fix a link error
-Message-ID: <20090207125956.110591c9@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <Pine.LNX.4.64.0902042150550.25136@anakin>
-References: <20090115194033.GA10926@hack.private>
-	<20090116124158.4364e269.akpm@linux-foundation.org>
-	<200901170328.15178.rob@landley.net>
-	<dc84318c0901172223p57872a8cr227d940b1c0a908a@mail.gmail.com>
-	<20090119152104.GC6432@c2.user-mode-linux.org>
-	<dc84318c0901191746g31d51c23g65da89190dc8bfd2@mail.gmail.com>
-	<49753063.8040007@hathawaymix.org>
-	<alpine.LRH.2.00.0902041803360.7690@vixen.sonytel.be>
-	<Pine.LNX.4.64.0902042115530.25136@anakin>
-	<20090204204009.GA10680@suse.de>
-	<Pine.LNX.4.64.0902042150550.25136@anakin>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 7 Feb 2009 07:27:01 -0500
+Date: Sat, 7 Feb 2009 13:26:18 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       Andi Kleen <andi@firstfloor.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>
+Subject: Re: [PATCH] add b+tree library
+Message-ID: <20090207122618.GA17222@logfs.org>
+References: <2f11576a0901100429h415d3a87o40ba4849120832c8@mail.gmail.com> <20090110183921.GD20611@logfs.org> <1231613042.3706.16.camel@johannes> <87fxjrgd9s.fsf@basil.nowhere.org> <20090110202315.GE20611@logfs.org> <20090110212740.GE31579@mit.edu> <20090110220135.GF20611@logfs.org> <20090110142330.295a8847.akpm@linux-foundation.org> <1231631840.13420.24.camel@twins> <1233793066.7390.34.camel@johannes.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1233793066.7390.34.camel@johannes.local>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Feb 2009 21:54:12 +0100 (CET)
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> I verified that Shane's solution:
+On Thu, 5 February 2009 01:17:46 +0100, Johannes Berg wrote:
 > 
-> #define sys_sigprocmask sys_kernel_sigprocmask
+> Joern may need arbitrary key lengths, don't. But I've just looked around
+> a little:
 > 
-> works for me, but that's definitely not the cleanest way.
-> 
-> Al Viro also had a suggestion to rework the SYSCALL_DEFINE* macros, but I
-> haven't tried it yet.
+>  * radix trees are completely unsuitable for use as a sort of hash table
+>    because of their behaviour when keys are not at last mostly
+>    contiguous
+>  * rbtrees require lots of boilerplate code, and have much worse cache
+>    behaviour
 
+I did some testing as well.  And I didn't like the results very much.
+In my test harness, rbtrees performed roughly twice as good as btrees.
 
-Patch below should fix it.
+Something clearly is wrong with my theory.  To spell it out, the theory
+assumes that 1) CPUs get continuously faster at computations while
+memory latency stays roughly constant and as a result 2) current CPUs
+are sufficiently fast that memory latency is more important than a large
+amount of computation.  And maybe 3) L1 cache latency can be ignored,
+while DRAM latency most definitely can not.
 
+At least one of the above must be wrong.  Another interesting data point
+is that after hacking up binary search within nodes, btrees performed
+roughly 10% better than before.  Binary search means we mispredict every
+other branch, yet this still improved performance.  So on my test CPU
+(Pentium M), branch mispredictions must be relatively cheap compared to
+either calculations or L1 cache latency.
 
-Subject: [PATCH] syscall define: fix uml compile bug
+I also tried to rig the tests to favor btrees over rbtrees.  Since the
+rb_node is embedded in an object, I grew those objects beyond cacheline
+size, so no two rb_nodes would ever share a cacheline while all the
+pointers in btrees still do.  And still btrees lost.  Well - if the
+dataset is large enough that all the object padding is comsuming half a
+gigabyte of memory, swapping will make the rbtree load go slow, but
+given enough free memory and no swapping (i.e. second run) it beats
+btrees.
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+So there are two results I can see from all this.  Rbtrees are still a
+good choice an semi-current machines and the kernel doesn't need much
+rework yet.  Whether my assumption 2) above will match reality better in
+the future and the scales will tip to the other side I don't know.  The
+other is that my assumptions are wrong somewhere and I don't yet
+understand where.  If anyone has an idea, I'd be glad to hear about it.
 
-With the new system call defines we get this on uml:
+Jörn
 
-arch/um/sys-i386/built-in.o: In function `sys_call_table':
-(.rodata+0x308): undefined reference to `sys_sigprocmask'
-
-Reason for this is that uml passes the preprocessor option
--Dsigprocmask=kernel_sigprocmask to gcc when compiling the kernel.
-This causes SYSCALL_DEFINE3(sigprocmask, ...) to be expanded to
-SYSCALL_DEFINEx(3, kernel_sigprocmask, ...) and finally to a system call
-named sys_kernel_sigprocmask. However sys_sigprocmask is missing because
-of this.
-To avoid macro expansion for the system call name just concatenate the
-name at first define instead of carrying it through severel levels.
-This was pointed out by Al Viro.
-
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
- include/linux/syscalls.h |   28 ++++++++++++++--------------
- 1 file changed, 14 insertions(+), 14 deletions(-)
-
-Index: linux-2.6/include/linux/syscalls.h
-===================================================================
---- linux-2.6.orig/include/linux/syscalls.h
-+++ linux-2.6/include/linux/syscalls.h
-@@ -95,13 +95,13 @@ struct old_linux_dirent;
- #define __SC_TEST5(t5, a5, ...)	__SC_TEST(t5); __SC_TEST4(__VA_ARGS__)
- #define __SC_TEST6(t6, a6, ...)	__SC_TEST(t6); __SC_TEST5(__VA_ARGS__)
- 
--#define SYSCALL_DEFINE0(name)   asmlinkage long sys_##name(void)
--#define SYSCALL_DEFINE1(...)    SYSCALL_DEFINEx(1, __VA_ARGS__)
--#define SYSCALL_DEFINE2(...)    SYSCALL_DEFINEx(2, __VA_ARGS__)
--#define SYSCALL_DEFINE3(...)    SYSCALL_DEFINEx(3, __VA_ARGS__)
--#define SYSCALL_DEFINE4(...)    SYSCALL_DEFINEx(4, __VA_ARGS__)
--#define SYSCALL_DEFINE5(...)    SYSCALL_DEFINEx(5, __VA_ARGS__)
--#define SYSCALL_DEFINE6(...)    SYSCALL_DEFINEx(6, __VA_ARGS__)
-+#define SYSCALL_DEFINE0(name)	   asmlinkage long sys_##name(void)
-+#define SYSCALL_DEFINE1(name, ...) SYSCALL_DEFINEx(1, _##name, __VA_ARGS__)
-+#define SYSCALL_DEFINE2(name, ...) SYSCALL_DEFINEx(2, _##name, __VA_ARGS__)
-+#define SYSCALL_DEFINE3(name, ...) SYSCALL_DEFINEx(3, _##name, __VA_ARGS__)
-+#define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
-+#define SYSCALL_DEFINE5(name, ...) SYSCALL_DEFINEx(5, _##name, __VA_ARGS__)
-+#define SYSCALL_DEFINE6(name, ...) SYSCALL_DEFINEx(6, _##name, __VA_ARGS__)
- 
- #ifdef CONFIG_PPC64
- #define SYSCALL_ALIAS(alias, name)					\
-@@ -121,21 +121,21 @@ struct old_linux_dirent;
- 
- #define SYSCALL_DEFINE(name) static inline long SYSC_##name
- #define SYSCALL_DEFINEx(x, name, ...)					\
--	asmlinkage long sys_##name(__SC_DECL##x(__VA_ARGS__));		\
--	static inline long SYSC_##name(__SC_DECL##x(__VA_ARGS__));	\
--	asmlinkage long SyS_##name(__SC_LONG##x(__VA_ARGS__))		\
-+	asmlinkage long sys##name(__SC_DECL##x(__VA_ARGS__));		\
-+	static inline long SYSC##name(__SC_DECL##x(__VA_ARGS__));	\
-+	asmlinkage long SyS##name(__SC_LONG##x(__VA_ARGS__))		\
- 	{								\
- 		__SC_TEST##x(__VA_ARGS__);				\
--		return (long) SYSC_##name(__SC_CAST##x(__VA_ARGS__));	\
-+		return (long) SYSC##name(__SC_CAST##x(__VA_ARGS__));	\
- 	}								\
--	SYSCALL_ALIAS(sys_##name, SyS_##name);				\
--	static inline long SYSC_##name(__SC_DECL##x(__VA_ARGS__))
-+	SYSCALL_ALIAS(sys##name, SyS##name);				\
-+	static inline long SYSC##name(__SC_DECL##x(__VA_ARGS__))
- 
- #else /* CONFIG_HAVE_SYSCALL_WRAPPERS */
- 
- #define SYSCALL_DEFINE(name) asmlinkage long sys_##name
- #define SYSCALL_DEFINEx(x, name, ...)					\
--	asmlinkage long sys_##name(__SC_DECL##x(__VA_ARGS__))
-+	asmlinkage long sys##name(__SC_DECL##x(__VA_ARGS__))
- 
- #endif /* CONFIG_HAVE_SYSCALL_WRAPPERS */
- 
+-- 
+Science is like sex: sometimes something useful comes out,
+but that is not the reason we are doing it.
+-- Richard Feynman
