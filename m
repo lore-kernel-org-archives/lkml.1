@@ -1,43 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbZBGD3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbZBGDfr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756713AbZBGD3Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 22:29:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZBGD3O
+	id S1756460AbZBGDfr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 22:35:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbZBGDfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 22:29:14 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52089
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751661AbZBGD3O (ORCPT
+	Fri, 6 Feb 2009 22:35:37 -0500
+Received: from vms173007pub.verizon.net ([206.46.173.7]:26342 "EHLO
+	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752917AbZBGDfh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 22:29:14 -0500
-Date: Fri, 06 Feb 2009 19:29:10 -0800 (PST)
-Message-Id: <20090206.192910.42610645.davem@davemloft.net>
-To: dan.j.williams@intel.com
-Cc: anemo@mba.ocn.ne.jp, maciej.sosnowski@intel.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] net_dma: call dmaengine_get only if NET_DMA enabled
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <e9c3a7c20902061452r40a97fa2p1fccfa78e3905458@mail.gmail.com>
-References: <e9c3a7c20902061315n7184c55ck7fcaa2c519a035d4@mail.gmail.com>
-	<20090206.140912.40800913.davem@davemloft.net>
-	<e9c3a7c20902061452r40a97fa2p1fccfa78e3905458@mail.gmail.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Feb 2009 22:35:37 -0500
+Date: Fri, 06 Feb 2009 22:35:24 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH] x86: find nr_irqs_gsi with mp_ioapic_routing
+In-reply-to: <498CCEDB.8050708@kernel.org>
+Message-id: <alpine.LFD.2.00.0902062221050.26256@localhost.localdomain>
+References: <498CCEDB.8050708@kernel.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Fri, 6 Feb 2009 15:52:35 -0700
 
-> Yes, it has been on the todo list for a while, but I eventually want
-> the net case to look more like the raid case.  I.e. have one code path
-> that picks async versus sync at runtime, with the option to compile
-> out async support with header file ifdefs only.
 
-And how does any of that get us any closer to a fix right now
-for this problem that doesn't require an ifdef?
 
-Someone please work on this.
+> Impact: find right nr_irqs_gsi on some systems.
+> 
+> one system has gap between gsi.
+> [    0.000000] ACPI: IOAPIC (id[0x04] address[0xfec00000] gsi_base[0])
+> [    0.000000] IOAPIC[0]: apic_id 4, version 0, address 0xfec00000, GSI 0-23
+> [    0.000000] ACPI: IOAPIC (id[0x05] address[0xfeafd000] gsi_base[48])
+> [    0.000000] IOAPIC[1]: apic_id 5, version 0, address 0xfeafd000, GSI 48-54
+> [    0.000000] ACPI: IOAPIC (id[0x06] address[0xfeafc000] gsi_base[56])
+> [    0.000000] IOAPIC[2]: apic_id 6, version 0, address 0xfeafc000, GSI 56-62
+> ...
+> [    0.000000] nr_irqs_gsi: 38
+
+I've never seen gaps in GSIs.
+I've never seen IOAPICs with 7 redirection table entries.
+
+This system looks quite broken even before the probe for nr_irqs_gsi.
+Do you have more information on it?
+
+thanks,
+-Len
+--
+Intel Open Source Technology Center
