@@ -1,241 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbZBGChE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbZBGCh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755202AbZBGChE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 21:37:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbZBGCgx
+	id S1756156AbZBGCh3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 21:37:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbZBGCg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 21:36:53 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:35251 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751661AbZBGCgw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 21:36:52 -0500
-Subject: LS21 + HPET = boot hang (since 2.6.24-rc1)
-From: john stultz <johnstul@us.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: lkml <linux-kernel@vger.kernel.org>, Clark Williams <williams@redhat.com>
-Content-Type: multipart/mixed; boundary="=-AVHMp6VSbnDUED53qGqJ"
-Date: Fri, 06 Feb 2009 18:36:49 -0800
-Message-Id: <1233974209.7141.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 6 Feb 2009 21:36:59 -0500
+Received: from ozlabs.org ([203.10.76.45]:56813 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753194AbZBGCg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 21:36:58 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jeff Arnold <jbarnold@mit.edu>
+Subject: Re: [PATCH 7/7] Ksplice: Support updating x86-32 and x86-64
+Date: Sat, 7 Feb 2009 13:06:43 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Denys Vlasenko <vda.linux@googlemail.com>, Tim Abbott <tabbott@mit.edu>,
+       Anders Kaseorg <andersk@mit.edu>, Waseem Daher <wdaher@mit.edu>,
+       Nikanth Karthikesan <knikanth@suse.de>
+References: <1228521840-3886-1-git-send-email-jbarnold@mit.edu> <1228521840-3886-7-git-send-email-jbarnold@mit.edu> <1228521840-3886-8-git-send-email-jbarnold@mit.edu>
+In-Reply-To: <1228521840-3886-8-git-send-email-jbarnold@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902071306.45546.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 06 December 2008 10:34:00 Jeff Arnold wrote:
+...
+> +1. Concepts: Updates, packs, helper modules, primary modules
+> +------------------------------------------------------------
+> +
+> +A Ksplice update (struct update) contains one or more Ksplice packs, one for
+> +each target kernel module that should be changed by the update.  Ksplice packs
+> +are grouped together into a Ksplice update in order to allow multiple
+> +compilation units to be changed atomically.
 
---=-AVHMp6VSbnDUED53qGqJ
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Hi Jeff et al.
 
-Hey Thomas, 
-	Just a heads up, Clark noted that on LS21s if the HPET is enabled in
-the BIOS, recent kernels hang at boot.
+   The temptation to invent new nomenclature is one we geeks constantly
+wrestle with.  But when you have a *genuinely* good idea, it's not necessary.
+Unfortunately, changing names is a PITA, but it's not going to get easier.
 
-I booted the current -git up after enabling HPET and sure enough:
+   ksplice_update is a good name, but the rest of your nomenclature is
+horribly general.  So before I become so experienced with it I can't see the
+flaws, let me suggest:
 
-ENABLING IO-APIC IRQs
-..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
-..MP-BIOS bug: 8254 timer not connected to IO-APIC
-...trying to set up timer (IRQ0) through the 8259A ...
-..... (found apic 0 pin 2) ...
-....... failed.
-...trying to set up timer as Virtual Wire IRQ...
-..... failed.
-...trying to set up timer as ExtINT IRQ...
-..... failed :(.
-Kernel panic - not syncing: IO-APIC + timer doesn't work!  Boot with
-apic=debug and send a report.  Then try booting with the 'noapic'
-option.
+	pack -> ksplice_mod_change
+	helper module -> old_code
+	primary module -> new_code
 
+> +ksplice_123abc_vmlinux (the "primary" module for the vmlinux pack)
+> +ksplice_123abc_vmlinux_helper (the "helper" module for the vmlinux pack)
+> +ksplice_123abc_isdn (the "primary" module for the vmlinux pack)
+> +ksplice_123abc_isdn_helper (the "helper" module for the vmlinux pack)
 
-Full boot log attached. Disabling the HPET in the BIOS boots up fine.
+  Or, ksplice_123abc_vmlinux_new, ksplice_123abc_vmlinux_old, etc.
 
-I then did some rough bisection to see when this showed up and
-apparently it hit sometime between 2.6.23 and 2.6.24-rc1.
+This has the advantage that it's pretty clear that _old can be removed
+afterwards, for example.
 
-I'll do some further bisection on it next week, but if you have any
-quick ideas let me know. 
+> +unexpected_running_task (P->A, A->R): Ksplice aborted the operation because
+> +Ksplice observed a running task during the kernel stack check, at a time when
+> +Ksplice expected all tasks to be stopped by stop_machine.
 
-thanks
--john
+I'll have to check the code, but this should now just be a subset of
+"unexpected", no?
 
+> +++ b/arch/x86/kernel/ksplice-arch.c
+> @@ -0,0 +1,125 @@
+> +/*  Copyright (C) 2007-2008  Jeff Arnold <jbarnold@mit.edu>
+> + *  Copyright (C) 2008  Anders Kaseorg <andersk@mit.edu>,
+> + *                      Tim Abbott <tabbott@mit.edu>
+> + *
+> + *  This program is free software; you can redistribute it and/or modify
+> + *  it under the terms of the GNU General Public License, version 2.
 
---=-AVHMp6VSbnDUED53qGqJ
-Content-Disposition: attachment; filename=boot.log
-Content-Type: text/x-log; name=boot.log; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Just in case you copied this boilerplate without thinking about it, I'll just
+note that my code is all GPLv2 or later.
 
-Probing EDD (edd=off to disable)...Linux version 2.6.29-rc3john (jstultz@kernel)
- (gcc version 4.2.4 (Ubuntu 4.2.4-1ubuntu3)) #8 SMP PREEMPT Fri Feb 6 16:32:39 PST 2009
-Command line: root=/dev/sda3 ro crashkernel=128M@32M console=tty1 console=ttyS1,19200  apic=debug
-KERNEL supported cpus:
-   Intel GenuineIntel
-   AMD AuthenticAMD
-   Centaur CentaurHauls
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 000000000009c000 (usable)
- BIOS-e820: 000000000009c000 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 00000000cffa3a00 (usable)
- BIOS-e820: 00000000cffa3a00 - 00000000cffa7400 (ACPI data)                   [
- BIOS-e820: 00000000cffa7400 - 00000000d0000000 (reserved)
- BIOS-e820: 00000000f4000000 - 00000000fc000000 (reserved)
- BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
- BIOS-e820: 0000000100000000 - 0000000230000000 (usable)
-DMI 2.4 present.
-last_pfn = 0x230000 max_arch_pfn = 0x100000000
-last_pfn = 0xcffa3 max_arch_pfn = 0x100000000
-init_memory_mapping: 0000000000000000-00000000cffa3000
-last_map_addr: cffa3000 end: cffa3000
-init_memory_mapping: 0000000100000000-0000000230000000
-last_map_addr: 230000000 end: 230000000
-RAMDISK: 37d8a000 - 37fef34b
-ACPI: RSDP 000FDFE0, 0014 (r0 IBM   )
-ACPI: RSDT CFFA7380, 0034 (r1 IBM    SERLEWIS     1000 IBM  45444F43)
-ACPI: FACP CFFA72C0, 0084 (r2 IBM    SERLEWIS     1000 IBM  45444F43)
-FADT: X_PM1a_EVT_BLK.bit_width (16) does not match PM1_EVT_LEN (4)
-FADT: X_PM1b_EVT_BLK.bit_width (16) does not match PM1_EVT_LEN (4)
-ACPI: DSDT CFFA3A00, 35FC (r1 IBM    SERLEWIS     1000 INTL 20060912)
-ACPI: FACS CFFA7080, 0040
-ACPI: APIC CFFA7200, 0090 (r1 IBM    SERLEWIS     1000 IBM  45444F43)
-ACPI: SRAT CFFA7100, 00E8 (r1 AMD    HAMMER          1 AMD         1)
-ACPI: HPET CFFA70C0, 0038 (r1 IBM    SERLEWIS     1000 IBM  45444F43)
-(7 early reservations) ==> bootmem [0000000000 - 0230000000]
-  #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
-  #1 [0000006000 - 0000008000]       TRAMPOLINE ==> [0000006000 - 0000008000]
-  #2 [0001000000 - 0001e96558]    TEXT DATA BSS ==> [0001000000 - 0001e96558]
-  #3 [0037d8a000 - 0037fef34b]          RAMDISK ==> [0037d8a000 - 0037fef34b]
-  #4 [000009c000 - 0000100000]    BIOS reserved ==> [000009c000 - 0000100000]
-  #5 [0000008000 - 000000c000]          PGTABLE ==> [0000008000 - 000000c000]
-  #6 [000000c000 - 0000011000]          PGTABLE ==> [000000c000 - 0000011000]
-Scan SMP from ffff880000000000 for 1024 bytes.
-Scan SMP from ffff88000009fc00 for 1024 bytes.
-Scan SMP from ffff8800000f0000 for 65536 bytes.
-Scan SMP from ffff88000009c000 for 1024 bytes.
-found SMP MP-table at [ffff88000009c140] 0009c140
-Reserving 128MB of memory at 32MB for crashkernel (System RAM: 8960MB)
-Zone PFN ranges:
-  DMA      0x00000000 -> 0x00001000
-  DMA32    0x00001000 -> 0x00100000
-  Normal   0x00100000 -> 0x00230000
-Movable zone start PFN for each node
-early_node_map[3] active PFN ranges
-    0: 0x00000000 -> 0x0000009c
-    0: 0x00000100 -> 0x000cffa3
-    0: 0x00100000 -> 0x00230000
-Detected use of extended apic ids on hypertransport bus
-Detected use of extended apic ids on hypertransport bus
-ACPI: PM-Timer IO Port: 0x488
-ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
-ACPI: LAPIC (acpi_id[0x01] lapic_id[0x02] enabled)
-ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
-ACPI: LAPIC (acpi_id[0x03] lapic_id[0x03] enabled)
-ACPI: LAPIC_NMI (acpi_id[0x00] dfl dfl lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x01] dfl dfl lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x02] dfl dfl lint[0x1])
-ACPI: LAPIC_NMI (acpi_id[0x03] dfl dfl lint[0x1])
-ACPI: IOAPIC (id[0x0e] address[0xfec00000] gsi_base[0])
-IOAPIC[0]: apic_id 14, version 0, address 0xfec00000, GSI 0-15
-ACPI: IOAPIC (id[0x0d] address[0xfec02000] gsi_base[16])
-IOAPIC[1]: apic_id 13, version 0, address 0xfec02000, GSI 16-31
-ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
-ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 low level)
-Using ACPI (MADT) for SMP configuration information
-ACPI: HPET id: 0x1166a201 base: 0xfed00000
-SMP: Allowing 4 CPUs, 0 hotplug CPUs
-mapped APIC to ffffffffff5fc000 (fee00000)
-mapped IOAPIC to ffffffffff5fb000 (fec00000)
-mapped IOAPIC to ffffffffff5fa000 (fec02000)
-Allocating PCI resources starting at d4000000 (gap: d0000000:24000000)
-NR_CPUS:8 nr_cpumask_bits:8 nr_cpu_ids:4 nr_node_ids:1
-PERCPU: Allocating 40960 bytes of per cpu data
-Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 2065485
-Kernel command line: root=/dev/sda3 ro crashkernel=128M@32M console=tty1 console=ttyS1,19200  apic=debug
-Initializing CPU#0
-Preemptible RCU implementation.
-PID hash table entries: 4096 (order: 12, 32768 bytes)
-Fast TSC calibration using PIT
-Detected 2600.065 MHz processor.
-Console: colour VGA+ 80x25
-console [tty1] enabled
-console [ttyS1] enabled
-Dentry cache hash table entries: 1048576 (order: 11, 8388608 bytes)
-Inode-cache hash table entries: 524288 (order: 10, 4194304 bytes)
-Checking aperture...
-No AGP bridge found
-Node 0: aperture @ f4000000 size 64 MB
-Node 1: aperture @ f4000000 size 64 MB
-Memory: 8098608k/9175040k available (8336k kernel code, 787204k absent, 288288k reserved, 4652k data, 496k init)
-HPET: 3 timers in total, 0 timers will be used for per-cpu timer
-Calibrating delay loop (skipped), value calculated using timer frequency.. 5200.13 BogoMIPS (lpj=2600065)
-Security Framework initialized
-SELinux:  Initializing.
-Mount-cache hash table entries: 256
-CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
-CPU: L2 Cache: 1024K (64 bytes/line)
-CPU: Physical Processor ID: 0
-CPU: Processor Core ID: 0
-using C1E aware idle routine
-ACPI: Core revision 20081204
-Setting APIC routing to flat
-Getting VERSION: 80050010
-Getting VERSION: 80050010
-Getting ID: 0
-Getting ID: ff000000
-Getting LVT0: 700
-Getting LVT1: 400
-enabled ExtINT on CPU#0
-ESR value before enabling vector: 0x00000004  after: 0x00000000
-ENABLING IO-APIC IRQs
-..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
-..MP-BIOS bug: 8254 timer not connected to IO-APIC
-...trying to set up timer (IRQ0) through the 8259A ...
-..... (found apic 0 pin 2) ...
-....... failed.
-...trying to set up timer as Virtual Wire IRQ...
-..... failed.
-...trying to set up timer as ExtINT IRQ...
-..... failed :(.
-Kernel panic - not syncing: IO-APIC + timer doesn't work!  Boot with apic=debug and send a report.  Then try booting with the 'noapic' option.
+(Rest of ksplice-arch.c skipped... it's hard to review until I understand the
+ core).
 
-------------[ cut here ]------------
-WARNING: at kernel/smp.c:329 smp_call_function_many+0x1c4/0x220()
-Hardware name: BladeCenter LS21 -[7971AC1]-
-Pid: 1, comm: swapper Not tainted 2.6.29-rc3john #8
-Call Trace:
- [<ffffffff81046817>] warn_slowpath+0xd7/0x100
- [<ffffffff818207d0>] ? _spin_unlock+0x10/0x40
- [<ffffffff813139ac>] ? vt_console_print+0x22c/0x2f0
- [<ffffffff81046e26>] ? __call_console_drivers+0x66/0x80
- [<ffffffff81820442>] ? _spin_lock_irqsave+0x22/0x50
- [<ffffffff81820892>] ? _spin_unlock_irqrestore+0x12/0x40
- [<ffffffff810608a5>] ? up+0x35/0x50
- [<ffffffff81820892>] ? _spin_unlock_irqrestore+0x12/0x40
- [<ffffffff81047084>] ? release_console_sem+0x1d4/0x1f0
- [<ffffffff81047641>] ? vprintk+0x2c1/0x3f0
- [<ffffffff81046e26>] ? __call_console_drivers+0x66/0x80
- [<ffffffff810477d7>] ? printk+0x67/0x70
- [<ffffffff8106d244>] smp_call_function_many+0x1c4/0x220
- [<ffffffff810140a0>] ? stop_this_cpu+0x0/0x30
- [<ffffffff810608a5>] ? up+0x35/0x50
- [<ffffffff810140a0>] ? stop_this_cpu+0x0/0x30
- [<ffffffff8106d2df>] smp_call_function+0x3f/0x80
- [<ffffffff81022103>] native_smp_send_stop+0x23/0x40
- [<ffffffff81046909>] panic+0xb9/0x180
- [<ffffffff8129e55f>] ? delay_tsc+0x6f/0xb0
- [<ffffffff8129e3fa>] ? __delay+0xa/0x10
- [<ffffffff8129e449>] ? __const_udelay+0x49/0x50
- [<ffffffff81ced49b>] setup_IO_APIC+0x85b/0x860
- [<ffffffff810246cd>] ? clear_IO_APIC+0x3d/0x70
- [<ffffffff81023f39>] ? setup_apic_nmi_watchdog+0x49/0xc0
- [<ffffffff81ce946a>] native_smp_prepare_cpus+0x3aa/0x430
- [<ffffffff81cd9958>] kernel_init+0x58/0x1b0
- [<ffffffff8100d4ea>] child_rip+0xa/0x20
- [<ffffffff81cd9900>] ? kernel_init+0x0/0x1b0
- [<ffffffff8100d4e0>] ? child_rip+0x0/0x20
----[ end trace 4eaa2a86a8e2da22 ]---
+> +/**
+> + * struct ksplice_symbol - Ksplice's analogue of an ELF symbol
+> + * @name:	The ELF name of the symbol
+> + * @label:	A unique Ksplice name for the symbol
+> + * @vals:	A linked list of possible values for the symbol, or NULL
+> + * @value:	The value of the symbol (valid when vals is NULL)
+> + **/
+> +struct ksplice_symbol {
+> +	const char *name;
+> +	const char *label;
+> +/* private: */
+> +	struct list_head *vals;
+> +	unsigned long value;
+> +};
 
+I'd have to look at the usage, but might this be neater as a standard
+linked list, eg:
 
---=-AVHMp6VSbnDUED53qGqJ--
+struct ksplice_symval {
+	struct list_head list;
+	unsigned long val;
+};
 
+struct ksplice_symbol {
+	...
+	struct list_head vals;
+	/* We always have one, so this saves dynamic alloc in common case? */
+	struct ksplice_symval first_val;
+};
+
+(You could link off the first_val.list, but it we don't have iterators for
+such a "headless" list).
+
+> +/**
+> + * struct ksplice_reloc - Ksplice's analogue of an ELF relocation
+> + * @blank_addr:		The address of the relocation's storage unit
+> + * @symbol:		The ksplice_symbol associated with this relocation
+> + * @howto:		The information regarding the relocation type
+> + * @addend:		The ELF addend of the relocation
+> + **/
+> +struct ksplice_reloc {
+> +	unsigned long blank_addr;
+> +	struct ksplice_symbol *symbol;
+> +	const struct ksplice_reloc_howto *howto;
+
+howto is an interesting name.  I *think* this is what we usually call "ops"?
+
+> +enum ksplice_reloc_howto_type {
+> +	KSPLICE_HOWTO_RELOC,
+> +	KSPLICE_HOWTO_RELOC_PATCH,
+> +	KSPLICE_HOWTO_DATE,
+> +	KSPLICE_HOWTO_TIME,
+> +	KSPLICE_HOWTO_BUG,
+> +	KSPLICE_HOWTO_EXTABLE,
+> +};
+
+OK, there are two problems with really reviewing this code.  (1) it does
+everything; it's not in stages.  (2) it isn't complete unless you see a
+ksplice module which interacts with it.
+
+Could we start with something really simple and work up?  I know it's a
+serious amount of work to split like this.  How about a version which just
+patches time and date?  Should also be easy to manually create a ksplice
+module to test that as well, no?  Then say, substitute a new function.
+Finally work up to what you have now, with handling alternatives and
+everything.
+
+Otherwise the important review (design, not spelling and style) is not
+really possible in finite time.
+
+But trivial comments follow:
+
+> +/* List of all ksplice modules and the module they patch */
+> +extern struct list_head ksplice_module_list;
+
+Just call it ksplice_modules.  It's obvious from its usage that it's a list.
+
+> +/**
+> + * init_ksplice_pack() - Initializes a pack
+> + * @pack:	The pack to be initialized.  All of the public fields of the
+> + * 		pack and its associated data structures should be populated
+> + * 		before this function is called.  The values of the private
+> + * 		fields will be ignored.
+> + **/
+> +int init_ksplice_pack(struct ksplice_pack *pack);
+
+I think would more usually be called "register_ksplice_pack"?
+
+> +
+> +/**
+> + * cleanup_ksplice_pack() - Cleans up a pack
+
+unregister... ?
+
+> +typedef int __bitwise__ abort_t;
+> +
+> +#define OK ((__force abort_t) 0)
+> +#define NO_MATCH ((__force abort_t) 1)
+> +#define CODE_BUSY ((__force abort_t) 2)
+> +#define MODULE_BUSY ((__force abort_t) 3)
+> +#define OUT_OF_MEMORY ((__force abort_t) 4)
+> +#define FAILED_TO_FIND ((__force abort_t) 5)
+> +#define ALREADY_REVERSED ((__force abort_t) 6)
+> +#define MISSING_EXPORT ((__force abort_t) 7)
+> +#define UNEXPECTED_RUNNING_TASK ((__force abort_t) 8)
+> +#define UNEXPECTED ((__force abort_t) 9)
+> +#define TARGET_NOT_LOADED ((__force abort_t) 10)
+> +#define CALL_FAILED ((__force abort_t) 11)
+
+Yech... I'm not sold on abort_t; how about standard errno?  Yes, you have
+to get a bit creative, say: -ENOENT, -EBUSY, -ETXTBSY, -ENOMEM, -ENOENT,
+-EEXIST, -ENOEXEC, *, *, -ENODEV, (whatever that call returned).
+
+> +static struct update *init_ksplice_update(const char *kid);
+> +static void cleanup_ksplice_update(struct update *update);
+> +static void maybe_cleanup_ksplice_update(struct update *update);
+> +static void add_to_update(struct ksplice_pack *pack, struct update *update);
+> +static int ksplice_sysfs_init(struct update *update);
+
+Please don't talk about what you're going to talk about: order properly
+and don't keep up in suspense :)
+
+[ cut 170 more lines of introduction ]
+
+> +#include "ksplice-arch.c"
+
+Hmm, that's a little unclean.  include/linux/ksplice_arch.h
+and treat it as a normal .o I'd say.
+
+> +int init_ksplice_pack(struct ksplice_pack *pack)
+...
+> +	sort(pack->helper_relocs,
+> +	     pack->helper_relocs_end - pack->helper_relocs,
+> +	     sizeof(*pack->helper_relocs), compare_relocs, NULL);
+> +	sort(pack->primary_relocs,
+> +	     pack->primary_relocs_end - pack->primary_relocs,
+> +	     sizeof(*pack->primary_relocs), compare_relocs, NULL);
+> +	sort(pack->helper_sections,
+> +	     pack->helper_sections_end - pack->helper_sections,
+> +	     sizeof(*pack->helper_sections), compare_section_labels, NULL);
+
+Can't be sorted in userspace?
+
+> +static bool starts_with(const char *str, const char *prefix)
+> +{
+> +	return strncmp(str, prefix, strlen(prefix)) == 0;
+> +}
+
+Hmm, I call this strstarts() in CCAN.  Turns out it's a fairly common need,
+I'll implement a common version as a separate patch.
+
+Cheers,
+Rusty.
