@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756657AbZBGAxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752776AbZBGAyP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756657AbZBGAxz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 19:53:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbZBGAxn
+	id S1752776AbZBGAyP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 19:54:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752912AbZBGAxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 19:53:43 -0500
-Received: from kroah.org ([198.145.64.141]:36062 "EHLO coco.kroah.org"
+	Fri, 6 Feb 2009 19:53:47 -0500
+Received: from kroah.org ([198.145.64.141]:36069 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752234AbZBGAxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 19:53:42 -0500
-Date: Fri, 6 Feb 2009 15:47:16 -0800
+	id S1752776AbZBGAxq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 19:53:46 -0500
+Date: Fri, 6 Feb 2009 16:01:48 -0800
 From: Greg KH <greg@kroah.com>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Dirk DeSchepper <ddeschepper@nvtl.com>,
-       USB development list <linux-usb@vger.kernel.org>, smurf@smurf.noris.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 001/001]  usbserial: New mobile broadband modems to be
-	supported through option module
-Message-ID: <20090206234716.GB31059@kroah.com>
-References: <12047829252365@kroah.org> <200902061258.40303.oliver@neukum.org> <20090206185130.GB8517@kroah.com> <200902062023.07759.oliver@neukum.org>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: felipe.balbi@nokia.com, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Mike Frysinger <vapier.adi@gmail.com>
+Subject: Re: [PATCH] usb: musb: tweak musb_read_fifo() to avoid unused
+	warnings
+Message-ID: <20090207000148.GF31059@kroah.com>
+References: <1233915736-18506-1-git-send-email-cooloney@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902062023.07759.oliver@neukum.org>
+In-Reply-To: <1233915736-18506-1-git-send-email-cooloney@kernel.org>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 06, 2009 at 08:23:06PM +0100, Oliver Neukum wrote:
-> Am Friday 06 February 2009 19:51:30 schrieben Sie:
-> > On Fri, Feb 06, 2009 at 12:58:39PM +0100, Oliver Neukum wrote:
-> > > Am Friday 06 February 2009 12:29:06 schrieb Dirk DeSchepper:
-> > > > From: Dirk De Schepper <ddeschepper@nvtl.com>
-> > > > 
-> > > > Patch for option.c, based on kernel v2.6.28.3
-> > > > - New Novatel and Dell mobile broadband modem products added
-> > > > - Dell pid variables used in stead of numerical PIDs for known products
-> > > 
-> > > This is not really an advantage. You usually get the nummeric IDs
-> > > just fine from lsusb. And you could easily see the nummeric order of entries.
-> > > These symbolic names do not appear in code, just in the macros
-> > > where their meaning is clear. You introduce a useless level of indirection.
-> > 
-> > No, it's fine, we can use all of the descriptive information that we can
+On Fri, Feb 06, 2009 at 06:22:16PM +0800, Bryan Wu wrote:
+> From: Mike Frysinger <vapier.adi@gmail.com>
 > 
-> Which descriptive information? The symbolic names used are internal
-> to the kernel.
-
-Exactly, and people look at kernel code all the time :)
-
-> > get at times.  So changing the defines from a generic one, to a specific
-> > one to match the device type, only helps out in the end.
+> Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+> ---
+>  drivers/usb/musb/blackfin.c |    9 +++++----
+>  1 files changed, 5 insertions(+), 4 deletions(-)
 > 
-> The specifity is not affected at all.
+> diff --git a/drivers/usb/musb/blackfin.c b/drivers/usb/musb/blackfin.c
+> index 7861348..0ebb19d 100644
+> --- a/drivers/usb/musb/blackfin.c
+> +++ b/drivers/usb/musb/blackfin.c
+> @@ -54,13 +54,11 @@ void musb_write_fifo(struct musb_hw_ep *hw_ep, u16 len, const u8 *src)
+>  void musb_read_fifo(struct musb_hw_ep *hw_ep, u16 len, u8 *dst)
+>  {
+>  	void __iomem *fifo = hw_ep->fifo;
+> +
+> +#ifdef CONFIG_BF52x
 
-If you look at the names that were changed, they are now more
-descriptive than before, always a good thing to have.
+Any way we can just not have ifdefs in .c files alltogether?
 
 thanks,
 
