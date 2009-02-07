@@ -1,80 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbZBGVaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755103AbZBGVgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755119AbZBGVaf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 16:30:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbZBGVa1
+	id S1755103AbZBGVgV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 16:36:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbZBGVgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 16:30:27 -0500
-Received: from fk-out-0910.google.com ([209.85.128.184]:43693 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752885AbZBGVa0 (ORCPT
+	Sat, 7 Feb 2009 16:36:12 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:42989 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753188AbZBGVgL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 16:30:26 -0500
+	Sat, 7 Feb 2009 16:36:11 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:date:message-id:subject:from:to:content-type;
-        b=Tpq5Z0od0ZsS/Qr1Rza91LA0BhdLoA8FM+MsMqUTuPIhfc2kE5gDoc3lIV9HwtYInY
-         LsgiFHk3MSCVZsSedzZL3DPeMSXF//V2CREZOjIpsPR2NsA8W5hcku/EiAB48x2O8z5v
-         eublAwrGZkhfvZBBEEuKpDgt/OJ87YcU41I2s=
+        b=lTzj1wvKcIRDpBcZhl/q/IZ9T3dW6ZP/GGeEzV0Ar9PeZWpMYXeFurZmkgUHEW6qPx
+         YIYrg7PUffIWXssTYliCKHdUeIZEuj85PdTPfIR5eOPKFowiyDqd1lO6FS2Kiwp3vAGo
+         eItoCA1iCFAVKyGsPcA+nqy2fST98OgNcujUA=
 MIME-Version: 1.0
-Date: Sat, 7 Feb 2009 23:30:24 +0200
-Message-ID: <46e1c7760902071330u10427d33p3f49e82a2e4b1ddc@mail.gmail.com>
-Subject: [PATCH 001/002] de2104x: force correct order when writing to rx ring
+Date: Sat, 7 Feb 2009 23:30:40 +0200
+Message-ID: <46e1c7760902071330i5362fe4fvd99fc7075fc666d3@mail.gmail.com>
+Subject: [PATCH 002/002] de2104x: support for systems lacking cache coherence
 From: Risto Suominen <risto.suominen@gmail.com>
 To: Jeff Garzik <jgarzik@pobox.com>, lkml <linux-kernel@vger.kernel.org>
-Content-Type: multipart/mixed; boundary=00504502cd8f6c4fb304625ad8f8
+Content-Type: multipart/mixed; boundary=001636c5bf2c64634804625ad9a1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---00504502cd8f6c4fb304625ad8f8
+--001636c5bf2c64634804625ad9a1
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
-DescOwn should not be set, thus allowing the chip to use the descriptor, before
-everything else is set up correctly.
+Add a configurable Descriptor Skip Length for systems that lack cache coherence.
 
 Signed-off-by: Risto Suominen <Risto.Suominen@gmail.com>
 ---
 The testing is done on kernel version 2.6.18.
 
+--- drivers/net/tulip/Kconfig.org	2006-09-20 06:42:06.000000000 +0300
++++ drivers/net/tulip/Kconfig	2009-02-07 20:48:17.000000000 +0200
+@@ -27,6 +27,18 @@ config DE2104X
+ 	  To compile this driver as a module, choose M here. The module will
+ 	  be called de2104x.
+
++config DE2104X_DSL
++	int "Descriptor Skip Length in 32 bit longwords"
++	depends on DE2104X
++	range 0 31
++	default 0
++	help
++	  Setting this value allows to align ring buffer descriptors into their
++	  own cache lines. Value of 4 corresponds to the typical 32 byte line
++	  (the descriptor is 16 bytes). This is necessary on systems that lack
++	  cache coherence, an example is PowerMac 5500. Otherwise 0 is safe.
++	  Default is 0, and range is 0 to 31.
++
+ config TULIP
+ 	tristate "DECchip Tulip (dc2114x) PCI support"
+ 	depends on PCI
 --- drivers/net/tulip/de2104x.c.org	2006-09-20 06:42:06.000000000 +0300
 +++ drivers/net/tulip/de2104x.c	2009-02-07 15:04:04.000000000 +0200
-@@ -465,13 +465,14 @@ static void de_rx (struct de_private *de
- 			drop = 1;
+@@ -82,6 +82,13 @@ MODULE_PARM_DESC (rx_copybreak, "de2104x
+ 				 NETIF_MSG_RX_ERR	| \
+ 				 NETIF_MSG_TX_ERR)
 
- rx_next:
--		de->rx_ring[rx_tail].opts1 = cpu_to_le32(DescOwn);
- 		if (rx_tail == (DE_RX_RING_SIZE - 1))
- 			de->rx_ring[rx_tail].opts2 =
- 				cpu_to_le32(RingEnd | de->rx_buf_sz);
- 		else
- 			de->rx_ring[rx_tail].opts2 = cpu_to_le32(de->rx_buf_sz);
- 		de->rx_ring[rx_tail].addr1 = cpu_to_le32(mapping);
-+		wmb();
-+		de->rx_ring[rx_tail].opts1 = cpu_to_le32(DescOwn);
- 		rx_tail = NEXT_RX(rx_tail);
- 	}
++/* Descriptor skip length in 32 bit longwords. */
++#ifndef CONFIG_DE2104X_DSL
++#define DSL			0
++#else
++#define DSL			CONFIG_DE2104X_DSL
++#endif
++
+ #define DE_RX_RING_SIZE		64
+ #define DE_TX_RING_SIZE		64
+ #define DE_RING_BYTES		\
+@@ -153,6 +160,7 @@ enum {
+ 	CmdReset		= (1 << 0),
+ 	CacheAlign16		= 0x00008000,
+ 	BurstLen4		= 0x00000400,
++	DescSkipLen		= (DSL << 2),
 
---00504502cd8f6c4fb304625ad8f8
-Content-Type: text/x-diff; charset=US-ASCII; name="de2104x-rx.patch"
-Content-Disposition: attachment; filename="de2104x-rx.patch"
+ 	/* Rx/TxPoll bits */
+ 	NormalTxPoll		= (1 << 0),
+@@ -246,7 +254,7 @@ static const u32 de_intr_mask =
+  * Set the programmable burst length to 4 longwords for all:
+  * DMA errors result without these values. Cache align 16 long.
+  */
+-static const u32 de_bus_mode = CacheAlign16 | BurstLen4;
++static const u32 de_bus_mode = CacheAlign16 | BurstLen4 | DescSkipLen;
+
+ struct de_srom_media_block {
+ 	u8			opts;
+@@ -266,6 +274,9 @@ struct de_desc {
+ 	__le32			opts2;
+ 	__le32			addr1;
+ 	__le32			addr2;
++#if DSL
++	__le32			skip[DSL];
++#endif
+ };
+
+ struct media_info {
+
+--001636c5bf2c64634804625ad9a1
+Content-Type: text/x-diff; charset=US-ASCII; name="de2104x-dsl.patch"
+Content-Disposition: attachment; filename="de2104x-dsl.patch"
 Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fqwsgev20
+X-Attachment-Id: f_fqwsmz7m0
 
-RGVzY093biBzaG91bGQgbm90IGJlIHNldCwgdGh1cyBhbGxvd2luZyB0aGUgY2hpcCB0byB1c2Ug
-dGhlIGRlc2NyaXB0b3IsIGJlZm9yZQpldmVyeXRoaW5nIGVsc2UgaXMgc2V0IHVwIGNvcnJlY3Rs
-eS4KClNpZ25lZC1vZmYtYnk6IFJpc3RvIFN1b21pbmVuIDxSaXN0by5TdW9taW5lbkBnbWFpbC5j
-b20+Ci0tLQpUaGUgdGVzdGluZyBpcyBkb25lIG9uIGtlcm5lbCB2ZXJzaW9uIDIuNi4xOC4KCi0t
-LSBkcml2ZXJzL25ldC90dWxpcC9kZTIxMDR4LmMub3JnCTIwMDYtMDktMjAgMDY6NDI6MDYuMDAw
-MDAwMDAwICswMzAwCisrKyBkcml2ZXJzL25ldC90dWxpcC9kZTIxMDR4LmMJMjAwOS0wMi0wNyAx
-NTowNDowNC4wMDAwMDAwMDAgKzAyMDAKQEAgLTQ2NSwxMyArNDY1LDE0IEBAIHN0YXRpYyB2b2lk
-IGRlX3J4IChzdHJ1Y3QgZGVfcHJpdmF0ZSAqZGUKIAkJCWRyb3AgPSAxOwogCiByeF9uZXh0Ogot
-CQlkZS0+cnhfcmluZ1tyeF90YWlsXS5vcHRzMSA9IGNwdV90b19sZTMyKERlc2NPd24pOwogCQlp
-ZiAocnhfdGFpbCA9PSAoREVfUlhfUklOR19TSVpFIC0gMSkpCiAJCQlkZS0+cnhfcmluZ1tyeF90
-YWlsXS5vcHRzMiA9CiAJCQkJY3B1X3RvX2xlMzIoUmluZ0VuZCB8IGRlLT5yeF9idWZfc3opOwog
-CQllbHNlCiAJCQlkZS0+cnhfcmluZ1tyeF90YWlsXS5vcHRzMiA9IGNwdV90b19sZTMyKGRlLT5y
-eF9idWZfc3opOwogCQlkZS0+cnhfcmluZ1tyeF90YWlsXS5hZGRyMSA9IGNwdV90b19sZTMyKG1h
-cHBpbmcpOworCQl3bWIoKTsKKwkJZGUtPnJ4X3JpbmdbcnhfdGFpbF0ub3B0czEgPSBjcHVfdG9f
-bGUzMihEZXNjT3duKTsKIAkJcnhfdGFpbCA9IE5FWFRfUlgocnhfdGFpbCk7CiAJfQogCg==
---00504502cd8f6c4fb304625ad8f8--
+QWRkIGEgY29uZmlndXJhYmxlIERlc2NyaXB0b3IgU2tpcCBMZW5ndGggZm9yIHN5c3RlbXMgdGhh
+dCBsYWNrIGNhY2hlIGNvaGVyZW5jZS4KClNpZ25lZC1vZmYtYnk6IFJpc3RvIFN1b21pbmVuIDxS
+aXN0by5TdW9taW5lbkBnbWFpbC5jb20+Ci0tLQpUaGUgdGVzdGluZyBpcyBkb25lIG9uIGtlcm5l
+bCB2ZXJzaW9uIDIuNi4xOC4KCi0tLSBkcml2ZXJzL25ldC90dWxpcC9LY29uZmlnLm9yZwkyMDA2
+LTA5LTIwIDA2OjQyOjA2LjAwMDAwMDAwMCArMDMwMAorKysgZHJpdmVycy9uZXQvdHVsaXAvS2Nv
+bmZpZwkyMDA5LTAyLTA3IDIwOjQ4OjE3LjAwMDAwMDAwMCArMDIwMApAQCAtMjcsNiArMjcsMTgg
+QEAgY29uZmlnIERFMjEwNFgKIAkgIFRvIGNvbXBpbGUgdGhpcyBkcml2ZXIgYXMgYSBtb2R1bGUs
+IGNob29zZSBNIGhlcmUuIFRoZSBtb2R1bGUgd2lsbAogCSAgYmUgY2FsbGVkIGRlMjEwNHguCiAK
+K2NvbmZpZyBERTIxMDRYX0RTTAorCWludCAiRGVzY3JpcHRvciBTa2lwIExlbmd0aCBpbiAzMiBi
+aXQgbG9uZ3dvcmRzIgorCWRlcGVuZHMgb24gREUyMTA0WAorCXJhbmdlIDAgMzEKKwlkZWZhdWx0
+IDAKKwloZWxwCisJICBTZXR0aW5nIHRoaXMgdmFsdWUgYWxsb3dzIHRvIGFsaWduIHJpbmcgYnVm
+ZmVyIGRlc2NyaXB0b3JzIGludG8gdGhlaXIKKwkgIG93biBjYWNoZSBsaW5lcy4gVmFsdWUgb2Yg
+NCBjb3JyZXNwb25kcyB0byB0aGUgdHlwaWNhbCAzMiBieXRlIGxpbmUKKwkgICh0aGUgZGVzY3Jp
+cHRvciBpcyAxNiBieXRlcykuIFRoaXMgaXMgbmVjZXNzYXJ5IG9uIHN5c3RlbXMgdGhhdCBsYWNr
+CisJICBjYWNoZSBjb2hlcmVuY2UsIGFuIGV4YW1wbGUgaXMgUG93ZXJNYWMgNTUwMC4gT3RoZXJ3
+aXNlIDAgaXMgc2FmZS4KKwkgIERlZmF1bHQgaXMgMCwgYW5kIHJhbmdlIGlzIDAgdG8gMzEuCisK
+IGNvbmZpZyBUVUxJUAogCXRyaXN0YXRlICJERUNjaGlwIFR1bGlwIChkYzIxMTR4KSBQQ0kgc3Vw
+cG9ydCIKIAlkZXBlbmRzIG9uIFBDSQotLS0gZHJpdmVycy9uZXQvdHVsaXAvZGUyMTA0eC5jLm9y
+ZwkyMDA2LTA5LTIwIDA2OjQyOjA2LjAwMDAwMDAwMCArMDMwMAorKysgZHJpdmVycy9uZXQvdHVs
+aXAvZGUyMTA0eC5jCTIwMDktMDItMDcgMTU6MDQ6MDQuMDAwMDAwMDAwICswMjAwCkBAIC04Miw2
+ICs4MiwxMyBAQCBNT0RVTEVfUEFSTV9ERVNDIChyeF9jb3B5YnJlYWssICJkZTIxMDR4CiAJCQkJ
+IE5FVElGX01TR19SWF9FUlIJfCBcCiAJCQkJIE5FVElGX01TR19UWF9FUlIpCiAKKy8qIERlc2Ny
+aXB0b3Igc2tpcCBsZW5ndGggaW4gMzIgYml0IGxvbmd3b3Jkcy4gKi8KKyNpZm5kZWYgQ09ORklH
+X0RFMjEwNFhfRFNMCisjZGVmaW5lIERTTAkJCTAKKyNlbHNlCisjZGVmaW5lIERTTAkJCUNPTkZJ
+R19ERTIxMDRYX0RTTAorI2VuZGlmCisKICNkZWZpbmUgREVfUlhfUklOR19TSVpFCQk2NAogI2Rl
+ZmluZSBERV9UWF9SSU5HX1NJWkUJCTY0CiAjZGVmaW5lIERFX1JJTkdfQllURVMJCVwKQEAgLTE1
+Myw2ICsxNjAsNyBAQCBlbnVtIHsKIAlDbWRSZXNldAkJPSAoMSA8PCAwKSwKIAlDYWNoZUFsaWdu
+MTYJCT0gMHgwMDAwODAwMCwKIAlCdXJzdExlbjQJCT0gMHgwMDAwMDQwMCwKKwlEZXNjU2tpcExl
+bgkJPSAoRFNMIDw8IDIpLAogCiAJLyogUngvVHhQb2xsIGJpdHMgKi8KIAlOb3JtYWxUeFBvbGwJ
+CT0gKDEgPDwgMCksCkBAIC0yNDYsNyArMjU0LDcgQEAgc3RhdGljIGNvbnN0IHUzMiBkZV9pbnRy
+X21hc2sgPQogICogU2V0IHRoZSBwcm9ncmFtbWFibGUgYnVyc3QgbGVuZ3RoIHRvIDQgbG9uZ3dv
+cmRzIGZvciBhbGw6CiAgKiBETUEgZXJyb3JzIHJlc3VsdCB3aXRob3V0IHRoZXNlIHZhbHVlcy4g
+Q2FjaGUgYWxpZ24gMTYgbG9uZy4KICAqLwotc3RhdGljIGNvbnN0IHUzMiBkZV9idXNfbW9kZSA9
+IENhY2hlQWxpZ24xNiB8IEJ1cnN0TGVuNDsKK3N0YXRpYyBjb25zdCB1MzIgZGVfYnVzX21vZGUg
+PSBDYWNoZUFsaWduMTYgfCBCdXJzdExlbjQgfCBEZXNjU2tpcExlbjsKIAogc3RydWN0IGRlX3Ny
+b21fbWVkaWFfYmxvY2sgewogCXU4CQkJb3B0czsKQEAgLTI2Niw2ICsyNzQsOSBAQCBzdHJ1Y3Qg
+ZGVfZGVzYyB7CiAJX19sZTMyCQkJb3B0czI7CiAJX19sZTMyCQkJYWRkcjE7CiAJX19sZTMyCQkJ
+YWRkcjI7CisjaWYgRFNMCisJX19sZTMyCQkJc2tpcFtEU0xdOworI2VuZGlmCiB9OwogCiBzdHJ1
+Y3QgbWVkaWFfaW5mbyB7Cg==
+--001636c5bf2c64634804625ad9a1--
