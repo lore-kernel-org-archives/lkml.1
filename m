@@ -1,114 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753830AbZBGJBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbZBGJCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753830AbZBGJBT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 04:01:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbZBGJBF
+	id S1754338AbZBGJCs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 04:02:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbZBGJCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 04:01:05 -0500
-Received: from rv-out-0506.google.com ([209.85.198.224]:6542 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751634AbZBGJBE (ORCPT
+	Sat, 7 Feb 2009 04:02:33 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:44795 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751187AbZBGJCc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 04:01:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=fwsSx0J3sdG8f0gTGBspQdaioOOZyrgsFwp42aM05+nKm8GZfKfuYsAZSgBQFBOIVH
-         Pk7lKl9Tjh2Qn6tmbDqIHkoX3Ow184AVQwgKoToH8gv1W67+eBkaXdlvGxPKYVQ/HBzD
-         8xxvCuhT5BqvM0KqzHoJZA6Pp1DE9cQ8qAl8s=
-MIME-Version: 1.0
-In-Reply-To: <20090207002610.73ff7e6d.akpm@linux-foundation.org>
-References: <498CB0B7.8030009@kernel.org>
-	 <20090206140005.44b4bb50.akpm@linux-foundation.org>
-	 <498CB4DC.2010108@kernel.org> <498D3D15.5090005@kernel.org>
-	 <20090207002610.73ff7e6d.akpm@linux-foundation.org>
-Date: Sat, 7 Feb 2009 01:01:03 -0800
-X-Google-Sender-Auth: 713feb133185db24
-Message-ID: <86802c440902070101l5b0ef862ja92e3f31705d9608@mail.gmail.com>
-Subject: Re: [PATCH] irq: optimize init_kstat_irqs/init_copy_kstat_irqs
-From: Yinghai Lu <yinghai@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+	Sat, 7 Feb 2009 04:02:32 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 001/001]  usbserial: New mobile broadband modems to be supported through option module
+Date: Sat, 7 Feb 2009 10:03:34 +0100
+User-Agent: KMail/1.9.10
+Cc: Dirk DeSchepper <ddeschepper@nvtl.com>,
+       USB development list <linux-usb@vger.kernel.org>, smurf@smurf.noris.de,
        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+References: <12047829252365@kroah.org> <200902062023.07759.oliver@neukum.org> <20090206234716.GB31059@kroah.com>
+In-Reply-To: <20090206234716.GB31059@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902071003.35856.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 7, 2009 at 12:26 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Fri, 06 Feb 2009 23:49:41 -0800 Yinghai Lu <yinghai@kernel.org> wrote:
->
->>
->> Impact: even later type of kstat_irqs is changed
->>
->> simplify and make init_kstat_irqs etc more type prof according to Andrew
->>
->> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->>
->> ---
->>  kernel/irq/handle.c       |   20 +++++++++++---------
->>  kernel/irq/numa_migrate.c |   11 +++--------
->>  2 files changed, 14 insertions(+), 17 deletions(-)
->>
->> Index: linux-2.6/kernel/irq/handle.c
->> ===================================================================
->> --- linux-2.6.orig/kernel/irq/handle.c
->> +++ linux-2.6/kernel/irq/handle.c
->> @@ -82,19 +82,21 @@ static struct irq_desc irq_desc_init = {
->>
->>  void init_kstat_irqs(struct irq_desc *desc, int cpu, int nr)
->>  {
->> -     unsigned long bytes;
->> -     char *ptr;
->>       int node;
->> -
->> -     /* Compute how many bytes we need per irq and allocate them */
->> -     bytes = nr * sizeof(unsigned int);
->> +     void *ptr;
->>
->>       node = cpu_to_node(cpu);
->> -     ptr = kzalloc_node(bytes, GFP_ATOMIC, node);
->> -     printk(KERN_DEBUG "  alloc kstat_irqs on cpu %d node %d\n", cpu, node);
->> +     ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs), GFP_ATOMIC, node);
->>
->> -     if (ptr)
->> -             desc->kstat_irqs = (unsigned int *)ptr;
->> +     /*
->> +      * don't overwite if can not get new one
->> +      * init_copy_kstat_irqs() could still use old one
->> +      */
->> +     if (ptr) {
->> +             printk(KERN_DEBUG "  alloc kstat_irqs on cpu %d node %d\n",
->> +                      cpu, node);
->> +             desc->kstat_irqs = ptr;
->> +     }
->
->        else
->                init_one_irq_desc() goes BUG.
->
->>  }
->
-> Sorry, but it's just not acceptable for irq_to_desc_alloc_cpu() and
-> init_one_irq_desc() to go BUG if a GFP_ATOMIC allocation attempt
-> failed.
->
-> If this code is only called on kernel boot then OK, that's acceptable.
-> But if that is the case then all this code should be marked
-> __init/__initdata.  And ack_apic_edge() sure doesn't look like a
-> boot-time-only function.
+Am Saturday 07 February 2009 00:47:16 schrieb Greg KH:
 
-add kzalloc_node_safe()?
+> > The specifity is not affected at all.
+> 
+> If you look at the names that were changed, they are now more
+> descriptive than before, always a good thing to have.
 
->
-> This is basic stuff which even a cursory review should have picked up.
->
-> Also, please go through all this code and convert WARN_ON(1) into
-> WARN(), and convert BUG_ON(1) into BUG().
+They are not descriptive. As far as USB devices have names,
+these names _are_ the numbers. You will be very hard pressed
+to guess from a name on a box that you may or may not have
+which OEM's hardware really is in that box. If you have IDs
+everything is clear. People who look at this code will mostly
+have bug reports which will hopefully include lsusb, but not the
+symbolic name in the kernel.
 
-sure, will do it.
+We dont do
+*(base + 8) = 0xb3;
+here. That would be bad. We use a clearly defined macro, USB_DEVICE
+which takes id _numbers_. Device IDs have no meaning. They are meant
+to be unique. You can give sensible names only to things that have meaning.
 
-YH
+This is like doing
+u8 init_string1[] = { INIT_STRING1_BYTE0, INIT_STRING1_BYTE1, ...
+
+Don't make a fetish out of symbolic names.
+
+	Regards
+		Oliver
+
+PS: Yes, I've had a professor who did prefer it this way.
+
