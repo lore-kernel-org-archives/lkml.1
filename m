@@ -1,106 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbZBGRoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754665AbZBGRrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754707AbZBGRoT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 12:44:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbZBGRoL
+	id S1754665AbZBGRrg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 12:47:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbZBGRrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 12:44:11 -0500
-Received: from smtp.wellnetcz.com ([212.24.148.102]:40201 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753031AbZBGRoK (ORCPT
+	Sat, 7 Feb 2009 12:47:25 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:6866 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752948AbZBGRrY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 12:44:10 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: lenb@kernel.org
-Cc: pavel@suse.cz, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 1/1] x86_64: acpi/wakeup_64 cleanup
-Date: Sat,  7 Feb 2009 18:44:01 +0100
-Message-Id: <1234028641-5072-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.1.2
+	Sat, 7 Feb 2009 12:47:24 -0500
+From: Alex Williamson <alex.williamson@hp.com>
+Subject: [PATCH] tun: Fix unicast filter overflow
+To: maxk@qualcomm.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       alex.williamson@hp.com
+Date: Sat, 07 Feb 2009 10:45:13 -0700
+Message-ID: <20090207174404.16716.20574.stgit@kvm.aw>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- remove %ds re-set, it's already set in wakeup_long64
-- remove double labels and alignment (ENTRY already adds both)
-- use meaningful resume point labelname
-- skip alignment while jumping from wakeup_long64 to the resume point
-- remove .size, .type and unused labels
+Tap devices can make use of a small MAC filter set via the
+TUNSETTXFILTER ioctl.  The filter has a set of exact matches
+plus a hash for imperfect filtering of additional multicast
+addresses.  The current code is unbalanced, adding unicast
+addresses to the multicast hash, but only checking the hash
+against multicast addresses.  This results in the filter
+dropping unicast addresses that overflow the exact filter.
+The fix is simply to disable the filter by leaving count set
+to zero if we find non-multicast addresses after the exact
+match table is filled.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Len Brown <lenb@kernel.org>
-Cc: Pavel Machek <pavel@suse.cz>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Alex Williamson <alex.williamson@hp.com>
 ---
- arch/x86/kernel/acpi/wakeup_64.S |   24 +++++-------------------
- 1 files changed, 5 insertions(+), 19 deletions(-)
 
-diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wakeup_64.S
-index bcc2934..d813da1 100644
---- a/arch/x86/kernel/acpi/wakeup_64.S
-+++ b/arch/x86/kernel/acpi/wakeup_64.S
-@@ -13,7 +13,6 @@
- 	 * Hooray, we are in Long 64-bit mode (but still running in low memory)
- 	 */
- ENTRY(wakeup_long64)
--wakeup_long64:
- 	movq	saved_magic, %rax
- 	movq	$0x123456789abcdef0, %rdx
- 	cmpq	%rdx, %rax
-@@ -38,12 +37,7 @@ wakeup_long64:
- bogus_64_magic:
- 	jmp	bogus_64_magic
+Proposed for 2.6.29 and stable.
+
+ drivers/net/tun.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/tun.c b/drivers/net/tun.c
+index d7b81e4..09fea31 100644
+--- a/drivers/net/tun.c
++++ b/drivers/net/tun.c
+@@ -157,10 +157,16 @@ static int update_filter(struct tap_filter *filter, void __user *arg)
  
--	.align 2
--	.p2align 4,,15
--.globl do_suspend_lowlevel
--	.type	do_suspend_lowlevel,@function
--do_suspend_lowlevel:
--.LFB5:
-+ENTRY(do_suspend_lowlevel)
- 	subq	$8, %rsp
- 	xorl	%eax, %eax
- 	call	save_processor_state
-@@ -67,7 +61,7 @@ do_suspend_lowlevel:
- 	pushfq
- 	popq	pt_regs_flags(%rax)
+ 	nexact = n;
  
--	movq	$.L97, saved_rip(%rip)
-+	movq	$resume_point, saved_rip(%rip)
+-	/* The rest is hashed */
++	/* Remaining multicast addresses are hashed,
++	 * unicast will leave the filter disabled. */
+ 	memset(filter->mask, 0, sizeof(filter->mask));
+-	for (; n < uf.count; n++)
++	for (; n < uf.count; n++) {
++		if (!is_multicast_ether_addr(addr[n].u)) {
++			err = 0; /* no filter */
++			goto done;
++		}
+ 		addr_hash_set(filter->mask, addr[n].u);
++	}
  
- 	movq	%rsp, saved_rsp
- 	movq	%rbp, saved_rbp
-@@ -79,13 +73,9 @@ do_suspend_lowlevel:
- 	movl	$3, %edi
- 	xorl	%eax, %eax
- 	jmp	acpi_enter_sleep_state
--.L97:
--	.p2align 4,,7
--.L99:
--	.align 4
--	movl	$24, %eax
--	movw	%ax, %ds
- 
-+	.align 4
-+resume_point:
- 	/* We don't restore %rax, it must be 0 anyway */
- 	movq	$saved_context, %rax
- 	movq	saved_context_cr4(%rax), %rbx
-@@ -117,12 +107,8 @@ do_suspend_lowlevel:
- 	xorl	%eax, %eax
- 	addq	$8, %rsp
- 	jmp	restore_processor_state
--.LFE5:
--.Lfe5:
--	.size	do_suspend_lowlevel, .Lfe5-do_suspend_lowlevel
--	
-+
- .data
--ALIGN
- ENTRY(saved_rbp)	.quad	0
- ENTRY(saved_rsi)	.quad	0
- ENTRY(saved_rdi)	.quad	0
--- 
-1.6.1.2
+ 	/* For ALLMULTI just set the mask to all ones.
+ 	 * This overrides the mask populated above. */
 
