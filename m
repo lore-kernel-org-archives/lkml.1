@@ -1,117 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754291AbZBGVx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754700AbZBGVy6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754291AbZBGVx0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 16:53:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbZBGVxS
+	id S1754700AbZBGVy6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 16:54:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbZBGVyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 16:53:18 -0500
-Received: from smtp.wellnetcz.com ([212.24.148.102]:51889 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751450AbZBGVxR (ORCPT
+	Sat, 7 Feb 2009 16:54:46 -0500
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:64521 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750915AbZBGVyp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 16:53:17 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: lenb@kernel.org
-Cc: gorcunov@gmail.com, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>, Pavel Machek <pavel@suse.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH v2 1/1] x86_64: acpi/wakeup_64 cleanup
-Date: Sat,  7 Feb 2009 22:52:38 +0100
-Message-Id: <1234043558-15784-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.1.2
-In-Reply-To: <1234028641-5072-1-git-send-email-jirislaby@gmail.com>
-References: <1234028641-5072-1-git-send-email-jirislaby@gmail.com>
+	Sat, 7 Feb 2009 16:54:45 -0500
+From: Junio C Hamano <gitster@pobox.com>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.6.2-rc0
+cc: linux-kernel@vger.kernel.org
+Date: Sat, 07 Feb 2009 13:54:37 -0800
+Message-ID: <7vvdrlsyjm.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: ED79E694-F561-11DD-8504-6F7C8D1D4FD0-77302942!a-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- remove %ds re-set, it's already set in wakeup_long64
-- remove double labels and alignment (ENTRY already adds both)
-- use meaningful resume point labelname
-- skip alignment while jumping from wakeup_long64 to the resume point
-- remove .size, .type and unused labels
-[v2]
-- added ENDPROCs
+The 0th release candidate for 1.6.2 is available at the usual places:
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Len Brown <lenb@kernel.org>
-Cc: Pavel Machek <pavel@suse.cz>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/x86/kernel/acpi/wakeup_64.S |   26 +++++++-------------------
- 1 files changed, 7 insertions(+), 19 deletions(-)
+  http://www.kernel.org/pub/software/scm/git/
 
-diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wakeup_64.S
-index bcc2934..b5dee6a 100644
---- a/arch/x86/kernel/acpi/wakeup_64.S
-+++ b/arch/x86/kernel/acpi/wakeup_64.S
-@@ -13,7 +13,6 @@
- 	 * Hooray, we are in Long 64-bit mode (but still running in low memory)
- 	 */
- ENTRY(wakeup_long64)
--wakeup_long64:
- 	movq	saved_magic, %rax
- 	movq	$0x123456789abcdef0, %rdx
- 	cmpq	%rdx, %rax
-@@ -34,16 +33,12 @@ wakeup_long64:
- 
- 	movq	saved_rip, %rax
- 	jmp	*%rax
-+ENDPROC(wakeup_long64)
- 
- bogus_64_magic:
- 	jmp	bogus_64_magic
- 
--	.align 2
--	.p2align 4,,15
--.globl do_suspend_lowlevel
--	.type	do_suspend_lowlevel,@function
--do_suspend_lowlevel:
--.LFB5:
-+ENTRY(do_suspend_lowlevel)
- 	subq	$8, %rsp
- 	xorl	%eax, %eax
- 	call	save_processor_state
-@@ -67,7 +62,7 @@ do_suspend_lowlevel:
- 	pushfq
- 	popq	pt_regs_flags(%rax)
- 
--	movq	$.L97, saved_rip(%rip)
-+	movq	$resume_point, saved_rip(%rip)
- 
- 	movq	%rsp, saved_rsp
- 	movq	%rbp, saved_rbp
-@@ -79,13 +74,9 @@ do_suspend_lowlevel:
- 	movl	$3, %edi
- 	xorl	%eax, %eax
- 	jmp	acpi_enter_sleep_state
--.L97:
--	.p2align 4,,7
--.L99:
--	.align 4
--	movl	$24, %eax
--	movw	%ax, %ds
- 
-+	.align 4
-+resume_point:
- 	/* We don't restore %rax, it must be 0 anyway */
- 	movq	$saved_context, %rax
- 	movq	saved_context_cr4(%rax), %rbx
-@@ -117,12 +108,9 @@ do_suspend_lowlevel:
- 	xorl	%eax, %eax
- 	addq	$8, %rsp
- 	jmp	restore_processor_state
--.LFE5:
--.Lfe5:
--	.size	do_suspend_lowlevel, .Lfe5-do_suspend_lowlevel
--	
-+ENDPROC(do_suspend_lowlevel)
-+
- .data
--ALIGN
- ENTRY(saved_rbp)	.quad	0
- ENTRY(saved_rsi)	.quad	0
- ENTRY(saved_rdi)	.quad	0
--- 
-1.6.1.2
+  git-1.6.2-rc0.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.6.2-rc0.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.6.2-rc0.tar.{gz,bz2}		(preformatted docs)
 
+The RPM binary packages for a few architectures are also provided
+as courtesy.
+
+  testing/git-*-1.6.2-rc0-1.fc9.$arch.rpm	(RPM)
+
+----------------------------------------------------------------
+
+GIT v1.6.2 Release Notes (draft)
+================================
+
+With the next major release, "git push" into a branch that is
+currently checked out will be refused by default.  You can choose
+what should happen upon such a push by setting the configuration
+variable receive.denyCurrentBranch in the receiving repository.
+
+To ease the transition plan, the receiving repository of such a
+push running this release will issue a big warning when the
+configuration variable is missing.  Please refer to:
+
+  http://thread.gmane.org/gmane.comp.version-control.git/107758/focus=108007
+
+for more details on the transition plan.
+
+
+Updates since v1.6.1
+--------------------
+
+(subsystems)
+
+* git-svn updates.
+
+* gitweb updates, including a new patch view and RSS/Atom feed
+  improvements.
+
+* (contrib) git.el updates for better XEmacs compatibility; vc-git.el
+  is not shiped with git anymore (it is part of official Emacs)
+
+(performance)
+
+* pack-objects autodetects the number of CPUs available and uses threaded
+  version.
+
+(usability, bells and whistles)
+
+* automatic typo correction works on aliases as well
+
+* Initial support for "git notes" implemented.
+
+* @{-1} is a way to refer to the last branch you were on.  This is
+  accepted not only where an object name is expected, but anywhere
+  a branch name is expected.  E.g. "git branch --track mybranch @{-1}"
+  "git rev-parse --symbolic-full-name @{-1}".
+
+* "git add -p" learned 'g'oto action to jump directly to a hunk.
+
+* "git add -p" learned to find a hunk with given text with '/'.
+
+* "git add -p" optionally can be told to work with just the command letter
+  without Enter.
+
+* when "git am" stops upon a patch that does not apply, it shows the
+  title of the offending patch.
+
+* "git am --directory=<dir>" and "git am --reject" passes these options
+  to underlying "git apply".
+
+* "git am" learned --ignore-date option.
+
+* "git blame" aligns author names better when they are spelled in
+  non US-ASCII encoding.
+
+* "git clone" now makes its best effort when cloning from an empty
+  repository to set up configuration variables to refer to the remote
+  repository.
+
+* "git checkout -" is a shorthand for "git checkout @{-1}".
+
+* "git cherry" defaults to whatever the current branch is tracking (if
+  exists) when the <upstream> argument is not given.
+
+* "git cvsserver" can be told not to add extra "via git-CVS emulator" to
+  the commit log message it serves via gitcvs.commitmsgannotation
+  configuration.
+
+* "git cvsserver" learned to handle 'noop' command some CVS clients seem
+  to expect to work.
+
+* "git diff" learned a new option --inter-hunk-context to coalesce close
+  hunks together and show context between them.
+
+* The definition of what constitutes a word for "git diff --color-words"
+  can be customized via gitattributes, command line or a configuration.
+
+* "git diff" learned --patience to run "patience diff" algorithm.
+
+* "git filter-branch" learned --prune-empty option that discards commits
+  that do not change the contents.
+
+* "git fsck" now checks loose objects in alternate object stores, instead
+  of misreporting them as missing.
+
+* "git grep -w" and "git grep" for fixed strings have been optimized.
+
+* "git mergetool" learned -y(--no-prompt) option to disable prompting.
+
+* "git rebase -i" can transplant a history down to root to elsewhere
+  with --root option.
+
+* "git reset --merge" is a new mode that works similar to the way
+  "git checkout" switches branches, taking the local changes while
+  switching to another commit.
+
+* "git tag" learned --contains that works the same way as the same option
+  from "git branch".
+
+
+Fixes since v1.6.1
+------------------
+
+All of the fixes in v1.6.1.X maintenance series are included in this
+release, unless otherwise noted.
+
+Here are fixes that this release has, but have not been backported to
+v1.6.1.X series.
+
+* "git-add sub/file" when sub is a submodule incorrectly added the path to
+  the superproject.
+
+* "git bundle" did not exclude annotated tags even when a range given
+  from the command line wanted to.
+
+* "git filter-branch" unnecessarily refused to work when you had
+  checked out a different commit from what is recorded in the superproject
+  index in a submodule.
+
+* "git filter-branch" incorrectly tried to update a nonexistent work tree
+  at the end when it is run in a bare repository.
+
+* "git mergetool" used to ignore autocrlf and other attributes
+  based content rewriting.
+
+* branch switching and merges had a silly bug that did not validate
+  the correct directory when making sure an existing subdirectory is
+  clean.
+
+* "git -p cmd" when cmd is not a built-in one left the display in funny state
+  when killed in the middle.
