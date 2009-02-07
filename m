@@ -1,40 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbZBGOOG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbZBGOrF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753666AbZBGOOG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 09:14:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbZBGONy
+	id S1753371AbZBGOrF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 09:47:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbZBGOqy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 09:13:54 -0500
-Received: from ns.suse.de ([195.135.220.2]:52159 "EHLO mx1.suse.de"
+	Sat, 7 Feb 2009 09:46:54 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:35483 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751529AbZBGONy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 09:13:54 -0500
-Message-ID: <498D9706.9090209@suse.de>
-Date: Sat, 07 Feb 2009 15:13:26 +0100
-From: Frank Seidel <fseidel@suse.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751490AbZBGOqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Feb 2009 09:46:53 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Damien Wyart <damien.wyart@free.fr>
+Subject: Re: 2.6.29-rc3-git6: Reported regressions from 2.6.28
+Date: Sat, 7 Feb 2009 15:46:19 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <20090204134204.GA8082@localhost.localdomain>
+In-Reply-To: <20090204134204.GA8082@localhost.localdomain>
 MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, Frank Seidel <frank@f-seidel.de>,
-       linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
-       jarod@redhat.com
-Subject: Re: [PATCH] crypto: add missing KERN_* constants to printks
-References: <498C46DE.8040700@suse.de> <20090206145838.GA28197@x200.localdomain> <498C4F2E.1070204@f-seidel.de> <20090206150315.GA28249@x200.localdomain> <498C5053.4010809@suse.de> <20090207125211.GA17913@gondor.apana.org.au>
-In-Reply-To: <20090207125211.GA17913@gondor.apana.org.au>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902071546.19683.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> Please do.  If it doesn't have any markings at least we know that
-> it needs fixing.  If you just add WARNINGs then we lose that
-> information.
+On Wednesday 04 February 2009, Damien Wyart wrote:
+> Hello,
+> 
+> > This message contains a list of some regressions from 2.6.28, for
+> > which there are no fixes in the mainline I know of. If any of them
+> > have been fixed already, please let me know.
+> 
+> > If you know of any other unresolved regressions from 2.6.28, please
+> > let me know either and I'll add them to the list. Also, please let me
+> > know if any of the entries below are invalid.
+> 
+> I have not yet got any feedback on this regression I reported:
+> http://marc.info/?l=linux-kernel&m=123307298514358&w=2
+> which is easy to reproduce on my machines.
 
-Thats right, i fully agree. So i'll redo it asap.
+Added to the list of recent regressions.
 
 Thanks,
-Frank
+Rafael
