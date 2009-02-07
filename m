@@ -1,99 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755128AbZBGI04@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754115AbZBGIfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755128AbZBGI04 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 03:26:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753639AbZBGI0r
+	id S1754115AbZBGIfA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 03:35:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbZBGIev
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 03:26:47 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52562 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753603AbZBGI0r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 03:26:47 -0500
-Date: Sat, 7 Feb 2009 00:26:10 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] irq: optimize init_kstat_irqs/init_copy_kstat_irqs
-Message-Id: <20090207002610.73ff7e6d.akpm@linux-foundation.org>
-In-Reply-To: <498D3D15.5090005@kernel.org>
-References: <498CB0B7.8030009@kernel.org>
-	<20090206140005.44b4bb50.akpm@linux-foundation.org>
-	<498CB4DC.2010108@kernel.org>
-	<498D3D15.5090005@kernel.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 7 Feb 2009 03:34:51 -0500
+Received: from serv04.lahn.de ([213.239.197.57]:40526 "EHLO serv04.lahn.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751343AbZBGIeu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Feb 2009 03:34:50 -0500
+Date: Sat, 7 Feb 2009 09:34:48 +0100
+From: Philipp Matthias Hahn <pmhahn@titan.lahn.de>
+To: Yinghai Lu <yinghai@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: WOL with forcedeth broken since
+	f55c21fd9a92a444e55ad1ca4e4732d56661bf2e
+Message-ID: <20090207083448.GB5204@pmhahn.de>
+Mail-Followup-To: Yinghai Lu <yinghai@kernel.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <20090205232343.GA9455@pmhahn.de> <200902060113.31651.rjw@sisk.pl> <a47yn9c9JrF.A.hz.L5YiJB@chimera> <20090129063118.GA3586@pmhahn.de> <CGyEB0S4BpO.A.MFB.R5YiJB@chimera> <86802c440901292253ie9e2a9dmb4580a3da1480c81@mail.gmail.com> <20090205232343.GA9455@pmhahn.de> <86802c440902051535n118339bes88ae48a54ce4711a@mail.gmail.com> <20090206053320.GA4369@pmhahn.de> <20090206065912.GA3614@pmhahn.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090206065912.GA3614@pmhahn.de>
+Organization: UUCP-Freunde Lahn e.V.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 06 Feb 2009 23:49:41 -0800 Yinghai Lu <yinghai@kernel.org> wrote:
+HellO!
 
-> 
-> Impact: even later type of kstat_irqs is changed
-> 
-> simplify and make init_kstat_irqs etc more type prof according to Andrew
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> ---
->  kernel/irq/handle.c       |   20 +++++++++++---------
->  kernel/irq/numa_migrate.c |   11 +++--------
->  2 files changed, 14 insertions(+), 17 deletions(-)
-> 
-> Index: linux-2.6/kernel/irq/handle.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/irq/handle.c
-> +++ linux-2.6/kernel/irq/handle.c
-> @@ -82,19 +82,21 @@ static struct irq_desc irq_desc_init = {
->  
->  void init_kstat_irqs(struct irq_desc *desc, int cpu, int nr)
->  {
-> -	unsigned long bytes;
-> -	char *ptr;
->  	int node;
-> -
-> -	/* Compute how many bytes we need per irq and allocate them */
-> -	bytes = nr * sizeof(unsigned int);
-> +	void *ptr;
->  
->  	node = cpu_to_node(cpu);
-> -	ptr = kzalloc_node(bytes, GFP_ATOMIC, node);
-> -	printk(KERN_DEBUG "  alloc kstat_irqs on cpu %d node %d\n", cpu, node);
-> +	ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs), GFP_ATOMIC, node);
->  
-> -	if (ptr)
-> -		desc->kstat_irqs = (unsigned int *)ptr;
-> +	/*
-> +	 * don't overwite if can not get new one
-> +	 * init_copy_kstat_irqs() could still use old one
-> +	 */
-> +	if (ptr) {
-> +		printk(KERN_DEBUG "  alloc kstat_irqs on cpu %d node %d\n",
-> +			 cpu, node);
-> +		desc->kstat_irqs = ptr;
-> +	}
+On Fri, Feb 06, 2009 at 07:59:12AM +0100, Philipp Matthias Hahn wrote:
+> I did some structured tesing:
 
-	else
-		init_one_irq_desc() goes BUG.
+Here are my captured console logs:
+scout=Desktop with nVidia Corporation MCP51 Ethernet Controller (rev a3)
+euro=Laptop used for capturing and wakeup
 
->  }
+(initramfs) modprobe forcedeth
+forcedeth: Reverse Engineered nForce ethernet driver. Version 0.61.
+ACPI: PCI Interrupt Link [LMAC] enabled at IRQ 23
+forcedeth 0000:00:14.0: PCI INT A -> Link[LMAC] -> GSI 23 (level, low) -> IRQ 23
+forcedeth 0000:00:14.0: setting latency timer to 64
+nv_probe: MAC_ADDR_REV ELSE
+nv_probe: set workaround bit for reversed mac addr
+forcedeth 0000:00:14.0: ifname eth0, PHY OUI 0x732 @ 1, addr 00:19:db:f2:e1:35
+forcedeth 0000:00:14.0: highdma pwrctl timirq gbit lnktim desc-v3
+(initramfs) ethtool -s eth0 wol g
+(initramfs) poweroff
+...
+forcedeth 0000:00:14.0: PCI INT A disabled
+forcedeth 0000:00:14.0: PME# enabled
+forcedeth 0000:00:14.0: wake-up capability enabled by ACPI
+ACPI: Preparing to enter system sleep state S5
+...
+Power down.
+acpi_power_off called
 
-Sorry, but it's just not acceptable for irq_to_desc_alloc_cpu() and
-init_one_irq_desc() to go BUG if a GFP_ATOMIC allocation attempt
-failed.
-
-If this code is only called on kernel boot then OK, that's acceptable. 
-But if that is the case then all this code should be marked
-__init/__initdata.  And ack_apic_edge() sure doesn't look like a
-boot-time-only function.
-
-This is basic stuff which even a cursory review should have picked up.
-
-Also, please go through all this code and convert WARN_ON(1) into
-WARN(), and convert BUG_ON(1) into BUG().
+euro:~# etherwake -i eth0 00:19:db:f2:e1:35 # FAIL
+euro:~# etherwake -i eth0 35:e1:f2:db:19:00 # FAIL
 
 
+(initramfs) modprobe forcedeth
+forcedeth: Reverse Engineered nForce ethernet driver. Version 0.61.
+ACPI: PCI Interrupt Link [LMAC] enabled at IRQ 23
+forcedeth 0000:00:14.0: PCI INT A -> Link[LMAC] -> GSI 23 (level, low) -> IRQ 23
+forcedeth 0000:00:14.0: setting latency timer to 64
+nv_probe: MAC_ADDR_REV ELSE
+nv_probe: set workaround bit for reversed mac addr
+forcedeth 0000:00:14.0: ifname eth0, PHY OUI 0x732 @ 1, addr 00:19:db:f2:e1:35
+forcedeth 0000:00:14.0: highdma pwrctl timirq gbit lnktim desc-v3
+(initramfs) ethtool -s eth0 wol g
+(initramfs) echo o > /proc/sysrq-trigger
+SysRq : Power Off
+...
+forcedeth 0000:00:14.0: PCI INT A disabled
+forcedeth 0000:00:14.0: PME# enabled
+forcedeth 0000:00:14.0: wake-up capability enabled by ACPI
+ACPI: Preparing to enter system sleep state S5
+...
+Power down.
+acpi_power_off called
+
+euro:~# etherwake -i eth0 00:19:db:f2:e1:35 # FAIL
+euro:~# etherwake -i eth0 35:e1:f2:db:19:00 # FAIL
+
+
+(initramfs) modprobe forcedeth
+forcedeth: Reverse Engineered nForce ethernet driver. Version 0.61.
+ACPI: PCI Interrupt Link [LMAC] enabled at IRQ 23
+forcedeth 0000:00:14.0: PCI INT A -> Link[LMAC] -> GSI 23 (level, low) -> IRQ 23
+forcedeth 0000:00:14.0: setting latency timer to 64
+nv_probe: MAC_ADDR_REV ELSE
+nv_probe: set workaround bit for reversed mac addr
+forcedeth 0000:00:14.0: ifname eth0, PHY OUI 0x732 @ 1, addr 00:19:db:f2:e1:35
+forcedeth 0000:00:14.0: highdma pwrctl timirq gbit lnktim desc-v3
+(initramfs) ethtool -s eth0 wol g
+(initramfs) echo b > /proc/sysrq-trigger
+SysRq : Resetting
+(grub) halt
+
+euro:~# etherwake -i eth0 35:e1:f2:db:19:00 # FAIL
+euro:~# etherwake -i eth0 00:19:db:f2:e1:35 # SUCCESS
+
+
+(initramfs) modprobe forcedeth
+forcedeth: Reverse Engineered nForce ethernet driver. Version 0.61.
+ACPI: PCI Interrupt Link [LMAC] enabled at IRQ 23
+forcedeth 0000:00:14.0: PCI INT A -> Link[LMAC] -> GSI 23 (level, low) -> IRQ 23
+forcedeth 0000:00:14.0: setting latency timer to 64
+nv_probe: MAC_ADDR_REV ELSE
+nv_probe: set workaround bit for reversed mac addr
+forcedeth 0000:00:14.0: ifname eth0, PHY OUI 0x732 @ 1, addr 00:19:db:f2:e1:35
+forcedeth 0000:00:14.0: highdma pwrctl timirq gbit lnktim desc-v3
+(initramfs) ethtool -s eth0 wol g
+(initramfs) exit
+...
+scout:~# poweroff
+...
+forcedeth 0000:00:14.0: PCI INT A disabled
+forcedeth 0000:00:14.0: PME# enabled
+forcedeth 0000:00:14.0: wake-up capability enabled by ACPI
+ACPI: Preparing to enter system sleep state S5
+...
+Power down.
+acpi_power_off called
+
+euro:~# etherwake -i eth0 00:19:db:f2:e1:35 # FAIL
+euro:~# etherwake -i eth0 35:e1:f2:db:19:00 # SUCCESS
+
+BYtE
+Philipp Hahn
+-- 
+  / /  (_)__  __ ____  __ Philipp Hahn
+ / /__/ / _ \/ // /\ \/ /
+/____/_/_//_/\_,_/ /_/\_\ pmhahn@titan.lahn.de
