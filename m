@@ -1,84 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbZBGM1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753885AbZBGMa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754019AbZBGM1S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 07:27:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbZBGM1D
+	id S1753885AbZBGMa1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 07:30:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbZBGMaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 07:27:03 -0500
-Received: from lazybastard.de ([212.112.238.170]:44342 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752420AbZBGM1B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 07:27:01 -0500
-Date: Sat, 7 Feb 2009 13:26:18 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Andi Kleen <andi@firstfloor.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>
-Subject: Re: [PATCH] add b+tree library
-Message-ID: <20090207122618.GA17222@logfs.org>
-References: <2f11576a0901100429h415d3a87o40ba4849120832c8@mail.gmail.com> <20090110183921.GD20611@logfs.org> <1231613042.3706.16.camel@johannes> <87fxjrgd9s.fsf@basil.nowhere.org> <20090110202315.GE20611@logfs.org> <20090110212740.GE31579@mit.edu> <20090110220135.GF20611@logfs.org> <20090110142330.295a8847.akpm@linux-foundation.org> <1231631840.13420.24.camel@twins> <1233793066.7390.34.camel@johannes.local>
+	Sat, 7 Feb 2009 07:30:10 -0500
+Received: from mail.atlantis.sk ([80.94.52.35]:36932 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752420AbZBGMaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Feb 2009 07:30:09 -0500
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] [resend] Resume from hibernation fails with pata_it821x RAID volume
+Date: Sat, 7 Feb 2009 13:29:58 +0100
+User-Agent: KMail/1.9.10
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200902061412.09839.linux@rainbow-software.org> <498C778B.7020309@ru.mvista.com> <20090206175635.5344ce37@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090206175635.5344ce37@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1233793066.7390.34.camel@johannes.local>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Length: 2162
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200902071330.00779.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 February 2009 01:17:46 +0100, Johannes Berg wrote:
-> 
-> Joern may need arbitrary key lengths, don't. But I've just looked around
-> a little:
-> 
->  * radix trees are completely unsuitable for use as a sort of hash table
->    because of their behaviour when keys are not at last mostly
->    contiguous
->  * rbtrees require lots of boilerplate code, and have much worse cache
->    behaviour
+On Friday 06 February 2009 18:56:35 Alan Cox wrote:
+> >     See CodingStyle chapter 8 for the preferred multiline comment style.
+> >
+> > > +		memset(&id[ATA_ID_SERNO], 0x20, ATA_ID_SERNO_LEN);
+> >
+> >     Why not ' '?
+> >
+> > MBR, Sergei
+>
+> Digging into the docs the RAID serial number (and what that means isn't
+> defined anywhere I can see) is byte offset 54-73 in each of the 4 128
+> byte blocks returned by the chip status query we do at boot
+> (it821x_probe_firmware).
 
-I did some testing as well.  And I didn't like the results very much.
-In my test harness, rbtrees performed roughly twice as good as btrees.
-
-Something clearly is wrong with my theory.  To spell it out, the theory
-assumes that 1) CPUs get continuously faster at computations while
-memory latency stays roughly constant and as a result 2) current CPUs
-are sufficiently fast that memory latency is more important than a large
-amount of computation.  And maybe 3) L1 cache latency can be ignored,
-while DRAM latency most definitely can not.
-
-At least one of the above must be wrong.  Another interesting data point
-is that after hacking up binary search within nodes, btrees performed
-roughly 10% better than before.  Binary search means we mispredict every
-other branch, yet this still improved performance.  So on my test CPU
-(Pentium M), branch mispredictions must be relatively cheap compared to
-either calculations or L1 cache latency.
-
-I also tried to rig the tests to favor btrees over rbtrees.  Since the
-rb_node is embedded in an object, I grew those objects beyond cacheline
-size, so no two rb_nodes would ever share a cacheline while all the
-pointers in btrees still do.  And still btrees lost.  Well - if the
-dataset is large enough that all the object padding is comsuming half a
-gigabyte of memory, swapping will make the rbtree load go slow, but
-given enough free memory and no swapping (i.e. second run) it beats
-btrees.
-
-So there are two results I can see from all this.  Rbtrees are still a
-good choice an semi-current machines and the kernel doesn't need much
-rework yet.  Whether my assumption 2) above will match reality better in
-the future and the scales will tip to the other side I don't know.  The
-other is that my assumptions are wrong somewhere and I don't yet
-understand where.  If anyone has an idea, I'd be glad to hear about it.
-
-Jörn
+Yes, found it there. But it seems to be the same number as present in the 
+IDENTIFY data. It contains date and time of boot (matches RAID_SERIAL_NUMBER 
+structure found in iteraid.h in driver source from ITE) instead of date and 
+time of RAID creation.
 
 -- 
-Science is like sex: sometimes something useful comes out,
-but that is not the reason we are doing it.
--- Richard Feynman
+Ondrej Zary
