@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbZBGDD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756544AbZBGDFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756563AbZBGDD6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 22:03:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbZBGDDu
+	id S1756544AbZBGDFe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 22:05:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbZBGDF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 22:03:50 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:46314 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750745AbZBGDDu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 22:03:50 -0500
-X-Sasl-enc: 6fSf6JEBYjegFr6fpoM5Qeh6/eEhLLR/6eqpxfHKyKWx 1233975829
-Date: Sat, 7 Feb 2009 01:03:46 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Chris Friesen <cfriesen@nortel.com>, linux-kernel@vger.kernel.org
-Subject: Re: marching through all physical memory in software
-Message-ID: <20090207030346.GB5587@khazad-dum.debian.net>
-References: <497DD8E5.1040305@nortel.com> <87bptgvt1t.fsf@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87bptgvt1t.fsf@basil.nowhere.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 6 Feb 2009 22:05:26 -0500
+Received: from gate.crashing.org ([63.228.1.57]:47520 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750745AbZBGDFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 22:05:25 -0500
+Subject: Re: [Bug #12608] 2.6.29-rc powerpc G5 Xorg legacy_mem regression
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Hugh Dickins <hugh@veritas.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <200902061445.11379.jbarnes@virtuousgeek.org>
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
+	 <200902060849.45851.jbarnes@virtuousgeek.org>
+	 <Pine.LNX.4.64.0902062205540.5710@blonde.anvils>
+	 <200902061445.11379.jbarnes@virtuousgeek.org>
+Content-Type: text/plain
+Date: Sat, 07 Feb 2009 14:05:10 +1100
+Message-Id: <1233975910.31963.56.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 06 Feb 2009, Andi Kleen wrote:
-> "Chris Friesen" <cfriesen@nortel.com> writes:
-> > Someone is asking me about the feasability of "scrubbing" system
-> > memory by accessing each page and handling the ECC faults.
-> 
-> I would expect any ECC RAM capable memory controller designed 
-> in the last 10-15 years to be able to do this on its own without
-> software intervention. Is that not true? It is certainly
-> on x86 (although you sometimes have to change BIOS options)
+On Fri, 2009-02-06 at 14:45 -0800, Jesse Barnes wrote:
+> +    if (Base <= 1024*1024) {
+> +        /* Try legacy_mem (may not be available or implemented) */
+> +        if ((fd = linuxOpenLegacy(dev, "legacy_mem")) < 0) {
+> +            addr = mmap(NULL, Size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, Base);
+> +            close(fd);
+> +            if (addr && addr != MAP_FAILED)
+> +                return addr;
+> +        }
+>      }
+> -    return addr;
+> +
+> +    /* Fall back to old method if legacy_mem fails or Base >= 1M */
+> +    return linuxMapPci(ScreenNum, Flags, dev, Base, Size, PCIIOC_MMAP_IS_MEM);
+>  }
 
-Is that true for the 82875, and other common desktop chipsets that DO
-support ECC ram?
+I don't like the fallback if legacy_mem exists and returns an error,
+that's an indication that legacy memory is -not- available and thus
+whatever 'fallback' X will try (supposedly using /dev/mem) will be
+horribly broken and will probably end up scribbling all over system
+memory :-)
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Ben.
+
+
