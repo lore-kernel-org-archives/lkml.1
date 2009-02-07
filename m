@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752776AbZBGAyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577AbZBGBUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752776AbZBGAyP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 19:54:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752912AbZBGAxr
+	id S1754577AbZBGBUl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 20:20:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbZBGBUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 19:53:47 -0500
-Received: from kroah.org ([198.145.64.141]:36069 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752776AbZBGAxq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 19:53:46 -0500
-Date: Fri, 6 Feb 2009 16:01:48 -0800
-From: Greg KH <greg@kroah.com>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: felipe.balbi@nokia.com, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Mike Frysinger <vapier.adi@gmail.com>
-Subject: Re: [PATCH] usb: musb: tweak musb_read_fifo() to avoid unused
-	warnings
-Message-ID: <20090207000148.GF31059@kroah.com>
-References: <1233915736-18506-1-git-send-email-cooloney@kernel.org>
+	Fri, 6 Feb 2009 20:20:32 -0500
+Received: from mga11.intel.com ([192.55.52.93]:5138 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752163AbZBGBUb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 20:20:31 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,394,1231142400"; 
+   d="scan'208";a="663595436"
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+To: Roland Dreier <rdreier@cisco.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Eric Anholt <eric@anholt.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "drivers_video-dri@kernel-bugs.osdl.org" 
+	<drivers_video-dri@kernel-bugs.osdl.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Date: Fri, 6 Feb 2009 17:20:27 -0800
+Subject: RE: [Bug #12491] i915 lockdep warning
+Thread-Topic: [Bug #12491] i915 lockdep warning
+Thread-Index: AcmIrLc4C24MfkrWSK+9D98h63SX2wAFRoJA
+Message-ID: <F169D4F5E1F1974DBFAFABF47F60C10A1DFD867C@orsmsx507.amr.corp.intel.com>
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
+	<pWZw1SZjMCH.A.ciH.4vYiJB@chimera> <adar62dltg1.fsf@cisco.com>
+	<200902050203.40535.rjw@sisk.pl> <adar62bchfw.fsf@cisco.com>
+In-Reply-To: <adar62bchfw.fsf@cisco.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233915736-18506-1-git-send-email-cooloney@kernel.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 06, 2009 at 06:22:16PM +0800, Bryan Wu wrote:
-> From: Mike Frysinger <vapier.adi@gmail.com>
+Roland Dreier wrote:
+>  > i915: Fix potential AB-BA deadlock in i915_gem_execbuffer()
 > 
-> Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
-> ---
->  drivers/usb/musb/blackfin.c |    9 +++++----
->  1 files changed, 5 insertions(+), 4 deletions(-)
+> Jesse, Eric, or anybody -- does this look correct to you?  This seems
+> to be triggering for several people, eg
+> https://bugzilla.redhat.com/show_bug.cgi?id=481687
 > 
-> diff --git a/drivers/usb/musb/blackfin.c b/drivers/usb/musb/blackfin.c
-> index 7861348..0ebb19d 100644
-> --- a/drivers/usb/musb/blackfin.c
-> +++ b/drivers/usb/musb/blackfin.c
-> @@ -54,13 +54,11 @@ void musb_write_fifo(struct musb_hw_ep *hw_ep, u16 len, const u8 *src)
->  void musb_read_fifo(struct musb_hw_ep *hw_ep, u16 len, u8 *dst)
->  {
->  	void __iomem *fifo = hw_ep->fifo;
-> +
-> +#ifdef CONFIG_BF52x
+>  - R.
 
-Any way we can just not have ifdefs in .c files alltogether?
+I tested this on my 965 based system that showed the issue and it seemed resolved, at least no warnings in dmesg.  Lockdep was confirmed to still be enabled.
 
-thanks,
+I can mark the bug fixed in korg bugzilla too.
 
-greg k-h
+Thank you Roland for looking into this, good work!
