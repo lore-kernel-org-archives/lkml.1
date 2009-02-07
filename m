@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756990AbZBGDBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbZBGDD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756990AbZBGDBW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 22:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbZBGDBE
+	id S1756563AbZBGDD6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 22:03:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbZBGDDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 22:01:04 -0500
-Received: from vms173009pub.verizon.net ([206.46.173.9]:46908 "EHLO
-	vms173009pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750745AbZBGDBD (ORCPT
+	Fri, 6 Feb 2009 22:03:50 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:46314 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750745AbZBGDDu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 22:01:03 -0500
-Date: Fri, 06 Feb 2009 22:00:54 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Ben Greear <greearb@candelatech.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PATCH:  Allow over-ride of smp_found_cfg with kernel cmd-line
- option.
-In-reply-to: <20090206193121.GA32634@elte.hu>
-Message-id: <alpine.LFD.2.00.0902062157490.26256@localhost.localdomain>
-References: <498B421D.9090609@candelatech.com> <20090206193121.GA32634@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 6 Feb 2009 22:03:50 -0500
+X-Sasl-enc: 6fSf6JEBYjegFr6fpoM5Qeh6/eEhLLR/6eqpxfHKyKWx 1233975829
+Date: Sat, 7 Feb 2009 01:03:46 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Chris Friesen <cfriesen@nortel.com>, linux-kernel@vger.kernel.org
+Subject: Re: marching through all physical memory in software
+Message-ID: <20090207030346.GB5587@khazad-dum.debian.net>
+References: <497DD8E5.1040305@nortel.com> <87bptgvt1t.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87bptgvt1t.fsf@basil.nowhere.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Without this override, performance drops by around 15% on
-> > network throughput tests on this system.
+On Fri, 06 Feb 2009, Andi Kleen wrote:
+> "Chris Friesen" <cfriesen@nortel.com> writes:
+> > Someone is asking me about the feasability of "scrubbing" system
+> > memory by accessing each page and handling the ECC faults.
 > 
-> The question is, _why_ does network performance drop?
->
-> Do you have a before/after pair of /proc/interrupts output
-> perhaps? Does the layout of IRQs change?
->
-> The system is not SMP - so only something about UP-IOAPIC can
-> be helpful to performance here - or some unknown effect.
+> I would expect any ECC RAM capable memory controller designed 
+> in the last 10-15 years to be able to do this on its own without
+> software intervention. Is that not true? It is certainly
+> on x86 (although you sometimes have to change BIOS options)
 
-I presume it is IOAPIC (good) vs PIC (bad), for the 
-patch that provoked this regression was one that caused
-the MPS table to be disabled.  (the problem with that patch
-was that it was effective not just in ACPI mode, but in acpi=off mode)
+Is that true for the 82875, and other common desktop chipsets that DO
+support ECC ram?
 
-The other un-answered question is why the system under test
-has ACPI disabled in the BIOS when it did not ship that
-way from the manufacturer.
-
-cheers,
--Len
-Intel Open Source Technology Center
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
