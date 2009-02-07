@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbZBGUIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbZBGUId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754648AbZBGUIS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 15:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbZBGUHE
+	id S1755842AbZBGUId (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 15:08:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbZBGUHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 15:07:04 -0500
-Received: from vena.lwn.net ([206.168.112.25]:51333 "EHLO vena.lwn.net"
+	Sat, 7 Feb 2009 15:07:05 -0500
+Received: from vena.lwn.net ([206.168.112.25]:51322 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753225AbZBGUHB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 15:07:01 -0500
+	id S1753288AbZBGUHC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Feb 2009 15:07:02 -0500
 From: Jonathan Corbet <corbet@lwn.net>
 To: linux-kernel@vger.kernel.org
 Cc: Andi Kleen <andi@firstfloor.org>, Oleg Nesterov <oleg@redhat.com>,
@@ -18,9 +18,9 @@ Cc: Andi Kleen <andi@firstfloor.org>, Oleg Nesterov <oleg@redhat.com>,
        David Miller <davem@davemloft.net>, Christoph Hellwig <hch@lst.de>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>, Matt Mackall <mpm@selenic.com>,
        Jonathan Corbet <corbet@lwn.net>
-Subject: [PATCH 3/4] Move FASYNC bit handling to f_op->fasync()
-Date: Sat,  7 Feb 2009 13:06:56 -0700
-Message-Id: <1234037217-16124-4-git-send-email-corbet@lwn.net>
+Subject: [PATCH 4/4] Rationalize fasync return values
+Date: Sat,  7 Feb 2009 13:06:57 -0700
+Message-Id: <1234037217-16124-5-git-send-email-corbet@lwn.net>
 X-Mailer: git-send-email 1.6.1.2
 In-Reply-To: <1234037217-16124-1-git-send-email-corbet@lwn.net>
 References: <1234037217-16124-1-git-send-email-corbet@lwn.net>
@@ -28,153 +28,364 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Removing the BKL from FASYNC handling ran into the challenge of keeping the
-setting of the FASYNC bit in filp->f_flags atomic with regard to calls to
-the underlying fasync() function.  Andi Kleen suggested moving the handling
-of that bit into fasync(); this patch does exactly that.  As a result, we
-have a couple of internal API changes: fasync() must now manage the FASYNC
-bit, and it will be called without the BKL held.
+Most fasync implementations do something like:
 
-As it happens, every fasync() implementation in the kernel with one
-exception calls fasync_helper().  So, if we make fasync_helper() set the
-FASYNC bit, we can avoid making any changes to the other fasync()
-functions - as long as those functions, themselves, have proper locking.
-Most fasync() implementations do nothing but call fasync_helper() - which
-has its own lock - so they are easily verified as correct.  The BKL had
-already been pushed down into the rest.
+     return fasync_helper(...);
 
-The networking code has its own version of fasync_helper(), so that code
-has been augmented with explicit FASYNC bit handling.
+But fasync_helper() will return a positive value at times - a feature used
+in at least one place.  Thus, a number of other drivers do:
+
+     err = fasync_helper(...);
+     if (err < 0)
+             return err;
+     return 0;
+
+In the interests of consistency and more concise code, it makes sense to
+map positive return values onto zero where ->fasync() is called.
 
 Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 ---
- fs/fcntl.c   |   29 ++++++++++++++++-------------
- fs/ioctl.c   |   13 +------------
- net/socket.c |    8 ++++++++
- 3 files changed, 25 insertions(+), 25 deletions(-)
+ drivers/char/sonypi.c              |    7 +------
+ drivers/gpu/drm/drm_fops.c         |    6 +-----
+ drivers/hid/usbhid/hiddev.c        |    5 +----
+ drivers/ieee1394/dv1394.c          |    6 +-----
+ drivers/input/evdev.c              |    5 +----
+ drivers/input/joydev.c             |    5 +----
+ drivers/input/mousedev.c           |    5 +----
+ drivers/input/serio/serio_raw.c    |    4 +---
+ drivers/net/wan/cosa.c             |    4 ++--
+ drivers/platform/x86/sony-laptop.c |    7 +------
+ drivers/scsi/sg.c                  |    4 +---
+ fs/fcntl.c                         |    2 ++
+ fs/ioctl.c                         |    2 +-
+ fs/pipe.c                          |   17 +++--------------
+ sound/core/control.c               |    7 ++-----
+ sound/core/pcm_native.c            |    4 +---
+ sound/core/timer.c                 |    6 +-----
+ 17 files changed, 22 insertions(+), 74 deletions(-)
 
+diff --git a/drivers/char/sonypi.c b/drivers/char/sonypi.c
+index f437443..fd3dced 100644
+--- a/drivers/char/sonypi.c
++++ b/drivers/char/sonypi.c
+@@ -888,12 +888,7 @@ found:
+ 
+ static int sonypi_misc_fasync(int fd, struct file *filp, int on)
+ {
+-	int retval;
+-
+-	retval = fasync_helper(fd, filp, on, &sonypi_device.fifo_async);
+-	if (retval < 0)
+-		return retval;
+-	return 0;
++	return fasync_helper(fd, filp, on, &sonypi_device.fifo_async);
+ }
+ 
+ static int sonypi_misc_release(struct inode *inode, struct file *file)
+diff --git a/drivers/gpu/drm/drm_fops.c b/drivers/gpu/drm/drm_fops.c
+index b06a537..9ec9d5d 100644
+--- a/drivers/gpu/drm/drm_fops.c
++++ b/drivers/gpu/drm/drm_fops.c
+@@ -337,14 +337,10 @@ int drm_fasync(int fd, struct file *filp, int on)
+ {
+ 	struct drm_file *priv = filp->private_data;
+ 	struct drm_device *dev = priv->minor->dev;
+-	int retcode;
+ 
+ 	DRM_DEBUG("fd = %d, device = 0x%lx\n", fd,
+ 		  (long)old_encode_dev(priv->minor->device));
+-	retcode = fasync_helper(fd, filp, on, &dev->buf_async);
+-	if (retcode < 0)
+-		return retcode;
+-	return 0;
++	return fasync_helper(fd, filp, on, &dev->buf_async);
+ }
+ EXPORT_SYMBOL(drm_fasync);
+ 
+diff --git a/drivers/hid/usbhid/hiddev.c b/drivers/hid/usbhid/hiddev.c
+index d73eea3..55828da 100644
+--- a/drivers/hid/usbhid/hiddev.c
++++ b/drivers/hid/usbhid/hiddev.c
+@@ -227,12 +227,9 @@ void hiddev_report_event(struct hid_device *hid, struct hid_report *report)
+  */
+ static int hiddev_fasync(int fd, struct file *file, int on)
+ {
+-	int retval;
+ 	struct hiddev_list *list = file->private_data;
+ 
+-	retval = fasync_helper(fd, file, on, &list->fasync);
+-
+-	return retval < 0 ? retval : 0;
++	return fasync_helper(fd, file, on, &list->fasync);
+ }
+ 
+ 
+diff --git a/drivers/ieee1394/dv1394.c b/drivers/ieee1394/dv1394.c
+index a329e6b..22e5487 100644
+--- a/drivers/ieee1394/dv1394.c
++++ b/drivers/ieee1394/dv1394.c
+@@ -1325,11 +1325,7 @@ static int dv1394_fasync(int fd, struct file *file, int on)
+ 
+ 	struct video_card *video = file_to_video_card(file);
+ 
+-	int retval = fasync_helper(fd, file, on, &video->fasync);
+-
+-	if (retval < 0)
+-		return retval;
+-        return 0;
++	return fasync_helper(fd, file, on, &video->fasync);
+ }
+ 
+ static ssize_t dv1394_write(struct file *file, const char __user *buffer, size_t count, loff_t *ppos)
+diff --git a/drivers/input/evdev.c b/drivers/input/evdev.c
+index ed8baa0..7a7a026 100644
+--- a/drivers/input/evdev.c
++++ b/drivers/input/evdev.c
+@@ -94,11 +94,8 @@ static void evdev_event(struct input_handle *handle,
+ static int evdev_fasync(int fd, struct file *file, int on)
+ {
+ 	struct evdev_client *client = file->private_data;
+-	int retval;
+-
+-	retval = fasync_helper(fd, file, on, &client->fasync);
+ 
+-	return retval < 0 ? retval : 0;
++	return fasync_helper(fd, file, on, &client->fasync);
+ }
+ 
+ static int evdev_flush(struct file *file, fl_owner_t id)
+diff --git a/drivers/input/joydev.c b/drivers/input/joydev.c
+index 6f23662..4224f01 100644
+--- a/drivers/input/joydev.c
++++ b/drivers/input/joydev.c
+@@ -159,12 +159,9 @@ static void joydev_event(struct input_handle *handle,
+ 
+ static int joydev_fasync(int fd, struct file *file, int on)
+ {
+-	int retval;
+ 	struct joydev_client *client = file->private_data;
+ 
+-	retval = fasync_helper(fd, file, on, &client->fasync);
+-
+-	return retval < 0 ? retval : 0;
++	return fasync_helper(fd, file, on, &client->fasync);
+ }
+ 
+ static void joydev_free(struct device *dev)
+diff --git a/drivers/input/mousedev.c b/drivers/input/mousedev.c
+index ef99a7e..17fd6d4 100644
+--- a/drivers/input/mousedev.c
++++ b/drivers/input/mousedev.c
+@@ -403,12 +403,9 @@ static void mousedev_event(struct input_handle *handle,
+ 
+ static int mousedev_fasync(int fd, struct file *file, int on)
+ {
+-	int retval;
+ 	struct mousedev_client *client = file->private_data;
+ 
+-	retval = fasync_helper(fd, file, on, &client->fasync);
+-
+-	return retval < 0 ? retval : 0;
++	return fasync_helper(fd, file, on, &client->fasync);
+ }
+ 
+ static void mousedev_free(struct device *dev)
+diff --git a/drivers/input/serio/serio_raw.c b/drivers/input/serio/serio_raw.c
+index 06bbd0e..b03009b 100644
+--- a/drivers/input/serio/serio_raw.c
++++ b/drivers/input/serio/serio_raw.c
+@@ -58,10 +58,8 @@ static unsigned int serio_raw_no;
+ static int serio_raw_fasync(int fd, struct file *file, int on)
+ {
+ 	struct serio_raw_list *list = file->private_data;
+-	int retval;
+ 
+-	retval = fasync_helper(fd, file, on, &list->fasync);
+-	return retval < 0 ? retval : 0;
++	return fasync_helper(fd, file, on, &list->fasync);
+ }
+ 
+ static struct serio_raw *serio_raw_locate(int minor)
+diff --git a/drivers/net/wan/cosa.c b/drivers/net/wan/cosa.c
+index d80b72e..ce753e9 100644
+--- a/drivers/net/wan/cosa.c
++++ b/drivers/net/wan/cosa.c
+@@ -993,8 +993,8 @@ static struct fasync_struct *fasync[256] = { NULL, };
+ static int cosa_fasync(struct inode *inode, struct file *file, int on)
+ {
+         int port = iminor(inode);
+-        int rv = fasync_helper(inode, file, on, &fasync[port]);
+-        return rv < 0 ? rv : 0;
++
++	return fasync_helper(inode, file, on, &fasync[port]);
+ }
+ #endif
+ 
+diff --git a/drivers/platform/x86/sony-laptop.c b/drivers/platform/x86/sony-laptop.c
+index 537959d..bc8996c 100644
+--- a/drivers/platform/x86/sony-laptop.c
++++ b/drivers/platform/x86/sony-laptop.c
+@@ -1917,12 +1917,7 @@ static struct sonypi_compat_s sonypi_compat = {
+ 
+ static int sonypi_misc_fasync(int fd, struct file *filp, int on)
+ {
+-	int retval;
+-
+-	retval = fasync_helper(fd, filp, on, &sonypi_compat.fifo_async);
+-	if (retval < 0)
+-		return retval;
+-	return 0;
++	return fasync_helper(fd, filp, on, &sonypi_compat.fifo_async);
+ }
+ 
+ static int sonypi_misc_release(struct inode *inode, struct file *file)
+diff --git a/drivers/scsi/sg.c b/drivers/scsi/sg.c
+index 8f0bd3f..b656cde 100644
+--- a/drivers/scsi/sg.c
++++ b/drivers/scsi/sg.c
+@@ -1154,7 +1154,6 @@ sg_poll(struct file *filp, poll_table * wait)
+ static int
+ sg_fasync(int fd, struct file *filp, int mode)
+ {
+-	int retval;
+ 	Sg_device *sdp;
+ 	Sg_fd *sfp;
+ 
+@@ -1163,8 +1162,7 @@ sg_fasync(int fd, struct file *filp, int mode)
+ 	SCSI_LOG_TIMEOUT(3, printk("sg_fasync: %s, mode=%d\n",
+ 				   sdp->disk->disk_name, mode));
+ 
+-	retval = fasync_helper(fd, filp, mode, &sfp->async_qp);
+-	return (retval < 0) ? retval : 0;
++	return fasync_helper(fd, filp, mode, &sfp->async_qp);
+ }
+ 
+ static int
 diff --git a/fs/fcntl.c b/fs/fcntl.c
-index 04df857..431bb64 100644
+index 431bb64..d865ca6 100644
 --- a/fs/fcntl.c
 +++ b/fs/fcntl.c
-@@ -141,7 +141,7 @@ SYSCALL_DEFINE1(dup, unsigned int, fildes)
- 	return ret;
- }
- 
--#define SETFL_MASK (O_APPEND | O_NONBLOCK | O_NDELAY | FASYNC | O_DIRECT | O_NOATIME)
-+#define SETFL_MASK (O_APPEND | O_NONBLOCK | O_NDELAY | O_DIRECT | O_NOATIME)
- 
- static int setfl(int fd, struct file * filp, unsigned long arg)
- {
-@@ -177,23 +177,19 @@ static int setfl(int fd, struct file * filp, unsigned long arg)
- 		return error;
- 
- 	/*
--	 * We still need a lock here for now to keep multiple FASYNC calls
--	 * from racing with each other.
-+	 * ->fasync() is responsible for setting the FASYNC bit.
- 	 */
--	lock_kernel();
--	if ((arg ^ filp->f_flags) & FASYNC) {
--		if (filp->f_op && filp->f_op->fasync) {
--			error = filp->f_op->fasync(fd, filp, (arg & FASYNC) != 0);
--			if (error < 0)
--				goto out;
--		}
-+	if (((arg ^ filp->f_flags) & FASYNC) && filp->f_op &&
-+			filp->f_op->fasync) {
-+		error = filp->f_op->fasync(fd, filp, (arg & FASYNC) != 0);
-+		if (error < 0)
-+			goto out;
+@@ -184,6 +184,8 @@ static int setfl(int fd, struct file * filp, unsigned long arg)
+ 		error = filp->f_op->fasync(fd, filp, (arg & FASYNC) != 0);
+ 		if (error < 0)
+ 			goto out;
++		if (error > 0)
++			error = 0;
  	}
--
  	spin_lock(&filp->f_lock);
  	filp->f_flags = (arg & SETFL_MASK) | (filp->f_flags & ~SETFL_MASK);
- 	spin_unlock(&filp->f_lock);
-+
-  out:
--	unlock_kernel();
- 	return error;
- }
- 
-@@ -518,7 +514,7 @@ static DEFINE_RWLOCK(fasync_lock);
- static struct kmem_cache *fasync_cache __read_mostly;
- 
- /*
-- * fasync_helper() is used by some character device drivers (mainly mice)
-+ * fasync_helper() is used by almost all character device drivers
-  * to set up the fasync queue. It returns negative on error, 0 if it did
-  * no changes and positive if it added/deleted the entry.
-  */
-@@ -557,6 +553,13 @@ int fasync_helper(int fd, struct file * filp, int on, struct fasync_struct **fap
- 		result = 1;
- 	}
- out:
-+	/* Fix up FASYNC bit while still holding fasync_lock */
-+	spin_lock(&filp->f_lock);
-+	if (on)
-+		filp->f_flags |= FASYNC;
-+	else
-+		filp->f_flags &= ~FASYNC;
-+	spin_unlock(&filp->f_lock);
- 	write_unlock_irq(&fasync_lock);
- 	return result;
- }
 diff --git a/fs/ioctl.c b/fs/ioctl.c
-index 421aab4..e8e89ed 100644
+index e8e89ed..ac2d47e 100644
 --- a/fs/ioctl.c
 +++ b/fs/ioctl.c
-@@ -427,19 +427,11 @@ static int ioctl_fioasync(unsigned int fd, struct file *filp,
- 	/* Did FASYNC state change ? */
- 	if ((flag ^ filp->f_flags) & FASYNC) {
- 		if (filp->f_op && filp->f_op->fasync)
-+			/* fasync() adjusts filp->f_flags */
- 			error = filp->f_op->fasync(fd, filp, on);
+@@ -432,7 +432,7 @@ static int ioctl_fioasync(unsigned int fd, struct file *filp,
  		else
  			error = -ENOTTY;
  	}
--	if (error)
--		return error;
--
--	spin_lock(&filp->f_lock);
--	if (on)
--		filp->f_flags |= FASYNC;
--	else
--		filp->f_flags &= ~FASYNC;
--	spin_unlock(&filp->f_lock);
- 	return error;
+-	return error;
++	return error < 0 ? error : 0;
  }
  
-@@ -507,10 +499,7 @@ int do_vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd,
- 		break;
+ static int ioctl_fsfreeze(struct file *filp)
+diff --git a/fs/pipe.c b/fs/pipe.c
+index 3a48ba5..900de67 100644
+--- a/fs/pipe.c
++++ b/fs/pipe.c
+@@ -667,10 +667,7 @@ pipe_read_fasync(int fd, struct file *filp, int on)
+ 	retval = fasync_helper(fd, filp, on, &inode->i_pipe->fasync_readers);
+ 	mutex_unlock(&inode->i_mutex);
  
- 	case FIOASYNC:
--		/* BKL needed to avoid races tweaking f_flags */
--		lock_kernel();
- 		error = ioctl_fioasync(fd, filp, argp);
--		unlock_kernel();
- 		break;
+-	if (retval < 0)
+-		return retval;
+-
+-	return 0;
++	return retval;
+ }
  
- 	case FIOQSIZE:
-diff --git a/net/socket.c b/net/socket.c
-index 35dd737..5770398 100644
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -1030,6 +1030,14 @@ static int sock_fasync(int fd, struct file *filp, int on)
  
- 	lock_sock(sk);
+@@ -684,10 +681,7 @@ pipe_write_fasync(int fd, struct file *filp, int on)
+ 	retval = fasync_helper(fd, filp, on, &inode->i_pipe->fasync_writers);
+ 	mutex_unlock(&inode->i_mutex);
  
-+	/* Maintaining the FASYNC bit is our job now */
-+	spin_lock(&filp->f_lock);
-+	if (on)
-+		filp->f_flags |= FASYNC;
-+	else
-+		filp->f_flags &= ~FASYNC;
-+	spin_unlock(&filp->f_lock);
+-	if (retval < 0)
+-		return retval;
+-
+-	return 0;
++	return retval;
+ }
+ 
+ 
+@@ -701,16 +695,11 @@ pipe_rdwr_fasync(int fd, struct file *filp, int on)
+ 	mutex_lock(&inode->i_mutex);
+ 
+ 	retval = fasync_helper(fd, filp, on, &pipe->fasync_readers);
+-
+ 	if (retval >= 0)
+ 		retval = fasync_helper(fd, filp, on, &pipe->fasync_writers);
+ 
+ 	mutex_unlock(&inode->i_mutex);
+-
+-	if (retval < 0)
+-		return retval;
+-
+-	return 0;
++	return retval;
+ }
+ 
+ 
+diff --git a/sound/core/control.c b/sound/core/control.c
+index 636b3b5..4b20fa2 100644
+--- a/sound/core/control.c
++++ b/sound/core/control.c
+@@ -1373,12 +1373,9 @@ EXPORT_SYMBOL(snd_ctl_unregister_ioctl_compat);
+ static int snd_ctl_fasync(int fd, struct file * file, int on)
+ {
+ 	struct snd_ctl_file *ctl;
+-	int err;
 +
- 	prev = &(sock->fasync_list);
+ 	ctl = file->private_data;
+-	err = fasync_helper(fd, file, on, &ctl->fasync);
+-	if (err < 0)
+-		return err;
+-	return 0;
++	return fasync_helper(fd, file, on, &ctl->fasync);
+ }
  
- 	for (fa = *prev; fa != NULL; prev = &fa->fa_next, fa = *prev)
+ /*
+diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
+index a789efc..a75c194 100644
+--- a/sound/core/pcm_native.c
++++ b/sound/core/pcm_native.c
+@@ -3246,9 +3246,7 @@ static int snd_pcm_fasync(int fd, struct file * file, int on)
+ 	err = fasync_helper(fd, file, on, &runtime->fasync);
+ out:
+ 	unlock_kernel();
+-	if (err < 0)
+-		return err;
+-	return 0;
++	return err;
+ }
+ 
+ /*
+diff --git a/sound/core/timer.c b/sound/core/timer.c
+index 7965320..3f0050d 100644
+--- a/sound/core/timer.c
++++ b/sound/core/timer.c
+@@ -1825,13 +1825,9 @@ static long snd_timer_user_ioctl(struct file *file, unsigned int cmd,
+ static int snd_timer_user_fasync(int fd, struct file * file, int on)
+ {
+ 	struct snd_timer_user *tu;
+-	int err;
+ 
+ 	tu = file->private_data;
+-	err = fasync_helper(fd, file, on, &tu->fasync);
+-        if (err < 0)
+-		return err;
+-	return 0;
++	return fasync_helper(fd, file, on, &tu->fasync);
+ }
+ 
+ static ssize_t snd_timer_user_read(struct file *file, char __user *buffer,
 -- 
 1.6.1.2
 
