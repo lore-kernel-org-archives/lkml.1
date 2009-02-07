@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbZBGRXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755770AbZBGRXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756147AbZBGRXV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 12:23:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbZBGRWc
+	id S1755770AbZBGRXi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 12:23:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbZBGRWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 12:22:32 -0500
-Received: from LUNGE.MIT.EDU ([18.54.1.69]:43443 "EHLO lunge.queued.net"
+	Sat, 7 Feb 2009 12:22:33 -0500
+Received: from LUNGE.MIT.EDU ([18.54.1.69]:43444 "EHLO lunge.queued.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753075AbZBGRWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753083AbZBGRWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 7 Feb 2009 12:22:31 -0500
-Date: Sat, 7 Feb 2009 12:12:42 -0500
+Date: Sat, 7 Feb 2009 12:14:48 -0500
 From: Andres Salomon <dilinger@queued.net>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
        adaplas@gmail.com
-Subject: [PATCH 4/15] vfb: fix memory leaks in removal path
-Message-ID: <20090207121242.21c07e0e@ephemeral>
+Subject: [PATCH 6/15] sm501fb: check fb_alloc_cmap return value and handle
+ failure properly
+Message-ID: <20090207121448.7b18c3fd@ephemeral>
 X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -25,25 +26,27 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-We were leaking the cmap memory.
-
 Signed-off-by: Andres Salomon <dilinger@debian.org>
 ---
- drivers/video/vfb.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/video/sm501fb.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/vfb.c b/drivers/video/vfb.c
-index 93fe08d..cc919ae 100644
---- a/drivers/video/vfb.c
-+++ b/drivers/video/vfb.c
-@@ -543,6 +543,7 @@ static int vfb_remove(struct platform_device *dev)
- 	if (info) {
- 		unregister_framebuffer(info);
- 		rvfree(videomemory, videomemorysize);
-+		fb_dealloc_cmap(&info->cmap);
- 		framebuffer_release(info);
+diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
+index dcd9879..eb5d73a 100644
+--- a/drivers/video/sm501fb.c
++++ b/drivers/video/sm501fb.c
+@@ -1525,7 +1525,10 @@ static int sm501fb_init_fb(struct fb_info *fb,
  	}
- 	return 0;
+ 
+ 	/* initialise and set the palette */
+-	fb_alloc_cmap(&fb->cmap, NR_PALETTE, 0);
++	if (fb_alloc_cmap(&fb->cmap, NR_PALETTE, 0)) {
++		dev_err(info->dev, "failed to allocate cmap memory\n");
++		return -ENOMEM;
++	}
+ 	fb_set_cmap(&fb->cmap, fb);
+ 
+ 	ret = (fb->fbops->fb_check_var)(&fb->var, fb);
 -- 
 1.5.6.5
 
