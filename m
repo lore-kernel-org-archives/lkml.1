@@ -1,282 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577AbZBGRCj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbZBGRLG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754577AbZBGRCj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 12:02:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbZBGRC3
+	id S1754692AbZBGRLG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 12:11:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbZBGRKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 12:02:29 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:35998 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752519AbZBGRC2 (ORCPT
+	Sat, 7 Feb 2009 12:10:55 -0500
+Received: from smtp.regionline.fi ([85.157.255.99]:34799 "EHLO
+	smtp.regionline.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752919AbZBGRKy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 12:02:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=D4Fs3rze5/3d28SPuxI/d+p0klGIbBCvGT++vu6MwNIRmLiYPrzk4kdC4tYjVwJHbe
-         jgQJiKPdJngjN2QDSFcQ1Lrrfdz5DUvRZQpwVQetrTFG9cJh2EHHDW8HAv4HtJvg7M+w
-         VYA6ywF7s/MRSL697JxaVoaLsCfCW5cuQtZvE=
-Date: Sat, 7 Feb 2009 18:02:22 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Mandeep Singh Baines <msb@google.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, rientjes@google.com,
-       mbligh@google.com, thockin@google.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] softlockup: remove timestamp checking from hung_task
-Message-ID: <20090207170222.GD5779@nowhere>
-References: <20090206233747.GA8747@google.com> <20090207162328.GA5779@nowhere> <20090207163440.GB5779@nowhere> <20090207165154.GC5779@nowhere>
+	Sat, 7 Feb 2009 12:10:54 -0500
+X-Greylist: delayed 730 seconds by postgrey-1.27 at vger.kernel.org; Sat, 07 Feb 2009 12:10:54 EST
+From: Jan Knutar <jk-lkml@sci.fi>
+To: "J.A. =?iso-8859-1?q?Magall=F3n?=" <jamagallon@ono.com>
+Subject: Re: SSD and IO schedulers
+Date: Sat, 7 Feb 2009 18:58:39 +0200
+User-Agent: KMail/1.10.4 (Linux/2.6.27.12-170.2.5.fc10.x86_64; KDE/4.1.4; x86_64; ; )
+Cc: "Linux-Kernel" <linux-kernel@vger.kernel.org>
+References: <4dcf7d360901301355l7ed26a5aob7ef6d79d9607b6b@mail.gmail.com> <20090204004003.26068f72@werewolf.home>
+In-Reply-To: <20090204004003.26068f72@werewolf.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <20090207165154.GC5779@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200902071858.40146.jk-lkml@sci.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 07, 2009 at 05:51:55PM +0100, Frederic Weisbecker wrote:
-> On Sat, Feb 07, 2009 at 05:34:40PM +0100, Frederic Weisbecker wrote:
-> > On Sat, Feb 07, 2009 at 05:23:28PM +0100, Frederic Weisbecker wrote:
-> > > Hi Mandeep,
-> > > 
-> > > On Fri, Feb 06, 2009 at 03:37:47PM -0800, Mandeep Singh Baines wrote:
-> > > > Patch against tip/core/softlockup
-> > > > 
-> > > > ---
-> > > > Impact: saves sizeof(long) bytes per task_struct
-> > > > 
-> > > > By guaranteeing that sysctl_hung_task_timeout_secs have elapsed between
-> > > > tasklist scans we can avoid using timestamps.
-> > > > 
-> > > > Signed-off-by: Mandeep Singh Baines <msb@google.com>
-> > > 
-> > > 
-> > > Good idea.
-> > > BTW, why haven't you put your name on top of this file?
-> > > That would help those who will send patches knowing to whom they have to
-> > > route their mails.
-> > > 
-> > > I made some comments below about small things...
-> > > 
-> > > > ---
-> > > >  include/linux/sched.h |    1 -
-> > > >  kernel/fork.c         |    8 +++-----
-> > > >  kernel/hung_task.c    |   48 +++++++++---------------------------------------
-> > > >  3 files changed, 12 insertions(+), 45 deletions(-)
-> > > > 
-> > > > diff --git a/include/linux/sched.h b/include/linux/sched.h
-> > > > index 2a2811c..e0d723f 100644
-> > > > --- a/include/linux/sched.h
-> > > > +++ b/include/linux/sched.h
-> > > > @@ -1241,7 +1241,6 @@ struct task_struct {
-> > > >  #endif
-> > > >  #ifdef CONFIG_DETECT_HUNG_TASK
-> > > >  /* hung task detection */
-> > > > -	unsigned long last_switch_timestamp;
-> > > >  	unsigned long last_switch_count;
-> > > >  #endif
-> > > >  /* CPU-specific state of this task */
-> > > > diff --git a/kernel/fork.c b/kernel/fork.c
-> > > > index fb94442..bf582f7 100644
-> > > > --- a/kernel/fork.c
-> > > > +++ b/kernel/fork.c
-> > > > @@ -639,6 +639,9 @@ static int copy_mm(unsigned long clone_flags, struct task_struct * tsk)
-> > > >  
-> > > >  	tsk->min_flt = tsk->maj_flt = 0;
-> > > >  	tsk->nvcsw = tsk->nivcsw = 0;
-> > > > +#ifdef CONFIG_DETECT_HUNG_TASK
-> > > > +	tsk->last_switch_count = tsk->nvcsw + tsk->nivcsw;
-> > > > +#endif
-> > > 
-> > > 
-> > > I think you can directly assign a zero here :-)
-> > > Or you want to let it as is to give some sense and explanation
-> > > about the role of this field?
-> > > Why not, I guess gcc will optimize it anyway.
-> > > 
-> > > 
-> > > >  	tsk->mm = NULL;
-> > > >  	tsk->active_mm = NULL;
-> > > > @@ -1041,11 +1044,6 @@ static struct task_struct *copy_process(unsigned long clone_flags,
-> > > >  
-> > > >  	p->default_timer_slack_ns = current->timer_slack_ns;
-> > > >  
-> > > > -#ifdef CONFIG_DETECT_HUNG_TASK
-> > > > -	p->last_switch_count = 0;
-> > > > -	p->last_switch_timestamp = 0;
-> > > > -#endif
-> > > > -
-> > > >  	task_io_accounting_init(&p->ioac);
-> > > >  	acct_clear_integrals(p);
-> > > >  
-> > > > diff --git a/kernel/hung_task.c b/kernel/hung_task.c
-> > > > index 3951a80..4a10756 100644
-> > > > --- a/kernel/hung_task.c
-> > > > +++ b/kernel/hung_task.c
-> > > > @@ -34,7 +34,6 @@ unsigned long __read_mostly sysctl_hung_task_check_count = PID_MAX_LIMIT;
-> > > >   * Zero means infinite timeout - no checking done:
-> > > >   */
-> > > >  unsigned long __read_mostly sysctl_hung_task_timeout_secs = 120;
-> > > > -static unsigned long __read_mostly hung_task_poll_jiffies;
-> > > >  
-> > > >  unsigned long __read_mostly sysctl_hung_task_warnings = 10;
-> > > >  
-> > > > @@ -69,33 +68,17 @@ static struct notifier_block panic_block = {
-> > > >  	.notifier_call = hung_task_panic,
-> > > >  };
-> > > >  
-> > > > -/*
-> > > > - * Returns seconds, approximately.  We don't need nanosecond
-> > > > - * resolution, and we don't need to waste time with a big divide when
-> > > > - * 2^30ns == 1.074s.
-> > > > - */
-> > > > -static unsigned long get_timestamp(void)
-> > > > -{
-> > > > -	int this_cpu = raw_smp_processor_id();
-> > > > -
-> > > > -	return cpu_clock(this_cpu) >> 30LL;  /* 2^30 ~= 10^9 */
-> > > > -}
-> > > > -
-> > > > -static void check_hung_task(struct task_struct *t, unsigned long now,
-> > > > -			    unsigned long timeout)
-> > > > +static void check_hung_task(struct task_struct *t, unsigned long timeout)
-> > > >  {
-> > > >  	unsigned long switch_count = t->nvcsw + t->nivcsw;
-> > > >  
-> > > >  	if (t->flags & PF_FROZEN)
-> > > >  		return;
-> > > >  
-> > > > -	if (switch_count != t->last_switch_count || !t->last_switch_timestamp) {
-> > > > +	if (switch_count != t->last_switch_count) {
-> > > >  		t->last_switch_count = switch_count;
-> > > > -		t->last_switch_timestamp = now;
-> > > >  		return;
-> > > >  	}
-> > > 
-> > > 
-> > > 
-> > > What happens here if khungtaskd is scheduled in after tsk is inserted on the task_list
-> > > in copy_process() but before tsk has been scheduled once?
-> > > 
-> > > tsk->last_switch_count and  tsk->nvcsw + tsk->nivcsw will still be equal to zero right?
-> > > 
-> > > Perhaps you could add another check such as
-> > > 
-> > > if (!switch_count)
-> > > 	return;
-> > > 
-> > > 
-> > > > -	if ((long)(now - t->last_switch_timestamp) < timeout)
-> > > > -		return;
-> > > >  	if (!sysctl_hung_task_warnings)
-> > > >  		return;
-> > > >  	sysctl_hung_task_warnings--;
-> > > > @@ -111,7 +94,6 @@ static void check_hung_task(struct task_struct *t, unsigned long now,
-> > > >  	sched_show_task(t);
-> > > >  	__debug_show_held_locks(t);
-> > > >  
-> > > > -	t->last_switch_timestamp = now;
-> > > >  	touch_nmi_watchdog();
-> > > >  
-> > > >  	if (sysctl_hung_task_panic)
-> > > > @@ -145,7 +127,6 @@ static void check_hung_uninterruptible_tasks(unsigned long timeout)
-> > > >  {
-> > > >  	int max_count = sysctl_hung_task_check_count;
-> > > >  	int batch_count = HUNG_TASK_BATCHING;
-> > > > -	unsigned long now = get_timestamp();
-> > > >  	struct task_struct *g, *t;
-> > > >  
-> > > >  	/*
-> > > > @@ -168,19 +149,16 @@ static void check_hung_uninterruptible_tasks(unsigned long timeout)
-> > > >  		}
-> > > >  		/* use "==" to skip the TASK_KILLABLE tasks waiting on NFS */
-> > > >  		if (t->state == TASK_UNINTERRUPTIBLE)
-> > > > -			check_hung_task(t, now, timeout);
-> > > > +			check_hung_task(t, timeout);
-> > > >  	} while_each_thread(g, t);
-> > > >   unlock:
-> > > >  	rcu_read_unlock();
-> > > >  }
-> > > >  
-> > > > -static void update_poll_jiffies(void)
-> > > > +static unsigned long timeout_jiffies(unsigned long timeout)
-> > > >  {
-> > > >  	/* timeout of 0 will disable the watchdog */
-> > > > -	if (sysctl_hung_task_timeout_secs == 0)
-> > > > -		hung_task_poll_jiffies = MAX_SCHEDULE_TIMEOUT;
-> > > > -	else
-> > > > -		hung_task_poll_jiffies = sysctl_hung_task_timeout_secs * HZ / 2;
-> > > > +	return (timeout ? timeout * HZ : MAX_SCHEDULE_TIMEOUT);
-> > > >  }
-> > > >  
-> > > >  /*
-> > > > @@ -197,8 +175,6 @@ int proc_dohung_task_timeout_secs(struct ctl_table *table, int write,
-> > > >  	if (ret || !write)
-> > > >  		goto out;
-> > > >  
-> > > > -	update_poll_jiffies();
-> > > > -
-> > > >  	wake_up_process(watchdog_task);
-> > > 
-> > > 
-> > > I'm not sure what does this function now that you dropped update_poll_jiffies()
-> > > So if the user sets up a new timeout value, the only effect will be that khungtaskd will
-> > > be awakened?
-> > > 
-> > > But actually the /sys file doesn't seem to be set up.
-> > 
-> > 
-> > Oops, I should have grep on proc_dohung_task_timeout_secs which is set on kernel/sysctl.
-> > Sorry.
-> > But still, sysctl_hung_task_timeout_secs doesn't seem to be set :-)
-> 
-> 
-> And once again I'm wrong, I shoud read sysctl.c or at least read the sysfs documentation.
-> Sorry for the noise.
-> 
-> BTW, here is a small fixlet on top of your patch about what I commented concerning
-> the tasks than weren't yet scheduled once:
+On Wednesday 04 February 2009, J.A. Magallón wrote:
 
+> Perhaps the reason is that, as the SSD is not so good, it behaves
+> more like a rotational drive ;).
 
-But it is not supposed to be TASK_UNINTERRUPTIBLE.
-Forget this fixlet.
-So, again sorry for the noise, I'm going to hide somewhere...
-
- 
-> --
-> From e7120e424b031978e482b5fe311d90916ffb8b7e Mon Sep 17 00:00:00 2001
-> From: Frederic Weisbecker <fweisbec@gmail.com>
-> Date: Sat, 7 Feb 2009 17:45:12 +0100
-> Subject: [PATCH] softlockup: ensure the task has been scheduled once
-> 
-> When we check if the task has been scheduled since the last scan, we might
-> have a race condition if the task has been inserted on the task list but not
-> yet scheduled once. So we just add a small check to ensure it has been switched
-> in at least one time to avoid false positive.
-> 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
->  kernel/hung_task.c |    6 +++++-
->  1 files changed, 5 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/hung_task.c b/kernel/hung_task.c
-> index 4a10756..7f57a71 100644
-> --- a/kernel/hung_task.c
-> +++ b/kernel/hung_task.c
-> @@ -72,7 +72,11 @@ static void check_hung_task(struct task_struct *t, unsigned long timeout)
->  {
->  	unsigned long switch_count = t->nvcsw + t->nivcsw;
->  
-> -	if (t->flags & PF_FROZEN)
-> +	/*
-> +	 * Ensure the task is not frozen and that it has been scheduled
-> +	 * at least once.
-> +	 */
-> +	if (t->flags & PF_FROZEN || !switch_count)
->  		return;
->  
->  	if (switch_count != t->last_switch_count) {
-> -- 
-> 1.6.1
-> 
-
+Do any other SSDs except Intel's exist that DON'T behave more like a 
+rotational drive? I am guessing using something like LogFS would give 
+the biggest boost on cheap SSDs and all memory cards.
