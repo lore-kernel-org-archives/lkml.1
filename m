@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbZBGPfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbZBGPkI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753861AbZBGPfv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 10:35:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbZBGPfk
+	id S1754045AbZBGPkI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 10:40:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbZBGPj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 10:35:40 -0500
-Received: from mba.ocn.ne.jp ([122.1.235.107]:53361 "EHLO smtp.mba.ocn.ne.jp"
+	Sat, 7 Feb 2009 10:39:56 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:38429 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751684AbZBGPfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 10:35:40 -0500
-Date: Sun, 08 Feb 2009 00:35:36 +0900 (JST)
-Message-Id: <20090208.003536.72707389.anemo@mba.ocn.ne.jp>
-To: sshtylyov@ru.mvista.com
-Cc: bzolnier@gmail.com, geert@linux-m68k.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, apw@canonical.com
-Subject: Re: [PATCH 01/15] ide: include <asm/ide.h> only when needed
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <498CB3CF.8070306@ru.mvista.com>
-References: <498B7D09.6040100@ru.mvista.com>
-	<200902061721.46813.bzolnier@gmail.com>
-	<498CB3CF.8070306@ru.mvista.com>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1752565AbZBGPjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Feb 2009 10:39:55 -0500
+Date: Sat, 7 Feb 2009 16:33:20 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Izik Eidus <ieidus@redhat.com>
+Cc: Greg KH <greg@kroah.com>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       mtk.manpages@gmail.com, linux-man@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: open(2) says O_DIRECT works on 512 byte boundries?
+Message-ID: <20090207153320.GA13276@random.random>
+References: <20090128213322.GA15789@kroah.com> <20090129141338.34e44a1f.kamezawa.hiroyu@jp.fujitsu.com> <20090129160826.701E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090130061714.GC31209@kroah.com> <20090202220856.GY20323@random.random> <20090204234153.GA32244@kroah.com> <20090206175414.GQ14011@random.random> <498D8D53.6030007@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <498D8D53.6030007@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 07 Feb 2009 01:03:59 +0300, Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
-> > config CONFIG_IDE_BE_IO
-> > 	bool
-> 
->     If it was that simple... Normally the BE case gets handled automagically 
-> (moreover, there is MIPS option that additionally controls I/O and memory 
-> space byte swapping). The case we have to address for TX493x is actually where 
-> the usual magic fails (or actually the code just doesn't want to use that 
-> option). So this doesn't look like a good name to me...
+On Sat, Feb 07, 2009 at 03:32:03PM +0200, Izik Eidus wrote:
+> we are opening here a tiny race:
+>
+> cpu#1 do get_user_pages_fast and fetch the pte (it think the pte is 
+> writeable)
+> cpu#2 do ptep_set_wrprotect()
+> cpu#2 check the mapcount against pagecount (it think that everything is 
+> fine and continue)
+> cpu#1 only now do get_page()
+>
+> Anyway this is minor issue that can be probably solved by just:
+> rechecking if the pte isnt read_only in gup_fast after we do the get_page()
 
-Well, for TX493x (MIPS), we have CONFIG_SWAP_IO_SPACE for big endian
-and it works fine for PCI-IDE host controllers.  For SoC internal
-controllers, no swapping is needed for both endian, thus custom tp_ops
-is needed only for big endian.
+Not needed, if I check page_count vs mapcount after marking the pte
+readonly and after sending smp-tlb-flush there is no race.
 
-So ... IDE_BE_IO looks actually not best name for this case.  It is
-IDE_RAW_IO or something.  But IDE_RAW_IO might not fit for other
-cases.  IDE_SWAPPED_IO?  Any other good name?
+> Anyway sound like a great idea to fix this issue!
 
----
-Atsushi Nemoto
+The only problem I'm thinking now is the IPI flood that would be
+generated if I send IPIs for every pte wrprotected in fork, that
+sounds overkill. So to use the IPI fix I could have gup-fast take the
+slow path first time around if PG_gup isn't set, and then only second
+time take the lockless fast path when PG_gup is already set (PG_gup
+gets set by follow_page under PT lock/mmap_sem read mode at
+least). And fork/ksm would only send IPIs for PG_gup pages. However
+that would make gup-fast slow the first time it runs on an
+anonymous/hugetlb page with pte marked writeable and I'm unsure if
+that's ok.
+
+Otherwise we've to return to the plan of the slightly more complicated
+fix.
