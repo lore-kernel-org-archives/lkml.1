@@ -1,64 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbZBGJCs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754070AbZBGJH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754338AbZBGJCs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 04:02:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbZBGJCd
+	id S1754070AbZBGJH3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 04:07:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbZBGJHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 04:02:33 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:44795 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751187AbZBGJCc (ORCPT
+	Sat, 7 Feb 2009 04:07:00 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50166 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751978AbZBGJG5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 04:02:32 -0500
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 001/001]  usbserial: New mobile broadband modems to be supported through option module
-Date: Sat, 7 Feb 2009 10:03:34 +0100
-User-Agent: KMail/1.9.10
-Cc: Dirk DeSchepper <ddeschepper@nvtl.com>,
-       USB development list <linux-usb@vger.kernel.org>, smurf@smurf.noris.de,
+	Sat, 7 Feb 2009 04:06:57 -0500
+Date: Sat, 7 Feb 2009 01:06:19 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
        linux-kernel@vger.kernel.org
-References: <12047829252365@kroah.org> <200902062023.07759.oliver@neukum.org> <20090206234716.GB31059@kroah.com>
-In-Reply-To: <20090206234716.GB31059@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Subject: Re: [PATCH] irq: optimize init_kstat_irqs/init_copy_kstat_irqs
+Message-Id: <20090207010619.daededa3.akpm@linux-foundation.org>
+In-Reply-To: <86802c440902070101l5b0ef862ja92e3f31705d9608@mail.gmail.com>
+References: <498CB0B7.8030009@kernel.org>
+	<20090206140005.44b4bb50.akpm@linux-foundation.org>
+	<498CB4DC.2010108@kernel.org>
+	<498D3D15.5090005@kernel.org>
+	<20090207002610.73ff7e6d.akpm@linux-foundation.org>
+	<86802c440902070101l5b0ef862ja92e3f31705d9608@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902071003.35856.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Saturday 07 February 2009 00:47:16 schrieb Greg KH:
+On Sat, 7 Feb 2009 01:01:03 -0800 Yinghai Lu <yinghai@kernel.org> wrote:
 
-> > The specifity is not affected at all.
 > 
-> If you look at the names that were changed, they are now more
-> descriptive than before, always a good thing to have.
+> add kzalloc_node_safe()?
 
-They are not descriptive. As far as USB devices have names,
-these names _are_ the numbers. You will be very hard pressed
-to guess from a name on a box that you may or may not have
-which OEM's hardware really is in that box. If you have IDs
-everything is clear. People who look at this code will mostly
-have bug reports which will hopefully include lsusb, but not the
-symbolic name in the kernel.
+I cannot find that function.
 
-We dont do
-*(base + 8) = 0xb3;
-here. That would be bad. We use a clearly defined macro, USB_DEVICE
-which takes id _numbers_. Device IDs have no meaning. They are meant
-to be unique. You can give sensible names only to things that have meaning.
-
-This is like doing
-u8 init_string1[] = { INIT_STRING1_BYTE0, INIT_STRING1_BYTE1, ...
-
-Don't make a fetish out of symbolic names.
-
-	Regards
-		Oliver
-
-PS: Yes, I've had a professor who did prefer it this way.
 
