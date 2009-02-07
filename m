@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754700AbZBGVUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbZBGVUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754700AbZBGVUZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 16:20:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753418AbZBGVUK
+	id S1755339AbZBGVUk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 16:20:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbZBGVUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 16:20:10 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:35445 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752938AbZBGVUJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 16:20:09 -0500
-Date: Sat, 7 Feb 2009 23:23:46 +0200
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Matthew Garrett <mjg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] binfmt_script: rewrite using parse_shell_args()
-Message-ID: <20090207212346.GA1120@epbyminw8406h.minsk.epam.com>
-References: <1233866864-14422-1-git-send-email-kirill@shutemov.name> <1233866864-14422-2-git-send-email-kirill@shutemov.name> <20090207163306.GB31938@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="J2SCkAp4GZ/dPZZf"
-Content-Disposition: inline
-In-Reply-To: <20090207163306.GB31938@srcf.ucam.org>
-User-Agent: Mutt/1.5.18 (2008-10-30)
+	Sat, 7 Feb 2009 16:20:12 -0500
+Received: from mail.crca.org.au ([67.207.131.56]:41353 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752938AbZBGVUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Feb 2009 16:20:11 -0500
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [PATCH 3/3][RFC] swsusp: shrink file cache first
+From: Nigel Cunningham <ncunningham-lkml@crca.org.au>
+Reply-To: ncunningham-lkml@crca.org.au
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>, rjw@sisk.pl, riel@redhat.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <2f11576a0902070851q7d478679i8a47ad9b3810dc0e@mail.gmail.com>
+References: <20090206031125.693559239@cmpxchg.org>
+	 <20090206031324.004715023@cmpxchg.org>
+	 <20090206122129.79CC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20090206044907.GA18467@cmpxchg.org>
+	 <20090206130009.99400d43.akpm@linux-foundation.org>
+	 <2f11576a0902070851q7d478679i8a47ad9b3810dc0e@mail.gmail.com>
+Content-Type: text/plain
+Date: Sun, 08 Feb 2009 08:20:51 +1100
+Message-Id: <1234041651.7277.5.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi.
 
---J2SCkAp4GZ/dPZZf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun, 2009-02-08 at 01:51 +0900, KOSAKI Motohiro wrote:
+> akpm wrote:
+> --------------
+>  And what was the observed effect of all this?
+> 
+> Rafael wrote:
+> --------------
+> Measurable effects:
+> 1) It tends to free only as much memory as required, eg. if the image_size
+> is set to 450 MB, the actual image sizes are almost always well above
+> 400 MB and they tended to be below that number without the patch
+> (~5-10% of a difference, but still :-)).
 
-On Sat, Feb 07, 2009 at 04:33:06PM +0000, Matthew Garrett wrote:
-> On Thu, Feb 05, 2009 at 10:47:43PM +0200, Kirill A. Shutemov wrote:
-> > parse_shell_args() allows to use more than one argument in shebang
->=20
-> Surely this changes userspace ABI?
+Do you always get at least the number of pages you ask for, if that's
+possible?
 
-This patch break programs which use shabang like
+Regards,
 
-#!/bin/foo a b
+Nigel
 
-and expect that it will be interpreted as
-
-/bin/foo "a b"
-
-But I don't know a real world program witch use this hack.
-
---=20
-Regards,  Kirill A. Shutemov
- + Belarus, Minsk
- + ALT Linux Team, http://www.altlinux.org/
-
---J2SCkAp4GZ/dPZZf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmN++IACgkQbWYnhzC5v6qzMwCdGBZTCmnJdoIFvewDNoCJ3npo
-4DMAni3NSrEqf5oi8Cr8IPK5id+UzAEO
-=hu0M
------END PGP SIGNATURE-----
-
---J2SCkAp4GZ/dPZZf--
