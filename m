@@ -1,222 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbZBGPTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbZBGPfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753953AbZBGPTw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 10:19:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbZBGPTm
+	id S1753861AbZBGPfv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 10:35:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbZBGPfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 10:19:42 -0500
-Received: from mx2.suse.de ([195.135.220.15]:50618 "EHLO mx2.suse.de"
+	Sat, 7 Feb 2009 10:35:40 -0500
+Received: from mba.ocn.ne.jp ([122.1.235.107]:53361 "EHLO smtp.mba.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752285AbZBGPTl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 10:19:41 -0500
-Message-ID: <498DA670.1000508@suse.de>
-Date: Sat, 07 Feb 2009 16:19:12 +0100
-From: Frank Seidel <fseidel@suse.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: linux kernel <linux-kernel@vger.kernel.org>
-Cc: akpm@linux-foundation.org, "David S. Miller" <davem@davemloft.net>,
-       linux-crypto@vger.kernel.org, frank@f-seidel.de,
-       herbert@gondor.apana.org.au, jarod@redhat.com,
-       Alexey Dobriyan <adobriyan@gmail.com>, Frank Seidel <fseidel@suse.de>
-Subject: [PATCHv2] crypto: add missing KERN_* constants to printks
-References: <498C46DE.8040700@suse.de>
-In-Reply-To: <498C46DE.8040700@suse.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-15
+	id S1751684AbZBGPfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Feb 2009 10:35:40 -0500
+Date: Sun, 08 Feb 2009 00:35:36 +0900 (JST)
+Message-Id: <20090208.003536.72707389.anemo@mba.ocn.ne.jp>
+To: sshtylyov@ru.mvista.com
+Cc: bzolnier@gmail.com, geert@linux-m68k.org, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, apw@canonical.com
+Subject: Re: [PATCH 01/15] ide: include <asm/ide.h> only when needed
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <498CB3CF.8070306@ru.mvista.com>
+References: <498B7D09.6040100@ru.mvista.com>
+	<200902061721.46813.bzolnier@gmail.com>
+	<498CB3CF.8070306@ru.mvista.com>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Frank Seidel <frank@f-seidel.de>
+On Sat, 07 Feb 2009 01:03:59 +0300, Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
+> > config CONFIG_IDE_BE_IO
+> > 	bool
+> 
+>     If it was that simple... Normally the BE case gets handled automagically 
+> (moreover, there is MIPS option that additionally controls I/O and memory 
+> space byte swapping). The case we have to address for TX493x is actually where 
+> the usual magic fails (or actually the code just doesn't want to use that 
+> option). So this doesn't look like a good name to me...
 
-According to kerneljanitors todo list all printk calls (beginning
-a new line) should have an according KERN_* constant.
-Those are the missing pieces here for the crypto subsystem.
+Well, for TX493x (MIPS), we have CONFIG_SWAP_IO_SPACE for big endian
+and it works fine for PCI-IDE host controllers.  For SoC internal
+controllers, no swapping is needed for both endian, thus custom tp_ops
+is needed only for big endian.
 
-Signed-off-by: Frank Seidel <frank@f-seidel.de>
+So ... IDE_BE_IO looks actually not best name for this case.  It is
+IDE_RAW_IO or something.  But IDE_RAW_IO might not fit for other
+cases.  IDE_SWAPPED_IO?  Any other good name?
+
 ---
- crypto/ansi_cprng.c |    2 +-
- crypto/tcrypt.c     |   51 +++++++++++++++++++++++++++++----------------------
- 2 files changed, 30 insertions(+), 23 deletions(-)
-
---- a/crypto/ansi_cprng.c
-+++ b/crypto/ansi_cprng.c
-@@ -167,7 +167,7 @@ static int _get_more_prng_bytes(struct p
- 			break;
- 	}
- 
--	dbgprint("Returning new block for context %p\n", ctx);
-+	dbgprint(KERN_DEBUG "Returning new block for context %p\n", ctx);
- 	ctx->rand_data_valid = 0;
- 
- 	hexdump("Output DT: ", ctx->DT, DEFAULT_BLK_SZ);
---- a/crypto/tcrypt.c
-+++ b/crypto/tcrypt.c
-@@ -74,7 +74,7 @@ static int test_cipher_jiffies(struct bl
- 			return ret;
- 	}
- 
--	printk("%d operations in %d seconds (%ld bytes)\n",
-+	printk(KERN_INFO "%d operations in %d seconds (%ld bytes)\n",
- 	       bcount, sec, (long)bcount * blen);
- 	return 0;
- }
-@@ -122,7 +122,7 @@ out:
- 	local_bh_enable();
- 
- 	if (ret == 0)
--		printk("1 operation in %lu cycles (%d bytes)\n",
-+		printk(KERN_INFO "1 operation in %lu cycles (%d bytes)\n",
- 		       (cycles + 4) / 8, blen);
- 
- 	return ret;
-@@ -146,13 +146,13 @@ static void test_cipher_speed(const char
- 	else
- 		e = "decryption";
- 
--	printk("\ntesting speed of %s %s\n", algo, e);
-+	printk(KERN_INFO "\ntesting speed of %s %s\n", algo, e);
- 
- 	tfm = crypto_alloc_blkcipher(algo, 0, CRYPTO_ALG_ASYNC);
- 
- 	if (IS_ERR(tfm)) {
--		printk("failed to load transform for %s: %ld\n", algo,
--		       PTR_ERR(tfm));
-+		printk(KERN_WARNING "failed to load transform for %s: %ld\n",
-+		       algo, PTR_ERR(tfm));
- 		return;
- 	}
- 	desc.tfm = tfm;
-@@ -166,14 +166,16 @@ static void test_cipher_speed(const char
- 			struct scatterlist sg[TVMEMSIZE];
- 
- 			if ((*keysize + *b_size) > TVMEMSIZE * PAGE_SIZE) {
--				printk("template (%u) too big for "
-+				printk(KERN_WARNING
-+				       "template (%u) too big for "
- 				       "tvmem (%lu)\n", *keysize + *b_size,
- 				       TVMEMSIZE * PAGE_SIZE);
- 				goto out;
- 			}
- 
--			printk("test %u (%d bit key, %d byte blocks): ", i,
--					*keysize * 8, *b_size);
-+			printk(KERN_INFO "test %u "
-+					"(%d bit key, %d byte blocks): ",
-+					i, *keysize * 8, *b_size);
- 
- 			memset(tvmem[0], 0xff, PAGE_SIZE);
- 
-@@ -188,7 +190,8 @@ static void test_cipher_speed(const char
- 
- 			ret = crypto_blkcipher_setkey(tfm, key, *keysize);
- 			if (ret) {
--				printk("setkey() failed flags=%x\n",
-+				printk(KERN_WARNING
-+						"setkey() failed flags=%x\n",
- 						crypto_blkcipher_get_flags(tfm));
- 				goto out;
- 			}
-@@ -215,7 +218,8 @@ static void test_cipher_speed(const char
- 							 *b_size);
- 
- 			if (ret) {
--				printk("%s() failed flags=%x\n", e, desc.flags);
-+				printk(KERN_WARNING "%s() failed flags=%x\n",
-+				       e, desc.flags);
- 				break;
- 			}
- 			b_size++;
-@@ -243,7 +247,7 @@ static int test_hash_jiffies_digest(stru
- 			return ret;
- 	}
- 
--	printk("%6u opers/sec, %9lu bytes/sec\n",
-+	printk(KERN_INFO "%6u opers/sec, %9lu bytes/sec\n",
- 	       bcount / sec, ((long)bcount * blen) / sec);
- 
- 	return 0;
-@@ -275,7 +279,7 @@ static int test_hash_jiffies(struct hash
- 			return ret;
- 	}
- 
--	printk("%6u opers/sec, %9lu bytes/sec\n",
-+	printk(KERN_INFO "%6u opers/sec, %9lu bytes/sec\n",
- 	       bcount / sec, ((long)bcount * blen) / sec);
- 
- 	return 0;
-@@ -320,7 +324,7 @@ out:
- 	if (ret)
- 		return ret;
- 
--	printk("%6lu cycles/operation, %4lu cycles/byte\n",
-+	printk(KERN_INFO "%6lu cycles/operation, %4lu cycles/byte\n",
- 	       cycles / 8, cycles / (8 * blen));
- 
- 	return 0;
-@@ -384,7 +388,7 @@ out:
- 	if (ret)
- 		return ret;
- 
--	printk("%6lu cycles/operation, %4lu cycles/byte\n",
-+	printk(KERN_INFO "%6lu cycles/operation, %4lu cycles/byte\n",
- 	       cycles / 8, cycles / (8 * blen));
- 
- 	return 0;
-@@ -400,13 +404,13 @@ static void test_hash_speed(const char *
- 	int i;
- 	int ret;
- 
--	printk("\ntesting speed of %s\n", algo);
-+	printk(KERN_INFO "\ntesting speed of %s\n", algo);
- 
- 	tfm = crypto_alloc_hash(algo, 0, CRYPTO_ALG_ASYNC);
- 
- 	if (IS_ERR(tfm)) {
--		printk("failed to load transform for %s: %ld\n", algo,
--		       PTR_ERR(tfm));
-+		printk(KERN_WARNING "failed to load transform for %s: %ld\n",
-+		       algo, PTR_ERR(tfm));
- 		return;
- 	}
- 
-@@ -414,7 +418,7 @@ static void test_hash_speed(const char *
- 	desc.flags = 0;
- 
- 	if (crypto_hash_digestsize(tfm) > sizeof(output)) {
--		printk("digestsize(%u) > outputbuffer(%zu)\n",
-+		printk(KERN_WARNING "digestsize(%u) > outputbuffer(%zu)\n",
- 		       crypto_hash_digestsize(tfm), sizeof(output));
- 		goto out;
- 	}
-@@ -427,13 +431,16 @@ static void test_hash_speed(const char *
- 
- 	for (i = 0; speed[i].blen != 0; i++) {
- 		if (speed[i].blen > TVMEMSIZE * PAGE_SIZE) {
--			printk("template (%u) too big for tvmem (%lu)\n",
-+			printk(KERN_WARNING
-+			       "template (%u) too big for tvmem (%lu)\n",
- 			       speed[i].blen, TVMEMSIZE * PAGE_SIZE);
- 			goto out;
- 		}
- 
--		printk("test%3u (%5u byte blocks,%5u bytes per update,%4u updates): ",
--		       i, speed[i].blen, speed[i].plen, speed[i].blen / speed[i].plen);
-+		printk(KERN_INFO "test%3u "
-+		       "(%5u byte blocks,%5u bytes per update,%4u updates): ",
-+		       i, speed[i].blen, speed[i].plen,
-+		       speed[i].blen / speed[i].plen);
- 
- 		if (sec)
- 			ret = test_hash_jiffies(&desc, sg, speed[i].blen,
-@@ -443,7 +450,7 @@ static void test_hash_speed(const char *
- 					       speed[i].plen, output);
- 
- 		if (ret) {
--			printk("hashing failed ret=%d\n", ret);
-+			printk(KERN_WARNING "hashing failed ret=%d\n", ret);
- 			break;
- 		}
- 	}
+Atsushi Nemoto
