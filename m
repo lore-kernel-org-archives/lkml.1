@@ -1,213 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756838AbZBGBWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753187AbZBGBXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756838AbZBGBWW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 20:22:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbZBGBWL
+	id S1753187AbZBGBXA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 20:23:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbZBGBWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 20:22:11 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:51010 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752440AbZBGBWJ (ORCPT
+	Fri, 6 Feb 2009 20:22:50 -0500
+Received: from mail.fireflyinternet.com ([78.156.72.243]:1555 "EHLO
+	fireflyinternet.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752835AbZBGBWt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 20:22:09 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:mime-version:
-	content-type:content-disposition:x-operating-system:user-agent:
-	x-gmailtapped-by:x-gmailtapped;
-	b=xWDaEQoHRtR2NEHVciILFm1DcQafI3Nxvs4UfhC+M6Zci8i6edJCJdFSLuspnX0s2
-	njGLrJHjQt13Ihu07ZyFA==
-Date: Fri, 6 Feb 2009 15:37:47 -0800
-From: Mandeep Singh Baines <msb@google.com>
-To: mingo@elte.hu, fweisbec@gmail.com
-Cc: linux-kernel@vger.kernel.org, rientjes@google.com, mbligh@google.com,
-       thockin@google.com, akpm@linux-foundation.org
-Subject: [PATCH] softlockup: remove timestamp checking from hung_task
-Message-ID: <20090206233747.GA8747@google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Operating-System: Linux/2.6.18.5-gg42workstation-mixed64-32 (x86_64)
-User-Agent: Mutt/1.5.11
-X-GMailtapped-By: 172.28.16.76
-X-GMailtapped: msb
+	Fri, 6 Feb 2009 20:22:49 -0500
+X-Greylist: delayed 1822 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Feb 2009 20:22:49 EST
+Subject: Re: Gem GTT mmaps..
+From: Chris Wilson <chris@chris-wilson.co.uk>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Thomas =?ISO-8859-1?Q?Hellstr=F6m?= <thomas@shipmail.org>,
+       DRI <dri-devel@lists.sourceforge.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200902061424.02906.jbarnes@virtuousgeek.org>
+References: <498A1760.7010108@shipmail.org>
+	 <200902060914.59956.jbarnes@virtuousgeek.org>
+	 <498CAD2F.5070806@shipmail.org>
+	 <200902061424.02906.jbarnes@virtuousgeek.org>
+Content-Type: text/plain
+Date: Sat, 07 Feb 2009 00:52:21 +0000
+Message-Id: <1233967941.11716.1009.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: 78.156.66.37
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch against tip/core/softlockup
+I tried it, it's not too happy. My only concern is that this now relies
+on userspace to correctly call SW_FINISH (and not unmap after mmapping
+the GTT_MMAP) or otherwise the object is leaked? Patch comments inline.
 
----
-Impact: saves sizeof(long) bytes per task_struct
+On Fri, 2009-02-06 at 14:24 -0800, Jesse Barnes wrote:
+> This one should cover the cases you found.
+>   - ref at map time will keep the object around so fault shouldn't fail
+>   - additional threads will take their refs in vm_open/close
+>   - unmap will unref and remove mmap_offset allowing object to be freed
+> 
+> -- 
+> Jesse Barnes, Intel Open Source Technology Center
+> 
+> diff --git a/drivers/gpu/drm/drm_gem.c b/drivers/gpu/drm/drm_gem.c
+> index 6915fb8..2752114 100644
+> --- a/drivers/gpu/drm/drm_gem.c
+> +++ b/drivers/gpu/drm/drm_gem.c
+> @@ -460,6 +460,23 @@ drm_gem_object_handle_free(struct kref *kref)
+>  }
+>  EXPORT_SYMBOL(drm_gem_object_handle_free);
+>  
+> +void drm_gem_vm_open(struct vm_area_struct *vma)
+> +{
+> +	struct drm_gem_object *obj = vma->vm_private_data;
+> +
+> +	drm_gem_object_reference(obj);
+> +}
+> +EXPORT_SYMBOL(drm_gem_vm_open);
+> +
+> +void drm_gem_vm_close(struct vm_area_struct *vma)
+> +{
+> +	struct drm_gem_object *obj = vma->vm_private_data;
+> +
+> +	drm_gem_object_unreference(obj);
 
-By guaranteeing that sysctl_hung_task_timeout_secs have elapsed between
-tasklist scans we can avoid using timestamps.
+Need to take the dev->struct_mutex for this potential free.
 
-Signed-off-by: Mandeep Singh Baines <msb@google.com>
----
- include/linux/sched.h |    1 -
- kernel/fork.c         |    8 +++-----
- kernel/hung_task.c    |   48 +++++++++---------------------------------------
- 3 files changed, 12 insertions(+), 45 deletions(-)
+> +}
+> +EXPORT_SYMBOL(drm_gem_vm_close);
+> +
+> +
+>  /**
+>   * drm_gem_mmap - memory map routine for GEM objects
+>   * @filp: DRM file pointer
+> diff --git a/drivers/gpu/drm/i915/i915_drv.c b/drivers/gpu/drm/i915/i915_drv.c
+> index aac12ee..a31cbdb 100644
+> --- a/drivers/gpu/drm/i915/i915_drv.c
+> +++ b/drivers/gpu/drm/i915/i915_drv.c
+> @@ -94,6 +94,8 @@ static int i915_resume(struct drm_device *dev)
+>  
+>  static struct vm_operations_struct i915_gem_vm_ops = {
+>  	.fault = i915_gem_fault,
+> +	.open = drm_gem_vm_open,
+> +	.close = drm_gem_vm_close,
+>  };
+>  
+>  static struct drm_driver driver = {
+> diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
+> index 1441831..a476de0 100644
+> --- a/drivers/gpu/drm/i915/i915_gem.c
+> +++ b/drivers/gpu/drm/i915/i915_gem.c
+> @@ -52,6 +52,7 @@ static void i915_gem_object_free_page_list(struct drm_gem_object *obj);
+>  static int i915_gem_object_wait_rendering(struct drm_gem_object *obj);
+>  static int i915_gem_object_bind_to_gtt(struct drm_gem_object *obj,
+>  					   unsigned alignment);
+> +static void i915_gem_free_mmap_offset(struct drm_gem_object *obj);
+>  static int i915_gem_object_get_fence_reg(struct drm_gem_object *obj, bool write);
+>  static void i915_gem_clear_fence_reg(struct drm_gem_object *obj);
+>  static int i915_gem_evict_something(struct drm_device *dev);
+> @@ -497,6 +498,13 @@ i915_gem_sw_finish_ioctl(struct drm_device *dev, void *data,
+>  		i915_gem_object_flush_cpu_write_domain(obj);
+>  
+>  	drm_gem_object_unreference(obj);
+> +
+> +	/* If it's been GTT mapped, unref it again... */
+> +	if (obj_priv->mmap_offset) {
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 2a2811c..e0d723f 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1241,7 +1241,6 @@ struct task_struct {
- #endif
- #ifdef CONFIG_DETECT_HUNG_TASK
- /* hung task detection */
--	unsigned long last_switch_timestamp;
- 	unsigned long last_switch_count;
- #endif
- /* CPU-specific state of this task */
-diff --git a/kernel/fork.c b/kernel/fork.c
-index fb94442..bf582f7 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -639,6 +639,9 @@ static int copy_mm(unsigned long clone_flags, struct task_struct * tsk)
- 
- 	tsk->min_flt = tsk->maj_flt = 0;
- 	tsk->nvcsw = tsk->nivcsw = 0;
-+#ifdef CONFIG_DETECT_HUNG_TASK
-+	tsk->last_switch_count = tsk->nvcsw + tsk->nivcsw;
-+#endif
- 
- 	tsk->mm = NULL;
- 	tsk->active_mm = NULL;
-@@ -1041,11 +1044,6 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 
- 	p->default_timer_slack_ns = current->timer_slack_ns;
- 
--#ifdef CONFIG_DETECT_HUNG_TASK
--	p->last_switch_count = 0;
--	p->last_switch_timestamp = 0;
--#endif
--
- 	task_io_accounting_init(&p->ioac);
- 	acct_clear_integrals(p);
- 
-diff --git a/kernel/hung_task.c b/kernel/hung_task.c
-index 3951a80..4a10756 100644
---- a/kernel/hung_task.c
-+++ b/kernel/hung_task.c
-@@ -34,7 +34,6 @@ unsigned long __read_mostly sysctl_hung_task_check_count = PID_MAX_LIMIT;
-  * Zero means infinite timeout - no checking done:
-  */
- unsigned long __read_mostly sysctl_hung_task_timeout_secs = 120;
--static unsigned long __read_mostly hung_task_poll_jiffies;
- 
- unsigned long __read_mostly sysctl_hung_task_warnings = 10;
- 
-@@ -69,33 +68,17 @@ static struct notifier_block panic_block = {
- 	.notifier_call = hung_task_panic,
- };
- 
--/*
-- * Returns seconds, approximately.  We don't need nanosecond
-- * resolution, and we don't need to waste time with a big divide when
-- * 2^30ns == 1.074s.
-- */
--static unsigned long get_timestamp(void)
--{
--	int this_cpu = raw_smp_processor_id();
--
--	return cpu_clock(this_cpu) >> 30LL;  /* 2^30 ~= 10^9 */
--}
--
--static void check_hung_task(struct task_struct *t, unsigned long now,
--			    unsigned long timeout)
-+static void check_hung_task(struct task_struct *t, unsigned long timeout)
- {
- 	unsigned long switch_count = t->nvcsw + t->nivcsw;
- 
- 	if (t->flags & PF_FROZEN)
- 		return;
- 
--	if (switch_count != t->last_switch_count || !t->last_switch_timestamp) {
-+	if (switch_count != t->last_switch_count) {
- 		t->last_switch_count = switch_count;
--		t->last_switch_timestamp = now;
- 		return;
- 	}
--	if ((long)(now - t->last_switch_timestamp) < timeout)
--		return;
- 	if (!sysctl_hung_task_warnings)
- 		return;
- 	sysctl_hung_task_warnings--;
-@@ -111,7 +94,6 @@ static void check_hung_task(struct task_struct *t, unsigned long now,
- 	sched_show_task(t);
- 	__debug_show_held_locks(t);
- 
--	t->last_switch_timestamp = now;
- 	touch_nmi_watchdog();
- 
- 	if (sysctl_hung_task_panic)
-@@ -145,7 +127,6 @@ static void check_hung_uninterruptible_tasks(unsigned long timeout)
- {
- 	int max_count = sysctl_hung_task_check_count;
- 	int batch_count = HUNG_TASK_BATCHING;
--	unsigned long now = get_timestamp();
- 	struct task_struct *g, *t;
- 
- 	/*
-@@ -168,19 +149,16 @@ static void check_hung_uninterruptible_tasks(unsigned long timeout)
- 		}
- 		/* use "==" to skip the TASK_KILLABLE tasks waiting on NFS */
- 		if (t->state == TASK_UNINTERRUPTIBLE)
--			check_hung_task(t, now, timeout);
-+			check_hung_task(t, timeout);
- 	} while_each_thread(g, t);
-  unlock:
- 	rcu_read_unlock();
- }
- 
--static void update_poll_jiffies(void)
-+static unsigned long timeout_jiffies(unsigned long timeout)
- {
- 	/* timeout of 0 will disable the watchdog */
--	if (sysctl_hung_task_timeout_secs == 0)
--		hung_task_poll_jiffies = MAX_SCHEDULE_TIMEOUT;
--	else
--		hung_task_poll_jiffies = sysctl_hung_task_timeout_secs * HZ / 2;
-+	return (timeout ? timeout * HZ : MAX_SCHEDULE_TIMEOUT);
- }
- 
- /*
-@@ -197,8 +175,6 @@ int proc_dohung_task_timeout_secs(struct ctl_table *table, int write,
- 	if (ret || !write)
- 		goto out;
- 
--	update_poll_jiffies();
--
- 	wake_up_process(watchdog_task);
- 
-  out:
-@@ -211,20 +187,14 @@ int proc_dohung_task_timeout_secs(struct ctl_table *table, int write,
- static int watchdog(void *dummy)
- {
- 	set_user_nice(current, 0);
--	update_poll_jiffies();
- 
- 	for ( ; ; ) {
--		unsigned long timeout;
-+		unsigned long timeout = sysctl_hung_task_timeout_secs;
- 
--		while (schedule_timeout_interruptible(hung_task_poll_jiffies));
-+		while (schedule_timeout_interruptible(timeout_jiffies(timeout)))
-+			timeout = sysctl_hung_task_timeout_secs;
- 
--		/*
--		 * Need to cache timeout here to avoid timeout being set
--		 * to 0 via sysctl while inside check_hung_*_tasks().
--		 */
--		timeout = sysctl_hung_task_timeout_secs;
--		if (timeout)
--			check_hung_uninterruptible_tasks(timeout);
-+		check_hung_uninterruptible_tasks(timeout);
- 	}
- 
- 	return 0;
--- 
-1.5.4.5
+This test occurs after the potential free above.
+
+> +		i915_gem_free_mmap_offset(obj);
+> +		drm_gem_object_unreference(obj);
+> +	}
+> +
+>  	mutex_unlock(&dev->struct_mutex);
+>  	return ret;
+>  }
+> @@ -607,8 +615,6 @@ int i915_gem_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+>  	case -EAGAIN:
+>  		return VM_FAULT_OOM;
+>  	case -EFAULT:
+> -	case -EBUSY:
+> -		DRM_ERROR("can't insert pfn??  fault or busy...\n");
+>  		return VM_FAULT_SIGBUS;
+>  	default:
+>  		return VM_FAULT_NOPAGE;
+> @@ -684,6 +690,32 @@ out_free_list:
+>  	return ret;
+>  }
+>  
+> +static void
+> +i915_gem_free_mmap_offset(struct drm_gem_object *obj)
+> +{
+> +	struct drm_device *dev = obj->dev;
+> +	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+> +	struct drm_gem_mm *mm = dev->mm_private;
+> +	struct drm_map_list *list;
+> +	struct drm_map *map;
+> +
+> +	list = &obj->map_list;
+> +	drm_ht_remove_item(&mm->offset_hash, &list->hash);
+> +
+> +	if (list->file_offset_node) {
+> +		drm_mm_put_block(list->file_offset_node);
+> +		list->file_offset_node = NULL;
+> +	}
+> +
+> +	map = list->map;
+> +	if (map) {
+> +		drm_free(map, sizeof(*map), DRM_MEM_DRIVER);
+> +		list->map = NULL;
+> +	}
+> +
+> +	obj_priv->mmap_offset = 0;
+> +}
+> +
+>  /**
+>   * i915_gem_get_gtt_alignment - return required GTT alignment for an object
+>   * @obj: object to check
+> @@ -788,7 +820,7 @@ i915_gem_mmap_gtt_ioctl(struct drm_device *dev, void *data,
+>  		list_add(&obj_priv->list, &dev_priv->mm.inactive_list);
+>  	}
+>  
+> -	drm_gem_object_unreference(obj);
+> +	/* Leave lookup reference around until unmap time */
+>  	mutex_unlock(&dev->struct_mutex);
+>  
+>  	return 0;
+> @@ -2885,9 +2917,6 @@ int i915_gem_init_object(struct drm_gem_object *obj)
+>  void i915_gem_free_object(struct drm_gem_object *obj)
+>  {
+>  	struct drm_device *dev = obj->dev;
+> -	struct drm_gem_mm *mm = dev->mm_private;
+> -	struct drm_map_list *list;
+> -	struct drm_map *map;
+>  	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+>  
+>  	while (obj_priv->pin_count > 0)
+> @@ -2898,20 +2927,6 @@ void i915_gem_free_object(struct drm_gem_object *obj)
+>  
+>  	i915_gem_object_unbind(obj);
+>  
+> -	list = &obj->map_list;
+> -	drm_ht_remove_item(&mm->offset_hash, &list->hash);
+> -
+> -	if (list->file_offset_node) {
+> -		drm_mm_put_block(list->file_offset_node);
+> -		list->file_offset_node = NULL;
+> -	}
+> -
+> -	map = list->map;
+> -	if (map) {
+> -		drm_free(map, sizeof(*map), DRM_MEM_DRIVER);
+> -		list->map = NULL;
+> -	}
+> -
+
+Add a BUG_ON(obj_priv->mmap_offset) for fun and double-faults!
+
+>  	drm_free(obj_priv->page_cpu_valid, 1, DRM_MEM_DRIVER);
+>  	drm_free(obj->driver_private, 1, DRM_MEM_DRIVER);
+>  }
+> diff --git a/include/drm/drmP.h b/include/drm/drmP.h
+> index 8190b9b..e5f4ae9 100644
+> --- a/include/drm/drmP.h
+> +++ b/include/drm/drmP.h
+> @@ -1321,6 +1321,8 @@ void drm_gem_object_free(struct kref *kref);
+>  struct drm_gem_object *drm_gem_object_alloc(struct drm_device *dev,
+>  					    size_t size);
+>  void drm_gem_object_handle_free(struct kref *kref);
+> +void drm_gem_vm_open(struct vm_area_struct *vma);
+> +void drm_gem_vm_close(struct vm_area_struct *vma);
+>  int drm_gem_mmap(struct file *filp, struct vm_area_struct *vma);
+
+-ickle
 
