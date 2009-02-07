@@ -1,137 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbZBGQvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755103AbZBGQwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754752AbZBGQvT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 11:51:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbZBGQvK
+	id S1755103AbZBGQwR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 11:52:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752791AbZBGQwD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 11:51:10 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:62249 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752291AbZBGQvI (ORCPT
+	Sat, 7 Feb 2009 11:52:03 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:58716 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752291AbZBGQwA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 11:51:08 -0500
+	Sat, 7 Feb 2009 11:52:00 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=dN8/X1coIr/w2V+xa2xs3018KuOFrrrVWBPQiKAuC/MSnxxi9evvgsg9XWFYkaxAJN
-         3u/FYBVwXVOiiZNo5KXL4MnQeuw/4TCYlo22nhg+YbBT//pwxQAm6HnLrKKvMsUSOjID
-         IkO7uEpubYv+/Bce9smK58haTYlFXFq/LBHzU=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=XUU6yLGyXDPu/g355YpLcEfWNeEiIABaAixNG9TyZAPLFB21jD9sddB4P7AxusGJOg
+         GjxZyB7muT2qscCiCpm3xx1JcoUVLD0vAKiooXiZmfqSWeyjEfBRz5CV2B3TQ0ThdJOf
+         b7dZKCZyyQ45WHESSgeJqbMzeckaAUNwNZIzI=
+Date: Sat, 7 Feb 2009 17:51:55 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Mandeep Singh Baines <msb@google.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, rientjes@google.com,
+       mbligh@google.com, thockin@google.com, akpm@linux-foundation.org
+Subject: Re: [PATCH] softlockup: remove timestamp checking from hung_task
+Message-ID: <20090207165154.GC5779@nowhere>
+References: <20090206233747.GA8747@google.com> <20090207162328.GA5779@nowhere> <20090207163440.GB5779@nowhere>
 MIME-Version: 1.0
-In-Reply-To: <20090206130009.99400d43.akpm@linux-foundation.org>
-References: <20090206031125.693559239@cmpxchg.org>
-	 <20090206031324.004715023@cmpxchg.org>
-	 <20090206122129.79CC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20090206044907.GA18467@cmpxchg.org>
-	 <20090206130009.99400d43.akpm@linux-foundation.org>
-Date: Sun, 8 Feb 2009 01:51:06 +0900
-X-Google-Sender-Auth: b94a78815c1985e6
-Message-ID: <2f11576a0902070851q7d478679i8a47ad9b3810dc0e@mail.gmail.com>
-Subject: Re: [PATCH 3/3][RFC] swsusp: shrink file cache first
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Johannes Weiner <hannes@cmpxchg.org>, rjw@sisk.pl, riel@redhat.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090207163440.GB5779@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/2/7 Andrew Morton <akpm@linux-foundation.org>:
-> On Fri, 6 Feb 2009 05:49:07 +0100
-> Johannes Weiner <hannes@cmpxchg.org> wrote:
->
->> > and, I think you should mesure performence result.
->>
->> Yes, I'm still thinking about ideas how to quantify it properly.  I
->> have not yet found a reliable way to check for whether the working set
->> is intact besides seeing whether the resumed applications are
->> responsive right away or if they first have to swap in their pages
->> again.
->
-> Describing your subjective non-quantitative impressions would be better
-> than nothing...
->
-> The patch bugs me.
->
-> The whole darn point behind the whole darn page reclaim is "reclaim the
-> pages which we aren't likely to need soon".  There's nothing special
-> about the swsusp code at all!  We want it to do exactly what page
-> reclaim normally does, only faster.
->
-> So why do we need to write special hand-rolled code to implement
-> something which we've already spent ten years writing?
->
-> hm?  And if this approach leads to less-than-optimum performance after
-> resume then the fault lies with core page reclaim - it reclaimed the
-> wrong pages!
->
-> That actually was my thinking when I first worked on
-> shrink_all_memory() and it did turn out to be surprisingly hard to
-> simply reuse the existing reclaim code for this application.  Things
-> kept on going wrong.  IIRC this was because we were freeing pages as we
-> were reclaiming, so the page reclaim logic kept on seeing all these
-> free pages and kept on wanting to bale out.
->
-> Now, the simple and obvious fix to this is not to free the pages - just
-> keep on allocating pages and storing them locally until we have
-> "enough" memory.  Then when we're all done, dump them all straight onto
-> to the freelists.
->
-> But for some reason which I do not recall, we couldn't do that.
+On Sat, Feb 07, 2009 at 05:34:40PM +0100, Frederic Weisbecker wrote:
+> On Sat, Feb 07, 2009 at 05:23:28PM +0100, Frederic Weisbecker wrote:
+> > Hi Mandeep,
+> > 
+> > On Fri, Feb 06, 2009 at 03:37:47PM -0800, Mandeep Singh Baines wrote:
+> > > Patch against tip/core/softlockup
+> > > 
+> > > ---
+> > > Impact: saves sizeof(long) bytes per task_struct
+> > > 
+> > > By guaranteeing that sysctl_hung_task_timeout_secs have elapsed between
+> > > tasklist scans we can avoid using timestamps.
+> > > 
+> > > Signed-off-by: Mandeep Singh Baines <msb@google.com>
+> > 
+> > 
+> > Good idea.
+> > BTW, why haven't you put your name on top of this file?
+> > That would help those who will send patches knowing to whom they have to
+> > route their mails.
+> > 
+> > I made some comments below about small things...
+> > 
+> > > ---
+> > >  include/linux/sched.h |    1 -
+> > >  kernel/fork.c         |    8 +++-----
+> > >  kernel/hung_task.c    |   48 +++++++++---------------------------------------
+> > >  3 files changed, 12 insertions(+), 45 deletions(-)
+> > > 
+> > > diff --git a/include/linux/sched.h b/include/linux/sched.h
+> > > index 2a2811c..e0d723f 100644
+> > > --- a/include/linux/sched.h
+> > > +++ b/include/linux/sched.h
+> > > @@ -1241,7 +1241,6 @@ struct task_struct {
+> > >  #endif
+> > >  #ifdef CONFIG_DETECT_HUNG_TASK
+> > >  /* hung task detection */
+> > > -	unsigned long last_switch_timestamp;
+> > >  	unsigned long last_switch_count;
+> > >  #endif
+> > >  /* CPU-specific state of this task */
+> > > diff --git a/kernel/fork.c b/kernel/fork.c
+> > > index fb94442..bf582f7 100644
+> > > --- a/kernel/fork.c
+> > > +++ b/kernel/fork.c
+> > > @@ -639,6 +639,9 @@ static int copy_mm(unsigned long clone_flags, struct task_struct * tsk)
+> > >  
+> > >  	tsk->min_flt = tsk->maj_flt = 0;
+> > >  	tsk->nvcsw = tsk->nivcsw = 0;
+> > > +#ifdef CONFIG_DETECT_HUNG_TASK
+> > > +	tsk->last_switch_count = tsk->nvcsw + tsk->nivcsw;
+> > > +#endif
+> > 
+> > 
+> > I think you can directly assign a zero here :-)
+> > Or you want to let it as is to give some sense and explanation
+> > about the role of this field?
+> > Why not, I guess gcc will optimize it anyway.
+> > 
+> > 
+> > >  	tsk->mm = NULL;
+> > >  	tsk->active_mm = NULL;
+> > > @@ -1041,11 +1044,6 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+> > >  
+> > >  	p->default_timer_slack_ns = current->timer_slack_ns;
+> > >  
+> > > -#ifdef CONFIG_DETECT_HUNG_TASK
+> > > -	p->last_switch_count = 0;
+> > > -	p->last_switch_timestamp = 0;
+> > > -#endif
+> > > -
+> > >  	task_io_accounting_init(&p->ioac);
+> > >  	acct_clear_integrals(p);
+> > >  
+> > > diff --git a/kernel/hung_task.c b/kernel/hung_task.c
+> > > index 3951a80..4a10756 100644
+> > > --- a/kernel/hung_task.c
+> > > +++ b/kernel/hung_task.c
+> > > @@ -34,7 +34,6 @@ unsigned long __read_mostly sysctl_hung_task_check_count = PID_MAX_LIMIT;
+> > >   * Zero means infinite timeout - no checking done:
+> > >   */
+> > >  unsigned long __read_mostly sysctl_hung_task_timeout_secs = 120;
+> > > -static unsigned long __read_mostly hung_task_poll_jiffies;
+> > >  
+> > >  unsigned long __read_mostly sysctl_hung_task_warnings = 10;
+> > >  
+> > > @@ -69,33 +68,17 @@ static struct notifier_block panic_block = {
+> > >  	.notifier_call = hung_task_panic,
+> > >  };
+> > >  
+> > > -/*
+> > > - * Returns seconds, approximately.  We don't need nanosecond
+> > > - * resolution, and we don't need to waste time with a big divide when
+> > > - * 2^30ns == 1.074s.
+> > > - */
+> > > -static unsigned long get_timestamp(void)
+> > > -{
+> > > -	int this_cpu = raw_smp_processor_id();
+> > > -
+> > > -	return cpu_clock(this_cpu) >> 30LL;  /* 2^30 ~= 10^9 */
+> > > -}
+> > > -
+> > > -static void check_hung_task(struct task_struct *t, unsigned long now,
+> > > -			    unsigned long timeout)
+> > > +static void check_hung_task(struct task_struct *t, unsigned long timeout)
+> > >  {
+> > >  	unsigned long switch_count = t->nvcsw + t->nivcsw;
+> > >  
+> > >  	if (t->flags & PF_FROZEN)
+> > >  		return;
+> > >  
+> > > -	if (switch_count != t->last_switch_count || !t->last_switch_timestamp) {
+> > > +	if (switch_count != t->last_switch_count) {
+> > >  		t->last_switch_count = switch_count;
+> > > -		t->last_switch_timestamp = now;
+> > >  		return;
+> > >  	}
+> > 
+> > 
+> > 
+> > What happens here if khungtaskd is scheduled in after tsk is inserted on the task_list
+> > in copy_process() but before tsk has been scheduled once?
+> > 
+> > tsk->last_switch_count and  tsk->nvcsw + tsk->nivcsw will still be equal to zero right?
+> > 
+> > Perhaps you could add another check such as
+> > 
+> > if (!switch_count)
+> > 	return;
+> > 
+> > 
+> > > -	if ((long)(now - t->last_switch_timestamp) < timeout)
+> > > -		return;
+> > >  	if (!sysctl_hung_task_warnings)
+> > >  		return;
+> > >  	sysctl_hung_task_warnings--;
+> > > @@ -111,7 +94,6 @@ static void check_hung_task(struct task_struct *t, unsigned long now,
+> > >  	sched_show_task(t);
+> > >  	__debug_show_held_locks(t);
+> > >  
+> > > -	t->last_switch_timestamp = now;
+> > >  	touch_nmi_watchdog();
+> > >  
+> > >  	if (sysctl_hung_task_panic)
+> > > @@ -145,7 +127,6 @@ static void check_hung_uninterruptible_tasks(unsigned long timeout)
+> > >  {
+> > >  	int max_count = sysctl_hung_task_check_count;
+> > >  	int batch_count = HUNG_TASK_BATCHING;
+> > > -	unsigned long now = get_timestamp();
+> > >  	struct task_struct *g, *t;
+> > >  
+> > >  	/*
+> > > @@ -168,19 +149,16 @@ static void check_hung_uninterruptible_tasks(unsigned long timeout)
+> > >  		}
+> > >  		/* use "==" to skip the TASK_KILLABLE tasks waiting on NFS */
+> > >  		if (t->state == TASK_UNINTERRUPTIBLE)
+> > > -			check_hung_task(t, now, timeout);
+> > > +			check_hung_task(t, timeout);
+> > >  	} while_each_thread(g, t);
+> > >   unlock:
+> > >  	rcu_read_unlock();
+> > >  }
+> > >  
+> > > -static void update_poll_jiffies(void)
+> > > +static unsigned long timeout_jiffies(unsigned long timeout)
+> > >  {
+> > >  	/* timeout of 0 will disable the watchdog */
+> > > -	if (sysctl_hung_task_timeout_secs == 0)
+> > > -		hung_task_poll_jiffies = MAX_SCHEDULE_TIMEOUT;
+> > > -	else
+> > > -		hung_task_poll_jiffies = sysctl_hung_task_timeout_secs * HZ / 2;
+> > > +	return (timeout ? timeout * HZ : MAX_SCHEDULE_TIMEOUT);
+> > >  }
+> > >  
+> > >  /*
+> > > @@ -197,8 +175,6 @@ int proc_dohung_task_timeout_secs(struct ctl_table *table, int write,
+> > >  	if (ret || !write)
+> > >  		goto out;
+> > >  
+> > > -	update_poll_jiffies();
+> > > -
+> > >  	wake_up_process(watchdog_task);
+> > 
+> > 
+> > I'm not sure what does this function now that you dropped update_poll_jiffies()
+> > So if the user sets up a new timeout value, the only effect will be that khungtaskd will
+> > be awakened?
+> > 
+> > But actually the /sys file doesn't seem to be set up.
+> 
+> 
+> Oops, I should have grep on proc_dohung_task_timeout_secs which is set on kernel/sysctl.
+> Sorry.
+> But still, sysctl_hung_task_timeout_secs doesn't seem to be set :-)
 
-current strategy is introduced commit d6277db4ab271862ed599da08d78961c70f00002
-quotation here.
 
-    Author: Rafael J. Wysocki <rjw@sisk.pl>
-    Date:   Fri Jun 23 02:03:18 2006 -0700
-    Subject: [PATCH] swsusp: rework memory shrinker
+And once again I'm wrong, I shoud read sysctl.c or at least read the sysfs documentation.
+Sorry for the noise.
 
-    Rework the swsusp's memory shrinker in the following way:
+BTW, here is a small fixlet on top of your patch about what I commented concerning
+the tasks than weren't yet scheduled once:
 
-    - Simplify balance_pgdat() by removing all of the swsusp-related code
-      from it.
+--
+>From e7120e424b031978e482b5fe311d90916ffb8b7e Mon Sep 17 00:00:00 2001
+From: Frederic Weisbecker <fweisbec@gmail.com>
+Date: Sat, 7 Feb 2009 17:45:12 +0100
+Subject: [PATCH] softlockup: ensure the task has been scheduled once
 
-    - Make shrink_all_memory() use shrink_slab() and a new function
-      shrink_all_zones() which calls shrink_active_list() and
-      shrink_inactive_list() directly for each zone in a way that's optimized
-      for suspend.
+When we check if the task has been scheduled since the last scan, we might
+have a race condition if the task has been inserted on the task list but not
+yet scheduled once. So we just add a small check to ensure it has been switched
+in at least one time to avoid false positive.
 
-    In shrink_all_memory() we try to free exactly as many pages as the caller
-    asks for, preferably in one shot, starting from easier targets.  ?If slab
-    caches are huge, they are most likely to have enough pages to reclaim.
-    ?The inactive lists are next (the zones with more inactive pages go first)
-    etc.
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ kernel/hung_task.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-    Each time shrink_all_memory() attempts to shrink the active and inactive
-    lists for each zone in 5 passes.  ?In the first pass, only the inactive
-    lists are taken into consideration.  ?In the next two passes the active
-    lists are also shrunk, but mapped pages are not reclaimed.  ?In the last
-    two passes the active and inactive lists are shrunk and mapped pages are
-    reclaimed as well.  The aim of this is to alter the reclaim logic to choose
-    the best pages to keep on resume and improve the responsiveness of the
+diff --git a/kernel/hung_task.c b/kernel/hung_task.c
+index 4a10756..7f57a71 100644
+--- a/kernel/hung_task.c
++++ b/kernel/hung_task.c
+@@ -72,7 +72,11 @@ static void check_hung_task(struct task_struct *t, unsigned long timeout)
+ {
+ 	unsigned long switch_count = t->nvcsw + t->nivcsw;
+ 
+-	if (t->flags & PF_FROZEN)
++	/*
++	 * Ensure the task is not frozen and that it has been scheduled
++	 * at least once.
++	 */
++	if (t->flags & PF_FROZEN || !switch_count)
+ 		return;
+ 
+ 	if (switch_count != t->last_switch_count) {
+-- 
+1.6.1
 
-and related discussion mail here.
-
-akpm wrote:
---------------
- And what was the observed effect of all this?
-
-Rafael wrote:
---------------
-Measurable effects:
-1) It tends to free only as much memory as required, eg. if the image_size
-is set to 450 MB, the actual image sizes are almost always well above
-400 MB and they tended to be below that number without the patch
-(~5-10% of a difference, but still :-)).
-2) If image_size = 0, it frees everything that can be freed without any
-workarounds (we had to add the additional loop checking for
-ret >= nr_pages with the additional blk_congestion_wait() to the
-"original" shrinker to achieve this).
-
-
-
-my conclusion is, nobody says "we can't". it's performance improvement
-purpose commit.
