@@ -1,47 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753576AbZBGOCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbZBGOOG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753576AbZBGOCh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 09:02:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbZBGOC2
+	id S1753666AbZBGOOG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 09:14:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbZBGONy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 09:02:28 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48595 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750920AbZBGOC2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 09:02:28 -0500
-Date: Sat, 7 Feb 2009 14:02:45 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: H Peter Anvin <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       thomas@linux-os.sc.intel.com,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Add clflush before monitor for Intel 7400 series -
- v2
-Message-ID: <20090207140245.1e91a88f@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090207004728.GA17586@linux-os.sc.intel.com>
-References: <20090207004728.GA17586@linux-os.sc.intel.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 7 Feb 2009 09:13:54 -0500
+Received: from ns.suse.de ([195.135.220.2]:52159 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751529AbZBGONy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Feb 2009 09:13:54 -0500
+Message-ID: <498D9706.9090209@suse.de>
+Date: Sat, 07 Feb 2009 15:13:26 +0100
+From: Frank Seidel <fseidel@suse.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, Frank Seidel <frank@f-seidel.de>,
+       linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
+       jarod@redhat.com
+Subject: Re: [PATCH] crypto: add missing KERN_* constants to printks
+References: <498C46DE.8040700@suse.de> <20090206145838.GA28197@x200.localdomain> <498C4F2E.1070204@f-seidel.de> <20090206150315.GA28249@x200.localdomain> <498C5053.4010809@suse.de> <20090207125211.GA17913@gondor.apana.org.au>
+In-Reply-To: <20090207125211.GA17913@gondor.apana.org.au>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Feb 2009 16:47:29 -0800
-"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> wrote:
+Herbert Xu wrote:
+> Please do.  If it doesn't have any markings at least we know that
+> it needs fixing.  If you just add WARNINGs then we lose that
+> information.
 
-> 
-> 
-> For Intel 7400 series CPUs, the recommendation is to use a clflush on the
-> monitored address just before monitor and mwait pair [1]. This clflush makes
-> sure that there are no false wakeups from mwait when the monitored address
-> was recently written to.
+Thats right, i fully agree. So i'll redo it asap.
 
-Given our mwait usages will very quickly go back to sleep in such a case
-and it would almost certainly be one sleep only is this really worth the
-effort ?
+Thanks,
+Frank
