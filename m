@@ -1,64 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbZBGFjK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbZBGFzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753307AbZBGFjK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 00:39:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbZBGFiw
+	id S1753967AbZBGFzt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 00:55:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbZBGFzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 00:38:52 -0500
-Received: from kroah.org ([198.145.64.141]:58146 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754120AbZBGFiu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 00:38:50 -0500
-Date: Fri, 6 Feb 2009 21:34:09 -0800
-From: Greg KH <greg@kroah.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Bryan Wu <cooloney@kernel.org>, felipe.balbi@nokia.com,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] usb: musb: tweak musb_read_fifo() to avoid unused
-	warnings
-Message-ID: <20090207053409.GB14918@kroah.com>
-References: <1233915736-18506-1-git-send-email-cooloney@kernel.org> <20090207000148.GF31059@kroah.com> <8bd0f97a0902062029l7cfd58d2ga0c12f2c33cc9d93@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8bd0f97a0902062029l7cfd58d2ga0c12f2c33cc9d93@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sat, 7 Feb 2009 00:55:37 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57314
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750869AbZBGFzg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Feb 2009 00:55:36 -0500
+Date: Fri, 06 Feb 2009 21:55:33 -0800 (PST)
+Message-Id: <20090206.215533.166740686.davem@davemloft.net>
+To: dan.j.williams@intel.com
+Cc: anemo@mba.ocn.ne.jp, maciej.sosnowski@intel.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] net_dma: call dmaengine_get only if NET_DMA enabled
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090206.192910.42610645.davem@davemloft.net>
+References: <20090206.140912.40800913.davem@davemloft.net>
+	<e9c3a7c20902061452r40a97fa2p1fccfa78e3905458@mail.gmail.com>
+	<20090206.192910.42610645.davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 06, 2009 at 11:29:54PM -0500, Mike Frysinger wrote:
-> On Fri, Feb 6, 2009 at 19:01, Greg KH wrote:
-> > On Fri, Feb 06, 2009 at 06:22:16PM +0800, Bryan Wu wrote:
-> >> From: Mike Frysinger <vapier.adi@gmail.com>
-> >>
-> >> Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
-> >> Signed-off-by: Bryan Wu <cooloney@kernel.org>
-> >> ---
-> >>  drivers/usb/musb/blackfin.c |    9 +++++----
-> >>  1 files changed, 5 insertions(+), 4 deletions(-)
-> >>
-> >> diff --git a/drivers/usb/musb/blackfin.c b/drivers/usb/musb/blackfin.c
-> >> index 7861348..0ebb19d 100644
-> >> --- a/drivers/usb/musb/blackfin.c
-> >> +++ b/drivers/usb/musb/blackfin.c
-> >> @@ -54,13 +54,11 @@ void musb_write_fifo(struct musb_hw_ep *hw_ep, u16 len, const u8 *src)
-> >>  void musb_read_fifo(struct musb_hw_ep *hw_ep, u16 len, u8 *dst)
-> >>  {
-> >>       void __iomem *fifo = hw_ep->fifo;
-> >> +
-> >> +#ifdef CONFIG_BF52x
-> >
-> > Any way we can just not have ifdefs in .c files alltogether?
+From: David Miller <davem@davemloft.net>
+Date: Fri, 06 Feb 2009 19:29:10 -0800 (PST)
+
+> From: Dan Williams <dan.j.williams@intel.com>
+> Date: Fri, 6 Feb 2009 15:52:35 -0700
 > 
-> the sub arch.c files for musb are pretty much header files.  the
-> alternative (splitting up the funcs into their own header files) would
-> be much more bothersome for us to maintain atm i think since there's
-> so very little different.
+> > Yes, it has been on the todo list for a while, but I eventually want
+> > the net case to look more like the raid case.  I.e. have one code path
+> > that picks async versus sync at runtime, with the option to compile
+> > out async support with header file ifdefs only.
+> 
+> And how does any of that get us any closer to a fix right now
+> for this problem that doesn't require an ifdef?
+> 
+> Someone please work on this.
 
-Ick.  Oh well, any cleanup that people can think of would be good in
-this area...
+I guess that'd end up being me....
 
-thanks,
+How about something like this?
 
-greg k-h
+diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
+index 3e0f64c..3e68469 100644
+--- a/include/linux/dmaengine.h
++++ b/include/linux/dmaengine.h
+@@ -282,6 +282,18 @@ static inline void dmaengine_put(void)
+ }
+ #endif
+ 
++#ifdef CONFIG_NET_DMA
++#define net_dmaengine_get()	dmaengine_get()
++#define net_dmaengine_put()	dmaengine_put()
++#else
++static inline void net_dmaengine_get(void)
++{
++}
++static inline void net_dmaengine_put(void)
++{
++}
++#endif
++
+ dma_cookie_t dma_async_memcpy_buf_to_buf(struct dma_chan *chan,
+ 	void *dest, void *src, size_t len);
+ dma_cookie_t dma_async_memcpy_buf_to_pg(struct dma_chan *chan,
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 5379b0c..a17e006 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -1090,7 +1090,7 @@ int dev_open(struct net_device *dev)
+ 		/*
+ 		 *	Enable NET_DMA
+ 		 */
+-		dmaengine_get();
++		net_dmaengine_get();
+ 
+ 		/*
+ 		 *	Initialize multicasting status
+@@ -1172,7 +1172,7 @@ int dev_close(struct net_device *dev)
+ 	/*
+ 	 *	Shutdown NET_DMA
+ 	 */
+-	dmaengine_put();
++	net_dmaengine_put();
+ 
+ 	return 0;
+ }
