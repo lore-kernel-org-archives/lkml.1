@@ -1,83 +1,272 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755861AbZBGXh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbZBGXil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755861AbZBGXh6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 18:37:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbZBGXhu
+	id S1754703AbZBGXil (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 18:38:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbZBGXic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 18:37:50 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:45574 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753615AbZBGXht (ORCPT
+	Sat, 7 Feb 2009 18:38:32 -0500
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:42031 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753776AbZBGXib (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 18:37:49 -0500
-Message-ID: <498E1B46.2040500@ru.mvista.com>
-Date: Sun, 08 Feb 2009 02:37:42 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: bzolnier@gmail.com, geert@linux-m68k.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, apw@canonical.com
-Subject: Re: [PATCH 01/15] ide: include <asm/ide.h> only when needed
-References: <498B7D09.6040100@ru.mvista.com>	<200902061721.46813.bzolnier@gmail.com>	<498CB3CF.8070306@ru.mvista.com> <20090208.003536.72707389.anemo@mba.ocn.ne.jp>
-In-Reply-To: <20090208.003536.72707389.anemo@mba.ocn.ne.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 7 Feb 2009 18:38:31 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAA6kjUlMQWt2/2dsb2JhbACBbcpwhBoG
+Date: Sat, 7 Feb 2009 18:38:27 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
+       Robert Wisniewski <bob@watson.ibm.com>
+Subject: Re: [RFC git tree] Userspace RCU (urcu) for Linux (repost)
+Message-ID: <20090207233827.GA3557@Krystal>
+References: <20090206030543.GB8560@Krystal> <20090206045841.GA12995@Krystal> <20090206130640.GB10918@linux.vnet.ibm.com> <20090206163432.GF10918@linux.vnet.ibm.com> <20090207151028.GA11150@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090207151028.GA11150@linux.vnet.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 18:27:34 up 37 days, 23:25,  3 users,  load average: 0.84, 0.64,
+	0.47
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> On Fri, Feb 06, 2009 at 08:34:32AM -0800, Paul E. McKenney wrote:
+> > On Fri, Feb 06, 2009 at 05:06:40AM -0800, Paul E. McKenney wrote:
+> > > On Thu, Feb 05, 2009 at 11:58:41PM -0500, Mathieu Desnoyers wrote:
+> > > > (sorry for repost, I got the ltt-dev email wrong in the previous one)
+> > > > 
+> > > > Hi Paul,
+> > > > 
+> > > > I figured out I needed some userspace RCU for the userspace tracing part
+> > > > of LTTng (for quick read access to the control variables) to trace
+> > > > userspace pthread applications. So I've done a quick-and-dirty userspace
+> > > > RCU implementation.
+> > > > 
+> > > > It works so far, but I have not gone through any formal verification
+> > > > phase. It seems to work on paper, and the tests are also OK (so far),
+> > > > but I offer no guarantee for this 300-lines-ish 1-day hack. :-) If you
+> > > > want to comment on it, it would be welcome. It's a userland-only
+> > > > library. It's also currently x86-only, but only a few basic definitions
+> > > > must be adapted in urcu.h to port it.
+> > > > 
+> > > > Here is the link to my git tree :
+> > > > 
+> > > > git://lttng.org/userspace-rcu.git
+> > > > 
+> > > > http://lttng.org/cgi-bin/gitweb.cgi?p=userspace-rcu.git;a=summary
+> > > 
+> > > Very cool!!!  I will take a look!
+> > > 
+> > > I will also point you at a few that I have put together:
+> > > 
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/perfbook.git
+> > > 
+> > > (In the CodeSamples/defer directory.)
+> > 
+> > Interesting approach, using the signal to force memory-barrier execution!
+> > 
+> > o	One possible optimization would be to avoid sending a signal to
+> > 	a blocked thread, as the context switch leading to blocking
+> > 	will have implied a memory barrier -- otherwise it would not
+> > 	be safe to resume the thread on some other CPU.  That said,
+> > 	not sure whether checking to see whether a thread is blocked is
+> > 	any faster than sending it a signal and forcing it to wake up.
+> > 
+> > 	Of course, this approach does require that the enclosing
+> > 	application be willing to give up a signal.  I suspect that most
+> > 	applications would be OK with this, though some might not.
+> > 
+> > 	Of course, I cannot resist pointing to an old LKML thread:
+> > 
+> > 		http://lkml.org/lkml/2001/10/8/189
+> > 
+> > 	But I think that the time is now right.  ;-)
+> > 
+> > o	I don't understand the purpose of rcu_write_lock() and
+> > 	rcu_write_unlock().  I am concerned that it will lead people
+> > 	to decide that a single global lock must protect RCU updates,
+> > 	which is of course absolutely not the case.  I strongly
+> > 	suggest making these internal to the urcu.c file.  Yes,
+> > 	uses of urcu_publish_content() would then hit two locks (the
+> > 	internal-to-urcu.c one and whatever they are using to protect
+> > 	their data structure), but let's face it, if you are sending a
+> > 	signal to each and every thread, the additional overhead of the
+> > 	extra lock is the least of your worries.
+> > 
+> > 	If you really want to heavily optimize this, I would suggest
+> > 	setting up a state machine that permits multiple concurrent
+> > 	calls to urcu_publish_content() to share the same set of signal
+> > 	invocations.  That way, if the caller has partitioned the
+> > 	data structure, global locking might be avoided completely
+> > 	(or at least greatly restricted in scope).
+> > 
+> > 	Of course, if updates are rare, the optimization would not
+> > 	help, but in that case, acquiring two locks would be even less
+> > 	of a problem.
+> > 
+> > o	Is urcu_qparity relying on initialization to zero?  Or on the
+> > 	fact that, for all x, 1-x!=x mod 2^32?  Ah, given that this is
+> > 	used to index urcu_active_readers[], you must be relying on
+> > 	initialization to zero.
+> > 
+> > o	In rcu_read_lock(), why is a non-atomic increment of the
+> > 	urcu_active_readers[urcu_parity] element safe?  Are you
+> > 	relying on the compiler generating an x86 add-to-memory
+> > 	instruction?
+> > 
+> > 	Ditto for rcu_read_unlock().
+> > 
+> > 	Ah, never mind!!!  I now see the __thread specification,
+> > 	and the keeping of references to it in the reader_data list.
+> > 
+> > o	Combining the equivalent of rcu_assign_pointer() and
+> > 	synchronize_rcu() into urcu_publish_content() is an interesting
+> > 	approach.  Not yet sure whether or not it is a good idea.  I
+> > 	guess trying it out on several applications would be the way
+> > 	to find out.  ;-)
+> > 
+> > 	That said, I suspect that it would be very convenient in a
+> > 	number of situations.
+> > 
+> > o	It would be good to avoid having to pass the return value
+> > 	of rcu_read_lock() into rcu_read_unlock().  It should be
+> > 	possible to avoid this via counter value tricks, though this
+> > 	would add a bit more code in rcu_read_lock() on 32-bit machines.
+> > 	(64-bit machines don't have to worry about counter overflow.)
+> > 
+> > 	See the recently updated version of CodeSamples/defer/rcu_nest.[ch]
+> > 	in the aforementioned git archive for a way to do this.
+> > 	(And perhaps I should apply this change to SRCU...)
+> > 
+> > o	Your test looks a bit strange, not sure why you test all the
+> > 	different variables.  It would be nice to take a test duration
+> > 	as an argument and run the test for that time.
+> > 
+> > 	I killed the test after better part of an hour on my laptop,
+> > 	will retry on a larger machine (after noting the 18 threads
+> > 	created!).  (And yes, I first tried Power, which objected
+> > 	strenously to the "mfence" and "lock; incl" instructions,
+> > 	so getting an x86 machine to try on.)
+> > 
+> > Again, looks interesting!  Looks plausible, although I have not 100%
+> > convinced myself that it is perfectly bug-free.  But I do maintain
+> > a healthy skepticism of purported RCU algorithms, especially ones that
+> > I have written.  ;-)
+> 
+> OK, here is one sequence of concern...
+> 
 
-Atsushi Nemoto wrote:
+Let's see..
 
->>> config CONFIG_IDE_BE_IO
->>> 	bool
->>>       
->>     If it was that simple... Normally the BE case gets handled automagically 
->> (moreover, there is MIPS option that additionally controls I/O and memory 
->> space byte swapping). The case we have to address for TX493x is actually where 
->> the usual magic fails (or actually the code just doesn't want to use that 
->> option). So this doesn't look like a good name to me...
->>     
->
-> Well, for TX493x (MIPS), we have CONFIG_SWAP_IO_SPACE for big endian
-> and it works fine for PCI-IDE host controllers.  For SoC internal
-> controllers, no swapping is needed for both endian, thus custom tp_ops
-> is needed only for big endian.
->   
+> o	Thread 0 starts rcu_read_lock(), picking up the current
+> 	get_urcu_qparity() into the local variable urcu_parity().
+> 	Assume that the value returned is zero.
+> 
+> o	Thread 0 is now preempted.
+> 
+> o	Thread 1 invokes urcu_publish_content():
+> 
+> 	o	It substitutes the pointer.
+> 
+> 	o	It forces all threads to execute a memory barrier
+> 		(thread 0 runs just long enough to process its signal
+> 		and then is immediately preempted again).
+> 
+> 	o	It switches the parity, which is now one.
+> 
+> 	o	It waits for all readers on parity zero, and there are
+> 		none, because thread 0 has not yet registered itself.
+> 
+> 	o	It therefore returns the old pointer.  So far, so good.
+> 
+> o	Thread 0 now resumes:
+> 
+> 	o	It increments its urcu_active_readers[0].
+> 
+> 	o	It forces a compiler barrier.
+> 
+> 	o	It returns zero (why not store this in thread-local
+> 		storage rather than returning?).
+> 
 
-   Yeah, SoCs *typically* can handle different endianness for the 
-integrated devices in a transparent way. TX4939 didn't do that 
-consistently still, and that's where the MIPS address swizzling macros 
-could have helped but Atsushi chose to reserve their usage only to the 
-external bus accesses. I however don't think that TX4938 case should 
-have been handled the same way as TX4939 since in this case the 
-controller is *not* SoC integrated device and the IDE registers are 
-situated on the chip's external bus with their mapping is actually board 
-specific, if I don't mistake (I don't have the datasheet at hand).
+To support nested rcu_read_locks. (that's the only reason)
 
-> So ... IDE_BE_IO looks actually not best name for this case.  It is
-> IDE_RAW_IO or something.
+> 	o	It enters its critical section, obtaining a reference
+> 		to the new pointer that thread 1 just published.
+> 
+> o	Thread 1 now again invokes urcu_publish_content():
+>  
+> 	o	It substitutes the pointer.
+> 
+> 	o	It forces all threads to execute a memory barrier,
+> 		including thread 0.
+> 
+> 	o	It switches the parity, which is now zero.
+> 
+> 	o	It waits for all readers on parity one, and there are
+> 		none, because thread 0 has registered itself on parity
+> 		zero!!!
+> 
+> 	o	Thread 1 therefore returns the old pointer.
+> 
+> 	o	Thread 1 frees the old pointer, which thread 0 is still
+> 		using!!!
+> 
 
-   Yes, I was going to suggest exactly that.
+Ah, yes, you are right.
 
-> But IDE_RAW_IO might not fit for other cases.  IDE_SWAPPED_IO?
+> So, how to fix?  Here are some approaches:
+> 
+> o	Make urcu_publish_content() do two parity flips rather than one.
+> 	I use this approach in my rcu_rcpg, rcu_rcpl, and rcu_rcpls
+> 	algorithms in CodeSamples/defer.
+> 
 
-   I'd prefer IDE_RAW_IO because it can be swapped when using the 
-standard accessors as well. Frankly speaking, I'm not sure why ide-h8300 
-needs its own accessors while this arch's io.h has an abundance of 
-swapping and not swapping accessors already defined...
+This approach seems very interesting.
 
-> Any other good name?
->   
+> o	Use a single free-running counter, in a manner similar to rcu_nest,
+> 	as suggested earlier.  This one is interesting, as I rely on a
+> 	read-side memory barrier to handle the long-preemption case.
+> 	However, if you believe that any thread that waits several minutes
+> 	between executing adjacent instructions must have been preempted
+> 	(which the memory barriers that are required to do a context
+> 	switch), then a compiler barrier suffices.  ;-)
 
-   I'm still not convinced that it's really worth the trouble...
+Hrm, I'm trying to figure out what kind of memory backend you need to
+put your counters for each quiescent state period. Is this free-running
+counter indexing a very large array ? I doubt it does. Then how does it
+make sure we don't roll back to the old array entries ?
 
-> ---
-> Atsushi Nemoto
->   
+This latter solution could break jump-based probing of programs
+soon-to-be available in gcc. The probes are meant to be of short
+duration, but the fact is that this design lets the debugger inject code
+without resorting to a breakpoint, which might therefore break your
+"short time between instructions" assumption. It's very unlikely, but
+possible.
 
-MBR, Sergei
 
+> 
+> Of course, the probability of seeing this failure during test is quite
+> low, since it is unlikely that thread 0 would run just long enough to
+> execute its signal handler.  However, it could happen.  And if you were
+> to adapt this algorithm for use in a real-time application, then priority
+> boosting could cause this to happen naturally.
+> 
 
+Yes. It's not because we are not able to create the faulty condition
+that it will _never_ happen. It must therefore be taken care of.
+
+Mathieu
+
+> 							Thanx, Paul
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
