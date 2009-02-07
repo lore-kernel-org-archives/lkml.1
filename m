@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbZBGAG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756317AbZBGAHG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167AbZBGAG0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 19:06:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbZBGAGS
+	id S1756317AbZBGAHG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 19:07:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbZBGAGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 19:06:18 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53889 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750882AbZBGAGR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 19:06:17 -0500
-Date: Fri, 6 Feb 2009 16:05:55 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
-       sonic.zhang@analog.com, cooloney@kernel.org
-Subject: Re: [PATCH] tty: fix bug - kernel can't be pinged through when
- bootargs console=null
-Message-Id: <20090206160555.b95e02bc.akpm@linux-foundation.org>
-In-Reply-To: <1233908877-7729-1-git-send-email-cooloney@kernel.org>
-References: <1233908877-7729-1-git-send-email-cooloney@kernel.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Feb 2009 19:06:54 -0500
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:34881 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750882AbZBGAGy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 19:06:54 -0500
+Date: Fri, 6 Feb 2009 18:06:51 -0600
+From: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Subject: [PATCH] eCryptfs: Regression in unencrypted filename symlinks
+Message-ID: <20090207000649.GA10560@boomer>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri,  6 Feb 2009 16:27:57 +0800
-Bryan Wu <cooloney@kernel.org> wrote:
+The addition of filename encryption caused a regression in unencrypted
+filename symlink support.  ecryptfs_copy_filename() is used when dealing
+with unencrypted filenames and it reported that the new, copied filename
+was a character longer than it should have been.
 
-> From: Sonic Zhang <sonic.zhang@analog.com>
-> 
-> when pass bootargs console=null into kernel from u-boot, the booted up
-> kernel can't be pinged through. This happens after the kernel is upgraded
-> to 2.6.28.
-> 
-> Should check if tty_driver is NULL before call kref_get() in tty_driver_kref_get().
-> 
-> Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
-> ---
->  include/linux/tty_driver.h |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/tty_driver.h b/include/linux/tty_driver.h
-> index 08e0883..2a602a8 100644
-> --- a/include/linux/tty_driver.h
-> +++ b/include/linux/tty_driver.h
-> @@ -312,7 +312,8 @@ extern struct tty_driver *tty_find_polling_driver(char *name, int *line);
->  extern void tty_driver_kref_put(struct tty_driver *driver);
->  extern inline struct tty_driver *tty_driver_kref_get(struct tty_driver *d)
->  {
-> -	kref_get(&d->kref);
-> +	if (d)
-> +		kref_get(&d->kref);
->  	return d;
->  }
->  
+This caused the return value of readlink() to count the NULL byte of the
+symlink target.  Most applications don't care about the extra NULL byte,
+but a version control system (bzr) helped in discovering the bug.
 
-Did any earlier kernel versions handle this situation OK?
+Signed-off-by: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
+---
+ fs/ecryptfs/crypto.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-If so, we might need to be back-compatible with buggy userspace :(
+diff --git a/fs/ecryptfs/crypto.c b/fs/ecryptfs/crypto.c
+index c01e043..f6caeb1 100644
+--- a/fs/ecryptfs/crypto.c
++++ b/fs/ecryptfs/crypto.c
+@@ -1716,7 +1716,7 @@ static int ecryptfs_copy_filename(char **copied_name, size_t *copied_name_size,
+ {
+ 	int rc = 0;
+ 
+-	(*copied_name) = kmalloc((name_size + 2), GFP_KERNEL);
++	(*copied_name) = kmalloc((name_size + 1), GFP_KERNEL);
+ 	if (!(*copied_name)) {
+ 		rc = -ENOMEM;
+ 		goto out;
+@@ -1726,7 +1726,7 @@ static int ecryptfs_copy_filename(char **copied_name, size_t *copied_name_size,
+ 						 * in printing out the
+ 						 * string in debug
+ 						 * messages */
+-	(*copied_name_size) = (name_size + 1);
++	(*copied_name_size) = name_size;
+ out:
+ 	return rc;
+ }
+-- 
+1.5.3.7
+
