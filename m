@@ -1,92 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756314AbZBGRZO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756556AbZBGRZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756314AbZBGRZO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 12:25:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbZBGRWg
+	id S1756556AbZBGRZm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 12:25:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756898AbZBGRYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 12:22:36 -0500
-Received: from LUNGE.MIT.EDU ([18.54.1.69]:43447 "EHLO lunge.queued.net"
+	Sat, 7 Feb 2009 12:24:32 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:35947 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753105AbZBGRWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 12:22:31 -0500
-Date: Sat, 7 Feb 2009 12:15:26 -0500
-From: Andres Salomon <dilinger@queued.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       adaplas@gmail.com
-Subject: [PATCH 9/15] valkyriefb: check fb_alloc_cmap return value and
- handle failure properly
-Message-ID: <20090207121526.33494f59@ephemeral>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1756247AbZBGRYc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Feb 2009 12:24:32 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: [PATCH 3/3][RFC] swsusp: shrink file cache first
+Date: Sat, 7 Feb 2009 18:23:53 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>, kosaki.motohiro@jp.fujitsu.com,
+       riel@redhat.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+References: <20090206031125.693559239@cmpxchg.org> <20090206130009.99400d43.akpm@linux-foundation.org> <20090206232747.GA3539@cmpxchg.org>
+In-Reply-To: <20090206232747.GA3539@cmpxchg.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902071823.54259.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 07 February 2009, Johannes Weiner wrote:
+> On Fri, Feb 06, 2009 at 01:00:09PM -0800, Andrew Morton wrote:
+> > On Fri, 6 Feb 2009 05:49:07 +0100
+> > Johannes Weiner <hannes@cmpxchg.org> wrote:
+> > 
+> > > > and, I think you should mesure performence result.
+> > > 
+> > > Yes, I'm still thinking about ideas how to quantify it properly.  I
+> > > have not yet found a reliable way to check for whether the working set
+> > > is intact besides seeing whether the resumed applications are
+> > > responsive right away or if they first have to swap in their pages
+> > > again.
+> > 
+> > Describing your subjective non-quantitative impressions would be better
+> > than nothing...
+> 
+> Okay.
+> 
+> > The patch bugs me.
+> 
+> Please ignore it, it is broken as is.  My verbal cortex got obviously
+> disconnected from my code cortex when writing the changelog...
 
-Signed-off-by: Andres Salomon <dilinger@debian.org>
----
- drivers/video/valkyriefb.c |   15 ++++++++++-----
- 1 files changed, 10 insertions(+), 5 deletions(-)
+If I understood this correctly, patch 3/3 is to be disregarded.
 
-diff --git a/drivers/video/valkyriefb.c b/drivers/video/valkyriefb.c
-index 7b0cef9..4bb9a0b 100644
---- a/drivers/video/valkyriefb.c
-+++ b/drivers/video/valkyriefb.c
-@@ -119,7 +119,7 @@ static void set_valkyrie_clock(unsigned char *params);
- static int valkyrie_var_to_par(struct fb_var_screeninfo *var,
- 	struct fb_par_valkyrie *par, const struct fb_info *fb_info);
- 
--static void valkyrie_init_info(struct fb_info *info, struct fb_info_valkyrie *p);
-+static int valkyrie_init_info(struct fb_info *info, struct fb_info_valkyrie *p);
- static void valkyrie_par_to_fix(struct fb_par_valkyrie *par, struct fb_fix_screeninfo *fix);
- static void valkyrie_init_fix(struct fb_fix_screeninfo *fix, struct fb_info_valkyrie *p);
- 
-@@ -381,18 +381,22 @@ int __init valkyriefb_init(void)
- 
- 	valkyrie_choose_mode(p);
- 	mac_vmode_to_var(default_vmode, default_cmode, &p->info.var);
--	valkyrie_init_info(&p->info, p);
-+	err = valkyrie_init_info(&p->info, p);
-+	if (err < 0)
-+		goto out_free;
- 	valkyrie_init_fix(&p->info.fix, p);
- 	if (valkyriefb_set_par(&p->info))
- 		/* "can't happen" */
- 		printk(KERN_ERR "valkyriefb: can't set default video mode\n");
- 
- 	if ((err = register_framebuffer(&p->info)) != 0)
--		goto out_free;
-+		goto out_cmap_free;
- 
- 	printk(KERN_INFO "fb%d: valkyrie frame buffer device\n", p->info.node);
- 	return 0;
- 
-+ out_cmap_free:
-+	fb_dealloc_cmap(&p->info.cmap);
-  out_free:
- 	if (p->frame_buffer)
- 		iounmap(p->frame_buffer);
-@@ -538,14 +542,15 @@ static void valkyrie_par_to_fix(struct fb_par_valkyrie *par,
- 		/* ywrapstep, xpanstep, ypanstep */
- }
- 
--static void __init valkyrie_init_info(struct fb_info *info, struct fb_info_valkyrie *p)
-+static int __init valkyrie_init_info(struct fb_info *info,
-+		struct fb_info_valkyrie *p)
- {
- 	info->fbops = &valkyriefb_ops;
- 	info->screen_base = p->frame_buffer + 0x1000;
- 	info->flags = FBINFO_DEFAULT;
- 	info->pseudo_palette = p->pseudo_palette;
--	fb_alloc_cmap(&info->cmap, 256, 0);
- 	info->par = &p->par;
-+	return fb_alloc_cmap(&info->cmap, 256, 0);
- }
- 
- 
--- 
-1.5.6.5
+> And I will reconsider the actual change bits, I still think that we
+> shouldn't scan anon page lists while may_swap is zero.
 
+Hm, can you please remind me what may_swap == 0 acutally means?
+
+Rafael
