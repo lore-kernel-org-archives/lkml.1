@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756479AbZBGDAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756990AbZBGDBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756479AbZBGDAz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 22:00:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbZBGDAo
+	id S1756990AbZBGDBW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 22:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbZBGDBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 22:00:44 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40809 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752943AbZBGDAn (ORCPT
+	Fri, 6 Feb 2009 22:01:04 -0500
+Received: from vms173009pub.verizon.net ([206.46.173.9]:46908 "EHLO
+	vms173009pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750745AbZBGDBD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 22:00:43 -0500
-Date: Fri, 6 Feb 2009 19:00:07 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Parag Warudkar <parag.lkml@gmail.com>,
-       Matt Carlson <mcarlson@broadcom.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: 2.6.29-rc3: tg3 dead after resume
-In-Reply-To: <200902040141.15920.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0902061858120.3048@localhost.localdomain>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200902032315.27113.rjw@sisk.pl> <alpine.DEB.2.00.0902031937070.7758@parag-laptop> <200902040141.15920.rjw@sisk.pl>
+	Fri, 6 Feb 2009 22:01:03 -0500
+Date: Fri, 06 Feb 2009 22:00:54 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ben Greear <greearb@candelatech.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: PATCH:  Allow over-ride of smp_found_cfg with kernel cmd-line
+ option.
+In-reply-to: <20090206193121.GA32634@elte.hu>
+Message-id: <alpine.LFD.2.00.0902062157490.26256@localhost.localdomain>
+References: <498B421D.9090609@candelatech.com> <20090206193121.GA32634@elte.hu>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 4 Feb 2009, Rafael J. Wysocki wrote:
-
-> On Wednesday 04 February 2009, Parag Warudkar wrote:
-> > 
-> > On Tue, 3 Feb 2009, Rafael J. Wysocki wrote:
-> > 
-> > > 
-> > > Can you also test this one instead and tell me if it still works?
-> > 
-> > Removing Linus' patch and applying the below one works as well.
+> > Without this override, performance drops by around 15% on
+> > network throughput tests on this system.
 > 
-> Great, thanks for testing.
-> 
-> I'm going to push this one to Jesse.
+> The question is, _why_ does network performance drop?
+>
+> Do you have a before/after pair of /proc/interrupts output
+> perhaps? Does the layout of IRQs change?
+>
+> The system is not SMP - so only something about UP-IOAPIC can
+> be helpful to performance here - or some unknown effect.
 
-Jesse, should I take this directly (and presumably the related series by 
-Rafael)?
+I presume it is IOAPIC (good) vs PIC (bad), for the 
+patch that provoked this regression was one that caused
+the MPS table to be disabled.  (the problem with that patch
+was that it was effective not just in ACPI mode, but in acpi=off mode)
 
-I was going to release -rc4 this weekend (it's already more than a week - 
-I'm bad), and I'd hate for pci-e bridges to not resume correctly. So I'd 
-either like a pull request from you with the pending suspend fixes, or 
-I'll just apply the patch(es) directly.
+The other un-answered question is why the system under test
+has ACPI disabled in the BIOS when it did not ship that
+way from the manufacturer.
 
-		Linus
+cheers,
+-Len
+Intel Open Source Technology Center
