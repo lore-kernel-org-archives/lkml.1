@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbZBGVUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbZBGVZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755339AbZBGVUk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 16:20:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbZBGVUM
+	id S1753528AbZBGVZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 16:25:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbZBGVZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 16:20:12 -0500
-Received: from mail.crca.org.au ([67.207.131.56]:41353 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752938AbZBGVUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 16:20:11 -0500
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [PATCH 3/3][RFC] swsusp: shrink file cache first
-From: Nigel Cunningham <ncunningham-lkml@crca.org.au>
-Reply-To: ncunningham-lkml@crca.org.au
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, rjw@sisk.pl, riel@redhat.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <2f11576a0902070851q7d478679i8a47ad9b3810dc0e@mail.gmail.com>
-References: <20090206031125.693559239@cmpxchg.org>
-	 <20090206031324.004715023@cmpxchg.org>
-	 <20090206122129.79CC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20090206044907.GA18467@cmpxchg.org>
-	 <20090206130009.99400d43.akpm@linux-foundation.org>
-	 <2f11576a0902070851q7d478679i8a47ad9b3810dc0e@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 08 Feb 2009 08:20:51 +1100
-Message-Id: <1234041651.7277.5.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Sat, 7 Feb 2009 16:25:11 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:43974 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752885AbZBGVZJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Feb 2009 16:25:09 -0500
+Date: Sat, 7 Feb 2009 13:20:22 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: oleg@redhat.com, ebiederm@xmission.com, roland@redhat.com,
+       bastian@waldi.eu.org
+Cc: daniel@hozac.com, xemul@openvz.org, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7][v7] Container-init signal semantics
+Message-ID: <20090207212022.GA25353@us.ibm.com>
+References: <20090117202638.GA11825@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090117202638.GA11825@us.ibm.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Sukadev Bhattiprolu [sukadev@linux.vnet.ibm.com] wrote:
+| Patches in this set:
+| 
+| 	[PATCH 1/7] Remove 'handler' parameter to tracehook functions
+| 	[PATCH 2/7] Protect init from unwanted signals more
+| 	[PATCH 3/7] Add from_ancestor_ns parameter to send_signal()
+| 	[PATCH 4/7] Protect cinit from unblocked SIG_DFL signals
+| 	[PATCH 5/7] Protect cinit from blocked fatal signals
+| 	[PATCH 6/7] SI_USER: Masquerade si_pid when crossing pid ns boundary
+| 	[PATCH 7/7] proc: Show SIG_DFL signals to init as "ignored" signals
 
-On Sun, 2009-02-08 at 01:51 +0900, KOSAKI Motohiro wrote:
-> akpm wrote:
-> --------------
->  And what was the observed effect of all this?
-> 
-> Rafael wrote:
-> --------------
-> Measurable effects:
-> 1) It tends to free only as much memory as required, eg. if the image_size
-> is set to 450 MB, the actual image sizes are almost always well above
-> 400 MB and they tended to be below that number without the patch
-> (~5-10% of a difference, but still :-)).
+Roland, Eric, Daniel, Pavel
 
-Do you always get at least the number of pages you ask for, if that's
-possible?
+Any comments on this patchset ? We are not sure about patch 7, but should
+I send the rest to Andrew ?
 
-Regards,
-
-Nigel
-
+Sukadev
