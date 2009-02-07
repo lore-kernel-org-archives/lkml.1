@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577AbZBGBUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbZBGBVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754577AbZBGBUl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 20:20:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbZBGBUc
+	id S1756078AbZBGBVf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 20:21:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbZBGBV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 20:20:32 -0500
-Received: from mga11.intel.com ([192.55.52.93]:5138 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752163AbZBGBUb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 20:20:31 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,394,1231142400"; 
-   d="scan'208";a="663595436"
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: Roland Dreier <rdreier@cisco.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Eric Anholt <eric@anholt.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "drivers_video-dri@kernel-bugs.osdl.org" 
-	<drivers_video-dri@kernel-bugs.osdl.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Date: Fri, 6 Feb 2009 17:20:27 -0800
-Subject: RE: [Bug #12491] i915 lockdep warning
-Thread-Topic: [Bug #12491] i915 lockdep warning
-Thread-Index: AcmIrLc4C24MfkrWSK+9D98h63SX2wAFRoJA
-Message-ID: <F169D4F5E1F1974DBFAFABF47F60C10A1DFD867C@orsmsx507.amr.corp.intel.com>
-References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
-	<pWZw1SZjMCH.A.ciH.4vYiJB@chimera> <adar62dltg1.fsf@cisco.com>
-	<200902050203.40535.rjw@sisk.pl> <adar62bchfw.fsf@cisco.com>
-In-Reply-To: <adar62bchfw.fsf@cisco.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Fri, 6 Feb 2009 20:21:27 -0500
+Received: from kroah.org ([198.145.64.141]:60354 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752093AbZBGBV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 20:21:26 -0500
+Subject: patch staging-usbip-kmem_cache_alloc-memset-kmem_cache_zalloc.patch added to gregkh-2.6 tree
+To: yjwei@cn.fujitsu.com, gregkh@suse.de, linux-kernel@vger.kernel.org
+From: <gregkh@suse.de>
+Date: Fri, 06 Feb 2009 17:11:19 -0800
+In-Reply-To: <498BA9CA.7060700@cn.fujitsu.com>
+Message-ID: <12339690792200@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
->  > i915: Fix potential AB-BA deadlock in i915_gem_execbuffer()
-> 
-> Jesse, Eric, or anybody -- does this look correct to you?  This seems
-> to be triggering for several people, eg
-> https://bugzilla.redhat.com/show_bug.cgi?id=481687
-> 
->  - R.
 
-I tested this on my 965 based system that showed the issue and it seemed resolved, at least no warnings in dmesg.  Lockdep was confirmed to still be enabled.
+This is a note to let you know that I've just added the patch titled
 
-I can mark the bug fixed in korg bugzilla too.
+    Subject: Staging: usbip: kmem_cache_alloc/memset -> kmem_cache_zalloc
 
-Thank you Roland for looking into this, good work!
+to my gregkh-2.6 tree.  Its filename is
+
+    staging-usbip-kmem_cache_alloc-memset-kmem_cache_zalloc.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+
+
+>From yjwei@cn.fujitsu.com  Fri Feb  6 15:53:31 2009
+From: Wei Yongjun <yjwei@cn.fujitsu.com>
+Date: Fri, 06 Feb 2009 11:08:58 +0800
+Subject: Staging: usbip: kmem_cache_alloc/memset -> kmem_cache_zalloc
+To: Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Message-ID: <498BA9CA.7060700@cn.fujitsu.com>
+
+
+Used kmem_cache_zalloc instead of kmem_cache_alloc/memset.
+
+Signed-off-by: Wei Yongjun <yjwei@cn.fujitsu.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/staging/usbip/stub_rx.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+--- a/drivers/staging/usbip/stub_rx.c
++++ b/drivers/staging/usbip/stub_rx.c
+@@ -334,7 +334,7 @@ static struct stub_priv *stub_priv_alloc
+ 
+ 	spin_lock_irqsave(&sdev->priv_lock, flags);
+ 
+-	priv = kmem_cache_alloc(stub_priv_cache, GFP_ATOMIC);
++	priv = kmem_cache_zalloc(stub_priv_cache, GFP_ATOMIC);
+ 	if (!priv) {
+ 		dev_err(&sdev->interface->dev, "alloc stub_priv\n");
+ 		spin_unlock_irqrestore(&sdev->priv_lock, flags);
+@@ -342,8 +342,6 @@ static struct stub_priv *stub_priv_alloc
+ 		return NULL;
+ 	}
+ 
+-	memset(priv, 0, sizeof(struct stub_priv));
+-
+ 	priv->seqnum = pdu->base.seqnum;
+ 	priv->sdev = sdev;
+ 
+
+
+Patches currently in gregkh-2.6 which might be from yjwei@cn.fujitsu.com are
+
+staging/staging-usbip-kmem_cache_alloc-memset-kmem_cache_zalloc.patch
