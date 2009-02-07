@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754540AbZBGNyH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753576AbZBGOCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754540AbZBGNyH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 08:54:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbZBGNxy
+	id S1753576AbZBGOCh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 09:02:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbZBGOC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 08:53:54 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35321 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753113AbZBGNxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 08:53:53 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Roland Dreier <rdreier@cisco.com>, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [Bug #12491] i915 lockdep warning
-Date: Sat, 7 Feb 2009 14:53:30 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
-Cc: "Brandeburg\, Jesse" <jesse.brandeburg@intel.com>,
-       Eric Anholt <eric@anholt.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       intel-gfx@lists.freedesktop.org
-References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <F169D4F5E1F1974DBFAFABF47F60C10A1DFD867C@orsmsx507.amr.corp.intel.com> <adabptfc90m.fsf@cisco.com>
-In-Reply-To: <adabptfc90m.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 7 Feb 2009 09:02:28 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48595 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750920AbZBGOC2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Feb 2009 09:02:28 -0500
+Date: Sat, 7 Feb 2009 14:02:45 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: H Peter Anvin <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       thomas@linux-os.sc.intel.com,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Add clflush before monitor for Intel 7400 series -
+ v2
+Message-ID: <20090207140245.1e91a88f@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090207004728.GA17586@linux-os.sc.intel.com>
+References: <20090207004728.GA17586@linux-os.sc.intel.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902071453.31570.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 07 February 2009, Roland Dreier wrote:
-> [intel-gfx CC added]
+On Fri, 6 Feb 2009 16:47:29 -0800
+"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> wrote:
+
 > 
->  > I tested this on my 965 based system that showed the issue and it seemed resolved, at least no warnings in dmesg.  Lockdep was confirmed to still be enabled.
 > 
->  > I can mark the bug fixed in korg bugzilla too.
-> 
-> Probably we just want to add a comment saying the patch works
+> For Intel 7400 series CPUs, the recommendation is to use a clflush on the
+> monitored address just before monitor and mwait pair [1]. This clflush makes
+> sure that there are no false wakeups from mwait when the monitored address
+> was recently written to.
 
-Yes, I have already added this information to the bug entry.
-
-> -- the bug should stay open until we get the fix upstream I guess.
-
-Yes, the bug will be closed as soon as it's fixed upstream.
-
-Thanks,
-Rafael
+Given our mwait usages will very quickly go back to sleep in such a case
+and it would almost certainly be one sleep only is this really worth the
+effort ?
