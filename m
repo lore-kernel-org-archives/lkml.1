@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbZBHNsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbZBHOKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbZBHNsS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 08:48:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbZBHNsE
+	id S1753482AbZBHOKm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 09:10:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbZBHOKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 08:48:04 -0500
-Received: from zone0.gcu-squad.org ([212.85.147.21]:32895 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752604AbZBHNsD (ORCPT
+	Sun, 8 Feb 2009 09:10:33 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:25591 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752845AbZBHOKc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 08:48:03 -0500
-Date: Sun, 8 Feb 2009 14:47:51 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Frank Seidel <frank@f-seidel.de>
-Cc: Frank Seidel <fseidel@suse.de>,
-       linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       ben-linux@fluff.org, linux-i2c@vger.kernel.org, w.sang@pengutronix.de,
-       "David S. Miller" <davem@davemloft.net>,
-       ukleinek@informatik.uni-freiburg.de, Frans Pop <elendil@planet.nl>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH] i2c: add missing KERN_* constants to printks
-Message-ID: <20090208144751.46184041@hyperion.delvare>
-In-Reply-To: <498EDA18.1090300@f-seidel.de>
-References: <498C3EEA.5060508@suse.de>
-	<20090208000553.059a0732@hyperion.delvare>
-	<498EDA18.1090300@f-seidel.de>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 8 Feb 2009 09:10:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=gmK3BCJPnoyxevZRqS9mxIYZJfE3DwvwLNT/BkIfbVDefV3XRwCo2OZ9NpDLQnoKbz
+         P17ojZwQRZeGQ3xhsrFExHBjEOOIkXhWkcSYc96qZV9rHdoiEprJyz9e9qnP9uNos18U
+         hgGoJlizfPPQ00RoDEIwEtID0AOIAttZMrNjM=
+Message-ID: <498EE7D6.4090100@gmail.com>
+Date: Sun, 08 Feb 2009 15:10:30 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
+MIME-Version: 1.0
+To: mano@roarinelk.homelinux.net, a.zummo@towertech.it
+CC: rtc-linux@googlegroups.com, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] rtc: t reaches -1, tested 0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 08 Feb 2009 14:11:52 +0100, Frank Seidel wrote:
-> Hi,
-> 
-> Jean Delvare wrote:
-> >> +	printk(KERN_ERR "i2c: ICR: %08x ISR: %08x\n"
-> >>  	       "i2c: log: ", readl(_ICR(i2c)), readl(_ISR(i2c)));
-> >>  	for (i = 0; i < i2c->irqlogidx; i++)
-> >>  		printk("[%08x:%08x] ", i2c->isrlog[i], i2c->icrlog[i]);
-> > 
-> > This last printk also lacks a log level. You can't add it in the loop,
-> > but you could add one printk before the loop, printing just the log level.
-> 
-> Isn't the last printk just a followup of the previous KERN_ERR which
-> doesn't have a newline? And i'm told only on new line beginnings the
-> loglevel should be set.
+With a postfix decrement t will reach -1 rather than 0,
+so the warning nor errot_out occur.
 
-I mean the (first) printk in the loop, not the last printk in this
-function. So what I am suggesting is:
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/drivers/rtc/rtc-au1xxx.c b/drivers/rtc/rtc-au1xxx.c
+index 8906a68..979ed04 100644
+--- a/drivers/rtc/rtc-au1xxx.c
++++ b/drivers/rtc/rtc-au1xxx.c
+@@ -81,7 +81,7 @@ static int __devinit au1xtoy_rtc_probe(struct platform_device *pdev)
+ 	if (au_readl(SYS_TOYTRIM) != 32767) {
+ 		/* wait until hardware gives access to TRIM register */
+ 		t = 0x00100000;
+-		while ((au_readl(SYS_COUNTER_CNTRL) & SYS_CNTRL_T0S) && t--)
++		while ((au_readl(SYS_COUNTER_CNTRL) & SYS_CNTRL_T0S) && --t)
+ 			msleep(1);
+ 
+ 		if (!t) {
 
-+	printk(KERN_DEBUG);
-	for (i = 0; i < i2c->irqlogidx; i++)
-		printk("[%08x:%08x] ", i2c->isrlog[i], i2c->icrlog[i]);
-	printk("\n");
 
--- 
-Jean Delvare
