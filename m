@@ -1,185 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbZBHUIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbZBHUI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753952AbZBHUIK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 15:08:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbZBHUH4
+	id S1754055AbZBHUI5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 15:08:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbZBHUIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 15:07:56 -0500
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:40775 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751387AbZBHUHy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 15:07:54 -0500
-X-Trace: 145594294/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.44.176.198/None/adrian@newgolddream.dyndns.info
-X-SBRS: None
-X-RemoteIP: 80.44.176.198
-X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
-X-MUA: Evolution 2.24.3 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsoEAHrKjklQLLDG/2dsb2JhbACBbspuhBoG
-X-IronPort-AV: E=Sophos;i="4.37,400,1231113600"; 
-   d="scan'208";a="145594294"
-Subject: Re: [PATCH] sh: maple: add support for Visual Memory Card devices,
- and make consequential changes to maple input drivers - 0/3 - v5
-From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Greg KH <greg@kroah.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       dwmw2 <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       MTD <linux-mtd@lists.infradead.org>,
-       linux-sh <linux-sh@vger.kernel.org>,
-       linux-input <linux-input@vger.kernel.org>,
-       Paul Mundt <lethal@linux-sh.org>
-In-Reply-To: <1234122069.6736.8.camel@localhost.localdomain>
-References: <1234122069.6736.8.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Sun, 08 Feb 2009 20:07:37 +0000
-Message-Id: <1234123657.6736.32.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Sun, 8 Feb 2009 15:08:45 -0500
+Received: from mail.atlantis.sk ([80.94.52.35]:34221 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753394AbZBHUIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 15:08:44 -0500
+From: Ondrej Zary <linux@rainbow-software.org>
+To: David Miller <davem@davemloft.net>
+Subject: Re: 3c509 resume from hibernation broken somewhere between 2.6.25 and 2.6.28
+Date: Sun, 8 Feb 2009 21:08:35 +0100
+User-Agent: KMail/1.9.10
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200902061422.14746.linux@rainbow-software.org> <20090206.220426.21894163.davem@davemloft.net>
+In-Reply-To: <20090206.220426.21894163.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902082108.37180.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Consequential changes to the maple input drivers as well as a cleanup of
-the keyboard code.
+On Saturday 07 February 2009 07:04:26 David Miller wrote:
+> From: Ondrej Zary <linux@rainbow-software.org>
+> Date: Fri, 6 Feb 2009 14:22:13 +0100
+>
+> > Hello,
+> > last year, I posted a patch which fixed hibernation on 3c509 cards. That
+> > was back in 2.6.24. It worked fine in 2.6.25. But then I stopped using
+> > hibernation (as it did not work with my new IT8212 RAID controller).
+> >
+> > Now I fixed it and noticed that 3c509 does not wake up properly anymore
+> > (in 2.6.28) - neither in PnP nor in ISA modes. ifconfig down/up makes the
+> > card work again in PnP mode. However, in ISA mode, ifconfig up ends with
+> > "No such device" error.
+> >
+> > Comparing the 3c509 driver between 2.6.25 and 2.6.28, there's only some
+> > statistics-related change. So the cause of the problem must be somewhere
+> > else.
+> >
+> > This patch makes the resume work in PnP mode, but it's still not enough
+> > for ISA mode.
+>
+> Patch applied, thank you.
+>
+> Let us know if you figure out how to get the ISA case working
+> too :-)
 
-Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
----
-diff --git a/drivers/input/joystick/maplecontrol.c b/drivers/input/joystick/maplecontrol.c
-index e50047b..77cfde5 100644
---- a/drivers/input/joystick/maplecontrol.c
-+++ b/drivers/input/joystick/maplecontrol.c
-@@ -3,7 +3,7 @@
-  *	Based on drivers/usb/iforce.c
-  *
-  *	Copyright Yaegashi Takeshi, 2001
-- *	Adrian McMenamin, 2008
-+ *	Adrian McMenamin, 2008 - 2009
-  */
- 
- #include <linux/kernel.h>
-@@ -29,7 +29,7 @@ static void dc_pad_callback(struct mapleq *mq)
- 	struct maple_device *mapledev = mq->dev;
- 	struct dc_pad *pad = maple_get_drvdata(mapledev);
- 	struct input_dev *dev = pad->dev;
--	unsigned char *res = mq->recvbuf;
-+	unsigned char *res = mq->recvbuf->buf;
- 
- 	buttons = ~le16_to_cpup((__le16 *)(res + 8));
- 
-diff --git a/drivers/input/keyboard/maple_keyb.c b/drivers/input/keyboard/maple_keyb.c
-index 22f17a5..5aa2361 100644
---- a/drivers/input/keyboard/maple_keyb.c
-+++ b/drivers/input/keyboard/maple_keyb.c
-@@ -1,8 +1,8 @@
- /*
-  * SEGA Dreamcast keyboard driver
-  * Based on drivers/usb/usbkbd.c
-- * Copyright YAEGASHI Takeshi, 2001
-- * Porting to 2.6 Copyright Adrian McMenamin, 2007, 2008
-+ * Copyright (c) YAEGASHI Takeshi, 2001
-+ * Porting to 2.6 Copyright (c) Adrian McMenamin, 2007 - 2009
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-@@ -33,7 +33,7 @@ static DEFINE_MUTEX(maple_keyb_mutex);
- 
- #define NR_SCANCODES 256
- 
--MODULE_AUTHOR("YAEGASHI Takeshi, Adrian McMenamin");
-+MODULE_AUTHOR("Adrian McMenamin <adrian@mcmen.demon.co.uk");
- MODULE_DESCRIPTION("SEGA Dreamcast keyboard driver");
- MODULE_LICENSE("GPL");
- 
-@@ -115,7 +115,7 @@ static void dc_scan_kbd(struct dc_kbd *kbd)
- 				input_event(dev, EV_MSC, MSC_SCAN, code);
- 				input_report_key(dev, keycode, 0);
- 			} else
--				printk(KERN_DEBUG "maple_keyb: "
-+				dev_dbg(&dev->dev,
- 					"Unknown key (scancode %#x) released.",
- 					code);
- 		}
-@@ -127,7 +127,7 @@ static void dc_scan_kbd(struct dc_kbd *kbd)
- 				input_event(dev, EV_MSC, MSC_SCAN, code);
- 				input_report_key(dev, keycode, 1);
- 			} else
--				printk(KERN_DEBUG "maple_keyb: "
-+				dev_dbg(&dev->dev,
- 					"Unknown key (scancode %#x) pressed.",
- 					code);
- 		}
-@@ -140,7 +140,7 @@ static void dc_kbd_callback(struct mapleq *mq)
- {
- 	struct maple_device *mapledev = mq->dev;
- 	struct dc_kbd *kbd = maple_get_drvdata(mapledev);
--	unsigned long *buf = mq->recvbuf;
-+	unsigned long *buf = (unsigned long *)(mq->recvbuf->buf);
- 
- 	/*
- 	 * We should always get the lock because the only
-@@ -159,22 +159,27 @@ static void dc_kbd_callback(struct mapleq *mq)
- 
- static int probe_maple_kbd(struct device *dev)
- {
--	struct maple_device *mdev = to_maple_dev(dev);
--	struct maple_driver *mdrv = to_maple_driver(dev->driver);
-+	struct maple_device *mdev;
-+	struct maple_driver *mdrv;
- 	int i, error;
- 	struct dc_kbd *kbd;
- 	struct input_dev *idev;
- 
--	if (!(mdev->function & MAPLE_FUNC_KEYBOARD))
--		return -EINVAL;
-+	mdev = to_maple_dev(dev);
-+	mdrv = to_maple_driver(dev->driver);
- 
- 	kbd = kzalloc(sizeof(struct dc_kbd), GFP_KERNEL);
--	idev = input_allocate_device();
--	if (!kbd || !idev) {
-+	if (!kbd) {
- 		error = -ENOMEM;
- 		goto fail;
- 	}
- 
-+	idev = input_allocate_device();
-+	if (!idev) {
-+		error = -ENOMEM;
-+		goto fail_idev_alloc;
-+	}
-+
- 	kbd->dev = idev;
- 	memcpy(kbd->keycode, dc_kbd_keycode, sizeof(kbd->keycode));
- 
-@@ -195,7 +200,7 @@ static int probe_maple_kbd(struct device *dev)
- 
- 	error = input_register_device(idev);
- 	if (error)
--		goto fail;
-+		goto fail_register;
- 
- 	/* Maple polling is locked to VBLANK - which may be just 50/s */
- 	maple_getcond_callback(mdev, dc_kbd_callback, HZ/50,
-@@ -207,10 +212,12 @@ static int probe_maple_kbd(struct device *dev)
- 
- 	return error;
- 
--fail:
-+fail_register:
-+	maple_set_drvdata(mdev, NULL);
- 	input_free_device(idev);
-+fail_idev_alloc:
- 	kfree(kbd);
--	maple_set_drvdata(mdev, NULL);
-+fail:
- 	return error;
- }
- 
+Found that when the driver is compiled as module, ISA resume works fine. But 
+when the driver is compiled in the kernel, it does not work. I'm unable to 
+find why.
 
+When resuming, el3_isa_resume() is called first. It then calls 
+el3_isa_id_sequence(). This function fails when the driver is compiled-in 
+because id_read_eeprom(7) returns 0xFFFF - as if the card is not present 
+there. I'm out of ideas.
 
-
-
-
+-- 
+Ondrej Zary
