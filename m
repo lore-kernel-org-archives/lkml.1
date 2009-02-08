@@ -1,39 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754117AbZBHSxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753714AbZBHTAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754117AbZBHSxT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 13:53:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbZBHSw6
+	id S1753714AbZBHTAo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 14:00:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbZBHTAe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 13:52:58 -0500
-Received: from casper.infradead.org ([85.118.1.10]:53622 "EHLO
+	Sun, 8 Feb 2009 14:00:34 -0500
+Received: from casper.infradead.org ([85.118.1.10]:53786 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753267AbZBHSw5 convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1753130AbZBHTAe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 13:52:57 -0500
-Date: Sun, 8 Feb 2009 10:43:14 -0800
+	Sun, 8 Feb 2009 14:00:34 -0500
+Date: Sun, 8 Feb 2009 11:00:52 -0800
 From: Arjan van de Ven <arjan@infradead.org>
 To: Arjan van de Ven <arjan@infradead.org>
 Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, jkosina@suse.cz,
        mchehab@infradead.org
-Subject: [PATCH 3/3] use the new request_module_nowait() in drivers/media
-Message-ID: <20090208104314.4e74e6a8@infradead.org>
-In-Reply-To: <20090208104201.6124ab6a@infradead.org>
+Subject: Re: [PATCH 3/3] use the new request_module_nowait() in
+ drivers/media
+Message-ID: <20090208110052.6f3deafc@infradead.org>
+In-Reply-To: <20090208104314.4e74e6a8@infradead.org>
 References: <20090208104201.6124ab6a@infradead.org>
+	<20090208104314.4e74e6a8@infradead.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 8 Feb 2009 10:43:14 -0800
+Arjan van de Ven <arjan@infradead.org> wrote:
+
+blargh I sent an older version of this patch
+I meant to send this one
+
 >From 2311993ceed96ec0bb023419120d9aeada205242 Mon Sep 17 00:00:00 2001
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sun, 1 Feb 2009 12:02:39 -0800
 Subject: [PATCH] use the new request_module_nowait() in drivers/media
 
 Several drivers/media/video drivers use keventd to load modules
@@ -71,7 +77,7 @@ index c71f394..f470318 100644
  {
 -	INIT_WORK(&dev->request_module_wk, request_module_async);
 -	schedule_work(&dev->request_module_wk);
-+	request_module_async("dvb-bt8xx");
++	request_module_nowait("dvb-bt8xx");
  }
  #else
  #define request_modules(dev)
@@ -104,7 +110,7 @@ index b295b76..7215344 100644
 -
  	if (dev->core->board.mpeg & CX88_MPEG_DVB)
 -		request_module("cx88-dvb");
-+		request_module_async("cx88-dvb");
++		request_module_nowait("cx88-dvb");
  	if (dev->core->board.mpeg & CX88_MPEG_BLACKBIRD)
 -		request_module("cx88-blackbird");
 -}
@@ -113,7 +119,7 @@ index b295b76..7215344 100644
 -{
 -	INIT_WORK(&dev->request_module_wk, request_module_async);
 -	schedule_work(&dev->request_module_wk);
-+		request_module_async("cx88-blackbird");
++		request_module_nowait("cx88-blackbird");
  }
  #else
  #define request_modules(dev)
@@ -145,10 +151,10 @@ index 3b3ca3f..890f209 100644
 -
  	if (dev->has_audio_class)
 -		request_module("snd-usb-audio");
-+		request_module_async("snd-usb-audio");
++		request_module_nowait("snd-usb-audio");
  	else if (dev->has_alsa_audio)
 -		request_module("em28xx-alsa");
-+		request_module_async("em28xx-alsa");
++		request_module_nowait("em28xx-alsa");
  
  	if (dev->board.has_dvb)
 -		request_module("em28xx-dvb");
@@ -158,7 +164,7 @@ index 3b3ca3f..890f209 100644
 -{
 -	INIT_WORK(&dev->request_module_wk, request_module_async);
 -	schedule_work(&dev->request_module_wk);
-+		request_module_async("em28xx-dvb");
++		request_module_nowait("em28xx-dvb");
  }
  #else
  #define request_modules(dev)
@@ -190,13 +196,13 @@ index 99221d7..753836c 100644
 +{
  	if (card_is_empress(dev))
 -		request_module("saa7134-empress");
-+		request_module_async("saa7134-empress");
++		request_module_nowait("saa7134-empress");
  	if (card_is_dvb(dev))
 -		request_module("saa7134-dvb");
-+		request_module_async("saa7134-dvb");
++		request_module_nowait("saa7134-dvb");
  	if (alsa)
 -		request_module("saa7134-alsa");
-+		request_module_async("saa7134-alsa");
++		request_module_nowait("saa7134-alsa");
  	if (oss)
 -		request_module("saa7134-oss");
 -}
@@ -205,7 +211,7 @@ index 99221d7..753836c 100644
 -{
 -	INIT_WORK(&dev->request_module_wk, request_module_async);
 -	schedule_work(&dev->request_module_wk);
-+		request_module_async("saa7134-oss");
++		request_module_nowait("saa7134-oss");
  }
  
  #else
