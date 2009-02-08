@@ -1,98 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbZBHU6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753732AbZBHU6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753967AbZBHU6Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 15:58:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbZBHU5s
+	id S1753732AbZBHU6z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 15:58:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbZBHU6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 15:57:48 -0500
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:48224 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753331AbZBHU5r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 15:57:47 -0500
-Date: Sun, 8 Feb 2009 21:57:39 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Liu Dave <DaveLiu@freescale.com>, sdhci-devel@list.drzeus.cx,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 04/11] sdhci: Add support for card-detection polling
-Message-ID: <20090208215739.26fbb34b@mjolnir.drzeus.cx>
-In-Reply-To: <20090206180650.GD11548@oksana.dev.rtsoft.ru>
-References: <20090206180520.GA16123@oksana.dev.rtsoft.ru>
-	<20090206180650.GD11548@oksana.dev.rtsoft.ru>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-4104-1234126663-0001-2"
+	Sun, 8 Feb 2009 15:58:46 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:33853 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753181AbZBHU6p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 15:58:45 -0500
+Date: Sun, 8 Feb 2009 20:56:58 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Sami Farin <safari-kernel@safari.iki.fi>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: 2.6.28.4 regression: mmap fails if mlockall used
+In-Reply-To: <20090208192340.mydonrnzi3os734u@m.safari.iki.fi>
+Message-ID: <Pine.LNX.4.64.0902082025470.14955@blonde.anvils>
+References: <20090208105222.hj7zhcyxyqfjeobt@m.safari.iki.fi>
+ <Pine.LNX.4.64.0902081802480.14394@blonde.anvils>
+ <20090208192340.mydonrnzi3os734u@m.safari.iki.fi>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Sun, 8 Feb 2009, Sami Farin wrote:
+> On Sun, Feb 08, 2009 at 18:25:45 +0000, Hugh Dickins wrote:
+> > On Sun, 8 Feb 2009, Sami Farin wrote:
+> > 
+> > > 2.6.28.2 + gcc-4.3.2-7 works.
+> > > 2.6.28.4 + gcc-4.4.0-0.16 does not work.
+> > > I run x86_64 SMP kernel.
+> > 
+> > If it's really a bug, in kernel or gcc, then it will help to know
+> > how 2.6.28.4 + gcc-4.3.2-7 behaves.  And are you using the respective
+> > version of gcc to build both the kernel and the a.out?
+> 
+> Yes, I used the same gcc for both of them.
+> I noticed ntpd (started with -m for mlockall) did not work with 2.6.28.4:
+> getpwnam, getaddrinfo, and maybe others failed.  ntpd was originally compiled
+> with gcc 4.3.2-7, but using gcc 4.4.0-0.16 did not change anything.
+> 
+> > > # strace ./a.out ntp
+> > > 12:10:14.780726 mmap(NULL, 2147624, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = -1 EFAULT (Bad address) <0.000038>
+> > 
+> > I wonder where that 2147624 originates from.  Because EFAULT is exactly
+> 
+> yeah I snipped a bit too much...:
+> 
+> 21:01:54.543468 open("/lib64/libnss_files.so.2", O_RDONLY) = 3 <0.000034>
+> 21:01:54.543562 read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0@ \0\0\0\0\0\0@\0\0\0\0\0\0\0\230\352\0\0\0\0\0\0\0\0\0\0@\0008\0\t\0@\0!\0 \0\6\0\0\0\5\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0\370\1\0\0\0\0\0\0\370\1\0\0\0\0\0\0\10\0\0\0\0\0\0\0\3\0\0\0\4\0\0\0\340"..., 832) = 832 <0.000016>
+> 21:01:54.543683 fstat(3, {st_dev=makedev(8, 6), st_ino=101893687, st_mode=S_IFREG|0755, st_nlink=1, st_uid=0, st_gid=0, st_blksize=4096, st_blocks=128, st_size=62168, st_atime=2008/11/01-00:18:43, st_mtime=2008/11/01-00:18:43, st_ctime=2008/11/06-23:46:26}) = 0 <0.000012>
+> 21:01:54.543791 mmap(NULL, 2147624, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = -1 EFAULT (Bad address) <0.000046>
 
---=_freyr.drzeus.cx-4104-1234126663-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Right, st_size=62168 but it's mapping 2147624, so it's not surprising
+that an EFAULT comes into it if we're mlocking (but see below, you're
+perfectly correct).
 
-On Fri, 6 Feb 2009 21:06:50 +0300
-Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+In my case I don't actually see that happening in the getpwnam() after
+the mlockall(), but I can see a similar instance earlier, while it's
+mmaping /lib64/libc.so.6.
 
-> This patch adds SDHCI_QUIRK_BROKEN_CARD_DETECTION quirk. When specified,
-> sdhci driver will set MMC_CAP_NEEDS_POLL MMC host capability, and won't
-> enable card insert/remove interrupts.
->=20
-> This is needed for hosts with unreliable card detection, such as FSL
-> eSDHC. The original eSDHC driver was tring to "debounce" card-detection
-> IRQs by reading present state and disabling particular interrupts. But
-> with this debouncing scheme I noticed that sometimes we miss card
-> insertion/removal events.
->=20
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
+At first I was very puzzled, then remembered: it does the one oversized
+mmap from the file in order to reserve contiguous virtual memory space,
+then follows it up with MAP_FIXED mmaps to replace the beyond-EOF parts
+with what it actually wants in there.  Fair enough: it could be done
+differently, but this is an efficient and accepted way to do it.
 
-I guess you need to fix the check at the start of the request function
-as well.
+> 
+> > what you get on an mmap of a file, following an mlockall(MCL_FUTURE),
+> > if the file is actually a page or more shorter than the size given:
+> > the mlocking tries to fault in a non-existent page of the file, if
+> > in userspace you'd get SIGBUS, but within the kernel it's EFAULT
+> > returned from the mmap.
+> > 
+> > My suspicion is that the 2147624 is just wrong: is it a filesize,
+> 
+> I haven't looked at glibc where it pulls the value.
+> But  that mmap calls succeeds if mlockall is not called.
+> 
+> Yes, bug can also be in gcc, but I'd bet my euros (but not very many)
+> on mlock changes introduced in 2.6.28.2 --> 2.6.28.4.
 
-> diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-> index b7a79a0..45c5f1f 100644
-> --- a/drivers/mmc/host/sdhci.c
-> +++ b/drivers/mmc/host/sdhci.c
-> @@ -162,6 +162,9 @@ static void sdhci_init(struct sdhci_host *host)
->  		SDHCI_INT_DMA_END | SDHCI_INT_DATA_END | SDHCI_INT_RESPONSE |
->  		SDHCI_INT_ADMA_ERROR;
-> =20
-> +	if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
-> +		intmask &=3D ~(SDHCI_INT_CARD_REMOVE | SDHCI_INT_CARD_INSERT);
-> +
+You are perfectly correct.  The 2.6.28 code was careful to hide
+the -EFAULT (or other) locking error from higher levels - and we
+can see why that's necessary, given MCL_FUTURE and this technique
+for reserving space with one oversized mapping from file.  But
+the 2.6.28.4 code is mistakenly passing the error back on up.
 
-A matter of taste perhaps, but I think it would make more sense to not
-add them in the first place than to add and then remove them.
+> 
+> If I don't hear others crying about mlockall in 2.6.28.4
+> in a week or so, I may bother trying older gcc with 2.6.28.4,
+> but not right now..
 
-Card detection interrupts should be handled separately anyway as they
-should not be enabled before mmc_add_host() returns and should be
-disabled before calling mmc_remove_host(). Patch welcome. ;)
+There may be some tears, but you've really helped to sooth this.
 
-Rgds
---=20
-     -- Pierre Ossman
+> 
+> > but the file gets truncated before the mmap? or is it the size given
+> > in an ELF section perhaps, but the file actually not that big?
+> > Any ENOSPC in that filesystem recently?
+> 
+> No ENOSPC.
+>  
+> > > 12:10:14.780809 close(3)                = 0 <0.000012>
+> > > 12:10:14.780856 munmap(0x7f3476e0d000, 421232) = 0 <0.000145>
+> > > 12:10:14.781054 write(2, "./a.out: getpwnam failed: Success\n"..., 34./a.out: getpwnam failed: Success
+> > > ) = 34 <0.000015>
+> > > 
+> > > I can do malloc(3000000), then mmap call is
+> > > 12:50:20.694207 mmap(NULL, 3002368, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f8a8d16b000 <0.003078>
+> > 
+> > Whereas in the case of anonymous, we don't have an underlying object
+> > to fault in (or create the object in response to the mmap), so no
+> > such problem.
+> > 
+> > I didn't manage to reproduce this here, but I wasn't using the same
+> > version of gcc nor (I'd guess!) your kernel config nor your a.out.
+> 
+> To be sure: you tried to reproduce by compiling the attached file
+> on 2.6.28.4 kernel?
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+Silly me missed the attachment, thanks for pointing it out: as I said
+above, in my case it didn't actually show the problem (I guess because
+my getpwnam() can ignore the network), but stracing it certainly helped
+to clarify the issue.
 
---=_freyr.drzeus.cx-4104-1234126663-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
+> 
+> Thanks for looking at this...!
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+More thanks to you for reporting it.  Here's a patch against 2.6.28.4
+(or applies at offset to current linux-2.6 git), please test and report
+back when you've a moment:
 
-iEYEARECAAYFAkmPR0cACgkQ7b8eESbyJLinhwCgxCrMV6jlNboNhbhJo9PjcO7P
-SHoAoLJekCBLVYJpwVQ4TsgkC+3xqln2
-=cNsd
------END PGP SIGNATURE-----
 
---=_freyr.drzeus.cx-4104-1234126663-0001-2--
+[PATCH] mm: fix error case in mlock downgrade reversion
+
+Commit 27421e211a39784694b597dbf35848b88363c248, Manually revert
+"mlock: downgrade mmap sem while populating mlocked regions", has
+introduced its own regression: __mlock_vma_pages_range() may report
+an error (for example, -EFAULT from trying to lock down pages from
+beyond EOF), but mlock_vma_pages_range() must hide that from its
+callers as before.
+
+Reported-by: Sami Farin <safari-kernel@safari.iki.fi>
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Cc: stable@kernel.org
+---
+
+ mm/mlock.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+--- 2.6.28.4/mm/mlock.c	2009-02-07 01:00:40.000000000 +0000
++++ linux/mm/mlock.c	2009-02-08 20:12:38.000000000 +0000
+@@ -310,7 +310,10 @@ long mlock_vma_pages_range(struct vm_are
+ 			is_vm_hugetlb_page(vma) ||
+ 			vma == get_gate_vma(current))) {
+ 
+-		return __mlock_vma_pages_range(vma, start, end, 1);
++		__mlock_vma_pages_range(vma, start, end, 1);
++
++		/* Hide errors from mmap() and other callers */
++		return 0;
+ 	}
+ 
+ 	/*
