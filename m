@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757870AbZBHWEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbZBHWE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757870AbZBHWEk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 17:04:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755957AbZBHV4E
+	id S1756560AbZBHWE7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 17:04:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbZBHV52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 16:56:04 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46813 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756117AbZBHV4B (ORCPT
+	Sun, 8 Feb 2009 16:57:28 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:1096 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754720AbZBHV5Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 16:56:01 -0500
-Date: Sun, 8 Feb 2009 13:55:44 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Sun, 8 Feb 2009 16:57:25 -0500
+Date: Sun, 8 Feb 2009 16:57:23 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Vegard Nossum <vegard.nossum@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
 cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>
-Subject: Re: 2.6.29-rc4: Reported regressions from 2.6.28
+       Natalie Protasevich <protasnb@gmail.com>
+Subject: Re: [linux-pm] 2.6.29-rc4: Reported regressions from 2.6.28
 In-Reply-To: <AIghyjFgMFP.A.uZD._10jJB@chimera>
-Message-ID: <alpine.LFD.2.00.0902081354150.3048@localhost.localdomain>
-References: <AIghyjFgMFP.A.uZD._10jJB@chimera>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+Message-ID: <Pine.LNX.4.44L0.0902081652120.22400-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
 On Sun, 8 Feb 2009, Rafael J. Wysocki wrote:
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12669
-> Subject		: 2.6.28.4 regression: mmap fails if mlockall used
-> Submitter	: Sami Farin <safari-kernel@safari.iki.fi>
-> Date		: 2009-02-08 10:52 (1 days old)
-> References	: http://marc.info/?l=linux-kernel&m=123409037423068&w=4
 
-Oh, Hugh just sent a patch, and it's now commit 
-d5b562330ec766292a3ac54ae5e0673610bd5b3d. Sadly this just missed -rc4 by 
-something like 20 minutes..
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12668
+> Subject		: USB flash disk surprise disconnect
+> Submitter	: Vegard Nossum <vegard.nossum@gmail.com>
+> Date		: 2009-02-08 10:21 (1 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123408851821292&w=4
 
-		Linus
+Is there any reason to think this is a regression rather than a 
+one-time fluke?
+
+If it really is a regression, additional debugging info would help.  
+The log excerpt in the email report doesn't show anything that happened
+prior to the disconnect.
+
+Alan Stern
+
