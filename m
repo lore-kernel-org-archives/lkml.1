@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755756AbZBHAAI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbZBHAJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755756AbZBHAAI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 19:00:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbZBGX7z
+	id S1755990AbZBHAJV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 19:09:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZBHAJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 18:59:55 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:40356 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753615AbZBGX7y convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 18:59:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=WWcuvY2MLzxkgDZ7G5VX05iSYrozCPqNWVsKCvPnH0hf5oFrlJIaHoGb8BdtJrecI+
-         loZcXIlQQqrfyq23laJkEmBBJHQYZ5VKdDhj00VzK809upL8itoNoYd1mI9cAMh5XaLN
-         U/yUGvHok637KrvYNJg4LFvurbCzIBJV4hSVg=
+	Sat, 7 Feb 2009 19:09:04 -0500
+Received: from gw.goop.org ([64.81.55.164]:54577 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754056AbZBHAJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Feb 2009 19:09:03 -0500
+Message-ID: <498E229C.5030205@goop.org>
+Date: Sat, 07 Feb 2009 16:09:00 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-In-Reply-To: <498D9F02.9000107@tremplin-utc.net>
-References: <1233967681-6378-1-git-send-email-giuseppe.bilotta@gmail.com>
-	 <498D9F02.9000107@tremplin-utc.net>
-Date: Sun, 8 Feb 2009 00:59:52 +0100
-Message-ID: <cb7bb73a0902071559w70b3367el9471db894872257f@mail.gmail.com>
-Subject: Re: [PATCH] lis3lv02d: add axes knowledge of HP Pavilion dv5 models
-From: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
-To: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
-Cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org,
-       Palatis Tseng <palatis@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: state of some x86 acpi patches
+References: <4947FF4C.80706@goop.org> <20081216192534.GB843@elte.hu> <alpine.LFD.2.00.0812311821110.3854@localhost.localdomain> <495C677F.6080707@goop.org> <20090102153957.GA1180@elte.hu> <4980EE0C.4070308@goop.org> <49810211.9030808@kernel.org> <498CF8DA.30004@goop.org> <498CFD95.5070004@kernel.org>
+In-Reply-To: <498CFD95.5070004@kernel.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 7, 2009 at 3:47 PM, Éric Piel <eric.piel@tremplin-utc.net> wrote:
-> Giuseppe Bilotta schreef:
->> Add support for HP Pavlion dv5 models, whose sensor has an inverted x
->> axis.
->>
->> Signed-off-by: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
-> Acked-by: Eric Piel <Eric.Piel@tremplin-utc.net>
->
-> Looks good.
-> Andrew, would you mind queuing it?
->> ---
->> My HP Pavilion dv5 has an inverted x axis of the accelerometer, so this
->> patch marks the inversion for all the dv5. I can include the full
->> dmidecode output if this is deemed necessary.
->>
->> With the laptop standing still on my desk jstest reports X and Y values
->> fluctuating from -8k to +8k (more or less). I assume this is normal?
-> What does "k" stands for? If that's the unit of the joystick output:
-> yes, that's perfectly normal, just some noise/vibration. If that's 1000,
-> it's far too much to be normal.
+Yinghai Lu wrote:
+> Ingo is too busy...
+> It seems Len already agreed those patches can go through tip.
+>   
 
-k is for thousands. I thought it could have been normal because
-someone (Pavel?) mentioned the disk park script trigged even if he was
-just walking around, so I just assumed the sensor to be extremely
-sensible. OTOH the maximum range of the sensor, as reported by jstest,
-seems to be -32k to +32k, and 8k is about one forth of it. Considering
-sometimes the fluctuations even peak to 12k, there might be something
-else at play here. Any suggestions on helping debug the issue are
-welcome.
+OK, I have them prepared as a branch off tip/git pullable from:
 
+The following changes since commit 82eda818f26cbef2b0a6bf6580e52645af62e4fd:
+  Ingo Molnar (1):
+        Merge branch 'core/locking'
 
+are available in the git repository at:
 
+  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git acpi/map
 
+Jeremy Fitzhardinge (3):
+      x86: use early_ioremap in __acpi_map_table
+      x86: always explicitly map acpi memory
+      acpi: remove final __acpi_map_table mapping before setting acpi_gbl_permanent_mmap
 
--- 
-Giuseppe "Oblomov" Bilotta
+Yinghai Lu (2):
+      acpi/x86: introduce __apci_map_table, v4
+      revert_fix_es7000_compiling
+
+ arch/ia64/kernel/acpi.c          |    4 ++++
+ arch/x86/include/asm/acpi.h      |    3 ---
+ arch/x86/include/asm/fixmap_32.h |    4 ----
+ arch/x86/include/asm/fixmap_64.h |    4 ----
+ arch/x86/kernel/acpi/boot.c      |   33 ++++++++-------------------------
+ arch/x86/kernel/es7000_32.c      |    9 ++++++++-
+ drivers/acpi/acpica/tbxface.c    |   17 ++++++++++++++---
+ drivers/acpi/osl.c               |   11 +++++++++--
+ drivers/acpi/tables.c            |   20 ++++++++++++++------
+ include/acpi/acpiosxf.h          |    1 +
+ include/acpi/acpixf.h            |    4 ++++
+ include/linux/acpi.h             |    1 +
+ 12 files changed, 63 insertions(+), 48 deletions(-)
+
+	J
+
