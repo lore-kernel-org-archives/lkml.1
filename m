@@ -1,65 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753331AbZBHPfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbZBHPkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753331AbZBHPfq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 10:35:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbZBHPfh
+	id S1753266AbZBHPkx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 10:40:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbZBHPko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 10:35:37 -0500
-Received: from yumi.tdiedrich.de ([85.10.210.183]:56558 "EHLO mx.tdiedrich.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750787AbZBHPfg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 10:35:36 -0500
-X-Greylist: delayed 1094 seconds by postgrey-1.27 at vger.kernel.org; Sun, 08 Feb 2009 10:35:36 EST
-Date: Sun, 8 Feb 2009 16:18:13 +0100
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-To: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Ayaz Abdulla <aabdulla@nvidia.com>,
-       Jeff Garzik <jeff@garzik.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: WOL with forcedeth broken since
-	f55c21fd9a92a444e55ad1ca4e4732d56661bf2e
-Message-ID: <20090208151813.GA6941@yamamaya.is-a-geek.org>
-Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-	Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Yinghai Lu <yhlu.kernel@gmail.com>,
-	Ayaz Abdulla <aabdulla@nvidia.com>, Jeff Garzik <jeff@garzik.org>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>
-References: <20090129063118.GA3586@pmhahn.de>
+	Sun, 8 Feb 2009 10:40:44 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:21928 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750787AbZBHPkn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 10:40:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=rlvCrOUyGapdDFLCMPrkYobhs/KeJptFKRx+N9wID6/MWapxMFJm1cWjz4WV14syG0
+         Mo69eMp0N/aV3WDottpp+YssAu/Y8nZnx+skAOn2Ssp+F5fCTBMyzpX4wmQFWj/jXsNV
+         KQO512aAz+rQb2aVQdanhjVxlztOKanIQJk0c=
+Message-ID: <498EFCF8.5070106@gmail.com>
+Date: Sun, 08 Feb 2009 16:40:40 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090129063118.GA3586@pmhahn.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] serial: Z85C30: BCM1480: loops should end at 0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Philipp Matthias Hahn wrote:
-> Somewhere between 2.6.26 and 2.6.27 WOL stopped working on my MS-7350
-> motherboard with an "nVidia Corporation MCP51 Ethernet Controller (rev a3)".
-> 	"etherwake 00:19:db:f2:e1:35" did not work
-> 	"etherwake 35:e1:f2:db:19:00" did work
-> Since I did a BIOS update during the same time window I (wrongly) put
-> the fault on the BIOS. (See /sys/class/dmi/id/modalias for yourself:
-> dmi:bvnAmericanMegatrendsInc.:bvrV1.7:bd07/29/2008:svnMSI:pnMS-7350:pvr1.0:rvnMSI:rnMS-7350:rvr1.0:cvnToBeFilledByO.E.M.:ct3:cvrToBeFilledByO.E.M.:
-> )
+With a postfix decrement 'loops' reach -1, not 0, which is subsequently
+returned. In drivers/serial/zs.c, line 1137 it is considered as a boolean with 0
+as failure:
 
-Hmm, I had not tried WOL for some time.
-With 2.6.29-rc3 is see the following behaviour:
+if (zs_transmit_drain(zport, irq))
+                write_zsdata(zport, ch);
 
-State            WOL Behaviour
-------------------------------
-shutdown         reversed MAC
-disk/shutdown    reversed MAC
-disk/platform    OK
+so to use it as such loops should end at 0 after the loop rather than -1.
+This also fix similar issues in other functions.
 
-Apparently nv_restore_mac_addr() restores the MAC in the wrong order
-for WOL (at least for my PCI_DEVICE_ID_NVIDIA_NVENET_15).  platform
-works, because the MAC is not touched in the nv_suspend() path.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+Another solution would be to change the test at drivers/serial/zs.c, line 1137:
 
-A possible fix might be to only call nv_restore_mac_addr() if
-system_state != SYSTEM_POWER_OFF.
+if (zs_transmit_drain(zport, irq) == -1)
 
--- 
-Tobias						PGP: http://9ac7e0bc.uguu.de
-このメールは十割再利用されたビットで作られています。
+Is that preferred?
+
+ drivers/serial/sb1250-duart.c |    6 +++---
+ drivers/serial/zs.c           |    6 +++---
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/serial/sb1250-duart.c b/drivers/serial/sb1250-duart.c
+index a4fb343..319e8b8 100644
+--- a/drivers/serial/sb1250-duart.c
++++ b/drivers/serial/sb1250-duart.c
+@@ -204,7 +204,7 @@ static int sbd_receive_drain(struct sbd_port *sport)
+ {
+ 	int loops = 10000;
+ 
+-	while (sbd_receive_ready(sport) && loops--)
++	while (sbd_receive_ready(sport) && --loops)
+ 		read_sbdchn(sport, R_DUART_RX_HOLD);
+ 	return loops;
+ }
+@@ -218,7 +218,7 @@ static int __maybe_unused sbd_transmit_drain(struct sbd_port *sport)
+ {
+ 	int loops = 10000;
+ 
+-	while (!sbd_transmit_ready(sport) && loops--)
++	while (!sbd_transmit_ready(sport) && --loops)
+ 		udelay(2);
+ 	return loops;
+ }
+@@ -232,7 +232,7 @@ static int sbd_line_drain(struct sbd_port *sport)
+ {
+ 	int loops = 10000;
+ 
+-	while (!sbd_transmit_empty(sport) && loops--)
++	while (!sbd_transmit_empty(sport) && --loops)
+ 		udelay(2);
+ 	return loops;
+ }
+diff --git a/drivers/serial/zs.c b/drivers/serial/zs.c
+index 9e6a873..d8c2809 100644
+--- a/drivers/serial/zs.c
++++ b/drivers/serial/zs.c
+@@ -231,7 +231,7 @@ static int zs_receive_drain(struct zs_port *zport)
+ {
+ 	int loops = 10000;
+ 
+-	while ((read_zsreg(zport, R0) & Rx_CH_AV) && loops--)
++	while ((read_zsreg(zport, R0) & Rx_CH_AV) && --loops)
+ 		read_zsdata(zport);
+ 	return loops;
+ }
+@@ -241,7 +241,7 @@ static int zs_transmit_drain(struct zs_port *zport, int irq)
+ 	struct zs_scc *scc = zport->scc;
+ 	int loops = 10000;
+ 
+-	while (!(read_zsreg(zport, R0) & Tx_BUF_EMP) && loops--) {
++	while (!(read_zsreg(zport, R0) & Tx_BUF_EMP) && --loops) {
+ 		zs_spin_unlock_cond_irq(&scc->zlock, irq);
+ 		udelay(2);
+ 		zs_spin_lock_cond_irq(&scc->zlock, irq);
+@@ -254,7 +254,7 @@ static int zs_line_drain(struct zs_port *zport, int irq)
+ 	struct zs_scc *scc = zport->scc;
+ 	int loops = 10000;
+ 
+-	while (!(read_zsreg(zport, R1) & ALL_SNT) && loops--) {
++	while (!(read_zsreg(zport, R1) & ALL_SNT) && --loops) {
+ 		zs_spin_unlock_cond_irq(&scc->zlock, irq);
+ 		udelay(2);
+ 		zs_spin_lock_cond_irq(&scc->zlock, irq);
