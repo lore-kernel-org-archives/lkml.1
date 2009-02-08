@@ -1,58 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753447AbZBHMaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbZBHMgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753447AbZBHMaS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 07:30:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbZBHMaF
+	id S1753368AbZBHMgt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 07:36:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbZBHMgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 07:30:05 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:31857 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751843AbZBHMaD (ORCPT
+	Sun, 8 Feb 2009 07:36:38 -0500
+Received: from mu-out-0910.google.com ([209.85.134.189]:50659 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751870AbZBHMgh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 07:30:03 -0500
+	Sun, 8 Feb 2009 07:36:37 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=kcXt3hQWXChQt+8FYWC0wOGh60M/sMiRhnD8GmNq8ucwrT2+WwfK7xcQxUKqouvSi+
-         vgwk/hwECkv6DiZw0BBW/YkBpmU3vbS/RHoSWNukgqk9kD3Zj7DI1jocmtGuYj9ptWUK
-         KjXACaBDRrF5HRVqyVHXxljUD412FXX1CjHIE=
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=ZCZYYmY0FNmzBZQHPqt68Nsy55JhDQDqwrzhzA5oTJZaKavuZDuC+g8CxC/PKWI0R8
+         Hsx3qSyFO2rAAuR20M1s8kpp5EBgZvlxqKoYCv5fisCuzXjKVdytg6Tb+vqs1scl2mQo
+         /1DcOBY86CBxh7tQ7l/eggX1XZSYChYmpVvlU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 09/15] ide: add "flagged" taskfile flags to struct ide_taskfile
+Date: Sun, 8 Feb 2009 12:38:18 +0100
+User-Agent: KMail/1.10.4 (Linux/2.6.29-rc3-next-20090206; KDE/4.1.4; i686; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20090201174909.19144.67767.sendpatchset@localhost.localdomain> <20090201175012.19144.87417.sendpatchset@localhost.localdomain> <20090206170425.201346e6.sfr@canb.auug.org.au>
+In-Reply-To: <20090206170425.201346e6.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-In-Reply-To: <20090208063516.GA2318@elte.hu>
-References: <20090208063516.GA2318@elte.hu>
-Date: Sun, 8 Feb 2009 13:30:01 +0100
-Message-ID: <8db1092f0902080430y7acdbe74pb5b5d0ee5723afe6@mail.gmail.com>
-Subject: Re: [bug] sata detection problem
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Tejun Heo <tj@kernel.org>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+Message-Id: <200902081238.18970.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/2/8 Ingo Molnar <mingo@elte.hu>:
 
-[...]
+Hi,
 
-> Look at the weird sda detection. The only _real_ device on this system is the
-> ST3320620AS disk which got detected as sdb. But the bogus sda entry crashed the
-> (older) OS installation on the box:
->
-> [   20.132252] VFS: Cannot open root device "sda3" or unknown-block(0,0)
->
-> Find below a successful bootup. Bug is very sporadic. (seems timing related)
->
+On Friday 06 February 2009, Stephen Rothwell wrote:
+> Hi Bart,
+> 
+> On Sun, 01 Feb 2009 18:50:12 +0100 Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> >
+> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > Subject: [PATCH] ide: add "flagged" taskfile flags to struct ide_taskfile
+> > 
+> > * Add ->ftf_flags field to struct ide_taskfile
+> >   and convert flags for TASKFILE ioctl to use it.
+> > 
+> > * Rename "flagged" taskfile flags:
+> >   - IDE_TFLAG_FLAGGED -> IDE_FTFLAG_FLAGGED
+> 
+> There were several places where this transformation did not take place as
+> shown by today's linux-next build.
 
-I had similar problem few months ago, while laptop hangs during DVD
-drive detection. Problem occurs very often when CONFIG_HZ_1000 is set,
-but never when CONFIG_HZ=300 is set. I reported this, but I hadn't any
-response. Also I think, that is timming issue.
+Thanks, it is now fixed with v2 of the patch, interdiff below:
 
-http://kerneltrap.org/mailarchive/linux-kernel/2008/8/11/2898134
+...
+v2:
+* Remember to fully update ide-h8300.c, scc_pata.c and tx493{8,9}ide.c
+  (thanks to Stephen Rothwell for noticing).
 
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+There should be no functional changes caused by this patch.
+
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+...
+diff -u b/drivers/ide/ide-h8300.c b/drivers/ide/ide-h8300.c
+--- b/drivers/ide/ide-h8300.c
++++ b/drivers/ide/ide-h8300.c
+@@ -51,7 +51,7 @@
+ 	struct ide_taskfile *tf = &task->tf;
+ 	u8 HIHI = (task->tf_flags & IDE_TFLAG_LBA48) ? 0xE0 : 0xEF;
+ 
+-	if (task->tf_flags & IDE_TFLAG_FLAGGED)
++	if (task->ftf_flags & IDE_FTFLAG_FLAGGED)
+ 		HIHI = 0xFF;
+ 
+ 	if (task->ftf_flags & IDE_FTFLAG_OUT_DATA)
+diff -u b/drivers/ide/scc_pata.c b/drivers/ide/scc_pata.c
+--- b/drivers/ide/scc_pata.c
++++ b/drivers/ide/scc_pata.c
+@@ -672,7 +672,7 @@
+ 	struct ide_taskfile *tf = &task->tf;
+ 	u8 HIHI = (task->tf_flags & IDE_TFLAG_LBA48) ? 0xE0 : 0xEF;
+ 
+-	if (task->tf_flags & IDE_TFLAG_FLAGGED)
++	if (task->ftf_flags & IDE_FTFLAG_FLAGGED)
+ 		HIHI = 0xFF;
+ 
+ 	if (task->ftf_flags & IDE_FTFLAG_OUT_DATA)
+diff -u b/drivers/ide/tx4938ide.c b/drivers/ide/tx4938ide.c
+--- b/drivers/ide/tx4938ide.c
++++ b/drivers/ide/tx4938ide.c
+@@ -89,7 +89,7 @@
+ 	struct ide_taskfile *tf = &task->tf;
+ 	u8 HIHI = task->tf_flags & IDE_TFLAG_LBA48 ? 0xE0 : 0xEF;
+ 
+-	if (task->tf_flags & IDE_TFLAG_FLAGGED)
++	if (task->ftf_flags & IDE_FTFLAG_FLAGGED)
+ 		HIHI = 0xFF;
+ 
+ 	if (task->ftf_flags & IDE_FTFLAG_OUT_DATA) {
+diff -u b/drivers/ide/tx4939ide.c b/drivers/ide/tx4939ide.c
+--- b/drivers/ide/tx4939ide.c
++++ b/drivers/ide/tx4939ide.c
+@@ -474,7 +474,7 @@
+ 	struct ide_taskfile *tf = &task->tf;
+ 	u8 HIHI = task->tf_flags & IDE_TFLAG_LBA48 ? 0xE0 : 0xEF;
+ 
+-	if (task->tf_flags & IDE_TFLAG_FLAGGED)
++	if (task->ftf_flags & IDE_FTFLAG_FLAGGED)
+ 		HIHI = 0xFF;
+ 
+ 	if (task->ftf_flags & IDE_FTFLAG_OUT_DATA) {
+
