@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753386AbZBHKJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753508AbZBHKKN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753386AbZBHKJV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 05:09:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZBHKJJ
+	id S1753508AbZBHKKN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 05:10:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZBHKKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 05:09:09 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:43849 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753005AbZBHKJI convert rfc822-to-8bit (ORCPT
+	Sun, 8 Feb 2009 05:10:00 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:60382 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753005AbZBHKJ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 05:09:08 -0500
-Date: Sun, 8 Feb 2009 08:08:37 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Miles Lane <miles.lane@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Toralf =?UTF-8?B?RsO2cnN0ZXI=?= <toralf@foerster.gmx.de>,
-       Gerd Knorr <kraxel@bytesex.org>, hverkuil@xs4all.nl, awalls@radix.net
-Subject: Re: 2.6.29-rc3-git3 -- drivers/media/video/cx88/cx88-i2c.c:122:
- error: =?UTF-8?B?4oCYc3RydWN0IGN4ODhfY29yZeKAmQ==?= has no member named
- =?UTF-8?B?4oCYZ2F0ZV9jdHJs4oCZ?=
-Message-ID: <20090208080837.7815fca3@caramujo.chehab.org>
-In-Reply-To: <a44ae5cd0902021525i28ba9e62jbb87624cc7f6b53d@mail.gmail.com>
-References: <a44ae5cd0902021525i28ba9e62jbb87624cc7f6b53d@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
+	Sun, 8 Feb 2009 05:09:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=PVr4/c41KjlMPJXXbKTBFI18CECjGRNeREpSOxGW8YfV0ksRLiWCssGirFa/LU4adK
+         10gk1ArZSpdX9nIzqwsGuXn3UCbptu6vfMQGU59agQ3D/0UaLIOY7aUHcokT2HjUM+5R
+         AD6GLi/xGC/iKThS6UVNLaWj0iYh+qt+SMal4=
+MIME-Version: 1.0
+In-Reply-To: <20090207164057.777f482f@infradead.org>
+References: <c43b2e150902071144j4f01e754y83205ad8d734fd95@mail.gmail.com>
+	 <20090207200652.GA3255@x200.localdomain>
+	 <c43b2e150902071217id7bfdbaq66dbbd7d5e370c23@mail.gmail.com>
+	 <20090207205606.GA3490@x200.localdomain>
+	 <20090207164057.777f482f@infradead.org>
+Date: Sun, 8 Feb 2009 11:09:57 +0100
+Message-ID: <c43b2e150902080209s2444718fjb08086eed1a835cc@mail.gmail.com>
+Subject: Re: viafb triggers BUG at mm/vmalloc.c:294 [kernel 2.6.28.3]
+From: wixor <wixorpeek@gmail.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, JosephChan@via.com.tw,
+       linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Feb 2009 18:25:22 -0500
-Miles Lane <miles.lane@gmail.com> wrote:
+Okay, passing vmalloc=300M removed the BUG, still the screen is
+looking the very same way it was before - rubbished. I guess I should
+play with the module options now?
 
-> My apologies if I have CCed anyone who I should not have.  I did not
-> see a maintainer listed, so am trying the folks listed in the code as
-> well as the V4L folks who are responsible for what may be a related
-> driver (CX18).
-> 
-> Previously reported by Toralf Förster for 2.6.29-rc3 ("Subject: Fwd:
-> build issue #577 for v2.6.29-rc3"), 2009-01-29 13:08:09.
-> 
->   CC [M]  drivers/media/video/cx88/cx88-i2c.o
-> drivers/media/video/cx88/cx88-i2c.c: In function 'cx88_call_i2c_clients':
-> drivers/media/video/cx88/cx88-i2c.c:122: error: 'struct cx88_core' has
-> no member named 'gate_ctrl'
-> drivers/media/video/cx88/cx88-i2c.c:123: error: 'struct cx88_core' has
-> no member named 'gate_ctrl'
-> drivers/media/video/cx88/cx88-i2c.c:127: error: 'struct cx88_core' has
-> no member named 'gate_ctrl'
-> drivers/media/video/cx88/cx88-i2c.c:128: error: 'struct cx88_core' has
-> no member named 'gate_ctrl'
-> make[4]: *** [drivers/media/video/cx88/cx88-i2c.o] Error 1
-
-This should be fixed with on rc3-git5 or above.
-
-
-
-Cheers,
-Mauro
+--
+wixor
