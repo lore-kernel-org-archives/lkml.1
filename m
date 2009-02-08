@@ -1,68 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709AbZBHU5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbZBHU6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753709AbZBHU5y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 15:57:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbZBHU5q
+	id S1753967AbZBHU6Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 15:58:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbZBHU5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 15:57:46 -0500
-Received: from cmpxchg.org ([85.214.51.133]:43074 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751900AbZBHU5p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 15:57:45 -0500
-Date: Sun, 8 Feb 2009 21:56:50 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, kosaki.motohiro@jp.fujitsu.com,
-       riel@redhat.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 3/3][RFC] swsusp: shrink file cache first
-Message-ID: <20090208205650.GA6188@cmpxchg.org>
-References: <20090206031125.693559239@cmpxchg.org> <20090206130009.99400d43.akpm@linux-foundation.org> <20090206232747.GA3539@cmpxchg.org> <200902071823.54259.rjw@sisk.pl>
+	Sun, 8 Feb 2009 15:57:48 -0500
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:48224 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753331AbZBHU5r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 15:57:47 -0500
+Date: Sun, 8 Feb 2009 21:57:39 +0100
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Liu Dave <DaveLiu@freescale.com>, sdhci-devel@list.drzeus.cx,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 04/11] sdhci: Add support for card-detection polling
+Message-ID: <20090208215739.26fbb34b@mjolnir.drzeus.cx>
+In-Reply-To: <20090206180650.GD11548@oksana.dev.rtsoft.ru>
+References: <20090206180520.GA16123@oksana.dev.rtsoft.ru>
+	<20090206180650.GD11548@oksana.dev.rtsoft.ru>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200902071823.54259.rjw@sisk.pl>
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-4104-1234126663-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 07, 2009 at 06:23:53PM +0100, Rafael J. Wysocki wrote:
-> On Saturday 07 February 2009, Johannes Weiner wrote:
-> > On Fri, Feb 06, 2009 at 01:00:09PM -0800, Andrew Morton wrote:
-> > > On Fri, 6 Feb 2009 05:49:07 +0100
-> > > Johannes Weiner <hannes@cmpxchg.org> wrote:
-> > > 
-> > > > > and, I think you should mesure performence result.
-> > > > 
-> > > > Yes, I'm still thinking about ideas how to quantify it properly.  I
-> > > > have not yet found a reliable way to check for whether the working set
-> > > > is intact besides seeing whether the resumed applications are
-> > > > responsive right away or if they first have to swap in their pages
-> > > > again.
-> > > 
-> > > Describing your subjective non-quantitative impressions would be better
-> > > than nothing...
-> > 
-> > Okay.
-> > 
-> > > The patch bugs me.
-> > 
-> > Please ignore it, it is broken as is.  My verbal cortex got obviously
-> > disconnected from my code cortex when writing the changelog...
-> 
-> If I understood this correctly, patch 3/3 is to be disregarded.
-> 
-> > And I will reconsider the actual change bits, I still think that we
-> > shouldn't scan anon page lists while may_swap is zero.
-> 
-> Hm, can you please remind me what may_swap == 0 acutally means?
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-That no mapped pages are reclaimed.  These are also mapped file pages,
-but more importantly in this case, anon pages.  See this check in
-shrink_page_list():
+--=_freyr.drzeus.cx-4104-1234126663-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-                if (!sc->may_swap && page_mapped(page))
-                        goto keep_locked;
+On Fri, 6 Feb 2009 21:06:50 +0300
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-So scanning anon lists without allowing to unmap doesn't free memory.
+> This patch adds SDHCI_QUIRK_BROKEN_CARD_DETECTION quirk. When specified,
+> sdhci driver will set MMC_CAP_NEEDS_POLL MMC host capability, and won't
+> enable card insert/remove interrupts.
+>=20
+> This is needed for hosts with unreliable card detection, such as FSL
+> eSDHC. The original eSDHC driver was tring to "debounce" card-detection
+> IRQs by reading present state and disabling particular interrupts. But
+> with this debouncing scheme I noticed that sometimes we miss card
+> insertion/removal events.
+>=20
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
 
-	Hannes
+I guess you need to fix the check at the start of the request function
+as well.
+
+> diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+> index b7a79a0..45c5f1f 100644
+> --- a/drivers/mmc/host/sdhci.c
+> +++ b/drivers/mmc/host/sdhci.c
+> @@ -162,6 +162,9 @@ static void sdhci_init(struct sdhci_host *host)
+>  		SDHCI_INT_DMA_END | SDHCI_INT_DATA_END | SDHCI_INT_RESPONSE |
+>  		SDHCI_INT_ADMA_ERROR;
+> =20
+> +	if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
+> +		intmask &=3D ~(SDHCI_INT_CARD_REMOVE | SDHCI_INT_CARD_INSERT);
+> +
+
+A matter of taste perhaps, but I think it would make more sense to not
+add them in the first place than to add and then remove them.
+
+Card detection interrupts should be handled separately anyway as they
+should not be enabled before mmc_add_host() returns and should be
+disabled before calling mmc_remove_host(). Patch welcome. ;)
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-4104-1234126663-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkmPR0cACgkQ7b8eESbyJLinhwCgxCrMV6jlNboNhbhJo9PjcO7P
+SHoAoLJekCBLVYJpwVQ4TsgkC+3xqln2
+=cNsd
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-4104-1234126663-0001-2--
