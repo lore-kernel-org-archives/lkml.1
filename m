@@ -1,115 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbZBHFv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbZBHFxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752839AbZBHFv5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 00:51:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbZBHFvt
+	id S1753132AbZBHFxy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 00:53:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbZBHFxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 00:51:49 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37388 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751520AbZBHFvs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 00:51:48 -0500
-Subject: Re: [git pull -tip] headers_check fixes for other architectures
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       hskinnemoen@atmel.com, cooloney@kernel.org, ralf@linux-mips.org,
-       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090206172453.GB11299@uranus.ravnborg.org>
-References: <1233385816.17794.16.camel@localhost.localdomain>
-	 <12c511ca0902050955x1acb3907jdbfc1d0e6392cb91@mail.gmail.com>
-	 <alpine.LFD.2.00.0902051101040.3247@localhost.localdomain>
-	 <20090205191907.GA27422@elte.hu>
-	 <1233886017.3463.26.camel@localhost.localdomain>
-	 <20090206022025.GA8317@elte.hu>
-	 <1233929922.3209.6.camel@localhost.localdomain>
-	 <20090206172453.GB11299@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Sun, 08 Feb 2009 11:20:34 +0530
-Message-Id: <1234072234.26182.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sun, 8 Feb 2009 00:53:43 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:35511 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751520AbZBHFxm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 00:53:42 -0500
+Message-Id: <20090208055341.008385061@goodmis.org>
+References: <20090208054955.777429253@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Sun, 08 Feb 2009 00:49:58 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 3/8] ring-buffer: allow tracing_off to be used in core kernel code
+Content-Disposition: inline; filename=0003-ring-buffer-allow-tracing_off-to-be-used-in-core-ke.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-02-06 at 18:24 +0100, Sam Ravnborg wrote:
-> > 
-> > Is this safe OR we can make it more safer:
-> > 
-> > Subject: [PATCH] make linux/types.h as assembly safe
-> > 
-> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > ---
-> >  include/linux/types.h |    3 ++-
-> >  1 files changed, 2 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/include/linux/types.h b/include/linux/types.h
-> > index 712ca53..c30973a 100644
-> > --- a/include/linux/types.h
-> > +++ b/include/linux/types.h
-> > @@ -1,6 +1,7 @@
-> >  #ifndef _LINUX_TYPES_H
-> >  #define _LINUX_TYPES_H
-> >  
-> > +#ifndef __ASSEMBLY__
-> >  #ifdef	__KERNEL__
-> >  
-> >  #define DECLARE_BITMAP(name,bits) \
-> > @@ -212,5 +213,5 @@ struct ustat {
-> >  };
-> >  
-> >  #endif	/* __KERNEL__ */
-> > -
-> > +#endif /*  __ASSEMBLY__ */
-> >  #endif /* _LINUX_TYPES_H */
-> 
-> This is wrong...
-> We should include the assumed assembly safe asm/types.h
-> outside the __ASEMBLY__ ifdef.
-> 
+From: Steven Rostedt <srostedt@redhat.com>
 
-The following changes since commit f6c727813e03ce0f58d73808da8c9a6bc227249e:
-  Ingo Molnar (1):
-        Merge branch 'core/header-fixes' of git://git.kernel.org/.../jaswinder/linux-2.6-tip into core/header-fixes
+tracing_off() is the fastest way to stop recording to the ring buffers.
+This may be used in places like panic and die, just before the
+ftrace_dump is called.
 
-are available in the git repository at:
+This patch adds the appropriate CPP conditionals to make it a stub
+function when the ring buffer is not configured it.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git core/header-fixes
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ include/linux/ring_buffer.h |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-Jaswinder Singh Rajput (1):
-      unconditionally include asm/types.h from linux/types.h
-
- include/linux/types.h |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-Complete diff:
-diff --git a/include/linux/types.h b/include/linux/types.h
-index c30973a..fca82ed 100644
---- a/include/linux/types.h
-+++ b/include/linux/types.h
-@@ -1,6 +1,8 @@
- #ifndef _LINUX_TYPES_H
- #define _LINUX_TYPES_H
+diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
+index b3b3596..ac94c06 100644
+--- a/include/linux/ring_buffer.h
++++ b/include/linux/ring_buffer.h
+@@ -124,9 +124,18 @@ unsigned long ring_buffer_overrun_cpu(struct ring_buffer *buffer, int cpu);
+ u64 ring_buffer_time_stamp(int cpu);
+ void ring_buffer_normalize_time_stamp(int cpu, u64 *ts);
  
-+#include <asm/types.h>
-+
- #ifndef __ASSEMBLY__
- #ifdef	__KERNEL__
++/*
++ * The below functions are fine to use outside the tracing facility.
++ */
++#ifdef CONFIG_RING_BUFFER
+ void tracing_on(void);
+ void tracing_off(void);
+ void tracing_off_permanent(void);
++#else
++static inline void tracing_on(void) { }
++static inline void tracing_off(void) { }
++static inline void tracing_off_permanent(void) { }
++#endif
  
-@@ -10,7 +12,6 @@
- #endif
- 
- #include <linux/posix_types.h>
--#include <asm/types.h>
- 
- #ifndef __KERNEL_STRICT_NAMES
- 
+ void *ring_buffer_alloc_read_page(struct ring_buffer *buffer);
+ void ring_buffer_free_read_page(struct ring_buffer *buffer, void *data);
+-- 
+1.5.6.5
 
-
+-- 
