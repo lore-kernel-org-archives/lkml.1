@@ -1,64 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbZBHNMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbZBHNR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753460AbZBHNMb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 08:12:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbZBHNMW
+	id S1753510AbZBHNR6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 08:17:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbZBHNRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 08:12:22 -0500
-Received: from uhweb15152.united-hoster.com ([85.88.15.152]:47941 "EHLO
-	uhweb15152.united-hoster.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751872AbZBHNMW (ORCPT
+	Sun, 8 Feb 2009 08:17:48 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:51349 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752091AbZBHNRr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 08:12:22 -0500
-Message-ID: <498EDA18.1090300@f-seidel.de>
-Date: Sun, 08 Feb 2009 14:11:52 +0100
-From: Frank Seidel <frank@f-seidel.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Frank Seidel <fseidel@suse.de>,
-       linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       ben-linux@fluff.org, linux-i2c@vger.kernel.org, w.sang@pengutronix.de,
-       "David S. Miller" <davem@davemloft.net>,
-       ukleinek@informatik.uni-freiburg.de, Frans Pop <elendil@planet.nl>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH] i2c: add missing KERN_* constants to printks
-References: <498C3EEA.5060508@suse.de> <20090208000553.059a0732@hyperion.delvare>
-In-Reply-To: <20090208000553.059a0732@hyperion.delvare>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 8 Feb 2009 08:17:47 -0500
+Date: Sun, 8 Feb 2009 13:17:34 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Paul Walmsley <paul@pwsan.com>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH E 10/14] OMAP clock: support "dry run" rate and parent changes
+Message-ID: <20090208131734.GA21434@n2100.arm.linux.org.uk>
+References: <20090128192551.29333.82943.stgit@localhost.localdomain> <20090128192753.29333.56931.stgit@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090128192753.29333.56931.stgit@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Jan 28, 2009 at 12:27:56PM -0700, Paul Walmsley wrote:
+> For upcoming notifier support, modify the rate recalculation code to
+> take parent rate and rate storage parameters.  The goal here is to
+> allow the clock code to determine what the clock's rate would be after
+> a parent change or a rate change, without actually changing the
+> hardware registers.  This is used by the upcoming notifier patches to
+> pass a clock's current and planned rates to the notifier callbacks.
 
-Jean Delvare wrote:
->> +	printk(KERN_ERR "i2c: ICR: %08x ISR: %08x\n"
->>  	       "i2c: log: ", readl(_ICR(i2c)), readl(_ISR(i2c)));
->>  	for (i = 0; i < i2c->irqlogidx; i++)
->>  		printk("[%08x:%08x] ", i2c->isrlog[i], i2c->icrlog[i]);
-> 
-> This last printk also lacks a log level. You can't add it in the loop,
-> but you could add one printk before the loop, printing just the log level.
+NAK.  I'm not sure whether you've realised, but this is exactly what the
+'round_rate' method is supposed to be doing.  It provides a method by
+which you can find out what the clock rate would be if you asked for
+'set_rate' to set the hardware to the requested rate.
 
-Isn't the last printk just a followup of the previous KERN_ERR which
-doesn't have a newline? And i'm told only on new line beginnings the
-loglevel should be set.
+A far better way to approach this would be to split the set_rate/recalc
+functionality into two parts:
 
-> I second Uwe's comments: it would be much better to add the log level
-> in the DEBx macros. Additionally, some discussion is needed as to what
-> log level would be appropriate. You put KERN_WARNING for all but some
-> of these messages are clearly debugging messages. As a matter of fact,
-> DEBx macros are all about debugging.
-> 
-> So I think that a good patch would 1* add KERN_DEBUG to the DEBx macros
-> and 2* check for all usage of these DEBx macros and turn all messages
-> which aren't actual debug messages to raw printks. As this will require
-> some more work, you may want to split these changes off your initial
-> patch.
+1. a method which returns the both the new clock rate and the hardware
+   programming information
+2. a method to commit the hardware programming information to the registers
 
-Ok, i fully agree with you. So, i'll redo the patch asap.
+(1) can be used for implementing clk_round_rate() (which is totally lacking
+in OMAP2+, yet is implemented in OMAP1), clk_set_rate(), clk_set_parent()
+etc.
 
-Thanks for your feedback,
-Frank
+(2) can be used when it's required to actually reprogram the hardware.
+
+So, rather than the current situation where we have recalc, round_rate
+and set_rate methods, we have calc_rate() and commit() methods instead
+and have the core clock code sort out calling these.
+
+IOW, clk_set_rate() and clk_round_rate() becomes:
+
+int clk_set_rate(struct clk *clk, unsigned long rate)
+{
+	unsigned long flags;
+	int ret = -EINVAL;
+
+        spin_lock_irqsave(&clockfw_lock, flags);
+	if (clk->calc_rate) {
+		unsigned long parent_rate = 0;
+		struct clk_hw hw;
+
+		if (clk->parent)
+			parent_rate = clk->parent->rate;
+
+		ret = clk->calc_rate(clk, parent_rate, &rate, &hw);
+		if (ret == 0) {
+			clk->rate = rate;
+			clk->commit(clk, &hw);
+		}
+	}
+        spin_unlock_irqrestore(&clockfw_lock, flags);
+
+	return ret;
+}
+
+long clk_round_rate(struct clk *clk, unsigned long rate)
+{
+	unsigned long flags;
+	long ret;
+
+        spin_lock_irqsave(&clockfw_lock, flags);
+	if (clk->calc_rate) {
+		unsigned long parent_rate = 0;
+		struct clk_hw hw;
+
+		if (clk->parent)
+			parent_rate = clk->parent->rate;
+
+		ret = clk->calc_rate(clk, parent_rate, &rate, &hw);
+		if (ret == 0)
+			ret = rate;
+	}
+        spin_unlock_irqrestore(&clockfw_lock, flags);
+
+	return ret;
+}
