@@ -1,68 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092AbZBHVSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbZBHVWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754092AbZBHVSs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 16:18:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbZBHVS0
+	id S1753899AbZBHVWT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 16:22:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbZBHVWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 16:18:26 -0500
-Received: from kroah.org ([198.145.64.141]:36534 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752228AbZBHVSX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 16:18:23 -0500
-Date: Sun, 8 Feb 2009 13:11:43 -0800
-From: Greg KH <greg@kroah.com>
-To: Alex Chiang <achiang@hp.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Shaohua Li <shaohua.li@intel.com>, stable@kernel.org
-Subject: Re: [stable] [RFC PATCH 03/10] PCI: properly clean up ASPM link
-	state on device remove
-Message-ID: <20090208211143.GB3204@kroah.com>
-References: <20090128213814.28003.34634.stgit@bob.kio> <20090128215918.28003.58805.stgit@bob.kio> <200902041637.45099.jbarnes@virtuousgeek.org> <20090205011352.GA30756@ldl.fc.hp.com>
+	Sun, 8 Feb 2009 16:22:09 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:38670 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753084AbZBHVWI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 16:22:08 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Sun, 8 Feb 2009 13:22:04 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: mtk.manpages@gmail.com
+cc: "linux-man@vger.kernel.org" <linux-man@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Why does timerfd() only support CLOCK_REALTIME and 
+ CLOCK_MONOTONIC?
+In-Reply-To: <cfd18e0f0902081318p3b7efde5u3977a9fdadf3f542@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0902081320560.18839@alien.or.mcafeemobile.com>
+References: <cfd18e0f0902081025t3fe333ev1616af990e6d19ce@mail.gmail.com>  <alpine.DEB.1.10.0902081127510.18839@alien.or.mcafeemobile.com>  <alpine.DEB.1.10.0902081245560.18839@alien.or.mcafeemobile.com>
+ <cfd18e0f0902081318p3b7efde5u3977a9fdadf3f542@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090205011352.GA30756@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 04, 2009 at 06:13:52PM -0700, Alex Chiang wrote:
-> * Jesse Barnes <jbarnes@virtuousgeek.org>:
-> > On Wednesday, January 28, 2009 1:59 pm Alex Chiang wrote:
-> > > We only want to disable ASPM when the last function is removed from
-> > > the parent's device list. We determine this by checking to see if
-> > > the parent's device list is completely empty.
-> > >
-> > > Unfortunately, we never hit that code because the parent is considered
-> > > an upstream port, and never had an ASPM link_state associated with it.
-> > >
-> > > The early check for !link_state causes us to return early, we never
-> > > discover that our device list is empty, and thus we never remove the
-> > > downstream ports' link_state nodes.
-> > >
-> > > Instead of checking to see if the parent's device list is empty, we can
-> > > check to see if we are the last device on the list, and if so, then we
-> > > know that we can clean up properly.
-> > >
-> > > Cc: Shaohua Li <shaohua.li@intel.com>
-> > > Signed-off-by: Alex Chiang <achiang@hp.com>
-> > 
-> > Applied to my for-linus branch, thanks.  Let me know if you have a problem 
-> > with it (fast) Shaohua! :)
-> 
-> Thanks Jesse.
-> 
-> I'm cc'ing stable@kernel.org as well (which I should have done in
-> the first place). This fixes a bug that existed since ASPM
-> support was added (7d715a6c1), and git name-rev tells me that
-> we've had it since 2.6.26.
-> 
-> So this patch is a candidate for 2.6.27 and 2.6.28 stable
-> branches.
+On Mon, 9 Feb 2009, Michael Kerrisk wrote:
 
-Now queued up.
+> On Mon, Feb 9, 2009 at 9:46 AM, Davide Libenzi <davidel@xmailserver.org> wrote:
+> > On Sun, 8 Feb 2009, Davide Libenzi wrote:
+> >
+> >> On Mon, 9 Feb 2009, Michael Kerrisk wrote:
+> >>
+> >> > Hi Davide,
+> >> >
+> >> > At the moment I'm looking into writing man pages for timer_create(2)
+> >> > and friends.  (Somewhat bizarrely, these pages do not yet exist.)  As
+> >> > I looked into the source code of timer_create(), etc., and did some
+> >> > tests, I saw that timer_create() supports the following clocks:
+> >> >
+> >> > TIMER_REALTIME
+> >> > TIMER_MONOTONIC
+> >> > TIMER_PROCESS_CPUTIME_ID
+> >> > TIMER_THREAD_CPUTIME_ID
+> >> > clockid obtained from clock_getcpuclockid(3)
+> >> > clockid obtained from pthread_getcpuclockid(3)
+> >> >
+> >> > On the other hand, timerfd() only permits the first two of these.
+> >> > What's the reason for that limitation of timerfd()?  (It may be worth
+> >> > adding something to the man page on this point.)
+> >>
+> >> No particular reason I can think of. If Thomas makes invalid_clockid()
+> >> available, we could allow timerfd() to support all time timers
+> >> timer_create() supports.
+> >> Do you see any reason why this won't work Thomas?
+> >
+> > Patch, not tested, below.
+> 
+> (Has it been compiled?)
 
-thanks,
+Yes, it builds fine. I just haven't had time to test it ATM...
 
-greg k-h
+
+
+- Davide
+
+
