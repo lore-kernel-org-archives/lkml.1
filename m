@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbZBHWE7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757994AbZBHWF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756560AbZBHWE7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 17:04:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbZBHV52
+	id S1757994AbZBHWF3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 17:05:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756251AbZBHV65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 16:57:28 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:1096 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754720AbZBHV5Z (ORCPT
+	Sun, 8 Feb 2009 16:58:57 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:60345 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756586AbZBHV6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 16:57:25 -0500
-Date: Sun, 8 Feb 2009 16:57:23 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Vegard Nossum <vegard.nossum@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-Subject: Re: [linux-pm] 2.6.29-rc4: Reported regressions from 2.6.28
-In-Reply-To: <AIghyjFgMFP.A.uZD._10jJB@chimera>
-Message-ID: <Pine.LNX.4.44L0.0902081652120.22400-100000@netrider.rowland.org>
+	Sun, 8 Feb 2009 16:58:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=MeOyQkYy4lDcvZIKA7aTvbl1N+UiImR/eNKpMdGeyX37D7euxaVTVczCAuMECrj1y1
+         +v8PGsyXj787GG3axr6gPXG2JAUlMxHTjyy7Zfqe0ho7d43Wlpw2zYGMJavF5LzJb1xI
+         UL0e2Tw08gSW4+JYeViu2g7ciEy2ktbUsWoB0=
+Message-ID: <498F558F.109@gmail.com>
+Date: Sun, 08 Feb 2009 22:58:39 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: akpm@linux-foundation.org, linux-serial@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] PCI: quirks, don't mark one netmos as class other
+References: <1228749555-21363-1-git-send-email-jirislaby@gmail.com> <200812091453.32105.jbarnes@virtuousgeek.org>
+In-Reply-To: <200812091453.32105.jbarnes@virtuousgeek.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 8 Feb 2009, Rafael J. Wysocki wrote:
+Jesse Barnes wrote:
+> On Monday, December 08, 2008 7:19 am Jiri Slaby wrote:
+>> Let it as serial, since it doesn't have subdevice in the form of 0x00PS.
+>>
+>> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+>> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+> 
+> Applied to my linux-next branch, thanks.
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12668
-> Subject		: USB flash disk surprise disconnect
-> Submitter	: Vegard Nossum <vegard.nossum@gmail.com>
-> Date		: 2009-02-08 10:21 (1 days old)
-> References	: http://marc.info/?l=linux-kernel&m=123408851821292&w=4
+Hi, did this get lost by a chance? I don't see it in your -next branch
+anymore. Neither in any other branch nor upstream.
 
-Is there any reason to think this is a regression rather than a 
-one-time fluke?
-
-If it really is a regression, additional debugging info would help.  
-The log excerpt in the email report doesn't show anything that happened
-prior to the disconnect.
-
-Alan Stern
-
+BTW I got:
+This patch was dropped because it was merged into mainline or a subsystem tree
+from Andrew, so it had to be somewhere, I suppose...
