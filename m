@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753751AbZBHS3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753128AbZBHSgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753751AbZBHS3y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 13:29:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbZBHS3o
+	id S1753128AbZBHSgO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 13:36:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbZBHSf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 13:29:44 -0500
-Received: from fnoeppeil36.netpark.at ([217.175.205.164]:42975 "EHLO
-	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752976AbZBHS3o (ORCPT
+	Sun, 8 Feb 2009 13:35:58 -0500
+Received: from an-out-0708.google.com ([209.85.132.249]:15269 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752988AbZBHSf5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 13:29:44 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sun, 08 Feb 2009 13:29:43 EST
-Date: Sun, 8 Feb 2009 19:23:00 +0100
-From: Manuel Lauss <mano@roarinelk.homelinux.net>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: a.zummo@towertech.it, rtc-linux@googlegroups.com,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rtc: t reaches -1, tested 0
-Message-ID: <20090208192300.51d0a80c@scarran.roarinelk.net>
-In-Reply-To: <498EE7D6.4090100@gmail.com>
-References: <498EE7D6.4090100@gmail.com>
-Organization: Private
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 8 Feb 2009 13:35:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
+         :subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        b=vDvscY2nWDmDZRK4InHLvshupD1eVngDbtWWTO3JA9dcltRsWWcwGJbrg49948W0LY
+         RQ8RA3azIJw1COUhjHwn3Tx+Dr+DUeHBAJ6UjK+e6AWLghd5s0B0wZvVlxvTAS1T5Vr2
+         4WPsOcOweKYA2h+Gk5yxfO6zHaS+JsfPVC8H8=
+Message-ID: <498F2608.9030809@gmail.com>
+Date: Sun, 08 Feb 2009 12:35:52 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+Newsgroups: gmane.linux.kernel
+To: Thomas Renninger <trenn@suse.de>
+CC: davej@codemonkey.org.uk, mark.langsdorf@amd.com, cpufreq@vger.kernel.org,
+       venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/7] CPUFREQ: powernow-k8: Get transition latency from
+ ACPI _PSS table
+References: <1233679606-1971-1-git-send-email-trenn@suse.de> <1233679606-1971-5-git-send-email-trenn@suse.de>
+In-Reply-To: <1233679606-1971-5-git-send-email-trenn@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey Roel,
-
-On Sun, 08 Feb 2009 15:10:30 +0100
-Roel Kluin <roel.kluin@gmail.com> wrote:
-> With a postfix decrement t will reach -1 rather than 0,
-> so the warning nor errot_out occur.
+Thomas Renninger wrote:
+> From: Mark Langsdorf <mark.langsdorf@amd.com>
 > 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> At this time, the PowerNow! driver for K8 uses an experimentally
+> derived formula to calculate transition latency.  The value it
+> provides is orders of magnitude too large on modern systems.
+> This patch replaces the formula with ACPI _PSS latency values
+> for more accuracy and better performance.
+> 
+> I've tested it on two 2nd generation Opteron systems, a 3rd
+> generation Operton system, and a Turion X2 without seeing any
+> stability problems.
+> 
+> Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+> Signed-off-by: Thomas Renninger <trenn@suse.de>
 > ---
-> diff --git a/drivers/rtc/rtc-au1xxx.c b/drivers/rtc/rtc-au1xxx.c
-> index 8906a68..979ed04 100644
-> --- a/drivers/rtc/rtc-au1xxx.c
-> +++ b/drivers/rtc/rtc-au1xxx.c
-> @@ -81,7 +81,7 @@ static int __devinit au1xtoy_rtc_probe(struct platform_device *pdev)
->  	if (au_readl(SYS_TOYTRIM) != 32767) {
->  		/* wait until hardware gives access to TRIM register */
->  		t = 0x00100000;
-> -		while ((au_readl(SYS_COUNTER_CNTRL) & SYS_CNTRL_T0S) && t--)
-> +		while ((au_readl(SYS_COUNTER_CNTRL) & SYS_CNTRL_T0S) && --t)
->  			msleep(1);
->  
->  		if (!t) {
+>  arch/x86/kernel/cpu/cpufreq/powernow-k8.c |   28 ++++++++++++++++++++++------
+>  1 files changed, 22 insertions(+), 6 deletions(-)
 
-Thank you, obviously correct.
-
-Acked-by: Manuel Lauss <mano@roarinelk.homelinux.net>
+Hopefully somebody is pushing this for .29? This seems to make a big 
+difference in system responsiveness on my Athlon X2 system.
