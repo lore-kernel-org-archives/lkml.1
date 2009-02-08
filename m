@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755262AbZBHV7N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbZBHV7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755262AbZBHV7N (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 16:59:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697AbZBHVtj
+	id S1755893AbZBHV7a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 16:59:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754708AbZBHVtk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 16:49:39 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39695 "EHLO ogre.sisk.pl"
+	Sun, 8 Feb 2009 16:49:40 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39697 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754702AbZBHVth convert rfc822-to-8bit (ORCPT
+	id S1754467AbZBHVth convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 8 Feb 2009 16:49:37 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "2.6.29-rc3-git3 -- Failure to resume two Sandisk USB flash drives"@ogre.sisk.pl,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
+       "Alex Riesen" <fork0@users.sf.net>,
+       "Reinette Chatre" <reinette.chatre@intel.com>
 References: <AIghyjFgMFP.A.uZD._10jJB@chimera>
 In-Reply-To: <AIghyjFgMFP.A.uZD._10jJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,10 +20,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <sWhNs83kKPE.A.2qE.Y20jJB@chimera>
-Subject: [Bug #12659] Failure to resume two Sandisk USB flash drives attached to a Belkin USB Busport Mobile (F5U022).
+Message-ID: <sWhNs83kKPE.A.zuE.a20jJB@chimera>
+Subject: [Bug #12656] iwl3945 broken after hibernation: Wait for START_ALIVE timeout after 2000ms.
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun,  8 Feb 2009 20:21:46 +0100 (CET)
+Date: Sun,  8 Feb 2009 20:21:45 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,11 +36,9 @@ from 2.6.28.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12659
-Subject		: Failure to resume two Sandisk USB flash drives attached to a Belkin USB Busport Mobile (F5U022).
-Submitter	: 2.6.29-rc3-git3 -- Failure to resume two Sandisk USB flash drives
-Date		: 2009-02-03 4:58 (6 days old)
-References	: http://marc.info/?l=linux-kernel&m=123363718614763&w=4
-Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12656
+Subject		: iwl3945 broken after hibernation: Wait for START_ALIVE timeout after 2000ms.
+Submitter	: Alex Riesen <fork0@users.sf.net>
+Date		: 2009-02-08 01:52 (1 days old)
 
 
