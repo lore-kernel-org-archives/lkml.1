@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753824AbZBHVne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbZBHVoc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753824AbZBHVne (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 16:43:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbZBHVnY
+	id S1753927AbZBHVoc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 16:44:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbZBHVoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 16:43:24 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:55138 "EHLO mgw1.diku.dk"
+	Sun, 8 Feb 2009 16:44:20 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:55153 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752772AbZBHVnX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 16:43:23 -0500
-Date: Sun, 8 Feb 2009 22:43:19 +0100 (CET)
+	id S1753044AbZBHVoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 16:44:19 -0500
+Date: Sun, 8 Feb 2009 22:44:16 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: james.smart@emulex.com, linux-scsi@vger.kernel.org,
-       James.Bottomley@HansenPartnership.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/6] drivers/scsi: introduce missing kfree
-Message-ID: <Pine.LNX.4.64.0902082242290.25891@ask.diku.dk>
+To: davem@davemloft.net, netdev@vger.kernel.org, chas@cmf.nrl.navy.mil,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 2/6] drivers/atm: introduce missing kfree
+Message-ID: <Pine.LNX.4.64.0902082243200.25891@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -66,18 +65,18 @@ print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- drivers/scsi/lpfc/lpfc_els.c        |    1 +
+ drivers/atm/solos-pci.c             |    1 +
  1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/scsi/lpfc/lpfc_els.c b/drivers/scsi/lpfc/lpfc_els.c
-index a8f30bd..a730248 100644
---- a/drivers/scsi/lpfc/lpfc_els.c
-+++ b/drivers/scsi/lpfc/lpfc_els.c
-@@ -5258,6 +5258,7 @@ lpfc_send_els_event(struct lpfc_vport *vport,
- 			sizeof(struct lpfc_name));
- 		break;
- 	default:
-+		kfree(els_data);
- 		return;
- 	}
- 	memcpy(els_data->wwpn, &ndlp->nlp_portname, sizeof(struct lpfc_name));
+diff --git a/drivers/atm/solos-pci.c b/drivers/atm/solos-pci.c
+index 72fc0f7..89d7a6e 100644
+--- a/drivers/atm/solos-pci.c
++++ b/drivers/atm/solos-pci.c
+@@ -685,6 +685,7 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
+  out_release_regions:
+ 	pci_release_regions(dev);
+  out:
++	kfree(card);
+ 	return err;
+ }
+ 
