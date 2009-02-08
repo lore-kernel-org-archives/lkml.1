@@ -1,138 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754060AbZBHXiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbZBHXjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754060AbZBHXiV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 18:38:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbZBHXiN
+	id S1754156AbZBHXjU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 18:39:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbZBHXjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 18:38:13 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:17032 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751319AbZBHXiM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 18:38:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=fF7+9IrFe/3Oj/Ydcg0C9JeY3dFNQ2hW3NL3SJ07yZoXXJKTyfUa55Bn15/e/+EK/y
-         Gv86fRghzPe356ZbfQzrIN9In+9urOYCbjdZQc1pSXhXHBlmK7qicxezuZNBMni4GHpq
-         4D0BsKYriR4iBO/krFzdlgvvx+mymQ9vLDpFA=
+	Sun, 8 Feb 2009 18:39:11 -0500
+Received: from aun.it.uu.se ([130.238.12.36]:40538 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751319AbZBHXjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 18:39:10 -0500
 MIME-Version: 1.0
-Reply-To: mtk.manpages@gmail.com
-In-Reply-To: <alpine.DEB.1.10.0902081504380.18839@alien.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0902081504380.18839@alien.or.mcafeemobile.com>
-Date: Mon, 9 Feb 2009 12:38:10 +1300
-Message-ID: <cfd18e0f0902081538p7021481eq5025e85a1f10642f@mail.gmail.com>
-Subject: Re: [patch 1/2] timerfd add flags check
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18831.27907.957902.357829@harpo.it.uu.se>
+Date: Mon, 9 Feb 2009 00:38:43 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+       "Mikael Pettersson" <mikpe@it.uu.se>
+Subject: Re: [Bug #12508] "powerpc/pci: Reserve legacy regions on PCI" broke my G3
+In-Reply-To: <sWhNs83kKPE.A.DvG.Y30jJB@chimera>
+References: <AIghyjFgMFP.A.uZD._10jJB@chimera>
+	<sWhNs83kKPE.A.DvG.Y30jJB@chimera>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 9, 2009 at 12:23 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
-> Like Michael requested, this patch adds a missing check for valid flags in
-> timerfd_settime(), and make it return EINVAL in case some extra bits are
-> set. If this is or not a -stable thing, it Greg decision.
-> Should be queued by Andrew for .30, unless -stable and Linus decide to
-> get it before, like Michael suggested.
+Rafael J. Wysocki wrote:
+>This message has been generated automatically as a part of a report
+>of recent regressions.
+>
+>The following bug entry is on the current list of known regressions
+>from 2.6.28.  Please verify if it still should be listed and let me know
+>(either way).
+>
+>
+>Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D12508
+>Subject		: "powerpc/pci: Reserve legacy regions on PCI" broke my G3
+>Submitter	: Mikael Pettersson <mikpe@it.uu.se>
+>Date		: 2009-01-17 22:46 (23 days old)
+>First-Bad-Commit: http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linu=
+>x-2.6.git;a=3Dcommit;h=3Dc1f343028d35ba4e88cd4a3c44e0d8b8a84264ee
+>References	: http://marc.info/?l=3Dlinux-kernel&m=3D123223247325452&w=3D4
+>Handled-By	: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-If this is to be any use to userland apps that want to check flag
-support (perhaps it is too late already), then the sooner we get it
-into the kernel the better: 2.6.29 would be good; earlier stables as
-well would be even better.
-
-Acked-by: Michael Kerrisk <mtk.manpages@gmail.com>
-
-> - Davide
->
->
-> ---
->  fs/timerfd.c            |   12 ++++++------
->  include/linux/timerfd.h |   17 ++++++++++++++---
->  2 files changed, 20 insertions(+), 9 deletions(-)
->
-> Index: linux-2.6.mod/fs/timerfd.c
-> ===================================================================
-> --- linux-2.6.mod.orig/fs/timerfd.c     2009-02-08 14:51:12.000000000 -0800
-> +++ linux-2.6.mod/fs/timerfd.c  2009-02-08 14:55:32.000000000 -0800
-> @@ -186,10 +186,9 @@ SYSCALL_DEFINE2(timerfd_create, int, clo
->        BUILD_BUG_ON(TFD_CLOEXEC != O_CLOEXEC);
->        BUILD_BUG_ON(TFD_NONBLOCK != O_NONBLOCK);
->
-> -       if (flags & ~(TFD_CLOEXEC | TFD_NONBLOCK))
-> -               return -EINVAL;
-> -       if (clockid != CLOCK_MONOTONIC &&
-> -           clockid != CLOCK_REALTIME)
-> +       if ((flags & ~TFD_CREATE_FLAGS) ||
-> +           (clockid != CLOCK_MONOTONIC &&
-> +            clockid != CLOCK_REALTIME))
->                return -EINVAL;
->
->        ctx = kzalloc(sizeof(*ctx), GFP_KERNEL);
-> @@ -201,7 +200,7 @@ SYSCALL_DEFINE2(timerfd_create, int, clo
->        hrtimer_init(&ctx->tmr, clockid, HRTIMER_MODE_ABS);
->
->        ufd = anon_inode_getfd("[timerfd]", &timerfd_fops, ctx,
-> -                              flags & (O_CLOEXEC | O_NONBLOCK));
-> +                              flags & TFD_SHARED_FCNTL_FLAGS);
->        if (ufd < 0)
->                kfree(ctx);
->
-> @@ -219,7 +218,8 @@ SYSCALL_DEFINE4(timerfd_settime, int, uf
->        if (copy_from_user(&ktmr, utmr, sizeof(ktmr)))
->                return -EFAULT;
->
-> -       if (!timespec_valid(&ktmr.it_value) ||
-> +       if ((flags & ~TFD_SETTIME_FLAGS) ||
-> +           !timespec_valid(&ktmr.it_value) ||
->            !timespec_valid(&ktmr.it_interval))
->                return -EINVAL;
->
-> Index: linux-2.6.mod/include/linux/timerfd.h
-> ===================================================================
-> --- linux-2.6.mod.orig/include/linux/timerfd.h  2009-02-08 14:51:12.000000000 -0800
-> +++ linux-2.6.mod/include/linux/timerfd.h       2009-02-08 14:53:00.000000000 -0800
-> @@ -11,13 +11,24 @@
->  /* For O_CLOEXEC and O_NONBLOCK */
->  #include <linux/fcntl.h>
->
-> -/* Flags for timerfd_settime.  */
-> +/*
-> + * CAREFUL: Check include/asm-generic/fcntl.h when defining
-> + * new flags, since they might collide with O_* ones. We want
-> + * to re-use O_* flags that couldn't possibly have a meaning
-> + * from eventfd, in order to leave a free define-space for
-> + * shared O_* flags.
-> + */
->  #define TFD_TIMER_ABSTIME (1 << 0)
-> -
-> -/* Flags for timerfd_create.  */
->  #define TFD_CLOEXEC O_CLOEXEC
->  #define TFD_NONBLOCK O_NONBLOCK
->
-> +#define TFD_SHARED_FCNTL_FLAGS (TFD_CLOEXEC | TFD_NONBLOCK)
-> +/* Flags for timerfd_create.  */
-> +#define TFD_CREATE_FLAGS TFD_SHARED_FCNTL_FLAGS
-> +/* Flags for timerfd_settime.  */
-> +#define TFD_SETTIME_FLAGS TFD_TIMER_ABSTIME
-> +#define TFD_FLAGS_SET (TFD_SHARED_FCNTL_FLAGS | TFD_TIMER_ABSTIME)
-> +
->
->  #endif /* _LINUX_TIMERFD_H */
->
->
-
-
-
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Fixed in 2.6.29-rc4.
+See <http://marc.info/?l=linux-kernel&m=123394660404763&w=2> (you were CC:d).
