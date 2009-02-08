@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbZBHJNM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753279AbZBHJoJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753515AbZBHJNM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 04:13:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbZBHJMz
+	id S1753279AbZBHJoJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 04:44:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbZBHJn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 04:12:55 -0500
-Received: from ti-out-0910.google.com ([209.85.142.184]:18341 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753365AbZBHJMx (ORCPT
+	Sun, 8 Feb 2009 04:43:56 -0500
+Received: from sov-mail-b0023.gradwell.net ([193.84.87.47]:42214 "EHLO
+	sov-mail-b0023.gradwell.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752774AbZBHJnz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 04:12:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=aVzMJu98WznrKu4GKfQY5Y7V0BtUKCzljAKhtoOEU/kSYo138c0ddai319tExMwirF
-         cfGceg9smCGyYI5/zopXEQ32sGfcNTtoxZPCQc8Bbxbl41sKMdXPf4W8ot3ZruUKDiv9
-         JC2lduUlMqFEMRNTLNSAx+3IUvTW8gc6jQiVA=
-Date: Sun, 8 Feb 2009 17:12:44 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, Greg KH <gregkh@suse.de>,
-       Shane Hathaway <shane@hathawaymix.org>,
-       Daolong Wang <ahlongxp@gmail.com>,
-       User-mode Linux Kernel Development 
-	<user-mode-linux-devel@lists.sourceforge.net>,
-       Jeff Dike <jdike@addtoit.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Rob Landley <rob@landley.net>,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [uml-devel] [Patch] uml: fix a link error
-Message-ID: <20090208091244.GB383@hack.private>
-References: <dc84318c0901172223p57872a8cr227d940b1c0a908a@mail.gmail.com> <20090119152104.GC6432@c2.user-mode-linux.org> <dc84318c0901191746g31d51c23g65da89190dc8bfd2@mail.gmail.com> <49753063.8040007@hathawaymix.org> <alpine.LRH.2.00.0902041803360.7690@vixen.sonytel.be> <Pine.LNX.4.64.0902042115530.25136@anakin> <20090204204009.GA10680@suse.de> <Pine.LNX.4.64.0902042150550.25136@anakin> <20090207125956.110591c9@osiris.boeblingen.de.ibm.com> <20090208090642.GA383@hack.private>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090208090642.GA383@hack.private>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 8 Feb 2009 04:43:55 -0500
+Date: Sun, 8 Feb 2009 09:43:33 +0000
+From: Alex Buell <alex.buell@munted.org.uk>
+To: A B <spinflipper4@yahoo.co.uk>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: Fat64 / exFat fs and Linux
+Message-ID: <20090208094333.490abcc1@lithium.local.net>
+In-Reply-To: <473359.26476.qm@web25803.mail.ukl.yahoo.com>
+References: <54747.12003.qm@web25801.mail.ukl.yahoo.com>
+	<871vul3g14.fsf@devron.myhome.or.jp>
+	<49822E2A.3020601@zytor.com>
+	<957266.96237.qm@web25805.mail.ukl.yahoo.com>
+	<87bptp1njj.fsf@devron.myhome.or.jp>
+	<87bptouoid.fsf@devron.myhome.or.jp>
+	<473359.26476.qm@web25803.mail.ukl.yahoo.com>
+Organization: One tortoiseshell cat, very high maintenance
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.11; i686-pc-linux-gnu)
+X-Face: "wUuhsy:X)M;>-dA\j"&y@*\$91]iX10Iv1WG_oNbGYpo,eqc06O?"VSeRTx]xM\LiITUh01z}<|GF/4Gzz(MAU~;p4AS,%TB69M:vB-9+i'#W7$UQCW&UP#zt{VdLlzEiw8k~jL<
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 08, 2009 at 05:07:10PM +0800, Américo Wang wrote:
->
->> 	}								\
->>-	SYSCALL_ALIAS(sys_##name, SyS_##name);				\
->>-	static inline long SYSC_##name(__SC_DECL##x(__VA_ARGS__))
->>+	SYSCALL_ALIAS(sys##name, SyS##name);				\
->>+	static inline long SYSC##name(__SC_DECL##x(__VA_ARGS__))
->
->So your final actual name for a syscall 'foo' will be 'sysfoo'
->instead of 'sys_foo', right?
->
+On Sun, 1 Feb 2009 12:46:00 +0000 (GMT), I waved a wand and this
+message magically appears in front of A B:
 
-Oops, I misread the leading underscore! Sorry.
+> > I've updated the tarballs to fix the bug he found. If someone tried
+> > old tarballs, please download new tarballs and try.
+> > 
+> >     http://userweb.kernel.org/~hirofumi/exfat/exfat.tar.gz
 
-Looks good then,
+I have just converted your set of patches into a standalone module
+driver that you can build outside the kernel as long as you have a
+recent version of the kernel sources installed (currently 2.6.27). 
 
-Reviewed-by: WANG Cong <wangcong@zeuux.org>
+The only modification I needed to make was to add an extern for sys_tz
+in utils.c (extern struct timezone sys_tz)
 
+The bz2 tarball can be found at:
+http://www.munted.org.uk/programming/exfat.tar.bz2
 
+Regards,
+Alex
 -- 
-"Against stupidity, the gods themselves, contend in vain."
+http://www.munted.org.uk
 
+Fearsome grindings.
