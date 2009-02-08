@@ -1,147 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbZBHFPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbZBHFv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752812AbZBHFPq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 00:15:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbZBHFPh
+	id S1752839AbZBHFv5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 00:51:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbZBHFvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 00:15:37 -0500
-Received: from hera.kernel.org ([140.211.167.34]:55312 "EHLO hera.kernel.org"
+	Sun, 8 Feb 2009 00:51:49 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37388 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750805AbZBHFPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 00:15:36 -0500
-Message-ID: <498E6A3C.6020004@kernel.org>
-Date: Sat, 07 Feb 2009 21:14:36 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: check_timer cleanup
-References: <20090206220716.GA15319@elte.hu> <498D55A4.7000608@kernel.org> <20090207165901.GA32116@elte.hu>
-In-Reply-To: <20090207165901.GA32116@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1751520AbZBHFvs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 00:51:48 -0500
+Subject: Re: [git pull -tip] headers_check fixes for other architectures
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Tony Luck <tony.luck@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       hskinnemoen@atmel.com, cooloney@kernel.org, ralf@linux-mips.org,
+       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090206172453.GB11299@uranus.ravnborg.org>
+References: <1233385816.17794.16.camel@localhost.localdomain>
+	 <12c511ca0902050955x1acb3907jdbfc1d0e6392cb91@mail.gmail.com>
+	 <alpine.LFD.2.00.0902051101040.3247@localhost.localdomain>
+	 <20090205191907.GA27422@elte.hu>
+	 <1233886017.3463.26.camel@localhost.localdomain>
+	 <20090206022025.GA8317@elte.hu>
+	 <1233929922.3209.6.camel@localhost.localdomain>
+	 <20090206172453.GB11299@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Sun, 08 Feb 2009 11:20:34 +0530
+Message-Id: <1234072234.26182.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-02-06 at 18:24 +0100, Sam Ravnborg wrote:
+> > 
+> > Is this safe OR we can make it more safer:
+> > 
+> > Subject: [PATCH] make linux/types.h as assembly safe
+> > 
+> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > ---
+> >  include/linux/types.h |    3 ++-
+> >  1 files changed, 2 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/include/linux/types.h b/include/linux/types.h
+> > index 712ca53..c30973a 100644
+> > --- a/include/linux/types.h
+> > +++ b/include/linux/types.h
+> > @@ -1,6 +1,7 @@
+> >  #ifndef _LINUX_TYPES_H
+> >  #define _LINUX_TYPES_H
+> >  
+> > +#ifndef __ASSEMBLY__
+> >  #ifdef	__KERNEL__
+> >  
+> >  #define DECLARE_BITMAP(name,bits) \
+> > @@ -212,5 +213,5 @@ struct ustat {
+> >  };
+> >  
+> >  #endif	/* __KERNEL__ */
+> > -
+> > +#endif /*  __ASSEMBLY__ */
+> >  #endif /* _LINUX_TYPES_H */
+> 
+> This is wrong...
+> We should include the assumed assembly safe asm/types.h
+> outside the __ASEMBLY__ ifdef.
+> 
 
-Impact: remove extra unmask, and pair disable/enable
+The following changes since commit f6c727813e03ce0f58d73808da8c9a6bc227249e:
+  Ingo Molnar (1):
+        Merge branch 'core/header-fixes' of git://git.kernel.org/.../jaswinder/linux-2.6-tip into core/header-fixes
 
-for edge trigger io-apic routing, already unmasked via setup_IO_APIC_irq,
-so don't unmask it again.
+are available in the git repository at:
 
-also do call local_irq_disable() between timer_irq_works(), between it does call
-local_irq_enable() inside.
-also remove not needed apic version reading for 64bit
+  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git core/header-fixes
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Jaswinder Singh Rajput (1):
+      unconditionally include asm/types.h from linux/types.h
 
----
- arch/x86/kernel/io_apic.c |   30 ++++++++++++++++++++++--------
- 1 file changed, 22 insertions(+), 8 deletions(-)
+ include/linux/types.h |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Index: linux-2.6/arch/x86/kernel/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/io_apic.c
-+++ linux-2.6/arch/x86/kernel/io_apic.c
-@@ -1660,7 +1660,7 @@ static void __init setup_timer_IRQ0_pin(
- 	 * to the first CPU.
- 	 */
- 	entry.dest_mode = apic->irq_dest_mode;
--	entry.mask = 1;					/* mask IRQ now */
-+	entry.mask = 0;			/* don't mask IRQ for edge */
- 	entry.dest = apic->cpu_mask_to_apicid(apic->target_cpus());
- 	entry.delivery_mode = apic->irq_delivery_mode;
- 	entry.polarity = 0;
-@@ -2866,14 +2866,10 @@ static inline void __init check_timer(vo
- 	int cpu = boot_cpu_id;
- 	int apic1, pin1, apic2, pin2;
- 	unsigned long flags;
--	unsigned int ver;
- 	int no_pin1 = 0;
+Complete diff:
+diff --git a/include/linux/types.h b/include/linux/types.h
+index c30973a..fca82ed 100644
+--- a/include/linux/types.h
++++ b/include/linux/types.h
+@@ -1,6 +1,8 @@
+ #ifndef _LINUX_TYPES_H
+ #define _LINUX_TYPES_H
  
- 	local_irq_save(flags);
- 
--	ver = apic_read(APIC_LVR);
--	ver = GET_APIC_VERSION(ver);
--
- 	/*
- 	 * get/set the timer IRQ vector:
- 	 */
-@@ -2892,7 +2888,13 @@ static inline void __init check_timer(vo
- 	apic_write(APIC_LVT0, APIC_LVT_MASKED | APIC_DM_EXTINT);
- 	init_8259A(1);
- #ifdef CONFIG_X86_32
--	timer_ack = (nmi_watchdog == NMI_IO_APIC && !APIC_INTEGRATED(ver));
-+	{
-+		unsigned int ver;
++#include <asm/types.h>
 +
-+		ver = apic_read(APIC_LVR);
-+		ver = GET_APIC_VERSION(ver);
-+		timer_ack = (nmi_watchdog == NMI_IO_APIC && !APIC_INTEGRATED(ver));
-+	}
+ #ifndef __ASSEMBLY__
+ #ifdef	__KERNEL__
+ 
+@@ -10,7 +12,6 @@
  #endif
  
- 	pin1  = find_isa_irq_pin(0, mp_INT);
-@@ -2931,8 +2933,17 @@ static inline void __init check_timer(vo
- 		if (no_pin1) {
- 			add_pin_to_irq_cpu(cfg, cpu, apic1, pin1);
- 			setup_timer_IRQ0_pin(apic1, pin1, cfg->vector);
-+		} else {
-+			/* for edge trigger, setup_IO_APIC_irq already
-+			 * leave it unmasked.
-+			 * so only need to unmask if it is level-trigger
-+			 * do we really have level trigger timer?
-+			 */
-+			int idx;
-+			idx = find_irq_entry(apic1, pin1, mp_INT);
-+			if (idx != -1 && irq_trigger(idx))
-+				unmask_IO_APIC_irq_desc(desc);
- 		}
--		unmask_IO_APIC_irq_desc(desc);
- 		if (timer_irq_works()) {
- 			if (nmi_watchdog == NMI_IO_APIC) {
- 				setup_nmi();
-@@ -2946,6 +2957,7 @@ static inline void __init check_timer(vo
- 		if (intr_remapping_enabled)
- 			panic("timer doesn't work through Interrupt-remapped IO-APIC");
- #endif
-+		local_irq_disable();
- 		clear_IO_APIC_pin(apic1, pin1);
- 		if (!no_pin1)
- 			apic_printk(APIC_QUIET, KERN_ERR "..MP-BIOS bug: "
-@@ -2960,7 +2972,6 @@ static inline void __init check_timer(vo
- 		 */
- 		replace_pin_at_irq_cpu(cfg, cpu, apic1, pin1, apic2, pin2);
- 		setup_timer_IRQ0_pin(apic2, pin2, cfg->vector);
--		unmask_IO_APIC_irq_desc(desc);
- 		enable_8259A_irq(0);
- 		if (timer_irq_works()) {
- 			apic_printk(APIC_QUIET, KERN_INFO "....... works.\n");
-@@ -2975,6 +2986,7 @@ static inline void __init check_timer(vo
- 		/*
- 		 * Cleanup, just in case ...
- 		 */
-+		local_irq_disable();
- 		disable_8259A_irq(0);
- 		clear_IO_APIC_pin(apic2, pin2);
- 		apic_printk(APIC_QUIET, KERN_INFO "....... failed.\n");
-@@ -3000,6 +3012,7 @@ static inline void __init check_timer(vo
- 		apic_printk(APIC_QUIET, KERN_INFO "..... works.\n");
- 		goto out;
- 	}
-+	local_irq_disable();
- 	disable_8259A_irq(0);
- 	apic_write(APIC_LVT0, APIC_LVT_MASKED | APIC_DM_FIXED | cfg->vector);
- 	apic_printk(APIC_QUIET, KERN_INFO "..... failed.\n");
-@@ -3017,6 +3030,7 @@ static inline void __init check_timer(vo
- 		apic_printk(APIC_QUIET, KERN_INFO "..... works.\n");
- 		goto out;
- 	}
-+	local_irq_disable();
- 	apic_printk(APIC_QUIET, KERN_INFO "..... failed :(.\n");
- 	panic("IO-APIC + timer doesn't work!  Boot with apic=debug and send a "
- 		"report.  Then try booting with the 'noapic' option.\n");
+ #include <linux/posix_types.h>
+-#include <asm/types.h>
+ 
+ #ifndef __KERNEL_STRICT_NAMES
+ 
+
+
