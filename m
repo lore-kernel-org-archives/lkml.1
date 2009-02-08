@@ -1,141 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbZBHBoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868AbZBHB4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752839AbZBHBoB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 20:44:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbZBHBnw
+	id S1752868AbZBHB4o (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 20:56:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbZBHB4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 20:43:52 -0500
-Received: from mailout.artfiles.de ([80.252.97.80]:57464 "EHLO
-	mailout.artfiles.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750722AbZBHBnv convert rfc822-to-8bit (ORCPT
+	Sat, 7 Feb 2009 20:56:35 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:46888 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752250AbZBHB4e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 20:43:51 -0500
-Subject: warning in arch/x86/kernel/cpu/mtrr/generic.c:400 with 2.6.29-rc3 on IBM x3400
-Date: Sun, 8 Feb 2009 02:43:48 +0100
+	Sat, 7 Feb 2009 20:56:34 -0500
+Date: Sat, 7 Feb 2009 20:56:33 -0500
+To: George Spelvin <linux@horizon.com>
+Cc: giometti@enneenne.com, linux-kernel@vger.kernel.org,
+       LinuxPPS@ml.enneenne.com
+Subject: Re: LinuxPPS kernel interface
+Message-ID: <20090208015633.GA15809@csclub.uwaterloo.ca>
+References: <20081028181335.29352.qmail@science.horizon.com> <20081028181546.GM11339@tekkaman> <20090206142231.22425.qmail@science.horizon.com> <20090206143703.GC7975@enneenne.com> <20090206144752.5195.qmail@science.horizon.com> <20090206145553.GD7975@enneenne.com> <20090206145932.10638.qmail@science.horizon.com> <20090206152156.GE7975@enneenne.com> <20090206225326.14093.qmail@science.horizon.com> <20090208004914.21448.qmail@science.horizon.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <B4ED8DE8E195E84A872496A085BC07822F18@exchange01.corp.win-professional.com>
-X-MS-Has-Attach: 
-Content-class: urn:content-classes:message
-X-MS-TNEF-Correlator: 
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Thread-Topic: warning in arch/x86/kernel/cpu/mtrr/generic.c:400 with 2.6.29-rc3 on IBM x3400
-Thread-Index: AcmJjq+13WQP0k8DSW6CGiQncZ/gLA==
-From: "Morten P.D. Stevens" <mstevens@win-professional.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 08 Feb 2009 01:43:48.0843 (UTC) FILETIME=[B007C3B0:01C9898E]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090208004914.21448.qmail@science.horizon.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, Feb 07, 2009 at 07:49:14PM -0500, George Spelvin wrote:
+> (Be aware that this is crossposted to linux-kernel and LinuxPPS.
+> The latter mailing list rejects mail from non-subscribers, so
+> the discussion on linux-kernel is likely to be more complete.)
+> 
+> LinuxPPS is an implementation of the PPS API from RFC 2783.
+> That's a function-call interface, and it's up to the implementation
+> to determine how to partition responsibility between the kernel and
+> the userspace library.
+> 
+> I just posted to the LinuxPPS maining list a series of patches which
+> change the semantics of the LinuxPPS kernel interface so most of the
+> mode bits are per-fd rather than global.  You can have one user listening
+> for assert events and the other listening for clear events.
+> 
+> So far, nothing has changed the interface for any single user; the
+> only difference is that multiple users now interact less.
+> 
+> One thing I got working is that POLLIN now properly waits until a new
+> PPS event is available.
+> 
+> That makes it possible to implement the (required) time_pps_fetch()
+> function without passing the timeout to the PPS_FETCH ioctl.  Instead,
+> time_pps_fetch() can be implemented as a call to poll(2) followed by an
+> immediate ioctl.
+> 
+> However, other kernel interface cleanups seem possible.  Here's my list
+> of possible kernel interface changes.  I'd like some design review and
+> comments on the ideas.
+> (Note that some of them are mutually exclusive!)
+> 
+> - Eliminate the timeout argument and the whole struct pps_fdata thing.
+>   Do the timeout with ppoll, and then get the last event.
+> 
+> - Change PPS_FETCH to never wait.  Instead, it always immediately returns
+>   the most recently captures PPS events.  If you want to wait, use poll.
+> 
+> - Move the PPS_OFFSET feature to user space.  That requires making
+>   a pps_handle_t a pointer to a structure containing the offsets.
+> 
+> - Move the PPS_CAPTURE mode bits to use space.  Rather than telling
+>   the kernel the mode of the current fd, just have the two different
+>   edges reported by different poll bits (POLLPRI and POLLRDBAND?) which
+>   userspace can wait for whenever it wishes.  (POLLIN would get both,
+>   of course.)
+> 
+> - Add a read(2) interface.  Suggestions for the format are appreciated.
+>   I imagine an ASCII interface:
+>   assert <sequence> <seconds>.<fraction>\n
+>   clear <sequence> <seconds>.<fraction>\n
+>   But maybe something else?
+> 
+> - Replace PPS_FETCH with the above interface?  Or is the dual binary/ASCII
+>   conversion too annoying?
+> 
+> - Add a clock type specification to the kernel interface?  Or is
+>   CLOCK_REALTIME always okay?
+> 
+> - I'd like to add support for serial port signals other than DCD.
+>   The 8250 hardware treats CTS and DSR just the same, and one edge of RI
+>   can be trapped.  Any idea how to do that?  Just instantiate multiple
+>   PPS devices?  Should there be a better device naming convention?
+> 
+> - Think about the ECHO flags.  The RFC leaves it implementation-defined
+>   which line is used for output, and people seem to use the RTS line.
+>   Bascially, the interrupt handler does a TIOCMBIS/TIOCMBIC ioctl to
+>   toggle the RTS line.  Is this okay?  How should it interact with CRTSCTS?
 
-just for fun i installed linux 2.6.29-rc3 on a IBM x3400 server for
-testing purposes and get a warning in
-arch/x86/kernel/cpu/mtrr/generic.c:
+Have you looked at the PPS code Rodolfo Giometti has been working on and
+has been working hard to get in to the kernel?  It works very well, and
+I think probably does everything (or at least most of what) you
+mentioned.  I have been using it for a couple of years now.
 
-Kernel failure message 1:
-------------[ cut here ]------------
-WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:400
-generic_get_mtrr+0xc6/0x104() (Not tainted)
-Hardware name: IBM eServer x3400-[7976KCG]-
-mtrr: your BIOS has set up an incorrect mask, fixing it up.
-Modules linked in:
-Pid: 0, comm: swapper Not tainted 2.6.29-0.66.rc3.fc11.x86_64 #1
-Call Trace:
-[<ffffffff8104a5c1>] warn_slowpath+0xb9/0xfe
-[<ffffffff8106ef5b>] ? lock_acquired+0x29e/0x2ae
-[<ffffffff81016ea4>] ? sched_clock+0xa/0xc
-[<ffffffff8106bc68>] ? lock_release_holdtime+0x2c/0x123
-[<ffffffff8106f633>] ? lock_release+0x17c/0x189
-[<ffffffff8119a570>] ? _raw_spin_unlock+0x8f/0x93
-[<ffffffff8106c741>] ? trace_hardirqs_off+0xd/0xf
-[<ffffffff8101f915>] generic_get_mtrr+0xc6/0x104
-[<ffffffff8160efa0>] mtrr_trim_uncached_memory+0x8e/0x2f5
-[<ffffffff813806d9>] ? printk+0x3c/0x43
-[<ffffffff816190f6>] ? early_gart_iommu_check+0x98/0x26a
-[<ffffffff81602140>] ? early_idt_handler+0x0/0x71
-[<ffffffff8160a825>] setup_arch+0x41c/0x7d1
-[<ffffffff8138338e>] ? _spin_unlock_irqrestore+0x40/0x57
-[<ffffffff81602a8e>] start_kernel+0xa2/0x3e2
-[<ffffffff816022bf>] x86_64_start_reservations+0xaa/0xae
-[<ffffffff816023ca>] x86_64_start_kernel+0xe4/0xf3
----[ end trace 4eaa2a86a8e2da22 ]---
+I would not start working on yet another implementation.
 
-lspci:
+Search for mailing list archives for LinusPPS core.  The latest version
+was posted quite recently (less than a month ago).
 
-00:00.0 Host bridge: Intel Corporation 5000P Chipset Memory Controller
-Hub (rev b1)
-00:02.0 PCI bridge: Intel Corporation 5000 Series Chipset PCI Express x8
-Port 2-3 (rev b1)
-00:03.0 PCI bridge: Intel Corporation 5000 Series Chipset PCI Express x4
-Port 3 (rev b1)
-00:04.0 PCI bridge: Intel Corporation 5000 Series Chipset PCI Express x8
-Port 4-5 (rev b1)
-00:05.0 PCI bridge: Intel Corporation 5000 Series Chipset PCI Express x4
-Port 5 (rev b1)
-00:06.0 PCI bridge: Intel Corporation 5000 Series Chipset PCI Express x8
-Port 6-7 (rev b1)
-00:07.0 PCI bridge: Intel Corporation 5000 Series Chipset PCI Express x4
-Port 7 (rev b1)
-00:10.0 Host bridge: Intel Corporation 5000 Series Chipset FSB Registers
-(rev b1)
-00:10.1 Host bridge: Intel Corporation 5000 Series Chipset FSB Registers
-(rev b1)
-00:10.2 Host bridge: Intel Corporation 5000 Series Chipset FSB Registers
-(rev b1)
-00:11.0 Host bridge: Intel Corporation 5000 Series Chipset Reserved
-Registers (rev b1)
-00:13.0 Host bridge: Intel Corporation 5000 Series Chipset Reserved
-Registers (rev b1)
-00:15.0 Host bridge: Intel Corporation 5000 Series Chipset FBD Registers
-(rev b1)
-00:16.0 Host bridge: Intel Corporation 5000 Series Chipset FBD Registers
-(rev b1)
-00:1c.0 PCI bridge: Intel Corporation 631xESB/632xESB/3100 Chipset PCI
-Express Root Port 1 (rev 09)
-00:1c.1 PCI bridge: Intel Corporation 631xESB/632xESB/3100 Chipset PCI
-Express Root Port 2 (rev 09)
-00:1d.0 USB Controller: Intel Corporation 631xESB/632xESB/3100 Chipset
-UHCI USB Controller #1 (rev 09)
-00:1d.1 USB Controller: Intel Corporation 631xESB/632xESB/3100 Chipset
-UHCI USB Controller #2 (rev 09)
-00:1d.2 USB Controller: Intel Corporation 631xESB/632xESB/3100 Chipset
-UHCI USB Controller #3 (rev 09)
-00:1d.3 USB Controller: Intel Corporation 631xESB/632xESB/3100 Chipset
-UHCI USB Controller #4 (rev 09)
-00:1d.7 USB Controller: Intel Corporation 631xESB/632xESB/3100 Chipset
-EHCI USB2 Controller (rev 09)
-00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev d9)
-00:1f.0 ISA bridge: Intel Corporation 631xESB/632xESB/3100 Chipset LPC
-Interface Controller (rev 09)
-00:1f.1 IDE interface: Intel Corporation 631xESB/632xESB IDE Controller
-(rev 09)
-00:1f.3 SMBus: Intel Corporation 631xESB/632xESB/3100 Chipset SMBus
-Controller (rev 09)
-01:00.0 PCI bridge: Intel Corporation 6311ESB/6321ESB PCI Express
-Upstream Port (rev 01)
-01:00.3 PCI bridge: Intel Corporation 6311ESB/6321ESB PCI Express to
-PCI-X Bridge (rev 01)
-02:00.0 PCI bridge: Intel Corporation 6311ESB/6321ESB PCI Express
-Downstream Port E1 (rev 01)
-02:01.0 PCI bridge: Intel Corporation 6311ESB/6321ESB PCI Express
-Downstream Port E2 (rev 01)
-03:00.0 RAID bus controller: Adaptec AAC-RAID (Rocket) (rev 02)
-1a:00.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5721
-Gigabit Ethernet PCI Express (rev 21)
-1c:04.0 VGA compatible controller: ATI Technologies Inc ES1000 (rev 02)
-
-Bios is the newest IBM BIOS.
-There are no problems with previous kernel versions like 2.6.18-92 or
-2.6.27.
-
-Any ideas about the CPU/BIOS warning?
-
--
-
-Morten
-
-
+-- 
+Len Sorensen
