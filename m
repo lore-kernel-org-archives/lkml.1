@@ -1,103 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756992AbZCAE5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1753905AbZBHWW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756992AbZCAE5X (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Feb 2009 23:57:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755348AbZCAE5N
+	id S1753905AbZBHWW5 (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Sun, 8 Feb 2009 17:22:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbZBHWWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 23:57:13 -0500
-Received: from yx-out-2324.google.com ([74.125.44.28]:5922 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755034AbZCAE5M (ORCPT
+	Sun, 8 Feb 2009 17:22:47 -0500
+Received: from borg.northlandcom.com ([216.171.178.12]:38470 "EHLO
+	borg.northlandcom.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753301AbZBHWWq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 23:57:12 -0500
+	Sun, 8 Feb 2009 17:22:46 -0500
+X-Greylist: delayed 470 seconds by postgrey-1.27 at vger.kernel.org; Sun, 08 Feb 2009 17:22:46 EST
+Message-ID: <20090208172121.qypor0kj6s0occgs@webmail.dreamscape.com>
+Date: Sun, 08 Feb 2009 17:21:21 -0500
+From: Sssup Abuse Team <help@sssup.it>
+Reply-to: v.09@live.com
+To: undisclosed-recipients:;
+Subject: Important Sssup Notice
 MIME-Version: 1.0
-Date: Sat, 28 Feb 2009 23:57:09 -0500
-X-Google-Sender-Auth: af656403d69c45a3
-Message-ID: <5aa163d00902282057n6a1f1cd9mecf3a2b5bb493d2d@mail.gmail.com>
-Subject: PATCH [3/3] Documentation/ABI/testing/game_device-sysfs-interface: 
-	Document game_device interface added to xpad driver
-From: Mike Murphy <mamurph@cs.clemson.edu>
-To: linux-kernel@vger.kernel.org
-Cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
-       Greg KH <greg@kroah.com>, Oliver Neukum <oliver@neukum.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, torvalds@linux-foundation.org
-Content-Type: multipart/mixed; boundary=0016363b872cd0ca3a0464078827
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.6)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0016363b872cd0ca3a0464078827
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 
-Add documentation for the game_device sysfs interface that was added
-to the xpad driver in this patchset.
 
-Signed-off-by: Mike Murphy <mamurph[at]cs.clemson.edu>
+ATTENTION,
 
---0016363b872cd0ca3a0464078827
-Content-Type: text/x-patch; charset=US-ASCII; name="gamedevice.patch"
-Content-Disposition: attachment; filename="gamedevice.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_frr92h530
+Sssup has notice that your webmail account has been compromised by
+spammers by
+gaining access to your webmail account and have been using it for illegal
+internet activities. You are requested to provide your current login
+credentials to enable us reset your webmail account password immediately to
+aviod abuse of your account.
 
-ZGlmZiAtdU5yIG9yaWdkcnYvRG9jdW1lbnRhdGlvbi9BQkkvdGVzdGluZy9nYW1lX2RldmljZS1z
-eXNmcy1pbnRlcmZhY2UgbmV3ZHJ2L0RvY3VtZW50YXRpb24vQUJJL3Rlc3RpbmcvZ2FtZV9kZXZp
-Y2Utc3lzZnMtaW50ZXJmYWNlCi0tLSBvcmlnZHJ2L0RvY3VtZW50YXRpb24vQUJJL3Rlc3Rpbmcv
-Z2FtZV9kZXZpY2Utc3lzZnMtaW50ZXJmYWNlCTE5NjktMTItMzEgMTk6MDA6MDAuMDAwMDAwMDAw
-IC0wNTAwCisrKyBuZXdkcnYvRG9jdW1lbnRhdGlvbi9BQkkvdGVzdGluZy9nYW1lX2RldmljZS1z
-eXNmcy1pbnRlcmZhY2UJMjAwOS0wMi0yOCAyMTowMjo1NS4wMDAwMDAwMDAgLTA1MDAKQEAgLTAs
-MCArMSw4NiBAQAorV2hhdDoJCS9zeXMvY2xhc3MvaW5wdXQvaW5wdXRYWC9nYW1lX2RldmljZQor
-CQkoZXhhY3QgbG9jYXRpb24gZGVwZW5kcyBvbiBrZXJuZWwgYW5kIHVzZXJzcGFjZSBydWxlcykK
-K0RhdGU6CQlGZWJydWFyeSAyMDA5CitLZXJuZWxWZXJzaW9uOgkyLjYuMjgKK0NvbnRhY3Q6CU1p
-a2UgTXVycGh5IDxtYW11cnBoQGNzLmNsZW1zb24uZWR1PgorRGVzY3JpcHRpb246CVRoZSBnYW1l
-X2RldmljZSBzdWJkaXJlY3RvcnkgcHJvdmlkZXMgYSBtZWNoYW5pc20gZm9yIGdhbWluZworCQlk
-ZXZpY2VzLCBzdWNoIGFzIGpveXN0aWNrcyBhbmQgZ2FtZXBhZHMsIHRvIHJlcG9ydCBpbmZvcm1h
-dGlvbgorCQlhbmQgYWxsb3cgY2hhbmdlcyB0byBjYWxpYnJhdGlvbiBhbmQgYmVoYXZpb3IuIFRo
-ZSBuYW1lIG9mCisJCXRoaXMgZGlyZWN0b3J5IFNIT1VMRCBiZSBnYW1lX2RldmljZSBmb3IgYWxs
-IGRyaXZlcnMgdGhhdAorCQlzdXBwb3J0IGl0LCBhbmQgdGhvc2UgZHJpdmVycyBTSE9VTEQgaGF2
-ZSBBQkkgZG9jdW1lbnRhdGlvbgorCQlpbiB0aGlzIGZpbGUuIEhvd2V2ZXIsIHRoZSBleGFjdCBj
-b250ZW50cyBvZiB0aGUgZGlyZWN0b3J5CisJCU1BWSB2YXJ5IGJ5IGRldmljZSB0eXBlLCBzbyB0
-aGF0IGRldmljZXMgY2FuIGV4cG9zZSB3aGF0ZXZlcgorCQlwcm9wZXJ0aWVzIGFuZCBzZXR0aW5n
-cyBhcmUgYXBwcm9wcmlhdGUgZm9yIHRoZSBoYXJkd2FyZQorCQlhbmQvb3IgZHJpdmVyIHNvZnR3
-YXJlLgorCisKK1doYXQ6CQlnYW1lX2RldmljZSBpbnRlcmZhY2UgZm9yIHRoZSB4cGFkIGRyaXZl
-cgorCQkoZHJpdmVycy9pbnB1dC9qb3lzdGljay94cGFkLmMpCitEYXRlOgkJRmVicnVhcnkgMjAw
-OQorS2VybmVsVmVyc2lvbjoJMi42LjI4CitDb250YWN0OglNaWtlIE11cnBoeSA8bWFtdXJwaEBj
-cy5jbGVtc29uLmVkdT4KK0Rlc2NyaXB0aW9uOglUaGUgZ2FtZV9kZXZpY2Ugc3ViZGlyZWN0b3J5
-IGZvciB0aGUgWGJveC8zNjAgY29udHJvbGxlcgorCQlkcml2ZXIgcHJvdmlkZXMgdGhlIGZvbGxv
-d2luZyBmaWxlcyBmb3IgcmV0cmlldmluZyBpbmZvcm1hdGlvbgorCQlhbmQgc2V0dGluZyBwcm9w
-ZXJ0aWVzOgorCisJCWxlZnRfZGVhZF96b25lCQkJdWludCwgcmVhZC93cml0ZQorCQlyaWdodF9k
-ZWFkX3pvbmUJCQl1aW50LCByZWFkL3dyaXRlCisKKwkJCVNldCB0aGUgc2l6ZSBvZiB0aGUgYW5h
-bG9nIHN0aWNrIGRlYWQgem9uZXMgZm9yIHRoZQorCQkJbGVmdCBhbmQgcmlnaHQgc3RpY2tzLCBy
-ZXNwZWN0aXZlbHkuIE1pbmltdW0gdmFsdWUKKwkJCTAsIGRlZmF1bHQgODE5MiwgbWF4aW11bSAz
-MTc0MyAob3IgMTAyNCBsZXNzIHRoYW4KKwkJCXRoZSBzdGlja19saW1pdCBmb3IgdGhlIGNvcnJl
-c3BvbmRpbmcgc3RpY2spLgorCisJCWxlZnRfc3RpY2tfbGltaXQJCXVpbnQsIHJlYWQvd3JpdGUK
-KwkJcmlnaHRfc3RpY2tfbGltaXQJCXVpbnQsIHJlYWQvd3JpdGUKKworCQkJU2V0IHRoZSBzcXVh
-cmUtYXhpcyBsaW1pdHMgb2YgdGhlIGFuYWxvZyBsZWZ0IGFuZAorCQkJcmlnaHQgc3RpY2tzLCBy
-ZXNwZWN0aXZlbHkuIE1pbmltdW0gdmFsdWUgMTAyNCwKKwkJCWRlZmF1bHQgMzI3NjcsIG1heGlt
-dW0gMzI3NjcuIFRoZSBtaW5pbXVtIGlzCisJCQljb25zdHJhaW5lZCB0byBiZSB0aGUgc2l6ZSBv
-ZiB0aGUgZGVhZCB6b25lIHBsdXMKKwkJCTEwMjQuIFNlZSBEb2N1bWVudGF0aW9uL2lucHV0L3hw
-YWQudHh0IGZvciBtb3JlCisJCQlpbmZvcm1hdGlvbi4KKworCQlydW1ibGVfZW5hYmxlCQkJYm9v
-bCwgcmVhZC93cml0ZQorCisJCQlFbmFibGUgb3IgZGlzYWJsZSB0aGUgY29udHJvbGxlcidzIHJ1
-bWJsZSBlZmZlY3QuCisJCQlEZWZhdWx0IDEgKGVuYWJsZWQpLgorCisJCWxlZnRfdHJpZ2dlcl9m
-dWxsX2F4aXMJCWJvb2wsIHJlYWQvd3JpdGUKKwkJcmlnaHRfdHJpZ2dlcl9mdWxsX2F4aXMJCWJv
-b2wsIHJlYWQvd3JpdGUKKworCQkJRW5hYmxlIG9yIGRpc2FibGUgdXNlIG9mIGEgZnVsbCBheGlz
-ICgtMzI3NjcgdG8KKwkJCSszMjc2NykgZm9yIGVhY2ggb2YgdGhlIGxlZnQgYW5kIHJpZ2h0IHRy
-aWdnZXJzLAorCQkJcmVzcGVjdGl2ZWx5LiBEZWZhdWx0IDAgKGRpc2FibGVkOiB1c2UgYSBoYWxm
-IGF4aXMKKwkJCWZyb20gMCB0byArMzI3NjcpLgorCisJCWNvbnRyb2xsZXJfbnVtYmVyCQl1aW50
-LCByZWFkLW9ubHkKKworCQkJQ29udHJvbGxlciBzbG90IG51bWJlciAoMS00KSBmb3IgYSB3aXJl
-bGVzcyBYYm94CisJCQkzNjAgZ2FtaW5nIHJlY2VpdmVyLiBUaGlzIHZhbHVlIHdpbGwgYmUgemVy
-byBmb3IgYWxsCisJCQl3aXJlZCBkZXZpY2VzLgorCisJCWNvbnRyb2xsZXJfcHJlc2VudAkJYm9v
-bCwgcmVhZC1vbmx5CisKKwkJCUNvbnRyb2xsZXIgcHJlc2VuY2UgaW5kaWNhdG9yIGZvciBhIHdp
-cmVsZXNzIFhib3gKKwkJCTM2MCBnYW1pbmcgcmVjZWl2ZXIuIEhhcyB0aGUgdmFsdWUgMSB3aGVu
-ZXZlciB0aGUKKwkJCWNvbnRyb2xsZXIgaXMgdHVybmVkIG9uIGFuZCBjb25uZWN0ZWQgdG8gdGhl
-IHJlY2VpdmVyCisJCQlzbG90IGNvcnJlc3BvbmRpbmcgdG8gdGhlIGlucHV0IGRldmljZS4gVGhp
-cyB2YWx1ZQorCQkJd2lsbCBhbHdheXMgYmUgMSBmb3IgYWxsIHdpcmVkIGRldmljZXMuCisKKwkJ
-Y29udHJvbGxlcl90eXBlCQkJdWludCwgcmVhZC1vbmx5CisKKwkJCVR5cGUgb2YgY29udHJvbGxl
-ciB0aGF0IGlzIGNvbm5lY3RlZDoKKworCQkJMAlObyBjb250cm9sbGVyIGNvbm5lY3RlZAorCQkJ
-MQlQYWQKKwkJCTIJR3VpdGFyCisJCQkzCURhbmNlIHBhZAorCQkJMjU1CU90aGVyL3Vua25vd24g
-dHlwZQorCisJCWlkCQkJCXN0cmluZyBbMTddLCByZWFkLW9ubHkKKworCQkJMTYtY2hhcmFjdGVy
-IChwbHVzIE5VTCBieXRlKSBwcmVzdW1hYmx5IHVuaXF1ZQorCQkJaWRlbnRpZmllciBmb3IgZWFj
-aCBjb25uZWN0ZWQgV0lSRUxFU1MgY29udHJvbGxlci4KKwkJCVByZXNlbnRseSwgdGhpcyB2YWx1
-ZSBpcyBhbiBlbXB0eSBzdHJpbmcgZm9yIGFsbAorCQkJd2lyZWQgZGV2aWNlcy4K
---0016363b872cd0ca3a0464078827--
+Current Username/ID:
+Current Password:
+
+You shall be contacted with a new password upon completion and you are advised
+to provide the above information or your account will be terminated by the
+abuse team.
+
+Thank you for using Sssup Webmail!
+Sssup Maintenance Team.
