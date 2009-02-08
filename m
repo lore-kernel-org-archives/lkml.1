@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753082AbZBHEA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753162AbZBHEfP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753082AbZBHEA2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 23:00:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbZBHEAU
+	id S1753162AbZBHEfP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 23:35:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbZBHEfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 23:00:20 -0500
-Received: from science.horizon.com ([192.35.100.1]:10790 "HELO
-	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752483AbZBHEAU (ORCPT
+	Sat, 7 Feb 2009 23:35:05 -0500
+Received: from jenny.ondioline.org ([66.220.1.122]:38559 "EHLO
+	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752483AbZBHEfE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 23:00:20 -0500
-Message-ID: <20090208040018.10831.qmail@science.horizon.com>
-From: "George Spelvin" <linux@horizon.com>
-Date: Sat, 07 Feb 2009 23:00:18 -0500
-To: lsorense@csclub.uwaterloo.ca, linux@horizon.com
-Cc: LinuxPPS@ml.enneenne.com, linux-kernel@vger.kernel.org,
-       giometti@enneenne.com
-Subject: Re: LinuxPPS kernel interface
-References: <20081028181335.29352.qmail@science.horizon.com>
- <20081028181546.GM11339@tekkaman>
- <20090206142231.22425.qmail@science.horizon.com>
- <20090206143703.GC7975@enneenne.com>
- <20090206144752.5195.qmail@science.horizon.com>
- <20090206145553.GD7975@enneenne.com>
- <20090206145932.10638.qmail@science.horizon.com>
- <20090206152156.GE7975@enneenne.com>
- <20090206225326.14093.qmail@science.horizon.com>
- <20090208004914.21448.qmail@science.horizon.com>
- <20090208015633.GA15809@csclub.uwaterloo.ca>
-In-Reply-To: <20090208015633.GA15809@csclub.uwaterloo.ca>
+	Sat, 7 Feb 2009 23:35:04 -0500
+From: Paul Collins <paul@burly.ondioline.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Badness at kernel/time/timekeeping.c:98 in pmud (timekeeping_suspended)
+References: <87prihcepl.fsf@burly.wgtn.ondioline.org>
+	<200901211713.39630.rjw@sisk.pl>
+	<87k58nda87.fsf@burly.wgtn.ondioline.org>
+Date: Sun, 08 Feb 2009 17:35:02 +1300
+In-Reply-To: <87k58nda87.fsf@burly.wgtn.ondioline.org> (Paul Collins's message
+	of "Thu, 22 Jan 2009 21:19:04 +1300")
+Message-ID: <874oz5pmvd.fsf@burly.wgtn.ondioline.org>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.90 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-lsorense@csclub.uwaterloo.ca (Lennart Sorensen) wrote:
-> Have you looked at the PPS code Rodolfo Giometti has been working on and
-> has been working hard to get in to the kernel?  It works very well, and
-> I think probably does everything (or at least most of what) you
-> mentioned.  I have been using it for a couple of years now.
+Paul Collins <paul@burly.ondioline.org> writes:
 
-Er, yes, I'm sorry if I left out that bit of background; I had meant to
-imply it when I mentioned "LinuxPPS" in the subject line, which I think
-of as Rodolfo's code base.  I was starting from that implementation,
-my patches were to that code, and I was thinking about further changes.
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>
+>> On Wednesday 21 January 2009, Paul Collins wrote:
+>>> Got a couple of these on a PowerBook running 2.6.29-rc2 either during
+>>> suspend or resume -- it's hard to tell.  (The suspend message is
+>>> timestamped in syslog with the time I resumed, so I guess it was
+>>> buffered along with the subsequent "Badness" messages.)
+>>
+>> Please check if the patch from http://lkml.org/lkml/2009/1/13/144 fixes the
+>> problem for you.
+>
+> It does not fix the problem.
 
-> I would not start working on yet another implementation.
+I'm also getting this warning since 2.6.28.1, which incorporated commit
+1c5745aa380efb6417b5681104b007c8612fb496 ("sched_clock: prevent
+scd->clock from moving backwards, take #2") as commit
+e268dcdd404f4558cdd24c8ecede3e064df8fa33, this being the patch that
+introduced the WARN_ON(timekeeping_suspended) check.
 
-It's not; I've been working on improvements to Rodolfo's code.
-(For example, I think the PPS_FETCH ioctl interface could use it.)
+-- 
+Paul Collins
+Wellington, New Zealand
+
+Dag vijandelijk luchtschip de huismeester is dood
