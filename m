@@ -1,65 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753453AbZBHMjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753393AbZBHMwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753453AbZBHMjy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 07:39:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752604AbZBHMjp
+	id S1753393AbZBHMwZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 07:52:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZBHMwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 07:39:45 -0500
-Received: from mail.gmx.net ([213.165.64.20]:46232 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752346AbZBHMjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 07:39:44 -0500
-X-Authenticated: #704063
-X-Provags-ID: V01U2FsdGVkX193TkVAkJF32lVsY0pn4EIch2s/7WJmTDOha6mRs0
-	W7Fn1Fg/qF4bAS
-Date: Sun, 8 Feb 2009 13:39:40 +0100
-From: Eric Sesterhenn <snakebyte@gmx.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12605] Suspend regression, hang after matroxfb
-Message-ID: <20090208123940.GA14450@alice>
-References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <pWZw1SZjMCH.A.2UE.zuYiJB@chimera> <20090205121624.GA17811@alice> <200902051712.56407.rjw@sisk.pl>
+	Sun, 8 Feb 2009 07:52:17 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:38893 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751872AbZBHMwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 07:52:16 -0500
+Date: Sun, 8 Feb 2009 10:16:23 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/5] tracing/blktrace: move the tracing file to
+	kernel/trace
+Message-ID: <20090208121623.GD11892@ghostprotocols.net>
+References: <498e1747.1f145e0a.126a.ffffdf3b@mx.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902051712.56407.rjw@sisk.pl>
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snake-basket.de
-X-Operating-System: Linux/2.6.29-rc3 (x86_64)
-X-Uptime: 13:36:26 up  2:57, 10 users,  load average: 0.25, 0.40, 0.45
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.54
+In-Reply-To: <498e1747.1f145e0a.126a.ffffdf3b@mx.google.com>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rafael J. Wysocki (rjw@sisk.pl) wrote:
-> On Thursday 05 February 2009, Eric Sesterhenn wrote:
-> > * Rafael J. Wysocki (rjw@sisk.pl) wrote:
-> > > This message has been generated automatically as a part of a report
-> > > of recent regressions.
-> > > 
-> > > The following bug entry is on the current list of known regressions
-> > > from 2.6.28.  Please verify if it still should be listed and let me know
-> > > (either way).
-> > > 
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12605
-> > > Subject		: Suspend regression, hang after matroxfb
-> > > Submitter	: Eric Sesterhenn <snakebyte@gmx.de>
-> > > Date		: 2009-01-29 12:58 (7 days old)
-> > > References	: http://thread.gmane.org/gmane.linux.power-management.general/12640
-> > > Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
-> > > Patch		: http://marc.info/?l=linux-kernel&m=123335902122029&w=4
-> > 
-> > with todays -git I still get the same error, I have seen that some of 
-> > your PM patches got applied, seems the one I need wasnt one of them.
+Jens,
+
+	Are you ok with that? If you are, Frederic, please add my:
+
+Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+
+- Arnaldo
+
+Em Sat, Feb 07, 2009 at 08:46:45PM +0100, Frederic Weisbecker escreveu:
+> Impact: cleanup
 > 
-> No, it's not been merged yet.
-
-This is fixed with todays -git. Thanks
-A CC on the newer patches would have been nice, since I read the list
-only via web archives, but i saw them floating by.
-
-Greetings, Eric
+> Move blktrace.c to kernel/trace, also move its config entry.
+> 
+> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> ---
+>  block/Kconfig                      |   24 ------------------------
+>  block/Makefile                     |    1 -
+>  kernel/trace/Kconfig               |   23 +++++++++++++++++++++++
+>  kernel/trace/Makefile              |    1 +
+>  {block => kernel/trace}/blktrace.c |    2 +-
+>  5 files changed, 25 insertions(+), 26 deletions(-)
+>  rename {block => kernel/trace}/blktrace.c (99%)
+> 
+> diff --git a/block/Kconfig b/block/Kconfig
+> index 7cdaa1d..e7d1278 100644
+> --- a/block/Kconfig
+> +++ b/block/Kconfig
+> @@ -44,30 +44,6 @@ config LBD
+>  
+>  	  If unsure, say N.
+>  
+> -config BLK_DEV_IO_TRACE
+> -	bool "Support for tracing block io actions"
+> -	depends on SYSFS
+> -	select RELAY
+> -	select DEBUG_FS
+> -	select TRACEPOINTS
+> -	select TRACING
+> -	select STACKTRACE
+> -	help
+> -	  Say Y here if you want to be able to trace the block layer actions
+> -	  on a given queue. Tracing allows you to see any traffic happening
+> -	  on a block device queue. For more information (and the userspace
+> -	  support tools needed), fetch the blktrace tools from:
+> -
+> -	  git://git.kernel.dk/blktrace.git
+> -
+> -	  Tracing also is possible using the ftrace interface, e.g.:
+> -
+> -	    echo 1 > /sys/block/sda/sda1/trace/enable
+> -	    echo blk > /sys/kernel/debug/tracing/current_tracer
+> -	    cat /sys/kernel/debug/tracing/trace_pipe
+> -
+> -	  If unsure, say N.
+> -
+>  config BLK_DEV_BSG
+>  	bool "Block layer SG support v4 (EXPERIMENTAL)"
+>  	depends on EXPERIMENTAL
+> diff --git a/block/Makefile b/block/Makefile
+> index bfe7304..e9fa4dd 100644
+> --- a/block/Makefile
+> +++ b/block/Makefile
+> @@ -13,6 +13,5 @@ obj-$(CONFIG_IOSCHED_AS)	+= as-iosched.o
+>  obj-$(CONFIG_IOSCHED_DEADLINE)	+= deadline-iosched.o
+>  obj-$(CONFIG_IOSCHED_CFQ)	+= cfq-iosched.o
+>  
+> -obj-$(CONFIG_BLK_DEV_IO_TRACE)	+= blktrace.o
+>  obj-$(CONFIG_BLOCK_COMPAT)	+= compat_ioctl.o
+>  obj-$(CONFIG_BLK_DEV_INTEGRITY)	+= blk-integrity.o
+> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+> index 28f2644..0e920e2 100644
+> --- a/kernel/trace/Kconfig
+> +++ b/kernel/trace/Kconfig
+> @@ -294,6 +294,29 @@ config WORKQUEUE_TRACER
+>            For example it can help a developer to decide whether he should
+>            choose a per cpu workqueue instead of a singlethreaded one.
+>  
+> +config BLK_DEV_IO_TRACE
+> +	bool "Support for tracing block io actions"
+> +	depends on SYSFS
+> +	select RELAY
+> +	select DEBUG_FS
+> +	select TRACEPOINTS
+> +	select TRACING
+> +	select STACKTRACE
+> +	help
+> +	  Say Y here if you want to be able to trace the block layer actions
+> +	  on a given queue. Tracing allows you to see any traffic happening
+> +	  on a block device queue. For more information (and the userspace
+> +	  support tools needed), fetch the blktrace tools from:
+> +
+> +	  git://git.kernel.dk/blktrace.git
+> +
+> +	  Tracing also is possible using the ftrace interface, e.g.:
+> +
+> +	    echo 1 > /sys/block/sda/sda1/trace/enable
+> +	    echo blk > /sys/kernel/debug/tracing/current_tracer
+> +	    cat /sys/kernel/debug/tracing/trace_pipe
+> +
+> +	  If unsure, say N.
+>  
+>  config DYNAMIC_FTRACE
+>  	bool "enable/disable ftrace tracepoints dynamically"
+> diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
+> index f76d48f..627090b 100644
+> --- a/kernel/trace/Makefile
+> +++ b/kernel/trace/Makefile
+> @@ -37,5 +37,6 @@ obj-$(CONFIG_HW_BRANCH_TRACER) += trace_hw_branches.o
+>  obj-$(CONFIG_POWER_TRACER) += trace_power.o
+>  obj-$(CONFIG_KMEMTRACE) += kmemtrace.o
+>  obj-$(CONFIG_WORKQUEUE_TRACER) += trace_workqueue.o
+> +obj-$(CONFIG_BLK_DEV_IO_TRACE)	+= blktrace.o
+>  
+>  libftrace-y := ftrace.o
+> diff --git a/block/blktrace.c b/kernel/trace/blktrace.c
+> similarity index 99%
+> rename from block/blktrace.c
+> rename to kernel/trace/blktrace.c
+> index ca6d320..3b91da0 100644
+> --- a/block/blktrace.c
+> +++ b/kernel/trace/blktrace.c
+> @@ -25,7 +25,7 @@
+>  #include <linux/time.h>
+>  #include <trace/block.h>
+>  #include <linux/uaccess.h>
+> -#include <../kernel/trace/trace_output.h>
+> +#include "trace_output.h"
+>  
+>  static unsigned int blktrace_seq __read_mostly = 1;
+>  
+> -- 
+> 1.6.1
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
