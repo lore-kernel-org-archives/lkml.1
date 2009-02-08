@@ -1,106 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbZBHNR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753594AbZBHNX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753510AbZBHNR6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 08:17:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbZBHNRs
+	id S1753594AbZBHNX4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 08:23:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbZBHNXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 08:17:48 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:51349 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752091AbZBHNRr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 08:17:47 -0500
-Date: Sun, 8 Feb 2009 13:17:34 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Paul Walmsley <paul@pwsan.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH E 10/14] OMAP clock: support "dry run" rate and parent changes
-Message-ID: <20090208131734.GA21434@n2100.arm.linux.org.uk>
-References: <20090128192551.29333.82943.stgit@localhost.localdomain> <20090128192753.29333.56931.stgit@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 8 Feb 2009 08:23:47 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38313 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752091AbZBHNXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 08:23:46 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH 1/3] PCI PM: Do not disable and enable bridges during suspend-resume
+Date: Sun, 8 Feb 2009 14:23:08 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200902012229.27517.rjw@sisk.pl> <200902071448.13877.rjw@sisk.pl> <20090208091157.GD8040@elf.ucw.cz>
+In-Reply-To: <20090208091157.GD8040@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090128192753.29333.56931.stgit@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200902081423.08991.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 28, 2009 at 12:27:56PM -0700, Paul Walmsley wrote:
-> For upcoming notifier support, modify the rate recalculation code to
-> take parent rate and rate storage parameters.  The goal here is to
-> allow the clock code to determine what the clock's rate would be after
-> a parent change or a rate change, without actually changing the
-> hardware registers.  This is used by the upcoming notifier patches to
-> pass a clock's current and planned rates to the notifier callbacks.
+On Sunday 08 February 2009, Pavel Machek wrote:
+> Hi!
+> 
+> > > > their standard config spaces are restored.  Fix this by not attempting
+> > > > to disable bridges during suspend and enable them during resume.
+> > > ...
+> > > > @@ -428,16 +428,18 @@ static int pci_pm_default_resume(struct 
+> > > >  {
+> > > >  	pci_fixup_device(pci_fixup_resume, pci_dev);
+> > > >  
+> > > > -	if (!pci_is_bridge(pci_dev))
+> > > > -		pci_enable_wake(pci_dev, PCI_D0, false);
+> > > > +	if (pci_is_bridge(pci_dev))
+> > > > +		return 0;
+> > > >  
+> > > > +	pci_enable_wake(pci_dev, PCI_D0, false);
+> > > >  	return pci_pm_reenable_device(pci_dev);
+> > > >  }
+> > > 
+> > > Are you sure? This goes from doing reenable_device to not doing it for
+> > > bridges, seemingly contradicting changelog?
+> > 
+> > Can you explain what you mean, please?
+> 
+> It looks to me like the patch does not match the changelog.
+> 
+> Changelog says "enable bridge during resume", but code does return 0
+> if it seems bridge.
 
-NAK.  I'm not sure whether you've realised, but this is exactly what the
-'round_rate' method is supposed to be doing.  It provides a method by
-which you can find out what the clock rate would be if you asked for
-'set_rate' to set the hardware to the requested rate.
+Ah, I see.  The changelog was supposed to mean that the bridges would not
+be disabled during suspend and also would not be enabled during resume
+(which shouldn't be necessary, since they would be automatically enabled
+as a result of restoring their configuration registers).
 
-A far better way to approach this would be to split the set_rate/recalc
-functionality into two parts:
+Thanks,
+Rafael
 
-1. a method which returns the both the new clock rate and the hardware
-   programming information
-2. a method to commit the hardware programming information to the registers
 
-(1) can be used for implementing clk_round_rate() (which is totally lacking
-in OMAP2+, yet is implemented in OMAP1), clk_set_rate(), clk_set_parent()
-etc.
+> 									Pavel
 
-(2) can be used when it's required to actually reprogram the hardware.
 
-So, rather than the current situation where we have recalc, round_rate
-and set_rate methods, we have calc_rate() and commit() methods instead
-and have the core clock code sort out calling these.
-
-IOW, clk_set_rate() and clk_round_rate() becomes:
-
-int clk_set_rate(struct clk *clk, unsigned long rate)
-{
-	unsigned long flags;
-	int ret = -EINVAL;
-
-        spin_lock_irqsave(&clockfw_lock, flags);
-	if (clk->calc_rate) {
-		unsigned long parent_rate = 0;
-		struct clk_hw hw;
-
-		if (clk->parent)
-			parent_rate = clk->parent->rate;
-
-		ret = clk->calc_rate(clk, parent_rate, &rate, &hw);
-		if (ret == 0) {
-			clk->rate = rate;
-			clk->commit(clk, &hw);
-		}
-	}
-        spin_unlock_irqrestore(&clockfw_lock, flags);
-
-	return ret;
-}
-
-long clk_round_rate(struct clk *clk, unsigned long rate)
-{
-	unsigned long flags;
-	long ret;
-
-        spin_lock_irqsave(&clockfw_lock, flags);
-	if (clk->calc_rate) {
-		unsigned long parent_rate = 0;
-		struct clk_hw hw;
-
-		if (clk->parent)
-			parent_rate = clk->parent->rate;
-
-		ret = clk->calc_rate(clk, parent_rate, &rate, &hw);
-		if (ret == 0)
-			ret = rate;
-	}
-        spin_unlock_irqrestore(&clockfw_lock, flags);
-
-	return ret;
-}
+-- 
+Everyone knows that debugging is twice as hard as writing a program
+in the first place.  So if you're as clever as you can be when you write it,
+how will you ever debug it? --- Brian Kernighan
