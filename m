@@ -1,98 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753410AbZBHBOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbZBHBRf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753410AbZBHBOb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 20:14:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbZBHBOX
+	id S1753112AbZBHBRf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 20:17:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbZBHBR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 20:14:23 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51320 "EHLO hera.kernel.org"
+	Sat, 7 Feb 2009 20:17:28 -0500
+Received: from ozlabs.org ([203.10.76.45]:48509 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751568AbZBHBOX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 20:14:23 -0500
-Message-ID: <498E319C.6070005@kernel.org>
-Date: Sat, 07 Feb 2009 17:13:00 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1752138AbZBHBR1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Feb 2009 20:17:27 -0500
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: use NR_IRQS_LEGACY to replace 16
-References: <498CCEDB.8050708@kernel.org>
-In-Reply-To: <498CCEDB.8050708@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18830.12961.954870.727816@cargo.ozlabs.ibm.com>
+Date: Sun, 8 Feb 2009 12:17:21 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kerneltop "enhancements"
+In-Reply-To: <1234007236.24521.29.camel@marge.simson.net>
+References: <1233813650.9044.29.camel@marge.simson.net>
+	<1234007236.24521.29.camel@marge.simson.net>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mike Galbraith writes:
 
-Impact: cleanup
+> BTW, how does one convince getopt_long() that an option really really
+> doesn't require an argument?  no_argument works for the long version,
+> but it insists that an argument is required for the short version
+> regardless.
 
-also could kill platform_legacy_irq
+Take out the ":" after the "z" in the string argument to getopt_long.
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- arch/x86/include/asm/hw_irq.h |    4 +---
- arch/x86/kernel/io_apic.c     |    8 ++++----
- 2 files changed, 5 insertions(+), 7 deletions(-)
-
-Index: linux-2.6/arch/x86/include/asm/hw_irq.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/hw_irq.h
-+++ linux-2.6/arch/x86/include/asm/hw_irq.h
-@@ -25,8 +25,6 @@
- #include <asm/irq.h>
- #include <asm/sections.h>
- 
--#define platform_legacy_irq(irq)	((irq) < 16)
--
- /* Interrupt handlers registered during init_IRQ */
- extern void apic_timer_interrupt(void);
- extern void error_interrupt(void);
-@@ -60,7 +58,7 @@ extern void make_8259A_irq(unsigned int
- extern void init_8259A(int aeoi);
- 
- /* IOAPIC */
--#define IO_APIC_IRQ(x) (((x) >= 16) || ((1<<(x)) & io_apic_irqs))
-+#define IO_APIC_IRQ(x) (((x) >= NR_IRQS_LEGACY) || ((1<<(x)) & io_apic_irqs))
- extern unsigned long io_apic_irqs;
- 
- extern void init_VISWS_APIC_irqs(void);
-Index: linux-2.6/arch/x86/kernel/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/io_apic.c
-+++ linux-2.6/arch/x86/kernel/io_apic.c
-@@ -3168,6 +3168,7 @@ static int __init ioapic_init_sysfs(void
- 
- device_initcall(ioapic_init_sysfs);
- 
-+static int nr_irqs_gsi = NR_IRQS_LEGACY;
- /*
-  * Dynamic irq allocate and deallocation
-  */
-@@ -3182,11 +3183,11 @@ unsigned int create_irq_nr(unsigned int
- 	struct irq_desc *desc_new = NULL;
- 
- 	irq = 0;
-+	if (irq_want < nr_irqs_gsi)
-+		irq_want = nr_irqs_gsi;
-+
- 	spin_lock_irqsave(&vector_lock, flags);
- 	for (new = irq_want; new < nr_irqs; new++) {
--		if (platform_legacy_irq(new))
--			continue;
--
- 		desc_new = irq_to_desc_alloc_cpu(new, cpu);
- 		if (!desc_new) {
- 			printk(KERN_INFO "can not get irq_desc for %d\n", new);
-@@ -3211,7 +3212,6 @@ unsigned int create_irq_nr(unsigned int
- 	return irq;
- }
- 
--static int nr_irqs_gsi = NR_IRQS_LEGACY;
- int create_irq(void)
- {
- 	unsigned int irq_want;
+Paul.
