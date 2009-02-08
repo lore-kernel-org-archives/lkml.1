@@ -1,114 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbZBHARY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173AbZBHAUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756027AbZBHARY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Feb 2009 19:17:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbZBHARQ
+	id S1756173AbZBHAUT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Feb 2009 19:20:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754281AbZBHAUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Feb 2009 19:17:16 -0500
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:63228 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753966AbZBHARP (ORCPT
+	Sat, 7 Feb 2009 19:20:04 -0500
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:63378 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754106AbZBHAUD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Feb 2009 19:17:15 -0500
+	Sat, 7 Feb 2009 19:20:03 -0500
 X-IronPort-Anti-Spam-Filtered: true
 X-IronPort-Anti-Spam-Result: ApsEAB6yjUlMQWt2/2dsb2JhbACBbspphBoG
-Date: Sat, 7 Feb 2009 19:17:13 -0500
+Date: Sat, 7 Feb 2009 19:19:56 -0500
 From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Bert Wesarg <bert.wesarg@googlemail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [urcu PATCH] test_urcu.c: use gettid()
-Message-ID: <20090208001713.GA5282@Krystal>
-References: <1233946197-32046-1-git-send-email-bert.wesarg@googlemail.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
+       Robert Wisniewski <bob@watson.ibm.com>
+Subject: Re: [RFC git tree] Userspace RCU (urcu) for Linux (repost)
+Message-ID: <20090208001956.GB5282@Krystal>
+References: <20090206030543.GB8560@Krystal> <20090206045841.GA12995@Krystal> <20090206130640.GB10918@linux.vnet.ibm.com> <20090206163432.GF10918@linux.vnet.ibm.com> <20090207151028.GA11150@linux.vnet.ibm.com> <20090207221627.GA26162@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1233946197-32046-1-git-send-email-bert.wesarg@googlemail.com>
+In-Reply-To: <20090207221627.GA26162@linux.vnet.ibm.com>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 19:17:05 up 38 days, 15 min,  3 users,  load average: 0.66, 0.77,
-	0.58
+X-Uptime: 19:19:47 up 38 days, 17 min,  3 users,  load average: 0.27, 0.58,
+	0.54
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Bert Wesarg (bert.wesarg@googlemail.com) wrote:
-> It's probably better to print the tid for each thread, not the pid.
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> On Sat, Feb 07, 2009 at 07:10:28AM -0800, Paul E. McKenney wrote:
+> > So, how to fix?  Here are some approaches:
+> > 
+> > o	Make urcu_publish_content() do two parity flips rather than one.
+> > 	I use this approach in my rcu_rcpg, rcu_rcpl, and rcu_rcpls
+> > 	algorithms in CodeSamples/defer.
+> > 
+> > o	Use a single free-running counter, in a manner similar to rcu_nest,
+> > 	as suggested earlier.  This one is interesting, as I rely on a
+> > 	read-side memory barrier to handle the long-preemption case.
+> > 	However, if you believe that any thread that waits several minutes
+> > 	between executing adjacent instructions must have been preempted
+> > 	(which the memory barriers that are required to do a context
+> > 	switch), then a compiler barrier suffices.  ;-)
+> > 
+> > Of course, the probability of seeing this failure during test is quite
+> > low, since it is unlikely that thread 0 would run just long enough to
+> > execute its signal handler.  However, it could happen.  And if you were
+> > to adapt this algorithm for use in a real-time application, then priority
+> > boosting could cause this to happen naturally.
 > 
-> Signed-off-by: Bert Wesarg <bert.wesarg@googlemail.com>
+> And here is a patch, taking the first approach.  It also exposes a
+> synchronize_rcu() API that is used by the existing urcu_publish_content()
+> API.  This allows easier handling of structures that are referenced by
+> more than one pointer.  And should also allow to be more easily plugged
+> into my rcutorture test.  ;-)
 > 
+
 Merged, thanks !
 
 Mathieu
 
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 > ---
->  test_urcu.c |   28 ++++++++++++++++++++++++----
->  1 files changed, 24 insertions(+), 4 deletions(-)
 > 
-> diff --git a/test_urcu.c b/test_urcu.c
-> index db0b68c..ea5a784 100644
-> --- a/test_urcu.c
-> +++ b/test_urcu.c
-> @@ -17,6 +17,23 @@
->  #include <unistd.h>
->  #include <stdio.h>
->  #include <assert.h>
-> +#include <sys/syscall.h>
-> +
-> +#if defined(_syscall0)
-> +_syscall0(pid_t, gettid)
-> +#elif defined(__NR_gettid)
-> +static inline pid_t gettid(void)
+>  urcu.c |   39 ++++++++++++++++++++++++++-------------
+>  1 file changed, 26 insertions(+), 13 deletions(-)
+> 
+> diff --git a/urcu.c b/urcu.c
+> index e401d8d..1a276ce 100644
+> --- a/urcu.c
+> +++ b/urcu.c
+> @@ -113,13 +113,35 @@ void wait_for_quiescent_state(int parity)
+>  	force_mb_all_threads();
+>  }
+>  
+> +static void switch_qparity(void)
 > +{
-> +	return syscall(__NR_gettid);
+> +	int prev_parity;
+> +
+> +	/* All threads should read qparity before accessing data structure. */
+> +	/* Write ptr before changing the qparity */
+> +	force_mb_all_threads();
+> +	prev_parity = switch_next_urcu_qparity();
+> +
+> +	/*
+> +	 * Wait for previous parity to be empty of readers.
+> +	 */
+> +	wait_for_quiescent_state(prev_parity);
 > +}
-> +#else
-> +#warning "use pid as tid"
-> +static inline pid_t gettid(void)
+> +
+> +void synchronize_rcu(void)
 > +{
-> +	return getpid();
+> +	rcu_write_lock();
+> +	switch_qparity();
+> +	switch_qparity();
+> +	rcu_write_unlock();
 > +}
-> +#endif
 > +
->  #include "urcu.h"
+>  /*
+>   * Return old pointer, OK to free, no more reference exist.
+>   * Called under rcu_write_lock.
+>   */
+>  void *urcu_publish_content(void **ptr, void *new)
+>  {
+> -	int prev_parity;
+>  	void *oldptr;
 >  
->  struct test_array {
-> @@ -36,8 +53,8 @@ void *thr_reader(void *arg)
->  	int qparity, i, j;
->  	struct test_array *local_ptr;
+>  	/*
+> @@ -134,19 +156,10 @@ void *urcu_publish_content(void **ptr, void *new)
+>  	 */
+>  	oldptr = *ptr;
+>  	*ptr = new;
+> -	/* All threads should read qparity before ptr */
+> -	/* Write ptr before changing the qparity */
+> -	force_mb_all_threads();
+> -	prev_parity = switch_next_urcu_qparity();
 >  
-> -	printf("thread %s, thread id : %lu, pid %lu\n",
-> -			"reader", pthread_self(), (unsigned long)getpid());
-> +	printf("thread %s, thread id : %lx, tid %lu\n",
-> +			"reader", pthread_self(), (unsigned long)gettid());
->  	sleep(2);
->  
->  	urcu_register_thread();
-> @@ -66,8 +83,8 @@ void *thr_writer(void *arg)
->  	int i;
->  	struct test_array *new, *old;
->  
-> -	printf("thread %s, thread id : %lu, pid %lu\n",
-> -			"writer", pthread_self(), (unsigned long)getpid());
-> +	printf("thread %s, thread id : %lx, tid %lu\n",
-> +			"writer", pthread_self(), (unsigned long)gettid());
->  	sleep(2);
->  
->  	for (i = 0; i < 10000000; i++) {
-> @@ -104,6 +121,9 @@ int main()
->  	void *tret;
->  	int i;
->  
-> +	printf("thread %-6s, thread id : %lx, tid %lu\n",
-> +			"main", pthread_self(), (unsigned long)gettid());
+> -	/*
+> -	 * Wait for previous parity to be empty of readers.
+> -	 */
+> -	wait_for_quiescent_state(prev_parity);
+> -	/*
+> -	 * Deleting old data is ok !
+> -	 */
+> -	
+> +	switch_qparity();
+> +	switch_qparity();
 > +
->  	for (i = 0; i < NR_READ; i++) {
->  		err = pthread_create(&tid_reader[i], NULL, thr_reader, NULL);
->  		if (err != 0)
-> -- 
-> tg: (24316d1..) bw/use-gettid (depends on: master)
+>  	return oldptr;
+>  }
+>  
 > 
 
 -- 
