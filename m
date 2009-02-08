@@ -1,111 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753728AbZBHWkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbZBHWm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753728AbZBHWkP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 17:40:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbZBHWkA
+	id S1753968AbZBHWm7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 17:42:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbZBHWmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 17:40:00 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:58476 "EHLO
+	Sun, 8 Feb 2009 17:42:51 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:44818 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751319AbZBHWkA (ORCPT
+	with ESMTP id S1751221AbZBHWmu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 17:40:00 -0500
-Date: Sun, 8 Feb 2009 17:39:58 -0500
-From: Kyle McMartin <kyle@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: torvalds@linux-foundation.org, ralf@linux-mips.org, mingo@redhat.com
-Subject: Re: x86: spinlocks: define dummy __raw_spin_is_contended
-Message-ID: <20090208223958.GA19888@bombadil.infradead.org>
-References: <20090208180341.GC11398@bombadil.infradead.org>
+	Sun, 8 Feb 2009 17:42:50 -0500
+Date: Sun, 8 Feb 2009 17:42:49 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Alessandro Bono <alessandro.bono@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-xfs <linux-xfs@oss.sgi.com>
+Subject: Re: XFS kernel BUG at fs/buffer.c:470! with 2.6.28.4
+Message-ID: <20090208224249.GA11931@infradead.org>
+References: <1234011974.7435.11.camel@champagne.cantina> <20090208222859.GA2532@infradead.org> <1234132752.12370.0.camel@champagne.cantina>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090208180341.GC11398@bombadil.infradead.org>
+In-Reply-To: <1234132752.12370.0.camel@champagne.cantina>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC-ing Linus, since he just released 2.6.29-rc4, which will fail to
-build btrfs on anything besides mips or x86.
+On Sun, Feb 08, 2009 at 11:39:12PM +0100, Alessandro Bono wrote:
+> On Sun, 2009-02-08 at 17:28 -0500, Christoph Hellwig wrote:
+> > On Sat, Feb 07, 2009 at 02:06:13PM +0100, Alessandro Bono wrote:
+> > > Feb  7 12:43:12 champagne kernel: [ 5828.167041] ------------[ cut
+> > > here ]------------
+> > > Feb  7 12:43:12 champagne kernel: [ 5828.167048] kernel BUG at
+> > > fs/buffer.c:470!
+> > 
+> > Per
+> > http://git.kernel.org/?p=linux/kernel/git/hpa/linux-2.6-allstable.git;a=blob;f=fs/buffer.c;h=665d446b25bc034241ef54c3c6b1d239c0ccf0f9;hb=d5b562330ec766292a3ac54ae5e0673610bd5b3d
+> > 
+> > line 470 in fs/buffer.c of 2.6.28.4 has a comment and no actual code.
+> > 
+> > What additional patches do you have applied?
+> > 
+> 
+> vanilla kernel
+> no additional patches at all
 
-regards, Kyle
+Well, the 2.6.28.4 clearly doesn't have a bug there.  Can you
+attach the fs/buffer.c you built the kernel from?
 
-On Sun, Feb 08, 2009 at 01:03:41PM -0500, Kyle McMartin wrote:
-> From: Kyle McMartin <kyle@redhat.com>
-> 
-> Architectures other than mips and x86 are not using ticket
-> spinlocks. Therefore, the contention on the lock is meaningless,
-> since there is nobody known to be waiting on it (arguably /fairly/
-> unfair locks) Dummy it out to return 0 on other architectures.
-> 
-> Signed-off-by: Kyle McMartin <kyle@redhat.com>
-> ---
->  arch/mips/include/asm/spinlock.h |    1 +
->  arch/x86/include/asm/paravirt.h  |    1 +
->  arch/x86/include/asm/spinlock.h  |    1 +
->  include/linux/spinlock.h         |    5 +++++
->  4 files changed, 8 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/mips/include/asm/spinlock.h b/arch/mips/include/asm/spinlock.h
-> index 1a1f320..0884947 100644
-> --- a/arch/mips/include/asm/spinlock.h
-> +++ b/arch/mips/include/asm/spinlock.h
-> @@ -51,6 +51,7 @@ static inline int __raw_spin_is_contended(raw_spinlock_t *lock)
->  
->  	return (((counters >> 14) - counters) & 0x1fff) > 1;
->  }
-> +#define __raw_spin_is_contended	__raw_spin_is_contended
->  
->  static inline void __raw_spin_lock(raw_spinlock_t *lock)
->  {
-> diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-> index ba3e2ff..c09a141 100644
-> --- a/arch/x86/include/asm/paravirt.h
-> +++ b/arch/x86/include/asm/paravirt.h
-> @@ -1402,6 +1402,7 @@ static inline int __raw_spin_is_contended(struct raw_spinlock *lock)
->  {
->  	return PVOP_CALL1(int, pv_lock_ops.spin_is_contended, lock);
->  }
-> +#define __raw_spin_is_contended	__raw_spin_is_contended
->  
->  static __always_inline void __raw_spin_lock(struct raw_spinlock *lock)
->  {
-> diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
-> index d17c919..8247e94 100644
-> --- a/arch/x86/include/asm/spinlock.h
-> +++ b/arch/x86/include/asm/spinlock.h
-> @@ -245,6 +245,7 @@ static inline int __raw_spin_is_contended(raw_spinlock_t *lock)
->  {
->  	return __ticket_spin_is_contended(lock);
->  }
-> +#define __raw_spin_is_contended	__raw_spin_is_contended
->  
->  static __always_inline void __raw_spin_lock(raw_spinlock_t *lock)
->  {
-> diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
-> index e0c0fcc..a0c66a2 100644
-> --- a/include/linux/spinlock.h
-> +++ b/include/linux/spinlock.h
-> @@ -124,7 +124,12 @@ do {								\
->  #ifdef CONFIG_GENERIC_LOCKBREAK
->  #define spin_is_contended(lock) ((lock)->break_lock)
->  #else
-> +
-> +#ifdef __raw_spin_is_contended
->  #define spin_is_contended(lock)	__raw_spin_is_contended(&(lock)->raw_lock)
-> +#else
-> +#define spin_is_contended(lock)	(((void)(lock), 0))
-> +#endif /*__raw_spin_is_contended*/
->  #endif
->  
->  /**
-> -- 
-> 1.6.0.6
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
