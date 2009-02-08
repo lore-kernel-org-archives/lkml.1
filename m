@@ -1,118 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbZBHSwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754061AbZBHSwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753836AbZBHSwg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 13:52:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbZBHSw2
+	id S1754061AbZBHSwt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 13:52:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbZBHSwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 13:52:28 -0500
-Received: from casper.infradead.org ([85.118.1.10]:53611 "EHLO
+	Sun, 8 Feb 2009 13:52:33 -0500
+Received: from casper.infradead.org ([85.118.1.10]:53616 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752557AbZBHSw1 convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1753543AbZBHSwc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 13:52:27 -0500
-Date: Sun, 8 Feb 2009 10:42:01 -0800
+	Sun, 8 Feb 2009 13:52:32 -0500
+Date: Sun, 8 Feb 2009 10:42:40 -0800
 From: Arjan van de Ven <arjan@infradead.org>
 To: linux-kernel@vger.kernel.org
-Cc: rusty@rustcorp.com.au, jkosina@suse.cz, mchehab@infradead.org
-Subject: [PATCH 1/3] module: create a request_module_nowait()
-Message-ID: <20090208104201.6124ab6a@infradead.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, rusty@rustcorp.com.au,
+       jkosina@suse.cz, mchehab@infradead.org
+Subject: [PATCH 2/3] use the new request_module_nowait() in the hid driver
+Message-ID: <20090208104240.3405903f@infradead.org>
+In-Reply-To: <20090208104201.6124ab6a@infradead.org>
+References: <20090208104201.6124ab6a@infradead.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 48cd2d5171ae8fb40ef6092a566b4889b9ac72b7 Mon Sep 17 00:00:00 2001
+
+>From b8c36ec88e272ba2e755e6104579f1e751ee81f8 Mon Sep 17 00:00:00 2001
 From: Arjan van de Ven <arjan@linux.intel.com>
 Date: Sun, 1 Feb 2009 12:02:39 -0800
-Subject: [PATCH] module: create a request_module_nowait()
+Subject: [PATCH] use the new request_module_nowait() in the hid driver
 
-There seems to be a common pattern in the kernel where drivers want to
-call request_module() from inside a module_init() function. Currently
-this would deadlock.
-
-As a result, several drivers go through hoops like scheduling things via
-kevent, or creating custom work queues (because kevent can deadlock on them).
-
-This patch changes this to use a request_module_nowait() function macro instead,
-which just fires the modprobe off but doesn't wait for it, and thus avoids the
-original deadlock entirely.
-
-On my laptop this already results in one less kernel thread running..
+Now that there is a request_module_nowait(), use it in the hid driver.
+This gets rid of a kernel thread, and also greatly simplifies the code...
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- include/linux/kmod.h |    9 ++++++---
- kernel/kmod.c        |   10 ++++++----
- 2 files changed, 12 insertions(+), 7 deletions(-)
+ drivers/hid/hid-core.c |   19 +------------------
+ 1 files changed, 1 insertions(+), 18 deletions(-)
 
-diff --git a/include/linux/kmod.h b/include/linux/kmod.h
-index 92213a9..73b2b56 100644
---- a/include/linux/kmod.h
-+++ b/include/linux/kmod.h
-@@ -29,10 +29,13 @@
- #ifdef CONFIG_MODULES
- /* modprobe exit status on success, -ve on error.  Return value
-  * usually useless though. */
--extern int request_module(const char * name, ...) __attribute__ ((format (printf, 1, 2)));
--#define try_then_request_module(x, mod...) ((x) ?: (request_module(mod), (x)))
-+extern int __request_module(int wait, const char *name, ...) __attribute__ ((format (printf, 2, 3)));
-+#define request_module(mod...) __request_module(1, mod)
-+#define request_module_nowait(mod...) __request_module(0, mod)
-+#define try_then_request_module(x, mod...) ((x) ?: (__request_module(0, mod), (x)))
- #else
--static inline int request_module(const char * name, ...) { return -ENOSYS; }
-+static inline int request_module(const char *name, ...) { return -ENOSYS; }
-+static inline int request_module_nowait(const char *name, ...) { return -ENOSYS; }
- #define try_then_request_module(x, mod...) (x)
+diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+index 6cad69e..d51331f 100644
+--- a/drivers/hid/hid-core.c
++++ b/drivers/hid/hid-core.c
+@@ -1812,15 +1812,6 @@ void hid_unregister_driver(struct hid_driver *hdrv)
+ }
+ EXPORT_SYMBOL_GPL(hid_unregister_driver);
+ 
+-#ifdef CONFIG_HID_COMPAT
+-static void hid_compat_load(struct work_struct *ws)
+-{
+-	request_module("hid-dummy");
+-}
+-static DECLARE_WORK(hid_compat_work, hid_compat_load);
+-static struct workqueue_struct *hid_compat_wq;
+-#endif
+-
+ static int __init hid_init(void)
+ {
+ 	int ret;
+@@ -1836,12 +1827,7 @@ static int __init hid_init(void)
+ 		goto err_bus;
+ 
+ #ifdef CONFIG_HID_COMPAT
+-	hid_compat_wq = create_singlethread_workqueue("hid_compat");
+-	if (!hid_compat_wq) {
+-		hidraw_exit();
+-		goto err;
+-	}
+-	queue_work(hid_compat_wq, &hid_compat_work);
++	request_module_nowait("hid-dummy");
  #endif
  
-diff --git a/kernel/kmod.c b/kernel/kmod.c
-index a27a5f6..3b90ea5 100644
---- a/kernel/kmod.c
-+++ b/kernel/kmod.c
-@@ -50,7 +50,8 @@ static struct workqueue_struct *khelper_wq;
- char modprobe_path[KMOD_PATH_LEN] = "/sbin/modprobe";
+ 	return 0;
+@@ -1853,9 +1839,6 @@ err:
  
- /**
-- * request_module - try to load a kernel module
-+ * __request_module - try to load a kernel module
-+ * @wait: wait (or not) for the operation to complete
-  * @fmt: printf style format string for the name of the module
-  * @...: arguments as specified in the format string
-  *
-@@ -63,7 +64,8 @@ char modprobe_path[KMOD_PATH_LEN] = "/sbin/modprobe";
-  * If module auto-loading support is disabled then this function
-  * becomes a no-operation.
-  */
--int request_module(const char *fmt, ...)
-+
-+int __request_module(int wait, const char *fmt, ...)
+ static void __exit hid_exit(void)
  {
- 	va_list args;
- 	char module_name[MODULE_NAME_LEN];
-@@ -108,11 +110,11 @@ int request_module(const char *fmt, ...)
- 		return -ENOMEM;
- 	}
- 
--	ret = call_usermodehelper(modprobe_path, argv, envp, 1);
-+	ret = call_usermodehelper(modprobe_path, argv, envp, wait);
- 	atomic_dec(&kmod_concurrent);
- 	return ret;
+-#ifdef CONFIG_HID_COMPAT
+-	destroy_workqueue(hid_compat_wq);
+-#endif
+ 	hidraw_exit();
+ 	bus_unregister(&hid_bus_type);
  }
--EXPORT_SYMBOL(request_module);
-+EXPORT_SYMBOL(__request_module);
- #endif /* CONFIG_MODULES */
- 
- struct subprocess_info {
 -- 
 1.6.0.6
-
 
 
 -- 
