@@ -1,73 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753545AbZBHRq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbZBHSDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753545AbZBHRq6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 12:46:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbZBHRqu
+	id S1753416AbZBHSDv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 13:03:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbZBHSDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 12:46:50 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:24208 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752662AbZBHRqt (ORCPT
+	Sun, 8 Feb 2009 13:03:42 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:48936 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752857AbZBHSDl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 12:46:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Olja7cGuazBrxTft1OKulMqMl++9QDN3NUeGwbYiyitCfV3v+lycveFLXNUDjYjSDP
-         SztAGHkI2HOFF0ZfDACZcFaq+v4IkuoI9E8z8LrrbZt3Monoag++DdEDh72uVDIQ+k7k
-         mkLblkfy6e0Po5364ITC+/eZGhFW367P4Ds3s=
-Message-ID: <498F1A87.8060403@gmail.com>
-Date: Sun, 08 Feb 2009 18:46:47 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
+	Sun, 8 Feb 2009 13:03:41 -0500
+Date: Sun, 8 Feb 2009 13:03:41 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: ralf@linux-mips.org, mingo@redhat.com
+Subject: x86: spinlocks: define dummy __raw_spin_is_contended
+Message-ID: <20090208180341.GC11398@bombadil.infradead.org>
 MIME-Version: 1.0
-To: Mariusz Ceier <mceier@gmail.com>
-CC: David Brownell <david-b@pacbell.net>,
-       spi-devel-general@lists.sourceforge.net,
-       lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] spi: limit reaches -1, tested 0
-References: <498EE9C0.3010601@gmail.com> <200902080755.26241.david-b@pacbell.net> <200902080828.49036.david-b@pacbell.net> <498F0D64.4040909@gmail.com> <498F1979.1030104@gmail.com>
-In-Reply-To: <498F1979.1030104@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mariusz Ceier wrote:
-> Roel Kluin writes in first post:
->> -			while ((read(drv_data) == 0) && limit--);
->> +			while ((read(drv_data) == 0) && --limit);
-> 
-> Roel Kluin writes in last post:
->> -			while ((read(drv_data) == 0) && limit--);
->> +			while ((read(drv_data) == 0) && limit--)
->> +				cpu_relax();
-> 
-> so should there be postfix or prefix decrement ? :)
+From: Kyle McMartin <kyle@redhat.com>
 
-Thanks for spotting, I took the liberty to add David Brownell's Acked-by
-in this case.
------------------------>8------------------8<---------------------------
-With a postfix decrement limit will reach -1 rather than 0,
-so the warning will not be issued.
+Architectures other than mips and x86 are not using ticket
+spinlocks. Therefore, the contention on the lock is meaningless,
+since there is nobody known to be waiting on it (arguably /fairly/
+unfair locks) Dummy it out to return 0 on other architectures.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: Kyle McMartin <kyle@redhat.com>
 ---
-diff --git a/drivers/spi/spi_imx.c b/drivers/spi/spi_imx.c
-index 269a55e..b143e8c 100644
---- a/drivers/spi/spi_imx.c
-+++ b/drivers/spi/spi_imx.c
-@@ -779,7 +779,8 @@ static irqreturn_t interrupt_transfer(struct driver_data *drv_data)
+ arch/mips/include/asm/spinlock.h |    1 +
+ arch/x86/include/asm/paravirt.h  |    1 +
+ arch/x86/include/asm/spinlock.h  |    1 +
+ include/linux/spinlock.h         |    5 +++++
+ 4 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/arch/mips/include/asm/spinlock.h b/arch/mips/include/asm/spinlock.h
+index 1a1f320..0884947 100644
+--- a/arch/mips/include/asm/spinlock.h
++++ b/arch/mips/include/asm/spinlock.h
+@@ -51,6 +51,7 @@ static inline int __raw_spin_is_contended(raw_spinlock_t *lock)
  
- 			/* Read trailing bytes */
- 			limit = loops_per_jiffy << 1;
--			while ((read(drv_data) == 0) && limit--);
-+			while ((read(drv_data) == 0) && --limit)
-+				cpu_relax();
+ 	return (((counters >> 14) - counters) & 0x1fff) > 1;
+ }
++#define __raw_spin_is_contended	__raw_spin_is_contended
  
- 			if (limit == 0)
- 				dev_err(&drv_data->pdev->dev,
+ static inline void __raw_spin_lock(raw_spinlock_t *lock)
+ {
+diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
+index ba3e2ff..c09a141 100644
+--- a/arch/x86/include/asm/paravirt.h
++++ b/arch/x86/include/asm/paravirt.h
+@@ -1402,6 +1402,7 @@ static inline int __raw_spin_is_contended(struct raw_spinlock *lock)
+ {
+ 	return PVOP_CALL1(int, pv_lock_ops.spin_is_contended, lock);
+ }
++#define __raw_spin_is_contended	__raw_spin_is_contended
+ 
+ static __always_inline void __raw_spin_lock(struct raw_spinlock *lock)
+ {
+diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
+index d17c919..8247e94 100644
+--- a/arch/x86/include/asm/spinlock.h
++++ b/arch/x86/include/asm/spinlock.h
+@@ -245,6 +245,7 @@ static inline int __raw_spin_is_contended(raw_spinlock_t *lock)
+ {
+ 	return __ticket_spin_is_contended(lock);
+ }
++#define __raw_spin_is_contended	__raw_spin_is_contended
+ 
+ static __always_inline void __raw_spin_lock(raw_spinlock_t *lock)
+ {
+diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
+index e0c0fcc..a0c66a2 100644
+--- a/include/linux/spinlock.h
++++ b/include/linux/spinlock.h
+@@ -124,7 +124,12 @@ do {								\
+ #ifdef CONFIG_GENERIC_LOCKBREAK
+ #define spin_is_contended(lock) ((lock)->break_lock)
+ #else
++
++#ifdef __raw_spin_is_contended
+ #define spin_is_contended(lock)	__raw_spin_is_contended(&(lock)->raw_lock)
++#else
++#define spin_is_contended(lock)	(((void)(lock), 0))
++#endif /*__raw_spin_is_contended*/
+ #endif
+ 
+ /**
+-- 
+1.6.0.6
+
