@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754115AbZBHVpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753262AbZBHVqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754115AbZBHVpj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 16:45:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453AbZBHVp2
+	id S1753262AbZBHVqQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 16:46:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453AbZBHVp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 16:45:28 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:55182 "EHLO mgw1.diku.dk"
+	Sun, 8 Feb 2009 16:45:57 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:55192 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753447AbZBHVp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 16:45:26 -0500
-Date: Sun, 8 Feb 2009 22:45:24 +0100 (CET)
+	id S1753316AbZBHVp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 16:45:56 -0500
+Date: Sun, 8 Feb 2009 22:45:53 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 4/6] drivers/pci: introduce missing kfree
-Message-ID: <Pine.LNX.4.64.0902082244490.25891@ask.diku.dk>
+To: chris.mason@oracle.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 5/6] fs/btrfs/volumes.c: remove useless kzalloc
+Message-ID: <Pine.LNX.4.64.0902082245250.25891@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,9 +23,8 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-Error handling code following a kmalloc should free the allocated data.
-Since the subsequent code that could provoke an error does not use the
-allocated data, the allocation is just moved below it.
+The call to kzalloc is followed by a kmalloc whose result is stored in the
+same variable.
 
 The semantic match that finds the problem is as follows:
 (http://www.emn.fr/x-info/coccinelle/)
@@ -67,28 +66,21 @@ print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- drivers/pci/hotplug/pciehp_acpi.c   |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ fs/btrfs/volumes.c                  |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/pci/hotplug/pciehp_acpi.c b/drivers/pci/hotplug/pciehp_acpi.c
-index 21734c3..9604801 100644
---- a/drivers/pci/hotplug/pciehp_acpi.c
-+++ b/drivers/pci/hotplug/pciehp_acpi.c
-@@ -79,14 +79,15 @@ static int __init dummy_probe(struct pcie_device *dev)
- 	struct slot *slot, *tmp;
- 	struct pci_dev *pdev = dev->port;
- 	struct pci_bus *pbus = pdev->subordinate;
--	if (!(slot = kzalloc(sizeof(*slot), GFP_KERNEL)))
+diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
+index 3451e1c..f1a0eee 100644
+--- a/fs/btrfs/volumes.c
++++ b/fs/btrfs/volumes.c
+@@ -2905,10 +2905,6 @@ static int read_one_chunk(struct btrfs_root *root, struct btrfs_key *key,
+ 		free_extent_map(em);
+ 	}
+ 
+-	map = kzalloc(sizeof(*map), GFP_NOFS);
+-	if (!map)
 -		return -ENOMEM;
- 	/* Note: pciehp_detect_mode != PCIEHP_DETECT_ACPI here */
- 	if (pciehp_get_hp_hw_control_from_firmware(pdev))
- 		return -ENODEV;
- 	if (!(pos = pci_find_capability(pdev, PCI_CAP_ID_EXP)))
- 		return -ENODEV;
- 	pci_read_config_dword(pdev, pos + PCI_EXP_SLTCAP, &slot_cap);
-+	slot = kzalloc(sizeof(*slot), GFP_KERNEL);
-+	if (!slot)
-+		return -ENOMEM;
- 	slot->number = slot_cap >> 19;
- 	list_for_each_entry(tmp, &dummy_slots, slot_list) {
- 		if (tmp->number == slot->number)
+-
+ 	em = alloc_extent_map(GFP_NOFS);
+ 	if (!em)
+ 		return -ENOMEM;
