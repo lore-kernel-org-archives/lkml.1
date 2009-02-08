@@ -1,221 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbZBHORi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbZBHOSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753867AbZBHORi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 09:17:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbZBHORV
+	id S1753665AbZBHOSw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 09:18:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZBHOSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 09:17:21 -0500
-Received: from www17.your-server.de ([213.133.104.17]:33535 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753312AbZBHORU (ORCPT
+	Sun, 8 Feb 2009 09:18:45 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:46087 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752117AbZBHOSo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 09:17:20 -0500
-Subject: ath5k phy0: noise floor calibration timeout
-From: Thomas Meyer <thomas@m3y3r.de>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Sun, 08 Feb 2009 15:16:49 +0100
-Message-Id: <1234102609.6945.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+	Sun, 8 Feb 2009 09:18:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=UhOv/FTWiaItYNgo91Y9O4uMIjxvyOW9aaViVRBK0clD60uDYpnLHZEPvVvT3IepyL
+         7eklu71J7xQDlosEKMt8NvgNTyMUjgZsJEAn1+twC2HfOmq8hG7p4b8xYRc2mXeegFxC
+         UPQZGz3wJvxovBrlAzmdWiYN6fbKv3qEBmJwg=
+Message-ID: <498EE9C0.3010601@gmail.com>
+Date: Sun, 08 Feb 2009 15:18:40 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
+MIME-Version: 1.0
+To: dbrownell@users.sourceforge.net
+CC: spi-devel-general@lists.sourceforge.net,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] spi: limit reaches -1, tested 0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My kernel message ring buffer seems to be flooded by these messages:
+With a postfix decrement limit will reach -1 rather than 0,
+so the warning will not be issued.
 
-Should I care?
-
-kernel version: v2.6.29-rc3-746-g396bb7a
-
-[   84.204328] ath5k phy0: noise floor calibration timeout (2422MHz)
-[   87.427344] ath5k phy0: noise floor calibration timeout (2422MHz)
-[  104.361179] ath5k phy0: noise floor calibration timeout (2422MHz)
-[  134.371186] ath5k phy0: noise floor calibration timeout (2422MHz)
-[  174.368022] ath5k phy0: noise floor calibration timeout (2422MHz)
-[  224.375513] ath5k phy0: noise floor calibration timeout (2422MHz)
-[  273.695097] ath5k phy0: noise floor calibration timeout (2412MHz)
-[  284.691302] ath5k phy0: noise floor calibration timeout (2422MHz)
-[  284.719456] ath5k phy0: noise floor calibration timeout (2422MHz)
-[  344.372930] ath5k phy0: noise floor calibration timeout (2422MHz)
-[  404.375727] ath5k phy0: noise floor calibration timeout (2422MHz)
-[  464.374426] ath5k phy0: noise floor calibration timeout (2422MHz)
-[  524.374399] ath5k phy0: noise floor calibration timeout (2422MHz)
-[  584.391007] ath5k phy0: noise floor calibration timeout (2422MHz)
-[  644.381050] ath5k phy0: noise floor calibration timeout (2422MHz)
-[  704.387696] ath5k phy0: noise floor calibration timeout (2422MHz)
-[  764.387691] ath5k phy0: noise floor calibration timeout (2422MHz)
-[  824.407684] ath5k phy0: noise floor calibration timeout (2422MHz)
-[  884.391028] ath5k phy0: noise floor calibration timeout (2422MHz)
-[  944.397690] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 1004.397720] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 1064.407676] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 1124.400992] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 1184.400927] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 1244.405526] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 1304.407617] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 1364.407782] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 1424.421183] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 1484.414686] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 1544.424453] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 1604.417778] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 1664.426351] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 1724.424670] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 1784.424273] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 1844.424285] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 1904.424293] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 1964.424326] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 2024.440948] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 2084.427576] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 2144.444288] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 2204.434838] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 2264.441458] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 2324.467683] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 2376.345512] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 2384.464265] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 2444.458280] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 2504.532778] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 2564.447163] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 2624.443925] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 2677.345516] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 2684.483913] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 2744.443930] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 2804.447287] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 2864.446836] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 2924.448238] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 2984.450657] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 3044.450663] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 3104.454748] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 3164.450584] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 3224.450559] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 3284.449933] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 3298.345275] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 3344.453916] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 3404.457231] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 3464.466881] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 3524.470987] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 3584.477682] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 3644.484430] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 3704.504164] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 3764.537561] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 3824.512131] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 3884.513231] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 3944.514414] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 4004.533897] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 4039.345672] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 4064.522009] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 4124.526323] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 4184.530334] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 4244.533790] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 4304.540538] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 4364.543917] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 4424.547075] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 4484.554716] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 4508.704550] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 4528.901833] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 4558.759306] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 4598.345043] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 4598.954370] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 4629.345075] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 4640.345741] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 4648.707681] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 4701.345085] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 4708.712247] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 4752.346136] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 4763.344662] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 4768.707877] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 4794.344612] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 4828.711707] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 4875.344444] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 4886.345226] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 4888.710667] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 4948.714941] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 5008.714434] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 5068.717810] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 5098.345154] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 5109.345068] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 5120.348511] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 5128.727909] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 5188.721102] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 5221.346028] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 5242.344926] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 5248.724323] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 5308.724350] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 5368.727652] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 5413.344209] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 5424.344529] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 5428.731784] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 5488.734384] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 5548.738623] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 5607.344529] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 5608.737499] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 5668.737647] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 5728.740890] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 5788.740868] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 5819.344612] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 5841.344901] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 5848.744246] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 5908.744258] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 5968.747614] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 6028.747630] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 6088.747519] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 6091.417636] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 6092.344842] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 6103.344464] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 6148.750490] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 6208.750995] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 6268.750914] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 6328.754678] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 6388.754294] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 6448.754325] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 6454.344893] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 6465.344915] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 6476.344823] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 6497.344889] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 6508.754162] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 6528.343920] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 6539.344848] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 6550.344935] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 6561.344527] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 6568.757609] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 6622.344772] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 6628.757587] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 6688.760895] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 6748.760931] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 6808.760872] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 6844.343973] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 6855.344713] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 6868.764713] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 6928.764222] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 6988.767553] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 7048.764089] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 7108.764168] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 7168.780902] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 7228.764210] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 7288.767591] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 7326.344481] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 7348.764078] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 7408.764151] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 7447.344329] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 7468.764032] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 7528.804126] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 7588.863972] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 7648.780854] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 7659.344736] ath5k phy0: noise floor calibration timeout (2412MHz)
-[ 7708.787547] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 7768.791077] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 7828.797274] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 7888.800403] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 7948.803764] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 8008.807872] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 8068.814193] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 8128.820751] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 8188.824164] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 8248.827441] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 8308.833997] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 8368.841535] ath5k phy0: noise floor calibration timeout (2422MHz)
-[ 8428.845069] ath5k phy0: noise floor calibration timeout (2422MHz)
-
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/drivers/spi/spi_imx.c b/drivers/spi/spi_imx.c
+index 269a55e..a4652f1 100644
+--- a/drivers/spi/spi_imx.c
++++ b/drivers/spi/spi_imx.c
+@@ -779,7 +779,7 @@ static irqreturn_t interrupt_transfer(struct driver_data *drv_data)
+ 
+ 			/* Read trailing bytes */
+ 			limit = loops_per_jiffy << 1;
+-			while ((read(drv_data) == 0) && limit--);
++			while ((read(drv_data) == 0) && --limit);
+ 
+ 			if (limit == 0)
+ 				dev_err(&drv_data->pdev->dev,
 
