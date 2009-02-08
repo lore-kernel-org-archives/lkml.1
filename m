@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbZBHVoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbZBHVpB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753927AbZBHVoc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 16:44:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbZBHVoU
+	id S1754038AbZBHVpB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 16:45:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbZBHVov
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 16:44:20 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:55153 "EHLO mgw1.diku.dk"
+	Sun, 8 Feb 2009 16:44:51 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:55168 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753044AbZBHVoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 16:44:19 -0500
-Date: Sun, 8 Feb 2009 22:44:16 +0100 (CET)
+	id S1753413AbZBHVou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 16:44:50 -0500
+Date: Sun, 8 Feb 2009 22:44:47 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: davem@davemloft.net, netdev@vger.kernel.org, chas@cmf.nrl.navy.mil,
+To: kkeil@suse.de, isdn4linux@listserv.isdn4linux.de,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/6] drivers/atm: introduce missing kfree
-Message-ID: <Pine.LNX.4.64.0902082243200.25891@ask.diku.dk>
+Subject: [PATCH 3/6] drivers/isdn: introduce missing kfree
+Message-ID: <Pine.LNX.4.64.0902082244180.25891@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -65,18 +65,26 @@ print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- drivers/atm/solos-pci.c             |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/isdn/hardware/mISDN/hfcmulti.c         |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/atm/solos-pci.c b/drivers/atm/solos-pci.c
-index 72fc0f7..89d7a6e 100644
---- a/drivers/atm/solos-pci.c
-+++ b/drivers/atm/solos-pci.c
-@@ -685,6 +685,7 @@ static int fpga_probe(struct pci_dev *dev, const struct pci_device_id *id)
-  out_release_regions:
- 	pci_release_regions(dev);
-  out:
-+	kfree(card);
- 	return err;
- }
- 
+diff --git a/drivers/isdn/hardware/mISDN/hfcmulti.c b/drivers/isdn/hardware/mISDN/hfcmulti.c
+index 595ba8e..0b28141 100644
+--- a/drivers/isdn/hardware/mISDN/hfcmulti.c
++++ b/drivers/isdn/hardware/mISDN/hfcmulti.c
+@@ -4599,6 +4599,7 @@ init_e1_port(struct hfc_multi *hc, struct hm_map *m)
+ 			printk(KERN_ERR "%s: no memory for coeffs\n",
+ 			    __func__);
+ 			ret = -ENOMEM;
++			kfree(bch);
+ 			goto free_chan;
+ 		}
+ 		bch->nr = ch;
+@@ -4767,6 +4768,7 @@ init_multi_port(struct hfc_multi *hc, int pt)
+ 			printk(KERN_ERR "%s: no memory for coeffs\n",
+ 			    __func__);
+ 			ret = -ENOMEM;
++			kfree(bch);
+ 			goto free_chan;
+ 		}
+ 		bch->nr = ch + 1;
