@@ -1,97 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbZBHSDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440AbZBHSIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753416AbZBHSDv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 13:03:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbZBHSDm
+	id S1753440AbZBHSIU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 13:08:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbZBHSIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 13:03:42 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:48936 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752857AbZBHSDl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 13:03:41 -0500
-Date: Sun, 8 Feb 2009 13:03:41 -0500
-From: Kyle McMartin <kyle@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: ralf@linux-mips.org, mingo@redhat.com
-Subject: x86: spinlocks: define dummy __raw_spin_is_contended
-Message-ID: <20090208180341.GC11398@bombadil.infradead.org>
+	Sun, 8 Feb 2009 13:08:10 -0500
+Received: from kroah.org ([198.145.64.141]:38723 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752657AbZBHSII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 13:08:08 -0500
+Date: Sun, 8 Feb 2009 10:05:48 -0800
+From: Greg KH <greg@kroah.com>
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mdharm-usb@one-eyed-alien.net, USB list <linux-usb@vger.kernel.org>,
+       USB Storage list <usb-storage@lists.one-eyed-alien.net>
+Subject: Re: WARNING: at drivers/usb/storage/transport.c:584
+	last_sector_hacks+0x12a/0x190 [usb_storage]()
+Message-ID: <20090208180548.GB9376@kroah.com>
+References: <8db1092f0902080940i390efc72i18046210931606a9@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <8db1092f0902080940i390efc72i18046210931606a9@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kyle McMartin <kyle@redhat.com>
+On Sun, Feb 08, 2009 at 06:40:16PM +0100, Maciej Rutecki wrote:
+> Pendrive 1GB, in 2.6.28 works without any problems (also in XP and Vista)
+> 
+> 2.6.29-rc3:
 
-Architectures other than mips and x86 are not using ticket
-spinlocks. Therefore, the contention on the lock is meaningless,
-since there is nobody known to be waiting on it (arguably /fairly/
-unfair locks) Dummy it out to return 0 on other architectures.
+Thanks, this warning is about to go away, it was used to evaluate how
+many pieces of broken hardware really are out there in the wild (turns
+out a lot...)
 
-Signed-off-by: Kyle McMartin <kyle@redhat.com>
----
- arch/mips/include/asm/spinlock.h |    1 +
- arch/x86/include/asm/paravirt.h  |    1 +
- arch/x86/include/asm/spinlock.h  |    1 +
- include/linux/spinlock.h         |    5 +++++
- 4 files changed, 8 insertions(+), 0 deletions(-)
+thanks,
 
-diff --git a/arch/mips/include/asm/spinlock.h b/arch/mips/include/asm/spinlock.h
-index 1a1f320..0884947 100644
---- a/arch/mips/include/asm/spinlock.h
-+++ b/arch/mips/include/asm/spinlock.h
-@@ -51,6 +51,7 @@ static inline int __raw_spin_is_contended(raw_spinlock_t *lock)
- 
- 	return (((counters >> 14) - counters) & 0x1fff) > 1;
- }
-+#define __raw_spin_is_contended	__raw_spin_is_contended
- 
- static inline void __raw_spin_lock(raw_spinlock_t *lock)
- {
-diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-index ba3e2ff..c09a141 100644
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -1402,6 +1402,7 @@ static inline int __raw_spin_is_contended(struct raw_spinlock *lock)
- {
- 	return PVOP_CALL1(int, pv_lock_ops.spin_is_contended, lock);
- }
-+#define __raw_spin_is_contended	__raw_spin_is_contended
- 
- static __always_inline void __raw_spin_lock(struct raw_spinlock *lock)
- {
-diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
-index d17c919..8247e94 100644
---- a/arch/x86/include/asm/spinlock.h
-+++ b/arch/x86/include/asm/spinlock.h
-@@ -245,6 +245,7 @@ static inline int __raw_spin_is_contended(raw_spinlock_t *lock)
- {
- 	return __ticket_spin_is_contended(lock);
- }
-+#define __raw_spin_is_contended	__raw_spin_is_contended
- 
- static __always_inline void __raw_spin_lock(raw_spinlock_t *lock)
- {
-diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
-index e0c0fcc..a0c66a2 100644
---- a/include/linux/spinlock.h
-+++ b/include/linux/spinlock.h
-@@ -124,7 +124,12 @@ do {								\
- #ifdef CONFIG_GENERIC_LOCKBREAK
- #define spin_is_contended(lock) ((lock)->break_lock)
- #else
-+
-+#ifdef __raw_spin_is_contended
- #define spin_is_contended(lock)	__raw_spin_is_contended(&(lock)->raw_lock)
-+#else
-+#define spin_is_contended(lock)	(((void)(lock), 0))
-+#endif /*__raw_spin_is_contended*/
- #endif
- 
- /**
--- 
-1.6.0.6
-
+greg k-h
