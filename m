@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753443AbZBHNkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbZBHNsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753443AbZBHNkW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 08:40:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbZBHNkI
+	id S1753446AbZBHNsS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 08:48:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbZBHNsE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 08:40:08 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38357 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751330AbZBHNkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 08:40:07 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Paul Collins <paul@burly.ondioline.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Badness at kernel/time/timekeeping.c:98 in pmud (timekeeping_suspended)
-Date: Sun, 8 Feb 2009 14:39:30 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
-Cc: Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-References: <87prihcepl.fsf@burly.wgtn.ondioline.org> <87k58nda87.fsf@burly.wgtn.ondioline.org> <874oz5pmvd.fsf@burly.wgtn.ondioline.org>
-In-Reply-To: <874oz5pmvd.fsf@burly.wgtn.ondioline.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 8 Feb 2009 08:48:04 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:32895 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752604AbZBHNsD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 08:48:03 -0500
+Date: Sun, 8 Feb 2009 14:47:51 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Frank Seidel <frank@f-seidel.de>
+Cc: Frank Seidel <fseidel@suse.de>,
+       linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       ben-linux@fluff.org, linux-i2c@vger.kernel.org, w.sang@pengutronix.de,
+       "David S. Miller" <davem@davemloft.net>,
+       ukleinek@informatik.uni-freiburg.de, Frans Pop <elendil@planet.nl>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH] i2c: add missing KERN_* constants to printks
+Message-ID: <20090208144751.46184041@hyperion.delvare>
+In-Reply-To: <498EDA18.1090300@f-seidel.de>
+References: <498C3EEA.5060508@suse.de>
+	<20090208000553.059a0732@hyperion.delvare>
+	<498EDA18.1090300@f-seidel.de>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902081439.31548.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 08 February 2009, Paul Collins wrote:
-> Paul Collins <paul@burly.ondioline.org> writes:
+On Sun, 08 Feb 2009 14:11:52 +0100, Frank Seidel wrote:
+> Hi,
 > 
-> > "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> >
-> >> On Wednesday 21 January 2009, Paul Collins wrote:
-> >>> Got a couple of these on a PowerBook running 2.6.29-rc2 either during
-> >>> suspend or resume -- it's hard to tell.  (The suspend message is
-> >>> timestamped in syslog with the time I resumed, so I guess it was
-> >>> buffered along with the subsequent "Badness" messages.)
-> >>
-> >> Please check if the patch from http://lkml.org/lkml/2009/1/13/144 fixes the
-> >> problem for you.
-> >
-> > It does not fix the problem.
+> Jean Delvare wrote:
+> >> +	printk(KERN_ERR "i2c: ICR: %08x ISR: %08x\n"
+> >>  	       "i2c: log: ", readl(_ICR(i2c)), readl(_ISR(i2c)));
+> >>  	for (i = 0; i < i2c->irqlogidx; i++)
+> >>  		printk("[%08x:%08x] ", i2c->isrlog[i], i2c->icrlog[i]);
+> > 
+> > This last printk also lacks a log level. You can't add it in the loop,
+> > but you could add one printk before the loop, printing just the log level.
 > 
-> I'm also getting this warning since 2.6.28.1, which incorporated commit
-> 1c5745aa380efb6417b5681104b007c8612fb496 ("sched_clock: prevent
-> scd->clock from moving backwards, take #2") as commit
-> e268dcdd404f4558cdd24c8ecede3e064df8fa33, this being the patch that
-> introduced the WARN_ON(timekeeping_suspended) check.
+> Isn't the last printk just a followup of the previous KERN_ERR which
+> doesn't have a newline? And i'm told only on new line beginnings the
+> loglevel should be set.
 
-Hm, I thought the timekeeping suspend problem was fixed in this commit.  Ingo?
+I mean the (first) printk in the loop, not the last printk in this
+function. So what I am suggesting is:
+
++	printk(KERN_DEBUG);
+	for (i = 0; i < i2c->irqlogidx; i++)
+		printk("[%08x:%08x] ", i2c->isrlog[i], i2c->icrlog[i]);
+	printk("\n");
+
+-- 
+Jean Delvare
