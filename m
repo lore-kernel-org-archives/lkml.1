@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753656AbZBHU1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678AbZBHUdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753656AbZBHU1U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 15:27:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbZBHU1I
+	id S1753678AbZBHUdw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 15:33:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbZBHUdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 15:27:08 -0500
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:39647 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752915AbZBHU1H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 15:27:07 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:Reply-To:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=s6cx5kIYh0pJf7bjUpI+cw3xvAjoqzcgsp2WMQEx1XyOsbBoQxGM49uqvKUyu0zbpkypoM/hlQwHogmDP6eKYLjckmrBlLmKT3Afa0pPATc8p7KtFnNTL2RCQTiluvpb8m1WkK69RDDEzT8zYXcV+zAHt3+Da6Sf7KxeOD96bs8=  ;
-X-YMail-OSG: 8qKbAO8VM1nFv_I0qxOvrweG4K.OiBBLznn3lu.XRifqvv_bo0RK5Tg2lC6G3IN7N71gzAoH3O8tpY3AdtMlTdkhJIDWNWpbevBKv8BKRNsEgFGbCpE2Mg3yfhHOQ_vvjov4T0qoN9BYduDJzquHbXih
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-Reply-To: dbrownell@users.sourceforge.net
-To: Paul Walmsley <paul@pwsan.com>
-Subject: Re: [PATCH] OMAP: MMC: recover from transfer failures - Resend
-Date: Sun, 8 Feb 2009 12:27:03 -0800
-User-Agent: KMail/1.9.10
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jean Pihet <jpihet@mvista.com>,
-       tony@atomide.com, ext-adrian.hunter@nokia.com,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-omap@vger.kernel.org,
-       jarkko.lavinen@nokia.com, drzeus-mmc@drzeus.cx,
-       linux-kernel@vger.kernel.org
-References: <20081207213617.10456.43951.stgit@localhost> <20090205121045.4022c319.akpm@linux-foundation.org> <alpine.DEB.2.00.0902051323090.8131@utopia.booyaka.com>
-In-Reply-To: <alpine.DEB.2.00.0902051323090.8131@utopia.booyaka.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200902081227.03526.david-b@pacbell.net>
+	Sun, 8 Feb 2009 15:33:44 -0500
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:36616 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751623AbZBHUdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 15:33:43 -0500
+Date: Sun, 8 Feb 2009 21:33:34 +0100
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: avorontsov@ru.mvista.com
+Cc: Pierre Ossman <drzeus-sdhci@drzeus.cx>, Ben Dooks <ben-linux@fluff.org>,
+       Arnd Bergmann <arnd@arndb.de>, Kumar Gala <galak@kernel.crashing.org>,
+       Liu Dave <DaveLiu@freescale.com>, sdhci-devel@list.drzeus.cx,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH RFC 0/11] FSL eSDHC support: second call for comments
+Message-ID: <20090208213334.3a4fb015@mjolnir.drzeus.cx>
+In-Reply-To: <20090206180520.GA16123@oksana.dev.rtsoft.ru>
+References: <20090206180520.GA16123@oksana.dev.rtsoft.ru>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-3084-1234125220-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 05 February 2009, Paul Walmsley wrote:
-> 
-> > > +   while (OMAP_HSMMC_READ(host->base,
-> > > +                   SYSCTL) & SRD)
-> > > +           ;
-> > 
-> > Is a __raw_readl() sufficient to prevent the cpu from burning up here,
-> > or should we add cpu_relax()?
-> 
-> The __raw_readl() should be sufficient.  The MMC controller is located on 
-> the L4 CORE interconnect, so the round trip latency for the read from MMC 
-> is at least 90 ns, while the CPU cycle time is only about 1 to 2 ns.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-It's still good policy to have a cpu_relax() in
-such loops.  Not that it'll do much on most ARMs,
-but empty statements are in general worth avoiding.
+--=_freyr.drzeus.cx-3084-1234125220-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
+On Fri, 6 Feb 2009 21:05:20 +0300
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
+> Hi all,
+>=20
+> There were only a few comments on the previous version. So, here is
+> the second call for comments.
+>=20
+
+Yeah sorry, haven't really had time for looking over your patches
+properly. See my first comments to relevant patches now though.
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-3084-1234125220-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkmPQaMACgkQ7b8eESbyJLjO0ACg+kl1KS78vxdAzQOqM/PBIk8W
+k4QAoOwpo238RFQm+uqZALfWIJXTlHA3
+=ARuk
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-3084-1234125220-0001-2--
