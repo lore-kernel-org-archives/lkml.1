@@ -1,19 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755396AbZBHVzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbZBHV4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755396AbZBHVzv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 16:55:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754600AbZBHVtF
+	id S1755457AbZBHV4T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 16:56:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754610AbZBHVtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 16:49:05 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39656 "EHLO ogre.sisk.pl"
+	Sun, 8 Feb 2009 16:49:07 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39659 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753390AbZBHVs7 convert rfc822-to-8bit (ORCPT
+	id S1753956AbZBHVtA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 16:48:59 -0500
+	Sun, 8 Feb 2009 16:49:00 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>, "Jan Kara" <jack@suse.cz>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Nick Piggin" <npiggin@suse.de>
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Hugh Dickins" <hugh@veritas.com>,
+       "Larry Finger" <Larry.Finger@lwfinger.net>,
+       "Mikael Pettersson" <mikpe@it.uu.se>,
+       "Sergei Shtylyov" <sshtylyov@ru.mvista.com>
 References: <AIghyjFgMFP.A.uZD._10jJB@chimera>
 In-Reply-To: <AIghyjFgMFP.A.uZD._10jJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -21,10 +23,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <sWhNs83kKPE.A.gUG.420jJB@chimera>
-Subject: [Bug #12604] Commit 31a12666d8f0c22235297e1c1575f82061480029 slows down Berkeley DB
+Message-ID: <sWhNs83kKPE.A.E5F.w20jJB@chimera>
+Subject: [Bug #12609] v2.6.29-rc2 libata sff 32bit PIO regression
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun,  8 Feb 2009 20:21:42 +0100 (CET)
+Date: Sun,  8 Feb 2009 20:21:43 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -37,11 +39,15 @@ from 2.6.28.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12604
-Subject		: Commit 31a12666d8f0c22235297e1c1575f82061480029 slows down Berkeley DB
-Submitter	: Jan Kara <jack@suse.cz>
-Date		: 2009-01-30 1:23 (10 days old)
-First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=31a12666d8f0c22235297e1c1575f82061480029
-References	: http://marc.info/?l=linux-kernel&m=123327862901800&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12609
+Subject		: v2.6.29-rc2 libata sff 32bit PIO regression
+Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
+Date		: 2009-01-23 23:52 (17 days old)
+References	: http://marc.info/?l=linux-kernel&m=123275478111406&w=4
+		  http://marc.info/?l=linux-kernel&m=123254501314058&w=4
+Handled-By	: Mikael Pettersson <mikpe@it.uu.se>
+		  Hugh Dickins <hugh@veritas.com>
+		  Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Patch		: http://marc.info/?l=linux-kernel&m=123412278730735&w=4
 
 
