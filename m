@@ -1,93 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbZBHWQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755189AbZBHWRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754613AbZBHWQl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 17:16:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbZBHWQc
+	id S1755189AbZBHWRa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 17:17:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbZBHWRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 17:16:32 -0500
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:62165 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753368AbZBHWQb (ORCPT
+	Sun, 8 Feb 2009 17:17:21 -0500
+Received: from SpacedOut.fries.net ([67.64.210.234]:52464 "EHLO
+	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753648AbZBHWRU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 17:16:31 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAObojkl5LClx/2dsb2JhbADMVYQaBg
-X-IronPort-AV: E=Sophos;i="4.37,401,1231075800"; 
-   d="scan'208";a="285836570"
-Date: Mon, 9 Feb 2009 09:16:25 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Alessandro Bono <alessandro.bono@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-xfs <linux-xfs@oss.sgi.com>
-Subject: Re: XFS kernel BUG at fs/buffer.c:470! with 2.6.28.4
-Message-ID: <20090208221625.GB8830@disturbed>
-Mail-Followup-To: Alessandro Bono <alessandro.bono@gmail.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-xfs <linux-xfs@oss.sgi.com>
-References: <1234011974.7435.11.camel@champagne.cantina>
+	Sun, 8 Feb 2009 17:17:20 -0500
+X-Greylist: delayed 434 seconds by postgrey-1.27 at vger.kernel.org; Sun, 08 Feb 2009 17:17:20 EST
+Date: Sun, 8 Feb 2009 16:09:56 -0600
+From: David Fries <david@fries.net>
+To: linux-kernel@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] ide.c 'clear' fix, ide=nodma documentation
+Message-ID: <20090208220956.GA3278@spacedout.fries.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1234011974.7435.11.camel@champagne.cantina>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Sun, 08 Feb 2009 16:09:59 -0600 (CST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 07, 2009 at 02:06:13PM +0100, Alessandro Bono wrote:
-> Hi all
-> 
-> This time I hit kernel bug without any particular operation, normal
-> browsing, mail, news, etc
-> tell me if you need info asap because I want to reformat this machine
-> and switch back to ext3.
->
-> xfs seems really unstable in this particular
-> machine and after this crash I lose again configuration file of opened
-> program at crash time
+From: David Fries <david@fries.net>
 
-That's not XFS's fault - that's a broken application that does not
-safely overwrite files and hence you lose data on crash.
+Documentation/kernel-parameters.txt
+ide=nodma is no longer valid
 
-> Feb  7 12:43:12 champagne kernel: [ 5828.167041] ------------[ cut
-> here ]------------
-> Feb  7 12:43:12 champagne kernel: [ 5828.167048] kernel BUG at
-> fs/buffer.c:470!
+drivers/ide/Kconfig
+the module is ide-core.ko not ide
 
-I can't remember seeing that problem before.
+drivers/ide/ide.c
+It took me a while to figure out what the arguments %d.%d:%d to nodma
+module parameter ment, so I added a comment to each.
+Added a comment to each of the sscanf lines to
+There is a bug, if j is 0 it would previously clear all the other bits
+except the current device, changed in three different places.
+mask &= (1 << i)     should be     mask &= ~(1 << i)
 
-> Call Trace:
->  [<ffffffff8022806f>] ?  need_resched+0x1e/0x28
->  [<ffffffff8030be35>] ?  __up_write+0x12/0x45
->  [<ffffffffa01c2269>] ?  xfs_destroy_ioend+0x23/0x71 [xfs]
->  [<ffffffffa01c23db>] ?  xfs_end_bio_delalloc+0x0/0x19 [xfs]
->  [<ffffffffa01c23db>] ?  xfs_end_bio_delalloc+0x0/0x19 [xfs]
->  [<ffffffff80242d5e>] ?  run_workqueue+0x79/0xfe
->  [<ffffffff80242ed3>] ?  worker_thread+0xf0/0x102
->  [<ffffffff802461cd>] ?  autoremove_wake_function+0x0/0x2e
->  [<ffffffff80242de3>] ?  worker_thread+0x0/0x102
->  [<ffffffff80245ea2>] ?  kthread+0x47/0x73
->  [<ffffffff80231bfa>] ?  schedule_tail+0x27/0x60
->  [<ffffffff8020c3f9>] ?  child_rip+0xa/0x11
->  [<ffffffff80245e5b>] ?  kthread+0x0/0x73
->  [<ffffffff8020c3ef>] ?  child_rip+0x0/0x11
 
-Standard delayed allocation IO completion trace. No idea what
-could have caused it. Perhaps a memory error? 
+Signed-off-by: David Fries <david@fries.net>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-Can you send the output of xfs_info on that filesystem, and
-perhaps run an xfs_repair -n  on it to see if there are any
-undetected errors on disk?
+---
+I pretty much wasted my Saturday on this.  This is an older VIA
+vt82c586b (rev 41) IDE UDMA33 and I've seen disk corruption in the
+past with dma enabled, I can't use hdparm because those settings don't
+persist across hibernate and restore (that should be another bug
+report).  ide=nodma was working on the last 2.6.24 kernel, and
+kernel-parameters.txt still lists it.  I had to go through the change
+logs to figure out what happened to ide=nodma, then ide.c to figure
+out what replaced it and what %d.%d:%d means (so I documented it so
+other would have an easier time), then figure out how to set a module
+parameter on the kernel command line when Kconfig said the module name
+was ide and ide.nodma=0.0 didn't work, it was ide-core.nodma=0.0.
 
-Also, I note that you are using ext4 on some disks. Does this
-problem show up if you don't use ext4 at all? (We have had problems
-in the past with one filesystem not leaving bufferheads in the
-correct state and the system crashing when a different type of
-filesystem got them reallocated).
+Now instead of,
+ide=nodma
+I have the following.
+ide-core.nodma=0.0 ide-core.nodma=0.1 ide-core.nodma=1.0 ide-core.nodma=1.1
+Where else is hdc written 1.0 ?  Why doesn't it take ide-core.nodma=hdc ?
 
-Cheers,
+---
+ Documentation/kernel-parameters.txt |    6 ++++--
+ drivers/ide/Kconfig                 |    2 +-
+ drivers/ide/ide.c                   |   11 ++++++++---
+ 3 files changed, 13 insertions(+), 6 deletions(-)
 
-Dave.
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index d8362cf..1512f6d 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -868,8 +868,10 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	icn=		[HW,ISDN]
+ 			Format: <io>[,<membase>[,<icn_id>[,<icn_id2>]]]
+ 
+-	ide=		[HW] (E)IDE subsystem
+-			Format: ide=nodma or ide=doubler
++	ide-core.nodma=	[HW] (E)IDE subsystem
++			Format: =0.0 to prevent dma on hda, =0.1 hdb =1.0 hdc
++			.vlb_clock .pci_clock .noflush .noprobe .nowerr .cdrom
++			.chs .ignore_cable are additional options
+ 			See Documentation/ide/ide.txt.
+ 
+ 	idebus=		[HW] (E)IDE subsystem - VLB/PCI bus speed
+diff --git a/drivers/ide/Kconfig b/drivers/ide/Kconfig
+index 3dad229..e072903 100644
+--- a/drivers/ide/Kconfig
++++ b/drivers/ide/Kconfig
+@@ -46,7 +46,7 @@ menuconfig IDE
+ 	  SMART parameters from disk drives.
+ 
+ 	  To compile this driver as a module, choose M here: the
+-	  module will be called ide.
++	  module will be called ide-core.ko.
+ 
+ 	  For further information, please read <file:Documentation/ide/ide.txt>.
+ 
+diff --git a/drivers/ide/ide.c b/drivers/ide/ide.c
+index 258805d..7d04e22 100644
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -337,6 +337,7 @@ static int ide_set_dev_param_mask(const char *s, struct kernel_param *kp)
+ 	int a, b, i, j = 1;
+ 	unsigned int *dev_param_mask = (unsigned int *)kp->arg;
+ 
++	/* controller . disk (0 or 1) [ : 1 (set) | 0 (clear) ] */
+ 	if (sscanf(s, "%d.%d:%d", &a, &b, &j) != 3 &&
+ 	    sscanf(s, "%d.%d", &a, &b) != 2)
+ 		return -EINVAL;
+@@ -349,7 +350,7 @@ static int ide_set_dev_param_mask(const char *s, struct kernel_param *kp)
+ 	if (j)
+ 		*dev_param_mask |= (1 << i);
+ 	else
+-		*dev_param_mask &= (1 << i);
++		*dev_param_mask &= ~(1 << i);
+ 
+ 	return 0;
+ }
+@@ -392,6 +393,8 @@ static int ide_set_disk_chs(const char *str, struct kernel_param *kp)
+ {
+ 	int a, b, c = 0, h = 0, s = 0, i, j = 1;
+ 
++	/* controller . disk (0 or 1) : Cylinders , Heads , Sectors */
++	/* controller . disk (0 or 1) : 1 (use CHS) | 0 (ignore CHS) */
+ 	if (sscanf(str, "%d.%d:%d,%d,%d", &a, &b, &c, &h, &s) != 5 &&
+ 	    sscanf(str, "%d.%d:%d", &a, &b, &j) != 3)
+ 		return -EINVAL;
+@@ -407,7 +410,7 @@ static int ide_set_disk_chs(const char *str, struct kernel_param *kp)
+ 	if (j)
+ 		ide_disks |= (1 << i);
+ 	else
+-		ide_disks &= (1 << i);
++		ide_disks &= ~(1 << i);
+ 
+ 	ide_disks_chs[i].cyl  = c;
+ 	ide_disks_chs[i].head = h;
+@@ -469,6 +472,8 @@ static int ide_set_ignore_cable(const char *s, struct kernel_param *kp)
+ {
+ 	int i, j = 1;
+ 
++	/* controller (ignore) */
++	/* controller : 1 (ignore) | 0 (use) */
+ 	if (sscanf(s, "%d:%d", &i, &j) != 2 && sscanf(s, "%d", &i) != 1)
+ 		return -EINVAL;
+ 
+@@ -478,7 +483,7 @@ static int ide_set_ignore_cable(const char *s, struct kernel_param *kp)
+ 	if (j)
+ 		ide_ignore_cable |= (1 << i);
+ 	else
+-		ide_ignore_cable &= (1 << i);
++		ide_ignore_cable &= ~(1 << i);
+ 
+ 	return 0;
+ }
 -- 
-Dave Chinner
-david@fromorbit.com
+1.5.6.5
+
