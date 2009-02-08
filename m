@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753417AbZBHTiB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753788AbZBHTmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753417AbZBHTiB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 14:38:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbZBHThL
+	id S1753788AbZBHTmv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 14:42:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbZBHTmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 14:37:11 -0500
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:46151 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752915AbZBHThD (ORCPT
+	Sun, 8 Feb 2009 14:42:42 -0500
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:32118 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753063AbZBHTmk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 14:37:03 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=P5UeeI3PM4gTMnPuOKUBS5+5earT1L25+GfQNrrApFsIbxmOXQX2V7Bh+YAW/6K8B76HJQUN3C97qVd2i6Kd4/6LLba0k8TwOIihQXfM2BvemFkuZNyN8wxOcFaJo9ior4E8xvfaiEZAsDwsPFli5J0z9hhIerp5xIAOUh4psOI=  ;
-X-YMail-OSG: GZBEOOQVM1nBWvG2YsHfIhugVwumEvYc1BBhiJyE__dWxcvPe4HicLHvpUK7mDlnFUlDmLqIqBrarRGvSFAkaSiKUTCG4l8m3yMGX.c3lUD0U4ezawRd9QUNU5rN7neNarm283kAlzYGEkTNROBWqW6lW9lYAw.f9mF6FwXYcgjEhD.W0foeGMhbRB44
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Grazvydas Ignotas <notasas@gmail.com>
-Subject: Re: [PATCH] OMAP HSMMC: fix MMC3 dma
-Date: Sun, 8 Feb 2009 11:10:24 -0800
-User-Agent: KMail/1.9.10
-Cc: tony@atomide.com, drzeus-mmc@drzeus.cx, ext-adrian.hunter@nokia.com,
-       linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <1233052573-6223-1-git-send-email-notasas@gmail.com>
-In-Reply-To: <1233052573-6223-1-git-send-email-notasas@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200902081110.25166.david-b@pacbell.net>
+	Sun, 8 Feb 2009 14:42:40 -0500
+X-Trace: 145578954/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.44.176.198/None/adrian@newgolddream.dyndns.info
+X-SBRS: None
+X-RemoteIP: 80.44.176.198
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-MUA: Evolution 2.24.3 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsoEAJPEjklQLLDG/2dsb2JhbACBbspjhBoG
+X-IronPort-AV: E=Sophos;i="4.37,400,1231113600"; 
+   d="scan'208";a="145578954"
+Subject: [PATCH] sh: maple: add support for Visual Memory Card devices, and
+ make consequential changes to maple input drivers - 0/3 - v5
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: paul mundt <lethal@users.sourceforge.net>, Greg KH <greg@kroah.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       dwmw2 <dwmw2@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, MTD <linux-mtd@lists.infradead.org>,
+       linux-sh <linux-sh@vger.kernel.org>,
+       linux-input <linux-input@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 08 Feb 2009 19:41:09 +0000
+Message-Id: <1234122069.6736.8.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 January 2009, Grazvydas Ignotas wrote:
-> @@ -1058,6 +1054,25 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
->         OMAP_HSMMC_WRITE(host->base, HCTL,
->                         OMAP_HSMMC_READ(host->base, HCTL) | SDBP);
->  
-> +       /* Select DMA lines */
-> +       switch (host->id) {
-> +       case OMAP_MMC1_DEVID:
-> +               host->dma_line_tx = OMAP24XX_DMA_MMC1_TX;
-> +               host->dma_line_rx = OMAP24XX_DMA_MMC1_RX;
-> +               break;
+This series of patches adds support for the Dreamcast Visual Memory
+Unit, reworking the maple bus code to ensure it supports asynchronous
+reads and writes. A consequential amendment to the keyboard and joystick
+drivers are also included.
 
-Actually the cleanest way to do that is through IORESOURCE_DMA
-type resources associated with the platform devices ... but
-doing it that way requires reworking the MMC platform device
-setup logic.  Which I can understand wanting to avoid here.
+This version (v5) fixes a memory leak in the VMU code that was present
+when read or write requests timed out in v4. It also adds the joystick
+fix.
 
-(I think that rework is worth doing for multiple reasons; this
-is just one more.)
+The VMU is a 'smart' flash chip where access is controlled by a
+microcontroller so that, for instance, flash erases appear to be
+transparent to the end user. The VMU does, however, show typical
+flash-type behaviour (eg phased writes) and the MTD layer and the chip
+work well together (eg in the way they handle apparent hotplug events
+during a block write).
 
+This version tidies up some style issues raised with version 2.
 
-> +       case OMAP_MMC2_DEVID:
-> +               host->dma_line_tx = OMAP24XX_DMA_MMC2_TX;
-> +               host->dma_line_rx = OMAP24XX_DMA_MMC2_RX;
-> +               break;
-> +       case OMAP_MMC3_DEVID:
-> +               host->dma_line_tx = OMAP34XX_DMA_MMC3_TX;
-> +               host->dma_line_rx = OMAP34XX_DMA_MMC3_RX;
-> +               break;
-> +       default:
-> +               dev_err(mmc_dev(host->mmc), "Invalid MMC id\n");
-> +               goto err_irq;
-> +       }
-> +
->         /* Request IRQ for MMC operations */
->         ret = request_irq(host->irq, mmc_omap_irq, IRQF_DISABLED,
->                         mmc_hostname(mmc), host);
+Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+---
+ drivers/input/joystick/maplecontrol.c |    4 +-
+ drivers/input/keyboard/maple_keyb.c   |   40 +-
+ drivers/mtd/maps/Kconfig              |   12 +-
+ drivers/mtd/maps/Makefile             |    1 +
+ drivers/mtd/maps/vmu-flash.c          |  827 +++++++++++++++++++++++++++++++++
+ drivers/sh/maple/maple.c              |  463 ++++++++++---------
+ include/linux/maple.h                 |   62 ++-
+ 7 files changed, 1142 insertions(+), 267 deletions(-)
 
 
