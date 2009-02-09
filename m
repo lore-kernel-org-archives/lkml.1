@@ -1,164 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754091AbZBIUAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757849AbZBIUBa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754091AbZBIUAt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 15:00:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756908AbZBIT7r
+	id S1757849AbZBIUBa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 15:01:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755967AbZBIUAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 14:59:47 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:43279 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757325AbZBIT7q (ORCPT
+	Mon, 9 Feb 2009 15:00:06 -0500
+Received: from mu-out-0910.google.com ([209.85.134.184]:24537 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757429AbZBIUAD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 14:59:46 -0500
+	Mon, 9 Feb 2009 15:00:03 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=F4KRWmgMWvSDEGETtTMHqiWZePoBdk2ZnWsWphkxKt8E1NjvwA7YJFmLJWvKVyItjw
-         IzM3juNDdgde0mEXbAl8jCrsUd7c9395ogPmf+zzZQXuQMPL0xoam8Aj5LmibXI4A2Cs
-         icxHj/RRPtK935kMCs1TGOXSLuZLsGCDAMxIA=
+        b=SMXu0QMkbAGAB+AMwdICaLZyLcwa7t0HU7dsVSP4+lW0kQRIlrW0fYO5esLhH/hhAn
+         6YUeVCKBUqHGVyYuLae0umq/s1MiZJ1D1LNbsWmS5nlTqoWPXa2ngYFQNrAnueeRfOZ3
+         tzKv2uTFjAdEgpVzi+7omu0KBtBtxVpvvX0qM=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Mon, 09 Feb 2009 21:00:57 +0100
-Message-Id: <20090209200057.7985.71084.sendpatchset@localhost.localdomain>
+Date: Mon, 09 Feb 2009 21:01:13 +0100
+Message-Id: <20090209200113.7985.38988.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090209200042.7985.94247.sendpatchset@localhost.localdomain>
 References: <20090209200042.7985.94247.sendpatchset@localhost.localdomain>
-Subject: [PATCH 2/9] ide: add ide_end_rq()
+Subject: [PATCH 4/9] ide: pass error value to ide_complete_rq()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: add ide_end_rq()
+Subject: [PATCH] ide: pass error value to ide_complete_rq()
 
-* Move request dequeuing from __ide_end_request() to ide_end_request().
+Set rq->errors at ide_complete_rq() call sites and then pass
+error value to ide_complete_rq().
 
-* Rename __ide_end_request() to ide_end_rq() and export it.
-
-* Fix ide_end_rq() to pass original blk_end_request() return value.
-
-* ide_end_dequeued_request() is used only in cdrom_end_request()
-  so inline it there and then remove the function.
+[ Some rq->errors assignments look really wrong but this patch
+  leaves them alone to not introduce too many changes at once. ]
 
 There should be no functional changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-cd.c |    6 ++++--
- drivers/ide/ide-io.c |   45 ++++++++++-----------------------------------
- include/linux/ide.h  |    2 +-
- 3 files changed, 15 insertions(+), 38 deletions(-)
+ drivers/ide/ide-atapi.c    |    5 +++--
+ drivers/ide/ide-eh.c       |    5 +++--
+ drivers/ide/ide-floppy.c   |    2 +-
+ drivers/ide/ide-io.c       |   19 +++++++++----------
+ drivers/ide/ide-tape.c     |    2 +-
+ drivers/ide/ide-taskfile.c |    4 +++-
+ include/linux/ide.h        |    2 +-
+ 7 files changed, 21 insertions(+), 18 deletions(-)
 
-Index: b/drivers/ide/ide-cd.c
+Index: b/drivers/ide/ide-atapi.c
 ===================================================================
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -264,8 +264,10 @@ static void cdrom_end_request(ide_drive_
- 			 * now end the failed request
- 			 */
- 			if (blk_fs_request(failed)) {
--				if (ide_end_dequeued_request(drive, failed, 0,
--						failed->hard_nr_sectors))
-+				BUG_ON(!blk_rq_started(rq));
-+
-+				if (ide_end_rq(drive, failed, 0,
-+						failed->hard_nr_sectors << 9))
- 					BUG();
- 			} else {
- 				if (blk_end_request(failed, -EIO,
+--- a/drivers/ide/ide-atapi.c
++++ b/drivers/ide/ide-atapi.c
+@@ -390,9 +390,10 @@ static ide_startstop_t ide_pc_intr(ide_d
+ 		if (uptodate == 0)
+ 			drive->failed_pc = NULL;
+ 
+-		if (blk_special_request(rq))
++		if (blk_special_request(rq)) {
++			rq->errors = 0;
+ 			ide_complete_rq(drive, 0);
+-		else
++		} else
+ 			ide_end_request(drive, uptodate, 0);
+ 
+ 		return ide_stopped;
+Index: b/drivers/ide/ide-eh.c
+===================================================================
+--- a/drivers/ide/ide-eh.c
++++ b/drivers/ide/ide-eh.c
+@@ -123,17 +123,18 @@ ide_startstop_t ide_error(ide_drive_t *d
+ 
+ 	/* retry only "normal" I/O: */
+ 	if (!blk_fs_request(rq)) {
+-		rq->errors = 1;
+ 		if (rq->cmd_type == REQ_TYPE_ATA_TASKFILE) {
+ 			struct ide_cmd *cmd = rq->special;
+ 
+ 			if (cmd)
+ 				ide_complete_cmd(drive, cmd, stat, err);
+ 		} else if (blk_pm_request(rq)) {
++			rq->errors = 1;
+ 			ide_complete_pm_rq(drive, rq);
+ 			return ide_stopped;
+ 		}
+-		ide_complete_rq(drive, err);
++		rq->errors = err;
++		ide_complete_rq(drive, err ? -EIO : 0);
+ 		return ide_stopped;
+ 	}
+ 
+Index: b/drivers/ide/ide-floppy.c
+===================================================================
+--- a/drivers/ide/ide-floppy.c
++++ b/drivers/ide/ide-floppy.c
+@@ -260,7 +260,7 @@ static ide_startstop_t ide_floppy_do_req
+ 			printk(KERN_ERR PFX "%s: I/O error\n", drive->name);
+ 
+ 		if (blk_special_request(rq)) {
+-			rq->errors = IDE_DRV_ERROR_GENERAL;
++			rq->errors = 0;
+ 			ide_complete_rq(drive, 0);
+ 			return ide_stopped;
+ 		} else
 Index: b/drivers/ide/ide-io.c
 ===================================================================
 --- a/drivers/ide/ide-io.c
 +++ b/drivers/ide/ide-io.c
-@@ -54,10 +54,9 @@
- #include <asm/uaccess.h>
- #include <asm/io.h>
- 
--static int __ide_end_request(ide_drive_t *drive, struct request *rq,
--			     int uptodate, unsigned int nr_bytes, int dequeue)
-+int ide_end_rq(ide_drive_t *drive, struct request *rq, int uptodate,
-+	       unsigned int nr_bytes)
- {
--	int ret = 1;
- 	int error = 0;
- 
- 	if (uptodate <= 0)
-@@ -83,14 +82,9 @@ static int __ide_end_request(ide_drive_t
- 		ide_dma_on(drive);
- 	}
- 
--	if (!blk_end_request(rq, error, nr_bytes))
--		ret = 0;
--
--	if (ret == 0 && dequeue)
--		drive->hwif->rq = NULL;
--
--	return ret;
-+	return blk_end_request(rq, error, nr_bytes);
+@@ -140,17 +140,14 @@ void ide_complete_cmd(ide_drive_t *drive
+ 		kfree(cmd);
  }
-+EXPORT_SYMBOL_GPL(ide_end_rq);
  
- /**
-  *	ide_end_request		-	complete an IDE I/O
-@@ -107,6 +101,7 @@ int ide_end_request (ide_drive_t *drive,
+-void ide_complete_rq(ide_drive_t *drive, u8 err)
++void ide_complete_rq(ide_drive_t *drive, int error)
  {
- 	unsigned int nr_bytes = nr_sectors << 9;
- 	struct request *rq = drive->hwif->rq;
-+	int rc;
+ 	ide_hwif_t *hwif = drive->hwif;
+ 	struct request *rq = hwif->rq;
  
- 	if (!nr_bytes) {
- 		if (blk_pc_request(rq))
-@@ -115,33 +110,13 @@ int ide_end_request (ide_drive_t *drive,
- 			nr_bytes = rq->hard_cur_sectors << 9;
- 	}
+ 	hwif->rq = NULL;
  
--	return __ide_end_request(drive, rq, uptodate, nr_bytes, 1);
--}
--EXPORT_SYMBOL(ide_end_request);
+-	rq->errors = err;
 -
--/**
-- *	ide_end_dequeued_request	-	complete an IDE I/O
-- *	@drive: IDE device for the I/O
-- *	@uptodate:
-- *	@nr_sectors: number of sectors completed
-- *
-- *	Complete an I/O that is no longer on the request queue. This
-- *	typically occurs when we pull the request and issue a REQUEST_SENSE.
-- *	We must still finish the old request but we must not tamper with the
-- *	queue in the meantime.
-- *
-- *	NOTE: This path does not handle barrier, but barrier is not supported
-- *	on ide-cd anyway.
-- */
--
--int ide_end_dequeued_request(ide_drive_t *drive, struct request *rq,
--			     int uptodate, int nr_sectors)
--{
--	BUG_ON(!blk_rq_started(rq));
-+	rc = ide_end_rq(drive, rq, uptodate, nr_bytes);
-+	if (rc == 0)
-+		drive->hwif->rq = NULL;
- 
--	return __ide_end_request(drive, rq, uptodate, nr_sectors << 9, 0);
-+	return rc;
+-	if (unlikely(blk_end_request(rq, (rq->errors ? -EIO : 0),
+-				     blk_rq_bytes(rq))))
++	if (unlikely(blk_end_request(rq, error, blk_rq_bytes(rq))))
+ 		BUG();
  }
--EXPORT_SYMBOL_GPL(ide_end_dequeued_request);
-+EXPORT_SYMBOL(ide_end_request);
+ EXPORT_SYMBOL(ide_complete_rq);
+@@ -162,13 +159,14 @@ void ide_kill_rq(ide_drive_t *drive, str
  
- void ide_complete_cmd(ide_drive_t *drive, struct ide_cmd *cmd, u8 stat, u8 err)
+ 	drive->failed_pc = NULL;
+ 
+-	if ((media == ide_floppy && drv_req) || media == ide_tape)
+-		rq->errors = IDE_DRV_ERROR_GENERAL;
+-
+-	if ((media == ide_floppy || media == ide_tape) && drv_req)
++	if ((media == ide_floppy || media == ide_tape) && drv_req) {
++		rq->errors = 0;
+ 		ide_complete_rq(drive, 0);
+-	else
++	} else {
++		if (media == ide_tape)
++			rq->errors = IDE_DRV_ERROR_GENERAL;
+ 		ide_end_request(drive, 0, 0);
++	}
+ }
+ 
+ static void ide_tf_set_specify_cmd(ide_drive_t *drive, struct ide_taskfile *tf)
+@@ -308,6 +306,7 @@ static ide_startstop_t execute_drive_cmd
+ #ifdef DEBUG
+  	printk("%s: DRIVE_CMD (null)\n", drive->name);
+ #endif
++	rq->errors = 0;
+ 	ide_complete_rq(drive, 0);
+ 
+  	return ide_stopped;
+Index: b/drivers/ide/ide-tape.c
+===================================================================
+--- a/drivers/ide/ide-tape.c
++++ b/drivers/ide/ide-tape.c
+@@ -774,8 +774,8 @@ static ide_startstop_t idetape_do_reques
+ 		if (rq != postponed_rq) {
+ 			printk(KERN_ERR "ide-tape: ide-tape.c bug - "
+ 					"Two DSC requests were queued\n");
+-			rq->errors = IDE_DRV_ERROR_GENERAL;
+ 			drive->failed_pc = NULL;
++			rq->errors = 0;
+ 			ide_complete_rq(drive, 0);
+ 			return ide_stopped;
+ 		}
+Index: b/drivers/ide/ide-taskfile.c
+===================================================================
+--- a/drivers/ide/ide-taskfile.c
++++ b/drivers/ide/ide-taskfile.c
+@@ -289,10 +289,12 @@ static void ide_error_cmd(ide_drive_t *d
+ 
+ void ide_finish_cmd(ide_drive_t *drive, struct ide_cmd *cmd, u8 stat)
  {
++	struct request *rq = drive->hwif->rq;
+ 	u8 err = ide_read_error(drive);
+ 
+ 	ide_complete_cmd(drive, cmd, stat, err);
+-	ide_complete_rq(drive, err);
++	rq->errors = err;
++	ide_complete_rq(drive, err ? -EIO : 0);
+ }
+ 
+ /*
 Index: b/include/linux/ide.h
 ===================================================================
 --- a/include/linux/ide.h
 +++ b/include/linux/ide.h
-@@ -1128,8 +1128,8 @@ int generic_ide_ioctl(ide_drive_t *, str
- extern int ide_vlb_clk;
- extern int ide_pci_clk;
+@@ -1163,7 +1163,7 @@ extern int ide_devset_execute(ide_drive_
+ 			      const struct ide_devset *setting, int arg);
  
-+int ide_end_rq(ide_drive_t *, struct request *, int, unsigned int);
- int ide_end_request(ide_drive_t *, int, int);
--int ide_end_dequeued_request(ide_drive_t *, struct request *, int, int);
- void ide_kill_rq(ide_drive_t *, struct request *);
+ void ide_complete_cmd(ide_drive_t *, struct ide_cmd *, u8, u8);
+-void ide_complete_rq(ide_drive_t *, u8);
++void ide_complete_rq(ide_drive_t *, int);
  
- void __ide_set_handler(ide_drive_t *, ide_handler_t *, unsigned int,
+ void ide_tf_dump(const char *, struct ide_taskfile *);
+ 
