@@ -1,79 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbZBISMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756446AbZBISNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756793AbZBISMt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 13:12:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756446AbZBISMa
+	id S1756446AbZBISNw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 13:13:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754455AbZBISNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 13:12:30 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:52283 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756328AbZBISM3 (ORCPT
+	Mon, 9 Feb 2009 13:13:41 -0500
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:9902 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752452AbZBISNk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 13:12:29 -0500
-Date: Mon, 9 Feb 2009 18:12:19 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Davide Rizzo <elpa.rizzo@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, ben-linux@fluff.org,
-       Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH 1/2] User access to internal clocks
-Message-ID: <20090209181219.GC19453@n2100.arm.linux.org.uk>
-References: <8447d6730902090904y138af9c6r3d64278bc7a30811@mail.gmail.com>
-Mime-Version: 1.0
+	Mon, 9 Feb 2009 13:13:40 -0500
+Date: Mon, 9 Feb 2009 11:13:38 -0700
+From: Alex Chiang <achiang@hp.com>
+To: tony.luck@intel.com
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, stable@kernel.org,
+       linux-ia64@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2 0/2] ia64: prevent irq migration race in __cpu_disable
+	path
+Message-ID: <20090209181338.GD19064@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>, tony.luck@intel.com,
+	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, stable@kernel.org,
+	linux-ia64@vger.kernel.org,
+	linux-kernel <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <8447d6730902090904y138af9c6r3d64278bc7a30811@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 09, 2009 at 06:04:29PM +0100, Davide Rizzo wrote:
-> +static ssize_t parent_store(struct device *dev,
-> +       struct device_attribute *attr, const char *buffer, size_t count)
-> +{
-> +       struct clk *parent;
-> +
-> +       char *s = kstrdup(buffer, GFP_KERNEL);
-> +
-> +       if (!s)
-> +               return -ENOMEM;
-> +       if (s[strlen(s) - 1] == '\n')
-> +               s[strlen(s) - 1] = '\0';
-> +       parent = clk_get(dev, s);
-> +       kfree(s);
-> +       if (IS_ERR(parent))
-> +               return PTR_ERR(parent);
-> +
-> +       mutex_lock(&mutex);
-> +
-> +       clk_set_parent(dev_get_drvdata(dev), parent);
+This is v2 of my attempt to prevent an oops while offlining CPUs.
 
-BTW, MXC doesn't (and won't) support run-time changing of the clk tree.
-OMAP sort-of does, but it's currently buggy.  It looks like S3C is also
-buggy.
+The change is that the patch becomes a full revert of Paul's
+original patch, along with a long changelog that explains the
+situation as best as I can determine. It's not 100% satisfactory
+to me right now, but the testing we've done supports the patch.
 
-These implementations are currently only usable under a very strict set
-of circumstances (which are not currently checked by the implementations)
-and if the parent is changed while the clock is in use, it'll screw up
-the clock tree - details below.
+The 2nd patch in the series is mostly cosmetic, and removes a
+redundant call to cpu_clear() that we no longer need().
 
-Arguably, that's a problem which the clk_set_parent() implementations need
-to be solved (and I hope are going to be resolved), but it's an example
-where exposing the API to allow userspace to fiddle with things produces
-new ways to make things explode.  Certainly the MXC folk responded saying
-"we don't support run-time parent changes".
+Tony, if you agree with the rationale in 1/2, then this series is
+a candidate for .29.
 
-FYI, the problem basically is that the sequence:
+stable team, if Tony pushes upstream for .29, then this series
+should be applied to the .27 and .28 stable series.
 
-1. clk_enable(clk);
-2. clk_set_parent(clk, new_parent);
-3. clk_disable(clk);
+Thanks.
 
-will result in the old parent having a permanently incremented usecount,
-and the new_parent having a negative usecount.  You could say "don't
-permit enabled clocks to change parents" but I believe such a statement
-would be provably incompatible with OMAP.
+/ac
 
-(This issue has just been pointed out to the relevant ARM maintainers
-today.)
