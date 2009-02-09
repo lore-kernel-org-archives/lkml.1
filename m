@@ -1,196 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757197AbZBITba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756578AbZBITdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757197AbZBITba (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 14:31:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757020AbZBITbU
+	id S1756578AbZBITdv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 14:33:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753745AbZBITdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 14:31:20 -0500
-Received: from smtp5.tech.numericable.fr ([82.216.111.41]:51895 "EHLO
-	smtp5.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756983AbZBITbQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 14:31:16 -0500
-Message-ID: <49908480.6070408@numericable.fr>
-Date: Mon, 09 Feb 2009 20:31:12 +0100
-From: etienne <etienne.basset@numericable.fr>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 9 Feb 2009 14:33:40 -0500
+Received: from kroah.org ([198.145.64.141]:44443 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752285AbZBITdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 14:33:39 -0500
+Date: Mon, 9 Feb 2009 11:31:57 -0800
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: [GIT PATCH] USB patches for 2.6-git
+Message-ID: <20090209193157.GA2194@kroah.com>
 MIME-Version: 1.0
-To: Dave Airlie <airlied@gmail.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>, Dave Airlie <airlied@redhat.com>,
-       Soeren Sonnenburg <kernel@nn7.de>
-Subject: Re: [Bug #12613] [Suspend regression][DRM, RADEON]
-References: <AIghyjFgMFP.A.uZD._10jJB@chimera>	 <sWhNs83kKPE.A.HiF.r20jJB@chimera> <498F5785.3000009@numericable.fr> <21d7e9970902081826r48777cb8s8c4e882a02575c71@mail.gmail.com>
-In-Reply-To: <21d7e9970902081826r48777cb8s8c4e882a02575c71@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Airlie wrote:
-> On Mon, Feb 9, 2009 at 8:07 AM, etienne <etienne.basset@numericable.fr> wrote:
->   
->> Rafael J. Wysocki wrote:
->>     
->>> This message has been generated automatically as a part of a report
->>> of recent regressions.
->>>
->>> The following bug entry is on the current list of known regressions
->>> from 2.6.28.  Please verify if it still should be listed and let me know
->>> (either way).
->>>
->>>
->>> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12613
->>> Subject         : [Suspend regression][DRM, RADEON]
->>> Submitter       : etienne <etienne.basset@numericable.fr>
->>> Date            : 2009-01-28 22:00 (12 days old)
->>> First-Bad-Commit:
->>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a9d51a5ad1154b5b20add1e8d30a5564f8aabbe9
->>> References      : http://marc.info/?l=linux-kernel&m=123318030419558&w=4
->>>                  http://marc.info/?l=linux-kernel&m=123334865404574&w=4
->>>
->>>
->>>
->>>       
->> hello,
->> yes it's still present in -rc4
->> But I noticed that when I switch off KDE4.2 desktop effects, suspend to ram
->> is 100% reliable with 2.6.29-rc4
->> With 2.6.28, STR is 100% reliable with or without desktop effects
->>
->>     
->
-> Hi Etienne,
->
-> Can you try commenting out the calls to the radeon_suspend and
-> radeon_resume hooks in radeon_drv.c?
->
-> Dave.
->   
-Hi Dave,
+Here are some USB patches for your 2.6-git tree.
 
-I created the following "shot in the dark" patch that solves my problem!
+Just a few minor bugfixes and device id updates (one of them is a
+regression fix, as we incorrectly grabbed bound the wrong device to the
+wrong driver, breaking some people's systems.)
 
-I looked at the change between 2.6.28 and .29rc, and only the  
-radeon_cp.c:radeon_cp_init_ring_buffer changes stroke my eyes (cause 
-it's called by radeon_cp_resume indirectedly)
+We also disable the WARN_ON() in the usb-storage driver that was causing
+a lot of reports.  Turns out there are a lot of broken flash disks out
+there in the wild, we hopefully can now handle them properly based on
+the information we've gathered from kerneloops.org.
 
-I don't understand what i did and how this works, but it works for me
-regards
-Etienne
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
 
-Signed-off-by: etienne <etienne.basset@numericable.fr>
+All of these patches have been in the -next and -mm releases for a while.
 
-diff --git a/drivers/gpu/drm/radeon/radeon_cp.c 
-b/drivers/gpu/drm/radeon/radeon_cp.c
-index 63212d7..fc6e134 
-100644                                                      
---- 
-a/drivers/gpu/drm/radeon/radeon_cp.c                                            
+The full patches will be sent to the linux-usb mailing list, if anyone
+wants to see them.
 
-+++ 
-b/drivers/gpu/drm/radeon/radeon_cp.c                                            
+thanks,
 
-@@ -557,7 +557,8 @@ static int radeon_do_engine_reset(struct drm_device 
-* dev)     
- }                                                                                  
+greg k-h
 
-                                                                                    
+------------
 
- static void radeon_cp_init_ring_buffer(struct drm_device * 
-dev,                   
--                                      drm_radeon_private_t * 
-dev_priv)            
-+                                      drm_radeon_private_t * 
-dev_priv,            
-+                                      struct drm_radeon_master_private 
-*master)   
- {                                                                                                                                                                                  
+ drivers/usb/Makefile                  |    1 +
+ drivers/usb/class/cdc-acm.c           |    3 -
+ drivers/usb/gadget/fsl_qe_udc.c       |   46 +++++++++++++----
+ drivers/usb/serial/aircable.c         |    4 +-
+ drivers/usb/serial/ftdi_sio.c         |    5 ++-
+ drivers/usb/serial/ftdi_sio.h         |    3 +
+ drivers/usb/serial/option.c           |   93 ++++++++++++++++++++-------------
+ drivers/usb/serial/ti_usb_3410_5052.c |   10 +++-
+ drivers/usb/serial/ti_usb_3410_5052.h |    2 +
+ drivers/usb/storage/scsiglue.c        |    2 +
+ drivers/usb/storage/transport.c       |   36 +------------
+ drivers/usb/storage/unusual_devs.h    |   17 +------
+ 12 files changed, 117 insertions(+), 105 deletions(-)
 
-        u32 ring_start, 
-cur_read_ptr;                                                                                                                                               
+---------------
 
-        u32 
-tmp;                                                                                                                                                                    
+Alan Stern (2):
+      USB: usb-storage: remove WARN from last-sector hacks
+      USB: usb-storage: add Pentax to the bad-vendor list
 
-@@ -668,13 +669,13 @@ static void radeon_cp_init_ring_buffer(struct 
-drm_device * 
-dev,                                                                                               
+Anton Vorontsov (6):
+      USB: fsl_qe_udc: Fix oops on QE UDC probe failure
+      USB: fsl_qe_udc: Fix recursive locking bug in ch9getstatus()
+      USB: fsl_qe_udc: Fix QE USB controller initialization
+      USB: fsl_qe_udc: Fix disconnects reporting during bus reset
+      USB: fsl_qe_udc: Fix muram corruption by disabled endpoints
+      USB: fsl_qe_udc: Fix stalled TX requests bug
 
-                RADEON_WRITE(RADEON_BUS_CNTL, 
-tmp);                                                                                                                                 
+Dan Carpenter (1):
+      USB: ftdi_sio: unlock_kernel() on error in set_serial_info()
 
-        } /* PCIE cards appears to not need this 
-*/                                                                                                                                 
+Dave Young (1):
+      USB: usb-serial: fix the aircable_init failure path
 
-                                                                                                                                                                                    
+Dirk De Schepper (1):
+      USB: option: New mobile broadband modems to be supported
 
--       dev_priv->scratch[0] = 
-0;                                                                                                                                                   
+Greg Kroah-Hartman (1):
+      Revert USB: option: add Pantech cards
 
-+       master->sarea_priv->last_frame = dev_priv->scratch[0] = 0;
-        RADEON_WRITE(RADEON_LAST_FRAME_REG, 0);
+Ivan Kuten (1):
+      USB: Correct Makefile to make isp1760 buildable
 
--       dev_priv->scratch[1] = 0;
-+       master->sarea_priv->last_dispatch = dev_priv->scratch[1] = 0;
-        RADEON_WRITE(RADEON_LAST_DISPATCH_REG, 0);
+James Treacy (1):
+      USB: cdc-acm.c: remove duplicate lines for MTK gps support
 
--       dev_priv->scratch[2] = 0;
-+       master->sarea_priv->last_clear = dev_priv->scratch[2] = 0;
-        RADEON_WRITE(RADEON_LAST_CLEAR_REG, 0);
+Nick Holloway (1):
+      USB: Storage: Update unusual_devs entry for Datafab KECF-USB
 
-        radeon_do_wait_for_idle(dev_priv);
-@@ -1215,7 +1216,7 @@ static int radeon_do_init_cp(struct drm_device 
-*dev, drm_radeon_init_t *init,
-        }
+Oliver Neukum (1):
+      USB: two more usb ids for ti_usb_3410_5052
 
-        radeon_cp_load_microcode(dev_priv);
--       radeon_cp_init_ring_buffer(dev, dev_priv);
-+       radeon_cp_init_ring_buffer(dev, dev_priv, master_priv);
-
-        dev_priv->last_buf = 0;
-
-@@ -1281,9 +1282,11 @@ static int radeon_do_cleanup_cp(struct drm_device 
-* dev)
-  *
-  * Charl P. Botha <http://cpbotha.net>
-  */
--static int radeon_do_resume_cp(struct drm_device * dev)
-+static int radeon_do_resume_cp(struct drm_device * dev,
-+                              struct drm_file * file_priv)
- {
-        drm_radeon_private_t *dev_priv = dev->dev_private;
-+       struct drm_radeon_master_private * master_priv = 
-file_priv->master->driver_priv;
-
-        if (!dev_priv) {
-                DRM_ERROR("Called with no initialization\n");
-@@ -1304,7 +1307,7 @@ static int radeon_do_resume_cp(struct drm_device * 
-dev)
-        }
-
-        radeon_cp_load_microcode(dev_priv);
--       radeon_cp_init_ring_buffer(dev, dev_priv);
-+       radeon_cp_init_ring_buffer(dev, dev_priv, master_priv);
-
-        radeon_do_engine_reset(dev);
-        radeon_irq_set_state(dev, RADEON_SW_INT_ENABLE, 1);
-@@ -1480,7 +1483,7 @@ int radeon_cp_idle(struct drm_device *dev, void 
-*data, struct drm_file *file_pri
- int radeon_cp_resume(struct drm_device *dev, void *data, struct 
-drm_file *file_priv)
- {
-
--       return radeon_do_resume_cp(dev);
-+       return radeon_do_resume_cp(dev, file_priv);
- }
-
- int radeon_engine_reset(struct drm_device *dev, void *data, struct 
-drm_file *file_priv)
-
-
-
+Stephane Clerambault (1):
+      USB: ftdi_sio: add support for the NDI Polaris system
 
