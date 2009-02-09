@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754101AbZBIAHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbZBIATn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754101AbZBIAHY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 19:07:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbZBIAHK
+	id S1754048AbZBIATn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 19:19:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbZBIATe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 19:07:10 -0500
-Received: from h155.mvista.com ([63.81.120.155]:59193 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752988AbZBIAHJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 19:07:09 -0500
-Message-ID: <498F73A5.2070300@ru.mvista.com>
-Date: Mon, 09 Feb 2009 03:07:01 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Sun, 8 Feb 2009 19:19:34 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:33294 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752153AbZBIATd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 19:19:33 -0500
+Message-ID: <498F767B.9060701@pobox.com>
+Date: Sun, 08 Feb 2009 19:19:07 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-Cc: jgarzik@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+CC: Mikael Pettersson <mikpe@it.uu.se>, Hugh Dickins <hugh@veritas.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
        alan@lxorguk.ukuu.org.uk, rjw@sisk.pl
 Subject: Re: [PATCH] libata-sff: fix 32-bit PIO regression
-References: <200902082253.07438.sshtylyov@ru.mvista.com> <Pine.LNX.4.64.0902082108290.18661@blonde.anvils>
-In-Reply-To: <Pine.LNX.4.64.0902082108290.18661@blonde.anvils>
+References: <200902082253.07438.sshtylyov@ru.mvista.com>	<Pine.LNX.4.64.0902082108290.18661@blonde.anvils>	<498F5A25.90707@ru.mvista.com> <18831.28471.454273.451912@harpo.it.uu.se> <498F72C8.8020204@ru.mvista.com>
+In-Reply-To: <498F72C8.8020204@ru.mvista.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Sergei Shtylyov wrote:
+>   Do you really think that the transfers having lengths non-divisible by 
+> 4 make any *significant* percentage even on the ATAPI devices? I think 
+> it's you who is really wrong.
 
-Hugh Dickins wrote:
+The answer depends on workload.  Though rare, workloads do exist that 
+involve a lot of oddball querying via weird, vendor-specific SCSI[-ish] 
+commands.
 
->> Commit 871af1210f13966ab911ed2166e4ab2ce775b99d (libata: Add 32bit PIO support)
->> caused all kind of errors on the ATAPI devices, so it's been empirically proven
->> that one shouldn't read/write an extra data word when a device isn't expecting
->> it already. "Don't do it then"; however still taking a chance to use 32-bit I/O
->> one last  time when there are exactly 3 trailing bytes.  Oh, and stop pointless
->> swapping bytes to and fro as well by using io*_rep() which shouldn't byte-swap.
->>
->> This should fix the kernel.org bug #12609.
->>
->> ---
->> This is hopefully better replacement for Hugh Dickins most recent patch
->> (http://marc.info/?l=linux-ide&m=123352294619281)...
->>     
->
-> Yes, looks nice, and works for me.  My only criticism would be,
-> minor issue unchanged by your patch, that actually "slop" isn't
-> unlikely enough to deserve an "unlikely" - slop of 1 or 3 is
-> unlikely, but slop of 2 is quite common.
->   
+Moreover, the likelihood and cost of a branch mispredict are both low in 
+this case, IMO.
 
-  Common on what types of ATAPI commands? I can hardly believe that they 
-are common on the block I/O...
+Or a more human version of the rule:  if you have to have a long email 
+thread about unlikely() placement, it is best just to avoid using 
+unlikely() in that case at all.  Branch prediction units in modern CPUs 
+are damned good anyways, and there is always the likelihood that a 
+human-placed unlikely() becomes wrong in the future.
 
-MBR, Sergei
+Plus the code is more readable without unlikely(), IMO.
+
+	Jeff
+
 
 
