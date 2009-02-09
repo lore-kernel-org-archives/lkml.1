@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754756AbZBIKaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755021AbZBIKak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754756AbZBIKaV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 05:30:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbZBIKaI
+	id S1755021AbZBIKak (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 05:30:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbZBIKaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 05:30:08 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:43493 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752592AbZBIKaG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 05:30:06 -0500
-Date: Mon, 9 Feb 2009 10:25:46 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Mikael Pettersson <mikpe@it.uu.se>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [Bug #12609] v2.6.29-rc2 libata sff 32bit PIO regression
-In-Reply-To: <sWhNs83kKPE.A.E5F.w20jJB@chimera>
-Message-ID: <Pine.LNX.4.64.0902091024520.14410@blonde.anvils>
-References: <AIghyjFgMFP.A.uZD._10jJB@chimera> <sWhNs83kKPE.A.E5F.w20jJB@chimera>
+	Mon, 9 Feb 2009 05:30:09 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34156 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752635AbZBIKaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 05:30:07 -0500
+Date: Mon, 9 Feb 2009 11:29:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [GIT PULL] x86: unify some of kernel/irq*.c
+Message-ID: <20090209102951.GK20467@elte.hu>
+References: <498CD661.4070804@goop.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <498CD661.4070804@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 8 Feb 2009, Rafael J. Wysocki wrote:
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12609
-> Subject		: v2.6.29-rc2 libata sff 32bit PIO regression
-> Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
-> Date		: 2009-01-23 23:52 (17 days old)
-> References	: http://marc.info/?l=linux-kernel&m=123275478111406&w=4
-> 		  http://marc.info/?l=linux-kernel&m=123254501314058&w=4
-> Handled-By	: Mikael Pettersson <mikpe@it.uu.se>
-> 		  Hugh Dickins <hugh@veritas.com>
-> 		  Sergei Shtylyov <sshtylyov@ru.mvista.com>
-> Patch		: http://marc.info/?l=linux-kernel&m=123412278730735&w=4
 
-Please still list it for now, but I expect Sergei's and Alan's fixes
-to be in -rc5.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-Hugh
+> These changes factor out the differences between 32 and 64-bit do_IRQ  
+> and unify the rest. Unfortunately there are still quite a few other  
+> differences (like interrupt stack handling) which preclude further easy  
+> unification.
+>
+> Thanks,
+>    J
+>
+> The following changes since commit f21daa4d04885a34d1972afa9f82a8aebb6152bb:
+>  Ingo Molnar (1):
+>        Merge branch 'out-of-tree'
+>
+> are available in the git repository at:
+>
+>  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git jsgf/x86/unify-irq
+>
+> Jeremy Fitzhardinge (2):
+>      x86: add handle_irq() to allow interrupt injection
+
+Why doesnt Xen use a special irqchip, instead of this private hook/layer
+in the lowlevel x86 arch level?
+
+irqchip is at least well-specified and widely used. do_IRQ() internals
+on the other hand will become a Xen special quickly. Also, adding a
+needless function call there obviously does not help native performance.
+
+	Ingo
