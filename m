@@ -1,80 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbZBIXCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbZBIXDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755496AbZBIXCA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 18:02:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbZBIXBw
+	id S1755977AbZBIXDI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 18:03:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbZBIXC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 18:01:52 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:8783 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753343AbZBIXBv (ORCPT
+	Mon, 9 Feb 2009 18:02:56 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:38752 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753859AbZBIXCz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 18:01:51 -0500
+	Mon, 9 Feb 2009 18:02:55 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=siWt/iO0Kxhni68SrSPrP4AVj9URJXS+/DjmLzAeG77xekTMTnM2Z1bnbauhHzpBez
-         Yab2ygcVubjJ3cv6l9j3iPVbqJVyowLejC2YXLcXorbu52XAgKi+7kkQbbiYI7ouOREh
-         llAQNHa4eGZ0lpwFii9sherV6/wAl00aOpyQ4=
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=KHBehQms1oLbF3E7J3t8knAvZh+ZjVBzVqFZfODm2DwP0hmNu5eZ1C8nABb5Xxnw4L
+         5hjeprk4COa2ieS9UivkVTQiHNzDEu1aRdcIA0Qjj+154feH2FwmqEp/l6Sn5exkGO76
+         J7AbXHVuBAmRLHyV1fRIX3jubuXF2pBsrcgk8=
 MIME-Version: 1.0
-Reply-To: mtk.manpages@gmail.com
-In-Reply-To: <alpine.DEB.1.10.0902091148520.8503@alien.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0902081510150.18839@alien.or.mcafeemobile.com>
-	 <cfd18e0f0902090128i1a4902f4of0d4d830b567602f@mail.gmail.com>
-	 <alpine.DEB.1.10.0902090940100.8084@alien.or.mcafeemobile.com>
-	 <cfd18e0f0902091128pf5723c8rcfa1c08d77d4e55d@mail.gmail.com>
-	 <alpine.DEB.1.10.0902091148520.8503@alien.or.mcafeemobile.com>
-Date: Tue, 10 Feb 2009 12:01:50 +1300
-Message-ID: <cfd18e0f0902091501g5059a12s3dc734d9a936890a@mail.gmail.com>
-Subject: Re: [patch 2/2] timerfd extend clockid support
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20090209194309.GA8491@cmpxchg.org>
+References: <20090206122129.79CC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20090206044907.GA18467@cmpxchg.org>
+	 <20090206135302.628E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20090206122417.GB1580@cmpxchg.org>
+	 <28c262360902060535g22facdd0tf082ca0abaec3f80@mail.gmail.com>
+	 <28c262360902060915u18b2fb54t5f2c1f44d03306e3@mail.gmail.com>
+	 <20090209194309.GA8491@cmpxchg.org>
+Date: Tue, 10 Feb 2009 08:02:53 +0900
+Message-ID: <28c262360902091502w5555528bt8e61e6c288aeff76@mail.gmail.com>
+Subject: Re: [patch] vmscan: rename sc.may_swap to may_unmap
+From: MinChan Kim <minchan.kim@gmail.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Rik van Riel <riel@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 9:10 AM, Davide Libenzi <davidel@xmailserver.org> wrote:
-> On Tue, 10 Feb 2009, Michael Kerrisk wrote:
+On Tue, Feb 10, 2009 at 4:43 AM, Johannes Weiner <hannes@cmpxchg.org> wrote:
+> sc.may_swap does not only influence reclaiming of anon pages but pages
+> mapped into pagetables in general, which also includes mapped file
+> pages.
 >
->> > and I did not have even the time to peek
->> > into the core timer code to see if the usage of other timer types in
->> > eventfd would create problems. That's why I asked Thomas if they'd behave
->> > differently from an hrtimer caller POV.
->> > I'll try to take a look by myself today or tomorrow.
+> From shrink_page_list():
+>
+>                if (!sc->may_swap && page_mapped(page))
+>                        goto keep_locked;
+>
+> For anon pages, this makes sense as they are always mapped and
+> reclaiming them always requires swapping.
+>
+> But mapped file pages are skipped here as well and it has nothing to
+> do with swapping.
+>
+> The real effect of the knob is whether mapped pages are unmapped and
+> reclaimed or not.  Rename it to `may_unmap' to have its name match its
+> actual meaning more precisely.
+>
+> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> ---
+>  mm/vmscan.c |   20 ++++++++++----------
+>  1 file changed, 10 insertions(+), 10 deletions(-)
+>
+> On Sat, Feb 07, 2009 at 02:15:21AM +0900, MinChan Kim wrote:
+>> Sorry for misunderstood your point.
+>> It would be better to remain more detaily for git log ?
 >>
->> Okay -- hopefully my test program may be useful (even if it is not
->> itself fully tested yet, it's patterned after a similar test program I
->> wrote fot the POSIX timers API, so it should mostly work).
+>> 'may_swap' applies not only to anon pages but to mapped file pages as
+>> well. 'may_swap' term is sometime used for 'swap', sometime used for
+>> 'sync|discard'.
+>> In case of anon pages, 'may_swap' determines whether pages were swapout or not.
+>> but In case of mapped file pages, it determines whether pages are
+>> synced or discarded. so, 'may_swap' is rather awkward. Rename it to
+>> 'may_unmap' which is the actual meaning.
+>>
+>> If you find wrong word and sentence, Please, fix it. :)
 >
-> Answer was pretty easy once you look at the code :)
-> Timerfd uses core hrtimer functions, and clockids different from the ones
-> timerfd already handles, fall into the CPU-timers domain. Domain that is
-> not handled by hrtimer.
-> Changes to timerfd to support CPU-based timers are really deep (more than
-> changes, is a total rewrite). not only to timerfd, but also to CPU-based
-> timers to deliver notification by means different than signals.
-> Given the amount of code change, and given that a posix-timers->signalfd
-> bridge could solve the problem, I'm not going even close to suggest such a
-> change.
+> Is the above description okay for you?
+>
 
-Okay, thanks for the info.  I've added some text to the
-timerfd_create(2) page to explicitly note that the range of clocks
-supported by timerfd_create() is smaller than POSIX timers.
+It looks good to me. :)
 
-Cheers,
-
-Michael
-
+Reviewed-by: MinChan Kim <minchan.kim@gmail.com>
 
 -- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Kinds regards,
+MinChan Kim
