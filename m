@@ -1,92 +1,297 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756612AbZBIRDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbZBIREo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756612AbZBIRDV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 12:03:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756240AbZBIRCx
+	id S1756029AbZBIREo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 12:04:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbZBIREf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 12:02:53 -0500
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:53530 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756105AbZBIRCw (ORCPT
+	Mon, 9 Feb 2009 12:04:35 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:11752 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752625AbZBIREd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 12:02:52 -0500
-Date: Mon, 9 Feb 2009 22:32:43 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cpu hotplug: remove unused cpuhotplug_mutex_lock()
-Message-ID: <20090209170243.GE12696@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <498BDB15.6050609@cn.fujitsu.com>
+	Mon, 9 Feb 2009 12:04:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=FCm2b35vDftpc++yBz74P0yOqoLLNYYZmRr7U2ifuZlsG8EteG9L2LlnZwhudECmlu
+         CcVTlO86ZzRtlKKNXh/Lu3h4Xo4k6CwcSeZJDzC4EJtJDHN99A+jvJ6PTMOaJ7Zha++4
+         Y88uT5XH/zoGZpJbOeWvbE9G6Zywny8W1RIRc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <498BDB15.6050609@cn.fujitsu.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Date: Mon, 9 Feb 2009 18:04:29 +0100
+Message-ID: <8447d6730902090904y138af9c6r3d64278bc7a30811@mail.gmail.com>
+Subject: [PATCH 1/2] User access to internal clocks
+From: Davide Rizzo <elpa.rizzo@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Cc: ben-linux@fluff.org, "Hans J. Koch" <hjk@linutronix.de>,
+       Greg KH <gregkh@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Lai,
+To: Greg KH <gregkh@suse.de>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, linux-kernel@vger.kernel.org,
+ben-linux@fluff.org, linux-api@vger.kernel.org
 
-On Fri, Feb 06, 2009 at 02:39:17PM +0800, Lai Jiangshan wrote:
-> 
-> cpuhotplug_mutex_lock() is not used. this patch remove it.
+This driver is for user level programs to interact with system clocks.
+It allows to read and modify rates and parents, using virtual files.
+It requires the implementation of 2 additional functions in the clk interface:
+ clk_for_each() and clk_name().
+Actually I implemented that functions only for Samsung S3C24xx platform.
 
-This should have been long gone with get_online_cpus()/put_online_cpus()
-patch series. My bad, I missed it.
+Signed-off-by: Davide Rizzo <elpa.rizzo@gmail.com>
+---
+diff -urpN linux-2.6.29-rc2/drivers/misc/Kconfig
+linux-2.6.29-rc2.elpa/drivers/misc/Kconfig
+--- linux-2.6.29-rc2/drivers/misc/Kconfig       2009-01-17
+11:32:40.000000000 +0100
++++ linux-2.6.29-rc2.elpa/drivers/misc/Kconfig  2009-01-28
+19:21:43.000000000 +0100
+@@ -232,4 +232,19 @@ config DELL_LAPTOP
 
-Thanks for the patch.
-Acked-by: Gautham R Shenoy <ego@in.ibm.com>
-> 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
->  cpu.h |   16 ----------------
->  1 file changed, 16 deletions(-)
-> diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-> index c2747ac..2643d84 100644
-> --- a/include/linux/cpu.h
-> +++ b/include/linux/cpu.h
-> @@ -23,7 +23,6 @@
->  #include <linux/node.h>
->  #include <linux/compiler.h>
->  #include <linux/cpumask.h>
-> -#include <linux/mutex.h>
-> 
->  struct cpu {
->  	int node_id;		/* The node which contains the CPU */
-> @@ -103,16 +102,6 @@ extern struct sysdev_class cpu_sysdev_class;
->  #ifdef CONFIG_HOTPLUG_CPU
->  /* Stop CPUs going up and down. */
-> 
-> -static inline void cpuhotplug_mutex_lock(struct mutex *cpu_hp_mutex)
-> -{
-> -	mutex_lock(cpu_hp_mutex);
-> -}
-> -
-> -static inline void cpuhotplug_mutex_unlock(struct mutex *cpu_hp_mutex)
-> -{
-> -	mutex_unlock(cpu_hp_mutex);
-> -}
-> -
->  extern void get_online_cpus(void);
->  extern void put_online_cpus(void);
->  #define hotcpu_notifier(fn, pri) {				\
-> @@ -126,11 +115,6 @@ int cpu_down(unsigned int cpu);
-> 
->  #else		/* CONFIG_HOTPLUG_CPU */
-> 
-> -static inline void cpuhotplug_mutex_lock(struct mutex *cpu_hp_mutex)
-> -{ }
-> -static inline void cpuhotplug_mutex_unlock(struct mutex *cpu_hp_mutex)
-> -{ }
-> -
->  #define get_online_cpus()	do { } while (0)
->  #define put_online_cpus()	do { } while (0)
->  #define hotcpu_notifier(fn, pri)	do { (void)(fn); } while (0)
-> 
+ source "drivers/misc/c2port/Kconfig"
 
--- 
-Thanks and Regards
-gautham
++config UM_CLOCK
++       bool "User mode clock driver"
++       depends on SYSFS
++       default n
++       ---help---
++       Allows user mode programs to configure and control internal clocks'
++        rates and parents through virtual files in sysfs.
++       This driver requires implementation of some additional functions
++        in architecture specific low-level drivers: clk_for_each() and
++        clk_get_name(). Moreover, it requires clk_get() to recognize the
++        "name.id" format
++       Currently they're implemented only on Samsung S3C24xx platforms.
++
++       If unsure, say N.
++
+ endif # MISC_DEVICES
+diff -urpN linux-2.6.29-rc2/drivers/misc/Makefile
+linux-2.6.29-rc2.elpa/drivers/misc/Makefile
+--- linux-2.6.29-rc2/drivers/misc/Makefile      2009-01-17
+11:32:40.000000000 +0100
++++ linux-2.6.29-rc2.elpa/drivers/misc/Makefile 2009-01-28
+19:21:43.000000000 +0100
+@@ -20,3 +20,4 @@ obj-$(CONFIG_SGI_XP)          += sgi-xp/
+ obj-$(CONFIG_SGI_GRU)          += sgi-gru/
+ obj-$(CONFIG_HP_ILO)           += hpilo.o
+ obj-$(CONFIG_C2PORT)           += c2port/
++obj-$(CONFIG_UM_CLOCK) += um_clock.o
+diff -urpN linux-2.6.29-rc2/drivers/misc/um_clock.c
+linux-2.6.29-rc2.elpa/drivers/misc/um_clock.c
+--- linux-2.6.29-rc2/drivers/misc/um_clock.c    1970-01-01
+01:00:00.000000000 +0100
++++ linux-2.6.29-rc2.elpa/drivers/misc/um_clock.c       2009-01-28
+19:21:43.000000000 +0100
+@@ -0,0 +1,174 @@
++/*
++ driver/misc/clock.c
++
++ Written Feb 2008 by Davide Rizzo <elpa.rizzo@gmail.com>
++
++ This driver allows to read and modify internal clocks' rates using
++  virtual files. User can also read and modify parents.
++
++ This driver requires implementation of clk_name() and clk_enum() functions
++  in architecture specific clock.c
++
++ This program is free software; you can redistribute it and/or modify
++ it under the terms of the GNU General Public License as published by
++ the Free Software Foundation; either version 2 of the License, or
++ (at your option) any later version.
++
++ This program is distributed in the hope that it will be useful,
++ but WITHOUT ANY WARRANTY; without even the implied warranty of
++ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ GNU General Public License for more details.
++
++ You should have received a copy of the GNU General Public License
++ along with this program; if not, write to the Free Software
++ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++*/
++
++#include <linux/device.h>
++#include <linux/clk.h>
++#include <linux/kdev_t.h>
++#include <linux/err.h>
++
++static DEFINE_MUTEX(mutex);
++
++static ssize_t rate_show(struct device *dev, struct device_attribute *attr,
++       char *buffer)
++{
++       unsigned long rate;
++       struct clk *clk;
++
++       clk = dev_get_drvdata(dev);
++       rate = 0;
++
++       mutex_lock(&mutex);
++
++       rate = clk_get_rate(clk);
++
++       mutex_unlock(&mutex);
++
++       return sprintf(buffer, "%ld\n", rate);
++}
++
++static ssize_t rate_store(struct device *dev, struct device_attribute *attr,
++       const char *buffer, size_t count)
++{
++       unsigned long rate;
++       struct clk *clk;
++       int err;
++
++       clk = dev_get_drvdata(dev);
++       err = strict_strtoul(buffer, 10, &rate);
++       if (err)
++               return err;
++
++       mutex_lock(&mutex);
++
++       if (rate != 0) {
++               clk_set_rate(clk, clk_round_rate(clk, rate));
++               clk_enable(clk);
++       } else
++               clk_disable(clk);
++
++       mutex_unlock(&mutex);
++
++       return count;
++}
++
++static ssize_t parent_show(struct device *dev,
++       struct device_attribute *attr, char *buffer)
++{
++       struct clk *parent, *clk;
++
++       clk = dev_get_drvdata(dev);
++
++       mutex_lock(&mutex);
++
++       parent = clk_get_parent(clk);
++       if (parent && !IS_ERR(parent)) {
++               const char *name = clk_get_name(parent);
++               if (IS_ERR(name)) {
++                       mutex_unlock(&mutex);
++                       return PTR_ERR(name);
++               }
++               strlcpy(buffer, name, PAGE_SIZE);
++       } else
++               buffer[0] = '\0';
++       strlcat(buffer, "\n", PAGE_SIZE);
++
++       mutex_unlock(&mutex);
++
++       return strlen(buffer);
++}
++
++static ssize_t parent_store(struct device *dev,
++       struct device_attribute *attr, const char *buffer, size_t count)
++{
++       struct clk *parent;
++
++       char *s = kstrdup(buffer, GFP_KERNEL);
++
++       if (!s)
++               return -ENOMEM;
++       if (s[strlen(s) - 1] == '\n')
++               s[strlen(s) - 1] = '\0';
++       parent = clk_get(dev, s);
++       kfree(s);
++       if (IS_ERR(parent))
++               return PTR_ERR(parent);
++
++       mutex_lock(&mutex);
++
++       clk_set_parent(dev_get_drvdata(dev), parent);
++
++       mutex_unlock(&mutex);
++
++       clk_put(parent);
++       return count;
++}
++
++static DEVICE_ATTR(rate, S_IRUGO | S_IWUSR, rate_show, rate_store);
++static DEVICE_ATTR(parent, S_IRUGO | S_IWUSR, parent_show, parent_store);
++
++static const struct attribute *clock_attrs[] = {
++       &dev_attr_rate.attr,
++       &dev_attr_parent.attr,
++       NULL,
++};
++
++static const struct attribute_group clock_attr_group = {
++       .attrs = (struct attribute **) clock_attrs,
++};
++
++static struct class gpclock_class = {
++       .name =         "clock",
++       .owner =        THIS_MODULE,
++};
++
++static int create_clock_attr(struct clk *clk, void *data)
++{
++       struct device *dev;
++       const char *name;
++
++       name = clk_get_name(clk);
++       if (name == NULL || IS_ERR(name)) {
++               pr_debug("Invalid clock's name\n");
++               return PTR_ERR(name);
++       }
++       dev = device_create(&gpclock_class, (struct device *)data, MKDEV(0, 0),
++               clk, name);
++       if (!dev)
++               return -ENODEV;
++       return sysfs_create_group(&dev->kobj, &clock_attr_group);
++}
++
++static int __init gpclock_init(void)
++{
++       int ret;
++
++       ret = class_register(&gpclock_class);
++       if (ret >= 0)
++               ret = clk_for_each(create_clock_attr, NULL);
++       return ret;
++}
++subsys_initcall(gpclock_init);
++
+diff -urpN linux-2.6.29-rc2/Documentation/ABI/testing/sysfs-class-clock
+linux-2.6.29-rc2.elpa/Documentation/ABI/testing/sysfs-class-clock
+--- linux-2.6.29-rc2/Documentation/ABI/testing/sysfs-class-clock
+ 1970-01-01
+01:00:00.000000000 +0100
++++ linux-2.6.29-rc2.elpa/Documentation/ABI/testing/sysfs-class-clock
+ 2009-01-28
+19:21:43.000000000 +0100
+@@ -0,0 +1,20 @@
++What:          /sys/class/clock
++Date:          January 2009
++Contact:       Davide Rizzo <elpa.rizzo@gmail.com>
++Description:
++               The /sys/class/clock directory will consist of a group of
++               subdirectories each one describing an internal clock
+in the kernel.
++               The name of the subdirectory is the clock's name.
++               If a clock is device specific, its name is in the form
+"name.id".
++               In each directory there are 2 virtual files: rate and parent.
++               Both these files are r/w, but there can be some
+architecture-dependent
++               limitations on write access on one or both of them.
++               For this interface to work, it needs some low-level
+implementations (look
++               at include/linux/clk.h):
++               - clk_for_each()
++               - clk_name()
++               - clk_get() should recognize also the "name.id" format
++               Actually I implemented these only for Samsung S3C SoC in
++               arch/arm/plat-s3c/clock.c
++
++Users:
