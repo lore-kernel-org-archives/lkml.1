@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbZBIBtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754277AbZBIBvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754055AbZBIBtT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 20:49:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbZBIBtB
+	id S1754277AbZBIBvT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 20:51:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbZBIBvL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 20:49:01 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58678
+	Sun, 8 Feb 2009 20:51:11 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58682
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752934AbZBIBtA (ORCPT
+	by vger.kernel.org with ESMTP id S1752934AbZBIBvK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 20:49:00 -0500
-Date: Sun, 08 Feb 2009 17:48:54 -0800 (PST)
-Message-Id: <20090208.174854.51245719.davem@davemloft.net>
-To: alex.williamson@hp.com
-Cc: maxk@qualcomm.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] tun: Fix unicast filter overflow
+	Sun, 8 Feb 2009 20:51:10 -0500
+Date: Sun, 08 Feb 2009 17:51:03 -0800 (PST)
+Message-Id: <20090208.175103.257843097.davem@davemloft.net>
+To: risto.suominen@gmail.com
+Cc: jgarzik@pobox.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 001/002] de2104x: force correct order when writing to
+ rx ring
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1234143837.20601.11.camel@2710p.home>
-References: <20090207174404.16716.20574.stgit@kvm.aw>
-	<20090208.170605.01154488.davem@davemloft.net>
-	<1234143837.20601.11.camel@2710p.home>
+In-Reply-To: <46e1c7760902071330u10427d33p3f49e82a2e4b1ddc@mail.gmail.com>
+References: <46e1c7760902071330u10427d33p3f49e82a2e4b1ddc@mail.gmail.com>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,17 +27,19 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alex Williamson <alex.williamson@hp.com>
-Date: Sun, 08 Feb 2009 18:43:57 -0700
+From: Risto Suominen <risto.suominen@gmail.com>
+Date: Sat, 7 Feb 2009 23:30:24 +0200
 
-> Sure, that's another option, but we'd then need to figure out what to do
-> with TUN_FLT_ALLMULTI.  Unicast would almost needs it's own hash list if
-> we want to support an allmulti mode that's less than promiscuous.  The
-> return value of the ioctl is the number of exact filters, so the user
-> will know what happened.
+> DescOwn should not be set, thus allowing the chip to use the descriptor, before
+> everything else is set up correctly.
+> 
+> Signed-off-by: Risto Suominen <Risto.Suominen@gmail.com>
 
-Oh so that's what the return value means.
+Applied.
 
-Ok, I guess for now your patch is fine, I'll apply it and
-queue it up for -stable, thanks!
+Please send networking patches to netdev@vger.kernel.org, especially
+so that your patch gets properly logged and tracked at:
 
+	http://patchwork.ozlabs.org/project/netdev/list/
+
+Thanks.
