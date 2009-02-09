@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754178AbZBIKFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754469AbZBIKGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754178AbZBIKFR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 05:05:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbZBIKFE
+	id S1754469AbZBIKGo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 05:06:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbZBIKGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 05:05:04 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57387 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751661AbZBIKFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 05:05:03 -0500
-Date: Mon, 9 Feb 2009 11:04:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mandeep Singh Baines <msb@google.com>
-Cc: fweisbec@gmail.com, linux-kernel@vger.kernel.org, rientjes@google.com,
-       mbligh@google.com, thockin@google.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] softlockup: remove timestamp checking from hung_task
-Message-ID: <20090209100452.GD20467@elte.hu>
-References: <20090206233747.GA8747@google.com>
+	Mon, 9 Feb 2009 05:06:35 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:60987 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751661AbZBIKGe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 05:06:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=IxjKwz+jhv/81oUcrIUZZVkFZ/Egc6tv8jqylzrJz9w68YKCCriJsioI1gZkrQz/0M
+         pDZVP0xdI4Jlgla17OgTNUuz1DqEkcUUshH+80apXD8rBPswBL3BiFOAvecK5gCe3oFK
+         8BwdnojYkgYnn6Ig5KceVJJ/IF3OxXQ70qUrM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090206233747.GA8747@google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200902091659.21446.nickpiggin@yahoo.com.au>
+References: <c43b2e150902071144j4f01e754y83205ad8d734fd95@mail.gmail.com>
+	 <c43b2e150902080209s2444718fjb08086eed1a835cc@mail.gmail.com>
+	 <c43b2e150902080225kefc3f0bk89aa270397bcc33f@mail.gmail.com>
+	 <200902091659.21446.nickpiggin@yahoo.com.au>
+Date: Mon, 9 Feb 2009 11:06:32 +0100
+Message-ID: <c43b2e150902090206n4fd45d24xedbf5074535cf574@mail.gmail.com>
+Subject: Re: viafb triggers BUG at mm/vmalloc.c:294 [kernel 2.6.28.3]
+From: wixor <wixorpeek@gmail.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>, JosephChan@via.com.tw,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Yes, that is somehow better. BUG is gone, it says now
+   vmap allocation failed: use vmalloc=<size> to increase size
+and then
+   ioremap failed.
+The driver still doesn't work however.
 
-* Mandeep Singh Baines <msb@google.com> wrote:
-
-> Patch against tip/core/softlockup
-> 
-> ---
-> Impact: saves sizeof(long) bytes per task_struct
-> 
-> By guaranteeing that sysctl_hung_task_timeout_secs have elapsed between
-> tasklist scans we can avoid using timestamps.
-> 
-> Signed-off-by: Mandeep Singh Baines <msb@google.com>
-> ---
->  include/linux/sched.h |    1 -
->  kernel/fork.c         |    8 +++-----
->  kernel/hung_task.c    |   48 +++++++++---------------------------------------
->  3 files changed, 12 insertions(+), 45 deletions(-)
-
-Nice simplification!
-
-Applied to tip/core/softlockup, thanks Mandeep.
-
-(i fixed the one scripts/checkpatch.pl error that your patch triggered)
-
-	Ingo
+--
+wixor
