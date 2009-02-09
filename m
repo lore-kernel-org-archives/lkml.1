@@ -1,53 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754521AbZBIJbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbZBIJdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754521AbZBIJbY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 04:31:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbZBIJbP
+	id S1754176AbZBIJdz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 04:33:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbZBIJdq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 04:31:15 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54086 "EHLO mx2.mail.elte.hu"
+	Mon, 9 Feb 2009 04:33:46 -0500
+Received: from ozlabs.org ([203.10.76.45]:43374 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752461AbZBIJbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 04:31:14 -0500
-Date: Mon, 9 Feb 2009 10:31:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Brian Gerst <brgerst@gmail.com>
-Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 3/3] x86: Fix abuse of per_cpu_offset
-Message-ID: <20090209093100.GC7930@elte.hu>
-References: <1234105120-19731-1-git-send-email-brgerst@gmail.com> <1234105120-19731-3-git-send-email-brgerst@gmail.com>
+	id S1751791AbZBIJdp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 04:33:45 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] module_param: bool params should still work with #include <stdbool.h>
+Date: Mon, 9 Feb 2009 20:03:39 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: Arjan van de Ven <arjan@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1234105120-19731-3-git-send-email-brgerst@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200902092003.39875.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Brian Gerst <brgerst@gmail.com> wrote:
-
-> Impact: bug fix
+On Monday 09 February 2009 18:22:26 Rusty Russell wrote:
 > 
-> Don't use per_cpu_offset() to determine if it valid to access a
-> per-cpu variable for a given cpu number.  It is not a valid assumption
-> on x86-64 anymore.  Use cpu_possible() instead.
-> 
-> Signed-off-by: Brian Gerst <brgerst@gmail.com>
-> ---
->  arch/x86/mm/numa_64.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+> Code such as "module_param(foo, bool, 0400)" no longer compiles if one
+> includes stdbool.h: the ISO standard requires that this "#define bool
+> _Bool".
 
-Applied to tip/core/perpcu, thanks Brian!
+Of course, better fix is not to use stdbool.h, but leave it to the
+typedef in kernel/types.h.
 
-	Ingo
+Forget this patch...
+Rusty.
