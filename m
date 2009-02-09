@@ -1,80 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756107AbZBIXDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756261AbZBIXEB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756107AbZBIXDk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 18:03:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbZBIXDb
+	id S1756261AbZBIXEB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 18:04:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755239AbZBIXDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 18:03:31 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:10341 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753447AbZBIXDa (ORCPT
+	Mon, 9 Feb 2009 18:03:51 -0500
+Received: from e39.co.us.ibm.com ([32.97.110.160]:33334 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753958AbZBIXDu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 18:03:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=bjhcABu83APqzklhxsy+B3SX+hjV2VrdnuxoOutg1LNz/Zpg9Nlxr9PV7yeYwemTaa
-         k3AlsakyBxJJel00ET46k0629MPM6N90G7J69qOrxHgsi5ekGWcSc2kAes8FWC+6fj6o
-         UJmSjSLLGvEnJ6tADviZv4wDb7R++ZzmxCQs8=
-MIME-Version: 1.0
-Reply-To: mtk.manpages@gmail.com
-In-Reply-To: <alpine.DEB.1.10.0902091148520.8503@alien.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0902081510150.18839@alien.or.mcafeemobile.com>
-	 <cfd18e0f0902090128i1a4902f4of0d4d830b567602f@mail.gmail.com>
-	 <alpine.DEB.1.10.0902090940100.8084@alien.or.mcafeemobile.com>
-	 <cfd18e0f0902091128pf5723c8rcfa1c08d77d4e55d@mail.gmail.com>
-	 <alpine.DEB.1.10.0902091148520.8503@alien.or.mcafeemobile.com>
-Date: Tue, 10 Feb 2009 12:03:28 +1300
-Message-ID: <cfd18e0f0902091503o52f551ceu559fff657e1cc7c9@mail.gmail.com>
-Subject: Re: [patch 2/2] timerfd extend clockid support
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Feb 2009 18:03:50 -0500
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+       Mimi Zohar <zohar@us.ibm.com>
+Subject: [PATCH] integrity: shmem zero fix
+Date: Mon,  9 Feb 2009 18:02:28 -0500
+Message-Id: <1234220548-4791-1-git-send-email-zohar@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.5.6.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 9:10 AM, Davide Libenzi <davidel@xmailserver.org> wrote:
-> On Tue, 10 Feb 2009, Michael Kerrisk wrote:
->
->> > and I did not have even the time to peek
->> > into the core timer code to see if the usage of other timer types in
->> > eventfd would create problems. That's why I asked Thomas if they'd behave
->> > differently from an hrtimer caller POV.
->> > I'll try to take a look by myself today or tomorrow.
->>
->> Okay -- hopefully my test program may be useful (even if it is not
->> itself fully tested yet, it's patterned after a similar test program I
->> wrote fot the POSIX timers API, so it should mostly work).
->
-> Answer was pretty easy once you look at the code :)
-> Timerfd uses core hrtimer functions, and clockids different from the ones
-> timerfd already handles, fall into the CPU-timers domain. Domain that is
-> not handled by hrtimer.
-> Changes to timerfd to support CPU-based timers are really deep (more than
-> changes, is a total rewrite). not only to timerfd, but also to CPU-based
-> timers to deliver notification by means different than signals.
-> Given the amount of code change, and given that a posix-timers->signalfd
-> bridge could solve the problem, I'm not going even close to suggest such a
-> change.
+Based on comments from Mike Frysinger and Randy Dunlap,
+- moved ima.h include before CONFIG_SHMEM test
+- added 'struct linux_binprm' in ima.h
 
-Davide,
-
-Will you nevertheless push the patch that adds the EINVAL flags checks?
-
-Cheers,
-
-Michael
-
-
+Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+---
+diff --git a/include/linux/ima.h b/include/linux/ima.h
+index 6db30a3..7018ee8 100644
+--- a/include/linux/ima.h
++++ b/include/linux/ima.h
+@@ -12,6 +12,8 @@
+ #ifndef _LINUX_IMA_H
+ #define _LINUX_IMA_H
+ 
++struct linux_binprm;
++
+ #ifdef CONFIG_IMA
+ extern int ima_bprm_check(struct linux_binprm *bprm);
+ extern int ima_inode_alloc(struct inode *inode);
+diff --git a/mm/shmem.c b/mm/shmem.c
+index 7519988..8135fac 100644
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -28,6 +28,7 @@
+ #include <linux/mm.h>
+ #include <linux/module.h>
+ #include <linux/swap.h>
++#include <linux/ima.h>
+ 
+ static struct vfsmount *shm_mnt;
+ 
+@@ -59,7 +60,6 @@ static struct vfsmount *shm_mnt;
+ #include <linux/highmem.h>
+ #include <linux/seq_file.h>
+ #include <linux/magic.h>
+-#include <linux/ima.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/div64.h>
 -- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+1.5.6.6
+
