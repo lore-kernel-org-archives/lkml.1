@@ -1,434 +1,1258 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbZBIOPM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757229AbZBIORB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756648AbZBIOPM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 09:15:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756144AbZBIONh
+	id S1757229AbZBIORB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 09:17:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756293AbZBIOOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 09:13:37 -0500
+	Mon, 9 Feb 2009 09:14:15 -0500
 Received: from cavolo.yandex.ru ([87.250.244.45]:19472 "EHLO cavolo.yandex.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756000AbZBIONc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 09:13:32 -0500
+	id S1756057AbZBIONr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 09:13:47 -0500
 X-Greylist: delayed 640 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Feb 2009 09:13:15 EST
 From: Evgeniy Polyakov <zbr@ioremap.net>
 To: GregKH <greg@kroah.com>
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, Eveniy Polyakov <zbr@ioremap.net>
-Subject: [1/9] pohmelfs: documentation.
-Date: Mon,  9 Feb 2009 17:02:34 +0300
-Message-Id: <1234188162-14727-2-git-send-email-zbr@ioremap.net>
+       netdev@vger.kernel.org, Evgeniy Polyakov <zbr@ioremap.net>
+Subject: [4/9] pohmelfs: directory operations.
+Date: Mon,  9 Feb 2009 17:02:37 +0300
+Message-Id: <1234188162-14727-5-git-send-email-zbr@ioremap.net>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1234188162-14727-1-git-send-email-zbr@ioremap.net>
+In-Reply-To: <1234188162-14727-4-git-send-email-zbr@ioremap.net>
 References: <1234188162-14727-1-git-send-email-zbr@ioremap.net>
+ <1234188162-14727-2-git-send-email-zbr@ioremap.net>
+ <1234188162-14727-3-git-send-email-zbr@ioremap.net>
+ <1234188162-14727-4-git-send-email-zbr@ioremap.net>
 X-Antivirus: Dr.Web (R) for Mail Servers on cavolo.yandex.ru host
 X-Antivirus-Code: 100000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch includes POHMELFS design and implementation description.
-Separate file includes mount options, default parameters and usage examples.
+This patch implementes all supported directory operations
+like directory reading, object lookup, creation, removal
+and so on.
 
-Signed-off-by: Eveniy Polyakov <zbr@ioremap.net>
+Currently object removal is not optimized at all.
 
-diff --git a/Documentation/filesystems/pohmelfs/design_notes.txt b/Documentation/filesystems/pohmelfs/design_notes.txt
+Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
+
+diff --git a/drivers/staging/pohmelfs/dir.c b/drivers/staging/pohmelfs/dir.c
 new file mode 100644
-index 0000000..6d6db60
+index 0000000..3b795c9
 --- /dev/null
-+++ b/Documentation/filesystems/pohmelfs/design_notes.txt
-@@ -0,0 +1,70 @@
-+POHMELFS: Parallel Optimized Host Message Exchange Layered File System.
++++ b/drivers/staging/pohmelfs/dir.c
+@@ -0,0 +1,1093 @@
++/*
++ * 2007+ Copyright (c) Evgeniy Polyakov <zbr@ioremap.net>
++ * All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
 +
-+		Evgeniy Polyakov <zbr@ioremap.net>
++#include <linux/kernel.h>
++#include <linux/fs.h>
++#include <linux/jhash.h>
++#include <linux/namei.h>
++#include <linux/pagemap.h>
 +
-+Homepage: http://www.ioremap.net/projects/pohmelfs
++#include "netfs.h"
 +
-+POHMELFS first began as a network filesystem with coherent local data and
-+metadata caches but is now evolving into a parallel distributed filesystem.
-+
-+Main features of this FS include:
-+ * Locally coherent cache for data and metadata with (potentially) byte-range locks.
-+	Since all Linux filesystems lock the whole inode during writing, algorithm
-+	is very simple and does not use byte-ranges, although they are sent in
-+	locking messages.
-+ * Completely async processing of all events except creation of hard and symbolic
-+	links, and rename events.
-+	Object creation and data reading and writing are processed asynchronously.
-+ * Flexible object architecture optimized for network processing.
-+	Ability to create long paths to objects and remove arbitrarily huge
-+	directories with a single network command.
-+	(like removing the whole kernel tree via a single network command).
-+ * Very high performance.
-+ * Fast and scalable multithreaded userspace server. Being in userspace it works
-+	with any underlying filesystem and still is much faster than async in-kernel NFS one.
-+ * Client is able to switch between different servers (if one goes down, client
-+	automatically reconnects to second and so on).
-+ * Transactions support. Full failover for all operations.
-+	Resending transactions to different servers on timeout or error.
-+ * Read request (data read, directory listing, lookup requests) balancing between multiple servers.
-+ * Write requests are replicated to multiple servers and completed only when all of them are acked.
-+ * Ability to add and/or remove servers from the working set at run-time.
-+ * Strong authentification and possible data encryption in network channel.
-+ * Extended attributes support.
-+
-+POHMELFS is based on transactions, which are potentially long-standing objects that live
-+in the client's memory. Each transaction contains all the information needed to process a given
-+command (or set of commands, which is frequently used during data writing: single transactions
-+can contain creation and data writing commands). Transactions are committed by all the servers
-+to which they are sent and, in case of failures, are eventually resent or dropped with an error.
-+For example, reading will return an error if no servers are available.
-+
-+POHMELFS uses a asynchronous approach to data processing. Courtesy of transactions, it is
-+possible to detach replies from requests and, if the command requires data to be received, the
-+caller sleeps waiting for it. Thus, it is possible to issue multiple read commands to different
-+servers and async threads will pick up replies in parallel, find appropriate transactions in the
-+system and put the data where it belongs (like the page or inode cache).
-+
-+The main feature of POHMELFS is writeback data and the metadata cache.
-+Only a few non-performance critical operations use the write-through cache and
-+are synchronous: hard and symbolic link creation, and object rename. Creation,
-+removal of objects and data writing are asynchronous and are sent to
-+the server during system writeback. Only one writer at a time is allowed for any
-+given inode, which is guarded by an appropriate locking protocol.
-+Because of this feature, POHMELFS is extremely fast at metadata intensive
-+workloads and can fully utilize the bandwidth to the servers when doing bulk
-+data transfers.
-+
-+POHMELFS clients operate with a working set of servers and are capable of balancing read-only
-+operations (like lookups or directory listings) between them.
-+Administrators can add or remove servers from the set at run-time via special commands (described
-+in Documentation/pohmelfs/info.txt file). Writes are replicated to all servers.
-+
-+POHMELFS is capable of full data channel encryption and/or strong crypto hashing.
-+One can select any kernel supported cipher, encryption mode, hash type and operation mode
-+(hmac or digest). It is also possible to use both or neither (default). Crypto configuration
-+is checked during mount time and, if the server does not support it, appropriate capabilities
-+will be disabled or mount will fail (if 'crypto_fail_unsupported' mount option is specified).
-+Crypto performance heavily depends on the number of crypto threads, which asynchronously perform
-+crypto operations and send the resulting data to server or submit it up the stack. This number
-+can be controlled via a mount option.
-diff --git a/Documentation/filesystems/pohmelfs/info.txt b/Documentation/filesystems/pohmelfs/info.txt
-new file mode 100644
-index 0000000..4e3d501
---- /dev/null
-+++ b/Documentation/filesystems/pohmelfs/info.txt
-@@ -0,0 +1,86 @@
-+POHMELFS usage information.
-+
-+Mount options:
-+idx=%u
-+ Each mountpoint is associated with a special index via this option.
-+ Administrator can add or remove servers from the given index, so all mounts,
-+ which were attached to it, are updated.
-+ Default it is 0.
-+
-+trans_scan_timeout=%u
-+ This timeout, expressed in milliseconds, specifies time to scan transaction
-+ trees looking for stale requests, which have to be resent, or if number of
-+ retries exceed specified limit, dropped with error.
-+ Default is 5 seconds.
-+
-+drop_scan_timeout=%u
-+ Internal timeout, expressed in milliseconds, which specifies how frequently
-+ inodes marked to be dropped are freed. It also specifies how frequently
-+ the system checks that servers have to be added or removed from current working set.
-+ Default is 1 second.
-+
-+wait_on_page_timeout=%u
-+ Number of milliseconds to wait for reply from remote server for data reading command.
-+ If this timeout is exceeded, reading returns an error.
-+ Default is 5 seconds.
-+
-+trans_retries=%u
-+ This is the number of times that a transaction will be resent to a server that did
-+ not answer for the last @trans_scan_timeout milliseconds.
-+ When the number of resends exceeds this limit, the transaction is completed with error.
-+ Default is 5 resends.
-+
-+crypto_thread_num=%u
-+ Number of crypto processing threads. Threads are used both for RX and TX traffic.
-+ Default is 2, or no threads if crypto operations are not supported.
-+
-+trans_max_pages=%u
-+ Maximum number of pages in a single transaction. This parameter also controls
-+ the number of pages,  allocated for crypto processing (each crypto thread has
-+ pool of pages, the number of which is equal to 'trans_max_pages'.
-+ Default is 100 pages.
-+
-+crypto_fail_unsupported
-+ If specified, mount will fail if the server does not support requested crypto operations.
-+ By default mount will disable non-matching crypto operations.
-+
-+mcache_timeout=%u
-+ Maximum number of milliseconds to wait for the mcache objects to be processed.
-+ Mcache includes locks (given lock should be granted by server), attributes (they should be
-+ fully received in the given timeframe).
-+ Default is 5 seconds.
-+
-+Usage examples.
-+
-+Add (or remove if it already exists) server server1.net:1025 into the working set with index $idx
-+with appropriate hash algorithm and key file and cipher algorithm, mode and key file:
-+$cfg -a server1.net -p 1025 -i $idx -K $hash_key -k $cipher_key
-+
-+Mount filesystem with given index $idx to /mnt mountpoint.
-+Client will connect to all servers specified in the working set via previous command:
-+mount -t pohmel -o idx=$idx q /mnt
-+
-+One can add or remove servers from working set after mounting too.
-+
-+
-+Server installation.
-+
-+Creating a server, which listens at port 1025 and 0.0.0.0 address.
-+Working root directory (note, that server chroots there, so you have to have appropriate permissions)
-+is set to /mnt, server will negotiate hash/cipher with client, in case client requested it, there
-+are appropriate key files.
-+Number of working threads is set to 10.
-+
-+# ./fserver -a 0.0.0.0 -p 1025 -r /mnt -w 10 -K hash_key -k cipher_key
-+
-+ -A 6			 - listen on ipv6 address. Default: Disabled.
-+ -r root                 - path to root directory. Default: /tmp.
-+ -a addr                 - listen address. Default: 0.0.0.0.
-+ -p port                 - listen port. Default: 1025.
-+ -w workers              - number of workers per connected client. Default: 1.
-+ -K file		 - hash key size. Default: none.
-+ -k file		 - cipher key size. Default: none.
-+ -h                      - this help.
-+
-+Number of worker threads specifies how many workers will be created for each client.
-+Bulk single-client transafers usually are better handled with smaller number (like 1-3).
-diff --git a/Documentation/filesystems/pohmelfs/network_protocol.txt b/Documentation/filesystems/pohmelfs/network_protocol.txt
-new file mode 100644
-index 0000000..40ea6c2
---- /dev/null
-+++ b/Documentation/filesystems/pohmelfs/network_protocol.txt
-@@ -0,0 +1,227 @@
-+POHMELFS network protocol.
-+
-+Basic structure used in network communication is following command:
-+
-+struct netfs_cmd
++static int pohmelfs_cmp_hash(struct pohmelfs_name *n, u32 hash)
 +{
-+	__u16			cmd;	/* Command number */
-+	__u16			csize;	/* Attached crypto information size */
-+	__u16			cpad;	/* Attached padding size */
-+	__u16			ext;	/* External flags */
-+	__u32			size;	/* Size of the attached data */
-+	__u32			trans;	/* Transaction id */
-+	__u64			id;	/* Object ID to operate on. Used for feedback.*/
-+	__u64			start;	/* Start of the object. */
-+	__u64			iv;	/* IV sequence */
-+	__u8			data[0];
++	if (n->hash > hash)
++		return -1;
++	if (n->hash < hash)
++		return 1;
++
++	return 0;
++}
++
++static struct pohmelfs_name *pohmelfs_search_hash_unprecise(struct pohmelfs_inode *pi, u32 hash)
++{
++	struct rb_node *n = pi->hash_root.rb_node;
++	struct pohmelfs_name *tmp = NULL;
++	int cmp;
++
++	while (n) {
++		tmp = rb_entry(n, struct pohmelfs_name, hash_node);
++
++		cmp = pohmelfs_cmp_hash(tmp, hash);
++		if (cmp < 0)
++			n = n->rb_left;
++		else if (cmp > 0)
++			n = n->rb_right;
++		else
++			break;
++
++	}
++
++	return tmp;
++}
++
++struct pohmelfs_name *pohmelfs_search_hash(struct pohmelfs_inode *pi, u32 hash)
++{
++	struct pohmelfs_name *tmp;
++
++	tmp = pohmelfs_search_hash_unprecise(pi, hash);
++	if (tmp && (tmp->hash == hash))
++		return tmp;
++
++	return NULL;
++}
++
++static void __pohmelfs_name_del(struct pohmelfs_inode *parent, struct pohmelfs_name *node)
++{
++	rb_erase(&node->hash_node, &parent->hash_root);
++}
++
++/*
++ * Remove name cache entry from its caches and free it.
++ */
++static void pohmelfs_name_free(struct pohmelfs_inode *parent, struct pohmelfs_name *node)
++{
++	__pohmelfs_name_del(parent, node);
++	list_del(&node->sync_create_entry);
++	kfree(node);
++}
++
++static struct pohmelfs_name *pohmelfs_insert_hash(struct pohmelfs_inode *pi,
++		struct pohmelfs_name *new)
++{
++	struct rb_node **n = &pi->hash_root.rb_node, *parent = NULL;
++	struct pohmelfs_name *ret = NULL, *tmp;
++	int cmp;
++
++	while (*n) {
++		parent = *n;
++
++		tmp = rb_entry(parent, struct pohmelfs_name, hash_node);
++
++		cmp = pohmelfs_cmp_hash(tmp, new->hash);
++		if (cmp < 0)
++			n = &parent->rb_left;
++		else if (cmp > 0)
++			n = &parent->rb_right;
++		else {
++			ret = tmp;
++			break;
++		}
++	}
++
++	if (ret) {
++		printk("%s: exist: parent: %llu, ino: %llu, hash: %x, len: %u, data: '%s', "
++				           "new: ino: %llu, hash: %x, len: %u, data: '%s'.\n",
++				__func__, pi->ino,
++				ret->ino, ret->hash, ret->len, ret->data,
++				new->ino, new->hash, new->len, new->data);
++		ret->ino = new->ino;
++		return ret;
++	}
++
++	rb_link_node(&new->hash_node, parent, n);
++	rb_insert_color(&new->hash_node, &pi->hash_root);
++
++	return NULL;
++}
++
++/*
++ * Free name cache for given inode.
++ */
++void pohmelfs_free_names(struct pohmelfs_inode *parent)
++{
++	struct rb_node *rb_node;
++	struct pohmelfs_name *n;
++
++	for (rb_node = rb_first(&parent->hash_root); rb_node;) {
++		n = rb_entry(rb_node, struct pohmelfs_name, hash_node);
++		rb_node = rb_next(rb_node);
++
++		pohmelfs_name_free(parent, n);
++	}
++}
++
++static void pohmelfs_fix_offset(struct pohmelfs_inode *parent, struct pohmelfs_name *node)
++{
++	parent->total_len -= node->len;
++}
++
++/*
++ * Free name cache entry helper.
++ */
++void pohmelfs_name_del(struct pohmelfs_inode *parent, struct pohmelfs_name *node)
++{
++	pohmelfs_fix_offset(parent, node);
++	pohmelfs_name_free(parent, node);
++}
++
++/*
++ * Insert new name cache entry into all hash cache.
++ */
++static int pohmelfs_insert_name(struct pohmelfs_inode *parent, struct pohmelfs_name *n)
++{
++	struct pohmelfs_name *name;
++
++	name = pohmelfs_insert_hash(parent, n);
++	if (name)
++		return -EEXIST;
++
++	parent->total_len += n->len;
++	list_add_tail(&n->sync_create_entry, &parent->sync_create_list);
++
++	return 0;
++}
++
++/*
++ * Allocate new name cache entry.
++ */
++static struct pohmelfs_name *pohmelfs_name_alloc(unsigned int len)
++{
++	struct pohmelfs_name *n;
++
++	n = kzalloc(sizeof(struct pohmelfs_name) + len, GFP_KERNEL);
++	if (!n)
++		return NULL;
++
++	INIT_LIST_HEAD(&n->sync_create_entry);
++
++	n->data = (char *)(n+1);
++
++	return n;
++}
++
++/*
++ * Add new name entry into directory's cache.
++ */
++static int pohmelfs_add_dir(struct pohmelfs_sb *psb, struct pohmelfs_inode *parent,
++		struct pohmelfs_inode *npi, struct qstr *str, unsigned int mode, int link)
++{
++	int err = -ENOMEM;
++	struct pohmelfs_name *n;
++
++	n = pohmelfs_name_alloc(str->len + 1);
++	if (!n)
++		goto err_out_exit;
++
++	n->ino = npi->ino;
++	n->mode = mode;
++	n->len = str->len;
++	n->hash = str->hash;
++	sprintf(n->data, "%s", str->name);
++
++	mutex_lock(&parent->offset_lock);
++	err = pohmelfs_insert_name(parent, n);
++	mutex_unlock(&parent->offset_lock);
++
++	if (err) {
++		if (err != -EEXIST)
++			goto err_out_free;
++		kfree(n);
++	}
++
++	return 0;
++
++err_out_free:
++	kfree(n);
++err_out_exit:
++	return err;
++}
++
++/*
++ * Create new inode for given parameters (name, inode info, parent).
++ * This does not create object on the server, it will be synced there during writeback.
++ */
++struct pohmelfs_inode *pohmelfs_new_inode(struct pohmelfs_sb *psb,
++		struct pohmelfs_inode *parent, struct qstr *str,
++		struct netfs_inode_info *info, int link)
++{
++	struct inode *new = NULL;
++	struct pohmelfs_inode *npi;
++	int err = -EEXIST;
++
++	dprintk("%s: creating inode: parent: %llu, ino: %llu, str: %p.\n",
++			__func__, (parent)?parent->ino:0, info->ino, str);
++
++	err = -ENOMEM;
++	new = iget_locked(psb->sb, info->ino);
++	if (!new)
++		goto err_out_exit;
++
++	npi = POHMELFS_I(new);
++	npi->ino = info->ino;
++	err = 0;
++
++	if (new->i_state & I_NEW) {
++		dprintk("%s: filling VFS inode: %lu/%llu.\n",
++				__func__, new->i_ino, info->ino);
++		pohmelfs_fill_inode(new, info);
++
++		if (S_ISDIR(info->mode)) {
++			struct qstr s;
++
++			s.name = ".";
++			s.len = 1;
++			s.hash = jhash(s.name, s.len, 0);
++
++			err = pohmelfs_add_dir(psb, npi, npi, &s, info->mode, 0);
++			if (err)
++				goto err_out_put;
++
++			s.name = "..";
++			s.len = 2;
++			s.hash = jhash(s.name, s.len, 0);
++
++			err = pohmelfs_add_dir(psb, npi, (parent)?parent:npi, &s,
++					(parent)?parent->vfs_inode.i_mode:npi->vfs_inode.i_mode, 0);
++			if (err)
++				goto err_out_put;
++		}
++	}
++
++	if (str) {
++		if (parent) {
++			err = pohmelfs_add_dir(psb, parent, npi, str, info->mode, link);
++
++			dprintk("%s: %s inserted name: '%s', new_offset: %llu, ino: %llu, parent: %llu.\n",
++					__func__, (err)?"unsuccessfully":"successfully",
++					str->name, parent->total_len, info->ino, parent->ino);
++
++			if (err && err != -EEXIST)
++				goto err_out_put;
++		}
++	}
++
++	if (new->i_state & I_NEW) {
++		if (parent)
++			mark_inode_dirty(&parent->vfs_inode);
++		mark_inode_dirty(new);
++	}
++
++	set_bit(NETFS_INODE_OWNED, &npi->state);
++	npi->lock_type = POHMELFS_WRITE_LOCK;
++	unlock_new_inode(new);
++
++	return npi;
++
++err_out_put:
++	printk("%s: putting inode: %p, npi: %p, error: %d.\n", __func__, new, npi, err);
++	iput(new);
++err_out_exit:
++	return ERR_PTR(err);
++}
++
++static int pohmelfs_remote_sync_complete(struct page **pages, unsigned int page_num,
++		void *private, int err)
++{
++	struct pohmelfs_inode *pi = private;
++	struct pohmelfs_sb *psb = POHMELFS_SB(pi->vfs_inode.i_sb);
++
++	dprintk("%s: ino: %llu, err: %d.\n", __func__, pi->ino, err);
++
++	if (err)
++		pi->error = err;
++	wake_up(&psb->wait);
++	pohmelfs_put_inode(pi);
++
++	return err;
++}
++
++/*
++ * Receive directory content from the server.
++ * This should be only done for objects, which were not created locally,
++ * and which were not synced previously.
++ */
++static int pohmelfs_sync_remote_dir(struct pohmelfs_inode *pi)
++{
++	struct inode *inode = &pi->vfs_inode;
++	struct pohmelfs_sb *psb = POHMELFS_SB(inode->i_sb);
++	long ret = msecs_to_jiffies(25000);
++	int err;
++
++	dprintk("%s: dir: %llu, state: %lx: remote_synced: %d.\n",
++		__func__, pi->ino, pi->state, test_bit(NETFS_INODE_REMOTE_SYNCED, &pi->state));
++
++	if (test_bit(NETFS_INODE_REMOTE_DIR_SYNCED, &pi->state))
++		return 0;
++	
++	if (!igrab(inode)) {
++		err = -ENOENT;
++		goto err_out_exit;
++	}
++
++	err = pohmelfs_meta_command(pi, NETFS_READDIR, NETFS_TRANS_SINGLE_DST,
++			pohmelfs_remote_sync_complete, pi, 0);
++	if (err)
++		goto err_out_exit;
++
++	pi->error = 0;
++	ret = wait_event_interruptible_timeout(psb->wait,
++			test_bit(NETFS_INODE_REMOTE_DIR_SYNCED, &pi->state) || pi->error, ret);
++	dprintk("%s: awake dir: %llu, ret: %ld, err: %d.\n", __func__, pi->ino, ret, pi->error);
++	if (ret <= 0) {
++		err = -ETIMEDOUT;
++		goto err_out_exit;
++	}
++
++	if (pi->error)
++		return pi->error;
++
++	return 0;
++
++err_out_exit:
++	clear_bit(NETFS_INODE_REMOTE_SYNCED, &pi->state);
++
++	return err;
++}
++
++static int pohmelfs_dir_open(struct inode *inode, struct file *file)
++{
++	file->private_data = NULL;
++	return 0;
++}
++
++/*
++ * VFS readdir callback. Syncs directory content from server if needed,
++ * and provides direntry info to the userspace.
++ */
++static int pohmelfs_readdir(struct file *file, void *dirent, filldir_t filldir)
++{
++	struct inode *inode = file->f_path.dentry->d_inode;
++	struct pohmelfs_inode *pi = POHMELFS_I(inode);
++	struct pohmelfs_name *n;
++	struct rb_node *rb_node;
++	int err = 0, mode;
++	u64 len;
++
++	dprintk("%s: parent: %llu, fpos: %llu, hash: %08lx.\n",
++			__func__, pi->ino, (u64)file->f_pos,
++			(unsigned long)file->private_data);
++
++	err = pohmelfs_data_lock(pi, 0, ~0, POHMELFS_READ_LOCK);
++	if (err)
++		return err;
++
++	err = pohmelfs_sync_remote_dir(pi);
++	if (err)
++		return err;
++
++	if (file->private_data && (file->private_data == (void *)(unsigned long)file->f_pos))
++		return 0;
++
++	mutex_lock(&pi->offset_lock);
++	n = pohmelfs_search_hash_unprecise(pi, (unsigned long)file->private_data);
++
++	while (n) {
++		mode = (n->mode >> 12) & 15;
++
++		dprintk("%s: offset: %llu, parent ino: %llu, name: '%s', len: %u, ino: %llu, "
++				"mode: %o/%o, fpos: %llu, hash: %08x.\n",
++				__func__, file->f_pos, pi->ino, n->data, n->len,
++				n->ino, n->mode, mode, file->f_pos, n->hash);
++
++		file->private_data = (void *)n->hash;
++
++		len = n->len;
++		err = filldir(dirent, n->data, n->len, file->f_pos, n->ino, mode);
++
++		if (err < 0) {
++			dprintk("%s: err: %d.\n", __func__, err);
++			err = 0;
++			break;
++		}
++
++		file->f_pos += len;
++
++		rb_node = rb_next(&n->hash_node);
++
++		if (!rb_node || (rb_node == &n->hash_node)) {
++			file->private_data = (void *)(unsigned long)file->f_pos;
++			break;
++		}
++
++		n = rb_entry(rb_node, struct pohmelfs_name, hash_node);
++	}
++	mutex_unlock(&pi->offset_lock);
++
++	return err;
++}
++
++static loff_t pohmelfs_dir_lseek(struct file *file, loff_t offset, int origin)
++{
++	file->f_pos = offset;
++	file->private_data = NULL;
++	return offset;
++}
++
++const struct file_operations pohmelfs_dir_fops = {
++	.open = pohmelfs_dir_open,
++	.read = generic_read_dir,
++	.llseek = pohmelfs_dir_lseek,
++	.readdir = pohmelfs_readdir,
 +};
 +
-+Commands can be embedded into transaction command (which in turn has own command),
-+so one can extend protocol as needed without breaking backward compatibility as long
-+as old commands are supported. All string lengths include tail 0 byte.
-+
-+All commans are transfered over the network in big-endian. CPU endianess is used at the end peers.
-+
-+@cmd - command number, which specifies command to be processed. Following
-+	commands are used currently:
-+
-+	NETFS_READDIR	= 1,	/* Read directory for given inode number */
-+	NETFS_READ_PAGE,	/* Read data page from the server */
-+	NETFS_WRITE_PAGE,	/* Write data page to the server */
-+	NETFS_CREATE,		/* Create directory entry */
-+	NETFS_REMOVE,		/* Remove directory entry */
-+	NETFS_LOOKUP,		/* Lookup single object */
-+	NETFS_LINK,		/* Create a link */
-+	NETFS_TRANS,		/* Transaction */
-+	NETFS_OPEN,		/* Open intent */
-+	NETFS_INODE_INFO,	/* Metadata cache coherency synchronization message */
-+	NETFS_PAGE_CACHE,	/* Page cache invalidation message */
-+	NETFS_READ_PAGES,	/* Read multiple contiguous pages in one go */
-+	NETFS_RENAME,		/* Rename object */
-+	NETFS_CAPABILITIES,	/* Capabilities of the client, for example supported crypto */
-+	NETFS_LOCK,		/* Distributed lock message */
-+	NETFS_XATTR_SET,	/* Set extended attribute */
-+	NETFS_XATTR_GET,	/* Get extended attribute */
-+
-+@ext - external flags. Used by different commands to specify some extra arguments
-+	like partial size of the embedded objects or creation flags.
-+
-+@size - size of the attached data. For NETFS_READ_PAGE and NETFS_READ_PAGES no data is attached,
-+	but size of the requested data is incorporated here. It does not include size of the command
-+	header (struct netfs_cmd) itself.
-+
-+@id - id of the object this command operates on. Each command can use it for own purpose.
-+
-+@start - start of the object this command operates on. Each command can use it for own purpose.
-+
-+@csize, @cpad - size and padding size of the (attached if needed) crypto information.
-+
-+Command specifications.
-+
-+@NETFS_READDIR
-+This command is used to sync content of the remote dir to the client.
-+
-+@ext - length of the path to object.
-+@size - the same.
-+@id - local inode number of the directory to read.
-+@start - zero.
-+
-+
-+@NETFS_READ_PAGE
-+This command is used to read data from remote server.
-+Data size does not exceed local page cache size.
-+
-+@id - inode number.
-+@start - first byte offset.
-+@size - number of bytes to read plus length of the path to object.
-+@ext - object path length.
-+
-+
-+@NETFS_CREATE
-+Used to create object.
-+It does not require that all directories on top of the object were
-+already created, it will create them automatically. Each object has
-+associated @netfs_path_entry data structure, which contains creation
-+mode (permissions and type) and length of the name as long as name itself.
-+
-+@start - 0
-+@size - size of the all data structures needed to create a path
-+@id - local inode number
-+@ext - 0
-+
-+
-+@NETFS_REMOVE
-+Used to remove object.
-+
-+@ext - length of the path to object.
-+@size - the same.
-+@id - local inode number.
-+@start - zero.
-+
-+
-+@NETFS_LOOKUP
-+Lookup information about object on server.
-+
-+@ext - length of the path to object.
-+@size - the same.
-+@id - local inode number of the directory to look object in.
-+@start - local inode number of the object to look at.
-+
-+
-+@NETFS_LINK
-+Create hard of symlink.
-+Command is sent as "object_path|target_path".
-+
-+@size - size of the above string.
-+@id - parent local inode number.
-+@start - 1 for symlink, 0 for hardlink.
-+@ext - size of the "object_path" above.
-+
-+
-+@NETFS_TRANS
-+Transaction header.
-+
-+@size - incorporates all embedded command sizes including theirs header sizes.
-+@start - transaction generation number - unique id used to find transaction.
-+@ext - transaction flags. Unused at the moment.
-+@id - 0.
-+
-+
-+@NETFS_OPEN
-+Open intent for given transaction.
-+
-+@id - local inode number.
-+@start - 0.
-+@size - path length to the object.
-+@ext - open flags (O_RDWR and so on).
-+
-+
-+@NETFS_INODE_INFO
-+Metadata update command.
-+It is sent to servers when attributes of the object are changed and received
-+when data or metadata were updated. It operates with the following structure:
-+
-+struct netfs_inode_info
++/*
++ * Lookup single object on server.
++ */
++static int pohmelfs_lookup_single(struct pohmelfs_inode *parent,
++		struct qstr *str, u64 ino)
 +{
-+	unsigned int		mode;
-+	unsigned int		nlink;
-+	unsigned int		uid;
-+	unsigned int		gid;
-+	unsigned int		blocksize;
-+	unsigned int		padding;
-+	__u64			ino;
-+	__u64			blocks;
-+	__u64			rdev;
-+	__u64			size;
-+	__u64			version;
++	struct pohmelfs_sb *psb = POHMELFS_SB(parent->vfs_inode.i_sb);
++	long ret = msecs_to_jiffies(5000);
++	int err;
++
++	set_bit(NETFS_COMMAND_PENDING, &parent->state);
++	err = pohmelfs_meta_command_data(parent, parent->ino, NETFS_LOOKUP,
++			(char *)str->name, NETFS_TRANS_SINGLE_DST, NULL, NULL, ino);
++	if (err)
++		goto err_out_exit;
++
++	err = 0;
++	ret = wait_event_interruptible_timeout(psb->wait,
++			!test_bit(NETFS_COMMAND_PENDING, &parent->state), ret);
++	if (ret == 0)
++		err = -ETIMEDOUT;
++	else if (signal_pending(current))
++		err = -EINTR;
++
++	if (err)
++		goto err_out_exit;
++
++	return 0;
++
++err_out_exit:
++	clear_bit(NETFS_COMMAND_PENDING, &parent->state);
++
++	printk("%s: failed: parent: %llu, ino: %llu, name: '%s', err: %d.\n",
++			__func__, parent->ino, ino, str->name, err);
++
++	return err;
++}
++
++/*
++ * VFS lookup callback.
++ * We first try to get inode number from local name cache, if we have one,
++ * then inode can be found in inode cache. If there is no inode or no object in
++ * local cache, try to lookup it on server. This only should be done for directories,
++ * which were not created locally, otherwise remote server does not know about dir at all,
++ * so no need to try to know that.
++ */
++struct dentry *pohmelfs_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
++{
++	struct pohmelfs_inode *parent = POHMELFS_I(dir);
++	struct pohmelfs_name *n;
++	struct inode *inode = NULL;
++	unsigned long ino = 0;
++	int err, lock_type = POHMELFS_READ_LOCK, need_lock;
++	struct qstr str = dentry->d_name;
++
++	if ((nd->intent.open.flags & O_ACCMODE) > 1)
++		lock_type = POHMELFS_WRITE_LOCK;
++
++	need_lock = pohmelfs_need_lock(parent, lock_type);
++
++	err = pohmelfs_data_lock(parent, 0, ~0, lock_type);
++	if (err)
++		goto out;
++
++	str.hash = jhash(dentry->d_name.name, dentry->d_name.len, 0);
++
++	mutex_lock(&parent->offset_lock);
++	n = pohmelfs_search_hash(parent, str.hash);
++	if (n)
++		ino = n->ino;
++	mutex_unlock(&parent->offset_lock);
++
++	dprintk("%s: 1 ino: %lu, inode: %p, name: '%s', hash: %x, parent_state: %lx.\n",
++			__func__, ino, inode, str.name, str.hash, parent->state);
++
++	if (ino) {
++		inode = ilookup(dir->i_sb, ino);
++		if (inode)
++			goto out;
++	}
++
++	dprintk("%s: dir: %p, dir_ino: %llu, name: '%s', len: %u, dir_state: %lx, ino: %lu.\n",
++			__func__, dir, parent->ino,
++			str.name, str.len, parent->state, ino);
++
++	if (!ino) {
++		if (!need_lock)
++			goto out;
++	}
++
++	err = pohmelfs_lookup_single(parent, &str, ino);
++	if (err)
++		goto out;
++
++	if (!ino) {
++		mutex_lock(&parent->offset_lock);
++		n = pohmelfs_search_hash(parent, str.hash);
++		if (n)
++			ino = n->ino;
++		mutex_unlock(&parent->offset_lock);
++	}
++
++	if (ino) {
++		inode = ilookup(dir->i_sb, ino);
++		printk("%s: second lookup ino: %lu, inode: %p, name: '%s', hash: %x.\n",
++				__func__, ino, inode, str.name, str.hash);
++		if (!inode) {
++			printk("%s: No inode for ino: %lu, name: '%s', hash: %x.\n",
++				__func__, ino, str.name, str.hash);
++			//return NULL;
++			return ERR_PTR(-EACCES);
++		}
++	} else {
++		printk("%s: No inode number : name: '%s', hash: %x.\n",
++			__func__, str.name, str.hash);
++	}
++out:
++	return d_splice_alias(inode, dentry);
++}
++
++/*
++ * Create new object in local cache. Object will be synced to server
++ * during writeback for given inode.
++ */
++struct pohmelfs_inode *pohmelfs_create_entry_local(struct pohmelfs_sb *psb,
++	struct pohmelfs_inode *parent, struct qstr *str, u64 start, int mode)
++{
++	struct pohmelfs_inode *npi;
++	int err = -ENOMEM;
++	struct netfs_inode_info info;
++
++	dprintk("%s: name: '%s', mode: %o, start: %llu.\n",
++			__func__, str->name, mode, start);
++
++	info.mode = mode;
++	info.ino = start;
++
++	if (!start)
++		info.ino = pohmelfs_new_ino(psb);
++
++	info.nlink = S_ISDIR(mode)?2:1;
++	info.uid = current_fsuid();
++	info.gid = current_fsgid();
++	info.size = 0;
++	info.blocksize = 512;
++	info.blocks = 0;
++	info.rdev = 0;
++	info.version = 0;
++
++	npi = pohmelfs_new_inode(psb, parent, str, &info, !!start);
++	if (IS_ERR(npi)) {
++		err = PTR_ERR(npi);
++		goto err_out_unlock;
++	}
++
++	return npi;
++
++err_out_unlock:
++	dprintk("%s: err: %d.\n", __func__, err);
++	return ERR_PTR(err);
++}
++
++/*
++ * Create local object and bind it to dentry.
++ */
++static int pohmelfs_create_entry(struct inode *dir, struct dentry *dentry, u64 start, int mode)
++{
++	struct pohmelfs_sb *psb = POHMELFS_SB(dir->i_sb);
++	struct pohmelfs_inode *npi, *parent;
++	struct qstr str = dentry->d_name;
++	int err;
++
++	parent = POHMELFS_I(dir);
++
++	err = pohmelfs_data_lock(parent, 0, ~0, POHMELFS_WRITE_LOCK);
++	if (err)
++		return err;
++
++	str.hash = jhash(dentry->d_name.name, dentry->d_name.len, 0);
++
++	npi = pohmelfs_create_entry_local(psb, parent, &str, start, mode);
++	if (IS_ERR(npi))
++		return PTR_ERR(npi);
++
++	d_instantiate(dentry, &npi->vfs_inode);
++
++	dprintk("%s: parent: %llu, inode: %llu, name: '%s', parent_nlink: %d, nlink: %d.\n",
++			__func__, parent->ino, npi->ino, dentry->d_name.name,
++			(signed)dir->i_nlink, (signed)npi->vfs_inode.i_nlink);
++
++	return 0;
++}
++
++/*
++ * VFS create and mkdir callbacks.
++ */
++static int pohmelfs_create(struct inode *dir, struct dentry *dentry, int mode,
++		struct nameidata *nd)
++{
++	return pohmelfs_create_entry(dir, dentry, 0, mode);
++}
++
++static int pohmelfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
++{
++	int err;
++
++	inode_inc_link_count(dir);
++	err = pohmelfs_create_entry(dir, dentry, 0, mode | S_IFDIR);
++	if (err)
++		inode_dec_link_count(dir);
++
++	return err;
++}
++
++static int pohmelfs_remove_entry(struct inode *dir, struct dentry *dentry)
++{
++	struct pohmelfs_sb *psb = POHMELFS_SB(dir->i_sb);
++	struct inode *inode = dentry->d_inode;
++	struct pohmelfs_inode *parent = POHMELFS_I(dir), *pi = POHMELFS_I(inode);
++	struct pohmelfs_name *n;
++	int err = -ENOENT;
++	struct qstr str = dentry->d_name;
++
++	err = pohmelfs_data_lock(parent, 0, ~0, POHMELFS_WRITE_LOCK);
++	if (err)
++		return err;
++
++	str.hash = jhash(dentry->d_name.name, dentry->d_name.len, 0);
++
++	dprintk("%s: dir_ino: %llu, inode: %llu, name: '%s', nlink: %d.\n",
++			__func__, parent->ino, pi->ino,
++			str.name, (signed)inode->i_nlink);
++
++	BUG_ON(!inode);
++
++	mutex_lock(&parent->offset_lock);
++	n = pohmelfs_search_hash(parent, str.hash);
++	if (n) {
++		pohmelfs_fix_offset(parent, n);
++		if (test_bit(NETFS_INODE_REMOTE_SYNCED, &pi->state)) {
++			pohmelfs_remove_child(pi, n);
++		}
++		pohmelfs_name_free(parent, n);
++		err = 0;
++	}
++	mutex_unlock(&parent->offset_lock);
++
++	if (!err) {
++		psb->avail_size += inode->i_size;
++
++		pohmelfs_inode_del_inode(psb, pi);
++
++		mark_inode_dirty(dir);
++
++		inode->i_ctime = dir->i_ctime;
++		if (inode->i_nlink)
++			inode_dec_link_count(inode);
++	}
++	dprintk("%s: inode: %p, lock: %ld, unhashed: %d.\n",
++		__func__, pi, inode->i_state & I_LOCK, hlist_unhashed(&inode->i_hash));
++
++	return err;
++}
++
++/*
++ * Unlink and rmdir VFS callbacks.
++ */
++static int pohmelfs_unlink(struct inode *dir, struct dentry *dentry)
++{
++	return pohmelfs_remove_entry(dir, dentry);
++}
++
++static int pohmelfs_rmdir(struct inode *dir, struct dentry *dentry)
++{
++	int err;
++	struct inode *inode = dentry->d_inode;
++
++	dprintk("%s: parent: %llu, inode: %llu, name: '%s', parent_nlink: %d, nlink: %d.\n",
++			__func__, POHMELFS_I(dir)->ino, POHMELFS_I(inode)->ino,
++			dentry->d_name.name, (signed)dir->i_nlink, (signed)inode->i_nlink);
++
++	err = pohmelfs_remove_entry(dir, dentry);
++	if (!err) {
++		inode_dec_link_count(dir);
++		inode_dec_link_count(inode);
++	}
++
++	return err;
++}
++
++/*
++ * Link creation is synchronous.
++ * I'm lazy.
++ * Earth is somewhat round.
++ */
++static int pohmelfs_create_link(struct pohmelfs_inode *parent, struct qstr *obj,
++		struct pohmelfs_inode *target, struct qstr *tstr)
++{
++	struct super_block *sb = parent->vfs_inode.i_sb;
++	struct pohmelfs_sb *psb = POHMELFS_SB(sb);
++	struct netfs_cmd *cmd;
++	struct netfs_trans *t;
++	void *data;
++	int err, parent_len, target_len = 0, cur_len, path_size = 0;
++
++	err = pohmelfs_data_lock(parent, 0, ~0, POHMELFS_WRITE_LOCK);
++	if (err)
++		return err;
++
++	err = sb->s_op->write_inode(&parent->vfs_inode, 0);
++	if (err)
++		goto err_out_exit;
++
++	if (tstr)
++		target_len = tstr->len;
++
++	parent_len = pohmelfs_path_length(parent);
++	if (target)
++		target_len += pohmelfs_path_length(target);
++
++	if (parent_len < 0) {
++		err = parent_len;
++		goto err_out_exit;
++	}
++	
++	if (target_len < 0) {
++		err = target_len;
++		goto err_out_exit;
++	}
++
++	t = netfs_trans_alloc(psb, parent_len + target_len + obj->len + 2, 0, 0);
++	if (!t) {
++		err = -ENOMEM;
++		goto err_out_exit;
++	}
++	cur_len = netfs_trans_cur_len(t);
++
++	cmd = netfs_trans_current(t);
++	if (IS_ERR(cmd)) {
++		err = PTR_ERR(cmd);
++		goto err_out_free;
++	}
++
++	data = (void *)(cmd + 1);
++	cur_len -= sizeof(struct netfs_cmd);
++
++	err = pohmelfs_construct_path_string(parent, data, parent_len);
++	if (err > 0) {
++		/* Do not place null-byte before the slash */
++		path_size = err - 1;
++		cur_len -= path_size;
++
++		err = snprintf(data + path_size, cur_len, "/%s|", obj->name);
++
++		path_size += err;
++		cur_len -= err;
++
++		cmd->ext = path_size - 1; /* No | symbol */
++
++		if (target) {
++			err = pohmelfs_construct_path_string(target, data + path_size, target_len);
++			if (err > 0) {
++				path_size += err;
++				cur_len -= err;
++			}
++		}
++	}
++
++	if (err < 0)
++		goto err_out_free;
++
++	cmd->start = 0;
++
++	if (!target && tstr) {
++		if (tstr->len > cur_len - 1) {
++			err = -ENAMETOOLONG;
++			goto err_out_free;
++		}
++
++		err = snprintf(data + path_size, cur_len, "%s", tstr->name) + 1; /* 0-byte */
++		path_size += err;
++		cur_len -= err;
++		cmd->start = 1;
++	}
++
++	dprintk("%s: parent: %llu, obj: '%s', target_inode: %llu, target_str: '%s', full: '%s'.\n",
++			__func__, parent->ino, obj->name, (target)?target->ino:0, (tstr)?tstr->name:NULL,
++			(char *)data);
++
++	cmd->cmd = NETFS_LINK;
++	cmd->size = path_size;
++	cmd->id = parent->ino;
++
++	netfs_convert_cmd(cmd);
++	
++	netfs_trans_update(cmd, t, path_size);
++
++	err = netfs_trans_finish(t, psb);
++	if (err)
++		goto err_out_exit;
++
++	return 0;
++
++err_out_free:
++	t->result = err;
++	netfs_trans_put(t);
++err_out_exit:
++	return err;
++}
++
++/*
++ *  VFS hard and soft link callbacks.
++ */
++static int pohmelfs_link(struct dentry *old_dentry, struct inode *dir,
++	struct dentry *dentry)
++{
++	struct inode *inode = old_dentry->d_inode;
++	struct pohmelfs_inode *pi = POHMELFS_I(inode);
++	int err;
++	struct qstr str = dentry->d_name;
++
++	str.hash = jhash(dentry->d_name.name, dentry->d_name.len, 0);
++
++	err = inode->i_sb->s_op->write_inode(inode, 0);
++	if (err)
++		return err;
++
++	err = pohmelfs_create_link(POHMELFS_I(dir), &str, pi, NULL);
++	if (err)
++		return err;
++
++	return pohmelfs_create_entry(dir, dentry, pi->ino, inode->i_mode);
++}
++
++static int pohmelfs_symlink(struct inode *dir, struct dentry *dentry, const char *symname)
++{
++	struct qstr sym_str;
++	struct qstr str = dentry->d_name;
++	struct inode *inode;
++	int err;
++
++	str.hash = jhash(dentry->d_name.name, dentry->d_name.len, 0);
++
++	sym_str.name = symname;
++	sym_str.len = strlen(symname);
++
++	err = pohmelfs_create_link(POHMELFS_I(dir), &str, NULL, &sym_str);
++	if (err)
++		goto err_out_exit;
++
++	err = pohmelfs_create_entry(dir, dentry, 0, S_IFLNK | S_IRWXU | S_IRWXG | S_IRWXO);
++	if (err)
++		goto err_out_exit;
++
++	inode = dentry->d_inode;
++
++	err = page_symlink(inode, symname, sym_str.len + 1);
++	if (err)
++		goto err_out_put;
++
++	return 0;
++
++err_out_put:
++	iput(inode);
++err_out_exit:
++	return err;
++}
++
++static int pohmelfs_send_rename(struct pohmelfs_inode *pi, struct pohmelfs_inode *parent,
++		struct qstr *str)
++{
++	int path_len, err, total_len = 0, inode_len, parent_len;
++	char *path;
++	struct netfs_trans *t;
++	struct netfs_cmd *cmd;
++	struct pohmelfs_sb *psb = POHMELFS_SB(pi->vfs_inode.i_sb);
++
++	parent_len = pohmelfs_path_length(parent);
++	inode_len = pohmelfs_path_length(pi);
++
++	if (parent_len < 0 || inode_len < 0)
++		return -EINVAL;
++
++	path_len = parent_len + inode_len + str->len + 3;
++
++	t = netfs_trans_alloc(psb, path_len, 0, 0);
++	if (!t)
++		return -ENOMEM;
++
++	cmd = netfs_trans_current(t);
++	path = (char *)(cmd + 1);
++
++	err = pohmelfs_construct_path_string(pi, path, inode_len);
++	if (err < 0)
++		goto err_out_unlock;
++
++	cmd->ext = err;
++
++	path += err;
++	total_len += err;
++	path_len -= err;
++
++	*path = '|';
++	path++;
++	total_len++;
++	path_len--;
++
++	err = pohmelfs_construct_path_string(parent, path, parent_len);
++	if (err < 0)
++		goto err_out_unlock;
++
++	/*
++	 * Do not place a null-byte before the final slash and the name.
++	 */
++	err--;
++	path += err;
++	total_len += err;
++	path_len -= err;
++
++	err = snprintf(path, path_len - 1, "/%s", str->name);
++	
++	total_len += err + 1; /* 0 symbol */
++	path_len -= err + 1;
++
++	cmd->cmd = NETFS_RENAME;
++	cmd->id = pi->ino;
++	cmd->start = parent->ino;
++	cmd->size = total_len;
++
++	netfs_convert_cmd(cmd);
++	
++	netfs_trans_update(cmd, t, total_len);
++
++	return netfs_trans_finish(t, psb);
++
++err_out_unlock:
++	netfs_trans_free(t);
++	return err;
++}
++
++static int pohmelfs_rename(struct inode *old_dir, struct dentry *old_dentry,
++			struct inode *new_dir, struct dentry *new_dentry)
++{
++	struct inode *inode = old_dentry->d_inode;
++	struct pohmelfs_inode *old_parent, *pi, *new_parent;
++	struct qstr str = new_dentry->d_name;
++	struct pohmelfs_name *n;
++	unsigned int old_hash;
++	int err = -ENOENT;
++
++	pi = POHMELFS_I(inode);
++	old_parent = POHMELFS_I(old_dir);
++
++	if (new_dir) {
++		new_dir->i_sb->s_op->write_inode(new_dir, 0);
++	}
++
++	old_hash = jhash(old_dentry->d_name.name, old_dentry->d_name.len, 0);
++	str.hash = jhash(new_dentry->d_name.name, new_dentry->d_name.len, 0);
++
++	str.len = new_dentry->d_name.len;
++	str.name = new_dentry->d_name.name;
++	str.hash = jhash(new_dentry->d_name.name, new_dentry->d_name.len, 0);
++
++	if (new_dir) {
++		new_parent = POHMELFS_I(new_dir);
++		err = -ENOTEMPTY;
++
++		if (S_ISDIR(inode->i_mode) &&
++				new_parent->total_len <= 3)
++			goto err_out_exit;
++	} else {
++		new_parent = old_parent;
++	}
++
++	dprintk("%s: ino: %llu, parent: %llu, name: '%s' -> parent: %llu, name: '%s', i_size: %llu.\n",
++			__func__, pi->ino, old_parent->ino, old_dentry->d_name.name,
++			new_parent->ino, new_dentry->d_name.name, inode->i_size);
++
++	if (test_bit(NETFS_INODE_REMOTE_SYNCED, &pi->state) &&
++			test_bit(NETFS_INODE_OWNED, &pi->state)) {
++		err = pohmelfs_send_rename(pi, new_parent, &str);
++		if (err)
++			goto err_out_exit;
++	}
++
++	n = pohmelfs_name_alloc(str.len + 1);
++	if (!n)
++		goto err_out_exit;
++
++	mutex_lock(&new_parent->offset_lock);
++	n->ino = pi->ino;
++	n->mode = inode->i_mode;
++	n->len = str.len;
++	n->hash = str.hash;
++	sprintf(n->data, "%s", str.name);
++
++	err = pohmelfs_insert_name(new_parent, n);
++	mutex_unlock(&new_parent->offset_lock);
++
++	if (err)
++		goto err_out_exit;
++
++	mutex_lock(&old_parent->offset_lock);
++	n = pohmelfs_search_hash(old_parent, old_hash);
++	if (n)
++		pohmelfs_name_del(old_parent, n);
++	mutex_unlock(&old_parent->offset_lock);
++
++	mark_inode_dirty(inode);
++	mark_inode_dirty(&new_parent->vfs_inode);
++
++	WARN_ON_ONCE(list_empty(&inode->i_dentry));
++
++	return 0;
++
++err_out_exit:
++
++	clear_bit(NETFS_INODE_REMOTE_SYNCED, &pi->state);
++
++	mutex_unlock(&inode->i_mutex);
++	return err;
++}
++
++/*
++ * POHMELFS directory inode operations.
++ */
++const struct inode_operations pohmelfs_dir_inode_ops = {
++	.link		= pohmelfs_link,
++	.symlink	= pohmelfs_symlink,
++	.unlink		= pohmelfs_unlink,
++	.mkdir		= pohmelfs_mkdir,
++	.rmdir		= pohmelfs_rmdir,
++	.create		= pohmelfs_create,
++	.lookup 	= pohmelfs_lookup,
++	.setattr	= pohmelfs_setattr,
++	.rename		= pohmelfs_rename,
 +};
+diff --git a/drivers/staging/pohmelfs/path_entry.c b/drivers/staging/pohmelfs/path_entry.c
+new file mode 100644
+index 0000000..b62374b
+--- /dev/null
++++ b/drivers/staging/pohmelfs/path_entry.c
+@@ -0,0 +1,114 @@
++/*
++ * 2007+ Copyright (c) Evgeniy Polyakov <zbr@ioremap.net>
++ * All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
 +
-+It effectively mirrors stat(2) returned data.
++#include <linux/module.h>
++#include <linux/slab.h>
++#include <linux/fs.h>
++#include <linux/ktime.h>
++#include <linux/fs.h>
++#include <linux/pagemap.h>
++#include <linux/writeback.h>
++#include <linux/mount.h>
++#include <linux/mm.h>
 +
++#include "netfs.h"
 +
-+@ext - path length to the object.
-+@size - the same plus size of the netfs_inode_info structure.
-+@id - local inode number.
-+@start - 0.
++#define UNHASHED_OBSCURE_STRING_SIZE		sizeof(" (deleted)")
 +
++/*
++ * Create path from root for given inode.
++ * Path is formed as set of stuctures, containing name of the object
++ * and its inode data (mode, permissions and so on).
++ */
++int pohmelfs_construct_path_string(struct pohmelfs_inode *pi, void *data, int len)
++{
++	struct path path;
++	struct dentry *d;
++	char *ptr;
++	int err = 0, strlen, reduce = 0;
 +
-+@NETFS_PAGE_CACHE
-+Command is only received by clients. It contains information about
-+page to be marked as not up-to-date.
++	d = d_find_alias(&pi->vfs_inode);
++	if (!d) {
++		printk("%s: no alias, list_empty: %d.\n", __func__, list_empty(&pi->vfs_inode.i_dentry));
++		return -ENOENT;
++	}
 +
-+@id - client's inode number.
-+@start - last byte of the page to be invalidated. If it is not equal to
-+	current inode size, it will be vmtruncated().
-+@size - 0
-+@ext - 0
++	read_lock(&current->fs->lock);
++	path.mnt = mntget(current->fs->root.mnt);
++	read_unlock(&current->fs->lock);
 +
++	path.dentry = d;
++	
++	if (!IS_ROOT(d) && d_unhashed(d))
++		reduce = 1;
 +
-+@NETFS_READ_PAGES
-+Used to read multiple contiguous pages in one go.
++	ptr = d_path(&path, data, len);
++	if (IS_ERR(ptr)) {
++		err = PTR_ERR(ptr);
++		goto out;
++	}
 +
-+@start - first byte of the contiguous region to read.
-+@size - contains of two fields: lower 8 bits are used to represent page cache shift
-+	used by client, another 3 bytes are used to get number of pages.
-+@id - local inode number.
-+@ext - path length to the object.
++	if (reduce && len >= UNHASHED_OBSCURE_STRING_SIZE) {
++		char *end = data + len - UNHASHED_OBSCURE_STRING_SIZE;
++		*end = '\0';
++	}
 +
++	strlen = len - (ptr - (char *)data);
++	memmove(data, ptr, strlen);
++	ptr = data;
 +
-+@NETFS_RENAME
-+Used to rename object.
-+Attached data is formed into following string: "old_path|new_path".
++	err = strlen;
 +
-+@id - local inode number.
-+@start - parent inode number.
-+@size - length of the above string.
-+@ext - length of the old path part.
++	dprintk("%s: dname: '%s', len: %u, maxlen: %u, name: '%s', strlen: %d.\n",
++			__func__, d->d_name.name, d->d_name.len, len, ptr, strlen);
 +
++out:
++	dput(d);
++	mntput(path.mnt);
 +
-+@NETFS_CAPABILITIES
-+Used to exchange crypto capabilities with server.
-+If crypto capabilities are not supported by server, then client will disable it
-+or fail (if 'crypto_fail_unsupported' mount options was specified).
++	return err;
++}
 +
-+@id - superblock index. Used to specify crypto information for group of servers.
-+@size - size of the attached capabilities structure.
-+@start - 0.
-+@size - 0.
-+@scsize - 0.
++int pohmelfs_path_length(struct pohmelfs_inode *pi)
++{
++	struct dentry *d, *root, *first;
++	int len = 1; /* Root slash */
 +
-+@NETFS_LOCK
-+Used to send lock request/release messages. Although it sends byte range request
-+and is capable of flushing pages based on that, it is not used, since all Linux
-+filesystems lock the whole inode.
++	first = d = d_find_alias(&pi->vfs_inode);
++	if (!d) {
++		dprintk("%s: ino: %llu, mode: %o.\n", __func__, pi->ino, pi->vfs_inode.i_mode);
++		return -ENOENT;
++	}
 +
-+@id - lock generation number.
-+@start - start of the locked range.
-+@size - size of the locked range.
-+@ext - lock type: read/write. Not used actually. 15'th bit is used to determine,
-+	if it is lock request (1) or release (0).
++	read_lock(&current->fs->lock);
++	root = dget(current->fs->root.dentry);
++	read_unlock(&current->fs->lock);
 +
-+@NETFS_XATTR_SET
-+@NETFS_XATTR_GET
-+Used to set/get extended attributes for given inode.
-+@id - attribute generation number or xattr setting type
-+@start - size of the attribute (request or attached)
-+@size - name length, path len and data size for given attribute
-+@ext - path length for given object
++	spin_lock(&dcache_lock);
++
++	if (!IS_ROOT(d) && d_unhashed(d))
++		len += UNHASHED_OBSCURE_STRING_SIZE; /* Obscure " (deleted)" string */
++
++	while (d && d != root && !IS_ROOT(d)) {
++		len += d->d_name.len + 1; /* Plus slash */
++		d = d->d_parent;
++	}
++	spin_unlock(&dcache_lock);
++
++	dput(root);
++	dput(first);
++
++	return len + 1; /* Including zero-byte */
++}
