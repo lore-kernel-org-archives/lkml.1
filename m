@@ -1,116 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbZBIChX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754433AbZBICi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754215AbZBIChX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 21:37:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbZBIChK
+	id S1754433AbZBICi4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 21:38:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbZBICis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 21:37:10 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45425 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753084AbZBIChJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 21:37:09 -0500
+	Sun, 8 Feb 2009 21:38:48 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:45983 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753084AbZBICir (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 21:38:47 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Sun, 8 Feb 2009 18:38:45 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: mtk.manpages@gmail.com
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 1/2] timerfd add flags check
+In-Reply-To: <cfd18e0f0902081834l55142925i1f2f068e4aa9b145@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0902081836540.18839@alien.or.mcafeemobile.com>
+References: <alpine.DEB.1.10.0902081504380.18839@alien.or.mcafeemobile.com> <cfd18e0f0902081834l55142925i1f2f068e4aa9b145@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] forget_original_parent: cleanup ptrace pathes
-In-Reply-To: Oleg Nesterov's message of  Thursday, 5 February 2009 16:33:01 +0100 <20090205153301.GC20953@redhat.com>
-References: <20090129080603.GA26882@redhat.com>
-	<20090205024021.04DDDFC381@magilla.sf.frob.com>
-	<20090205153301.GC20953@redhat.com>
-X-Shopping-List: (1) Deboned turkeys
-   (2) Harried prescriptions
-   (3) Apathetic dogboy auditions
-Message-Id: <20090209023626.03C7DFC330@magilla.sf.frob.com>
-Date: Sun,  8 Feb 2009 18:36:25 -0800 (PST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Roland, I don't know how to reply ;) Because you didn't comment the
-> previois patch
+On Mon, 9 Feb 2009, Michael Kerrisk wrote:
 
-I think my remarks about using ->ptrace_entry covered my sentiments.
-
-> Yes. But The code becomes much more readable for the new readers,
-> it is immediately obvious waht forget_original_parent() does.
-
-How so?  It's already "immediately obvious" that it cleans up ptrace stuff
-and then does the father->children loop.
-
-> And we don't mix things, imho. The "ptrace" logic is lives in
-> the __ptrace_deatch(), so it stays separated.
-
-The fact that task_struct.ptraced exists at all, much less that you need to
-iterate on it, is purely part of the "ptrace logic".
-
-> > In later cleanups, we will eventually separate ptrace linkage from
-> > the tasklist_lock'd parent/child linkage more thoroughly.
+> On Mon, Feb 9, 2009 at 12:23 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
+> > Like Michael requested, this patch adds a missing check for valid flags in
+> > timerfd_settime(), and make it return EINVAL in case some extra bits are
+> > set. If this is or not a -stable thing, it Greg decision.
+> > Should be queued by Andrew for .30, unless -stable and Linus decide to
+> > get it before, like Michael suggested.
 > 
-> Well, who knows how the code will involve ;) And when. But yes, sure,
-> in that case we will need a lot of changes, including the new helper.
-
-I think we know pretty much how it will evolve, because it will be us doing it.
-
-> > For the same reasons, I am not entirely sanguine about overloading
-> > ptrace_entry for any case not related to ptrace.
+> When these two patches are applied against .29-rc3:
 > 
-> Yes. But I don't see a better soulution for now.
+> $ make
+> [...]
+>   CC      fs/timerfd.o
+> fs/timerfd.c: In function 'sys_timerfd_create':
+> fs/timerfd.c:190: error: implicit declaration of function 'invalid_clockid'
+> make[1]: *** [fs/timerfd.o] Error 1
+> make: *** [fs] Error 2
 
-The clunky solution below works fine right now.  It perhaps theoretically
-performs worse--when we actually hit this utterly obscure case, if that
-ever actually happens in real life at all.
-
-> But if reparent_thread returns true, we know the task is not traced
-> and detached, so it must be safe to use ->ptrace_entry. And in fact
-> this is not much worse than ptrace_exit() currently does.
-
-Sure, we "know" it's safe because this code "knows" every intimate thing
-about ptrace innards.  Great.  More of that instead of less is exactly what
-we need, don't you think?  Or perhaps all these stages of clean-up had a
-point, and it was to avoid exactly things like this.  ptrace_exit is itself
-part of the ptrace innards to begin with; that's why it's called that!
-
-> Yes, perhaps. But again, in that case we need a lot of other changes.
-
-Not really so many.  I have thought about plan this from the beginning
-when I did the cleanups creating ptrace_exit et al.  Because of the past
-cleanups, pretty much all those changes are in places now called ptrace_*.
-That's why those were cleanups: they made it easier to isolate such later
-changes from the rest of the code.
-
-> And. After the "[PATCH 3/4]" the code looks really bad. At least we
-> should rename ptrace_exit_finish and ptrace_dead. But if you think
-> this patch is buggy or you see the better fix, then of course this
-> patch should be dropped too.
-
-"Better" is obviously subjective.  I think you are only talking about
-"better" in a micro-optimizing sense that here is only actually relevant to
-optimizing rare cases that don't need it.  I think the "slow kludge" here
-is "better" than overloading ptrace innards in any way because the "better"
-comes from a sanity, readability and maintenance perspective that puts a
-high value on isolating ptrace crud fully from core code, and because the
-specific local cost in "slow" and "kludge" forms of "worse" is IMHO quite
-marginal in this particular spot.
-
-> Oh. We can do this right now. But I don't think this makes the code
-> better. We should restart the list_for_each_entry_safe() loop again
-> and againg until we can't find the task to reap.
-
-Sure, but "restarting" doesn't mean walking any part of the list again--the
-parts you've walked earlier are already gone.  It just means the pure
-overhead of the restart (unlock/relock et al).
-
-> And we have the small problem with atomicity, we should call
-> find_new_reaper() every time we re-lock tasklist.
-
-Ok.  That's right.  I don't think it hurts anything.
+Yeah, I missed the posix-timers.h inclusion in timerfd.c, when I split the 
+first patch into two separate ones. Will re-send tomorrow.
 
 
-Thanks,
-Roland
+- Davide
+
+
