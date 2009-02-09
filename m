@@ -1,111 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbZBITEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755154AbZBITF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756230AbZBITEg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 14:04:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbZBITE1
+	id S1755154AbZBITF1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 14:05:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbZBITFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 14:04:27 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:38292 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751784AbZBITE0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 14:04:26 -0500
-Date: Mon, 9 Feb 2009 17:04:06 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH tip 1/1] ring_buffer: pahole struct ring_buffer
-Message-ID: <20090209190406.GA11005@ghostprotocols.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Mon, 9 Feb 2009 14:05:14 -0500
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:45730 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751235AbZBITFN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 14:05:13 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq8EAEsLkElMQWt2/2dsb2JhbACBbs8ahBoG
+Date: Mon, 9 Feb 2009 14:05:09 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
+       ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
+Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
+	(repost)
+Message-ID: <20090209190509.GA17895@Krystal>
+References: <20090208224419.GA19512@Krystal> <20090209041153.GR7120@linux.vnet.ibm.com> <20090209045352.GA28653@Krystal> <20090209051737.GA29254@Krystal> <20090209132343.GT7120@linux.vnet.ibm.com> <20090209172816.GA12934@Krystal> <20090209174741.GE6802@linux.vnet.ibm.com> <20090209181341.GA15514@Krystal> <20090209183742.GI6802@linux.vnet.ibm.com> <20090209184951.GA12184@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-X-Url: http://oops.ghostprotocols.net:81/blog
+In-Reply-To: <20090209184951.GA12184@linux.vnet.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:01:06 up 39 days, 18:59,  4 users,  load average: 0.68, 0.68,
+	0.68
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> On Mon, Feb 09, 2009 at 10:37:42AM -0800, Paul E. McKenney wrote:
+> > On Mon, Feb 09, 2009 at 01:13:41PM -0500, Mathieu Desnoyers wrote:
+> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> 
+> [ . . . ]
+> 
+> > > You know what ? Changing RCU_GP_CTR_BIT to 16 uses a
+> > > testw %ax, %ax instead of a testb %al, %al. The trick here is that
+> > > RCU_GP_CTR_BIT must be a multiple of 8 so we can use a full 8-bits,
+> > > 16-bits or 32-bits bitmask for the lower order bits.
+> > > 
+> > > On 64-bits, using a RCU_GP_CTR_BIT of 32 is also ok. It uses a testl.
+> > > 
+> > > To provide 32-bits compability and allow the deepest nesting possible, I
+> > > think it makes sense to use
+> > > 
+> > > /* Use the amount of bits equal to half of the architecture long size */
+> > > #define RCU_GP_CTR_BIT (sizeof(long) << 2)
+> > 
+> > You lost me on this one:
+> > 
+> > 	sizeof(long) << 2 = 0x10
+> > 
+> > I could believe the following (run on a 32-bit machine):
+> > 
+> > 	1 << (sizeof(long) * 8 - 1) = 0x80000000
+> > 
+> > Or, if you were wanting to use a bit halfway up the word, perhaps this:
+> > 
+> > 	1 << (sizeof(long) * 4 - 1) = 0x8000
+> > 
+> > Or am I confused?
+> 
+> Well, I am at least partly confused.  You were wanting a low-order bit,
+> so you want to lose the "- 1" above.  Here are some of the possibilities:
+> 
+> 	sizeof(long) = 0x4
+> 	sizeof(long) << 2 = 0x10
+> 	1 << (sizeof(long) * 8 - 1) = 0x80000000
+> 	1 << (sizeof(long) * 4) = 0x10000
+> 	1 << (sizeof(long) * 4 - 1) = 0x8000
+> 	1 << (sizeof(long) * 2) = 0x100
+> 	1 << (sizeof(long) * 2 - 1) = 0x80
+> 
+> My guess is that 1 << (sizeof(long) * 4) and 1 << (sizeof(long) * 2)
+> are of the most interest.
+> 
 
-While fixing some bugs in pahole (built-in.o files were not being
-processed due to relocation problems) I found out about these packable
-structures:
+Exactly. I'll change it to :
 
-$ pahole --packable kernel/trace/ring_buffer.o  | grep ring
-ring_buffer	72	64	8
-ring_buffer_per_cpu	112	104	8
+#define RCU_GP_CTR_BIT          (1 << (sizeof(long) << 2))
 
-If we take a look at the current layout of struct ring_buffer we can see
-that we have two 4 bytes holes.
+I somehow thought this define was used as a bit number rather than the
+bit mask.
 
-$ pahole -C ring_buffer kernel/trace/ring_buffer.o
-struct ring_buffer {
-	unsigned int               pages;           /*     0     4 */
-	unsigned int               flags;           /*     4     4 */
-	int                        cpus;            /*     8     4 */
+Thanks,
 
-	/* XXX 4 bytes hole, try to pack */
+Mathieu
 
-	cpumask_var_t              cpumask;         /*    16     8 */
-	atomic_t                   record_disabled; /*    24     4 */
 
-	/* XXX 4 bytes hole, try to pack */
 
-	struct mutex               mutex;           /*    32    32 */
-	/* --- cacheline 1 boundary (64 bytes) --- */
-	struct ring_buffer_per_cpu * * buffers;     /*    64     8 */
+> 							Thanx, Paul
+> 
 
-	/* size: 72, cachelines: 2, members: 7 */
-	/* sum members: 64, holes: 2, sum holes: 8 */
-	/* last cacheline: 8 bytes */
-};
-
-So, if I ask pahole to reorganize it:
-
-$ pahole -C ring_buffer --reorganize kernel/trace/ring_buffer.o
-
-struct ring_buffer {
-	unsigned int               pages;           /*     0     4 */
-	unsigned int               flags;           /*     4     4 */
-	int                        cpus;            /*     8     4 */
-	atomic_t                   record_disabled; /*    12     4 */
-	cpumask_var_t              cpumask;         /*    16     8 */
-	struct mutex               mutex;           /*    24    32 */
-	struct ring_buffer_per_cpu * * buffers;     /*    56     8 */
-	/* --- cacheline 1 boundary (64 bytes) --- */
-
-	/* size: 64, cachelines: 1, members: 7 */
-};   /* saved 8 bytes and 1 cacheline! */
-
-We get it using just one 64 bytes cacheline.
-
-To see what it did:
-
-$ pahole -C ring_buffer --reorganize --show_reorg_steps \
-	kernel/trace/ring_buffer.o | grep \/
-/* Moving 'record_disabled' from after 'cpumask' to after 'cpus' */
-
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
-
- ring_buffer.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 53ba3a6..27ef3bf 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -273,8 +273,8 @@ struct ring_buffer {
- 	unsigned			pages;
- 	unsigned			flags;
- 	int				cpus;
--	cpumask_var_t			cpumask;
- 	atomic_t			record_disabled;
-+	cpumask_var_t			cpumask;
- 
- 	struct mutex			mutex;
- 
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
