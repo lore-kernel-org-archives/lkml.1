@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756748AbZBIRmw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756384AbZBIRow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756748AbZBIRmw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 12:42:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbZBIRmo
+	id S1756384AbZBIRow (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 12:44:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbZBIRon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 12:42:44 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:46369 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752689AbZBIRmn (ORCPT
+	Mon, 9 Feb 2009 12:44:43 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:5175 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751572AbZBIRom (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 12:42:43 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 9 Feb 2009 09:42:41 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: mtk.manpages@gmail.com
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 2/2] timerfd extend clockid support
-In-Reply-To: <cfd18e0f0902090128i1a4902f4of0d4d830b567602f@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0902090940100.8084@alien.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0902081510150.18839@alien.or.mcafeemobile.com> <cfd18e0f0902090128i1a4902f4of0d4d830b567602f@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Mon, 9 Feb 2009 12:44:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=N02xmCOhv1UY+1V57QLgzm5QCMAxMXW/tXotkiy9FDxUUCJZW9wMR6qq4QLos+re06
+         dXP3C512ac+/Z0cRVj1zpfCBvmwGHSLHzMnEa8/icA9g5PUUta9C/A2tCpW+yTU8Ty1r
+         1QV4TbekNTD4s6aM9PGQnVACTkwKLlrHXwp5g=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090209171042.GA19453@n2100.arm.linux.org.uk>
+References: <8447d6730902090904y138af9c6r3d64278bc7a30811@mail.gmail.com>
+	 <20090209171042.GA19453@n2100.arm.linux.org.uk>
+Date: Mon, 9 Feb 2009 18:44:40 +0100
+Message-ID: <8447d6730902090944s9bc96f7r76da82ea09c629f0@mail.gmail.com>
+Subject: Re: [PATCH 1/2] User access to internal clocks
+From: Davide Rizzo <elpa.rizzo@gmail.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, ben-linux@fluff.org,
+       linux-api@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Feb 2009, Michael Kerrisk wrote:
-
-> On Mon, Feb 9, 2009 at 12:23 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
-> > The following patch extends timerfd clockid support to cover the ones
-> > supported by timer_create().
-> > It exports the invalid_clockid() function outside posix-timers.c to allow
-> > timerfd to properly check input parameters.
-> > Andrew, this is (eventually) .30 material, and do not take the patch
-> > until you have Thomas sign off.
-> > Thomas, timerfd uses core hrtimer functions for its tasks. By extending
-> > the clockid support, I assume that the clockids other than CLOCK_MONOTONIC
-> > and CLOCK_REALTIME, behaves the same from a hrtimer caller POV. Right?
-> 
-> Hi Davide,
-> 
-> Have you done any testing of this patch?  My attempts at testing with
-> clocks other than REALTIME and MONOTONIC all don't work so far.  In
-> some cases, my test programs causes the system to hang.  Try
-> experimenting with the (not yet well tested) test program below, to
-> check the behavior with other clocks.
-
-Michael, no I did not test it and I did not have even the time to peek 
-into the core timer code to see if the usage of other timer types in 
-eventfd would create problems. That's why I asked Thomas if they'd behave 
-differently from an hrtimer caller POV.
-I'll try to take a look by myself today or tomorrow.
-
-
-- Davide
-
-
+>> This driver is for user level programs to interact with system clocks.
+>> It allows to read and modify rates and parents, using virtual files.
+>> It requires the implementation of 2 additional functions in the clk interface:
+>>  clk_for_each() and clk_name().
+>> Actually I implemented that functions only for Samsung S3C24xx platform.
+>
+> NAK.
+>
+>> +       name = clk_get_name(clk);
+>
+> This implies that there is a 1:1 relationship between a 'name' and a
+> struct clk.  No such thing exists (and where it does, it's being
+> eliminated in ARM because it's just plain and simple WRONG.)
+>
+Not exactly, clk_get() could work in both way: a struct clk can be
+exactly identified by name and device id (like clk_get is acting now)
+or by full name, in the format clkname.device
+Why do you say that it's wrong ? This is the same syntax used for
+devices, why couldn't it be used also for clocks ? This should not
+break backward compatibility.
+May be clk_get_name() should be renamed as clk_get_full_name() ? Or it
+would be better to make a function (or 2 different functions) that
+returns separated name and device id ?
+Otherwise, what do you suggest to enumerate and distinguish all system clocks ?
