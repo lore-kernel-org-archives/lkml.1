@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755030AbZBILis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbZBILjI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755030AbZBILis (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 06:38:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbZBILii
+	id S1755217AbZBILjI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 06:39:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755098AbZBILix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 06:38:38 -0500
-Received: from ftp.linux-mips.org ([213.58.128.207]:52054 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753220AbZBILih (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 06:38:37 -0500
-Date: Mon, 9 Feb 2009 11:38:29 +0000 (GMT)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: check_timer cleanup
-In-Reply-To: <20090209081542.GF24420@elte.hu>
-Message-ID: <alpine.LFD.1.10.0902091129150.12457@ftp.linux-mips.org>
-References: <20090206220716.GA15319@elte.hu> <498D55A4.7000608@kernel.org> <20090207165901.GA32116@elte.hu> <498E6A3C.6020004@kernel.org> <20090209081542.GF24420@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 9 Feb 2009 06:38:53 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:49204 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755085AbZBILiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 06:38:51 -0500
+Message-ID: <499015A7.3040400@cn.fujitsu.com>
+Date: Mon, 09 Feb 2009 19:38:15 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Al Viro <viro@ZenIV.linux.org.uk>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Menage <menage@google.com>, Arjan van de Ven <arjan@infradead.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [cgroup or VFS ?] INFO: possible recursive locking detected
+References: <49617D2E.8050502@cn.fujitsu.com> <496576E7.1@cn.fujitsu.com> <20090209112321.GW28946@ZenIV.linux.org.uk>
+In-Reply-To: <20090209112321.GW28946@ZenIV.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Feb 2009, Ingo Molnar wrote:
-
-> > Impact: remove extra unmask, and pair disable/enable
-> > 
-> > for edge trigger io-apic routing, already unmasked via setup_IO_APIC_irq,
-> > so don't unmask it again.
-> > 
-> > also do call local_irq_disable() between timer_irq_works(), between it does call
-> > local_irq_enable() inside.
-> > also remove not needed apic version reading for 64bit
-> > 
-> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> > 
-> > ---
-> >  arch/x86/kernel/io_apic.c |   30 ++++++++++++++++++++++--------
-> >  1 file changed, 22 insertions(+), 8 deletions(-)
+Al Viro wrote:
+> On Thu, Jan 08, 2009 at 11:45:43AM +0800, Li Zefan wrote:
+>> Hi Al Viro,
+>>
+>> I hacked into the kernel with the patch below (I think It's ok for me
+>> to comment out bdev->bd_mount_sem for testing):
 > 
-> applied to tip/x86/apic, thanks Yinghai. Maybe this even solves some of the spurious 
-> detection troubles we had in this code.
+>> And ran 2 threads:
+>> 	for ((; ;))  # thread 1
+>> 	{
+>> 		mount -t ext3 /dev/sda9 /mnt1
+>> 		umount /mnt1
+>> 	}
+>>
+>> 	for ((; ;))  # thread 2
+>> 	{
+>> 		mount -t ext3 /dev/sda9 /mnt2
+>> 		umount /mnt2
+>> 	}
+>>
+>> And I got the same lockdep warning immediately, so I think it's
+>> VFS's issue.
+> 
+> It's a lockdep issue, actually.  It _is_ a false positive; we could get rid
 
- I'll see if I can find time to look into it in details, but it looks 
-dodgy to me.  The thing is setup_timer_IRQ0_pin() is special -- due to 
-line rerouting it may not necessarily be called for an input already set 
-up by setup_IO_APIC_irqs().  I recall keeping this mask set until ready 
-for a reason when doing the cleanup last year -- I think old code actually 
-used to do what the change now reintroduces.  What's the reason of this 
-change?
+Yes, I believe it's a false positive when I looked into this issue.
 
- And timer_irq_works() used to restore the local interrupt mask within 
-itself -- perhaps it should be brought back rather than cluttering code 
-with local_irq_disable() calls throughout?
+> of that if we took destroy_super(s); just before grab_super(), but I really
+> do not believe that there's any point.
+> 
+> Frankly, I'd rather see if there's any way to teach lockdep that this instance
+> of lock is getting initialized into "one writer" state and that yes, we know
+> that it's not visible to anyone, so doing that is safe, TYVM, even though
+> we are under spinlock.  Then take that sucker to just before set().
+> 
 
- What problems are you referring to, Ingo?  Perhaps they should be looked 
-into specifically?
+It would be nice if we can do this way..
 
-  Maciej
+> In any case, I really do not believe that it might have anything to do with
+> the WARN_ON() from another thread...
+> 
+
+agreed. I don't think they are related, and that's why I sent 2 different reports.
+
