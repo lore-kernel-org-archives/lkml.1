@@ -1,84 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757880AbZBIUEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755329AbZBIUKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757880AbZBIUEW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 15:04:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbZBIUEG
+	id S1755329AbZBIUKi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 15:10:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZBIUK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 15:04:06 -0500
-Received: from an-out-0708.google.com ([209.85.132.240]:34065 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754034AbZBIUEF (ORCPT
+	Mon, 9 Feb 2009 15:10:28 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:51592 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752107AbZBIUK1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 15:04:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=i24jwMJNchmTmzB+giAar3b8hqGHuRnL/NK+t4rsOPeK/KQ5BWhtJp8tWJWbEs5ORd
-         9omY6jy+KLK2Gr46F5d8T2ivV6u6awGssO+SdrPqzTfQh9uDmx6t/b6FtavIoY67yETU
-         GwPp3D3p2NlcD5q4XJZNJ4WoZdqR2WPj11cgc=
+	Mon, 9 Feb 2009 15:10:27 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Mon, 9 Feb 2009 12:10:23 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: mtk.manpages@gmail.com
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 2/2] timerfd extend clockid support
+In-Reply-To: <cfd18e0f0902091128pf5723c8rcfa1c08d77d4e55d@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0902091148520.8503@alien.or.mcafeemobile.com>
+References: <alpine.DEB.1.10.0902081510150.18839@alien.or.mcafeemobile.com>  <cfd18e0f0902090128i1a4902f4of0d4d830b567602f@mail.gmail.com>  <alpine.DEB.1.10.0902090940100.8084@alien.or.mcafeemobile.com>
+ <cfd18e0f0902091128pf5723c8rcfa1c08d77d4e55d@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-In-Reply-To: <1234209174.5951.165.camel@laptop>
-References: <b6a2d2e20902091130ha452a97rcfaa2972bfdbe710@mail.gmail.com>
-	 <1234209174.5951.165.camel@laptop>
-Date: Mon, 9 Feb 2009 20:04:03 +0000
-Message-ID: <b6a2d2e20902091204p2391799p160ce13971e9f779@mail.gmail.com>
-Subject: Re: cgroup, RT reservation per core(s)?
-From: Rolando Martins <rolando.martins@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for the quick reply.
+On Tue, 10 Feb 2009, Michael Kerrisk wrote:
 
-On Mon, Feb 9, 2009 at 7:52 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Mon, 2009-02-09 at 19:30 +0000, Rolando Martins wrote:
->> Hi,
->> I would like to have in a quad-core, 2 cores totally (100%) dedicated
->> to RT tasks (SCHED_RR and SCHED_FIFO) and the other 2 cores with
->> normal behavior, better said,  allowing SCHED_OTHER & SCHED_FIFO &
->> SCHED_RR tasks but still with a RT reservation. Follows an example:
->>
->>
->> # Setup first domain (cpu 0,1)
->> echo 0-1 > /dev/cgroup/0/cpuset.cpus
->> echo 0 > /dev/cgroup/0/cpuset.mems
->>
->> # Setup RT bandwidth for firstdomain (80% for RT, 20% others)
->> echo 1000000 > /dev/cgroup/0/cpu.rt_period_us
->> echo 800000 > /dev/cgroup/0/cpu.rt_runtime_us
->>
->>
->> # Setup second domain (cpu 2,3)
->> mkdir /dev/cgroup/1
->> echo 2-3 > /dev/cgroup/1/cpuset.cpus
->> echo 0 > /dev/cgroup/1/cpuset.mems
->>
->> # Setup RT bandwidth for second domain (100% for RT)
->> echo 1000000 > /dev/cgroup/1/cpu.rt_period_us
->> echo 1000000 > /dev/cgroup/1/cpu.rt_runtime_us
->>
->> Is there anyway for doing this?
->
-> Nope, but why do you need bandwidth groups if all you want is a full
-> cpu?
->
-> Just the cpuset should be plenty
-You have a point;)
->
->
-I should have elaborated this more:
+> > and I did not have even the time to peek
+> > into the core timer code to see if the usage of other timer types in
+> > eventfd would create problems. That's why I asked Thomas if they'd behave
+> > differently from an hrtimer caller POV.
+> > I'll try to take a look by myself today or tomorrow.
+> 
+> Okay -- hopefully my test program may be useful (even if it is not
+> itself fully tested yet, it's patterned after a similar test program I
+> wrote fot the POSIX timers API, so it should mostly work).
 
-                     root
-                  ----|----
-                  |          |
-(0.5 mem) 0         1 (100% rt, 0.5 mem)
-                         ---------
-                         |    |    |
-                         2   3   4  (33% rt for each group, 33% mem
-per group(0.165))
-Rol
+Answer was pretty easy once you look at the code :)
+Timerfd uses core hrtimer functions, and clockids different from the ones 
+timerfd already handles, fall into the CPU-timers domain. Domain that is 
+not handled by hrtimer.
+Changes to timerfd to support CPU-based timers are really deep (more than 
+changes, is a total rewrite). not only to timerfd, but also to CPU-based 
+timers to deliver notification by means different than signals.
+Given the amount of code change, and given that a posix-timers->signalfd 
+bridge could solve the problem, I'm not going even close to suggest such a 
+change.
+
+
+
+- Davide
+
+
