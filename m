@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752703AbZBIIUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbZBII3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752703AbZBIIUb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 03:20:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbZBIIUX
+	id S1752500AbZBII3R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 03:29:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750736AbZBII3B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 03:20:23 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34606 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750696AbZBIIUW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 03:20:22 -0500
-Date: Mon, 9 Feb 2009 00:19:03 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yinghai@kernel.org>, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] irq: optimize init_kstat_irqs/init_copy_kstat_irqs
-Message-Id: <20090209001903.89548108.akpm@linux-foundation.org>
-In-Reply-To: <20090209081124.GB24420@elte.hu>
-References: <498CB0B7.8030009@kernel.org>
-	<20090206140005.44b4bb50.akpm@linux-foundation.org>
-	<498CB4DC.2010108@kernel.org>
-	<498D3D15.5090005@kernel.org>
-	<20090207002610.73ff7e6d.akpm@linux-foundation.org>
-	<86802c440902070101l5b0ef862ja92e3f31705d9608@mail.gmail.com>
-	<20090207010619.daededa3.akpm@linux-foundation.org>
-	<20090209081124.GB24420@elte.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Feb 2009 03:29:01 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44420 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750787AbZBII3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 03:29:00 -0500
+Date: Mon, 9 Feb 2009 09:28:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@infradead.org>, Avi Kivity <avi@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linus 2.6.29-rc4
+Message-ID: <20090209082816.GA14808@elte.hu>
+References: <alpine.LFD.2.00.0902081251090.3048@localhost.localdomain> <20090208172111.6941cd3e@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090208172111.6941cd3e@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Feb 2009 09:11:24 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 
+* Arjan van de Ven <arjan@infradead.org> wrote:
+
+> On Sun, 8 Feb 2009 13:01:04 -0800 (PST)
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Sat, 7 Feb 2009 01:01:03 -0800 Yinghai Lu <yinghai@kernel.org> wrote:
 > > 
-> > > 
-> > > add kzalloc_node_safe()?
+> > Another week (and a half), another -rc.
 > > 
-> > I cannot find that function.
+> > Arch updates (sparc, blackfin), driver updates (dvb, mmc, ide), ACPI 
+> > updates, FS updates (ubifs, btrfs), you name it. It's all there.
+> > 
+> > But more importantly, people really have been working on regressions,
+> > and hopefully this closes a nice set of the top one, and hopefully
+> > without introducing too many new ones.
+> > 
+> > 			Linus
 > 
-> His suggestion is to provide that allocator variant.
 > 
+> I just looked at the top -rc3 oopses/warnings/etc
+> 
+> quick summary of the top ones:
+> (manual rather than the normal automated scripts, so the format is
+> different)
+> "regulars" that happened a lot prior to  .29 (eg clearly non-regressions) I marked with a *
+> 
+> Oopses: 78 oopses reported
+> --------------------------
+> 12 times	i915_driver_irq_handler		http://www.kerneloops.org/searchweek.php?search=i915_driver_irq_handler
+> 8 times		apic_mmio_read			http://www.kerneloops.org/searchweek.php?search=apic_mmio_read
 
-Oh.
+The last one seems KVM related.
 
-It isn't possible to write a kzalloc_node_safe(GFP_ATOMIC).  Or at
-least, we've never worked out a way.
-
-Maybe I'm confused again.
+	Ingo
