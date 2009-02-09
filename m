@@ -1,76 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754364AbZBITeP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757307AbZBITei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754364AbZBITeP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 14:34:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbZBITdl
+	id S1757307AbZBITei (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 14:34:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757171AbZBITeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 14:33:41 -0500
-Received: from kroah.org ([198.145.64.141]:44445 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752568AbZBITdk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 14:33:40 -0500
-Date: Mon, 9 Feb 2009 11:32:01 -0800
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PATCH] STAGING patches for 2.6-git
-Message-ID: <20090209193201.GB2194@kroah.com>
+	Mon, 9 Feb 2009 14:34:03 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:54216 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757151AbZBITeA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 14:34:00 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Subject: Re: [PATCH] sh: maple: add support for Visual Memory Card devices, and make consequential changes to maple input drivers - 2/3 - v5
+Date: Mon, 9 Feb 2009 14:33:55 -0500
+User-Agent: KMail/1.11.0 (Linux/2.6.28; KDE/4.2.0; x86_64; ; )
+Cc: Paul Mundt <lethal@linux-sh.org>, Greg KH <greg@kroah.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       dwmw2 <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       MTD <linux-mtd@lists.infradead.org>,
+       "linux-sh" <linux-sh@vger.kernel.org>,
+       "linux-input" <linux-input@vger.kernel.org>
+References: <1234122069.6736.8.camel@localhost.localdomain> <20090209065632.GA21980@linux-sh.org> <1234207053.6756.11.camel@localhost.localdomain>
+In-Reply-To: <1234207053.6756.11.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200902091433.57126.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some tiny staging patches fixing some build errors and Kconfig
-problems that people have reported.
+On Monday 09 February 2009 14:17:33 Adrian McMenamin wrote:
+> On Mon, 2009-02-09 at 15:56 +0900, Paul Mundt wrote:
+> > On Sun, Feb 08, 2009 at 08:04:33PM +0000, Adrian McMenamin wrote:
+> > > Change the maple bus driver to support the visual memory unit driver.
+> > >
+> > > The maple bus driver currently only supports synchronous polling of
+> > > attached devices status. These changes allow the bus to handle
+> > > asynchronous commands such as block reads and writes.
+> > >
+> > > Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+> >
+> > The ordering of your patch series is a bit vague. Do the changes to the
+> > maple bus code need to be made before the VMU patch can be applied? Do
+> > the input driver changes have to be made at the same time as the changes
+> > to the bus code, or are they ok to leave as a separate patch after the
+> > bus changes?
+> >
+> > All of these seem to have some interdependency issues that haven't been
+> > noted at all, making it incredibly difficult to apply incrementally. Your
+> > subject for the series also seems to imply you have no idea how they
+> > logically structure, and that you simply hacked things up until the point
+> > where everything worked, rather than paying attention to logical
+> > incremental changes to show how you got from point A to point B without
+> > breaking bisection along the way.
+>
+> You are right. I haven' made it fully clear in this post. But I did in
+> previous posts eg:
+>
+> "This series of patches adds support for the Dreamcast Visual Memory
+> Unit, reworking the maple bus code to ensure it supports asynchronous
+> reads and writes. A consequential amendment to the keyboard driver is
+> also included."
 
-And there's also a big patch in here that is a revert of a patch that
-went into 2.6.29-rc1 for the at76_usb driver.  The linux-wireless
-developers asked that I revert it as it is conflicting with some work
-that they are currently doing.  The revert wasn't a straight git-revert
-due to patches that had been made afterward, hence the by-hand revert.
+that isnt terribly clear.  it might be for you, but for the people attempting 
+to coordinate source code, it really isnt.
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/staging-2.6.git/
+using git, you can format patches and number them and include a cover letter.  
+that would make everything clear for people.
+git format-patch -n --cover-letter HEAD~3
 
-All of these have been in the -next releases with no known build errors.
-
-The patches will be sent as a follow-on to this message to lkml for people
-to see.
-
-thanks,
-
-greg k-h
-
---------------
-
- drivers/staging/android/Kconfig       |    1 +
- drivers/staging/android/ram_console.c |   14 +
- drivers/staging/android/timed_gpio.c  |    2 +-
- drivers/staging/at76_usb/Kconfig      |    2 +-
- drivers/staging/at76_usb/at76_usb.c   | 4620 ++++++++++++++++++++++++++-------
- drivers/staging/at76_usb/at76_usb.h   |  227 ++-
- drivers/staging/panel/panel.c         |   10 +-
- 7 files changed, 3903 insertions(+), 973 deletions(-)
-
----------------
-
-Arve Hjønnevåg (1):
-      Staging: android: ram_console: Disable ECC when early init is enabled and validate buffer size
-
-Greg Kroah-Hartman (2):
-      Revert Staging: at76_usb: update drivers/staging/at76_usb w/ mac80211 port
-      Staging: android: fix up units in timed_gpio
-
-Jamie Lentin (1):
-      Staging: at76_usb: Add support for OQO Model 01+
-
-Jason Andryuk (1):
-      Staging: at76_usb: fix bugs introduced by "Staging: at76_usb: cleanup dma on stack issues"
-
-Sachin P. Sant (1):
-      Staging: panel: fix lcd panel driver build failure
-
+then you'd end up with 4 clearly marked files (assuming your log message for 
+each change is clear).  in the summary, you should then make statements like:
+Patch 1 (... subject ...) in this series can be applied by itself for the bus 
+driver.  Then patch 2 (... subject ...) and 3 (... subject ...) can be applied 
+as they need the bus changes.
+-mike
