@@ -1,137 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754902AbZBIVgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755850AbZBIVgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754902AbZBIVgW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 16:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbZBIVgL
+	id S1755850AbZBIVgg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 16:36:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754447AbZBIVgU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 16:36:11 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43289 "EHLO mx2.redhat.com"
+	Mon, 9 Feb 2009 16:36:20 -0500
+Received: from mga02.intel.com ([134.134.136.20]:17816 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753876AbZBIVgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 16:36:10 -0500
-Date: Mon, 9 Feb 2009 22:36:01 +0100
-From: Karel Zak <kzak@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org
-Subject: [ANNOUNCE] util-linux-ng v2.14.2 (stable)
-Message-ID: <20090209213601.GE3205@nb.net.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1754729AbZBIVgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 16:36:20 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,406,1231142400"; 
+   d="scan'208";a="385383144"
+Subject: Re: [PATCH] x86: Add clflush before monitor for Intel 7400 series
+ - v2
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, H Peter Anvin <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200902091653.26570.nickpiggin@yahoo.com.au>
+References: <20090207004728.GA17586@linux-os.sc.intel.com>
+	 <20090207140245.1e91a88f@lxorguk.ukuu.org.uk>
+	 <20090207164707.GA19149@linux-os.sc.intel.com>
+	 <200902091653.26570.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Date: Mon, 09 Feb 2009 13:37:17 -0800
+Message-Id: <1234215437.4286.396.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 2009-02-08 at 21:53 -0800, Nick Piggin wrote:
+> On Sunday 08 February 2009 03:47:07 Pallipadi, Venkatesh wrote:
+> > On Sat, Feb 07, 2009 at 06:02:45AM -0800, Alan Cox wrote:
+> > > On Fri, 6 Feb 2009 16:47:29 -0800
+> > >
+> > > "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> wrote:
+> > > > For Intel 7400 series CPUs, the recommendation is to use a clflush on
+> > > > the monitored address just before monitor and mwait pair [1]. This
+> > > > clflush makes sure that there are no false wakeups from mwait when the
+> > > > monitored address was recently written to.
+> > >
+> > > Given our mwait usages will very quickly go back to sleep in such a case
+> > > and it would almost certainly be one sleep only is this really worth the
+> > > effort ?
+> >
+> > Yes. If we only consider the CPU idle behavior, we really do not need the
+> > patch as we will go back to idle. But, there are other factors:
+> > - drivers/idle/i7300_idle.c  which tries to save memory power based on CPU
+> >   idle time. It gets confused with these short idles.
+> > - cpuidle menu governor  These platforms may also support more than one
+> > C-state. C1 and CC3. So, we will go through the C-state policy in menu
+> > governor, which again looks at idle time and may end up taking wrong
+> > decisions due to these short idles.
+> >
+> > We can make the above code to be more clever, to ignore short idles. But,
+> > this patch seems to be the easier and clean way as the errata is only in a
+> > particular CPU model.
+> 
+> Have you benchmarked it? With something like tbench which IIRC should
+> generate a good number of idle/busy transitions?
+> 
 
-The stable util-linux-ng 2.14.2 release is available at
+We haven't run tbench specifically. But, we noticed this issue running
+specpower workload on this platform. Especially the 10-20% point of
+specpower, which also has notable idle/busy transitions, this patch
+helps.
 
-    ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.14/
-
-Feedback and bug reports, as always, are welcomed.
-
-    Karel
+Thanks,
+Venki
 
 
-Util-linux-ng 2.14.2 Release Notes
-==================================
-
-ChangeLog between v2.14.1 and v2.14.2
--------------------------------------
-
- For more details see ChangeLog files at:
- ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.14/
-
-build-sys:
-   - add -luuid to BLKID_LIBS  [Karel Zak]
-   - release++ (v2.14.2-rc1)  [Karel Zak]
-   - release++ (v2.14.2-rc2)  [Karel Zak]
-cfdisk:
-   - accept yes/no as fallback  [Matthias Koenig]
-chrt:
-   - output buglet when reporting scheduling class  [Karel Zak]
-   - support CFS SCHED_IDLE priority and document it  [Martin Steigerwald]
-docs:
-   - update AUTHORS file  [Karel Zak]
-   - update v2.14.2 ReleaseNotes  [Karel Zak]
-fdisk:
-   - add some missing includes  [Matthias Koenig]
-   - cannot create partition with starting beyond 1 TB  [Karel Zak]
-   - fix man page typo  [Karel Zak]
-   - remove obsolete information from man page  [Karel Zak]
-   - remove unnecessary gettext call  [Karel Zak]
-   - several strings without gettext calls  [Pedro Ribeiro]
-   - support +cylinder notation  [Karel Zak]
-hwclock:
-   - remove "cli" and "sti" from i386 CMOS code  [Karel Zak]
-   - remove x86_64-specific bogon  [David Brownell]
-include:
-   - use __BYTE_ORDER rather than AC specific WORDS_BIGENDIAN  [Karel Zak]
-ionice:
-   - Extend the man page to explain the "none" class and cpu-nice inheritance  [Jakob Unterwurzacher]
-   - a little cleanup of "none" description  [Karel Zak]
-ldattach:
-   - don't compile for non-linux systems  [Samuel Thibault]
-lib:
-   - add __BYTE_ORDER to md5.c  [Karel Zak]
-logger:
-   - several strings without gettext calls  [Pedro Ribeiro]
-login:
-   - fix compiler warning (int32 time() arg)  [Karel Zak]
-   - fix warning "dereferencing type-punned pointer will break strict-aliasing rules"  [Karel Zak]
-losetup:
-   - add warning about read-only mode  [Karel Zak]
-   - missing EBUSY error hint message  [Karel Zak]
-   - several strings without gettext strings  [Pedro Ribeiro]
-   - try to set up loop readonly if EACCES  [Matthias Koenig]
-mkfs.cramfs:
-   - several strings without gettext calls  [Pedro Ribeiro]
-mkfs.minix:
-   - fix size detection  [Matthias Koenig]
-more:
-   - dont use a.out.h  [Mike Frysinger]
-   - minor fixes to magic()  [James Youngman]
-mount:
-   - add i_version support  [Karel Zak]
-   - add info about /proc/mounts to mount.1  [Karel Zak]
-   - add info about semantics of read-only mount to mount.8  [Karel Zak]
-   - add rootcontext= SELinux mount option  [Karel Zak]
-   - clean up SPEC canonicalization  [Karel Zak]
-   - cleans up mount(8) troff markup  [Sam Varshavchik]
-   - create separate section for fs-independent options in mount.8  [Karel Zak]
-   - finalize support of quoted LABELs/UUIDs  [Karel Zak]
-   - fix mount_static_LDADD  [Karel Zak]
-   - fix typo  [Guan Xin]
-   - fix typo  [Karel Zak]
-   - fix typo in volume_id code  [Karel Zak]
-   - make file_t SELinux warning optional and shorter  [Karel Zak]
-   - mtab created multiple times with -a option  [Karel Zak]
-   - remove link to namesys.com  [Karel Zak]
-   - remove spurious newline from mount.8  [Mike Frysinger]
-   - reorder list of options in mount.8  [Karel Zak]
-   - retry on ENOMEDIUM  [Matthias Koenig]
-   - suggest to use blockdev --setro rather than losetup  [Karel Zak]
-   - sundries.h add klibc support  [maximilian attems]
-   - sync FAT info in mount.8 with Documentation/filesystems/vfat.txt  [Karel Zak]
-   - sync tmpfs info in mount.8 with Documentation/filesystems/tmpfs.txt  [Karel Zak]
-   - use subsections in mount.8 DESCRIPTION  [Karel Zak]
-   - warn on "file_t" selinux context  [Karel Zak]
-po:
-   - merge changes  [Karel Zak]
-   - update cs.po (from translationproject.org)  [Petr Pisar]
-   - update fr.po (from translationproject.org)  [Nicolas Provost]
-   - update ja.po (from translationproject.org)  [Makoto Kato]
-   - update nl.po (from translationproject.org)  [Benno Schulenberg]
-   - update pt_BR.po (from translationproject.org)  [Rodrigo Stulzer Lopes]
-   - update sv.po (from translationproject.org)  [Daniel Nylander]
-   - update vi.po (from translationproject.org)  [Clytie Siddall]
-readprofile:
-   - several strings without gettext calls  [Pedro Ribeiro]
-setterm:
-   - fix -blank man page  [Karel Zak]
-
-- refresh gitignore  [Karel Zak]
-- use getpagesize()  [maximilian attems]
-
--- 
- Karel Zak  <kzak@redhat.com>
