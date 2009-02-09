@@ -1,77 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbZBIUWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbZBIU3K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754236AbZBIUWa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 15:22:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbZBIUWV
+	id S1754146AbZBIU3K (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 15:29:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750699AbZBIU25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 15:22:21 -0500
-Received: from mx1.wp.pl ([212.77.101.5]:45666 "EHLO mx1.wp.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751212AbZBIUWU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 15:22:20 -0500
-Date: Mon, 9 Feb 2009 21:26:29 +0100
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-To: Andres Salomon <dilinger@queued.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       adaplas@gmail.com
-Subject: Re: [Linux-fbdev-devel] [PATCH 14/15] amifb: check fb_alloc_cmap
- return value and handle failure properly
-Message-Id: <20090209212629.611bd99d.krzysztof.h1@wp.pl>
-In-Reply-To: <20090207121857.6bc5d5bc@ephemeral>
-References: <20090207121857.6bc5d5bc@ephemeral>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-WP-AV: skaner antywirusowy poczty Wirtualnej Polski S. A.
-X-WP-SPAM: NO 0000000 [QWPk]                               
+	Mon, 9 Feb 2009 15:28:57 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:47212 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696AbZBIU25 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 15:28:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=hCBEAn0id8j3Iv9VWm2AQ1HIHdXMdxG5/wQCDk2leyzD+zEYxUMwMvymDvElxnToVE
+         lFY2yogKo52yFcE4abA0te3iXkRxaRgWLJC+G3NP/QNW/sRwV8GurIw06zgRXXsbNSb2
+         hJrv/GN2j8OGNDYeiMnai7xU2LanRxqN0Z5cA=
+Date: Mon, 9 Feb 2009 23:35:02 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Mike Travis <travis@sgi.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: include/linux/irq.h:452: error: implicit declaration of
+	function 'cpu_to_node'
+Message-ID: <20090209203502.GA7701@x200.localdomain>
+References: <20090121215306.GA10123@x200.localdomain> <4977B1F1.1090602@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4977B1F1.1090602@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 7 Feb 2009 12:18:57 -0500
-Andres Salomon <dilinger@queued.net> wrote:
-
+On Wed, Jan 21, 2009 at 03:38:25PM -0800, Mike Travis wrote:
+> Alexey Dobriyan wrote:
+> > On mips-malta:
+> > 
+> >   CC      arch/mips/mti-malta/malta-int.o
+> > In file included from arch/mips/mti-malta/malta-int.c:25:
+> > include/linux/irq.h: In function 'init_alloc_desc_masks':
+> > include/linux/irq.h:452: error: implicit declaration of function 'cpu_to_node'
+> > include/linux/irq.h:454: error: 'GFP_ATOMIC' undeclared (first use in this function)
+> > 
+> > I _think_ init_alloc_desc_masks() should be made out of line to fix this.
 > 
-> Signed-off-by: Andres Salomon <dilinger@debian.org>
-> ---
-
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-
-One comment below.
-
->  drivers/video/amifb.c |    7 +++++--
->  1 files changed, 5 insertions(+), 2 deletions(-)
+> Hi Alexey,
 > 
-> diff --git a/drivers/video/amifb.c b/drivers/video/amifb.c
-> index 100f236..82bedd7 100644
-> --- a/drivers/video/amifb.c
-> +++ b/drivers/video/amifb.c
-> @@ -2437,7 +2437,9 @@ default_chipset:
->  		goto amifb_error;
->  	}
->  
-> -	fb_alloc_cmap(&fb_info.cmap, 1<<fb_info.var.bits_per_pixel, 0);
-> +	err = fb_alloc_cmap(&fb_info.cmap, 1<<fb_info.var.bits_per_pixel, 0);
-> +	if (err)
-> +		goto amifb_error;
->  
->  	if (register_framebuffer(&fb_info) < 0) {
->  		err = -EINVAL;
-> @@ -2456,7 +2458,8 @@ amifb_error:
->  
->  static void amifb_deinit(void)
->  {
-> -	fb_dealloc_cmap(&fb_info.cmap);
-> +	if (fb_info.cmap.len)
-> +		fb_dealloc_cmap(&fb_info.cmap);
-
-Again, is the "if(fb_info.cmap.len)" needed here?
-
->  	chipfree();
->  	if (videomemory)
->  		iounmap((void*)videomemory);
-> -- 
-> 1.5.6.5
+> Does adding #include <linux/slab.h> fix the error?  If so, I can add this to
+> linux/irq.h.
 > 
+> The primary reason it's inline is that unless CONFIG_CPUMASK_OFFSTACK=y, then the
+> entire routine is a NOP which optimizes out more completely as an inline function.
+
+linux/slab.h helps.
