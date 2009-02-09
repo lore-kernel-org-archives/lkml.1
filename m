@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752920AbZBIIOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753240AbZBIIPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752920AbZBIIOp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 03:14:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750736AbZBIIOg
+	id S1753240AbZBIIPV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 03:15:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750736AbZBIIPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 03:14:36 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56054 "EHLO mx2.mail.elte.hu"
+	Mon, 9 Feb 2009 03:15:04 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52912 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750741AbZBIIOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 03:14:35 -0500
-Date: Mon, 9 Feb 2009 09:14:21 +0100
+	id S1751075AbZBIIPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 03:15:03 -0500
+Date: Mon, 9 Feb 2009 09:14:53 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Yinghai Lu <yinghai@kernel.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86/irq: optimizing nr_irqs -v2
-Message-ID: <20090209081421.GD24420@elte.hu>
-References: <498CCEDB.8050708@kernel.org> <498CCF28.3050207@kernel.org> <498EA964.2070902@kernel.org>
+Subject: Re: [PATCH] x86: use NR_IRQS_LEGACY to replace 16
+Message-ID: <20090209081453.GE24420@elte.hu>
+References: <498CCEDB.8050708@kernel.org> <498E319C.6070005@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <498EA964.2070902@kernel.org>
+In-Reply-To: <498E319C.6070005@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,18 +39,16 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 * Yinghai Lu <yinghai@kernel.org> wrote:
 
 > 
-> Impact: more depend on cards to be used
+> Impact: cleanup
 > 
-> depend on nr_irq_gsi more, and have a ratio for MSI
-> 
-> v2: make nr_irqs shoule less than NR_VECTORS * nr_cpu_ids
->    aka if only one cpu, we only can support nr_irqs = NR_VECTORS
+> also could kill platform_legacy_irq
 > 
 > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 > 
 > ---
->  arch/x86/kernel/io_apic.c |   16 +++++++++++-----
->  1 file changed, 11 insertions(+), 5 deletions(-)
+>  arch/x86/include/asm/hw_irq.h |    4 +---
+>  arch/x86/kernel/io_apic.c     |    8 ++++----
+>  2 files changed, 5 insertions(+), 7 deletions(-)
 
 Applied to tip/x86/apic, thanks Yinghai!
 
