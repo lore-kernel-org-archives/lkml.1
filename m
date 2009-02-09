@@ -1,165 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbZBIQZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbZBIQ0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754711AbZBIQZd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 11:25:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbZBIQZY
+	id S1755167AbZBIQ0U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 11:26:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753052AbZBIQ0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 11:25:24 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:51473 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752628AbZBIQZW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 11:25:22 -0500
-Date: Mon, 9 Feb 2009 10:25:20 -0600
-From: Dean Nelson <dcn@sgi.com>
-To: Tony Luck <tony.luck@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-ia64 <linux-ia64@vger.kernel.org>,
-       linux-next <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] SGI IA64 UV: fix ia64 build error in the linux-next tree
-Message-ID: <20090209162520.GA4882@sgi.com>
+	Mon, 9 Feb 2009 11:26:07 -0500
+Received: from cantor.suse.de ([195.135.220.2]:52051 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752859AbZBIQ0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 11:26:06 -0500
+Date: Mon, 9 Feb 2009 08:24:02 -0800
+From: Greg KH <gregkh@suse.de>
+To: Stefan Lippers-Hollmann <s.L-H@gmx.de>
+Cc: linux-kernel@vger.kernel.org, len.brown@intel.com, stable@kernel.org
+Subject: Re: patch acpi-remove-locking-from-pm1x_sts-register-reads.patch
+	added to 2.6.28-stable tree
+Message-ID: <20090209162402.GA13931@suse.de>
+References: <20090208211932.4CAB349019@coco.kroah.org> <200902090124.44228.s.L-H@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200902090124.44228.s.L-H@gmx.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the ia64 build error that occurs in the linux-next tree by introducing
-an ia64 version of uv.h.  Additionally, clean up the usage of is_uv_system().
+On Mon, Feb 09, 2009 at 01:24:43AM +0100, Stefan Lippers-Hollmann wrote:
+> Hi
+> 
+> On Sonntag, 8. Februar 2009, gregkh@suse.de wrote:
+> > 
+> > This is a note to let you know that we have just queued up the patch titled
+> > 
+> >     Subject: ACPI: remove locking from PM1x_STS register reads
+> > 
+> > to the 2.6.28-stable tree.  Its filename is
+> > 
+> >     acpi-remove-locking-from-pm1x_sts-register-reads.patch
+> [...]
+> > From a2b7b01c072435b7832ab392167545a1b38cabc3 Mon Sep 17 00:00:00 2001
+> > From: Len Brown <len.brown@intel.com>
+> > Date: Wed, 28 Jan 2009 12:47:15 -0500
+> > Subject: ACPI: remove locking from PM1x_STS register reads
+> > 
+> > From: Len Brown <len.brown@intel.com>
+> > 
+> > commit a2b7b01c072435b7832ab392167545a1b38cabc3 upstream.
+> > 
+> > PM1a_STS and PM1b_STS are twins that get OR'd together
+> > on reads, and all writes are repeated to both.
+> > 
+> > The fields in PM1x_STS are single bits only,
+> > there are no multi-bit fields.
+> > 
+> > So it is not necessary to lock PM1x_STS reads against
+> > writes because it is impossible to read an intermediate
+> > value of a single bit.  It will either be 0 or 1,
+> > even if a write is in progress during the read.
+> > Reads are asynchronous to writes no matter if a lock
+> > is used or not.
+> > 
+> > Signed-off-by: Len Brown <len.brown@intel.com>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> This patch fails to compile on 2.6.28.4 + queue-2.6.28 (and 2.6.27 as 
+> well):
+> 
+> 
+>   BUILD   arch/x86/boot/bzImage
+> Root device is (254, 1)
+> Setup is 11676 bytes (padded to 11776 bytes).
+> System is 2175 kB
+> CRC d4d9303a
+> Kernel: arch/x86/boot/bzImage is ready  (#1)
+> ERROR: "acpi_get_register_unlocked" [drivers/acpi/processor.ko] undefined!
+> make[4]: *** [__modpost] Error 1
+> make[3]: *** [modules] Error 2
+> 
+> 
+> because it seems to depend on the larger changes started in, but not 
+> limited to:
 
-Signed-off-by: Dean Nelson <dcn@sgi.com>
-Signed-off-by: Jack Steiner <steiner@sgi.com>
+Odd, it builds for me.  I see acpi_get_register_unlocked being defined
+in include/acpi/acpixf.h and then implemented in
+drivers/acpi/hardware/hwregs.c in the 2.6.28.4 + queue tree.
 
----
+Do you not have it somehow?
 
- arch/ia64/include/asm/uv/uv.h  |   13 +++++++++++++
- drivers/misc/sgi-gru/gru.h     |    2 --
- drivers/misc/sgi-gru/grufile.c |   18 +++---------------
- drivers/misc/sgi-xp/xp.h       |   22 ++++++++--------------
- 4 files changed, 24 insertions(+), 31 deletions(-)
+Do you think this patch shouldn't be added to the tree?  If so, I have
+no objection to removing it, it just looked like a bugfix that would be
+good to backport.
 
-Index: linux/arch/ia64/include/asm/uv/uv.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux/arch/ia64/include/asm/uv/uv.h	2009-02-09 09:18:45.657924900 -0600
-@@ -0,0 +1,13 @@
-+#ifndef _ASM_IA64_UV_UV_H
-+#define _ASM_IA64_UV_UV_H
-+
-+#include <asm/system.h>
-+#include <asm/sn/simulator.h>
-+
-+static inline int is_uv_system(void)
-+{
-+	/* temporary support for running on hardware simulator */
-+	return IS_MEDUSA() || ia64_platform_is("uv");
-+}
-+
-+#endif	/* _ASM_IA64_UV_UV_H */
-Index: linux/drivers/misc/sgi-gru/gru.h
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/gru.h	2009-02-09 09:18:43.485658003 -0600
-+++ linux/drivers/misc/sgi-gru/gru.h	2009-02-09 09:18:45.677927344 -0600
-@@ -19,8 +19,6 @@
- #ifndef __GRU_H__
- #define __GRU_H__
- 
--#include <asm/uv/uv.h>
--
- /*
-  * GRU architectural definitions
-  */
-Index: linux/drivers/misc/sgi-gru/grufile.c
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/grufile.c	2009-02-09 09:18:43.485658003 -0600
-+++ linux/drivers/misc/sgi-gru/grufile.c	2009-02-09 09:18:45.697930179 -0600
-@@ -36,23 +36,11 @@
- #include <linux/interrupt.h>
- #include <linux/proc_fs.h>
- #include <linux/uaccess.h>
-+#include <asm/uv/uv.h>
- #include "gru.h"
- #include "grulib.h"
- #include "grutables.h"
- 
--#if defined CONFIG_X86_64
--#include <asm/genapic.h>
--#include <asm/irq.h>
--#define IS_UV()		is_uv_system()
--#elif defined CONFIG_IA64
--#include <asm/system.h>
--#include <asm/sn/simulator.h>
--/* temp support for running on hardware simulator */
--#define IS_UV()		IS_MEDUSA() || ia64_platform_is("uv")
--#else
--#define IS_UV()		0
--#endif
--
- #include <asm/uv/uv_hub.h>
- #include <asm/uv/uv_mmrs.h>
- 
-@@ -381,7 +369,7 @@ static int __init gru_init(void)
- 	char id[10];
- 	void *gru_start_vaddr;
- 
--	if (!IS_UV())
-+	if (!is_uv_system())
- 		return 0;
- 
- #if defined CONFIG_IA64
-@@ -451,7 +439,7 @@ static void __exit gru_exit(void)
- 	int order = get_order(sizeof(struct gru_state) *
- 			      GRU_CHIPLETS_PER_BLADE);
- 
--	if (!IS_UV())
-+	if (!is_uv_system())
- 		return;
- 
- 	for (i = 0; i < GRU_CHIPLETS_PER_BLADE; i++)
-Index: linux/drivers/misc/sgi-xp/xp.h
-===================================================================
---- linux.orig/drivers/misc/sgi-xp/xp.h	2009-02-09 09:18:43.489658800 -0600
-+++ linux/drivers/misc/sgi-xp/xp.h	2009-02-09 09:19:18.065905314 -0600
-@@ -15,21 +15,19 @@
- 
- #include <linux/mutex.h>
- 
-+#if defined CONFIG_X86_UV || defined CONFIG_IA64_SGI_UV
- #include <asm/uv/uv.h>
-+#define is_uv()		is_uv_system()
-+#endif
- 
--#ifdef CONFIG_IA64
-+#ifndef is_uv
-+#define is_uv()		0
-+#endif
-+
-+#if defined CONFIG_IA64
- #include <asm/system.h>
- #include <asm/sn/arch.h>	/* defines is_shub1() and is_shub2() */
- #define is_shub()	ia64_platform_is("sn2")
--#ifdef CONFIG_IA64_SGI_UV
--#define is_uv()		ia64_platform_is("uv")
--#else
--#define is_uv()		0
--#endif
--#endif
--#ifdef CONFIG_X86_64
--#include <asm/genapic.h>
--#define is_uv()		is_uv_system()
- #endif
- 
- #ifndef is_shub1
-@@ -44,10 +42,6 @@
- #define is_shub()	0
- #endif
- 
--#ifndef is_uv
--#define is_uv()		0
--#endif
--
- #ifdef USE_DBUG_ON
- #define DBUG_ON(condition)	BUG_ON(condition)
- #else
+thanks,
+
+greg k-h
