@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754277AbZBIBvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbZBIBvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754277AbZBIBvT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 20:51:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbZBIBvL
+	id S1754701AbZBIBvd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 20:51:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792AbZBIBvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sun, 8 Feb 2009 20:51:12 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:33485 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753714AbZBIBvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 8 Feb 2009 20:51:11 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58682
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752934AbZBIBvK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 20:51:10 -0500
-Date: Sun, 08 Feb 2009 17:51:03 -0800 (PST)
-Message-Id: <20090208.175103.257843097.davem@davemloft.net>
-To: risto.suominen@gmail.com
-Cc: jgarzik@pobox.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 001/002] de2104x: force correct order when writing to
- rx ring
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <46e1c7760902071330u10427d33p3f49e82a2e4b1ddc@mail.gmail.com>
-References: <46e1c7760902071330u10427d33p3f49e82a2e4b1ddc@mail.gmail.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jerome Marchand <jmarchan@redhat.com>,
+       Denys Vlasenko <dvlasenk@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] ptrace_untrace: fix the SIGNAL_STOP_STOPPED check
+In-Reply-To: Oleg Nesterov's message of  Sunday, 8 February 2009 19:47:30 +0100 <20090208184730.GA27086@redhat.com>
+References: <20090208184730.GA27086@redhat.com>
+X-Zippy-Says: Do I have a lifestyle yet?
+Message-Id: <20090209015029.45AA7FC330@magilla.sf.frob.com>
+Date: Sun,  8 Feb 2009 17:50:29 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Risto Suominen <risto.suominen@gmail.com>
-Date: Sat, 7 Feb 2009 23:30:24 +0200
+Yes, I believe this is correct.  It matches the flip side of the
+bookkeeping where we adjust group_stop_count when going into TASK_TRACED
+(ptrace_stop).  I think it warrants a comment with your change, saying that
+treating group_stop_count as "we should be already stopped" is consistent
+with decrementing an active group_stop_count when we enter TASK_TRACED.
 
-> DescOwn should not be set, thus allowing the chip to use the descriptor, before
-> everything else is set up correctly.
-> 
-> Signed-off-by: Risto Suominen <Risto.Suominen@gmail.com>
+> 	- if the process/thread was traced, SIGNAL_STOP_STOPPED
+> 	  does not necessary means this thread group is stopped.
+>
+> 	- ptrace breaks the bookkeeping of ->group_stop_count.
 
-Applied.
+SIGNAL_STOP_STOPPED is only set when all live threads in the group are in
+either TASK_TRACED or TASK_STOPPED.  PTRACE_DETACH respects this and this
+it stopped.  However, PTRACE_CONT et al (ptrace_resume) do not respect it
+and can resume an individual thread regardless of SIGNAL_STOP_STOPPED.
+That's what you mean here, right?
 
-Please send networking patches to netdev@vger.kernel.org, especially
-so that your patch gets properly logged and tracked at:
+Doing that without a SIGCONT having been generated is an anomalous way for
+a debugger to behave, since it's going to eat the effects of the job
+control stop.  But who knows that things they do, so this could be sticky
+to fix so that SIGNAL_STOP_STOPPED really means all stopped.
 
-	http://patchwork.ozlabs.org/project/netdev/list/
+> (the comment above ptrace_untrace() doesn't look exactly right too).
 
-Thanks.
+How so?
+
+
+Thanks,
+Roland
