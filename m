@@ -1,58 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755368AbZBIPRH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755504AbZBIPSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755368AbZBIPRH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 10:17:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754343AbZBIPQz
+	id S1755504AbZBIPSp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 10:18:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754521AbZBIPSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 10:16:55 -0500
-Received: from zone0.gcu-squad.org ([212.85.147.21]:7362 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753383AbZBIPQy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 10:16:54 -0500
-Date: Mon, 9 Feb 2009 16:16:44 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Frank Seidel <fseidel@suse.de>
-Cc: linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       ben-linux@fluff.org, linux-i2c@vger.kernel.org, frank@f-seidel.de,
-       w.sang@pengutronix.de, "David S. Miller" <davem@davemloft.net>,
-       ukleinek@informatik.uni-freiburg.de, Frans Pop <elendil@planet.nl>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Frank Seidel <fseidel@suse.de>
-Subject: Re: [PATCHv2 2/2] i2c: adapt debug macros for KERN_* constants
-Message-ID: <20090209161644.35e3154d@hyperion.delvare>
-In-Reply-To: <498EEA2F.5050601@suse.de>
-References: <498C3EEA.5060508@suse.de>
-	<498EE9C9.4080002@suse.de>
-	<498EEA2F.5050601@suse.de>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Feb 2009 10:18:34 -0500
+Received: from styx.suse.cz ([82.119.242.94]:37319 "EHLO dhcp35"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754454AbZBIPSd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 10:18:33 -0500
+Date: Mon, 9 Feb 2009 16:18:31 +0100
+From: Michal Hocko <mhocko@suse.cz>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: Karsten Keil <kkeil@suse.de>, linux-kernel@vger.kernel.org,
+       richard kennedy <richard@rsk.demon.co.uk>,
+       Dan Williams <dan.j.williams@intel.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>, dwmw2@infradead.org,
+       Scott Wood <scottwood@freescale.com>, netdev@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [RFC] Suspicious bug in module refcounting
+Message-ID: <20090209151830.GC6018@dhcp35.suse.cz>
+References: <20090203134721.GA11069@pingi.kke.suse.de> <200902041418.09630.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200902041418.09630.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 08 Feb 2009 15:20:31 +0100, Frank Seidel wrote:
-> From: Frank Seidel <frank@f-seidel.de>
+Hi David,
+
+On Wed 04-02-09 14:18:08, Rusty Russell wrote:
+> On Wednesday 04 February 2009 00:17:21 Karsten Keil wrote:
+> > The refcount is a per CPU atomic variable, module_refcount() simple add
+> > in a fully unprotected loop (not disabled irqs, not protected against
+> > scheduling) all per cpu values.
 > 
-> According to kerneljanitors todo list all printk calls (beginning
-> a new line) should have an according KERN_* constant.
-> Those are the changes to the debug macros in the i2c subsystem
-> to meet this requirement. Also changing no-debug statements
-> to raw printks again.
+> Hi Karsten,
 > 
-> Signed-off-by: Frank Seidel <frank@f-seidel.de>
-> ---
->  drivers/i2c/algos/i2c-algo-pca.c |   14 +++++++++-----
->  1 file changed, 9 insertions(+), 5 deletions(-)
+>    Yes, the BUG_ON() is overly aggressive.  And I really hate __module_get,
+> and it looks like most of the callers are completely bogus.  The watchdog
+> drivers use it to nail themselves in place in their open routines: this is
+> OK, if a bit weird.
+> 
+>    We should only use __module_get() when you *can't handle* failure;
+> otherwise you should accept that the admin did rmmod --wait and don't use the
+> module any further.
+> 
+>   dmaengine.c seems to be taking liberties like this.  AFAICT it can error
+> out, so why not just try_module_get() always?
+> 
+>   gameport.c, serio.c and input.c increment their own refcount, but to get
+> into those init functions someone must be holding a refcount already (ie. a
+> module depends on this module).  Ditto cyber2000fb.c, and MTD.
+> 
+>   mdio-bitbang.c should definitely use try_module_get.
+> 
+>   loop.c bumping its own refcount, Al might know why, but definitely can be
+> try_module_get() if it's valid at all.
+> 
+>   net/socket.c can also handle failure, so that's another try_module_get.
+> 
+> etc.
+> 
+> > I think we should replace all unprotected __module_get() calls with
+> > try_module_get(), or remove __module_get() completely.
+> 
+> Agreed.  We will need a "nail_module()" call for those legitimate uses (which
+> should clear mod->exit, rather than manipulating the refcount at all).
+> 
+> Meanwhile, I'll remove the BUG_ON for 2.6.29.
+> 
+> Thanks,
+> Rusty.
+> 
+> module: remove over-zealous check in __module_get()
+> 
+> module_refcount() isn't reliable outside stop_machine(), as demonstrated
+> by Karsten Keil <kkeil@suse.de>, networking can trigger it under load
+> (an inc on one cpu and dec on another while module_refcount() is tallying
+>  can give false results, for example).
+> 
+> Almost noone should be using __module_get, but that's another issue.
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> 
+> diff --git a/include/linux/module.h b/include/linux/module.h
+> --- a/include/linux/module.h
+> +++ b/include/linux/module.h
+> @@ -407,7 +407,6 @@ static inline void __module_get(struct m
+>  static inline void __module_get(struct module *module)
+>  {
+>  	if (module) {
+> -		BUG_ON(module_refcount(module) == 0);
+>  		local_inc(__module_ref_addr(module, get_cpu()));
+>  		put_cpu();
+>  	}
 
-Applied, thanks.
+Based on this change, would it make sense to update sys_accept to change
+__module_get to try_module_get like in the following patch?
 
-Wolfram, I would appreciate if you could test the patch and confirm it
-doesn't break anything:
-ftp://ftp.kernel.org/pub/linux/kernel/people/jdelvare/linux-2.6/jdelvare-i2c/i2c-algo-pca-adapt-debug-macros-for-KERN-constants.patch
 
-Thanks,
+>From 368c52b25414d1ccd0851d77fa5f20431487c172 Mon Sep 17 00:00:00 2001
+From: Michal Hocko <mhocko@suse.cz>
+Date: Mon, 9 Feb 2009 16:06:15 +0100
+Subject: [PATCH] [NET] replace __module_get by try_module_get in accept4
+
+After 7f9a50a5b89b87f8e754f59ae9968da28be618a5 we are not checking for
+potential BUG in module reference counting. Therefore we should replace
+__module_get by try_module_get and BUG if the module is being unloaded.
+
+Signed-off-by: Michal Hocko <mhocko@suse.cz>
+---
+ net/socket.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/net/socket.c b/net/socket.c
+index 35dd737..d0d4c92 100644
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -1444,10 +1444,11 @@ SYSCALL_DEFINE4(accept4, int, fd, struct sockaddr __user *, upeer_sockaddr,
+ 	newsock->ops = sock->ops;
+ 
+ 	/*
+-	 * We don't need try_module_get here, as the listening socket (sock)
+-	 * has the protocol module (sock->ops->owner) held.
++	 * Socket's owner cannot be in unloading path because there
++	 * must be at least one listening reference
+ 	 */
+-	__module_get(newsock->ops->owner);
++	if (unlikely(!try_module_get(newsock->ops->owner)))
++		BUG();
+ 
+ 	newfd = sock_alloc_fd(&newfile, flags & O_CLOEXEC);
+ 	if (unlikely(newfd < 0)) {
 -- 
-Jean Delvare
+1.5.6.5
+
+
+-- 
+Michal Hocko
+L3 team 
+SUSE LINUX s.r.o.
+Lihovarska 1060/12
+190 00 Praha 9    
+Czech Republic
