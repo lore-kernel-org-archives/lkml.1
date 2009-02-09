@@ -1,58 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbZBILbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754796AbZBILeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754669AbZBILbR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 06:31:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753122AbZBILbC
+	id S1754796AbZBILeg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 06:34:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbZBILe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 06:31:02 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:53740 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752306AbZBILbA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 06:31:00 -0500
-Message-ID: <499013CC.2060808@cn.fujitsu.com>
-Date: Mon, 09 Feb 2009 19:30:20 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 9 Feb 2009 06:34:27 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50993 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751731AbZBILe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 06:34:26 -0500
+Date: Mon, 9 Feb 2009 12:34:10 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Yinghai Lu <yinghai@kernel.org>, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] irq: optimize init_kstat_irqs/init_copy_kstat_irqs
+Message-ID: <20090209113410.GB18757@elte.hu>
+References: <20090206140005.44b4bb50.akpm@linux-foundation.org> <498CB4DC.2010108@kernel.org> <498D3D15.5090005@kernel.org> <20090207002610.73ff7e6d.akpm@linux-foundation.org> <86802c440902070101l5b0ef862ja92e3f31705d9608@mail.gmail.com> <20090207010619.daededa3.akpm@linux-foundation.org> <20090209081124.GB24420@elte.hu> <20090209001903.89548108.akpm@linux-foundation.org> <20090209083739.GB15517@elte.hu> <20090209004319.cc8c5d8b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Paul Menage <menage@google.com>,
-       containers@lists.osdl.org, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [cgroup or VFS ?]  WARNING: at fs/namespace.c:636	mntput_no_expire+0xac/0xf2()
-References: <49617D35.4040805@cn.fujitsu.com> <20090209004046.3ce1dde0.akpm@linux-foundation.org> <20090209093414.GU28946@ZenIV.linux.org.uk>
-In-Reply-To: <20090209093414.GU28946@ZenIV.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090209004319.cc8c5d8b.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:
-> On Mon, Feb 09, 2009 at 12:40:46AM -0800, Andrew Morton wrote:
->>> Thread 1:
->>>   for ((; ;))
->>>   {
->>>       mount -t cgroup -o cpuset xxx /mnt > /dev/null 2>&1
->>>       mkdir /mnt/0 > /dev/null 2>&1
->>>       rmdir /mnt/0 > /dev/null 2>&1
->>>       umount /mnt > /dev/null 2>&1
->>>   }
->>>
->>> Thread 2:
->>>   {
->>>       mount -t cpuset xxx /mnt > /dev/null 2>&1
->>>       umount /mnt > /dev/null 2>&1
->>>   }
-> 
-> How cute...  Same mountpoint in both, so these mount(2) will sometimes
-> fail (cgroup picks the same sb on the same options, AFAICS) and fail
-> silently due to these redirects...
-> 
-> That's a lovely way to stress-test a large part of ro-bind stuff *and*
-> umount()-related code.  Could you do C equivalent of the above (just
-> the same syscalls in loop, nothing fancier) and do time-stamped strace?
-> 
 
-Sure, I'll write a C version and try to reproduce the warning.
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
+> On Mon, 9 Feb 2009 09:37:39 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > On Mon, 9 Feb 2009 09:11:24 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+> > > 
+> > > > 
+> > > > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > > 
+> > > > > On Sat, 7 Feb 2009 01:01:03 -0800 Yinghai Lu <yinghai@kernel.org> wrote:
+> > > > > 
+> > > > > > 
+> > > > > > add kzalloc_node_safe()?
+> > > > > 
+> > > > > I cannot find that function.
+> > > > 
+> > > > His suggestion is to provide that allocator variant.
+> > > > 
+> > > 
+> > > Oh.
+> > > 
+> > > It isn't possible to write a kzalloc_node_safe(GFP_ATOMIC).  Or at
+> > > least, we've never worked out a way.
+> > > 
+> > > Maybe I'm confused again.
+> > 
+> > Indeed - duh - more morning tea needed.
+> > 
+> > Yinghai, why are those allocations GFP_ATOMIC to begin with? These:
+> > 
+> > earth4:~/tip> grep GFP_ATOMIC kernel/irq/*.c
+> > kernel/irq/handle.c:	ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs), GFP_ATOMIC, node);
+> > kernel/irq/handle.c:	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
+> > kernel/irq/manage.c:	action = kmalloc(sizeof(struct irqaction), GFP_ATOMIC);
+> > 
+> > Should all be GFP_KERNEL. Wherever they are within a spinlocked section the code 
+> > should be restructured. All descriptor data structures should be preallocated at 
+> > __setup_irq() time. If we ever need to allocate dynamically later on, in the middle 
+> > of some difficult codepath that's a structure bug in the code.
+> 
+> yup, something along those lines.
+> 
+> > and this one:
+> > 
+> > kernel/irq/numa_migrate.c:	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
+> > 
+> > should fail the migration silently if GFP_ATOMIC returns NULL.
+> 
+> Silent failure sounds bad?
+> 
+> The allocation attempt will spew a page-allocation-failure backtrace
+> anyway, so people will still get alarmed.
+> 
+> You might instead choose to suppress that warning with __GFP_NOWARN and
+> instead add a more meaningful warning at the calling codesite.
 
+Well this is a NUMA performance optimization that gets re-tried anyway, so
+spewing anything because we are so low on RAM that we cannot fulfill
+GFP_ATOMIC wont help things. Silence is better there i think. At most
+a WARN_ONCE().
+
+	Ingo
