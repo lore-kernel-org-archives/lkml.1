@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbZBIIp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbZBIIq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754006AbZBIIp3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 03:45:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750983AbZBIIpV
+	id S1754172AbZBIIq3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 03:46:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbZBIIqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 03:45:21 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34435 "EHLO hera.kernel.org"
+	Mon, 9 Feb 2009 03:46:21 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35375 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751377AbZBIIpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 03:45:20 -0500
-Message-ID: <498FECD3.9030204@kernel.org>
-Date: Mon, 09 Feb 2009 00:44:03 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751377AbZBIIqU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 03:46:20 -0500
+Date: Mon, 9 Feb 2009 09:46:03 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org
+Subject: Re: [PATCH] x86: Don't pretend that non-framepointer stack traces
+	are reliable
+Message-ID: <20090209084603.GA20270@elte.hu>
+References: <20090207122337.4c0f25b7@infradead.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de,
-       hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] irq: optimize init_kstat_irqs/init_copy_kstat_irqs
-References: <498CB0B7.8030009@kernel.org> <20090206140005.44b4bb50.akpm@linux-foundation.org> <498CB4DC.2010108@kernel.org> <498D3D15.5090005@kernel.org> <20090207002610.73ff7e6d.akpm@linux-foundation.org> <86802c440902070101l5b0ef862ja92e3f31705d9608@mail.gmail.com> <20090207010619.daededa3.akpm@linux-foundation.org> <20090209081124.GB24420@elte.hu> <20090209001903.89548108.akpm@linux-foundation.org> <20090209083739.GB15517@elte.hu>
-In-Reply-To: <20090209083739.GB15517@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090207122337.4c0f25b7@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
->> On Mon, 9 Feb 2009 09:11:24 +0100 Ingo Molnar <mingo@elte.hu> wrote:
->>
->>> * Andrew Morton <akpm@linux-foundation.org> wrote:
->>>
->>>> On Sat, 7 Feb 2009 01:01:03 -0800 Yinghai Lu <yinghai@kernel.org> wrote:
->>>>
->>>>> add kzalloc_node_safe()?
->>>> I cannot find that function.
->>> His suggestion is to provide that allocator variant.
->>>
->> Oh.
->>
->> It isn't possible to write a kzalloc_node_safe(GFP_ATOMIC).  Or at
->> least, we've never worked out a way.
->>
->> Maybe I'm confused again.
-> 
-> Indeed - duh - more morning tea needed.
-> 
-> Yinghai, why are those allocations GFP_ATOMIC to begin with? These:
-> 
-> earth4:~/tip> grep GFP_ATOMIC kernel/irq/*.c
-> kernel/irq/handle.c:	ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs), GFP_ATOMIC, node);
-> kernel/irq/handle.c:	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
-> kernel/irq/manage.c:	action = kmalloc(sizeof(struct irqaction), GFP_ATOMIC);
-> 
-> Should all be GFP_KERNEL. Wherever they are within a spinlocked section the code 
-> should be restructured. All descriptor data structures should be preallocated at 
-> __setup_irq() time. If we ever need to allocate dynamically later on, in the middle 
-> of some difficult codepath that's a structure bug in the code.
 
-ok.
+* Arjan van de Ven <arjan@infradead.org> wrote:
 
+> >From f460ce92e09770691855b98a904556e92d39ead9 Mon Sep 17 00:00:00 2001
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Date: Sat, 7 Feb 2009 12:20:20 -0800
+> Subject: [PATCH] x86: Don't pretend that non-framepointer stack traces are reliable
 > 
-> and this one:
+> without frame pointers enabled, the x86 stack traces should not
+> pretend to be reliable; instead they should just be what they are:
+> unreliable.
 > 
-> kernel/irq/numa_migrate.c:	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
+> The effect of this is that they have a ? printed in the stacktrace,
+> to warn the reader that these entries are guesses rather than known
+> based on more reliable information.
 > 
-> should fail the migration silently if GFP_ATOMIC returns NULL.
-it will reuse the old one.
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> ---
+>  arch/x86/kernel/dumpstack.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 
-YH
+applied to tip/x86/debug, thanks Arjan!
+
+	Ingo
