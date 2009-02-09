@@ -1,207 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545AbZBIJ2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600AbZBIJ3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754545AbZBIJ2w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 04:28:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753181AbZBIJ2k
+	id S1754600AbZBIJ3Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 04:29:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbZBIJ3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 04:28:40 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:30375 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753897AbZBIJ2i (ORCPT
+	Mon, 9 Feb 2009 04:29:15 -0500
+Received: from mga02.intel.com ([134.134.136.20]:58540 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751985AbZBIJ3N convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 04:28:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=bbaeK1SLPOEWjnp2wWhwKkbimHTg8qyqYqEAwlsmrbuOR0rvmoqkG6xwdIhibQQ/qj
-         /u9o5UcvsikeK2mBobjEmzDSzl94U0V00hi9y21JpIikkNh9RoSIHTL+iT99I/hulmVU
-         cNOPfpTJoH1Oh/umRvAo5Yq4HOS9BUBDB+/Es=
+	Mon, 9 Feb 2009 04:29:13 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,404,1231142400"; 
+   d="scan'208";a="488423301"
+From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+To: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Mon, 9 Feb 2009 09:28:34 +0000
+Subject: RE: [PATCH, for 2.6.29] ptrace: fix the usage of ptrace_fork()
+Thread-Topic: [PATCH, for 2.6.29] ptrace: fix the usage of ptrace_fork()
+Thread-Index: AcmKVhLJ2pry8DqWQMuENQK18GDtIwAOFmJA
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E4A1E7C8B@irsmsx504.ger.corp.intel.com>
+References: <20090209010233.GA26444@redhat.com>
+ <20090209012824.GA26461@redhat.com>
+In-Reply-To: <20090209012824.GA26461@redhat.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Reply-To: mtk.manpages@gmail.com
-In-Reply-To: <alpine.DEB.1.10.0902081510150.18839@alien.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0902081510150.18839@alien.or.mcafeemobile.com>
-Date: Mon, 9 Feb 2009 22:28:36 +1300
-Message-ID: <cfd18e0f0902090128i1a4902f4of0d4d830b567602f@mail.gmail.com>
-Subject: Re: [patch 2/2] timerfd extend clockid support
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 9, 2009 at 12:23 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
-> The following patch extends timerfd clockid support to cover the ones
-> supported by timer_create().
-> It exports the invalid_clockid() function outside posix-timers.c to allow
-> timerfd to properly check input parameters.
-> Andrew, this is (eventually) .30 material, and do not take the patch
-> until you have Thomas sign off.
-> Thomas, timerfd uses core hrtimer functions for its tasks. By extending
-> the clockid support, I assume that the clockids other than CLOCK_MONOTONIC
-> and CLOCK_REALTIME, behaves the same from a hrtimer caller POV. Right?
+>-----Original Message-----
+>From: Oleg Nesterov [mailto:oleg@redhat.com]
+>Sent: Monday, February 09, 2009 2:28 AM
+>To: Andrew Morton; Ingo Molnar; Metzger, Markus T; Roland McGrath
+>Cc: linux-kernel@vger.kernel.org
 
-Hi Davide,
 
-Have you done any testing of this patch?  My attempts at testing with
-clocks other than REALTIME and MONOTONIC all don't work so far.  In
-some cases, my test programs causes the system to hang.  Try
-experimenting with the (not yet well tested) test program below, to
-check the behavior with other clocks.
+>> I noticed by pure accident we have ptrace_fork() and friends. This was
+>> added by "x86, bts: add fork and exit handling", commit
+>> bf53de907dfdaac178c92d774aae7370d7b97d20
+>
+>Hmm. Looks like we have more problems here...
 
-Cheers,
+Thanks for pointing out these problems. I did not get too many reviews when I sent out the patch.
 
-Michael
 
-/* timerfd_demo.c
+>PTRACE_BTS_CONFIG allocates ->bts_buffer via alloc_locked_buffer()
+>which updates mm->total_vm/locked_vm.
+>
+>ptrace_detach() does free_locked_buffer() which "restores" mm->xxx_vm.
 
-   Compile with -lrt
-*/
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <signal.h>
-#include <errno.h>
-#include <time.h>
-#include <sys/timerfd.h>
-#include <pthread.h>
-#include <stdint.h>               /* Definition of uint64_t */
+That's what I expect to be the normal case.
 
-#define SIG SIGUSR1
 
-#define errExit(msg)    do { perror(msg); exit(EXIT_FAILURE); \
-                        } while (0)
+>But if the tracer exits we are doing __ptrace_unlink()->ptrace_bts_untrace()
+>which uses a plain kfree(), in that case we don't update mm->xxx_vm ?
 
-static void *
-thread_func(void *arg)
-{
-    printf("Thread burning CPU\n");
-    for (;;)
-        ;
-}
+That's correct.
+When the tracer dies, do_exit() first calls exit_mm() and then calls exit_notify(), which eventually calls __ptrace_unlink() and ptrace_bts_untrace().
 
-int
-main(int argc, char *argv[])
-{
-    timer_t timer_id;
-    struct itimerspec its;
-    clockid_t clock_id;
-    int flags, s, fd;
-    struct timespec ts;
-    uint64_t numExp;
+At this time, the tracer's mm is already gone, but the bts buffer is not.
+The code reclaims the memory; so we should not leak memory.
+The user should not see any problems with his ulimit, either, since the task that had the memory accounted against his locked and total limit is as good as dead.
 
-    if (argc < 4) {
-        fprintf(stderr, "Usage: %s <clockid> <flags> <num-secs> "
-                "[<clock-adj-secs>]\n", argv[0]);
-#define fpe(str) fprintf(stderr, str);
-        fpe("<clockid> is one of:\n");
-        fpe("\tm  CLOCK_MONOTONIC\n");
-        fpe("\tr  CLOCK_REALTIME\n");
-        fpe("\tp  CLOCK_PROCESS_CPUTIME_ID\n");
-        fpe("\tC  clock of a child process that burns CPU time\n");
-        fpe("\tT  clock of a sub-thread that burns CPU time\n");
-        fpe("<flags> is one of:\n");
-        fpe("\ta  absolute timer (<num-secs> is added to current\n");
-        fpe("\t   clock value)\n")
-        fpe("\t-  relative timer\n")
-        fpe("<num-secs> is the initial expiration time for the timer\n");
-        fpe("<clock-adj-secs> is number of seconds by which clock\n");
-        fpe("\tshould be adjusted (clock_settime()) after timer\n");
-        fpe("\thas started\n")
-        exit(EXIT_FAILURE);
-    }
+Where exactly do you see the problem?
 
-    if (argv[1][0] == 'C') {
-        pid_t cpid;
 
-        cpid = fork();
-        if (cpid == -1)
-            errExit("fork");
+>Note that the exiting tracer can have sub-threads, so the whole process
+>does not necessary dies.
 
-        if (cpid == 0) {
-            usleep(10000);
-            printf("Child process burning CPU time\n");
-            alarm(100); /* Ensure child eventually dies */
-            for (;;)
-                ;
-        } else {        /* Parent gets CPU clock ID of child and
-                           falls through */
-            if (clock_getcpuclockid(cpid, &clock_id) == -1)
-                errExit("clock_getcpuclockid");
-        }
+In that case, the process would lose the child's branch trace. Doesn't the process lose control over the ptraced task, anyway, when we call __ptrace_unlink()?
 
-    } else if (argv[1][0] == 'T') {
-        pthread_t t;
+The task that paid for the buffer, though, is dead, and the memory has been reclaimed by the kernel.
 
-        errno = pthread_create(&t, NULL, thread_func, NULL);
-        if (errno != 0)
-            errExit("pthread_create");
-        errno = pthread_getcpuclockid(t, &clock_id);
-        if (errno != 0)
-            errExit("pthread_getcpuclockid");
 
-    } else {
-        clock_id = (argv[1][0] == 'm') ? CLOCK_MONOTONIC :
-                   (argv[1][0] == 'r') ? CLOCK_REALTIME :
-                   (argv[1][0] == 'p') ? CLOCK_PROCESS_CPUTIME_ID :
-                   -999999;     /* Unlikely to be a valid clock ID */
+>Or, the tracer can reap a zombie tracee without PTRACE_DETACH, in that
+>case we don't update ->mm too.
 
-        if (clock_id == CLOCK_PROCESS_CPUTIME_ID) {
-            pthread_t t;
+I'm not sure I understand that scenario.
+A task ptraces another task, requests branch trace, and does not detach when the tracee dies?
 
-            errno = pthread_create(&t, NULL, thread_func, NULL);
-            if (errno != 0)
-                errExit("pthread_create");
-        }
-    }
+In that case, the tracer would continue to pay for the buffer (which had been freed in __ptrace_unlink()) until it dies.
+If the tracer task still lives, shouldn't we enforce a proper detach?
 
-    fd = timerfd_create(clock_id, 0);
-    if (fd == -1)
-        errExit("timerfd_create");
 
-    printf("clock ID is 0x%lx\n", (long) clock_id);
-    printf("timer ID is 0x%lx\n", (long) timer_id);
+The problem I was trying to solve is that a dying ptracer does not detach properly. It seems that there are more ways to bypass ptrace detach.
 
-    flags = (argv[2][0] == 'a') ? TFD_TIMER_ABSTIME : 0;
+Ideally (that is, from my point of view, at least), the tracer would call ptrace_detach() very early in do_exit(), so ptrace would not have to distinguish the various ways a tracer or tracee could die. That view might be a bit naïve, I admit.
 
-    if (flags & TFD_TIMER_ABSTIME) {
-        printf("Absolute timer\n");
-        if (clock_gettime(clock_id, &ts) == -1)
-            errExit("clock_gettime");
-        printf("Current clock value = %ld\n", (long) ts.tv_sec);
-        its.it_value.tv_sec = ts.tv_sec + atoi(argv[3]);
-        its.it_value.tv_nsec = ts.tv_nsec;
-    } else {
-        its.it_value.tv_sec = atoi(argv[3]);
-        its.it_value.tv_nsec = 0;
-    }
 
-    its.it_interval.tv_sec = 1;
-    its.it_interval.tv_nsec = 0;
+>Oh, and afaics ptrace_detach()->ptrace_bts_detach() can race with the
+>tracer's sub-thread which does do_wait()->release_task() (if the tracee
+>was killed before detach takes tasklist), the kernel can crash in this
+>case.
 
-    printf("its.it_value.tv_sec = %ld\n",
-            (long) its.it_value.tv_sec);
+Are you saying that ptrace_detach() should call ptrace_disable() with tasklist_lock held for write?
+There's a comment in ptrace_detach() before it does write_lock_irw(&tasklist_lock) and calls __ptrace_detach().
 
-    if (timerfd_settime(fd, flags, &its, NULL) == -1)
-         errExit("timer_settime");
 
-    if (argc > 4) {
-        if (clock_gettime(clock_id, &ts) == -1)
-            errExit("clock_gettime");
-        ts.tv_sec += atoi(argv[4]);
-        printf("About to adjust clock to %ld\n", (long) ts.tv_sec);
-        if (clock_settime(clock_id, &ts) == -1)
-            errExit("clock_settime");
-    }
+>Unless I missed something, This all looks rather wrong, and I wasn't
+>aware about these changes :(
 
-    s = read(fd, &numExp, sizeof(uint64_t));
-    if (s != sizeof(uint64_t))
-        errExit("read");
-    printf("number of expirations = %lld\n",
-            (unsigned long long) numExp);
-}
+I wished I would have got this review when I sent out the patch.
+
+
+regards,
+markus.
+
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
