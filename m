@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754540AbZBIKRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbZBIKRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754540AbZBIKRT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 05:17:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384AbZBIKRH
+	id S1754715AbZBIKRs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 05:17:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752452AbZBIKRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 05:17:07 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49627 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751449AbZBIKRE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 05:17:04 -0500
-Date: Mon, 9 Feb 2009 11:16:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org,
-       Ralf Baechle <ralf@linux-mips.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Al Viro <viro@zeniv.linux.org.uk>, Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH 1/3] cpumask: remove dangerous CPU_MASK_ALL_PTR,
-	&CPU_MASK_ALL.
-Message-ID: <20090209101642.GG20467@elte.hu>
-References: <200902071809.17953.rusty@rustcorp.com.au>
+	Mon, 9 Feb 2009 05:17:38 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:44970 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752384AbZBIKRi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 05:17:38 -0500
+Date: Mon, 9 Feb 2009 11:17:30 +0100
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: George Spelvin <linux@horizon.com>
+Cc: udovdh@xs4all.nl, linux-kernel@vger.kernel.org, LinuxPPS@ml.enneenne.com
+Message-ID: <20090209101730.GM7975@enneenne.com>
+Mail-Followup-To: George Spelvin <linux@horizon.com>, udovdh@xs4all.nl,
+	linux-kernel@vger.kernel.org, LinuxPPS@ml.enneenne.com
+References: <20090206142231.22425.qmail@science.horizon.com> <20090206143703.GC7975@enneenne.com> <20090206144752.5195.qmail@science.horizon.com> <20090206145553.GD7975@enneenne.com> <20090206145932.10638.qmail@science.horizon.com> <20090206152156.GE7975@enneenne.com> <20090206225326.14093.qmail@science.horizon.com> <20090208004914.21448.qmail@science.horizon.com> <498E712F.7080206@xs4all.nl> <20090208060938.25184.qmail@science.horizon.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902071809.17953.rusty@rustcorp.com.au>
+In-Reply-To: <20090208060938.25184.qmail@science.horizon.com>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [LinuxPPS] LinuxPPS kernel interface
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Feb 08, 2009 at 01:09:38AM -0500, George Spelvin wrote:
+> Udo van den Heuvel <udovdh@xs4all.nl> wrote:
+> > Interesting ideas, thanks for the input.
+> >
+> > I think I must mention  that we also must strive for kernel inclusion.
+> > Kernel inclusion will broaden our exposure.
+> > This means we have to get rid of the issues blocking inclusion.
+> > (see a query like http://marc.info/?l=linux-kernel&w=2&r=1&s=pps&q=b for 
+> > related posts)
+> >
+> > What do you think?
+> 
+> I agree, that's the goal.  But it's also important to get the
+> interface right, preferably before publishing it to world+dog.
+> 
+> And then there are little things like the fact that an important header
+> file like timepps.h probably shouldn't live in Documentation/pps...
+> 
+> For example, here's a patch, on top of the previous series, that
+> gets rid of the timeout argument to PPS_FETCH:
 
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
+Please, note that such file is _not_ into kernel proposed patch.
 
-> (Thanks to Al Viro for reminding me of this, via Ingo)
-> 
-> CPU_MASK_ALL is the (deprecated) "all bits set" cpumask, defined as so:
-> 
-> 	#define CPU_MASK_ALL (cpumask_t) { { ... } }
-> 
-> Taking the address of such a temporary is questionable at best,
-> unfortunately 321a8e9d (cpumask: add CPU_MASK_ALL_PTR macro) added
-> CPU_MASK_ALL_PTR:
-> 
-> 	#define CPU_MASK_ALL_PTR (&CPU_MASK_ALL)
-> 
-> Which formalizes this practice.  One day gcc could bite us over this
-> usage (though we seem to have gotten away with it so far).
-> 
-> So replace everywhere which used &CPU_MASK_ALL or CPU_MASK_ALL_PTR
-> with the modern "cpu_all_mask" (a real struct cpumask *), and remove
-> CPU_MASK_ALL_PTR altogether.
-> 
-> Also remove the confusing and deprecated large-NR_CPUS-only
-> "cpu_mask_all".
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> Cc: Al Viro <viro@zeniv.linux.org.uk>
+First we should get inclusion of core code, then we can discuss about
+userland interface and other related stuff.
 
-In general this should be expressed via this tag:
+Ciao,
 
-	Reported-by: Al Viro <viro@zeniv.linux.org.uk>
+Rodolfo
 
-Thanks,
+-- 
 
-	Ingo
+GNU/Linux Solutions                  e-mail: giometti@enneenne.com
+Linux Device Driver                          giometti@linux.it
+Embedded Systems                     phone:  +39 349 2432127
+UNIX programming                     skype:  rodolfo.giometti
