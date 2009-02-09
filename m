@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbZBJUHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbZBJUII@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756186AbZBJUHu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 15:07:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbZBJUH1
+	id S1756402AbZBJUII (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 15:08:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755294AbZBJUH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 15:07:27 -0500
-Received: from gw.goop.org ([64.81.55.164]:50703 "EHLO mail.goop.org"
+	Tue, 10 Feb 2009 15:07:28 -0500
+Received: from gw.goop.org ([64.81.55.164]:50708 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754813AbZBJUH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754870AbZBJUH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 10 Feb 2009 15:07:26 -0500
-Message-Id: <3c552ac8a747d6c26d13302c54d71dae9f56f4ac.1234296039.git.jeremy.fitzhardinge@citrix.com>
+Message-Id: <4924e228ae039029a9503ad571d91086e4042c90.1234296039.git.jeremy.fitzhardinge@citrix.com>
 In-Reply-To: <cover.1234296039.git.jeremy.fitzhardinge@citrix.com>
 References: <cover.1234296039.git.jeremy.fitzhardinge@citrix.com>
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 Date: Mon, 9 Feb 2009 12:05:47 -0800
-Subject: [PATCH] x86: make apic_* operations inline functions
+Subject: [PATCH] x86: unstatic mp_find_ioapic so it can be used elsewhere
 Cc: Ingo Molnar <mingo@elte.hu>, x86@kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Yinghai Lu <yinghai@kernel.org>
@@ -23,58 +23,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mainly to get proper type-checking and consistency.
-
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/apic.h |   35 +++++++++++++++++++++++++++++------
- 1 files changed, 29 insertions(+), 6 deletions(-)
+ arch/x86/include/asm/mpspec.h |    1 +
+ arch/x86/kernel/acpi/boot.c   |    2 +-
+ 2 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
-index b03711d..f4835a1 100644
---- a/arch/x86/include/asm/apic.h
-+++ b/arch/x86/include/asm/apic.h
-@@ -139,12 +139,35 @@ struct apic_ops {
+diff --git a/arch/x86/include/asm/mpspec.h b/arch/x86/include/asm/mpspec.h
+index 8c56201..b59371a 100644
+--- a/arch/x86/include/asm/mpspec.h
++++ b/arch/x86/include/asm/mpspec.h
+@@ -77,6 +77,7 @@ extern int acpi_probe_gsi(void);
+ #ifdef CONFIG_X86_IO_APIC
+ extern int mp_config_acpi_gsi(unsigned char number, unsigned int devfn, u8 pin,
+ 				u32 gsi, int triggering, int polarity);
++extern int mp_find_ioapic(int gsi);
+ #else
+ static inline int
+ mp_config_acpi_gsi(unsigned char number, unsigned int devfn, u8 pin,
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index c334fe7..068b900 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -872,7 +872,7 @@ static struct {
+ 	DECLARE_BITMAP(pin_programmed, MP_MAX_IOAPIC_PIN + 1);
+ } mp_ioapic_routing[MAX_IO_APICS];
  
- extern struct apic_ops *apic_ops;
- 
--#define apic_read (apic_ops->read)
--#define apic_write (apic_ops->write)
--#define apic_icr_read (apic_ops->icr_read)
--#define apic_icr_write (apic_ops->icr_write)
--#define apic_wait_icr_idle (apic_ops->wait_icr_idle)
--#define safe_apic_wait_icr_idle (apic_ops->safe_wait_icr_idle)
-+static inline u32 apic_read(u32 reg)
-+{
-+	return apic_ops->read(reg);
-+}
-+
-+static inline void apic_write(u32 reg, u32 val)
-+{
-+	apic_ops->write(reg, val);
-+}
-+
-+static inline u64 apic_icr_read(void)
-+{
-+	return apic_ops->icr_read();
-+}
-+
-+static inline void apic_icr_write(u32 low, u32 high)
-+{
-+	apic_ops->icr_write(low, high);
-+}
-+
-+static inline void apic_wait_icr_idle(void)
-+{
-+	apic_ops->wait_icr_idle();
-+}
-+
-+static inline u32 safe_apic_wait_icr_idle(void)
-+{
-+	return apic_ops->safe_wait_icr_idle();
-+}
- 
- extern int get_physical_broadcast(void);
+-static int mp_find_ioapic(int gsi)
++int mp_find_ioapic(int gsi)
+ {
+ 	int i = 0;
  
 -- 
 1.6.0.6
