@@ -1,103 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755805AbZBIN2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755655AbZBIN2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755805AbZBIN2Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 08:28:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbZBIN2N
+	id S1755655AbZBIN2l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 08:28:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755817AbZBIN20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 08:28:13 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:48965 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753778AbZBIN2M (ORCPT
+	Mon, 9 Feb 2009 08:28:26 -0500
+Received: from mail.openmoko.org ([88.198.124.205]:44534 "EHLO
+	mail.openmoko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755796AbZBIN2Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 08:28:12 -0500
-Date: Mon, 9 Feb 2009 15:28:09 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Herbert Xu <herbert@gondor.apana.org.au>
-cc: David Miller <davem@davemloft.net>, jeff.chua.linux@gmail.com, rjw@sisk.pl,
-       torvalds@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>
-Subject: Re: commit 64ff3b938ec6782e6585a83d5459b98b0c3f6eb8 breaks rlogin
-In-Reply-To: <20090209072806.GB4380@gondor.apana.org.au>
-Message-ID: <Pine.LNX.4.64.0902091513190.31742@wrl-59.cs.helsinki.fi>
-References: <20090206054541.GA4954@gondor.apana.org.au>
- <b6a2187b0902060335h646e8d86pf00773035f577665@mail.gmail.com>
- <20090209055848.GA3889@gondor.apana.org.au> <20090208.220357.261414983.davem@davemloft.net>
- <20090209061151.GA3982@gondor.apana.org.au> <Pine.LNX.4.64.0902090853360.20576@wrl-59.cs.helsinki.fi>
- <20090209072806.GB4380@gondor.apana.org.au>
+	Mon, 9 Feb 2009 08:28:25 -0500
+Date: Mon, 9 Feb 2009 18:58:08 +0530
+From: Balaji Rao <balajirrao@openmoko.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andy Green <andy@openmoko.com>, Pierre Ossman <drzeus-mmc@drzeus.cx>
+Subject: [PATCH] mmc: In mmc_power_up, use previously selected ocr if
+	available
+Message-ID: <20090209132806.GD3278@fedora.yogi>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-721455914-1234186089=:31742"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+When mmc_power_up is called during unsafe resume, host->ocr should be
+used instead of host->ocr_avail.
 
----696208474-721455914-1234186089=:31742
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
+Cc: Andy Green <andy@openmoko.com>
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>
+---
+ drivers/mmc/core/core.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
 
-On Mon, 9 Feb 2009, Herbert Xu wrote:
-
-> On Mon, Feb 09, 2009 at 09:13:00AM +0200, Ilpo Järvinen wrote:
-> > 
-> > Hmm, what happens if a opposite dir ACK gets sent (it's zero sized seqno
-> > range will be above urgent sequence when urg is not yet acknowledged)? So
-> > we'll take the later branch after your change and send bogus 0xffff urg?
-> > I think you're change might have actually broken bidir tcp completely (and
-> > probably window probing as well under some conditions). Congraz, two flies
-> > with a single stroke :-). You would have needed an additional check that
-> > the tcb->seq is below urg...
-> > 
-> > ...Below is a patch but Jeff might need to revert the revert first if
-> > he tests with the latest Linus' tree.
-> 
-> Good point! That would definitely explain this.
->  
-> > [PATCH] tcp: check that we're still < urg instead of sending a bogus one
-> > 
-> > Opposite dir ACK with zero sized seqno range can go into the
-> > later condition once urg is in the outstanding window not
-> > yet acknowledge (we're still in urg mode but seqno we sent in
-> > the ack won't be below snd_up). Need to check that we never
-> > advertize bogus urg for a segment which is after the snd_up.
-> > 
-> > Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
-> > ---
-> >  net/ipv4/tcp_output.c |    3 ++-
-> >  1 files changed, 2 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/net/ipv4/tcp_output.c b/net/ipv4/tcp_output.c
-> > index 557fe16..c808d73 100644
-> > --- a/net/ipv4/tcp_output.c
-> > +++ b/net/ipv4/tcp_output.c
-> > @@ -667,7 +667,8 @@ static int tcp_transmit_skb(struct sock *sk, struct sk_buff *skb, int clone_it,
-> >  		if (between(tp->snd_up, tcb->seq + 1, tcb->seq + 0xFFFF)) {
-> >  			th->urg_ptr = htons(tp->snd_up - tcb->seq);
-> >  			th->urg = 1;
-> > -		} else if (after(tcb->seq + 0xFFFF, tp->snd_nxt)) {
-> > +		} else if (after(tcb->seq + 0xFFFF, tp->snd_nxt) &&
-> > +			   before(tcb->seq, tcp->snd_up)) {
-> >  			th->urg_ptr = 0xFFFF;
-> >  			th->urg = 1;
-> >  		}
-> 
-> We could rewrite this as
-> 
-> 	if (unlikely(tcp_urg_mode(tp) && before(tcb->seq, tcp->snd_up))) {
-> 		if (before(tp->sndup, tcb->seq + 0x10000)) {
-> 			th->urg_ptr = htons(tp->snd_up - tcb->seq);
-> 			th->urg = 1;
-> 		} else if (after(tcb->seq + 0xFFFF, tp->snd_nxt)) {
-> 			th->urg_ptr = 0xFFFF;
-> 			th->urg = 1;
-> 		}
-> 	}
-
-Yes, that should work too except the gcc catchable typo.
-
-
+diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+index df6ce4a..3ad7f87 100644
+--- a/drivers/mmc/core/core.c
++++ b/drivers/mmc/core/core.c
+@@ -572,7 +572,13 @@ void mmc_set_timing(struct mmc_host *host, unsigned int timing)
+  */
+ static void mmc_power_up(struct mmc_host *host)
+ {
+-	int bit = fls(host->ocr_avail) - 1;
++	int bit;
++
++	/* If ocr is set, we use it */
++	if (host->ocr)
++		bit = ffs(host->ocr) - 1;
++	else
++		bit = fls(host->ocr_avail) - 1;
+ 
+ 	host->ios.vdd = bit;
+ 	if (mmc_host_is_spi(host)) {
 -- 
- i.
----696208474-721455914-1234186089=:31742--
+1.6.0.6
