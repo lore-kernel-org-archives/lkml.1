@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbZBIKzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbZBIK4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754591AbZBIKzb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 05:55:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbZBIKzR
+	id S1754809AbZBIK4f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 05:56:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbZBIK4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 05:55:17 -0500
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:27300 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751534AbZBIKzQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 05:55:16 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=oTT30Cu9vfAn1RrllwH6MLbY4xRvbmvUWud8VfPn2VSDDGCMHD5sQi2Slk8CJA0JCbnieWyCofCGgvQzz2kEU1cBPmbICIby78ON6WrbMi59g7qf2pLH2NcK6iffxOshvpLrEkElO1F8fA3mYgf6Ze8OrXm43NIrQpXjAwZek38=  ;
-X-YMail-OSG: zLcV1eUVM1myApQRA8Tzdv7TpJvUSIltJeNewE9hsyHOlhspYQwBVhL1B9vvzPBLoWHBT_d8zUH6STB2mAbjfeDetXABmD0FwSJ4Wa6iUy2FAVVz0s5_raQjwzOWvcYdqVW7F61_k.NTMYd_uwtTZXsR9_4jQQKxxFL7nYA6z0puosyID7060YdHY_HBIA--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: wixor <wixorpeek@gmail.com>
-Subject: Re: viafb triggers BUG at mm/vmalloc.c:294 [kernel 2.6.28.3]
-Date: Mon, 9 Feb 2009 21:54:45 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>, JosephChan@via.com.tw,
-       linux-kernel@vger.kernel.org
-References: <c43b2e150902071144j4f01e754y83205ad8d734fd95@mail.gmail.com> <200902091659.21446.nickpiggin@yahoo.com.au> <c43b2e150902090206n4fd45d24xedbf5074535cf574@mail.gmail.com>
-In-Reply-To: <c43b2e150902090206n4fd45d24xedbf5074535cf574@mail.gmail.com>
+	Mon, 9 Feb 2009 05:56:24 -0500
+Received: from h155.mvista.com ([63.81.120.155]:8356 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752461AbZBIK4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 05:56:23 -0500
+Message-ID: <49900BD1.9040305@ru.mvista.com>
+Date: Mon, 09 Feb 2009 13:56:17 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Jeff Garzik <jgarzik@pobox.com>, Mikael Pettersson <mikpe@it.uu.se>
+Cc: Hugh Dickins <hugh@veritas.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk, rjw@sisk.pl
+Subject: Re: [PATCH] libata-sff: fix 32-bit PIO regression
+References: <200902082253.07438.sshtylyov@ru.mvista.com>	<Pine.LNX.4.64.0902082108290.18661@blonde.anvils>	<498F5A25.90707@ru.mvista.com> <18831.28471.454273.451912@harpo.it.uu.se> <498F72C8.8020204@ru.mvista.com> <498F767B.9060701@pobox.com> <499008B7.3020404@ru.mvista.com>
+In-Reply-To: <499008B7.3020404@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902092154.46695.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 February 2009 21:06:32 wixor wrote:
-> Yes, that is somehow better. BUG is gone, it says now
->    vmap allocation failed: use vmalloc=<size> to increase size
-> and then
->    ioremap failed.
-> The driver still doesn't work however.
+Hello, I wrote:
 
-Quite possibly then it is a bad size being passed to ioremap.
-(as you said you still have a few hundred GB of vmalloc space
-free).
+>> The answer depends on workload.  Though rare, workloads do exist that 
+>> involve a lot of oddball querying via weird, vendor-specific 
+>> SCSI[-ish] commands.
+>   Do you really think that the transfers having lengths non-divisible 
+> by 4 make any *significant* percentage even on the ATAPI devices? I 
+> think it's you who is really wrong.
+>
+>   Can you give an example of a *continous* querying with the data 
+> transferring commands?
+>   Hm, it just occured to me that the typical ATAPI command packet is 
+> 12 bytes long.
 
-Could you printk the value of the 'size' variable, and also
-call WARN() in the case of allocation failure?
+   Haha, I even can't count! 12 divides by 4, of course. :-D
+
+>> Or a more human version of the rule:  if you have to have a long 
+>> email thread about unlikely() placement, it is best just to avoid 
+>> using unlikely() in that case at all.  Branch prediction units in 
+>> modern CPUs are damned good anyways, and there is always the 
+>> likelihood that a human-placed unlikely() becomes wrong in the 
+>> future. Moreover, the likelihood and cost of a branch mispredict are 
+>> both low in this case, IMO.
+>
+>   There are still CPUs without the branch prediction, you know -- 
+> Linux runs not only on x86.
+>
+>> Plus the code is more readable without unlikely(), IMO.
+>
+>   I tend to disagree. However, the packet command transfer is not 
+> unlikely at all, so I'll remove that unlikely() in the respun patch.
+
+   No, I'll keep it now. This case is indeed unlikely.
+
+>>     Jeff
+
+MBR, Sergei
+
 
