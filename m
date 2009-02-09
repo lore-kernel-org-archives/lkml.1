@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbZBIBbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbZBIBfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754222AbZBIBbT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 20:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbZBIBbH
+	id S1754174AbZBIBfY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 20:35:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbZBIBfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 20:31:07 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:38994 "EHLO mx2.redhat.com"
+	Sun, 8 Feb 2009 20:35:12 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43718 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752988AbZBIBbE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 20:31:04 -0500
-Date: Mon, 9 Feb 2009 02:28:24 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Markus Metzger <markus.t.metzger@intel.com>,
-       Roland McGrath <roland@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, for 2.6.29] ptrace: fix the usage of ptrace_fork()
-Message-ID: <20090209012824.GA26461@redhat.com>
-References: <20090209010233.GA26444@redhat.com>
+	id S1752934AbZBIBfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 20:35:10 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090209010233.GA26444@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jerome Marchand <jmarchan@redhat.com>,
+       Denys Vlasenko <dvlasenk@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] ptrace_detach: the wrong wakeup breaks the ERESTARTxxx
+	logic
+In-Reply-To: Oleg Nesterov's message of  Sunday, 8 February 2009 19:47:24 +0100 <20090208184724.GA27074@redhat.com>
+References: <20090208184724.GA27074@redhat.com>
+Emacs: because Hell was full.
+Message-Id: <20090209013455.CB996FC330@magilla.sf.frob.com>
+Date: Sun,  8 Feb 2009 17:34:55 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/09, Oleg Nesterov wrote:
->
-> I noticed by pure accident we have ptrace_fork() and friends. This was
-> added by "x86, bts: add fork and exit handling", commit
-> bf53de907dfdaac178c92d774aae7370d7b97d20
+> This is because ptrace_detach does:
+> 
+> 	if (!child->exit_state)
+> 		wake_up_process(child);
 
-Hmm. Looks like we have more problems here...
+I'm pretty sure that all these uses of wake_up_process were just blindly
+copied from an original use in ptrace code (what's now ptrace_resume).
+That original use just dates from the beforetime, the long long ago.
+(I don't think it indicates any coherent original intent.)
 
-"x86, bts: memory accounting", commit c5dee6177f4bd2095aab7d9be9f6ebdddd6deee9.
+It's many kinds of wrong.  It's also always been wrong in case of a
+simultaneous SIGKILL that already woke the child, which has then blocked on
+some mutex or semaphore or whatnot.  I don't know what the stated general
+policy about spurious wakeups from schedule() is supposed to be.  Perhaps
+to be pedantic, the sys_pause() code has been wrong to return without
+checking signal_pending().
 
-PTRACE_BTS_CONFIG allocates ->bts_buffer via alloc_locked_buffer()
-which updates mm->total_vm/locked_vm.
+It's also about as wrong to use blind wake_up_process in ptrace_resume.
+It ought to be wake_up_state(__TASK_TRACED|__TASK_STOPPED).
 
-ptrace_detach() does free_locked_buffer() which "restores" mm->xxx_vm.
+Frankly, I've always been afraid of strange cruft that might unexpectedly
+turn out to rely on this "wrong" (unconditional) wake-up.  Probably the
+things like that historically were all just to do with the stopped/traced
+bookkeeping and would be covered by explicitly dealing with PTRACE_CONT vs
+group stop et al.  But FWIW my reaction to fiddling the wake_up_process
+bogons in the past has been, "Be afraid."
 
-But if the tracer exits we are doing __ptrace_unlink()->ptrace_bts_untrace()
-which uses a plain kfree(), in that case we don't update mm->xxx_vm ?
 
-Note that the exiting tracer can have sub-threads, so the whole process
-does not necessary dies.
-
-Or, the tracer can reap a zombie tracee without PTRACE_DETACH, in that
-case we don't update ->mm too.
-
-Oh, and afaics ptrace_detach()->ptrace_bts_detach() can race with the
-tracer's sub-thread which does do_wait()->release_task() (if the tracee
-was killed before detach takes tasklist), the kernel can crash in this
-case.
-
-Unless I missed something, This all looks rather wrong, and I wasn't
-aware about these changes :(
-
-Oleg.
-
+Thanks,
+Roland
