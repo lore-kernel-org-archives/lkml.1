@@ -1,74 +1,373 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755752AbZBIXrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755054AbZBIXte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755752AbZBIXrU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 18:47:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbZBIXrK
+	id S1755054AbZBIXte (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 18:49:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbZBIXtZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 18:47:10 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45883 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752774AbZBIXrJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 18:47:09 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [Bug #12496] swsusp cannot find resume device (sometimes)
-Date: Tue, 10 Feb 2009 00:46:32 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <AIghyjFgMFP.A.uZD._10jJB@chimera> <20090208163817.6a53d026@infradead.org> <20090209022700.GA10979@kroah.com>
-In-Reply-To: <20090209022700.GA10979@kroah.com>
+	Mon, 9 Feb 2009 18:49:25 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:35562 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752500AbZBIXtZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 18:49:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=EJb2BZw3pLP67CPn4qAO2uCgokdCtIDnFoqUTahiwpkqxAg9jvrPapjpknzGk2Geu9
+         3p3EqhTCWVCEs2zOfhH0bBPRwILLGttA2hVkiL8Jv7F7KTnmN0Z6SkEFQPs6Xb+skx3k
+         cb1MCyuCW3nWM2ND5gtvRV5J5DvZSYgmmKOJY=
+Date: Tue, 10 Feb 2009 00:49:20 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH tip 1/1] tracing: Use a single trace_enabled variable
+Message-ID: <20090209234919.GA5070@nowhere>
+References: <20090209211535.GA12820@ghostprotocols.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902100046.33347.rjw@sisk.pl>
+In-Reply-To: <20090209211535.GA12820@ghostprotocols.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 February 2009, Greg KH wrote:
-> On Sun, Feb 08, 2009 at 04:38:17PM -0800, Arjan van de Ven wrote:
-> > On Sun,  8 Feb 2009 20:21:39 +0100 (CET)
-> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > 
-> > > This message has been generated automatically as a part of a report
-> > > of recent regressions.
-> > > 
-> > > The following bug entry is on the current list of known regressions
-> > > from 2.6.28.  Please verify if it still should be listed and let me
-> > > know (either way).
-> > > 
-> > > 
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12496
-> > > Subject		: swsusp cannot find resume device (sometimes)
-> > > Submitter	: Rafael J. Wysocki <rjw@sisk.pl>
-> > > Date		: 2009-01-09 12:24 (31 days old)
-> > > References	:
-> > > http://marc.info/?l=linux-kernel&m=123150395731165&w=4
-> > > Handled-By	: Arjan van de Ven <arjan@infradead.org>
-> > > Patch		:
-> > > http://marc.info/?l=linux-kernel&m=123156441218358&w=4
-> > > http://marc.info/?t=123156453100002&r=1&w=4
-> > > 
-> > > 
-> > 
-> > the patches are in -mm waiting for gregkh to pick them up and push...
+On Mon, Feb 09, 2009 at 07:15:35PM -0200, Arnaldo Carvalho de Melo wrote:
+> Impact: API change/cleanup
 > 
-> Ok, I'm totally confused now, care to point out exactly which ones I
-> should be picking up and pushing?
+> $ codiff kernel/trace/built-in.o.before kernel/trace/built-in.o
+> kernel/trace/trace.c:
+>   tracing_is_enabled |  -12
+>   __find_next_entry  |   -5
+>  2 functions changed, 17 bytes removed, diff: -17
+> 
+> kernel/trace/trace_sched_switch.c:
+>   tracing_sched_switch_assign_trace |  -13
+>   tracing_stop_sched_switch_record  |  -74
+>   tracing_start_sched_switch_record |  -30
+>  3 functions changed, 117 bytes removed, diff: -117
+> 
+> kernel/trace/trace_sysprof.c:
+>   stack_trace_reset |  -10
+>   stack_trace_init  |  -10
+>  2 functions changed, 20 bytes removed, diff: -20
+> 
+> kernel/trace/trace_irqsoff.c:
+>   irqsoff_tracer_start |  -16
+>   irqsoff_tracer_stop  |  -16
+>   irqsoff_tracer_reset |  -10
+>   irqsoff_tracer_init  |  -19
+>  4 functions changed, 61 bytes removed, diff: -61
+> 
+> kernel/trace/trace_sched_wakeup.c:
+>   wakeup_tracer_stop  |  -16
+>   wakeup_tracer_start |  -10
+>   start_wakeup_tracer |  -19
+>   wakeup_tracer_reset |  -10
+>  4 functions changed, 55 bytes removed, diff: -55
+> 
+> kernel/trace/built-in.o:
+>  15 functions changed, 270 bytes removed, diff: -270
+> 
+> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+> ---
+>  kernel/trace/trace.c              |   15 +-------------
+>  kernel/trace/trace.h              |    3 +-
+>  kernel/trace/trace_irqsoff.c      |   22 --------------------
+>  kernel/trace/trace_sched_switch.c |   40 +------------------------------------
+>  kernel/trace/trace_sched_wakeup.c |   26 ------------------------
+>  kernel/trace/trace_sysprof.c      |    5 +---
+>  6 files changed, 5 insertions(+), 106 deletions(-)
+> 
+> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> index 5b1e9a9..37bb6a9 100644
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -182,20 +182,7 @@ static struct trace_array	max_tr;
+>  static DEFINE_PER_CPU(struct trace_array_cpu, max_data);
+>  
+>  /* tracer_enabled is used to toggle activation of a tracer */
+> -static int			tracer_enabled = 1;
+> -
+> -/**
+> - * tracing_is_enabled - return tracer_enabled status
+> - *
+> - * This function is used by other tracers to know the status
+> - * of the tracer_enabled flag.  Tracers may use this function
+> - * to know if it should enable their features when starting
+> - * up. See irqsoff tracer for an example (start_irqsoff_tracer).
+> - */
+> -int tracing_is_enabled(void)
+> -{
+> -	return tracer_enabled;
+> -}
+> +int tracer_enabled __read_mostly;
+>  
+>  /*
+>   * trace_buf_size is the size in bytes that is allocated
+> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+> index 7b0518a..faa4791 100644
+> --- a/kernel/trace/trace.h
+> +++ b/kernel/trace/trace.h
+> @@ -396,8 +396,9 @@ struct trace_iterator {
+>  	cpumask_var_t		started;
+>  };
+>  
+> +extern int tracer_enabled;
+> +
+>  int tracer_init(struct tracer *t, struct trace_array *tr);
+> -int tracing_is_enabled(void);
+>  void trace_wake_up(void);
+>  void tracing_reset(struct trace_array *tr, int cpu);
+>  void tracing_reset_online_cpus(struct trace_array *tr);
+> diff --git a/kernel/trace/trace_irqsoff.c b/kernel/trace/trace_irqsoff.c
+> index c6b442d..42364e8 100644
+> --- a/kernel/trace/trace_irqsoff.c
+> +++ b/kernel/trace/trace_irqsoff.c
+> @@ -19,7 +19,6 @@
+>  #include "trace.h"
+>  
+>  static struct trace_array		*irqsoff_trace __read_mostly;
+> -static int				tracer_enabled __read_mostly;
+>  
+>  static DEFINE_PER_CPU(int, tracing_cpu);
+>  
+> @@ -356,15 +355,10 @@ void trace_preempt_off(unsigned long a0, unsigned long a1)
+>  static void start_irqsoff_tracer(struct trace_array *tr)
+>  {
+>  	register_ftrace_function(&trace_ops);
+> -	if (tracing_is_enabled())
+> -		tracer_enabled = 1;
+> -	else
+> -		tracer_enabled = 0;
+>  }
+>  
+>  static void stop_irqsoff_tracer(struct trace_array *tr)
+>  {
+> -	tracer_enabled = 0;
+>  	unregister_ftrace_function(&trace_ops);
+>  }
+>  
+> @@ -382,16 +376,6 @@ static void irqsoff_tracer_reset(struct trace_array *tr)
+>  	stop_irqsoff_tracer(tr);
+>  }
+>  
+> -static void irqsoff_tracer_start(struct trace_array *tr)
+> -{
+> -	tracer_enabled = 1;
+> -}
+> -
+> -static void irqsoff_tracer_stop(struct trace_array *tr)
+> -{
+> -	tracer_enabled = 0;
+> -}
+> -
+>  #ifdef CONFIG_IRQSOFF_TRACER
+>  static int irqsoff_tracer_init(struct trace_array *tr)
+>  {
+> @@ -405,8 +389,6 @@ static struct tracer irqsoff_tracer __read_mostly =
+>  	.name		= "irqsoff",
+>  	.init		= irqsoff_tracer_init,
+>  	.reset		= irqsoff_tracer_reset,
+> -	.start		= irqsoff_tracer_start,
+> -	.stop		= irqsoff_tracer_stop,
+>  	.print_max	= 1,
+>  #ifdef CONFIG_FTRACE_SELFTEST
+>  	.selftest    = trace_selftest_startup_irqsoff,
+> @@ -431,8 +413,6 @@ static struct tracer preemptoff_tracer __read_mostly =
+>  	.name		= "preemptoff",
+>  	.init		= preemptoff_tracer_init,
+>  	.reset		= irqsoff_tracer_reset,
+> -	.start		= irqsoff_tracer_start,
+> -	.stop		= irqsoff_tracer_stop,
+>  	.print_max	= 1,
+>  #ifdef CONFIG_FTRACE_SELFTEST
+>  	.selftest    = trace_selftest_startup_preemptoff,
+> @@ -459,8 +439,6 @@ static struct tracer preemptirqsoff_tracer __read_mostly =
+>  	.name		= "preemptirqsoff",
+>  	.init		= preemptirqsoff_tracer_init,
+>  	.reset		= irqsoff_tracer_reset,
+> -	.start		= irqsoff_tracer_start,
+> -	.stop		= irqsoff_tracer_stop,
+>  	.print_max	= 1,
+>  #ifdef CONFIG_FTRACE_SELFTEST
+>  	.selftest    = trace_selftest_startup_preemptirqsoff,
+> diff --git a/kernel/trace/trace_sched_switch.c b/kernel/trace/trace_sched_switch.c
+> index 30e14fe..828a70b 100644
+> --- a/kernel/trace/trace_sched_switch.c
+> +++ b/kernel/trace/trace_sched_switch.c
+> @@ -15,7 +15,6 @@
+>  #include "trace.h"
+>  
+>  static struct trace_array	*ctx_trace;
+> -static int __read_mostly	tracer_enabled;
+>  static int			sched_ref;
+>  static DEFINE_MUTEX(sched_register_mutex);
+>  
+> @@ -151,43 +150,6 @@ void tracing_start_sched_switch_record(void)
+>  	}
+>  
+>  	tracing_start_sched_switch();
+> -
+> -	mutex_lock(&sched_register_mutex);
+> -	tracer_enabled++;
+> -	mutex_unlock(&sched_register_mutex);
+> -}
+> -
+> -/**
+> - * tracing_stop_sched_switch_record - start tracing context switches
+> - *
+> - * Turns off context switch tracing for a tracer.
+> - */
+> -void tracing_stop_sched_switch_record(void)
+> -{
+> -	mutex_lock(&sched_register_mutex);
+> -	tracer_enabled--;
+> -	WARN_ON(tracer_enabled < 0);
+> -	mutex_unlock(&sched_register_mutex);
+> -
+> -	tracing_stop_sched_switch();
+> -}
+> -
+> -/**
+> - * tracing_sched_switch_assign_trace - assign a trace array for ctx switch
+> - * @tr: trace array pointer to assign
+> - *
+> - * Some tracers might want to record the context switches in their
+> - * trace. This function lets those tracers assign the trace array
+> - * to use.
+> - */
+> -void tracing_sched_switch_assign_trace(struct trace_array *tr)
+> -{
+> -	ctx_trace = tr;
+> -}
+> -
+> -static void stop_sched_trace(struct trace_array *tr)
+> -{
+> -	tracing_stop_sched_switch_record();
+>  }
+>  
+>  static int sched_switch_trace_init(struct trace_array *tr)
+> @@ -200,7 +162,7 @@ static int sched_switch_trace_init(struct trace_array *tr)
+>  static void sched_switch_trace_reset(struct trace_array *tr)
+>  {
+>  	if (sched_ref)
+> -		stop_sched_trace(tr);
+> +		tracing_stop_sched_switch();
+>  }
+>  
+>  static void sched_switch_trace_start(struct trace_array *tr)
+> diff --git a/kernel/trace/trace_sched_wakeup.c b/kernel/trace/trace_sched_wakeup.c
+> index 96d7164..c526a1b 100644
+> --- a/kernel/trace/trace_sched_wakeup.c
+> +++ b/kernel/trace/trace_sched_wakeup.c
+> @@ -20,7 +20,6 @@
+>  #include "trace.h"
+>  
+>  static struct trace_array	*wakeup_trace;
+> -static int __read_mostly	tracer_enabled;
+>  
+>  static struct task_struct	*wakeup_task;
+>  static int			wakeup_cpu;
+> @@ -289,23 +288,7 @@ static void start_wakeup_tracer(struct trace_array *tr)
+>  	}
+>  
+>  	wakeup_reset(tr);
+> -
+> -	/*
+> -	 * Don't let the tracer_enabled = 1 show up before
+> -	 * the wakeup_task is reset. This may be overkill since
+> -	 * wakeup_reset does a spin_unlock after setting the
+> -	 * wakeup_task to NULL, but I want to be safe.
+> -	 * This is a slow path anyway.
+> -	 */
+> -	smp_wmb();
+> -
+>  	register_ftrace_function(&trace_ops);
+> -
+> -	if (tracing_is_enabled())
+> -		tracer_enabled = 1;
+> -	else
+> -		tracer_enabled = 0;
+> -
+>  	return;
+>  fail_deprobe_wake_new:
+>  	unregister_trace_sched_wakeup_new(probe_wakeup);
+> @@ -315,7 +298,6 @@ fail_deprobe:
+>  
+>  static void stop_wakeup_tracer(struct trace_array *tr)
+>  {
+> -	tracer_enabled = 0;
+>  	unregister_ftrace_function(&trace_ops);
+>  	unregister_trace_sched_switch(probe_wakeup_sched_switch);
+>  	unregister_trace_sched_wakeup_new(probe_wakeup);
+> @@ -352,12 +334,6 @@ static void wakeup_tracer_reset(struct trace_array *tr)
+>  static void wakeup_tracer_start(struct trace_array *tr)
+>  {
+>  	wakeup_reset(tr);
+> -	tracer_enabled = 1;
+> -}
+> -
+> -static void wakeup_tracer_stop(struct trace_array *tr)
+> -{
+> -	tracer_enabled = 0;
+>  }
+>  
+>  static struct tracer wakeup_tracer __read_mostly =
+> @@ -366,7 +342,6 @@ static struct tracer wakeup_tracer __read_mostly =
+>  	.init		= wakeup_tracer_init,
+>  	.reset		= wakeup_tracer_reset,
+>  	.start		= wakeup_tracer_start,
+> -	.stop		= wakeup_tracer_stop,
+>  	.print_max	= 1,
+>  #ifdef CONFIG_FTRACE_SELFTEST
+>  	.selftest    = trace_selftest_startup_wakeup,
+> @@ -379,7 +354,6 @@ static struct tracer wakeup_rt_tracer __read_mostly =
+>  	.init		= wakeup_rt_tracer_init,
+>  	.reset		= wakeup_tracer_reset,
+>  	.start		= wakeup_tracer_start,
+> -	.stop		= wakeup_tracer_stop,
+>  	.print_max	= 1,
+>  #ifdef CONFIG_FTRACE_SELFTEST
+>  	.selftest    = trace_selftest_startup_wakeup,
+> diff --git a/kernel/trace/trace_sysprof.c b/kernel/trace/trace_sysprof.c
+> index 84ca9d8..5c986b4 100644
+> --- a/kernel/trace/trace_sysprof.c
+> +++ b/kernel/trace/trace_sysprof.c
+> @@ -18,8 +18,7 @@
+>  
+>  #include "trace.h"
+>  
+> -static struct trace_array	*sysprof_trace;
+> -static int __read_mostly	tracer_enabled;
+> +static struct trace_array *sysprof_trace;
+>  
+>  /*
+>   * 1 msec sample interval by default:
+> @@ -230,7 +229,6 @@ static void stop_stack_trace(struct trace_array *tr)
+>  {
+>  	mutex_lock(&sample_timer_lock);
+>  	stop_stack_timers();
+> -	tracer_enabled = 0;
+>  	mutex_unlock(&sample_timer_lock);
+>  }
+>  
+> @@ -240,7 +238,6 @@ static int stack_trace_init(struct trace_array *tr)
+>  
+>  	mutex_lock(&sample_timer_lock);
+>  	start_stack_timers();
+> -	tracer_enabled = 1;
+>  	mutex_unlock(&sample_timer_lock);
+>  	return 0;
+>  }
+> -- 
+> 1.6.0.6
+> 
 
-Patches from -mm called:
 
-drivers-consolidate-driver_probe_done-loops-into-one-place.patch
-drivers-consolidate-driver_probe_done-loops-into-one-place-checkpatch-fixes.patch
-resume-wait-for-device-probing-to-finish.patch
-drivers-consolidate-driver_probe_done-loops-into-one-place-fix.patch
+That looks good :-)
 
-in this order.
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 
-Thanks,
-Rafael
