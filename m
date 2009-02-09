@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756312AbZBINsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621AbZBINuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756312AbZBINsA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 08:48:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbZBINrw
+	id S1755621AbZBINuU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 08:50:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753774AbZBINuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 08:47:52 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:59250 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754711AbZBINrv (ORCPT
+	Mon, 9 Feb 2009 08:50:04 -0500
+Received: from mail-ausfall.charite.de ([193.175.70.131]:40080 "EHLO
+	mail-ausfall.charite.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753541AbZBINuB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 08:47:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Xp4Ky9JGZI9KYwNEtEDYetwks9F3KkZuYM9Zlp5u6xZHLTJhaLm7WRU1+aarvJ/h3l
-         Vs7kpci4z8ozmcqHjtjeUVwv/zY+wA2cfPpTXxYPV6H6vpxIYrtyJutZ/2muGvgcsom/
-         sRwmxjiPvUwQ1l6P5wjqUTjx4xkNdw4ss9kck=
-Date: Mon, 9 Feb 2009 14:47:46 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 4/5] tracing/core: drop the cpu field from trace_entry
-Message-ID: <20090209134744.GC4705@nowhere>
-References: <498e176a.0637560a.3cea.3ff8@mx.google.com> <20090209095324.GD14402@elte.hu>
+	Mon, 9 Feb 2009 08:50:01 -0500
+Date: Mon, 9 Feb 2009 14:49:58 +0100
+From: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Federico Cuello <fedux@lugmen.org.ar>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: sync-Regression in 2.6.28.2?
+Message-ID: <20090209134958.GP27548@charite.de>
+Mail-Followup-To: Nick Piggin <nickpiggin@yahoo.com.au>,
+	Federico Cuello <fedux@lugmen.org.ar>,
+	Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+	linux-kernel@vger.kernel.org
+References: <20090127093533.GB7037@charite.de> <200902051425.19552.nickpiggin@yahoo.com.au> <498AD368.2090000@lugmen.org.ar> <200902100045.44386.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20090209095324.GD14402@elte.hu>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200902100045.44386.nickpiggin@yahoo.com.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 09, 2009 at 10:53:24AM +0100, Ingo Molnar wrote:
+> This patch seems good to me. If you would care to add a changelog and
+> Signed-off-by: line, then we could get it merged?
 > 
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> I am not too sure about this bug. I have reproduced a strange hang with
+> ext4 (which does include sys_sync and write_cache_pages traces), and
+> also turned up a lockdep report. Also, we haven't seen any reports of
+> this problem on other filesystems. So it could be an ext4 bug.
 > 
-> > Impact: fix a bug on cpu output
-> > 
-> > While looking on the function tracer traces, I first cheered up:
-> > 
-> >             TASK-PID    CPU#    TIMESTAMP  FUNCTION
-> >                | |       |          |         |
-> >          firefox-4622  [081]  1315.790405: lapic_next_event <-clockevents_program_event
-> >          firefox-4622  [178]  1315.790405: native_apic_mem_write <-lapic_next_event
-> >          firefox-4622  [020]  1315.790406: perf_counter_unthrottle <-smp_apic_timer_interrupt
-> > 
-> > But no, actually I don't have so many cpus...
+> Your traces also have lots of tasks hung waiting for page lock. It is
+> possible that wakeups get lost, which is fixed by this commit in
+> mainline
+> 777c6c5f1f6e757ae49ecca2ed72d6b1f523c007
 > 
-> incidentally, Steve came up with the exact same patch :)
+> Which might also be your bug.
 > 
-> 	Ingo
+> 
+> Any chance you can test this patch (as well as the existing patches
+> you are using to fix write_cache_pages?).
 
-Heh, I guess the moon inspired both of us in the name of tracing, or
-something like that...
+I could test 2.6.28.4
 
-Anyway, thanks for having applied the other patches :-)
-
+-- 
+Ralf Hildebrandt                                Ralf.Hildebrandt@charite.de
+Charite - Universitätsmedizin Berlin            Tel.  +49 (0)30-450 570-155
+Geschäftsbereich IT | Abt. Netzwerk             Fax.  +49 (0)30-450 570-962
+Hindenburgdamm 30 | 12200 Berlin
