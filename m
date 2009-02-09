@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbZBIJTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754060AbZBIJWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754025AbZBIJTS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 04:19:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbZBIJTE
+	id S1754060AbZBIJWl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 04:22:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752452AbZBIJWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 04:19:04 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38532 "EHLO mx3.mail.elte.hu"
+	Mon, 9 Feb 2009 04:22:33 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39240 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751637AbZBIJTC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 04:19:02 -0500
-Date: Mon, 9 Feb 2009 10:18:49 +0100
+	id S1752017AbZBIJWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 04:22:32 -0500
+Date: Mon, 9 Feb 2009 10:22:21 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Paul Collins <paul@burly.ondioline.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Bug #12667] Badness at kernel/time/timekeeping.c:98 in pmud
-	(timekeeping_suspended)
-Message-ID: <20090209091849.GF31890@elte.hu>
-References: <AIghyjFgMFP.A.uZD._10jJB@chimera> <sWhNs83kKPE.A.p4D.L20jJB@chimera> <878wognj00.fsf@burly.wgtn.ondioline.org>
+To: Kyle McMartin <kyle@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       ralf@linux-mips.org, mingo@redhat.com
+Subject: Re: x86: spinlocks: define dummy __raw_spin_is_contended
+Message-ID: <20090209092221.GG31890@elte.hu>
+References: <20090208180341.GC11398@bombadil.infradead.org> <20090208223958.GA19888@bombadil.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <878wognj00.fsf@burly.wgtn.ondioline.org>
+In-Reply-To: <20090208223958.GA19888@bombadil.infradead.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,23 +36,41 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Paul Collins <paul@burly.ondioline.org> wrote:
+* Kyle McMartin <kyle@infradead.org> wrote:
 
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12667
-> > Subject		: Badness at kernel/time/timekeeping.c:98 in pmud (timekeeping_suspended)
-> > Submitter	: Paul Collins <paul@burly.ondioline.org>
-> > Date		: 2009-01-21 7:15 (19 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1c5745aa380efb6417b5681104b007c8612fb496
-> > References	: http://marc.info/?l=linux-kernel&m=123252215315106&w=4
-> 
-> I've just done ten suspend/resume cycles with 2.6.29-rc4 and this
-> message was not logged, so it's either gone away or else become much
-> more difficult to reproduce.
+> CC-ing Linus, since he just released 2.6.29-rc4, which will fail to
+> build btrfs on anything besides mips or x86.
 
-Various suspend handlers were enabling irqs spuriously - fixed by recent patches in 
--rc4. The warning above is consistent with the timekeeping code being surprised with 
-a premature irqs-enable.
+Hm, i'm not particularly fond of the spin_is_contended() trickery done in:
+
+/*
+ * btrfs_search_slot uses this to decide if it should drop its locks
+ * before doing something expensive like allocating free blocks for cow.
+ */
+int btrfs_path_lock_waiting(struct btrfs_path *path, int level)
+{
+        int i;
+        struct extent_buffer *eb;
+
+        for (i = level; i <= level + 1 && i < BTRFS_MAX_LEVEL; i++) {
+                eb = path->nodes[i];
+                if (!eb)
+                        break;
+                smp_mb();
+                if (spin_is_contended(&eb->lock) ||
+                    waitqueue_active(&eb->lock_wq))
+                        return 1;
+        }
+        return 0;
+}
+
+It does not look particularly cheap either, if the number of levels is high.
+
+I'd suggest we remove that hack please and live or die by what performance
+the generic locking code gives us - and fix it when it causes problems,
+instead of working it around locally?
+
+As spin-mutexes have shown (queued up for .30), working on that level is far
+more rewarding in terms of improving Linux as a whole.
 
 	Ingo
