@@ -1,90 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755776AbZBIXZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756389AbZBIXZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755776AbZBIXZW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 18:25:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbZBIXZH
+	id S1756389AbZBIXZu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 18:25:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbZBIXZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 18:25:07 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:11934 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751266AbZBIXZG (ORCPT
+	Mon, 9 Feb 2009 18:25:37 -0500
+Received: from wf-out-1314.google.com ([209.85.200.174]:31479 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752751AbZBIXZg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 18:25:06 -0500
+	Mon, 9 Feb 2009 18:25:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=K1qQpDNV5yjTyOFYBg5spDnAUUs0cCKKoD29Av4vVz0DQz7Q+2SJMPEufs7G+4CA4O
-         jIjDX6epCiVtNob3x3dSoHleLPT26YpcdU3w0cDIq9coQi21MZgLxWLuMhPICrC822Ag
-         U2v0L19vuJ5fVfpWKS9GfksU8MrpOhGqnwfDE=
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=MD8xrLtqzfwsIMusxEbnnpbdq3IKdVDV32LfOqGZWEAG0Mw4j9I+fNkKQ70VKZXCYz
+         GiiAP2u1/ZRqvLXr53GHigYq/uTUfns8yBNhbhQReakFNVW4X/w7dGxVliL/RC0gH73w
+         jklZHwTk+xBgB0J1mKPjfyTKSefw599WClTS8=
 MIME-Version: 1.0
-Reply-To: mtk.manpages@gmail.com
-In-Reply-To: <alpine.DEB.1.10.0902091523010.8503@alien.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0902081510150.18839@alien.or.mcafeemobile.com>
-	 <cfd18e0f0902090128i1a4902f4of0d4d830b567602f@mail.gmail.com>
-	 <alpine.DEB.1.10.0902090940100.8084@alien.or.mcafeemobile.com>
-	 <cfd18e0f0902091128pf5723c8rcfa1c08d77d4e55d@mail.gmail.com>
-	 <alpine.DEB.1.10.0902091148520.8503@alien.or.mcafeemobile.com>
-	 <cfd18e0f0902091503o52f551ceu559fff657e1cc7c9@mail.gmail.com>
-	 <alpine.DEB.1.10.0902091523010.8503@alien.or.mcafeemobile.com>
-Date: Tue, 10 Feb 2009 12:25:04 +1300
-Message-ID: <cfd18e0f0902091525j1b76406pfa0045773991c801@mail.gmail.com>
-Subject: Re: [patch 2/2] timerfd extend clockid support
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <72dbd3150901152004m2e3d721bwf2cc633361f1fe40@mail.gmail.com>
+References: <72dbd3150901152004m2e3d721bwf2cc633361f1fe40@mail.gmail.com>
+Date: Mon, 9 Feb 2009 15:25:35 -0800
+Message-ID: <72dbd3150902091525n516ec5c6i12f3749fd55c47bf@mail.gmail.com>
+Subject: Re: Disk IO Slowly Grinds to a (near) Halt
+From: David Rees <drees76@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-raid@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 12:23 PM, Davide Libenzi
-<davidel@xmailserver.org> wrote:
-> On Tue, 10 Feb 2009, Michael Kerrisk wrote:
+On Thu, Jan 15, 2009 at 8:04 PM, David Rees <drees76@gmail.com> wrote:
+> I've got a server running Fedora 9 server running kernel
+> 2.6.27.9-73.fc9 where inevitably, any sort of IO activity slows down
+> significantly.
 >
->> On Tue, Feb 10, 2009 at 9:10 AM, Davide Libenzi <davidel@xmailserver.org> wrote:
->> > On Tue, 10 Feb 2009, Michael Kerrisk wrote:
->> >
->> >> > and I did not have even the time to peek
->> >> > into the core timer code to see if the usage of other timer types in
->> >> > eventfd would create problems. That's why I asked Thomas if they'd behave
->> >> > differently from an hrtimer caller POV.
->> >> > I'll try to take a look by myself today or tomorrow.
->> >>
->> >> Okay -- hopefully my test program may be useful (even if it is not
->> >> itself fully tested yet, it's patterned after a similar test program I
->> >> wrote fot the POSIX timers API, so it should mostly work).
->> >
->> > Answer was pretty easy once you look at the code :)
->> > Timerfd uses core hrtimer functions, and clockids different from the ones
->> > timerfd already handles, fall into the CPU-timers domain. Domain that is
->> > not handled by hrtimer.
->> > Changes to timerfd to support CPU-based timers are really deep (more than
->> > changes, is a total rewrite). not only to timerfd, but also to CPU-based
->> > timers to deliver notification by means different than signals.
->> > Given the amount of code change, and given that a posix-timers->signalfd
->> > bridge could solve the problem, I'm not going even close to suggest such a
->> > change.
->>
->> Davide,
->>
->> Will you nevertheless push the patch that adds the EINVAL flags checks?
+> The machine is a basic Athlon 64 X2 5000+, 3GB RAM and 4 disks
+> (2x250GB IDE and 2x1TB SATA) running in two software RAID1 arrays.
 >
-> Sure, I'll send it to Greg and Andrew.
+> One IDE drive is connected to the onboard (Nvidia MCP51 pata_amd), the
+> other connected to a Promise (PDC20268 pata_pdc2027x) controller.
+>
+> Both SATA drivers are connected to the onboard Nvidia MCP51 sata_nv controller.
+>
+> I suspect that the culprit has something to do with the fact that this
+> machine acts as a BackupPC server, and as such, has a filesystem with
+> over 7million inodes on it (about 175GB in use on that partition), but
+> that's just a hunch.
+>
+> A simple test to confirm the issue is to drop the caches, and then do
+> a directory listing on an empty directory.  Doesn't matter which raid1
+> array it's on.  On the normally performing systems I tested this
+> typically took 0.15-0.45 seconds.  On this slow system, it takes over
+> a second for the same test to run when it's acting up.  After a fresh
+> reboot, it takes less than 0.2 seconds.
+>
+> Any ideas? The only thing that seems to help is rebooting the server.
+> Let me know if there is any more information I can provide that would
+> be helpful.
 
-Thanks!  Please CC me.
+Following up to my old message - and CC'ing linux-raid - I found the issue.
 
-Cheers,
+The server was suffering again from slow IO today - I also happened to
+run a few more tests to try to narrow things down.
 
-Michael
+I ran some dd raw throughput tests and while write speeds seemed to be
+down about 50% slow for one mirror (only ~20MB/s), read speeds of the
+individual disks and write speeds of the other mirror were normal.
 
+But any disk IO which required small bursts of activity seemed very slow.
 
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+I then realized that I made a mistake in my previous test.  While the
+directory listing was slow on both arrays after dropping the caches,
+the primary reason it was slow was because of the random IO required
+to load the `ls` binary and not the actual directory listing itself.
+
+So this narrowed down the performance issue to the mirror which was
+also showing about 1/2 the expected raw write speeds - the /
+partition.
+
+I then noticed that there was a raid-check running on the / partition
+(which was running about 1/10-1/20th of the expected speed or 1-2MB/s
+on a nearly idle system), and then also realized that long smart self
+tests were running on those disks, too.  After killing the smart
+self-tests the raid check speed jumped to 20MB/s.
+
+So that explains why heavy read/write loads were working OK - they
+kept the disks busy enough to keep the raid-check and smart self-tests
+from thinking the system was idle and doing their work - and why small
+bursts of random IO were slow - a small request would come in and have
+to interrupt both the smart self test and the raid recheck.
+
+It seems that the combination of the smart self-test and raid recheck
+interact very poorly on this particular mirror though as I don't
+recall having similar issues before even though I've used similar
+raid-check and smart-test schedules on multiple systems in the past.
+At the rate things were going, it'd take the better part of a week to
+finish the raid check and longer for the long smart test.  Meanwhile,
+the other array had finished both checks in less than 12 hours.
+
+I'm going to try spacing out the start of the raid check and long
+smart self-tests more - hopefully ensuring that only one check is
+running at a time will avoid the huge slowdowns that are present when
+both are running.
+
+I'd be curious to know if anyone else has seen similar very poor
+interaction between the two before.  I wonder if there is some sort of
+firmware bug on the "slow" array (Seagate ST3250824A) that makes this
+worse.
+
+-Dave
