@@ -1,53 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755604AbZBIWXE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbZBIWX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755604AbZBIWXE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 17:23:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbZBIWWv
+	id S1755936AbZBIWX0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 17:23:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755651AbZBIWXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 17:22:51 -0500
-Received: from gate.crashing.org ([63.228.1.57]:37675 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753995AbZBIWWv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 17:22:51 -0500
-Subject: Re: [PATCH] ftrace, powerpc64: fix math to calculate offset in TOC
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-       Arnd Bergmann <arnd@arndb.de>,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       Remis Lima Baima <remis.developer@googlemail.com>
-In-Reply-To: <20090209094014.GE7930@elte.hu>
-References: <alpine.DEB.1.10.0902080118480.30802@gandalf.stny.rr.com>
-	 <20090209094014.GE7930@elte.hu>
-Content-Type: text/plain
-Date: Tue, 10 Feb 2009 09:21:59 +1100
-Message-Id: <1234218119.31963.109.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Feb 2009 17:23:07 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:24564 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755580AbZBIWXF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 17:23:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=lnXfYKgWGfx/yIWWTgVhZrfuRwU3aXY5aOZguSD5VXf0DLfFnolUQZrCDmhcWbvDGt
+         OJC85oMOi1EQsToOScVJLM2MUvNjjb/cD0mj3BNEDEoXfMMR873uf4CZcD+q6gSzeXpC
+         kBDDXSIxITZycT0FYpKZ3nO24tPnWXP71Z8oQ=
+Date: Tue, 10 Feb 2009 01:29:10 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Mike Travis <travis@sgi.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: include/linux/irq.h:452: error: implicit declaration of
+	function 'cpu_to_node'
+Message-ID: <20090209222910.GA9768@x200.localdomain>
+References: <20090121215306.GA10123@x200.localdomain> <4977B1F1.1090602@sgi.com> <20090209203502.GA7701@x200.localdomain> <4990A899.8070302@sgi.com> <4990A96A.3060603@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4990A96A.3060603@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-09 at 10:40 +0100, Ingo Molnar wrote:
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
+On Mon, Feb 09, 2009 at 02:08:42PM -0800, Mike Travis wrote:
+> Mike Travis wrote:
+> > Alexey Dobriyan wrote:
+> >> On Wed, Jan 21, 2009 at 03:38:25PM -0800, Mike Travis wrote:
+> >>> Alexey Dobriyan wrote:
+> >>>> On mips-malta:
+> >>>>
+> >>>>   CC      arch/mips/mti-malta/malta-int.o
+> >>>> In file included from arch/mips/mti-malta/malta-int.c:25:
+> >>>> include/linux/irq.h: In function 'init_alloc_desc_masks':
+> >>>> include/linux/irq.h:452: error: implicit declaration of function 'cpu_to_node'
+> >>>> include/linux/irq.h:454: error: 'GFP_ATOMIC' undeclared (first use in this function)
+> >>>>
+> >>>> I _think_ init_alloc_desc_masks() should be made out of line to fix this.
+> >>> Hi Alexey,
+> >>>
+> >>> Does adding #include <linux/slab.h> fix the error?  If so, I can add this to
+> >>> linux/irq.h.
+> >>>
+> >>> The primary reason it's inline is that unless CONFIG_CPUMASK_OFFSTACK=y, then the
+> >>> entire routine is a NOP which optimizes out more completely as an inline function.
+> >> linux/slab.h helps.
 > > 
-> > Paul,
+> > Hi Alexey,
 > > 
-> > I found the bug that was causing large modules to fail in setting
-> > up dynamic ftrace. It wound up being a simple math error. To calculate
-> > the offset in the TOC, I had used an OR, but the bottom half was
-> > a signed extended short, and it should have been an addition.
-> > The fix is in my tree below, as well as posted here.
+> > Since you reported this problem a similar issue was discovered on s390.  However
+> > the fix for that was to include interrupt.h instead of irq.h.
+> > 
+> > Could you try this as well?
+> > 
+> > Here's a tail end pointer to the thread and Andrew's commit msg including the
+> > patch is below.
+> > 
+> > http://marc.info/?l=linux-mm-commits&m=123360349631362&w=4
 > 
-> Looks like a .29 candidate?
+> Sorry, I should have made a patch specific to mips, and here that is...
 
-Yup, I was planning to send it to Linus along with a handful of other
-powerpc fixes today, unless you prefer taking it yourself.
+Removal helps independently. ;-)
 
-Cheers,
-Ben.
+Oh and please fold all of this into relevant commit.
 
+> --- linux-2.6-linus.orig/arch/mips/mti-malta/malta-int.c
+> +++ linux-2.6-linus/arch/mips/mti-malta/malta-int.c
+> @@ -22,7 +22,7 @@
+>   * with two internal 82C95 interrupt controllers.
+>   */
+>  #include <linux/init.h>
+> -#include <linux/irq.h>
+> +#include <linux/interrupt.h>		<====
+>  #include <linux/sched.h>
+>  #include <linux/slab.h>
+>  #include <linux/interrupt.h>		<====
 
+P.S.: irq related headers suck.
