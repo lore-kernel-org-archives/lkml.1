@@ -1,194 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbZBIJPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbZBIJQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753932AbZBIJPq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 04:15:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbZBIJPg
+	id S1754330AbZBIJQZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 04:16:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbZBIJQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 04:15:36 -0500
-Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:37593 "EHLO
-	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751449AbZBIJPf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 04:15:35 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhoFAHuBj0nCTtAn/2dsb2JhbACBbswehBoG
-Date: Mon, 9 Feb 2009 10:15:27 +0100
-From: Philippe De Muyter <phdm@macqel.be>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       hancockrwd@gmail.com, abelay@mit.edu, lenb@kernel.org,
-       stable@kernel.org
-Subject: Re: [PATCH] floppy: release only the ports we actually requested
-Message-ID: <20090209091527.GA7049@frolo.macqel>
-References: <20090205174859.18396.68512.stgit@bob.kio> <20090206085501.GA18125@frolo.macqel> <200902060920.14194.bjorn.helgaas@hp.com> <200902061057.07223.bjorn.helgaas@hp.com>
+	Mon, 9 Feb 2009 04:16:16 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47439 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751449AbZBIJQP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 04:16:15 -0500
+Date: Mon, 9 Feb 2009 10:16:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Hannes Eder <hannes@hanneseder.net>, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kernel/irq: fix sparse warning: make symbol static
+Message-ID: <20090209091604.GE31890@elte.hu>
+References: <20090208192405.8084.89231.stgit@vmbox.hanneseder.net> <20090208230910.GH31509@parisc-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902061057.07223.bjorn.helgaas@hp.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20090208230910.GH31509@parisc-linux.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bjorn,
 
-On Fri, Feb 06, 2009 at 10:57:06AM -0700, Bjorn Helgaas wrote:
-> On Friday 06 February 2009 09:20:13 am Bjorn Helgaas wrote:
-> > On Friday 06 February 2009 01:55:01 am Philippe De Muyter wrote:
-> > > Bjorn, Andrew,
-> > > 
-> > > --
-> > > 
-> > > With the last floppy patch, the floppy driver requests only the ports that
-> > > it really uses, but the code contains yet places where it releases those
-> > > unrequested ports.  I don't know if it is harmfull, but I think it is cleaner
-> > > that the parameters of the release_region calls match the request_region ones.
-> > 
-> > Doh!  Boy, do I feel stupid.  I doubt this is in any git trees yet,
-> > so I'll combine the two patches and send a cleaner one.
+* Matthew Wilcox <matthew@wil.cx> wrote:
+
+> On Sun, Feb 08, 2009 at 08:24:47PM +0100, Hannes Eder wrote:
+> > -static inline int do_irq_select_affinity(int irq, struct irq_desc *desc)
+> > +static inline int do_irq_select_affinity(unsigned int irq, struct irq_desc *desc)
 > 
-> Philippe, can you give this a once-over?  I can compile it, but I don't
-> have a machine with a floppy drive handy to test it.  Since you pointed
-> out all the places I forgot to change, I went ahead and factored out
-> the request/release stuff so they're all in one place now.
+> Does this not introduce a checkpatch warning about a line being longer
+> than 80 columns?  Three acceptable ways to fix this:
 
-As expected, your code works (tested linked in kernel and as a module),
-but I took your idea a little bit further, avoiding to keep 3 places with
-the io regions list, avoiding gotos and producing a slightly smaller binary.
-Of course, it is also compiled and tested both linked in kernel and in module
-mode.
+It does - 81 cols. We could ignore it (it's close enough to the limit), but:
 
-Is it OK for you ?
+> static inline
+> int do_irq_select_affinity(unsigned int irq, struct irq_desc *desc)
+> 
+> static inline int do_irq_select_affinity(unsigned int irq,
+> 							struct irq_desc *desc)
+> 
+> static inline int do_irq_select_affinity(unsigned irq, struct irq_desc *desc)
+> 
+> My favourite is the last one.
 
-Philippe
+I went for the fourth way which is even better - see the commit below ;-)
 
-diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
---- a/drivers/block/floppy.c
-+++ b/drivers/block/floppy.c
-@@ -558,6 +558,8 @@ static void recalibrate_floppy(void);
- static void recalibrate_floppy(void);
- static void floppy_shutdown(unsigned long);
- 
-+static int floppy_request_regions(int);
-+static void floppy_release_regions(int);
- static int floppy_grab_irq_and_dma(void);
- static void floppy_release_irq_and_dma(void);
- 
-@@ -4274,8 +4276,7 @@ static int __init floppy_init(void)
- 		FDCS->rawcmd = 2;
- 		if (user_reset_fdc(-1, FD_RESET_ALWAYS, 0)) {
- 			/* free ioports reserved by floppy_grab_irq_and_dma() */
--			release_region(FDCS->address + 2, 4);
--			release_region(FDCS->address + 7, 1);
-+			floppy_release_regions(fdc);
- 			FDCS->address = -1;
- 			FDCS->version = FDC_NONE;
- 			continue;
-@@ -4284,8 +4285,7 @@ static int __init floppy_init(void)
- 		FDCS->version = get_fdc_version();
- 		if (FDCS->version == FDC_NONE) {
- 			/* free ioports reserved by floppy_grab_irq_and_dma() */
--			release_region(FDCS->address + 2, 4);
--			release_region(FDCS->address + 7, 1);
-+			floppy_release_regions(fdc);
- 			FDCS->address = -1;
- 			continue;
- 		}
-@@ -4358,6 +4358,47 @@ out_put_disk:
- 
- static DEFINE_SPINLOCK(floppy_usage_lock);
- 
-+static struct io_region {
-+	int offset;
-+	int size;
-+} io_regions[] = {
-+	{ 2, 1 },
-+	/* address + 3 is sometimes reserved by pnp bios for motherboard */
-+	{ 4, 2 },
-+	/* address + 6 is reserved, and may be taken by IDE.
-+	 * Unfortunately, Adaptec doesn't know this :-(, */
-+	{ 7, 1 },
-+};
-+
-+static void floppy_release_allocated_regions(int fdc, struct io_region *p)
-+{
-+	while (p != io_regions) {
-+		p--;
-+		release_region(FDCS->address + p->offset, p->size);
-+	}
-+}
-+	
-+#define ARRAY_END(X) (&((X)[ARRAY_SIZE(X)]))
-+
-+static int floppy_request_regions(int fdc)
-+{
-+	struct io_region *p;
-+
-+	for (p = io_regions; p < ARRAY_END(io_regions); p++) {
-+		if (!request_region(FDCS->address + p->offset, p->size, "floppy")) {
-+			DPRINT("Floppy io-port 0x%04lx in use\n", FDCS->address + p->offset);
-+			floppy_release_allocated_regions(fdc, p);
-+			return -EBUSY;
-+		}
-+	}
-+	return 0;
-+}
-+
-+static void floppy_release_regions(int fdc)
-+{
-+	floppy_release_allocated_regions(fdc, ARRAY_END(io_regions));
-+}
-+
- static int floppy_grab_irq_and_dma(void)
+Applied to tip/irq/urgent, thanks guys!
+
+	Ingo
+
+----------------->
+>From 548c8933801c9ee347b6f1bad2491e4286a4f3a2 Mon Sep 17 00:00:00 2001
+From: Hannes Eder <hannes@hanneseder.net>
+Date: Sun, 8 Feb 2009 20:24:47 +0100
+Subject: [PATCH] kernel/irq: fix sparse warning: make symbol static
+
+While being at it make every occurrence of 'do_irq_select_affinity'
+have the same signature in terms of signedness of the first argument.
+
+Fix this sparse warning:
+  kernel/irq/manage.c:112:5: warning: symbol 'do_irq_select_affinity' was not declared. Should it be static?
+
+Also rename do_irq_select_affinity() to setup_affinity() - shorter name
+and clearer naming.
+
+Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+Acked-by: Matthew Wilcox <matthew@wil.cx>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/irq/manage.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 291f036..38008b8 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -109,7 +109,7 @@ int irq_set_affinity(unsigned int irq, const struct cpumask *cpumask)
+ /*
+  * Generic version of the affinity autoselector.
+  */
+-int do_irq_select_affinity(unsigned int irq, struct irq_desc *desc)
++static int setup_affinity(unsigned int irq, struct irq_desc *desc)
  {
- 	unsigned long flags;
-@@ -4399,18 +4440,8 @@ static int floppy_grab_irq_and_dma(void)
- 
- 	for (fdc = 0; fdc < N_FDC; fdc++) {
- 		if (FDCS->address != -1) {
--			if (!request_region(FDCS->address + 2, 4, "floppy")) {
--				DPRINT("Floppy io-port 0x%04lx in use\n",
--				       FDCS->address + 2);
--				goto cleanup1;
--			}
--			if (!request_region(FDCS->address + 7, 1, "floppy DIR")) {
--				DPRINT("Floppy io-port 0x%04lx in use\n",
--				       FDCS->address + 7);
--				goto cleanup2;
--			}
--			/* address + 6 is reserved, and may be taken by IDE.
--			 * Unfortunately, Adaptec doesn't know this :-(, */
-+			if (floppy_request_regions(fdc))
-+				goto cleanup;
- 		}
- 	}
- 	for (fdc = 0; fdc < N_FDC; fdc++) {
-@@ -4432,15 +4463,11 @@ static int floppy_grab_irq_and_dma(void)
- 	fdc = 0;
- 	irqdma_allocated = 1;
+ 	if (!irq_can_set_affinity(irq))
+ 		return 0;
+@@ -133,7 +133,7 @@ set_affinity:
  	return 0;
--cleanup2:
--	release_region(FDCS->address + 2, 4);
--cleanup1:
-+cleanup:
- 	fd_free_irq();
- 	fd_free_dma();
--	while (--fdc >= 0) {
--		release_region(FDCS->address + 2, 4);
--		release_region(FDCS->address + 7, 1);
--	}
-+	while (--fdc >= 0)
-+		floppy_release_regions(fdc);
- 	spin_lock_irqsave(&floppy_usage_lock, flags);
- 	usage_count--;
- 	spin_unlock_irqrestore(&floppy_usage_lock, flags);
-@@ -4502,8 +4529,7 @@ static void floppy_release_irq_and_dma(v
- 	old_fdc = fdc;
- 	for (fdc = 0; fdc < N_FDC; fdc++)
- 		if (FDCS->address != -1) {
--			release_region(FDCS->address + 2, 4);
--			release_region(FDCS->address + 7, 1);
-+			floppy_release_regions(fdc);
- 		}
- 	fdc = old_fdc;
  }
+ #else
+-static inline int do_irq_select_affinity(unsigned int irq, struct irq_desc *d)
++static inline int setup_affinity(unsigned int irq, struct irq_desc *d)
+ {
+ 	return irq_select_affinity(irq);
+ }
+@@ -149,14 +149,14 @@ int irq_select_affinity_usr(unsigned int irq)
+ 	int ret;
+ 
+ 	spin_lock_irqsave(&desc->lock, flags);
+-	ret = do_irq_select_affinity(irq, desc);
++	ret = setup_affinity(irq, desc);
+ 	spin_unlock_irqrestore(&desc->lock, flags);
+ 
+ 	return ret;
+ }
+ 
+ #else
+-static inline int do_irq_select_affinity(int irq, struct irq_desc *desc)
++static inline int setup_affinity(unsigned int irq, struct irq_desc *desc)
+ {
+ 	return 0;
+ }
+@@ -488,7 +488,7 @@ __setup_irq(unsigned int irq, struct irq_desc * desc, struct irqaction *new)
+ 			desc->status |= IRQ_NO_BALANCING;
+ 
+ 		/* Set default affinity mask once everything is setup */
+-		do_irq_select_affinity(irq, desc);
++		setup_affinity(irq, desc);
+ 
+ 	} else if ((new->flags & IRQF_TRIGGER_MASK)
+ 			&& (new->flags & IRQF_TRIGGER_MASK)
