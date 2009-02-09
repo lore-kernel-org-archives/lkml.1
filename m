@@ -1,188 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756162AbZBIXUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756826AbZBIXUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756162AbZBIXUj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 18:20:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754364AbZBIXTI
+	id S1756826AbZBIXUy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 18:20:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756085AbZBIXTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 18:19:08 -0500
+	Mon, 9 Feb 2009 18:19:15 -0500
 Received: from mail-bw0-f161.google.com ([209.85.218.161]:56753 "EHLO
 	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754234AbZBIXTG (ORCPT
+	with ESMTP id S1755405AbZBIXTN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 18:19:06 -0500
+	Mon, 9 Feb 2009 18:19:13 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=baARVCq4qL9PEfbGP7pSkeY0LPQTBoG2uJdXzM6D+cHRRNkOAL50MCJ3Cwo4EB+d5X
-         MPjgJhPwYa7PJRoncxugFKOyp03wXMzabT1/iixfte3cCYC51q6yBrVhbwNGAdgZekDQ
-         jbK11Hh/OrAyFVzAZWOvcHt9k5KUicYmkviZU=
+        b=GATucOFvLFIZS52VIBF0IV3MRnIRU2Rx6xUO//ze2DyDgXbdc/SNPxMiR3QuRzk1yw
+         V25iMNuoQsmXGONVKw+Xf9D4s6r2elXyPQUJRCivuZv1Enwm3UZKQm4Pl2qYi9vIbqLo
+         VBPF+bFUt5E8/UWROddO5PGaAY061voFsc514=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Borislav Petkov <petkovbb@gmail.com>,
        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Tue, 10 Feb 2009 00:20:19 +0100
-Message-Id: <20090209232019.32406.98822.sendpatchset@localhost.localdomain>
+Date: Tue, 10 Feb 2009 00:20:26 +0100
+Message-Id: <20090209232026.32406.50385.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090209231945.32406.14874.sendpatchset@localhost.localdomain>
 References: <20090209231945.32406.14874.sendpatchset@localhost.localdomain>
-Subject: [PATCH 5/6] ide: remove ide_execute_pkt_cmd()
+Subject: [PATCH 6/6] ide: keep track of number of bytes instead of sectors in struct ide_cmd
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: remove ide_execute_pkt_cmd()
+Subject: [PATCH] ide: keep track of number of bytes instead of sectors in struct ide_cmd
 
-* Pass command structure to ide_execute_command() and skip
-  __ide_set_handler() for ATAPI protocols.
+* Pass number of bytes instead of sectors to ide_init_sg_cmd().
 
-* Convert ide_issue_pc() to always use ide_execute_command()
-  and remove no longer needed ide_execute_pkt_cmd().
+* Pass number of bytes to process to ide_pio_sector() and rename
+  it to ide_pio_bytes().
+
+* Rename ->nsect field to ->nbytes in struct ide_cmd and use
+  ->nbytes, ->nleft and ->cursg_ofs to keep track of number of
+  bytes instead of sectors.
 
 There should be no functional changes caused by this patch.
 
 Cc: Borislav Petkov <petkovbb@gmail.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-atapi.c    |   15 +++++++--------
- drivers/ide/ide-iops.c     |   23 ++++++-----------------
- drivers/ide/ide-taskfile.c |    6 ++----
- include/linux/ide.h        |    5 ++---
- 4 files changed, 17 insertions(+), 32 deletions(-)
+ drivers/ide/ide-disk.c     |    4 ++--
+ drivers/ide/ide-floppy.c   |    2 +-
+ drivers/ide/ide-io.c       |    6 +++---
+ drivers/ide/ide-taskfile.c |   32 ++++++++++++++++----------------
+ include/linux/ide.h        |    4 ++--
+ 5 files changed, 24 insertions(+), 24 deletions(-)
 
-Index: b/drivers/ide/ide-atapi.c
+Index: b/drivers/ide/ide-disk.c
 ===================================================================
---- a/drivers/ide/ide-atapi.c
-+++ b/drivers/ide/ide-atapi.c
-@@ -481,6 +481,7 @@ static void ide_init_packet_cmd(struct i
- 	cmd->protocol  = dma ? ATAPI_PROT_DMA : ATAPI_PROT_PIO;
- 	cmd->tf_flags |= IDE_TFLAG_OUT_LBAH | IDE_TFLAG_OUT_LBAM |
- 			 IDE_TFLAG_OUT_FEATURE | tf_flags;
-+	cmd->tf.command = ATA_CMD_PACKET;
- 	cmd->tf.feature = dma;		/* Use PIO/DMA */
- 	cmd->tf.lbam    = bcount & 0xff;
- 	cmd->tf.lbah    = (bcount >> 8) & 0xff;
-@@ -626,6 +627,7 @@ ide_startstop_t ide_issue_pc(ide_drive_t
- 	unsigned int timeout;
- 	u32 tf_flags;
- 	u16 bcount;
-+	u8 drq_int = !!(drive->atapi_flags & IDE_AFLAG_DRQ_INTERRUPT);
+--- a/drivers/ide/ide-disk.c
++++ b/drivers/ide/ide-disk.c
+@@ -152,7 +152,7 @@ static ide_startstop_t __ide_do_rw_disk(
+ 	cmd.rq = rq;
  
- 	if (dev_is_idecd(drive)) {
- 		tf_flags = IDE_TFLAG_OUT_NSECT | IDE_TFLAG_OUT_LBAL;
-@@ -675,17 +677,14 @@ ide_startstop_t ide_issue_pc(ide_drive_t
- 
- 	(void)do_rw_taskfile(drive, cmd);
- 
--	/* Issue the packet command */
--	if (drive->atapi_flags & IDE_AFLAG_DRQ_INTERRUPT) {
-+	if (drq_int) {
- 		if (drive->dma)
- 			drive->waiting_for_dma = 0;
- 		hwif->expiry = expiry;
--		ide_execute_command(drive, ATA_CMD_PACKET, ide_transfer_pc,
--				    timeout);
--		return ide_started;
--	} else {
--		ide_execute_pkt_cmd(drive);
--		return ide_transfer_pc(drive);
+ 	if (dma == 0) {
+-		ide_init_sg_cmd(&cmd, nsectors);
++		ide_init_sg_cmd(&cmd, nsectors << 9);
+ 		ide_map_sg(drive, &cmd);
  	}
-+
-+	ide_execute_command(drive, cmd, ide_transfer_pc, timeout);
-+
-+	return drq_int ? ide_started : ide_transfer_pc(drive);
- }
- EXPORT_SYMBOL_GPL(ide_issue_pc);
-Index: b/drivers/ide/ide-iops.c
+ 
+@@ -162,7 +162,7 @@ static ide_startstop_t __ide_do_rw_disk(
+ 		/* fallback to PIO */
+ 		cmd.tf_flags |= IDE_TFLAG_DMA_PIO_FALLBACK;
+ 		ide_tf_set_cmd(drive, &cmd, 0);
+-		ide_init_sg_cmd(&cmd, nsectors);
++		ide_init_sg_cmd(&cmd, nsectors << 9);
+ 		rc = do_rw_taskfile(drive, &cmd);
+ 	}
+ 
+Index: b/drivers/ide/ide-floppy.c
 ===================================================================
---- a/drivers/ide/ide-iops.c
-+++ b/drivers/ide/ide-iops.c
-@@ -451,7 +451,7 @@ EXPORT_SYMBOL(ide_set_handler);
- /**
-  *	ide_execute_command	-	execute an IDE command
-  *	@drive: IDE drive to issue the command against
-- *	@command: command byte to write
-+ *	@cmd: command
-  *	@handler: handler for next phase
-  *	@timeout: timeout for command
-  *
-@@ -461,15 +461,16 @@ EXPORT_SYMBOL(ide_set_handler);
-  *	should go via this function or do equivalent locking.
-  */
+--- a/drivers/ide/ide-floppy.c
++++ b/drivers/ide/ide-floppy.c
+@@ -293,7 +293,7 @@ static ide_startstop_t ide_floppy_do_req
  
--void ide_execute_command(ide_drive_t *drive, u8 cmd, ide_handler_t *handler,
--			 unsigned timeout)
-+void ide_execute_command(ide_drive_t *drive, struct ide_cmd *cmd,
-+			 ide_handler_t *handler, unsigned timeout)
- {
- 	ide_hwif_t *hwif = drive->hwif;
- 	unsigned long flags;
+ 	cmd.rq = rq;
  
- 	spin_lock_irqsave(&hwif->lock, flags);
--	__ide_set_handler(drive, handler, timeout);
--	hwif->tp_ops->exec_command(hwif, cmd);
-+	if (cmd->protocol != ATAPI_PROT_DMA && cmd->protocol != ATAPI_PROT_PIO)
-+		__ide_set_handler(drive, handler, timeout);
-+	hwif->tp_ops->exec_command(hwif, cmd->tf.command);
- 	/*
- 	 * Drive takes 400nS to respond, we must avoid the IRQ being
- 	 * serviced before that.
-@@ -480,18 +481,6 @@ void ide_execute_command(ide_drive_t *dr
- 	spin_unlock_irqrestore(&hwif->lock, flags);
+-	ide_init_sg_cmd(&cmd, rq->nr_sectors);
++	ide_init_sg_cmd(&cmd, rq->nr_sectors << 9);
+ 	ide_map_sg(drive, &cmd);
+ 
+ 	pc->sg = hwif->sg_table;
+Index: b/drivers/ide/ide-io.c
+===================================================================
+--- a/drivers/ide/ide-io.c
++++ b/drivers/ide/ide-io.c
+@@ -241,9 +241,9 @@ void ide_map_sg(ide_drive_t *drive, stru
  }
+ EXPORT_SYMBOL_GPL(ide_map_sg);
  
--void ide_execute_pkt_cmd(ide_drive_t *drive)
--{
--	ide_hwif_t *hwif = drive->hwif;
--	unsigned long flags;
--
--	spin_lock_irqsave(&hwif->lock, flags);
--	hwif->tp_ops->exec_command(hwif, ATA_CMD_PACKET);
--	ndelay(400);
--	spin_unlock_irqrestore(&hwif->lock, flags);
--}
--EXPORT_SYMBOL_GPL(ide_execute_pkt_cmd);
--
- /*
-  * ide_wait_not_busy() waits for the currently selected device on the hwif
-  * to report a non-busy status, see comments in ide_probe_port().
+-void ide_init_sg_cmd(struct ide_cmd *cmd, int nsect)
++void ide_init_sg_cmd(struct ide_cmd *cmd, unsigned int nr_bytes)
+ {
+-	cmd->nsect = cmd->nleft = nsect;
++	cmd->nbytes = cmd->nleft = nr_bytes;
+ 	cmd->cursg_ofs = 0;
+ 	cmd->cursg = NULL;
+ }
+@@ -268,7 +268,7 @@ static ide_startstop_t execute_drive_cmd
+ 
+ 	if (cmd) {
+ 		if (cmd->protocol == ATA_PROT_PIO) {
+-			ide_init_sg_cmd(cmd, rq->nr_sectors);
++			ide_init_sg_cmd(cmd, rq->nr_sectors << 9);
+ 			ide_map_sg(drive, cmd);
+ 		}
+ 
 Index: b/drivers/ide/ide-taskfile.c
 ===================================================================
 --- a/drivers/ide/ide-taskfile.c
 +++ b/drivers/ide/ide-taskfile.c
-@@ -97,8 +97,7 @@ ide_startstop_t do_rw_taskfile(ide_drive
- 	case ATA_PROT_NODATA:
- 		if (handler == NULL)
- 			handler = task_no_data_intr;
--		ide_execute_command(drive, tf->command, handler,
--				    WAIT_WORSTCASE);
-+		ide_execute_command(drive, cmd, handler, WAIT_WORSTCASE);
- 		return ide_started;
- 	case ATA_PROT_DMA:
- 		if ((drive->dev_flags & IDE_DFLAG_USING_DMA) == 0 ||
-@@ -106,8 +105,7 @@ ide_startstop_t do_rw_taskfile(ide_drive
- 		    dma_ops->dma_setup(drive, cmd))
- 			return ide_stopped;
- 		hwif->expiry = dma_ops->dma_expiry;
--		ide_execute_command(drive, tf->command, ide_dma_intr,
--				    2 * WAIT_CMD);
-+		ide_execute_command(drive, cmd, ide_dma_intr, 2 * WAIT_CMD);
- 		dma_ops->dma_start(drive);
- 	default:
- 		return ide_started;
+@@ -188,8 +188,8 @@ static u8 wait_drive_not_busy(ide_drive_
+ 	return stat;
+ }
+ 
+-static void ide_pio_sector(ide_drive_t *drive, struct ide_cmd *cmd,
+-			   unsigned int write)
++static void ide_pio_bytes(ide_drive_t *drive, struct ide_cmd *cmd,
++			  unsigned int write, unsigned int nr_bytes)
+ {
+ 	ide_hwif_t *hwif = drive->hwif;
+ 	struct scatterlist *sg = hwif->sg_table;
+@@ -208,7 +208,7 @@ static void ide_pio_sector(ide_drive_t *
+ 	}
+ 
+ 	page = sg_page(cursg);
+-	offset = cursg->offset + cmd->cursg_ofs * SECTOR_SIZE;
++	offset = cursg->offset + cmd->cursg_ofs;
+ 
+ 	/* get the current page and offset */
+ 	page = nth_page(page, (offset >> PAGE_SHIFT));
+@@ -219,19 +219,19 @@ static void ide_pio_sector(ide_drive_t *
+ #endif
+ 	buf = kmap_atomic(page, KM_BIO_SRC_IRQ) + offset;
+ 
+-	cmd->nleft--;
+-	cmd->cursg_ofs++;
++	cmd->nleft -= nr_bytes;
++	cmd->cursg_ofs += nr_bytes;
+ 
+-	if ((cmd->cursg_ofs * SECTOR_SIZE) == cursg->length) {
++	if (cmd->cursg_ofs == cursg->length) {
+ 		cmd->cursg = sg_next(cmd->cursg);
+ 		cmd->cursg_ofs = 0;
+ 	}
+ 
+ 	/* do the actual data transfer */
+ 	if (write)
+-		hwif->tp_ops->output_data(drive, cmd, buf, SECTOR_SIZE);
++		hwif->tp_ops->output_data(drive, cmd, buf, nr_bytes);
+ 	else
+-		hwif->tp_ops->input_data(drive, cmd, buf, SECTOR_SIZE);
++		hwif->tp_ops->input_data(drive, cmd, buf, nr_bytes);
+ 
+ 	kunmap_atomic(buf, KM_BIO_SRC_IRQ);
+ #ifdef CONFIG_HIGHMEM
+@@ -244,9 +244,9 @@ static void ide_pio_multi(ide_drive_t *d
+ {
+ 	unsigned int nsect;
+ 
+-	nsect = min_t(unsigned int, cmd->nleft, drive->mult_count);
++	nsect = min_t(unsigned int, cmd->nleft >> 9, drive->mult_count);
+ 	while (nsect--)
+-		ide_pio_sector(drive, cmd, write);
++		ide_pio_bytes(drive, cmd, write, SECTOR_SIZE);
+ }
+ 
+ static void ide_pio_datablock(ide_drive_t *drive, struct ide_cmd *cmd,
+@@ -265,7 +265,7 @@ static void ide_pio_datablock(ide_drive_
+ 	if (cmd->tf_flags & IDE_TFLAG_MULTI_PIO)
+ 		ide_pio_multi(drive, cmd, write);
+ 	else
+-		ide_pio_sector(drive, cmd, write);
++		ide_pio_bytes(drive, cmd, write, SECTOR_SIZE);
+ 
+ 	drive->io_32bit = saved_io_32bit;
+ }
+@@ -273,18 +273,18 @@ static void ide_pio_datablock(ide_drive_
+ static void ide_error_cmd(ide_drive_t *drive, struct ide_cmd *cmd)
+ {
+ 	if (cmd->tf_flags & IDE_TFLAG_FS) {
+-		int sectors = cmd->nsect - cmd->nleft;
++		int nr_bytes = cmd->nbytes - cmd->nleft;
+ 
+ 		if (cmd->protocol == ATA_PROT_PIO &&
+ 		    ((cmd->tf_flags & IDE_TFLAG_WRITE) || cmd->nleft == 0)) {
+ 			if (cmd->tf_flags & IDE_TFLAG_MULTI_PIO)
+-				sectors -= drive->mult_count;
++				nr_bytes -= drive->mult_count << 9;
+ 			else
+-				sectors--;
++				nr_bytes -= SECTOR_SIZE;
+ 		}
+ 
+-		if (sectors > 0)
+-			ide_complete_rq(drive, 0, sectors << 9);
++		if (nr_bytes > 0)
++			ide_complete_rq(drive, 0, nr_bytes);
+ 	}
+ }
+ 
 Index: b/include/linux/ide.h
 ===================================================================
 --- a/include/linux/ide.h
 +++ b/include/linux/ide.h
-@@ -1135,9 +1135,8 @@ void ide_kill_rq(ide_drive_t *, struct r
- void __ide_set_handler(ide_drive_t *, ide_handler_t *, unsigned int);
- void ide_set_handler(ide_drive_t *, ide_handler_t *, unsigned int);
+@@ -349,7 +349,7 @@ struct ide_cmd {
+ 	int			sg_nents;	  /* number of sg entries */
+ 	int			sg_dma_direction; /* DMA transfer direction */
  
--void ide_execute_command(ide_drive_t *, u8, ide_handler_t *, unsigned int);
--
--void ide_execute_pkt_cmd(ide_drive_t *);
-+void ide_execute_command(ide_drive_t *, struct ide_cmd *, ide_handler_t *,
-+			 unsigned int);
+-	unsigned int		nsect;
++	unsigned int		nbytes;
+ 	unsigned int		nleft;
+ 	struct scatterlist	*cursg;
+ 	unsigned int		cursg_ofs;
+@@ -1406,7 +1406,7 @@ int ide_pci_resume(struct pci_dev *);
+ #endif
  
- void ide_pad_transfer(ide_drive_t *, int, int);
+ void ide_map_sg(ide_drive_t *, struct ide_cmd *);
+-void ide_init_sg_cmd(struct ide_cmd *, int);
++void ide_init_sg_cmd(struct ide_cmd *, unsigned int);
  
+ #define BAD_DMA_DRIVE		0
+ #define GOOD_DMA_DRIVE		1
