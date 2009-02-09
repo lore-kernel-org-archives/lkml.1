@@ -1,150 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756826AbZBIRbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757056AbZBIRbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756826AbZBIRbA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 12:31:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756399AbZBIRaI
+	id S1757056AbZBIRbk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 12:31:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756566AbZBIRaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 12:30:08 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:48884 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756027AbZBIRaB (ORCPT
+	Mon, 9 Feb 2009 12:30:20 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:35426 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756558AbZBIRaT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 12:30:01 -0500
-Message-Id: <20090209172956.784717880@goodmis.org>
-References: <20090209172830.087244662@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Mon, 09 Feb 2009 12:28:32 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 2/3] tracing: Move pipe waiting code out of tracing_read_pipe().
-Content-Disposition: inline; filename=0002-tracing-Move-pipe-waiting-code-out-of-tracing_read_.patch
+	Mon, 9 Feb 2009 12:30:19 -0500
+Subject: Re: mm_alloc()'ed structure leak
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Darren Hart <dvhltc@us.ibm.com>
+In-Reply-To: <1234198023.5951.133.camel@laptop>
+References: <1234181898.16083.26.camel@pc1117.cambridge.arm.com>
+	 <1234190649.16083.44.camel@pc1117.cambridge.arm.com>
+	 <1234192363.5951.129.camel@laptop>  <1234197950.5951.132.camel@laptop>
+	 <1234198023.5951.133.camel@laptop>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Mon, 09 Feb 2009 17:28:58 +0000
+Message-Id: <1234200538.16083.52.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Feb 2009 17:29:03.0911 (UTC) FILETIME=[E7421B70:01C98ADB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+On Mon, 2009-02-09 at 17:47 +0100, Peter Zijlstra wrote:
+> On Mon, 2009-02-09 at 17:45 +0100, Peter Zijlstra wrote:
+> > -               return -ERESTART_RESTARTBLOCK;
+> > +               ret = -ERESTARTSYS;
+> 
+> noted and fixed.
 
-This moves the pipe waiting code from tracing_read_pipe() into
-tracing_wait_pipe(), which is useful to implement other fops, like
-splice_read.
-
-Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/trace/trace.c |   69 +++++++++++++++++++++++++++++---------------------
- 1 files changed, 40 insertions(+), 29 deletions(-)
-
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 9e29fdb..11fde0a 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -2388,37 +2388,15 @@ tracing_poll_pipe(struct file *filp, poll_table *poll_table)
- 	}
- }
- 
--/*
-- * Consumer reader.
-- */
--static ssize_t
--tracing_read_pipe(struct file *filp, char __user *ubuf,
--		  size_t cnt, loff_t *ppos)
-+/* Must be called with trace_types_lock mutex held. */
-+static int tracing_wait_pipe(struct file *filp)
- {
- 	struct trace_iterator *iter = filp->private_data;
--	ssize_t sret;
--
--	/* return any leftover data */
--	sret = trace_seq_to_user(&iter->seq, ubuf, cnt);
--	if (sret != -EBUSY)
--		return sret;
--
--	trace_seq_reset(&iter->seq);
- 
--	mutex_lock(&trace_types_lock);
--	if (iter->trace->read) {
--		sret = iter->trace->read(iter, filp, ubuf, cnt, ppos);
--		if (sret)
--			goto out;
--	}
--
--waitagain:
--	sret = 0;
- 	while (trace_empty(iter)) {
- 
- 		if ((filp->f_flags & O_NONBLOCK)) {
--			sret = -EAGAIN;
--			goto out;
-+			return -EAGAIN;
- 		}
- 
- 		/*
-@@ -2443,12 +2421,11 @@ waitagain:
- 		iter->tr->waiter = NULL;
- 
- 		if (signal_pending(current)) {
--			sret = -EINTR;
--			goto out;
-+			return -EINTR;
- 		}
- 
- 		if (iter->trace != current_trace)
--			goto out;
-+			return 0;
- 
- 		/*
- 		 * We block until we read something and tracing is disabled.
-@@ -2465,9 +2442,43 @@ waitagain:
- 		continue;
- 	}
- 
-+	return 1;
-+}
-+
-+/*
-+ * Consumer reader.
-+ */
-+static ssize_t
-+tracing_read_pipe(struct file *filp, char __user *ubuf,
-+		  size_t cnt, loff_t *ppos)
-+{
-+	struct trace_iterator *iter = filp->private_data;
-+	ssize_t sret;
-+
-+	/* return any leftover data */
-+	sret = trace_seq_to_user(&iter->seq, ubuf, cnt);
-+	if (sret != -EBUSY)
-+		return sret;
-+
-+	trace_seq_reset(&iter->seq);
-+
-+	mutex_lock(&trace_types_lock);
-+	if (iter->trace->read) {
-+		sret = iter->trace->read(iter, filp, ubuf, cnt, ppos);
-+		if (sret)
-+			goto out;
-+	}
-+
-+waitagain:
-+	sret = tracing_wait_pipe(filp);
-+	if (sret <= 0)
-+		goto out;
-+
- 	/* stop when tracing is finished */
--	if (trace_empty(iter))
-+	if (trace_empty(iter)) {
-+		sret = 0;
- 		goto out;
-+	}
- 
- 	if (cnt >= PAGE_SIZE)
- 		cnt = PAGE_SIZE - 1;
--- 
-1.5.6.5
+I can confirm that with your patch, the leak is no longer reported.
+Thanks.
 
 -- 
+Catalin
+
