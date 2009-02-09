@@ -1,105 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756896AbZBIVUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755499AbZBIVWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756896AbZBIVUj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 16:20:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754654AbZBIVRq
+	id S1755499AbZBIVWY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 16:22:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961AbZBIVWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 16:17:46 -0500
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:43151 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754861AbZBIVRo (ORCPT
+	Mon, 9 Feb 2009 16:22:14 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:50646 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752306AbZBIVWO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 16:17:44 -0500
-Date: Mon, 9 Feb 2009 14:17:43 -0700
-From: Alex Chiang <achiang@hp.com>
-To: tony.luck@intel.com, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       stable@kernel.org, linux-ia64@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 1/2] Revert "[IA64] prevent ia64 from invoking irq
-	handlers on offline CPUs"
-Message-ID: <20090209211743.GA3939@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>, tony.luck@intel.com,
-	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, stable@kernel.org,
-	linux-ia64@vger.kernel.org,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <20090209181338.GD19064@ldl.fc.hp.com> <20090209181616.GE19064@ldl.fc.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090209181616.GE19064@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 9 Feb 2009 16:22:14 -0500
+Subject: Re: 2.6.29-rc4-git1 -- iwl3945: Can not allocate SKB buffers
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Miles Lane <miles.lane@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Zhu Yi <yi.zhu@intel.com>, Reinette Chatre <reinette.chatre@intel.com>
+In-Reply-To: <a44ae5cd0902091312t50f31689xe3bc56a25a0ff502@mail.gmail.com> (sfid-20090209_221302_952960_F4B2EC25)
+References: <a44ae5cd0902091312t50f31689xe3bc56a25a0ff502@mail.gmail.com>
+	 (sfid-20090209_221302_952960_F4B2EC25)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-azSI+Xosc+Rx37UT3/IR"
+Date: Mon, 09 Feb 2009 22:21:40 +0100
+Message-Id: <1234214500.4175.255.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tony,
 
-* Alex Chiang <achiang@hp.com>:
-> This reverts commit e7b140365b86aaf94374214c6f4e6decbee2eb0a.
-> 
-> Commit e7b14036 removes the targetted disabled CPU from the
-> cpu_online_map after calls to migrate_platform_irqs and fixup_irqs.
+--=-azSI+Xosc+Rx37UT3/IR
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I'm currently testing the patch below as a v3.
+On Mon, 2009-02-09 at 16:12 -0500, Miles Lane wrote:
+> [12506.627936] iwl3945: Can not allocate SKB buffers
 
-> Paul McKenney states that the reasoning behind the patch was to
-> prevent irq handlers from running on CPUs marked offline because:
-> 
-> 	RCU happily ignores CPUs that don't have their bits set in
-> 	cpu_online_map, so if there are RCU read-side critical sections
-> 	in the irq handlers being run, RCU will ignore them.  If the
-> 	other CPUs were running, they might sequence through the RCU
-> 	state machine, which could result in data structures being
-> 	yanked out from under those irq handlers, which in turn could
-> 	result in oopses or worse.
-> 
-> Unfortunately, both ia64 functions above look at cpu_online_map to find
-> a new CPU to migrate interrupts onto. This means we can potentially
-> migrate an interrupt off ourself back to... ourself. Uh oh.
+So iwl3945 prints out that it's out of memory, but probably uses
+__GFP_NOWARN.
 
-v3 uses cpu_active_mask to find an interrupt migration target.
-This should fix both the oops we were seeing as well as avoid the
-issues with RCU that Paul mentions above.
+> [12544.530789] java: page allocation failure. order:1, mode:0x4020
+> [12544.530798] Pid: 21292, comm: java Not tainted 2.6.29-rc4-git1 #2
+> [12544.530801] Call Trace:
+> [12544.530812]  [<ffffffff8028f12d>] __alloc_pages_internal+0x423/0x442
+> [12544.530820]  [<ffffffff804cbb4f>] ? pskb_expand_head+0x52/0x16f
+> [12544.530826]  [<ffffffff802b13df>] alloc_slab_page+0x20/0x26
+> [12544.530830]  [<ffffffff802b1624>] __slab_alloc+0x23f/0x527
+> [12544.530835]  [<ffffffff804cbb4f>] ? pskb_expand_head+0x52/0x16f
+> [12544.530839]  [<ffffffff804cbb4f>] ? pskb_expand_head+0x52/0x16f
+> [12544.530844]  [<ffffffff802b23db>] __kmalloc+0xbc/0x102
+> [12544.530848]  [<ffffffff804cbb4f>] pskb_expand_head+0x52/0x16f
+> [12544.530854]  [<ffffffff805a0c8b>] ieee80211_skb_resize+0x91/0xca
+> [12544.530858]  [<ffffffff805a16fd>] ieee80211_master_start_xmit+0x260/0x=
+4c3
 
-I also think that this fix is simpler for us to think through
-rather than making Paul think through the implications of
-changing RCU to use cpu_active_mask. :)
+and here we have pskb_expand_head failing to allocate memory. And an
+order 1 allocation too. Are you saying wireless has a memory leak?
 
-So far, it's survived ~45 minutes on my simple test bed (without
-any patches, it usually crashes in < 15 minutes). I'm about to
-start a longer run on our complex test system that runs under
-heavy load.
+johannes
 
-Hopefully I'll have some results for tomorrow, in which case I'll
-send a proper patch.
+--=-azSI+Xosc+Rx37UT3/IR
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Thanks.
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-/ac
+iQIcBAABAgAGBQJJkJ5hAAoJEKVg1VMiehFYsZYP/0LJJSuaekvPzT1eIVlc2n+V
+ZebSRZXGz5OYJGVpuX+EW0vi0+V+KTSCZTAHQSAoIK1N3SbYnSU4zIo/SX1TFte7
+K06dyDMrGSizvCztPaIuA9mPsH/V+SLjGRAfywzOf1hWxIcVfnerXyGcph9gSTT/
+OrdBloBfmwzYTnnWjDn7eNMy6lJfBkyBrT0TIVOio8FOhMD4a8iWvc/r9Xf3nnb/
+oHjQ/txNM8aIc0mBrnKyviOQKhxnR7LsI/0vDoO3qM127pB6wQT+5QcKHRpN3gfl
+Z4toMc0ZhFa3vn0BGrS6G04Wm1oDBpqr83v1FuGkM4VcHGTMXnO9mjVitrNS5GYN
+p+J5Z2kn6YN1zLuUYwK1HlYnyRlTDConOmdg898VhMqK6p3Iougbk1/ekTeT6FRP
+KHIulitbzUYDBRj+4UC3emfVGJgCfW5mq50jPvfvuErPEhYP+CWBGSHCEVxhvMXB
+XZbh0xDeYEj0bT/i9aonyUwIIUFC/Zc6yELqW3GYtVCZD2d8u8GCKsbO1BHQXOzD
+tMTixGyIIjsZFBF56s08gVVrf/fxNm17QdDlogF/bZeI1KJyRKR3Y8S/H4e2K6bL
+kQy5RejQWLMnRIf/VmlERyr6GNO7zNscXuG4zUUSG3kMnnAapjkbk6/uz+RQ+e22
+nNEiLdeX5zpYGiM6blz7
+=qYuk
+-----END PGP SIGNATURE-----
 
-diff --git a/arch/ia64/kernel/irq.c b/arch/ia64/kernel/irq.c
-index a58f64c..9eaab3c 100644
---- a/arch/ia64/kernel/irq.c
-+++ b/arch/ia64/kernel/irq.c
-@@ -155,7 +155,7 @@ static void migrate_irqs(void)
- 			 */
- 			vectors_in_migration[irq] = irq;
- 
--			new_cpu = cpumask_any(cpu_online_mask);
-+			new_cpu = cpumask_any(cpu_active_mask);
- 
- 			/*
- 			 * Al three are essential, currently WARN_ON.. maybe panic?
-diff --git a/arch/ia64/kernel/smpboot.c b/arch/ia64/kernel/smpboot.c
-index 1146399..4e8765d 100644
---- a/arch/ia64/kernel/smpboot.c
-+++ b/arch/ia64/kernel/smpboot.c
-@@ -694,7 +694,7 @@ int migrate_platform_irqs(unsigned int cpu)
- 			/*
- 			 * Now re-target the CPEI to a different processor
- 			 */
--			new_cpei_cpu = any_online_cpu(cpu_online_map);
-+			new_cpei_cpu = cpumask_any(cpu_active_mask);
- 			mask = cpumask_of(new_cpei_cpu);
- 			set_cpei_target_cpu(new_cpei_cpu);
- 			desc = irq_desc + ia64_cpe_irq;
+--=-azSI+Xosc+Rx37UT3/IR--
+
