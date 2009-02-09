@@ -1,91 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754390AbZBIGZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754262AbZBIGcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754390AbZBIGZf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 01:25:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbZBIGZ1
+	id S1754262AbZBIGcd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 01:32:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753060AbZBIGcY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 01:25:27 -0500
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:28771 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752196AbZBIGZ0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 01:25:26 -0500
-Date: Mon, 9 Feb 2009 07:29:29 +0100
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-To: Andres Salomon <dilinger@queued.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       adaplas@gmail.com
-Subject: Re: [Linux-fbdev-devel] [PATCH 5/15] skeletonfb: check
- fb_alloc_cmap return value and handle failure properly
-Message-Id: <20090209072929.29589e5d.krzysztof.h1@poczta.fm>
-In-Reply-To: <20090207121302.55db6a87@ephemeral>
-References: <20090207121302.55db6a87@ephemeral>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 9 Feb 2009 01:32:24 -0500
+Received: from ozlabs.org ([203.10.76.45]:55103 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751000AbZBIGcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 01:32:24 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 1/3] module: create a request_module_nowait()
+Date: Mon, 9 Feb 2009 17:02:17 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: linux-kernel@vger.kernel.org, jkosina@suse.cz, mchehab@infradead.org
+References: <20090208104201.6124ab6a@infradead.org>
+In-Reply-To: <20090208104201.6124ab6a@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-EMID: 70e2b138
+Content-Disposition: inline
+Message-Id: <200902091702.18887.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 7 Feb 2009 12:13:02 -0500
-Andres Salomon <dilinger@queued.net> wrote:
+On Monday 09 February 2009 05:12:01 Arjan van de Ven wrote:
+> This patch changes this to use a request_module_nowait() function macro instead,
+> which just fires the modprobe off but doesn't wait for it, and thus avoids the
+> original deadlock entirely.
 
-> 
-> Bad example code, no cookie!
-> 
+Nice, applied.  Made one change; I've taken to using the new-fangled bool
+type for flag args, for slight extra clarity.
 
-It is even worse than you thought.
+(Which uncovered another interesting issue, which lead to several more
+ patches).
 
-> Signed-off-by: Andres Salomon <dilinger@debian.org>
-> ---
->  drivers/video/skeletonfb.c |    9 ++++++---
->  1 files changed, 6 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/skeletonfb.c b/drivers/video/skeletonfb.c
-> index df53365..a439159 100644
-> --- a/drivers/video/skeletonfb.c
-> +++ b/drivers/video/skeletonfb.c
-> @@ -795,8 +795,9 @@ static int __devinit xxxfb_probe(struct pci_dev *dev,
->      if (!retval || retval == 4)
->  	return -EINVAL;			
->  
-> -    /* This has to been done !!! */	
-> -    fb_alloc_cmap(&info->cmap, cmap_len, 0);
-> +    /* This has to be done! */
-> +    if (fb_alloc_cmap(&info->cmap, cmap_len, 0))
-> +	return -ENOMEM;
->  	
-
-The info pointer should be freed before the return here ...
-
->      /* 
->       * The following is done in the case of having hardware with a static 
-> @@ -820,8 +821,10 @@ static int __devinit xxxfb_probe(struct pci_dev *dev,
->       */
->      /* xxxfb_set_par(info); */
->  
-> -    if (register_framebuffer(info) < 0)
-> +    if (register_framebuffer(info) < 0) {
-> +	fb_dealloc_cmap(&info->cmap);
-
-... and here.
-
->  	return -EINVAL;
-> +    }
->      printk(KERN_INFO "fb%d: %s frame buffer device\n", info->node,
->  	   info->fix.id);
->      pci_set_drvdata(dev, info); /* or platform_set_drvdata(pdev, info) */
-> -- 
-
-
-Kind regards,
-Krzysztof
-
-
-----------------------------------------------------------------------
-Zostan mistrzem parkowania w Bombaju!
-Zagraj >> http://link.interia.pl/f204e 
+Thanks,
+Rusty.
 
