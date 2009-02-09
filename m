@@ -1,42 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755422AbZBIPEr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755128AbZBIPNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755422AbZBIPEr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 10:04:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792AbZBIPEj
+	id S1755128AbZBIPNU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 10:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbZBIPNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 10:04:39 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:49872 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753541AbZBIPEj (ORCPT
+	Mon, 9 Feb 2009 10:13:10 -0500
+Received: from casper.infradead.org ([85.118.1.10]:59323 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753195AbZBIPNJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 10:04:39 -0500
-MIME-Version: 1.0
-In-Reply-To: <499030E6.8030003@redhat.com>
-References: <alpine.LFD.2.00.0902081251090.3048@localhost.localdomain>
-	 <499030E6.8030003@redhat.com>
-Date: Mon, 9 Feb 2009 07:04:37 -0800
-Message-ID: <f488382f0902090704r6d0af6br9e60a4493ff62c0d@mail.gmail.com>
-Subject: Re: Linus 2.6.29-rc4
-From: Steven Noonan <steven@uplinklabs.net>
-To: Gerd Hoffmann <kraxel@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 9 Feb 2009 10:13:09 -0500
+Subject: Re: mm_alloc()'ed structure leak
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1234190649.16083.44.camel@pc1117.cambridge.arm.com>
+References: <1234181898.16083.26.camel@pc1117.cambridge.arm.com>
+	 <1234190649.16083.44.camel@pc1117.cambridge.arm.com>
+Content-Type: text/plain
+Date: Mon, 09 Feb 2009 16:12:43 +0100
+Message-Id: <1234192363.5951.129.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.90 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 9, 2009 at 5:34 AM, Gerd Hoffmann <kraxel@redhat.com> wrote:
-> Hmm, Linu*s* 2.6.29-rc4?
-> Tyops or hidden message?
->
-> /me remembers the "Linus 2.0" announcement ...
->
-> cheers,
->  Gerd
+On Mon, 2009-02-09 at 14:44 +0000, Catalin Marinas wrote:
+> On Mon, 2009-02-09 at 12:18 +0000, Catalin Marinas wrote:
+> > Basically bash forks and executes a command like "host kernel.org" which
+> > finishes normally but the corresponding mm_struct isn't freed (I get
+> > this consistently every time I run the above command):
+> > 
+> > unreferenced object 0xcfed4070 (size 368):
+> >   comm "bash", pid 1674, jiffies 421592
+> >   backtrace:
+> >     [<c0082bd4>] kmemleak_alloc+0x140/0x2b0
+> >     [<c007ff2c>] kmem_cache_alloc+0xd0/0x100
+> >     [<c0036980>] mm_alloc+0x14/0x44
+> >     [<c008a99c>] bprm_mm_init+0xc/0x13c
+> >     [<c008ab70>] do_execve+0xa4/0x218
+> >     [<c002718c>] sys_execve+0x34/0x54
+> >     [<c0023e80>] ret_fast_syscall+0x0/0x28
+> 
+> Dumping the object in question:
+> 
+> mm_struct.mm_users = 0
+> mm_struct.mm_count = 1
+> 
+> It looks like the mm_count didn't get to 0 hence no structure freeing
+> via mmdrop().
+> 
+> The leak disappears if I revert commit 38d47c1b7075 - "futex: rely on
+> get_user_pages() for shared futexes". Peter, any idea?
 
-Funny part is I didn't notice it at all until you said something. I
-wonder how many other people didn't notice...
+Looks like the futex key references go wrong somewhere, I'll go look at
+it.
 
-- Steven
+
+
