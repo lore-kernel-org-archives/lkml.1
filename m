@@ -1,83 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756369AbZBIRFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756435AbZBIRGE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756369AbZBIRFS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 12:05:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbZBIRFA
+	id S1756435AbZBIRGE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 12:06:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbZBIRFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 12:05:00 -0500
-Received: from mx1.wp.pl ([212.77.101.5]:18786 "EHLO mx1.wp.pl"
+	Mon, 9 Feb 2009 12:05:52 -0500
+Received: from mail.atlantis.sk ([80.94.52.35]:44324 "EHLO mail.atlantis.sk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752859AbZBIRE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 12:04:59 -0500
-Date: Mon, 9 Feb 2009 18:09:11 +0100
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-To: Andres Salomon <dilinger@queued.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       adaplas@gmail.com
-Subject: Re: [Linux-fbdev-devel] [PATCH 11/15] tgafb: fix cmap memory leak
-Message-Id: <20090209180911.fe7337a8.krzysztof.h1@wp.pl>
-In-Reply-To: <20090207121831.11c34988@ephemeral>
-References: <20090207121831.11c34988@ephemeral>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1754736AbZBIRFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 12:05:51 -0500
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] [resend] Resume from hibernation fails with pata_it821x RAID volume
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Disposition: inline
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Mon, 9 Feb 2009 18:05:39 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-WP-AV: skaner antywirusowy poczty Wirtualnej Polski S. A.
-X-WP-SPAM: NO 0000000 [UQMk]                               
+Message-Id: <200902091805.42285.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 7 Feb 2009 12:18:31 -0500
-Andres Salomon <dilinger@queued.net> wrote:
+On Friday 06 February 2009 18:56:35 Alan Cox wrote:
+> >     See CodingStyle chapter 8 for the preferred multiline comment style.
+> >
+> > > +		memset(&id[ATA_ID_SERNO], 0x20, ATA_ID_SERNO_LEN);
+> >
+> >     Why not ' '?
+> >
+> > MBR, Sergei
+>
+> Digging into the docs the RAID serial number (and what that means isn't
+> defined anywhere I can see) is byte offset 54-73 in each of the 4 128
+> byte blocks returned by the chip status query we do at boot
+> (it821x_probe_firmware).
 
-> 
->  - fix cmap leak when register_framebuffer fails
-> 
-> Signed-off-by: Andres Salomon <dilinger@debian.org>
-> ---
+Yes, found it there. But it seems to be the same number as present in the 
+IDENTIFY data. It contains date and time of boot (matches RAID_SERIAL_NUMBER 
+structure found in iteraid.h in driver source from ITE) instead of date and 
+time of RAID creation.
 
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+I don't have any better solution than the patch below. Generating the serial
+number from drives containing the array is not an option as it prevents
+resume if one of the drives fails.
 
 
->  drivers/video/tgafb.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/video/tgafb.c b/drivers/video/tgafb.c
-> index 680642c..a86046f 100644
-> --- a/drivers/video/tgafb.c
-> +++ b/drivers/video/tgafb.c
-> @@ -1663,7 +1663,7 @@ tgafb_register(struct device *dev)
->  	if (register_framebuffer(info) < 0) {
->  		printk(KERN_ERR "tgafb: Could not register framebuffer\n");
->  		ret = -EINVAL;
-> -		goto err1;
-> +		goto err2;
->  	}
->  
->  	if (tga_bus_pci) {
-> @@ -1682,6 +1682,8 @@ tgafb_register(struct device *dev)
->  
->  	return 0;
->  
-> + err2:
-> +	fb_dealloc_cmap(&info->cmap);
->   err1:
->  	if (mem_base)
->  		iounmap(mem_base);
-> -- 
-> 1.5.6.5
-> 
-> 
-> ------------------------------------------------------------------------------
-> Create and Deploy Rich Internet Apps outside the browser with Adobe(R)AIR(TM)
-> software. With Adobe AIR, Ajax developers can use existing skills and code to
-> build responsive, highly engaging applications that combine the power of local
-> resources and data with the reach of the web. Download the Adobe AIR SDK and
-> Ajax docs to start building applications today-http://p.sf.net/sfu/adobe-com
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-> 
+Fix resume on pata_it821x RAID volume by clearing the serial number in 
+IDENTIFY data. The serial number is different on each boot, breaking
+validation on resume from hibernation.
+
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+
+--- linux-2.6.28-orig/drivers/ata/pata_it821x.c	2009-01-02 17:18:36.000000000 +0100
++++ linux/drivers/ata/pata_it821x.c	2009-02-09 17:52:21.000000000 +0100
+@@ -561,6 +561,9 @@
+ 		id[83] |= 0x4400;	/* Word 83 is valid and LBA48 */
+ 		id[86] |= 0x0400;	/* LBA48 on */
+ 		id[ATA_ID_MAJOR_VER] |= 0x1F;
++		/* Clear the serial number because it's different each boot
++		   which breaks validation on resume */
++		memset(&id[ATA_ID_SERNO], ' ', ATA_ID_SERNO_LEN);
+ 	}
+ 	return err_mask;
+ }
+
+
+
+-- 
+Ondrej Zary
