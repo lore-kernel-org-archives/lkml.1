@@ -1,46 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbZBIN0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755805AbZBIN2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755980AbZBIN0x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 08:26:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755747AbZBIN0Y
+	id S1755805AbZBIN2Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 08:28:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbZBIN2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 08:26:24 -0500
-Received: from ti-out-0910.google.com ([209.85.142.184]:27150 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755730AbZBIN0X (ORCPT
+	Mon, 9 Feb 2009 08:28:13 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:48965 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753778AbZBIN2M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 08:26:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:from:to:cc:bcc:subject:date:user-agent;
-        b=nnM6XKX8FXc0NzArkwBDBqOESWBPDwaWIb8cFLFTt/bHjULauPhy/nki5I9h629oYT
-         1bVIZ0hZwTPmGGs5u79VGVy+FsDvVqqAr+koJ8yzhRBnIqErfXgFKNQRoyDUuWTsxAn7
-         ok/WZkBFy61tuX6o7JhtLoO4/ZhqVhpc7TrN4=
-Message-ID: <49902efb.0e1b6e0a.664d.ffff80b7@mx.google.com>
-From: Qinghuang Feng <qhfeng.kernel@gmail.com>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: [PATCH] : cleanup kernel-doc
-Date: Mon, 9 Feb 2009 21:26:16 +0800
-User-Agent: sniper-patch-carrier/1.06
+	Mon, 9 Feb 2009 08:28:12 -0500
+Date: Mon, 9 Feb 2009 15:28:09 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Herbert Xu <herbert@gondor.apana.org.au>
+cc: David Miller <davem@davemloft.net>, jeff.chua.linux@gmail.com, rjw@sisk.pl,
+       torvalds@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>
+Subject: Re: commit 64ff3b938ec6782e6585a83d5459b98b0c3f6eb8 breaks rlogin
+In-Reply-To: <20090209072806.GB4380@gondor.apana.org.au>
+Message-ID: <Pine.LNX.4.64.0902091513190.31742@wrl-59.cs.helsinki.fi>
+References: <20090206054541.GA4954@gondor.apana.org.au>
+ <b6a2187b0902060335h646e8d86pf00773035f577665@mail.gmail.com>
+ <20090209055848.GA3889@gondor.apana.org.au> <20090208.220357.261414983.davem@davemloft.net>
+ <20090209061151.GA3982@gondor.apana.org.au> <Pine.LNX.4.64.0902090853360.20576@wrl-59.cs.helsinki.fi>
+ <20090209072806.GB4380@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-721455914-1234186089=:31742"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove redundant argument comment.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Signed-off-by: Qinghuang Feng <qhfeng.kernel@gmail.com>
----
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 790f9d7..590e77f 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -2709,7 +2709,6 @@ int proc_dointvec_userhz_jiffies(struct ctl_table *table, int write, struct file
-  * @filp: the file structure
-  * @buffer: the user buffer
-  * @lenp: the size of the user buffer
-- * @ppos: file position
-  * @ppos: the current position in the file
-  *
-  * Reads/writes up to table->maxlen/sizeof(unsigned int) integer
+---696208474-721455914-1234186089=:31742
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 
+On Mon, 9 Feb 2009, Herbert Xu wrote:
+
+> On Mon, Feb 09, 2009 at 09:13:00AM +0200, Ilpo Järvinen wrote:
+> > 
+> > Hmm, what happens if a opposite dir ACK gets sent (it's zero sized seqno
+> > range will be above urgent sequence when urg is not yet acknowledged)? So
+> > we'll take the later branch after your change and send bogus 0xffff urg?
+> > I think you're change might have actually broken bidir tcp completely (and
+> > probably window probing as well under some conditions). Congraz, two flies
+> > with a single stroke :-). You would have needed an additional check that
+> > the tcb->seq is below urg...
+> > 
+> > ...Below is a patch but Jeff might need to revert the revert first if
+> > he tests with the latest Linus' tree.
+> 
+> Good point! That would definitely explain this.
+>  
+> > [PATCH] tcp: check that we're still < urg instead of sending a bogus one
+> > 
+> > Opposite dir ACK with zero sized seqno range can go into the
+> > later condition once urg is in the outstanding window not
+> > yet acknowledge (we're still in urg mode but seqno we sent in
+> > the ack won't be below snd_up). Need to check that we never
+> > advertize bogus urg for a segment which is after the snd_up.
+> > 
+> > Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+> > ---
+> >  net/ipv4/tcp_output.c |    3 ++-
+> >  1 files changed, 2 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/net/ipv4/tcp_output.c b/net/ipv4/tcp_output.c
+> > index 557fe16..c808d73 100644
+> > --- a/net/ipv4/tcp_output.c
+> > +++ b/net/ipv4/tcp_output.c
+> > @@ -667,7 +667,8 @@ static int tcp_transmit_skb(struct sock *sk, struct sk_buff *skb, int clone_it,
+> >  		if (between(tp->snd_up, tcb->seq + 1, tcb->seq + 0xFFFF)) {
+> >  			th->urg_ptr = htons(tp->snd_up - tcb->seq);
+> >  			th->urg = 1;
+> > -		} else if (after(tcb->seq + 0xFFFF, tp->snd_nxt)) {
+> > +		} else if (after(tcb->seq + 0xFFFF, tp->snd_nxt) &&
+> > +			   before(tcb->seq, tcp->snd_up)) {
+> >  			th->urg_ptr = 0xFFFF;
+> >  			th->urg = 1;
+> >  		}
+> 
+> We could rewrite this as
+> 
+> 	if (unlikely(tcp_urg_mode(tp) && before(tcb->seq, tcp->snd_up))) {
+> 		if (before(tp->sndup, tcb->seq + 0x10000)) {
+> 			th->urg_ptr = htons(tp->snd_up - tcb->seq);
+> 			th->urg = 1;
+> 		} else if (after(tcb->seq + 0xFFFF, tp->snd_nxt)) {
+> 			th->urg_ptr = 0xFFFF;
+> 			th->urg = 1;
+> 		}
+> 	}
+
+Yes, that should work too except the gcc catchable typo.
+
+
+-- 
+ i.
+---696208474-721455914-1234186089=:31742--
