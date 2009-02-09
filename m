@@ -1,90 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756945AbZBITaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbZBITbN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756945AbZBITaY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 14:30:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbZBITaJ
+	id S1755352AbZBITbN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 14:31:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbZBITa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 14:30:09 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:61600 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752587AbZBITaI (ORCPT
+	Mon, 9 Feb 2009 14:30:58 -0500
+Received: from an-out-0708.google.com ([209.85.132.241]:31368 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752756AbZBITa5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 14:30:08 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:references:
-	mime-version:content-type:content-disposition:in-reply-to:
-	x-operating-system:user-agent:x-system-of-record;
-	b=ItgLqghxwmkZNambpP99m5dcBNF0oSdDGG9IfCoN5IRE7bCL9urU7D2mUxFn1eVfg
-	7aqb18mLgmLBNVJW+3D5A==
-Date: Mon, 9 Feb 2009 11:29:56 -0800
-From: Mandeep Singh Baines <msb@google.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, rientjes@google.com,
-       mbligh@google.com, thockin@google.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] softlockup: remove timestamp checking from hung_task
-Message-ID: <20090209192956.GA7332@google.com>
-References: <20090206233747.GA8747@google.com> <20090207162328.GA5779@nowhere> <20090207163440.GB5779@nowhere> <20090207165154.GC5779@nowhere>
+	Mon, 9 Feb 2009 14:30:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=dwtqypfpuCWv25TOPvfYvc83ksZhgiqg7+OwLCvuiY5neA6IiYzCtgL9QbPkcwN4st
+         vUffUmdpy3E95nIyBxIn9RuLhdLWn8YX6PS/oPcmhGmWJyXmOOJP6IFQ0Km0UCZX1YZU
+         NhxDcVDG6KVkUBfpqouXsMMLexIS8AXXQKF7U=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090207165154.GC5779@nowhere>
-X-Operating-System: Linux/2.6.18.5-gg42workstation-mixed64-32 (x86_64)
-User-Agent: Mutt/1.5.11
-X-System-Of-Record: true
+Date: Mon, 9 Feb 2009 19:30:56 +0000
+Message-ID: <b6a2d2e20902091130ha452a97rcfaa2972bfdbe710@mail.gmail.com>
+Subject: cgroup, RT reservation per core(s)?
+From: Rolando Martins <rolando.martins@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker (fweisbec@gmail.com) wrote:
-> BTW, here is a small fixlet on top of your patch about what I commented concerning
-> the tasks than weren't yet scheduled once:
-> 
-> --
-> From e7120e424b031978e482b5fe311d90916ffb8b7e Mon Sep 17 00:00:00 2001
-> From: Frederic Weisbecker <fweisbec@gmail.com>
-> Date: Sat, 7 Feb 2009 17:45:12 +0100
-> Subject: [PATCH] softlockup: ensure the task has been scheduled once
-> 
-> When we check if the task has been scheduled since the last scan, we might
-> have a race condition if the task has been inserted on the task list but not
-> yet scheduled once. So we just add a small check to ensure it has been switched
-> in at least one time to avoid false positive.
-> 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
->  kernel/hung_task.c |    6 +++++-
->  1 files changed, 5 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/hung_task.c b/kernel/hung_task.c
-> index 4a10756..7f57a71 100644
-> --- a/kernel/hung_task.c
-> +++ b/kernel/hung_task.c
-> @@ -72,7 +72,11 @@ static void check_hung_task(struct task_struct *t, unsigned long timeout)
->  {
->  	unsigned long switch_count = t->nvcsw + t->nivcsw;
->  
-> -	if (t->flags & PF_FROZEN)
-> +	/*
-> +	 * Ensure the task is not frozen and that it has been scheduled
-> +	 * at least once.
-> +	 */
-> +	if (t->flags & PF_FROZEN || !switch_count)
->  		return;
->  
->  	if (switch_count != t->last_switch_count) {
-> -- 
-> 1.6.1
-> 
+Hi,
+I would like to have in a quad-core, 2 cores totally (100%) dedicated
+to RT tasks (SCHED_RR and SCHED_FIFO) and the other 2 cores with
+normal behavior, better said,  allowing SCHED_OTHER & SCHED_FIFO &
+SCHED_RR tasks but still with a RT reservation. Follows an example:
 
-Good catch! I would change the description though. The race is a little
-more subtle than your current description. For a newly forked process, the race
-can occur if check_hung_task() processes the task in the time between the task
-changing its state to UNINTERRUPTIBLE and the the scheduler updating the
-switch_count (nivcsw or nvcsw).
 
-One minor change to the  code comment. You want to ensure that the task has
-context switched at least once, NOT that the task has been scheduled at least
-once.
+# Setup first domain (cpu 0,1)
+echo 0-1 > /dev/cgroup/0/cpuset.cpus
+echo 0 > /dev/cgroup/0/cpuset.mems
 
-If you re-send the patch with the fixed comment and description, I'll
-ack it.
+# Setup RT bandwidth for firstdomain (80% for RT, 20% others)
+echo 1000000 > /dev/cgroup/0/cpu.rt_period_us
+echo 800000 > /dev/cgroup/0/cpu.rt_runtime_us
+
+
+# Setup second domain (cpu 2,3)
+mkdir /dev/cgroup/1
+echo 2-3 > /dev/cgroup/1/cpuset.cpus
+echo 0 > /dev/cgroup/1/cpuset.mems
+
+# Setup RT bandwidth for second domain (100% for RT)
+echo 1000000 > /dev/cgroup/1/cpu.rt_period_us
+echo 1000000 > /dev/cgroup/1/cpu.rt_runtime_us
+
+Is there anyway for doing this?
+
+Thanks,
+Rol
