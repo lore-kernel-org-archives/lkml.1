@@ -1,64 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754014AbZBHX6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbZBIADi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754014AbZBHX6z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 18:58:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbZBHX6o
+	id S1754076AbZBIADi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 19:03:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbZBIAD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 18:58:44 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:12993 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751788AbZBHX6n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 18:58:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=LgNTxVR+zeeg26zrZ2rFnzlSrvDMlDrKcLqq3XN5vhkIPCtp4t7/erXJmybho20kev
-         i+V9S941XYxygV/djMhUuwHJzozxUFWsrsnmUtI4D9nBYN6lsr80Z9Ig5aWdQjuI7m51
-         lecb6k6EiZJfCy5uo9aqEj+fWEfy2drWUB4K4=
-Date: Mon, 9 Feb 2009 00:58:39 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] power: fix a build breakage on latest -tip
-Message-ID: <20090208235838.GA4729@nowhere>
+	Sun, 8 Feb 2009 19:03:28 -0500
+Received: from h155.mvista.com ([63.81.120.155]:59121 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753111AbZBIAD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 19:03:27 -0500
+Message-ID: <498F72C8.8020204@ru.mvista.com>
+Date: Mon, 09 Feb 2009 03:03:20 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: Hugh Dickins <hugh@veritas.com>, jgarzik@pobox.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       alan@lxorguk.ukuu.org.uk, rjw@sisk.pl
+Subject: Re: [PATCH] libata-sff: fix 32-bit PIO regression
+References: <200902082253.07438.sshtylyov@ru.mvista.com>	<Pine.LNX.4.64.0902082108290.18661@blonde.anvils>	<498F5A25.90707@ru.mvista.com> <18831.28471.454273.451912@harpo.it.uu.se>
+In-Reply-To: <18831.28471.454273.451912@harpo.it.uu.se>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A recent conflict resolve (c2eefa20c3ab45ab2108ce7e6561364ea92d7334)
-did put twice the function suspend_test() on kernel/power/main.c
+Hello
 
-The version added for CONFIG_PM_TEST_SUSPEND to solve the conflict overlaps
-the one changed recently on (091d71e023557136e96f0e54f301497a3fc95dc3)
-since PM_TEST_SUSPEND depends on SUSPEND.
+Mikael Pettersson wrote:
+> Sergei Shtylyov writes:
+>  > Hello.
+>  > 
+>  > Hugh Dickins wrote:
+>  > 
+>  > >> Commit 871af1210f13966ab911ed2166e4ab2ce775b99d (libata: Add 32bit PIO support)
+>  > >> caused all kind of errors on the ATAPI devices, so it's been empirically proven
+>  > >> that one shouldn't read/write an extra data word when a device isn't expecting
+>  > >> it already. "Don't do it then"; however still taking a chance to use 32-bit I/O
+>  > >> one last  time when there are exactly 3 trailing bytes.  Oh, and stop pointless
+>  > >> swapping bytes to and fro as well by using io*_rep() which shouldn't byte-swap.
+>  > >>
+>  > >> This should fix the kernel.org bug #12609.
+>  > >>
+>  > >> ---
+>  > >> This is hopefully better replacement for Hugh Dickins most recent patch
+>  > >> (http://marc.info/?l=linux-ide&m=123352294619281)...
+>  > >>     
+>  > >
+>  > > Yes, looks nice, and works for me.  My only criticism would be,
+>  > > minor issue unchanged by your patch, that actually "slop" isn't
+>  > > unlikely enough to deserve an "unlikely" - slop of 1 or 3 is
+>  > > unlikely, but slop of 2 is quite common.
+>  > >   
+>  > 
+>  >    I guess that's the case only for the ATAPI devices, so I'm going to 
+>  > keep it.
+>
+> I really don't think it's a good idea to play micro-optimisation
+> unlikely() tricks when the likelihood depends on what kind of device
+> the driver is talking to. In this case unlikely() is clearly wrong.
+>   
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 2ade836..2265b98 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -135,16 +135,6 @@ static int suspend_test(int level)
- 
- #ifdef CONFIG_PM_TEST_SUSPEND
- 
--static int suspend_test(int level)
--{
--	if (pm_test_level == level) {
--		printk(KERN_INFO "suspend debug: Waiting for 5 seconds.\n");
--		mdelay(5000);
--		return 1;
--	}
--	return 0;
--}
--
- /*
-  * We test the system suspend code by setting an RTC wakealarm a short
-  * time in the future, then suspending.  Suspending the devices won't
+   Clearly?! :-O
+   Do you really think that the transfers having lengths non-divisible 
+by 4 make any *significant* percentage even on the ATAPI devices? I 
+think it's you who is really wrong.
+
+MBR, Sergei
+
 
