@@ -1,77 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754983AbZBIL6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbZBIL6x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754983AbZBIL6d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 06:58:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbZBIL6Z
+	id S1754135AbZBIL6x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 06:58:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754897AbZBIL6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 06:58:25 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:37544 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752686AbZBIL6Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 06:58:24 -0500
-Date: Mon, 9 Feb 2009 11:58:18 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Paul Menage <menage@google.com>,
-       containers@lists.osdl.org, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [cgroup or VFS ?]  WARNING: at fs/namespace.c:636
-	mntput_no_expire+0xac/0xf2()
-Message-ID: <20090209115818.GX28946@ZenIV.linux.org.uk>
-References: <49617D35.4040805@cn.fujitsu.com> <20090209004046.3ce1dde0.akpm@linux-foundation.org> <498FEE24.5030407@cn.fujitsu.com> <20090209110348.GV28946@ZenIV.linux.org.uk>
+	Mon, 9 Feb 2009 06:58:42 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41807 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753065AbZBIL6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 06:58:41 -0500
+Date: Mon, 9 Feb 2009 12:58:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH tip 1/1] tracing: handle unregistering the current
+	tracer
+Message-ID: <20090209115825.GA17782@elte.hu>
+References: <20090207205259.GB11892@ghostprotocols.net> <20090209095816.GB20467@elte.hu> <20090209115151.GB5265@ghostprotocols.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090209110348.GV28946@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090209115151.GB5265@ghostprotocols.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 09, 2009 at 11:03:48AM +0000, Al Viro wrote:
-> 	BTW, a trivial note - kfree(root) in your ->kill_sb() is done
-> earlier than it's nice to do.  Shouldn't affect the problem, though.
 
-	Other probably irrelevant notes:
+* Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
 
-                memcpy(start, cgrp->dentry->d_name.name, len);
-                cgrp = cgrp->parent;
-                if (!cgrp)
-                        break;
-                dentry = rcu_dereference(cgrp->dentry);
+> Em Mon, Feb 09, 2009 at 10:58:16AM +0100, Ingo Molnar escreveu:
+> > 
+> > * Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
+> > 
+> > > Impact: simplification
+> > > 
+> > > Instead of requiring that plugins have the sequence:
+> > > 
+> > >   my_tracer_stop(my_trace_array);
+> > >   unregister_tracer(my_tracer);
+> > > 
+> > > it should be possible just do a:
+> > > 
+> > >   unregister_tracer(my_tracer);
+> > > 
+> > > Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+> > > ---
+> > >  kernel/trace/trace.c |    9 +++++++++
+> > >  1 files changed, 9 insertions(+), 0 deletions(-)
+> > 
+> > Applied to tip/tracing/ftrace, thanks Arnaldo!
+> > 
+> > Nice one - we should try to shoot for the smallest physically
+> > possible linecount for any new (possibly trivial) tracer plugin.
+> 
+> That and also for as few as possible EXPORT_SYMBOL_GPL entries, now, for
+> converting net/ipv4/tcp_probe.c to an ftrace plugin + one tracepoint at
+> tcp_rcv_established we need:
+> 
+> doppio linux-2.6-tip]$ grep ^+EXPORT_SYMBOL ~/tcp_cwnd_tracer.patch 
+> +EXPORT_SYMBOL_GPL(register_tracer);
+> +EXPORT_SYMBOL_GPL(unregister_tracer);
+> +EXPORT_SYMBOL_GPL(tracing_record_cmdline);
+> +EXPORT_SYMBOL_GPL(trace_buffer_lock_reserve);
+> +EXPORT_SYMBOL_GPL(trace_buffer_unlock_commit);
+> +EXPORT_SYMBOL_GPL(trace_seq_printf);
+> +EXPORT_SYMBOL_GPL(register_ftrace_event);
+> +EXPORT_SYMBOL_GPL(unregister_ftrace_event);
+> [acme@doppio linux-2.6-tip]$
 
-in cgroup_path().  Why don't we need rcu_dereference on both?
-Moreover, shouldn't that be
-                memcpy(start, dentry->d_name.name, len);
-anyway, seeing that we'd just looked at dentry->d_name.len?
+ok. For in-kernel plugins it's of course fine to do those exports in any case.
 
-In cgroup_rmdir():
-        spin_lock(&cgrp->dentry->d_lock);
-        d = dget(cgrp->dentry);
-        spin_unlock(&d->d_lock);
-
-        cgroup_d_remove_dir(d);
-        dput(d);
-Er?  Comments, please...  Unless something very unusual is going on,
-either that d_lock is pointless or dget() is rather unsafe.
-
-cgroups_clone()
-        /* Now do the VFS work to create a cgroup */
-        inode = parent->dentry->d_inode;
-
-        /* Hold the parent directory mutex across this operation to
-         * stop anyone else deleting the new cgroup */
-        mutex_lock(&inode->i_mutex);
-Can the parent be in process of getting deleted by somebody else?  If yes,
-we are in trouble here.
-
-BTW, that thing in cgroup_path()...  What guarantees that cgroup_rename()
-won't hit between getting len and doing memcpy()?
-
-That said, cgroup seems to be completely agnostic wrt anything happening
-on vfsmount level, so I really don't see how it gets to that WARN_ON().
-Hell knows; I really want to see the sequence of events - it might be
-something like fscking up ->s_active handling with interesting results
-(cgroup code is certainly hitting it in not quite usual ways), it may be
-genuine VFS-only race.  Need more data...
+	Ingo
