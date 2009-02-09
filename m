@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754433AbZBICi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbZBICpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754433AbZBICi4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 21:38:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbZBICis
+	id S1754130AbZBICpS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 21:45:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbZBICpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 21:38:48 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:45983 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753084AbZBICir (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 21:38:47 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Sun, 8 Feb 2009 18:38:45 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: mtk.manpages@gmail.com
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 1/2] timerfd add flags check
-In-Reply-To: <cfd18e0f0902081834l55142925i1f2f068e4aa9b145@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0902081836540.18839@alien.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0902081504380.18839@alien.or.mcafeemobile.com> <cfd18e0f0902081834l55142925i1f2f068e4aa9b145@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sun, 8 Feb 2009 21:45:04 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:52498 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753754AbZBICpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 21:45:03 -0500
+Date: Mon, 9 Feb 2009 03:42:36 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jerome Marchand <jmarchan@redhat.com>,
+       Denys Vlasenko <dvlasenk@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] ptrace_untrace: use wake_up_process() instead of
+	bogus signal_wake_up()
+Message-ID: <20090209024236.GB28280@redhat.com>
+References: <20090208184727.GA27081@redhat.com> <20090209013804.C99B3FC330@magilla.sf.frob.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090209013804.C99B3FC330@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Feb 2009, Michael Kerrisk wrote:
+On 02/08, Roland McGrath wrote:
+>
+> > Both ptrace_stop() and do_signal_stop() pathes always take ->siglock and
+> > do recalc_sigpending() after wakeup.
+>
+> Yes, that's true.  But so what?  Why is this a reason to introduce yet
+> another unconditional (i.e. wrong) wake_up_process?  signal_wake_up does
+> the job fine, i.e. it calls wake_up_state the right way.
 
-> On Mon, Feb 9, 2009 at 12:23 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
-> > Like Michael requested, this patch adds a missing check for valid flags in
-> > timerfd_settime(), and make it return EINVAL in case some extra bits are
-> > set. If this is or not a -stable thing, it Greg decision.
-> > Should be queued by Andrew for .30, unless -stable and Linus decide to
-> > get it before, like Michael suggested.
-> 
-> When these two patches are applied against .29-rc3:
-> 
-> $ make
-> [...]
->   CC      fs/timerfd.o
-> fs/timerfd.c: In function 'sys_timerfd_create':
-> fs/timerfd.c:190: error: implicit declaration of function 'invalid_clockid'
-> make[1]: *** [fs/timerfd.o] Error 1
-> make: *** [fs] Error 2
+We are holding ->siglock, and task->state is TASK_TRACED. We can not do
+the "wrong" wakeup, afaics.
 
-Yeah, I missed the posix-timers.h inclusion in timerfd.c, when I split the 
-first patch into two separate ones. Will re-send tomorrow.
+And even if we forget about the unneeded TIF_SIGPENDING/kick_process,
+personally I can't agree that signal_wake_up() uses wake_up_state()
+more "correctly". This doesn't matter of course, but TASK_INTERRUPTIBLE
+(and to some extent TASK_WAKEKILL) has nothing to do here, imho.
 
+Of course, the tracee can already spin for ->siglock in TASK_RUNNING
+when we do wake_up_process(), but this is true for signal_wake_up()
+as well, and this is fine.
 
-- Davide
+> For exactly the
+> reasons you cited, setting TIF_SIGPENDING is both superfluous and
+> harmless--its effects will happen upon resume whether it was set or not.
+> So what's wrong with signal_wake_up?
 
+Because it complicates the understanding of this code. I spent a lot
+of time trying to understand this signal_wake_up().
+
+Perhaps this is just me. But when you see the code which does something,
+it is always good to understand the reason, otherwise the code at least
+looks wrong.
+
+Or, at least we can add the comment
+
+		/*
+		 * there are no reasons for signal_wake_up(), we could
+		 * use wake_up_state() or wake_up_process() instead.
+		 */
+		signal_wake_up(child, 1);
+
+Oleg.
 
