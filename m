@@ -1,60 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbZBIVUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198AbZBIVTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755161AbZBIVUy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 16:20:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755648AbZBIVSF
+	id S1755198AbZBIVTq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 16:19:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755150AbZBIVRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 16:18:05 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:33151 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755621AbZBIVSD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 16:18:03 -0500
-Date: Tue, 10 Feb 2009 08:17:37 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>, David Miller <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, lkml <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: commit 64ff3b938ec6782e6585a83d5459b98b0c3f6eb8 breaks rlogin
-Message-ID: <20090209211737.GA13831@gondor.apana.org.au>
-References: <b6a2187b0902050641h7943816ds26275a320e724440@mail.gmail.com> <20090206031025.GA3281@gondor.apana.org.au> <b6a2187b0902052139p3be2f321ucd900cc5346bff8c@mail.gmail.com> <20090206054541.GA4954@gondor.apana.org.au> <b6a2187b0902060335h646e8d86pf00773035f577665@mail.gmail.com> <20090209055848.GA3889@gondor.apana.org.au> <alpine.LFD.2.00.0902090740100.3048@localhost.localdomain>
+	Mon, 9 Feb 2009 16:17:10 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:36443 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754722AbZBIVRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 16:17:08 -0500
+From: Eric Paris <eparis@redhat.com>
+Subject: [PATCH -v1 10/11] fsnotify: handle filesystem unmounts with fsnotify
+	marks
+To: linux-kernel@vger.kernel.org
+Cc: viro@zeniv.linux.org.uk, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
+       sfr@canb.auug.org.au, john@johnmccutchan.com, rlove@rlove.org,
+       malware-list@lists.printk.net, akpm@linux-foundation.org
+Date: Mon, 09 Feb 2009 16:16:15 -0500
+Message-ID: <20090209211614.8985.27858.stgit@paris.rdu.redhat.com>
+In-Reply-To: <20090209211525.8985.13887.stgit@paris.rdu.redhat.com>
+References: <20090209211525.8985.13887.stgit@paris.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0902090740100.3048@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 09, 2009 at 07:44:56AM -0800, Linus Torvalds wrote:
->
-> The trace is incolclusive about that - just look at it. It's not following 
-> threads/children etc, so it's missing all the relevant pieces.
-> 
-> Which you should have realized, Herbert, since you had the knowledge that 
-> your patch _DOES_ make a difference, enough to bisect to it, and enough 
-> to see that reverting it changes behaviour.
-> 
-> Why are you arguing against facts?
-> 
-> >From the trace:
-> 
-> 	clone(child_stack=0, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0xb7d81918) = 6433
-> 	rt_sigaction(SIGURG, {0x80491d0, [URG], SA_RESTART}, {SIG_DFL}, 8) = 0
-> 	rt_sigaction(SIGUSR1, {0x8048de0, [USR1], SA_RESTART}, {SIG_DFL}, 8) = 0
-> 	rt_sigprocmask(SIG_SETMASK, [], [USR1 URG], 8) = 0
-> 	--- SIGURG (Urgent I/O condition) @ 0 (0) ---
-> 	kill(6433, SIGURG)                      = 0
-> 
-> IOW, the trace isn't saying anything at all, because all the real work 
-> probably got done in that child process.
+When an fs is unmounted with an fsnotify mark entry attached to one of its
+inodes we need to destroy that mark entry and we also (like inotify) send
+an unmount event.
 
-Ah yes, I knew the strace didn't tally with the reported behaviour,
-but I'd been focusing on the SIGURG and missed the clone.  Thanks!
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Signed-off-by: Eric Paris <eparis@redhat.com>
+---
+
+ fs/inode.c                       |    1 +
+ fs/notify/inode_mark.c           |   73 ++++++++++++++++++++++++++++++++++++++
+ include/linux/fsnotify_backend.h |    5 +++
+ 3 files changed, 79 insertions(+), 0 deletions(-)
+
+diff --git a/fs/inode.c b/fs/inode.c
+index f6a51a1..bec51e3 100644
+--- a/fs/inode.c
++++ b/fs/inode.c
+@@ -405,6 +405,7 @@ int invalidate_inodes(struct super_block * sb)
+ 	mutex_lock(&iprune_mutex);
+ 	spin_lock(&inode_lock);
+ 	inotify_unmount_inodes(&sb->s_inodes);
++	fsnotify_unmount_inodes(&sb->s_inodes);
+ 	busy = invalidate_list(&sb->s_inodes, &throw_away);
+ 	spin_unlock(&inode_lock);
+ 
+diff --git a/fs/notify/inode_mark.c b/fs/notify/inode_mark.c
+index ff65e62..f9c5cfe 100644
+--- a/fs/notify/inode_mark.c
++++ b/fs/notify/inode_mark.c
+@@ -23,6 +23,7 @@
+ #include <linux/mutex.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
++#include <linux/writeback.h> /* for inode_lock */
+ 
+ #include <asm/atomic.h>
+ 
+@@ -255,3 +256,75 @@ int fsnotify_add_mark(struct fsnotify_mark_entry *entry)
+ 
+ 	return ret;
+ }
++
++/**
++ * fsnotify_unmount_inodes - an sb is unmounting.  handle any watched inodes.
++ * @list: list of inodes being unmounted (sb->s_inodes)
++ *
++ * Called with inode_lock held, protecting the unmounting super block's list
++ * of inodes, and with iprune_mutex held, keeping shrink_icache_memory() at bay.
++ * We temporarily drop inode_lock, however, and CAN block.
++ */
++void fsnotify_unmount_inodes(struct list_head *list)
++{
++	struct inode *inode, *next_i, *need_iput = NULL;
++
++	list_for_each_entry_safe(inode, next_i, list, i_sb_list) {
++		struct inode *need_iput_tmp;
++
++		/*
++		 * If i_count is zero, the inode cannot have any watches and
++		 * doing an __iget/iput with MS_ACTIVE clear would actually
++		 * evict all inodes with zero i_count from icache which is
++		 * unnecessarily violent and may in fact be illegal to do.
++		 */
++		if (!atomic_read(&inode->i_count))
++			continue;
++
++		/*
++		 * We cannot __iget() an inode in state I_CLEAR, I_FREEING, or
++		 * I_WILL_FREE which is fine because by that point the inode
++		 * cannot have any associated watches.
++		 */
++		if (inode->i_state & (I_CLEAR | I_FREEING | I_WILL_FREE))
++			continue;
++
++		need_iput_tmp = need_iput;
++		need_iput = NULL;
++
++		/* In case fsnotify_inode_delete() drops a reference. */
++		if (inode != need_iput_tmp)
++			__iget(inode);
++		else
++			need_iput_tmp = NULL;
++
++		/* In case the dropping of a reference would nuke next_i. */
++		if ((&next_i->i_sb_list != list) &&
++		    atomic_read(&next_i->i_count) &&
++		    !(next_i->i_state & (I_CLEAR | I_FREEING | I_WILL_FREE))) {
++			__iget(next_i);
++			need_iput = next_i;
++		}
++
++		/*
++		 * We can safely drop inode_lock here because we hold
++		 * references on both inode and next_i.  Also no new inodes
++		 * will be added since the umount has begun.  Finally,
++		 * iprune_mutex keeps shrink_icache_memory() away.
++		 */
++		spin_unlock(&inode_lock);
++
++		if (need_iput_tmp)
++			iput(need_iput_tmp);
++
++		/* for each watch, send FS_UNMOUNT and then remove it */
++		fsnotify(inode, FS_UNMOUNT, inode, FSNOTIFY_EVENT_INODE, NULL, 0);
++
++		fsnotify_inode_delete(inode);
++
++		iput(inode);
++
++		spin_lock(&inode_lock);
++	}
++}
++EXPORT_SYMBOL_GPL(fsnotify_unmount_inodes);
+diff --git a/include/linux/fsnotify_backend.h b/include/linux/fsnotify_backend.h
+index c86795d..203842c 100644
+--- a/include/linux/fsnotify_backend.h
++++ b/include/linux/fsnotify_backend.h
+@@ -229,6 +229,8 @@ extern int fsnotify_add_mark(struct fsnotify_mark_entry *entry);
+ extern void fsnotify_destroy_mark_by_entry(struct fsnotify_mark_entry *entry);
+ extern void fsnotify_get_mark(struct fsnotify_mark_entry *entry);
+ extern void fsnotify_put_mark(struct fsnotify_mark_entry *entry);
++
++extern void fsnotify_unmount_inodes(struct list_head *list);
+ #else
+ 
+ static inline void fsnotify(struct inode *to_tell, __u64 mask, void *data, int data_is, const char *name, u32 cookie);
+@@ -242,6 +244,9 @@ static inline u32 fsnotify_get_cookie(void)
+ 	return 0;
+ }
+ 
++static inline void fsnotify_unmount_inodes(struct list_head *list)
++{}
++
+ #endif	/* CONFIG_FSNOTIFY */
+ 
+ #endif	/* __KERNEL __ */
+
