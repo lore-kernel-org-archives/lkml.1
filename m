@@ -1,100 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbZBIWcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbZBIWcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754883AbZBIWcU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 17:32:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbZBIWcG
+	id S1755898AbZBIWcf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 17:32:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754281AbZBIWcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 17:32:06 -0500
-Received: from LUNGE.MIT.EDU ([18.54.1.69]:48429 "EHLO lunge.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751898AbZBIWcF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 17:32:05 -0500
-Date: Mon, 9 Feb 2009 17:32:00 -0500
-From: Andres Salomon <dilinger@queued.net>
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       adaplas@gmail.com
-Subject: Re: [Linux-fbdev-devel] [PATCH 5/15] skeletonfb: check
- fb_alloc_cmap return value and handle failure properly
-Message-ID: <20090209173200.1122808e@ephemeral>
-In-Reply-To: <20090209072929.29589e5d.krzysztof.h1@poczta.fm>
-References: <20090207121302.55db6a87@ephemeral>
-	<20090209072929.29589e5d.krzysztof.h1@poczta.fm>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 9 Feb 2009 17:32:14 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:43306 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754226AbZBIWcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 17:32:13 -0500
+Message-ID: <4990AEEB.6000202@sgi.com>
+Date: Mon, 09 Feb 2009 14:32:11 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: include/linux/irq.h:452: error: implicit declaration of	function
+ 'cpu_to_node'
+References: <20090121215306.GA10123@x200.localdomain> <4977B1F1.1090602@sgi.com> <20090209203502.GA7701@x200.localdomain> <4990A899.8070302@sgi.com> <4990A96A.3060603@sgi.com> <20090209222910.GA9768@x200.localdomain>
+In-Reply-To: <20090209222910.GA9768@x200.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Feb 2009 07:29:29 +0100
-Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+Alexey Dobriyan wrote:
+> On Mon, Feb 09, 2009 at 02:08:42PM -0800, Mike Travis wrote:
+>> Mike Travis wrote:
+>>> Alexey Dobriyan wrote:
+>>>> On Wed, Jan 21, 2009 at 03:38:25PM -0800, Mike Travis wrote:
+>>>>> Alexey Dobriyan wrote:
+>>>>>> On mips-malta:
+>>>>>>
+>>>>>>   CC      arch/mips/mti-malta/malta-int.o
+>>>>>> In file included from arch/mips/mti-malta/malta-int.c:25:
+>>>>>> include/linux/irq.h: In function 'init_alloc_desc_masks':
+>>>>>> include/linux/irq.h:452: error: implicit declaration of function 'cpu_to_node'
+>>>>>> include/linux/irq.h:454: error: 'GFP_ATOMIC' undeclared (first use in this function)
+>>>>>>
+>>>>>> I _think_ init_alloc_desc_masks() should be made out of line to fix this.
+>>>>> Hi Alexey,
+>>>>>
+>>>>> Does adding #include <linux/slab.h> fix the error?  If so, I can add this to
+>>>>> linux/irq.h.
+>>>>>
+>>>>> The primary reason it's inline is that unless CONFIG_CPUMASK_OFFSTACK=y, then the
+>>>>> entire routine is a NOP which optimizes out more completely as an inline function.
+>>>> linux/slab.h helps.
+>>> Hi Alexey,
+>>>
+>>> Since you reported this problem a similar issue was discovered on s390.  However
+>>> the fix for that was to include interrupt.h instead of irq.h.
+>>>
+>>> Could you try this as well?
+>>>
+>>> Here's a tail end pointer to the thread and Andrew's commit msg including the
+>>> patch is below.
+>>>
+>>> http://marc.info/?l=linux-mm-commits&m=123360349631362&w=4
+>> Sorry, I should have made a patch specific to mips, and here that is...
+> 
+> Removal helps independently. ;-)
 
-> On Sat, 7 Feb 2009 12:13:02 -0500
-> Andres Salomon <dilinger@queued.net> wrote:
+Hmm, yes, obviously... ;-)
 > 
-> > 
-> > Bad example code, no cookie!
-> > 
-> 
-> It is even worse than you thought.
+> Oh and please fold all of this into relevant commit.
 
-Maybe skeletonfb.c should simply be dropped completely?  Incorrect
-documentation is worse than no documentation.  If it's unmaintained,
-buggy, and incorrect in many places...
+Done.
+>
+> P.S.: irq related headers suck.
 
+Agreed.  ;-)
 
+Andrew - is this something you can push via -mm?
 
-> 
-> > Signed-off-by: Andres Salomon <dilinger@debian.org>
-> > ---
-> >  drivers/video/skeletonfb.c |    9 ++++++---
-> >  1 files changed, 6 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/drivers/video/skeletonfb.c b/drivers/video/skeletonfb.c
-> > index df53365..a439159 100644
-> > --- a/drivers/video/skeletonfb.c
-> > +++ b/drivers/video/skeletonfb.c
-> > @@ -795,8 +795,9 @@ static int __devinit xxxfb_probe(struct pci_dev
-> > *dev, if (!retval || retval == 4)
-> >  	return -EINVAL;			
-> >  
-> > -    /* This has to been done !!! */	
-> > -    fb_alloc_cmap(&info->cmap, cmap_len, 0);
-> > +    /* This has to be done! */
-> > +    if (fb_alloc_cmap(&info->cmap, cmap_len, 0))
-> > +	return -ENOMEM;
-> >  	
-> 
-> The info pointer should be freed before the return here ...
-> 
-> >      /* 
-> >       * The following is done in the case of having hardware with a
-> > static @@ -820,8 +821,10 @@ static int __devinit xxxfb_probe(struct
-> > pci_dev *dev, */
-> >      /* xxxfb_set_par(info); */
-> >  
-> > -    if (register_framebuffer(info) < 0)
-> > +    if (register_framebuffer(info) < 0) {
-> > +	fb_dealloc_cmap(&info->cmap);
-> 
-> ... and here.
-> 
-> >  	return -EINVAL;
-> > +    }
-> >      printk(KERN_INFO "fb%d: %s frame buffer device\n", info->node,
-> >  	   info->fix.id);
-> >      pci_set_drvdata(dev, info); /* or platform_set_drvdata(pdev,
-> > info) */ -- 
-> 
-> 
-> Kind regards,
-> Krzysztof
-> 
-> 
-> ----------------------------------------------------------------------
-> Zostan mistrzem parkowania w Bombaju!
-> Zagraj >> http://link.interia.pl/f204e 
-> 
+Thanks!
+Mike
+---
+
+Subject: mips: include interrupt.h instead of irq.h
+
+Impact: fix build error on mips arch
+
+Alexey Dobriyan wrote:
+> On mips-malta:
+>
+>   CC      arch/mips/mti-malta/malta-int.o
+> In file included from arch/mips/mti-malta/malta-int.c:25:
+> include/linux/irq.h: In function 'init_alloc_desc_masks':
+> include/linux/irq.h:452: error: implicit declaration of function 'cpu_to_node'
+> include/linux/irq.h:454: error: 'GFP_ATOMIC' undeclared (first use in this function)
+...
+> Removal helps independently.  ;-) 
+
+This fix is similar to an issue on s390.
+
+Tested-by: Alexey Dobriyan <adobriyan@gmail.com>
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ arch/mips/mti-malta/malta-int.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+--- linux-2.6-linus.orig/arch/mips/mti-malta/malta-int.c
++++ linux-2.6-linus/arch/mips/mti-malta/malta-int.c
+@@ -22,7 +22,6 @@
+  * with two internal 82C95 interrupt controllers.
+  */
+ #include <linux/init.h>
+-#include <linux/irq.h>
+ #include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/interrupt.h>
+
