@@ -1,86 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755809AbZBIPTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbZBIPVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755809AbZBIPTV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 10:19:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbZBIPTH
+	id S1755533AbZBIPVS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 10:21:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbZBIPVE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 10:19:07 -0500
-Received: from qmta09.emeryville.ca.mail.comcast.net ([76.96.30.96]:51517 "EHLO
-	QMTA09.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754620AbZBIPTF (ORCPT
+	Mon, 9 Feb 2009 10:21:04 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:53743 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753266AbZBIPVD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 10:19:05 -0500
-Message-ID: <49904988.50408@xyzw.org>
-Date: Mon, 09 Feb 2009 07:19:36 -0800
-From: Brian Rogers <brian@xyzw.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jan Engelhardt <jengelh@medozas.de>, Ingo Molnar <mingo@elte.hu>,
-       Nathanael Hoyle <nhoyle@hoyletech.com>, stable <stable@kernel.org>
-Subject: Re: [stable] scheduler nice 19 versus 'idle' behavior / static	low-priority
- scheduling
-References: <1233294584.28741.2.camel@localhost> <alpine.LSU.2.00.0901300710200.999@fbirervta.pbzchgretzou.qr> <1233297635.17301.11.camel@localhost> <alpine.LSU.2.00.0901300818580.28427@fbirervta.pbzchgretzou.qr> <1233302349.17301.27.camel@localhost> <1233302861.6061.14.camel@marge.simson.net> <49837B32.3010206@xyzw.org> <1233380284.5636.5.camel@marge.simson.net> <1233392893.5863.25.camel@marge.simson.net> <20090202235714.GE32075@kroah.com>
-In-Reply-To: <20090202235714.GE32075@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Feb 2009 10:21:03 -0500
+Message-Id: <20090209152101.716709332@goodmis.org>
+References: <20090209151744.459736868@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Mon, 09 Feb 2009 10:17:46 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 2/2] ring_buffer: fix ring_buffer_read_page()
+Content-Disposition: inline; filename=0002-ring_buffer-fix-ring_buffer_read_page.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Sat, Jan 31, 2009 at 10:08:13AM +0100, Mike Galbraith wrote:
->   
->> On Sat, 2009-01-31 at 06:38 +0100, Mike Galbraith wrote:
->>     
->>> On Fri, 2009-01-30 at 14:12 -0800, Brian Rogers wrote:
->>>       
->>>> Mike Galbraith wrote:
->>>>         
->>>>> On Fri, 2009-01-30 at 02:59 -0500, Nathanael Hoyle wrote:
->>>>>   
->>>>>           
->>>>>> I am running foldingathome under it at the moment, and it seems to be
->>>>>> improving the situation somewhat, but I still need/want to test with
->>>>>> Mike's referenced patches.
->>>>>>     
->>>>>>             
->>>>> You will most definitely encounter evilness running SCHED_IDLE tasks in
->>>>> a kernel without the SCHED_IDLE fixes.
->>>>>   
->>>>>           
->>>> Speaking of SCHED_IDLE fixes, is 
->>>> 6bc912b71b6f33b041cfde93ca3f019cbaa852bc going to be put into the next 
->>>> stable 2.6.28 release? Without it on 2.6.28.2, I can still produce 
->>>> minutes-long freezes with BOINC or other idle processes.
->>>>
->>>> With the above commit on top of 2.6.28.2 and also 
->>>> cce7ade803699463ecc62a065ca522004f7ccb3d, the problem is solved, though 
->>>> I assume cce7ad isn't actually required to fix that, and I can test that 
->>>> if desired.
->>>>         
->>> I think they both should go to stable, but dunno if they're headed that
->>> direction or not.
->>>
->>> One way to find out, CCs added.
->>>       
->> For those who may want to run SCHED_IDLE tasks in .27, I've integrated
->> and lightly tested the fixes required to do so.  One additional commit
->> was needed to get SCHED_IDLE vs nice 19 working right, namely f9c0b09.
->> Without that, SCHED_IDLE tasks received more CPU than nice 19 tasks.
->>
->> Since .27 is in long-term maintenance, I'd integrate into stable, but
->> that's not my decision.  Anyone who applies the below to their stable
->> kernel gets to keep all the pieces should something break ;-)
->>     
->
-> I'm going to hold off and not do this, as it seems too risky.
->
-> But thanks for the pointers, perhaps someone else will want to do this
-> for their distro kernels if they have problems with this.
->   
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
 
-Is this statement meant to apply to both 2.6.27 and 2.6.28, or just 2.6.27?
+Impact: change API and init bpage when copy
 
+ring_buffer_read_page()/rb_remove_entries() may be called for
+a partially consumed page.
+
+Add a parameter for rb_remove_entries() and make it update
+cpu_buffer->entries correctly for partially consumed pages.
+
+ring_buffer_read_page() now returns the offset to the next event.
+
+Init the bpage's time_stamp when return value is 0.
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/trace/ring_buffer.c |   33 ++++++++++++++++++++-------------
+ 1 files changed, 20 insertions(+), 13 deletions(-)
+
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index e97acae..eaec7e5 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -2303,13 +2303,14 @@ int ring_buffer_swap_cpu(struct ring_buffer *buffer_a,
+ EXPORT_SYMBOL_GPL(ring_buffer_swap_cpu);
+ 
+ static void rb_remove_entries(struct ring_buffer_per_cpu *cpu_buffer,
+-			      struct buffer_data_page *bpage)
++			      struct buffer_data_page *bpage,
++			      unsigned int offset)
+ {
+ 	struct ring_buffer_event *event;
+ 	unsigned long head;
+ 
+ 	__raw_spin_lock(&cpu_buffer->lock);
+-	for (head = 0; head < local_read(&bpage->commit);
++	for (head = offset; head < local_read(&bpage->commit);
+ 	     head += rb_event_length(event)) {
+ 
+ 		event = __rb_data_page_index(bpage, head);
+@@ -2381,8 +2382,8 @@ void ring_buffer_free_read_page(struct ring_buffer *buffer, void *data)
+  *	if (!rpage)
+  *		return error;
+  *	ret = ring_buffer_read_page(buffer, &rpage, cpu, 0);
+- *	if (ret)
+- *		process_page(rpage);
++ *	if (ret >= 0)
++ *		process_page(rpage, ret);
+  *
+  * When @full is set, the function will not return true unless
+  * the writer is off the reader page.
+@@ -2393,8 +2394,8 @@ void ring_buffer_free_read_page(struct ring_buffer *buffer, void *data)
+  *  responsible for that.
+  *
+  * Returns:
+- *  1 if data has been transferred
+- *  0 if no data has been transferred.
++ *  >=0 if data has been transferred, returns the offset of consumed data.
++ *  <0 if no data has been transferred.
+  */
+ int ring_buffer_read_page(struct ring_buffer *buffer,
+ 			    void **data_page, int cpu, int full)
+@@ -2403,7 +2404,8 @@ int ring_buffer_read_page(struct ring_buffer *buffer,
+ 	struct ring_buffer_event *event;
+ 	struct buffer_data_page *bpage;
+ 	unsigned long flags;
+-	int ret = 0;
++	unsigned int read;
++	int ret = -1;
+ 
+ 	if (!data_page)
+ 		return 0;
+@@ -2425,24 +2427,29 @@ int ring_buffer_read_page(struct ring_buffer *buffer,
+ 	/* check for data */
+ 	if (!local_read(&cpu_buffer->reader_page->page->commit))
+ 		goto out;
++
++	read = cpu_buffer->reader_page->read;
+ 	/*
+ 	 * If the writer is already off of the read page, then simply
+ 	 * switch the read page with the given page. Otherwise
+ 	 * we need to copy the data from the reader to the writer.
+ 	 */
+ 	if (cpu_buffer->reader_page == cpu_buffer->commit_page) {
+-		unsigned int read = cpu_buffer->reader_page->read;
+ 		unsigned int commit = rb_page_commit(cpu_buffer->reader_page);
++		struct buffer_data_page *rpage = cpu_buffer->reader_page->page;
+ 
+ 		if (full)
+ 			goto out;
+ 		/* The writer is still on the reader page, we must copy */
+-		memcpy(bpage->data,
+-		       cpu_buffer->reader_page->page->data + read,
+-		       commit - read);
++		memcpy(bpage->data + read, rpage->data + read, commit - read);
+ 
+ 		/* consume what was read */
+ 		cpu_buffer->reader_page->read = commit;
++
++		/* update bpage */
++		local_set(&bpage->commit, commit);
++		if (!read)
++			bpage->time_stamp = rpage->time_stamp;
+ 	} else {
+ 		/* swap the pages */
+ 		rb_init_page(bpage);
+@@ -2451,10 +2458,10 @@ int ring_buffer_read_page(struct ring_buffer *buffer,
+ 		cpu_buffer->reader_page->read = 0;
+ 		*data_page = bpage;
+ 	}
+-	ret = 1;
++	ret = read;
+ 
+ 	/* update the entry counter */
+-	rb_remove_entries(cpu_buffer, bpage);
++	rb_remove_entries(cpu_buffer, bpage, read);
+  out:
+ 	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
+ 
+-- 
+1.5.6.5
+
+-- 
