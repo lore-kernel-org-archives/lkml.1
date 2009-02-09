@@ -1,74 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbZBIVtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755062AbZBIVu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755419AbZBIVtd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 16:49:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbZBIVtY
+	id S1755062AbZBIVu2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 16:50:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbZBIVuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 16:49:24 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:36515 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752090AbZBIVtX (ORCPT
+	Mon, 9 Feb 2009 16:50:14 -0500
+Received: from rcsinet13.oracle.com ([148.87.113.125]:24685 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752297AbZBIVuM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 16:49:23 -0500
-Message-ID: <4990A4ED.7020901@oracle.com>
-Date: Mon, 09 Feb 2009 13:49:33 -0800
+	Mon, 9 Feb 2009 16:50:12 -0500
+Message-ID: <4990A51C.1090607@oracle.com>
+Date: Mon, 09 Feb 2009 13:50:20 -0800
 From: Randy Dunlap <randy.dunlap@oracle.com>
 Organization: Oracle Linux Engineering
 User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Mike Frysinger <vapier.adi@gmail.com>
-CC: James Morris <jmorris@namei.org>, Mimi Zohar <zohar@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, Serge Hallyn <serue@us.ibm.com>
-Subject: Re: ima changes to shmem breaks !CONFIG_SHMEM
-References: <8bd0f97a0902090830y11965ayc436fc1157510764@mail.gmail.com>	 <alpine.LRH.1.10.0902100823170.1282@tundra.namei.org> <8bd0f97a0902091327m3a71bf4ex46a391436481032d@mail.gmail.com>
-In-Reply-To: <8bd0f97a0902091327m3a71bf4ex46a391436481032d@mail.gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: linux-next: Tree for February 9 (ide-dma)
+References: <20090209193908.1a448944.sfr@canb.auug.org.au> <499064CC.1030907@oracle.com> <200902091956.54226.bzolnier@gmail.com>
+In-Reply-To: <200902091956.54226.bzolnier@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 X-Source-IP: acsmt705.oracle.com [141.146.40.83]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.4990A4D8.028B:SCFSTAT928724,ss=1,fgs=0
+X-CT-RefId: str=0001.0A090205.4990A50A.012C:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Frysinger wrote:
-> On Mon, Feb 9, 2009 at 16:23, James Morris wrote:
->> On Mon, 9 Feb 2009, Mike Frysinger wrote:
->>> commit 1df9f0a73178718969ae47d813b8e7aab2cf073c broke default building
->>> for Blackfin systems:
->>>   CC      mm/shmem.o
->>> mm/shmem.c: In function 'shmem_zero_setup':
->>> mm/shmem.c:2670: error: implicit declaration of function 'ima_shm_check'
->>> make[1]: *** [mm/shmem.o] Error 1
+Bartlomiej Zolnierkiewicz wrote:
+> On Monday 09 February 2009, Randy Dunlap wrote:
+>> Stephen Rothwell wrote:
+>>> Hi all,
 >>>
->>> that's because the ima.h include was added behind the CONFIG_SHMEM
->>> markings rather than everywhere, just like the function is used.
->> Does this seem like the correct fix?
+>>> [I accidentally deleted the merge and quilt-import logs today :-( - I
+>>> wonder if any would have noticed :-).  The merge summary still appears
+>>> below.]
+>>>
+>>> Changes since 20090206:
+>>>
+>>> New tree:
+>>> 	aoe
+>>>
+>>> Undropped trees:
+>>> 	ide
+>>
+>> When CONFIG_BLK_DEV_IDEDMA=n:
+>>
+>> drivers/ide/ide-taskfile.c:104: error: implicit declaration of function 'ide_build_sglist'
 > 
-> it converts the build error to a build warning:
->   CC      mm/shmem.o
-> In file included from mm/shmem.c:32:
-> include/linux/ima.h:25: warning: 'struct linux_binprm' declared inside
-> parameter list
-> include/linux/ima.h:25: warning: its scope is only this definition or
-> declaration, which is probably not what you want
+> Thanks.  Should be fixed with new revision of the guilty patch
+> (fix part is in <linux/ide.h> chunk):
 
-Add to the other patch:
+Ack.  That works.  Thanks.
 
---- linux-next-20090209.orig/include/linux/ima.h
-+++ linux-next-20090209/include/linux/ima.h
-@@ -8,6 +8,7 @@
-  */
- 
- #include <linux/fs.h>
-+struct linux_binprm;
- 
- #ifndef _LINUX_IMA_H
- #define _LINUX_IMA_H
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] ide: call ide_build_sglist() prior to ->dma_setup (v2)
+> 
+> * Re-map sg table if needed in ide_build_sglist().
+> 
+> * Move ide_build_sglist() call from ->dma_setup to its users.
+> 
+> * Un-export ide_build_sglist().
+> 
+> v2:
+> * Build fix for CONFIG_BLK_DEV_IDEDMA=n (noticed by Randy Dunlap).
+> 
+> There should be no functional changes caused by this patch.
+> 
+> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
 
+> Index: b/include/linux/ide.h
+> ===================================================================
+> --- a/include/linux/ide.h
+> +++ b/include/linux/ide.h
+> @@ -1474,6 +1474,8 @@ static inline int ide_set_dma(ide_drive_
+>  static inline void ide_check_dma_crc(ide_drive_t *drive) { ; }
+>  static inline ide_startstop_t ide_dma_timeout_retry(ide_drive_t *drive, int error) { return ide_stopped; }
+>  static inline void ide_release_dma_engine(ide_hwif_t *hwif) { ; }
+> +static inline int ide_build_sglist(ide_drive_t *drive,
+> +				   struct request *rq) { return 0; }
+>  #endif /* CONFIG_BLK_DEV_IDEDMA */
+>  
+>  #ifdef CONFIG_BLK_DEV_IDEACPI
+> 
+> 
+> 
+> 
 
-and it builds for me.
 
 -- 
 ~Randy
