@@ -1,82 +1,290 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753277AbZBIIiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753458AbZBIIjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753277AbZBIIiA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 03:38:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750920AbZBIIhw
+	id S1753458AbZBIIjb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 03:39:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbZBIIjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 03:37:52 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51976 "EHLO mx2.mail.elte.hu"
+	Mon, 9 Feb 2009 03:39:22 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:33195 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750741AbZBIIhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 03:37:51 -0500
-Date: Mon, 9 Feb 2009 09:37:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Yinghai Lu <yinghai@kernel.org>, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] irq: optimize init_kstat_irqs/init_copy_kstat_irqs
-Message-ID: <20090209083739.GB15517@elte.hu>
-References: <498CB0B7.8030009@kernel.org> <20090206140005.44b4bb50.akpm@linux-foundation.org> <498CB4DC.2010108@kernel.org> <498D3D15.5090005@kernel.org> <20090207002610.73ff7e6d.akpm@linux-foundation.org> <86802c440902070101l5b0ef862ja92e3f31705d9608@mail.gmail.com> <20090207010619.daededa3.akpm@linux-foundation.org> <20090209081124.GB24420@elte.hu> <20090209001903.89548108.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090209001903.89548108.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1750741AbZBIIjV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 03:39:21 -0500
+Date: Mon, 9 Feb 2009 19:39:08 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for February 9
+Message-Id: <20090209193908.1a448944.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__9_Feb_2009_19_39_08_+1100_L7lDcl08IeNbhsE4"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Mon__9_Feb_2009_19_39_08_+1100_L7lDcl08IeNbhsE4
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+Hi all,
 
-> On Mon, 9 Feb 2009 09:11:24 +0100 Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > On Sat, 7 Feb 2009 01:01:03 -0800 Yinghai Lu <yinghai@kernel.org> wrote:
-> > > 
-> > > > 
-> > > > add kzalloc_node_safe()?
-> > > 
-> > > I cannot find that function.
-> > 
-> > His suggestion is to provide that allocator variant.
-> > 
-> 
-> Oh.
-> 
-> It isn't possible to write a kzalloc_node_safe(GFP_ATOMIC).  Or at
-> least, we've never worked out a way.
-> 
-> Maybe I'm confused again.
+[I accidentally deleted the merge and quilt-import logs today :-( - I
+wonder if any would have noticed :-).  The merge summary still appears
+below.]
 
-Indeed - duh - more morning tea needed.
+Changes since 20090206:
 
-Yinghai, why are those allocations GFP_ATOMIC to begin with? These:
+New tree:
+	aoe
 
-earth4:~/tip> grep GFP_ATOMIC kernel/irq/*.c
-kernel/irq/handle.c:	ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs), GFP_ATOMIC, node);
-kernel/irq/handle.c:	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
-kernel/irq/manage.c:	action = kmalloc(sizeof(struct irqaction), GFP_ATOMIC);
+Undropped trees:
+	ide
+	security-testing
 
-Should all be GFP_KERNEL. Wherever they are within a spinlocked section the code 
-should be restructured. All descriptor data structures should be preallocated at 
-__setup_irq() time. If we ever need to allocate dynamically later on, in the middle 
-of some difficult codepath that's a structure bug in the code.
+Dropped trees (temporarily):
+	quota (build problem)
+	audit (difficult conflicts)
 
-and this one:
+Linus' tree has a build failure for (at least) powerpc allyesconfig in
+btrfs.
 
-kernel/irq/numa_migrate.c:	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
+The tip-core tree lost its conflict, but gained a conflict against each of
+Linus' and the x86 trees.
 
-should fail the migration silently if GFP_ATOMIC returns NULL.
+The net tree lost its 2 conflicts.
 
-	Ingo
+The rr tree gained 2 conflicts against the x86 tree.
+
+The kmemcheck tree lost a conflict.
+
+The security-testing tree lost its conflict and build failure.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig,
+ppc44x_defconfig and allyesconfig (minus CONFIG_PROFILE_ALL_BRANCHES) and
+i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 133 trees (counting Linus' and 18 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+CONFLICT (content): Merge conflict in drivers/char/tty_audit.c
+CONFLICT (content): Merge conflict in kernel/auditsc.c
+Merging crypto-current/master
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+CONFLICT (content): Merge conflict in arch/arm/configs/magician_defconfig
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging quilt/driver-core
+Merging quilt/usb
+Merging tip-core/auto-core-next
+CONFLICT (content): Merge conflict in arch/x86/include/asm/setup.h
+CONFLICT (content): Merge conflict in fs/btrfs/locking.c
+Merging cpus4096/auto-cpus4096-next
+Merging ftrace/auto-ftrace-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging pci/linux-next
+CONFLICT (content): Merge conflict in drivers/pci/pcie/portdrv_pci.c
+Merging quilt/device-mapper
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging quota/for_next
+$ git reset --hard HEAD^
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ocfs2/linux-next
+Merging ext4/next
+CONFLICT (content): Merge conflict in fs/ext4/ext4.h
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging cpufreq/next
+Merging v9fs/for-next
+CONFLICT (content): Merge conflict in net/9p/protocol.c
+Merging quilt/rr
+CONFLICT (delete/modify): arch/x86/include/asm/es7000/apic.h deleted in HEA=
+D and modified in quilt/rr. Version quilt/rr of arch/x86/include/asm/es7000=
+/apic.h left in tree.
+CONFLICT (delete/modify): arch/x86/include/asm/numaq/apic.h deleted in HEAD=
+ and modified in quilt/rr. Version quilt/rr of arch/x86/include/asm/numaq/a=
+pic.h left in tree.
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/powernow-=
+k8.c
+CONFLICT (content): Merge conflict in drivers/net/virtio_net.c
+$ git rm -f arch/x86/include/asm/es7000/apic.h
+$ git rm -f arch/x86/include/asm/numaq/apic.h
+Applying: rr: fixup for cpumask:remove-address-of-CPU_MASK_ALL
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging bkl-removal/bkl-removal
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in sound/isa/Kconfig
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+CONFLICT (content): Merge conflict in include/linux/slub_def.h
+CONFLICT (content): Merge conflict in mm/slob.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging uclinux/for-next
+Merging md/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in mm/Makefile
+Merging generic-ipi/auto-generic-ipi-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+Merging agp/agp-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+CONFLICT (content): Merge conflict in kernel/irq/handle.c
+Merging iommu/auto-iommu-next
+CONFLICT (content): Merge conflict in arch/x86/include/asm/dma-mapping.h
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging proc/proc
+CONFLICT (content): Merge conflict in security/selinux/hooks.c
+Merging bdev/master
+Merging dwmw2-iommu/master
+CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
+CONFLICT (content): Merge conflict in include/linux/dma_remapping.h
+Merging cputime/cputime
+Merging osd/linux-next
+Merging fatfs/master
+Merging fuse/for-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging squashfs/master
+Merging omap/for-next
+Merging quilt/aoe
+Merging kmemleak/kmemleak
+CONFLICT (content): Merge conflict in include/linux/slab.h
+CONFLICT (content): Merge conflict in init/main.c
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+CONFLICT (content): Merge conflict in mm/slab.c
+CONFLICT (content): Merge conflict in mm/slob.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging quilt/staging
+Merging scsi-post-merge/master
+
+--Signature=_Mon__9_Feb_2009_19_39_08_+1100_L7lDcl08IeNbhsE4
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmP66wACgkQjjKRsyhoI8yl7QCfWGS1/NH1JyhbmspmVSld+WfE
+elAAoJB3zvjWT49FtVVXZ+bkRbdtPwmJ
+=9FDM
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__9_Feb_2009_19_39_08_+1100_L7lDcl08IeNbhsE4--
