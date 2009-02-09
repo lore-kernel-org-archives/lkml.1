@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbZBIJwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653AbZBIJx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754633AbZBIJwl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 04:52:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbZBIJwd
+	id S1754653AbZBIJx1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 04:53:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbZBIJxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 04:52:33 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35618 "EHLO mx3.mail.elte.hu"
+	Mon, 9 Feb 2009 04:53:17 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44941 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751766AbZBIJwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 04:52:32 -0500
-Date: Mon, 9 Feb 2009 10:52:25 +0100
+	id S1751766AbZBIJxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 04:53:16 -0500
+Date: Mon, 9 Feb 2009 10:52:54 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/5] tracing/function-graph-tracer: provide a selftest
-	for the function graph tracer
-Message-ID: <20090209095225.GB14402@elte.hu>
-References: <498e175a.0305560a.632d.2a9f@mx.google.com>
+       LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 3/5] tracing/power: move the power trace headers to a
+	dedicated file
+Message-ID: <20090209095254.GC14402@elte.hu>
+References: <498e1762.1358560a.0f3f.ffffa0a7@mx.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <498e175a.0305560a.632d.2a9f@mx.google.com>
+In-Reply-To: <498e1762.1358560a.0f3f.ffffa0a7@mx.google.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,15 +40,23 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> Making more easy to do a basic regression test for this tracer.
+> Impact: cleanup
 > 
+> Move the power tracer headers to trace/power.h to keep ftrace.h and power bits
+> more easy to maintain as separated topics.
+> 
+> Cc: Arjan van de Ven <arjan@infradead.org>
 > Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 > ---
->  kernel/trace/trace.h                 |    2 +
->  kernel/trace/trace_functions_graph.c |    3 ++
->  kernel/trace/trace_selftest.c        |   50 ++++++++++++++++++++++++++++++++++
->  3 files changed, 55 insertions(+), 0 deletions(-)
+>  arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    2 +-
+>  arch/x86/kernel/process.c                  |    2 +-
+>  include/linux/ftrace.h                     |   30 ------------------------
+>  include/trace/power.h                      |   35 ++++++++++++++++++++++++++++
+>  kernel/trace/trace.h                       |    1 +
+>  kernel/trace/trace_power.c                 |    2 +-
+>  6 files changed, 39 insertions(+), 33 deletions(-)
+>  create mode 100644 include/trace/power.h
 
 Applied to tip/tracing/ftrace, thanks Frederic!
 
