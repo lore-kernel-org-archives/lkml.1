@@ -1,87 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756872AbZBITVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756807AbZBITXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756872AbZBITVx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 14:21:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbZBITVj
+	id S1756807AbZBITXU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 14:23:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbZBITXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 14:21:39 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:51912 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753928AbZBITVi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 14:21:38 -0500
-Date: Mon, 9 Feb 2009 19:20:50 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Lennert Buytenhek <buytenh@wantstofly.org>
-cc: Rusty Russell <rusty@rustcorp.com.au>, Rafael Wysocki <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: /proc/profile broken on UP machines in 2.6.29-rc3
-In-Reply-To: <20090209145058.GY13433@xi.wantstofly.org>
-Message-ID: <Pine.LNX.4.64.0902091906440.5718@blonde.anvils>
-References: <20090209145058.GY13433@xi.wantstofly.org>
+	Mon, 9 Feb 2009 14:23:09 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:42615 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751160AbZBITXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 14:23:06 -0500
+Date: Mon, 9 Feb 2009 11:23:02 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
+       ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
+Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
+	(repost)
+Message-ID: <20090209192302.GM6802@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090209041153.GR7120@linux.vnet.ibm.com> <20090209045352.GA28653@Krystal> <20090209051737.GA29254@Krystal> <20090209132343.GT7120@linux.vnet.ibm.com> <20090209172816.GA12934@Krystal> <20090209174741.GE6802@linux.vnet.ibm.com> <20090209181341.GA15514@Krystal> <20090209183742.GI6802@linux.vnet.ibm.com> <20090209184951.GA12184@linux.vnet.ibm.com> <20090209190509.GA17895@Krystal>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090209190509.GA17895@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Feb 2009, Lennert Buytenhek wrote:
-
-> I'm about 130k emails behind on my linux-kernel@ subscription, so I'm
-> not entirely sure whether this has been reported, but it seems that
-> profiling is broken on !CONFIG_SMP builds in 2.6.29-rc3.
-
-Yes, and CONFIG_SMP builds, and 2.6.29-rc4.
-
-> It appears that since this commit:
+On Mon, Feb 09, 2009 at 02:05:09PM -0500, Mathieu Desnoyers wrote:
+> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > On Mon, Feb 09, 2009 at 10:37:42AM -0800, Paul E. McKenney wrote:
+> > > On Mon, Feb 09, 2009 at 01:13:41PM -0500, Mathieu Desnoyers wrote:
+> > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > 
+> > [ . . . ]
+> > 
+> > > > You know what ? Changing RCU_GP_CTR_BIT to 16 uses a
+> > > > testw %ax, %ax instead of a testb %al, %al. The trick here is that
+> > > > RCU_GP_CTR_BIT must be a multiple of 8 so we can use a full 8-bits,
+> > > > 16-bits or 32-bits bitmask for the lower order bits.
+> > > > 
+> > > > On 64-bits, using a RCU_GP_CTR_BIT of 32 is also ok. It uses a testl.
+> > > > 
+> > > > To provide 32-bits compability and allow the deepest nesting possible, I
+> > > > think it makes sense to use
+> > > > 
+> > > > /* Use the amount of bits equal to half of the architecture long size */
+> > > > #define RCU_GP_CTR_BIT (sizeof(long) << 2)
+> > > 
+> > > You lost me on this one:
+> > > 
+> > > 	sizeof(long) << 2 = 0x10
+> > > 
+> > > I could believe the following (run on a 32-bit machine):
+> > > 
+> > > 	1 << (sizeof(long) * 8 - 1) = 0x80000000
+> > > 
+> > > Or, if you were wanting to use a bit halfway up the word, perhaps this:
+> > > 
+> > > 	1 << (sizeof(long) * 4 - 1) = 0x8000
+> > > 
+> > > Or am I confused?
+> > 
+> > Well, I am at least partly confused.  You were wanting a low-order bit,
+> > so you want to lose the "- 1" above.  Here are some of the possibilities:
+> > 
+> > 	sizeof(long) = 0x4
+> > 	sizeof(long) << 2 = 0x10
+> > 	1 << (sizeof(long) * 8 - 1) = 0x80000000
+> > 	1 << (sizeof(long) * 4) = 0x10000
+> > 	1 << (sizeof(long) * 4 - 1) = 0x8000
+> > 	1 << (sizeof(long) * 2) = 0x100
+> > 	1 << (sizeof(long) * 2 - 1) = 0x80
+> > 
+> > My guess is that 1 << (sizeof(long) * 4) and 1 << (sizeof(long) * 2)
+> > are of the most interest.
+> > 
 > 
-> 	commit c309b917cab55799ea489d7b5f1b77025d9f8462
-> 	Author: Rusty Russell <rusty@rustcorp.com.au>
-> 	Date:   Thu Jan 1 10:12:27 2009 +1030
+> Exactly. I'll change it to :
 > 
-> 	    cpumask: convert kernel/profile.c
+> #define RCU_GP_CTR_BIT          (1 << (sizeof(long) << 2))
 > 
-> there's no longer anything that sets any bits in prof_cpu_mask on
-> UP systems at all (the default was to assign CPU_MASK_ALL, and
-> profile_cpu_callback() which clears/sets bits at run time is only
-> built and registered on SMP builds), so the cpumask_test_cpu()
-> test in profile_tick() always fails, and no samples are ever counted.
+> I somehow thought this define was used as a bit number rather than the
+> bit mask.
 
-I guess if you cpu down and up, or suspend and resume, that will get
-aux cpus profiling in the SMP case, but basically SMP is as broken as
-UP.  I noticed yesterday, took a look earlier today, here's the patch
-which gets it working for me:
+Ah!  Been there, done that!  ;-)
 
-
-[PATCH] fix broken profiling regression
-
-Commit c309b917cab55799ea489d7b5f1b77025d9f8462 "cpumask: convert
-kernel/profile.c" broke profiling.  prof_cpu_mask was previously
-initialized to CPU_MASK_ALL, but left uninitialized in that commit.
-We need to copy cpu_possible_mask (cpu_online_mask is not enough).
-
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
-
- kernel/profile.c |    3 +++
- 1 file changed, 3 insertions(+)
-
---- 2.6.29-rc4/kernel/profile.c	2009-01-11 01:33:38.000000000 +0000
-+++ linux/kernel/profile.c	2009-02-09 15:23:34.000000000 +0000
-@@ -114,12 +114,15 @@ int __ref profile_init(void)
- 	if (!slab_is_available()) {
- 		prof_buffer = alloc_bootmem(buffer_bytes);
- 		alloc_bootmem_cpumask_var(&prof_cpu_mask);
-+		cpumask_copy(prof_cpu_mask, cpu_possible_mask);
- 		return 0;
- 	}
- 
- 	if (!alloc_cpumask_var(&prof_cpu_mask, GFP_KERNEL))
- 		return -ENOMEM;
- 
-+	cpumask_copy(prof_cpu_mask, cpu_possible_mask);
-+
- 	prof_buffer = kzalloc(buffer_bytes, GFP_KERNEL);
- 	if (prof_buffer)
- 		return 0;
+							Thanx, Paul
