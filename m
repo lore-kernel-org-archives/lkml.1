@@ -1,296 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbZBIAYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbZBIAY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754082AbZBIAYb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 19:24:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbZBIAYX
+	id S1754330AbZBIAY4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 19:24:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbZBIAYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 19:24:23 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:40375 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753493AbZBIAYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 19:24:22 -0500
-Date: Sun, 8 Feb 2009 16:24:26 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
-       Robert Wisniewski <bob@watson.ibm.com>
-Subject: Re: [RFC git tree] Userspace RCU (urcu) for Linux (repost)
-Message-ID: <20090209002426.GA20025@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090206030543.GB8560@Krystal> <20090206045841.GA12995@Krystal> <20090206130640.GB10918@linux.vnet.ibm.com> <20090206163432.GF10918@linux.vnet.ibm.com> <20090207151028.GA11150@linux.vnet.ibm.com> <20090207233827.GA3557@Krystal> <20090208004416.GH7120@linux.vnet.ibm.com> <20090208214610.GB17569@Krystal> <20090208223606.GM7120@linux.vnet.ibm.com>
+	Sun, 8 Feb 2009 19:24:46 -0500
+Received: from mail.gmx.net ([213.165.64.20]:50278 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753531AbZBIAYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 19:24:45 -0500
+X-Authenticated: #1587495
+X-Provags-ID: V01U2FsdGVkX1+L64gpZu6LA6Gwvf8pKegwf6ECpiXF59iyRDXSe3
+	4ZeU4MWjHJvYFw
+From: Stefan Lippers-Hollmann <s.L-H@gmx.de>
+To: gregkh@suse.de
+Subject: Re: patch acpi-remove-locking-from-pm1x_sts-register-reads.patch added to 2.6.28-stable tree
+Date: Mon, 9 Feb 2009 01:24:43 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, len.brown@intel.com, stable@kernel.org
+References: <20090208211932.4CAB349019@coco.kroah.org>
+In-Reply-To: <20090208211932.4CAB349019@coco.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090208223606.GM7120@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: multipart/signed;
+  boundary="nextPart1892655.AxkGIgYmW7";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200902090124.44228.s.L-H@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.46
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 08, 2009 at 02:36:06PM -0800, Paul E. McKenney wrote:
-> On Sun, Feb 08, 2009 at 04:46:10PM -0500, Mathieu Desnoyers wrote:
+--nextPart1892655.AxkGIgYmW7
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-[ . . . ]
+Hi
 
-> > I ran your modified version within my benchmarks :
-> > 
-> > with return value : 14.164 cycles per read
-> > without return value : 16.4017 cycles per read
-> > 
-> > So we have a 14% performance decrease due to this. We also pollute the
-> > branch prediction buffer and we add a cache access due to the added
-> > variables in the TLS. Returning the value has the clear advantage of
-> > letting the compiler keep it around in registers or on the stack, which
-> > clearly costs less.
-> > 
-> > So I think the speed factor outweights the visual considerations. Maybe
-> > we could switch to something like :
-> > 
-> > unsigned int qparity;
-> > 
-> > urcu_read_lock(&qparity);
-> > ...
-> > urcu_read_unlock(&qparity);
-> > 
-> > That would be a bit like local_irq_save() in the kernel, except that we
-> > could do it in a static inline because we pass the address. I
-> > personnally dislike the local_irq_save() way of hiding the fact that it
-> > writes to the variable in a "clever" macro. I'd really prefer to leave
-> > the " & ".
-> > 
-> > What is your opinion ?
-> 
-> My current opinion is that I can avoid the overflow problem and the
-> need to recheck, which might get rid of the need for both arguments
-> and return values while still maintaining good performance.  The trick
-> is to use only the topmost bit for the grace-period counter, and all
-> the rest of the bits for nesting.  That way, no matter what value of
-> global counter one picks up, it will be waited for (since there are but
-> two values that the global counter takes on).
-> 
-> But just now coding it, so will see if it actually works.
+On Sonntag, 8. Februar 2009, gregkh@suse.de wrote:
+>=20
+> This is a note to let you know that we have just queued up the patch titl=
+ed
+>=20
+>     Subject: ACPI: remove locking from PM1x_STS register reads
+>=20
+> to the 2.6.28-stable tree.  Its filename is
+>=20
+>     acpi-remove-locking-from-pm1x_sts-register-reads.patch
+[...]
+> From a2b7b01c072435b7832ab392167545a1b38cabc3 Mon Sep 17 00:00:00 2001
+> From: Len Brown <len.brown@intel.com>
+> Date: Wed, 28 Jan 2009 12:47:15 -0500
+> Subject: ACPI: remove locking from PM1x_STS register reads
+>=20
+> From: Len Brown <len.brown@intel.com>
+>=20
+> commit a2b7b01c072435b7832ab392167545a1b38cabc3 upstream.
+>=20
+> PM1a_STS and PM1b_STS are twins that get OR'd together
+> on reads, and all writes are repeated to both.
+>=20
+> The fields in PM1x_STS are single bits only,
+> there are no multi-bit fields.
+>=20
+> So it is not necessary to lock PM1x_STS reads against
+> writes because it is impossible to read an intermediate
+> value of a single bit.  It will either be 0 or 1,
+> even if a write is in progress during the read.
+> Reads are asynchronous to writes no matter if a lock
+> is used or not.
+>=20
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-Seems to work, and seems to be pretty fast on my machine, anyway.
-This one adapts itself to 32- and 64-bit machines, though almost
-all of the code is common.  It does do a check, but avoids array
-indexing, arguments, and return values.
+This patch fails to compile on 2.6.28.4 + queue-2.6.28 (and 2.6.27 as=20
+well):
 
-How does it do on your hardware?
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
+  BUILD   arch/x86/boot/bzImage
+Root device is (254, 1)
+Setup is 11676 bytes (padded to 11776 bytes).
+System is 2175 kB
+CRC d4d9303a
+Kernel: arch/x86/boot/bzImage is ready  (#1)
+ERROR: "acpi_get_register_unlocked" [drivers/acpi/processor.ko] undefined!
+make[4]: *** [__modpost] Error 1
+make[3]: *** [modules] Error 2
 
- test_urcu.c        |    6 +++---
- test_urcu_timing.c |    6 +++---
- urcu.c             |   23 ++++++++++-------------
- urcu.h             |   42 +++++++++++++++++++++++++++++-------------
- 4 files changed, 45 insertions(+), 32 deletions(-)
 
-diff --git a/test_urcu.c b/test_urcu.c
-index f6be45b..f115a4a 100644
---- a/test_urcu.c
-+++ b/test_urcu.c
-@@ -72,7 +72,7 @@ void rcu_copy_mutex_unlock(void)
- 
- void *thr_reader(void *arg)
- {
--	int qparity, i, j;
-+	int i, j;
- 	struct test_array *local_ptr;
- 
- 	printf("thread %s, thread id : %lx, tid %lu\n",
-@@ -83,14 +83,14 @@ void *thr_reader(void *arg)
- 
- 	for (i = 0; i < 100000; i++) {
- 		for (j = 0; j < 100000000; j++) {
--			rcu_read_lock(&qparity);
-+			rcu_read_lock();
- 			local_ptr = rcu_dereference(test_rcu_pointer);
- 			if (local_ptr) {
- 				assert(local_ptr->a == 8);
- 				assert(local_ptr->b == 12);
- 				assert(local_ptr->c[55] == 2);
- 			}
--			rcu_read_unlock(&qparity);
-+			rcu_read_unlock();
- 		}
- 	}
- 
-diff --git a/test_urcu_timing.c b/test_urcu_timing.c
-index 57fda4f..9903705 100644
---- a/test_urcu_timing.c
-+++ b/test_urcu_timing.c
-@@ -94,7 +94,7 @@ static cycles_t reader_time[NR_READ] __attribute__((aligned(128)));
- 
- void *thr_reader(void *arg)
- {
--	int qparity, i, j;
-+	int i, j;
- 	struct test_array *local_ptr;
- 	cycles_t time1, time2;
- 
-@@ -107,12 +107,12 @@ void *thr_reader(void *arg)
- 	time1 = get_cycles();
- 	for (i = 0; i < OUTER_READ_LOOP; i++) {
- 		for (j = 0; j < INNER_READ_LOOP; j++) {
--			rcu_read_lock(&qparity);
-+			rcu_read_lock();
- 			local_ptr = rcu_dereference(test_rcu_pointer);
- 			if (local_ptr) {
- 				assert(local_ptr->a == 8);
- 			}
--			rcu_read_unlock(&qparity);
-+			rcu_read_unlock();
- 		}
- 	}
- 	time2 = get_cycles();
-diff --git a/urcu.c b/urcu.c
-index 08fb75d..2914b66 100644
---- a/urcu.c
-+++ b/urcu.c
-@@ -19,17 +19,17 @@
- 
- pthread_mutex_t urcu_mutex = PTHREAD_MUTEX_INITIALIZER;
- 
--/* Global quiescent period parity */
--int urcu_qparity;
-+/* Global grace period counter */
-+long urcu_gp_ctr;
- 
--int __thread urcu_active_readers[2];
-+long __thread urcu_active_readers;
- 
- /* Thread IDs of registered readers */
- #define INIT_NUM_THREADS 4
- 
- struct reader_data {
- 	pthread_t tid;
--	int *urcu_active_readers;
-+	long *urcu_active_readers;
- };
- 
- static struct reader_data *reader_data;
-@@ -60,11 +60,9 @@ void internal_urcu_unlock(void)
- /*
-  * called with urcu_mutex held.
-  */
--static int switch_next_urcu_qparity(void)
-+static void switch_next_urcu_qparity(void)
- {
--	int old_parity = urcu_qparity;
--	urcu_qparity = 1 - old_parity;
--	return old_parity;
-+	urcu_gp_ctr += RCU_GP_CTR_BOTTOM_BIT;
- }
- 
- static void force_mb_all_threads(void)
-@@ -89,7 +87,7 @@ static void force_mb_all_threads(void)
- 	mb();	/* read sig_done before ending the barrier */
- }
- 
--void wait_for_quiescent_state(int parity)
-+void wait_for_quiescent_state(void)
- {
- 	struct reader_data *index;
- 
-@@ -101,7 +99,7 @@ void wait_for_quiescent_state(int parity)
- 		/*
- 		 * BUSY-LOOP.
- 		 */
--		while (index->urcu_active_readers[parity] != 0)
-+		while (rcu_old_gp_ongoing(index->urcu_active_readers))
- 			barrier();
- 	}
- 	/*
-@@ -115,17 +113,16 @@ void wait_for_quiescent_state(int parity)
- 
- static void switch_qparity(void)
- {
--	int prev_parity;
- 
- 	/* All threads should read qparity before accessing data structure. */
- 	/* Write ptr before changing the qparity */
- 	force_mb_all_threads();
--	prev_parity = switch_next_urcu_qparity();
-+	switch_next_urcu_qparity();
- 
- 	/*
- 	 * Wait for previous parity to be empty of readers.
- 	 */
--	wait_for_quiescent_state(prev_parity);
-+	wait_for_quiescent_state();
- }
- 
- void synchronize_rcu(void)
-diff --git a/urcu.h b/urcu.h
-index b6b5c7b..e83c69f 100644
---- a/urcu.h
-+++ b/urcu.h
-@@ -66,23 +66,39 @@ static inline void atomic_inc(int *v)
- 
- #define SIGURCU SIGUSR1
- 
--/* Global quiescent period parity */
--extern int urcu_qparity;
-+#define RCU_GP_CTR_BOTTOM_BIT (sizeof(long) == 4 ? 0x80000000 : 0x100L)
-+#define RCU_GP_CTR_NEST_MASK (RCU_GP_CTR_BOTTOM_BIT - 1)
- 
--extern int __thread urcu_active_readers[2];
-+/* Global quiescent period counter with low-order bits unused. */
-+extern long urcu_gp_ctr;
- 
--static inline int get_urcu_qparity(void)
-+extern long __thread urcu_active_readers;
-+
-+static inline int rcu_old_gp_ongoing(long *value)
- {
--	return urcu_qparity;
-+	long v;
-+
-+	if (value == NULL)
-+		return 0;
-+	v = ACCESS_ONCE(*value);
-+	if (sizeof(long) == 4) {
-+		return (v & RCU_GP_CTR_NEST_MASK) &&
-+		       ((v ^ ACCESS_ONCE(urcu_gp_ctr)) & ~RCU_GP_CTR_NEST_MASK);
-+	} else {
-+		return (v & RCU_GP_CTR_NEST_MASK) &&
-+		       (v - ACCESS_ONCE(urcu_gp_ctr) < 0);
-+	}
- }
- 
--/*
-- * urcu_parity should be declared on the caller's stack.
-- */
--static inline void rcu_read_lock(int *urcu_parity)
-+static inline void rcu_read_lock(void)
- {
--	*urcu_parity = get_urcu_qparity();
--	urcu_active_readers[*urcu_parity]++;
-+	long tmp;
-+
-+	tmp = urcu_active_readers;
-+	if ((tmp & RCU_GP_CTR_NEST_MASK) == 0)
-+		urcu_active_readers = urcu_gp_ctr + 1;
-+	else
-+		urcu_active_readers = tmp + 1;
- 	/*
- 	 * Increment active readers count before accessing the pointer.
- 	 * See force_mb_all_threads().
-@@ -90,14 +106,14 @@ static inline void rcu_read_lock(int *urcu_parity)
- 	barrier();
- }
- 
--static inline void rcu_read_unlock(int *urcu_parity)
-+static inline void rcu_read_unlock(void)
- {
- 	barrier();
- 	/*
- 	 * Finish using rcu before decrementing the pointer.
- 	 * See force_mb_all_threads().
- 	 */
--	urcu_active_readers[*urcu_parity]--;
-+	urcu_active_readers--;
- }
- 
- extern void *urcu_publish_content(void **ptr, void *new);
+because it seems to depend on the larger changes started in, but not=20
+limited to:
+
+
+=46rom ecfbbc7b46f74ca48b9f42132739114c9e70f8e4 Mon Sep 17 00:00:00 2001
+=46rom: Bob Moore <robert.moore@intel.com>
+Date: Wed, 31 Dec 2008 02:55:32 +0800
+Subject: [PATCH] ACPICA: New: acpi_read and acpi_write public interfaces
+
+Changed the acpi_hw_low_level_read and acpi_hw_low_level_write functions to
+the public acpi_read and acpi_write to allow direct access to
+ACPI registers.  Removed the "width" parameter since the width
+can be obtained from the input GAS structure. Updated the FADT
+initialization to setup the GAS structures with the proper
+widths. Some widths are still hardcoded because many FADTs have
+incorrect register lengths.
+
+Signed-off-by: Bob Moore <robert.moore@intel.com
+Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+
+
+acpi_get_register_unlocked() seems to be a new feature and lots of h/w=20
+interfaces have been converted to use it for 2.6.29-git, a quick grep=20
+reveals:
+
+
+=46rom 7db5d82d0278b506441ab6025f0c6ce2f2aa3019 Mon Sep 17 00:00:00 2001
+=46rom: Bob Moore <robert.moore@intel.com>
+Date: Tue, 30 Dec 2008 11:04:48 +0800
+Subject: [PATCH] ACPICA: Move all public H/W interfaces to new hwxface
+
+=46rom 95b482a8d31116f3f5c2a5089569393234d06385 Mon Sep 17 00:00:00 2001
+=46rom: Len Brown <len.brown@intel.com>
+Date: Fri, 9 Jan 2009 00:13:17 -0500
+Subject: [PATCH] ACPICA: create acpica/ directory
+
+=46rom 9fdd54f206722ecee7fd7ba9dba26140450e7c32 Mon Sep 17 00:00:00 2001
+=46rom: Len Brown <len.brown@intel.com>
+Date: Fri, 6 Feb 2009 12:24:17 -0500
+Subject: [PATCH] ACPI: delete CPU_IDLE=3Dn code
+
+
+and this patch, amounting to rather large changes in total.
+
+>  drivers/acpi/processor_idle.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>=20
+> --- a/drivers/acpi/processor_idle.c
+> +++ b/drivers/acpi/processor_idle.c
+> @@ -446,7 +446,7 @@ static void acpi_processor_idle(void)
+> =20
+>  		pr->power.bm_activity <<=3D diff;
+> =20
+> -		acpi_get_register(ACPI_BITREG_BUS_MASTER_STATUS, &bm_status);
+> +		acpi_get_register_unlocked(ACPI_BITREG_BUS_MASTER_STATUS, &bm_status);
+>  		if (bm_status) {
+>  			pr->power.bm_activity |=3D 0x1;
+>  			acpi_set_register(ACPI_BITREG_BUS_MASTER_STATUS, 1);
+> @@ -1382,7 +1382,7 @@ static int acpi_idle_bm_check(void)
+>  {
+>  	u32 bm_status =3D 0;
+> =20
+> -	acpi_get_register(ACPI_BITREG_BUS_MASTER_STATUS, &bm_status);
+> +	acpi_get_register_unlocked(ACPI_BITREG_BUS_MASTER_STATUS, &bm_status);
+>  	if (bm_status)
+>  		acpi_set_register(ACPI_BITREG_BUS_MASTER_STATUS, 1);
+>  	/*
+
+Regards
+	Stefan Lippers-Hollmann
+
+--nextPart1892655.AxkGIgYmW7
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmPd8wACgkQORbEMfgJlPZDMwCeJ02A3GPZg089DKw50dtU4nRm
+ZMgAoLjNOc0XsuLkyy2NdUVUrNW0TZcS
+=3TRv
+-----END PGP SIGNATURE-----
+
+--nextPart1892655.AxkGIgYmW7--
