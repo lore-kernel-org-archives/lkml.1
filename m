@@ -1,27 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbZBIVzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755172AbZBIV46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754556AbZBIVzw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 16:55:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbZBIVzo
+	id S1755172AbZBIV46 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 16:56:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbZBIV4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 16:55:44 -0500
-Received: from LUNGE.MIT.EDU ([18.54.1.69]:57499 "EHLO lunge.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751740AbZBIVzo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 16:55:44 -0500
-Date: Mon, 9 Feb 2009 16:55:40 -0500
-From: Andres Salomon <dilinger@queued.net>
-To: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       adaplas@gmail.com
-Subject: Re: [Linux-fbdev-devel] [PATCH 13/15] amba-clcd: fix cmap memory
- leaks
-Message-ID: <20090209165540.523c2ce4@ephemeral>
-In-Reply-To: <20090209211614.44459a12.krzysztof.h1@wp.pl>
-References: <20090207121848.536b136d@ephemeral>
-	<20090209211614.44459a12.krzysztof.h1@wp.pl>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	Mon, 9 Feb 2009 16:56:50 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33959 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752150AbZBIV4u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 16:56:50 -0500
+Date: Mon, 9 Feb 2009 13:56:41 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: linux-kernel@vger.kernel.org, ian@beware.dropbear.id.au
+Subject: Re: [1/1] w1: w1 temp calculation overflow fix.
+Message-Id: <20090209135641.0367a71f.akpm@linux-foundation.org>
+In-Reply-To: <20090209214217.GA14958@ioremap.net>
+References: <20090209214217.GA14958@ioremap.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -29,47 +26,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Feb 2009 21:16:14 +0100
-Krzysztof Helt <krzysztof.h1@wp.pl> wrote:
+On Tue, 10 Feb 2009 00:42:17 +0300
+Evgeniy Polyakov <zbr@ioremap.net> wrote:
 
-> On Sat, 7 Feb 2009 12:18:48 -0500
-> Andres Salomon <dilinger@queued.net> wrote:
-> 
-> > 
-> >  - fix cmap leak in removal path
-> >  - fix cmap leak when register_framebuffer fails
-> > 
-> > Signed-off-by: Andres Salomon <dilinger@debian.org>
-> > ---
-> 
-> Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-> 
-> One comment (see below).
-> 
-[...]
-> > @@ -485,6 +489,8 @@ static int clcdfb_remove(struct amba_device
-> > *dev) 
-> >  	clcdfb_disable(fb);
-> >  	unregister_framebuffer(&fb->fb);
-> > +	if (fb->fb.cmap.len)
-> > +		fb_dealloc_cmap(&fb->fb.cmap);
-> 
-> Is this if() needed? Is this function called twice (or more) or
-> can it be called without the cmap allocated?
+> Signed-off-by: Ian Dall <ian@beware.dropbear.id.au>
+> Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
 
+I assumed from the above that Ian authored this patch.  Please let me
+know if that was incorrect.
 
-It was added as a precaution due to the fb->board->remove callbacks,
-but I think I misunderstood the code.  So my official answer is "I'm not
-sure." :)
+The way to track authorship is to put the originator's From: line at
+the top of the changelog.
 
+> diff --git a/drivers/w1/slaves/w1_therm.c b/drivers/w1/slaves/w1_therm.c
+> index 2c8dff9..1ed3d55 100644
+> --- a/drivers/w1/slaves/w1_therm.c
+> +++ b/drivers/w1/slaves/w1_therm.c
+> @@ -115,7 +115,7 @@ static struct w1_therm_family_converter w1_therm_families[] = {
+>  
+>  static inline int w1_DS18B20_convert_temp(u8 rom[9])
+>  {
+> -	s16 t = (rom[1] << 8) | rom[0];
+> +	int t = ((s16)rom[1] << 8) | rom[0];
+>  	t = t*1000/16;
+>  	return t;
+>  }
 
+It seems strange to use s16 here, but it will fix the bug.
 
+Perhaps this function should be using plain old `unsigned' everywhere.
+
+Please provide changelogs.  This bugfix is applicable to 2.6.28.x and
+probably earlier.  But due to the lack of any supporting information I
+am not in a position to determine whether it should be backported.
 
 
-> 
-> >  	iounmap(fb->regs);
-> >  	clk_put(fb->clk);
-> >  
-> > -- 
-> > 1.5.6.5
-> > 
+
