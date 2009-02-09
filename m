@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754304AbZBIHyF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbZBIH4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754304AbZBIHyF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 02:54:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbZBIHxx
+	id S1754124AbZBIH4U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 02:56:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbZBIH4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 02:53:53 -0500
-Received: from jenny.ondioline.org ([66.220.1.122]:59765 "EHLO
-	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750996AbZBIHxx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 02:53:53 -0500
-From: Paul Collins <paul@burly.ondioline.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: [Bug #12667] Badness at kernel/time/timekeeping.c:98 in pmud (timekeeping_suspended)
-References: <AIghyjFgMFP.A.uZD._10jJB@chimera>
-	<sWhNs83kKPE.A.p4D.L20jJB@chimera>
-Date: Mon, 09 Feb 2009 20:53:51 +1300
-In-Reply-To: <sWhNs83kKPE.A.p4D.L20jJB@chimera> (Rafael J. Wysocki's message
-	of "Sun, 8 Feb 2009 20:21:49 +0100 (CET)")
-Message-ID: <878wognj00.fsf@burly.wgtn.ondioline.org>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.90 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 9 Feb 2009 02:56:11 -0500
+Received: from ozlabs.org ([203.10.76.45]:34167 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750767AbZBIH4L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 02:56:11 -0500
+To: linux-kernel@vger.kernel.org
+From: Rusty Russell <rusty@rustcorp.com.au>
+Date: Mon, 09 Feb 2009 18:22:26 +1030
+CC: Arjan van de Ven <arjan@infradead.org>
+Subject: [PATCH 4/4] uvesafb: improve parameter handling.
+Cc: Michal Januszewski <spock@gentoo.org>
+Message-Id: <20090209075609.ECFA3DDDA1@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12667
-> Subject		: Badness at kernel/time/timekeeping.c:98 in pmud (timekeeping_suspended)
-> Submitter	: Paul Collins <paul@burly.ondioline.org>
-> Date		: 2009-01-21 7:15 (19 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1c5745aa380efb6417b5681104b007c8612fb496
-> References	: http://marc.info/?l=linux-kernel&m=123252215315106&w=4
+1) Now module_param(..., invbool, ...) requires a bool, and similarly
+   module_param(..., bool, ...) allows it, change pmi_setpal to a bool.
+2) #define param_get_scroll to NULL, since it can never be called (perm
+   argument to module_param_named is 0).
+3) Return -EINVAL from param_set_scroll if the value is bad, so it's
+   reported.
 
-I've just done ten suspend/resume cycles with 2.6.29-rc4 and this
-message was not logged, so it's either gone away or else become much
-more difficult to reproduce.
+Note that I don't think the old fb_get_options() is required for new
+drivers: the parameters automatically work as uvesafb.XXX=... anyway.
 
--- 
-Paul Collins
-Wellington, New Zealand
+Cc: Michal Januszewski <spock@gentoo.org>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-Dag vijandelijk luchtschip de huismeester is dood
+diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+--- a/drivers/video/uvesafb.c
++++ b/drivers/video/uvesafb.c
+@@ -45,7 +45,7 @@ static int mtrr		__devinitdata = 3; /* e
+ static int mtrr		__devinitdata = 3; /* enable mtrr by default */
+ static int blank	= 1;		   /* enable blanking by default */
+ static int ypan		= 1; 		 /* 0: scroll, 1: ypan, 2: ywrap */
+-static int pmi_setpal	__devinitdata = 1; /* use PMI for palette changes */
++static bool pmi_setpal	__devinitdata = true; /* use PMI for palette changes */
+ static int nocrtc	__devinitdata; /* ignore CRTC settings */
+ static int noedid	__devinitdata; /* don't try DDC transfers */
+ static int vram_remap	__devinitdata; /* set amt. of memory to be used */
+@@ -2009,11 +2009,7 @@ static void __devexit uvesafb_exit(void)
+ 
+ module_exit(uvesafb_exit);
+ 
+-static int param_get_scroll(char *buffer, struct kernel_param *kp)
+-{
+-	return 0;
+-}
+-
++#define param_get_scroll NULL
+ static int param_set_scroll(const char *val, struct kernel_param *kp)
+ {
+ 	ypan = 0;
+@@ -2024,6 +2020,8 @@ static int param_set_scroll(const char *
+ 		ypan = 1;
+ 	else if (!strcmp(val, "ywrap"))
+ 		ypan = 2;
++	else
++		return -EINVAL;
+ 
+ 	return 0;
+ }
+
