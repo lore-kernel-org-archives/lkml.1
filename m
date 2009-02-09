@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753975AbZBIFu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbZBIFxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753975AbZBIFu2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 00:50:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbZBIFuU
+	id S1754013AbZBIFxm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 00:53:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbZBIFxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 00:50:20 -0500
-Received: from nn7.de ([85.214.94.156]:33775 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751808AbZBIFuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 00:50:19 -0500
-Subject: Re: [Bug #12613] [Suspend regression][DRM, RADEON]
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: etienne <etienne.basset@numericable.fr>
-Cc: "Rafael J\. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>, Dave Airlie <airlied@redhat.com>
-In-Reply-To: <498F5785.3000009@numericable.fr>
-References: <AIghyjFgMFP.A.uZD._10jJB@chimera>
-	 <sWhNs83kKPE.A.HiF.r20jJB@chimera>  <498F5785.3000009@numericable.fr>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 09 Feb 2009 06:50:09 +0100
-Message-Id: <1234158609.3821.6.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 9 Feb 2009 00:53:33 -0500
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:24933 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751141AbZBIFxc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 00:53:32 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=pzD6efopJtXuKpbl1k4bwT8Dazkcku/TtKFh9R7FIfvwXUlChM1tRoZ31Hfnpuo3OcYDch7Jxoi7GyahxovMU8LGwdsweo0sdb50wJz539VUW5P3cf03SMxRgTpqBzn438rqrp0HkymQS2mZwGQooyHL/LjtjE4i655X2xVySGk=  ;
+X-YMail-OSG: NGbx9eAVM1lXgTnRWTjUY5.ItOi2fK8UnPqogdPyezkM5V5eox27lvLocrc8XpZ74r48lnJPBfBqj0ryhRU8Sj.BtQZTYS17AG5mUME79sUPF_6PQDZkmjXgYCe6rA0DlZI2dUDmeiC6LqqXhOaLSVWa
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Joonyoung Shim <dofmind@gmail.com>
+Subject: Re: [PATCH] OMAP3 GPIO: Fix getting the value of the GPIO output pin
+Date: Sun, 8 Feb 2009 21:53:30 -0800
+User-Agent: KMail/1.9.10
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
+       kyungmin.park@samsung.com
+References: <4e1455be0902062015i1ff94b28p93588e61b7860618@mail.gmail.com> <200902082011.36500.david-b@pacbell.net> <4e1455be0902082129i2c038477g886c8de03d3073dd@mail.gmail.com>
+In-Reply-To: <4e1455be0902082129i2c038477g886c8de03d3073dd@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200902082153.30479.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-02-08 at 23:07 +0100, etienne wrote:
-> Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.28.  Please verify if it still should be listed and let me know
-> > (either way).
-> >
-> >
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12613
-> > Subject		: [Suspend regression][DRM, RADEON]
-> > Submitter	: etienne <etienne.basset@numericable.fr>
-> > Date		: 2009-01-28 22:00 (12 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a9d51a5ad1154b5b20add1e8d30a5564f8aabbe9
-> > References	: http://marc.info/?l=linux-kernel&m=123318030419558&w=4
-> > 		  http://marc.info/?l=linux-kernel&m=123334865404574&w=4
-> >
-> >
-> >   
-> hello,
-> yes it's still present in -rc4
-> But I noticed that when I switch off KDE4.2 desktop effects, suspend to 
-> ram is 100% reliable with 2.6.29-rc4
-> With 2.6.28, STR is 100% reliable with or without desktop effects
+On Sunday 08 February 2009, Joonyoung Shim wrote:
+> > Which should clearly be AE6_34XX_GPIO141_OUT since it does
+> > not enable the input driver.  Try making that ...PIN_OUTPUT
+> > read ...PIN_INPUT and see if things behave.
+> 
+> Of course, it will be better if the name is clear as AE6_34XX_GPIO141_OUT.
+> but, the core of this problem is not it, the chip->get() called in
+> gpiolib_dbg_show()
+> of drivers/gpio/gpiolib.c or dbg_gpio_show() of arch/arm/plat-omap/gpio.c
+> can return the wrong value when gpio pin is configured as an output.
 
-For me it is reliable as soon as compositing/dri is disabled on 2.6.29.
-On 2.6.28 it worked with compositing/dri *sometimes* - so 2.6.29 is the
-first reliable kernel for me (when not using 3d).
+No, the core of the problem is that you're using a GPIO
+which is explicitly configured as output-only ... but are
+treating it as if it were a normal bi-directional GPIO.
 
-Soeren
+It's acting *exactly* right for an output-only GPIO.  But
+that's not the behavior you expect, or want.
+
+If you weren't disabling the input driver, then when you
+ask for the input value it would work as you expect.  Which
+is why I suggested you change how that ball is configured.
+(That's actually a bugfix to those muxing tables ...)
+
+- Dave
+
+p.s. This specific confusion is new on OMAP3; previous
+     OMAPs didn't have the extra byte of options to
+     configure.  The PIN_INPUT flag was, on previous
+     chips, effectively hard-wired on for GPIOs.
