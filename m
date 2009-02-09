@@ -1,50 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754323AbZBIEXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754302AbZBIE1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754323AbZBIEXX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 23:23:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbZBIEXO
+	id S1754302AbZBIE1R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 23:27:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbZBIE1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 23:23:14 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:38474 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751786AbZBIEXO (ORCPT
+	Sun, 8 Feb 2009 23:27:00 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37702 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753880AbZBIE07 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 23:23:14 -0500
-Date: Mon, 9 Feb 2009 15:23:07 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Jeff Chua <jeff.chua.linux@gmail.com>
-Subject: Re: [Bug #12661] commit 64ff3b938ec6782e6585a83d5459b98b0c3f6eb8
-	breaks rlogin
-Message-ID: <20090209042307.GA3268@gondor.apana.org.au>
-References: <AIghyjFgMFP.A.uZD._10jJB@chimera> <sWhNs83kKPE.A.ueE.U20jJB@chimera>
+	Sun, 8 Feb 2009 23:26:59 -0500
+Message-ID: <498FB088.5000104@jp.fujitsu.com>
+Date: Mon, 09 Feb 2009 13:26:48 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <sWhNs83kKPE.A.ueE.U20jJB@chimera>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Julia Lawall <julia@diku.dk>
+CC: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 4/6] drivers/pci: introduce missing kfree
+References: <Pine.LNX.4.64.0902082244490.25891@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0902082244490.25891@ask.diku.dk>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 08, 2009 at 08:21:46PM +0100, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.28.  Please verify if it still should be listed and let me know
-> (either way).
+> Error handling code following a kmalloc should free the allocated data.
+> Since the subsequent code that could provoke an error does not use the
+> allocated data, the allocation is just moved below it.
+> 
+> The semantic match that finds the problem is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
+> 
+> // <smpl>
+> @r exists@
+> local idexpression x;
+> statement S;
+> expression E;
+> identifier f,l;
+> position p1,p2;
+> expression *ptr != NULL;
+> @@
+> 
+> (
+> if ((x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...)) == NULL) S
+> |
+> x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
+> ...
+> if (x == NULL) S
+> )
+> <... when != x
+>      when != if (...) { <+...x...+> }
+> x->f = E
+> ...>
+> (
+>  return \(0\|<+...x...+>\|ptr\);
+> |
+>  return@p2 ...;
+> )
+> 
+> @script:python@
+> p1 << r.p1;
+> p2 << r.p2;
+> @@
+> 
+> print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> ---
+>  drivers/pci/hotplug/pciehp_acpi.c   |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/pci/hotplug/pciehp_acpi.c b/drivers/pci/hotplug/pciehp_acpi.c
+> index 21734c3..9604801 100644
+> --- a/drivers/pci/hotplug/pciehp_acpi.c
+> +++ b/drivers/pci/hotplug/pciehp_acpi.c
+> @@ -79,14 +79,15 @@ static int __init dummy_probe(struct pcie_device *dev)
+>  	struct slot *slot, *tmp;
+>  	struct pci_dev *pdev = dev->port;
+>  	struct pci_bus *pbus = pdev->subordinate;
+> -	if (!(slot = kzalloc(sizeof(*slot), GFP_KERNEL)))
+> -		return -ENOMEM;
+>  	/* Note: pciehp_detect_mode != PCIEHP_DETECT_ACPI here */
+>  	if (pciehp_get_hp_hw_control_from_firmware(pdev))
+>  		return -ENODEV;
+>  	if (!(pos = pci_find_capability(pdev, PCI_CAP_ID_EXP)))
+>  		return -ENODEV;
+>  	pci_read_config_dword(pdev, pos + PCI_EXP_SLTCAP, &slot_cap);
+> +	slot = kzalloc(sizeof(*slot), GFP_KERNEL);
+> +	if (!slot)
+> +		return -ENOMEM;
+>  	slot->number = slot_cap >> 19;
+>  	list_for_each_entry(tmp, &dummy_slots, slot_list) {
+>  		if (tmp->number == slot->number)
 
-The patch in question has already been reverted.  So while we
-still need to track down the underlying problem with rlogin, it's
-no longer a kernel regression.
+Thank you for fixing this!
+
+Reviewed-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 
 Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Kenji Kaneshige
+
+
