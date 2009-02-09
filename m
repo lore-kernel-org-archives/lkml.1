@@ -1,74 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755733AbZBIWsz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbZBIWuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755733AbZBIWsz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 17:48:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbZBIWsq
+	id S1755259AbZBIWuS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 17:50:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbZBIWuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 17:48:46 -0500
-Received: from ns2.suse.de ([195.135.220.15]:57651 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751196AbZBIWsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 17:48:45 -0500
-From: Bernhard Walle <bernhard.walle@gmx.de>
-To: gregkh@suse.de
-Cc: linux-kernel@vger.kernel.org, Bernhard Walle <bernhard.walle@gmx.de>
-Subject: [PATCH] Correct email address
-Date: Mon,  9 Feb 2009 23:48:42 +0100
-Message-Id: <1234219722-8196-1-git-send-email-bernhard.walle@gmx.de>
-X-Mailer: git-send-email 1.6.1.3
+	Mon, 9 Feb 2009 17:50:04 -0500
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:45867 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752161AbZBIWuD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 17:50:03 -0500
+Date: Mon, 9 Feb 2009 15:50:00 -0700
+From: Alex Chiang <achiang@hp.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: RCU can use cpu_active_map?
+Message-ID: <20090209225000.GC3939@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+	tony.luck@intel.com, linux-ia64@vger.kernel.org,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <20090209201345.GB13107@ldl.fc.hp.com> <20090209213929.GQ6802@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090209213929.GQ6802@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since I don't work for SUSE any more and the bwalle@suse.de address is invalid,
-correct it in the copyright headers and documentation.
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com>:
+> On Mon, Feb 09, 2009 at 01:13:45PM -0700, Alex Chiang wrote:
+> > Paul,
+> > 
+> > I don't pretend to understand RCU, but a very quick and naive
+> > look through rcupreempt.c makes me think that we could use the
+> > cpu_active_map instead of cpu_online_map?
+> > 
+> > cpu_active_map was introduced by e761b772.
+> > 
+> > In the CPU hotplug path, we touch the cpu_active_map very early
+> > on:
+> > 
+> > int __ref cpu_down(unsigned int cpu)
+> > {
+> >         int err;
+> >         err = stop_machine_create();
+> >         if (err)
+> >                 return err;
+> >         cpu_maps_update_begin();
+> > 
+> >         if (cpu_hotplug_disabled) {
+> >                 err = -EBUSY;
+> >                 goto out;
+> >         }
+> > 
+> >         cpu_clear(cpu, cpu_active_map);
+> > 	/* ... */
+> >         synchronize_sched();
+> >         err = _cpu_down(cpu, 0);
+> >         if (cpu_online(cpu))
+> >                 cpu_set(cpu, cpu_active_map);
+> > 
+> > out:
+> >         cpu_maps_update_done();
+> >         stop_machine_destroy();
+> >         return err;
+> > }
+> > 
+> > The call to _cpu_down() is where we eventually get to the code
+> > that my patch below touches, so you can see that we mark the CPU
+> > as !active before we ever get to the step of migrating interrupts
+> > (which relies on cpu_online_map).
+> > 
+> > If RCU looked at cpu_active_map instead of cpu_online_map, it
+> > seems like we would avoid the potential race situation you
+> > mentioned earlier.
+> > 
+> > Alternatively, I could explore just playing with the ia64
+> > interrupt migration code to use cpu_active_mask instead, but
+> > wanted to get your thoughts from the RCU perspective.
+> 
+> Perhaps I am confused, but if the CPU is on its way down, doesn't RCU
+> need a mask where the CPU's bit stays set longer rather than shorter?
+> 
+> If I use cpu_active_mask, couldn't there be device interrupts during
+> (for example) the synchronize_sched(), which might have RCU read-side
+> critical sections that RCU needs to pay attention to?
 
+Hm, I think you're right.
 
-Signed-off-by: Bernhard Walle <bernhard.walle@gmx.de>
----
- Documentation/ABI/testing/sysfs-firmware-memmap |    2 +-
- drivers/firmware/memmap.c                       |    2 +-
- include/linux/firmware-map.h                    |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+Thanks.
 
-diff --git a/Documentation/ABI/testing/sysfs-firmware-memmap b/Documentation/ABI/testing/sysfs-firmware-memmap
-index 0d99ee6..eca0d65 100644
---- a/Documentation/ABI/testing/sysfs-firmware-memmap
-+++ b/Documentation/ABI/testing/sysfs-firmware-memmap
-@@ -1,6 +1,6 @@
- What:		/sys/firmware/memmap/
- Date:		June 2008
--Contact:	Bernhard Walle <bwalle@suse.de>
-+Contact:	Bernhard Walle <bernhard.walle@gmx.de>
- Description:
- 		On all platforms, the firmware provides a memory map which the
- 		kernel reads. The resources from that memory map are registered
-diff --git a/drivers/firmware/memmap.c b/drivers/firmware/memmap.c
-index 261b9aa..05aa2d4 100644
---- a/drivers/firmware/memmap.c
-+++ b/drivers/firmware/memmap.c
-@@ -1,7 +1,7 @@
- /*
-  * linux/drivers/firmware/memmap.c
-  *  Copyright (C) 2008 SUSE LINUX Products GmbH
-- *  by Bernhard Walle <bwalle@suse.de>
-+ *  by Bernhard Walle <bernhard.walle@gmx.de>
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License v2.0 as published by
-diff --git a/include/linux/firmware-map.h b/include/linux/firmware-map.h
-index 6e199c8..cca686b 100644
---- a/include/linux/firmware-map.h
-+++ b/include/linux/firmware-map.h
-@@ -1,7 +1,7 @@
- /*
-  * include/linux/firmware-map.h:
-  *  Copyright (C) 2008 SUSE LINUX Products GmbH
-- *  by Bernhard Walle <bwalle@suse.de>
-+ *  by Bernhard Walle <bernhard.walle@gmx.de>
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License v2.0 as published by
--- 
-1.6.1.3
+/ac
 
