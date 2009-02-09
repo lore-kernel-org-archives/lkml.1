@@ -1,18 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755926AbZBJUHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbZBJUHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755926AbZBJUHg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 15:07:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbZBJUH0
+	id S1756186AbZBJUHu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 15:07:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbZBJUH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 15:07:26 -0500
-Received: from gw.goop.org ([64.81.55.164]:50700 "EHLO mail.goop.org"
+	Tue, 10 Feb 2009 15:07:27 -0500
+Received: from gw.goop.org ([64.81.55.164]:50703 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751103AbZBJUH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754813AbZBJUH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 10 Feb 2009 15:07:26 -0500
-Message-Id: <cover.1234296039.git.jeremy.fitzhardinge@citrix.com>
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Date: Tue, 10 Feb 2009 12:00:39 -0800
-Subject: [PATCH] *** SUBJECT HERE ***
+Message-Id: <3c552ac8a747d6c26d13302c54d71dae9f56f4ac.1234296039.git.jeremy.fitzhardinge@citrix.com>
+In-Reply-To: <cover.1234296039.git.jeremy.fitzhardinge@citrix.com>
+References: <cover.1234296039.git.jeremy.fitzhardinge@citrix.com>
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Date: Mon, 9 Feb 2009 12:05:47 -0800
+Subject: [PATCH] x86: make apic_* operations inline functions
 Cc: Ingo Molnar <mingo@elte.hu>, x86@kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Yinghai Lu <yinghai@kernel.org>
@@ -21,32 +23,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Mainly to get proper type-checking and consistency.
 
-This series of patches (against tip/x86/apic) makes some fairly
-uncontroversial changes and cleanups to lay the groundwork for some more
-Xen-specific patches (which will no doubt cause more of a discussion).
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ arch/x86/include/asm/apic.h |   35 +++++++++++++++++++++++++++++------
+ 1 files changed, 29 insertions(+), 6 deletions(-)
 
-These changes can also be pulled from
-   git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git x86/apic
+diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
+index b03711d..f4835a1 100644
+--- a/arch/x86/include/asm/apic.h
++++ b/arch/x86/include/asm/apic.h
+@@ -139,12 +139,35 @@ struct apic_ops {
+ 
+ extern struct apic_ops *apic_ops;
+ 
+-#define apic_read (apic_ops->read)
+-#define apic_write (apic_ops->write)
+-#define apic_icr_read (apic_ops->icr_read)
+-#define apic_icr_write (apic_ops->icr_write)
+-#define apic_wait_icr_idle (apic_ops->wait_icr_idle)
+-#define safe_apic_wait_icr_idle (apic_ops->safe_wait_icr_idle)
++static inline u32 apic_read(u32 reg)
++{
++	return apic_ops->read(reg);
++}
++
++static inline void apic_write(u32 reg, u32 val)
++{
++	apic_ops->write(reg, val);
++}
++
++static inline u64 apic_icr_read(void)
++{
++	return apic_ops->icr_read();
++}
++
++static inline void apic_icr_write(u32 low, u32 high)
++{
++	apic_ops->icr_write(low, high);
++}
++
++static inline void apic_wait_icr_idle(void)
++{
++	apic_ops->wait_icr_idle();
++}
++
++static inline u32 safe_apic_wait_icr_idle(void)
++{
++	return apic_ops->safe_wait_icr_idle();
++}
+ 
+ extern int get_physical_broadcast(void);
+ 
+-- 
+1.6.0.6
 
-Thanks,
-	J
-
-Ian Campbell (1):
-  xen: expose enable_IO_APIC for 32-bit
-
-Jeremy Fitzhardinge (4):
-  x86: make apic_* operations inline functions
-  x86: unstatic mp_find_ioapic so it can be used elsewhere
-  x86: add mp_find_ioapic_pin
-  x86: unstatic ioapic entry funcs
-
- arch/x86/include/asm/apic.h    |   35 +++++++++++++++++++++++++++++------
- arch/x86/include/asm/hw_irq.h  |    2 --
- arch/x86/include/asm/io_apic.h |    6 ++++++
- arch/x86/include/asm/mpspec.h  |    2 ++
- arch/x86/kernel/acpi/boot.c    |   18 ++++++++++++++----
- arch/x86/kernel/io_apic.c      |   10 +++++-----
- 6 files changed, 56 insertions(+), 17 deletions(-)
 
