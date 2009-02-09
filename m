@@ -1,86 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756977AbZBISRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756250AbZBISUJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756977AbZBISRb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 13:17:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756793AbZBISRM
+	id S1756250AbZBISUJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 13:20:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbZBIST5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 13:17:12 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:2108 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756268AbZBISRK (ORCPT
+	Mon, 9 Feb 2009 13:19:57 -0500
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:36841 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753619AbZBIST4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 13:17:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fsCDbCAou8EBzhq8kj+7N4G2Osq/8xNYE2XS0DkXKD7Vw8si8sURICHXk//aQu1UVf
-         f93yQa31HTGdoJr/eGgJlvlcTX7B1USaebJfGqlGrlfDSWNql4TaOjih7WKFQzA7Lw3+
-         IKH0yq6E5587nhLd1z+watzQWW0zzsui4l5HI=
-MIME-Version: 1.0
-In-Reply-To: <20090209175514.GB19453@n2100.arm.linux.org.uk>
-References: <8447d6730902090904y138af9c6r3d64278bc7a30811@mail.gmail.com>
-	 <20090209171042.GA19453@n2100.arm.linux.org.uk>
-	 <8447d6730902090944s9bc96f7r76da82ea09c629f0@mail.gmail.com>
-	 <20090209175514.GB19453@n2100.arm.linux.org.uk>
-Date: Mon, 9 Feb 2009 19:17:07 +0100
-Message-ID: <8447d6730902091017m21cb30d0w6be6fbbbf33db4f3@mail.gmail.com>
-Subject: Re: [PATCH 1/2] User access to internal clocks
-From: Davide Rizzo <elpa.rizzo@gmail.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, ben-linux@fluff.org,
-       linux-api@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Mon, 9 Feb 2009 13:19:56 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq8EAL8AkElMQWt2/2dsb2JhbACBbs8QhBoG
+Date: Mon, 9 Feb 2009 13:19:52 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>
+Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
+Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
+	(repost)
+Message-ID: <20090209181952.GA15692@Krystal>
+References: <20090206130640.GB10918@linux.vnet.ibm.com> <20090206163432.GF10918@linux.vnet.ibm.com> <20090208224419.GA19512@Krystal> <20090209041153.GR7120@linux.vnet.ibm.com> <20090209045352.GA28653@Krystal> <20090209051737.GA29254@Krystal> <20090209132343.GT7120@linux.vnet.ibm.com> <20090209172816.GA12934@Krystal> <20090209174741.GE6802@linux.vnet.ibm.com> <20090209181341.GA15514@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090209181341.GA15514@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:18:29 up 39 days, 18:16,  5 users,  load average: 0.48, 0.68,
+	0.73
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> You're not understanding the issue(s).
->
-> 1. there is no 1:1 mapping between the identifiers (struct device +
->   connection ID) and the struct clk.  It's actually a many-to-one
->   mapping.
->
->   That means there is _no_ name associated with a struct clk.
->
->   Conceptually, clk_get() gives you a struct clk for the struct device
->   and a connection ID.  How that mapping is achieved isn't specified
->   in the API, all that's required is that such a mapping is performed.
->   It is _specifically_ intended that more than one set of {device,id}
->   pairs will map to the same clk.
->
->   So, now to insist that you can go from a struct clk to some kind of
->   string identifier for it is changing this - you're now requiring
->   that every struct clk has a unique name.  This is not the case.
->   PXA, for instance, struct clk's are now completely nameless.  They
->   have no identifier.
->
->   If you want to have a string identifier which works in every case,
->   this will:
->
->        sprintf(identifer, "%p", clk);
->
->   Or, I guess you could force every struct clk to have a 'sysfs_name'
->   field just to export them out via sysfs - and that'll be all that
->   it's used for.
->
-> 2. there is no generic way to walk a set of struct clk's - indeed, there
->   may be no list of them (and there exists implmentations where that is
->   true) and the only list which does exist is a set ID to clk mapping
->   structures.
->
->> Otherwise, what do you suggest to enumerate and distinguish all system
->> clocks ?
->
-> There exists no such concept in the API, what you're asking for is
-> implementation specific.
->
+* Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
+> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > On Mon, Feb 09, 2009 at 12:28:17PM -0500, Mathieu Desnoyers wrote:
+> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > > On Mon, Feb 09, 2009 at 12:17:37AM -0500, Mathieu Desnoyers wrote:
+> > 
+> > [ . . . ]
+> > 
+> > > > > The new version is pushed into the repository. I changed you patch a
+> > > > > bit. Flaming is welcome. :)
+> > > > 
+> > > > Looks reasonable at first glance.  Just out of curiosity, why are
+> > > > urcu_gp_ctr and urcu_active_readers int rather than char?  I guess that
+> > > > one reason would be that many architectures work better with int than
+> > > > with char...
+> > > 
+> > > Exactly. This is done to make sure we don't end up having false register
+> > > dependencies causing stalls on such architectures. I'll add a comment.
+> > 
+> > Are there any 64-bit architectures that would prefer a long to an int?
+> > (Other than really old Alpha CPUs, that is.)
+> > 
+> 
+> None that I am aware of, but Christoph or Peter would probably know more
+> than I do on this aspect.
+> 
 
-Thank you for this explanation, now it's much more clear to me.
+Well, I had to put back a "long" rather than a "int" since we not
+support 2^32 nesting nevels on 64-bits. The following bit, used for
+quiescent state "parity", ends up being the 33rd bit, which needs a
+64-bit long.
 
-What about adding a dedicated function to clk api that registers a struct clk
- in a linked list and associates it with a name, with the only specific purpose
- to enumerate and list (and possibly change rate and parents) all
-clocks in sysfs ?
-Obviously only specifically registered clocks will be visible in sysfs...
+Mathieu
+
+> > > > So, how many cycles did this save?  ;-)
+> > > 
+> > > On x86_64, it's pretty much the same as before. It just helps having the
+> > > 32 and 64 bits algorithms being exactly the same, which I think is a
+> > > very good thing.
+> > 
+> > Good point!
+> > 
+> > > BTW, my tests were done without any CMOV instruction due to the standard
+> > > gcc options I used. Given think past discussion about CMOV :
+> > > 
+> > > http://ondioline.org/mail/cmov-a-bad-idea-on-out-of-order-cpus
+> > > 
+> > > It does not seem like such a good idea to use it anyway, given it can
+> > > take 10 cycles to run on a P4a
+> > 
+> > Fair enough!
+> > 
+> > > BTW, do you think having the 256 nested rcu read locks limitation could
+> > > become a problem ? I really think an application has recursion problem
+> > > if it does, but this is not impossible, especially on a particularly
+> > > badly designed tree-traversal algorithm on a 64-bits arch...
+> > 
+> > I don't know of any code in the Linux kernel that nests rcu_read_lock()
+> > anywhere near that deep.  And if someone does find such a case, it is
+> > pretty easy to use 15 bits rather than 8 to hold the nesting depth, just
+> > by changing the definition of RCU_GP_CTR_BIT.
+> > 
+> 
+> You know what ? Changing RCU_GP_CTR_BIT to 16 uses a
+> testw %ax, %ax instead of a testb %al, %al. The trick here is that
+> RCU_GP_CTR_BIT must be a multiple of 8 so we can use a full 8-bits,
+> 16-bits or 32-bits bitmask for the lower order bits.
+> 
+> On 64-bits, using a RCU_GP_CTR_BIT of 32 is also ok. It uses a testl.
+> 
+> To provide 32-bits compability and allow the deepest nesting possible, I
+> think it makes sense to use
+> 
+> /* Use the amount of bits equal to half of the architecture long size */
+> #define RCU_GP_CTR_BIT (sizeof(long) << 2)
+> 
+> Mathieu
+> 
+> 
+> > 							Thanx, Paul
+> > 
+> > > Mathieu
+> > > 
+> > > > 						Thanx, Paul
+> > > > 
+> > > > > Mathieu
+> > > > > 
+> > > > > > Mathieu
+> > > > > > 
+> > > > > > > > > Again, looks interesting!  Looks plausible, although I have not 100%
+> > > > > > > > > convinced myself that it is perfectly bug-free.  But I do maintain
+> > > > > > > > > a healthy skepticism of purported RCU algorithms, especially ones that
+> > > > > > > > > I have written.  ;-)
+> > > > > > > > > 
+> > > > > > > > 
+> > > > > > > > That's always good. I also tend to always be very skeptical about what I
+> > > > > > > > write and review.
+> > > > > > > > 
+> > > > > > > > Thanks for the thorough review.
+> > > > > > > 
+> > > > > > > No problem -- it has been quite fun!  ;-)
+> > > > > > > 
+> > > > > > > 							Thanx, Paul
+> > > > > > > 
+> > > > > > 
+> > > > > > -- 
+> > > > > > Mathieu Desnoyers
+> > > > > > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> > > > > > 
+> > > > > > _______________________________________________
+> > > > > > ltt-dev mailing list
+> > > > > > ltt-dev@lists.casi.polymtl.ca
+> > > > > > http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
+> > > > > > 
+> > > > > 
+> > > > > -- 
+> > > > > Mathieu Desnoyers
+> > > > > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> > > > 
+> > > 
+> > > -- 
+> > > Mathieu Desnoyers
+> > > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> > 
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> 
+> _______________________________________________
+> ltt-dev mailing list
+> ltt-dev@lists.casi.polymtl.ca
+> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
