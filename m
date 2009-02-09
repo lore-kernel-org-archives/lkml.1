@@ -1,47 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbZBILTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbZBILXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753913AbZBILTv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 06:19:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755050AbZBILTg
+	id S1754827AbZBILXd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 06:23:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753242AbZBILXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 06:19:36 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:55614 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755009AbZBILTf (ORCPT
+	Mon, 9 Feb 2009 06:23:23 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:35683 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752635AbZBILXW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 06:19:35 -0500
-Date: Mon, 9 Feb 2009 11:19:22 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Paul Walmsley <paul@pwsan.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH C 06/13] OMAP3 clock: DPLLs should enter bypass if new rate is sys_ck
-Message-ID: <20090209111922.GA11668@n2100.arm.linux.org.uk>
-References: <20090128190724.12092.22239.stgit@localhost.localdomain> <20090128190823.12092.2638.stgit@localhost.localdomain> <20090129123936.GA16644@n2100.arm.linux.org.uk> <alpine.DEB.2.00.0901292244211.26985@utopia.booyaka.com>
-Mime-Version: 1.0
+	Mon, 9 Feb 2009 06:23:22 -0500
+Date: Mon, 9 Feb 2009 11:23:21 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Menage <menage@google.com>, Arjan van de Ven <arjan@infradead.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [cgroup or VFS ?] INFO: possible recursive locking detected
+Message-ID: <20090209112321.GW28946@ZenIV.linux.org.uk>
+References: <49617D2E.8050502@cn.fujitsu.com> <496576E7.1@cn.fujitsu.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0901292244211.26985@utopia.booyaka.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <496576E7.1@cn.fujitsu.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 29, 2009 at 10:47:40PM -0700, Paul Walmsley wrote:
-> Hello Russell,
+On Thu, Jan 08, 2009 at 11:45:43AM +0800, Li Zefan wrote:
+> Hi Al Viro,
 > 
-> this E-mail responds to your comments on patches C 04 through C 08.  
-> My understanding is that you'd like me to:
+> I hacked into the kernel with the patch below (I think It's ok for me
+> to comment out bdev->bd_mount_sem for testing):
+
+> And ran 2 threads:
+> 	for ((; ;))  # thread 1
+> 	{
+> 		mount -t ext3 /dev/sda9 /mnt1
+> 		umount /mnt1
+> 	}
 > 
-> 1. Compress patches C 04 through C 09;
+> 	for ((; ;))  # thread 2
+> 	{
+> 		mount -t ext3 /dev/sda9 /mnt2
+> 		umount /mnt2
+> 	}
+> 
+> And I got the same lockdep warning immediately, so I think it's
+> VFS's issue.
 
-What I would like to see is a clear set of patches (or maybe just a
-single patch if appropriate) implementing the bypass DPLL support,
-and have it implemented in a common form for both OMAP2 and OMAP3.
+It's a lockdep issue, actually.  It _is_ a false positive; we could get rid
+of that if we took destroy_super(s); just before grab_super(), but I really
+do not believe that there's any point.
 
-In other words, if we're going to have a 'bypass' clock in the DPLL
-data, it shouldn't be just an OMAP3 thing.
+Frankly, I'd rather see if there's any way to teach lockdep that this instance
+of lock is getting initialized into "one writer" state and that yes, we know
+that it's not visible to anyone, so doing that is safe, TYVM, even though
+we are under spinlock.  Then take that sucker to just before set().
 
-I suspect it's going to be easier for me to figure out what's going
-on, clean up the existing patches and work from them so that they
-still fit in the existing series.
+In any case, I really do not believe that it might have anything to do with
+the WARN_ON() from another thread...
+
+Comments?
