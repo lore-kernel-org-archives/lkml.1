@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752798AbZBIIQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752703AbZBIIUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752798AbZBIIQO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 03:16:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbZBIIP7
+	id S1752703AbZBIIUb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 03:20:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbZBIIUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 03:15:59 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53042 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750788AbZBIIP5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 03:15:57 -0500
-Date: Mon, 9 Feb 2009 09:15:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: check_timer cleanup
-Message-ID: <20090209081542.GF24420@elte.hu>
-References: <20090206220716.GA15319@elte.hu> <498D55A4.7000608@kernel.org> <20090207165901.GA32116@elte.hu> <498E6A3C.6020004@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <498E6A3C.6020004@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 9 Feb 2009 03:20:23 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34606 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750696AbZBIIUW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 03:20:22 -0500
+Date: Mon, 9 Feb 2009 00:19:03 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yinghai@kernel.org>, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] irq: optimize init_kstat_irqs/init_copy_kstat_irqs
+Message-Id: <20090209001903.89548108.akpm@linux-foundation.org>
+In-Reply-To: <20090209081124.GB24420@elte.hu>
+References: <498CB0B7.8030009@kernel.org>
+	<20090206140005.44b4bb50.akpm@linux-foundation.org>
+	<498CB4DC.2010108@kernel.org>
+	<498D3D15.5090005@kernel.org>
+	<20090207002610.73ff7e6d.akpm@linux-foundation.org>
+	<86802c440902070101l5b0ef862ja92e3f31705d9608@mail.gmail.com>
+	<20090207010619.daededa3.akpm@linux-foundation.org>
+	<20090209081124.GB24420@elte.hu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 9 Feb 2009 09:11:24 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+> 
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Sat, 7 Feb 2009 01:01:03 -0800 Yinghai Lu <yinghai@kernel.org> wrote:
+> > 
+> > > 
+> > > add kzalloc_node_safe()?
+> > 
+> > I cannot find that function.
+> 
+> His suggestion is to provide that allocator variant.
+> 
 
-> Impact: remove extra unmask, and pair disable/enable
-> 
-> for edge trigger io-apic routing, already unmasked via setup_IO_APIC_irq,
-> so don't unmask it again.
-> 
-> also do call local_irq_disable() between timer_irq_works(), between it does call
-> local_irq_enable() inside.
-> also remove not needed apic version reading for 64bit
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> ---
->  arch/x86/kernel/io_apic.c |   30 ++++++++++++++++++++++--------
->  1 file changed, 22 insertions(+), 8 deletions(-)
+Oh.
 
-applied to tip/x86/apic, thanks Yinghai. Maybe this even solves some of the spurious 
-detection troubles we had in this code.
+It isn't possible to write a kzalloc_node_safe(GFP_ATOMIC).  Or at
+least, we've never worked out a way.
 
-	Ingo
+Maybe I'm confused again.
