@@ -1,86 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757076AbZBITj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbZBITkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757076AbZBITj7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 14:39:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113AbZBITjr
+	id S1757587AbZBITkW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 14:40:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757055AbZBITjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 14:39:47 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55516 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752374AbZBITjq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 14:39:46 -0500
-Date: Mon, 9 Feb 2009 20:36:25 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH, for 2.6.29] ptrace: fix the usage of ptrace_fork()
-Message-ID: <20090209193625.GA4808@redhat.com>
-References: <20090209010233.GA26444@redhat.com> <20090209012824.GA26461@redhat.com> <928CFBE8E7CB0040959E56B4EA41A77E4A1E7C8B@irsmsx504.ger.corp.intel.com>
+	Mon, 9 Feb 2009 14:39:54 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:55700 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756221AbZBITjw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 14:39:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=hKriumxmg3m2ekSUhkWKMczajx7p4NFQf5Revl0MSRmmsYz/pKq/rNztbR0OaQX9Nl
+         wvx8yW12cDy1XmYLhjjclHQqbepg2JG5Jnvk3xQpi2iLmJe3qNAikyUfH7qNNIHb+oA7
+         MttV3+lYN84YAGr5nvmhxnDEmdX0mXiTdK86s=
+Date: Mon, 9 Feb 2009 20:40:27 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>
+Cc: Ira Snyder <iws@ovro.caltech.edu>, Peter Korsgaard <jacmet@sunsite.dk>,
+       Dai Haruki <dai.haruki@freescale.com>,
+       Andy Fleming <afleming@freescale.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: [PATCH v2 net] gianfar: Fix boot hangs while bringing up gianfar
+	ethernet
+Message-ID: <20090209194027.GB2537@ami.dom.local>
+References: <20090129194145.GA4647@ovro.caltech.edu> <20090207225555.GA2680@ami.dom.local> <20090209172216.GA11312@ovro.caltech.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E4A1E7C8B@irsmsx504.ger.corp.intel.com>
+In-Reply-To: <20090209172216.GA11312@ovro.caltech.edu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/09, Metzger, Markus T wrote:
->
-> >PTRACE_BTS_CONFIG allocates ->bts_buffer via alloc_locked_buffer()
-> >which updates mm->total_vm/locked_vm.
-> >
-> >ptrace_detach() does free_locked_buffer() which "restores" mm->xxx_vm.
->
-> That's what I expect to be the normal case.
->
->
-> >But if the tracer exits we are doing __ptrace_unlink()->ptrace_bts_untrace()
-> >which uses a plain kfree(), in that case we don't update mm->xxx_vm ?
->
-> That's correct.
-> When the tracer dies, do_exit() first calls exit_mm() and then calls exit_notify(), which eventually calls __ptrace_unlink() and ptrace_bts_untrace().
->
-> At this time, the tracer's mm is already gone,
+> PS#2: Andy, this changelog is really a lot harder than the patch...
 
-It is not if we have sub-threads (which share the same ->mm),
+Hmm...
 
-> but the bts buffer is not.
-> The code reclaims the memory; so we should not leak memory.
+-------------------> (take 2 - signed-off fix only)
 
-yes, there is no memory leak,
+gianfar: Fix boot hangs while bringing up gianfar ethernet
 
-> The user should not see any problems with his ulimit, either, since the task that had the memory accounted against his locked and total limit is as good as dead.
+Ira Snyder found that commit 8c7396aebb68994c0519e438eecdf4d5fa9c7844
+"gianfar: Merge Tx and Rx interrupt for scheduling clean up ring" can
+cause hangs. It's because there was removed clearing of interrupts in
+gfar_schedule_cleanup() (which is called by an interrupt handler) in
+case when netif scheduling has been disabled. This patch brings back
+this action and a comment.
 
-again, if the process is multithreaded, it is not dead. It (other threads)
-continues to run with the same ->mm. Only the tracer thread is dead.
+Reported-by: Ira Snyder <iws@ovro.caltech.edu>
+Reported-by: Peter Korsgaard <jacmet@sunsite.dk>
+Bisected-by: Ira Snyder <iws@ovro.caltech.edu>
+Tested-by: Peter Korsgaard <jacmet@sunsite.dk>
+Tested-by: Ira Snyder <iws@ovro.caltech.edu>
+Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
 
-> >Or, the tracer can reap a zombie tracee without PTRACE_DETACH, in that
-> >case we don't update ->mm too.
->
-> I'm not sure I understand that scenario.
-> A task ptraces another task, requests branch trace, and does not detach when the tracee dies?
+---
 
-Yes. Again, we don't leak the memory, but the accounting in mm->total_vm/locked_vm
-is not right.
+ drivers/net/gianfar.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-> Ideally (that is, from my point of view, at least), the tracer would call
-> ptrace_detach() very early in do_exit(), so ptrace would not have to distinguish
-> the various ways a tracer or tracee could die.
-
-Well, yes I agree. Please look at http://marc.info/?t=123411902800001
-
-> >Oh, and afaics ptrace_detach()->ptrace_bts_detach() can race with the
-> >tracer's sub-thread which does do_wait()->release_task() (if the tracee
-> >was killed before detach takes tasklist), the kernel can crash in this
-> >case.
->
-> Are you saying that ptrace_detach() should call ptrace_disable() with tasklist_lock held for write?
-
-We can't do this. And btw one of the reasons we can't is that
-ptrace_bts_free_buffer() needs ->mmap_sem ;)
-
-Oleg.
-
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index acae2d8..9b12a13 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -1629,6 +1629,12 @@ static void gfar_schedule_cleanup(struct net_device *dev)
+ 	if (netif_rx_schedule_prep(&priv->napi)) {
+ 		gfar_write(&priv->regs->imask, IMASK_RTX_DISABLED);
+ 		__netif_rx_schedule(&priv->napi);
++	} else {
++		/*
++		 * Clear IEVENT, so interrupts aren't called again
++		 * because of the packets that have already arrived.
++		 */
++		gfar_write(&priv->regs->ievent, IEVENT_RTX_MASK);
+ 	}
+ 
+ 	spin_unlock(&priv->rxlock);
