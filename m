@@ -1,64 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755818AbZBIQGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbZBIQHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755818AbZBIQGU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 11:06:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648AbZBIQGM
+	id S1755911AbZBIQHy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 11:07:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbZBIQHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 11:06:12 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:38517 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754620AbZBIQGL (ORCPT
+	Mon, 9 Feb 2009 11:07:46 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:62042 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753262AbZBIQHp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 11:06:11 -0500
-Subject: Re: Build failure with latest -git: btrfs on ppc64
-From: Chris Mason <chris.mason@oracle.com>
-To: Kyle McMartin <kyle@infradead.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20090209155702.GB13529@bombadil.infradead.org>
-References: <20090207155039.3b6a7429@dhcp-100-2-144.bos.redhat.com>
-	 <20090207232458.GB23407@bombadil.infradead.org>
-	 <1234191446.1262.3.camel@think.oraclecorp.com>
-	 <20090209155702.GB13529@bombadil.infradead.org>
-Content-Type: text/plain
-Date: Mon, 09 Feb 2009 11:05:39 -0500
-Message-Id: <1234195539.5447.2.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt707.oracle.com [141.146.40.85]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A09020A.49905457.0036:SCFSTAT928724,ss=1,fgs=0
+	Mon, 9 Feb 2009 11:07:45 -0500
+Date: Mon, 9 Feb 2009 11:07:44 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 4/5] tracing/core: drop the cpu field from trace_entry
+In-Reply-To: <20090209140321.GA20758@elte.hu>
+Message-ID: <alpine.DEB.1.10.0902091106410.14528@gandalf.stny.rr.com>
+References: <498e176a.0637560a.3cea.3ff8@mx.google.com> <20090209095324.GD14402@elte.hu> <20090209134744.GC4705@nowhere> <20090209140321.GA20758@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-09 at 10:57 -0500, Kyle McMartin wrote:
-> On Mon, Feb 09, 2009 at 09:57:26AM -0500, Chris Mason wrote:
-> > 
-> > Ok, I thought this would be defined to something simple for the
-> > non-ticket users, should I just not be using this call?  
-> > 
+
+On Mon, 9 Feb 2009, Ingo Molnar wrote:
+
 > 
-> I think the use is fine, since it's really a judgement call based on
-> whether there's waiters for the ticket. I need to take a closer look
-> at where this is used to say...
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
 > 
+> > On Mon, Feb 09, 2009 at 10:53:24AM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> > > 
+> > > > Impact: fix a bug on cpu output
+> > > > 
+> > > > While looking on the function tracer traces, I first cheered up:
+> > > > 
+> > > >             TASK-PID    CPU#    TIMESTAMP  FUNCTION
+> > > >                | |       |          |         |
+> > > >          firefox-4622  [081]  1315.790405: lapic_next_event <-clockevents_program_event
+> > > >          firefox-4622  [178]  1315.790405: native_apic_mem_write <-lapic_next_event
+> > > >          firefox-4622  [020]  1315.790406: perf_counter_unthrottle <-smp_apic_timer_interrupt
+> > > > 
+> > > > But no, actually I don't have so many cpus...
+> > > 
+> > > incidentally, Steve came up with the exact same patch :)
+> > > 
+> > > 	Ingo
+> > 
+> > Heh, I guess the moon inspired both of us in the name of tracing, or
+> > something like that...
+> 
+> It was exactly at around the time Thomas complained over IRC
+> about the visible CPU# breakage in the tracer output.
+> 
+> So i blame it on telepathy ;-)
 
-The Btrfs use goes something like this:
+Thomas was the full moon, his complaint to me was the reason I pushed it 
+out ASAP.
 
-I'm about to wait for the disk.  If there are other procs waiting for
-the locks I'm holding, I'll drop my locks and do a somewhat expensive
-btree search over again later so the waiters can make progress.
-
-If nobody is waiting, I'll do my read with my locks held so that I don't
-have to search again.
-
-> It's inevitable for you to hit things like this though, as far as I know
-> you're the first user of this lock interface. :)
-
-;)
-
--chris
-
+-- Steve
 
