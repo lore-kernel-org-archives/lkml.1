@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbZBIMET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbZBIMLL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755277AbZBIMET (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 07:04:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbZBIMEL
+	id S1755162AbZBIMLL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 07:11:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbZBIMK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 07:04:11 -0500
-Received: from www.tglx.de ([62.245.132.106]:51798 "EHLO www.tglx.de"
+	Mon, 9 Feb 2009 07:10:56 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55344 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752103AbZBIMEK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 07:04:10 -0500
-Date: Mon, 9 Feb 2009 13:03:53 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Paul Collins <paul@burly.ondioline.org>, Ingo Molnar <mingo@elte.hu>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: Badness at kernel/time/timekeeping.c:98 in pmud
- (timekeeping_suspended)
-In-Reply-To: <200902081439.31548.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0902091302310.415@localhost.localdomain>
-References: <87prihcepl.fsf@burly.wgtn.ondioline.org> <87k58nda87.fsf@burly.wgtn.ondioline.org> <874oz5pmvd.fsf@burly.wgtn.ondioline.org> <200902081439.31548.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1752295AbZBIMKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 07:10:55 -0500
+Date: Mon, 9 Feb 2009 13:10:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alok Kataria <akataria@vmware.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Zach Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Rohit Jain <rjain@vmware.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PARAVIRT/x86] BUGFIX: Put a missing paravirt_release_pmd in
+	pgd_dtor
+Message-ID: <20090209121045.GF17782@elte.hu>
+References: <1233885731.29693.26.camel@alok-dev1> <498BA0CA.2040603@goop.org> <1233901043.8943.6.camel@alok-dev1> <498BDE1D.8030101@goop.org> <20090206145324.GF18368@elte.hu> <498C6CC9.5050302@goop.org> <1233944975.15269.14.camel@alok-dev1>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1233944975.15269.14.camel@alok-dev1>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 8 Feb 2009, Rafael J. Wysocki wrote:
 
-> On Sunday 08 February 2009, Paul Collins wrote:
-> > Paul Collins <paul@burly.ondioline.org> writes:
+* Alok Kataria <akataria@vmware.com> wrote:
+
+> On Fri, 2009-02-06 at 09:00 -0800, Jeremy Fitzhardinge wrote:
+> > >   
 > > 
-> > > "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> > >
-> > >> On Wednesday 21 January 2009, Paul Collins wrote:
-> > >>> Got a couple of these on a PowerBook running 2.6.29-rc2 either during
-> > >>> suspend or resume -- it's hard to tell.  (The suspend message is
-> > >>> timestamped in syslog with the time I resumed, so I guess it was
-> > >>> buffered along with the subsequent "Badness" messages.)
-> > >>
-> > >> Please check if the patch from http://lkml.org/lkml/2009/1/13/144 fixes the
-> > >> problem for you.
-> > >
-> > > It does not fix the problem.
-> > 
-> > I'm also getting this warning since 2.6.28.1, which incorporated commit
-> > 1c5745aa380efb6417b5681104b007c8612fb496 ("sched_clock: prevent
-> > scd->clock from moving backwards, take #2") as commit
-> > e268dcdd404f4558cdd24c8ecede3e064df8fa33, this being the patch that
-> > introduced the WARN_ON(timekeeping_suspended) check.
+> > Yeah.  Though:
+> > >  /*
+> > > + * We hack the pgd_free hook for releasing the pgd page.
+> > >   
+> > Its hardly a hack to use a hook for exactly its intended purpose...
 > 
-> Hm, I thought the timekeeping suspend problem was fixed in this commit.  Ingo?
+> Ok Ingo, below is the patch with a better comment. Please apply this.
 
-The commit fixed the problem with sched_clock, but it does not fix
-problems where other parts of the kernel call timekeeping functions
-_AFTER_ timekeeping has been suspended.
+Applied to tip:x86/urgent, thanks guys!
 
-Thanks,
-
-	tglx
-
+	Ingo
