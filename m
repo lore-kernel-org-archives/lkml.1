@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbZBIODp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbZBIOGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755233AbZBIODp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 09:03:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbZBIODh
+	id S1755233AbZBIOGl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 09:06:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869AbZBIOGc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 09:03:37 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60217 "EHLO mx2.mail.elte.hu"
+	Mon, 9 Feb 2009 09:06:32 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37712 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752452AbZBIODg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 09:03:36 -0500
-Date: Mon, 9 Feb 2009 15:03:21 +0100
+	id S1752590AbZBIOGb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 09:06:31 -0500
+Date: Mon, 9 Feb 2009 15:06:10 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 4/5] tracing/core: drop the cpu field from trace_entry
-Message-ID: <20090209140321.GA20758@elte.hu>
-References: <498e176a.0637560a.3cea.3ff8@mx.google.com> <20090209095324.GD14402@elte.hu> <20090209134744.GC4705@nowhere>
+To: Tejun Heo <tj@kernel.org>
+Cc: hpa@zytor.com, jeremy@goop.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, x86@kernel.org, rusty@rustcorp.com.au
+Subject: Re: [PATCHSET x86/master] add stack protector support for x86_32
+Message-ID: <20090209140610.GA21560@elte.hu>
+References: <1234186798-16820-1-git-send-email-tj@kernel.org> <20090209135557.GB14785@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090209134744.GC4705@nowhere>
+In-Reply-To: <20090209135557.GB14785@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,34 +35,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> On Mon, Feb 09, 2009 at 10:53:24AM +0100, Ingo Molnar wrote:
-> > 
-> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > 
-> > > Impact: fix a bug on cpu output
-> > > 
-> > > While looking on the function tracer traces, I first cheered up:
-> > > 
-> > >             TASK-PID    CPU#    TIMESTAMP  FUNCTION
-> > >                | |       |          |         |
-> > >          firefox-4622  [081]  1315.790405: lapic_next_event <-clockevents_program_event
-> > >          firefox-4622  [178]  1315.790405: native_apic_mem_write <-lapic_next_event
-> > >          firefox-4622  [020]  1315.790406: perf_counter_unthrottle <-smp_apic_timer_interrupt
-> > > 
-> > > But no, actually I don't have so many cpus...
-> > 
-> > incidentally, Steve came up with the exact same patch :)
-> > 
-> > 	Ingo
+> > This patchset contains the following eleven patches.
 > 
-> Heh, I guess the moon inspired both of us in the name of tracing, or
-> something like that...
+> Note, i sorted out the dependencies (it depended on x86/uaccess) and have put the 
+> commits into tip:core/percpu. I might not get around testing it today and pushing 
+> it out into tip:master, but i pushed out the core/percpu bits, should you queue up 
+> further changes.
 
-It was exactly at around the time Thomas complained over IRC
-about the visible CPU# breakage in the tracer output.
+Note that i spread the patches the following way: #001-003 are in tip:x86/urgent, 
+and tip:core/percpu merges in x86/urgent, x86/uaccess and rc4 - and #004-011 go on 
+top of that.
 
-So i blame it on telepathy ;-)
+(That way we avoid having to cherry-pick #001-003.)
 
 	Ingo
