@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbZBIMLL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755049AbZBIMSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755162AbZBIMLL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 07:11:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbZBIMK4
+	id S1755049AbZBIMSj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 07:18:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbZBIMSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 07:10:56 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55344 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752295AbZBIMKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 07:10:55 -0500
-Date: Mon, 9 Feb 2009 13:10:45 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alok Kataria <akataria@vmware.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Zach Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Rohit Jain <rjain@vmware.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PARAVIRT/x86] BUGFIX: Put a missing paravirt_release_pmd in
-	pgd_dtor
-Message-ID: <20090209121045.GF17782@elte.hu>
-References: <1233885731.29693.26.camel@alok-dev1> <498BA0CA.2040603@goop.org> <1233901043.8943.6.camel@alok-dev1> <498BDE1D.8030101@goop.org> <20090206145324.GF18368@elte.hu> <498C6CC9.5050302@goop.org> <1233944975.15269.14.camel@alok-dev1>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233944975.15269.14.camel@alok-dev1>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 9 Feb 2009 07:18:30 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:38098 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753335AbZBIMSa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 07:18:30 -0500
+Subject: mm_alloc()'ed structure leak
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Mon, 09 Feb 2009 12:18:18 +0000
+Message-Id: <1234181898.16083.26.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Feb 2009 12:18:23.0568 (UTC) FILETIME=[80BF7D00:01C98AB0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Alok Kataria <akataria@vmware.com> wrote:
+I've noticed on recent kernels (currently 2.6.29-rc3) a memory leak
+reported by kmemleak for an mm_struct allocated in mm_alloc(). If that's
+a valid leak, it is a pretty serious one.
 
-> On Fri, 2009-02-06 at 09:00 -0800, Jeremy Fitzhardinge wrote:
-> > >   
-> > 
-> > Yeah.  Though:
-> > >  /*
-> > > + * We hack the pgd_free hook for releasing the pgd page.
-> > >   
-> > Its hardly a hack to use a hook for exactly its intended purpose...
-> 
-> Ok Ingo, below is the patch with a better comment. Please apply this.
+Basically bash forks and executes a command like "host kernel.org" which
+finishes normally but the corresponding mm_struct isn't freed (I get
+this consistently every time I run the above command):
 
-Applied to tip:x86/urgent, thanks guys!
+unreferenced object 0xcfed4070 (size 368):
+  comm "bash", pid 1674, jiffies 421592
+  backtrace:
+    [<c0082bd4>] kmemleak_alloc+0x140/0x2b0
+    [<c007ff2c>] kmem_cache_alloc+0xd0/0x100
+    [<c0036980>] mm_alloc+0x14/0x44
+    [<c008a99c>] bprm_mm_init+0xc/0x13c
+    [<c008ab70>] do_execve+0xa4/0x218
+    [<c002718c>] sys_execve+0x34/0x54
+    [<c0023e80>] ret_fast_syscall+0x0/0x28
 
-	Ingo
+I can't figure out why this structure isn't freed, so any help is
+welcomed before I start bisecting. The platform is an ARM one but the
+code in question is probably generic.
+
+Thanks.
+
+-- 
+Catalin
+
