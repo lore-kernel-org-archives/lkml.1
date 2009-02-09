@@ -1,57 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756151AbZBISq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbZBISuE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756151AbZBISq5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 13:46:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbZBISqs
+	id S1756223AbZBISuE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 13:50:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbZBISty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 13:46:48 -0500
-Received: from mho-01-bos.mailhop.org ([63.208.196.178]:52853 "EHLO
-	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752452AbZBISqr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 13:46:47 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 69.181.40.92
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX19CaBfhsAr+8KZI+aDSUFio
-Date: Mon, 9 Feb 2009 10:46:38 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-Cc: Pierre Ossman <drzeus@drzeus.dddcx>, Jean Pihet <jpihet@mvista.com>,
-       Paul Walmsley <paul@pwsan.com>,
-       " Hunter Adrian (EXT-Teleca/Helsinki)" <ext-adrian.hunter@nokia.com>,
-       OMAP <linux-omap@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       " linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [PATCH] OMAP: MMC: recover from transfer failures - Resend
-Message-ID: <20090209184636.GG14200@atomide.com>
-References: <20090206145343.2b8a5353@mjolnir.drzeus.cx> <20090209175851.GA30769@angel.research.nokia.com>
+	Mon, 9 Feb 2009 13:49:54 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:40967 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751221AbZBIStx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 13:49:53 -0500
+Date: Mon, 9 Feb 2009 10:49:51 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
+       ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
+Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
+	(repost)
+Message-ID: <20090209184951.GA12184@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090206163432.GF10918@linux.vnet.ibm.com> <20090208224419.GA19512@Krystal> <20090209041153.GR7120@linux.vnet.ibm.com> <20090209045352.GA28653@Krystal> <20090209051737.GA29254@Krystal> <20090209132343.GT7120@linux.vnet.ibm.com> <20090209172816.GA12934@Krystal> <20090209174741.GE6802@linux.vnet.ibm.com> <20090209181341.GA15514@Krystal> <20090209183742.GI6802@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090209175851.GA30769@angel.research.nokia.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090209183742.GI6802@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jarkko Lavinen <jarkko.lavinen@nokia.com> [090209 10:06]:
-> Pierre Ossman wrote:
-> > Related, who is the maintainer of this driver? Tony? I'd like
-> > to have someone who checks patches before I queue them up.
+On Mon, Feb 09, 2009 at 10:37:42AM -0800, Paul E. McKenney wrote:
+> On Mon, Feb 09, 2009 at 01:13:41PM -0500, Mathieu Desnoyers wrote:
+> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+
+[ . . . ]
+
+> > You know what ? Changing RCU_GP_CTR_BIT to 16 uses a
+> > testw %ax, %ax instead of a testb %al, %al. The trick here is that
+> > RCU_GP_CTR_BIT must be a multiple of 8 so we can use a full 8-bits,
+> > 16-bits or 32-bits bitmask for the lower order bits.
+> > 
+> > On 64-bits, using a RCU_GP_CTR_BIT of 32 is also ok. It uses a testl.
+> > 
+> > To provide 32-bits compability and allow the deepest nesting possible, I
+> > think it makes sense to use
+> > 
+> > /* Use the amount of bits equal to half of the architecture long size */
+> > #define RCU_GP_CTR_BIT (sizeof(long) << 2)
 > 
-> I can be.  Tony asked me a month ago to set up git tree for OMAP
-> HSMMC and put the workaround for the HSMMC multi-block DMA read
-> corruption there, but hate to admit things have been hanging on
-> todo list.
+> You lost me on this one:
+> 
+> 	sizeof(long) << 2 = 0x10
+> 
+> I could believe the following (run on a 32-bit machine):
+> 
+> 	1 << (sizeof(long) * 8 - 1) = 0x80000000
+> 
+> Or, if you were wanting to use a bit halfway up the word, perhaps this:
+> 
+> 	1 << (sizeof(long) * 4 - 1) = 0x8000
+> 
+> Or am I confused?
 
-Yeah it would be great if Jarkkko can queue up all the omap MMC
-patches from now on.
+Well, I am at least partly confused.  You were wanting a low-order bit,
+so you want to lose the "- 1" above.  Here are some of the possibilities:
 
-> There are some other fixes waiting. Omap_mmc_set_ios() doesn't
-> handle power off case correctly and resume from suspend can hang
-> if the SDBP bit fails to set.
+	sizeof(long) = 0x4
+	sizeof(long) << 2 = 0x10
+	1 << (sizeof(long) * 8 - 1) = 0x80000000
+	1 << (sizeof(long) * 4) = 0x10000
+	1 << (sizeof(long) * 4 - 1) = 0x8000
+	1 << (sizeof(long) * 2) = 0x100
+	1 << (sizeof(long) * 2 - 1) = 0x80
 
-And then all your PM patches for the next merge window..
+My guess is that 1 << (sizeof(long) * 4) and 1 << (sizeof(long) * 2)
+are of the most interest.
 
-Tony
+							Thanx, Paul
