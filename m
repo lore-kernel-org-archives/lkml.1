@@ -1,112 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756343AbZBIRaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756631AbZBIRaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756343AbZBIRaG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 12:30:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbZBIR3y
+	id S1756631AbZBIRaa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 12:30:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756267AbZBIRaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 12:29:54 -0500
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:10057 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753637AbZBIR3x (ORCPT
+	Mon, 9 Feb 2009 12:30:05 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:48909 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756106AbZBIRaD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 12:29:53 -0500
-Subject: [PATCH] mm: rearrange exit_mmap() to unlock before arch_exit_mmap
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>, stable@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Keir Fraser <keir.fraser@eu.citrix.com>,
-       Christophe Saout <christophe@saout.de>,
-       Alex Williamson <alex.williamson@hp.com>, Nick Piggin <npiggin@suse.de>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Mon, 09 Feb 2009 12:29:48 -0500
-Message-Id: <1234200588.22359.30.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Feb 2009 12:30:03 -0500
+Message-Id: <20090209172956.970104543@goodmis.org>
+References: <20090209172830.087244662@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Mon, 09 Feb 2009 12:28:33 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 3/3] tracing: clean up splice code
+Content-Disposition: inline; filename=0003-tracing-clean-up-splice-code.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+From: Steven Rostedt <srostedt@redhat.com>
 
-Subject: mm: rearrange exit_mmap() to unlock before arch_exit_mmap
+Ingo Molnar suggested a series of clean ups for the splice code.
+This patch implements those suggestions.
 
-Applicable to 29-rc4 and 28-stable
-
-Christophe Saout reported [in precursor to:
-http://marc.info/?l=linux-kernel&m=123209902707347&w=4]:
-
-> Note that I also some a different issue with CONFIG_UNEVICTABLE_LRU.
-> Seems like Xen tears down current->mm early on process termination, so
-> that __get_user_pages in exit_mmap causes nasty messages when the
-> process had any mlocked pages.  (in fact, it somehow manages to get into
-> the swapping code and produces a null pointer dereference trying to get
-> a swap token)
-
-Jeremy explained:
-
-Yes.  In the normal case under Xen, an in-use pagetable is "pinned", 
-meaning that it is RO to the kernel, and all updates must go via 
-hypercall (or writes are trapped and emulated, which is much the same 
-thing).  An unpinned pagetable is not currently in use by any process, 
-and can be directly accessed as normal RW pages.
-
-As an optimisation at process exit time, we unpin the pagetable as early 
-as possible (switching the process to init_mm), so that all the normal 
-pagetable teardown can happen with direct memory accesses.
-
-This happens in exit_mmap() -> arch_exit_mmap().  The munlocking happens 
-a few lines below.  The obvious thing to do would be to move 
-arch_exit_mmap() to below the munlock code, but I think we'd want to 
-call it even if mm->mmap is NULL, just to be on the safe side.
-
-Thus, this patch:
-
-exit_mmap() needs to unlock any locked vmas before calling
-arch_exit_mmap, as the latter may switch the current mm to init_mm,
-which would cause the former to fail.
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Acked-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
-
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- mm/mmap.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ kernel/trace/trace.c |   96 ++++++++++++++++++++++++++++---------------------
+ 1 files changed, 55 insertions(+), 41 deletions(-)
 
-===================================================================
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -2078,12 +2078,8 @@
- 	unsigned long end;
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 11fde0a..d898212 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -2537,15 +2537,49 @@ static void tracing_spd_release_pipe(struct splice_pipe_desc *spd,
+ }
  
- 	/* mm's last user has gone, and its about to be pulled down */
--	arch_exit_mmap(mm);
- 	mmu_notifier_release(mm);
+ static struct pipe_buf_operations tracing_pipe_buf_ops = {
+-	.can_merge = 0,
+-	.map = generic_pipe_buf_map,
+-	.unmap = generic_pipe_buf_unmap,
+-	.confirm = generic_pipe_buf_confirm,
+-	.release = tracing_pipe_buf_release,
+-	.steal = generic_pipe_buf_steal,
+-	.get = generic_pipe_buf_get,
++	.can_merge		= 0,
++	.map			= generic_pipe_buf_map,
++	.unmap			= generic_pipe_buf_unmap,
++	.confirm		= generic_pipe_buf_confirm,
++	.release		= tracing_pipe_buf_release,
++	.steal			= generic_pipe_buf_steal,
++	.get			= generic_pipe_buf_get,
+ };
  
--	if (!mm->mmap)	/* Can happen if dup_mmap() received an OOM */
--		return;
--
- 	if (mm->locked_vm) {
- 		vma = mm->mmap;
- 		while (vma) {
-@@ -2092,7 +2088,13 @@
- 			vma = vma->vm_next;
- 		}
++static size_t
++tracing_fill_pipe_page(struct page *pages, size_t rem,
++			struct trace_iterator *iter)
++{
++	size_t count;
++	int ret;
++
++	/* Seq buffer is page-sized, exactly what we need. */
++	for (;;) {
++		count = iter->seq.len;
++		ret = print_trace_line(iter);
++		count = iter->seq.len - count;
++		if (rem < count) {
++			rem = 0;
++			iter->seq.len -= count;
++			break;
++		}
++		if (ret == TRACE_TYPE_PARTIAL_LINE) {
++			iter->seq.len -= count;
++			break;
++		}
++
++		trace_consume(iter);
++		rem -= count;
++		if (!find_next_entry_inc(iter))	{
++			rem = 0;
++			iter->ent = NULL;
++			break;
++		}
++	}
++
++	return rem;
++}
++
+ static ssize_t tracing_splice_read_pipe(struct file *filp,
+ 					loff_t *ppos,
+ 					struct pipe_inode_info *pipe,
+@@ -2556,15 +2590,15 @@ static ssize_t tracing_splice_read_pipe(struct file *filp,
+ 	struct partial_page partial[PIPE_BUFFERS];
+ 	struct trace_iterator *iter = filp->private_data;
+ 	struct splice_pipe_desc spd = {
+-		.pages = pages,
+-		.partial = partial,
+-		.nr_pages = 0, /* This gets updated below. */
+-		.flags = flags,
+-		.ops = &tracing_pipe_buf_ops,
+-		.spd_release = tracing_spd_release_pipe,
++		.pages		= pages,
++		.partial	= partial,
++		.nr_pages	= 0, /* This gets updated below. */
++		.flags		= flags,
++		.ops		= &tracing_pipe_buf_ops,
++		.spd_release	= tracing_spd_release_pipe,
+ 	};
+ 	ssize_t ret;
+-	size_t count, rem;
++	size_t rem;
+ 	unsigned int i;
+ 
+ 	mutex_lock(&trace_types_lock);
+@@ -2573,45 +2607,25 @@ static ssize_t tracing_splice_read_pipe(struct file *filp,
+ 		ret = iter->trace->splice_read(iter, filp,
+ 					       ppos, pipe, len, flags);
+ 		if (ret)
+-			goto out;
++			goto out_err;
  	}
-+
-+	arch_exit_mmap(mm);
-+
- 	vma = mm->mmap;
-+	if (!vma)	/* Can happen if dup_mmap() received an OOM */
-+		return;
-+
- 	lru_add_drain();
- 	flush_cache_mm(mm);
- 	tlb = tlb_gather_mmu(mm, 1);
+ 
+ 	ret = tracing_wait_pipe(filp);
+ 	if (ret <= 0)
+-		goto out;
++		goto out_err;
+ 
+ 	if (!iter->ent && !find_next_entry_inc(iter)) {
+ 		ret = -EFAULT;
+-		goto out;
++		goto out_err;
+ 	}
+ 
+ 	/* Fill as many pages as possible. */
+ 	for (i = 0, rem = len; i < PIPE_BUFFERS && rem; i++) {
+ 		pages[i] = alloc_page(GFP_KERNEL);
++		if (!pages[i])
++			break;
+ 
+-		/* Seq buffer is page-sized, exactly what we need. */
+-		for (;;) {
+-			count = iter->seq.len;
+-			ret = print_trace_line(iter);
+-			count = iter->seq.len - count;
+-			if (rem < count) {
+-				rem = 0;
+-				iter->seq.len -= count;
+-				break;
+-			}
+-			if (ret == TRACE_TYPE_PARTIAL_LINE) {
+-				iter->seq.len -= count;
+-				break;
+-			}
+-
+-			trace_consume(iter);
+-			rem -= count;
+-			if (!find_next_entry_inc(iter))	{
+-				rem = 0;
+-				iter->ent = NULL;
+-				break;
+-			}
+-		}
++		rem = tracing_fill_pipe_page(pages[i], rem, iter);
+ 
+ 		/* Copy the data into the page, so we can start over. */
+ 		ret = trace_seq_to_buffer(&iter->seq,
+@@ -2633,7 +2647,7 @@ static ssize_t tracing_splice_read_pipe(struct file *filp,
+ 
+ 	return splice_to_pipe(pipe, &spd);
+ 
+-out:
++out_err:
+ 	mutex_unlock(&trace_types_lock);
+ 
+ 	return ret;
+-- 
+1.5.6.5
 
-
-
-
-
+-- 
