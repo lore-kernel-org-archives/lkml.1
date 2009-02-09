@@ -1,93 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbZBIN4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbZBIN73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755872AbZBIN4X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 08:56:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbZBIN4P
+	id S1755483AbZBIN73 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 08:59:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbZBIN7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 08:56:15 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38972 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753964AbZBIN4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 08:56:14 -0500
-Date: Mon, 9 Feb 2009 14:55:57 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: hpa@zytor.com, jeremy@goop.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, x86@kernel.org, rusty@rustcorp.com.au
-Subject: Re: [PATCHSET x86/master] add stack protector support for x86_32
-Message-ID: <20090209135557.GB14785@elte.hu>
-References: <1234186798-16820-1-git-send-email-tj@kernel.org>
+	Mon, 9 Feb 2009 08:59:20 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:45634 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752590AbZBIN7T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 08:59:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=qkZrhoAbUqYhILlI1OBTt7C7/LD+3WiZM4oAdDA+mhofBy4hqFVJoFtPON7YDgqcNu
+         6C4M5V1zvmX3P90LdIUUee8+7UDVFVIddtIcNR8hoZJqYBaSUoOYDraOlqUy+3ngL+s/
+         8AzilgsmqOJ5Nt0v6ztLMWUbzj9LisFJy2ZTc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1234186798-16820-1-git-send-email-tj@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <sWhNs83kKPE.A.4cG.E30jJB@chimera>
+References: <AIghyjFgMFP.A.uZD._10jJB@chimera>
+	 <sWhNs83kKPE.A.4cG.E30jJB@chimera>
+Date: Mon, 9 Feb 2009 15:59:17 +0200
+Message-ID: <8f53421d0902090559n26af97d0i1b8e5f5a04dd6976@mail.gmail.com>
+Subject: Re: [Bug #12574] possible circular locking dependency detected
+From: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I have verified that this still occurs on 2.6.29-rc4.
 
-* Tejun Heo <tj@kernel.org> wrote:
-
-> Hello,
-> 
-> This patchset adds stack protector support for x86_32.  The basics are
-> the same with x86_64 but there are some noticeable differences.
-> 
-> * x86_32 uses %fs for percpu base.  %gs is unused by the kernel and
->   managed lazily.  %gs is used for userland TLS and loading %gs with
->   different value on kernel entry is known to cost quite a bit on some
->   chips.
-> 
->   Lazy %gs handling is made optional and disabled if stack protector
->   is enabled.  To do this, entry for %gs is added to pt_regs.  This
->   adds one "pushl $0" to SAVE_ALL in entry_32.S when lazy %gs is on.
->   However, no overhead is added to common exit path and error_code
->   entry path shed a few instructions.  I don't think there will be
->   noticeable overhead but then again it does add an instruction to a
->   very hot path.  Would this be okay?
-
-Yeah, looks good.
-
-> * x86_32 doesn't support direct access to shadow part of %gs and
->   there's no swapgs, so GDT entry should be built for stack canary.
-> 
->   GDT entry 28 is used for this.  The boot cpu one is setup from
->   head_32.S.  Others while setting up percpu areas.
-
-Yeah.
-
-> * math_emu register access was completely broken.  Fixed.
-
-=> i'll queue this up for mainline too as this breakage is independent
-   of stackprotector.
-
-> * x86_32 exception handlers take register frame verbatim as struct
->   pt_regs.  With -fstack-protector, gcc copies pt_regs into the
->   callee's stack frame to put it after the stack canary.  Of course it
->   doesn't copy back (as the callee owns the argument) and any change
->   made to pt_regs is lost on return.  This is currently worked around
->   by adding -fno-stack-protector to any file containing such
->   functions.  We really need to teach gcc about the calling
->   convention.
-
-Or we could just push in struct pt_regs * ? Even if it's one more
-instruction that will avoid trouble not just with the canary but also
-with over-eager tail-call optimizations, etc.
-
-> This patchset contains the following eleven patches.
-
-Note, i sorted out the dependencies (it depended on x86/uaccess) and have
-put the commits into tip:core/percpu. I might not get around testing it
-today and pushing it out into tip:master, but i pushed out the core/percpu
-bits, should you queue up further changes.
-
-	Ingo
+On Sun, Feb 8, 2009 at 9:21 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.28.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12574
+> Subject         : possible circular locking dependency detected
+> Submitter       : Michael S. Tsirkin <m.s.tsirkin@gmail.com>
+> Date            : 2009-01-29 11:35 (11 days old)
+>
+>
+>
