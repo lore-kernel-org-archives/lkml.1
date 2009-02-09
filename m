@@ -1,81 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754101AbZBIBVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbZBIBWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754101AbZBIBVA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 20:21:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbZBIBUw
+	id S1754417AbZBIBWQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 20:22:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbZBIBWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 20:20:52 -0500
-Received: from casper.infradead.org ([85.118.1.10]:39849 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753615AbZBIBUv (ORCPT
+	Sun, 8 Feb 2009 20:22:00 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:54743 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753635AbZBIBV7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 20:20:51 -0500
-Date: Sun, 8 Feb 2009 17:21:11 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linus 2.6.29-rc4
-Message-ID: <20090208172111.6941cd3e@infradead.org>
-In-Reply-To: <alpine.LFD.2.00.0902081251090.3048@localhost.localdomain>
-References: <alpine.LFD.2.00.0902081251090.3048@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 8 Feb 2009 20:21:59 -0500
+Date: Sun, 8 Feb 2009 18:21:40 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Julia Lawall <julia@diku.dk>
+Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 4/6] drivers/pci: introduce missing kfree
+Message-ID: <20090209012140.GJ31509@parisc-linux.org>
+References: <Pine.LNX.4.64.0902082244490.25891@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0902082244490.25891@ask.diku.dk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 8 Feb 2009 13:01:04 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
+On Sun, Feb 08, 2009 at 10:45:24PM +0100, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
-> Another week (and a half), another -rc.
+> Error handling code following a kmalloc should free the allocated data.
+> Since the subsequent code that could provoke an error does not use the
+> allocated data, the allocation is just moved below it.
 > 
-> Arch updates (sparc, blackfin), driver updates (dvb, mmc, ide), ACPI 
-> updates, FS updates (ubifs, btrfs), you name it. It's all there.
-> 
-> But more importantly, people really have been working on regressions,
-> and hopefully this closes a nice set of the top one, and hopefully
-> without introducing too many new ones.
-> 
-> 			Linus
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-
-I just looked at the top -rc3 oopses/warnings/etc
-
-quick summary of the top ones:
-(manual rather than the normal automated scripts, so the format is
-different)
-"regulars" that happened a lot prior to  .29 (eg clearly non-regressions) I marked with a *
-
-Oopses: 78 oopses reported
---------------------------
-12 times	i915_driver_irq_handler		http://www.kerneloops.org/searchweek.php?search=i915_driver_irq_handler
-8 times		apic_mmio_read			http://www.kerneloops.org/searchweek.php?search=apic_mmio_read
-
-
-BUG/BUG_ON:	16 reports
---------------------------
-6 times		i915_gem_object_unpin		http://www.kerneloops.org/searchweek.php?i915_gem_object_unpin
-2 times		__schedule			http://www.kerneloops.org/searchweek.php?__schedule
-
-
-WARN/WARN_ON/etc:	999 reports
------------------------------------
-213 times	check_unmap			http://www.kerneloops.org/searchweek.php?search=check_unmap
-164 times	last_sector_hacks		http://www.kerneloops.org/searchweek.php?search=last_sector_hack
-94 times	*mpt_config			http://www.kerneloops.org/searchweek.php?search=mpt_config
-92 times	reserve_pfn_range		http://www.kerneloops.org/searchweek.php?search=reserve_pfn_range
-79 times	*init_ck804xrom			http://www.kerneloops.org/searchweek.php?search=init_ck804xrom
-56 times	*iwl_set_dynamic_key		http://www.kerneloops.org/searchweek.php?search=iwl_set_dynamic_key
-39 times	check_sync			http://www.kerneloops.org/searchweek.php?search=check_sync
-35 times	track_pfn_vma_copy		http://www.kerneloops.org/searchweek.php?search=track_pfn_vma_cop
+Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
