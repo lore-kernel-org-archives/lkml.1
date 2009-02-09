@@ -1,127 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756617AbZBISWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756357AbZBISY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756617AbZBISWi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 13:22:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbZBISW3
+	id S1756357AbZBISY2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 13:24:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754634AbZBISYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 13:22:29 -0500
-Received: from p02c12o148.mxlogic.net ([208.65.145.81]:39280 "EHLO
-	p02c12o148.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754679AbZBISW2 (ORCPT
+	Mon, 9 Feb 2009 13:24:19 -0500
+Received: from mail.fieldses.org ([141.211.133.115]:42043 "EHLO
+	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754084AbZBISYT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 13:22:28 -0500
-Message-ID: <4990743F.1070409@steeleye.com>
-Date: Mon, 09 Feb 2009 13:21:51 -0500
-From: Paul Clements <paul.clements@steeleye.com>
-User-Agent: Swiftdove 2.0.0.9 (X11/20071116)
+	Mon, 9 Feb 2009 13:24:19 -0500
+Date: Mon, 9 Feb 2009 13:24:25 -0500
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org, stable@kernel.org,
+       Frank van Maarseveen <frankvm@frankvm.com>,
+       Miklos Szeredi <mszeredi@suse.cz>
+Subject: [PATCH] lockd: fix regression in lockd's handling of blocked locks
+Message-ID: <20090209182425.GJ10297@fieldses.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: kernel list <linux-kernel@vger.kernel.org>,
-       jnelson-kernel-bugzilla@jamponi.net
-Subject: [PATCH 1/1] NBD: fix I/O hang on disconnected nbds
-Content-Type: multipart/mixed;
- boundary="------------030208040506030309030302"
-X-OriginalArrivalTime: 09 Feb 2009 18:21:51.0384 (UTC) FILETIME=[47382180:01C98AE3]
-X-Spam: [F=0.2000000000; S=0.200(2009020301)]
-X-MAIL-FROM: <paul.clements@steeleye.com>
-X-SOURCE-IP: [207.43.68.209]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030208040506030309030302
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+From: J. Bruce Fields <bfields@citi.umich.edu>
 
-This patch fixes a problem that causes I/O to a disconnected
-(or partially initialized) nbd device to hang indefinitely. To reproduce:
+If a client requests a blocking lock, is denied, then requests it again,
+then here in nlmsvc_lock() we will call vfs_lock_file() without FL_SLEEP
+set, because we've already queued a block and don't need the locks code
+to do it again.
 
-# ioctl NBD_SET_SIZE_BLOCKS /dev/nbd23 514048
-# dd if=/dev/nbd23 of=/dev/null bs=4096 count=1
+But that means vfs_lock_file() will return -EAGAIN instead of
+FILE_LOCK_DENIED.  So we still need to translate that -EAGAIN return
+into a nlm_lck_blocked error in this case, and put ourselves back on
+lockd's block list.
 
-...hangs...
+The bug was introduced by bde74e4bc64415b1 "locks: add special return
+value for asynchronous locks".
 
-This can also occur when an nbd device loses its nbd-client/server
-connection. Although we clear the queue of any outstanding I/Os after 
-the client/server connection fails, any additional I/Os that get queued 
-later will hang.
+Thanks to Frank van Maarseveen for the report; his original test
+case was essentially
 
-This bug may also be the problem reported in this bug report:
-http://bugzilla.kernel.org/show_bug.cgi?id=12277
+	for i in `seq 30`; do flock /nfsmount/foo sleep 10 & done
 
-Testing would need to be performed to determine if the two issues are 
-the same.
-
-This problem was introduced by the new request handling thread code
-("NBD: allow nbd to be used locally", 3/2008), which entered into 
-mainline around 2.6.25.
-
-The fix, which is fairly simple, is to restore the check for lo->sock
-being NULL in do_nbd_request. This causes I/O to an uninitialized nbd to
-immediately fail with an I/O error, as it did prior to the introduction 
-of this bug.
-
---
-Paul
-
---------------030208040506030309030302
-Content-Type: text/x-diff;
- name="nbd-io-hang.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="nbd-io-hang.diff"
-
-This patch fixes a problem that causes I/O to a disconnected
-(or partially initialized) nbd device to hang indefinitely. To reproduce:
-
-# ioctl NBD_SET_SIZE_BLOCKS /dev/nbd23 514048
-# dd if=/dev/nbd23 of=/dev/null bs=4096 count=1
-
-...hangs...
-
-This can also occur when an nbd device loses its nbd-client/server
-connection. Although we clear the queue of any outstanding I/Os after the
-client/server connection fails, any additional I/Os that get queued later
-will hang.
-
-This bug may also be the problem reported in this bug report:
-http://bugzilla.kernel.org/show_bug.cgi?id=12277
-
-Testing would need to be performed to determine if the two issues are the same.
-
-This problem was introduced by the new request handling thread code
-("NBD: allow nbd to be used locally", 3/2008), which entered into
-mainline around 2.6.25.
-
-The fix, which is fairly simple, is to restore the check for lo->sock
-being NULL in do_nbd_request. This causes I/O to an uninitialized nbd to
-immediately fail with an I/O error, as it did prior to the introduction of
-this bug.
-
-Signed-off-by: Paul Clements <paul.clements@steeleye.com>
+Tested-by: Frank van Maarseveen <frankvm@frankvm.com>
+Reported-by: Frank van Maarseveen <frankvm@frankvm.com>
+Cc: Miklos Szeredi <mszeredi@suse.cz>
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
 ---
+ fs/lockd/svclock.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
- nbd.c |    9 +++++++++
- 1 files changed, 9 insertions(+)
+Also available from
 
---- ./drivers/block/nbd.c.PRISTINE	2009-02-09 12:41:09.000000000 -0500
-+++ ./drivers/block/nbd.c	2009-02-09 12:41:19.000000000 -0500
-@@ -547,6 +547,15 @@ static void do_nbd_request(struct reques
+	git://linux-nfs.org/~bfields/linux.git for-2.6.29
+
+Also appropriate for stable.--b.
+
+diff --git a/fs/lockd/svclock.c b/fs/lockd/svclock.c
+index 6063a8e..763b78a 100644
+--- a/fs/lockd/svclock.c
++++ b/fs/lockd/svclock.c
+@@ -427,7 +427,7 @@ nlmsvc_lock(struct svc_rqst *rqstp, struct nlm_file *file,
+ 			goto out;
+ 		case -EAGAIN:
+ 			ret = nlm_lck_denied;
+-			goto out;
++			break;
+ 		case FILE_LOCK_DEFERRED:
+ 			if (wait)
+ 				break;
+@@ -443,6 +443,10 @@ nlmsvc_lock(struct svc_rqst *rqstp, struct nlm_file *file,
+ 			goto out;
+ 	}
  
- 		BUG_ON(lo->magic != LO_MAGIC);
- 
-+		if (unlikely(!lo->sock)) {
-+			printk(KERN_ERR "%s: Attempted send on closed socket\n",
-+				lo->disk->disk_name);
-+			req->errors++;
-+			nbd_end_request(req);
-+			spin_lock_irq(q->queue_lock);
-+			continue;
-+		}
++	ret = nlm_lck_denied;
++	if (!wait)
++		goto out;
 +
- 		spin_lock_irq(&lo->queue_lock);
- 		list_add_tail(&req->queuelist, &lo->waiting_queue);
- 		spin_unlock_irq(&lo->queue_lock);
+ 	ret = nlm_lck_blocked;
+ 
+ 	/* Append to list of blocked */
+-- 
+1.5.6.3
 
---------------030208040506030309030302--
