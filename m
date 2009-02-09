@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbZBIPqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755612AbZBIPuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755534AbZBIPqX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 10:46:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbZBIPqF
+	id S1755612AbZBIPuQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 10:50:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754773AbZBIPuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 10:46:05 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47907 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753940AbZBIPqE (ORCPT
+	Mon, 9 Feb 2009 10:50:03 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:47302 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754633AbZBIPuB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 10:46:04 -0500
-Date: Mon, 9 Feb 2009 07:44:56 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Herbert Xu <herbert@gondor.apana.org.au>
-cc: Jeff Chua <jeff.chua.linux@gmail.com>, David Miller <davem@davemloft.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, lkml <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: commit 64ff3b938ec6782e6585a83d5459b98b0c3f6eb8 breaks rlogin
-In-Reply-To: <20090209055848.GA3889@gondor.apana.org.au>
-Message-ID: <alpine.LFD.2.00.0902090740100.3048@localhost.localdomain>
-References: <b6a2187b0902050641h7943816ds26275a320e724440@mail.gmail.com> <20090206031025.GA3281@gondor.apana.org.au> <b6a2187b0902052139p3be2f321ucd900cc5346bff8c@mail.gmail.com> <20090206054541.GA4954@gondor.apana.org.au> <b6a2187b0902060335h646e8d86pf00773035f577665@mail.gmail.com>
- <20090209055848.GA3889@gondor.apana.org.au>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 9 Feb 2009 10:50:01 -0500
+Date: Mon, 9 Feb 2009 10:49:59 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+cc: mingo@elte.hu, fweisbec@gmail.com, penberg@cs.helsinki.fi,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 2/2] trace: splice support for tracing_pipe
+In-Reply-To: <da7111334b2e95966758bf982a7bcf3b31ccba9c.1234159200.git.eduard.munteanu@linux360.ro>
+Message-ID: <alpine.DEB.1.10.0902091048310.14528@gandalf.stny.rr.com>
+References: <cover.1234159200.git.eduard.munteanu@linux360.ro> <83d0bfae11560e926bea9c9e572d6facef145b47.1234159200.git.eduard.munteanu@linux360.ro> <da7111334b2e95966758bf982a7bcf3b31ccba9c.1234159200.git.eduard.munteanu@linux360.ro>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -30,41 +28,29 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+On Mon, 9 Feb 2009, Eduard - Gabriel Munteanu wrote:
+> +
+> +static ssize_t tracing_splice_read_pipe(struct file *filp,
+> +					loff_t *ppos,
+> +					struct pipe_inode_info *pipe,
+> +					size_t len,
+> +					unsigned int flags)
+> +{
+> +	struct page *pages[PIPE_BUFFERS];
+> +	struct partial_page partial[PIPE_BUFFERS];
+> +	struct trace_iterator *iter = filp->private_data;
+> +	struct splice_pipe_desc spd = {
+> +		.pages = pages,
+> +		.partial = partial,
+> +		.nr_pages = 0, /* This gets updated below. */
+> +		.flags = flags,
+> +		.ops = &tracing_pipe_buf_ops,
+> +		.spd_release = tracing_spd_release_pipe,
+> +	};
 
-On Mon, 9 Feb 2009, Herbert Xu wrote:
-> 
-> Then the problem isn't my patch at all.  My patch only affects
-> the side sending the urgent data, according to your straces, rlogin
-> is only receiving urgent data, not sending it.  So the patch cannot
-> have an affect.
+Note, this is getting a little stack heavy. It is still in bounds,
+but I get very nervous when I see structure arrays on the stack.
+If either the structure or the array grows large, we can be in trouble.
 
-The trace is incolclusive about that - just look at it. It's not following 
-threads/children etc, so it's missing all the relevant pieces.
+-- Steve
 
-Which you should have realized, Herbert, since you had the knowledge that 
-your patch _DOES_ make a difference, enough to bisect to it, and enough 
-to see that reverting it changes behaviour.
-
-Why are you arguing against facts?
-
->From the trace:
-
-	clone(child_stack=0, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0xb7d81918) = 6433
-	rt_sigaction(SIGURG, {0x80491d0, [URG], SA_RESTART}, {SIG_DFL}, 8) = 0
-	rt_sigaction(SIGUSR1, {0x8048de0, [USR1], SA_RESTART}, {SIG_DFL}, 8) = 0
-	rt_sigprocmask(SIG_SETMASK, [], [USR1 URG], 8) = 0
-	--- SIGURG (Urgent I/O condition) @ 0 (0) ---
-	kill(6433, SIGURG)                      = 0
-
-IOW, the trace isn't saying anything at all, because all the real work 
-probably got done in that child process.
-
-> No you're still stracing rlogin, which in this case is the receiver
-> of the urgent data.  Please strace the sending side, which would be
-> presumably be rlogind in this case.
-
-Herbert, how sure are you that there is no URG data on that side?
-
-You clearly spent _zero_ time actually looking at the trace, so...
-
-		Linus
