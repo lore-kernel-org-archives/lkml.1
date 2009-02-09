@@ -1,106 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755154AbZBITF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbZBITMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755154AbZBITF1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 14:05:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbZBITFO
+	id S1754883AbZBITMT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 14:12:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbZBITMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 14:05:14 -0500
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:45730 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751235AbZBITFN (ORCPT
+	Mon, 9 Feb 2009 14:12:09 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:55545 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752625AbZBITMI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 14:05:13 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq8EAEsLkElMQWt2/2dsb2JhbACBbs8ahBoG
-Date: Mon, 9 Feb 2009 14:05:09 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
-       ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
-	(repost)
-Message-ID: <20090209190509.GA17895@Krystal>
-References: <20090208224419.GA19512@Krystal> <20090209041153.GR7120@linux.vnet.ibm.com> <20090209045352.GA28653@Krystal> <20090209051737.GA29254@Krystal> <20090209132343.GT7120@linux.vnet.ibm.com> <20090209172816.GA12934@Krystal> <20090209174741.GE6802@linux.vnet.ibm.com> <20090209181341.GA15514@Krystal> <20090209183742.GI6802@linux.vnet.ibm.com> <20090209184951.GA12184@linux.vnet.ibm.com>
+	Mon, 9 Feb 2009 14:12:08 -0500
+Subject: Re: [RFC] Dynamic Tick and Deferrable Timer Support
+From: John Stultz <johnstul@us.ibm.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Jon Hunter <jon-hunter@ti.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20090207092021.GD1411@ucw.cz>
+References: <CF7665F795A4BE438425FE728CEACFA302F2436B52@dlee01.ent.ti.com>
+	 <20090114221624.76ee8aa4.akpm@linux-foundation.org>
+	 <7B4574D56E4ADF438756313E9A172A872CB8232E@dlee01.ent.ti.com>
+	 <7E82351C108FA840AB1866AC776AEC46471B9452@orsmsx505.amr.corp.intel.com>
+	 <7B4574D56E4ADF438756313E9A172A872CB82749@dlee01.ent.ti.com>
+	 <1233081369.28350.68.camel@jamoon.sc.intel.com>
+	 <7E82351C108FA840AB1866AC776AEC464723835C@orsmsx505.amr.corp.intel.com>
+	 <4981D957.8040409@ti.com>
+	 <1f1b08da0901290936k71d016fcme81f04ca16029a7c@mail.gmail.com>
+	 <20090207092021.GD1411@ucw.cz>
+Content-Type: text/plain
+Date: Mon, 09 Feb 2009 11:10:42 -0800
+Message-Id: <1234206642.10457.45.camel@jstultz-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090209184951.GA12184@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:01:06 up 39 days, 18:59,  4 users,  load average: 0.68, 0.68,
-	0.68
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> On Mon, Feb 09, 2009 at 10:37:42AM -0800, Paul E. McKenney wrote:
-> > On Mon, Feb 09, 2009 at 01:13:41PM -0500, Mathieu Desnoyers wrote:
-> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> 
-> [ . . . ]
-> 
-> > > You know what ? Changing RCU_GP_CTR_BIT to 16 uses a
-> > > testw %ax, %ax instead of a testb %al, %al. The trick here is that
-> > > RCU_GP_CTR_BIT must be a multiple of 8 so we can use a full 8-bits,
-> > > 16-bits or 32-bits bitmask for the lower order bits.
-> > > 
-> > > On 64-bits, using a RCU_GP_CTR_BIT of 32 is also ok. It uses a testl.
-> > > 
-> > > To provide 32-bits compability and allow the deepest nesting possible, I
-> > > think it makes sense to use
-> > > 
-> > > /* Use the amount of bits equal to half of the architecture long size */
-> > > #define RCU_GP_CTR_BIT (sizeof(long) << 2)
+On Sat, 2009-02-07 at 10:20 +0100, Pavel Machek wrote:
+> On Thu 2009-01-29 09:36:00, john stultz wrote:
+> > On Thu, Jan 29, 2009 at 8:29 AM, Jon Hunter <jon-hunter@ti.com> wrote:
+> > > Pallipadi, Venkatesh wrote:
+> > > I have spent several weeks trying to suppress kernel timers using the
+> > > deferred timers and lengthen the sleep time. I am now able to get the device
+> > > to sleep for minutes but I found that max_delta_ns is a limiting factor. I
+> > > will be surprised if you can sleep for longer than ~2.15 seconds with the
+> > > current implementation.
 > > 
-> > You lost me on this one:
+> > As an aside, there are some further hardware limitations in the
+> > timekeeping core that limit the amount of time the hardware can sleep.
+> > For instance, the acpi_pm clocksource wraps every 2.5 seconds or so,
+> > so we have to wake up periodically to sample it to avoid wrapping
+> > issues.
 > > 
-> > 	sizeof(long) << 2 = 0x10
-> > 
-> > I could believe the following (run on a 32-bit machine):
-> > 
-> > 	1 << (sizeof(long) * 8 - 1) = 0x80000000
-> > 
-> > Or, if you were wanting to use a bit halfway up the word, perhaps this:
-> > 
-> > 	1 << (sizeof(long) * 4 - 1) = 0x8000
-> > 
-> > Or am I confused?
+> > Just to be able to deal with all the different hardware out there, the
+> > timekeeping core expects to wake up twice a second to do this
+> > sampling. It may be possible to push this out if you are using other
 > 
-> Well, I am at least partly confused.  You were wanting a low-order bit,
-> so you want to lose the "- 1" above.  Here are some of the possibilities:
-> 
-> 	sizeof(long) = 0x4
-> 	sizeof(long) << 2 = 0x10
-> 	1 << (sizeof(long) * 8 - 1) = 0x80000000
-> 	1 << (sizeof(long) * 4) = 0x10000
-> 	1 << (sizeof(long) * 4 - 1) = 0x8000
-> 	1 << (sizeof(long) * 2) = 0x100
-> 	1 << (sizeof(long) * 2 - 1) = 0x80
-> 
-> My guess is that 1 << (sizeof(long) * 4) and 1 << (sizeof(long) * 2)
-> are of the most interest.
-> 
+> That's strange... I think I seen less than 2 wakeups per second on
+> powertop...? (thinkpad x60, nothing exotic).
 
-Exactly. I'll change it to :
+Yea, I don't think there is an interface that the timekeeping code
+communicates that through. Probably a good idea to get that established
+before folks try to push further then a second and end up with trouble
+on hardware with short clocksources.
 
-#define RCU_GP_CTR_BIT          (1 << (sizeof(long) << 2))
-
-I somehow thought this define was used as a bit number rather than the
-bit mask.
-
-Thanks,
-
-Mathieu
+thanks
+-john
 
 
-
-> 							Thanx, Paul
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
