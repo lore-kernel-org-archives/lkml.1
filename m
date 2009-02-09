@@ -1,153 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbZBIHWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbZBIH2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754684AbZBIHWe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 02:22:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbZBIHWZ
+	id S1754553AbZBIH2i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 02:28:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbZBIH21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 02:22:25 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:33543 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753960AbZBIHWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 02:22:24 -0500
+	Mon, 9 Feb 2009 02:28:27 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:40969 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754001AbZBIH20 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 02:28:26 -0500
+Date: Mon, 9 Feb 2009 18:28:06 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+Cc: David Miller <davem@davemloft.net>, jeff.chua.linux@gmail.com, rjw@sisk.pl,
+       torvalds@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>
+Subject: Re: commit 64ff3b938ec6782e6585a83d5459b98b0c3f6eb8 breaks rlogin
+Message-ID: <20090209072806.GB4380@gondor.apana.org.au>
+References: <20090206054541.GA4954@gondor.apana.org.au> <b6a2187b0902060335h646e8d86pf00773035f577665@mail.gmail.com> <20090209055848.GA3889@gondor.apana.org.au> <20090208.220357.261414983.davem@davemloft.net> <20090209061151.GA3982@gondor.apana.org.au> <Pine.LNX.4.64.0902090853360.20576@wrl-59.cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-X-Fcc: ~/Mail/utrace
-Cc: utrace-devel@redhat.com, linux-kernel@vger.kernel.org,
-       systemtap@sources.redhat.com
-Subject: Re: proof-of-concept, utrace->ftrace engine
-In-Reply-To: Frank Ch. Eigler's message of  Tuesday, 27 January 2009 14:54:26 -0500 <20090127195425.GF32568@redhat.com>
-References: <20090127195425.GF32568@redhat.com>
-X-Windows: you'd better sit down.
-Message-Id: <20090209072218.214FBFC35D@magilla.sf.frob.com>
-Date: Sun,  8 Feb 2009 23:22:18 -0800 (PST)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0902090853360.20576@wrl-59.cs.helsinki.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Here's the start of a little ditty that ties process-related events as
-> hooked by the Roland McGrath's utrace code into the ftrace
-> buffer/control widgetry.  If nothing else, think of it as one
-> potential in-tree user of utrace.
+On Mon, Feb 09, 2009 at 09:13:00AM +0200, Ilpo Järvinen wrote:
+> 
+> Hmm, what happens if a opposite dir ACK gets sent (it's zero sized seqno
+> range will be above urgent sequence when urg is not yet acknowledged)? So
+> we'll take the later branch after your change and send bogus 0xffff urg?
+> I think you're change might have actually broken bidir tcp completely (and
+> probably window probing as well under some conditions). Congraz, two flies
+> with a single stroke :-). You would have needed an additional check that
+> the tcb->seq is below urg...
+> 
+> ...Below is a patch but Jeff might need to revert the revert first if
+> he tests with the latest Linus' tree.
 
-Cool!  I won't comment on the use of the tracer or its interface code,
-I'll leave that to others.  (It's simplistic and kludgey, but I know
-that's what it's going for.)  I'll just review your use of the utrace API.
+Good point! That would definitely explain this.
+ 
+> [PATCH] tcp: check that we're still < urg instead of sending a bogus one
+> 
+> Opposite dir ACK with zero sized seqno range can go into the
+> later condition once urg is in the outstanding window not
+> yet acknowledge (we're still in urg mode but seqno we sent in
+> the ack won't be below snd_up). Need to check that we never
+> advertize bogus urg for a segment which is after the snd_up.
+> 
+> Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+> ---
+>  net/ipv4/tcp_output.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/net/ipv4/tcp_output.c b/net/ipv4/tcp_output.c
+> index 557fe16..c808d73 100644
+> --- a/net/ipv4/tcp_output.c
+> +++ b/net/ipv4/tcp_output.c
+> @@ -667,7 +667,8 @@ static int tcp_transmit_skb(struct sock *sk, struct sk_buff *skb, int clone_it,
+>  		if (between(tp->snd_up, tcb->seq + 1, tcb->seq + 0xFFFF)) {
+>  			th->urg_ptr = htons(tp->snd_up - tcb->seq);
+>  			th->urg = 1;
+> -		} else if (after(tcb->seq + 0xFFFF, tp->snd_nxt)) {
+> +		} else if (after(tcb->seq + 0xFFFF, tp->snd_nxt) &&
+> +			   before(tcb->seq, tcp->snd_up)) {
+>  			th->urg_ptr = 0xFFFF;
+>  			th->urg = 1;
+>  		}
 
-> +/* Should tracing apply to given task?  Compare against filter
-> +   values. */
-> +static int trace_test (struct task_struct *tsk) 
-> +{
-> +        if (trace_taskcomm_filter[0]
-> +            && strcmp (trace_taskcomm_filter, tsk->comm))
-> +                return 0;
+We could rewrite this as
 
-Note that this is the most simple-minded approach for this.  The ->comm
-value only changes at exec.  So the "normal", slightly more sophisticated,
-way to approach this would be to check at attach time if ->comm matches.
-If so, enable full tracing.  If not, enable only EXEC and CLONE events.  In
-your report_exec callback, check ->comm to see if the task now should be
-filtered in or now should be filtered out, and call utrace_set_events with
-more or fewer bits set accordingly.  You always need the report_clone
-callback to attach the new child so you can see when it execs; give the new
-child the thin or fat event mask as its parent has.
-
-This way, you don't go off the fast paths in signals, etc. when you are
-never going to care about those events.  For a trivial hack like this one,
-you might not care.  But for more serious use, you want to bother doing it
-the fancier way.  If you added syscall tracing support, you probably would
-care about the overhead of enabling that on all the uninteresting tasks.
-
-> +        if (trace_taskuid_filter != (u32)-1 
-> +            && trace_taskuid_filter != task_uid (tsk))
-> +                return 0;
-
-We don't have a utrace event for uid changes, so this one you do have to do
-"eagerly".  (Some day in the future, we might well have an event for this
-so it can be treated intelligently on transitions as with exec as the
-"->comm change event".)
-
-> +static struct utrace_engine_ops process_trace_ops __read_mostly;
-
-This is normally const.  utrace never touches it (all const pointers).
-You could change it yourself, but that would not be a normal way to do things.
-
-> +        engine = utrace_attach_task (tsk, UTRACE_ATTACH_CREATE,
-> +                                     & process_trace_ops, NULL);
-
-Given how you use UTRACE_ATTACH_MATCH_OPS to effect detach, you might want
-to use UTRACE_ATTACH_MATCH_OPS|UTRACE_ATTACH_EXCLUSIVE here.  It's probably
-impossible to have another call than yours with the same ops pointer, but
-if not then it probably indicates that your later detach could well foul
-something up.
-
-> +                /* XXX: Why is this not implicit from the fields
-> +                   set in the process_trace_ops? */
-> +                rc = utrace_set_events (tsk, engine,
-
-The same reason FWRITE on a struct file is not implicit from having a
-.write field set in your struct file_operations.  Your ops struct says
-statically what your code is written to handle.  An engine's event mask
-says what callbacks you want from that specific thread to that specific
-engine at the moment.
-
-> +                                        UTRACE_EVENT(SIGNAL) |
-
-Note this means (exactly as documented):
-
-	_UTRACE_EVENT_SIGNAL,	/* Signal delivery will run a user handler.  */
-
-You might have had UTRACE_EVENT_SIGNAL_ALL in mind.  
-That is the union of the five different kinds of SIGNAL* event.
-
-> +u32 process_trace_report_clone (enum utrace_resume_action action,
-[...]
-> +        return action;
-> +}
-
-This is wrong.  If you have nothing special you want to do (just
-observing, not perturbing), then "return UTRACE_RESUME;" is what you say.
-In report_signal, the non-utrace_resume_action part of the return value
-matters, so:
-	return UTRACE_RESUME | utrace_signal_action(action);
-is what doesn't change anything there.
-
-As documented under 'struct utrace_engine_ops', the action argument is
-what other engines are causing to be done independent of what your
-engine does.  The utrace_resume_action part of the return value is
-what *your engine* wants done, independent of what other engines say.
-Your choices might be informed by what other engines are doing in some
-cases, but it is not right to mimic what they said.  If some other
-engine said UTRACE_STOP, then now you say UTRACE_STOP, but you'll
-never call utrace_control to resume, and the thread will be stopped
-forever.  If he says UTRACE_STOP and you don't care, you say
-UTRACE_RESUME, and the thread stops (UTRACE_STOP < UTRACE_RESUME).
-When he calls utrace_control in the future, the thread resumes because
-there is no engine left whose last command was UTRACE_STOP.
-
-The non-utrace_resume_action part of the return value (only nonempty for
-SIGNAL* and SYSCALL* events) is different.  Unlike utrace_resume_action,
-the different choices of different engines can't be combined into a
-"least common denominator".  The choice of utrace_signal_action or
-utrace_syscall_action setting is what the user-visible disposition
-resolving the event will be; all the choices are mutually exclusive and
-their effects final.  The last callback to run chooses the final answer.
-So each callback has to decide something.  It gets the incoming choice
-in its action argument, either from the preceding callback or from the
-original normal default (what prevails in the absence of tracing).  The
-idiom above passes through the incoming value to leave that choice alone.
-
-> +                /* Skip over kernel threads. */
-> +                mm = get_task_mm (tsk);
-> +                if (!mm)
-> +                        continue;
-
-This should just check PF_KTHREAD.  (As it is, you leak an mm ref here.)
-Or just don't bother and handle utrace_attach returning ERR_PTR(-EPERM),
-which it will for a kernel thread.
-
+	if (unlikely(tcp_urg_mode(tp) && before(tcb->seq, tcp->snd_up))) {
+		if (before(tp->sndup, tcb->seq + 0x10000)) {
+			th->urg_ptr = htons(tp->snd_up - tcb->seq);
+			th->urg = 1;
+		} else if (after(tcb->seq + 0xFFFF, tp->snd_nxt)) {
+			th->urg_ptr = 0xFFFF;
+			th->urg = 1;
+		}
+	}
 
 Thanks,
-Roland
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
