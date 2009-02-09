@@ -1,54 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbZBIN73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbZBIODp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755483AbZBIN73 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 08:59:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbZBIN7U
+	id S1755233AbZBIODp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 09:03:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbZBIODh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 08:59:20 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:45634 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752590AbZBIN7T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 08:59:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=qkZrhoAbUqYhILlI1OBTt7C7/LD+3WiZM4oAdDA+mhofBy4hqFVJoFtPON7YDgqcNu
-         6C4M5V1zvmX3P90LdIUUee8+7UDVFVIddtIcNR8hoZJqYBaSUoOYDraOlqUy+3ngL+s/
-         8AzilgsmqOJ5Nt0v6ztLMWUbzj9LisFJy2ZTc=
+	Mon, 9 Feb 2009 09:03:37 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60217 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752452AbZBIODg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 09:03:36 -0500
+Date: Mon, 9 Feb 2009 15:03:21 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 4/5] tracing/core: drop the cpu field from trace_entry
+Message-ID: <20090209140321.GA20758@elte.hu>
+References: <498e176a.0637560a.3cea.3ff8@mx.google.com> <20090209095324.GD14402@elte.hu> <20090209134744.GC4705@nowhere>
 MIME-Version: 1.0
-In-Reply-To: <sWhNs83kKPE.A.4cG.E30jJB@chimera>
-References: <AIghyjFgMFP.A.uZD._10jJB@chimera>
-	 <sWhNs83kKPE.A.4cG.E30jJB@chimera>
-Date: Mon, 9 Feb 2009 15:59:17 +0200
-Message-ID: <8f53421d0902090559n26af97d0i1b8e5f5a04dd6976@mail.gmail.com>
-Subject: Re: [Bug #12574] possible circular locking dependency detected
-From: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090209134744.GC4705@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have verified that this still occurs on 2.6.29-rc4.
 
-On Sun, Feb 8, 2009 at 9:21 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.28.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12574
-> Subject         : possible circular locking dependency detected
-> Submitter       : Michael S. Tsirkin <m.s.tsirkin@gmail.com>
-> Date            : 2009-01-29 11:35 (11 days old)
->
->
->
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> On Mon, Feb 09, 2009 at 10:53:24AM +0100, Ingo Molnar wrote:
+> > 
+> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> > 
+> > > Impact: fix a bug on cpu output
+> > > 
+> > > While looking on the function tracer traces, I first cheered up:
+> > > 
+> > >             TASK-PID    CPU#    TIMESTAMP  FUNCTION
+> > >                | |       |          |         |
+> > >          firefox-4622  [081]  1315.790405: lapic_next_event <-clockevents_program_event
+> > >          firefox-4622  [178]  1315.790405: native_apic_mem_write <-lapic_next_event
+> > >          firefox-4622  [020]  1315.790406: perf_counter_unthrottle <-smp_apic_timer_interrupt
+> > > 
+> > > But no, actually I don't have so many cpus...
+> > 
+> > incidentally, Steve came up with the exact same patch :)
+> > 
+> > 	Ingo
+> 
+> Heh, I guess the moon inspired both of us in the name of tracing, or
+> something like that...
+
+It was exactly at around the time Thomas complained over IRC
+about the visible CPU# breakage in the tracer output.
+
+So i blame it on telepathy ;-)
+
+	Ingo
