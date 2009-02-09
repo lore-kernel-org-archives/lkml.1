@@ -1,93 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbZBIV14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754985AbZBIV3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755242AbZBIV14 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 16:27:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbZBIV1p
+	id S1754985AbZBIV3x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 16:29:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbZBIV3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 16:27:45 -0500
-Received: from mail.fieldses.org ([141.211.133.115]:37957 "EHLO
-	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754088AbZBIV1o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 16:27:44 -0500
-Date: Mon, 9 Feb 2009 16:27:51 -0500
-To: "Gary L. Grobe" <gary@grobe.net>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: processes in D state too long too often
-Message-ID: <20090209212751.GK13636@fieldses.org>
-References: <W396157575167661234039767@webmail27>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <W396157575167661234039767@webmail27>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Mon, 9 Feb 2009 16:29:44 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:33687 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753898AbZBIV3n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 16:29:43 -0500
+Subject: [PATCH -v1 00/11] fsnotify: unified filesystem notification backend
+From: Eric Paris <eparis@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: sfr@canb.auug.org.au, rlove@rlove.org, malware-list@lists.printk.net,
+       hch@infradead.org, viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
+       john@johnmccutchan.com, alan@lxorguk.ukuu.org.uk
+In-Reply-To: <20090209211525.8985.13887.stgit@paris.rdu.redhat.com>
+References: <20090209211525.8985.13887.stgit@paris.rdu.redhat.com>
+Content-Type: text/plain
+Date: Mon, 09 Feb 2009 16:28:52 -0500
+Message-Id: <1234214932.3724.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(By the way, please try not to start new threads or drop people from the
-cc.)
+Whoops, forgot the cover note. So proceeding is an implementation of
+fsnotify, a novel unified filesystem notification backend.  This patch
+set implements the backend and converts both dnotify and inotify to this
+backend.  This patch set reduced the size of struct inode if one uses
+both dnotify and inotify.
 
-On Sat, Feb 07, 2009 at 08:49:27PM +0000, Gary L. Grobe wrote:
-> > Then send us those traces. Please try to avoid wordwrapping them in
-> the email.
-> 
-> Ok, so I run my simulations, and then run the following script. 
-> 
-> --- This was run on the master node
-> echo w > /proc/sysrq-trigger
-> dmesg -c -s 1000000 > foo
-> 
-> I've captured these stuck tasks on both the master and the slave node, on separate runs.
+I have patches which move the audit functionality which uses inotify to
+fsnotify and I have patches which implement fanotify, my new on access
+notification and access decisions to this backend, but just to keep the
+series small I'm only sending fsnotify, dnotify and inotify changes.
 
-So the nfsd stacks are all identical:
+I would love the most careful and scrutinizing eyes on patches 3, 9, 10
+which implement the changes to inodes and introduce by far the most
+complex locking, refcnt, and object lifetimes.
 
-> nfsd          D 00000001079318f8     0  5832      2
->  ffff880837a23c70 0000000000000046 0000000000000000 0000000000000002
->  ffff88083aef5950 ffff88083cda5790 ffff88083aef5b80 0000000437a23c80
->  00000000ffffffff 00000001079318fb 0000000000000000 0000000000000000
-> Call Trace:
->  [<ffffffff8056e8e3>] schedule_timeout+0x8a/0xad
->  [<ffffffff80237e8b>] process_timeout+0x0/0x5
->  [<ffffffff8056e8de>] schedule_timeout+0x85/0xad
->  [<ffffffff80238178>] msleep+0x14/0x1e
->  [<ffffffff8030235d>] nfsd_vfs_write+0x221/0x2dd
->  [<ffffffff8028222b>] __dentry_open+0x14c/0x23b
->  [<ffffffff80302a93>] nfsd_write+0xc5/0xe2
->  [<ffffffff803003bd>] nfsd_proc_write+0xc5/0xde
->  [<ffffffff80307ac1>] decode_fh+0x1c/0x45
->  [<ffffffff802fe8f3>] nfsd_dispatch+0xde/0x1c2
->  [<ffffffff805456f5>] svc_process+0x408/0x6e7
->  [<ffffffff8056f920>] __down_read+0x12/0x93
->  [<ffffffff802fef26>] nfsd+0x1b7/0x285
->  [<ffffffff802fed6f>] nfsd+0x0/0x285
->  [<ffffffff80240d34>] kthread+0x47/0x73
->  [<ffffffff8022bd1d>] schedule_tail+0x27/0x5f
->  [<ffffffff8020c109>] child_rip+0xa/0x11
->  [<ffffffff80240ced>] kthread+0x0/0x73
->  [<ffffffff8020c0ff>] child_rip+0x0/0x11
+dnotify changes are in patch 5
+inotify changes are in patch 11
 
-Presumably that's the msleep(10) in nfsd_vfs_write().
+ Documentation/filesystems/fsnotify.txt |  192 ++++++++++
+ MAINTAINERS                            |    4 
+ fs/inode.c                             |   10 
+ fs/notify/Kconfig                      |   13 
+ fs/notify/Makefile                     |    2 
+ fs/notify/dnotify/Kconfig              |    1 
+ fs/notify/dnotify/dnotify.c            |  449 +++++++++++++++++++-----
+ fs/notify/fsnotify.c                   |   91 +++++
+ fs/notify/fsnotify.h                   |   28 +
+ fs/notify/group.c                      |  207 +++++++++++
+ fs/notify/inode_mark.c                 |  330 ++++++++++++++++++
+ fs/notify/inotify/Kconfig              |   20 -
+ fs/notify/inotify/Makefile             |    2 
+ fs/notify/inotify/inotify.h            |  108 +++++
+ fs/notify/inotify/inotify_fsnotify.c   |  176 +++++++++
+ fs/notify/inotify/inotify_kernel.c     |  236 +++++++++++++
+ fs/notify/inotify/inotify_user.c       |  598 ++++++++-------------------------
+ fs/notify/notification.c               |  348 +++++++++++++++++++
+ include/linux/dcache.h                 |    3 
+ include/linux/dnotify.h                |   29 -
+ include/linux/fs.h                     |    6 
+ include/linux/fsnotify.h               |  255 ++++++++++----
+ include/linux/fsnotify_backend.h       |  265 ++++++++++++++
+ 23 files changed, 2735 insertions(+), 638 deletions(-)
 
-That wouldn't explain the same nfsd thread waiting for several seconds,
-though.  Or was it just that that several seconds during which different
-nfsd threads were stuck in D, not necessarily the same ones?
-
-What does your /etc/exports file look like on the server, and what are
-the mount options on the client?
-
-You could try turning off that msleep() with no_wdelay, but it may not
-help.
-
-The more likely explanation is that you just switched to a more recent
-distro where "sync" (as opposed to "async") is the option.  Depending on
-workload, "async" may improve performance a great deal, at the expense
-of possible data corruption on server reboot!
-
-If you're doing a lot of writing and using NFSv2, then switching to
-NFSv3 may give you performance close to the "async" performance without
-the corruption worries.
-
---b.
