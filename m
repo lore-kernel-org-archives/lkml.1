@@ -1,77 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754071AbZBITih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757076AbZBITj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754071AbZBITih (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 14:38:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754317AbZBITgD
+	id S1757076AbZBITj7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 14:39:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113AbZBITjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 14:36:03 -0500
-Received: from kroah.org ([198.145.64.141]:34774 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755263AbZBITfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 14:35:50 -0500
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: "Sachin P. Sant" <sachinp@in.ibm.com>, Willy Tarreau <w@1wt.eu>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 6/6] Staging: panel: fix lcd panel driver build failure
-Date: Mon,  9 Feb 2009 11:34:06 -0800
-Message-Id: <1234208046-2295-6-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.6.1.2
-In-Reply-To: <20090209193201.GB2194@kroah.com>
-References: <20090209193201.GB2194@kroah.com>
+	Mon, 9 Feb 2009 14:39:47 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55516 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752374AbZBITjq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 14:39:46 -0500
+Date: Mon, 9 Feb 2009 20:36:25 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH, for 2.6.29] ptrace: fix the usage of ptrace_fork()
+Message-ID: <20090209193625.GA4808@redhat.com>
+References: <20090209010233.GA26444@redhat.com> <20090209012824.GA26461@redhat.com> <928CFBE8E7CB0040959E56B4EA41A77E4A1E7C8B@irsmsx504.ger.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E4A1E7C8B@irsmsx504.ger.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sachin P. Sant <sachinp@in.ibm.com>
+On 02/09, Metzger, Markus T wrote:
+>
+> >PTRACE_BTS_CONFIG allocates ->bts_buffer via alloc_locked_buffer()
+> >which updates mm->total_vm/locked_vm.
+> >
+> >ptrace_detach() does free_locked_buffer() which "restores" mm->xxx_vm.
+>
+> That's what I expect to be the normal case.
+>
+>
+> >But if the tracer exits we are doing __ptrace_unlink()->ptrace_bts_untrace()
+> >which uses a plain kfree(), in that case we don't update mm->xxx_vm ?
+>
+> That's correct.
+> When the tracer dies, do_exit() first calls exit_mm() and then calls exit_notify(), which eventually calls __ptrace_unlink() and ptrace_bts_untrace().
+>
+> At this time, the tracer's mm is already gone,
 
-* Fix build break for lcd panel driver.
+It is not if we have sub-threads (which share the same ->mm),
 
-Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
-Cc: Willy Tarreau <w@1wt.eu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/staging/panel/panel.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+> but the bts buffer is not.
+> The code reclaims the memory; so we should not leak memory.
 
-diff --git a/drivers/staging/panel/panel.c b/drivers/staging/panel/panel.c
-index 5ffe269..ab69c1b 100644
---- a/drivers/staging/panel/panel.c
-+++ b/drivers/staging/panel/panel.c
-@@ -622,7 +622,7 @@ static int set_ctrl_bits(void)
- }
- 
- /* sets ctrl & data port bits according to current signals values */
--static void set_bits(void)
-+static void panel_set_bits(void)
- {
- 	set_data_bits();
- 	set_ctrl_bits();
-@@ -707,12 +707,12 @@ static void lcd_send_serial(int byte)
- 	 */
- 	for (bit = 0; bit < 8; bit++) {
- 		bits.cl = BIT_CLR;	/* CLK low */
--		set_bits();
-+		panel_set_bits();
- 		bits.da = byte & 1;
--		set_bits();
-+		panel_set_bits();
- 		udelay(2);	/* maintain the data during 2 us before CLK up */
- 		bits.cl = BIT_SET;	/* CLK high */
--		set_bits();
-+		panel_set_bits();
- 		udelay(1);	/* maintain the strobe during 1 us */
- 		byte >>= 1;
- 	}
-@@ -727,7 +727,7 @@ static void lcd_backlight(int on)
- 	/* The backlight is activated by seting the AUTOFEED line to +5V  */
- 	spin_lock(&pprt_lock);
- 	bits.bl = on;
--	set_bits();
-+	panel_set_bits();
- 	spin_unlock(&pprt_lock);
- }
- 
--- 
-1.6.0.2
+yes, there is no memory leak,
+
+> The user should not see any problems with his ulimit, either, since the task that had the memory accounted against his locked and total limit is as good as dead.
+
+again, if the process is multithreaded, it is not dead. It (other threads)
+continues to run with the same ->mm. Only the tracer thread is dead.
+
+> >Or, the tracer can reap a zombie tracee without PTRACE_DETACH, in that
+> >case we don't update ->mm too.
+>
+> I'm not sure I understand that scenario.
+> A task ptraces another task, requests branch trace, and does not detach when the tracee dies?
+
+Yes. Again, we don't leak the memory, but the accounting in mm->total_vm/locked_vm
+is not right.
+
+> Ideally (that is, from my point of view, at least), the tracer would call
+> ptrace_detach() very early in do_exit(), so ptrace would not have to distinguish
+> the various ways a tracer or tracee could die.
+
+Well, yes I agree. Please look at http://marc.info/?t=123411902800001
+
+> >Oh, and afaics ptrace_detach()->ptrace_bts_detach() can race with the
+> >tracer's sub-thread which does do_wait()->release_task() (if the tracee
+> >was killed before detach takes tasklist), the kernel can crash in this
+> >case.
+>
+> Are you saying that ptrace_detach() should call ptrace_disable() with tasklist_lock held for write?
+
+We can't do this. And btw one of the reasons we can't is that
+ptrace_bts_free_buffer() needs ->mmap_sem ;)
+
+Oleg.
 
