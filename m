@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621AbZBINuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754758AbZBINxI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755621AbZBINuU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 08:50:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753774AbZBINuE
+	id S1754758AbZBINxI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 08:53:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbZBINwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 08:50:04 -0500
-Received: from mail-ausfall.charite.de ([193.175.70.131]:40080 "EHLO
-	mail-ausfall.charite.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753541AbZBINuB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 08:50:01 -0500
-Date: Mon, 9 Feb 2009 14:49:58 +0100
-From: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Federico Cuello <fedux@lugmen.org.ar>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: sync-Regression in 2.6.28.2?
-Message-ID: <20090209134958.GP27548@charite.de>
-Mail-Followup-To: Nick Piggin <nickpiggin@yahoo.com.au>,
-	Federico Cuello <fedux@lugmen.org.ar>,
-	Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-	linux-kernel@vger.kernel.org
-References: <20090127093533.GB7037@charite.de> <200902051425.19552.nickpiggin@yahoo.com.au> <498AD368.2090000@lugmen.org.ar> <200902100045.44386.nickpiggin@yahoo.com.au>
+	Mon, 9 Feb 2009 08:52:55 -0500
+Received: from hera.kernel.org ([140.211.167.34]:33179 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752452AbZBINwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 08:52:54 -0500
+Message-ID: <4990350C.4010908@kernel.org>
+Date: Mon, 09 Feb 2009 22:52:12 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200902100045.44386.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: hpa@zytor.com, jeremy@goop.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, x86@kernel.org, rusty@rustcorp.com.au
+Subject: Re: [PATCH 02/11] x86: math_emu info cleanup
+References: <1234186798-16820-1-git-send-email-tj@kernel.org> <1234186798-16820-3-git-send-email-tj@kernel.org> <20090209134234.GA14048@elte.hu> <20090209134542.GA14785@elte.hu>
+In-Reply-To: <20090209134542.GA14785@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 09 Feb 2009 13:52:25 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This patch seems good to me. If you would care to add a changelog and
-> Signed-off-by: line, then we could get it merged?
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> I am not too sure about this bug. I have reproduced a strange hang with
-> ext4 (which does include sys_sync and write_cache_pages traces), and
-> also turned up a lockdep report. Also, we haven't seen any reports of
-> this problem on other filesystems. So it could be an ext4 bug.
+>> * Tejun Heo <tj@kernel.org> wrote:
+>>
+>>> Impact: cleanup
+>>>
+>>> * Come on, struct info?  s/struct info/struct math_emu_info/
+>>>
+>>> * Use struct pt_regs and kernel_vm86_regs instead of defining its own
+>>>   register frame structure.
+>>>
+>>> Signed-off-by: Tejun Heo <tj@kernel.org>
+>>> ---
+>>>  arch/x86/include/asm/math_emu.h  |   29 +++++------------
+>>>  arch/x86/include/asm/processor.h |    2 +-
+>>>  arch/x86/math-emu/fpu_entry.c    |    2 +-
+>>>  arch/x86/math-emu/fpu_proto.h    |    2 +-
+>>>  arch/x86/math-emu/fpu_system.h   |   14 ++++----
+>>>  arch/x86/math-emu/get_address.c  |   63 ++++++++++++++++++--------------------
+>>>  6 files changed, 48 insertions(+), 64 deletions(-)
+>> Nice - that's a fix for .29 too, right?
 > 
-> Your traces also have lots of tasks hung waiting for page lock. It is
-> possible that wakeups get lost, which is fixed by this commit in
-> mainline
-> 777c6c5f1f6e757ae49ecca2ed72d6b1f523c007
+> this one i mean:
 > 
-> Which might also be your bug.
-> 
-> 
-> Any chance you can test this patch (as well as the existing patches
-> you are using to fix write_cache_pages?).
+> Subject: [PATCH 03/11] x86: fix math_emu register frame access
 
-I could test 2.6.28.4
+Yeap, 0001-0003 are candidates for .29 inclusion.
+
+Thanks.
 
 -- 
-Ralf Hildebrandt                                Ralf.Hildebrandt@charite.de
-Charite - Universitätsmedizin Berlin            Tel.  +49 (0)30-450 570-155
-Geschäftsbereich IT | Abt. Netzwerk             Fax.  +49 (0)30-450 570-962
-Hindenburgdamm 30 | 12200 Berlin
+tejun
