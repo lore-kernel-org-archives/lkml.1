@@ -1,39 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934AbZBIXcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbZBIXdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755934AbZBIXcV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 18:32:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbZBIXcH
+	id S1755480AbZBIXdg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 18:33:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbZBIXd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 18:32:07 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37901 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751266AbZBIXcG (ORCPT
+	Mon, 9 Feb 2009 18:33:26 -0500
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:26122 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750933AbZBIXdZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 18:32:06 -0500
-Date: Mon, 9 Feb 2009 15:31:25 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: zbr@ioremap.net, linux-kernel@vger.kernel.org, ian@beware.dropbear.id.au
-Subject: Re: [1/1] w1: w1 temp calculation overflow fix.
-Message-Id: <20090209153125.04210608.akpm@linux-foundation.org>
-In-Reply-To: <20090209144803.821aa33e.akpm@linux-foundation.org>
-References: <20090209214217.GA14958@ioremap.net>
-	<20090209135641.0367a71f.akpm@linux-foundation.org>
-	<20090209220830.GA15633@ioremap.net>
-	<20090209144803.821aa33e.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Feb 2009 18:33:25 -0500
+Date: Mon, 9 Feb 2009 16:33:24 -0700
+From: Alex Chiang <achiang@hp.com>
+To: tony.luck@intel.com, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       stable@kernel.org, linux-ia64@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 1/2] Revert "[IA64] prevent ia64 from invoking irq
+	handlers on offline CPUs"
+Message-ID: <20090209233324.GE3939@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>, tony.luck@intel.com,
+	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, stable@kernel.org,
+	linux-ia64@vger.kernel.org,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <20090209181338.GD19064@ldl.fc.hp.com> <20090209181616.GE19064@ldl.fc.hp.com> <20090209211743.GA3939@ldl.fc.hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090209211743.GA3939@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Feb 2009 14:48:03 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Hi Tony,
 
-> But we still don't have a _reason_.  Presumably the bug causes the
-> driver to malfunction in some manner.
+* Alex Chiang <achiang@hp.com>:
+> * Alex Chiang <achiang@hp.com>:
+> > This reverts commit e7b140365b86aaf94374214c6f4e6decbee2eb0a.
+> > 
+> > Commit e7b14036 removes the targetted disabled CPU from the
+> > cpu_online_map after calls to migrate_platform_irqs and fixup_irqs.
+> 
+> I'm currently testing the patch below as a v3.
+> 
+> > Paul McKenney states that the reasoning behind the patch was to
+> > prevent irq handlers from running on CPUs marked offline because:
+> > 
+> > 	RCU happily ignores CPUs that don't have their bits set in
+> > 	cpu_online_map, so if there are RCU read-side critical sections
+> > 	in the irq handlers being run, RCU will ignore them.  If the
+> > 	other CPUs were running, they might sequence through the RCU
+> > 	state machine, which could result in data structures being
+> > 	yanked out from under those irq handlers, which in turn could
+> > 	result in oopses or worse.
+> > 
+> > Unfortunately, both ia64 functions above look at cpu_online_map to find
+> > a new CPU to migrate interrupts onto. This means we can potentially
+> > migrate an interrupt off ourself back to... ourself. Uh oh.
+> 
+> v3 uses cpu_active_mask to find an interrupt migration target.
+> This should fix both the oops we were seeing as well as avoid the
+> issues with RCU that Paul mentions above.
+> 
+> I also think that this fix is simpler for us to think through
+> rather than making Paul think through the implications of
+> changing RCU to use cpu_active_mask. :)
+> 
+> So far, it's survived ~45 minutes on my simple test bed (without
+> any patches, it usually crashes in < 15 minutes). I'm about to
+> start a longer run on our complex test system that runs under
+> heavy load.
 
-ah-hah.  I discovered http://bugzilla.kernel.org/show_bug.cgi?id=12646
+NAK this patch, I was able to reproduce the crash again.
 
-Now all is revealed!
+I'm a little closer to understanding why the original revert
+survives my test though.
+
+It seems that during ia64_process_pending_intr(), we will skip
+TLB flushes, and IPI reschedules.
+
+Vectors lower than IA64_TIMER_VECTOR are masked (because we raise
+the TPR), meaning we won't see CMC/CPE interrupts or perfmon
+interrupts.
+
+This leaves only IPIs and MCA above IA64_TIMER_VECTOR. The kernel
+doesn't actually send many IPIs to itself, so in practice, we
+almost never see those.  If we receive an MCA interrupt, well, we
+have more problems to worry about than taking a CPU offline (and
+whatever implications it may have on RCU). So I'm not concerned
+there.
+
+The upshot is that in practice, we pretty much ever only need to
+handle the timer interrupt.
+
+The ia64 implementation of timer_interrupt() has this near the
+top of the function:
+
+        if (unlikely(cpu_is_offline(smp_processor_id()))) {
+		return IRQ_HANDLED;
+	}
+
+So if we remove the CPU from cpu_online_map before performing any
+of the interrupt migration stuff in __cpu_disable(), I think
+we're safe.
+
+Please have a think about this, and re-consider my v2 patch
+series for inclusion into .29, and let me know what you think.
+
+Thanks.
+
+/ac
+
+> 
+> Hopefully I'll have some results for tomorrow, in which case I'll
+> send a proper patch.
+> 
+> Thanks.
+> 
+> /ac
+> 
+> diff --git a/arch/ia64/kernel/irq.c b/arch/ia64/kernel/irq.c
+> index a58f64c..9eaab3c 100644
+> --- a/arch/ia64/kernel/irq.c
+> +++ b/arch/ia64/kernel/irq.c
+> @@ -155,7 +155,7 @@ static void migrate_irqs(void)
+>  			 */
+>  			vectors_in_migration[irq] = irq;
+>  
+> -			new_cpu = cpumask_any(cpu_online_mask);
+> +			new_cpu = cpumask_any(cpu_active_mask);
+>  
+>  			/*
+>  			 * Al three are essential, currently WARN_ON.. maybe panic?
+> diff --git a/arch/ia64/kernel/smpboot.c b/arch/ia64/kernel/smpboot.c
+> index 1146399..4e8765d 100644
+> --- a/arch/ia64/kernel/smpboot.c
+> +++ b/arch/ia64/kernel/smpboot.c
+> @@ -694,7 +694,7 @@ int migrate_platform_irqs(unsigned int cpu)
+>  			/*
+>  			 * Now re-target the CPEI to a different processor
+>  			 */
+> -			new_cpei_cpu = any_online_cpu(cpu_online_map);
+> +			new_cpei_cpu = cpumask_any(cpu_active_mask);
+>  			mask = cpumask_of(new_cpei_cpu);
+>  			set_cpei_target_cpu(new_cpei_cpu);
+>  			desc = irq_desc + ia64_cpe_irq;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ia64" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
