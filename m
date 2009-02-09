@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbZBIWW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755604AbZBIWXE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754745AbZBIWW0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 17:22:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751801AbZBIWWN
+	id S1755604AbZBIWXE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 17:23:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbZBIWWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 17:22:13 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:26140 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751196AbZBIWWM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 17:22:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=XQAhJ/rQhvQDmU/G0SHYycTF9UBuvR7Yg2emQ/sMmPiStOgxkTrOaDhp07HYXjO62h
-         rOJOUz1gxuNEbZqZCuomBymsvhAkjXsnsrtQSqX2/s9J6uUxgsY7M7PIwlE90BqEWnbv
-         IM22Vqk0/2A5HkrS7bwU9ov3NyNt62c5/Qq5I=
-Message-ID: <4990AC93.3080906@gmail.com>
-Date: Mon, 09 Feb 2009 23:22:11 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
-MIME-Version: 1.0
-To: "David S. Miller" <davem@davemloft.net>
-CC: netdev@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] netdevice: ticks reaches 25, not 26.
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 9 Feb 2009 17:22:51 -0500
+Received: from gate.crashing.org ([63.228.1.57]:37675 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753995AbZBIWWv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 17:22:51 -0500
+Subject: Re: [PATCH] ftrace, powerpc64: fix math to calculate offset in TOC
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+       Arnd Bergmann <arnd@arndb.de>,
+       Geoff Levand <geoffrey.levand@am.sony.com>,
+       Remis Lima Baima <remis.developer@googlemail.com>
+In-Reply-To: <20090209094014.GE7930@elte.hu>
+References: <alpine.DEB.1.10.0902080118480.30802@gandalf.stny.rr.com>
+	 <20090209094014.GE7930@elte.hu>
+Content-Type: text/plain
+Date: Tue, 10 Feb 2009 09:21:59 +1100
+Message-Id: <1234218119.31963.109.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With while (tick++ < 25) { ... } ticks reaches 25, not 26.
+On Mon, 2009-02-09 at 10:40 +0100, Ingo Molnar wrote:
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > 
+> > Paul,
+> > 
+> > I found the bug that was causing large modules to fail in setting
+> > up dynamic ftrace. It wound up being a simple math error. To calculate
+> > the offset in the TOC, I had used an OR, but the bottom half was
+> > a signed extended short, and it should have been an addition.
+> > The fix is in my tree below, as well as posted here.
+> 
+> Looks like a .29 candidate?
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/net/myri_sbus.c b/drivers/net/myri_sbus.c
-index 899ed06..a95e217 100644
---- a/drivers/net/myri_sbus.c
-+++ b/drivers/net/myri_sbus.c
-@@ -161,7 +161,7 @@ static int myri_do_handshake(struct myri_eth *mp)
- 
- 	myri_enable_irq(mp->lregs, cregs);
- 
--	if (tick > 25) {
-+	if (tick >= 25) {
- 		DET(("25 ticks we lose, failure.\n"));
- 		return -1;
- 	}
+Yup, I was planning to send it to Linus along with a handful of other
+powerpc fixes today, unless you prefer taking it yourself.
+
+Cheers,
+Ben.
+
+
