@@ -1,58 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756052AbZBIOLB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbZBIOMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756052AbZBIOLB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 09:11:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755666AbZBIOKp
+	id S1755929AbZBIOMU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 09:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753951AbZBIOMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 09:10:45 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:57697 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754652AbZBIOKo (ORCPT
+	Mon, 9 Feb 2009 09:12:10 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:49861 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753464AbZBIOMI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 09:10:44 -0500
-Date: Mon, 9 Feb 2009 09:10:42 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-cc: mingo@elte.hu, fweisbec@gmail.com, penberg@cs.helsinki.fi,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 0/2] splice patches for ftrace
-In-Reply-To: <cover.1234159200.git.eduard.munteanu@linux360.ro>
-Message-ID: <alpine.DEB.1.10.0902090907190.14528@gandalf.stny.rr.com>
-References: <cover.1234159200.git.eduard.munteanu@linux360.ro>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 9 Feb 2009 09:12:08 -0500
+Date: Mon, 9 Feb 2009 14:11:56 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Paul Walmsley <paul@pwsan.com>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH E 11/14] OMAP clock: track child clocks
+Message-ID: <20090209141156.GB16626@n2100.arm.linux.org.uk>
+References: <20090128192551.29333.82943.stgit@localhost.localdomain> <20090128192756.29333.41541.stgit@localhost.localdomain> <20090129151401.GC18233@n2100.arm.linux.org.uk> <20090129220608.GJ18233@n2100.arm.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090129220608.GJ18233@n2100.arm.linux.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jan 29, 2009 at 10:06:08PM +0000, Russell King - ARM Linux wrote:
+> @@ -780,7 +780,7 @@ int omap2_clk_set_parent(struct clk *clk, struct clk *new_parent)
+>  	if (clk->usecount > 0)
+>  		_omap2_clk_enable(clk);
+>  
+> -	clk->parent = new_parent;
+> +	clk_reparent(clk, new_parent);
 
-On Mon, 9 Feb 2009, Eduard - Gabriel Munteanu wrote:
+While looking at the DPLL patches, I've realised that omap2_clk_set_parent()
+is buggy, as are any other places which reparent the clock (thankfully
+the only other place is in the initialisation code where it doesn't
+matter.)
 
-> Hi,
-> 
-> This implements splice support so we can use it in kmemtrace-user. Please
-> check it out and tell me what you think.
-> 
-> The "RFC" in the subject reads like "I tested this the best I could,
-> although kmemtrace-user isn't still ready.". As we speak, I'm working on
-> making kmemtrace over ftrace and kmemtrace-user work together nicely.
+Consider what happens when a clock is enabled - we walk up the tree
+enabling all parents.  If we then change the clock's parent, and
+then disable the child, we will again walk up the tree, but since
+we've reparented it, it will be a different clock tree.  The result
+is that the ancestors clock usage counts, and therefore their enable
+status, will end up getting screwed up.
 
-Hi Eduard!
+So, this has revealed a logical bug here.  We need to walk the
+parent tree before and after the switch to ensure that things stay
+sane.
 
-Thanks, I'll give it a test. I've been playing on my spare time with
-a ring buffer splice interface. But I've not had the time to get it 
-working fully. My version would be a binary only interface, but I really 
-like the text interface you have.
+This brings up a question: what we currently do here is:
 
-You can look at my old changes at:
+- disable the child
+- program clksel
+- enable the child
+- change child->parent
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+If we add in the parent handling, there are two possibilities:
 
-  The branch tip/splice-broken
+- disable the child
+- enable the new parent tree
+- program clksel
+- change child->parent
+- disable the old parent tree
+- enable the child
 
-As the name suggests, it is still broken ;-)
+OR
 
--- Steve
+- disable the child and the old parent tree
+- program clksel
+- change child->parent
+- enable the new parent tree and the child
 
+(note those 'and's have implied ordering).
+
+Is there anything which dictates one approach over the other?
+Obviously the latter approach results in something smaller and
+cleaner, but might not be technically correct.
