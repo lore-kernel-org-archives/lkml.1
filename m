@@ -1,494 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbZBINnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbZBINnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756723AbZBINnX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 08:43:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756052AbZBINk6
+	id S1756883AbZBINnz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 08:43:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756088AbZBINlC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 08:40:58 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37871 "EHLO hera.kernel.org"
+	Mon, 9 Feb 2009 08:41:02 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37881 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756025AbZBINk4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 08:40:56 -0500
+	id S1756068AbZBINk7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 08:40:59 -0500
 From: Tejun Heo <tj@kernel.org>
 To: hpa@zytor.com, jeremy@goop.org, tglx@linutronix.de, mingo@elte.hu,
        linux-kernel@vger.kernel.org, x86@kernel.org, rusty@rustcorp.com.au
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 11/11] x86: implement x86_32 stack protector
-Date: Mon,  9 Feb 2009 22:39:58 +0900
-Message-Id: <1234186798-16820-12-git-send-email-tj@kernel.org>
+Subject: [PATCH 09/11] x86: add %gs accessors for x86_32
+Date: Mon,  9 Feb 2009 22:39:56 +0900
+Message-Id: <1234186798-16820-10-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1234186798-16820-1-git-send-email-tj@kernel.org>
 References: <1234186798-16820-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 09 Feb 2009 13:40:29 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 09 Feb 2009 13:40:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: stack protector for x86_32
+Impact: cleanup
 
-Implement stack protector for x86_32.  GDT entry 28 is used for it.
-It's set to point to stack_canary-20 and have the length of 24 bytes.
-CONFIG_CC_STACKPROTECTOR turns off CONFIG_X86_32_LAZY_GS and sets %gs
-to the stack canary segment on entry.  As %gs is otherwise unused by
-the kernel, the canary can be anywhere.  It's defined as a percpu
-variable.
+On x86_32, %gs is handled lazily.  It's not saved and restored on
+kernel entry/exit but only when necessary which usually is during task
+switch but there are few other places.  Currently, it's done by
+calling savesegment() and loadsegment() explicitly.  Define
+get_user_gs(), set_user_gs() and task_user_gs() and use them instead.
 
-x86_32 exception handlers take register frame on stack directly as
-struct pt_regs.  With -fstack-protector turned on, gcc copies the
-whole structure after the stack canary and (of course) doesn't copy
-back on return thus losing all changed.  For now, -fno-stack-protector
-is added to all files which contain those functions.  We definitely
-need something better.
+While at it, clean up register access macros in signal.c.
+
+This cleans up code a bit and will help future changes.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- arch/x86/Kconfig                          |    3 +-
- arch/x86/include/asm/processor.h          |    4 +
- arch/x86/include/asm/segment.h            |    9 +++-
- arch/x86/include/asm/stackprotector.h     |   91 +++++++++++++++++++++++++++--
- arch/x86/include/asm/system.h             |   21 +++++++
- arch/x86/kernel/Makefile                  |   18 ++++++
- arch/x86/kernel/cpu/common.c              |   17 ++++--
- arch/x86/kernel/entry_32.S                |    2 +-
- arch/x86/kernel/head_32.S                 |   20 ++++++-
- arch/x86/kernel/process_32.c              |    1 +
- arch/x86/kernel/setup_percpu.c            |    2 +
- scripts/gcc-x86_32-has-stack-protector.sh |    8 +++
- 12 files changed, 180 insertions(+), 16 deletions(-)
- create mode 100644 scripts/gcc-x86_32-has-stack-protector.sh
+ arch/x86/include/asm/a.out-core.h  |    2 +-
+ arch/x86/include/asm/elf.h         |    2 +-
+ arch/x86/include/asm/mmu_context.h |    2 +-
+ arch/x86/include/asm/system.h      |    9 ++++++++
+ arch/x86/kernel/process_32.c       |    6 ++--
+ arch/x86/kernel/ptrace.c           |   14 +++++-------
+ arch/x86/kernel/signal.c           |   41 ++++++++++++++----------------------
+ arch/x86/kernel/vm86_32.c          |    4 +-
+ arch/x86/math-emu/get_address.c    |    6 +---
+ 9 files changed, 41 insertions(+), 45 deletions(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index e91093a..31c555f 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -198,7 +198,7 @@ config X86_TRAMPOLINE
- 
- config X86_32_LAZY_GS
- 	def_bool y
--	depends on X86_32
-+	depends on X86_32 && !CC_STACKPROTECTOR
- 
- config KTIME_SCALAR
- 	def_bool X86_32
-@@ -1342,7 +1342,6 @@ config CC_STACKPROTECTOR_ALL
- 
- config CC_STACKPROTECTOR
- 	bool "Enable -fstack-protector buffer overflow detection (EXPERIMENTAL)"
--	depends on X86_64
- 	select CC_STACKPROTECTOR_ALL
- 	---help---
- 	  This option turns on the -fstack-protector GCC feature. This
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 80b8be2..a013383 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -396,7 +396,11 @@ DECLARE_PER_CPU(union irq_stack_union, irq_stack_union);
- DECLARE_INIT_PER_CPU(irq_stack_union);
- 
- DECLARE_PER_CPU(char *, irq_stack_ptr);
-+#else	/* X86_64 */
-+#ifdef CONFIG_CC_STACKPROTECTOR
-+DECLARE_PER_CPU(unsigned long, stack_canary);
- #endif
-+#endif	/* X86_64 */
- 
- extern void print_cpu_info(struct cpuinfo_x86 *);
- extern unsigned int xstate_size;
-diff --git a/arch/x86/include/asm/segment.h b/arch/x86/include/asm/segment.h
-index 1dc1b51..14e0ed8 100644
---- a/arch/x86/include/asm/segment.h
-+++ b/arch/x86/include/asm/segment.h
-@@ -61,7 +61,7 @@
-  *
-  *  26 - ESPFIX small SS
-  *  27 - per-cpu			[ offset to per-cpu data area ]
-- *  28 - unused
-+ *  28 - stack_canary-20		[ for stack protector ]
-  *  29 - unused
-  *  30 - unused
-  *  31 - TSS for double fault handler
-@@ -95,6 +95,13 @@
- #define __KERNEL_PERCPU 0
- #endif
- 
-+#define GDT_ENTRY_STACK_CANARY		(GDT_ENTRY_KERNEL_BASE + 16)
-+#ifdef CONFIG_CC_STACKPROTECTOR
-+#define __KERNEL_STACK_CANARY		(GDT_ENTRY_STACK_CANARY * 8)
-+#else
-+#define __KERNEL_STACK_CANARY		0
-+#endif
-+
- #define GDT_ENTRY_DOUBLEFAULT_TSS	31
- 
- /*
-diff --git a/arch/x86/include/asm/stackprotector.h b/arch/x86/include/asm/stackprotector.h
-index ee275e9..fa7e5bd 100644
---- a/arch/x86/include/asm/stackprotector.h
-+++ b/arch/x86/include/asm/stackprotector.h
-@@ -1,3 +1,35 @@
-+/*
-+ * GCC stack protector support.
-+ *
-+ * Stack protector works by putting predefined pattern at the start of
-+ * the stack frame and verifying that it hasn't been overwritten when
-+ * returning from the function.  The pattern is called stack canary
-+ * and unfortunately gcc requires it to be at a fixed offset from %gs.
-+ * On x86_64, the offset is 40 bytes and on x86_32 20 bytes.  x86_64
-+ * and x86_32 use segment registers differently and thus handles this
-+ * requirement differently.
-+ *
-+ * On x86_64, %gs is shared by percpu area and stack canary.  All
-+ * percpu symbols are zero based and %gs points to the base of percpu
-+ * area.  The first occupant of the percpu area is always
-+ * irq_stack_union which contains stack_canary at offset 40.  Userland
-+ * %gs is always saved and restored on kernel entry and exit using
-+ * swapgs, so stack protector doesn't add any complexity there.
-+ *
-+ * On x86_32, it's slightly more complicated.  As in x86_64, %gs is
-+ * used for userland TLS.  Unfortunately, some processors are much
-+ * slower at loading segment registers with different value when
-+ * entering and leaving the kernel, so the kernel uses %fs for percpu
-+ * area and manages %gs lazily so that %gs is switched only when
-+ * necessary, usually during task switch.
-+ *
-+ * As gcc requires the stack canary at %gs:20, %gs can't be managed
-+ * lazily if stack protector is enabled, so the kernel saves and
-+ * restores userland %gs on kernel entry and exit.  This behavior is
-+ * controlled by CONFIG_X86_32_LAZY_GS and accessors are defined in
-+ * system.h to hide the details.
-+ */
-+
- #ifndef _ASM_STACKPROTECTOR_H
- #define _ASM_STACKPROTECTOR_H 1
- 
-@@ -6,9 +38,19 @@
- #include <asm/tsc.h>
- #include <asm/processor.h>
- #include <asm/percpu.h>
-+#include <asm/system.h>
-+#include <asm/desc.h>
- #include <linux/random.h>
- 
- /*
-+ * 24 byte read-only segment initializer for stack canary.  Linker
-+ * can't handle the address bit shifting.  Address will be set in
-+ * head_32 for boot CPU and setup_per_cpu_areas() for others.
-+ */
-+#define GDT_STACK_CANARY_INIT						\
-+	[GDT_ENTRY_STACK_CANARY] = { { { 0x00000018, 0x00409000 } } },
-+
-+/*
-  * Initialize the stackprotector canary value.
-  *
-  * NOTE: this must only be called from functions that never return,
-@@ -19,12 +61,9 @@ static __always_inline void boot_init_stack_canary(void)
- 	u64 canary;
- 	u64 tsc;
- 
--	/*
--	 * Build time only check to make sure the stack_canary is at
--	 * offset 40 in the pda; this is a gcc ABI requirement
--	 */
-+#ifdef CONFIG_X86_64
- 	BUILD_BUG_ON(offsetof(union irq_stack_union, stack_canary) != 40);
--
-+#endif
- 	/*
- 	 * We both use the random pool and the current TSC as a source
- 	 * of randomness. The TSC only matters for very early init,
-@@ -36,7 +75,49 @@ static __always_inline void boot_init_stack_canary(void)
- 	canary += tsc + (tsc << 32UL);
- 
- 	current->stack_canary = canary;
-+#ifdef CONFIG_X86_64
- 	percpu_write(irq_stack_union.stack_canary, canary);
-+#else
-+	percpu_write(stack_canary, canary);
-+#endif
-+}
-+
-+static inline void setup_stack_canary_segment(int cpu)
-+{
-+#ifdef CONFIG_X86_32
-+	unsigned long canary = (unsigned long)&per_cpu(stack_canary, cpu);
-+	struct desc_struct *gdt_table = get_cpu_gdt_table(cpu);
-+	struct desc_struct desc;
-+
-+	desc = gdt_table[GDT_ENTRY_STACK_CANARY];
-+	desc.base0 = canary & 0xffff;
-+	desc.base1 = (canary >> 16) & 0xff;
-+	desc.base2 = (canary >> 24) & 0xff;
-+	write_gdt_entry(gdt_table, GDT_ENTRY_STACK_CANARY, &desc, DESCTYPE_S);
-+#endif
-+}
-+
-+static inline void load_stack_canary_segment(void)
-+{
-+#ifdef CONFIG_X86_32
-+	asm("mov %0, %%gs" : : "r" (__KERNEL_STACK_CANARY) : "memory");
-+#endif
-+}
-+
-+#else	/* CC_STACKPROTECTOR */
-+
-+#define GDT_STACK_CANARY_INIT
-+
-+/* dummy boot_init_stack_canary() is defined in linux/stackprotector.h */
-+
-+static inline void setup_stack_canary_segment(int cpu)
-+{ }
-+
-+static inline void load_stack_canary_segment(void)
-+{
-+#ifdef CONFIG_X86_32
-+	asm volatile ("mov %0, %%gs" : : "r" (0));
-+#endif
- }
- 
- #endif	/* CC_STACKPROTECTOR */
+diff --git a/arch/x86/include/asm/a.out-core.h b/arch/x86/include/asm/a.out-core.h
+index 3c601f8..bb70e39 100644
+--- a/arch/x86/include/asm/a.out-core.h
++++ b/arch/x86/include/asm/a.out-core.h
+@@ -55,7 +55,7 @@ static inline void aout_dump_thread(struct pt_regs *regs, struct user *dump)
+ 	dump->regs.ds = (u16)regs->ds;
+ 	dump->regs.es = (u16)regs->es;
+ 	dump->regs.fs = (u16)regs->fs;
+-	savesegment(gs, dump->regs.gs);
++	dump->regs.gs = get_user_gs(regs);
+ 	dump->regs.orig_ax = regs->orig_ax;
+ 	dump->regs.ip = regs->ip;
+ 	dump->regs.cs = (u16)regs->cs;
+diff --git a/arch/x86/include/asm/elf.h b/arch/x86/include/asm/elf.h
+index f51a3dd..39b0aac 100644
+--- a/arch/x86/include/asm/elf.h
++++ b/arch/x86/include/asm/elf.h
+@@ -124,7 +124,7 @@ do {						\
+ 	pr_reg[7] = regs->ds & 0xffff;		\
+ 	pr_reg[8] = regs->es & 0xffff;		\
+ 	pr_reg[9] = regs->fs & 0xffff;		\
+-	savesegment(gs, pr_reg[10]);		\
++	pr_reg[10] = get_user_gs(regs);		\
+ 	pr_reg[11] = regs->orig_ax;		\
+ 	pr_reg[12] = regs->ip;			\
+ 	pr_reg[13] = regs->cs & 0xffff;		\
+diff --git a/arch/x86/include/asm/mmu_context.h b/arch/x86/include/asm/mmu_context.h
+index 52948df..4955165 100644
+--- a/arch/x86/include/asm/mmu_context.h
++++ b/arch/x86/include/asm/mmu_context.h
+@@ -79,7 +79,7 @@ do {						\
+ #ifdef CONFIG_X86_32
+ #define deactivate_mm(tsk, mm)			\
+ do {						\
+-	loadsegment(gs, 0);			\
++	set_user_gs(task_pt_regs(tsk), 0);	\
+ } while (0)
+ #else
+ #define deactivate_mm(tsk, mm)			\
 diff --git a/arch/x86/include/asm/system.h b/arch/x86/include/asm/system.h
-index e658bbe..4ded307 100644
+index c223837..72082d3 100644
 --- a/arch/x86/include/asm/system.h
 +++ b/arch/x86/include/asm/system.h
-@@ -23,6 +23,22 @@ struct task_struct *__switch_to(struct task_struct *prev,
+@@ -182,6 +182,15 @@ extern void native_load_gs_index(unsigned);
+ #define savesegment(seg, value)				\
+ 	asm("mov %%" #seg ",%0":"=r" (value) : : "memory")
  
- #ifdef CONFIG_X86_32
- 
-+#ifdef CONFIG_CC_STACKPROTECTOR
-+#define __switch_canary							\
-+	"movl "__percpu_arg([current_task])",%%ebx\n\t"			\
-+	"movl %P[task_canary](%%ebx),%%ebx\n\t"				\
-+	"movl %%ebx,"__percpu_arg([stack_canary])"\n\t"
-+#define __switch_canary_oparam						\
-+	, [stack_canary] "=m" (per_cpu_var(stack_canary))
-+#define __switch_canary_iparam						\
-+	, [current_task] "m" (per_cpu_var(current_task))		\
-+	, [task_canary] "i" (offsetof(struct task_struct, stack_canary))
-+#else	/* CC_STACKPROTECTOR */
-+#define __switch_canary
-+#define __switch_canary_oparam
-+#define __switch_canary_iparam
-+#endif	/* CC_STACKPROTECTOR */
-+
- /*
-  * Saving eflags is important. It switches not only IOPL between tasks,
-  * it also protects other tasks from NT leaking through sysenter etc.
-@@ -46,6 +62,7 @@ do {									\
- 		     "pushl %[next_ip]\n\t"	/* restore EIP   */	\
- 		     "jmp __switch_to\n"	/* regparm call  */	\
- 		     "1:\t"						\
-+		     __switch_canary					\
- 		     "popl %%ebp\n\t"		/* restore EBP   */	\
- 		     "popfl\n"			/* restore flags */	\
- 									\
-@@ -58,6 +75,8 @@ do {									\
- 		       "=b" (ebx), "=c" (ecx), "=d" (edx),		\
- 		       "=S" (esi), "=D" (edi)				\
- 		       							\
-+		       __switch_canary_oparam				\
-+									\
- 		       /* input parameters: */				\
- 		     : [next_sp]  "m" (next->thread.sp),		\
- 		       [next_ip]  "m" (next->thread.ip),		\
-@@ -66,6 +85,8 @@ do {									\
- 		       [prev]     "a" (prev),				\
- 		       [next]     "d" (next)				\
- 									\
-+		       __switch_canary_iparam				\
-+									\
- 		     : /* reloaded segment registers */			\
- 			"memory");					\
- } while (0)
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index a11e5ac..0da4e4d 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -24,6 +24,24 @@ CFLAGS_vsyscall_64.o	:= $(PROFILING) -g0 $(nostackp)
- CFLAGS_hpet.o		:= $(nostackp)
- CFLAGS_tsc.o		:= $(nostackp)
- CFLAGS_paravirt.o	:= $(nostackp)
-+#
-+# On x86_32, register frame is passed verbatim on stack as struct
-+# pt_regs.  gcc considers the parameter to belong to the callee and
-+# with -fstack-protector it copies pt_regs to the callee's stack frame
-+# to put the structure after the stack canary causing changes made by
-+# the exception handlers to be lost.  Turn off stack protector for all
-+# files containing functions which take struct pt_regs from register
-+# frame.
-+#
-+# The proper way to fix this is to teach gcc that the argument belongs
-+# to the caller for these functions, oh well...
-+#
-+ifdef CONFIG_X86_32
-+CFLAGS_process_32.o	:= $(nostackp)
-+CFLAGS_vm86_32.o	:= $(nostackp)
-+CFLAGS_signal.o		:= $(nostackp)
-+CFLAGS_traps.o		:= $(nostackp)
-+endif
- 
- obj-y			:= process_$(BITS).o signal.o entry_$(BITS).o
- obj-y			+= traps.o irq.o irq_$(BITS).o dumpstack_$(BITS).o
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index 2a3c9a5..3a9d45a 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -40,6 +40,7 @@
- #include <asm/sections.h>
- #include <asm/setup.h>
- #include <asm/hypervisor.h>
-+#include <asm/stackprotector.h>
- 
- #include "cpu.h"
- 
-@@ -123,6 +124,7 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
- 
- 	[GDT_ENTRY_ESPFIX_SS] = { { { 0x00000000, 0x00c09200 } } },
- 	[GDT_ENTRY_PERCPU] = { { { 0x0000ffff, 0x00cf9200 } } },
-+	GDT_STACK_CANARY_INIT
- #endif
- } };
- EXPORT_PER_CPU_SYMBOL_GPL(gdt_page);
-@@ -305,6 +307,7 @@ void load_percpu_segment(int cpu)
- 	loadsegment(gs, 0);
- 	wrmsrl(MSR_GS_BASE, (unsigned long)per_cpu(irq_stack_union.gs_base, cpu));
- #endif
-+	load_stack_canary_segment();
- }
- 
- /* Current gdt points %fs at the "master" per-cpu area: after this,
-@@ -984,16 +987,21 @@ unsigned long kernel_eflags;
-  */
- DEFINE_PER_CPU(struct orig_ist, orig_ist);
- 
--#else
-+#else	/* x86_64 */
-+
-+#ifdef CONFIG_CC_STACKPROTECTOR
-+DEFINE_PER_CPU(unsigned long, stack_canary);
++/*
++ * x86_32 user gs accessors.
++ */
++#ifdef CONFIG_X86_32
++#define get_user_gs(regs)	(u16)({unsigned long v; savesegment(gs, v); v;})
++#define set_user_gs(regs, v)	loadsegment(gs, (unsigned long)(v))
++#define task_user_gs(tsk)	((tsk)->thread.gs)
 +#endif
- 
--/* Make sure %fs is initialized properly in idle threads */
-+/* Make sure %fs and %gs are initialized properly in idle threads */
- struct pt_regs * __cpuinit idle_regs(struct pt_regs *regs)
++
+ static inline unsigned long get_limit(unsigned long segment)
  {
- 	memset(regs, 0, sizeof(struct pt_regs));
- 	regs->fs = __KERNEL_PERCPU;
-+	regs->gs = __KERNEL_STACK_CANARY;
- 	return regs;
- }
--#endif
-+#endif	/* x86_64 */
- 
- /*
-  * cpu_init() initializes state that is per-CPU. Some data is already
-@@ -1155,9 +1163,6 @@ void __cpuinit cpu_init(void)
- 	__set_tss_desc(cpu, GDT_ENTRY_DOUBLEFAULT_TSS, &doublefault_tss);
- #endif
- 
--	/* Clear %gs. */
--	asm volatile ("mov %0, %%gs" : : "r" (0));
--
- 	/* Clear all 6 debug registers: */
- 	set_debugreg(0, 0);
- 	set_debugreg(0, 1);
-diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
-index d3be889..f7d0837 100644
---- a/arch/x86/kernel/entry_32.S
-+++ b/arch/x86/kernel/entry_32.S
-@@ -186,7 +186,7 @@
- 	/*CFI_REL_OFFSET gs, PT_GS*/
- .endm
- .macro SET_KERNEL_GS reg
--	xorl \reg, \reg
-+	movl $(__KERNEL_STACK_CANARY), \reg
- 	movl \reg, %gs
- .endm
- 
-diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-index 0cd61bb..410c9bb 100644
---- a/arch/x86/kernel/head_32.S
-+++ b/arch/x86/kernel/head_32.S
-@@ -19,6 +19,7 @@
- #include <asm/asm-offsets.h>
- #include <asm/setup.h>
- #include <asm/processor-flags.h>
-+#include <asm/percpu.h>
- 
- /* Physical address */
- #define pa(X) ((X) - __PAGE_OFFSET)
-@@ -437,8 +438,25 @@ is386:	movl $2,%ecx		# set MP
- 	movl $(__KERNEL_PERCPU), %eax
- 	movl %eax,%fs			# set this cpu's percpu
- 
--	xorl %eax,%eax			# Clear GS and LDT
-+#ifdef CONFIG_CC_STACKPROTECTOR
-+	/*
-+	 * The linker can't handle this by relocation.  Manually set
-+	 * base address in stack canary segment descriptor.
-+	 */
-+	cmpb $0,ready
-+	jne 1f
-+	movl $per_cpu__gdt_page,%eax
-+	movl $per_cpu__stack_canary,%ecx
-+	movw %cx, 8 * GDT_ENTRY_STACK_CANARY + 2(%eax)
-+	shrl $16, %ecx
-+	movb %cl, 8 * GDT_ENTRY_STACK_CANARY + 4(%eax)
-+	movb %ch, 8 * GDT_ENTRY_STACK_CANARY + 7(%eax)
-+1:
-+#endif
-+	movl $(__KERNEL_STACK_CANARY),%eax
- 	movl %eax,%gs
-+
-+	xorl %eax,%eax			# Clear LDT
- 	lldt %ax
- 
- 	cld			# gcc2 wants the direction flag cleared at all times
+ 	unsigned long __limit;
 diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index 461d0a7..13d224b 100644
+index eccfb58..317d956 100644
 --- a/arch/x86/kernel/process_32.c
 +++ b/arch/x86/kernel/process_32.c
-@@ -210,6 +210,7 @@ int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
- 	regs.ds = __USER_DS;
- 	regs.es = __USER_DS;
- 	regs.fs = __KERNEL_PERCPU;
-+	regs.gs = __KERNEL_STACK_CANARY;
- 	regs.orig_ax = -1;
- 	regs.ip = (unsigned long) kernel_thread_helper;
- 	regs.cs = __KERNEL_CS | get_kernel_rpl();
-diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
-index ef91747..d992e6c 100644
---- a/arch/x86/kernel/setup_percpu.c
-+++ b/arch/x86/kernel/setup_percpu.c
-@@ -16,6 +16,7 @@
- #include <asm/proto.h>
- #include <asm/cpumask.h>
- #include <asm/cpu.h>
-+#include <asm/stackprotector.h>
+@@ -129,7 +129,7 @@ void __show_regs(struct pt_regs *regs, int all)
+ 	if (user_mode_vm(regs)) {
+ 		sp = regs->sp;
+ 		ss = regs->ss & 0xffff;
+-		savesegment(gs, gs);
++		gs = get_user_gs(regs);
+ 	} else {
+ 		sp = (unsigned long) (&regs->sp);
+ 		savesegment(ss, ss);
+@@ -302,7 +302,7 @@ int copy_thread(int nr, unsigned long clone_flags, unsigned long sp,
  
- #ifdef CONFIG_DEBUG_PER_CPU_MAPS
- # define DBG(x...) printk(KERN_DEBUG x)
-@@ -95,6 +96,7 @@ void __init setup_per_cpu_areas(void)
- 		per_cpu(this_cpu_off, cpu) = per_cpu_offset(cpu);
- 		per_cpu(cpu_number, cpu) = cpu;
- 		setup_percpu_segment(cpu);
-+		setup_stack_canary_segment(cpu);
- 		/*
- 		 * Copy data used in early init routines from the
- 		 * initial arrays to the per cpu data areas.  These
-diff --git a/scripts/gcc-x86_32-has-stack-protector.sh b/scripts/gcc-x86_32-has-stack-protector.sh
-new file mode 100644
-index 0000000..4fdf6ce
---- /dev/null
-+++ b/scripts/gcc-x86_32-has-stack-protector.sh
-@@ -0,0 +1,8 @@
-+#!/bin/sh
-+
-+echo "int foo(void) { char X[200]; return 3; }" | $1 -S -xc -c -O0 -fstack-protector - -o - 2> /dev/null | grep -q "%gs"
-+if [ "$?" -eq "0" ] ; then
-+	echo y
-+else
-+	echo n
-+fi
+ 	p->thread.ip = (unsigned long) ret_from_fork;
+ 
+-	savesegment(gs, p->thread.gs);
++	task_user_gs(p) = get_user_gs(regs);
+ 
+ 	tsk = current;
+ 	if (unlikely(test_tsk_thread_flag(tsk, TIF_IO_BITMAP))) {
+@@ -340,7 +340,7 @@ int copy_thread(int nr, unsigned long clone_flags, unsigned long sp,
+ void
+ start_thread(struct pt_regs *regs, unsigned long new_ip, unsigned long new_sp)
+ {
+-	__asm__("movl %0, %%gs" : : "r"(0));
++	set_user_gs(regs, 0);
+ 	regs->fs		= 0;
+ 	set_fs(USER_DS);
+ 	regs->ds		= __USER_DS;
+diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+index 0a5df5f..508b6b5 100644
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -90,9 +90,10 @@ static u16 get_segment_reg(struct task_struct *task, unsigned long offset)
+ 	if (offset != offsetof(struct user_regs_struct, gs))
+ 		retval = *pt_regs_access(task_pt_regs(task), offset);
+ 	else {
+-		retval = task->thread.gs;
+ 		if (task == current)
+-			savesegment(gs, retval);
++			retval = get_user_gs(task_pt_regs(task));
++		else
++			retval = task_user_gs(task);
+ 	}
+ 	return retval;
+ }
+@@ -126,13 +127,10 @@ static int set_segment_reg(struct task_struct *task,
+ 		break;
+ 
+ 	case offsetof(struct user_regs_struct, gs):
+-		task->thread.gs = value;
+ 		if (task == current)
+-			/*
+-			 * The user-mode %gs is not affected by
+-			 * kernel entry, so we must update the CPU.
+-			 */
+-			loadsegment(gs, value);
++			set_user_gs(task_pt_regs(task), value);
++		else
++			task_user_gs(task) = value;
+ 	}
+ 
+ 	return 0;
+diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
+index 40e089b..b2f977e 100644
+--- a/arch/x86/kernel/signal.c
++++ b/arch/x86/kernel/signal.c
+@@ -50,27 +50,23 @@
+ # define FIX_EFLAGS	__FIX_EFLAGS
+ #endif
+ 
+-#define COPY(x)			{		\
+-	get_user_ex(regs->x, &sc->x);		\
+-}
++#define COPY(x)			do {			\
++	get_user_ex(regs->x, &sc->x);			\
++} while (0)
+ 
+-#define COPY_SEG(seg)		{			\
+-		unsigned short tmp;			\
+-		get_user_ex(tmp, &sc->seg);		\
+-		regs->seg = tmp;			\
+-}
++#define GET_SEG(seg)		({			\
++	unsigned short tmp;				\
++	get_user_ex(tmp, &sc->seg);			\
++	tmp;						\
++})
+ 
+-#define COPY_SEG_CPL3(seg)	{			\
+-		unsigned short tmp;			\
+-		get_user_ex(tmp, &sc->seg);		\
+-		regs->seg = tmp | 3;			\
+-}
++#define COPY_SEG(seg)		do {			\
++	regs->seg = GET_SEG(seg);			\
++} while (0)
+ 
+-#define GET_SEG(seg)		{			\
+-		unsigned short tmp;			\
+-		get_user_ex(tmp, &sc->seg);		\
+-		loadsegment(seg, tmp);			\
+-}
++#define COPY_SEG_CPL3(seg)	do {			\
++	regs->seg = GET_SEG(seg) | 3;			\
++} while (0)
+ 
+ static int
+ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc,
+@@ -86,7 +82,7 @@ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc,
+ 	get_user_try {
+ 
+ #ifdef CONFIG_X86_32
+-		GET_SEG(gs);
++		set_user_gs(regs, GET_SEG(gs));
+ 		COPY_SEG(fs);
+ 		COPY_SEG(es);
+ 		COPY_SEG(ds);
+@@ -138,12 +134,7 @@ setup_sigcontext(struct sigcontext __user *sc, void __user *fpstate,
+ 	put_user_try {
+ 
+ #ifdef CONFIG_X86_32
+-		{
+-			unsigned int tmp;
+-
+-			savesegment(gs, tmp);
+-			put_user_ex(tmp, (unsigned int __user *)&sc->gs);
+-		}
++		put_user_ex(get_user_gs(regs), (unsigned int __user *)&sc->gs);
+ 		put_user_ex(regs->fs, (unsigned int __user *)&sc->fs);
+ 		put_user_ex(regs->es, (unsigned int __user *)&sc->es);
+ 		put_user_ex(regs->ds, (unsigned int __user *)&sc->ds);
+diff --git a/arch/x86/kernel/vm86_32.c b/arch/x86/kernel/vm86_32.c
+index 4eeb5cf..55ea30d 100644
+--- a/arch/x86/kernel/vm86_32.c
++++ b/arch/x86/kernel/vm86_32.c
+@@ -158,7 +158,7 @@ struct pt_regs *save_v86_state(struct kernel_vm86_regs *regs)
+ 	ret = KVM86->regs32;
+ 
+ 	ret->fs = current->thread.saved_fs;
+-	loadsegment(gs, current->thread.saved_gs);
++	set_user_gs(ret, current->thread.saved_gs);
+ 
+ 	return ret;
+ }
+@@ -323,7 +323,7 @@ static void do_sys_vm86(struct kernel_vm86_struct *info, struct task_struct *tsk
+ 	info->regs32->ax = 0;
+ 	tsk->thread.saved_sp0 = tsk->thread.sp0;
+ 	tsk->thread.saved_fs = info->regs32->fs;
+-	savesegment(gs, tsk->thread.saved_gs);
++	tsk->thread.saved_gs = get_user_gs(info->regs32);
+ 
+ 	tss = &per_cpu(init_tss, get_cpu());
+ 	tsk->thread.sp0 = (unsigned long) &info->VM86_TSS_ESP0;
+diff --git a/arch/x86/math-emu/get_address.c b/arch/x86/math-emu/get_address.c
+index 420b3b6..6ef5e99 100644
+--- a/arch/x86/math-emu/get_address.c
++++ b/arch/x86/math-emu/get_address.c
+@@ -150,11 +150,9 @@ static long pm_address(u_char FPU_modrm, u_char segment,
+ #endif /* PARANOID */
+ 
+ 	switch (segment) {
+-		/* gs isn't used by the kernel, so it still has its
+-		   user-space value. */
+ 	case PREFIX_GS_ - 1:
+-		/* N.B. - movl %seg, mem is a 2 byte write regardless of prefix */
+-		savesegment(gs, addr->selector);
++		/* user gs handling can be lazy, use special accessors */
++		addr->selector = get_user_gs(FPU_info->regs);
+ 		break;
+ 	default:
+ 		addr->selector = PM_REG_(segment);
 -- 
 1.6.0.2
 
