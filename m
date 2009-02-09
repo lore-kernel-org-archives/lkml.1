@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbZBINm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbZBINmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755483AbZBINm2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 08:42:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755884AbZBINku
+	id S1756211AbZBINmo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 08:42:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755986AbZBINky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 08:40:50 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37851 "EHLO hera.kernel.org"
+	Mon, 9 Feb 2009 08:40:54 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37859 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755723AbZBINkt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 08:40:49 -0500
+	id S1755940AbZBINkw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 08:40:52 -0500
 From: Tejun Heo <tj@kernel.org>
 To: hpa@zytor.com, jeremy@goop.org, tglx@linutronix.de, mingo@elte.hu,
        linux-kernel@vger.kernel.org, x86@kernel.org, rusty@rustcorp.com.au
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 05/11] x86: stackprotector.h misc update
-Date: Mon,  9 Feb 2009 22:39:52 +0900
-Message-Id: <1234186798-16820-6-git-send-email-tj@kernel.org>
+Subject: [PATCH 06/11] stackprotector: update make rules
+Date: Mon,  9 Feb 2009 22:39:53 +0900
+Message-Id: <1234186798-16820-7-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1234186798-16820-1-git-send-email-tj@kernel.org>
 References: <1234186798-16820-1-git-send-email-tj@kernel.org>
@@ -24,44 +24,99 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: misc udpate
+Impact: no default -fno-stack-protector if stackp is enabled, cleanup
 
-* wrap content with CONFIG_CC_STACK_PROTECTOR so that other arch files
-  can include it directly
+Stackprotector make rules had the following problems.
 
-* add missing includes
+* cc support test and warning are scattered across makefile and
+  kernel/panic.c.
 
-This will help future changes.
+* -fno-stack-protector was always added regardless of configuration.
+
+Update such that cc support test and warning are contained in makefile
+and -fno-stack-protector is added iff stackp is turned off.  While at
+it, prepare for 32bit support.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- arch/x86/include/asm/stackprotector.h |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
+ Makefile                                  |    3 ++-
+ arch/x86/Makefile                         |   17 ++++++++++-------
+ kernel/panic.c                            |    4 ----
+ scripts/gcc-x86_64-has-stack-protector.sh |    4 +++-
+ 4 files changed, 15 insertions(+), 13 deletions(-)
 
-diff --git a/arch/x86/include/asm/stackprotector.h b/arch/x86/include/asm/stackprotector.h
-index 36a700a..ee275e9 100644
---- a/arch/x86/include/asm/stackprotector.h
-+++ b/arch/x86/include/asm/stackprotector.h
-@@ -1,8 +1,12 @@
- #ifndef _ASM_STACKPROTECTOR_H
- #define _ASM_STACKPROTECTOR_H 1
+diff --git a/Makefile b/Makefile
+index d0634bc..1ab7cef 100644
+--- a/Makefile
++++ b/Makefile
+@@ -532,8 +532,9 @@ KBUILD_CFLAGS += $(call cc-option,-Wframe-larger-than=${CONFIG_FRAME_WARN})
+ endif
  
-+#ifdef CONFIG_CC_STACKPROTECTOR
-+
- #include <asm/tsc.h>
- #include <asm/processor.h>
-+#include <asm/percpu.h>
-+#include <linux/random.h>
+ # Force gcc to behave correct even for buggy distributions
+-# Arch Makefiles may override this setting
++ifndef CONFIG_CC_STACKPROTECTOR
+ KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
++endif
  
- /*
-  * Initialize the stackprotector canary value.
-@@ -35,4 +39,5 @@ static __always_inline void boot_init_stack_canary(void)
- 	percpu_write(irq_stack_union.stack_canary, canary);
- }
+ ifdef CONFIG_FRAME_POINTER
+ KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index eb7b986..8597305 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -70,14 +70,17 @@ else
+         # this works around some issues with generating unwind tables in older gccs
+         # newer gccs do it by default
+         KBUILD_CFLAGS += -maccumulate-outgoing-args
++endif
  
+-        stackp := $(CONFIG_SHELL) $(srctree)/scripts/gcc-x86_64-has-stack-protector.sh
+-        stackp-$(CONFIG_CC_STACKPROTECTOR) := $(shell $(stackp) \
+-                "$(CC)" "-fstack-protector -DGCC_HAS_SP" )
+-        stackp-$(CONFIG_CC_STACKPROTECTOR_ALL) += $(shell $(stackp) \
+-                "$(CC)" -fstack-protector-all )
+-
+-        KBUILD_CFLAGS += $(stackp-y)
++ifdef CONFIG_CC_STACKPROTECTOR
++	cc_has_sp := $(srctree)/scripts/gcc-x86_$(BITS)-has-stack-protector.sh
++        ifeq ($(shell $(CONFIG_SHELL) $(cc_has_sp) $(CC)),y)
++                stackp-y := -fstack-protector
++                stackp-$(CONFIG_CC_STACKPROTECTOR_ALL) += -fstack-protector-all
++                KBUILD_CFLAGS += $(stackp-y)
++        else
++                $(warning stack protector enabled but no compiler support)
++        endif
+ endif
+ 
+ # Don't unroll struct assignments with kmemcheck enabled
+diff --git a/kernel/panic.c b/kernel/panic.c
+index 33cab3d..32fe4ef 100644
+--- a/kernel/panic.c
++++ b/kernel/panic.c
+@@ -359,10 +359,6 @@ EXPORT_SYMBOL(warn_slowpath);
+ 
+ #ifdef CONFIG_CC_STACKPROTECTOR
+ 
+-#ifndef GCC_HAS_SP
+-#warning You have selected the CONFIG_CC_STACKPROTECTOR option, but the gcc used does not support this.
 -#endif
-+#endif	/* CC_STACKPROTECTOR */
-+#endif	/* _ASM_STACKPROTECTOR_H */
+-
+ /*
+  * Called when gcc's -fstack-protector feature is used, and
+  * gcc detects corruption of the on-stack canary value
+diff --git a/scripts/gcc-x86_64-has-stack-protector.sh b/scripts/gcc-x86_64-has-stack-protector.sh
+index 325c0a1..2d69fcd 100644
+--- a/scripts/gcc-x86_64-has-stack-protector.sh
++++ b/scripts/gcc-x86_64-has-stack-protector.sh
+@@ -2,5 +2,7 @@
+ 
+ echo "int foo(void) { char X[200]; return 3; }" | $1 -S -xc -c -O0 -mcmodel=kernel -fstack-protector - -o - 2> /dev/null | grep -q "%gs"
+ if [ "$?" -eq "0" ] ; then
+-	echo $2
++	echo y
++else
++	echo n
+ fi
 -- 
 1.6.0.2
 
