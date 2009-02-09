@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755624AbZBIQue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbZBIQwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755624AbZBIQue (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 11:50:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbZBIQuZ
+	id S1755575AbZBIQwW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 11:52:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbZBIQwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 11:50:25 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:43087 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753885AbZBIQuZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 11:50:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ipOCpLIUWy4cE90qxvg7MDOFjzhCgV6biwPHsbLiz9Y5NhdkZhiprnSP73JS9PanWJ
-         3NLOfYU/EribB/iAt+NZi2tGHrNX+QqTZgdgUEGanUm1PrX5w5CJ97WxIdqIx40i/9jC
-         H9BfQ9UdsyemDYOAFoWiDOKQk35+5qL/Zsc0E=
+	Mon, 9 Feb 2009 11:52:09 -0500
+Received: from cantor.suse.de ([195.135.220.2]:53031 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753885AbZBIQwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 11:52:08 -0500
+Date: Mon, 9 Feb 2009 08:49:05 -0800
+From: Greg KH <gregkh@suse.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Stefan Lippers-Hollmann <s.L-H@gmx.de>, linux-kernel@vger.kernel.org,
+       len.brown@intel.com, stable@kernel.org
+Subject: Re: patch acpi-remove-locking-from-pm1x_sts-register-reads.patch
+	added to 2.6.28-stable tree
+Message-ID: <20090209164905.GA5420@suse.de>
+References: <20090208211932.4CAB349019@coco.kroah.org> <200902090124.44228.s.L-H@gmx.de> <20090209162402.GA13931@suse.de> <20090209083050.361e997d@infradead.org>
 MIME-Version: 1.0
-In-Reply-To: <1234191743.3156.2.camel@localhost.localdomain>
-References: <1233967681-6378-1-git-send-email-giuseppe.bilotta@gmail.com>
-	 <1234191743.3156.2.camel@localhost.localdomain>
-Date: Mon, 9 Feb 2009 17:50:23 +0100
-Message-ID: <cb7bb73a0902090850m1abb0f74wc75d77df8a507852@mail.gmail.com>
-Subject: Re: [PATCH] lis3lv02d: add axes knowledge of HP Pavilion dv5 models
-From: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090209083050.361e997d@infradead.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 9, 2009 at 4:02 PM, Jaswinder Singh Rajput
-<jaswinder@kernel.org> wrote:
-> On Sat, 2009-02-07 at 01:48 +0100, Giuseppe Bilotta wrote:
->> Add support for HP Pavlion dv5 models, whose sensor has an inverted x
->> axis.
->>
-> How can I test this patch on HP dv5-1002us laptop.
+On Mon, Feb 09, 2009 at 08:30:50AM -0800, Arjan van de Ven wrote:
+> On Mon, 9 Feb 2009 08:24:02 -0800
+> Greg KH <gregkh@suse.de> wrote:
+> 
+> > On Mon, Feb 09, 2009 at 01:24:43AM +0100, Stefan Lippers-Hollmann
+> > wrote:
+> > > Hi
+> > > 
+> > > On Sonntag, 8. Februar 2009, gregkh@suse.de wrote:
+> > > > 
+> > > > This is a note to let you know that we have just queued up the
+> > > > patch titled
+> > > > 
+> > > >     Subject: ACPI: remove locking from PM1x_STS register reads
+> 
+> 
+> why is this -stable material?
+> this is a performance improvement....
 
-lspnp (run by root, most likely) should show a device HPQ0004. If it's
-present you have the sensor. I also have a big horrible sticker on my
-palm rest advertising the protectsmart feature.
+It is, and not a bugfix?  If so, I'll drop it.
 
-(Please use Reply-All)
+thanks,
 
--- 
-Giuseppe "Oblomov" Bilotta
+greg k-h
