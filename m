@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbZBINhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755640AbZBINkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756027AbZBINhA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 08:37:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbZBINgt
+	id S1755640AbZBINkq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 08:40:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754402AbZBINkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 08:36:49 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:50541 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754378AbZBINgs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 08:36:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:to:cc:subject:references:from:date:in-reply-to:message-id
-         :user-agent:mime-version:content-type;
-        b=kk0xvO8Y4ex18Ejw+Qmhdu8yqOP0qBZ9vOdi/IhcrgF2X6iFbfDrX35V4VXehFSjKt
-         hIs1q7UW30PZhJAIt4zrOVFB77Ptvp6WRDX40GmJSJCTzesvfSAzRTi05hk8eUfqP024
-         eU+ys/EwTAeGr67+B9RxqVQVMnLZa/o3QfItA=
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Ira Snyder <iws@ovro.caltech.edu>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Dai Haruki <dai.haruki@freescale.com>,
-       Andy Fleming <afleming@freescale.com>
-Subject: Re: [BUG BISECTED] boot hangs while bringing up gianfar ethernet
-References: <20090207225555.GA2680@ami.dom.local>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Mon, 09 Feb 2009 14:36:15 +0100
-In-Reply-To: <20090207225555.GA2680@ami.dom.local> (Jarek Poplawski's message of "Sat\, 7 Feb 2009 23\:55\:56 +0100")
-Message-ID: <87prhr7mwg.fsf@macbook.be.48ers.dk>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 9 Feb 2009 08:40:37 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37785 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753964AbZBINkh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 08:40:37 -0500
+From: Tejun Heo <tj@kernel.org>
+To: hpa@zytor.com, jeremy@goop.org, tglx@linutronix.de, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, x86@kernel.org, rusty@rustcorp.com.au
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 04/11] elf: add ELF_CORE_COPY_KERNEL_REGS()
+Date: Mon,  9 Feb 2009 22:39:51 +0900
+Message-Id: <1234186798-16820-5-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1234186798-16820-1-git-send-email-tj@kernel.org>
+References: <1234186798-16820-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 09 Feb 2009 13:40:20 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Jarek" == Jarek Poplawski <jarkao2@gmail.com> writes:
+ELF core dump is used for both user land core dump and kernel crash
+dump.  Depending on architecture, register might need to be accessed
+differently for userland and kernel.  Allow architectures to define
+ELF_CORE_COPY_KERNEL_REGS() and use different operation for kernel
+register dump.
 
- Jarek> Ira Snyder wrote, On 01/29/2009 08:41 PM:
- >> Hello,
- >> 
- >> I'm working on a Freescale MPC8349EMDS board. I have been booting it
- >> over NFS for a long time now. I try to run the latest git kernels to
- >> find possible problems.
- >> 
- >> Recently, I haven't been able to boot over NFS anymore. When the machine
- >> tries to bring up the ethernet interface, it just hangs forever. There
- >> are no softlockup warnings, the machine has locked up completely.
- >> 
- >> Here is the commit I bisected it down to. I tried running git revert,
- >> but there have been other changes which prevent an easy revert.
- >> 
- >> After building each kernel, I compiled and used the dts file from that
- >> kernel. There shouldn't be any conflicts there.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+---
+ include/linux/elfcore.h |    9 +++++++++
+ kernel/kexec.c          |    2 +-
+ 2 files changed, 10 insertions(+), 1 deletions(-)
 
- Jarek> Hi,
-
- Jarek> Could you try this patch?
-
-Solves the problem for me - Thanks. I'm not familar enough with the hw
-to know if's the right fix, but it certainly fixes the nfsboot issue
-for me.
-
+diff --git a/include/linux/elfcore.h b/include/linux/elfcore.h
+index 5ca54d7..7605c5e 100644
+--- a/include/linux/elfcore.h
++++ b/include/linux/elfcore.h
+@@ -111,6 +111,15 @@ static inline void elf_core_copy_regs(elf_gregset_t *elfregs, struct pt_regs *re
+ #endif
+ }
+ 
++static inline void elf_core_copy_kernel_regs(elf_gregset_t *elfregs, struct pt_regs *regs)
++{
++#ifdef ELF_CORE_COPY_KERNEL_REGS
++	ELF_CORE_COPY_KERNEL_REGS((*elfregs), regs);
++#else
++	elf_core_copy_regs(elfregs, regs);
++#endif
++}
++
+ static inline int elf_core_copy_task_regs(struct task_struct *t, elf_gregset_t* elfregs)
+ {
+ #ifdef ELF_CORE_COPY_TASK_REGS
+diff --git a/kernel/kexec.c b/kernel/kexec.c
+index 8a6d7b0..795e7b6 100644
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -1130,7 +1130,7 @@ void crash_save_cpu(struct pt_regs *regs, int cpu)
+ 		return;
+ 	memset(&prstatus, 0, sizeof(prstatus));
+ 	prstatus.pr_pid = current->pid;
+-	elf_core_copy_regs(&prstatus.pr_reg, regs);
++	elf_core_copy_kernel_regs(&prstatus.pr_reg, regs);
+ 	buf = append_elf_note(buf, KEXEC_CORE_NOTE_NAME, NT_PRSTATUS,
+ 		      	      &prstatus, sizeof(prstatus));
+ 	final_note(buf);
 -- 
-Bye, Peter Korsgaard
+1.6.0.2
+
