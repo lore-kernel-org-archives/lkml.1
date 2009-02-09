@@ -1,107 +1,348 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbZBIR1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756494AbZBIR2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756241AbZBIR1i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 12:27:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbZBIR1Y
+	id S1756494AbZBIR2c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 12:28:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754987AbZBIR2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 12:27:24 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:3411 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754987AbZBIR1X (ORCPT
+	Mon, 9 Feb 2009 12:28:24 -0500
+Received: from tomts25.bellnexxia.net ([209.226.175.188]:44348 "EHLO
+	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755118AbZBIR2W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 12:27:23 -0500
-Date: Mon, 9 Feb 2009 17:27:15 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
-       OMAP <linux-omap@vger.kernel.org>
-Subject: Re: [patch 2.6.29-rc3-git 1/2] regulator: twl4030 regulators
-Message-ID: <20090209172714.GA17637@sirena.org.uk>
-References: <200902081037.06645.david-b@pacbell.net> <20090208232922.GA16966@sirena.org.uk> <200902081604.29905.david-b@pacbell.net>
-MIME-Version: 1.0
+	Mon, 9 Feb 2009 12:28:22 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq8EAK/yj0lMQWt2/2dsb2JhbACBbs5yhBoG
+Date: Mon, 9 Feb 2009 12:28:17 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
+Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
+	(repost)
+Message-ID: <20090209172816.GA12934@Krystal>
+References: <20090206030543.GB8560@Krystal> <20090206045841.GA12995@Krystal> <20090206130640.GB10918@linux.vnet.ibm.com> <20090206163432.GF10918@linux.vnet.ibm.com> <20090208224419.GA19512@Krystal> <20090209041153.GR7120@linux.vnet.ibm.com> <20090209045352.GA28653@Krystal> <20090209051737.GA29254@Krystal> <20090209132343.GT7120@linux.vnet.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200902081604.29905.david-b@pacbell.net>
-X-Cookie: Long life is in store for you.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20090209132343.GT7120@linux.vnet.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:49:21 up 39 days, 16:47,  4 users,  load average: 0.22, 0.28,
+	0.37
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 08, 2009 at 04:04:29PM -0800, David Brownell wrote:
-> On Sunday 08 February 2009, Mark Brown wrote:
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> On Mon, Feb 09, 2009 at 12:17:37AM -0500, Mathieu Desnoyers wrote:
+> > * Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
+> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > > On Sun, Feb 08, 2009 at 05:44:19PM -0500, Mathieu Desnoyers wrote:
+> > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > > > > On Fri, Feb 06, 2009 at 05:06:40AM -0800, Paul E. McKenney wrote:
+> > > > > > > On Thu, Feb 05, 2009 at 11:58:41PM -0500, Mathieu Desnoyers wrote:
+> > > > > > > > (sorry for repost, I got the ltt-dev email wrong in the previous one)
+> > > > > > > > 
+> > > > > > > > Hi Paul,
+> > > > > > > > 
+> > > > > > > > I figured out I needed some userspace RCU for the userspace tracing part
+> > > > > > > > of LTTng (for quick read access to the control variables) to trace
+> > > > > > > > userspace pthread applications. So I've done a quick-and-dirty userspace
+> > > > > > > > RCU implementation.
+> > > > > > > > 
+> > > > > > > > It works so far, but I have not gone through any formal verification
+> > > > > > > > phase. It seems to work on paper, and the tests are also OK (so far),
+> > > > > > > > but I offer no guarantee for this 300-lines-ish 1-day hack. :-) If you
+> > > > > > > > want to comment on it, it would be welcome. It's a userland-only
+> > > > > > > > library. It's also currently x86-only, but only a few basic definitions
+> > > > > > > > must be adapted in urcu.h to port it.
+> > > > > > > > 
+> > > > > > > > Here is the link to my git tree :
+> > > > > > > > 
+> > > > > > > > git://lttng.org/userspace-rcu.git
+> > > > > > > > 
+> > > > > > > > http://lttng.org/cgi-bin/gitweb.cgi?p=userspace-rcu.git;a=summary
+> > > > > > > 
+> > > > > > > Very cool!!!  I will take a look!
+> > > > > > > 
+> > > > > > > I will also point you at a few that I have put together:
+> > > > > > > 
+> > > > > > > git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/perfbook.git
+> > > > > > > 
+> > > > > > > (In the CodeSamples/defer directory.)
+> > > > > > 
+> > > > > > Interesting approach, using the signal to force memory-barrier execution!
+> > > > > > 
+> > > > > > o	One possible optimization would be to avoid sending a signal to
+> > > > > > 	a blocked thread, as the context switch leading to blocking
+> > > > > > 	will have implied a memory barrier -- otherwise it would not
+> > > > > > 	be safe to resume the thread on some other CPU.  That said,
+> > > > > > 	not sure whether checking to see whether a thread is blocked is
+> > > > > > 	any faster than sending it a signal and forcing it to wake up.
+> > > > > 
+> > > > > I'm not sure it will be any faster, and it could be racy too. How would
+> > > > > you envision querying the execution state of another thread ?
+> > > > 
+> > > > For my 64-bit implementation (or the old slow 32-bit version), the trick
+> > > > would be to observe that the thread didn't do an RCU read-side critical
+> > > > section during the past grace period.  This observation would be by
+> > > > comparing counters.
+> > > > 
+> > > > For the new 32-bit implementation, the only way I know of is to grovel
+> > > > through /proc, which would probably be slower than just sending the
+> > > > signal.
+> > > > 
+> > > 
+> > > Yes, I guess the signal is not so bad.
+> > > 
+> > > > > > 	Of course, this approach does require that the enclosing
+> > > > > > 	application be willing to give up a signal.  I suspect that most
+> > > > > > 	applications would be OK with this, though some might not.
+> > > > > 
+> > > > > If we want to make this transparent to the application, we'll have to
+> > > > > investigate further in sigaction() and signal() library override I
+> > > > > guess.
+> > > > 
+> > > > Certainly seems like it is worth a try!
+> > > > 
+> > > > > > 	Of course, I cannot resist pointing to an old LKML thread:
+> > > > > > 
+> > > > > > 		http://lkml.org/lkml/2001/10/8/189
+> > > > > > 
+> > > > > > 	But I think that the time is now right.  ;-)
+> > > > > > 
+> > > > > > o	I don't understand the purpose of rcu_write_lock() and
+> > > > > > 	rcu_write_unlock().  I am concerned that it will lead people
+> > > > > > 	to decide that a single global lock must protect RCU updates,
+> > > > > > 	which is of course absolutely not the case.  I strongly
+> > > > > > 	suggest making these internal to the urcu.c file.  Yes,
+> > > > > > 	uses of urcu_publish_content() would then hit two locks (the
+> > > > > > 	internal-to-urcu.c one and whatever they are using to protect
+> > > > > > 	their data structure), but let's face it, if you are sending a
+> > > > > > 	signal to each and every thread, the additional overhead of the
+> > > > > > 	extra lock is the least of your worries.
+> > > > > > 
+> > > > > 
+> > > > > Ok, just changed it.
+> > > > 
+> > > > Thank you!!!
+> > > > 
+> > > > > > 	If you really want to heavily optimize this, I would suggest
+> > > > > > 	setting up a state machine that permits multiple concurrent
+> > > > > > 	calls to urcu_publish_content() to share the same set of signal
+> > > > > > 	invocations.  That way, if the caller has partitioned the
+> > > > > > 	data structure, global locking might be avoided completely
+> > > > > > 	(or at least greatly restricted in scope).
+> > > > > > 
+> > > > > 
+> > > > > That brings an interesting question about urcu_publish_content :
+> > > > > 
+> > > > > void *urcu_publish_content(void **ptr, void *new)
+> > > > > {
+> > > > >         void *oldptr;
+> > > > > 
+> > > > >         internal_urcu_lock();
+> > > > >         oldptr = *ptr;
+> > > > >         *ptr = new;
+> > > > > 
+> > > > >         switch_qparity();
+> > > > >         switch_qparity();
+> > > > >         internal_urcu_unlock();
+> > > > > 
+> > > > >         return oldptr;
+> > > > > }
+> > > > > 
+> > > > > Given that we take a global lock around the pointer assignment, we can
+> > > > > safely assume, from the caller's perspective, that the update will
+> > > > > happen as an "xchg" operation. So if the caller does not have to copy
+> > > > > the old data, it can simply publish the new data without taking any
+> > > > > lock itself.
+> > > > > 
+> > > > > So the question that arises if we want to remove global locking is :
+> > > > > should we change this 
+> > > > > 
+> > > > >         oldptr = *ptr;
+> > > > >         *ptr = new;
+> > > > > 
+> > > > > for an atomic xchg ?
+> > > > 
+> > > > Makes sense to me!
+> > > > 
+> > > > > > 	Of course, if updates are rare, the optimization would not
+> > > > > > 	help, but in that case, acquiring two locks would be even less
+> > > > > > 	of a problem.
+> > > > > 
+> > > > > I plan updates to be quite rare, but it's always good to foresee how
+> > > > > that kind of infrastructure could be misused. :-)
+> > > > 
+> > > > ;-)  ;-)  ;-)
+> > > > 
+> > > > > > o	Is urcu_qparity relying on initialization to zero?  Or on the
+> > > > > > 	fact that, for all x, 1-x!=x mod 2^32?  Ah, given that this is
+> > > > > > 	used to index urcu_active_readers[], you must be relying on
+> > > > > > 	initialization to zero.
+> > > > > 
+> > > > > Yes, starts at 0.
+> > > > 
+> > > > Whew!  ;-)
+> > > > 
+> > > > > > o	In rcu_read_lock(), why is a non-atomic increment of the
+> > > > > > 	urcu_active_readers[urcu_parity] element safe?  Are you
+> > > > > > 	relying on the compiler generating an x86 add-to-memory
+> > > > > > 	instruction?
+> > > > > > 
+> > > > > > 	Ditto for rcu_read_unlock().
+> > > > > > 
+> > > > > > 	Ah, never mind!!!  I now see the __thread specification,
+> > > > > > 	and the keeping of references to it in the reader_data list.
+> > > > > 
+> > > > > Exactly :)
+> > > > 
+> > > > Getting old and blind, what can I say?
+> > > > 
+> > > > > > o	Combining the equivalent of rcu_assign_pointer() and
+> > > > > > 	synchronize_rcu() into urcu_publish_content() is an interesting
+> > > > > > 	approach.  Not yet sure whether or not it is a good idea.  I
+> > > > > > 	guess trying it out on several applications would be the way
+> > > > > > 	to find out.  ;-)
+> > > > > > 
+> > > > > > 	That said, I suspect that it would be very convenient in a
+> > > > > > 	number of situations.
+> > > > > 
+> > > > > I thought so. It seemed to be a natural way to express it to me. Usage
+> > > > > will tell.
+> > > > 
+> > > > ;-)
+> > > > 
+> > > > > > o	It would be good to avoid having to pass the return value
+> > > > > > 	of rcu_read_lock() into rcu_read_unlock().  It should be
+> > > > > > 	possible to avoid this via counter value tricks, though this
+> > > > > > 	would add a bit more code in rcu_read_lock() on 32-bit machines.
+> > > > > > 	(64-bit machines don't have to worry about counter overflow.)
+> > > > > > 
+> > > > > > 	See the recently updated version of CodeSamples/defer/rcu_nest.[ch]
+> > > > > > 	in the aforementioned git archive for a way to do this.
+> > > > > > 	(And perhaps I should apply this change to SRCU...)
+> > > > > 
+> > > > > See my other mail about this.
+> > > > 
+> > > > And likewise!
+> > > > 
+> > > > > > o	Your test looks a bit strange, not sure why you test all the
+> > > > > > 	different variables.  It would be nice to take a test duration
+> > > > > > 	as an argument and run the test for that time.
+> > > > > 
+> > > > > I made a smaller version which only reads a single variable. I agree
+> > > > > that the initial test was a bit strange on that aspect.
+> > > > > 
+> > > > > I'll do a version which takes a duration as parameter.
+> > > > 
+> > > > I strongly recommend taking a look at my CodeSamples/defer/rcutorture.h
+> > > > file in my git archive:
+> > > > 
+> > > > 	git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/perfbook.git
+> > > > 
+> > > > This torture test detects the missing second flip 15 times during a
+> > > > 10-second test on a two-processor machine.
+> > > > 
+> > > > The first part of the rcutorture.h file is performance tests -- search
+> > > > for the string "Stress test" to find the torture test.
+> > > > 
+> > > 
+> > > I will.
+> > > 
+> > > > > > 	I killed the test after better part of an hour on my laptop,
+> > > > > > 	will retry on a larger machine (after noting the 18 threads
+> > > > > > 	created!).  (And yes, I first tried Power, which objected
+> > > > > > 	strenously to the "mfence" and "lock; incl" instructions,
+> > > > > > 	so getting an x86 machine to try on.)
+> > > > > 
+> > > > > That should be easy enough to fix. A bit of primitive cut'n'paste would
+> > > > > do.
+> > > > 
+> > > > Yep.  Actually, I was considering porting your code into my environment,
+> > > > which already has the Power primitives.  Any objections?  (This would
+> > > > have the side effect of making a version available via perfbook.git.
+> > > > I would of course add comments referencing your git archive as the
+> > > > official version.)
+> > > 
+> > > Yes, no objection. I am currently looking at your last patch, cleaning
+> > > it up and making the 32 and 64-bit code the same. Also trying to save a
+> > > few instructions. I'll keep you posted when it's ready and committed.
+> > 
+> > The new version is pushed into the repository. I changed you patch a
+> > bit. Flaming is welcome. :)
+> 
+> Looks reasonable at first glance.  Just out of curiosity, why are
+> urcu_gp_ctr and urcu_active_readers int rather than char?  I guess that
+> one reason would be that many architectures work better with int than
+> with char...
+> 
 
-> > If we're going to do this I think it'd be better to push it into the
-> > core and let the regulators pass in a set of constraints so that the
-> > behaviour will be consistent between drivers.
+Exactly. This is done to make sure we don't end up having false register
+dependencies causing stalls on such architectures. I'll add a comment.
 
-> Maybe, but there is no such mechanism right yet.
-> When it's created, then this could switch over.
+> So, how many cycles did this save?  ;-)
+> 
 
-Since you appear to be writing the code already... :)
+On x86_64, it's pretty much the same as before. It just helps having the
+32 and 64 bits algorithms being exactly the same, which I think is a
+very good thing.
 
-> > I'd also expect to have the registration fail or at least issue a
-> > warning if the code kicks in since that indicates that the board
-> > constraints have been set up incorrectly.
+BTW, my tests were done without any CMOV instruction due to the standard
+gcc options I used. Given think past discussion about CMOV :
 
-> A warning might make sense in some cases ... that's
-> something I would expect to see from the regulator
-> core, though.
+http://ondioline.org/mail/cmov-a-bad-idea-on-out-of-order-cpus
 
-That's what I'm suggesting should happen - that things like this should
-be implemented in the core so that the behaviour of the API remains
-consistent for users moving between platforms and everyone benefits from
-new features.
+It does not seem like such a good idea to use it anyway, given it can
+take 10 cycles to run on a P4a
 
->                Example, I see no "max < min" checks
-> triggering registration errors.
+BTW, do you think having the 256 nested rcu read locks limitation could
+become a problem ? I really think an application has recursion problem
+if it does, but this is not impossible, especially on a particularly
+badly designed tree-traversal algorithm on a 64-bits arch...
 
-Not a bad idea, though.  The core currently doesn't do much checking of
-the constraints but that's as much because nobody spent the time on it
-as anything else.  To the extent it's a deliberate design decision it's
-because the constraints and consumer lists are where the information
-about what's possible on a given system comes from and so the checking
-that can be done by software is relatively minor.
+Mathieu
 
-> > There's a reasonable chance 
-> > that the fixed up constraints will still need to be changed for the
-> > board to be configured properly and things may end up being driven out
-> > of spec, potentially causing damage.
+> 						Thanx, Paul
+> 
+> > Mathieu
+> > 
+> > > Mathieu
+> > > 
+> > > > > > Again, looks interesting!  Looks plausible, although I have not 100%
+> > > > > > convinced myself that it is perfectly bug-free.  But I do maintain
+> > > > > > a healthy skepticism of purported RCU algorithms, especially ones that
+> > > > > > I have written.  ;-)
+> > > > > > 
+> > > > > 
+> > > > > That's always good. I also tend to always be very skeptical about what I
+> > > > > write and review.
+> > > > > 
+> > > > > Thanks for the thorough review.
+> > > > 
+> > > > No problem -- it has been quite fun!  ;-)
+> > > > 
+> > > > 							Thanx, Paul
+> > > > 
+> > > 
+> > > -- 
+> > > Mathieu Desnoyers
+> > > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> > > 
+> > > _______________________________________________
+> > > ltt-dev mailing list
+> > > ltt-dev@lists.casi.polymtl.ca
+> > > http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
+> > > 
+> > 
+> > -- 
+> > Mathieu Desnoyers
+> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> 
 
-> I don't see that happening ... all that code does is
-> tighten existing constraints to match what the hardware
-> can do.  The result is just a subset of the range the
-> board already said was OK.  If no valid subset exists,
-
-The trouble is that this code should only do anything if the board code
-provided a configuration that can't be supported by the hardware, which
-is a bit of a red flag.  I'd expect it'd end up catching things like the
-user typing extra digits by mistake (this has definitely happened when
-writing consumer drivers).
-
-Your current patch does also set constraints for the voltages if they
-weren't there previously (though this shouldn't matter since voltage
-setting shouldn't be enabled without voltage value constraints).
-
-> I can easily imagine having things partially set up, and
-> not really caring whether, on a particular board, those
-> initial constraints are really the most specific ones
-> applicable.  One component tolerates a range of 1V8..3V6
-> maybe, but on any given board it can be hooked up to any
-> supply that's even partially in-range.
-
-The pattern you're describing is very much that for consumer and
-regulator drivers.  They should work with as wide a set of constraints
-as possible to allow them to be used on different systems with different
-capabilities and needs - allowing this is essential for the API to be
-usable since so many chips are flexible about the supplies they can use.
-
-It's different for the machine constraints since they are by definition
-specific to a given system.  While it's expected that users (especially
-those sensitive to power consumption) may want to optimise the
-configuration of their system during development to get the best
-performance out of it there is also an expectation that users will be
-making decisions based on knowledge of the hardware design.
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
