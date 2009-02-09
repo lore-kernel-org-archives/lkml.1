@@ -1,165 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbZBISh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbZBISnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754863AbZBISh5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 13:37:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754324AbZBIShr
+	id S1755273AbZBISnT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 13:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbZBISnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 13:37:47 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:51281 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754322AbZBIShq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 13:37:46 -0500
-Date: Mon, 9 Feb 2009 10:37:42 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>,
-       ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
-	(repost)
-Message-ID: <20090209183742.GI6802@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090206130640.GB10918@linux.vnet.ibm.com> <20090206163432.GF10918@linux.vnet.ibm.com> <20090208224419.GA19512@Krystal> <20090209041153.GR7120@linux.vnet.ibm.com> <20090209045352.GA28653@Krystal> <20090209051737.GA29254@Krystal> <20090209132343.GT7120@linux.vnet.ibm.com> <20090209172816.GA12934@Krystal> <20090209174741.GE6802@linux.vnet.ibm.com> <20090209181341.GA15514@Krystal>
+	Mon, 9 Feb 2009 13:43:09 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:38307 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750710AbZBISnI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 13:43:08 -0500
+Date: Mon, 9 Feb 2009 13:43:04 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 3/3] tracing: clean up splice code
+In-Reply-To: <20090209183754.GB5283@localhost>
+Message-ID: <alpine.DEB.1.10.0902091342000.14528@gandalf.stny.rr.com>
+References: <20090209172830.087244662@goodmis.org> <20090209172956.970104543@goodmis.org> <20090209182500.GA5283@localhost> <4990754C.7010301@cs.helsinki.fi> <20090209183754.GB5283@localhost>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090209181341.GA15514@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 09, 2009 at 01:13:41PM -0500, Mathieu Desnoyers wrote:
-> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > On Mon, Feb 09, 2009 at 12:28:17PM -0500, Mathieu Desnoyers wrote:
-> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > On Mon, Feb 09, 2009 at 12:17:37AM -0500, Mathieu Desnoyers wrote:
-> > 
-> > [ . . . ]
-> > 
-> > > > > The new version is pushed into the repository. I changed you patch a
-> > > > > bit. Flaming is welcome. :)
-> > > > 
-> > > > Looks reasonable at first glance.  Just out of curiosity, why are
-> > > > urcu_gp_ctr and urcu_active_readers int rather than char?  I guess that
-> > > > one reason would be that many architectures work better with int than
-> > > > with char...
-> > > 
-> > > Exactly. This is done to make sure we don't end up having false register
-> > > dependencies causing stalls on such architectures. I'll add a comment.
-> > 
-> > Are there any 64-bit architectures that would prefer a long to an int?
-> > (Other than really old Alpha CPUs, that is.)
-> 
-> None that I am aware of, but Christoph or Peter would probably know more
-> than I do on this aspect.
-> 
-> > > > So, how many cycles did this save?  ;-)
-> > > 
-> > > On x86_64, it's pretty much the same as before. It just helps having the
-> > > 32 and 64 bits algorithms being exactly the same, which I think is a
-> > > very good thing.
-> > 
-> > Good point!
-> > 
-> > > BTW, my tests were done without any CMOV instruction due to the standard
-> > > gcc options I used. Given think past discussion about CMOV :
-> > > 
-> > > http://ondioline.org/mail/cmov-a-bad-idea-on-out-of-order-cpus
-> > > 
-> > > It does not seem like such a good idea to use it anyway, given it can
-> > > take 10 cycles to run on a P4a
-> > 
-> > Fair enough!
-> > 
-> > > BTW, do you think having the 256 nested rcu read locks limitation could
-> > > become a problem ? I really think an application has recursion problem
-> > > if it does, but this is not impossible, especially on a particularly
-> > > badly designed tree-traversal algorithm on a 64-bits arch...
-> > 
-> > I don't know of any code in the Linux kernel that nests rcu_read_lock()
-> > anywhere near that deep.  And if someone does find such a case, it is
-> > pretty easy to use 15 bits rather than 8 to hold the nesting depth, just
-> > by changing the definition of RCU_GP_CTR_BIT.
-> > 
-> 
-> You know what ? Changing RCU_GP_CTR_BIT to 16 uses a
-> testw %ax, %ax instead of a testb %al, %al. The trick here is that
-> RCU_GP_CTR_BIT must be a multiple of 8 so we can use a full 8-bits,
-> 16-bits or 32-bits bitmask for the lower order bits.
-> 
-> On 64-bits, using a RCU_GP_CTR_BIT of 32 is also ok. It uses a testl.
-> 
-> To provide 32-bits compability and allow the deepest nesting possible, I
-> think it makes sense to use
-> 
-> /* Use the amount of bits equal to half of the architecture long size */
-> #define RCU_GP_CTR_BIT (sizeof(long) << 2)
 
-You lost me on this one:
+On Mon, 9 Feb 2009, Eduard - Gabriel Munteanu wrote:
 
-	sizeof(long) << 2 = 0x10
-
-I could believe the following (run on a 32-bit machine):
-
-	1 << (sizeof(long) * 8 - 1) = 0x80000000
-
-Or, if you were wanting to use a bit halfway up the word, perhaps this:
-
-	1 << (sizeof(long) * 4 - 1) = 0x8000
-
-Or am I confused?
-
-							Thanx, Paul
-
-> Mathieu
+> On Mon, Feb 09, 2009 at 08:26:20PM +0200, Pekka Enberg wrote:
+> > Eduard - Gabriel Munteanu wrote:
+> >>> @@ -2573,45 +2607,25 @@ static ssize_t tracing_splice_read_pipe(struct 
+> >>> file *filp,
+> >>>  		ret = iter->trace->splice_read(iter, filp,
+> >>>  					       ppos, pipe, len, flags);
+> >>>  		if (ret)
+> >>> -			goto out;
+> >>> +			goto out_err;
+> >>>  	}
+> >>>   	ret = tracing_wait_pipe(filp);
+> >>>  	if (ret <= 0)
+> >>> -		goto out;
+> >>> +		goto out_err;
+> >>>   	if (!iter->ent && !find_next_entry_inc(iter)) {
+> >>>  		ret = -EFAULT;
+> >>> -		goto out;
+> >>> +		goto out_err;
+> >>>  	}
+> >>>   	/* Fill as many pages as possible. */
+> >>>  	for (i = 0, rem = len; i < PIPE_BUFFERS && rem; i++) {
+> >>>  		pages[i] = alloc_page(GFP_KERNEL);
+> >>> +		if (!pages[i])
+> >>> +			break;
+> >> I believe you should decrement 'i' before breaking, since we fill
+> >> spd.nr_pages just after the loop. In case the current page couldn't be
+> >> allocated, spd.nr_pages will be one too many (that is, 'i').
+> >
+> > But, but, if we fail for i == 1, for example, we want ->nr_pages == 1, no?
+> >
+> > 			Pekka
 > 
-> 
-> > 							Thanx, Paul
-> > 
-> > > Mathieu
-> > > 
-> > > > 						Thanx, Paul
-> > > > 
-> > > > > Mathieu
-> > > > > 
-> > > > > > Mathieu
-> > > > > > 
-> > > > > > > > > Again, looks interesting!  Looks plausible, although I have not 100%
-> > > > > > > > > convinced myself that it is perfectly bug-free.  But I do maintain
-> > > > > > > > > a healthy skepticism of purported RCU algorithms, especially ones that
-> > > > > > > > > I have written.  ;-)
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > > That's always good. I also tend to always be very skeptical about what I
-> > > > > > > > write and review.
-> > > > > > > > 
-> > > > > > > > Thanks for the thorough review.
-> > > > > > > 
-> > > > > > > No problem -- it has been quite fun!  ;-)
-> > > > > > > 
-> > > > > > > 							Thanx, Paul
-> > > > > > > 
-> > > > > > 
-> > > > > > -- 
-> > > > > > Mathieu Desnoyers
-> > > > > > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> > > > > > 
-> > > > > > _______________________________________________
-> > > > > > ltt-dev mailing list
-> > > > > > ltt-dev@lists.casi.polymtl.ca
-> > > > > > http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> > > > > > 
-> > > > > 
-> > > > > -- 
-> > > > > Mathieu Desnoyers
-> > > > > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> > > > 
-> > > 
-> > > -- 
-> > > Mathieu Desnoyers
-> > > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> > 
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> Sure, my bad. I even made the same assumption myself about the outer
+> 'for' loop when I wrote it ('i' would end up last page + 1). The patch is
+> okay. :-)
+
+Heh, I was just about to say, if this is wrong then so is the if below it 
+;-)
+
+
+               pages[i] = alloc_page(GFP_KERNEL);
+                if (!pages[i])
+                        break;
+
+                rem = tracing_fill_pipe_page(pages[i], rem, iter);
+
+                /* Copy the data into the page, so we can start over. */
+                ret = trace_seq_to_buffer(&iter->seq,
+                                          page_address(pages[i]),
+                                          iter->seq.len);
+                if (ret < 0) {
+                        __free_page(pages[i]);
+
+Same 'i'.
+                        break;
+                }
+
+
+Thanks Eduard!
+
+-- Steve
+
