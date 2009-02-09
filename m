@@ -1,211 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755047AbZBISYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbZBIS0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755047AbZBISYs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 13:24:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755280AbZBISYi
+	id S1756664AbZBIS0j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 13:26:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbZBIS0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 13:24:38 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:43734 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754634AbZBISYg (ORCPT
+	Mon, 9 Feb 2009 13:26:31 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:50047 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751891AbZBIS0a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 13:24:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=TIPDwIt4ih9meXWWriCgJncrglPj9VzGg+wvxTiN2WioLGmW/wVa+pSYxnWs1xJQrH
-         7zsvb3ECRav+wNmFhn7jRX6/uys3kFzluNCZVCz+am0nMCY4/7cdt8rxN33qLW2U1xl9
-         TLi85cpF9w5M5Y0l7ufr37Ua2IUgzQrr9eyQA=
-Date: Mon, 9 Feb 2009 20:25:01 +0200
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+	Mon, 9 Feb 2009 13:26:30 -0500
+Subject: [PATCH] futex: fix reference leak
+From: Peter Zijlstra <peterz@infradead.org>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 3/3] tracing: clean up splice code
-Message-ID: <20090209182500.GA5283@localhost>
-References: <20090209172830.087244662@goodmis.org> <20090209172956.970104543@goodmis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090209172956.970104543@goodmis.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+       Darren Hart <dvhltc@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+In-Reply-To: <1234200538.16083.52.camel@pc1117.cambridge.arm.com>
+References: <1234181898.16083.26.camel@pc1117.cambridge.arm.com>
+	 <1234190649.16083.44.camel@pc1117.cambridge.arm.com>
+	 <1234192363.5951.129.camel@laptop>  <1234197950.5951.132.camel@laptop>
+	 <1234198023.5951.133.camel@laptop>
+	 <1234200538.16083.52.camel@pc1117.cambridge.arm.com>
+Content-Type: text/plain
+Date: Mon, 09 Feb 2009 19:26:15 +0100
+Message-Id: <1234203975.5951.143.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.90 
+Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 09, 2009 at 12:28:33PM -0500, Steven Rostedt wrote:
-> From: Steven Rostedt <srostedt@redhat.com>
-> 
-> Ingo Molnar suggested a series of clean ups for the splice code.
-> This patch implements those suggestions.
-> 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  kernel/trace/trace.c |   96 ++++++++++++++++++++++++++++---------------------
->  1 files changed, 55 insertions(+), 41 deletions(-)
-> 
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index 11fde0a..d898212 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -2537,15 +2537,49 @@ static void tracing_spd_release_pipe(struct splice_pipe_desc *spd,
->  }
->  
->  static struct pipe_buf_operations tracing_pipe_buf_ops = {
-> -	.can_merge = 0,
-> -	.map = generic_pipe_buf_map,
-> -	.unmap = generic_pipe_buf_unmap,
-> -	.confirm = generic_pipe_buf_confirm,
-> -	.release = tracing_pipe_buf_release,
-> -	.steal = generic_pipe_buf_steal,
-> -	.get = generic_pipe_buf_get,
-> +	.can_merge		= 0,
-> +	.map			= generic_pipe_buf_map,
-> +	.unmap			= generic_pipe_buf_unmap,
-> +	.confirm		= generic_pipe_buf_confirm,
-> +	.release		= tracing_pipe_buf_release,
-> +	.steal			= generic_pipe_buf_steal,
-> +	.get			= generic_pipe_buf_get,
->  };
->  
-> +static size_t
-> +tracing_fill_pipe_page(struct page *pages, size_t rem,
-> +			struct trace_iterator *iter)
-> +{
-> +	size_t count;
-> +	int ret;
-> +
-> +	/* Seq buffer is page-sized, exactly what we need. */
-> +	for (;;) {
-> +		count = iter->seq.len;
-> +		ret = print_trace_line(iter);
-> +		count = iter->seq.len - count;
-> +		if (rem < count) {
-> +			rem = 0;
-> +			iter->seq.len -= count;
-> +			break;
-> +		}
-> +		if (ret == TRACE_TYPE_PARTIAL_LINE) {
-> +			iter->seq.len -= count;
-> +			break;
-> +		}
-> +
-> +		trace_consume(iter);
-> +		rem -= count;
-> +		if (!find_next_entry_inc(iter))	{
-> +			rem = 0;
-> +			iter->ent = NULL;
-> +			break;
-> +		}
-> +	}
-> +
-> +	return rem;
-> +}
-> +
->  static ssize_t tracing_splice_read_pipe(struct file *filp,
->  					loff_t *ppos,
->  					struct pipe_inode_info *pipe,
-> @@ -2556,15 +2590,15 @@ static ssize_t tracing_splice_read_pipe(struct file *filp,
->  	struct partial_page partial[PIPE_BUFFERS];
->  	struct trace_iterator *iter = filp->private_data;
->  	struct splice_pipe_desc spd = {
-> -		.pages = pages,
-> -		.partial = partial,
-> -		.nr_pages = 0, /* This gets updated below. */
-> -		.flags = flags,
-> -		.ops = &tracing_pipe_buf_ops,
-> -		.spd_release = tracing_spd_release_pipe,
-> +		.pages		= pages,
-> +		.partial	= partial,
-> +		.nr_pages	= 0, /* This gets updated below. */
-> +		.flags		= flags,
-> +		.ops		= &tracing_pipe_buf_ops,
-> +		.spd_release	= tracing_spd_release_pipe,
->  	};
->  	ssize_t ret;
-> -	size_t count, rem;
-> +	size_t rem;
->  	unsigned int i;
->  
->  	mutex_lock(&trace_types_lock);
-> @@ -2573,45 +2607,25 @@ static ssize_t tracing_splice_read_pipe(struct file *filp,
->  		ret = iter->trace->splice_read(iter, filp,
->  					       ppos, pipe, len, flags);
->  		if (ret)
-> -			goto out;
-> +			goto out_err;
->  	}
->  
->  	ret = tracing_wait_pipe(filp);
->  	if (ret <= 0)
-> -		goto out;
-> +		goto out_err;
->  
->  	if (!iter->ent && !find_next_entry_inc(iter)) {
->  		ret = -EFAULT;
-> -		goto out;
-> +		goto out_err;
->  	}
->  
->  	/* Fill as many pages as possible. */
->  	for (i = 0, rem = len; i < PIPE_BUFFERS && rem; i++) {
->  		pages[i] = alloc_page(GFP_KERNEL);
-> +		if (!pages[i])
-> +			break;
+Venki, does this perchance solve your issue with my futex patch?
 
-I believe you should decrement 'i' before breaking, since we fill
-spd.nr_pages just after the loop. In case the current page couldn't be
-allocated, spd.nr_pages will be one too many (that is, 'i').
+Darren, could you please have a look at this before Ingo pushes it out
+to Linus?
 
->  
-> -		/* Seq buffer is page-sized, exactly what we need. */
-> -		for (;;) {
-> -			count = iter->seq.len;
-> -			ret = print_trace_line(iter);
-> -			count = iter->seq.len - count;
-> -			if (rem < count) {
-> -				rem = 0;
-> -				iter->seq.len -= count;
-> -				break;
-> -			}
-> -			if (ret == TRACE_TYPE_PARTIAL_LINE) {
-> -				iter->seq.len -= count;
-> -				break;
-> -			}
-> -
-> -			trace_consume(iter);
-> -			rem -= count;
-> -			if (!find_next_entry_inc(iter))	{
-> -				rem = 0;
-> -				iter->ent = NULL;
-> -				break;
-> -			}
-> -		}
-> +		rem = tracing_fill_pipe_page(pages[i], rem, iter);
->  
->  		/* Copy the data into the page, so we can start over. */
->  		ret = trace_seq_to_buffer(&iter->seq,
-> @@ -2633,7 +2647,7 @@ static ssize_t tracing_splice_read_pipe(struct file *filp,
->  
->  	return splice_to_pipe(pipe, &spd);
->  
-> -out:
-> +out_err:
->  	mutex_unlock(&trace_types_lock);
->  
->  	return ret;
-> -- 
-> 1.5.6.5
-> 
-> -- 
+---
+Catalin noticed that (38d47c1b7075: futex: rely on
+get_user_pages() for shared futexes) caused an mm_struct leak.
 
-Otherwise, it looks okay to me.
+Some tracing with the function graph tracer quickly pointed out that
+futex_wait() has exit paths with unbalanced reference counts.
 
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/futex.c |   23 +++++++++++++++--------
+ 1 files changed, 15 insertions(+), 8 deletions(-)
 
-	Thanks,
-	Eduard
+diff --git a/kernel/futex.c b/kernel/futex.c
+index f89d373..7b76c8e 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -1284,18 +1284,23 @@ retry:
+ 	 */
+ 
+ 	/* If we were woken (and unqueued), we succeeded, whatever. */
+-	if (!unqueue_me(&q))
+-		return 0;
+-	if (rem)
+-		return -ETIMEDOUT;
++	if (!unqueue_me(&q)) {
++		ret = 0;
++		goto out_put_key;
++	}
++	if (rem) {
++		ret = -ETIMEDOUT;
++		goto out_put_key;
++	}
+ 
+ 	/*
+ 	 * We expect signal_pending(current), but another thread may
+ 	 * have handled it for us already.
+ 	 */
+-	if (!abs_time)
+-		return -ERESTARTSYS;
+-	else {
++	if (!abs_time) {
++		ret = -ERESTARTSYS;
++		goto out_put_key;
++	} else {
+ 		struct restart_block *restart;
+ 		restart = &current_thread_info()->restart_block;
+ 		restart->fn = futex_wait_restart;
+@@ -1309,11 +1314,13 @@ retry:
+ 			restart->futex.flags |= FLAGS_SHARED;
+ 		if (clockrt)
+ 			restart->futex.flags |= FLAGS_CLOCKRT;
+-		return -ERESTART_RESTARTBLOCK;
++		ret = -RESTART_RESTARTBLOCK;
++		goto out_put_key;
+ 	}
+ 
+ out_unlock_put_key:
+ 	queue_unlock(&q, hb);
++out_put_key:
+ 	put_futex_key(fshared, &q.key);
+ 
+ out:
+
 
