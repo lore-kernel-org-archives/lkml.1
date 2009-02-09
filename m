@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754263AbZBIDjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229AbZBIDnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754263AbZBIDjo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 22:39:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbZBIDjf
+	id S1754229AbZBIDnT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 22:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbZBIDnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 22:39:35 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:42555 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752988AbZBIDje (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 22:39:34 -0500
-Date: Mon, 9 Feb 2009 14:39:24 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: Crypto Fixes for 2.6.29
-Message-ID: <20090209033924.GA31250@gondor.apana.org.au>
-References: <20080501102812.GA7151@gondor.apana.org.au> <20080727063659.GA936@gondor.apana.org.au> <20090115044020.GA29891@gondor.apana.org.au> <20090127061546.GA27962@gondor.apana.org.au>
+	Sun, 8 Feb 2009 22:43:09 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43398 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753576AbZBIDnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 22:43:08 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090127061546.GA27962@gondor.apana.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jerome Marchand <jmarchan@redhat.com>,
+       Denys Vlasenko <dvlasenk@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] ptrace_untrace: use wake_up_process() instead of
+	bogus signal_wake_up()
+In-Reply-To: Oleg Nesterov's message of  Monday, 9 February 2009 03:42:36 +0100 <20090209024236.GB28280@redhat.com>
+References: <20090208184727.GA27081@redhat.com>
+	<20090209013804.C99B3FC330@magilla.sf.frob.com>
+	<20090209024236.GB28280@redhat.com>
+X-Zippy-Says: Somewhere in suburban Honolulu, an unemployed bellhop is whipping
+    up a batch of illegal psilocybin chop suey!!
+Message-Id: <20090209034255.E95A7FC330@magilla.sf.frob.com>
+Date: Sun,  8 Feb 2009 19:42:55 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus:
+> We are holding ->siglock, and task->state is TASK_TRACED. We can not do
+> the "wrong" wakeup, afaics.
 
-This push fixes a number of bugs/regerssions:
+I guess that's true with the siglock.  But you'd be wrong to think that
+this sort of detailed thinking is why wake_up_process() appears *anywhere
+at all* in ptrace-related code.  I'm really quite sure that it's the
+aforementioned (ancient) lack of detailed thinking about it that led to
+wake_up_process() appearing originally--so any use of it reminds us of that
+dubious past.
 
-* shash modules weren't ref counted properly.
-* AEAD initialisation may fail which broke IPsec.
-* Not all memory were zeroed when a crypto tfm is freed.
-* We were doing flush_dcache_page on slab pages.
- 
-Please pull from
+> Because it complicates the understanding of this code. I spent a lot
+> of time trying to understand this signal_wake_up().
+> 
+> Perhaps this is just me. But when you see the code which does something,
+> it is always good to understand the reason, otherwise the code at least
+> looks wrong.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+I had presumed most people interpret it the way I do: it does
+signal_wake_up(,1), meaning "whatever it is that works right for SIGKILL or
+SIGCONT", which it seems intuitive to think is right for this case too.
+You don't have to think about exactly what is always exactly right for this
+case, because it makes sense to think that this is like the wakeup that
+SIGCONT would do.  To me, it takes much more thought to be convinced that
+wake_up_process() without other considerations is correct here--because it
+looks like such a scary, unconditional thing, whereas normally that is
+wrapped up inside calls that handle appropriate bookkeeping--signal_wake_up()
+being one of those.
 
-or
-
-master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
-
-
-Adrian-Ken Rueegsegger (1):
-      crypto: shash - Fix module refcount
-
-Herbert Xu (4):
-      crypto: api - Fix algorithm test race that broke aead initialisation
-      crypto: api - Fix zeroing on free
-      crypto: shash - Fix tfm destruction
-      crypto: scatterwalk - Avoid flush_dcache_page on slab pages
-
- crypto/algapi.c        |    6 +++++-
- crypto/api.c           |   20 ++++++++++----------
- crypto/scatterwalk.c   |    3 ++-
- crypto/shash.c         |    7 ++++++-
- include/crypto/hash.h  |    2 +-
- include/linux/crypto.h |    7 ++++++-
- 6 files changed, 30 insertions(+), 15 deletions(-)
 
 Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Roland
