@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653AbZBIJx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbZBIJxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754653AbZBIJx1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 04:53:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbZBIJxR
+	id S1754821AbZBIJxq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 04:53:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbZBIJxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 04:53:17 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44941 "EHLO mx2.mail.elte.hu"
+	Mon, 9 Feb 2009 04:53:33 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54034 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751766AbZBIJxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 04:53:16 -0500
-Date: Mon, 9 Feb 2009 10:52:54 +0100
+	id S1752301AbZBIJxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 04:53:32 -0500
+Date: Mon, 9 Feb 2009 10:53:24 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 3/5] tracing/power: move the power trace headers to a
-	dedicated file
-Message-ID: <20090209095254.GC14402@elte.hu>
-References: <498e1762.1358560a.0f3f.ffffa0a7@mx.google.com>
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/5] tracing/core: drop the cpu field from trace_entry
+Message-ID: <20090209095324.GD14402@elte.hu>
+References: <498e176a.0637560a.3cea.3ff8@mx.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <498e1762.1358560a.0f3f.ffffa0a7@mx.google.com>
+In-Reply-To: <498e176a.0637560a.3cea.3ff8@mx.google.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,24 +38,18 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> Impact: cleanup
+> Impact: fix a bug on cpu output
 > 
-> Move the power tracer headers to trace/power.h to keep ftrace.h and power bits
-> more easy to maintain as separated topics.
+> While looking on the function tracer traces, I first cheered up:
 > 
-> Cc: Arjan van de Ven <arjan@infradead.org>
-> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
->  arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    2 +-
->  arch/x86/kernel/process.c                  |    2 +-
->  include/linux/ftrace.h                     |   30 ------------------------
->  include/trace/power.h                      |   35 ++++++++++++++++++++++++++++
->  kernel/trace/trace.h                       |    1 +
->  kernel/trace/trace_power.c                 |    2 +-
->  6 files changed, 39 insertions(+), 33 deletions(-)
->  create mode 100644 include/trace/power.h
+>             TASK-PID    CPU#    TIMESTAMP  FUNCTION
+>                | |       |          |         |
+>          firefox-4622  [081]  1315.790405: lapic_next_event <-clockevents_program_event
+>          firefox-4622  [178]  1315.790405: native_apic_mem_write <-lapic_next_event
+>          firefox-4622  [020]  1315.790406: perf_counter_unthrottle <-smp_apic_timer_interrupt
+> 
+> But no, actually I don't have so many cpus...
 
-Applied to tip/tracing/ftrace, thanks Frederic!
+incidentally, Steve came up with the exact same patch :)
 
 	Ingo
