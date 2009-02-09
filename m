@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbZBIJaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754521AbZBIJbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754530AbZBIJaX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 04:30:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbZBIJaF
+	id S1754521AbZBIJbY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 04:31:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbZBIJbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 04:30:05 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53700 "EHLO mx2.mail.elte.hu"
+	Mon, 9 Feb 2009 04:31:15 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54086 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752625AbZBIJaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 04:30:04 -0500
-Date: Mon, 9 Feb 2009 10:29:51 +0100
+	id S1752461AbZBIJbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 04:31:14 -0500
+Date: Mon, 9 Feb 2009 10:31:00 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Brian Gerst <brgerst@gmail.com>
 Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH 2/3] x86: Use linker to offset symbols by __per_cpu_load
-Message-ID: <20090209092951.GB7930@elte.hu>
-References: <1234105120-19731-1-git-send-email-brgerst@gmail.com> <1234105120-19731-2-git-send-email-brgerst@gmail.com>
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 3/3] x86: Fix abuse of per_cpu_offset
+Message-ID: <20090209093100.GC7930@elte.hu>
+References: <1234105120-19731-1-git-send-email-brgerst@gmail.com> <1234105120-19731-3-git-send-email-brgerst@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1234105120-19731-2-git-send-email-brgerst@gmail.com>
+In-Reply-To: <1234105120-19731-3-git-send-email-brgerst@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,28 +37,17 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Brian Gerst <brgerst@gmail.com> wrote:
 
-> Impact: cleanup and bug fix
+> Impact: bug fix
 > 
-> Use the linker to create symbols for certain per-cpu variables
-> that are offset by __per_cpu_load.  This allows the removal of
-> the runtime fixup of the GDT pointer, which fixes a bug with
-> resume reported by Jiri Slaby.
+> Don't use per_cpu_offset() to determine if it valid to access a
+> per-cpu variable for a given cpu number.  It is not a valid assumption
+> on x86-64 anymore.  Use cpu_possible() instead.
 > 
 > Signed-off-by: Brian Gerst <brgerst@gmail.com>
-> Cc: Jiri Slaby <jirislaby@gmail.com>
 > ---
->  arch/x86/include/asm/percpu.h    |   22 ++++++++++++++++++++++
->  arch/x86/include/asm/processor.h |    2 ++
->  arch/x86/kernel/cpu/common.c     |    6 +-----
->  arch/x86/kernel/head_64.S        |   21 ++-------------------
->  arch/x86/kernel/vmlinux_64.lds.S |    8 ++++++++
->  5 files changed, 35 insertions(+), 24 deletions(-)
+>  arch/x86/mm/numa_64.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 
-applied to tip/core/percpu, thanks!
-
-Also added these tags:
-
-Reported-by: Jiri Slaby <jirislaby@gmail.com>
-Acked-by: Jiri Slaby <jirislaby@gmail.com>
+Applied to tip/core/perpcu, thanks Brian!
 
 	Ingo
