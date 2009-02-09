@@ -1,41 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754122AbZBIHxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754304AbZBIHyF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754122AbZBIHxU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 02:53:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbZBIHxL
+	id S1754304AbZBIHyF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 02:54:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbZBIHxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 02:53:11 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47635 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750996AbZBIHxK (ORCPT
+	Mon, 9 Feb 2009 02:53:53 -0500
+Received: from jenny.ondioline.org ([66.220.1.122]:59765 "EHLO
+	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750996AbZBIHxx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 02:53:10 -0500
-Date: Mon, 9 Feb 2009 02:53:08 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Alessandro Bono <alessandro.bono@gmail.com>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-xfs <linux-xfs@oss.sgi.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: XFS kernel BUG at fs/buffer.c:470! with 2.6.28.4
-Message-ID: <20090209075308.GA7360@infradead.org>
-References: <1234011974.7435.11.camel@champagne.cantina> <20090208222859.GA2532@infradead.org> <1234132752.12370.0.camel@champagne.cantina> <20090208224249.GA11931@infradead.org> <1234133120.12370.7.camel@champagne.cantina>
+	Mon, 9 Feb 2009 02:53:53 -0500
+From: Paul Collins <paul@burly.ondioline.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: [Bug #12667] Badness at kernel/time/timekeeping.c:98 in pmud (timekeeping_suspended)
+References: <AIghyjFgMFP.A.uZD._10jJB@chimera>
+	<sWhNs83kKPE.A.p4D.L20jJB@chimera>
+Date: Mon, 09 Feb 2009 20:53:51 +1300
+In-Reply-To: <sWhNs83kKPE.A.p4D.L20jJB@chimera> (Rafael J. Wysocki's message
+	of "Sun, 8 Feb 2009 20:21:49 +0100 (CET)")
+Message-ID: <878wognj00.fsf@burly.wgtn.ondioline.org>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.90 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1234133120.12370.7.camel@champagne.cantina>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 08, 2009 at 11:45:20PM +0100, Alessandro Bono wrote:
-> sure, attached
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-That would be a missing PagePrivate bit in page_buffers() called from
-end_buffer_async_write.  PG_private can only be cleared via drop_buffers
-which requires the page not having PG_writeback set which must be
-set until end_buffer_async_write is done.  Very strange, and all this
-is generic code without xfs involvement.  Did this happen once
-or can you reproduce it?
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12667
+> Subject		: Badness at kernel/time/timekeeping.c:98 in pmud (timekeeping_suspended)
+> Submitter	: Paul Collins <paul@burly.ondioline.org>
+> Date		: 2009-01-21 7:15 (19 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1c5745aa380efb6417b5681104b007c8612fb496
+> References	: http://marc.info/?l=linux-kernel&m=123252215315106&w=4
 
+I've just done ten suspend/resume cycles with 2.6.29-rc4 and this
+message was not logged, so it's either gone away or else become much
+more difficult to reproduce.
+
+-- 
+Paul Collins
+Wellington, New Zealand
+
+Dag vijandelijk luchtschip de huismeester is dood
