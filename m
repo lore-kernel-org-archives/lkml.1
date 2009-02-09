@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbZBIGEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754292AbZBIGMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754188AbZBIGEU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 01:04:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbZBIGEF
+	id S1754292AbZBIGMV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 01:12:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbZBIGMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 01:04:05 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55576
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751534AbZBIGEE (ORCPT
+	Mon, 9 Feb 2009 01:12:07 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:47262 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753184AbZBIGMF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 01:04:04 -0500
-Date: Sun, 08 Feb 2009 22:03:57 -0800 (PST)
-Message-Id: <20090208.220357.261414983.davem@davemloft.net>
-To: herbert@gondor.apana.org.au
+	Mon, 9 Feb 2009 01:12:05 -0500
+Date: Mon, 9 Feb 2009 17:11:51 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: David Miller <davem@davemloft.net>
 Cc: jeff.chua.linux@gmail.com, rjw@sisk.pl, torvalds@linux-foundation.org,
        linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Subject: Re: commit 64ff3b938ec6782e6585a83d5459b98b0c3f6eb8 breaks rlogin
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090209055848.GA3889@gondor.apana.org.au>
-References: <20090206054541.GA4954@gondor.apana.org.au>
-	<b6a2187b0902060335h646e8d86pf00773035f577665@mail.gmail.com>
-	<20090209055848.GA3889@gondor.apana.org.au>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Message-ID: <20090209061151.GA3982@gondor.apana.org.au>
+References: <20090206054541.GA4954@gondor.apana.org.au> <b6a2187b0902060335h646e8d86pf00773035f577665@mail.gmail.com> <20090209055848.GA3889@gondor.apana.org.au> <20090208.220357.261414983.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090208.220357.261414983.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
-Date: Mon, 9 Feb 2009 16:58:48 +1100
-
-> On Fri, Feb 06, 2009 at 07:35:50PM +0800, Jeff Chua wrote:
-> >
-> > > Did you change the kernel on the other side during these tests?
-> > 
-> > No. Was hoping that the traces would show where it hang for the good
-> > and bad trace.
+On Sun, Feb 08, 2009 at 10:03:57PM -0800, David Miller wrote:
 > 
-> Then the problem isn't my patch at all.  My patch only affects
-> the side sending the urgent data, according to your straces, rlogin
-> is only receiving urgent data, not sending it.  So the patch cannot
-> have an affect.
+> I would expect to see the URG packets from rlogin not rlogind, from
+> things like hitting Ctrl-C etc.
 
-Hmmm... let's figure out exactly what's going on here.
+That's what I thought too, however, the strace says otherwise:
 
-I would expect to see the URG packets from rlogin not rlogind, from
-things like hitting Ctrl-C etc.
+connect(3, {sa_family=AF_INET, sin_port=htons(513), sin_addr=inet_addr("192.168.243.118")}, 16) = 0
+write(3, "\0", 1)                       = 1
+writev(3, [{"root\0", 5}, {"root\0", 5}, {"xterm/38400\0", 12}], 3) = 22
+read(3, "\0", 1)                        = 1
+rt_sigprocmask(SIG_SETMASK, [USR1 URG], [USR1 URG], 8) = 0
+setsockopt(3, SOL_IP, IP_TOS, [16], 4)  = 0
+setuid32(0)                             = 0
+ioctl(0, SNDCTL_TMR_TIMEBASE or TCGETS, {B38400 opost isig icanon echo ...}) = 0
+rt_sigaction(SIGINT, {SIG_IGN}, {SIG_DFL}, 8) = 0
+rt_sigprocmask(SIG_BLOCK, [HUP], [USR1 URG], 8) = 0
+rt_sigaction(SIGHUP, {0x8048bdc, [HUP], SA_RESTART}, {SIG_IGN}, 8) = 0
+rt_sigaction(SIGHUP, {SIG_IGN}, {0x8048bdc, [HUP], SA_RESTART}, 8) = 0
+rt_sigprocmask(SIG_SETMASK, [USR1 URG], [HUP USR1 URG], 8) = 0
+rt_sigprocmask(SIG_BLOCK, [QUIT], [USR1 URG], 8) = 0
+rt_sigaction(SIGQUIT, {0x8048bdc, [QUIT], SA_RESTART}, {SIG_DFL}, 8) = 0
+rt_sigprocmask(SIG_SETMASK, [USR1 URG], [QUIT USR1 URG], 8) = 0
+rt_sigaction(SIGCHLD, {0x8049f20, [CHLD], SA_RESTART}, {SIG_DFL}, 8) = 0
+clone(child_stack=0, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0xb7d81918) = 6433
+rt_sigaction(SIGURG, {0x80491d0, [URG], SA_RESTART}, {SIG_DFL}, 8) = 0
+rt_sigaction(SIGUSR1, {0x8048de0, [USR1], SA_RESTART}, {SIG_DFL}, 8) = 0
+rt_sigprocmask(SIG_SETMASK, [], [USR1 URG], 8) = 0
+--- SIGURG (Urgent I/O condition) @ 0 (0) ---
+kill(6433, SIGURG)                      = 0
 
-On the other hand, I can't imagine what the server, rlogind, would be
-sending URGs out for.
+FD 3 is the TCP socket.  As you can see, the only operations done
+were write/writev/read/setsockopt.  None of these can enter urgent
+mode for sending, so that's how I concluded that my patch should
+have zero effect on this side.
 
-So I would say that it is more likely to be rlogin sending the
-URG packets.
+Note also that we got an SIGURG, which indicates that we received
+urgent data.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
