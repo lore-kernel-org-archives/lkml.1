@@ -1,158 +1,319 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531AbZBIDsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbZBIDvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754531AbZBIDsl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 22:48:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbZBIDsd
+	id S1754417AbZBIDvT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 22:51:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbZBIDvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 22:48:33 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:47720 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753576AbZBIDsc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 22:48:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=d/xp04txSZ9FeKUDVxUcYev/LAJL1/QSMDMWidK623CQkoswOUQMhDuOZq13DxPRqT
-         CD0yt94sHFVcoO4+pd9RLFYkwray4Lv9x3szFFWnrQ+yaREqSDXWBMsBaKi2FFOrm7/5
-         nYbnRhle+dbARkZ6dZxL8xqpj+WtnlGvE/894=
-Date: Mon, 9 Feb 2009 04:48:27 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fastboot: keep at least one thread per cpu during boot
-Message-ID: <20090209034826.GA4768@nowhere>
+	Sun, 8 Feb 2009 22:51:08 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:56190 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753799AbZBIDvG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Feb 2009 22:51:06 -0500
+Date: Sun, 8 Feb 2009 19:42:26 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
+       Robert Wisniewski <bob@watson.ibm.com>
+Subject: Re: [RFC git tree] Userspace RCU (urcu) for Linux (repost)
+Message-ID: <20090209034226.GO7120@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090206045841.GA12995@Krystal> <20090206130640.GB10918@linux.vnet.ibm.com> <20090206163432.GF10918@linux.vnet.ibm.com> <20090207151028.GA11150@linux.vnet.ibm.com> <20090207233827.GA3557@Krystal> <20090208004416.GH7120@linux.vnet.ibm.com> <20090208214610.GB17569@Krystal> <20090208223606.GM7120@linux.vnet.ibm.com> <20090209002426.GA20025@linux.vnet.ibm.com> <20090209005450.GB22089@Krystal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090209005450.GB22089@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Async threads are created and destroyed depending on the number of jobs in queue.
-It means that several async threads can be created for a specific batch of work,
-then the threads will die after the completion of this batch, but they could be
-needed just after this completion for another batch of work.
-During the boot, such repetitive thread creations can be wasteful, that's why
-this patch proposes to keep at least one thread per cpu (if they already have
-been created once). Such a threshold of threads kept alive will prevent from
-a part of the thread creation overhead.
-This threshold will be dropped one the system_state switches from SYSTEM_BOOTING
-to SYSTEM_RUNNING.
+On Sun, Feb 08, 2009 at 07:54:50PM -0500, Mathieu Desnoyers wrote:
+> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > On Sun, Feb 08, 2009 at 02:36:06PM -0800, Paul E. McKenney wrote:
+> > > On Sun, Feb 08, 2009 at 04:46:10PM -0500, Mathieu Desnoyers wrote:
+> > 
+> > [ . . . ]
+> > 
+> > > > I ran your modified version within my benchmarks :
+> > > > 
+> > > > with return value : 14.164 cycles per read
+> > > > without return value : 16.4017 cycles per read
+> > > > 
+> > > > So we have a 14% performance decrease due to this. We also pollute the
+> > > > branch prediction buffer and we add a cache access due to the added
+> > > > variables in the TLS. Returning the value has the clear advantage of
+> > > > letting the compiler keep it around in registers or on the stack, which
+> > > > clearly costs less.
+> > > > 
+> > > > So I think the speed factor outweights the visual considerations. Maybe
+> > > > we could switch to something like :
+> > > > 
+> > > > unsigned int qparity;
+> > > > 
+> > > > urcu_read_lock(&qparity);
+> > > > ...
+> > > > urcu_read_unlock(&qparity);
+> > > > 
+> > > > That would be a bit like local_irq_save() in the kernel, except that we
+> > > > could do it in a static inline because we pass the address. I
+> > > > personnally dislike the local_irq_save() way of hiding the fact that it
+> > > > writes to the variable in a "clever" macro. I'd really prefer to leave
+> > > > the " & ".
+> > > > 
+> > > > What is your opinion ?
+> > > 
+> > > My current opinion is that I can avoid the overflow problem and the
+> > > need to recheck, which might get rid of the need for both arguments
+> > > and return values while still maintaining good performance.  The trick
+> > > is to use only the topmost bit for the grace-period counter, and all
+> > > the rest of the bits for nesting.  That way, no matter what value of
+> > > global counter one picks up, it will be waited for (since there are but
+> > > two values that the global counter takes on).
+> > > 
+> > > But just now coding it, so will see if it actually works.
+> > 
+> > Seems to work, and seems to be pretty fast on my machine, anyway.
+> > This one adapts itself to 32- and 64-bit machines, though almost
+> > all of the code is common.  It does do a check, but avoids array
+> > indexing, arguments, and return values.
+> > 
+> > How does it do on your hardware?
+> > 
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> 
+> Wow...
+> 
+> Patch updated against HEAD.
+> 
+> Time per read : 7.53622 cycles
+> 
+> Half of what we had previously.. I'll have to look at the assembly. :)
 
-Note:
-_ If this patch is accepted, I will try to extend it to modules loading on boot
-_ One thread per cpu could sound a bit arbitrary here. Actually this is compromize
-between memory saving (if we just created lots of async thread for a large batch
-of jobs) and task creation overhead.
+My guess is that CMOV is your friend here...  ;-)
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- include/linux/async.h |    2 +
- init/main.c           |    1 +
- kernel/async.c        |   52 +++++++++++++++++++++++++++++++++++++++++++++++-
- 3 files changed, 53 insertions(+), 2 deletions(-)
+							Thanx, Paul
 
-diff --git a/include/linux/async.h b/include/linux/async.h
-index 68a9530..71a09e2 100644
---- a/include/linux/async.h
-+++ b/include/linux/async.h
-@@ -25,3 +25,5 @@ extern void async_synchronize_cookie(async_cookie_t cookie);
- extern void async_synchronize_cookie_domain(async_cookie_t cookie,
- 					    struct list_head *list);
- 
-+extern void async_finish_boot(void);
-+
-diff --git a/init/main.c b/init/main.c
-index 36de89b..fa99928 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -806,6 +806,7 @@ static noinline int init_post(void)
- 	unlock_kernel();
- 	mark_rodata_ro();
- 	system_state = SYSTEM_RUNNING;
-+	async_finish_boot();
- 	numa_default_policy();
- 
- 	if (sys_open((const char __user *) "/dev/console", O_RDWR, 0) < 0)
-diff --git a/kernel/async.c b/kernel/async.c
-index f565891..25c12d0 100644
---- a/kernel/async.c
-+++ b/kernel/async.c
-@@ -176,7 +176,7 @@ static async_cookie_t __async_schedule(async_func_ptr *ptr, void *data, struct l
- 	struct async_entry *entry;
- 	unsigned long flags;
- 	async_cookie_t newcookie;
--	
-+
- 
- 	/* allow irq-off callers */
- 	entry = kzalloc(sizeof(struct async_entry), GFP_ATOMIC);
-@@ -313,6 +313,54 @@ void async_synchronize_cookie(async_cookie_t cookie)
- EXPORT_SYMBOL_GPL(async_synchronize_cookie);
- 
- 
-+/**
-+ * async_finish_boot - wake up the async thread which stayed alive only to keep
-+ * the minimum threshold of async threads on boot.
-+ */
-+void async_finish_boot(void)
-+{
-+	wake_up(&async_new);
-+}
-+
-+/**
-+ * Adaptive wait function for the async threads.
-+ * While booting, we want to keep about one thread per
-+ * cpu to avoid wasteful threads creations/deletions.
-+ * We return in the normal async thread creation/deletion mode once
-+ * the boot is finished, since async is most used during the boot.
-+ *
-+ * @return: 0 if we assume the thread should be destroyed
-+ */
-+static int async_thread_sleep(int timeout)
-+{
-+	static atomic_t nb_sleeping = ATOMIC_INIT(-1);
-+	int tc;
-+	int ret;
-+
-+	/*
-+	 * If several async threads come here together and if we are in the
-+	 * boot stage, those which overlap the number of boot thread threshold
-+	 * will sleep and then assume they have to die...
-+	 */
-+	tc = atomic_read(&thread_count) - atomic_inc_return(&nb_sleeping);
-+
-+	if (system_state == SYSTEM_BOOTING && tc <= num_online_cpus()) {
-+		schedule();
-+		if (system_state == SYSTEM_RUNNING)
-+			/* We may have been awoken by async_finish_boot() */
-+			ret = 0;
-+		else
-+			/* We may have a job to handle */
-+			ret = timeout;
-+	} else {
-+		ret = schedule_timeout(timeout);
-+	}
-+
-+	atomic_dec(&nb_sleeping);
-+
-+	return ret;
-+}
-+
- static int async_thread(void *unused)
- {
- 	DECLARE_WAITQUEUE(wq, current);
-@@ -330,7 +378,7 @@ static int async_thread(void *unused)
- 		if (!list_empty(&async_pending))
- 			run_one_entry();
- 		else
--			ret = schedule_timeout(HZ);
-+			ret = async_thread_sleep(ret);
- 
- 		if (ret == 0) {
- 			/*
-
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> ---
+> 
+>  test_urcu.c        |    6 +++---
+>  test_urcu_timing.c |    6 +++---
+>  urcu.c             |   23 ++++++++++-------------
+>  urcu.h             |   42 +++++++++++++++++++++++++++++-------------
+>  4 files changed, 45 insertions(+), 32 deletions(-)
+> 
+> diff --git a/test_urcu.c b/test_urcu.c
+> index f6be45b..f115a4a 100644
+> --- a/test_urcu.c
+> +++ b/test_urcu.c
+> @@ -72,7 +72,7 @@ void rcu_copy_mutex_unlock(void)
+> 
+>  void *thr_reader(void *arg)
+>  {
+> -	int qparity, i, j;
+> +	int i, j;
+>  	struct test_array *local_ptr;
+> 
+>  	printf("thread %s, thread id : %lx, tid %lu\n",
+> @@ -83,14 +83,14 @@ void *thr_reader(void *arg)
+> 
+>  	for (i = 0; i < 100000; i++) {
+>  		for (j = 0; j < 100000000; j++) {
+> -			rcu_read_lock(&qparity);
+> +			rcu_read_lock();
+>  			local_ptr = rcu_dereference(test_rcu_pointer);
+>  			if (local_ptr) {
+>  				assert(local_ptr->a == 8);
+>  				assert(local_ptr->b == 12);
+>  				assert(local_ptr->c[55] == 2);
+>  			}
+> -			rcu_read_unlock(&qparity);
+> +			rcu_read_unlock();
+>  		}
+>  	}
+> 
+> diff --git a/test_urcu_timing.c b/test_urcu_timing.c
+> index 57fda4f..9903705 100644
+> --- a/test_urcu_timing.c
+> +++ b/test_urcu_timing.c
+> @@ -94,7 +94,7 @@ static cycles_t reader_time[NR_READ] __attribute__((aligned(128)));
+> 
+>  void *thr_reader(void *arg)
+>  {
+> -	int qparity, i, j;
+> +	int i, j;
+>  	struct test_array *local_ptr;
+>  	cycles_t time1, time2;
+> 
+> @@ -107,12 +107,12 @@ void *thr_reader(void *arg)
+>  	time1 = get_cycles();
+>  	for (i = 0; i < OUTER_READ_LOOP; i++) {
+>  		for (j = 0; j < INNER_READ_LOOP; j++) {
+> -			rcu_read_lock(&qparity);
+> +			rcu_read_lock();
+>  			local_ptr = rcu_dereference(test_rcu_pointer);
+>  			if (local_ptr) {
+>  				assert(local_ptr->a == 8);
+>  			}
+> -			rcu_read_unlock(&qparity);
+> +			rcu_read_unlock();
+>  		}
+>  	}
+>  	time2 = get_cycles();
+> diff --git a/urcu.c b/urcu.c
+> index 08fb75d..2914b66 100644
+> --- a/urcu.c
+> +++ b/urcu.c
+> @@ -19,17 +19,17 @@
+> 
+>  pthread_mutex_t urcu_mutex = PTHREAD_MUTEX_INITIALIZER;
+> 
+> -/* Global quiescent period parity */
+> -int urcu_qparity;
+> +/* Global grace period counter */
+> +long urcu_gp_ctr;
+> 
+> -int __thread urcu_active_readers[2];
+> +long __thread urcu_active_readers;
+> 
+>  /* Thread IDs of registered readers */
+>  #define INIT_NUM_THREADS 4
+> 
+>  struct reader_data {
+>  	pthread_t tid;
+> -	int *urcu_active_readers;
+> +	long *urcu_active_readers;
+>  };
+> 
+>  static struct reader_data *reader_data;
+> @@ -60,11 +60,9 @@ void internal_urcu_unlock(void)
+>  /*
+>   * called with urcu_mutex held.
+>   */
+> -static int switch_next_urcu_qparity(void)
+> +static void switch_next_urcu_qparity(void)
+>  {
+> -	int old_parity = urcu_qparity;
+> -	urcu_qparity = 1 - old_parity;
+> -	return old_parity;
+> +	urcu_gp_ctr += RCU_GP_CTR_BOTTOM_BIT;
+>  }
+> 
+>  static void force_mb_all_threads(void)
+> @@ -89,7 +87,7 @@ static void force_mb_all_threads(void)
+>  	mb();	/* read sig_done before ending the barrier */
+>  }
+> 
+> -void wait_for_quiescent_state(int parity)
+> +void wait_for_quiescent_state(void)
+>  {
+>  	struct reader_data *index;
+> 
+> @@ -101,7 +99,7 @@ void wait_for_quiescent_state(int parity)
+>  		/*
+>  		 * BUSY-LOOP.
+>  		 */
+> -		while (index->urcu_active_readers[parity] != 0)
+> +		while (rcu_old_gp_ongoing(index->urcu_active_readers))
+>  			barrier();
+>  	}
+>  	/*
+> @@ -115,17 +113,16 @@ void wait_for_quiescent_state(int parity)
+> 
+>  static void switch_qparity(void)
+>  {
+> -	int prev_parity;
+> 
+>  	/* All threads should read qparity before accessing data structure. */
+>  	/* Write ptr before changing the qparity */
+>  	force_mb_all_threads();
+> -	prev_parity = switch_next_urcu_qparity();
+> +	switch_next_urcu_qparity();
+> 
+>  	/*
+>  	 * Wait for previous parity to be empty of readers.
+>  	 */
+> -	wait_for_quiescent_state(prev_parity);
+> +	wait_for_quiescent_state();
+>  }
+> 
+>  void synchronize_rcu(void)
+> diff --git a/urcu.h b/urcu.h
+> index b6b5c7b..e83c69f 100644
+> --- a/urcu.h
+> +++ b/urcu.h
+> @@ -66,23 +66,39 @@ static inline void atomic_inc(int *v)
+> 
+>  #define SIGURCU SIGUSR1
+> 
+> -/* Global quiescent period parity */
+> -extern int urcu_qparity;
+> +#define RCU_GP_CTR_BOTTOM_BIT (sizeof(long) == 4 ? 0x80000000 : 0x100L)
+> +#define RCU_GP_CTR_NEST_MASK (RCU_GP_CTR_BOTTOM_BIT - 1)
+> 
+> -extern int __thread urcu_active_readers[2];
+> +/* Global quiescent period counter with low-order bits unused. */
+> +extern long urcu_gp_ctr;
+> 
+> -static inline int get_urcu_qparity(void)
+> +extern long __thread urcu_active_readers;
+> +
+> +static inline int rcu_old_gp_ongoing(long *value)
+>  {
+> -	return urcu_qparity;
+> +	long v;
+> +
+> +	if (value == NULL)
+> +		return 0;
+> +	v = ACCESS_ONCE(*value);
+> +	if (sizeof(long) == 4) {
+> +		return (v & RCU_GP_CTR_NEST_MASK) &&
+> +		       ((v ^ ACCESS_ONCE(urcu_gp_ctr)) & ~RCU_GP_CTR_NEST_MASK);
+> +	} else {
+> +		return (v & RCU_GP_CTR_NEST_MASK) &&
+> +		       (v - ACCESS_ONCE(urcu_gp_ctr) < 0);
+> +	}
+>  }
+> 
+> -/*
+> - * urcu_parity should be declared on the caller's stack.
+> - */
+> -static inline void rcu_read_lock(int *urcu_parity)
+> +static inline void rcu_read_lock(void)
+>  {
+> -	*urcu_parity = get_urcu_qparity();
+> -	urcu_active_readers[*urcu_parity]++;
+> +	long tmp;
+> +
+> +	tmp = urcu_active_readers;
+> +	if ((tmp & RCU_GP_CTR_NEST_MASK) == 0)
+> +		urcu_active_readers = urcu_gp_ctr + 1;
+> +	else
+> +		urcu_active_readers = tmp + 1;
+>  	/*
+>  	 * Increment active readers count before accessing the pointer.
+>  	 * See force_mb_all_threads().
+> @@ -90,14 +106,14 @@ static inline void rcu_read_lock(int *urcu_parity)
+>  	barrier();
+>  }
+> 
+> -static inline void rcu_read_unlock(int *urcu_parity)
+> +static inline void rcu_read_unlock(void)
+>  {
+>  	barrier();
+>  	/*
+>  	 * Finish using rcu before decrementing the pointer.
+>  	 * See force_mb_all_threads().
+>  	 */
+> -	urcu_active_readers[*urcu_parity]--;
+> +	urcu_active_readers--;
+>  }
+> 
+>  extern void *urcu_publish_content(void **ptr, void *new);
+> 
+> 
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
