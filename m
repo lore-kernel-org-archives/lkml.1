@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755756AbZBIRB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173AbZBIRBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755756AbZBIRB3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 12:01:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbZBIRBV
+	id S1756173AbZBIRBo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 12:01:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbZBIRBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 12:01:21 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:34705 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752285AbZBIRBU (ORCPT
+	Mon, 9 Feb 2009 12:01:32 -0500
+Received: from mga11.intel.com ([192.55.52.93]:35406 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755932AbZBIRBb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 12:01:20 -0500
-Message-ID: <49906157.9090707@oracle.com>
-Date: Mon, 09 Feb 2009 09:01:11 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 9 Feb 2009 12:01:31 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,406,1231142400"; 
+   d="scan'208";a="664085613"
+From: "Brown, Len" <len.brown@intel.com>
+To: Greg KH <gregkh@suse.de>, Arjan van de Ven <arjan@infradead.org>
+CC: Stefan Lippers-Hollmann <s.L-H@gmx.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "stable@kernel.org" <stable@kernel.org>
+Date: Mon, 9 Feb 2009 10:00:10 -0700
+Subject: RE: patch acpi-remove-locking-from-pm1x_sts-register-reads.patch
+	added to 2.6.28-stable tree
+Thread-Topic: patch acpi-remove-locking-from-pm1x_sts-register-reads.patch
+	added to 2.6.28-stable tree
+Thread-Index: AcmK1sEsqiehEiXrQCGavo3nioAjmQAAJTNg
+Message-ID: <E87738D94A6AD54789B5B8D1BAEB06CC49F143F02E@azsmsx503.amr.corp.intel.com>
+References: <20090208211932.4CAB349019@coco.kroah.org>
+ <200902090124.44228.s.L-H@gmx.de> <20090209162402.GA13931@suse.de>
+ <20090209083050.361e997d@infradead.org> <20090209164905.GA5420@suse.de>
+In-Reply-To: <20090209164905.GA5420@suse.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Steve Wise <swise@opengridcomputing.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, swise@chelsio.com,
-       general@lists.openfabrics.org, Roland Dreier <rolandd@cisco.com>
-Subject: Re: linux-next: Tree for February 9 (infiniband)
-References: <20090209193908.1a448944.sfr@canb.auug.org.au> <49905F93.300@oracle.com> <49906118.3060801@opengridcomputing.com>
-In-Reply-To: <49906118.3060801@opengridcomputing.com>
-Content-Type: text/plain; charset=windows-1251
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt702.oracle.com [141.146.40.80]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A09020A.4990614C.0304:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steve Wise wrote:
-> Randy Dunlap wrote:
->> Stephen Rothwell wrote:
->>  
->>> Hi all,
->>>
->>> [I accidentally deleted the merge and quilt-import logs today :-( - I
->>> wonder if any would have noticed :-).  The merge summary still appears
->>> below.]
->>>
->>> Changes since 20090206:
->>>     
->>
->>
->> allyesconfig build on i386 fails with:
->>
->> drivers/built-in.o: In function `iwch_sgl2pbl_map':
->> /usr/builds/linux-next-20090209/drivers/infiniband/hw/cxgb3/iwch_qp.c:237:
->> undefined reference to `__umoddi3'
->> make: *** [.tmp_vmlinux1] Error 1
->>
->>
->> or allmodconfig on i386 fails with:
->>
->> ERROR: "__umoddi3" [drivers/infiniband/hw/cxgb3/iw_cxgb3.ko] undefined!
->>
->>   
-> 
-> Somehow changing offset to a u64 must have caused this.  What is
-> __umoddi3?  (it can't be good) :)
 
-It's some kind of mod operation, like 64-bit % 32-bit or
-64-bit % 64-bit.  Should be in a fairly recent change.
+>> why is this -stable material?
+>> this is a performance improvement....
+>
+>It is, and not a bugfix?  If so, I'll drop it.
 
+yes, removing the un-necessary locking
+it is a scaling performance improvement.
 
--- 
-~Randy
+The code has been this way for years.
+The reason we noticed this issue recently
+is because of the emergence of systems that
+simultaneously have many threads and also
+have deep C-states.
+
+In 2.6.30 we plan larger improvements in this area.
+
+cheers,
+-Len
