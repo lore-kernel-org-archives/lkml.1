@@ -1,176 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756250AbZBISUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbZBISU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756250AbZBISUJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 13:20:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbZBIST5
+	id S1756062AbZBISU4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 13:20:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbZBISUp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 13:19:57 -0500
-Received: from tomts16.bellnexxia.net ([209.226.175.4]:36841 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753619AbZBIST4 (ORCPT
+	Mon, 9 Feb 2009 13:20:45 -0500
+Received: from mailserv58-us.natinst.com ([130.164.14.247]:3101 "EHLO
+	mailserv58-us.natinst.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753619AbZBISUp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 13:19:56 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq8EAL8AkElMQWt2/2dsb2JhbACBbs8QhBoG
-Date: Mon, 9 Feb 2009 13:19:52 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Christoph Hellwig <hch@infradead.org>
-Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
-	(repost)
-Message-ID: <20090209181952.GA15692@Krystal>
-References: <20090206130640.GB10918@linux.vnet.ibm.com> <20090206163432.GF10918@linux.vnet.ibm.com> <20090208224419.GA19512@Krystal> <20090209041153.GR7120@linux.vnet.ibm.com> <20090209045352.GA28653@Krystal> <20090209051737.GA29254@Krystal> <20090209132343.GT7120@linux.vnet.ibm.com> <20090209172816.GA12934@Krystal> <20090209174741.GE6802@linux.vnet.ibm.com> <20090209181341.GA15514@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090209181341.GA15514@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:18:29 up 39 days, 18:16,  5 users,  load average: 0.48, 0.68,
-	0.73
+	Mon, 9 Feb 2009 13:20:45 -0500
+X-Greylist: delayed 901 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Feb 2009 13:20:45 EST
+Date: Mon, 9 Feb 2009 12:01:44 -0600
+From: Shawn Bohrer <shawn.bohrer@ni.com>
+To: linux-kernel@vger.kernel.org
+Cc: gregkh@suse.de, abbotti@mev.co.uk, fmhess@users.sourceforge.net,
+       ds@schleef.org
+Subject: [staging] High level Comedi feedback
+Message-ID: <20090209180144.GD18058@bohrers.amer.corp.natinst.com>
+MIME-Version: 1.0
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-MIMETrack: Itemize by SMTP Server on MailServ58-US/AUS/H/NIC(Release 8.0.2|August 07, 2008) at
+ 02/09/2009 12:05:44 PM,
+	Serialize by Router on MailServ58-US/AUS/H/NIC(Release 8.0.2|August 07, 2008) at
+ 02/09/2009 12:20:47 PM,
+	Serialize complete at 02/09/2009 12:20:47 PM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
-> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > On Mon, Feb 09, 2009 at 12:28:17PM -0500, Mathieu Desnoyers wrote:
-> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > On Mon, Feb 09, 2009 at 12:17:37AM -0500, Mathieu Desnoyers wrote:
-> > 
-> > [ . . . ]
-> > 
-> > > > > The new version is pushed into the repository. I changed you patch a
-> > > > > bit. Flaming is welcome. :)
-> > > > 
-> > > > Looks reasonable at first glance.  Just out of curiosity, why are
-> > > > urcu_gp_ctr and urcu_active_readers int rather than char?  I guess that
-> > > > one reason would be that many architectures work better with int than
-> > > > with char...
-> > > 
-> > > Exactly. This is done to make sure we don't end up having false register
-> > > dependencies causing stalls on such architectures. I'll add a comment.
-> > 
-> > Are there any 64-bit architectures that would prefer a long to an int?
-> > (Other than really old Alpha CPUs, that is.)
-> > 
-> 
-> None that I am aware of, but Christoph or Peter would probably know more
-> than I do on this aspect.
-> 
+Hey All,
 
-Well, I had to put back a "long" rather than a "int" since we not
-support 2^32 nesting nevels on 64-bits. The following bit, used for
-quiescent state "parity", ends up being the 33rd bit, which needs a
-64-bit long.
+After reviewing the design of COMEDI there are a few concerns we've
+found that could inhibit COMEDI as a general data acquisition framework.
+I can elaborate on any of these concerns if needed, and I'd appreciate
+any feedback from those who are more familiar with the COMEDI drivers.
 
-Mathieu
+1. COMEDI lacks a state model (configure, reserve, commit, start, stop)
+that allows for speedy programming, reserving, and starting and stopping
+when multiple clients are vying for usage of the shared hardware and
+setup/tear-down costs have to be minimized.  The comedi_cmd interface
+forces the setup costs to be incurred for every acquisition this is a
+performance liability.  The other downside of this interface is that it
+does not allow for on-the-fly settings changes such as changing an
+acquisition rate or ranges of a channel within a running
+acquisition/generation.
 
-> > > > So, how many cycles did this save?  ;-)
-> > > 
-> > > On x86_64, it's pretty much the same as before. It just helps having the
-> > > 32 and 64 bits algorithms being exactly the same, which I think is a
-> > > very good thing.
-> > 
-> > Good point!
-> > 
-> > > BTW, my tests were done without any CMOV instruction due to the standard
-> > > gcc options I used. Given think past discussion about CMOV :
-> > > 
-> > > http://ondioline.org/mail/cmov-a-bad-idea-on-out-of-order-cpus
-> > > 
-> > > It does not seem like such a good idea to use it anyway, given it can
-> > > take 10 cycles to run on a P4a
-> > 
-> > Fair enough!
-> > 
-> > > BTW, do you think having the 256 nested rcu read locks limitation could
-> > > become a problem ? I really think an application has recursion problem
-> > > if it does, but this is not impossible, especially on a particularly
-> > > badly designed tree-traversal algorithm on a 64-bits arch...
-> > 
-> > I don't know of any code in the Linux kernel that nests rcu_read_lock()
-> > anywhere near that deep.  And if someone does find such a case, it is
-> > pretty easy to use 15 bits rather than 8 to hold the nesting depth, just
-> > by changing the definition of RCU_GP_CTR_BIT.
-> > 
-> 
-> You know what ? Changing RCU_GP_CTR_BIT to 16 uses a
-> testw %ax, %ax instead of a testb %al, %al. The trick here is that
-> RCU_GP_CTR_BIT must be a multiple of 8 so we can use a full 8-bits,
-> 16-bits or 32-bits bitmask for the lower order bits.
-> 
-> On 64-bits, using a RCU_GP_CTR_BIT of 32 is also ok. It uses a testl.
-> 
-> To provide 32-bits compability and allow the deepest nesting possible, I
-> think it makes sense to use
-> 
-> /* Use the amount of bits equal to half of the architecture long size */
-> #define RCU_GP_CTR_BIT (sizeof(long) << 2)
-> 
-> Mathieu
-> 
-> 
-> > 							Thanx, Paul
-> > 
-> > > Mathieu
-> > > 
-> > > > 						Thanx, Paul
-> > > > 
-> > > > > Mathieu
-> > > > > 
-> > > > > > Mathieu
-> > > > > > 
-> > > > > > > > > Again, looks interesting!  Looks plausible, although I have not 100%
-> > > > > > > > > convinced myself that it is perfectly bug-free.  But I do maintain
-> > > > > > > > > a healthy skepticism of purported RCU algorithms, especially ones that
-> > > > > > > > > I have written.  ;-)
-> > > > > > > > > 
-> > > > > > > > 
-> > > > > > > > That's always good. I also tend to always be very skeptical about what I
-> > > > > > > > write and review.
-> > > > > > > > 
-> > > > > > > > Thanks for the thorough review.
-> > > > > > > 
-> > > > > > > No problem -- it has been quite fun!  ;-)
-> > > > > > > 
-> > > > > > > 							Thanx, Paul
-> > > > > > > 
-> > > > > > 
-> > > > > > -- 
-> > > > > > Mathieu Desnoyers
-> > > > > > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> > > > > > 
-> > > > > > _______________________________________________
-> > > > > > ltt-dev mailing list
-> > > > > > ltt-dev@lists.casi.polymtl.ca
-> > > > > > http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> > > > > > 
-> > > > > 
-> > > > > -- 
-> > > > > Mathieu Desnoyers
-> > > > > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> > > > 
-> > > 
-> > > -- 
-> > > Mathieu Desnoyers
-> > > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> > 
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> 
-> _______________________________________________
-> ltt-dev mailing list
-> ltt-dev@lists.casi.polymtl.ca
-> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> 
+2. In general I'm concerned that the comedi_cmd_struct can't be expanded
+to support all of the possible timing configurations of existing
+hardware.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+3. COMEDI expresses timing in terms of nano-seconds, limiting the scan
+rate to 1GHz, scopes can go higher than this. The ~4,200V and 4.2A
+limits brought by the range scaling coefficients are often suitable, but
+could be a problem later with signal conditioned boards. Would value +
+unit or value + multiplier be better?
+
+4. COMEDI lacks the fine grained resource reservation (digital lines,
+specific routes).
+
+5. COMEDI does not yet support memory mapped digital lines or memory
+mapped single point reads/writes directly with the hardware.
+
+6. COMEDI doesn't yet support configuring hardware buffer sizes for deep
+on-board FIFOs.
+
+7. The comedi_bond.c driver doesn't attempt any synchronization and
+doesn't support buffered operations. These features could be added, in
+the kernel, but wouldn't this be better done in user-mode?
+
+--
+Shawn
