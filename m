@@ -1,87 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbZBIC0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbZBIC2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754027AbZBIC0a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Feb 2009 21:26:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753717AbZBIC0U
+	id S1754119AbZBIC2p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Feb 2009 21:28:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbZBIC2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Feb 2009 21:26:20 -0500
-Received: from yx-out-2324.google.com ([74.125.44.28]:39725 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753679AbZBIC0T (ORCPT
+	Sun, 8 Feb 2009 21:28:37 -0500
+Received: from mail-gx0-f21.google.com ([209.85.217.21]:53922 "EHLO
+	mail-gx0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753635AbZBIC2g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Feb 2009 21:26:19 -0500
+	Sun, 8 Feb 2009 21:28:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=vfc+Edmew1qvJUQ1KJarY9XXXZy7nDdbHjrksklzbwei+i8MHOVlGh+5FMjR5vCCoR
-         gkipi68PNsnWPp3EkFPsLZ1VNpn1/Lq3YYbwC87FNzkHR+ObMZv9+177ajsEkpdIHMYw
-         +/pe0ByU3+Vr+kuFZ5AtL4GfgGDFS/zj36XpI=
+        b=K+aXiz/Q2UEClixtVXTSuGfU81MY9L/c/TgtajLjLItfd7BC7lL7241FMYSAKQwetS
+         FBDrcp/+A1c9X+z8YNqQV+5y/nB+FJnUJoEWSFb0X6JcZTcZXNf1kUtrWdSL51tM44wt
+         MGlA1Nem8VJNcIFjtTF57S8aMzJH8ZqnI6QUA=
 MIME-Version: 1.0
-In-Reply-To: <498F5785.3000009@numericable.fr>
-References: <AIghyjFgMFP.A.uZD._10jJB@chimera>
-	 <sWhNs83kKPE.A.HiF.r20jJB@chimera> <498F5785.3000009@numericable.fr>
-Date: Mon, 9 Feb 2009 12:26:18 +1000
-Message-ID: <21d7e9970902081826r48777cb8s8c4e882a02575c71@mail.gmail.com>
-Subject: Re: [Bug #12613] [Suspend regression][DRM, RADEON]
+In-Reply-To: <498EEB42.1050509@gmail.com>
+References: <498EEB42.1050509@gmail.com>
+Date: Mon, 9 Feb 2009 12:28:35 +1000
+Message-ID: <21d7e9970902081828m709bd839va95b464cd72a4bdb@mail.gmail.com>
+Subject: Re: [PATCH] drm: count reaches -1, tested 0
 From: Dave Airlie <airlied@gmail.com>
-To: etienne <etienne.basset@numericable.fr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>, Dave Airlie <airlied@redhat.com>,
-       Soeren Sonnenburg <kernel@nn7.de>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: airlied@linux.ie, dri-devel@lists.sourceforge.net,
+       lkml <linux-kernel@vger.kernel.org>,
+       =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@tungstengraphics.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 9, 2009 at 8:07 AM, etienne <etienne.basset@numericable.fr> wrote:
-> Rafael J. Wysocki wrote:
->>
->> This message has been generated automatically as a part of a report
->> of recent regressions.
->>
->> The following bug entry is on the current list of known regressions
->> from 2.6.28.  Please verify if it still should be listed and let me know
->> (either way).
->>
->>
->> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12613
->> Subject         : [Suspend regression][DRM, RADEON]
->> Submitter       : etienne <etienne.basset@numericable.fr>
->> Date            : 2009-01-28 22:00 (12 days old)
->> First-Bad-Commit:
->> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a9d51a5ad1154b5b20add1e8d30a5564f8aabbe9
->> References      : http://marc.info/?l=linux-kernel&m=123318030419558&w=4
->>                  http://marc.info/?l=linux-kernel&m=123334865404574&w=4
->>
->>
->>
->
-> hello,
-> yes it's still present in -rc4
-> But I noticed that when I switch off KDE4.2 desktop effects, suspend to ram
-> is 100% reliable with 2.6.29-rc4
-> With 2.6.28, STR is 100% reliable with or without desktop effects
->
+On Mon, Feb 9, 2009 at 12:25 AM, Roel Kluin <roel.kluin@gmail.com> wrote:
+> With a postfix decrement count will reach -1 rather than 0,
+> subsequent tests fail.
 
-Hi Etienne,
-
-Can you try commenting out the calls to the radeon_suspend and
-radeon_resume hooks in radeon_drv.c?
+Thomas can you sign off on this?
 
 Dave.
-
-> hope this helps,
-> Etienne
 >
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> diff --git a/drivers/gpu/drm/via/via_dma.c b/drivers/gpu/drm/via/via_dma.c
+> index 7a339db..600315c 100644
+> --- a/drivers/gpu/drm/via/via_dma.c
+> +++ b/drivers/gpu/drm/via/via_dma.c
+> @@ -481,9 +481,9 @@ static int via_wait_idle(drm_via_private_t * dev_priv)
+>  {
+>        int count = 10000000;
 >
+> -       while (!(VIA_READ(VIA_REG_STATUS) & VIA_VR_QUEUE_BUSY) && count--);
+> +       while (!(VIA_READ(VIA_REG_STATUS) & VIA_VR_QUEUE_BUSY) && --count);
 >
->
->
->
+> -       while (count-- && (VIA_READ(VIA_REG_STATUS) &
+> +       while (--count && (VIA_READ(VIA_REG_STATUS) &
+>                           (VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY |
+>                            VIA_3D_ENG_BUSY))) ;
+>        return count;
+> @@ -705,7 +705,7 @@ static int via_cmdbuf_size(struct drm_device *dev, void *data, struct drm_file *
+>        switch (d_siz->func) {
+>        case VIA_CMDBUF_SPACE:
+>                while (((tmp_size = via_cmdbuf_space(dev_priv)) < d_siz->size)
+> -                      && count--) {
+> +                      && --count) {
+>                        if (!d_siz->wait) {
+>                                break;
+>                        }
+> @@ -717,7 +717,7 @@ static int via_cmdbuf_size(struct drm_device *dev, void *data, struct drm_file *
+>                break;
+>        case VIA_CMDBUF_LAG:
+>                while (((tmp_size = via_cmdbuf_lag(dev_priv)) > d_siz->size)
+> -                      && count--) {
+> +                      && --count) {
+>                        if (!d_siz->wait) {
+>                                break;
+>                        }
 >
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
