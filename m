@@ -1,44 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756253AbZBISfI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756401AbZBIShh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756253AbZBISfI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 13:35:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbZBISe5
+	id S1756401AbZBIShh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 13:37:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbZBISh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 13:34:57 -0500
-Received: from gw.goop.org ([64.81.55.164]:50624 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751891AbZBISe4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 13:34:56 -0500
-Message-ID: <4990774E.5080206@goop.org>
-Date: Mon, 09 Feb 2009 10:34:54 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 9 Feb 2009 13:37:29 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:25359 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753694AbZBISh2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 13:37:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=UC82MX5+SBlU5uWoO98+8jFBChXuHXOu/8JQ/DZN7kN+kqHDyPZraSwd00sSBMYHuC
+         Ss7HkGyqVMMUdoaJ7dEgssoXhnBqX2uR/s9JgW4WemFYjCAMRUjjxcgZuNsE4NA2glYb
+         1Jfl+m5ZUPS9tps0GyQqNbWB00veOqmeJXZZQ=
+Date: Mon, 9 Feb 2009 20:37:54 +0200
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 3/3] tracing: clean up splice code
+Message-ID: <20090209183754.GB5283@localhost>
+References: <20090209172830.087244662@goodmis.org> <20090209172956.970104543@goodmis.org> <20090209182500.GA5283@localhost> <4990754C.7010301@cs.helsinki.fi>
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: hpa@zytor.com, tglx@linutronix.de, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, x86@kernel.org, rusty@rustcorp.com.au
-Subject: Re: [PATCH 08/11] x86: use asm .macro instead of cpp #define in entry_32.S
-References: <1234186798-16820-1-git-send-email-tj@kernel.org> <1234186798-16820-9-git-send-email-tj@kernel.org>
-In-Reply-To: <1234186798-16820-9-git-send-email-tj@kernel.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4990754C.7010301@cs.helsinki.fi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Impact: cleanup
+On Mon, Feb 09, 2009 at 08:26:20PM +0200, Pekka Enberg wrote:
+> Eduard - Gabriel Munteanu wrote:
+>>> @@ -2573,45 +2607,25 @@ static ssize_t tracing_splice_read_pipe(struct 
+>>> file *filp,
+>>>  		ret = iter->trace->splice_read(iter, filp,
+>>>  					       ppos, pipe, len, flags);
+>>>  		if (ret)
+>>> -			goto out;
+>>> +			goto out_err;
+>>>  	}
+>>>   	ret = tracing_wait_pipe(filp);
+>>>  	if (ret <= 0)
+>>> -		goto out;
+>>> +		goto out_err;
+>>>   	if (!iter->ent && !find_next_entry_inc(iter)) {
+>>>  		ret = -EFAULT;
+>>> -		goto out;
+>>> +		goto out_err;
+>>>  	}
+>>>   	/* Fill as many pages as possible. */
+>>>  	for (i = 0, rem = len; i < PIPE_BUFFERS && rem; i++) {
+>>>  		pages[i] = alloc_page(GFP_KERNEL);
+>>> +		if (!pages[i])
+>>> +			break;
+>> I believe you should decrement 'i' before breaking, since we fill
+>> spd.nr_pages just after the loop. In case the current page couldn't be
+>> allocated, spd.nr_pages will be one too many (that is, 'i').
 >
-> Use .macro instead of cpp #define where approriate.  This cleans up
-> code and will ease future changes.
->   
+> But, but, if we fail for i == 1, for example, we want ->nr_pages == 1, no?
+>
+> 			Pekka
 
-I agree with this in principle - cpp macros are indeed very ugly - but 
-in practise I've found asm macros to be very hard to work with.  When 
-things go wrong, the gas error messages are completely useless (it only 
-reports the error on the line where the macro was used, without any 
-detail about where in the macro the problem lies), and as far as I know, 
-there's no way to see the source with macros expanded.
+Sure, my bad. I even made the same assumption myself about the outer
+'for' loop when I wrote it ('i' would end up last page + 1). The patch is
+okay. :-)
 
-    J
+
+	Eduard
+
