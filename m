@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbZBIJQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbZBIJTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754330AbZBIJQZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 04:16:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbZBIJQQ
+	id S1754025AbZBIJTS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 04:19:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbZBIJTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 04:16:16 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47439 "EHLO mx3.mail.elte.hu"
+	Mon, 9 Feb 2009 04:19:04 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38532 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751449AbZBIJQP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 04:16:15 -0500
-Date: Mon, 9 Feb 2009 10:16:04 +0100
+	id S1751637AbZBIJTC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 04:19:02 -0500
+Date: Mon, 9 Feb 2009 10:18:49 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Hannes Eder <hannes@hanneseder.net>, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kernel/irq: fix sparse warning: make symbol static
-Message-ID: <20090209091604.GE31890@elte.hu>
-References: <20090208192405.8084.89231.stgit@vmbox.hanneseder.net> <20090208230910.GH31509@parisc-linux.org>
+To: Paul Collins <paul@burly.ondioline.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Bug #12667] Badness at kernel/time/timekeeping.c:98 in pmud
+	(timekeeping_suspended)
+Message-ID: <20090209091849.GF31890@elte.hu>
+References: <AIghyjFgMFP.A.uZD._10jJB@chimera> <sWhNs83kKPE.A.p4D.L20jJB@chimera> <878wognj00.fsf@burly.wgtn.ondioline.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090208230910.GH31509@parisc-linux.org>
+In-Reply-To: <878wognj00.fsf@burly.wgtn.ondioline.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,100 +38,23 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Matthew Wilcox <matthew@wil.cx> wrote:
+* Paul Collins <paul@burly.ondioline.org> wrote:
 
-> On Sun, Feb 08, 2009 at 08:24:47PM +0100, Hannes Eder wrote:
-> > -static inline int do_irq_select_affinity(int irq, struct irq_desc *desc)
-> > +static inline int do_irq_select_affinity(unsigned int irq, struct irq_desc *desc)
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> Does this not introduce a checkpatch warning about a line being longer
-> than 80 columns?  Three acceptable ways to fix this:
-
-It does - 81 cols. We could ignore it (it's close enough to the limit), but:
-
-> static inline
-> int do_irq_select_affinity(unsigned int irq, struct irq_desc *desc)
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12667
+> > Subject		: Badness at kernel/time/timekeeping.c:98 in pmud (timekeeping_suspended)
+> > Submitter	: Paul Collins <paul@burly.ondioline.org>
+> > Date		: 2009-01-21 7:15 (19 days old)
+> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1c5745aa380efb6417b5681104b007c8612fb496
+> > References	: http://marc.info/?l=linux-kernel&m=123252215315106&w=4
 > 
-> static inline int do_irq_select_affinity(unsigned int irq,
-> 							struct irq_desc *desc)
-> 
-> static inline int do_irq_select_affinity(unsigned irq, struct irq_desc *desc)
-> 
-> My favourite is the last one.
+> I've just done ten suspend/resume cycles with 2.6.29-rc4 and this
+> message was not logged, so it's either gone away or else become much
+> more difficult to reproduce.
 
-I went for the fourth way which is even better - see the commit below ;-)
-
-Applied to tip/irq/urgent, thanks guys!
+Various suspend handlers were enabling irqs spuriously - fixed by recent patches in 
+-rc4. The warning above is consistent with the timekeeping code being surprised with 
+a premature irqs-enable.
 
 	Ingo
-
------------------>
->From 548c8933801c9ee347b6f1bad2491e4286a4f3a2 Mon Sep 17 00:00:00 2001
-From: Hannes Eder <hannes@hanneseder.net>
-Date: Sun, 8 Feb 2009 20:24:47 +0100
-Subject: [PATCH] kernel/irq: fix sparse warning: make symbol static
-
-While being at it make every occurrence of 'do_irq_select_affinity'
-have the same signature in terms of signedness of the first argument.
-
-Fix this sparse warning:
-  kernel/irq/manage.c:112:5: warning: symbol 'do_irq_select_affinity' was not declared. Should it be static?
-
-Also rename do_irq_select_affinity() to setup_affinity() - shorter name
-and clearer naming.
-
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
-Acked-by: Matthew Wilcox <matthew@wil.cx>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/irq/manage.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 291f036..38008b8 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -109,7 +109,7 @@ int irq_set_affinity(unsigned int irq, const struct cpumask *cpumask)
- /*
-  * Generic version of the affinity autoselector.
-  */
--int do_irq_select_affinity(unsigned int irq, struct irq_desc *desc)
-+static int setup_affinity(unsigned int irq, struct irq_desc *desc)
- {
- 	if (!irq_can_set_affinity(irq))
- 		return 0;
-@@ -133,7 +133,7 @@ set_affinity:
- 	return 0;
- }
- #else
--static inline int do_irq_select_affinity(unsigned int irq, struct irq_desc *d)
-+static inline int setup_affinity(unsigned int irq, struct irq_desc *d)
- {
- 	return irq_select_affinity(irq);
- }
-@@ -149,14 +149,14 @@ int irq_select_affinity_usr(unsigned int irq)
- 	int ret;
- 
- 	spin_lock_irqsave(&desc->lock, flags);
--	ret = do_irq_select_affinity(irq, desc);
-+	ret = setup_affinity(irq, desc);
- 	spin_unlock_irqrestore(&desc->lock, flags);
- 
- 	return ret;
- }
- 
- #else
--static inline int do_irq_select_affinity(int irq, struct irq_desc *desc)
-+static inline int setup_affinity(unsigned int irq, struct irq_desc *desc)
- {
- 	return 0;
- }
-@@ -488,7 +488,7 @@ __setup_irq(unsigned int irq, struct irq_desc * desc, struct irqaction *new)
- 			desc->status |= IRQ_NO_BALANCING;
- 
- 		/* Set default affinity mask once everything is setup */
--		do_irq_select_affinity(irq, desc);
-+		setup_affinity(irq, desc);
- 
- 	} else if ((new->flags & IRQF_TRIGGER_MASK)
- 			&& (new->flags & IRQF_TRIGGER_MASK)
