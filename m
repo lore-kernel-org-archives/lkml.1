@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752928AbZBIIf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753277AbZBIIiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752928AbZBIIf4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 03:35:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbZBIIfs
+	id S1753277AbZBIIiA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 03:38:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750920AbZBIIhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 03:35:48 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:52244 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751449AbZBIIfr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 03:35:47 -0500
-Date: Mon, 9 Feb 2009 09:35:37 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Frank Seidel <frank@f-seidel.de>, Frank Seidel <fseidel@suse.de>,
-       linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       ben-linux@fluff.org, linux-i2c@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>,
-       ukleinek@informatik.uni-freiburg.de, Frans Pop <elendil@planet.nl>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH] i2c: add missing KERN_* constants to printks
-Message-ID: <20090209083537.GA3438@pengutronix.de>
-References: <498C3EEA.5060508@suse.de> <20090208000553.059a0732@hyperion.delvare> <498EDA18.1090300@f-seidel.de> <20090208144751.46184041@hyperion.delvare>
+	Mon, 9 Feb 2009 03:37:52 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51976 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750741AbZBIIhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 03:37:51 -0500
+Date: Mon, 9 Feb 2009 09:37:39 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Yinghai Lu <yinghai@kernel.org>, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] irq: optimize init_kstat_irqs/init_copy_kstat_irqs
+Message-ID: <20090209083739.GB15517@elte.hu>
+References: <498CB0B7.8030009@kernel.org> <20090206140005.44b4bb50.akpm@linux-foundation.org> <498CB4DC.2010108@kernel.org> <498D3D15.5090005@kernel.org> <20090207002610.73ff7e6d.akpm@linux-foundation.org> <86802c440902070101l5b0ef862ja92e3f31705d9608@mail.gmail.com> <20090207010619.daededa3.akpm@linux-foundation.org> <20090209081124.GB24420@elte.hu> <20090209001903.89548108.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090208144751.46184041@hyperion.delvare>
+In-Reply-To: <20090209001903.89548108.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:221:70ff:fe71:1890
-X-SA-Exim-Mail-From: w.sang@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---fdj2RfSjLxBAspz7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> I mean the (first) printk in the loop, not the last printk in this
-> function. So what I am suggesting is:
->=20
-> +	printk(KERN_DEBUG);
-> 	for (i =3D 0; i < i2c->irqlogidx; i++)
-> 		printk("[%08x:%08x] ", i2c->isrlog[i], i2c->icrlog[i]);
-> 	printk("\n");
+> On Mon, 9 Feb 2009 09:11:24 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > On Sat, 7 Feb 2009 01:01:03 -0800 Yinghai Lu <yinghai@kernel.org> wrote:
+> > > 
+> > > > 
+> > > > add kzalloc_node_safe()?
+> > > 
+> > > I cannot find that function.
+> > 
+> > His suggestion is to provide that allocator variant.
+> > 
+> 
+> Oh.
+> 
+> It isn't possible to write a kzalloc_node_safe(GFP_ATOMIC).  Or at
+> least, we've never worked out a way.
+> 
+> Maybe I'm confused again.
 
-Hmm, I was told (by Jean ;)) that every printk should end with newline,
-otherwise it might get interrupted with other output -> mess.
+Indeed - duh - more morning tea needed.
 
-Bye,
+Yinghai, why are those allocations GFP_ATOMIC to begin with? These:
 
-   Wolfram
+earth4:~/tip> grep GFP_ATOMIC kernel/irq/*.c
+kernel/irq/handle.c:	ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs), GFP_ATOMIC, node);
+kernel/irq/handle.c:	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
+kernel/irq/manage.c:	action = kmalloc(sizeof(struct irqaction), GFP_ATOMIC);
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Should all be GFP_KERNEL. Wherever they are within a spinlocked section the code 
+should be restructured. All descriptor data structures should be preallocated at 
+__setup_irq() time. If we ever need to allocate dynamically later on, in the middle 
+of some difficult codepath that's a structure bug in the code.
 
---fdj2RfSjLxBAspz7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+and this one:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+kernel/irq/numa_migrate.c:	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
 
-iEYEARECAAYFAkmP6tkACgkQD27XaX1/VRvAFACghhFugQU2E+yF8jSMZ2W3tU0n
-m9AAoIzP6diwB1m0Nou2CUegk+SHBSKF
-=pkji
------END PGP SIGNATURE-----
+should fail the migration silently if GFP_ATOMIC returns NULL.
 
---fdj2RfSjLxBAspz7--
+	Ingo
