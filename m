@@ -1,100 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbZBIJf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbZBIJi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754583AbZBIJf0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 04:35:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752510AbZBIJfM
+	id S1754202AbZBIJi0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 04:38:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752504AbZBIJiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 04:35:12 -0500
-Received: from mx3.schottelius.org ([77.109.138.221]:46131 "EHLO
-	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752500AbZBIJfK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 04:35:10 -0500
-Date: Mon, 9 Feb 2009 10:35:07 +0100
-From: Nico Schottelius <nico-linux-20090209@schottelius.org>
-To: Linux Next Mailing List <linux-next@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, ipw3945-devel@lists.sourceforge.net
-Subject: X200: Suspend & resume, iwlwifi on 2.6.29-rc3-00697-gae1a25d
-Message-ID: <20090209093507.GA27678@denkbrett.schottelius.org>
-Mail-Followup-To: Nico Schottelius <nico-linux-20090209@schottelius.org>,
-	Linux Next Mailing List <linux-next@vger.kernel.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	ipw3945-devel@lists.sourceforge.net
+	Mon, 9 Feb 2009 04:38:18 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42225 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752430AbZBIJiR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 04:38:17 -0500
+Date: Mon, 9 Feb 2009 10:37:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 0/8] git pull request for tip/tracing/core
+Message-ID: <20090209093751.GD7930@elte.hu>
+References: <20090208054955.777429253@goodmis.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="zhXaljGHf11kAtnf"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: ikn (Linux 2.6.29-rc3-ikn-00697-gae1a25d x86_64)
+In-Reply-To: <20090208054955.777429253@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---zhXaljGHf11kAtnf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Hello!
+> Ingo,
+> 
+> I rebased the previous changes onto tip/tracing/core. The first patch
+> is new, which is the elimination of the entry->cpu.
+> 
+> I did not remove it when it became obsolete, and thus we had
+> other developers using it, thinking that it was the way to
+> get the current cpu number. Unfortunately, the entry->cpu was
+> just taking up space, and never was initialized.
+> 
+> The rest of the patches, I've posted before, but this time I ported
+> them over to tip/tracing/core.
+> 
+> 
+> The following patches are in:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> 
+>     branch: tip/tracing/core/devel
+> 
+> 
+> Steven Rostedt (7):
+>       trace: remove deprecated entry->cpu
+>       ring-buffer: add NMI protection for spinlocks
+>       ring-buffer: allow tracing_off to be used in core kernel code
+>       ftrace, x86: rename in_nmi variable
+>       nmi: add generic nmi tracking state
+>       ftrace: change function graph tracer to use new in_nmi
+>       ring-buffer: use generic version of in_nmi
+> 
+> Wenji Huang (1):
+>       trace: trivial fixes in comment typos.
+> 
+> ----
+>  arch/x86/Kconfig                 |    1 +
+>  arch/x86/kernel/ftrace.c         |   35 ++++++++---------------------------
+>  include/linux/ftrace.h           |    2 +-
+>  include/linux/ftrace_irq.h       |    2 +-
+>  include/linux/hardirq.h          |   15 +++++++++++++++
+>  include/linux/ring_buffer.h      |    9 +++++++++
+>  kernel/trace/Kconfig             |    8 ++++++++
+>  kernel/trace/ftrace.c            |    6 +++---
+>  kernel/trace/ring_buffer.c       |   31 +++++++++++++++++++++++++++++--
+>  kernel/trace/trace.c             |    2 +-
+>  kernel/trace/trace.h             |    7 +++----
+>  kernel/trace/trace_hw_branches.c |    3 +--
+>  kernel/trace/trace_output.c      |    6 +++---
+>  13 files changed, 83 insertions(+), 44 deletions(-)
 
-Using latest git fetch from
-  git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-I can suspend and resume!
-(-next: does not work for a long time -- what's happening there?)
+Pulled into tip/tracing/ftrace, thanks Steve!
 
-Though, the first resume takes about 30 seconds, the following ones
-resume within 10 seconds.
+There was a conflict in kernel/trace/trace_hw_branches.c - i resolved it,
+please double-check the end result.
 
-The iwlagn / iwlwifi driver does not work anymore: ip l s wlan0 up
-makes ip hang for about 10 seconds, issuing the following in dmesg:
+One small detail, for future pull requests to me, could you please use the
+customary "tracing: " tags for generic commits, instead the "trace: " tag
+you started using recently? Thanks,
 
-[22640.752121] iwlagn: Could not load the INST uCode section
-[22640.752132] iwlagn: Unable to set up bootstrap uCode: -110
-[22645.752062] iwlagn: Could not load the INST uCode section
-[22645.752072] iwlagn: Unable to set up bootstrap uCode: -110
-[22650.752118] iwlagn: Could not load the INST uCode section
-[22650.752128] iwlagn: Unable to set up bootstrap uCode: -110
-[22660.752059] iwlagn: Could not load the INST uCode section
-[22660.752069] iwlagn: Unable to set up bootstrap uCode: -110
-[22660.761456] iwlagn: Unable to initialize device after 5 attempts.
-[22660.761581] iwlagn 0000:03:00.0: PCI INT A disabled
-
-I'm using latest microcode:
-
-[10:33] ikn:~# sha1sum /lib/firmware/iwlwifi-5000-1.ucode ~nico/Desktop/iwl=
-wifi-5000-ucode-5.4.A.11/iwlwifi-5000-1.ucode      =20
-f06ff86c8baa8616de584f8b0fff072a9aab6a44  /lib/firmware/iwlwifi-5000-1.ucode
-f06ff86c8baa8616de584f8b0fff072a9aab6a44  /home/user/nico/Desktop/iwlwifi-5=
-000-ucode-5.4.A.11/iwlwifi-5000-1.ucode
-
-I'm wondering what's broken with iwlwifi and why the first resume takes so =
-long.
-Anyone a good idea?
-
-Sincerly,
-
-Nico
-
---=20
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---zhXaljGHf11kAtnf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmP+MsACgkQuL75KpiFGIwPaQCeIhlO31jzPFnVxSlUxtXOeV1t
-cVMAn3lJOyaznNx4ZwDj3ExPFStWUzW2
-=qvgu
------END PGP SIGNATURE-----
-
---zhXaljGHf11kAtnf--
+	Ingo
