@@ -1,347 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbZBIQUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbZBIQZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755473AbZBIQUw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 11:20:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbZBIQUk
+	id S1754711AbZBIQZd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 11:25:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbZBIQZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 11:20:40 -0500
-Received: from yw-out-2122.google.com ([74.125.46.24]:31442 "EHLO
-	yw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753804AbZBIQUj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 11:20:39 -0500
+	Mon, 9 Feb 2009 11:25:24 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:51473 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752628AbZBIQZW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 11:25:22 -0500
+Date: Mon, 9 Feb 2009 10:25:20 -0600
+From: Dean Nelson <dcn@sgi.com>
+To: Tony Luck <tony.luck@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-ia64 <linux-ia64@vger.kernel.org>,
+       linux-next <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] SGI IA64 UV: fix ia64 build error in the linux-next tree
+Message-ID: <20090209162520.GA4882@sgi.com>
 MIME-Version: 1.0
-Date: Mon, 9 Feb 2009 08:20:36 -0800 (PST)
-In-Reply-To: <c31c6-4WO-9@gated-at.bofh.it>
-X-IP: 15.203.233.77
-References: <c31c6-4WO-9@gated-at.bofh.it>
-User-Agent: G2/1.0
-X-HTTP-UserAgent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; 
-	rv:1.8.1.10) Gecko/20071115 Firefox/2.0.0.10,gzip(gfe),gzip(gfe)
-Message-ID: <fa4a66a6-0729-41e4-9cd5-5380a7a0058f@d36g2000prf.googlegroups.com>
-Subject: Fwd: cciss: PCI power management reset for kexec
-From: mikem1355@gmail.com
-To: akpm@linux-foundation.org, jens.axboe@oracle.com, randy.dunlap@oracle.com
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix the ia64 build error that occurs in the linux-next tree by introducing
+an ia64 version of uv.h.  Additionally, clean up the usage of is_uv_system().
 
+Signed-off-by: Dean Nelson <dcn@sgi.com>
+Signed-off-by: Jack Steiner <steiner@sgi.com>
 
+---
 
----------- Forwarded message ----------
-From: Mike Miller <mike.mil...@hp.com>
-Date: Feb 7, 1:40 pm
-Subject: cciss: PCI power management reset for kexec
-To: linux.kernel
+ arch/ia64/include/asm/uv/uv.h  |   13 +++++++++++++
+ drivers/misc/sgi-gru/gru.h     |    2 --
+ drivers/misc/sgi-gru/grufile.c |   18 +++---------------
+ drivers/misc/sgi-xp/xp.h       |   22 ++++++++--------------
+ 4 files changed, 24 insertions(+), 31 deletions(-)
 
-
-Patch 1 of 1
-
-This patch provides the better "kick-in-the-pants" on driver load in a
-kexec'ed environment.
-
-I've successfully sanity tested the port in my lab. Randy, please
-apply and
-test. You seem to be able to bring out the worst in the driver. ;-)
-
-Author: Chip Coldwell <coldw...@redhat.com>
-
-   CCISS: Use PCI power management to reset the controller
-
-    The kexec kernel resets theCCISShardware in three steps:
-
-    1. Use PCI power management states to reset the controller
-       in the kexec kernel.
-    2. Clear the MSI/MSI-X bits in PCI configuration space so
-       that MSI initialization in the kexec kernel doesn't fail.
-    3. Use theCCISS"No-op" message to determine when the
-       controller firmware has recovered from the PCI PM reset.
-
-Signed-off-by: Mike Miller <mike.mil...@hp.com>
-
-I should have given more detail about using this reset patch. You must
-use the kernel command line option "reset_devices" in the kexec
-command line. My testing used:
-
-# kexec -l /boot/vmlinuz --initrd=/boot/initrd.img --append="root=/dev/
-cciss/c0d0p2 reset_devices 3 maxcpus=1 irqpoll"
-
-then
-
-# kexec -e
-
-Please consider this for inclusion.
-
--------------------------------------------------------------------------------
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 01e6938..ff4a105 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -3390,6 +3390,205 @@ static void free_hba(int i)
-        kfree(p);
- }
-
-+/* Send a message CDB to the firmware. */
-+static __devinit int cciss_message(struct pci_dev *pdev, unsigned
-char opcode, unsigned char type)
+Index: linux/arch/ia64/include/asm/uv/uv.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux/arch/ia64/include/asm/uv/uv.h	2009-02-09 09:18:45.657924900 -0600
+@@ -0,0 +1,13 @@
++#ifndef _ASM_IA64_UV_UV_H
++#define _ASM_IA64_UV_UV_H
++
++#include <asm/system.h>
++#include <asm/sn/simulator.h>
++
++static inline int is_uv_system(void)
 +{
-+       typedef struct {
-+               CommandListHeader_struct CommandHeader;
-+               RequestBlock_struct Request;
-+               ErrDescriptor_struct ErrorDescriptor;
-+       } Command;
-+       static const size_t cmd_sz = sizeof(Command) + sizeof
-(ErrorInfo_struct);
-+       Command *cmd;
-+       dma_addr_t paddr64;
-+       uint32_t paddr32, tag;
-+       void __iomem *vaddr;
-+       int i, err;
-+
-+       vaddr = ioremap_nocache(pci_resource_start(pdev, 0),
-pci_resource_len(pdev, 0));
-+       if (vaddr == NULL)
-+               return -ENOMEM;
-+
-+       /* The Inbound Post Queue only accepts 32-bit physical
-addresses for the
-+          CCISScommands, so they must be allocated from the lower
-4GiB of
-+          memory. */
-+       err = pci_set_consistent_dma_mask(pdev, DMA_32BIT_MASK);
-+       if (err) {
-+               iounmap(vaddr);
-+               return -ENOMEM;
-+       }
-+
-+       cmd = pci_alloc_consistent(pdev, cmd_sz, &paddr64);
-+       if (cmd == NULL) {
-+               iounmap(vaddr);
-+               return -ENOMEM;
-+       }
-+
-+       /* This must fit, because of the 32-bit consistent DMA mask.
-Also,
-+          although there's no guarantee, we assume that the address
-is at
-+          least 4-byte aligned (most likely, it's page-aligned). */
-+       paddr32 = paddr64;
-+
-+       cmd->CommandHeader.ReplyQueue = 0;
-+       cmd->CommandHeader.SGList = 0;
-+       cmd->CommandHeader.SGTotal = 0;
-+       cmd->CommandHeader.Tag.lower = paddr32;
-+       cmd->CommandHeader.Tag.upper = 0;
-+       memset(&cmd->CommandHeader.LUN.LunAddrBytes, 0, 8);
-+
-+       cmd->Request.CDBLen = 16;
-+       cmd->Request.Type.Type = TYPE_MSG;
-+       cmd->Request.Type.Attribute = ATTR_HEADOFQUEUE;
-+       cmd->Request.Type.Direction = XFER_NONE;
-+       cmd->Request.Timeout = 0; /* Don't time out */
-+       cmd->Request.CDB[0] = opcode;
-+       cmd->Request.CDB[1] = type;
-+       memset(&cmd->Request.CDB[2], 0, 14); /* the rest of the CDB is
-reserved */
-+
-+       cmd->ErrorDescriptor.Addr.lower = paddr32 + sizeof(Command);
-+       cmd->ErrorDescriptor.Addr.upper = 0;
-+       cmd->ErrorDescriptor.Len = sizeof(ErrorInfo_struct);
-+
-+       writel(paddr32, vaddr + SA5_REQUEST_PORT_OFFSET);
-+
-+       for (i = 0; i < 10; i++) {
-+               tag = readl(vaddr + SA5_REPLY_PORT_OFFSET);
-+               if ((tag & ~3) == paddr32)
-+                       break;
-+               schedule_timeout_uninterruptible(HZ);
-+       }
-+
-+       iounmap(vaddr);
-+
-+       /* we leak the DMA buffer here ... no choice since the
-controller could
-+          still complete the command. */
-+       if (i == 10) {
-+               printk(KERN_ERR "cciss: controller message %02x:%02x
-timed out\n",
-+                       opcode, type);
-+               return -ETIMEDOUT;
-+       }
-+
-+       pci_free_consistent(pdev, cmd_sz, cmd, paddr64);
-+
-+       if (tag & 2) {
-+               printk(KERN_ERR "cciss: controller message %02x:%02x
-failed\n",
-+                       opcode, type);
-+               return -EIO;
-+       }
-+
-+       printk(KERN_INFO "cciss: controller message %02x:%02x succeeded
-\n",
-+               opcode, type);
-+       return 0;
++	/* temporary support for running on hardware simulator */
++	return IS_MEDUSA() || ia64_platform_is("uv");
 +}
 +
-+#define cciss_soft_reset_controller(p) cciss_message(p, 1, 0)
-+#define cciss_noop(p) cciss_message(p, 3, 0)
-+
-+static __devinit int cciss_reset_msi(struct pci_dev *pdev)
-+{
-+/* the #defines are stolen from drivers/pci/msi.h. */
-+#define msi_control_reg(base)          (base + PCI_MSI_FLAGS)
-+#define PCI_MSIX_FLAGS_ENABLE          (1 << 15)
-+
-+       int pos;
-+       u16 control = 0;
-+
-+       pos = pci_find_capability(pdev, PCI_CAP_ID_MSI);
-+       if (pos) {
-+               pci_read_config_word(pdev, msi_control_reg(pos),
-&control);
-+               if (control & PCI_MSI_FLAGS_ENABLE) {
-+                       printk(KERN_INFO "cciss: resetting MSI\n");
-+                       pci_write_config_word(pdev, msi_control_reg
-(pos), control & ~PCI_MSI_FLAGS_ENABLE);
-+               }
-+       }
-+
-+       pos = pci_find_capability(pdev, PCI_CAP_ID_MSIX);
-+       if (pos) {
-+               pci_read_config_word(pdev, msi_control_reg(pos),
-&control);
-+               if (control & PCI_MSIX_FLAGS_ENABLE) {
-+                       printk(KERN_INFO "cciss: resetting MSI-X\n");
-+                       pci_write_config_word(pdev, msi_control_reg
-(pos), control & ~PCI_MSIX_FLAGS_ENABLE);
-+               }
-+       }
-+
-+       return 0;
-+}
-+
-+/* This does a hard reset of the controller using PCI power
-management
-+ * states. */
-+static __devinit int cciss_hard_reset_controller(struct pci_dev
-*pdev)
-+{
-+       u16 pmcsr, saved_config_space[32];
-+       int i, pos;
-+
-+       printk(KERN_INFO "cciss: using PCI PM to reset controller\n");
-+
-+       /* This is very nearly the same thing as
-+
-+          pci_save_state(pci_dev);
-+          pci_set_power_state(pci_dev, PCI_D3hot);
-+          pci_set_power_state(pci_dev, PCI_D0);
-+          pci_restore_state(pci_dev);
-+
-+          but we can't use these nice canned kernel routines on
-+          kexec, because they also check the MSI/MSI-X state in PCI
-+          configuration space and do the wrong thing when it is
-+          set/cleared.  Also, the pci_save/restore_state functions
-+          violate the ordering requirements for restoring the
-+          configuration space from theCCISSdocument (see the
-+          comment below).  So we roll our own .... */
-+
-+       for (i = 0; i < 32; i++)
-+               pci_read_config_word(pdev, 2*i, &saved_config_space
-[i]);
-+
-+       pos = pci_find_capability(pdev, PCI_CAP_ID_PM);
-+       if (pos == 0) {
-+               printk(KERN_ERR "cciss_reset_controller: PCI PM not
-supported\n");
-+               return -ENODEV;
-+       }
-+
-+       /* Quoting from the Open CISS Specification: "The Power
-+        * Management Control/Status Register (CSR) controls the power
-+        * state of the device.  The normal operating state is D0,
-+        * CSR=00h.  The software off state is D3, CSR=03h.  To reset
-+        * the controller, place the interface device in D3 then to
-+        * D0, this causes a secondary PCI reset which will reset the
-+        * controller." */
-+
-+       /* enter the D3hot power management state */
-+       pci_read_config_word(pdev, pos + PCI_PM_CTRL, &pmcsr);
-+       pmcsr &= ~PCI_PM_CTRL_STATE_MASK;
-+       pmcsr |= PCI_D3hot;
-+       pci_write_config_word(pdev, pos + PCI_PM_CTRL, pmcsr);
-+
-+       set_current_state(TASK_UNINTERRUPTIBLE);
-+       schedule_timeout(HZ >> 1);
-+
-+       /* enter the D0 power management state */
-+       pmcsr &= ~PCI_PM_CTRL_STATE_MASK;
-+       pmcsr |= PCI_D0;
-+       pci_write_config_word(pdev, pos + PCI_PM_CTRL, pmcsr);
-+
-+       set_current_state(TASK_UNINTERRUPTIBLE);
-+       schedule_timeout(HZ >> 1);
-+
-+       /* Restore the PCI configuration space.  The Open CISS
-+        * Specification says, "Restore the PCI Configuration
-+        * Registers, offsets 00h through 60h. It is important to
-+        * restore the command register, 16-bits at offset 04h,
-+        * last. Do not restore the configuration status register,
-+        * 16-bits at offset 06h."  Note that the offset is 2*i. */
-+       for (i = 0; i < 32; i++) {
-+               if (i == 2 || i == 3)
-+                       continue;
-+               pci_write_config_word(pdev, 2*i, saved_config_space
-[i]);
-+       }
-+       wmb();
-+       pci_write_config_word(pdev, 4, saved_config_space[2]);
-+
-+       return 0;
-+}
-+
++#endif	/* _ASM_IA64_UV_UV_H */
+Index: linux/drivers/misc/sgi-gru/gru.h
+===================================================================
+--- linux.orig/drivers/misc/sgi-gru/gru.h	2009-02-09 09:18:43.485658003 -0600
++++ linux/drivers/misc/sgi-gru/gru.h	2009-02-09 09:18:45.677927344 -0600
+@@ -19,8 +19,6 @@
+ #ifndef __GRU_H__
+ #define __GRU_H__
+ 
+-#include <asm/uv/uv.h>
+-
  /*
-  *  This is it.  Find all the controllers and register them.  I
-really hate
-  *  stealing all these major device numbers.
-@@ -3404,6 +3603,24 @@ static int __devinit cciss_init_one(struct
-pci_dev *pdev,
-        int dac, return_code;
-        InquiryData_struct *inq_buff = NULL;
-
-+       if (reset_devices) {
-+               /* Reset the controller with a PCI power-cycle */
-+               if (cciss_hard_reset_controller(pdev) ||
-cciss_reset_msi(pdev))
-+                       return -ENODEV;
+  * GRU architectural definitions
+  */
+Index: linux/drivers/misc/sgi-gru/grufile.c
+===================================================================
+--- linux.orig/drivers/misc/sgi-gru/grufile.c	2009-02-09 09:18:43.485658003 -0600
++++ linux/drivers/misc/sgi-gru/grufile.c	2009-02-09 09:18:45.697930179 -0600
+@@ -36,23 +36,11 @@
+ #include <linux/interrupt.h>
+ #include <linux/proc_fs.h>
+ #include <linux/uaccess.h>
++#include <asm/uv/uv.h>
+ #include "gru.h"
+ #include "grulib.h"
+ #include "grutables.h"
+ 
+-#if defined CONFIG_X86_64
+-#include <asm/genapic.h>
+-#include <asm/irq.h>
+-#define IS_UV()		is_uv_system()
+-#elif defined CONFIG_IA64
+-#include <asm/system.h>
+-#include <asm/sn/simulator.h>
+-/* temp support for running on hardware simulator */
+-#define IS_UV()		IS_MEDUSA() || ia64_platform_is("uv")
+-#else
+-#define IS_UV()		0
+-#endif
+-
+ #include <asm/uv/uv_hub.h>
+ #include <asm/uv/uv_mmrs.h>
+ 
+@@ -381,7 +369,7 @@ static int __init gru_init(void)
+ 	char id[10];
+ 	void *gru_start_vaddr;
+ 
+-	if (!IS_UV())
++	if (!is_uv_system())
+ 		return 0;
+ 
+ #if defined CONFIG_IA64
+@@ -451,7 +439,7 @@ static void __exit gru_exit(void)
+ 	int order = get_order(sizeof(struct gru_state) *
+ 			      GRU_CHIPLETS_PER_BLADE);
+ 
+-	if (!IS_UV())
++	if (!is_uv_system())
+ 		return;
+ 
+ 	for (i = 0; i < GRU_CHIPLETS_PER_BLADE; i++)
+Index: linux/drivers/misc/sgi-xp/xp.h
+===================================================================
+--- linux.orig/drivers/misc/sgi-xp/xp.h	2009-02-09 09:18:43.489658800 -0600
++++ linux/drivers/misc/sgi-xp/xp.h	2009-02-09 09:19:18.065905314 -0600
+@@ -15,21 +15,19 @@
+ 
+ #include <linux/mutex.h>
+ 
++#if defined CONFIG_X86_UV || defined CONFIG_IA64_SGI_UV
+ #include <asm/uv/uv.h>
++#define is_uv()		is_uv_system()
++#endif
+ 
+-#ifdef CONFIG_IA64
++#ifndef is_uv
++#define is_uv()		0
++#endif
 +
-+               /* Some devices (notably the HP Smart Array 5i
-Controller)
-+                  need a little pause here */
-+               schedule_timeout_uninterruptible(30*HZ);
-+
-+               /* Now try to get the controller to respond to a no-op
-*/
-+               for (i=0; i<12; i++) {
-+                       if (cciss_noop(pdev) == 0)
-+                               break;
-+                       else
-+                               printk("cciss: no-op failed%s\n", (i <
-11 ? "; re-trying" : ""));
-+               }
-+       }
-+
-        i = alloc_cciss_hba();
-        if (i < 0)
-                return -1;
---
-To unsubscribe from this list: send the line "unsubscribe linux-
-kernel" in
-the body of a message to majord...@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
++#if defined CONFIG_IA64
+ #include <asm/system.h>
+ #include <asm/sn/arch.h>	/* defines is_shub1() and is_shub2() */
+ #define is_shub()	ia64_platform_is("sn2")
+-#ifdef CONFIG_IA64_SGI_UV
+-#define is_uv()		ia64_platform_is("uv")
+-#else
+-#define is_uv()		0
+-#endif
+-#endif
+-#ifdef CONFIG_X86_64
+-#include <asm/genapic.h>
+-#define is_uv()		is_uv_system()
+ #endif
+ 
+ #ifndef is_shub1
+@@ -44,10 +42,6 @@
+ #define is_shub()	0
+ #endif
+ 
+-#ifndef is_uv
+-#define is_uv()		0
+-#endif
+-
+ #ifdef USE_DBUG_ON
+ #define DBUG_ON(condition)	BUG_ON(condition)
+ #else
