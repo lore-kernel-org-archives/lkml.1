@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbZBIK4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbZBIK6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754809AbZBIK4f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 05:56:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbZBIK4Y
+	id S1754739AbZBIK6m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 05:58:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbZBIK6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 05:56:24 -0500
-Received: from h155.mvista.com ([63.81.120.155]:8356 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752461AbZBIK4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 05:56:23 -0500
-Message-ID: <49900BD1.9040305@ru.mvista.com>
-Date: Mon, 09 Feb 2009 13:56:17 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@pobox.com>, Mikael Pettersson <mikpe@it.uu.se>
-Cc: Hugh Dickins <hugh@veritas.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk, rjw@sisk.pl
-Subject: Re: [PATCH] libata-sff: fix 32-bit PIO regression
-References: <200902082253.07438.sshtylyov@ru.mvista.com>	<Pine.LNX.4.64.0902082108290.18661@blonde.anvils>	<498F5A25.90707@ru.mvista.com> <18831.28471.454273.451912@harpo.it.uu.se> <498F72C8.8020204@ru.mvista.com> <498F767B.9060701@pobox.com> <499008B7.3020404@ru.mvista.com>
-In-Reply-To: <499008B7.3020404@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Feb 2009 05:58:34 -0500
+Received: from ti-out-0910.google.com ([209.85.142.191]:13628 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751698AbZBIK6d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 05:58:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:from:to:cc:bcc:subject:date:user-agent;
+        b=alQ0TfmJt8L2WXtcBBE0hSQKX9hf0SuFI3T6iXnObZaJNy9XdwRrGlRnFWbF3Wmssj
+         BBQyeSOVhLXzJx/RwK/Gs7jhx8sXzFxz2YHpeLg/cDbtyeA24lfUzAJomsTaIVWuDoj2
+         7iI6Kd+ryxCuZSTVvELeu1AKBkkKuHxkW3Zh4=
+Message-ID: <49900c55.0e1b6e0a.5174.3e17@mx.google.com>
+From: Qinghuang Feng <qhfeng.kernel@gmail.com>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: Casey Schaufler <casey@schaufler-ca.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] security/smack/smack_lsm.c: cleanup kernel-doc
+Date: Mon, 9 Feb 2009 18:58:25 +0800
+User-Agent: sniper-patch-carrier/1.06
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
+Remove comments which refer to nonexistent arguments.
 
->> The answer depends on workload.  Though rare, workloads do exist that 
->> involve a lot of oddball querying via weird, vendor-specific 
->> SCSI[-ish] commands.
->   Do you really think that the transfers having lengths non-divisible 
-> by 4 make any *significant* percentage even on the ATAPI devices? I 
-> think it's you who is really wrong.
->
->   Can you give an example of a *continous* querying with the data 
-> transferring commands?
->   Hm, it just occured to me that the typical ATAPI command packet is 
-> 12 bytes long.
-
-   Haha, I even can't count! 12 divides by 4, of course. :-D
-
->> Or a more human version of the rule:  if you have to have a long 
->> email thread about unlikely() placement, it is best just to avoid 
->> using unlikely() in that case at all.  Branch prediction units in 
->> modern CPUs are damned good anyways, and there is always the 
->> likelihood that a human-placed unlikely() becomes wrong in the 
->> future. Moreover, the likelihood and cost of a branch mispredict are 
->> both low in this case, IMO.
->
->   There are still CPUs without the branch prediction, you know -- 
-> Linux runs not only on x86.
->
->> Plus the code is more readable without unlikely(), IMO.
->
->   I tend to disagree. However, the packet command transfer is not 
-> unlikely at all, so I'll remove that unlikely() in the respun patch.
-
-   No, I'll keep it now. This case is indeed unlikely.
-
->>     Jeff
-
-MBR, Sergei
-
+Signed-off-by: Qinghuang Feng <qhfeng.kernel@gmail.com>
+---
+diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
+index 0278bc0..02c48ea 100644
+--- a/security/smack/smack_lsm.c
++++ b/security/smack/smack_lsm.c
+@@ -538,7 +538,6 @@ static int smack_inode_rename(struct inode *old_inode,
+  * smack_inode_permission - Smack version of permission()
+  * @inode: the inode in question
+  * @mask: the access requested
+- * @nd: unused
+  *
+  * This is the important Smack hook.
+  *
+@@ -701,8 +700,7 @@ static int smack_inode_removexattr(struct dentry *dentry, const char *name)
+  * @inode: the object
+  * @name: attribute name
+  * @buffer: where to put the result
+- * @size: size of the buffer
+- * @err: unused
++ * @alloc: unused
+  *
+  * Returns the size of the attribute or an error code
+  */
 
