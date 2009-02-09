@@ -1,522 +1,434 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756426AbZBIOPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbZBIOPM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756426AbZBIOPl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 09:15:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756017AbZBIONl
+	id S1756648AbZBIOPM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 09:15:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756144AbZBIONh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 09:13:41 -0500
+	Mon, 9 Feb 2009 09:13:37 -0500
 Received: from cavolo.yandex.ru ([87.250.244.45]:19472 "EHLO cavolo.yandex.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755428AbZBIONZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 09:13:25 -0500
+	id S1756000AbZBIONc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 09:13:32 -0500
 X-Greylist: delayed 640 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Feb 2009 09:13:15 EST
 From: Evgeniy Polyakov <zbr@ioremap.net>
 To: GregKH <greg@kroah.com>
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, Evgeniy Polyakov <zbr@ioremap.net>
-Subject: [2/9] pohmelfs: configuration interface.
-Date: Mon,  9 Feb 2009 17:02:35 +0300
-Message-Id: <1234188162-14727-3-git-send-email-zbr@ioremap.net>
+       netdev@vger.kernel.org, Eveniy Polyakov <zbr@ioremap.net>
+Subject: [1/9] pohmelfs: documentation.
+Date: Mon,  9 Feb 2009 17:02:34 +0300
+Message-Id: <1234188162-14727-2-git-send-email-zbr@ioremap.net>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1234188162-14727-2-git-send-email-zbr@ioremap.net>
+In-Reply-To: <1234188162-14727-1-git-send-email-zbr@ioremap.net>
 References: <1234188162-14727-1-git-send-email-zbr@ioremap.net>
- <1234188162-14727-2-git-send-email-zbr@ioremap.net>
 X-Antivirus: Dr.Web (R) for Mail Servers on cavolo.yandex.ru host
 X-Antivirus-Code: 100000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch includes POHMELFS configuration interface based
-on the netlink kernel connector. This interface allows to create
-configuration groups in the kerenel indexed by mount ID option.
+This patch includes POHMELFS design and implementation description.
+Separate file includes mount options, default parameters and usage examples.
 
-Each configuration group can include multiple servers to work
-with and various operation parameters.
+Signed-off-by: Eveniy Polyakov <zbr@ioremap.net>
 
-Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
-
-diff --git a/drivers/staging/pohmelfs/config.c b/drivers/staging/pohmelfs/config.c
+diff --git a/Documentation/filesystems/pohmelfs/design_notes.txt b/Documentation/filesystems/pohmelfs/design_notes.txt
 new file mode 100644
-index 0000000..941ab02
+index 0000000..6d6db60
 --- /dev/null
-+++ b/drivers/staging/pohmelfs/config.c
-@@ -0,0 +1,478 @@
-+/*
-+ * 2007+ Copyright (c) Evgeniy Polyakov <zbr@ioremap.net>
-+ * All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
++++ b/Documentation/filesystems/pohmelfs/design_notes.txt
+@@ -0,0 +1,70 @@
++POHMELFS: Parallel Optimized Host Message Exchange Layered File System.
 +
-+#include <linux/kernel.h>
-+#include <linux/connector.h>
-+#include <linux/crypto.h>
-+#include <linux/list.h>
-+#include <linux/mutex.h>
-+#include <linux/string.h>
-+#include <linux/in.h>
++		Evgeniy Polyakov <zbr@ioremap.net>
 +
-+#include "netfs.h"
++Homepage: http://www.ioremap.net/projects/pohmelfs
 +
-+/*
-+ * Global configuration list.
-+ * Each client can be asked to get one of them.
-+ *
-+ * Allows to provide remote server address (ipv4/v6/whatever), port
-+ * and so on via kernel connector.
-+ */
++POHMELFS first began as a network filesystem with coherent local data and
++metadata caches but is now evolving into a parallel distributed filesystem.
 +
-+static struct cb_id pohmelfs_cn_id = {.idx = POHMELFS_CN_IDX, .val = POHMELFS_CN_VAL};
-+static LIST_HEAD(pohmelfs_config_list);
-+static DEFINE_MUTEX(pohmelfs_config_lock);
++Main features of this FS include:
++ * Locally coherent cache for data and metadata with (potentially) byte-range locks.
++	Since all Linux filesystems lock the whole inode during writing, algorithm
++	is very simple and does not use byte-ranges, although they are sent in
++	locking messages.
++ * Completely async processing of all events except creation of hard and symbolic
++	links, and rename events.
++	Object creation and data reading and writing are processed asynchronously.
++ * Flexible object architecture optimized for network processing.
++	Ability to create long paths to objects and remove arbitrarily huge
++	directories with a single network command.
++	(like removing the whole kernel tree via a single network command).
++ * Very high performance.
++ * Fast and scalable multithreaded userspace server. Being in userspace it works
++	with any underlying filesystem and still is much faster than async in-kernel NFS one.
++ * Client is able to switch between different servers (if one goes down, client
++	automatically reconnects to second and so on).
++ * Transactions support. Full failover for all operations.
++	Resending transactions to different servers on timeout or error.
++ * Read request (data read, directory listing, lookup requests) balancing between multiple servers.
++ * Write requests are replicated to multiple servers and completed only when all of them are acked.
++ * Ability to add and/or remove servers from the working set at run-time.
++ * Strong authentification and possible data encryption in network channel.
++ * Extended attributes support.
 +
-+static inline int pohmelfs_config_eql(struct pohmelfs_ctl *sc, struct pohmelfs_ctl *ctl)
++POHMELFS is based on transactions, which are potentially long-standing objects that live
++in the client's memory. Each transaction contains all the information needed to process a given
++command (or set of commands, which is frequently used during data writing: single transactions
++can contain creation and data writing commands). Transactions are committed by all the servers
++to which they are sent and, in case of failures, are eventually resent or dropped with an error.
++For example, reading will return an error if no servers are available.
++
++POHMELFS uses a asynchronous approach to data processing. Courtesy of transactions, it is
++possible to detach replies from requests and, if the command requires data to be received, the
++caller sleeps waiting for it. Thus, it is possible to issue multiple read commands to different
++servers and async threads will pick up replies in parallel, find appropriate transactions in the
++system and put the data where it belongs (like the page or inode cache).
++
++The main feature of POHMELFS is writeback data and the metadata cache.
++Only a few non-performance critical operations use the write-through cache and
++are synchronous: hard and symbolic link creation, and object rename. Creation,
++removal of objects and data writing are asynchronous and are sent to
++the server during system writeback. Only one writer at a time is allowed for any
++given inode, which is guarded by an appropriate locking protocol.
++Because of this feature, POHMELFS is extremely fast at metadata intensive
++workloads and can fully utilize the bandwidth to the servers when doing bulk
++data transfers.
++
++POHMELFS clients operate with a working set of servers and are capable of balancing read-only
++operations (like lookups or directory listings) between them.
++Administrators can add or remove servers from the set at run-time via special commands (described
++in Documentation/pohmelfs/info.txt file). Writes are replicated to all servers.
++
++POHMELFS is capable of full data channel encryption and/or strong crypto hashing.
++One can select any kernel supported cipher, encryption mode, hash type and operation mode
++(hmac or digest). It is also possible to use both or neither (default). Crypto configuration
++is checked during mount time and, if the server does not support it, appropriate capabilities
++will be disabled or mount will fail (if 'crypto_fail_unsupported' mount option is specified).
++Crypto performance heavily depends on the number of crypto threads, which asynchronously perform
++crypto operations and send the resulting data to server or submit it up the stack. This number
++can be controlled via a mount option.
+diff --git a/Documentation/filesystems/pohmelfs/info.txt b/Documentation/filesystems/pohmelfs/info.txt
+new file mode 100644
+index 0000000..4e3d501
+--- /dev/null
++++ b/Documentation/filesystems/pohmelfs/info.txt
+@@ -0,0 +1,86 @@
++POHMELFS usage information.
++
++Mount options:
++idx=%u
++ Each mountpoint is associated with a special index via this option.
++ Administrator can add or remove servers from the given index, so all mounts,
++ which were attached to it, are updated.
++ Default it is 0.
++
++trans_scan_timeout=%u
++ This timeout, expressed in milliseconds, specifies time to scan transaction
++ trees looking for stale requests, which have to be resent, or if number of
++ retries exceed specified limit, dropped with error.
++ Default is 5 seconds.
++
++drop_scan_timeout=%u
++ Internal timeout, expressed in milliseconds, which specifies how frequently
++ inodes marked to be dropped are freed. It also specifies how frequently
++ the system checks that servers have to be added or removed from current working set.
++ Default is 1 second.
++
++wait_on_page_timeout=%u
++ Number of milliseconds to wait for reply from remote server for data reading command.
++ If this timeout is exceeded, reading returns an error.
++ Default is 5 seconds.
++
++trans_retries=%u
++ This is the number of times that a transaction will be resent to a server that did
++ not answer for the last @trans_scan_timeout milliseconds.
++ When the number of resends exceeds this limit, the transaction is completed with error.
++ Default is 5 resends.
++
++crypto_thread_num=%u
++ Number of crypto processing threads. Threads are used both for RX and TX traffic.
++ Default is 2, or no threads if crypto operations are not supported.
++
++trans_max_pages=%u
++ Maximum number of pages in a single transaction. This parameter also controls
++ the number of pages,  allocated for crypto processing (each crypto thread has
++ pool of pages, the number of which is equal to 'trans_max_pages'.
++ Default is 100 pages.
++
++crypto_fail_unsupported
++ If specified, mount will fail if the server does not support requested crypto operations.
++ By default mount will disable non-matching crypto operations.
++
++mcache_timeout=%u
++ Maximum number of milliseconds to wait for the mcache objects to be processed.
++ Mcache includes locks (given lock should be granted by server), attributes (they should be
++ fully received in the given timeframe).
++ Default is 5 seconds.
++
++Usage examples.
++
++Add (or remove if it already exists) server server1.net:1025 into the working set with index $idx
++with appropriate hash algorithm and key file and cipher algorithm, mode and key file:
++$cfg -a server1.net -p 1025 -i $idx -K $hash_key -k $cipher_key
++
++Mount filesystem with given index $idx to /mnt mountpoint.
++Client will connect to all servers specified in the working set via previous command:
++mount -t pohmel -o idx=$idx q /mnt
++
++One can add or remove servers from working set after mounting too.
++
++
++Server installation.
++
++Creating a server, which listens at port 1025 and 0.0.0.0 address.
++Working root directory (note, that server chroots there, so you have to have appropriate permissions)
++is set to /mnt, server will negotiate hash/cipher with client, in case client requested it, there
++are appropriate key files.
++Number of working threads is set to 10.
++
++# ./fserver -a 0.0.0.0 -p 1025 -r /mnt -w 10 -K hash_key -k cipher_key
++
++ -A 6			 - listen on ipv6 address. Default: Disabled.
++ -r root                 - path to root directory. Default: /tmp.
++ -a addr                 - listen address. Default: 0.0.0.0.
++ -p port                 - listen port. Default: 1025.
++ -w workers              - number of workers per connected client. Default: 1.
++ -K file		 - hash key size. Default: none.
++ -k file		 - cipher key size. Default: none.
++ -h                      - this help.
++
++Number of worker threads specifies how many workers will be created for each client.
++Bulk single-client transafers usually are better handled with smaller number (like 1-3).
+diff --git a/Documentation/filesystems/pohmelfs/network_protocol.txt b/Documentation/filesystems/pohmelfs/network_protocol.txt
+new file mode 100644
+index 0000000..40ea6c2
+--- /dev/null
++++ b/Documentation/filesystems/pohmelfs/network_protocol.txt
+@@ -0,0 +1,227 @@
++POHMELFS network protocol.
++
++Basic structure used in network communication is following command:
++
++struct netfs_cmd
 +{
-+	if (sc->idx == ctl->idx && sc->type == ctl->type &&
-+			sc->proto == ctl->proto &&
-+			sc->addrlen == ctl->addrlen &&
-+			!memcmp(&sc->addr, &ctl->addr, ctl->addrlen))
-+		return 1;
++	__u16			cmd;	/* Command number */
++	__u16			csize;	/* Attached crypto information size */
++	__u16			cpad;	/* Attached padding size */
++	__u16			ext;	/* External flags */
++	__u32			size;	/* Size of the attached data */
++	__u32			trans;	/* Transaction id */
++	__u64			id;	/* Object ID to operate on. Used for feedback.*/
++	__u64			start;	/* Start of the object. */
++	__u64			iv;	/* IV sequence */
++	__u8			data[0];
++};
 +
-+	return 0;
-+}
++Commands can be embedded into transaction command (which in turn has own command),
++so one can extend protocol as needed without breaking backward compatibility as long
++as old commands are supported. All string lengths include tail 0 byte.
 +
-+static struct pohmelfs_config_group *pohmelfs_find_config_group(unsigned int idx)
++All commans are transfered over the network in big-endian. CPU endianess is used at the end peers.
++
++@cmd - command number, which specifies command to be processed. Following
++	commands are used currently:
++
++	NETFS_READDIR	= 1,	/* Read directory for given inode number */
++	NETFS_READ_PAGE,	/* Read data page from the server */
++	NETFS_WRITE_PAGE,	/* Write data page to the server */
++	NETFS_CREATE,		/* Create directory entry */
++	NETFS_REMOVE,		/* Remove directory entry */
++	NETFS_LOOKUP,		/* Lookup single object */
++	NETFS_LINK,		/* Create a link */
++	NETFS_TRANS,		/* Transaction */
++	NETFS_OPEN,		/* Open intent */
++	NETFS_INODE_INFO,	/* Metadata cache coherency synchronization message */
++	NETFS_PAGE_CACHE,	/* Page cache invalidation message */
++	NETFS_READ_PAGES,	/* Read multiple contiguous pages in one go */
++	NETFS_RENAME,		/* Rename object */
++	NETFS_CAPABILITIES,	/* Capabilities of the client, for example supported crypto */
++	NETFS_LOCK,		/* Distributed lock message */
++	NETFS_XATTR_SET,	/* Set extended attribute */
++	NETFS_XATTR_GET,	/* Get extended attribute */
++
++@ext - external flags. Used by different commands to specify some extra arguments
++	like partial size of the embedded objects or creation flags.
++
++@size - size of the attached data. For NETFS_READ_PAGE and NETFS_READ_PAGES no data is attached,
++	but size of the requested data is incorporated here. It does not include size of the command
++	header (struct netfs_cmd) itself.
++
++@id - id of the object this command operates on. Each command can use it for own purpose.
++
++@start - start of the object this command operates on. Each command can use it for own purpose.
++
++@csize, @cpad - size and padding size of the (attached if needed) crypto information.
++
++Command specifications.
++
++@NETFS_READDIR
++This command is used to sync content of the remote dir to the client.
++
++@ext - length of the path to object.
++@size - the same.
++@id - local inode number of the directory to read.
++@start - zero.
++
++
++@NETFS_READ_PAGE
++This command is used to read data from remote server.
++Data size does not exceed local page cache size.
++
++@id - inode number.
++@start - first byte offset.
++@size - number of bytes to read plus length of the path to object.
++@ext - object path length.
++
++
++@NETFS_CREATE
++Used to create object.
++It does not require that all directories on top of the object were
++already created, it will create them automatically. Each object has
++associated @netfs_path_entry data structure, which contains creation
++mode (permissions and type) and length of the name as long as name itself.
++
++@start - 0
++@size - size of the all data structures needed to create a path
++@id - local inode number
++@ext - 0
++
++
++@NETFS_REMOVE
++Used to remove object.
++
++@ext - length of the path to object.
++@size - the same.
++@id - local inode number.
++@start - zero.
++
++
++@NETFS_LOOKUP
++Lookup information about object on server.
++
++@ext - length of the path to object.
++@size - the same.
++@id - local inode number of the directory to look object in.
++@start - local inode number of the object to look at.
++
++
++@NETFS_LINK
++Create hard of symlink.
++Command is sent as "object_path|target_path".
++
++@size - size of the above string.
++@id - parent local inode number.
++@start - 1 for symlink, 0 for hardlink.
++@ext - size of the "object_path" above.
++
++
++@NETFS_TRANS
++Transaction header.
++
++@size - incorporates all embedded command sizes including theirs header sizes.
++@start - transaction generation number - unique id used to find transaction.
++@ext - transaction flags. Unused at the moment.
++@id - 0.
++
++
++@NETFS_OPEN
++Open intent for given transaction.
++
++@id - local inode number.
++@start - 0.
++@size - path length to the object.
++@ext - open flags (O_RDWR and so on).
++
++
++@NETFS_INODE_INFO
++Metadata update command.
++It is sent to servers when attributes of the object are changed and received
++when data or metadata were updated. It operates with the following structure:
++
++struct netfs_inode_info
 +{
-+	struct pohmelfs_config_group *g, *group = NULL;
-+
-+	list_for_each_entry(g, &pohmelfs_config_list, group_entry) {
-+		if (g->idx == idx) {
-+			group = g;
-+			break;
-+		}
-+	}
-+
-+	return group;
-+}
-+
-+static struct pohmelfs_config_group *pohmelfs_find_create_config_group(unsigned int idx)
-+{
-+	struct pohmelfs_config_group *g;
-+	
-+	g = pohmelfs_find_config_group(idx);
-+	if (g)
-+		return g;
-+
-+	g = kzalloc(sizeof(struct pohmelfs_config_group), GFP_KERNEL);
-+	if (!g)
-+		return NULL;
-+
-+	INIT_LIST_HEAD(&g->config_list);
-+	g->idx = idx;
-+	g->num_entry = 0;
-+
-+	list_add_tail(&g->group_entry, &pohmelfs_config_list);
-+
-+	return g;
-+}
-+
-+int pohmelfs_copy_config(struct pohmelfs_sb *psb)
-+{
-+	struct pohmelfs_config_group *g;
-+	struct pohmelfs_config *c, *dst;
-+	int err = -ENODEV;
-+
-+	mutex_lock(&pohmelfs_config_lock);
-+
-+	g = pohmelfs_find_config_group(psb->idx);
-+	if (!g)
-+		goto out_unlock;
-+
-+	/*
-+	 * Run over all entries in given config group and try to crate and
-+	 * initialize those, which do not exist in superblock list.
-+	 * Skip all existing entries.
-+	 */
-+
-+	list_for_each_entry(c, &g->config_list, config_entry) {
-+		err = 0;
-+		list_for_each_entry(dst, &psb->state_list, config_entry) {
-+			if (pohmelfs_config_eql(&dst->state.ctl, &c->state.ctl)) {
-+				err = -EEXIST;
-+				break;
-+			}
-+		}
-+
-+		if (err)
-+			continue;
-+
-+		dst = kzalloc(sizeof(struct pohmelfs_config), GFP_KERNEL);
-+		if (!dst) {
-+			err = -ENOMEM;
-+			break;
-+		}
-+
-+		memcpy(&dst->state.ctl, &c->state.ctl, sizeof(struct pohmelfs_ctl));
-+
-+		list_add_tail(&dst->config_entry, &psb->state_list);
-+
-+		err = pohmelfs_state_init_one(psb, dst);
-+		if (err) {
-+			list_del(&dst->config_entry);
-+			kfree(dst);
-+		}
-+
-+		err = 0;
-+	}
-+
-+out_unlock:
-+	mutex_unlock(&pohmelfs_config_lock);
-+
-+	return err;
-+}
-+
-+int pohmelfs_copy_crypto(struct pohmelfs_sb *psb)
-+{
-+	struct pohmelfs_config_group *g;
-+	int err = -ENOENT;
-+
-+	mutex_lock(&pohmelfs_config_lock);
-+	g = pohmelfs_find_config_group(psb->idx);
-+	if (!g)
-+		goto err_out_exit;
-+
-+	if (g->hash_string) {
-+		err = -ENOMEM;
-+		psb->hash_string = kstrdup(g->hash_string, GFP_KERNEL);
-+		if (!psb->hash_string)
-+			goto err_out_exit;
-+		psb->hash_strlen = g->hash_strlen;
-+	}
-+
-+	if (g->cipher_string) {
-+		psb->cipher_string = kstrdup(g->cipher_string, GFP_KERNEL);
-+		if (!psb->cipher_string)
-+			goto err_out_free_hash_string;
-+		psb->cipher_strlen = g->cipher_strlen;
-+	}
-+
-+	if (g->hash_keysize) {
-+		psb->hash_key = kmalloc(g->hash_keysize, GFP_KERNEL);
-+		if (!psb->hash_key)
-+			goto err_out_free_cipher_string;
-+		memcpy(psb->hash_key, g->hash_key, g->hash_keysize);
-+		psb->hash_keysize = g->hash_keysize;
-+	}
-+
-+	if (g->cipher_keysize) {
-+		psb->cipher_key = kmalloc(g->cipher_keysize, GFP_KERNEL);
-+		if (!psb->cipher_key)
-+			goto err_out_free_hash;
-+		memcpy(psb->cipher_key, g->cipher_key, g->cipher_keysize);
-+		psb->cipher_keysize = g->cipher_keysize;
-+	}
-+
-+	mutex_unlock(&pohmelfs_config_lock);
-+
-+	return 0;
-+
-+err_out_free_hash:
-+	kfree(psb->hash_key);
-+err_out_free_cipher_string:
-+	kfree(psb->cipher_string);
-+err_out_free_hash_string:
-+	kfree(psb->hash_string);
-+err_out_exit:
-+	mutex_unlock(&pohmelfs_config_lock);
-+	return err;
-+}
-+
-+static int pohmelfs_send_reply(int err, int msg_num, int action, struct cn_msg *msg, struct pohmelfs_ctl *ctl)
-+{
-+	struct pohmelfs_cn_ack *ack;
-+
-+	ack = kmalloc(sizeof(struct pohmelfs_cn_ack), GFP_KERNEL);
-+	if (!ack)
-+		return -ENOMEM;
-+
-+	memset(ack, 0, sizeof(struct pohmelfs_cn_ack));
-+	memcpy(&ack->msg, msg, sizeof(struct cn_msg));
-+
-+	if (action == POHMELFS_CTLINFO_ACK)
-+		memcpy(&ack->ctl, ctl, sizeof(struct pohmelfs_ctl));
-+
-+	ack->msg.len = sizeof(struct pohmelfs_cn_ack) - sizeof(struct cn_msg);
-+	ack->msg.ack = msg->ack + 1;
-+	ack->error = err;
-+	ack->msg_num = msg_num;
-+
-+	cn_netlink_send(&ack->msg, 0, GFP_KERNEL);
-+	kfree(ack);
-+	return 0;
-+}
-+
-+static int pohmelfs_cn_disp(struct cn_msg *msg)
-+{
-+	struct pohmelfs_config_group *g;
-+	struct pohmelfs_ctl *ctl = (struct pohmelfs_ctl *)msg->data;
-+	struct pohmelfs_config *c, *tmp;
-+	int err = 0, i = 1;
-+
-+	if (msg->len != sizeof(struct pohmelfs_ctl))
-+		return -EBADMSG;
-+
-+	mutex_lock(&pohmelfs_config_lock);
-+
-+	g = pohmelfs_find_config_group(ctl->idx);
-+	if (!g) {
-+		pohmelfs_send_reply(err, 0, POHMELFS_NOINFO_ACK, msg, NULL);
-+		goto out_unlock;
-+	}
-+
-+	list_for_each_entry_safe(c, tmp, &g->config_list, config_entry) {
-+		struct pohmelfs_ctl *sc = &c->state.ctl;
-+		if (pohmelfs_send_reply(err, g->num_entry - i, POHMELFS_CTLINFO_ACK, msg, sc)) {
-+			err = -ENOMEM;
-+			goto out_unlock;
-+		}
-+		i += 1;
-+	}
-+
-+out_unlock:
-+        mutex_unlock(&pohmelfs_config_lock);
-+        return err;
-+}
-+
-+static int pohmelfs_cn_ctl(struct cn_msg *msg, int action)
-+{
-+	struct pohmelfs_config_group *g;
-+	struct pohmelfs_ctl *ctl = (struct pohmelfs_ctl *)msg->data;
-+	struct pohmelfs_config *c, *tmp;
-+	int err = 0;
-+
-+	if (msg->len != sizeof(struct pohmelfs_ctl))
-+		return -EBADMSG;
-+
-+	mutex_lock(&pohmelfs_config_lock);
-+
-+	g = pohmelfs_find_create_config_group(ctl->idx);
-+	if (!g) {
-+		err = -ENOMEM;
-+		goto out_unlock;
-+	}
-+
-+	list_for_each_entry_safe(c, tmp, &g->config_list, config_entry) {
-+		struct pohmelfs_ctl *sc = &c->state.ctl;
-+
-+		if (pohmelfs_config_eql(sc, ctl)) {
-+			if (action == POHMELFS_FLAGS_ADD) {
-+				err = -EEXIST;
-+				goto out_unlock;
-+			} else if (action == POHMELFS_FLAGS_DEL) {
-+				list_del(&c->config_entry);
-+				g->num_entry--;
-+				kfree(c);
-+				goto out_unlock;
-+			} else {
-+				err = -EEXIST;
-+				goto out_unlock;
-+			}
-+		}
-+	}
-+	if (action == POHMELFS_FLAGS_DEL) {
-+		err = -EBADMSG;
-+		goto out_unlock;
-+	}
-+
-+	c = kzalloc(sizeof(struct pohmelfs_config), GFP_KERNEL);
-+	if (!c) {
-+		err = -ENOMEM;
-+		goto out_unlock;
-+	}
-+	memcpy(&c->state.ctl, ctl, sizeof(struct pohmelfs_ctl));
-+	g->num_entry++;
-+	list_add_tail(&c->config_entry, &g->config_list);
-+
-+out_unlock:
-+	mutex_unlock(&pohmelfs_config_lock);
-+	if (pohmelfs_send_reply(err, 0, POHMELFS_NOINFO_ACK, msg, NULL))
-+		err = -ENOMEM;
-+
-+	return err;
-+}
-+
-+static int pohmelfs_crypto_hash_init(struct pohmelfs_config_group *g, struct pohmelfs_crypto *c)
-+{
-+	char *algo = (char *)c->data;
-+	u8 *key = (u8 *)(algo + c->strlen);
-+
-+	if (g->hash_string)
-+		return -EEXIST;
-+
-+	g->hash_string = kstrdup(algo, GFP_KERNEL);
-+	if (!g->hash_string)
-+		return -ENOMEM;
-+	g->hash_strlen = c->strlen;
-+	g->hash_keysize = c->keysize;
-+
-+	g->hash_key = kmalloc(c->keysize, GFP_KERNEL);
-+	if (!g->hash_key) {
-+		kfree(g->hash_string);
-+		return -ENOMEM;
-+	}
-+
-+	memcpy(g->hash_key, key, c->keysize);
-+
-+	return 0;
-+}
-+
-+static int pohmelfs_crypto_cipher_init(struct pohmelfs_config_group *g, struct pohmelfs_crypto *c)
-+{
-+	char *algo = (char *)c->data;
-+	u8 *key = (u8 *)(algo + c->strlen);
-+
-+	if (g->cipher_string)
-+		return -EEXIST;
-+
-+	g->cipher_string = kstrdup(algo, GFP_KERNEL);
-+	if (!g->cipher_string)
-+		return -ENOMEM;
-+	g->cipher_strlen = c->strlen;
-+	g->cipher_keysize = c->keysize;
-+
-+	g->cipher_key = kmalloc(c->keysize, GFP_KERNEL);
-+	if (!g->cipher_key) {
-+		kfree(g->cipher_string);
-+		return -ENOMEM;
-+	}
-+
-+	memcpy(g->cipher_key, key, c->keysize);
-+
-+	return 0;
-+}
-+
-+
-+static int pohmelfs_cn_crypto(struct cn_msg *msg)
-+{
-+	struct pohmelfs_crypto *crypto = (struct pohmelfs_crypto *)msg->data;
-+	struct pohmelfs_config_group *g;
-+	int err = 0;
-+
-+	dprintk("%s: idx: %u, strlen: %u, type: %u, keysize: %u, algo: %s.\n",
-+			__func__, crypto->idx, crypto->strlen, crypto->type,
-+			crypto->keysize, (char *)crypto->data);
-+
-+	mutex_lock(&pohmelfs_config_lock);
-+	g = pohmelfs_find_create_config_group(crypto->idx);
-+	if (!g) {
-+		err = -ENOMEM;
-+		goto out_unlock;
-+	}
-+
-+	switch (crypto->type) {
-+		case POHMELFS_CRYPTO_HASH:
-+			err = pohmelfs_crypto_hash_init(g, crypto);
-+			break;
-+		case POHMELFS_CRYPTO_CIPHER:
-+			err = pohmelfs_crypto_cipher_init(g, crypto);
-+			break;
-+		default:
-+			err = -ENOTSUPP;
-+			break;
-+	}
-+
-+out_unlock:
-+	mutex_unlock(&pohmelfs_config_lock);
-+	if (pohmelfs_send_reply(err, 0, POHMELFS_NOINFO_ACK, msg, NULL))
-+		err = -ENOMEM;
-+
-+	return err;
-+}
-+
-+static void pohmelfs_cn_callback(void *data)
-+{
-+	struct cn_msg *msg = data;
-+	int err;
-+	
-+	switch (msg->flags) {
-+		case POHMELFS_FLAGS_ADD:
-+			err = pohmelfs_cn_ctl(msg, POHMELFS_FLAGS_ADD);
-+			break;
-+		case POHMELFS_FLAGS_DEL:
-+			err = pohmelfs_cn_ctl(msg, POHMELFS_FLAGS_DEL);
-+			break;
-+		case POHMELFS_FLAGS_SHOW:
-+			err = pohmelfs_cn_disp(msg);
-+			break;
-+		case POHMELFS_FLAGS_CRYPTO:
-+			err = pohmelfs_cn_crypto(msg);
-+			break;
-+		default:
-+			err = -ENOSYS;
-+			break;
-+	}
-+}
-+
-+int pohmelfs_config_check(struct pohmelfs_config *config, int idx)
-+{
-+	struct pohmelfs_ctl *ctl = &config->state.ctl;
-+	struct pohmelfs_config *tmp;
-+	int err = -ENOENT;
-+	struct pohmelfs_ctl *sc;
-+	struct pohmelfs_config_group *g;
-+
-+	mutex_lock(&pohmelfs_config_lock);
-+
-+	g = pohmelfs_find_config_group(ctl->idx);
-+	if (g) {
-+		list_for_each_entry(tmp, &g->config_list, config_entry) {
-+			sc = &tmp->state.ctl;
-+
-+			if (pohmelfs_config_eql(sc, ctl)) {
-+				err = 0;
-+				break;
-+			}
-+		}
-+	}
-+
-+	mutex_unlock(&pohmelfs_config_lock);
-+
-+	return err;
-+}
-+
-+int __init pohmelfs_config_init(void)
-+{
-+	return cn_add_callback(&pohmelfs_cn_id, "pohmelfs", pohmelfs_cn_callback);
-+}
-+
-+void pohmelfs_config_exit(void)
-+{
-+	struct pohmelfs_config *c, *tmp;
-+	struct pohmelfs_config_group *g, *gtmp;
-+
-+	cn_del_callback(&pohmelfs_cn_id);
-+
-+	mutex_lock(&pohmelfs_config_lock);
-+	list_for_each_entry_safe(g, gtmp, &pohmelfs_config_list, group_entry) {
-+		list_for_each_entry_safe(c, tmp, &g->config_list, config_entry) {
-+			list_del(&c->config_entry);
-+			kfree(c);
-+		}
-+
-+		list_del(&g->group_entry);
-+
-+		if (g->hash_string)
-+			kfree(g->hash_string);
-+
-+		if (g->cipher_string)
-+			kfree(g->cipher_string);
-+
-+		kfree(g);
-+	}
-+	mutex_unlock(&pohmelfs_config_lock);
-+}
++	unsigned int		mode;
++	unsigned int		nlink;
++	unsigned int		uid;
++	unsigned int		gid;
++	unsigned int		blocksize;
++	unsigned int		padding;
++	__u64			ino;
++	__u64			blocks;
++	__u64			rdev;
++	__u64			size;
++	__u64			version;
++};
++
++It effectively mirrors stat(2) returned data.
++
++
++@ext - path length to the object.
++@size - the same plus size of the netfs_inode_info structure.
++@id - local inode number.
++@start - 0.
++
++
++@NETFS_PAGE_CACHE
++Command is only received by clients. It contains information about
++page to be marked as not up-to-date.
++
++@id - client's inode number.
++@start - last byte of the page to be invalidated. If it is not equal to
++	current inode size, it will be vmtruncated().
++@size - 0
++@ext - 0
++
++
++@NETFS_READ_PAGES
++Used to read multiple contiguous pages in one go.
++
++@start - first byte of the contiguous region to read.
++@size - contains of two fields: lower 8 bits are used to represent page cache shift
++	used by client, another 3 bytes are used to get number of pages.
++@id - local inode number.
++@ext - path length to the object.
++
++
++@NETFS_RENAME
++Used to rename object.
++Attached data is formed into following string: "old_path|new_path".
++
++@id - local inode number.
++@start - parent inode number.
++@size - length of the above string.
++@ext - length of the old path part.
++
++
++@NETFS_CAPABILITIES
++Used to exchange crypto capabilities with server.
++If crypto capabilities are not supported by server, then client will disable it
++or fail (if 'crypto_fail_unsupported' mount options was specified).
++
++@id - superblock index. Used to specify crypto information for group of servers.
++@size - size of the attached capabilities structure.
++@start - 0.
++@size - 0.
++@scsize - 0.
++
++@NETFS_LOCK
++Used to send lock request/release messages. Although it sends byte range request
++and is capable of flushing pages based on that, it is not used, since all Linux
++filesystems lock the whole inode.
++
++@id - lock generation number.
++@start - start of the locked range.
++@size - size of the locked range.
++@ext - lock type: read/write. Not used actually. 15'th bit is used to determine,
++	if it is lock request (1) or release (0).
++
++@NETFS_XATTR_SET
++@NETFS_XATTR_GET
++Used to set/get extended attributes for given inode.
++@id - attribute generation number or xattr setting type
++@start - size of the attribute (request or attached)
++@size - name length, path len and data size for given attribute
++@ext - path length for given object
