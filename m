@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755050AbZBIQfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755227AbZBIQmf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755050AbZBIQfo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 11:35:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbZBIQfe
+	id S1755227AbZBIQmf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 11:42:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbZBIQmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 11:35:34 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:42843 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751549AbZBIQfd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 11:35:33 -0500
-Date: Mon, 9 Feb 2009 14:34:56 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, jkosina@suse.cz,
-       linux-media@vger.kernel.org
-Subject: Re: [PATCH 3/3] use the new request_module_nowait() in
- drivers/media
-Message-ID: <20090209143456.1c5d7f0b@pedra.chehab.org>
-In-Reply-To: <20090208110052.6f3deafc@infradead.org>
-References: <20090208104201.6124ab6a@infradead.org>
-	<20090208104314.4e74e6a8@infradead.org>
-	<20090208110052.6f3deafc@infradead.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 9 Feb 2009 11:42:25 -0500
+Received: from h155.mvista.com ([63.81.120.155]:16759 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753218AbZBIQmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 11:42:25 -0500
+Message-ID: <49905D08.4050302@ru.mvista.com>
+Date: Mon, 09 Feb 2009 19:42:48 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Hugh Dickins <hugh@veritas.com>
+Cc: jgarzik@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       alan@lxorguk.ukuu.org.uk, rjw@sisk.pl
+Subject: Re: [PATCH] libata-sff: fix 32-bit PIO regression
+References: <200902082253.07438.sshtylyov@ru.mvista.com> <Pine.LNX.4.64.0902082108290.18661@blonde.anvils> <498F73A5.2070300@ru.mvista.com> <Pine.LNX.4.64.0902091016520.14410@blonde.anvils>
+In-Reply-To: <Pine.LNX.4.64.0902091016520.14410@blonde.anvils>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 8 Feb 2009 11:00:52 -0800
-Arjan van de Ven <arjan@infradead.org> wrote:
+Hugh Dickins wrote:
 
-> On Sun, 8 Feb 2009 10:43:14 -0800
-> Arjan van de Ven <arjan@infradead.org> wrote:
-> 
-> blargh I sent an older version of this patch
-> I meant to send this one
-> 
-> From 2311993ceed96ec0bb023419120d9aeada205242 Mon Sep 17 00:00:00 2001
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Subject: [PATCH] use the new request_module_nowait() in drivers/media
-> 
-> Several drivers/media/video drivers use keventd to load modules
-> to avoid the "load a module from the module init code" deadlock.
-> 
-> Now that we have request_module_nowait() this can be simplified
-> greatly.
-> 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+>>>Yes, looks nice, and works for me.  My only criticism would be,
+>>>minor issue unchanged by your patch, that actually "slop" isn't
+>>>unlikely enough to deserve an "unlikely" - slop of 1 or 3 is
+>>>unlikely, but slop of 2 is quite common.
 
-Cheers,
-Mauro
+>> Common on what types of ATAPI commands? I can hardly believe that they are
+>>common on the block I/O...
+
+> When I checked (mounting and listing a CD), about 34% of
+> commands had slop 2.
+
+    Hm, that probably involved the raw block reads. I don't remember the raw 
+sector length off-hand but it may well be just even, not divisble by 4.
+
+> But you're right, now I try copying
+> a large file, there's no slop involved in that at all.
+
+> Hugh
+
+MBR, Sergei
