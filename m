@@ -1,51 +1,338 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910AbZBJHs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752853AbZBJIHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753910AbZBJHs4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 02:48:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbZBJHss
+	id S1752853AbZBJIHW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 03:07:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbZBJIHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 02:48:48 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:49176 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750823AbZBJHss (ORCPT
+	Tue, 10 Feb 2009 03:07:09 -0500
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:58327 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751996AbZBJIHH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 02:48:48 -0500
-Message-ID: <49913126.7030906@nokia.com>
-Date: Tue, 10 Feb 2009 09:47:50 +0200
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Reply-To: Artem.Bityutskiy@nokia.com
-Organization: Nokia OYJ
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Damien Wyart <damien.wyart@free.fr>
-CC: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Federico Cuello <fedux@lugmen.org.ar>,
+	Tue, 10 Feb 2009 03:07:07 -0500
+Date: Tue, 10 Feb 2009 13:37:00 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] write-back: fix break condition
-References: <1233977610-8919-1-git-send-email-fedux@lugmen.org.ar> <20090209152140.aa3f50aa.akpm@linux-foundation.org> <20090210003452.GA26143@wotan.suse.de> <20090210062249.GA5224@localhost.localdomain>
-In-Reply-To: <20090210062249.GA5224@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 10 Feb 2009 07:47:49.0354 (UTC) FILETIME=[DED0C4A0:01C98B53]
-X-Nokia-AV: Clean
+Subject: Re: [RFC][PATCH] Reduce size of swap_cgroup by CSS ID v2
+Message-ID: <20090210080700.GC16317@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090205185959.7971dee4.kamezawa.hiroyu@jp.fujitsu.com> <20090209145557.d0754a9f.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090209145557.d0754a9f.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Damien Wyart wrote:
->>> Artem, Nick, please check?
-> 
->> Yes, this looks OK by me.
-> 
->> Acked-by: Nick Piggin <npiggin@suse.de>
-> 
-> Shouldn't this go to stable 2.6.28, too ? They have not been in Cc for
-> now. I think the problem was at first detected in 2.6.28.X, but it is
-> not yet sure if it is solved or if this interacts with some ext4
-> problems.
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-02-09 14:55:57]:
 
-It seems like this and my previous patch should go together to 2.6.28.X.
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> Still !!EXPERIMENTAL!!, sorry.
+> 
+> This patch tires to use CSS ID for records in swap_cgroup.
+> By this, on 64bit machine, size of swap_cgroup goes down to 2 bytes from 8bytes.
+> 
+> This means, when 2GB of swap is equipped, (assume the page size is 4096bytes)
+> 	From size of swap_cgroup = 2G/4k * 8 = 4Mbytes.
+> 	To   size of swap_cgroup = 2G/4k * 2 = 1Mbytes.
+> Reduction is large. Of course, there are trade-offs. This CSS ID will add
+> overhead to swap-in/swap-out/swap-free.
+> 
+> But in general,
+>   - swap is a resource which the user tend to avoid use.
+>   - If swap is never used, swap_cgroup area is not used.
+>   - Reading traditional manuals, size of swap should be proportional to
+>     size of memory. Memory size of machine is increasing now.
+> 
+> I think reducing size of swap_cgroup makes sense.
+>     
+> Note:
+>   - ID->CSS lookup routine has no locks, it's under RCU-Read-Side.
+>   - memcg can be obsolete at rmdir() but not freed while refcnt from
+>     swap_cgroup is available.
+> 
+> This is still under test. Any comments are welcome.
+
+Yes, this does save memory. I wonder if we should move away from
+mem_cgroup even in page_cgroup. I guess it depends on the cost of
+mem_cgroup lookup from CSS ID.
+
+> 
+> Changelog: v1 -> v2
+>  - removed css_tryget().
+>  - fixed text in comments.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+>  include/linux/page_cgroup.h |    9 ++----
+>  mm/memcontrol.c             |   64 +++++++++++++++++++++++++++++++++++++-------
+>  mm/page_cgroup.c            |   26 ++++++++---------
+>  3 files changed, 71 insertions(+), 28 deletions(-)
+> 
+> Index: mmotm-2.6.29-Feb05/include/linux/page_cgroup.h
+> ===================================================================
+> --- mmotm-2.6.29-Feb05.orig/include/linux/page_cgroup.h
+> +++ mmotm-2.6.29-Feb05/include/linux/page_cgroup.h
+> @@ -91,22 +91,21 @@ static inline void page_cgroup_init(void
+> 
+>  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+>  #include <linux/swap.h>
+> -extern struct mem_cgroup *
+> -swap_cgroup_record(swp_entry_t ent, struct mem_cgroup *mem);
+> -extern struct mem_cgroup *lookup_swap_cgroup(swp_entry_t ent);
+> +extern unsigned short swap_cgroup_record(swp_entry_t ent, unsigned short id);
+> +extern unsigned short lookup_swap_cgroup(swp_entry_t ent);
+>  extern int swap_cgroup_swapon(int type, unsigned long max_pages);
+>  extern void swap_cgroup_swapoff(int type);
+>  #else
+>  #include <linux/swap.h>
+> 
+>  static inline
+> -struct mem_cgroup *swap_cgroup_record(swp_entry_t ent, struct mem_cgroup *mem)
+> +unsigned short swap_cgroup_record(swp_entry_t ent, unsigned short id)
+>  {
+>  	return NULL;
+>  }
+> 
+>  static inline
+> -struct mem_cgroup *lookup_swap_cgroup(swp_entry_t ent)
+> +unsigned short lookup_swap_cgroup(swp_entry_t ent)
+>  {
+>  	return NULL;
+>  }
+> Index: mmotm-2.6.29-Feb05/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.29-Feb05.orig/mm/memcontrol.c
+> +++ mmotm-2.6.29-Feb05/mm/memcontrol.c
+> @@ -1001,20 +1001,41 @@ nomem:
+>  	return -ENOMEM;
+>  }
+> 
+> +/*
+> + * A helper function to get mem_cgroup from ID. must be called under
+> + * rcu_read_lock(). The caller must check css_is_removed() or some if
+> + * it's concern. (dropping refcnt from swap can be called against removed
+> + * memcg.)
+> + */
+> +static struct mem_cgroup *mem_cgroup_lookup(unsigned short id)
+> +{
+> +	struct cgroup_subsys_state *css;
+> +
+> +	/* ID 0 is unused ID */
+> +	if (!id)
+> +		return NULL;
+> +	css = css_lookup(&mem_cgroup_subsys, id);
+> +	if (!css)
+> +		return NULL;
+> +	return container_of(css, struct mem_cgroup, css);
+> +}
+> +
+>  static struct mem_cgroup *try_get_mem_cgroup_from_swapcache(struct page *page)
+>  {
+> -	struct mem_cgroup *mem;
+> +	unsigned short id;
+> +	struct mem_cgroup *mem = NULL;
+>  	swp_entry_t ent;
+> 
+>  	if (!PageSwapCache(page))
+>  		return NULL;
+> 
+>  	ent.val = page_private(page);
+> -	mem = lookup_swap_cgroup(ent);
+> -	if (!mem)
+> -		return NULL;
+> +	id = lookup_swap_cgroup(ent);
+> +	rcu_read_lock();
+> +	mem = mem_cgroup_lookup(id);
+>  	if (!css_tryget(&mem->css))
+> -		return NULL;
+> +		mem = NULL;
+
+This part is a bit confusing. If the page got swapped out and the CSS
+it belonged to got swapped out, we set mem to NULL. Is this so that it
+can be charged to root cgroup? If so, could you please add a comment
+indicating the same.
+
+> +	rcu_read_unlock();
+>  	return mem;
+>  }
+> 
+> @@ -1275,12 +1296,20 @@ int mem_cgroup_cache_charge(struct page 
+> 
+>  	if (do_swap_account && !ret && PageSwapCache(page)) {
+>  		swp_entry_t ent = {.val = page_private(page)};
+> +		unsigned short id;
+>  		/* avoid double counting */
+> -		mem = swap_cgroup_record(ent, NULL);
+> +		id = swap_cgroup_record(ent, 0);
+> +		rcu_read_lock();
+> +		mem = mem_cgroup_lookup(id);
+>  		if (mem) {
+> +			/*
+> +			 * Recorded ID can be obsolete. We avoid calling
+> +			 * css_tryget()
+> +			 */
+>  			res_counter_uncharge(&mem->memsw, PAGE_SIZE);
+>  			mem_cgroup_put(mem);
+>  		}
+
+If !mem, do we leak charge? BTW, We no longer hold css references if
+the page is swapped out?
+
+> +		rcu_read_unlock();
+>  	}
+>  	return ret;
+>  }
+> @@ -1345,13 +1374,21 @@ void mem_cgroup_commit_charge_swapin(str
+>  	 */
+>  	if (do_swap_account && PageSwapCache(page)) {
+>  		swp_entry_t ent = {.val = page_private(page)};
+> +		unsigned short id;
+>  		struct mem_cgroup *memcg;
+> -		memcg = swap_cgroup_record(ent, NULL);
+> +
+> +		id = swap_cgroup_record(ent, 0);
+> +		rcu_read_lock();
+> +		memcg = mem_cgroup_lookup(id);
+>  		if (memcg) {
+> +			/*
+> +			 * This recorded memcg can be obsolete one. So, avoid
+> +			 * calling css_tryget
+> +			 */
+>  			res_counter_uncharge(&memcg->memsw, PAGE_SIZE);
+>  			mem_cgroup_put(memcg);
+>  		}
+> -
+
+Same question as above
+
+> +		rcu_read_unlock();
+>  	}
+>  	/* add this page(page_cgroup) to the LRU we want. */
+> 
+> @@ -1472,7 +1509,7 @@ void mem_cgroup_uncharge_swapcache(struc
+>  					MEM_CGROUP_CHARGE_TYPE_SWAPOUT);
+>  	/* record memcg information */
+>  	if (do_swap_account && memcg) {
+> -		swap_cgroup_record(ent, memcg);
+> +		swap_cgroup_record(ent, css_id(&memcg->css));
+>  		mem_cgroup_get(memcg);
+>  	}
+>  	if (memcg)
+> @@ -1487,15 +1524,22 @@ void mem_cgroup_uncharge_swapcache(struc
+>  void mem_cgroup_uncharge_swap(swp_entry_t ent)
+>  {
+>  	struct mem_cgroup *memcg;
+> +	unsigned short id;
+> 
+>  	if (!do_swap_account)
+>  		return;
+> 
+> -	memcg = swap_cgroup_record(ent, NULL);
+> +	id = swap_cgroup_record(ent, 0);
+> +	rcu_read_lock();
+> +	memcg = mem_cgroup_lookup(id);
+>  	if (memcg) {
+> +		/*
+> +		 * This memcg can be obsolete one. We avoid calling css_tryget
+> +		 */
+>  		res_counter_uncharge(&memcg->memsw, PAGE_SIZE);
+>  		mem_cgroup_put(memcg);
+>  	}
+> +	rcu_read_unlock();
+>  }
+>  #endif
+> 
+> Index: mmotm-2.6.29-Feb05/mm/page_cgroup.c
+> ===================================================================
+> --- mmotm-2.6.29-Feb05.orig/mm/page_cgroup.c
+> +++ mmotm-2.6.29-Feb05/mm/page_cgroup.c
+> @@ -290,7 +290,7 @@ struct swap_cgroup_ctrl swap_cgroup_ctrl
+>   * cgroup rather than pointer.
+>   */
+>  struct swap_cgroup {
+> -	struct mem_cgroup	*val;
+> +	unsigned short		id;
+>  };
+>  #define SC_PER_PAGE	(PAGE_SIZE/sizeof(struct swap_cgroup))
+>  #define SC_POS_MASK	(SC_PER_PAGE - 1)
+> @@ -342,10 +342,10 @@ not_enough_page:
+>   * @ent: swap entry to be recorded into
+>   * @mem: mem_cgroup to be recorded
+>   *
+> - * Returns old value at success, NULL at failure.
+> - * (Of course, old value can be NULL.)
+> + * Returns old value at success, 0 at failure.
+> + * (Of course, old value can be 0.)
+>   */
+> -struct mem_cgroup *swap_cgroup_record(swp_entry_t ent, struct mem_cgroup *mem)
+> +unsigned short swap_cgroup_record(swp_entry_t ent, unsigned short id)
+>  {
+>  	int type = swp_type(ent);
+>  	unsigned long offset = swp_offset(ent);
+> @@ -354,18 +354,18 @@ struct mem_cgroup *swap_cgroup_record(sw
+>  	struct swap_cgroup_ctrl *ctrl;
+>  	struct page *mappage;
+>  	struct swap_cgroup *sc;
+> -	struct mem_cgroup *old;
+> +	unsigned short old;
+> 
+>  	if (!do_swap_account)
+> -		return NULL;
+> +		return 0;
+> 
+>  	ctrl = &swap_cgroup_ctrl[type];
+> 
+>  	mappage = ctrl->map[idx];
+>  	sc = page_address(mappage);
+>  	sc += pos;
+> -	old = sc->val;
+> -	sc->val = mem;
+> +	old = sc->id;
+> +	sc->id = id;
+> 
+>  	return old;
+>  }
+> @@ -374,9 +374,9 @@ struct mem_cgroup *swap_cgroup_record(sw
+>   * lookup_swap_cgroup - lookup mem_cgroup tied to swap entry
+>   * @ent: swap entry to be looked up.
+>   *
+> - * Returns pointer to mem_cgroup at success. NULL at failure.
+> + * Returns CSS ID of mem_cgroup at success. 0 at failure. (0 is invalid ID)
+>   */
+> -struct mem_cgroup *lookup_swap_cgroup(swp_entry_t ent)
+> +unsigned short lookup_swap_cgroup(swp_entry_t ent)
+>  {
+>  	int type = swp_type(ent);
+>  	unsigned long offset = swp_offset(ent);
+> @@ -385,16 +385,16 @@ struct mem_cgroup *lookup_swap_cgroup(sw
+>  	struct swap_cgroup_ctrl *ctrl;
+>  	struct page *mappage;
+>  	struct swap_cgroup *sc;
+> -	struct mem_cgroup *ret;
+> +	unsigned short ret;
+> 
+>  	if (!do_swap_account)
+> -		return NULL;
+> +		return 0;
+> 
+>  	ctrl = &swap_cgroup_ctrl[type];
+>  	mappage = ctrl->map[idx];
+>  	sc = page_address(mappage);
+>  	sc += pos;
+> -	ret = sc->val;
+> +	ret = sc->id;
+>  	return ret;
+>  }
+> 
+> 
 
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+	Balbir
