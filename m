@@ -1,115 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbZBJMj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbZBJMkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754893AbZBJMj0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 07:39:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbZBJMjQ
+	id S1755070AbZBJMkd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 07:40:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbZBJMkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 07:39:16 -0500
-Received: from e23smtp03.au.ibm.com ([202.81.31.145]:38448 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750798AbZBJMjP (ORCPT
+	Tue, 10 Feb 2009 07:40:22 -0500
+Received: from rn-out-0910.google.com ([64.233.170.191]:21718 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753723AbZBJMkV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 07:39:15 -0500
-X-Sieve: CMU Sieve 2.3
-X-Spam-TestScore: ALL_TRUSTED=-1.44,DNS_FROM_RFC_ABUSE=0.479
-X-Spam-TokenSummary: Bayes not run.
-X-Spam-Relay-Country: 
-Date: Tue, 10 Feb 2009 18:05:14 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>,
-       mingo@elte.hu, richardj_moore@uk.ibm.com, jason.wessel@windriver.com,
-       prasad@linux.vnet.ibm.com, naren@linux.vnet.ibm.com
-Subject: [Patch 0/10] Hardware Breakpoint interfaces - v2
-Message-ID: <20090210123514.GA4199@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
+	Tue, 10 Feb 2009 07:40:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=LyFLmP1W6KofqP+kbRU1e4GHQGva5isKVLjq5IrgpSrh/X3HzBBPHyv7KtFqNnj1tJ
+         b2Vmf7XZl0AaEzEjsFPYt96NMoeLrMYp4RhZem0XMX2qN9Ns/BfNe85TA289XmdZ7c9I
+         MHxX/6+FUXneTnC/DNReR6pqD7GhBH6qdHR1s=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Xagent-From: prasad@linux.vnet.ibm.com
-X-Xagent-To: prasad@linux.vnet.ibm.com
-X-Xagent-Gateway: sydvm9.vnet.ibm.com (XAGENTU at SYDVM9)
+In-Reply-To: <20090210213502.7007.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20090210210520.7004.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <28c262360902100431l4a5977e7p9c5152882f09dcf9@mail.gmail.com>
+	 <20090210213502.7007.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Date: Tue, 10 Feb 2009 21:40:19 +0900
+Message-ID: <28c262360902100440v765d3f7bnd56cc4b5510349c0@mail.gmail.com>
+Subject: Re: [RFC] vmscan: initialize sc->nr_reclaimed in do_try_to_free_pages()
+From: MinChan Kim <minchan.kim@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>, Rik van Riel <riel@redhat.com>,
+       William Lee Irwin III <wli@movementarian.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew and all,
+On Tue, Feb 10, 2009 at 9:35 PM, KOSAKI Motohiro
+<kosaki.motohiro@jp.fujitsu.com> wrote:
+>> Hmm.. You're right.
+>> As Johannes pointed out,
+>> too many page shrinking can degrade resume performance.
+>>
+>> We need to bale out in shrink_all_memory.
+>> Other people, thought ?
+>
+> shrink_all_zones() already have bale-out code ;)
+>
 
-	Please find the patches that introduce interfaces to access
-Hardware Breakpoint (or watchpoint) registers and an arch-specific
-implementation for x86/x86_64 architecture. The earlier patchset (sent to
-you here: http://lkml.org/lkml/2009/1/29/36) generated some discussion
-over the employment of RCU synchronisation in the patchset. They're now
-resolved. The other changes over the previous patchset include:
+Ahh.. I need to sleep. :(
+Thanks. Kosaki-san.
 
-- Modified kernel/hw_breakpoint.c and arch/x86/kernel/hw_breakpoint.c
-into independently compilable units. Made necessary declarations in
-header files.
 
-- One pair of read-side RCU locks were introduced in
-load_debug_registers() following discussions about RCU synchronisation
-in the patchset. 
 
-A short description of the framework and interfaces is provided
-below. Some of the details will be specific to x86/x86_64 architecture
-and may vary depending upon the support provided by the target
-processor.
-
-The patches are based of -mm tree (commit
-6a522c468fe6d01679224edfe78586c95b6d9872) and have been tested on x86
-architecture over 2.6.29-rc2. Kindly accept these patches to be a part
-of -mm tree.
-
-Description
--------------
-The Hardware Breakpoint registers can be used for tracing changes to a
-variable or data location (even I/O ports in x86/x86_64) and will be
-extremely helpful in debugging problems such as memory corruption. While
-these registers have been used by user-space debuggers for long (through
-'ptrace' syscalls), KGDB exploited them for kernel-space addresses.
-
-The proposed framework, introduces interfaces to use them directly on
-both  user- and kernel-space addresses apart from arbitrating requests
-from various such users for the limited number of registers.
-
-The interfaces are:
-
-int register_kernel_hw_breakpoint(struct hw_breakpoint *);
-void unregister_kernel_hw_breakpoint(struct hw_breakpoint *bp);
-
-int register_user_hw_breakpoint(struct task_struct *tsk,
-                                 struct hw_breakpoint *bp);
-void unregister_user_hw_breakpoint(struct task_struct *tsk,
-                struct hw_breakpoint *bp);
-
-The 'struct hw_breakpoint' will be the anchor data-structure containing
-all the necessary information such as name or address, type, length,
-priority and pointers to handler functions (some of which are
-arch-specific). More information about the role of each field, the
-handler
-functions and their return values can be found in the descriptive
-comments
-preceding these functions and in "include/asm-generic/hw_breakpoint.h".
-
-While (un)register_user_hw_breakpoint() isn't exported yet, its
-worker-routine __register_user-hw_breakpoint() is used by ptrace syscall
-for all breakpoint register requirements. For the kernel-space, a simple
-use case to trace 'write' operations on a kernel variable can be found
-in samples/hw_breakpoint/data_breakpoint.c.
-
-In the current patchset, support is provided only for read and
-read-write breakpoints on data locations, which can be later expand to
-include instruction and I/O breakpoints for x86/x86_64.
-
-The patches are based on 2.6.29-rc2 and have been tested on an x86
-machine along with concurrent sessions of a kprobe-module and a GDB
-session using HW breakpoints on the target program.
-
-There is pending integration with 'KGDB' without which mutual exclusion
-between them (KGDB and HW breakpoint use through above interfaces) needs
-to be observed.
-
-Thanks,
-K.Prasad
-
+-- 
+Kinds regards,
+MinChan Kim
