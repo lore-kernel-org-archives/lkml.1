@@ -1,59 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757207AbZBJVx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756680AbZBJV4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757207AbZBJVx5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 16:53:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756787AbZBJVxr
+	id S1756680AbZBJV4o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 16:56:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755509AbZBJV4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 16:53:47 -0500
-Received: from p02c12o143.mxlogic.net ([208.65.145.76]:53468 "EHLO
-	p02c12o143.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756958AbZBJVxq (ORCPT
+	Tue, 10 Feb 2009 16:56:35 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:42415 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754613AbZBJV4e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 16:53:46 -0500
-Message-ID: <4991F75D.7010100@steeleye.com>
-Date: Tue, 10 Feb 2009 16:53:33 -0500
-From: Paul Clements <paul.clements@steeleye.com>
-User-Agent: Swiftdove 2.0.0.9 (X11/20071116)
+	Tue, 10 Feb 2009 16:56:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=cyLuTi68gotU77nq90J1ZDKUbAQhb/+xbBY+xpm2MFC6UsO9qzBp0d1CVtjgcNIqAd
+         oX2TnpKgRriZkHdbmXjIiuO3sewxig1UEI5A4LYL71asEl31OXqfejEE5srSajzBXxAj
+         M0v+s5IF7+xTY9nHeEO0Q8uJrlrHdcRLC67Gw=
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, jnelson-kernel-bugzilla@jamponi.net,
-       Pavel Machek <pavel@ucw.cz>, stable@kernel.org
-Subject: Re: [PATCH 1/1] NBD: fix I/O hang on disconnected nbds
-References: <4990743F.1070409@steeleye.com> <20090210133537.23b1779a.akpm@linux-foundation.org>
-In-Reply-To: <20090210133537.23b1779a.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <f73f7ab80902101311w30d5aecet6dd7c2123a671480@mail.gmail.com>
+References: <56e1b5710902040628w5ceb36f5kdb1f433087355f80@mail.gmail.com>
+	 <20090204221451.GA27254@uranus.ravnborg.org>
+	 <adavdrplty2.fsf@cisco.com> <498A295A.4090008@gmail.com>
+	 <adaskmtjsnn.fsf@cisco.com>
+	 <56e1b5710902050026s5a8fd48fhf4a65c05a533dbc3@mail.gmail.com>
+	 <f73f7ab80902101311w30d5aecet6dd7c2123a671480@mail.gmail.com>
+Date: Tue, 10 Feb 2009 22:56:32 +0100
+Message-ID: <56e1b5710902101356h56140a5r12be50439b2ce10f@mail.gmail.com>
+Subject: Re: [PATCH] Kbuild: Disable the -Wformat-security gcc flag
+From: Floris Kraak <randakar@gmail.com>
+To: Kyle Moffett <kyle@moffetthome.net>
+Cc: Roland Dreier <rdreier@cisco.com>, Robert Hancock <hancockrwd@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Trivial Patch Monkey <trivial@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Feb 2009 21:53:33.0983 (UTC) FILETIME=[04F8AAF0:01C98BCA]
-X-Spam: [F=0.2000000000; S=0.200(2009020301)]
-X-MAIL-FROM: <paul.clements@steeleye.com>
-X-SOURCE-IP: [207.43.68.209]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 09 Feb 2009 13:21:51 -0500
-> Paul Clements <paul.clements@steeleye.com> wrote:
+On Tue, Feb 10, 2009 at 10:11 PM, Kyle Moffett <kyle@moffetthome.net> wrote:
+> On Thu, Feb 5, 2009 at 3:26 AM, Floris Kraak <randakar@gmail.com> wrote:
+>> There are probably some real bugs in there. On the other hand there is
+>> some overhead to fixing the warnings. Kernel text size increase,
+>> possibly some CPU overhead from parsing the format string. Hopefully
+>> none of these calls are in really hot code paths ;-)
+>
+> Actually, I would really suspect that CPU time would *decrease* for
+> most of these, because instead of groveling through the whole argument
+> string looking for '%' symbols we would do a single "%s" lookup
+> followed by a basic strncpy(dmesg_buffer + offset, arg,
+> dmesg_buffer_size - offset);
+>
 
->> This problem was introduced by the new request handling thread code
->> ("NBD: allow nbd to be used locally", 3/2008), which entered into 
->> mainline around 2.6.25.
-> 
-> Seems that the patch applies to 2.6.26, but not to 2.6.25.
+True enough.
+Still increasing kernel text in a number of cases.
 
-OK, couldn't remember the exact timeframe.
+I've been thinking that in a lot of them (most of the 'banner' and
+'version' substitutions, basically) I can probably get away with
+moving the string argument into the function that uses it without
+losing the __initdata section advantage - it just gets moved from an
+__initdata segment into an __init declared function anyway.. or
+something that should be declared __init at any rate since what the
+hell is it using __initdata segment data for otherwise?
 
->> The fix, which is fairly simple, is to restore the check for lo->sock
->> being NULL in do_nbd_request. This causes I/O to an uninitialized nbd to
->> immediately fail with an I/O error, as it did prior to the introduction 
->> of this bug.
-> 
-> I marked this as needing backporting into 2.6.26.x, 2.6.27.x and
-> 2.6.28.x.  OK?
+Unless some expert on these section markers can dispute that line of
+reasoning, anyway ;-)
+It means redoing most - possibly all - of the trivial patch though.
 
-Yes, that would be a good idea.
+Getting rid if a few warnings most people don't even get is more work
+than I thought. And to think I was considering looking into other
+types of warnings as well ..
+I should consider it a nice exercise in learning kernel development
+practices I guess ..
 
-Thanks,
-Paul
+Regards,
+Floris
+---
+"They that give up essential liberty to obtain temporary safety,
+deserve neither liberty nor safety."
+  -- Ben Franklin
 
-
+"The course of history shows that as a government grows, liberty
+decreases."
+  -- Thomas Jefferson
