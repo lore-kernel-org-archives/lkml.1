@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbZBJClA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754620AbZBJCmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754195AbZBJClA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 21:41:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751080AbZBJCkx
+	id S1754620AbZBJCmL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 21:42:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750735AbZBJCl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 21:40:53 -0500
-Received: from hera.kernel.org ([140.211.167.34]:50003 "EHLO hera.kernel.org"
+	Mon, 9 Feb 2009 21:41:59 -0500
+Received: from vena.lwn.net ([206.168.112.25]:56643 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750696AbZBJCkw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 21:40:52 -0500
-Message-ID: <4990E90D.30005@kernel.org>
-Date: Mon, 09 Feb 2009 18:40:13 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: "Morten P.D. Stevens" <mstevens@win-professional.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: warning in arch/x86/kernel/cpu/mtrr/generic.c:400 with	2.6.29-rc3
- on IBM x3400
-References: <B4ED8DE8E195E84A872496A085BC07822F18@exchange01.corp.win-professional.com> <B4ED8DE8E195E84A872496A085BC07822F1D@exchange01.corp.win-professional.com> <20090209234528.GA862@elte.hu>
-In-Reply-To: <20090209234528.GA862@elte.hu>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1750696AbZBJCl7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 21:41:59 -0500
+Date: Mon, 9 Feb 2009 19:41:56 -0700
+From: Jonathan Corbet <corbet@lwn.net>
+To: Christoph Hellwig <hch@lst.de>
+Cc: linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       David Miller <davem@davemloft.net>, Christoph Hellwig <hch@lst.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Matt Mackall <mpm@selenic.com>
+Subject: Re: [PATCH 3/4] Move FASYNC bit handling to f_op->fasync()
+Message-ID: <20090209194156.1f6a60b0@bike.lwn.net>
+In-Reply-To: <20090208090550.GC18521@lst.de>
+References: <1234037217-16124-1-git-send-email-corbet@lwn.net>
+	<1234037217-16124-4-git-send-email-corbet@lwn.net>
+	<20090208090550.GC18521@lst.de>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.3; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Morten P.D. Stevens <mstevens@win-professional.com> wrote:
-> 
->> Hi,
->>
->> Update:
->>
->> the same issue with a linux 2.6.28.4 kernel.
->>
->> [    0.000000] ------------[ cut here ]------------
->> [    0.000000] WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:404 generic_get_mtrr+0xdf/0x119()
->> [    0.000000] mtrr: your BIOS has set up an incorrect mask, fixing it up.
-> 
-> buggy BIOS most likely. Had the kernel not fixed up the MTRRs you'd have
-> a very slow and unhappy system now.
+On Sun, 8 Feb 2009 10:05:50 +0100
+Christoph Hellwig <hch@lst.de> wrote:
 
-please try:
-diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
-index 0c0a455..7a359ce 100644
---- a/arch/x86/kernel/cpu/mtrr/generic.c
-+++ b/arch/x86/kernel/cpu/mtrr/generic.c
-@@ -397,7 +397,8 @@ static void generic_get_mtrr(unsigned int reg, unsigned long *base,
- 		tmp |= ~((1<<(hi - 1)) - 1);
- 
- 		if (tmp != mask_lo) {
--			WARN_ONCE(1, KERN_INFO "mtrr: your BIOS has set up an incorrect mask, fixing it up.\n");
-+			printk(KERN_INFO "mtrr: BIOS set mask_lo: %x should be %x, fixing it up\n", mask_lo, tmp);
-+			WARN_ONCE(1, KERN_INFO "mtrr: your BIOS has set up an incorrect mask.\n");
- 			mask_lo = tmp;
- 		}
- 	}
+> > +	/* Maintaining the FASYNC bit is our job now */  
+> 
+> Not sure this comment is a good idea.  All comments of the style
+> something has changes and is this now get stale really soon.  If you
+> want to document that change in more details it should probably go
+> into Documentation/filesystems/Locking near the fasync part.
+
+Good point.  I've removed the comment and updated the doc file instead.
+
+Thanks,
+
+jon
