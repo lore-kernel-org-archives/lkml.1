@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758508AbZBJTS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758767AbZBJTUE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758508AbZBJTS0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 14:18:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755942AbZBJTEO
+	id S1758767AbZBJTUE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 14:20:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755518AbZBJTEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 14:04:14 -0500
+	Tue, 10 Feb 2009 14:04:20 -0500
 Received: from kroah.org ([198.145.64.141]:54111 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755928AbZBJTEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 14:04:12 -0500
-Date: Tue, 10 Feb 2009 11:01:17 -0800
+	id S1755961AbZBJTES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 14:04:18 -0500
+Date: Tue, 10 Feb 2009 11:01:27 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Hugh Dickins <hugh@veritas.com>
-Subject: [patch 41/53] mm: fix error case in mlock downgrade reversion
-Message-ID: <20090210190117.GP14308@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Dan Williams <dcbw@redhat.com>
+Subject: [patch 46/53] Revert USB: option: add Pantech cards
+Message-ID: <20090210190127.GU14308@kroah.com>
 References: <20090210185337.000769713@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mm-fix-error-case-in-mlock-downgrade-reversion.patch"
+Content-Disposition: inline; filename="revert-usb-option-add-pantech-cards.patch"
 In-Reply-To: <20090210185924.GA14308@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,37 +38,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Hugh Dickins <hugh@veritas.com>
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-commit d5b562330ec766292a3ac54ae5e0673610bd5b3d upstream.
+commit 6b40c0057a7935bcf63a38a924094c7e61d4731f upstream.
 
-Commit 27421e211a39784694b597dbf35848b88363c248, Manually revert
-"mlock: downgrade mmap sem while populating mlocked regions", has
-introduced its own regression: __mlock_vma_pages_range() may report
-an error (for example, -EFAULT from trying to lock down pages from
-beyond EOF), but mlock_vma_pages_range() must hide that from its
-callers as before.
+Revert 8b6346ec899713a90890c9e832f7eff91ea73504 as these devices really
+work just fine with the cdc-acm driver, as they follow the spec
+properly.
 
-Reported-by: Sami Farin <safari-kernel@safari.iki.fi>
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Thanks to Chuck Ebbert for pointing out the problem here.
+
+Cc: Chuck Ebbert <cebbert@redhat.com>
+Cc: Dan Williams <dcbw@redhat.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/mlock.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/usb/serial/option.c |    9 ---------
+ 1 file changed, 9 deletions(-)
 
---- a/mm/mlock.c
-+++ b/mm/mlock.c
-@@ -310,7 +310,10 @@ long mlock_vma_pages_range(struct vm_are
- 			is_vm_hugetlb_page(vma) ||
- 			vma == get_gate_vma(current))) {
+--- a/drivers/usb/serial/option.c
++++ b/drivers/usb/serial/option.c
+@@ -267,12 +267,6 @@ static int  option_send_setup(struct tty
+ #define ERICSSON_VENDOR_ID			0x0bdb
+ #define ERICSSON_PRODUCT_F3507G			0x1900
  
--		return __mlock_vma_pages_range(vma, start, end, 1);
-+		__mlock_vma_pages_range(vma, start, end, 1);
-+
-+		/* Hide errors from mmap() and other callers */
-+		return 0;
- 	}
- 
- 	/*
+-/* Pantech products */
+-#define PANTECH_VENDOR_ID			0x106c
+-#define PANTECH_PRODUCT_PC5740			0x3701
+-#define PANTECH_PRODUCT_PC5750			0x3702  /* PX-500 */
+-#define PANTECH_PRODUCT_UM150			0x3711
+-
+ static struct usb_device_id option_ids[] = {
+ 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_COLT) },
+ 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_RICOLA) },
+@@ -476,9 +470,6 @@ static struct usb_device_id option_ids[]
+ 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_MF628) },
+ 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_CDMA_TECH) },
+ 	{ USB_DEVICE(ERICSSON_VENDOR_ID, ERICSSON_PRODUCT_F3507G) },
+-	{ USB_DEVICE(PANTECH_VENDOR_ID, PANTECH_PRODUCT_PC5740) },
+-	{ USB_DEVICE(PANTECH_VENDOR_ID, PANTECH_PRODUCT_PC5750) },
+-	{ USB_DEVICE(PANTECH_VENDOR_ID, PANTECH_PRODUCT_UM150) },
+ 	{ } /* Terminating entry */
+ };
+ MODULE_DEVICE_TABLE(usb, option_ids);
 
