@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbZBJDnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754404AbZBJDqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754195AbZBJDnP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 22:43:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbZBJDmz
+	id S1754404AbZBJDqU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 22:46:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbZBJDqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 22:42:55 -0500
-Received: from cantor.suse.de ([195.135.220.2]:39913 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752183AbZBJDmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 22:42:54 -0500
-Date: Tue, 10 Feb 2009 04:42:50 +0100
-From: Karsten Keil <kkeil@suse.de>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Michal Hocko <mhocko@suse.cz>, "David S. Miller" <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, richard kennedy <richard@rsk.demon.co.uk>,
-       Dan Williams <dan.j.williams@intel.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>, dwmw2@infradead.org,
-       Scott Wood <scottwood@freescale.com>, netdev@vger.kernel.org,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [RFC] Suspicious bug in module refcounting
-Message-ID: <20090210034250.GA9938@pingi.kke.suse.de>
-References: <20090203134721.GA11069@pingi.kke.suse.de> <200902041418.09630.rusty@rustcorp.com.au> <20090209151830.GC6018@dhcp35.suse.cz> <200902101345.08580.rusty@rustcorp.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200902101345.08580.rusty@rustcorp.com.au>
-Organization: SuSE Linux AG
-X-Operating-System: Linux 2.6.16.60-0.34-smp x86_64
-User-Agent: Mutt/1.5.9i
+	Mon, 9 Feb 2009 22:46:12 -0500
+Received: from mail1.sea5.speakeasy.net ([69.17.117.3]:52499 "EHLO
+	mail1.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752785AbZBJDqM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 22:46:12 -0500
+X-Greylist: delayed 441 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Feb 2009 22:46:12 EST
+From: Frank Mori Hess <fmhess@speakeasy.net>
+Reply-To: fmhess@users.sourceforge.net
+To: Shawn Bohrer <shawn.bohrer@ni.com>
+Subject: Re: [staging] High level Comedi feedback
+Date: Mon, 9 Feb 2009 22:38:44 -0500
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de, abbotti@mev.co.uk,
+       ds@schleef.org
+References: <20090209180144.GD18058@bohrers.amer.corp.natinst.com>
+In-Reply-To: <20090209180144.GD18058@bohrers.amer.corp.natinst.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1325374.vydHzUg8db";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200902092238.49109.fmhess@speakeasy.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 01:45:07PM +1030, Rusty Russell wrote:
-> On Tuesday 10 February 2009 01:48:31 Michal Hocko wrote:
-> > Based on this change, would it make sense to update sys_accept to change
-> > __module_get to try_module_get like in the following patch?
-> 
-> I don't think so:
-> 
-> >  	/*
-> > -	 * We don't need try_module_get here, as the listening socket (sock)
-> > -	 * has the protocol module (sock->ops->owner) held.
-> > +	 * Socket's owner cannot be in unloading path because there
-> > +	 * must be at least one listening reference
-> >  	 */
-> > -	__module_get(newsock->ops->owner);
-> > +	if (unlikely(!try_module_get(newsock->ops->owner)))
-> > +		BUG();
-> 
-> rmmod --wait can make try_module_get fail even if the reference count isn't
-> zero.  But in this case, we should return an error from the accept call;
-> presumably the admin really doesn't want us to keep using the module...
-> 
+--nextPart1325374.vydHzUg8db
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I was thinking about this for a while too, but I did not find a valid
-error value for this case, the current accept syscall API only allow few
-error codes and I think we should not break this.
-Maybe -ECONNABORTED  could be used but it doesn't fit 100% and applications
-may interpret this in a wrong way.
-If the admin decide to remove the module, he should also stop the services
-needing this resource. In this case  the effect of __module_get(newsock->ops->owner);
-is ok, if the service is still in use, the module will not be removed and
-still does the expected work, if all sockets are closed the module refcount
-will reach zero and the module will go away.
+On Monday 09 February 2009 13:01, Shawn Bohrer wrote:
+> 6. COMEDI doesn't yet support configuring hardware buffer sizes for deep
+> on-board FIFOs.
 
--- 
-Karsten Keil
-SuSE Labs
+There is INSN_CONFIG_BLOCK_SIZE, which a couple drivers use to configure=20
+their hardware fifo size.
+
+By the way, I'm not subscribed to linux-kernel.  Comedi does have its own=20
+mailing list, maybe this kind of discussion would be easier on a more=20
+specific, lower traffic list?
+
+--nextPart1325374.vydHzUg8db
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBJkPbJ5vihyNWuA4URAqmaAJ9YzOjWAg449sCbfcw2I5FIC8aHCQCfUuY0
+z4yLPymuuYl1I1y5UsCl4pM=
+=1p2p
+-----END PGP SIGNATURE-----
+
+--nextPart1325374.vydHzUg8db--
