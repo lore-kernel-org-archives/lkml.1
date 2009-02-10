@@ -1,96 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbZBJUWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755942AbZBJUYN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755849AbZBJUWV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 15:22:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753896AbZBJUWM
+	id S1755942AbZBJUYN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 15:24:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754490AbZBJUX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 15:22:12 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:26102 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753436AbZBJUWL (ORCPT
+	Tue, 10 Feb 2009 15:23:57 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39603 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753896AbZBJUX5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 15:22:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Rxq1IGuFmyaY5fvbiapEf7r/3CFAv49I5jpbJUTgagXlF85/pcTTKvnrxltYuJ0PYN
-         syfSrCNR4skx1Xh8g9dOq1ByzjV1l9We+KAt0A9ieg+341XfiwkzXIcWvMpAsqM+IH0E
-         /6iM+mwqpl3gc0DLUqHs+CNVZXuw9lCk0/aic=
-Subject: Re: [PATCH, for 2.6.29] ptrace: fix the usage of ptrace_fork()
-From: Markus Metzger <markus.t.metzger@googlemail.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: "Metzger, Markus T" <markus.t.metzger@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Markus Metzger <markus.t.metzger@googlemail.com>
-In-Reply-To: <20090210184014.GA30545@redhat.com>
-References: <20090209010233.GA26444@redhat.com>
-	 <20090209012824.GA26461@redhat.com>
-	 <928CFBE8E7CB0040959E56B4EA41A77E4A1E7C8B@irsmsx504.ger.corp.intel.com>
-	 <20090209193625.GA4808@redhat.com>
-	 <928CFBE8E7CB0040959E56B4EA41A77E4A1E82FE@irsmsx504.ger.corp.intel.com>
-	 <20090210184014.GA30545@redhat.com>
-Content-Type: text/plain
-Date: Tue, 10 Feb 2009 21:21:59 +0100
-Message-Id: <1234297319.6112.23.camel@raistlin>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Feb 2009 15:23:57 -0500
+Date: Tue, 10 Feb 2009 21:23:47 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+       Mimi Zohar <zohar@us.ibm.com>
+Subject: Re: [PATCH 2/7] integrity: IMA as an integrity service provider
+Message-ID: <20090210202347.GA1382@ucw.cz>
+References: <cover.1233750611.git.zohar@linux.vnet.ibm.com> <ce9dbebd2ec91ddaf302f5d8146b01311b6b1bd2.1233750615.git.zohar@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ce9dbebd2ec91ddaf302f5d8146b01311b6b1bd2.1233750615.git.zohar@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-10 at 19:40 +0100, Oleg Nesterov wrote:
+Hi!
 
-> > 2. there is a race between a thread detaching
-> > and another thread releasing the same task.
+> --- /dev/null
+> +++ b/security/integrity/ima/Kconfig
+> @@ -0,0 +1,49 @@
+> +# IBM Integrity Measurement Architecture
+> +#
+> +config IMA
+> +	bool "Integrity Measurement Architecture(IMA)"
+> +	depends on ACPI
 
-I think I now see the problem. Ptrace uses the tasklist_lock to protect
-against __ptrace_unlink() races.
+Ugh?
 
-I could either introduce a separate lock to protect bts buffer
-deallocation, or I put the kfree part under the tasklist_lock,
-as you suggest below.
+> +	select SECURITYFS
+> +	select CRYPTO
+> +	select CRYPTO_HMAC
+> +	select CRYPTO_MD5
+> +	select CRYPTO_SHA1
+> +	select TCG_TPM
+> +	select TCG_TIS
+> +	help
+> +	  The Trusted Computing Group(TCG) runtime Integrity
+> +	  Measurement Architecture(IMA) maintains a list of hash
+> +	  values of executables and other sensitive system files,
+> +	  as they are read or executed. If an attacker manages
+> +	  to change the contents of an important system file
+> +	  being measured, we can tell.
+> +
+> +	  If your system has a TPM chip, then IMA also maintains
+> +	  an aggregate integrity value over this list inside the
+> +	  TPM hardware, so that the TPM can prove to a third party
+> +	  whether or not critical system files have been modified.
 
+Sound like 'well use this so people with homegrown distros can't
+access our e-shop'...
 
+> +	  Read <http://www.usenix.org/events/sec04/tech/sailer.html>
+> +	  to learn more about IMA.
 
-> Perhaps, for 2.6.29, we can do something like the "patch" below?
-> 
-> (btw, do you agree with the change in copy_process() I sent? )
+Maybe some basic docs should go into Documentation?
 
-Both patches look good to me.
+> +config IMA_MEASURE_PCR_IDX
+> +	int
+> +	depends on IMA
+> +	range 8 14
+> +	default 10
+> +	help
+> +	  IMA_MEASURE_PCR_IDX determines the TPM PCR register index
+> +	  that IMA uses to maintain the integrity aggregate of the
+> +	  measurement list.  If unsure, use the default 10.
 
-
-> --- a/arch/x86/kernel/ptrace.c
-> +++ b/arch/x86/kernel/ptrace.c
-> @@ -810,11 +810,15 @@ static void ptrace_bts_untrace(struct ta
->  
->  static void ptrace_bts_detach(struct task_struct *child)
->  {
-> +	// We can race with de_thread/do_wait which
-> +	// can do ptrace_bts_untrace() before us
->  	if (unlikely(child->bts)) {
-> -		ds_release_bts(child->bts);
-> -		child->bts = NULL;
-> -
-> -		ptrace_bts_free_buffer(child);
-> +		// This all will be freed by ptrace_bts_untrace()
-> +		// later, but we should update ->mm
-> +		down_write(->mmap_sem);
-> +		mm->total_vm  -= bts_size;
-> +		mm->locked_vm -= bts_size);
-> +		up_write(->mmap_sem);
->  	}
->  }
->  #else
-> 
-
-
-You already sent out the first one. I don't have access to any
-test machine from home. I could send the patch tomorrow (evening).
-
-thanks and regards,
-markus.
-
+This is quite ugly. How do you expect enduser to get this right?
+How do you expect distro to get it right for all users?
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
