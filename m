@@ -1,76 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbZBJVsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757032AbZBJVtN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756883AbZBJVsp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 16:48:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755648AbZBJVsf
+	id S1757032AbZBJVtN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 16:49:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755573AbZBJVs4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 16:48:35 -0500
-Received: from mx1.suse.de ([195.135.220.2]:42933 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754688AbZBJVse (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 16:48:34 -0500
-Date: Tue, 10 Feb 2009 12:57:52 -0800
-From: Greg KH <gregkh@suse.de>
-To: Pavel Machek <pavel@suse.cz>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Corentin Chary <corentincj@iksaif.net>,
-       Len Brown <len.brown@intel.com>, Thomas Renninger <trenn@suse.de>
-Subject: Re: [patch 33/41] asus-laptop: Fix the led behavior with value > 1
-Message-ID: <20090210205752.GA3044@suse.de>
-References: <20090204184029.881610776@mini.kroah.org> <20090204184654.GH25246@kroah.com> <20090210202429.GC1382@ucw.cz>
+	Tue, 10 Feb 2009 16:48:56 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:57455 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754888AbZBJVsz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 16:48:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=odLPZeJw5lJwwBKN3ReXfpwmCaNzzuqkrF/3vGZYFdObAm4rlb8E17IcGe0f5Ori8d
+         yzVyTqunTned7qCRyU6TFW/R60lm8pySz7aJHAVy/VJulQn1OJCMZFiH6ryoR8N2Cbl9
+         XwSafNS8tLpTk1toALnxQlTflzcS0Eg9FJmgQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090210202429.GC1382@ucw.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20090210202405.GB1382@ucw.cz>
+References: <56e1b5710902040628w5ceb36f5kdb1f433087355f80@mail.gmail.com>
+	 <20090204221451.GA27254@uranus.ravnborg.org>
+	 <adavdrplty2.fsf@cisco.com> <20090210202405.GB1382@ucw.cz>
+Date: Tue, 10 Feb 2009 22:48:52 +0100
+Message-ID: <56e1b5710902101348h5ae7b98bk97a69b2718f22bb1@mail.gmail.com>
+Subject: Re: [PATCH] Kbuild: Disable the -Wformat-security gcc flag
+From: Floris Kraak <randakar@gmail.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Roland Dreier <rdreier@cisco.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Trivial Patch Monkey <trivial@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 09:24:29PM +0100, Pavel Machek wrote:
-> On Wed 2009-02-04 10:46:54, Greg KH wrote:
-> > 2.6.27-stable review patch.  If anyone has any objections, please let us know.
-> > 
-> > ------------------
-> > 
-> > From: Corentin Chary <corentincj@iksaif.net>
-> > 
-> > commit e3deda9c87ac5eef2b5d18cd0b5511370979ca26 upstream.
-> > 
-> > Fix http://bugzilla.kernel.org/show_bug.cgi?id=11613 .
-> > 
-> > Signed-off-by: Corentin Chary <corentincj@iksaif.net>
-> > Signed-off-by: Len Brown <len.brown@intel.com>
-> > Cc: Thomas Renninger <trenn@suse.de>
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > ---
-> >  drivers/misc/asus-laptop.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > --- a/drivers/misc/asus-laptop.c
-> > +++ b/drivers/misc/asus-laptop.c
-> > @@ -351,7 +351,7 @@ static void write_status(acpi_handle han
-> >  	static void object##_led_set(struct led_classdev *led_cdev,	\
-> >  				     enum led_brightness value)		\
-> >  	{								\
-> > -		object##_led_wk = value;				\
-> > +		object##_led_wk = (value > 0) ? 1 : 0;			\
-> 
-> "= !!value" is standard  way to do that.... for unsigned value.
+On Tue, Feb 10, 2009 at 9:24 PM, Pavel Machek <pavel@suse.cz> wrote:
+> On Wed 2009-02-04 14:26:45, Roland Dreier wrote:
+>>  > Before judging on this patch could you please post what warning it
+>>  > triggers and one or a few patches to fix some of them.
+>>
+>> The warnings are things like:
+>>
+>>     init/main.c: In function 'start_kernel':
+>>     init/main.c:557: warning: format not a string literal and no format arguments
+>>
+>
+> Would it be possible to declare linux_banner const or something?
+>
+>> diff --git a/init/main.c b/init/main.c
+>> index 8442094..78fc0d8 100644
+>> --- a/init/main.c
+>> +++ b/init/main.c
+>> @@ -554,7 +554,7 @@ asmlinkage void __init start_kernel(void)
+>>       boot_cpu_init();
+>>       page_address_init();
+>>       printk(KERN_NOTICE);
+>> -     printk(linux_banner);
+>> +     printk("%s", linux_banner);
+>
+> Actually
+>         printk(KERN_NOTICE "%s", linux_banner);
+>
+> is a better fix that will save some code, too.
+>
 
-No dispute here, but that's what is upstream :)
+Noted. Adding that to the patch tomorrow.
 
-thanks,
+Regards,
+Floris
+---
+"They that give up essential liberty to obtain temporary safety,
+deserve neither liberty nor safety."
+  -- Ben Franklin
 
-greg k-h
+"The course of history shows that as a government grows, liberty
+decreases."
+  -- Thomas Jefferson
