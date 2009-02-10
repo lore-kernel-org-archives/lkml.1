@@ -1,105 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754341AbZBJLgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbZBJLhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754341AbZBJLgA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 06:36:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbZBJLfv
+	id S1754574AbZBJLhm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 06:37:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750793AbZBJLhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 06:35:51 -0500
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:49395 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752636AbZBJLfu (ORCPT
+	Tue, 10 Feb 2009 06:37:33 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:4085 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750790AbZBJLhc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 06:35:50 -0500
-Message-ID: <49916691.9080807@in.ibm.com>
-Date: Tue, 10 Feb 2009 17:05:45 +0530
-From: Chandru <chandru@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Tue, 10 Feb 2009 06:37:32 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=SBB3WCDOK88tUjnZNf5041pzm58uq/+Dp+JOzekpubS0ORBDg9kSpCD/DhcP7NbfY
+	VSHPR4rL5CLttC579XhiA==
 MIME-Version: 1.0
-To: Johannes Weiner <hannes@cmpxchg.org>
-CC: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
-       benh@kernel.crashing.org, chandru@linux.vnet.ibm.com, paulus@samba.org,
-       akpm@linux-foundation.org
-Subject: Re: + powerpc-fix-code-for-reserved-memory-spanning-across-nodes.patch
- added to -mm tree
-References: <200812250806.mBP86LPQ018399@imap1.linux-foundation.org> <20090208204725.GA5514@cmpxchg.org>
-In-Reply-To: <20090208204725.GA5514@cmpxchg.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <200902091502.27056.nickpiggin@yahoo.com.au>
+References: <4976D77C.3020107@cn.fujitsu.com> <4989606F.9030804@cn.fujitsu.com>
+	 <6599ad830902061119t2d82c782pb6442f9a35fbb01c@mail.gmail.com>
+	 <200902091502.27056.nickpiggin@yahoo.com.au>
+Date: Tue, 10 Feb 2009 03:37:28 -0800
+Message-ID: <6599ad830902100337mbde885fr89e5942f1016a1c@mail.gmail.com>
+Subject: Re: [PATCH] cpuset: fix allocating page cache/slab object on the 
+	unallowed node when memory spread is set
+From: Paul Menage <menage@google.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: miaox@cn.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, cl@linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Weiner wrote:
-> ---
-> From: Johannes Weiner <hannes@cmpxchg.org>
-> Subject: powerpc: fix rounding error in teaching bootmem about LMB
+On Sun, Feb 8, 2009 at 8:02 PM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 >
-> If the reserved LMB does not exactly span complete pages, treating
-> (start + size) >> PAGE_SHIFT as the ending PFN is an off by one error.
->
-> The subsequent check for whether the region needs to be trimmed to fit
-> the underlying node can now fail if the range exceeds the node by 1 to
-> PAGE_SIZE - 1 bytes.  The excessive range is then passed to bootmem
-> which BUG()s out on it correctly.
->
-> Fix up the rounding to include all pages the LMB spans, even partial
-> ones.
->
-> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> ---
+> Is it a problem if mems_allowed can get sampled in an unsafe way?
 
-Hello Hannes,
+It could cause an OOM to be incorrectly triggered if the task didn't
+see all the mems that it was meant to have access to. (In the extreme
+case, it could see no mems at all).
 
-Dave Hansen gave a fix for this problem which looks similar
-to the changes that you have made here , but has an additional
-one line change too. Here is the patch ( probably may not apply
-cleanly to the latest kernel ) . I don' t know if Dave
-submitted this patch to lkml for it's inclusion into the
-latest tree. Thanks for looking into this issue. We may also have
-to remove the 
-powerpc-fix-code-for-reserved-memory-spanning-across-nodes.patch
-from the -mm tree.
+> It will happen only quite rarely. This code seems to be far simpler
+> and more robust than the current fragile scheme, so it would be
+> nice to use it.
 
-Thanks,
-Chandru
+Agreed, the existing task->mems_allowed / cpuset_update_memory_state()
+code is a bit unwieldy. It's pretty much all inherited from the
+original cpusets code.
 
-=================
-Snippet from Dave's patch without change log
+A nicer way to do it might be:
 
----
+- get rid of task->mems_allowed entirely
 
- linux-2.6.git-dave/arch/powerpc/mm/numa.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+- have cpuset->mems_allowed be a pointer to an immutable RCU-protected
+nodemask (so updating the nodemask for a cpuset would always replace
+it with a fresh one and RCU-free the old one)
 
-diff -puN arch/powerpc/mm/numa.c~reserve-over-fix arch/powerpc/mm/numa.c
---- linux-2.6.git/arch/powerpc/mm/numa.c~reserve-over-fix	2009-01-26 10:17:20.000000000 -0800
-+++ linux-2.6.git-dave/arch/powerpc/mm/numa.c	2009-01-26 10:17:30.000000000 -0800
-@@ -19,6 +19,7 @@
- #include <linux/notifier.h>
- #include <linux/lmb.h>
- #include <linux/of.h>
-+#include <linux/pfn.h>
- #include <asm/sparsemem.h>
- #include <asm/prom.h>
- #include <asm/system.h>
-@@ -882,7 +883,7 @@ static void mark_reserved_regions_for_ni
- 		unsigned long physbase = lmb.reserved.region[i].base;
- 		unsigned long size = lmb.reserved.region[i].size;
- 		unsigned long start_pfn = physbase >> PAGE_SHIFT;
--		unsigned long end_pfn = ((physbase + size) >> PAGE_SHIFT);
-+		unsigned long end_pfn = PFN_UP(physbase + size);
- 		struct node_active_region node_ar;
- 		unsigned long node_end_pfn = node->node_start_pfn +
- 					     node->node_spanned_pages;
-@@ -908,7 +909,7 @@ static void mark_reserved_regions_for_ni
- 			 */
- 			if (end_pfn > node_ar.end_pfn)
- 				reserve_size = (node_ar.end_pfn << PAGE_SHIFT)
--					- (start_pfn << PAGE_SHIFT);
-+					- physbase;
- 			/*
- 			 * Only worry about *this* node, others may not
- 			 * yet have valid NODE_DATA().
-diff -puN arch/powerpc/kernel/prom_init.c~reserve-over-fix arch/powerpc/kernel/prom_init.c
+- make cpuset_zone_allowed_*() use rcu_read_lock() and just check
+*(task_cs(current)->mems_allowed) rather than current->mems_allowed
 
+- ensure that get_page_from_freelist() is also RCU-safe (right now I
+think it's not since cpuset_zone_allowed_softwall() can sleep, but I
+think cgroups/cpusets is sufficiently RCU-safe now that we could quite
+likely remove the mutex lock from cpuset_zone_allowed_*()
 
+- add an rcu_read_lock() in hugetlb.c:cpuset_mems_nr()
+
+- figure out where the mempolicy updates currently done in
+cpuset_update_task_memory_state() need to occur - this is part of the
+code that I'm pretty fuzzy on. (Maybe we can just copy the bits from
+Miao's patch for this?)
+
+Anything else?
+
+Paul
