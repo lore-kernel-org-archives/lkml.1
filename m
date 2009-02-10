@@ -1,82 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756222AbZBJVsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbZBJVsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756222AbZBJVsZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 16:48:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754688AbZBJVsR
+	id S1756883AbZBJVsp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 16:48:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755648AbZBJVsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 16:48:17 -0500
-Received: from mail.fieldses.org ([141.211.133.115]:46563 "EHLO
-	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753271AbZBJVsQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 16:48:16 -0500
-Date: Tue, 10 Feb 2009 16:48:22 -0500
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk
-Subject: Re: [RFC PATCH 0/2] Add VFS support for looking up paths on remote
-	servers using a temporary mount namespace
-Message-ID: <20090210214822.GF32393@fieldses.org>
-References: <20090209184534.23040.82605.stgit@heimdal.trondhjem.org> <20090210155820.GB29075@fieldses.org> <1234290708.7423.72.camel@heimdal.trondhjem.org>
+	Tue, 10 Feb 2009 16:48:35 -0500
+Received: from mx1.suse.de ([195.135.220.2]:42933 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754688AbZBJVse (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 16:48:34 -0500
+Date: Tue, 10 Feb 2009 12:57:52 -0800
+From: Greg KH <gregkh@suse.de>
+To: Pavel Machek <pavel@suse.cz>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Corentin Chary <corentincj@iksaif.net>,
+       Len Brown <len.brown@intel.com>, Thomas Renninger <trenn@suse.de>
+Subject: Re: [patch 33/41] asus-laptop: Fix the led behavior with value > 1
+Message-ID: <20090210205752.GA3044@suse.de>
+References: <20090204184029.881610776@mini.kroah.org> <20090204184654.GH25246@kroah.com> <20090210202429.GC1382@ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1234290708.7423.72.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+In-Reply-To: <20090210202429.GC1382@ucw.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 01:31:48PM -0500, Trond Myklebust wrote:
-> On Tue, 2009-02-10 at 10:58 -0500, J. Bruce Fields wrote:
-> > On Mon, Feb 09, 2009 at 01:45:34PM -0500, Trond Myklebust wrote:
-> > > The following two patches attempt to improve NFSv4's ability to look up
-> > > the mount path on a remote server.
-> > > 
-> > > The first patch adds VFS support for walking the remote path, using a
-> > > temporary mount namespace to represent the server's namespace, so that
-> > > symlinks
+On Tue, Feb 10, 2009 at 09:24:29PM +0100, Pavel Machek wrote:
+> On Wed 2009-02-04 10:46:54, Greg KH wrote:
+> > 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 > > 
-> > I'm a bit confused about the symlink case--I take it you're assuming
-> > that symlinks in the pseudofs should be interpreted as relative to the
-> > server's namespace (in keeping with traditional implementations of
-> > server exports), while symlinks elsewhere should continue to be
-> > intepreted relative to the client's namespace.
-
-Maybe I shouldn't have said "symlinks in the pseudofs", as that's not
-entirely well defined--a complicated namespace may transition between
-"pseudofs" and "real" filesystems multiple times.  So it's really a
-statement about the client's mount behavior: symlinks found along the
-mount path will be interpreted one way, symlinks found elsewhere
-another.  Right?
-
-Though put that way it's harder to decide what to store in a symlink,
-since you can't necessarily control which paths a given client may
-decide to mount.
-
-> > Do the rfc's say anything about this?
+> > ------------------
+> > 
+> > From: Corentin Chary <corentincj@iksaif.net>
+> > 
+> > commit e3deda9c87ac5eef2b5d18cd0b5511370979ca26 upstream.
+> > 
+> > Fix http://bugzilla.kernel.org/show_bug.cgi?id=11613 .
+> > 
+> > Signed-off-by: Corentin Chary <corentincj@iksaif.net>
+> > Signed-off-by: Len Brown <len.brown@intel.com>
+> > Cc: Thomas Renninger <trenn@suse.de>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > 
+> > ---
+> >  drivers/misc/asus-laptop.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > --- a/drivers/misc/asus-laptop.c
+> > +++ b/drivers/misc/asus-laptop.c
+> > @@ -351,7 +351,7 @@ static void write_status(acpi_handle han
+> >  	static void object##_led_set(struct led_classdev *led_cdev,	\
+> >  				     enum led_brightness value)		\
+> >  	{								\
+> > -		object##_led_wk = value;				\
+> > +		object##_led_wk = (value > 0) ? 1 : 0;			\
 > 
-> No, the RFCs say nothing, but interpreting symlinks as being relative to
-> the server namespace would be consistent with the mount behaviour of
-> NFSv2/v3. It also makes me uncomfortable to have a remote mount path
-> that could refer back to the client's namespace: that would not be an
-> NFS mount, but a local bind mount...
+> "= !!value" is standard  way to do that.... for unsigned value.
 
-Some may be surprised to find that /mntsymlink/ and /mnt/symlink/ will
-be different after
+No dispute here, but that's what is upstream :)
 
-	mount file:/path/symlink/ /mntsymlink/
-	mount file:/path/	  /mnt/
+thanks,
 
-I see your point, though it might also be an argument for continuing to
-error out on symlinks.
-
-It could also be argued that if a given symlink is expected to be
-interpreted on the server side, then the server should just go ahead and
-do that for the client, rather than returning it as a symlink.
-
-Seems worth at least mentioning to the ietf group, as different behavior
-across different clients would be confusing.
-
---b.
+greg k-h
