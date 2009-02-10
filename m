@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755775AbZBJTJD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757187AbZBJTJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755775AbZBJTJD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 14:09:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbZBJTDl
+	id S1757187AbZBJTJq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 14:09:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbZBJTDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 14:03:41 -0500
-Received: from kroah.org ([198.145.64.141]:53751 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 14:03:46 -0500
+Received: from kroah.org ([198.145.64.141]:53781 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755403AbZBJTDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 14:03:40 -0500
-Date: Tue, 10 Feb 2009 11:00:09 -0800
+	id S1755463AbZBJTDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 14:03:42 -0500
+Date: Tue, 10 Feb 2009 11:00:13 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jarod Wilson <jarod@redhat.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [patch 15/53] firewire: sbp2: add workarounds for 2nd and 3rd
-	generation iPods
-Message-ID: <20090210190009.GP14308@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Karsten Keil <kkeil@suse.de>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [patch 17/53] module: remove over-zealous check in __module_get()
+Message-ID: <20090210190013.GR14308@kroah.com>
 References: <20090210185337.000769713@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="firewire-sbp2-add-workarounds-for-2nd-and-3rd-generation-ipods.patch"
+Content-Disposition: inline; filename="module-remove-over-zealous-check-in-__module_get.patch"
 In-Reply-To: <20090210185924.GA14308@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,59 +39,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+From: Rusty Russell <rusty@rustcorp.com.au>
 
-Commit c8c4707cf7ca8ff7dcc1653447e48cb3de0bf114 upstream.
+commit 7f9a50a5b89b87f8e754f59ae9968da28be618a5 upstream.
 
-According to https://bugs.launchpad.net/bugs/294391
-  - 3rd generation iPods need the "fix capacity" workaround after all
-    (apparently they crash after the last sector was accessed),
-  - 2nd generation iPods need the "128 kB maximum request size"
-    workaround.
+Impact: fix spurious BUG_ON() triggered under load
 
-Alas both iPod generations feature the same model ID in the config ROM,
-hence we can only define a shared quirks list entry for them.  Luckily
-the fix capacity workaround did not show a negative effect in Jarod's
-tests with 2nd gen. iPod.
+module_refcount() isn't reliable outside stop_machine(), as demonstrated
+by Karsten Keil <kkeil@suse.de>, networking can trigger it under load
+(an inc on one cpu and dec on another while module_refcount() is tallying
+ can give false results, for example).
 
-A side note:  Apple computers in target mode (or at least an x86 Mac
-mini) don't have firmware_version and model_id, hence none of the iPod
-quirks list entries is active for them.
+Almost noone should be using __module_get, but that's another issue.
 
-Tested-by: Jarod Wilson <jarod@redhat.com>
-Acked-by: Jarod Wilson <jarod@redhat.com>
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Karsten Keil <kkeil@suse.de>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/firewire/fw-sbp2.c |   16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ include/linux/module.h |    1 -
+ 1 file changed, 1 deletion(-)
 
---- a/drivers/firewire/fw-sbp2.c
-+++ b/drivers/firewire/fw-sbp2.c
-@@ -357,15 +357,17 @@ static const struct {
- 		.model			= ~0,
- 		.workarounds		= SBP2_WORKAROUND_128K_MAX_TRANS,
- 	},
--
- 	/*
--	 * There are iPods (2nd gen, 3rd gen) with model_id == 0, but
--	 * these iPods do not feature the read_capacity bug according
--	 * to one report.  Read_capacity behaviour as well as model_id
--	 * could change due to Apple-supplied firmware updates though.
-+	 * iPod 2nd generation: needs 128k max transfer size workaround
-+	 * iPod 3rd generation: needs fix capacity workaround
- 	 */
--
--	/* iPod 4th generation. */ {
-+	{
-+		.firmware_revision	= 0x0a2700,
-+		.model			= 0x000000,
-+		.workarounds		= SBP2_WORKAROUND_128K_MAX_TRANS |
-+					  SBP2_WORKAROUND_FIX_CAPACITY,
-+	},
-+	/* iPod 4th generation */ {
- 		.firmware_revision	= 0x0a2700,
- 		.model			= 0x000021,
- 		.workarounds		= SBP2_WORKAROUND_FIX_CAPACITY,
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -391,7 +391,6 @@ void symbol_put_addr(void *addr);
+ static inline void __module_get(struct module *module)
+ {
+ 	if (module) {
+-		BUG_ON(module_refcount(module) == 0);
+ 		local_inc(&module->ref[get_cpu()].count);
+ 		put_cpu();
+ 	}
 
