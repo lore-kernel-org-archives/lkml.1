@@ -1,41 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbZBJKtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbZBJKvG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754203AbZBJKtt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 05:49:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750904AbZBJKtk
+	id S1754504AbZBJKvG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 05:51:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbZBJKuy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 05:49:40 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50157 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750793AbZBJKtk (ORCPT
+	Tue, 10 Feb 2009 05:50:54 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41980 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751922AbZBJKux (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 05:49:40 -0500
+	Tue, 10 Feb 2009 05:50:53 -0500
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [CRED bug?] 2.6.29-rc3 don't survive on stress workload
-Cc: kosaki.motohiro@jp.fujitsu.com, Serge Hallyn <serue@us.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-In-Reply-To: <25349.1234262157@redhat.com>
-References: <20090210142443.629E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <25349.1234262157@redhat.com>
-Message-Id: <20090210194900.6FE3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: [PATCH] mm: remove zone->prev_prioriy
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090210104222.GB1740@cmpxchg.org>
+References: <20090210184055.6FCB.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090210104222.GB1740@cmpxchg.org>
+Message-Id: <20090210195002.6FE6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 X-Mailer: Becky! ver. 2.42 [ja]
-Date: Tue, 10 Feb 2009 19:49:37 +0900 (JST)
+Date: Tue, 10 Feb 2009 19:50:50 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> On Tue, Feb 10, 2009 at 06:42:30PM +0900, KOSAKI Motohiro wrote:
+> > 
+> > KAMEZAWA Hiroyuki sugessted to remove zone->prev_priority.
+> > it's because Split-LRU VM doesn't use this parameter at all.
+> > 
+> > 
+> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > ---
+> >  include/linux/memcontrol.h |   27 -------------------------
+> >  include/linux/mmzone.h     |   15 --------------
+> >  mm/memcontrol.c            |   31 -----------------------------
+> >  mm/page_alloc.c            |    2 -
+> >  mm/vmscan.c                |   48 ++-------------------------------------------
+> >  mm/vmstat.c                |    2 -
+> >  6 files changed, 3 insertions(+), 122 deletions(-)
 > 
-> > It paniced with following stack.
-> > Do you have any suggestions?
+> > Index: b/include/linux/memcontrol.h
+> > ===================================================================
+> > --- a/include/linux/memcontrol.h
+> > +++ b/include/linux/memcontrol.h
+> > @@ -88,14 +88,7 @@ extern void mem_cgroup_end_migration(str
+> >  /*
+> >   * For memory reclaim.
+> >   */
+> > -extern int mem_cgroup_calc_mapped_ratio(struct mem_cgroup *mem);
 > 
-> Are you running with CONFIG_DEBUG_SLAB=y?
+> This bit crept in from the next patch, I think.
 
-No. I try this tonight testing.
-thanks.
+Grr.
+I'll fix this soon.
+
+Thanks for carefully reviewing! 
+
 
 
