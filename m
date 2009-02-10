@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755077AbZBJPTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbZBJPZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755077AbZBJPTW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 10:19:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbZBJPTL
+	id S1754559AbZBJPZY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 10:25:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbZBJPZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 10:19:11 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:4839 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750841AbZBJPTJ (ORCPT
+	Tue, 10 Feb 2009 10:25:11 -0500
+Received: from el-out-1112.google.com ([209.85.162.180]:34639 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751724AbZBJPZK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 10:19:09 -0500
-Date: Tue, 10 Feb 2009 15:19:03 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: Kalle Jokiniemi <kalle.jokiniemi@digia.com>
-Cc: David Brownell <david-b@pacbell.net>, Liam Girdwood <lrg@slimlogic.co.uk>,
-       lkml <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org,
-       OMAP <linux-omap@vger.kernel.org>
-Subject: Re: [patch 2.6.29-rc3-git 2/2] USB: disable twl4030 USB regulators when cable unplugged
-Message-ID: <20090210151902.GA31365@sirena.org.uk>
-References: <200902081053.00255.david-b@pacbell.net> <1234271294.17391.12.camel@ubuntu>
+	Tue, 10 Feb 2009 10:25:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=UTkQz00Av98FN0q8iY6dkPpam79v1GveSm5zgdcCJOI2DzK3Fhorh8AkVVB/v1P+H6
+         rW1ub4rFT18mqCq+GzQm3d/tDeMC0igCXz5c7SRnEGa3twIq+tkkjLydMYMen49iHVen
+         zq0lyw72mIBwaNwQawHyxu+XudljEVnsBjl4M=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1234271294.17391.12.camel@ubuntu>
-X-Cookie: To the landlord belongs the doorknobs.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <1234186798-16820-12-git-send-email-tj@kernel.org>
+References: <1234186798-16820-1-git-send-email-tj@kernel.org>
+	 <1234186798-16820-12-git-send-email-tj@kernel.org>
+Date: Tue, 10 Feb 2009 10:25:06 -0500
+Message-ID: <73c1f2160902100725w2503d693v5a3d1ae93ada75de@mail.gmail.com>
+Subject: Re: [PATCH 11/11] x86: implement x86_32 stack protector
+From: Brian Gerst <brgerst@gmail.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: hpa@zytor.com, jeremy@goop.org, tglx@linutronix.de, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, x86@kernel.org, rusty@rustcorp.com.au
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 03:08:14PM +0200, Kalle Jokiniemi wrote:
+On Mon, Feb 9, 2009 at 8:39 AM, Tejun Heo <tj@kernel.org> wrote:
+> Impact: stack protector for x86_32
+>
+> Implement stack protector for x86_32.  GDT entry 28 is used for it.
+> It's set to point to stack_canary-20 and have the length of 24 bytes.
+> CONFIG_CC_STACKPROTECTOR turns off CONFIG_X86_32_LAZY_GS and sets %gs
+> to the stack canary segment on entry.  As %gs is otherwise unused by
+> the kernel, the canary can be anywhere.  It's defined as a percpu
+> variable.
+>
+> x86_32 exception handlers take register frame on stack directly as
+> struct pt_regs.  With -fstack-protector turned on, gcc copies the
+> whole structure after the stack canary and (of course) doesn't copy
+> back on return thus losing all changed.  For now, -fno-stack-protector
+> is added to all files which contain those functions.  We definitely
+> need something better.
+>
+> Signed-off-by: Tejun Heo <tj@kernel.org>
 
-> A bug has been discovered here. If the twl-regulator is not compiled in,
-> the twl4030-usb fails while trying to access the reg-fw interfaces (and
+Am I missing something, or does this patch not actually implement the
+offset of the start of the segment by 20 from the stack_canary
+variable?
 
-reg-fw is the regulator framework?
-
-> not checking error values). Also it's bit confusing how we get different
-> error values if reg_fw is not compiled (no error) vs. reg_fw is
-> compiled, but twl_regulator is not... (error)
-
-The general model is that if you've got regulator API support enabled
-then you'll have the relevant regulator drivers enabled.  The support
-for compiling out the core is intended to allow configurations that
-don't use regulators at all.  This is a bit restrictive but works well
-for most users.
+--
+Brian Gerst
