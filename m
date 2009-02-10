@@ -1,154 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412AbZBJV2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbZBJV3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756412AbZBJV2p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 16:28:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbZBJV2h
+	id S1756453AbZBJV3R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 16:29:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbZBJV3B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 16:28:37 -0500
-Received: from tomts16.bellnexxia.net ([209.226.175.4]:55379 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755303AbZBJV2g (ORCPT
+	Tue, 10 Feb 2009 16:29:01 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:54430 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755457AbZBJV3A convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 16:28:36 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArEEAHx8kUlMQWt2/2dsb2JhbACBbtJNhBoG
-Date: Tue, 10 Feb 2009 16:28:33 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
-	(repost)
-Message-ID: <20090210212833.GA27578@Krystal>
-References: <20090206130640.GB10918@linux.vnet.ibm.com> <20090206163432.GF10918@linux.vnet.ibm.com> <20090208224419.GA19512@Krystal> <20090209041153.GR7120@linux.vnet.ibm.com> <20090209045352.GA28653@Krystal> <20090209051737.GA29254@Krystal> <20090209070317.GA31583@Krystal> <20090209153305.GA6802@linux.vnet.ibm.com> <20090210191731.GA20867@Krystal> <20090210211643.GL6742@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090210211643.GL6742@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:26:07 up 40 days, 21:24,  5 users,  load average: 0.16, 0.57,
-	0.53
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 10 Feb 2009 16:29:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=u2mCtLKf0q3jzVp4ZLmcjE1hyvDkNA4YRjxguKdd11VhPn1dY+YyjuGJshih1Z+MJf
+         iLCht8URY9jbSuHj2vP4Zyz+zydWy5J0+xqE/PQRmvqoot/CHEQgduz/Kc7qo6JpssSG
+         bacO8PVy5UBPcpabft1e46kt2xcuhN+RrU9aE=
+MIME-Version: 1.0
+In-Reply-To: <49917650.1060208@tudelft.nl>
+References: <1233967681-6378-1-git-send-email-giuseppe.bilotta@gmail.com>
+	 <498D9F02.9000107@tremplin-utc.net> <498E46F2.1020401@gmail.com>
+	 <4990BE23.8080301@tremplin-utc.net> <4990DEFD.4010700@gmail.com>
+	 <49915832.1090501@tremplin-utc.net>
+	 <cb7bb73a0902100307m4eab8ff2nfe9be8bed6a3b5b5@mail.gmail.com>
+	 <49917650.1060208@tudelft.nl>
+Date: Tue, 10 Feb 2009 22:28:58 +0100
+Message-ID: <cb7bb73a0902101328n25f64c9dqd6dabe62b05273ac@mail.gmail.com>
+Subject: Re: [PATCH] lis3lv02d: add axes knowledge of HP Pavilion dv5 models
+From: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+To: =?ISO-8859-1?Q?=C9ric_Piel?= <E.A.B.Piel@tudelft.nl>
+Cc: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>,
+       Palatis Tseng <palatis@gmail.com>, Pavel Machek <pavel@suse.cz>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> On Tue, Feb 10, 2009 at 02:17:31PM -0500, Mathieu Desnoyers wrote:
-> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > On Mon, Feb 09, 2009 at 02:03:17AM -0500, Mathieu Desnoyers wrote:
-> > > 
-> > > [ . . . ]
-> > > 
-> > > > I just added modified rcutorture.h and api.h from your git tree
-> > > > specifically for an urcutorture program to the repository. Some results :
-> > > > 
-> > > > 8-way x86_64
-> > > > E5405 @2 GHZ
-> > > > 
-> > > > ./urcutorture 8 perf
-> > > > n_reads: 1937650000  n_updates: 3  nreaders: 8  nupdaters: 1 duration: 1
-> > > > ns/read: 4.12871  ns/update: 3.33333e+08
-> > > > 
-> > > > ./urcutorture 8 uperf
-> > > > n_reads: 0  n_updates: 4413892  nreaders: 0  nupdaters: 8 duration: 1
-> > > > ns/read: nan  ns/update: 1812.46
-> > > > 
-> > > > n_reads: 98844204  n_updates: 10  n_mberror: 0
-> > > > rcu_stress_count: 98844171 33 0 0 0 0 0 0 0 0 0
-> > > > 
-> > > > However, I've tried removing the second switch_qparity() call, and the
-> > > > rcutorture test did not detect anything wrong. I also did a variation
-> > > > which calls the "sched_yield" version of the urcu, "urcutorture-yield".
-> > > 
-> > > My confusion -- I was testing my old approach where the memory barriers
-> > > are in rcu_read_lock() and rcu_read_unlock().  To force the failures in
-> > > your signal-handler-memory-barrier approach, I suspect that you are
-> > > going to need a bigger hammer.  In this case, one such bigger hammer
-> > > would be:
-> > > 
-> > > o	Just before exit from the signal handler, do a
-> > > 	pthread_cond_wait() under a pthread_mutex().
-> > > 
-> > > o	In force_mb_all_threads(), refrain from sending a signal to self.
-> > > 
-> > > 	Then it should be safe in force_mb_all_threads() to do a
-> > > 	pthread_cond_broadcast() under the same pthread_mutex().
-> > > 
-> > > This should raise the probability of seeing the failure in the case
-> > > where there is a single switch_qparity().
-> > > 
-> > 
-> > I just did a mb() version of the urcu :
-> > 
-> > (uncomment CFLAGS=+-DDEBUG_FULL_MB in the Makefile)
-> > 
-> > Time per read : 48.4086 cycles
-> > (about 6-7 times slower, as expected)
-> > 
-> > This will be useful especially to increase the chance to trigger races.
-> > 
-> > I tried removing the second parity switch from the writer. The rcu
-> > torture test did not find the problem yet (maybe I am not using the
-> > correct parameters ? It does not run for more than 5 seconds).
-> > 
-> > So I added a "-n" option to test_urcu, so it can make the usleep(1)
-> > between the writes optional. I also changed the yield for a usleep with
-> > random delay. I also now use a circular buffer rather than malloc so we
-> > are sure the memory is not quickly reused by the writer and stays longer
-> > in an invalid state.
-> > 
-> > So what really make the problem appear quickly is to add a delay between
-> > the rcu_dereference and the assertion on the data validity in thr_reader.
-> > 
-> > It now appears after just a few seconds when running
-> > ./test_urcu_yield 20 -r -n
-> > Compiled with CFLAGS=+-DDEBUG_FULL_MB
-> > 
-> > It seem to be much harder to trigger with the signal-based version. It's
-> > expected, because the writer takes about 50 times longer to execute than
-> > with the -DDEBUG_FULL_MB version.
-> > 
-> > So I'll let the ./test_urcu_yield NN -r -n run for a while on the
-> > correct version (with DEBUG_FULL_MB) and see what it gives.
-> 
-> Hmmm...  I had worse luck this time, took three 10-second tries to
-> see a failure:
-> 
-> paulmck@paulmck-laptop:~/paper/perfbook/CodeSamples/defer$ ./rcu_nest32 1 stress
-> n_reads: 44682055  n_updates: 9609503  n_mberror: 0
-> rcu_stress_count: 44679377 2678 0 0 0 0 0 0 0 0 0
-> paulmck@paulmck-laptop:~/paper/perfbook/CodeSamples/defer$ !!
-> ./rcu_nest32 1 stress
-> n_reads: 42281884  n_updates: 9870129  n_mberror: 0
-> rcu_stress_count: 42277756 4128 0 0 0 0 0 0 0 0 0
-> paulmck@paulmck-laptop:~/paper/perfbook/CodeSamples/defer$ !!
-> ./rcu_nest32 1 stress
-> n_reads: 41384304  n_updates: 10040805  n_mberror: 0
-> rcu_stress_count: 41380075 4228 1 0 0 0 0 0 0 0 0
-> paulmck@paulmck-laptop:~/paper/perfbook/CodeSamples/defer$
-> 
-> This is my prototype version, with read-side memory barriers, no
-> signals, and without your initialization-value speedup.
-> 
+On Tue, Feb 10, 2009 at 1:42 PM, Éric Piel <E.A.B.Piel@tudelft.nl> wrote:
+> Can you try something like this in lis3lv02d_poweron():
+>        adev.read(handle, CTRL_REG2, &val);
+>        val |= CTRL2_BDU | CTRL2_IEN;
+> +       val &= ~CTRL2_BLE;
+>        adev.write(handle, CTRL_REG2, val);
 
-It would be interesting to re-sync our trees, or if you can point me to
-a current version of your prototype, I could review it.
+Ok, this is getting crazier and crazier. Apparently, setting the
+CTRL2_BLE bit this way makes no difference, and so does setting it
+with val |= (i.e. enabling it): in both cases, if I debug
+lis3lv02d_read_16 I always get 0 in the lower byte and something in
+the upper byte.
 
-Thanks,
+By forcefully swapping lo and hi I actually get very little
+fluctuations in the Y and Z axes (so small that jstest doesn't detect
+them), but I still get huge (4k) fluctuations in the X axis:
+apparently, this axis has very small SIGNED fluctuations around the 0,
+which translate to fluctuations between 255 and 1
 
-Mathieu
+Now, the lo/hi thing might be solved some other way (e.g. by checking
+the BLE bit and relying on its setting instead of trying to force it,
+and then swapping hi and lo as needed). But how do we solve the
+SIGNEDNESS of lo ?
 
-> 							Thanx, Paul
-> 
-> _______________________________________________
-> ltt-dev mailing list
-> ltt-dev@lists.casi.polymtl.ca
-> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> 
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Giuseppe "Oblomov" Bilotta
