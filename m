@@ -1,133 +1,351 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbZBJBCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbZBJBC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753792AbZBJBCh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 20:02:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbZBJBCY
+	id S1754804AbZBJBC4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 20:02:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbZBJBC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 20:02:24 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40472 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751166AbZBJBCX (ORCPT
+	Mon, 9 Feb 2009 20:02:29 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:57790 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751480AbZBJBCZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 20:02:23 -0500
-Date: Mon, 9 Feb 2009 17:01:20 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Risto Suominen <risto.suominen@gmail.com>
-Cc: jgarzik@pobox.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Grant Grundler <grundler@parisc-linux.org>
-Subject: Re: [PATCH 002/002] de2104x: support for systems lacking cache
- coherence
-Message-Id: <20090209170120.85e192be.akpm@linux-foundation.org>
-In-Reply-To: <46e1c7760902071330i5362fe4fvd99fc7075fc666d3@mail.gmail.com>
-References: <46e1c7760902071330i5362fe4fvd99fc7075fc666d3@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Feb 2009 20:02:25 -0500
+Date: Mon, 9 Feb 2009 20:01:46 -0500 (EST)
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Jeff Arnold <jbarnold@MIT.EDU>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Denys Vlasenko <vda.linux@googlemail.com>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Nikanth Karthikesan <knikanth@suse.de>
+Subject: Re: [PATCH 7/7] Ksplice: Support updating x86-32 and x86-64
+In-Reply-To: <200902071306.45546.rusty@rustcorp.com.au>
+Message-ID: <alpine.DEB.2.00.0902072301200.11936@vinegar-pot.mit.edu>
+References: <1228521840-3886-1-git-send-email-jbarnold@mit.edu> <1228521840-3886-7-git-send-email-jbarnold@mit.edu> <1228521840-3886-8-git-send-email-jbarnold@mit.edu> <200902071306.45546.rusty@rustcorp.com.au>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 7 Feb 2009, Rusty Russell wrote:
 
-(cc netdev, and maintainer)
-
-On Sat, 7 Feb 2009 23:30:40 +0200
-Risto Suominen <risto.suominen@gmail.com> wrote:
-
-> Add a configurable Descriptor Skip Length for systems that lack cache coherence.
+>    The temptation to invent new nomenclature is one we geeks constantly
+> wrestle with.  But when you have a *genuinely* good idea, it's not necessary.
+> Unfortunately, changing names is a PITA, but it's not going to get easier.
 > 
-> Signed-off-by: Risto Suominen <Risto.Suominen@gmail.com>
-> ---
-> The testing is done on kernel version 2.6.18.
+>    ksplice_update is a good name, but the rest of your nomenclature is
+> horribly general.  So before I become so experienced with it I can't see the
+> flaws, let me suggest:
 > 
-> --- drivers/net/tulip/Kconfig.org	2006-09-20 06:42:06.000000000 +0300
-> +++ drivers/net/tulip/Kconfig	2009-02-07 20:48:17.000000000 +0200
+> 	pack -> ksplice_mod_change
+> 	helper module -> old_code
+> 	primary module -> new_code
 
-Please prefer to prepare patches in `patch -p1' form:
+OK, I agree that these are improvements.  We'll make the change for the 
+next version of the patch series.
 
---- a/drivers/net/tulip/Kconfig
-+++ a/drivers/net/tulip/Kconfig
-
-> @@ -27,6 +27,18 @@ config DE2104X
->  	  To compile this driver as a module, choose M here. The module will
->  	  be called de2104x.
+> > +unexpected_running_task (P->A, A->R): Ksplice aborted the operation because
+> > +Ksplice observed a running task during the kernel stack check, at a time when
+> > +Ksplice expected all tasks to be stopped by stop_machine.
 > 
-> +config DE2104X_DSL
-> +	int "Descriptor Skip Length in 32 bit longwords"
-> +	depends on DE2104X
-> +	range 0 31
-> +	default 0
-> +	help
-> +	  Setting this value allows to align ring buffer descriptors into their
-> +	  own cache lines. Value of 4 corresponds to the typical 32 byte line
-> +	  (the descriptor is 16 bytes). This is necessary on systems that lack
-> +	  cache coherence, an example is PowerMac 5500. Otherwise 0 is safe.
-> +	  Default is 0, and range is 0 to 31.
-> +
->  config TULIP
->  	tristate "DECchip Tulip (dc2114x) PCI support"
->  	depends on PCI
-> --- drivers/net/tulip/de2104x.c.org	2006-09-20 06:42:06.000000000 +0300
-> +++ drivers/net/tulip/de2104x.c	2009-02-07 15:04:04.000000000 +0200
-> @@ -82,6 +82,13 @@ MODULE_PARM_DESC (rx_copybreak, "de2104x
->  				 NETIF_MSG_RX_ERR	| \
->  				 NETIF_MSG_TX_ERR)
+> I'll have to check the code, but this should now just be a subset of
+> "unexpected", no?
+
+The story here is that normally when an unexpected error occurs, we print 
+something to the Ksplice debugfs file indicating what the actual error 
+was.  unexpected_running_task is special in that it occurs within 
+stop_machine, where allocating memory with GFP_KERNEL to print to the 
+debugfs file is not allowed.  So, we use a different abort_cause for this 
+particular unexpected error.
+
+> > +/**
+> > + * struct ksplice_symbol - Ksplice's analogue of an ELF symbol
+> > + * @name:	The ELF name of the symbol
+> > + * @label:	A unique Ksplice name for the symbol
+> > + * @vals:	A linked list of possible values for the symbol, or NULL
+> > + * @value:	The value of the symbol (valid when vals is NULL)
+> > + **/
+> > +struct ksplice_symbol {
+> > +	const char *name;
+> > +	const char *label;
+> > +/* private: */
+> > +	struct list_head *vals;
+> > +	unsigned long value;
+> > +};
 > 
-> +/* Descriptor skip length in 32 bit longwords. */
-> +#ifndef CONFIG_DE2104X_DSL
-> +#define DSL			0
-> +#else
-> +#define DSL			CONFIG_DE2104X_DSL
-> +#endif
-
-I think CONFIG_DE2104X_DSL is always defined if this driver is being
-compiled.  So the Kconfig `default' should suffice here?  In which case
-we can do
-
-#define DSL CONFIG_DE2104X_DSL
-
-and leave it at that.
-
->  #define DE_RX_RING_SIZE		64
->  #define DE_TX_RING_SIZE		64
->  #define DE_RING_BYTES		\
-> @@ -153,6 +160,7 @@ enum {
->  	CmdReset		= (1 << 0),
->  	CacheAlign16		= 0x00008000,
->  	BurstLen4		= 0x00000400,
-> +	DescSkipLen		= (DSL << 2),
-
-In which case we can do away with DSL everywhere and just use
-CONFIG_DE2104X_DSL here.
-
-
-But really, we shouldn't do this at configuration time at all.  It
-would be much better to do it at runtime, via a module parameter.
-
-And it would be much^2 better to do it automatically, based upon the
-chip probing information or whatever.  That's probably hard.
-
-
->  	/* Rx/TxPoll bits */
->  	NormalTxPoll		= (1 << 0),
-> @@ -246,7 +254,7 @@ static const u32 de_intr_mask =
->   * Set the programmable burst length to 4 longwords for all:
->   * DMA errors result without these values. Cache align 16 long.
->   */
-> -static const u32 de_bus_mode = CacheAlign16 | BurstLen4;
-> +static const u32 de_bus_mode = CacheAlign16 | BurstLen4 | DescSkipLen;
+> I'd have to look at the usage, but might this be neater as a standard
+> linked list, eg:
 > 
->  struct de_srom_media_block {
->  	u8			opts;
-> @@ -266,6 +274,9 @@ struct de_desc {
->  	__le32			opts2;
->  	__le32			addr1;
->  	__le32			addr2;
-> +#if DSL
-> +	__le32			skip[DSL];
-> +#endif
->  };
+> struct ksplice_symval {
+> 	struct list_head list;
+> 	unsigned long val;
+> };
+> 
+> struct ksplice_symbol {
+> 	...
+> 	struct list_head vals;
+> 	/* We always have one, so this saves dynamic alloc in common case? */
+> 	struct ksplice_symval first_val;
+> };
+> 
+> (You could link off the first_val.list, but it we don't have iterators for
+> such a "headless" list).
 
-Can remove the ifdefs here.  A zero-length array is OK, and will
-consume zero space.
+ksplice_symbol structures are generated by userspace.  Using a pointer to 
+a list_head rather than a list_head means userspace doesn't need to know 
+the structure of a list_head.
+
+The story with "vals" and "value" is the following.  If we don't yet know 
+the value of the symbol, vals is a pointer to a list of candidate values 
+(obtained by lookups in kallsyms and the exported symbol table).  Once we 
+have resolved the symbol using run-pre matching, we store its address in 
+the value field and set vals to NULL.  One checks whether a symbol has 
+been resolved by checking whether vals is NULL.
+
+The documentation of this struct is a bit terse and the names "vals" and 
+"value" are confusing; would renaming vals to "candidate_values" and 
+adding something like the above explanation in a comment improve the 
+situation?
+
+> > +/**
+> > + * struct ksplice_reloc - Ksplice's analogue of an ELF relocation
+> > + * @blank_addr:		The address of the relocation's storage unit
+> > + * @symbol:		The ksplice_symbol associated with this relocation
+> > + * @howto:		The information regarding the relocation type
+> > + * @addend:		The ELF addend of the relocation
+> > + **/
+> > +struct ksplice_reloc {
+> > +	unsigned long blank_addr;
+> > +	struct ksplice_symbol *symbol;
+> > +	const struct ksplice_reloc_howto *howto;
+> 
+> howto is an interesting name.  I *think* this is what we usually call "ops"?
+
+ksplice_reloc_howto is named after libbfd's reloc_howto_type, which is a 
+structure containing metadata for how to apply a relocation of that type 
+(how many bytes long the relocation is, whether it is relative to the 
+program counter, etc.).  ksplice_reloc_howto has essentially the same 
+purpose and contents as libbfd's reloc_howto_type.  
+
+> > +enum ksplice_reloc_howto_type {
+> > +	KSPLICE_HOWTO_RELOC,
+> > +	KSPLICE_HOWTO_RELOC_PATCH,
+> > +	KSPLICE_HOWTO_DATE,
+> > +	KSPLICE_HOWTO_TIME,
+> > +	KSPLICE_HOWTO_BUG,
+> > +	KSPLICE_HOWTO_EXTABLE,
+> > +};
+> 
+> OK, there are two problems with really reviewing this code.  (1) it does
+> everything; it's not in stages.  
+
+The actual process is in stages, so I assume you're referring to the fact 
+that we're submitting it as a single 2500-line patch; I comment on this 
+below.
+
+> (2) it isn't complete unless you see a ksplice module which interacts 
+> with it.
+
+Right.  For this I recommend creating an update using the Ksplice 
+"standalone" code available at [1] and a simple patch such as [2], and 
+actually looking at the modules generated.  I recommend the 
+ksplice-inspect utility included in the Ksplice distribution for seeing 
+the objects inside the helper and primary modules.  This will show you the 
+data that the update provides to the kernel; the primary and helper 
+modules themselves just load the data into a ksplice_pack and then call 
+init/cleanup_ksplice_pack as appropriate.
+
+[1] http://www.ksplice.com/dist/ksplice-0.9.6-src.tar.gz 
+[2] http://www.ksplice.com/example-update
+
+> Could we start with something really simple and work up?  I know it's a 
+> serious amount of work to split like this.  How about a version which 
+> just patches time and date?  Should also be easy to manually create a 
+> ksplice module to test that as well, no?  Then say, substitute a new 
+> function. Finally work up to what you have now, with handling 
+> alternatives and everything.
+
+Before I answer your question, I should explain that these are types of 
+Ksplice relocations, not types of patches.  Normal relocations have type 
+KSPLICE_HOWTO_RELOC; if you want to start simple, just ignore the rest and 
+look at what happens with that type.
+
+Most of the other Ksplice relocation types are classes of things that 
+should be handled through the same mechanism as relocations.  For example, 
+KSPLICE_HOWTO_DATE and KSPLICE_HOWTO_TIME are Ksplice relocations that 
+Ksplice generates in order to run-pre match strings containing __DATE__ 
+and __TIME__.  These are challenging for run-pre matching because the date 
+and time when the pre code was compiled will not be the same as the date 
+and time when those compilation units in the running kernel were compiled.  
+Ksplice handles this by generating special Ksplice relocations that 
+instruct Ksplice to do a date/time format check rather than a byte-by-byte 
+comparison at a particular location.
+
+
+Anyway, your question was whether we can strip down Ksplice to just the 
+"bare essentials" that would be easier to review.
+
+We could save about 200 lines of kernel code by removing support for 
+altinstructions/parainstructions/smp_locks, KSPLICE_HOWTO_DATE, 
+KSPLICE_HOWTO_TIME, KSPLICE_HOWTO_BUG and KSPLICE_HOWTO_EXTABLE.  One 
+could perhaps save another 150 lines of code by removing the optimizations 
+we have in critical pathways, i.e. replacing binary searches and the O(1) 
+amortized scan of relocations with linear searches, and another 70 or so 
+if we make it not work on CONFIG_DEBUG_RODATA kernels.  I could probably 
+cut another 100 or so lines of code by removing code that handles some 
+miscellaneous uncommon situations.  The result would be slow, unable to 
+run-pre match most compilation units, and have safety problems when 
+patching compilation units containing altinstructions (etc.).  So, not 
+something suitable for merge, but perhaps a bit easier to review.
+
+Is this the sort of thing that you're looking for?  I can get you a patch 
+along those lines fairly quickly.
+
+> Otherwise the important review (design, not spelling and style) is not
+> really possible in finite time.
+
+My recommended path for understanding the code is to first read 
+__apply_patches and the things it calls, which is the code run inside 
+stop_machine, including the stack check.  Then I'd look at finalize_pack, 
+which is basically the consumer of all the information obtained in run-pre 
+matching.  To understand run-pre matching, I'd start with trying to 
+understand run_pre_cmp, and then move up the chain of callers from there.
+
+Let us know if there's anything we can do to help with reviewing the code.  
+We'd be happy to answer any questions about how the code works.
+
+> But trivial comments follow:
+> 
+> > +/* List of all ksplice modules and the module they patch */
+> > +extern struct list_head ksplice_module_list;
+> 
+> Just call it ksplice_modules.  It's obvious from its usage that it's a list.
+
+Agreed.
+
+> > +int init_ksplice_pack(struct ksplice_pack *pack);
+> 
+> I think would more usually be called "register_ksplice_pack"?
+>
+> > + * cleanup_ksplice_pack() - Cleans up a pack
+> 
+> unregister... ?
+
+We choose the name cleanup because unlike a typical unregister function, 
+cleanup_ksplice_pack is currently called twice for each Ksplice update; 
+once when the helper module is unloaded, and once when the primary module 
+is unloaded.  The extra call is necessary to avoid leaks if you unload the 
+helper without applying the update.  
+
+Perhaps the right answer is to keep the current name and add a comment 
+documenting this behavior?
+
+> > +typedef int __bitwise__ abort_t;
+> > +
+> > +#define OK ((__force abort_t) 0)
+> > +#define NO_MATCH ((__force abort_t) 1)
+> > +#define CODE_BUSY ((__force abort_t) 2)
+> > +#define MODULE_BUSY ((__force abort_t) 3)
+> > +#define OUT_OF_MEMORY ((__force abort_t) 4)
+> > +#define FAILED_TO_FIND ((__force abort_t) 5)
+> > +#define ALREADY_REVERSED ((__force abort_t) 6)
+> > +#define MISSING_EXPORT ((__force abort_t) 7)
+> > +#define UNEXPECTED_RUNNING_TASK ((__force abort_t) 8)
+> > +#define UNEXPECTED ((__force abort_t) 9)
+> > +#define TARGET_NOT_LOADED ((__force abort_t) 10)
+> > +#define CALL_FAILED ((__force abort_t) 11)
+> 
+> Yech... I'm not sold on abort_t; how about standard errno?  Yes, you have
+> to get a bit creative, say: -ENOENT, -EBUSY, -ETXTBSY, -ENOMEM, -ENOENT,
+> -EEXIST, -ENOEXEC, *, *, -ENODEV, (whatever that call returned).
+
+The code actually used to make creative use of errno values as you 
+suggest.  It resulted in frequent confusion about which return value to 
+use, and mistakes involving the wrong return value were common.  After we 
+switched to abort_t, return value errors essentially stopped happening.  
+So I think that keeping abort_t might be worthwhile.
+
+We use a typedef so that sparse can check for mistakes involving returning 
+a number rather than an abort_t; we could probably convert it into an 
+enum at this point.
+
+> > +static struct update *init_ksplice_update(const char *kid);
+> > +static void cleanup_ksplice_update(struct update *update);
+> > +static void maybe_cleanup_ksplice_update(struct update *update);
+> > +static void add_to_update(struct ksplice_pack *pack, struct update *update);
+> > +static int ksplice_sysfs_init(struct update *update);
+> 
+> Please don't talk about what you're going to talk about: order properly
+> and don't keep up in suspense :)
+> 
+> [ cut 170 more lines of introduction ]
+
+Heh.  We actually sorted the functions in ksplice.c to read well from top 
+to bottom while preparing this patch series.
+
+I can re-sort our functions to eliminate the prototypes if that would be 
+preferred.  Perhaps there should be a note about use of prototypes in 
+Documentation/CodingStyle?
+
+> > +#include "ksplice-arch.c"
+> 
+> Hmm, that's a little unclean.  include/linux/ksplice_arch.h
+> and treat it as a normal .o I'd say.
+
+Are you suggesting that include/linux/ksplice_arch.h would give prototypes 
+for write_reloc_value and read_reloc_value along with the functions 
+currently in ksplice_arch.c, and they'd be implemented in a ksplice_arch.c 
+that would be linked in with the rest of Ksplice?
+
+I believe that this doesn't work because a module under kernel/ can't 
+depend on objects under arch/ (or vice versa).
+
+I agree that this is a little unclean but don't know how to improve it; 
+suggestions for how to clean this up are welcome.
+
+> > +int init_ksplice_pack(struct ksplice_pack *pack)
+> ...
+> > +	sort(pack->helper_relocs,
+> > +	     pack->helper_relocs_end - pack->helper_relocs,
+> > +	     sizeof(*pack->helper_relocs), compare_relocs, NULL);
+> > +	sort(pack->primary_relocs,
+> > +	     pack->primary_relocs_end - pack->primary_relocs,
+> > +	     sizeof(*pack->primary_relocs), compare_relocs, NULL);
+> > +	sort(pack->helper_sections,
+> > +	     pack->helper_sections_end - pack->helper_sections,
+> > +	     sizeof(*pack->helper_sections), compare_section_labels, NULL);
+> 
+> Can't be sorted in userspace?
+
+helper_sections could be sorted in userspace; the relocs arrays could not.  
+They are sorted by a value which depends on where the ELF sections of the 
+helper and primary modules are loaded.
+
+Also, these only need to be sorted because the kernel implementation uses 
+a binary search; if we were to replace a binary search with a hashing 
+algorithm, then userspace wouldn't need to sort these arrays.  We might 
+want to keep this implementation detail out of the userspace/kernelspace 
+API.
+
+By the way, we use binary search a good deal, and I know we're not the 
+only users of a simple binary search, for example search_extable in 
+lib/extable.c.  Grepping for "binary search" suggests there are a few 
+dozen of them in the kernel.  Should we split out bsearch into a 
+lib/bsearch.c in the next patch series?
+
+> > +static bool starts_with(const char *str, const char *prefix)
+> > +{
+> > +	return strncmp(str, prefix, strlen(prefix)) == 0;
+> > +}
+> 
+> Hmm, I call this strstarts() in CCAN.  Turns out it's a fairly common need,
+> I'll implement a common version as a separate patch.
+
+strstarts is a good name for this function.  I've made the change for the 
+next version of the patch series.
+
+	-Tim Abbott
 
