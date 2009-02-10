@@ -1,230 +1,772 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755444AbZBJNj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbZBJNlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755444AbZBJNj3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 08:39:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbZBJNjU
+	id S1755224AbZBJNlU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 08:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbZBJNlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 08:39:20 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:49865 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753896AbZBJNjT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 08:39:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=NIN7ou+VyuSoZPtKUHteT/y9rCOPlVCv0yVzF9EkNL9rIQlaU7ROd0Qlzc9hylC6O6
-         QeZGVGVNkOavf6xrhtOeI5bisus/9hZtXz7T5nWQUvK31LIDs3LSXwz5Rj+n54pohQSN
-         JSd2/53PPnuPaki3kR/Y54aPuIJI6gFsP7uco=
-MIME-Version: 1.0
-Date: Tue, 10 Feb 2009 14:39:17 +0100
-Message-ID: <56e1b5710902100539l49a258b7g37b178efdaa8b4dc@mail.gmail.com>
-Subject: Re: [PATCH]: Cleanup: Remove trivial gcc format string warnings when 
-	compiling with -Wformat-security (part 2: cleanups)
-From: Floris Kraak <randakar@gmail.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Robert Hancock <hancockrwd@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Trivial Patch Monkey <trivial@kernel.org>,
-       Andreas Schwab <schwab@suse.de>, Mike Isely <isely@isely.net>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 10 Feb 2009 08:41:09 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:57549 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753763AbZBJNlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 08:41:04 -0500
+Subject: Re: Next Feb 10 build break on s390 : mm/shmem.c
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: "Sachin P. Sant" <sachinp@in.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-s390@vger.kernel.org,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
+In-Reply-To: <49915ADD.2060709@in.ibm.com>
+References: <20090210194121.80256b72.sfr@canb.auug.org.au>
+	 <49915ADD.2060709@in.ibm.com>
+Content-Type: text/plain
+Date: Tue, 10 Feb 2009 08:40:58 -0500
+Message-Id: <1234273258.3505.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 2:26 PM, Floris Kraak <randakar@gmail.com> wrote:
-> On Thu, Feb 5, 2009 at 3:41 PM, Floris Kraak <randakar@gmail.com> wrote:
->>
->> Here's the patch that I get when I blindly patch every single location
->> that emits this warning.
->>
->> If needed I can attempt to split this monster into 135 patches but
->> given my limited experience with the tools involved a little help on
->> how to go about creating such a series would be appreciated ;-)
->>
->
-> Here's the first part of a split series of patches dealing with this.
-> I will reply to this message with further patches in the series.
->
+On Tue, 2009-02-10 at 16:15 +0530, Sachin P. Sant wrote:
+> randconfig build on s390 fails with
+> 
+>   CC      mm/shmem.o
+> mm/shmem.c: In function shmem_zero_setup:
+> mm/shmem.c:2670: error: implicit declaration of function ima_shm_check
+> make[1]: *** [mm/shmem.o] Error 1
+> make: *** [mm] Error 2
+> 
+> Need to include <linux/ima.h> ??
+> 
+> Thanks
+> -Sachin
 
-This patch contains cleaned up code; As in, changes to code that has
-been restructured a bit to make the warning go away without
-introducing extra "%s" arguments.
+A patch was posted http://lkml.org/lkml/2009/2/9/553.
 
+Thanks,
+Mimi
 
----
-[PATCH]: Cleanup: Remove trivial gcc format string warnings when
-compiling with -Wformat-security (part 2: cleanups)
+> plain text document attachment (config_s390_break)
+> #
+> # Automatically generated make config: don't edit
+> # Linux kernel version: 2.6.29-rc4
+> # Tue Feb 10 03:40:25 2009
+> #
+> CONFIG_SCHED_MC=y
+> CONFIG_MMU=y
+> CONFIG_ZONE_DMA=y
+> CONFIG_LOCKDEP_SUPPORT=y
+> CONFIG_STACKTRACE_SUPPORT=y
+> CONFIG_HAVE_LATENCYTOP_SUPPORT=y
+> CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+> # CONFIG_ARCH_HAS_ILOG2_U32 is not set
+> # CONFIG_ARCH_HAS_ILOG2_U64 is not set
+> CONFIG_GENERIC_HWEIGHT=y
+> CONFIG_GENERIC_TIME=y
+> CONFIG_GENERIC_TIME_VSYSCALL=y
+> CONFIG_GENERIC_CLOCKEVENTS=y
+> CONFIG_GENERIC_BUG=y
+> CONFIG_NO_IOMEM=y
+> CONFIG_NO_DMA=y
+> CONFIG_VIRT_CPU_ACCOUNTING=y
+> CONFIG_S390=y
+> CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+> 
+> #
+> # General setup
+> #
+> # CONFIG_EXPERIMENTAL is not set
+> CONFIG_LOCK_KERNEL=y
+> CONFIG_INIT_ENV_ARG_LIMIT=32
+> CONFIG_LOCALVERSION=""
+> # CONFIG_LOCALVERSION_AUTO is not set
+> # CONFIG_SYSVIPC is not set
+> CONFIG_BSD_PROCESS_ACCT=y
+> CONFIG_BSD_PROCESS_ACCT_V3=y
+> CONFIG_TASKSTATS=y
+> CONFIG_TASK_DELAY_ACCT=y
+> CONFIG_TASK_XACCT=y
+> CONFIG_TASK_IO_ACCOUNTING=y
+> CONFIG_AUDIT=y
+> CONFIG_AUDITSYSCALL=y
+> 
+> #
+> # RCU Subsystem
+> #
+> CONFIG_CLASSIC_RCU=y
+> # CONFIG_TREE_RCU is not set
+> # CONFIG_PREEMPT_RCU is not set
+> # CONFIG_TREE_RCU_TRACE is not set
+> # CONFIG_PREEMPT_RCU_TRACE is not set
+> CONFIG_IKCONFIG=y
+> CONFIG_LOG_BUF_SHIFT=17
+> # CONFIG_CGROUPS is not set
+> # CONFIG_RELAY is not set
+> CONFIG_NAMESPACES=y
+> # CONFIG_UTS_NS is not set
+> # CONFIG_BLK_DEV_INITRD is not set
+> # CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+> CONFIG_SYSCTL=y
+> CONFIG_EMBEDDED=y
+> CONFIG_SYSCTL_SYSCALL=y
+> CONFIG_KALLSYMS=y
+> CONFIG_KALLSYMS_ALL=y
+> CONFIG_KALLSYMS_EXTRA_PASS=y
+> CONFIG_HOTPLUG=y
+> # CONFIG_PRINTK is not set
+> CONFIG_BUG=y
+> # CONFIG_ELF_CORE is not set
+> CONFIG_COMPAT_BRK=y
+> CONFIG_BASE_FULL=y
+> CONFIG_FUTEX=y
+> CONFIG_ANON_INODES=y
+> CONFIG_EPOLL=y
+> # CONFIG_SIGNALFD is not set
+> CONFIG_TIMERFD=y
+> CONFIG_EVENTFD=y
+> # CONFIG_SHMEM is not set
+> # CONFIG_AIO is not set
+> CONFIG_VM_EVENT_COUNTERS=y
+> # CONFIG_SLAB is not set
+> # CONFIG_SLUB is not set
+> CONFIG_SLQB=y
+> # CONFIG_SLOB is not set
+> CONFIG_PROFILING=y
+> CONFIG_TRACEPOINTS=y
+> CONFIG_MARKERS=y
+> CONFIG_OPROFILE=y
+> CONFIG_HAVE_OPROFILE=y
+> CONFIG_HAVE_SYSCALL_WRAPPERS=y
+> CONFIG_HAVE_KPROBES=y
+> CONFIG_HAVE_KRETPROBES=y
+> CONFIG_HAVE_ARCH_TRACEHOOK=y
+> CONFIG_USE_GENERIC_SMP_HELPERS=y
+> CONFIG_SLOW_WORK=y
+> # CONFIG_HAVE_GENERIC_DMA_COHERENT is not set
+> CONFIG_RT_MUTEXES=y
+> CONFIG_BASE_SMALL=0
+> # CONFIG_MODULES is not set
+> CONFIG_INIT_ALL_POSSIBLE=y
+> CONFIG_STOP_MACHINE=y
+> # CONFIG_BLOCK is not set
+> # CONFIG_FREEZER is not set
+> 
+> #
+> # Base setup
+> #
+> 
+> #
+> # Processor type and features
+> #
+> CONFIG_TICK_ONESHOT=y
+> CONFIG_NO_HZ=y
+> CONFIG_HIGH_RES_TIMERS=y
+> CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+> CONFIG_64BIT=y
+> CONFIG_SMP=y
+> CONFIG_NR_CPUS=64
+> CONFIG_HOTPLUG_CPU=y
+> # CONFIG_COMPAT is not set
+> CONFIG_AUDIT_ARCH=y
+> CONFIG_S390_SWITCH_AMODE=y
+> # CONFIG_S390_EXEC_PROTECT is not set
+> 
+> #
+> # Code generation options
+> #
+> # CONFIG_MARCH_G5 is not set
+> CONFIG_MARCH_Z900=y
+> # CONFIG_MARCH_Z990 is not set
+> # CONFIG_MARCH_Z9_109 is not set
+> # CONFIG_MARCH_Z10 is not set
+> CONFIG_PACK_STACK=y
+> # CONFIG_CHECK_STACK is not set
+> CONFIG_WARN_STACK=y
+> CONFIG_WARN_STACK_SIZE=2048
+> CONFIG_ARCH_POPULATES_NODE_MAP=y
+> 
+> #
+> # Kernel preemption
+> #
+> CONFIG_PREEMPT_NONE=y
+> # CONFIG_PREEMPT_VOLUNTARY is not set
+> # CONFIG_PREEMPT is not set
+> CONFIG_ARCH_SPARSEMEM_ENABLE=y
+> CONFIG_ARCH_SPARSEMEM_DEFAULT=y
+> CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+> CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+> CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE=y
+> CONFIG_SELECT_MEMORY_MODEL=y
+> # CONFIG_FLATMEM_MANUAL is not set
+> # CONFIG_DISCONTIGMEM_MANUAL is not set
+> CONFIG_SPARSEMEM_MANUAL=y
+> CONFIG_SPARSEMEM=y
+> CONFIG_HAVE_MEMORY_PRESENT=y
+> CONFIG_SPARSEMEM_EXTREME=y
+> CONFIG_SPARSEMEM_VMEMMAP_ENABLE=y
+> CONFIG_SPARSEMEM_VMEMMAP=y
+> CONFIG_MEMORY_HOTPLUG=y
+> CONFIG_MEMORY_HOTPLUG_SPARSE=y
+> CONFIG_PAGEFLAGS_EXTENDED=y
+> CONFIG_SPLIT_PTLOCK_CPUS=4
+> # CONFIG_MIGRATION is not set
+> CONFIG_PHYS_ADDR_T_64BIT=y
+> CONFIG_ZONE_DMA_FLAG=1
+> CONFIG_VIRT_TO_BUS=y
+> CONFIG_UNEVICTABLE_LRU=y
+> 
+> #
+> # I/O subsystem configuration
+> #
+> CONFIG_MACHCHK_WARNING=y
+> CONFIG_QDIO=y
+> # CONFIG_CHSC_SCH is not set
+> 
+> #
+> # Misc
+> #
+> # CONFIG_IPL is not set
+> CONFIG_BINFMT_ELF=y
+> # CONFIG_HAVE_AOUT is not set
+> CONFIG_BINFMT_MISC=y
+> CONFIG_FORCE_MAX_ZONEORDER=9
+> CONFIG_PROCESS_DEBUG=y
+> # CONFIG_PFAULT is not set
+> CONFIG_SHARED_KERNEL=y
+> # CONFIG_CMM is not set
+> CONFIG_PAGE_STATES=y
+> # CONFIG_HZ_100 is not set
+> CONFIG_HZ_250=y
+> # CONFIG_HZ_300 is not set
+> # CONFIG_HZ_1000 is not set
+> CONFIG_HZ=250
+> CONFIG_SCHED_HRTICK=y
+> CONFIG_S390_HYPFS_FS=y
+> CONFIG_KEXEC=y
+> CONFIG_ZFCPDUMP=y
+> CONFIG_NET=y
+> 
+> #
+> # Networking options
+> #
+> CONFIG_COMPAT_NET_DEV_OPS=y
+> # CONFIG_PACKET is not set
+> CONFIG_UNIX=y
+> CONFIG_XFRM=y
+> CONFIG_XFRM_USER=y
+> CONFIG_XFRM_IPCOMP=y
+> # CONFIG_NET_KEY is not set
+> CONFIG_IUCV=y
+> CONFIG_AFIUCV=y
+> CONFIG_INET=y
+> # CONFIG_IP_MULTICAST is not set
+> CONFIG_IP_ADVANCED_ROUTER=y
+> CONFIG_ASK_IP_FIB_HASH=y
+> # CONFIG_IP_FIB_TRIE is not set
+> CONFIG_IP_FIB_HASH=y
+> # CONFIG_IP_MULTIPLE_TABLES is not set
+> # CONFIG_IP_ROUTE_MULTIPATH is not set
+> CONFIG_IP_ROUTE_VERBOSE=y
+> # CONFIG_IP_PNP is not set
+> # CONFIG_NET_IPIP is not set
+> # CONFIG_NET_IPGRE is not set
+> CONFIG_SYN_COOKIES=y
+> # CONFIG_INET_AH is not set
+> # CONFIG_INET_ESP is not set
+> # CONFIG_INET_IPCOMP is not set
+> # CONFIG_INET_XFRM_TUNNEL is not set
+> CONFIG_INET_TUNNEL=y
+> CONFIG_INET_XFRM_MODE_TRANSPORT=y
+> CONFIG_INET_XFRM_MODE_TUNNEL=y
+> CONFIG_INET_XFRM_MODE_BEET=y
+> CONFIG_INET_LRO=y
+> CONFIG_INET_DIAG=y
+> CONFIG_INET_TCP_DIAG=y
+> CONFIG_TCP_CONG_ADVANCED=y
+> CONFIG_TCP_CONG_BIC=y
+> CONFIG_TCP_CONG_CUBIC=y
+> # CONFIG_TCP_CONG_WESTWOOD is not set
+> # CONFIG_TCP_CONG_HTCP is not set
+> # CONFIG_DEFAULT_BIC is not set
+> CONFIG_DEFAULT_CUBIC=y
+> # CONFIG_DEFAULT_HTCP is not set
+> # CONFIG_DEFAULT_VEGAS is not set
+> # CONFIG_DEFAULT_WESTWOOD is not set
+> # CONFIG_DEFAULT_RENO is not set
+> CONFIG_DEFAULT_TCP_CONG="cubic"
+> CONFIG_IPV6=y
+> CONFIG_IPV6_PRIVACY=y
+> # CONFIG_IPV6_ROUTER_PREF is not set
+> CONFIG_INET6_AH=y
+> CONFIG_INET6_ESP=y
+> CONFIG_INET6_IPCOMP=y
+> CONFIG_INET6_XFRM_TUNNEL=y
+> CONFIG_INET6_TUNNEL=y
+> CONFIG_INET6_XFRM_MODE_TRANSPORT=y
+> CONFIG_INET6_XFRM_MODE_TUNNEL=y
+> # CONFIG_INET6_XFRM_MODE_BEET is not set
+> CONFIG_IPV6_SIT=y
+> CONFIG_IPV6_NDISC_NODETYPE=y
+> CONFIG_IPV6_TUNNEL=y
+> # CONFIG_NETWORK_SECMARK is not set
+> # CONFIG_NETFILTER is not set
+> # CONFIG_ATM is not set
+> CONFIG_STP=y
+> CONFIG_GARP=y
+> CONFIG_BRIDGE=y
+> CONFIG_VLAN_8021Q=y
+> CONFIG_VLAN_8021Q_GVRP=y
+> CONFIG_DECNET=y
+> CONFIG_LLC=y
+> # CONFIG_LLC2 is not set
+> CONFIG_IPX=y
+> CONFIG_IPX_INTERN=y
+> CONFIG_ATALK=y
+> # CONFIG_DEV_APPLETALK is not set
+> CONFIG_PHONET=y
+> CONFIG_NET_SCHED=y
+> 
+> #
+> # Queueing/Scheduling
+> #
+> CONFIG_NET_SCH_CBQ=y
+> # CONFIG_NET_SCH_HTB is not set
+> # CONFIG_NET_SCH_HFSC is not set
+> CONFIG_NET_SCH_PRIO=y
+> # CONFIG_NET_SCH_MULTIQ is not set
+> # CONFIG_NET_SCH_RED is not set
+> CONFIG_NET_SCH_SFQ=y
+> CONFIG_NET_SCH_TEQL=y
+> # CONFIG_NET_SCH_TBF is not set
+> # CONFIG_NET_SCH_GRED is not set
+> # CONFIG_NET_SCH_DSMARK is not set
+> # CONFIG_NET_SCH_NETEM is not set
+> CONFIG_NET_SCH_DRR=y
+> CONFIG_NET_SCH_INGRESS=y
+> 
+> #
+> # Classification
+> #
+> CONFIG_NET_CLS=y
+> CONFIG_NET_CLS_BASIC=y
+> # CONFIG_NET_CLS_TCINDEX is not set
+> # CONFIG_NET_CLS_ROUTE4 is not set
+> # CONFIG_NET_CLS_FW is not set
+> CONFIG_NET_CLS_U32=y
+> # CONFIG_CLS_U32_PERF is not set
+> # CONFIG_CLS_U32_MARK is not set
+> CONFIG_NET_CLS_RSVP=y
+> CONFIG_NET_CLS_RSVP6=y
+> # CONFIG_NET_CLS_FLOW is not set
+> # CONFIG_NET_EMATCH is not set
+> CONFIG_NET_CLS_ACT=y
+> # CONFIG_NET_ACT_POLICE is not set
+> CONFIG_NET_ACT_GACT=y
+> # CONFIG_GACT_PROB is not set
+> CONFIG_NET_ACT_MIRRED=y
+> CONFIG_NET_ACT_NAT=y
+> CONFIG_NET_ACT_PEDIT=y
+> CONFIG_NET_ACT_SIMP=y
+> CONFIG_NET_ACT_SKBEDIT=y
+> CONFIG_NET_CLS_IND=y
+> CONFIG_NET_SCH_FIFO=y
+> # CONFIG_DCB is not set
+> 
+> #
+> # Network testing
+> #
+> CONFIG_CAN=y
+> CONFIG_CAN_RAW=y
+> CONFIG_CAN_BCM=y
+> 
+> #
+> # CAN Device Drivers
+> #
+> # CONFIG_CAN_VCAN is not set
+> # CONFIG_CAN_DEBUG_DEVICES is not set
+> 
+> #
+> # WiMAX Wireless Broadband support requires CONFIG_INPUT enabled
+> #
+> CONFIG_RFKILL=y
+> # CONFIG_PCMCIA is not set
+> CONFIG_CCW=y
+> 
+> #
+> # Device Drivers
+> #
+> 
+> #
+> # Generic Driver Options
+> #
+> CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+> CONFIG_STANDALONE=y
+> # CONFIG_PREVENT_FIRMWARE_BUILD is not set
+> CONFIG_FW_LOADER=y
+> CONFIG_FIRMWARE_IN_KERNEL=y
+> CONFIG_EXTRA_FIRMWARE=""
+> CONFIG_DEBUG_DRIVER=y
+> CONFIG_DEBUG_DEVRES=y
+> CONFIG_SYS_HYPERVISOR=y
+> CONFIG_CONNECTOR=y
+> CONFIG_PROC_EVENTS=y
+> # CONFIG_MISC_DEVICES is not set
+> 
+> #
+> # SCSI device support
+> #
+> # CONFIG_SCSI_DMA is not set
+> # CONFIG_SCSI_NETLINK is not set
+> # CONFIG_NETDEVICES is not set
+> 
+> #
+> # Character devices
+> #
+> # CONFIG_DEVKMEM is not set
+> CONFIG_UNIX98_PTYS=y
+> CONFIG_DEVPTS_MULTIPLE_INSTANCES=y
+> CONFIG_LEGACY_PTYS=y
+> CONFIG_LEGACY_PTY_COUNT=256
+> CONFIG_HVC_DRIVER=y
+> CONFIG_HVC_IUCV=y
+> CONFIG_HW_RANDOM=y
+> # CONFIG_R3964 is not set
+> CONFIG_HANGCHECK_TIMER=y
+> 
+> #
+> # S/390 character device drivers
+> #
+> # CONFIG_TN3270 is not set
+> CONFIG_TN3215=y
+> # CONFIG_TN3215_CONSOLE is not set
+> CONFIG_SCLP_TTY=y
+> CONFIG_SCLP_CONSOLE=y
+> CONFIG_SCLP_VT220_TTY=y
+> CONFIG_SCLP_VT220_CONSOLE=y
+> # CONFIG_SCLP_CPI is not set
+> # CONFIG_S390_TAPE is not set
+> CONFIG_VMLOGRDR=y
+> CONFIG_VMCP=y
+> CONFIG_MONREADER=y
+> # CONFIG_MONWRITER is not set
+> CONFIG_S390_VMUR=y
+> CONFIG_W1=y
+> CONFIG_W1_CON=y
+> 
+> #
+> # 1-wire Bus Masters
+> #
+> 
+> #
+> # 1-wire Slaves
+> #
+> # CONFIG_W1_SLAVE_THERM is not set
+> # CONFIG_W1_SLAVE_SMEM is not set
+> CONFIG_W1_SLAVE_DS2433=y
+> # CONFIG_W1_SLAVE_DS2433_CRC is not set
+> CONFIG_W1_SLAVE_DS2760=y
+> CONFIG_W1_SLAVE_BQ27000=y
+> CONFIG_POWER_SUPPLY=y
+> # CONFIG_POWER_SUPPLY_DEBUG is not set
+> CONFIG_BATTERY_DS2760=y
+> # CONFIG_THERMAL is not set
+> # CONFIG_THERMAL_HWMON is not set
+> # CONFIG_WATCHDOG is not set
+> # CONFIG_REGULATOR is not set
+> # CONFIG_MEMSTICK is not set
+> # CONFIG_NEW_LEDS is not set
+> CONFIG_ACCESSIBILITY=y
+> CONFIG_STAGING=y
+> CONFIG_STAGING_EXCLUDE_BUILD=y
+> 
+> #
+> # File systems
+> #
+> CONFIG_FS_POSIX_ACL=y
+> CONFIG_DNOTIFY=y
+> # CONFIG_INOTIFY is not set
+> # CONFIG_QUOTA is not set
+> CONFIG_AUTOFS_FS=y
+> CONFIG_AUTOFS4_FS=y
+> CONFIG_FUSE_FS=y
+> 
+> #
+> # Caches
+> #
+> 
+> #
+> # Pseudo filesystems
+> #
+> # CONFIG_PROC_FS is not set
+> # CONFIG_SYSFS is not set
+> CONFIG_TMPFS=y
+> # CONFIG_TMPFS_POSIX_ACL is not set
+> # CONFIG_HUGETLBFS is not set
+> # CONFIG_HUGETLB_PAGE is not set
+> CONFIG_MISC_FILESYSTEMS=y
+> CONFIG_NETWORK_FILESYSTEMS=y
+> CONFIG_NFS_FS=y
+> CONFIG_NFS_V3=y
+> CONFIG_NFS_V3_ACL=y
+> CONFIG_LOCKD=y
+> CONFIG_LOCKD_V4=y
+> CONFIG_NFS_ACL_SUPPORT=y
+> CONFIG_NFS_COMMON=y
+> CONFIG_SUNRPC=y
+> CONFIG_SMB_FS=y
+> # CONFIG_SMB_NLS_DEFAULT is not set
+> # CONFIG_CIFS is not set
+> CONFIG_NCP_FS=y
+> CONFIG_NCPFS_PACKET_SIGNING=y
+> # CONFIG_NCPFS_IOCTL_LOCKING is not set
+> # CONFIG_NCPFS_STRONG is not set
+> # CONFIG_NCPFS_NFS_NS is not set
+> # CONFIG_NCPFS_OS2_NS is not set
+> CONFIG_NCPFS_SMALLDOS=y
+> # CONFIG_NCPFS_NLS is not set
+> # CONFIG_NCPFS_EXTRAS is not set
+> CONFIG_CODA_FS=y
+> CONFIG_NLS=y
+> CONFIG_NLS_DEFAULT="iso8859-1"
+> CONFIG_NLS_CODEPAGE_437=y
+> CONFIG_NLS_CODEPAGE_737=y
+> # CONFIG_NLS_CODEPAGE_775 is not set
+> CONFIG_NLS_CODEPAGE_850=y
+> # CONFIG_NLS_CODEPAGE_852 is not set
+> # CONFIG_NLS_CODEPAGE_855 is not set
+> CONFIG_NLS_CODEPAGE_857=y
+> CONFIG_NLS_CODEPAGE_860=y
+> # CONFIG_NLS_CODEPAGE_861 is not set
+> # CONFIG_NLS_CODEPAGE_862 is not set
+> # CONFIG_NLS_CODEPAGE_863 is not set
+> CONFIG_NLS_CODEPAGE_864=y
+> # CONFIG_NLS_CODEPAGE_865 is not set
+> # CONFIG_NLS_CODEPAGE_866 is not set
+> CONFIG_NLS_CODEPAGE_869=y
+> CONFIG_NLS_CODEPAGE_936=y
+> CONFIG_NLS_CODEPAGE_950=y
+> CONFIG_NLS_CODEPAGE_932=y
+> # CONFIG_NLS_CODEPAGE_949 is not set
+> CONFIG_NLS_CODEPAGE_874=y
+> CONFIG_NLS_ISO8859_8=y
+> CONFIG_NLS_CODEPAGE_1250=y
+> CONFIG_NLS_CODEPAGE_1251=y
+> # CONFIG_NLS_ASCII is not set
+> CONFIG_NLS_ISO8859_1=y
+> CONFIG_NLS_ISO8859_2=y
+> CONFIG_NLS_ISO8859_3=y
+> CONFIG_NLS_ISO8859_4=y
+> CONFIG_NLS_ISO8859_5=y
+> # CONFIG_NLS_ISO8859_6 is not set
+> # CONFIG_NLS_ISO8859_7 is not set
+> # CONFIG_NLS_ISO8859_9 is not set
+> CONFIG_NLS_ISO8859_13=y
+> CONFIG_NLS_ISO8859_14=y
+> CONFIG_NLS_ISO8859_15=y
+> CONFIG_NLS_KOI8_R=y
+> # CONFIG_NLS_KOI8_U is not set
+> CONFIG_NLS_UTF8=y
+> 
+> #
+> # Kernel hacking
+> #
+> CONFIG_TRACE_IRQFLAGS_SUPPORT=y
+> CONFIG_ENABLE_WARN_DEPRECATED=y
+> CONFIG_ENABLE_MUST_CHECK=y
+> CONFIG_FRAME_WARN=2048
+> # CONFIG_MAGIC_SYSRQ is not set
+> CONFIG_UNUSED_SYMBOLS=y
+> CONFIG_DEBUG_FS=y
+> # CONFIG_HEADERS_CHECK is not set
+> CONFIG_DEBUG_KERNEL=y
+> # CONFIG_DETECT_HUNG_TASK is not set
+> CONFIG_SCHED_DEBUG=y
+> CONFIG_SCHEDSTATS=y
+> CONFIG_DEBUG_OBJECTS=y
+> CONFIG_DEBUG_OBJECTS_SELFTEST=y
+> CONFIG_DEBUG_OBJECTS_FREE=y
+> CONFIG_DEBUG_OBJECTS_TIMERS=y
+> CONFIG_DEBUG_OBJECTS_ENABLE_DEFAULT=1
+> # CONFIG_SLQB_DEBUG is not set
+> CONFIG_SLQB_SYSFS=y
+> # CONFIG_SLQB_STATS is not set
+> CONFIG_DEBUG_RT_MUTEXES=y
+> CONFIG_DEBUG_PI_LIST=y
+> CONFIG_RT_MUTEX_TESTER=y
+> CONFIG_DEBUG_SPINLOCK=y
+> CONFIG_DEBUG_MUTEXES=y
+> CONFIG_DEBUG_LOCK_ALLOC=y
+> # CONFIG_PROVE_LOCKING is not set
+> CONFIG_LOCKDEP=y
+> CONFIG_LOCK_STAT=y
+> CONFIG_DEBUG_LOCKDEP=y
+> CONFIG_TRACE_IRQFLAGS=y
+> CONFIG_DEBUG_SPINLOCK_SLEEP=y
+> # CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
+> CONFIG_STACKTRACE=y
+> # CONFIG_DEBUG_KOBJECT is not set
+> # CONFIG_DEBUG_BUGVERBOSE is not set
+> # CONFIG_DEBUG_INFO is not set
+> CONFIG_DEBUG_VM=y
+> CONFIG_DEBUG_WRITECOUNT=y
+> CONFIG_DEBUG_MEMORY_INIT=y
+> # CONFIG_DEBUG_LIST is not set
+> CONFIG_DEBUG_SG=y
+> # CONFIG_DEBUG_NOTIFIERS is not set
+> CONFIG_FRAME_POINTER=y
+> # CONFIG_RCU_TORTURE_TEST is not set
+> CONFIG_RCU_CPU_STALL_DETECTOR=y
+> # CONFIG_BACKTRACE_SELF_TEST is not set
+> # CONFIG_FAULT_INJECTION is not set
+> CONFIG_LATENCYTOP=y
+> CONFIG_SYSCTL_SYSCALL_CHECK=y
+> CONFIG_NOP_TRACER=y
+> CONFIG_HAVE_FUNCTION_TRACER=y
+> CONFIG_TRACER_MAX_TRACE=y
+> CONFIG_RING_BUFFER=y
+> CONFIG_TRACING=y
+> 
+> #
+> # Tracers
+> #
+> CONFIG_FUNCTION_TRACER=y
+> CONFIG_IRQSOFF_TRACER=y
+> CONFIG_SCHED_TRACER=y
+> CONFIG_CONTEXT_SWITCH_TRACER=y
+> CONFIG_BOOT_TRACER=y
+> CONFIG_TRACE_BRANCH_PROFILING=y
+> CONFIG_PROFILE_ALL_BRANCHES=y
+> # CONFIG_BRANCH_TRACER is not set
+> CONFIG_STACK_TRACER=y
+> CONFIG_KMEMTRACE=y
+> CONFIG_WORKQUEUE_TRACER=y
+> CONFIG_FTRACE_SELFTEST=y
+> CONFIG_FTRACE_STARTUP_TEST=y
+> CONFIG_SAMPLES=y
+> CONFIG_SAMPLE_KOBJECT=y
+> CONFIG_DEBUG_PAGEALLOC=y
+> 
+> #
+> # Security options
+> #
+> CONFIG_KEYS=y
+> CONFIG_KEYS_DEBUG_PROC_KEYS=y
+> CONFIG_SECURITYFS=y
+> # CONFIG_SECURITY_FILE_CAPABILITIES is not set
+> CONFIG_CRYPTO=y
+> 
+> #
+> # Crypto core or helper
+> #
+> CONFIG_CRYPTO_FIPS=y
+> CONFIG_CRYPTO_ALGAPI=y
+> CONFIG_CRYPTO_ALGAPI2=y
+> CONFIG_CRYPTO_AEAD=y
+> CONFIG_CRYPTO_AEAD2=y
+> CONFIG_CRYPTO_BLKCIPHER=y
+> CONFIG_CRYPTO_BLKCIPHER2=y
+> CONFIG_CRYPTO_HASH=y
+> CONFIG_CRYPTO_HASH2=y
+> CONFIG_CRYPTO_RNG=y
+> CONFIG_CRYPTO_RNG2=y
+> CONFIG_CRYPTO_MANAGER=y
+> CONFIG_CRYPTO_MANAGER2=y
+> CONFIG_CRYPTO_GF128MUL=y
+> CONFIG_CRYPTO_NULL=y
+> # CONFIG_CRYPTO_CRYPTD is not set
+> CONFIG_CRYPTO_AUTHENC=y
+> 
+> #
+> # Authenticated Encryption with Associated Data
+> #
+> CONFIG_CRYPTO_CCM=y
+> CONFIG_CRYPTO_GCM=y
+> CONFIG_CRYPTO_SEQIV=y
+> 
+> #
+> # Block modes
+> #
+> CONFIG_CRYPTO_CBC=y
+> CONFIG_CRYPTO_CTR=y
+> CONFIG_CRYPTO_CTS=y
+> # CONFIG_CRYPTO_ECB is not set
+> # CONFIG_CRYPTO_PCBC is not set
+> 
+> #
+> # Hash modes
+> #
+> CONFIG_CRYPTO_HMAC=y
+> 
+> #
+> # Digest
+> #
+> CONFIG_CRYPTO_CRC32C=y
+> CONFIG_CRYPTO_MD4=y
+> CONFIG_CRYPTO_MD5=y
+> CONFIG_CRYPTO_MICHAEL_MIC=y
+> CONFIG_CRYPTO_RMD128=y
+> CONFIG_CRYPTO_RMD160=y
+> # CONFIG_CRYPTO_RMD256 is not set
+> CONFIG_CRYPTO_RMD320=y
+> CONFIG_CRYPTO_SHA1=y
+> # CONFIG_CRYPTO_SHA256 is not set
+> # CONFIG_CRYPTO_SHA512 is not set
+> CONFIG_CRYPTO_TGR192=y
+> CONFIG_CRYPTO_WP512=y
+> 
+> #
+> # Ciphers
+> #
+> CONFIG_CRYPTO_AES=y
+> CONFIG_CRYPTO_ANUBIS=y
+> CONFIG_CRYPTO_ARC4=y
+> CONFIG_CRYPTO_BLOWFISH=y
+> # CONFIG_CRYPTO_CAMELLIA is not set
+> CONFIG_CRYPTO_CAST5=y
+> # CONFIG_CRYPTO_CAST6 is not set
+> CONFIG_CRYPTO_DES=y
+> CONFIG_CRYPTO_FCRYPT=y
+> # CONFIG_CRYPTO_KHAZAD is not set
+> # CONFIG_CRYPTO_SEED is not set
+> CONFIG_CRYPTO_SERPENT=y
+> # CONFIG_CRYPTO_TEA is not set
+> CONFIG_CRYPTO_TWOFISH=y
+> CONFIG_CRYPTO_TWOFISH_COMMON=y
+> 
+> #
+> # Compression
+> #
+> CONFIG_CRYPTO_DEFLATE=y
+> # CONFIG_CRYPTO_LZO is not set
+> 
+> #
+> # Random Number Generation
+> #
+> CONFIG_CRYPTO_ANSI_CPRNG=y
+> CONFIG_CRYPTO_HW=y
+> CONFIG_ZCRYPT=y
+> CONFIG_ZCRYPT_MONOLITHIC=y
+> CONFIG_CRYPTO_SHA1_S390=y
+> # CONFIG_CRYPTO_SHA256_S390 is not set
+> CONFIG_CRYPTO_SHA512_S390=y
+> CONFIG_CRYPTO_DES_S390=y
+> # CONFIG_CRYPTO_AES_S390 is not set
+> CONFIG_S390_PRNG=y
+> 
+> #
+> # Library routines
+> #
+> CONFIG_GENERIC_FIND_LAST_BIT=y
+> # CONFIG_CRC_CCITT is not set
+> CONFIG_CRC16=y
+> # CONFIG_CRC_T10DIF is not set
+> CONFIG_CRC_ITU_T=y
+> # CONFIG_CRC32 is not set
+> CONFIG_CRC7=y
+> CONFIG_LIBCRC32C=y
+> CONFIG_ZLIB_INFLATE=y
+> CONFIG_ZLIB_DEFLATE=y
+> CONFIG_HAVE_KVM=y
+> # CONFIG_VIRTUALIZATION is not set
 
-When compiling the kernel with an allyesconfig and the gcc flags
--Wformat and -Wformat-security the build process emits ~150 warnings
-along these lines:
-
-init/main.c:557: warning: format not a string literal and no format arguments
-init/initramfs.c:582: warning: format not a string literal and no
-format arguments
-arch/x86/kernel/dumpstack.c:115: warning: format not a string literal
-and no format arguments
-...
-
-Many of these warnings are harmless - the format string is statically
-set within the kernel itself and is known to not contain any format
-qualifiers.
-This patch fixes a number of cases by restructuring code a little to
-avoid needing an extra "%s" argument.
-
-Signed-off-by: Floris Kraak <randakar@gmail.com>
----
-diff --git a/sound/pci/hda/hda_codec.c b/sound/pci/hda/hda_codec.c
-index 0b70813..99db356 100644
---- a/sound/pci/hda/hda_codec.c
-+++ b/sound/pci/hda/hda_codec.c
-@@ -591,14 +591,12 @@ find_codec_preset(struct hda_codec *codec)
- 	mutex_unlock(&preset_mutex);
-
- 	if (mod_requested < HDA_MODREQ_MAX_COUNT) {
--		char name[32];
- 		if (!mod_requested)
--			snprintf(name, sizeof(name), "snd-hda-codec-id:%08x",
-+			request_module("snd-hda-codec-id:%08x",
- 				 codec->vendor_id);
- 		else
--			snprintf(name, sizeof(name), "snd-hda-codec-id:%04x*",
-+			request_module("snd-hda-codec-id:%04x*",
- 				 (codec->vendor_id >> 16) & 0xffff);
--		request_module(name);
- 		mod_requested++;
- 		goto again;
- 	}
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index e858268..c7ebb40 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -1172,8 +1172,9 @@ u64 __init e820_hole_size(u64 start, u64 end)
- 	return end - start - ((u64)ram << PAGE_SHIFT);
- }
-
--static void early_panic(char *msg)
-+static inline void __init panic_memory_map_invalid(void)
- {
-+	static const char msg[] = "Invalid user supplied memory map";
- 	early_printk(msg);
- 	panic(msg);
- }
-@@ -1253,7 +1254,7 @@ void __init finish_e820_parsing(void)
- 		int nr = e820.nr_map;
-
- 		if (sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &nr) < 0)
--			early_panic("Invalid user supplied memory map");
-+			panic_memory_map_invalid();
- 		e820.nr_map = nr;
-
- 		printk(KERN_INFO "user-defined physical RAM map:\n");
-diff --git a/drivers/net/hamradio/mkiss.c b/drivers/net/hamradio/mkiss.c
-index bbdb311..5ededee 100644
---- a/drivers/net/hamradio/mkiss.c
-+++ b/drivers/net/hamradio/mkiss.c
-@@ -994,7 +994,7 @@ static int __init mkiss_init_driver(void)
- 	printk(banner);
-
- 	if ((status = tty_register_ldisc(N_AX25, &ax_ldisc)) != 0)
--		printk(msg_regfail);
-+		printk(msg_regfail, status);
-
- 	return status;
- }
-diff --git a/drivers/net/wireless/b43/main.c b/drivers/net/wireless/b43/main.c
-index c788bad..7472526 100644
---- a/drivers/net/wireless/b43/main.c
-+++ b/drivers/net/wireless/b43/main.c
-@@ -1999,11 +1999,11 @@ static void b43_release_firmware(struct b43_wldev *dev)
-
- static void b43_print_fw_helptext(struct b43_wl *wl, bool error)
- {
--	const char *text;
-+	static const char text[] =
-+		"You must go to "
-+		"http://linuxwireless.org/en/users/Drivers/b43#devicefirmware "
-+		"and download the latest firmware (version 4).\n";
-
--	text = "You must go to "
--	       "http://linuxwireless.org/en/users/Drivers/b43#devicefirmware "
--	       "and download the latest firmware (version 4).\n";
- 	if (error)
- 		b43err(wl, text);
- 	else
-diff --git a/sound/core/sound.c b/sound/core/sound.c
-index 7872a02..8e4237c 100644
---- a/sound/core/sound.c
-+++ b/sound/core/sound.c
-@@ -81,14 +81,14 @@ EXPORT_SYMBOL(snd_request_card);
-
- static void snd_request_other(int minor)
- {
--	char *str;
--
- 	switch (minor) {
--	case SNDRV_MINOR_SEQUENCER:	str = "snd-seq";	break;
--	case SNDRV_MINOR_TIMER:		str = "snd-timer";	break;
--	default:			return;
-+	case SNDRV_MINOR_SEQUENCER:
-+		request_module("snd-seq");
-+		break;
-+	case SNDRV_MINOR_TIMER:
-+		request_module("snd-timer");
-+		break;
- 	}
--	request_module(str);
- }
-
- #endif	/* modular kernel */
-diff --git a/sound/drivers/opl3/opl3_seq.c b/sound/drivers/opl3/opl3_seq.c
-index 2d33f53..7c0e0bc 100644
---- a/sound/drivers/opl3/opl3_seq.c
-+++ b/sound/drivers/opl3/opl3_seq.c
-@@ -220,6 +220,7 @@ static int snd_opl3_seq_new_device(struct
-snd_seq_device *dev)
- 	struct snd_opl3 *opl3;
- 	int client, err;
- 	char name[32];
-+	static const char nameformat [] = "OPL%i FM synth";
- 	int opl_ver;
-
- 	opl3 = *(struct snd_opl3 **)SNDRV_SEQ_DEVICE_ARGPTR(dev);
-@@ -232,10 +233,9 @@ static int snd_opl3_seq_new_device(struct
-snd_seq_device *dev)
-
- 	/* allocate new client */
- 	opl_ver = (opl3->hardware & OPL3_HW_MASK) >> 8;
--	sprintf(name, "OPL%i FM synth", opl_ver);
- 	client = opl3->seq_client =
- 		snd_seq_create_kernel_client(opl3->card, opl3->seq_dev_num,
--					     name);
-+					     nameformat, opl_ver);
- 	if (client < 0)
- 		return client;
-
-@@ -253,6 +253,7 @@ static int snd_opl3_seq_new_device(struct
-snd_seq_device *dev)
- 	opl3->sys_timer_status = 0;
-
- #ifdef CONFIG_SND_SEQUENCER_OSS
-+	sprintf(name, nameformat, opl_ver);
- 	snd_opl3_init_seq_oss(opl3, name);
- #endif
- 	return 0;
----
-
-Regards,
-Floris
----
-"They that give up essential liberty to obtain temporary safety,
-deserve neither liberty nor safety."
-  -- Ben Franklin
-
-"The course of history shows that as a government grows, liberty
-decreases."
-  -- Thomas Jefferson
