@@ -1,47 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbZBJQDB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbZBJQDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754022AbZBJQDB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 11:03:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895AbZBJQCw
+	id S1755506AbZBJQDr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 11:03:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbZBJQDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 11:02:52 -0500
-Received: from mail.fieldses.org ([141.211.133.115]:40655 "EHLO
-	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754583AbZBJQCv (ORCPT
+	Tue, 10 Feb 2009 11:03:38 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:33190 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753251AbZBJQDh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 11:02:51 -0500
-Date: Tue, 10 Feb 2009 11:02:58 -0500
-To: "Gary L. Grobe" <gary@grobe.net>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: processes in D state too long too often
-Message-ID: <20090210160258.GD29075@fieldses.org>
-References: <W322075763216621234232313@webmail8>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <W322075763216621234232313@webmail8>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Tue, 10 Feb 2009 11:03:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:from:to:cc:date:subject;
+        b=cgMCeMvV9c40o4NGsGiDKXqSekApC0SZT8D4uCZZP4WACqmfk6Kb7HPFRrWJgzzWMy
+         5eYgQkyNTKvvi/TXA0LzkToYC9+z5xqa8N/a463HHN2FvQ1c/0f7TbuCHohL8RiSdtTs
+         s5ZMcqzQIjv2cd9U/jE/5+waOQovJRkUZOZHE=
+Message-ID: <4991a557.1ade660a.582e.7835@mx.google.com>
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Mandeep Singh Baines <msb@google.com>
+Cc: linux-kernel@vger.kernel.org, rientjes@google.com, mbligh@google.com,
+       thockin@google.com
+Date: Tue, 10 Feb 2009 16:52:37 +0100
+Subject: [PATCH] softlockup: ensure the task has been switched out once
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 02:18:33AM +0000, Gary L. Grobe wrote:
-> 
-> >>The more likely explanation is that you just switched to a more recent
-> >>distro where "sync" (as opposed to "async") is the option.  Depending on
-> >>workload, "async" may improve performance a great deal, at the expense
-> >>of possible data corruption on server reboot!
-> >>
-> >>If you're doing a lot of writing and using NFSv2, then switching to
-> >>NFSv3 may give you performance close to the "async" performance without
-> >>the corruption worries.
-> 
-> Just a small update about our rollback I need to correct. Turns out our problem has been solved by going with the 2.6.20-r10 of the gentoo-sources patched kernel. Although gentoo marks this as unstable for amd64, it's working fine. I've made no other changes than going back a few versions on the kernel and adjusting the .config w/ the same settings. 
-> 
-> Tomorrow I'll likely give the next marked stable patched gentoo-sources kernel another try which was 2.6.24-r10 and recheck my configs and try to gather anything else I can gather from it.
+When we check if a task has been switched out since the last scan, we might
+have a race condition on the following scenario:
 
-Sounds good, thanks.
+_ the task is freshly created and scheduled
+_ it puts its state to TASK_UNINTERRUPTIBLE and is not yet switched out
+_ check_hung_task() scans this task and will report a false positive because
+  t->nvcsw + t->nivcsw == t->last_switch_count == 0
 
---b.
+Add a check for such cases.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ kernel/hung_task.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/hung_task.c b/kernel/hung_task.c
+index 0c924de..022a492 100644
+--- a/kernel/hung_task.c
++++ b/kernel/hung_task.c
+@@ -72,7 +72,13 @@ static void check_hung_task(struct task_struct *t, unsigned long timeout)
+ {
+ 	unsigned long switch_count = t->nvcsw + t->nivcsw;
+ 
+-	if (t->flags & PF_FROZEN)
++	/*
++	 * Ensure the task is not frozen.
++	 * Also, when a freshly created task is scheduled once, changes
++	 * its state to TASK_UNINTERRUPTIBLE without having ever been
++	 * switched out once, it musn't be checked.
++	 */
++	if (unlikely(t->flags & PF_FROZEN || !switch_count))
+ 		return;
+ 
+ 	if (switch_count != t->last_switch_count) {
+-- 
+1.6.1
+
+
