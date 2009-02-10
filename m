@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758277AbZBJTUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758520AbZBJTVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758277AbZBJTUh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 14:20:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755989AbZBJTEW
+	id S1758520AbZBJTVl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 14:21:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755994AbZBJTE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 14:04:22 -0500
-Received: from kroah.org ([198.145.64.141]:33907 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 14:04:27 -0500
+Received: from kroah.org ([198.145.64.141]:34003 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755948AbZBJTET (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 14:04:19 -0500
-Date: Tue, 10 Feb 2009 11:01:29 -0800
+	id S1755991AbZBJTEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 14:04:22 -0500
+Date: Tue, 10 Feb 2009 11:01:35 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dirk De Schepper <ddeschepper@nvtl.com>,
-       Matthias Urlichs <matthias@urlichs.de>
-Subject: [patch 47/53] USB: option: New mobile broadband modems to be
-	supported
-Message-ID: <20090210190129.GV14308@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
+Subject: [patch 50/53] USB: usb-storage: add Pentax to the bad-vendor list
+Message-ID: <20090210190135.GY14308@kroah.com>
 References: <20090210185337.000769713@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-option-new-mobile-broadband-modems-to-be-supported.patch"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline; filename="usb-usb-storage-add-pentax-to-the-bad-vendor-list.patch"
+Content-Transfer-Encoding: 8bit
 In-Reply-To: <20090210185924.GA14308@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,132 +39,63 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Dirk De Schepper <ddeschepper@nvtl.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit c200b9c9e8ec93cdd262cfa1699ad92e883d4876 upstream.
+commit 506e9469833c66ed6bb9acd902e208f7301b6adb upstream.
 
-- New Novatel and Dell mobile broadband modem products added
- - Dell pid variables used in stead of numerical PIDs for known
-   products
+This patch (as1202) adds Pentax to usb-storage's list of bad vendors
+whose devices always need the CAPACITY_HEURISTICS flag.  This is in
+addition to the existing entries: Nokia, Nikon, and Motorola.
 
-Signed-off-by: Dirk De Schepper <ddeschepper@nvtl.com>
-Signed-off-by: Matthias Urlichs <matthias@urlichs.de>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Tested-by: Virgo Pärna <virgo.parna@mail.ee>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/option.c |   84 +++++++++++++++++++++++++++++---------------
- 1 file changed, 56 insertions(+), 28 deletions(-)
+ drivers/usb/storage/scsiglue.c     |    2 ++
+ drivers/usb/storage/unusual_devs.h |   15 ---------------
+ 2 files changed, 2 insertions(+), 15 deletions(-)
 
---- a/drivers/usb/serial/option.c
-+++ b/drivers/usb/serial/option.c
-@@ -192,14 +192,15 @@ static int  option_send_setup(struct tty
- #define NOVATELWIRELESS_PRODUCT_MC950D		0x4400
+--- a/drivers/usb/storage/scsiglue.c
++++ b/drivers/usb/storage/scsiglue.c
+@@ -64,6 +64,7 @@
+  */
+ #define VENDOR_ID_NOKIA		0x0421
+ #define VENDOR_ID_NIKON		0x04b0
++#define VENDOR_ID_PENTAX	0x0a17
+ #define VENDOR_ID_MOTOROLA	0x22b8
  
- /* FUTURE NOVATEL PRODUCTS */
--#define NOVATELWIRELESS_PRODUCT_EVDO_1		0x6000
--#define NOVATELWIRELESS_PRODUCT_HSPA_1		0x7000
--#define NOVATELWIRELESS_PRODUCT_EMBEDDED_1	0x8000
--#define NOVATELWIRELESS_PRODUCT_GLOBAL_1	0x9000
--#define NOVATELWIRELESS_PRODUCT_EVDO_2		0x6001
--#define NOVATELWIRELESS_PRODUCT_HSPA_2		0x7001
--#define NOVATELWIRELESS_PRODUCT_EMBEDDED_2	0x8001
--#define NOVATELWIRELESS_PRODUCT_GLOBAL_2	0x9001
-+#define NOVATELWIRELESS_PRODUCT_EVDO_FULLSPEED	0X6000
-+#define NOVATELWIRELESS_PRODUCT_EVDO_HIGHSPEED	0X6001
-+#define NOVATELWIRELESS_PRODUCT_HSPA_FULLSPEED	0X7000
-+#define NOVATELWIRELESS_PRODUCT_HSPA_HIGHSPEED	0X7001
-+#define NOVATELWIRELESS_PRODUCT_EVDO_EMBEDDED_FULLSPEED	0X8000
-+#define NOVATELWIRELESS_PRODUCT_EVDO_EMBEDDED_HIGHSPEED	0X8001
-+#define NOVATELWIRELESS_PRODUCT_HSPA_EMBEDDED_FULLSPEED	0X9000
-+#define NOVATELWIRELESS_PRODUCT_HSPA_EMBEDDED_HIGHSPEED	0X9001
-+#define NOVATELWIRELESS_PRODUCT_GLOBAL		0XA001
+ /***********************************************************************
+@@ -150,6 +151,7 @@ static int slave_configure(struct scsi_d
+ 		switch (le16_to_cpu(us->pusb_dev->descriptor.idVendor)) {
+ 		case VENDOR_ID_NOKIA:
+ 		case VENDOR_ID_NIKON:
++		case VENDOR_ID_PENTAX:
+ 		case VENDOR_ID_MOTOROLA:
+ 			if (!(us->fflags & (US_FL_FIX_CAPACITY |
+ 					US_FL_CAPACITY_OK)))
+--- a/drivers/usb/storage/unusual_devs.h
++++ b/drivers/usb/storage/unusual_devs.h
+@@ -1304,21 +1304,6 @@ UNUSUAL_DEV( 0x0a17, 0x0004, 0x1000, 0x1
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_FIX_INQUIRY ),
  
- /* AMOI PRODUCTS */
- #define AMOI_VENDOR_ID				0x1614
-@@ -209,6 +210,27 @@ static int  option_send_setup(struct tty
- 
- #define DELL_VENDOR_ID				0x413C
- 
-+/* Dell modems */
-+#define DELL_PRODUCT_5700_MINICARD		0x8114
-+#define DELL_PRODUCT_5500_MINICARD		0x8115
-+#define DELL_PRODUCT_5505_MINICARD		0x8116
-+#define DELL_PRODUCT_5700_EXPRESSCARD		0x8117
-+#define DELL_PRODUCT_5510_EXPRESSCARD		0x8118
-+
-+#define DELL_PRODUCT_5700_MINICARD_SPRINT	0x8128
-+#define DELL_PRODUCT_5700_MINICARD_TELUS	0x8129
-+
-+#define DELL_PRODUCT_5720_MINICARD_VZW		0x8133
-+#define DELL_PRODUCT_5720_MINICARD_SPRINT	0x8134
-+#define DELL_PRODUCT_5720_MINICARD_TELUS	0x8135
-+#define DELL_PRODUCT_5520_MINICARD_CINGULAR	0x8136
-+#define DELL_PRODUCT_5520_MINICARD_GENERIC_L	0x8137
-+#define DELL_PRODUCT_5520_MINICARD_GENERIC_I	0x8138
-+
-+#define DELL_PRODUCT_5730_MINICARD_SPRINT	0x8180
-+#define DELL_PRODUCT_5730_MINICARD_TELUS	0x8181
-+#define DELL_PRODUCT_5730_MINICARD_VZW		0x8182
-+
- #define KYOCERA_VENDOR_ID			0x0c88
- #define KYOCERA_PRODUCT_KPC650			0x17da
- #define KYOCERA_PRODUCT_KPC680			0x180a
-@@ -377,31 +399,37 @@ static struct usb_device_id option_ids[]
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_EU870D) }, /* Novatel EU850D/EU860D/EU870D */
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_MC950D) }, /* Novatel MC930D/MC950D */
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_MC727) }, /* Novatel MC727/U727/USB727 */
--	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_EVDO_1) }, /* Novatel EVDO product */
--	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_HSPA_1) }, /* Novatel HSPA product */
--	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_EMBEDDED_1) }, /* Novatel Embedded product */
--	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_GLOBAL_1) }, /* Novatel Global product */
--	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_EVDO_2) }, /* Novatel EVDO product */
--	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_HSPA_2) }, /* Novatel HSPA product */
--	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_EMBEDDED_2) }, /* Novatel Embedded product */
--	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_GLOBAL_2) }, /* Novatel Global product */
-+	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_EVDO_FULLSPEED) }, /* Novatel EVDO product */
-+	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_HSPA_FULLSPEED) }, /* Novatel HSPA product */
-+	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_EVDO_EMBEDDED_FULLSPEED) }, /* Novatel EVDO Embedded product */
-+	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_HSPA_EMBEDDED_FULLSPEED) }, /* Novatel HSPA Embedded product */
-+	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_EVDO_HIGHSPEED) }, /* Novatel EVDO product */
-+	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_HSPA_HIGHSPEED) }, /* Novatel HSPA product */
-+	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_EVDO_EMBEDDED_HIGHSPEED) }, /* Novatel EVDO Embedded product */
-+	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_HSPA_EMBEDDED_HIGHSPEED) }, /* Novatel HSPA Embedded product */
-+	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_GLOBAL) }, /* Novatel Global product */
- 
- 	{ USB_DEVICE(AMOI_VENDOR_ID, AMOI_PRODUCT_H01) },
- 	{ USB_DEVICE(AMOI_VENDOR_ID, AMOI_PRODUCT_H01A) },
- 	{ USB_DEVICE(AMOI_VENDOR_ID, AMOI_PRODUCT_H02) },
- 
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8114) },	/* Dell Wireless 5700 Mobile Broadband CDMA/EVDO Mini-Card == Novatel Expedite EV620 CDMA/EV-DO */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8115) },	/* Dell Wireless 5500 Mobile Broadband HSDPA Mini-Card == Novatel Expedite EU740 HSDPA/3G */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8116) },	/* Dell Wireless 5505 Mobile Broadband HSDPA Mini-Card == Novatel Expedite EU740 HSDPA/3G */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8117) },	/* Dell Wireless 5700 Mobile Broadband CDMA/EVDO ExpressCard == Novatel Merlin XV620 CDMA/EV-DO */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8118) },	/* Dell Wireless 5510 Mobile Broadband HSDPA ExpressCard == Novatel Merlin XU870 HSDPA/3G */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8128) },	/* Dell Wireless 5700 Mobile Broadband CDMA/EVDO Mini-Card == Novatel Expedite E720 CDMA/EV-DO */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8129) },	/* Dell Wireless 5700 Mobile Broadband CDMA/EVDO Mini-Card == Novatel Expedite ET620 CDMA/EV-DO */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8133) }, /* Dell Wireless 5720 == Novatel EV620 CDMA/EV-DO */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8136) },	/* Dell Wireless HSDPA 5520 == Novatel Expedite EU860D */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8137) },	/* Dell Wireless HSDPA 5520 */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8138) },	/* Dell Wireless 5520 Voda I Mobile Broadband (3G HSDPA) Minicard */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8147) },	/* Dell Wireless 5530 Mobile Broadband (3G HSPA) Mini-Card */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5700_MINICARD) },		/* Dell Wireless 5700 Mobile Broadband CDMA/EVDO Mini-Card == Novatel Expedite EV620 CDMA/EV-DO */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5500_MINICARD) },		/* Dell Wireless 5500 Mobile Broadband HSDPA Mini-Card == Novatel Expedite EU740 HSDPA/3G */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5505_MINICARD) },		/* Dell Wireless 5505 Mobile Broadband HSDPA Mini-Card == Novatel Expedite EU740 HSDPA/3G */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5700_EXPRESSCARD) },		/* Dell Wireless 5700 Mobile Broadband CDMA/EVDO ExpressCard == Novatel Merlin XV620 CDMA/EV-DO */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5510_EXPRESSCARD) },		/* Dell Wireless 5510 Mobile Broadband HSDPA ExpressCard == Novatel Merlin XU870 HSDPA/3G */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5700_MINICARD_SPRINT) },	/* Dell Wireless 5700 Mobile Broadband CDMA/EVDO Mini-Card == Novatel Expedite E720 CDMA/EV-DO */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5700_MINICARD_TELUS) },	/* Dell Wireless 5700 Mobile Broadband CDMA/EVDO Mini-Card == Novatel Expedite ET620 CDMA/EV-DO */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5720_MINICARD_VZW) }, 	/* Dell Wireless 5720 == Novatel EV620 CDMA/EV-DO */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5720_MINICARD_SPRINT) }, 	/* Dell Wireless 5720 == Novatel EV620 CDMA/EV-DO */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5720_MINICARD_TELUS) }, 	/* Dell Wireless 5720 == Novatel EV620 CDMA/EV-DO */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5520_MINICARD_CINGULAR) },	/* Dell Wireless HSDPA 5520 == Novatel Expedite EU860D */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5520_MINICARD_GENERIC_L) },	/* Dell Wireless HSDPA 5520 */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5520_MINICARD_GENERIC_I) },	/* Dell Wireless 5520 Voda I Mobile Broadband (3G HSDPA) Minicard */
-+	{ USB_DEVICE(DELL_VENDOR_ID, 0x8147) },					/* Dell Wireless 5530 Mobile Broadband (3G HSPA) Mini-Card */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5730_MINICARD_SPRINT) },	/* Dell Wireless 5730 Mobile Broadband EVDO/HSPA Mini-Card */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5730_MINICARD_TELUS) },	/* Dell Wireless 5730 Mobile Broadband EVDO/HSPA Mini-Card */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5730_MINICARD_VZW) }, 	/* Dell Wireless 5730 Mobile Broadband EVDO/HSPA Mini-Card */
- 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_E100A) },	/* ADU-E100, ADU-310 */
- 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_500A) },
- 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_620UW) },
+-
+-/* Submitted by Per Winkvist <per.winkvist@uk.com> */
+-UNUSUAL_DEV( 0x0a17, 0x006, 0x0000, 0xffff,
+-		"Pentax",
+-		"Optio S/S4",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_INQUIRY ),
+-
+-/* Reported by Jaak Ristioja <Ristioja@gmail.com> */
+-UNUSUAL_DEV( 0x0a17, 0x006e, 0x0100, 0x0100,
+-		"Pentax",
+-		"K10D",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY ),
+-
+ /* These are virtual windows driver CDs, which the zd1211rw driver
+  * automatically converts into WLAN devices. */
+ UNUSUAL_DEV( 0x0ace, 0x2011, 0x0101, 0x0101,
 
