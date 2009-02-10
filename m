@@ -1,65 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756953AbZBJXxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757123AbZBJXzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756953AbZBJXxa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 18:53:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754262AbZBJXxW
+	id S1757123AbZBJXzQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 18:55:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbZBJXzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 18:53:22 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:46283 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753880AbZBJXxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 18:53:21 -0500
+	Tue, 10 Feb 2009 18:55:00 -0500
+Received: from mailservice.tudelft.nl ([130.161.131.5]:15466 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752351AbZBJXy7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 18:54:59 -0500
+X-Greylist: delayed 500 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Feb 2009 18:54:59 EST
+X-Spam-Flag: NO
+X-Spam-Score: -12.589
+Message-ID: <499213CD.6080903@tremplin-utc.net>
+Date: Wed, 11 Feb 2009 00:54:53 +0100
+From: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081231 Mandriva/2.0.0.19-1mdv2009.1 (2009.1) Thunderbird/2.0.0.19 Mnenhy/0.7.6.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+Cc: git@vger.kernel.org, Pavel Machek <pavel@suse.cz>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCHv2] lis3lv02d: support both one- and two-byte sensors
+References: <1234309249-13672-1-git-send-email-giuseppe.bilotta@gmail.com>	 <499211D0.3090705@tremplin-utc.net> <cb7bb73a0902101551o30dde0aesaeba399f1ab732af@mail.gmail.com>
+In-Reply-To: <cb7bb73a0902101551o30dde0aesaeba399f1ab732af@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] forget_original_parent: cleanup ptrace pathes
-In-Reply-To: Oleg Nesterov's message of  Wednesday, 11 February 2009 00:40:14 +0100 <20090210234014.GA15411@redhat.com>
-References: <20090129080603.GA26882@redhat.com>
-	<20090205024021.04DDDFC381@magilla.sf.frob.com>
-	<20090205153301.GC20953@redhat.com>
-	<20090209023626.03C7DFC330@magilla.sf.frob.com>
-	<20090210224751.GA9478@redhat.com>
-	<20090210232324.399ADFC3DB@magilla.sf.frob.com>
-	<20090210234014.GA15411@redhat.com>
-X-Windows: even your dog won't like it.
-Message-Id: <20090210235310.AEE3EFC35D@magilla.sf.frob.com>
-Date: Tue, 10 Feb 2009 15:53:10 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yes. But since I am paranoid, can we move the callsite later? I mean,
-> I'd prefer to make a separate (trivial) patch which moves it.
+Giuseppe Bilotta schreef:
 
-Absolutely.
-
-> Agreed, and probably forget_original_parent() can check empty(->children) too.
-
-Yes, that might optimize (vs what we've always done) a case so common that
-it actually makes a bit of difference in the grand scale. :-)
-
-> Yes, nobody should at least. Nobody can find this task on its own list.
-
-I was more worried about presumptions of all the linkage being complete
-until release_task.  But I don't see any actual thing to worry about.
-
-> If you don't mind, I'd prefer to make these changes on top of [PATCH 3/4],
-> reparent_thread-fix-a-zombie-leak-if-sbin-init-ignores-sigchld.patch
-> (and this one should be dropped).
-> 
-> Because that patch fixes the bug and changes the behaviour, while the
-> discussed changes are cleanups.
-
-I don't object to that patch first (and it might be fine for -stable even)
-as long as these cleanups are really going in soon so that ->ptrace_entry
-abuse disappears quickly.
-
+> Well, the previous one works, but I admit it's horribly convoluted.
+> I'll double check with this one and resubmit (I'll only resubmit the
+> one based on Pavel's "don't touch anything on init" probably though,
+> hope it's ok)
+Sure, only modified v3 is ok.
+BTW, now that this is working. Could you double check the correct axes 
+set up. In particular, is it x_inverted or y_inverted, and what about z 
+axis...
 
 Thanks,
-Roland
+Eric
