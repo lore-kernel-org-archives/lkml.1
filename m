@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757633AbZBJTMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756496AbZBJTLg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757633AbZBJTMz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 14:12:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755742AbZBJTDy
+	id S1756496AbZBJTLg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 14:11:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755604AbZBJTDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 14:03:54 -0500
-Received: from kroah.org ([198.145.64.141]:53904 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 14:03:50 -0500
+Received: from kroah.org ([198.145.64.141]:53858 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755614AbZBJTDx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 14:03:53 -0500
-Date: Tue, 10 Feb 2009 11:00:36 -0800
+	id S1755577AbZBJTDt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 14:03:49 -0500
+Date: Tue, 10 Feb 2009 11:00:26 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
-Subject: [patch 26/53] ALSA: hda - Add quirk for FSC Amilo Xi2550
-Message-ID: <20090210190036.GA14308@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 22/53] e1000: fix bug with shared interrupt during reset
+Message-ID: <20090210190026.GW14308@kroah.com>
 References: <20090210185337.000769713@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-hda-add-quirk-for-fsc-amilo-xi2550.patch"
+Content-Disposition: inline; filename="e1000-fix-bug-with-shared-interrupt-during-reset.patch"
 In-Reply-To: <20090210185924.GA14308@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,31 +39,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Takashi Iwai <tiwai@suse.de>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-commit f67d8176ba9a3dbc33454cd67057184b2ef5ee31 upstream.
+commit 15b2bee22a0390d951301b53e83df88d0350c499 upstream.
 
-Added model=fujisu-pi2515 for FSC Amilo Xi2550 with ALC883 codec.
+A nasty bug was found where an MTU change (or anything else that caused a
+reset) could race with the interrupt code.  The interrupt code was entered
+by a shared interrupt during the MTU change.
 
-Refernece: Novell bnc#450979
-	https://bugzilla.novell.com/show_bug.cgi?id=450979
+This change prevents the interrupt code from running while the driver is in
+the middle of its reset path.
 
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- sound/pci/hda/patch_realtek.c |    2 ++
- 1 file changed, 2 insertions(+)
-
---- a/sound/pci/hda/patch_realtek.c
-+++ b/sound/pci/hda/patch_realtek.c
-@@ -8463,6 +8463,8 @@ static struct snd_pci_quirk alc883_cfg_t
- 	SND_PCI_QUIRK(0x1558, 0, "Clevo laptop", ALC883_LAPTOP_EAPD),
- 	SND_PCI_QUIRK(0x15d9, 0x8780, "Supermicro PDSBA", ALC883_3ST_6ch),
- 	SND_PCI_QUIRK(0x161f, 0x2054, "Medion laptop", ALC883_MEDION),
-+	SND_PCI_QUIRK(0x1734, 0x1107, "FSC AMILO Xi2550",
-+		      ALC883_FUJITSU_PI2515),
- 	SND_PCI_QUIRK(0x1734, 0x1108, "Fujitsu AMILO Pi2515", ALC883_FUJITSU_PI2515),
- 	SND_PCI_QUIRK(0x17aa, 0x101e, "Lenovo 101e", ALC883_LENOVO_101E_2ch),
- 	SND_PCI_QUIRK(0x17aa, 0x2085, "Lenovo NB0763", ALC883_LENOVO_NB0763),
+--- a/drivers/net/e1000/e1000_main.c
++++ b/drivers/net/e1000/e1000_main.c
+@@ -31,7 +31,7 @@
+ 
+ char e1000_driver_name[] = "e1000";
+ static char e1000_driver_string[] = "Intel(R) PRO/1000 Network Driver";
+-#define DRV_VERSION "7.3.20-k3-NAPI"
++#define DRV_VERSION "7.3.21-k3-NAPI"
+ const char e1000_driver_version[] = DRV_VERSION;
+ static const char e1000_copyright[] = "Copyright (c) 1999-2006 Intel Corporation.";
+ 
+@@ -3712,7 +3712,7 @@ static irqreturn_t e1000_intr(int irq, void *data)
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	u32 rctl, icr = er32(ICR);
+ 
+-	if (unlikely(!icr))
++	if (unlikely((!icr) || test_bit(__E1000_RESETTING, &adapter->flags)))
+ 		return IRQ_NONE;  /* Not our interrupt */
+ 
+ 	/* IMS will not auto-mask if INT_ASSERTED is not set, and if it is
 
