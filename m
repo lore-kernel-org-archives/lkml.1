@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbZBJNBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbZBJNEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755407AbZBJNBT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 08:01:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbZBJNBE
+	id S1755195AbZBJNEe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 08:04:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbZBJNEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 08:01:04 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55025 "EHLO mx3.mail.elte.hu"
+	Tue, 10 Feb 2009 08:04:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44895 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754008AbZBJNBC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 08:01:02 -0500
-Date: Tue, 10 Feb 2009 14:00:50 +0100
+	id S1754076AbZBJNEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 08:04:25 -0500
+Date: Tue, 10 Feb 2009 14:04:11 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Steven Rostedt <rostedt@goodmis.org>
 Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 0/3] git pull request for tip/tracing/ftrace
-Message-ID: <20090210130050.GA8341@elte.hu>
-References: <20090209172830.087244662@goodmis.org>
+       Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: Re: [PATCH 0/2] git pull request for tip/tracing/urgent
+Message-ID: <20090210130411.GB8341@elte.hu>
+References: <20090209151744.459736868@goodmis.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090209172830.087244662@goodmis.org>
+In-Reply-To: <20090209151744.459736868@goodmis.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,39 +39,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 > Ingo,
 > 
-> I pulled in the splice code from Eduard into a branch that is
-> based off of tip's tracing/ftrace branch.
+> Here's the changes by Lai. The bug scared me enough to investigate
+> it further, to see if we had other bug reports that this could
+> have fixed. But I found out that ring_buffer_read_page currently
+> does not have any users. The only user I have is for my splice work,
+> which has not been included yet.
 > 
-> I kept Eduard's patches as is, and implemented the suggested clean
-> ups at the end.
+> I guess Lai is adding one. These are true bug fixes to code that
+> is in the kernel, even if that code is currently "dead code". But I think
+> they should still be included in 29, since this will reflect on ftrace
+> when we have developers starting to use it (such as Lai).
 > 
-> My branch names were getting too long so I hacked off the "/devel"
-> part at the end that I usually have.
-
-> Eduard - Gabriel Munteanu (2):
->       tracing: splice support for tracing_pipe
->       tracing: Move pipe waiting code out of tracing_read_pipe().
+> The following patches are in:
 > 
-> Steven Rostedt (1):
->       tracing: clean up splice code
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
 > 
-> ----
->  kernel/trace/trace.c |  219 +++++++++++++++++++++++++++++++++++++++++++-------
->  kernel/trace/trace.h |    6 ++
->  2 files changed, 196 insertions(+), 29 deletions(-)
+>     branch: tip/tracing/urgent/devel
 
-Pulled into tip:tracing/ftrace, thanks guys!
+hm, the branch does not exist anymore:
 
-A small request regarding the commit logs, could you please
-in the future make the titles more consistent:
+  fatal: Couldn't find remote ref tip/tracing/urgent/devel
+  fatal: Couldn't find remote ref tracing/urgent/devel
+  fatal: Couldn't find remote ref tracing/urgent
 
- 34cd499: tracing: clean up splice code
- ff98781: tracing: Move pipe waiting code out of tracing_read_pipe().
- 3c56819: tracing: splice support for tracing_pipe
-
-the closing period in the second commit is unnecessary, and
-capitalization should be consistent as well.
-
-Thanks,
+In any case, please include this in the devel path not the urgent path.
+Urgent patches are for real regressions that occur with the upstream
+kernel and affect users. New uses of tracing code should be done on
+top of the tracing tree.
 
 	Ingo
