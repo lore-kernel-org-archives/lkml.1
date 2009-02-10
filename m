@@ -1,107 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753284AbZBJFln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbZBJFsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753284AbZBJFln (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 00:41:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbZBJFle
+	id S1753245AbZBJFsY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 00:48:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbZBJFsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 00:41:34 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56429 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750699AbZBJFld (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 00:41:33 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: David Howells <dhowells@redhat.com>, Serge Hallyn <serue@us.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [CRED bug?] 2.6.29-rc3 don't survive on stress workload
-Cc: kosaki.motohiro@jp.fujitsu.com, Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Message-Id: <20090210142443.629E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 10 Feb 2009 00:48:15 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:51136 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750699AbZBJFsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 00:48:15 -0500
+Message-ID: <499114FC.6090307@cn.fujitsu.com>
+Date: Tue, 10 Feb 2009 13:47:40 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Al Viro <viro@ZenIV.linux.org.uk>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Paul Menage <menage@google.com>,
+       containers@lists.osdl.org, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [cgroup or VFS ?]  WARNING: at fs/namespace.c:636	mntput_no_expire+0xac/0xf2()
+References: <49617D35.4040805@cn.fujitsu.com> <20090209004046.3ce1dde0.akpm@linux-foundation.org> <498FEE24.5030407@cn.fujitsu.com> <20090209110348.GV28946@ZenIV.linux.org.uk> <20090209115818.GX28946@ZenIV.linux.org.uk>
+In-Reply-To: <20090209115818.GX28946@ZenIV.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Tue, 10 Feb 2009 14:41:29 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Al Viro wrote:
+> On Mon, Feb 09, 2009 at 11:03:48AM +0000, Al Viro wrote:
+>> 	BTW, a trivial note - kfree(root) in your ->kill_sb() is done
+>> earlier than it's nice to do.  Shouldn't affect the problem, though.
+> 
 
-I periodically test kernel on stress workload.
-Unfortunately, recent kerenel don't survive >24H.
+Do you mean kfree(root) should be called after kill_litter_super()?
+I don't see the point here..
 
-It paniced with following stack.
-Do you have any suggestions?
+> 	Other probably irrelevant notes:
+> 
+>                 memcpy(start, cgrp->dentry->d_name.name, len);
+>                 cgrp = cgrp->parent;
+>                 if (!cgrp)
+>                         break;
+>                 dentry = rcu_dereference(cgrp->dentry);
+> 
+> in cgroup_path().  Why don't we need rcu_dereference on both?
+> Moreover, shouldn't that be
+>                 memcpy(start, dentry->d_name.name, len);
+> anyway, seeing that we'd just looked at dentry->d_name.len?
 
-thanks!
+We are right, dentry-> but not cgrp->dentry-> should be used.
 
+> 
+> In cgroup_rmdir():
+>         spin_lock(&cgrp->dentry->d_lock);
+>         d = dget(cgrp->dentry);
+>         spin_unlock(&d->d_lock);
+> 
+>         cgroup_d_remove_dir(d);
+>         dput(d);
+> Er?  Comments, please...  Unless something very unusual is going on,
+> either that d_lock is pointless or dget() is rather unsafe.
+> 
 
-My test box:
-  CPU: ia64 x8
-  MEM: 8GB (4GB x2node)
+The code was inherited from cpuset. I doubted it's redundant, but
+I was not confident enough to remove it.
 
+> cgroups_clone()
+>         /* Now do the VFS work to create a cgroup */
+>         inode = parent->dentry->d_inode;
+> 
+>         /* Hold the parent directory mutex across this operation to
+>          * stop anyone else deleting the new cgroup */
+>         mutex_lock(&inode->i_mutex);
+> Can the parent be in process of getting deleted by somebody else?  If yes,
+> we are in trouble here.
+> 
+> BTW, that thing in cgroup_path()...  What guarantees that cgroup_rename()
+> won't hit between getting len and doing memcpy()?
+> 
 
-=================================================================
-PQ-muneda login: Unable to handle kernel paging request at virtual address a040000000403400
-etex[669958]: Oops 8813272891392 [1]
-Modules linked in: binfmt_misc nls_iso8859_1 nls_cp437 dm_multipath scsi_dh fan sg e100 thermal button container processor mii dm_snapshot dm_zero dm_mirror dm_region_hash dm_log dm_mod lpfc mptspi mptscsih mptbase ehci_hcd ohci_hcd uhci_hcd usbcore
+cgroup_path() was inherited from cpuset's cpuset_path(), and I think it's
+true it races with rename.
 
-Pid: 669958, CPU 2, comm:                 etex
-psr : 0000101008026038 ifs : 800000000000028a ip  : [<a0000001001c45e0>]    Not tainted (2.6.29-rc3)
-ip is at kfree+0x40/0x2a0
-unat: 0000000000000000 pfs : 0000000000000205 rsc : 0000000000000003
-rnat: 00000000498f1c7b bsps: 0000000000000000 pr  : 00000000005655ab
-ldrs: 0000000000000000 ccv : 0000000000000130 fpsr: 0009804c8a70033f
-csd : 0000000000000000 ssd : 0000000000000000
-b0  : a000000100123210 b6  : a0000001001231e0 b7  : a000000100014d20
-f6  : 1003e006caf999642a000 f7  : 1003e000000000183c978
-f8  : 1003e0000000080000000 f9  : 100099ba0000000000000
-f10 : 10014d28eb1b735286a15 f11 : 1003e000000000034a3ac
-r1  : a000000100f680c0 r2  : 000000000000012f r3  : 0000000000403400
-r8  : 00000000000100d0 r9  : a0000001001231e0 r10 : e000000002b6d148
-r11 : a000000100d69018 r12 : e00000408a78fe20 r13 : e00000408a780000
-r14 : 0000000000000130 r15 : a040000000000000 r16 : ffffffffdead4ead
-r17 : 00000000dead4ead r18 : a000000100cd2274 r19 : a000000100d796b8
-r20 : 0000000000004000 r21 : 0000000000004000 r22 : 000000000000000a
-r23 : a0000001009a95b8 r24 : a0000001000ec2a0 r25 : e00001600999b1e0
-r26 : 0000000000004000 r27 : e000000001116a48 r28 : 0000000000000002
-r29 : e00000408a780d54 r30 : 0000000000004000 r31 : 0000000000004000
+> That said, cgroup seems to be completely agnostic wrt anything happening
+> on vfsmount level, so I really don't see how it gets to that WARN_ON().
+> Hell knows; I really want to see the sequence of events - it might be
+> something like fscking up ->s_active handling with interesting results
+> (cgroup code is certainly hitting it in not quite usual ways), it may be
+> genuine VFS-only race.  Need more data...
+> 
 
-Call Trace:
- [<a000000100017780>] show_stack+0x80/0xa0
-                                sp=e00000408a78f9f0 bsp=e00000408a781418
- [<a000000100018080>] show_regs+0x880/0x8c0
-                                sp=e00000408a78fbc0 bsp=e00000408a7813b8
- [<a000000100040290>] die+0x1b0/0x2e0
-                                sp=e00000408a78fbc0 bsp=e00000408a781370
- [<a0000001007add90>] ia64_do_page_fault+0x810/0xb00
-                                sp=e00000408a78fbc0 bsp=e00000408a781310
- [<a00000010000c860>] ia64_native_leave_kernel+0x0/0x270
-                                sp=e00000408a78fc50 bsp=e00000408a781310
- [<a0000001001c45e0>] kfree+0x40/0x2a0
-                                sp=e00000408a78fe20 bsp=e00000408a7812c0
- [<a000000100123210>] free_user_ns+0x30/0x60
-                                sp=e00000408a78fe20 bsp=e00000408a7812a0
- [<a00000010037a320>] kref_put+0xe0/0x100
-                                sp=e00000408a78fe20 bsp=e00000408a781278
- [<a0000001000c5bf0>] free_uid+0x110/0x1a0
-                                sp=e00000408a78fe20 bsp=e00000408a781250
- [<a0000001000ec340>] put_cred_rcu+0xa0/0xe0
-                                sp=e00000408a78fe30 bsp=e00000408a781228
- [<a00000010012db90>] __rcu_process_callbacks+0x2f0/0x580
-                                sp=e00000408a78fe30 bsp=e00000408a7811e0
- [<a00000010012de70>] rcu_process_callbacks+0x50/0xc0
-                                sp=e00000408a78fe30 bsp=e00000408a7811c0
- [<a0000001000b7ac0>] __do_softirq+0x220/0x320
-                                sp=e00000408a78fe30 bsp=e00000408a781120
- [<a0000001000b7c30>] do_softirq+0x70/0xc0
-                                sp=e00000408a78fe30 bsp=e00000408a7810c0
- [<a0000001000b7d00>] irq_exit+0x80/0xa0
-                                sp=e00000408a78fe30 bsp=e00000408a7810a8
- [<a000000100014600>] ia64_handle_irq+0x1e0/0x400
-                                sp=e00000408a78fe30 bsp=e00000408a781030
- [<a00000010000c860>] ia64_native_leave_kernel+0x0/0x270
-                                sp=e00000408a78fe30 bsp=e00000408a781030
-Kernel panic - not syncing: Fatal exception
-Rebooting in 1 seconds..
 
