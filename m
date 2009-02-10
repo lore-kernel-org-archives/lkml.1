@@ -1,67 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbZBJP6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbZBJQCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755349AbZBJP6j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 10:58:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbZBJP6S
+	id S1754817AbZBJQCb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 11:02:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbZBJQCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 10:58:18 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:39601 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753826AbZBJP6Q (ORCPT
+	Tue, 10 Feb 2009 11:02:21 -0500
+Received: from mail.fieldses.org ([141.211.133.115]:40652 "EHLO
+	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753027AbZBJQCU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 10:58:16 -0500
-Subject: Re: cgroup, RT reservation per core(s)?
-From: Peter Zijlstra <peterz@infradead.org>
-To: Rolando Martins <rolando.martins@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <b6a2d2e20902100646q6c7073cse86b8f5790a120ac@mail.gmail.com>
-References: <b6a2d2e20902091130ha452a97rcfaa2972bfdbe710@mail.gmail.com>
-	 <1234209174.5951.165.camel@laptop>
-	 <b6a2d2e20902091204p2391799p160ce13971e9f779@mail.gmail.com>
-	 <1234271177.23438.24.camel@twins>
-	 <b6a2d2e20902100646q6c7073cse86b8f5790a120ac@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 10 Feb 2009 17:00:02 +0100
-Message-Id: <1234281602.23438.96.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Tue, 10 Feb 2009 11:02:20 -0500
+Date: Tue, 10 Feb 2009 11:02:27 -0500
+To: "Gary L. Grobe" <gary@grobe.net>
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: processes in D state too long too often
+Message-ID: <20090210160227.GC29075@fieldses.org>
+References: <W27744109726791234227850@webmail24>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <W27744109726791234227850@webmail24>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-10 at 14:46 +0000, Rolando Martins wrote:
-> 
-> >  I've never actually tried anything like this, let me know if it
-> >  works ;-)
+On Tue, Feb 10, 2009 at 01:04:10AM +0000, Gary L. Grobe wrote:
+> >Presumably that's the msleep(10) in nfsd_vfs_write().
 > >
+> >That wouldn't explain the same nfsd thread waiting for several seconds,
+> >though.  Or was it just that that several seconds during which different
+> >nfsd threads were stuck in D, not necessarily the same ones?
+> >
+> >What does your /etc/exports file look like on the server, and what are
+> >the mount options on the client?
+> >
+> >You could try turning off that msleep() with no_wdelay, but it may not
+> >help.
+> >
+> >The more likely explanation is that you just switched to a more recent
+> >distro where "sync" (as opposed to "async") is the option.  Depending on
+> >workload, "async" may improve performance a great deal, at the expense
+> >of possible data corruption on server reboot!
+> >
+> >If you're doing a lot of writing and using NFSv2, then switching to
+> >NFSv3 may give you performance close to the "async" performance without
+> >the corruption worries.
 > 
-> Thanks Peter, it works!
+> Apologies for the unintentional separate thread.
+> 
+> I really think I'm seeing the same nfsd threads going into D for a very short time. Here's what's in /etc/exports ...
+> 
+> /diskless/10.0.1.1 10.0.1.1(sync,rw,no_root_squash,no_all_squash,no_subtree_check)
+> /diskless/10.0.1.2 10.0.1.2(sync,rw,no_root_squash,no_all_squash,no_subtree_check)
+> /diskless/10.0.1.3 10.0.1.3(sync,rw,no_root_squash,no_all_squash,no_subtree_check)
+> # ... same lines above for another 80+ nodes
+> 
+> # Common to all slave nodes.
+> /usr    10.0.0.0/16(sync,ro,subtree_check,no_root_squash,no_all_squash)
+> /opt    10.0.0.0/16(sync,rw,no_subtree_check,no_root_squash,no_all_squash)
+> /home   10.0.0.0/16(sync,rw,no_subtree_check,no_root_squash,no_all_squash)
+> #/var/log 10.0.0.0/16(sync,rw,subtree_check,no_root_squash,no_all_squash)
+> 
+> Mount options on each client are as follows ...
+> 
+> 10.0.0.10:/diskless/10.0.1.1    /   nfs     sync,hard,intr,rw,rsize=8192,wsize=8192 0   0
+> 10.0.0.10:/opt          /opt    nfs sync,hard,intr,rw,rsize=8192,wsize=8192 0   0
+> 10.0.0.10:/usr          /usr    nfs sync,hard,intr,ro,rsize=8192,wsize=8192 0   0
+> 10.0.0.10:/home         /home   nfs sync,hard,intr,rw,rsize=8192,wsize=8192 0   0
+> none                    /proc   proc    defaults    0 0
+> #10.0.0.10:/var/log     /var/log nfs    sync,hard,intr,rw   0 0
+> 
+> I'm not following turning off the msleep() option. Where are you referring to this from?
 
-> I am thinking for different strategies to be used in my rt middleware
-> project, and I think there is a limitation.
-> If I wanted to have some RT on the B cpuset, I couldn't because I
-> assigned A.cpu.rt_runtime_ns = root.cpu.rt_runtime_ns (then subdivided
-> the A cpuset, with 2,3,4, each one having A.cpu.rt_runtime_ns/3).
+If you add no_wdelay to the export options, then we won't see the
+mdelay() calls in the sysrq-w output anymore.  I doubt that'll solve the
+problem, but it may be worth a try just to see what changes.
 
-Try it, you can run RT proglets in B.
+> I've got NFSv3 enabled and have used this in a previous installation
+> (using the same distro, gentoo) on this same hardware with no issues,
+> and 'sync', and the performance was much better.
 
-You get n*utilization per schedule domain, where n is the number of cpus
-in it.
+OK, then I'm out of theories for now....
 
-So you still have 200% left in B, even if you use 200% of A.
+--b.
 
-> This happens because there is a
-> global /proc/sys/kernel/sched_rt_runtime_us and
-> /proc/sys/kernel/sched_rt_period_us.
-
-These globals don't actually do much (except provide a global cap) in
-the cgroup case.
-
-> What do you think about adding a separate tuple (runtime,period) for
-> each core/cpu?
-
-> Does this make sense? ;)
-
-That's going to give me a horrible head-ache trying to load-balance
-stuff.
+> Something worth
+> noting, I've rolled back my kernel several times now and each time I
+> go back (w/ same vers on master and slave node), the D state time in
+> simulation processes keeps getting better (cut down). I went from
+> 2.6.27-r7 to 2.6.24-r8 and now I'm running 2.6.20-r10, and each one
+> better than the previous (and later) kernel. I was running 2.6.18-r2
+> in the past, which I'm having difficulties getting at the moment.
+> 
+> 
+> 
+> 
+> 
+> -- To unsubscribe from this list: send the line "unsubscribe
+> linux-nfs" in the body of a message to majordomo@vger.kernel.org More
+> majordomo info at  http://vger.kernel.org/majordomo-info.html
