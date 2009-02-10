@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759133AbZBJTWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756172AbZBJTW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759133AbZBJTWo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 14:22:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755789AbZBJTEb
+	id S1756172AbZBJTW0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 14:22:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756009AbZBJTE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 14:04:31 -0500
-Received: from kroah.org ([198.145.64.141]:34050 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 14:04:29 -0500
+Received: from kroah.org ([198.145.64.141]:34037 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756016AbZBJTEa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 14:04:30 -0500
-Date: Tue, 10 Feb 2009 11:01:41 -0800
+	id S1754654AbZBJTEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 14:04:25 -0500
+Date: Tue, 10 Feb 2009 11:01:39 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Vlad Yasevich <vladislav.yasevich@hp.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 53/53] sctp: Fix another socket race during accept/peeloff
-Message-ID: <20090210190141.GB14308@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Pavel Machek <pavel@suse.cz>,
+       Paul Clements <paul.clements@steeleye.com>
+Subject: [patch 52/53] nbd: do not allow two clients at the same time
+Message-ID: <20090210190139.GA14308@kroah.com>
 References: <20090210185337.000769713@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sctp-fix-another-socket-race-during-accept-peeloff.patch"
+Content-Disposition: inline; filename="nbd-do-not-allow-two-clients-at-the-same-time.patch"
 In-Reply-To: <20090210185924.GA14308@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,58 +39,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
+From: Pavel Machek <pavel@suse.cz>
 
-commit ae53b5bd77719fed58086c5be60ce4f22bffe1c6 upstream.
+commit c91192d66d6cea7878b8542c9d9f1873971aba92 upstream.
 
-There is a race between sctp_rcv() and sctp_accept() where we
-have moved the association from the listening socket to the
-accepted socket, but sctp_rcv() processing cached the old
-socket and continues to use it.
+Two nbd-clients at same time are bad idea, and cause WARN_ON from nbd in
+2.6.28-rc7 from sysfs_add_one.  This simply prevents that from happening.
 
-The easy solution is to check for the socket mismatch once we've
-grabed the socket lock.  If we hit a mis-match, that means
-that were are currently holding the lock on the listening socket,
-but the association is refrencing a newly accepted socket.  We need
-to drop the lock on the old socket and grab the lock on the new one.
+To reproduce:
 
-A more proper solution might be to create accepted sockets when
-the new association is established, similar to TCP.  That would
-eliminate the race for 1-to-1 style sockets, but it would still
-existing for 1-to-many sockets where a user wished to peeloff an
-association.  For now, we'll live with this easy solution as
-it addresses the problem.
+ cat /dev/zero | head -c 10000000 > /tmp/delme.fstest.fs
+ nbd-server 9100 -l /anyone.can.connect > /tmp/delme.fstest.fs &
+ sleep 1
+ nbd-client localhost 9100 /dev/nd0 &
+ nbd-client localhost 9100 /dev/nd0 &
 
-Reported-by: Michal Hocko <mhocko@suse.cz>
-Reported-by: Karsten Keil <kkeil@suse.de>
-Signed-off-by: Vlad Yasevich <vladislav.yasevich@hp.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+Acked-by: Paul Clements <paul.clements@steeleye.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/sctp/input.c |   13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ drivers/block/nbd.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
---- a/net/sctp/input.c
-+++ b/net/sctp/input.c
-@@ -249,6 +249,19 @@ int sctp_rcv(struct sk_buff *skb)
- 	 */
- 	sctp_bh_lock_sock(sk);
+--- a/drivers/block/nbd.c
++++ b/drivers/block/nbd.c
+@@ -406,6 +406,7 @@ static int nbd_do_it(struct nbd_device *
+ 	ret = sysfs_create_file(&disk_to_dev(lo->disk)->kobj, &pid_attr.attr);
+ 	if (ret) {
+ 		printk(KERN_ERR "nbd: sysfs_create_file failed!");
++		lo->pid = 0;
+ 		return ret;
+ 	}
  
-+	if (sk != rcvr->sk) {
-+		/* Our cached sk is different from the rcvr->sk.  This is
-+		 * because migrate()/accept() may have moved the association
-+		 * to a new socket and released all the sockets.  So now we
-+		 * are holding a lock on the old socket while the user may
-+		 * be doing something with the new socket.  Switch our veiw
-+		 * of the current sk.
-+		 */
-+		sctp_bh_unlock_sock(sk);
-+		sk = rcvr->sk;
-+		sctp_bh_lock_sock(sk);
-+	}
-+
- 	if (sock_owned_by_user(sk)) {
- 		SCTP_INC_STATS_BH(SCTP_MIB_IN_PKT_BACKLOG);
- 		sctp_add_backlog(sk, skb);
+@@ -413,6 +414,7 @@ static int nbd_do_it(struct nbd_device *
+ 		nbd_end_request(req);
+ 
+ 	sysfs_remove_file(&disk_to_dev(lo->disk)->kobj, &pid_attr.attr);
++	lo->pid = 0;
+ 	return 0;
+ }
+ 
+@@ -648,6 +650,8 @@ static int nbd_ioctl(struct block_device
+ 		set_capacity(lo->disk, lo->bytesize >> 9);
+ 		return 0;
+ 	case NBD_DO_IT:
++		if (lo->pid)
++			return -EBUSY;
+ 		if (!lo->file)
+ 			return -EINVAL;
+ 		thread = kthread_create(nbd_thread, lo, lo->disk->disk_name);
 
