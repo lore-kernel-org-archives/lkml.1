@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757266AbZBJTKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757240AbZBJTKB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757266AbZBJTKe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 14:10:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbZBJTDs
+	id S1757240AbZBJTKB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 14:10:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755540AbZBJTDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 14:03:48 -0500
-Received: from kroah.org ([198.145.64.141]:53806 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 14:03:47 -0500
+Received: from kroah.org ([198.145.64.141]:53791 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755483AbZBJTDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 14:03:44 -0500
-Date: Tue, 10 Feb 2009 11:00:19 -0800
+	id S1755477AbZBJTDn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 14:03:43 -0500
+Date: Tue, 10 Feb 2009 11:00:17 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Borislav Petkov <borislav.petkov@amd.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch 19/53] x86: APIC: enable workaround on AMD Fam10h CPUs
-Message-ID: <20090210190019.GT14308@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Andy Whitcroft <apw@canonical.com>,
+       Alan Cox <alan@redhat.com>,
+       Matthew Burgess <matthew@linuxfromscratch.org>
+Subject: [patch 18/53] serial: RS485 ioctl structure uses __u32 include
+	linux/types.h
+Message-ID: <20090210190017.GS14308@kroah.com>
 References: <20090210185337.000769713@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-apic-enable-workaround-on-amd-fam10h-cpus.patch"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline; filename="serial-rs485-ioctl-structure-uses-__u32-include-linux-types.h.patch"
+Content-Transfer-Encoding: 8bit
 In-Reply-To: <20090210185924.GA14308@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,36 +42,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Borislav Petkov <borislav.petkov@amd.com>
+From: Andy Whitcroft <apw@canonical.com>
 
-commit 858770619debfb9269add63e4ba8b7c6b5538dd1 upstream.
+commit 60c20fb8c00a2b23308ae4517f145383bc66d291 upstream.
 
-Impact: fix to enable APIC for AMD Fam10h on chipsets with a missing/b0rked
-	ACPI MP table (MADT)
+In the commit below a new struct serial_rs485 was introduced for a new
+ioctl:
 
-Booting a 32bit kernel on an AMD Fam10h CPU running on chipsets with
-missing/b0rked MP table leads to a hang pretty early in the boot process
-due to the APIC not being initialized. Fix that by falling back to the
-default APIC base address in 32bit code, as it is done in the 64bit
-codepath.
+    commit c26c56c0f40e200e61d1390629c806f6adaffbcc
+    Author: Alan Cox <alan@redhat.com>
+    Date:   Mon Oct 13 10:37:48 2008 +0100
 
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+	tty: Cris has a nice RS485 ioctl so we should steal it
+
+This structure uses the __u32 types for some of its members, which leads
+to the following compile error:
+
+    $ cc -I.../include -c X.c
+    In file included from X.c:2: .../include/linux/serial.h:185:
+		error: expected specifier-qualifier-list before ‘__u32’
+    $
+
+It seems that these types are appropriate for this structure as it is
+to be exposed to userspace.  These types are available via linux/types.h
+so move the include of that outside the __KERNEL__ section.
+
+Signed-off-by: Andy Whitcroft <apw@canonical.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Alan Cox <alan@redhat.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Matthew Burgess <matthew@linuxfromscratch.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- arch/x86/kernel/apic.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/x86/kernel/apic.c
-+++ b/arch/x86/kernel/apic.c
-@@ -1451,7 +1451,7 @@ static int __init detect_init_APIC(void)
- 	switch (boot_cpu_data.x86_vendor) {
- 	case X86_VENDOR_AMD:
- 		if ((boot_cpu_data.x86 == 6 && boot_cpu_data.x86_model > 1) ||
--		    (boot_cpu_data.x86 == 15))
-+		    (boot_cpu_data.x86 >= 15))
- 			break;
- 		goto no_apic;
- 	case X86_VENDOR_INTEL:
+---
+ include/linux/serial.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/include/linux/serial.h
++++ b/include/linux/serial.h
+@@ -10,8 +10,9 @@
+ #ifndef _LINUX_SERIAL_H
+ #define _LINUX_SERIAL_H
+ 
+-#ifdef __KERNEL__
+ #include <linux/types.h>
++
++#ifdef __KERNEL__
+ #include <asm/page.h>
+ 
+ /*
 
