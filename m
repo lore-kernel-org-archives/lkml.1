@@ -1,109 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753628AbZBJIvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753298AbZBJIyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753628AbZBJIvu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 03:51:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbZBJIvl
+	id S1753298AbZBJIyZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 03:54:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbZBJIyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 03:51:41 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37433 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752144AbZBJIvk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 03:51:40 -0500
-Date: Tue, 10 Feb 2009 17:50:19 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] Reduce size of swap_cgroup by CSS ID v2
-Message-Id: <20090210175019.b100b279.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090210080700.GC16317@balbir.in.ibm.com>
-References: <20090205185959.7971dee4.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090209145557.d0754a9f.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090210080700.GC16317@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 10 Feb 2009 03:54:15 -0500
+Received: from ozlabs.org ([203.10.76.45]:56562 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751387AbZBJIyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 03:54:15 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
+Date: Tue, 10 Feb 2009 19:24:07 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: travis@sgi.com, mingo@redhat.com, davej@redhat.com,
+       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20090116191108.135927000@polaris-admin.engr.sgi.com> <200902042111.35543.rusty@rustcorp.com.au> <20090204073636.30f15339.akpm@linux-foundation.org>
+In-Reply-To: <20090204073636.30f15339.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200902101924.08656.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Feb 2009 13:37:00 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-02-09 14:55:57]:
+On Thursday 05 February 2009 02:06:36 Andrew Morton wrote:
+> On Wed, 4 Feb 2009 21:11:35 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
 > 
-> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> >  static struct mem_cgroup *try_get_mem_cgroup_from_swapcache(struct page *page)
-> >  {
-> > -	struct mem_cgroup *mem;
-> > +	unsigned short id;
-> > +	struct mem_cgroup *mem = NULL;
-> >  	swp_entry_t ent;
+> > On Wednesday 04 February 2009 13:31:11 Andrew Morton wrote:
+> > > On Wed, 4 Feb 2009 13:14:31 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > > > I think you're right though: smp_call_function_single (or neat wrappers)
+> > > > where possible, work_on_cpu which can fail for the others, and we'll just
+> > > > have to plumb in the error returns.
+> > > 
+> > > I bet a lot of those can use plain old schedule_work_on().
 > > 
-> >  	if (!PageSwapCache(page))
-> >  		return NULL;
+> > Which is where work_on_cpu started: a little wrapper around schedule_work_on.
 > > 
-> >  	ent.val = page_private(page);
-> > -	mem = lookup_swap_cgroup(ent);
-> > -	if (!mem)
-> > -		return NULL;
-> > +	id = lookup_swap_cgroup(ent);
-> > +	rcu_read_lock();
-> > +	mem = mem_cgroup_lookup(id);
-> >  	if (!css_tryget(&mem->css))
-> > -		return NULL;
-> > +		mem = NULL;
+> > We're going in circles, no?
 > 
-> This part is a bit confusing. If the page got swapped out and the CSS
-> it belonged to got swapped out, we set mem to NULL. Is this so that it
-> can be charged to root cgroup?
-IIUC, this charge will go to "current" process's cgroup.
-
-> If so, could you please add a comment indicating the same.
+> No, we've made some progress.  We have a better understanding of what
+> the restrictions, shortcomings and traps are in this stuff.  We've
+> learned (surprise!) that a one-size-fits-all big hammer wasn't such a
+> great idea.
 > 
-Ah yes, I'll add some comments.
+> Proposed schedule_work_on() rule: either the flush_work() caller or the
+> callback should not hold any explicit or implicit sleeping locks.
 
+But as you found out looking through these, it's really hard to tell.  I can
+guess, but that's a little fraught...
 
-> > +	rcu_read_unlock();
-> >  	return mem;
-> >  }
-> > 
-> > @@ -1275,12 +1296,20 @@ int mem_cgroup_cache_charge(struct page 
-> > 
-> >  	if (do_swap_account && !ret && PageSwapCache(page)) {
-> >  		swp_entry_t ent = {.val = page_private(page)};
-> > +		unsigned short id;
-> >  		/* avoid double counting */
-> > -		mem = swap_cgroup_record(ent, NULL);
-> > +		id = swap_cgroup_record(ent, 0);
-> > +		rcu_read_lock();
-> > +		mem = mem_cgroup_lookup(id);
-> >  		if (mem) {
-> > +			/*
-> > +			 * Recorded ID can be obsolete. We avoid calling
-> > +			 * css_tryget()
-> > +			 */
-> >  			res_counter_uncharge(&mem->memsw, PAGE_SIZE);
-> >  			mem_cgroup_put(mem);
-> >  		}
-> 
-> If !mem, do we leak charge?
-No, it just means some other thread removed the ID before us.
+How about we make work_on_cpu spawn a temp thread; if you care, use
+something cleverer?  Spawning a thread just isn't that slow.
 
-> BTW, We no longer hold css references if the page is swapped out?
-> 
-The situation is a bit complicated.
-When cgroup is obsolete but its mem_cgroup is alive (because of reference
-from swap), css_tryget() always fails. swap_cgroup_record() is atomic
-compare-and-exchange, so I think we can trust mem_cgroup_put/get refcnt
-management and doesn't need to rely on css's refcnt at swap management.
+Meanwhile, I'll prepare patches to convert all the non-controversial cases
+(ie. smp_call_function-style ones).
 
-
-Thanks,
--Kame
-
+Cheers,
+Rusty.
