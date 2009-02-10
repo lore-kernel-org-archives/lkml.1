@@ -1,104 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755408AbZBJSwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbZBJTDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755408AbZBJSwd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 13:52:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbZBJSwZ
+	id S1755381AbZBJTDj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 14:03:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754522AbZBJTDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 13:52:25 -0500
-Received: from rv-out-0506.google.com ([209.85.198.231]:43017 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754427AbZBJSwY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 13:52:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Se/dnWDvoHAn876oUmSO6gaHvBv63M5K3yVjoF8hRctW0bqEvR4BaI6dd5x5fvZNqC
-         hLiDIwFPM/Xf/rHrzSBlQkVWvopSBCPFj8CV2wJyJWi+q56qgjsfRMs9EbwRjFmk9ZBp
-         FJ8esUw7gRW/g7DQG0sQyMkx9kthO831KzGbs=
+	Tue, 10 Feb 2009 14:03:25 -0500
+Received: from kroah.org ([198.145.64.141]:53532 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754540AbZBJTDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 14:03:24 -0500
+Date: Tue, 10 Feb 2009 10:59:24 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/53] 2.6.28-stable review
+Message-ID: <20090210185924.GA14308@kroah.com>
 MIME-Version: 1.0
-In-Reply-To: <B4ED8DE8E195E84A872496A085BC07822F21@exchange01.corp.win-professional.com>
-References: <B4ED8DE8E195E84A872496A085BC07822F18@exchange01.corp.win-professional.com>
-	 <B4ED8DE8E195E84A872496A085BC07822F1D@exchange01.corp.win-professional.com>
-	 <20090209234528.GA862@elte.hu> <4990E90D.30005@kernel.org>
-	 <B4ED8DE8E195E84A872496A085BC07822F21@exchange01.corp.win-professional.com>
-Date: Tue, 10 Feb 2009 10:52:23 -0800
-X-Google-Sender-Auth: f38839d41de1a216
-Message-ID: <86802c440902101052m223792ddi43d27423844b1d5b@mail.gmail.com>
-Subject: Re: warning in arch/x86/kernel/cpu/mtrr/generic.c:400 with 2.6.29-rc3 
-	on IBM x3400
-From: Yinghai Lu <yinghai@kernel.org>
-To: "Morten P.D. Stevens" <mstevens@win-professional.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 8:21 AM, Morten P.D. Stevens
-<mstevens@win-professional.com> wrote:
-> Hi,
->
->> please try:
->> diff --git a/arch/x86/kernel/cpu/mtrr/generic.c
-> b/arch/x86/kernel/cpu/mtrr/generic.c
->> index 0c0a455..7a359ce 100644
->> --- a/arch/x86/kernel/cpu/mtrr/generic.c
->> +++ b/arch/x86/kernel/cpu/mtrr/generic.c
->> @@ -397,7 +397,8 @@ static void generic_get_mtrr(unsigned int reg,
-> unsigned long *base,
->>               tmp |= ~((1<<(hi - 1)) - 1);
->>
->>               if (tmp != mask_lo) {
->> -                     WARN_ONCE(1, KERN_INFO "mtrr: your BIOS has set
-> up an incorrect mask, fixing it up.\n");
->> +                     printk(KERN_INFO "mtrr: BIOS set mask_lo: %x
-> should be %x, fixing it up\n", mask_lo, tmp);
->> +                     WARN_ONCE(1, KERN_INFO "mtrr: your BIOS has set
-> up an incorrect mask.\n");
->>                       mask_lo = tmp;
->>               }
->>       }
->
-> result:
->
-> [    0.000000] ------------[ cut here ]------------
-> [    0.000000] WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:405
-> generic_get_mtrr+0xd0/0x10a()
-> [    0.000000] mtrr: your BIOS has set up an incorrect mask.
-> [    0.000000] Modules linked in:
-> [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.28.4-ibm #1
-> [    0.000000] Call Trace:
-> [    0.000000]  [<ffffffff8023acca>] warn_slowpath+0xb4/0xda
-> [    0.000000]  [<ffffffff8023b8c6>] vprintk+0x2a4/0x2d1
-> [    0.000000]  [<ffffffff80221bea>] default_spin_lock_flags+0x6/0x8
-> [    0.000000]  [<ffffffff80451cf9>] printk+0x4e/0x5d
-> [    0.000000]  [<ffffffff80453e6a>] _spin_lock_irqsave+0x25/0x2c
-> [    0.000000]  [<ffffffff802194c0>] mtrr_wrmsr+0x1b/0x48
-> [    0.000000]  [<ffffffff805e5f88>] get_mtrr_state+0x2e5/0x2f1
-> [    0.000000]  [<ffffffff8021960e>] generic_get_mtrr+0xd0/0x10a
-> [    0.000000]  [<ffffffff805e4e0d>] mtrr_bp_init+0x1f5/0xc39
-> [    0.000000]  [<ffffffff805e58e4>]
-> mtrr_trim_uncached_memory+0x93/0x374
-> [    0.000000]  [<ffffffff805f07c9>] early_iounmap+0x13d/0x19d
-> [    0.000000]  [<ffffffff805f07c9>] early_iounmap+0x13d/0x19d
-> [    0.000000]  [<ffffffff805da140>] early_idt_handler+0x0/0x71
-> [    0.000000]  [<ffffffff805e0d56>] setup_arch+0x407/0x78c
-> [    0.000000]  [<ffffffff805f4c81>] cgroup_init_subsys+0x2a/0xd9
-> [    0.000000]  [<ffffffff805f4f5e>] cgroup_init_early+0x1a4/0x1b6
-> [    0.000000]  [<ffffffff80453f10>] _spin_lock+0x6/0x7
-> [    0.000000]  [<ffffffff805da931>] start_kernel+0x7b/0x38b
-> [    0.000000]  [<ffffffff805da140>] early_idt_handler+0x0/0x71
-> [    0.000000]  [<ffffffff805da3a1>] x86_64_start_kernel+0xe7/0xf4
-> [    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
->
+This is the start of the stable review cycle for the 2.6.28.5 release.
+There are 53 patches in this series, all will be posted as a response
+to this one.  If anyone has any issues with these being applied, please
+let us know.  If anyone is a maintainer of the proper subsystem, and
+wants to add a Signed-off-by: line to the patch, please respond with it.
+
+These patches are sent out with a number of different people on the
+Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
+to add your name to the list.  If you want to be off the reviewer list,
+also email us.
+
+Responses should be made by Thursday, February 12 19:00:00 UTC.
+Anything received after that time might be too late.
+
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.25.8-rc1.gz
+and the diffstat can be found below.
 
 
-the line before this? it should tell why BIOS set the mask wrong.
+thanks,
 
-YH
+greg k-h
+
+
+ Documentation/filesystems/sysfs-pci.txt |   13 +++-
+ Makefile                                |    2 +-
+ arch/ia64/sn/kernel/io_acpi_init.c      |    2 +-
+ arch/ia64/sn/kernel/io_init.c           |    2 +-
+ arch/x86/kernel/apic.c                  |    2 +-
+ arch/x86/mm/fault.c                     |    8 ++-
+ drivers/acpi/asus_acpi.c                |   16 ++++-
+ drivers/acpi/dock.c                     |    6 ++-
+ drivers/acpi/tables.c                   |    7 ++-
+ drivers/acpi/tables/tbutils.c           |    7 +-
+ drivers/acpi/video.c                    |   29 +++++++-
+ drivers/ata/sata_via.c                  |    2 +
+ drivers/block/nbd.c                     |    4 +
+ drivers/char/agp/intel-agp.c            |   11 +++-
+ drivers/firewire/fw-ohci.c              |    2 +-
+ drivers/firewire/fw-sbp2.c              |   43 +++++++-----
+ drivers/ieee1394/ohci1394.h             |    2 +-
+ drivers/ieee1394/sbp2.c                 |   10 +++
+ drivers/md/linear.c                     |    6 +-
+ drivers/md/md.c                         |   24 ++++---
+ drivers/misc/eeepc-laptop.c             |    7 ++-
+ drivers/misc/panasonic-laptop.c         |    2 +-
+ drivers/misc/sgi-xp/xpc.h               |    5 +-
+ drivers/misc/sgi-xp/xpc_uv.c            |   11 ++--
+ drivers/net/e1000/e1000_main.c          |    6 +-
+ drivers/net/wireless/ipw2200.c          |   28 ++++++--
+ drivers/net/wireless/ipw2200.h          |    1 +
+ drivers/pci/pci-sysfs.c                 |    4 +-
+ drivers/pci/pcie/aspm.c                 |    4 +-
+ drivers/pci/rom.c                       |    8 ++-
+ drivers/serial/8250_pci.c               |    9 +++
+ drivers/usb/serial/option.c             |   93 +++++++++++++++----------
+ drivers/usb/serial/ti_usb_3410_5052.c   |   13 +++-
+ drivers/usb/serial/ti_usb_3410_5052.h   |    4 +
+ drivers/usb/storage/scsiglue.c          |    2 +
+ drivers/usb/storage/unusual_devs.h      |   15 ----
+ fs/binfmt_elf.c                         |   14 +++-
+ fs/seq_file.c                           |  115 ++++++++++++++++---------------
+ fs/xfs/linux-2.6/xfs_buf.c              |    3 +-
+ include/acpi/pdc_intel.h                |    2 +
+ include/linux/module.h                  |    1 -
+ include/linux/pci.h                     |    2 +-
+ include/linux/pci_ids.h                 |    1 +
+ include/linux/serial.h                  |    3 +-
+ include/linux/wait.h                    |   11 +++-
+ ipc/shm.c                               |    4 +
+ kernel/sched.c                          |    4 +-
+ kernel/sys.c                            |   16 +---
+ kernel/wait.c                           |   59 ++++++++++++++--
+ mm/memory.c                             |    2 +-
+ mm/mlock.c                              |    5 +-
+ net/sctp/input.c                        |   13 ++++
+ sound/pci/hda/patch_realtek.c           |    4 +
+ sound/usb/usbaudio.c                    |    1 +
+ 54 files changed, 448 insertions(+), 222 deletions(-)
