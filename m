@@ -1,170 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbZBJLIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbZBJLJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754623AbZBJLIT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 06:08:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961AbZBJLID
+	id S1754224AbZBJLJZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 06:09:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750790AbZBJLJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 06:08:03 -0500
-Received: from static-220-247-10-204.b-man.svips.gol.ne.jp ([220.247.10.204]:41350
-	"EHLO smtp.kamineko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753041AbZBJLIA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 06:08:00 -0500
-Date: Tue, 10 Feb 2009 20:08:02 +0900
-From: Mattia Dongili <malattia@linux.it>
-To: Guilherme Malschitzky Schroeder <guilherme.m.schroeder@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: ACPI regression in 2.6.29 - cpufreq_performance doesn't work
-Message-ID: <20090210110802.GB31755@kamineko.org>
-References: <cc0fa41f0902091953y2ab718fcmdbd1c42acf270e08@mail.gmail.com> <20090210045803.GA31755@kamineko.org> <cc0fa41f0902092215i44823962t39033f6b987f273f@mail.gmail.com>
+	Tue, 10 Feb 2009 06:09:13 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:54643 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750793AbZBJLJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 06:09:11 -0500
+Date: Tue, 10 Feb 2009 11:09:07 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Ravikiran G Thirumalai <kiran@scalex86.org>
+Cc: wli@movementarian.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, shai@scalex86.org
+Subject: Re: [patch] mm: Fix SHM_HUGETLB to work with users in
+	hugetlb_shm_group
+Message-ID: <20090210110907.GB11649@csn.ul.ie>
+References: <20090204220428.GA6794@localdomain> <20090204221121.GD10229@movementarian.org> <20090205004157.GC6794@localdomain> <20090205132529.GA12132@csn.ul.ie> <20090205190851.GA6692@localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <cc0fa41f0902092215i44823962t39033f6b987f273f@mail.gmail.com>
-X-Message-Flag: Cranky? Try Free Software instead!
-X-Operating-System: Linux 2.6.26-1 i686
-X-Editor: Vim http://www.vim.org/
-X-Disclaimer: Buh!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090205190851.GA6692@localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A: Because it messes up the order in which people normally read text.
-Q: Why is top-posting such a bad thing?
-A: Top-posting.
-Q: What is the most annoying thing in e-mail?
-
-On Tue, Feb 10, 2009 at 04:15:00AM -0200, Guilherme Malschitzky Schroeder wrote:
-> yeah mattia, you were right about ondemand module was being used on
-> cpu1, so i couldn't remove it.
-> with this commited patch, both cpu's can now have different speeds.
-
-afair this has always been the case. the only difference the patch
-introduces is telling the BIOS where the coordination is actually done.
-
-> i was just comparing cat /proc/cpuinfo and didn't notice that cpu0 was
-> at 2268MHz.
-> cpufrequtils will need an update do deal with this change.
-
-why? what's wrong with cpufrequtils?
-
-> btw, this looks strange:
+On Thu, Feb 05, 2009 at 11:08:51AM -0800, Ravikiran G Thirumalai wrote:
+> Thanks for your comments Mel.
 > 
-> dub:~# echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-> dub:~# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
-> performance
-> ondemand
-> 
-> dub:~# cat /proc/cpuinfo | grep MH
-> cpu MHz         : 2268.000
-> cpu MHz         : 800.000
-> 
-> dub:~# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/cpuinfo_cur_freq
-> 2267000
-> 2267000
-
-well the former displays what the kernel thinks the frequency is, the
-latter reads from hw registers and displays the real frequency.
-It's consistent. The kernel doesn't (and can't) know about what the hw
-is doing behind its back and present the user consistent information.
-
-> dub:~# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_min_freq
-> 800000
-> 800000
-> 
-> dub:~# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_available_frequencies
-> 2268000 2267000 1600000 800000
-> 2268000 2267000 1600000 800000
-> 
-> doesn't cpu0/cpufreq/scaling_min_freq needs to be 2268000 and
-> scaling_frequencies
-> just have 2268000 because it's set to "performance"?
-> 
-> am i forgetting anything else to set?
-
-no, if I understand your question correctly you're just misinterpreting
-what those files are for, take a look at Documentation/cpu-freq
-
-> thanks,
-> 
-> 
-> On Tue, Feb 10, 2009 at 2:58 AM, Mattia Dongili <malattia@linux.it> wrote:
-> > On Tue, Feb 10, 2009 at 01:53:13AM -0200, Guilherme Malschitzky Schroeder wrote:
-> >> Hi,
-> >>
-> >> If i set performance for scaling_governor using 2.6.29-rc4-git2,
-> >> ondemand stills control my CPU.
-> >> I get just 800MHz instead of 2268MHz.
-> >>
-> >> dub:/sys/devices/system/cpu/cpu0/cpufreq# cat cpuinfo_cur_freq
-> >> 800000
-> >> dub:/sys/devices/system/cpu/cpu0/cpufreq# echo performance > scaling_governor
-> >> dub:/sys/devices/system/cpu/cpu0/cpufreq# cat scaling_governor
-> >> performance
-> >> dub:/sys/devices/system/cpu/cpu0/cpufreq# cat cpuinfo_cur_freq
-> >> 2267000
-> >>
-> >> But, /proc/cpuinfo still shows 800MHz:
-> >>
-> >> model name      : Intel(R) Core(TM)2 Duo CPU     P8400  @ 2.26GHz
-> >> stepping        : 6
-> >> cpu MHz         : 800.000
-> >>
-> >> And i cannot remove the ondemand module, that is not used anymore:
-> >>
-> >> dub:/sys/devices/system/cpu/cpu0/cpufreq# rmmod cpufreq_ondemand
-> >> ERROR: Module cpufreq_ondemand is in use
+> On Thu, Feb 05, 2009 at 01:25:29PM +0000, Mel Gorman wrote:
+> >On Wed, Feb 04, 2009 at 04:41:57PM -0800, Ravikiran G Thirumalai wrote:
 > >
-> > yes, I guess it is used by cpu1, you should repeat the above commands
-> > for /sys/devices/system/cpu/cpu1/cpufreq too.
+> >========
+> >> Fix hugetlb subsystem so that non root users belonging to hugetlb_shm_group
+> >> can actually allocate hugetlb backed shm.
+> >> 
+> >> Currently non root users cannot even map one large page using SHM_HUGETLB
+> >> when they belong to the gid in /proc/sys/vm/hugetlb_shm_group.
+> >> This is because allocation size is verified against RLIMIT_MEMLOCK resource
+> >> limit even if the user belongs to hugetlb_shm_group.
+> >> 
+> >> This patch
+> >> 1. Fixes hugetlb subsystem so that users with CAP_IPC_LOCK and users
+> >>    belonging to hugetlb_shm_group don't need to be restricted with
+> >>    RLIMIT_MEMLOCK resource limits
+> >> 2. If a user has sufficient memlock limit he can still allocate the hugetlb
+> >>    shm segment.
+> >>  
 > >
-> > ...
-> >> I've git bisect from 2.6.28.4 (which was working) to 2.6.29-rc4-git2
-> >> and i get into this:
-> >>
-> >> alemao@dub:~/linux-2.6$ git bisect good
-> >> d96f94c604453f87fe24154b87e1e9a3a72511f8 is first bad commit
-> >> commit d96f94c604453f87fe24154b87e1e9a3a72511f8
-> >> Author: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
-> >> Date:   Mon Feb 2 11:57:18 2009 -0800
-> >>
-> >>     ACPI: Enable bit 11 in _PDC to advertise hw coord
-> >>
-> >>     Bit 11 in intel PDC definitions is meant for OS capability to handle
-> >>     hardware coordination of P-states. In Linux we have always supported
-> >>     hwardware coordination of P-states. Just let the BIOSes know that we
-> >>     support it, by setting this bit.
-> >>
-> >>     Some BIOSes use this bit to choose between hardware or software coordination
-> >>     and without this change below, BIOSes switch to software coordination, which
-> >>     is not very optimal in terms of power consumption and extra
-> >> wakeups from idle.
-> >>
-> >>     Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> >>     Signed-off-by: Len Brown <len.brown@intel.com>
-> >
-> > the "coordination of P-states" is required when you have an SMP system
-> > that cannot scale cpu voltage independently on each cpu, so the best
-> > voltage/frequency have to be selected mediating between all the applied
-> > policies.
-> > The commit you found above just makes use hw coordination instead of sw
-> > and the message explains why.
-> >
-> > If you make sure you change *all* of the cpu policies you won't see the
-> > behaviour you describe.
-> >
-> > hth
-> > --
-> > mattia
-> > :wq
-> >
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> >Point 1 I'm happy with, point 2 less so. It alters the semantics of the
+> >locked rlimit beyond what is necessary to fix the problem - i.e. a user
+> >in the group should be allowed to use hugepages with shmget(). Minimally,
+> >there should be two separate patches.
 > 
+> I see your point, and I was initially leaning towards 1. only -- that is not
+> validate against memlock rlimit at all.  But, I kinda understand Bill's
+> comments about still honoring the rlimit because this is the only way to map
+> SHM_HUGETLB currently, and seems like all oracle users currently do that.
+
+Yeah, Bill convinced me of same. I'm not happy that applications will basically
+be depending on weird behaviour but breaking them because it's "cleaner"
+is a bit rude and I wanted to move away from hugepages being a root-only thing.
+
+> This is a compatibility issue and sysadmins will have to change from using
+> /etc/security/limits.conf  to a gid based sysctl in /etc/sysctl.conf
+> (both based on distros) to let users use hugetlb backed shm. I agree this
+> still keeps some inconsistency around, so how about letting people still use
+> rlimit based checks, but marking it deprecated by adding this to
+> feature-removal-schedule.txt?
+> 
+
+I'm ok with that. Should we print a KERN_INFO message once when someone
+is depending on rlimits without being part of the group warning that
+this behaviour will not be allowed in a future release?
+
+> >
+> >> Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
+> >> 
+> >> ---
+> >> 
+> >>  Documentation/vm/hugetlbpage.txt |   11 ++++++-----
+> >>  fs/hugetlbfs/inode.c             |   18 ++++++++++++------
+> >>  include/linux/mm.h               |    2 ++
+> >>  mm/mlock.c                       |   11 ++++++++---
+> >>  4 files changed, 28 insertions(+), 14 deletions(-)
+> >> 
+> >> Index: linux-2.6-tip/fs/hugetlbfs/inode.c
+> >> ===================================================================
+> >> --- linux-2.6-tip.orig/fs/hugetlbfs/inode.c	2009-02-04 15:21:45.000000000 -0800
+> >> +++ linux-2.6-tip/fs/hugetlbfs/inode.c	2009-02-04 15:23:19.000000000 -0800
+> >> @@ -943,8 +943,15 @@ static struct vfsmount *hugetlbfs_vfsmou
+> >>  static int can_do_hugetlb_shm(void)
+> >>  {
+> >>  	return likely(capable(CAP_IPC_LOCK) ||
+> >> -			in_group_p(sysctl_hugetlb_shm_group) ||
+> >> -			can_do_mlock());
+> >> +			in_group_p(sysctl_hugetlb_shm_group));
+> >> +}
+> >> +
+> >> +static void acct_huge_shm_lock(size_t size, struct user_struct *user)
+> >> +{
+> >> +	unsigned long pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
+> >> +	spin_lock(&shmlock_user_lock);
+> >> +	acct_shm_lock(pages, user);
+> >> +	spin_unlock(&shmlock_user_lock);
+> >>  }
+> >
+> >This should be split into another patch (i.e. three in all). The first patch
+> >allows users in thh shm_group to use huge pages. The second that accounts
+> >for locked_shm properly. The third allows users with a high enough locked
+> >rlimit to use shmget() with hugepages. However, my feeling right now would
+> >be to ack 1, re-reread 2 and nak 3.
+> 
+> I totally agree.  In fact yesterday I was thinking of resending this patch
+> to not account for shm memory when a user is not validated against rlimits
+> (when he has CAP_IPC_LOCK or if he belongs to the sysctl_hugetlb_shm_group).
+> 
+
+It would make it more consistent with the filesystem which doesn't check
+rlimits.
+
+> As I see it there must be two parts:
+> 1. Free ticket to CAP_IPC_LOCK and users belonging to sysctl_hugetlb_shm_group
+> 2. Patch to have users not having CAP_IPC_LOCK or sysctl_hugetlb_shm_group
+>    to check against memlock rlimits, and account it.  Also mark this
+>    deprecated in feature-removal-schedule.txt
+> 
+> Would this be OK?
+> 
+
+Sounds good. Thanks a lot.
+
 -- 
-mattia
-:wq!
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
