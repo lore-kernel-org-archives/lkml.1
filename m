@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757014AbZBJTKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757266AbZBJTKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757014AbZBJTKw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 14:10:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755573AbZBJTDt
+	id S1757266AbZBJTKe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 14:10:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbZBJTDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 14:03:49 -0500
-Received: from kroah.org ([198.145.64.141]:53816 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 14:03:48 -0500
+Received: from kroah.org ([198.145.64.141]:53806 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755485AbZBJTDp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 14:03:45 -0500
-Date: Tue, 10 Feb 2009 11:00:22 -0800
+	id S1755483AbZBJTDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 14:03:44 -0500
+Date: Tue, 10 Feb 2009 11:00:19 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Darren Salt <linux@youmustbejoking.demon.co.uk>,
-       Len Brown <len.brown@intel.com>
-Subject: [patch 20/53] eeepc-laptop: fix oops when changing backlight
-	brightness during eeepc-laptop init
-Message-ID: <20090210190022.GU14308@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Borislav Petkov <borislav.petkov@amd.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [patch 19/53] x86: APIC: enable workaround on AMD Fam10h CPUs
+Message-ID: <20090210190019.GT14308@kroah.com>
 References: <20090210185337.000769713@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="eeepc-laptop-fix-oops-when-changing-backlight-brightness-during-eeepc-laptop-init.patch"
+Content-Disposition: inline; filename="x86-apic-enable-workaround-on-amd-fam10h-cpus.patch"
 In-Reply-To: <20090210185924.GA14308@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,64 +39,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Darren Salt <linux@youmustbejoking.demon.co.uk>
+From: Borislav Petkov <borislav.petkov@amd.com>
 
-commit 7695fb04aca62e2d8a7ca6ede50f6211e1d71e53 upstream.
+commit 858770619debfb9269add63e4ba8b7c6b5538dd1 upstream.
 
-I got the following oops while changing the backlight brightness during
-startup.  When it happens, it prevents use of the hotkeys, Fn-Fx, and the
-lid button.
+Impact: fix to enable APIC for AMD Fam10h on chipsets with a missing/b0rked
+	ACPI MP table (MADT)
 
-It's a clear use-before-init, as I verified by testing with an
-appropriately-placed "else printk".
+Booting a 32bit kernel on an AMD Fam10h CPU running on chipsets with
+missing/b0rked MP table leads to a hang pretty early in the boot process
+due to the APIC not being initialized. Fix that by falling back to the
+default APIC base address in 32bit code, as it is done in the 64bit
+codepath.
 
-BUG: unable to handle kernel NULL pointer dereference at 00000000
-*pde = 00000000
-Oops: 0002 [#1] PREEMPT SMP
-Pid: 160, comm: kacpi_notify Not tainted (2.6.28.1-eee901 #4) 901
-EIP: 0060:[<c0264e68>]  [<c0264e68>] eeepc_hotk_notify+26/da
-EFLAGS: 00010246 CPU: 1
-Using defaults from ksymoops -t elf32-i386 -a i386
-EAX: 00000009 EBX: 00000000 ECX: 00000009 EDX: f70dbf64
-ESI: 00000029 EDI: f7335188 EBP: c02112c9 ESP: f70dbf80
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
- f70731e0 f73acd50 c02164ac f7335180 f70aa040 c02112e6 f733518c c012b62f
- f70aa044 f70aa040 c012bdba f70aa04c 00000000 c012be6e 00000000 f70bdf80
- c012e198 f70dbfc4 f70dbfc4 f70aa040 c012bdba 00000000 c012e0c9 c012e091
-Call Trace:
- [<c02164ac>] ? acpi_ev_notify_dispatch+4c/55
- [<c02112e6>] ? acpi_os_execute_deferred+1d/25
- [<c012b62f>] ? run_workqueue+71/f1
- [<c012bdba>] ? worker_thread+0/bf
- [<c012be6e>] ? worker_thread+b4/bf
- [<c012e198>] ? autoremove_wake_function+0/2b
- [<c012bdba>] ? worker_thread+0/bf
- [<c012e0c9>] ? kthread+38/5f
- [<c012e091>] ? kthread+0/5f
- [<c0103abf>] ? kernel_thread_helper+7/10
-Code: 00 00 00 00 c3 83 3d 60 5c 50 c0 00 56 89 d6 53 0f 84 c4 00 00 00 8d 42
-e0 83 f8 0f 77 0f 8b 1d 68 5c 50 c0 89 d8 e8 a9 fa ff ff <89> 03 8b 1d 60 5c
-50 c0 89 f2 83 e2 7f 0f b7 4c 53 10 8d 41 01
-
-Signed-off-by: Darren Salt <linux@youmustbejoking.demon.co.uk>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/misc/eeepc-laptop.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/x86/kernel/apic.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/misc/eeepc-laptop.c
-+++ b/drivers/misc/eeepc-laptop.c
-@@ -510,7 +510,8 @@ static int eeepc_hotk_check(void)
- static void notify_brn(void)
- {
- 	struct backlight_device *bd = eeepc_backlight_device;
--	bd->props.brightness = read_brightness(bd);
-+	if (bd)
-+		bd->props.brightness = read_brightness(bd);
- }
- 
- static void eeepc_hotk_notify(acpi_handle handle, u32 event, void *data)
+--- a/arch/x86/kernel/apic.c
++++ b/arch/x86/kernel/apic.c
+@@ -1451,7 +1451,7 @@ static int __init detect_init_APIC(void)
+ 	switch (boot_cpu_data.x86_vendor) {
+ 	case X86_VENDOR_AMD:
+ 		if ((boot_cpu_data.x86 == 6 && boot_cpu_data.x86_model > 1) ||
+-		    (boot_cpu_data.x86 == 15))
++		    (boot_cpu_data.x86 >= 15))
+ 			break;
+ 		goto no_apic;
+ 	case X86_VENDOR_INTEL:
 
