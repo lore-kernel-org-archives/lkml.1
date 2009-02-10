@@ -1,88 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755080AbZBJPmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbZBJPp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755080AbZBJPmR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 10:42:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752117AbZBJPmA
+	id S1754802AbZBJPp3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 10:45:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbZBJPpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 10:42:00 -0500
-Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:63161 "EHLO
-	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750869AbZBJPl7 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 10:41:59 -0500
-Date: Tue, 10 Feb 2009 15:15:21 +0000
-From: Darren Salt <linux@youmustbejoking.demon.co.uk>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Corentin Chary <corentincj@iksaif.net>
-Message-ID: <5030E7CFF4%linux@youmustbejoking.demon.co.uk>
-In-Reply-To: <20090210150431.GA26798@srcf.ucam.org>
-References: <alpine.LFD.2.00.0902081251090.3048@localhost.localdomain> 
- <gemini.ket9w800w44dc0hvg.linux@youmustbejoking.demon.co.uk> 
- <20090209234911.GB862@elte.hu> <5030E21460%linux@youmustbejoking.demon.co.uk> 
- <20090210150431.GA26798@srcf.ucam.org>
-Mail-Followup-To: Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar 
- <mingo@elte.hu>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, 
- "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>, Linus Torvalds 
- <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, 
- Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas Gleixner <tglx@linutronix.de>, 
- "H. Peter Anvin" <hpa@zytor.com>, Corentin Chary <corentincj@iksaif.net>,
- Darren Salt <linux@youmustbejoking.demon.co.uk>
-User-Agent: Gemini/2.29m (Qt/3.3.8b) (Linux-x86_64)
-X-SDate: Tue, 5642 Sep 1993 15:15:21 +0000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-SA-Exim-Connect-IP: 192.168.0.5
-X-SA-Exim-Mail-From: linux@youmustbejoking.demon.co.uk
-Subject: Re: Oopses and ACPI problems (Linus 2.6.29-rc4)
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on pentagram.youmustbejoking.demon.co.uk)
+	Tue, 10 Feb 2009 10:45:17 -0500
+Received: from sh.osrg.net ([192.16.179.4]:41121 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752602AbZBJPpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 10:45:15 -0500
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Subject: [PATCH mmotm] nilfs2: fix buggy behavior seen in enumerating checkpoints
+Date: Wed, 11 Feb 2009 00:42:49 +0900
+Message-Id: <1234280569-18102-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.5.6.5
+X-Dispatcher: imput version 20050308(IM148)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 11 Feb 2009 00:44:37 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I demand that Matthew Garrett may or may not have written...
+This will fix the weird behavior of lscp command in listing
+continuously created checkpoints; the output of lscp is rewinded
+regularly for the recent nilfs.  As a result of debugging, a defect
+was found in nilfs_cpfile_do_get_cpinfo() function.
 
-> On Tue, Feb 10, 2009 at 02:12:44PM +0000, Darren Salt wrote:
->> Reverting this fixes the rfkill oops; things work correctly again. I don't
->> know why this appears to be needed, since things work fine without this
->> patch ‒ both Fn-F2 and echoing to /sys/class/rfkill/rfkill0/state ‒ even
->> when I start up with init=/bin/sh and test directly from that shell.
+Though the function can be repeatedly called to enumerate checkpoints
+and it can skip invalid checkpoint entries, the index value was not
+carried between successive calls.
 
-> If this is BIOS version specific I'm going to be upset, but the general
-> case behaviour is that rfkill only works on the 901 if you either (a) pass
-> force=1 to pciehp (which you shouldn't) or (b) have native support in a
-> driver. My /guess/ is that you've got pciehp loaded, and there's some kind
-> of awkward race between it and eeepc-laptop.
+The bug has long been present, and came to surface after applying a
+bugfix nilfs2-fix-problems-of-memory-allocation-in-ioctl.patch, which
+increased frequency of calling the function.  The similar bugfix was
+already applied for ``snapshots'' by
+nilfs2-fix-gc-failure-on-volumes-keeping-numerous-snapshots.patch.
 
-I have; and yes, pciehp_force=1.
+This fixes the problem by making the index argument bidirectional on
+the function.
 
-As things stand, this is likely to be a problem for anybody using lenny on
-Eee hardware and upgrading (on their own) to 2.6.29, given that that
-workaround is present in eeepc-acpi-scripts in lenny.
+Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+---
+ fs/nilfs2/cpfile.c |   11 +++++++----
+ 1 files changed, 7 insertions(+), 4 deletions(-)
 
-Anyway, removing that option fixes the problem.
-
->> [long delay between these two lines]
->>   input: ETPS/2 Elantech Touchpad as /class/input/input5
->>   eeepc: Hotkey init flags 0x41
->> (not seen in .28 or .28.1; not checked later .28.*.)
-
-> BIOS bug. There's an explicit delay in the eee bios for some reason, and 
-> I haven't found any straightforward way to avoid it.
-
-BIOS bug or no, the fact remains that this is (AFAICS) a regression.
-
+diff --git a/fs/nilfs2/cpfile.c b/fs/nilfs2/cpfile.c
+index a4c9550..eb9b2d8 100644
+--- a/fs/nilfs2/cpfile.c
++++ b/fs/nilfs2/cpfile.c
+@@ -382,13 +382,13 @@ static void nilfs_cpfile_checkpoint_to_cpinfo(struct inode *cpfile,
+ 	ci->ci_next = le64_to_cpu(cp->cp_snapshot_list.ssl_next);
+ }
+ 
+-static ssize_t nilfs_cpfile_do_get_cpinfo(struct inode *cpfile, __u64 cno,
++static ssize_t nilfs_cpfile_do_get_cpinfo(struct inode *cpfile, __u64 *cnop,
+ 					  struct nilfs_cpinfo *ci, size_t nci)
+ {
+ 	struct nilfs_checkpoint *cp;
+ 	struct buffer_head *bh;
+ 	size_t cpsz = NILFS_MDT(cpfile)->mi_entry_size;
+-	__u64 cur_cno = nilfs_mdt_cno(cpfile);
++	__u64 cur_cno = nilfs_mdt_cno(cpfile), cno = *cnop;
+ 	void *kaddr;
+ 	int n, ret;
+ 	int ncps, i;
+@@ -416,6 +416,8 @@ static ssize_t nilfs_cpfile_do_get_cpinfo(struct inode *cpfile, __u64 cno,
+ 	}
+ 
+ 	ret = n;
++	if (n > 0)
++		*cnop = ci[n - 1].ci_cno + 1;
+ 
+  out:
+ 	up_read(&NILFS_MDT(cpfile)->mi_sem);
+@@ -504,7 +506,7 @@ ssize_t nilfs_cpfile_get_cpinfo(struct inode *cpfile, __u64 *cnop, int mode,
+ {
+ 	switch (mode) {
+ 	case NILFS_CHECKPOINT:
+-		return nilfs_cpfile_do_get_cpinfo(cpfile, *cnop, ci, nci);
++		return nilfs_cpfile_do_get_cpinfo(cpfile, cnop, ci, nci);
+ 	case NILFS_SNAPSHOT:
+ 		return nilfs_cpfile_do_get_ssinfo(cpfile, cnop, ci, nci);
+ 	default:
+@@ -520,13 +522,14 @@ ssize_t nilfs_cpfile_get_cpinfo(struct inode *cpfile, __u64 *cnop, int mode,
+ int nilfs_cpfile_delete_checkpoint(struct inode *cpfile, __u64 cno)
+ {
+ 	struct nilfs_cpinfo ci;
++	__u64 tcno = cno;
+ 	ssize_t nci;
+ 	int ret;
+ 
+ 	/* checkpoint number 0 is invalid */
+ 	if (cno == 0)
+ 		return -ENOENT;
+-	nci = nilfs_cpfile_do_get_cpinfo(cpfile, cno, &ci, 1);
++	nci = nilfs_cpfile_do_get_cpinfo(cpfile, &tcno, &ci, 1);
+ 	if (nci < 0)
+ 		return nci;
+ 	else if (nci == 0 || ci.ci_cno != cno)
 -- 
-| Darren Salt    | linux or ds at              | nr. Ashington, | Toon
-| RISC OS, Linux | youmustbejoking,demon,co,uk | Northumberland | Army
-| + Use more efficient products. Use less.          BE MORE ENERGY EFFICIENT.
+1.5.6.5
 
-  10 PRINT "I used to do this in Dixons": POKE 23692,255: GO TO 10
