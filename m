@@ -1,73 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754875AbZBJR6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbZBJR7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754875AbZBJR6b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 12:58:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbZBJR6W
+	id S1755224AbZBJR7v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 12:59:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbZBJR7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 12:58:22 -0500
-Received: from mga11.intel.com ([192.55.52.93]:23009 "EHLO mga11.intel.com"
+	Tue, 10 Feb 2009 12:59:42 -0500
+Received: from cmpxchg.org ([85.214.51.133]:58749 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751103AbZBJR6W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 12:58:22 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,187,1233561600"; 
-   d="scan'208";a="429826879"
-Subject: Re: 2.6.29-rc4-git1 -- iwl3945: Does not suspend/resume
-	successfully.
-From: reinette chatre <reinette.chatre@intel.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Miles Lane <miles.lane@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <20090210142337.GB3534@tuxdriver.com>
-References: <a44ae5cd0902091844m48a48e01i5c8d567279d70dff@mail.gmail.com>
-	 <20090210142337.GB3534@tuxdriver.com>
-Content-Type: text/plain
-Date: Tue, 10 Feb 2009 10:02:05 -0800
-Message-Id: <1234288925.11530.175.camel@rc-desk>
+	id S1751103AbZBJR7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 12:59:42 -0500
+Date: Tue, 10 Feb 2009 18:59:15 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Chandru <chandru@in.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
+       benh@kernel.crashing.org, chandru@linux.vnet.ibm.com, paulus@samba.org,
+       akpm@linux-foundation.org
+Subject: Re: + powerpc-fix-code-for-reserved-memory-spanning-across-nodes.patch added to -mm tree
+Message-ID: <20090210175915.GA2541@cmpxchg.org>
+References: <200812250806.mBP86LPQ018399@imap1.linux-foundation.org> <20090208204725.GA5514@cmpxchg.org> <49916691.9080807@in.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49916691.9080807@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-10 at 06:23 -0800, John W. Linville wrote:
-> On Mon, Feb 09, 2009 at 09:44:27PM -0500, Miles Lane wrote:
+On Tue, Feb 10, 2009 at 05:05:45PM +0530, Chandru wrote:
+> Johannes Weiner wrote:
+> >---
+> >From: Johannes Weiner <hannes@cmpxchg.org>
+> >Subject: powerpc: fix rounding error in teaching bootmem about LMB
+> >
+> >If the reserved LMB does not exactly span complete pages, treating
+> >(start + size) >> PAGE_SHIFT as the ending PFN is an off by one error.
+> >
+> >The subsequent check for whether the region needs to be trimmed to fit
+> >the underlying node can now fail if the range exceeds the node by 1 to
+> >PAGE_SIZE - 1 bytes.  The excessive range is then passed to bootmem
+> >which BUG()s out on it correctly.
+> >
+> >Fix up the rounding to include all pages the LMB spans, even partial
+> >ones.
+> >
+> >Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> >---
 > 
-> > At resume:
-> > 
-> > [ 2619.951641] iwl3945 0000:03:00.0: PCI INT A disabled
-> > [ 2619.954113] wlan0: disassociating by local choice (reason=3)
-> > [ 2623.178462] iwl3945 0000:03:00.0: restoring config space at offset
-> > 0xf (was 0x100, writing 0x10b)
-> > [ 2623.178462] iwl3945 0000:03:00.0: restoring config space at offset
-> > 0x4 (was 0x0, writing 0xd6000000)
-> > [ 2623.178462] iwl3945 0000:03:00.0: restoring config space at offset
-> > 0x3 (was 0x0, writing 0x10)
-> > [ 2623.178462] iwl3945 0000:03:00.0: restoring config space at offset
-> > 0x1 (was 0x100000, writing 0x100102)
-> > [ 2627.612291] iwl3945 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-> > [ 2627.612646] iwl3945 0000:03:00.0: irq 28 for MSI/MSI-X
-> > [ 2629.644532] iwl3945: Wait for START_ALIVE timeout after 2000ms.
-> > [ 2629.644669] iwl3945 0000:03:00.0: PCI INT A disabled
-> > [ 2629.655349] iwl3945 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-> > [ 2629.655752] iwl3945 0000:03:00.0: irq 28 for MSI/MSI-X
-> > [ 2631.684143] iwl3945: Wait for START_ALIVE timeout after 2000ms.
-> > [ 2631.684281] iwl3945 0000:03:00.0: PCI INT A disabled
-> > [ 2701.336116] Hangcheck: hangcheck value past margin!
-> > 
-> > Result:  The device isn't responding to Network Manager (no APs listed).
+> Hello Hannes,
 > 
-> Is this a dup?
+> Dave Hansen gave a fix for this problem which looks similar
+> to the changes that you have made here , but has an additional
+> one line change too. Here is the patch ( probably may not apply
+> cleanly to the latest kernel ) . I don' t know if Dave
+> submitted this patch to lkml for it's inclusion into the
+> latest tree. Thanks for looking into this issue. We may also have
+> to remove the 
+> powerpc-fix-code-for-reserved-memory-spanning-across-nodes.patch
+> from the -mm tree.
 > 
-> 	http://bugzilla.kernel.org/show_bug.cgi?id=12656
+> Thanks,
+> Chandru
 > 
-> Reinette, should I revert that patch?  Or is there a fix coming?
+> =================
+> Snippet from Dave's patch without change log
+> 
+> ---
+> 
+> linux-2.6.git-dave/arch/powerpc/mm/numa.c |    5 +++--
+> 1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff -puN arch/powerpc/mm/numa.c~reserve-over-fix arch/powerpc/mm/numa.c
+> --- linux-2.6.git/arch/powerpc/mm/numa.c~reserve-over-fix	2009-01-26 
+> 10:17:20.000000000 -0800
+> +++ linux-2.6.git-dave/arch/powerpc/mm/numa.c	2009-01-26 
+> 10:17:30.000000000 -0800
+> @@ -19,6 +19,7 @@
+> #include <linux/notifier.h>
+> #include <linux/lmb.h>
+> #include <linux/of.h>
+> +#include <linux/pfn.h>
+> #include <asm/sparsemem.h>
+> #include <asm/prom.h>
+> #include <asm/system.h>
+> @@ -882,7 +883,7 @@ static void mark_reserved_regions_for_ni
+> 		unsigned long physbase = lmb.reserved.region[i].base;
+> 		unsigned long size = lmb.reserved.region[i].size;
+> 		unsigned long start_pfn = physbase >> PAGE_SHIFT;
+> -		unsigned long end_pfn = ((physbase + size) >> PAGE_SHIFT);
+> +		unsigned long end_pfn = PFN_UP(physbase + size);
+> 		struct node_active_region node_ar;
+> 		unsigned long node_end_pfn = node->node_start_pfn +
+> 					     node->node_spanned_pages;
+> @@ -908,7 +909,7 @@ static void mark_reserved_regions_for_ni
+> 			 */
+> 			if (end_pfn > node_ar.end_pfn)
+> 				reserve_size = (node_ar.end_pfn << 
+> 				PAGE_SHIFT)
+> -					- (start_pfn << PAGE_SHIFT);
+> +					- physbase;
+> 			/*
+> 			 * Only worry about *this* node, others may not
+> 			 * yet have valid NODE_DATA().
+> diff -puN arch/powerpc/kernel/prom_init.c~reserve-over-fix 
+> arch/powerpc/kernel/prom_init.c
 
-This does look like a duplicate. Fix coming. 
+This is fine, too.  Subtracting physbase yields a smaller reserve_size
+if not page aligned (bootmem will round it up again, no problem there)
+and at the end of the loop, size is not zero.  This has no practical
+impacts, though, as far as I can see.
 
+The interesting question, however, is whether this patch actually
+fixes the problem you encountered?  If so, I would be glad if we could
+drop the workaround we currently have in -mm.
 
-Reinette
-
+	Hannes
