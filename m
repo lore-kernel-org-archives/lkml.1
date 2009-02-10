@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbZBJXey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbZBJXjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757233AbZBJXey (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 18:34:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756475AbZBJXep
+	id S1757328AbZBJXjM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 18:39:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756672AbZBJXi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 18:34:45 -0500
-Received: from mailservice.tudelft.nl ([130.161.131.5]:22142 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756446AbZBJXep (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 18:34:45 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -12.579
-Message-ID: <49920F0A.9060904@tremplin-utc.net>
-Date: Wed, 11 Feb 2009 00:34:34 +0100
-From: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081231 Mandriva/2.0.0.19-1mdv2009.1 (2009.1) Thunderbird/2.0.0.19 Mnenhy/0.7.6.666
-MIME-Version: 1.0
-To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
-Cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org,
-       Palatis Tseng <palatis@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] lis3lv02d: add axes knowledge of HP Pavilion dv5 models
-References: <1233967681-6378-1-git-send-email-giuseppe.bilotta@gmail.com>	 <498D9F02.9000107@tremplin-utc.net>	 <cb7bb73a0902071559w70b3367el9471db894872257f@mail.gmail.com>	 <20090209094748.GC4358@atrey.karlin.mff.cuni.cz>	 <cb7bb73a0902090153q30a5337bj45d41a3e3919e189@mail.gmail.com>	 <20090209095803.GD4358@atrey.karlin.mff.cuni.cz>	 <cb7bb73a0902090345y4ef5d544ta374ee96791a80df@mail.gmail.com>	 <cb7bb73a0902090533q3acc45b2r7d00b44aa0bdfc90@mail.gmail.com>	 <20090210101019.GB27018@atrey.karlin.mff.cuni.cz>	 <cb7bb73a0902101339g351bdd8cq442bafbeb7985a00@mail.gmail.com> <cb7bb73a0902101448h74b6b73j8307c65c4f006152@mail.gmail.com>
-In-Reply-To: <cb7bb73a0902101448h74b6b73j8307c65c4f006152@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 10 Feb 2009 18:38:56 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:34578 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756601AbZBJXi4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 18:38:56 -0500
+Date: Tue, 10 Feb 2009 18:36:02 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Ext4 tree backports for 2.6.27.13 and 2.6.28.2
+Message-ID: <20090210183602.404ee561@dhcp-100-2-144.bos.redhat.com>
+In-Reply-To: <E1LT8MN-0003Ps-Ur@closure.thunk.org>
+References: <E1LT8MN-0003Ps-Ur@closure.thunk.org>
+Organization: Red Hat, Inc.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Giuseppe Bilotta schreef:
-> On Tue, Feb 10, 2009 at 10:39 PM, Giuseppe Bilotta
-> <giuseppe.bilotta@gmail.com> wrote:
->> On Tue, Feb 10, 2009 at 11:10 AM, Pavel Machek <pavel@suse.cz> wrote:
->>> Yeah, that patch. Not sure what to do next... you could grab lis3
->>> manual and see if you can setup chip by hand to get better results...
->> As Eric pointed out, it looks definitely like an endianness problem,
->> although there are a few strange things which are happening at the
->> same time. Is the lis3 manual available online somewhere, or can I
->> request it to the mfgr?
+On Sat, 31 Jan 2009 00:25:39 -0500
+"Theodore Ts'o" <tytso@mit.edu> wrote:
+
+> I've updated the ext4 backport branches on the ext4 git tree:
 > 
-> 'k, found it on the STMicroelectronics website. Reading the doc about
-> LIS3LV02DL I see that WHO_AM_I should return 3Ah, but my sensor
-> returns 3Bh. I'll see if I find the correct datasheet for this one
-> instead, it might have info about the differences.
-Ah, yes, that would explain a lots of things! Your chip is 8bits! The 
-original reporter had not reported anything and I didn't pay attention 
-to this "little" detail when comparing the specs.
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git
+>    http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git
+> 
+> The for-stable branch is branched off of 2.6.28.2, and has a candidate
+> set of patches to be included in the next stable release.  The
+> for-stable-2.6.27 branch is branched off of 2.6.27.13.  
+> 
+> I'm more confident with the 2.6.28 stable candidate than the 2.6.27
+> stable candidates at the moment, but given that we just missed the
+> 2.6.27.14 and 2.6.28.3 release cycles, that should give us plenty of
+> time to test the patches.
+> 
 
+.27 has a bug and one patch got merged in .27.14...
 
-> One thing that I noticed is that (modulo axis inversion) I'm able to
-> use the sensor correctly if I set the thing to only use the high byte,
-> totally discarding the lower byte:
-> 	return *((s8*)(&hi));
-> Maybe this sensor needs a different setup to return 12 instead of 8
-> bits of information.
-So you either have the lis302dl or the lis202dl (2 axes only):
-http://www.st.com/stonline/products/literature/ds/12726/lis302dl.htm
-http://www.st.com/stonline/products/literature/ds/13624/lis202dl.htm
+> 
+> mainline 2.6.28  2.6.27
+>     commit-description
+> -------------------------------------------------------------------------
+> c894058d -----   71ae3e25
+>     ext4: Use an rbtree for tracking blocks freed during transaction.
+> 
 
-I'd guess you have the one with 3 axes as all the axes had changing 
-values. More optimistically I'll imagine that no HP laptop has the 2D 
-chip, which unfortunately share the same who_am_i value.
+The chunk that creates the ext4_free_block_extents cache is misapplied: it
+ended up at the end of ext4_mb_use_preallocated() instead of
+init_ext4_mballoc(). The null cache pointer then causes oopses when trying
+to delete files.
 
-So to get it working you need to change the lis3lv02d_read_16() function 
-to only read the low byte and put the high byte to FFh if the high bit 
-(80h) is set (I guess it's a signed integer). Then for completeness you 
-need to put MDPS_MAX_VAL to 128.
+> a21102b5 1b1872b 0f30c439
+>     ext3: Add sanity check to make_indexed_dir
+> 
 
-Does it work?
-
-Once this is verified, you should add a flag in the driver for the 
-device to know whether it's 8bits or 12bits. This would be set at 
-initialization according to the who_am_i value.
-
-Eric
+This went into 2.6.27.14.
