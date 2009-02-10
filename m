@@ -1,88 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbZBJVv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755807AbZBJVv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756908AbZBJVv3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 16:51:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755681AbZBJVvU
+	id S1755807AbZBJVv5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 16:51:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbZBJVvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 16:51:20 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:35215 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755505AbZBJVvQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 16:51:16 -0500
-Date: Tue, 10 Feb 2009 22:48:04 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Markus Metzger <markus.t.metzger@googlemail.com>
-Cc: "Metzger, Markus T" <markus.t.metzger@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH, for 2.6.29] ptrace: fix the usage of ptrace_fork()
-Message-ID: <20090210214804.GB4257@redhat.com>
-References: <20090209010233.GA26444@redhat.com> <20090209012824.GA26461@redhat.com> <928CFBE8E7CB0040959E56B4EA41A77E4A1E7C8B@irsmsx504.ger.corp.intel.com> <20090209193625.GA4808@redhat.com> <928CFBE8E7CB0040959E56B4EA41A77E4A1E82FE@irsmsx504.ger.corp.intel.com> <20090210184014.GA30545@redhat.com> <1234297319.6112.23.camel@raistlin> <1234299614.6112.55.camel@raistlin>
+	Tue, 10 Feb 2009 16:51:46 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:36833 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755974AbZBJVvp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 16:51:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=QL7BGXjkWiQToTf0rrChS+Hdi1vVaRXMwJG+tT6/kuEOqGYSn/gwSSeAGE9ph1msGf
+         RbEXI3zwbS3tvyWGrW8HWPcvtrJMOQEzwj6eEjkZzhN1uuN5AKShA+NvYDwa1Cdj2RaO
+         9NkWiN7ArlFVfeEU+TdIsETaZ01vCDB0oWTxI=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: Re: [PATCH] ide: move request type specific code from ide_end_drive_cmd() to callers (v2)
+Date: Tue, 10 Feb 2009 22:52:12 +0100
+User-Agent: KMail/1.10.4 (Linux/2.6.29-rc4-next-20090210; KDE/4.1.4; i686; ; )
+Cc: linux-kernel@vger.kernel.org, Borislav Petkov <petkovbb@googlemail.com>
+References: <200902052129.40866.bzolnier@gmail.com>
+In-Reply-To: <200902052129.40866.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1234299614.6112.55.camel@raistlin>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200902102252.13101.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/10, Markus Metzger wrote:
->
-> On Tue, 2009-02-10 at 21:21 +0100, Markus Metzger wrote:
-> > On Tue, 2009-02-10 at 19:40 +0100, Oleg Nesterov wrote:
->
-> > > Perhaps, for 2.6.29, we can do something like the "patch" below?
-> > > 
-> > > --- a/arch/x86/kernel/ptrace.c
-> > > +++ b/arch/x86/kernel/ptrace.c
-> > > @@ -810,11 +810,15 @@ static void ptrace_bts_untrace(struct ta
-> > >  
-> > >  static void ptrace_bts_detach(struct task_struct *child)
-> > >  {
-> > > +	// We can race with de_thread/do_wait which
-> > > +	// can do ptrace_bts_untrace() before us
-> > >  	if (unlikely(child->bts)) {
-> > > -		ds_release_bts(child->bts);
-> > > -		child->bts = NULL;
-> > > -
-> > > -		ptrace_bts_free_buffer(child);
-> > > +		// This all will be freed by ptrace_bts_untrace()
-> > > +		// later, but we should update ->mm
-> > > +		down_write(->mmap_sem);
-> > > +		mm->total_vm  -= bts_size;
-> > > +		mm->locked_vm -= bts_size);
-> > > +		up_write(->mmap_sem);
-> > >  	}
-> > >  }
-> > >  #else
-> > > 
-> > 
->
-> There's still a race.
-> The kfree() is safe, now, but ptrace_bts_untrace() might have cleared
-> child->bts_size before we can refund the memory.
+On Thursday 05 February 2009, Bartlomiej Zolnierkiewicz wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] ide: move request type specific code from ide_end_drive_cmd() to callers (v2)
+> 
+> * Move request type specific code from ide_end_drive_cmd() to callers.
+> 
+> * Remove stale ide_end_drive_cmd() documentation and drop no longer
+>   used 'stat' argument.  Then rename the function to ide_complete_rq().
+> 
+> v2:
+> * Fix handling of blk_pm_request() requests in task_no_data_intr().
 
-Yes sure, please note the "We can race..." comment at the top
-of ptrace_bts_detach().
+v2->v3 interdiff:
 
-The goal of this patch is to avoid the crash. The memory accounting
-in ->mm is still not right. But at least, the tracer can not "steal"
-the memory above the limits. And the "good" tracer should not exit
-without detach, and it shouldn't release the tracee from sub-thread
-if this can race with detach.
-
-So, afaics, the worst thing which can happen is: the "bad" tracer
-is punished by the "unfair" mm->xxx_vm numbers.
-
-Except exec() can release the main thread whatever the tracer does...
-
-> We need to make ptrace_bts_untrace() ignore child->bts_size and clear
-> it in ptrace_bts_detach().
-
-This is worse, now we can leak the memory if the tracer doesn't
-do ptrace_detach().
-
-Oleg.
-
+...
+v3:
+* Some ide_no_data_taskfile() users (HPA code and HDIO_DRIVE_* ioctls
+  handlers) access original command later so we need to update it in
+  ide_complete_task().
+...
+diff -u b/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
+--- b/drivers/ide/ide-io.c
++++ b/drivers/ide/ide-io.c
+@@ -147,12 +147,16 @@
+ void ide_complete_task(ide_drive_t *drive, ide_task_t *task, u8 stat, u8 err)
+ {
+ 	struct ide_taskfile *tf = &task->tf;
++	struct request *rq = task->rq;
+ 
+ 	tf->error = err;
+ 	tf->status = stat;
+ 
+ 	drive->hwif->tp_ops->tf_read(drive, task);
+ 
++	if (rq && rq->cmd_type == REQ_TYPE_ATA_TASKFILE)
++		memcpy(rq->special, task, sizeof(*task));
++
+ 	if (task->tf_flags & IDE_TFLAG_DYN)
+ 		kfree(task);
+ }
