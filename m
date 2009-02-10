@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbZBJLKx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754144AbZBJLM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754254AbZBJLKx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 06:10:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbZBJLKo
+	id S1754144AbZBJLM0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 06:12:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750904AbZBJLMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 06:10:44 -0500
-Received: from ti-out-0910.google.com ([209.85.142.186]:7936 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750793AbZBJLKn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 06:10:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:from:to:cc:bcc:subject:date:user-agent;
-        b=MF4TyiTLDXGXBo309UDgOrgMs/KKmblUHyAhKUaPw0cFhllc0BoKgRPbFkYUbPWF7t
-         Qyr0DkiU60ZII+/QRuDVYG2X4AQPCfQhPnwbRDjY6W7Z6Pb6nPZn7hK4ec9fWi2G94ck
-         GUA6MGUTA/CZ5uI+TBFJsesQUvWuYJPWHuKQo=
-Message-ID: <499160b0.0e1b6e0a.4589.6461@mx.google.com>
-From: Qinghuang Feng <qhfeng.kernel@gmail.com>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] : kernel/irq/devres.c:fix kernel-doc
-Date: Tue, 10 Feb 2009 19:10:37 +0800
-User-Agent: sniper-patch-carrier/1.06
+	Tue, 10 Feb 2009 06:12:14 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52738 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750759AbZBJLMM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 06:12:12 -0500
+Date: Tue, 10 Feb 2009 12:11:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Tejun Heo <tj@kernel.org>, hpa@zytor.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, x86@kernel.org, rusty@rustcorp.com.au
+Subject: Re: [PATCH 08/11] x86: use asm .macro instead of cpp #define in
+	entry_32.S
+Message-ID: <20090210111154.GA7822@elte.hu>
+References: <1234186798-16820-1-git-send-email-tj@kernel.org> <1234186798-16820-9-git-send-email-tj@kernel.org> <4990774E.5080206@goop.org> <4990D4E3.1010109@kernel.org> <4990D5F5.9030409@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4990D5F5.9030409@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a typo, change dev_{free|request}_irq to devm_{free|request}_irq.
 
-Signed-off-by: Qinghuang Feng <qhfeng.kernel@gmail.com>
----
-diff --git a/kernel/irq/devres.c b/kernel/irq/devres.c
-index 38a25b8..30b17de 100644
---- a/kernel/irq/devres.c
-+++ b/kernel/irq/devres.c
-@@ -40,7 +40,7 @@ static int devm_irq_match(struct device *dev, void *res, void *data)
-  *	automatically freed on driver detach.
-  *
-  *	If an IRQ allocated with this function needs to be freed
-- *	separately, dev_free_irq() must be used.
-+ *	separately, devm_free_irq() must be used.
-  */
- int devm_request_irq(struct device *dev, unsigned int irq,
- 		     irq_handler_t handler, unsigned long irqflags,
-@@ -77,7 +77,7 @@ EXPORT_SYMBOL(devm_request_irq);
-  *	Except for the extra @dev argument, this function takes the
-  *	same arguments and performs the same function as free_irq().
-  *	This function instead of free_irq() should be used to manually
-- *	free IRQs allocated with dev_request_irq().
-+ *	free IRQs allocated with devm_request_irq().
-  */
- void devm_free_irq(struct device *dev, unsigned int irq, void *dev_id)
- {
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
+> Tejun Heo wrote:
+>> Hmm... I originally did the conversion because I had some .if trick in
+>> SAVE_ALL which got removed later.  Even after the removal, it
+>> generally looked like a good idea as x86_64 asm was primarily using
+>> .macro too.  I do like being able to see the post-processing output of
+>> cpp too but for assembler disassembling the output often seem to give
+>> enough clue,
+>
+> That's assuming that the file assembles.  But if you're trying to assemble
+> and the best error the assembler comes up with is "bad operand" on the line
+> where you're using the macro, its extremely frustrating trying to work out
+> where the problem actually lies.
+
+Yeah, i had that experience with GAS usability with all the CFI restructuring
+we did.
+
+But it should be pretty rare that we come up with instructions that do not
+assemble - and even rarer that we come up with a _lot_ of new instructions
+that do not assemble. The trick i used was to remove bits of the macro to
+hone in on the bad instruction/construct. Stone-age tool but works.
+
+	Ingo
