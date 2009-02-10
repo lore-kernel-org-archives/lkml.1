@@ -1,85 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237AbZBJHKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753236AbZBJHQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753237AbZBJHKm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 02:10:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbZBJHKc
+	id S1753236AbZBJHQW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 02:16:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750790AbZBJHQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 02:10:32 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:61500 "EHLO
+	Tue, 10 Feb 2009 02:16:10 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:41559 "EHLO
 	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750798AbZBJHKc (ORCPT
+	with ESMTP id S1749667AbZBJHQJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 02:10:32 -0500
+	Tue, 10 Feb 2009 02:16:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=YUKxDZ6wkL5HROLBmYJ2yl9+pdrmkfxRC3RntvhPrgdLc3d8IXjTXvWOLIP0W2Y6es
-         HMu8LyGTQPXlxVS3MN4opiLhhV9xESMe5FaF8FHUyQMLZKPxVOVFvmI1fczxtN2ySo7W
-         sTGz49xVjk4sxthaJRVqfSse2dxbnwB6DZSfM=
+         :cc:content-type:content-transfer-encoding;
+        b=DMwbw4nqfBmor+m33VktLwY1Gnbqpy3hfgq0u3LR69ex5TT8qg/CERIh36DiO2L7Gr
+         Al+MR8yYHRs/JVfeZYssPXE+PxN0KAL2PSDfJ2AE9TxX51/ZZ8KZQqsEkrN7Y6u5OIXd
+         ATp6mhAhQW792fMc+Cq2+z62W+JTGR37am8uM=
 MIME-Version: 1.0
-In-Reply-To: <20090210142443.629E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20090210142443.629E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Date: Tue, 10 Feb 2009 08:10:29 +0100
-Message-ID: <19f34abd0902092310g513fb776s2e4d37285c8fa7be@mail.gmail.com>
-Subject: Re: [CRED bug?] 2.6.29-rc3 don't survive on stress workload
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: David Howells <dhowells@redhat.com>, Serge Hallyn <serue@us.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Content-Type: multipart/mixed; boundary=001636c59763a8a43204628b2e2a
+In-Reply-To: <20090209170120.85e192be.akpm@linux-foundation.org>
+References: <46e1c7760902071330i5362fe4fvd99fc7075fc666d3@mail.gmail.com>
+	 <20090209170120.85e192be.akpm@linux-foundation.org>
+Date: Tue, 10 Feb 2009 09:16:06 +0200
+Message-ID: <46e1c7760902092316g432a432dy10398030a5838ba9@mail.gmail.com>
+Subject: Re: [PATCH 002/002] de2104x: support for systems lacking cache 
+	coherence
+From: Risto Suominen <risto.suominen@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: jgarzik@pobox.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Grant Grundler <grundler@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---001636c59763a8a43204628b2e2a
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
-On Tue, Feb 10, 2009 at 6:41 AM, KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> wrote:
-> Hi
+2009/2/10 Andrew Morton <akpm@linux-foundation.org>:
 >
-> I periodically test kernel on stress workload.
-> Unfortunately, recent kerenel don't survive >24H.
+> Please prefer to prepare patches in `patch -p1' form:
 >
-> It paniced with following stack.
-> Do you have any suggestions?
+> --- a/drivers/net/tulip/Kconfig
+> +++ a/drivers/net/tulip/Kconfig
 >
-> thanks!
+I'll try to remember that.
 
-That stack trace looks somewhat similar to the one in
-http://lkml.org/lkml/2009/2/6/136
+> I think CONFIG_DE2104X_DSL is always defined if this driver is being
+> compiled.  So the Kconfig `default' should suffice here?  In which case
+> we can do
+>
+> #define DSL CONFIG_DE2104X_DSL
+>
+> and leave it at that.
+>
+> In which case we can do away with DSL everywhere and just use
+> CONFIG_DE2104X_DSL here.
+>
+I was thinking of the case where someone just compiles without reconfiguring.
 
-If this is reproducible, maybe a patch like the one attached can help
-pinpoint it?
+> But really, we shouldn't do this at configuration time at all.  It
+> would be much better to do it at runtime, via a module parameter.
+>
+Well, yeah, but that would probably cost cpu cycles. At least it would
+mean lots of changes.
 
+> And it would be much^2 better to do it automatically, based upon the
+> chip probing information or whatever.  That's probably hard.
+>
+I agree.
 
-Vegard
+> Can remove the ifdefs here.  A zero-length array is OK, and will
+> consume zero space.
+>
+I was uncertain whether this applies to all compilers. I kind of
+remember opposite cases in the past.
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
-
---001636c59763a8a43204628b2e2a
-Content-Type: application/octet-stream; name="kref-warn_on.patch"
-Content-Disposition: attachment; filename="kref-warn_on.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fr08e1wq0
-
-ZGlmZiAtLWdpdCBhL2xpYi9rcmVmLmMgYi9saWIva3JlZi5jCmluZGV4IDE1OTlkYmYuLmE1NDdh
-ZDMgMTAwNjQ0Ci0tLSBhL2xpYi9rcmVmLmMKKysrIGIvbGliL2tyZWYuYwpAQCAtNDAsNyArNDAs
-NyBAQCB2b2lkIGtyZWZfaW5pdChzdHJ1Y3Qga3JlZiAqa3JlZikKICAqLwogdm9pZCBrcmVmX2dl
-dChzdHJ1Y3Qga3JlZiAqa3JlZikKIHsKLQlXQVJOX09OKCFhdG9taWNfcmVhZCgma3JlZi0+cmVm
-Y291bnQpKTsKKwlXQVJOX09OKGF0b21pY19yZWFkKCZrcmVmLT5yZWZjb3VudCkgPD0gMCk7CiAJ
-YXRvbWljX2luYygma3JlZi0+cmVmY291bnQpOwogCXNtcF9tYl9fYWZ0ZXJfYXRvbWljX2luYygp
-OwogfQpAQCAtNjMsNyArNjMsNyBAQCBpbnQga3JlZl9wdXQoc3RydWN0IGtyZWYgKmtyZWYsIHZv
-aWQgKCpyZWxlYXNlKShzdHJ1Y3Qga3JlZiAqa3JlZikpCiB7CiAJV0FSTl9PTihyZWxlYXNlID09
-IE5VTEwpOwogCVdBUk5fT04ocmVsZWFzZSA9PSAodm9pZCAoKikoc3RydWN0IGtyZWYgKikpa2Zy
-ZWUpOwotCVdBUk5fT04oIWF0b21pY19yZWFkKCZrcmVmLT5yZWZjb3VudCkpOworCVdBUk5fT04o
-YXRvbWljX3JlYWQoJmtyZWYtPnJlZmNvdW50KSA8PSAwKTsKIAogCWlmIChhdG9taWNfZGVjX2Fu
-ZF90ZXN0KCZrcmVmLT5yZWZjb3VudCkpIHsKIAkJcmVsZWFzZShrcmVmKTsK
---001636c59763a8a43204628b2e2a--
+Risto
