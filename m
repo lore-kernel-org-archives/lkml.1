@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756472AbZBJTO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758223AbZBJTQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756472AbZBJTO6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 14:14:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755873AbZBJTEB
+	id S1758223AbZBJTQz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 14:16:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755910AbZBJTEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 14:04:01 -0500
-Received: from kroah.org ([198.145.64.141]:53963 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 14:04:09 -0500
+Received: from kroah.org ([198.145.64.141]:54086 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755862AbZBJTEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 14:04:00 -0500
-Date: Tue, 10 Feb 2009 11:00:49 -0800
+	id S1755906AbZBJTEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 14:04:07 -0500
+Date: Tue, 10 Feb 2009 11:01:01 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Zhao Yakui <yakui.zhao@intel.com>,
-       Len Brown <len.brown@intel.com>
-Subject: [patch 32/53] ACPI: proc_dir_entry video/VGA already registered
-Message-ID: <20090210190049.GG14308@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Eric Biederman <ebiederm@xmission.com>,
+       Paul Turner <pjt@google.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: [patch 37/53] seq_file: move traverse so it can be used from
+	seq_read
+Message-ID: <20090210190101.GL14308@kroah.com>
 References: <20090210185337.000769713@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-proc_dir_entry-video-vga-already-registered.patch"
+Content-Disposition: inline; filename="seq_file-move-traverse-so-it-can-be-used-from-seq_read.patch"
 In-Reply-To: <20090210185924.GA14308@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,35 +41,158 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Zhao Yakui <yakui.zhao@intel.com>
+From: Eric Biederman <ebiederm@xmission.com>
 
-commit f3b39f1393d5cebe56f43a584ef47efbebd2702c upstream.
+commit 33da8892a2f9e7d4b2d9a35fc80833ba2d2b1aa6 upstream.
 
-eliminate the duplicate the name of "VGA"
+In 2.6.25 some /proc files were converted to use the seq_file
+infrastructure.  But seq_files do not correctly support pread(), which
+broke some usersapce applications.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12514
+To handle pread correctly we can't assume that f_pos is where we left it
+in seq_read.  So move traverse() so that we can eventually use it in
+seq_read and do thus some day support pread().
 
-Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Eric Biederman <ebiederm@xmission.com>
+Cc: Paul Turner <pjt@google.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/video.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ fs/seq_file.c |  114 +++++++++++++++++++++++++++++-----------------------------
+ 1 file changed, 57 insertions(+), 57 deletions(-)
 
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -1991,6 +1991,12 @@ static int acpi_video_bus_add(struct acp
- 			device->pnp.bus_id[3] = '0' + instance;
- 		instance ++;
- 	}
-+	/* a hack to fix the duplicate name "VGA" problem on Pa 3553 */
-+	if (!strcmp(device->pnp.bus_id, "VGA")) {
-+		if (instance)
-+			device->pnp.bus_id[3] = '0' + instance;
-+		instance++;
-+	}
+--- a/fs/seq_file.c
++++ b/fs/seq_file.c
+@@ -54,6 +54,63 @@ int seq_open(struct file *file, const st
+ }
+ EXPORT_SYMBOL(seq_open);
  
- 	video->device = device;
- 	strcpy(acpi_device_name(device), ACPI_VIDEO_BUS_NAME);
++static int traverse(struct seq_file *m, loff_t offset)
++{
++	loff_t pos = 0, index;
++	int error = 0;
++	void *p;
++
++	m->version = 0;
++	index = 0;
++	m->count = m->from = 0;
++	if (!offset) {
++		m->index = index;
++		return 0;
++	}
++	if (!m->buf) {
++		m->buf = kmalloc(m->size = PAGE_SIZE, GFP_KERNEL);
++		if (!m->buf)
++			return -ENOMEM;
++	}
++	p = m->op->start(m, &index);
++	while (p) {
++		error = PTR_ERR(p);
++		if (IS_ERR(p))
++			break;
++		error = m->op->show(m, p);
++		if (error < 0)
++			break;
++		if (unlikely(error)) {
++			error = 0;
++			m->count = 0;
++		}
++		if (m->count == m->size)
++			goto Eoverflow;
++		if (pos + m->count > offset) {
++			m->from = offset - pos;
++			m->count -= m->from;
++			m->index = index;
++			break;
++		}
++		pos += m->count;
++		m->count = 0;
++		if (pos == offset) {
++			index++;
++			m->index = index;
++			break;
++		}
++		p = m->op->next(m, p, &index);
++	}
++	m->op->stop(m, p);
++	return error;
++
++Eoverflow:
++	m->op->stop(m, p);
++	kfree(m->buf);
++	m->buf = kmalloc(m->size <<= 1, GFP_KERNEL);
++	return !m->buf ? -ENOMEM : -EAGAIN;
++}
++
+ /**
+  *	seq_read -	->read() method for sequential files.
+  *	@file: the file to read from
+@@ -186,63 +243,6 @@ Efault:
+ }
+ EXPORT_SYMBOL(seq_read);
+ 
+-static int traverse(struct seq_file *m, loff_t offset)
+-{
+-	loff_t pos = 0, index;
+-	int error = 0;
+-	void *p;
+-
+-	m->version = 0;
+-	index = 0;
+-	m->count = m->from = 0;
+-	if (!offset) {
+-		m->index = index;
+-		return 0;
+-	}
+-	if (!m->buf) {
+-		m->buf = kmalloc(m->size = PAGE_SIZE, GFP_KERNEL);
+-		if (!m->buf)
+-			return -ENOMEM;
+-	}
+-	p = m->op->start(m, &index);
+-	while (p) {
+-		error = PTR_ERR(p);
+-		if (IS_ERR(p))
+-			break;
+-		error = m->op->show(m, p);
+-		if (error < 0)
+-			break;
+-		if (unlikely(error)) {
+-			error = 0;
+-			m->count = 0;
+-		}
+-		if (m->count == m->size)
+-			goto Eoverflow;
+-		if (pos + m->count > offset) {
+-			m->from = offset - pos;
+-			m->count -= m->from;
+-			m->index = index;
+-			break;
+-		}
+-		pos += m->count;
+-		m->count = 0;
+-		if (pos == offset) {
+-			index++;
+-			m->index = index;
+-			break;
+-		}
+-		p = m->op->next(m, p, &index);
+-	}
+-	m->op->stop(m, p);
+-	return error;
+-
+-Eoverflow:
+-	m->op->stop(m, p);
+-	kfree(m->buf);
+-	m->buf = kmalloc(m->size <<= 1, GFP_KERNEL);
+-	return !m->buf ? -ENOMEM : -EAGAIN;
+-}
+-
+ /**
+  *	seq_lseek -	->llseek() method for sequential files.
+  *	@file: the file in question
 
