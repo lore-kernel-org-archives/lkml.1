@@ -1,39 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754410AbZBJBIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbZBJBJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754410AbZBJBIW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 20:08:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbZBJBII
+	id S1754752AbZBJBJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 20:09:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104AbZBJBJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 20:08:08 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43780
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752031AbZBJBIF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 20:08:05 -0500
-Date: Mon, 09 Feb 2009 17:07:59 -0800 (PST)
-Message-Id: <20090209.170759.54708431.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: risto.suominen@gmail.com, jgarzik@pobox.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, grundler@parisc-linux.org
-Subject: Re: [PATCH 002/002] de2104x: support for systems lacking cache
- coherence
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090209170120.85e192be.akpm@linux-foundation.org>
-References: <46e1c7760902071330i5362fe4fvd99fc7075fc666d3@mail.gmail.com>
-	<20090209170120.85e192be.akpm@linux-foundation.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 9 Feb 2009 20:09:20 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41890 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753095AbZBJBJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 20:09:19 -0500
+Message-ID: <4990D397.8060705@kernel.org>
+Date: Tue, 10 Feb 2009 10:08:39 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Brian Gerst <brgerst@gmail.com>
+CC: hpa@zytor.com, jeremy@goop.org, tglx@linutronix.de, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, x86@kernel.org, rusty@rustcorp.com.au
+Subject: Re: [PATCH 03/11] x86: fix math_emu register frame access
+References: <1234186798-16820-1-git-send-email-tj@kernel.org>	 <1234186798-16820-4-git-send-email-tj@kernel.org> <73c1f2160902090913n20283872r2cb5ae774560d047@mail.gmail.com>
+In-Reply-To: <73c1f2160902090913n20283872r2cb5ae774560d047@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 10 Feb 2009 01:08:52 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 9 Feb 2009 17:01:20 -0800
+Hello, Brian.
 
+Brian Gerst wrote:
+>>  {
+>>        printk(KERN_EMERG
+>>                "math-emulation not enabled and no coprocessor found.\n");
+>> @@ -910,16 +910,19 @@ asmlinkage void math_emulate(long arg)
+>>  }
+>>  #endif /* CONFIG_MATH_EMULATION */
+>>
+>> -dotraplinkage void __kprobes
+>> -do_device_not_available(struct pt_regs *regs, long error)
+>> +dotraplinkage void __kprobes do_device_not_available(struct pt_regs regs)
 > 
-> (cc netdev, and maintainer)
+> Why did you change this to pass by value?  This is called from the
+> generic trap handler (error_code), which already passes the pt_regs
+> pointer in %eax.
 
-We're already discussing this patch on netdev, he resent it
-there.
+Ah.. right, my bad.  I somehow thought dotraplinkage is asmlinkage on
+x86_32.  Yeah, the original code was fine in that area, but then again
+most other trap functions take struct pt_regs.  Anyways, you're gonna
+post patches to convert trap functions to take pointer to pt_regs,
+right?  Can you please fix this one up together with those?
+
+Thanks.
+
+-- 
+tejun
