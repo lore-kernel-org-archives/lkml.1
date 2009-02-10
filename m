@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755089AbZBJNfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbZBJNgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755089AbZBJNfW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 08:35:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbZBJNfG
+	id S1755201AbZBJNgu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 08:36:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbZBJNgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 08:35:06 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:58312 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752103AbZBJNfF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 08:35:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Qws4ty3jDYR+fkd3ERv2gbhILyFgvF21qix0gz/oo60Ptwe/ZI5HlwI9WMygVV2yTt
-         ph8LZsSKasJotQyaIagFisF+mGAtvJYRltaQKzbOPOP0yxnDldVVRSVdCs3gXdFjBIu1
-         0w8qtHViXFiPo00NOPGFX6OvKcCb9RLhyqIwo=
+	Tue, 10 Feb 2009 08:36:39 -0500
+Received: from ozlabs.org ([203.10.76.45]:41845 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751920AbZBJNgi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 08:36:38 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Michal Hocko <mhocko@suse.cz>
+Subject: Re: [RFC] Suspicious bug in module refcounting
+Date: Wed, 11 Feb 2009 00:06:31 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: "David S. Miller" <davem@davemloft.net>, Karsten Keil <kkeil@suse.de>,
+       linux-kernel@vger.kernel.org, richard kennedy <richard@rsk.demon.co.uk>,
+       Dan Williams <dan.j.williams@intel.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>, dwmw2@infradead.org,
+       Scott Wood <scottwood@freescale.com>, netdev@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>
+References: <20090203134721.GA11069@pingi.kke.suse.de> <200902101345.08580.rusty@rustcorp.com.au> <20090210103136.GB7096@dhcp35.suse.cz>
+In-Reply-To: <20090210103136.GB7096@dhcp35.suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <1234272104-10211-1-git-send-email-kirill@shutemov.name>
-References: <1234272104-10211-1-git-send-email-kirill@shutemov.name>
-Date: Tue, 10 Feb 2009 15:35:03 +0200
-X-Google-Sender-Auth: f8a4ae448909e3b2
-Message-ID: <84144f020902100535i4d626a9fj8cbb305120cf332a@mail.gmail.com>
-Subject: Re: [PATCH] Export symbol ksize()
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-crypto@vger.kernel.org,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902110006.33132.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 3:21 PM, Kirill A. Shutemov
-<kirill@shutemov.name> wrote:
-> It needed for crypto.ko
->
-> Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+On Tuesday 10 February 2009 21:01:37 Michal Hocko wrote:
+> On Tue 10-02-09 13:45:07, Rusty Russell wrote:
+> > On Tuesday 10 February 2009 01:48:31 Michal Hocko wrote:
+> > > Based on this change, would it make sense to update sys_accept to change
+> > > __module_get to try_module_get like in the following patch?
+> > 
+> > I don't think so:
+> > 
+> > >  	/*
+> > > -	 * We don't need try_module_get here, as the listening socket (sock)
+> > > -	 * has the protocol module (sock->ops->owner) held.
+> > > +	 * Socket's owner cannot be in unloading path because there
+> > > +	 * must be at least one listening reference
+> > >  	 */
+> > > -	__module_get(newsock->ops->owner);
+> > > +	if (unlikely(!try_module_get(newsock->ops->owner)))
+> > > +		BUG();
+> > 
+> > rmmod --wait can make try_module_get fail even if the reference count isn't
+> > zero.  
+> 
+> OK, I though that rmmod --wait waits for refcount==0 and then changes
+> the state.
 
-That's bit terse for a changelog. I did a quick grep but wasn't able
-to find the offending call-site. Where is it?
+No, it has to stop all future use, otherwise it's useless under load.
 
-We unexported ksize() because it's a problematic interface and you
-almost certainly want to use the alternatives (e.g. krealloc). I think
-I need bit more convincing to apply this patch...
-
-                        Pekka
+Cheers,
+Rusty.
