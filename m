@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754640AbZBJP6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbZBJP6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754640AbZBJP6Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 10:58:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbZBJP6O
+	id S1755349AbZBJP6j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 10:58:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbZBJP6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 10:58:14 -0500
-Received: from mail.fieldses.org ([141.211.133.115]:40239 "EHLO
-	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753251AbZBJP6N (ORCPT
+	Tue, 10 Feb 2009 10:58:18 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:39601 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753826AbZBJP6Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 10:58:13 -0500
-Date: Tue, 10 Feb 2009 10:58:20 -0500
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk
-Subject: Re: [RFC PATCH 0/2] Add VFS support for looking up paths on remote
-	servers using a temporary mount namespace
-Message-ID: <20090210155820.GB29075@fieldses.org>
-References: <20090209184534.23040.82605.stgit@heimdal.trondhjem.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090209184534.23040.82605.stgit@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Tue, 10 Feb 2009 10:58:16 -0500
+Subject: Re: cgroup, RT reservation per core(s)?
+From: Peter Zijlstra <peterz@infradead.org>
+To: Rolando Martins <rolando.martins@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <b6a2d2e20902100646q6c7073cse86b8f5790a120ac@mail.gmail.com>
+References: <b6a2d2e20902091130ha452a97rcfaa2972bfdbe710@mail.gmail.com>
+	 <1234209174.5951.165.camel@laptop>
+	 <b6a2d2e20902091204p2391799p160ce13971e9f779@mail.gmail.com>
+	 <1234271177.23438.24.camel@twins>
+	 <b6a2d2e20902100646q6c7073cse86b8f5790a120ac@mail.gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 10 Feb 2009 17:00:02 +0100
+Message-Id: <1234281602.23438.96.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 09, 2009 at 01:45:34PM -0500, Trond Myklebust wrote:
-> The following two patches attempt to improve NFSv4's ability to look up
-> the mount path on a remote server.
+On Tue, 2009-02-10 at 14:46 +0000, Rolando Martins wrote:
 > 
-> The first patch adds VFS support for walking the remote path, using a
-> temporary mount namespace to represent the server's namespace, so that
-> symlinks
+> >  I've never actually tried anything like this, let me know if it
+> >  works ;-)
+> >
+> 
+> Thanks Peter, it works!
 
-I'm a bit confused about the symlink case--I take it you're assuming
-that symlinks in the pseudofs should be interpreted as relative to the
-server's namespace (in keeping with traditional implementations of
-server exports), while symlinks elsewhere should continue to be
-intepreted relative to the client's namespace.
+> I am thinking for different strategies to be used in my rt middleware
+> project, and I think there is a limitation.
+> If I wanted to have some RT on the B cpuset, I couldn't because I
+> assigned A.cpu.rt_runtime_ns = root.cpu.rt_runtime_ns (then subdivided
+> the A cpuset, with 2,3,4, each one having A.cpu.rt_runtime_ns/3).
 
-Do the rfc's say anything about this?
+Try it, you can run RT proglets in B.
 
---b.
+You get n*utilization per schedule domain, where n is the number of cpus
+in it.
 
-> and referrals can be followed across remote filesystem and
-> server boundaries.
-> The second patch then uses this VFS helper in the NFSv4 mount code.
-> 
-> A later set of patches will clean out the legacy nfs4_path_walk, however
-> I'm hoping for some commentary from the VFS folks on whether or not this
-> approach is acceptable before I continue.
-> 
-> Cheers
->   Trond
-> 
-> ---
-> 
-> Trond Myklebust (2):
->       NFSv4: Use vfs_path_lookup() instead of nfs4_path_walk()
->       VFS: Add a VFS helper function vfs_remote_path_lookup()
-> 
-> 
->  fs/namei.c                    |   75 ++++++++++++++++++++-
->  fs/namespace.c                |   56 +++++++++++++--
->  fs/nfs/super.c                |  149 +++++++++++++++++++++++++++++++++++------
->  include/linux/mnt_namespace.h |    2 +
->  include/linux/namei.h         |    2 +
->  include/linux/nsproxy.h       |    1 
->  kernel/nsproxy.c              |   11 +++
->  7 files changed, 267 insertions(+), 29 deletions(-)
-> 
-> -- 
-> Signature
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+So you still have 200% left in B, even if you use 200% of A.
+
+> This happens because there is a
+> global /proc/sys/kernel/sched_rt_runtime_us and
+> /proc/sys/kernel/sched_rt_period_us.
+
+These globals don't actually do much (except provide a global cap) in
+the cgroup case.
+
+> What do you think about adding a separate tuple (runtime,period) for
+> each core/cpu?
+
+> Does this make sense? ;)
+
+That's going to give me a horrible head-ache trying to load-balance
+stuff.
