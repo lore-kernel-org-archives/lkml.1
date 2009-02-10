@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbZBJTQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbZBJTPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756829AbZBJTQP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 14:16:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755898AbZBJTEG
+	id S1757584AbZBJTPs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 14:15:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755893AbZBJTEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 14:04:06 -0500
-Received: from kroah.org ([198.145.64.141]:54045 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 14:04:05 -0500
+Received: from kroah.org ([198.145.64.141]:54029 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755885AbZBJTED (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755882AbZBJTED (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 10 Feb 2009 14:04:03 -0500
-Date: Tue, 10 Feb 2009 11:00:57 -0800
+Date: Tue, 10 Feb 2009 11:00:54 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Shaohua Li <shaohua.li@intel.com>,
-       Alex Chiang <achiang@hp.com>, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [patch 35/53] PCI: properly clean up ASPM link state on device
-	remove
-Message-ID: <20090210190057.GJ14308@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Myron Stowe <myron.stowe@hp.com>,
+       Len Brown <len.brown@intel.com>
+Subject: [patch 34/53] ACPICA: Fix table entry truncation calculation
+Message-ID: <20090210190054.GI14308@kroah.com>
 References: <20090210185337.000769713@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pci-properly-clean-up-aspm-link-state-on-device-remove.patch"
+Content-Disposition: inline; filename="acpica-fix-table-entry-truncation-calculation.patch"
 In-Reply-To: <20090210185924.GA14308@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,46 +39,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Alex Chiang <achiang@hp.com>
+From: Myron Stowe <myron.stowe@hp.com>
 
-commit 3419c75e15f82c3ab09bd944fddbde72c9e4b3ea upstream.
+commit 386e4a8358239f90275e1f93d5ad11cdc93c6453 upstream.
 
-We only want to disable ASPM when the last function is removed from
-the parent's device list. We determine this by checking to see if
-the parent's device list is completely empty.
+During early boot, ACPI RSDT/XSDT table entries are gathered into the
+'initial_tables[]' array.  This array is currently statically defined (see
+./drivers/acpi/tables.c).  When there are more table entries than can be
+held in the 'initial_tables[]' array, the message "Truncating N table
+entries!" is output.  As currently implemented, this message will always
+erroneously calculate N as 0.
 
-Unfortunately, we never hit that code because the parent is considered
-an upstream port, and never had an ASPM link_state associated with it.
+This patch fixes the calculation that determines how many table entries
+will be missing (truncated).
 
-The early check for !link_state causes us to return early, we never
-discover that our device list is empty, and thus we never remove the
-downstream ports' link_state nodes.
+This modification may be used under either the GPL or the BSD-style
+license used for Intel ACPI CA code.
 
-Instead of checking to see if the parent's device list is empty, we can
-check to see if we are the last device on the list, and if so, then we
-know that we can clean up properly.
-
-Cc: Shaohua Li <shaohua.li@intel.com>
-Signed-off-by: Alex Chiang <achiang@hp.com>
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: Myron Stowe <myron.stowe@hp.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/pcie/aspm.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/acpi/tables/tbutils.c |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
---- a/drivers/pci/pcie/aspm.c
-+++ b/drivers/pci/pcie/aspm.c
-@@ -713,9 +713,9 @@ void pcie_aspm_exit_link_state(struct pc
- 
- 	/*
- 	 * All PCIe functions are in one slot, remove one function will remove
--	 * the the whole slot, so just wait
-+	 * the whole slot, so just wait until we are the last function left.
- 	 */
--	if (!list_empty(&parent->subordinate->devices))
-+	if (!list_is_last(&pdev->bus_list, &parent->subordinate->devices))
- 		goto out;
- 
- 	/* All functions are removed, so just disable ASPM for the link */
+--- a/drivers/acpi/tables/tbutils.c
++++ b/drivers/acpi/tables/tbutils.c
+@@ -512,10 +512,9 @@ acpi_tb_parse_root_table(acpi_physical_a
+ 			if (ACPI_FAILURE(status)) {
+ 				ACPI_WARNING((AE_INFO,
+ 					      "Truncating %u table entries!",
+-					      (unsigned)
+-					      (acpi_gbl_root_table_list.size -
+-					       acpi_gbl_root_table_list.
+-					       count)));
++					      (unsigned) (table_count -
++					       (acpi_gbl_root_table_list.
++					       count - 2))));
+ 				break;
+ 			}
+ 		}
 
