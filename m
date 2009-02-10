@@ -1,73 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757244AbZBJWmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757310AbZBJWnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757244AbZBJWmS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 17:42:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756180AbZBJWmI
+	id S1757310AbZBJWnR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 17:43:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756180AbZBJWnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 17:42:08 -0500
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:48254 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756119AbZBJWmG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 17:42:06 -0500
-Subject: Re: [Bug #12574] possible circular locking dependency detected
-From: Eric Anholt <eric@anholt.net>
-To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
-Cc: Dave Airlie <airlied@linux.ie>, dri-devel@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <20090210223711.GA6809@google.com>
-References: <AIghyjFgMFP.A.uZD._10jJB@chimera>
-	 <sWhNs83kKPE.A.4cG.E30jJB@chimera>  <20090210223711.GA6809@google.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-1Z7gR/hHA0tX+ZN1mhZM"
-Date: Tue, 10 Feb 2009 14:41:56 -0800
-Message-Id: <1234305716.32506.10.camel@gaiman>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 10 Feb 2009 17:43:01 -0500
+Received: from gw.goop.org ([64.81.55.164]:60589 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756005AbZBJWnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 17:43:00 -0500
+Message-ID: <499202F0.10108@goop.org>
+Date: Tue, 10 Feb 2009 14:42:56 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Pekka Paalanen <pq@iki.fi>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Stuart Bennett <stuart@freedesktop.org>
+Subject: Re: testing pmdval/pteval page presence bit
+References: <20090209215849.5a788261@daedalus.pq.iki.fi>
+In-Reply-To: <20090209215849.5a788261@daedalus.pq.iki.fi>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pekka Paalanen wrote:
+> Hi all,
+>
+> This question is related to mmiotrace which toggles the page presence
+> bit to trigger page faults on ioremapped regions. Page faults are used
+> to trace MMIO reads and writes of proprietary drivers.
+>
+> I understood that large pages use pmd's instead of pte's. If there is a
+> union like this:
+>
+> +	union {
+> +		pmdval_t pmdval;
+> +		pteval_t pteval;
+> +	} saved;	/* stored value prior to arming */
+>
+> and it is being assigned the proper content, as in the following:
+>
+> +static int clear_page_present(struct kmmio_fault_page *f, bool clear)
+>  {
+>  	pteval_t pteval;
+>  	pmdval_t pmdval;
+>  	unsigned int level;
+>  	pmd_t *pmd;
+> +	pte_t *pte = lookup_address(f->page, &level);
+>  
+>  	if (!pte) {
+> +		pr_err("kmmio: no pte for page 0x%08lx\n", f->page);
+>  		return -1;
+>  	}
+>  
+>  	switch (level) {
+>  	case PG_LEVEL_2M:
+>  		pmd = (pmd_t *)pte;
+> +		if (clear) {
+> +			f->saved.pmdval = pmd_val(*pmd);
+> +			pmdval = f->saved.pmdval & ~_PAGE_PRESENT;
+> +		} else
+> +			pmdval = f->saved.pmdval;
+>  		set_pmd(pmd, __pmd(pmdval));
+>  		break;
+>  
+>  	case PG_LEVEL_4K:
+> +		if (clear) {
+> +			f->saved.pteval = pte_val(*pte);
+> +			pteval = f->saved.pteval & ~_PAGE_PRESENT;
+> +		} else
+> +			pteval = f->saved.pteval;
+>  		set_pte_atomic(pte, __pte(pteval));
+>  		break;
+>
+>
+> Then regardless of was it pmdval or pteval being set, the test
+>
+> 	if (!(faultpage->saved.pteval & _PAGE_PRESENT))
+>
+> should be ok. But is it?
+> Can large page (pmd) presence be handled just like a normal page (pte)?
+>   
 
---=-1Z7gR/hHA0tX+ZN1mhZM
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+_PAGE_PRESENT is meaningful for both ptes and pmds; you can use 
+pmd_present() to test for it rather than open-coding it.
 
-On Wed, 2009-02-11 at 00:37 +0200, Michael S. Tsirkin wrote:
-> Dave, dri guys,
-> Could you take a look at this circular dependency please (below)?  I
-> observe it when suspending laptop with radeon drm loaded and with
-> lockdep enabled. It seems that the root of the problem is that
-> various vm ops such as drm_vm_open, drm_mmap) are called with mm
-> semaphore taken, and take dev->struct_mutex. On the other hand,
-> drm_rmmap_locked is called with dev->struct_mutex, and calls mtrr_del
-> which depends on mm semaphore indirectly.
->=20
-> What do you think?
+But there's one other theoretical problem with this code.  In general it 
+isn't safe to just toggle the _PAGE_PRESENT bit on its own, because the 
+rest of the non-present pte could get interpreted as a swap entry.  If 
+you're guaranteed that these are kernel mappings then there's no problem 
+in practice.
 
-Yes, there are real lock inversions now due to the GTT mmap code.  It's
-going to be a pain to fix (I tried getting the mmap_sem -> struct_mutex
-path to go away, but the fact that mmap_sem is held over the fault
-handler pretty much kills that).  It's high on the list, though.
-
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
-
-
-
---=-1Z7gR/hHA0tX+ZN1mhZM
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkmSArQACgkQHUdvYGzw6ved3ACff4huObnqoU+6sC0vjVh1NYy4
-CFAAoIKSScvTf88cLX+SVQh+PDgQbU8B
-=GKtc
------END PGP SIGNATURE-----
-
---=-1Z7gR/hHA0tX+ZN1mhZM--
-
+    J
