@@ -1,76 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123AbZBJNys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbZBJN5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755123AbZBJNys (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 08:54:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbZBJNyk
+	id S1755344AbZBJN5Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 08:57:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbZBJN5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 08:54:40 -0500
-Received: from hera.kernel.org ([140.211.167.34]:47688 "EHLO hera.kernel.org"
+	Tue, 10 Feb 2009 08:57:00 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:48829 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751920AbZBJNyj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 08:54:39 -0500
-Message-ID: <499186FB.4070506@kernel.org>
-Date: Tue, 10 Feb 2009 22:54:03 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
+	id S1753802AbZBJN5A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 08:57:00 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Ingo Molnar <mingo@elte.hu>
-CC: hpa@zytor.com, jeremy@goop.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, x86@kernel.org, rusty@rustcorp.com.au
-Subject: Re: [PATCHSET x86/master] add stack protector support for x86_32
-References: <1234186798-16820-1-git-send-email-tj@kernel.org> <20090209135557.GB14785@elte.hu> <20090209141209.GA24323@elte.hu>
-In-Reply-To: <20090209141209.GA24323@elte.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [PATCH 2/2] kprobes: check CONFIG_FREEZER instead of CONFIG_PM
+Date: Tue, 10 Feb 2009 14:56:19 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
+Cc: Masami Hiramatsu <mhiramat@redhat.com>, Len Brown <lenb@kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       Cheng Renquan <crquan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200901062112.29227.rjw@sisk.pl> <49909764.3020303@redhat.com> <20090210123734.GB21531@elte.hu>
+In-Reply-To: <20090210123734.GB21531@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 10 Feb 2009 13:54:16 +0000 (UTC)
+Content-Disposition: inline
+Message-Id: <200902101456.20147.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
+On Tuesday 10 February 2009, Ingo Molnar wrote:
 > 
->> [...] I might not get around testing it today and pushing it out into tip:master, 
->> but i pushed out the core/percpu bits, should you queue up further changes.
+> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
 > 
-> ok, activated it for -tip testing, and there's a 64-bit build failure caused by 
-> it:
+> > Ingo Molnar wrote:
+> >> * Len Brown <lenb@kernel.org> wrote:
+> >>
+> >>>>> Check CONFIG_FREEZER instead of CONFIG_PM because kprobe booster
+> >>>>> depends on freeze_processes() and thaw_processes() when CONFIG_PREEMPT=y.
+> >>>>>
+> >>>>> This fixes a linkage error which occurs when CONFIG_PREEMPT=y, CONFIG_PM=y
+> >>>>> and CONFIG_FREEZER=n.
+> >>>>>
+> >>>>> Reported-by: Cheng Renquan <crquan@gmail.com>
+> >>>>> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> >>>>> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> >>>>> ---
+> >>>>>  arch/ia64/kernel/kprobes.c |    2 +-
+> >>>>>  arch/x86/kernel/kprobes.c  |    2 +-
+> >>>>>  kernel/kprobes.c           |    2 +-
+> >>>>>  3 files changed, 3 insertions(+), 3 deletions(-)
+> >>>> looks good, the x86 bits:
+> >>>>
+> >>>> Acked-by: Ingo Molnar <mingo@elte.hu>
+> >>> man, we have too many config options:-)
+> >>
+> >> the non-x86 bits (kernel/kprobes.c) are crappy though, and broke -rc4
+> >> allnoconfig:
+> >>
+> >> kernel/built-in.o: In function `collect_garbage_slots':
+> >> kprobes.c:(.kprobes.text+0x16e4): undefined reference to `freeze_processes'
+> >> kprobes.c:(.kprobes.text+0x16f2): undefined reference to `thaw_processes'
+> >> kprobes.c:(.kprobes.text+0x176b): undefined reference to `thaw_processes'
+> >
+> > Hmm, it seems that kernel/power/built-in.o was not linked to .tmp_vmlinux1.
+> >
+> >   ld -m elf_i386 --build-id -o .tmp_vmlinux1 -T arch/x86/kernel/vmlinux.lds
+> > arch/x86/kernel/head_32.o arch/x86/kernel/head32.o arch/x86/kernel/head.o
+> > arch/x86/kernel/init_task.o  init/built-in.o --start-group  usr/built-in.o
+> > arch/x86/kernel/built-in.o  arch/x86/mm/built-in.o  arch/x86/mach-default/built-in.o
+> > arch/x86/crypto/built-in.o  arch/x86/vdso/built-in.o  kernel/built-in.o
+> > mm/built-in.o  fs/built-in.o  ipc/built-in.o  security/built-in.o  crypto/built-in.o
+> > block/built-in.o  lib/lib.a  arch/x86/lib/lib.a  lib/built-in.o
+> > arch/x86/lib/built-in.o  drivers/built-in.o  sound/built-in.o  firmware/built-in.o
+> > arch/x86/pci/built-in.o  net/built-in.o --end-group
+> > kernel/built-in.o: In function `collect_garbage_slots':
+> > kprobes.c:(.kprobes.text+0x16e4): undefined reference to `freeze_processes'
+> > kprobes.c:(.kprobes.text+0x16f2): undefined reference to `thaw_processes'
+> > kprobes.c:(.kprobes.text+0x176b): undefined reference to `thaw_processes'
+> >
+> > At kernel/Makefile:53, I can see
+> >
+> > obj-$(CONFIG_PM) += power/
+> >
+> > but CONFIG_PM was not set in config
 > 
-> arch/x86/kernel/head64.o: In function `x86_64_start_reservations':
-> head64.c:(.init.text+0x26): undefined reference to `__stack_chk_guard'
-> head64.c:(.init.text+0xc2): undefined reference to `__stack_chk_guard'
-> arch/x86/kernel/head64.o: In function `x86_64_start_kernel':
-> head64.c:(.init.text+0x104): undefined reference to `__stack_chk_guard'
-> head64.c:(.init.text+0x1cd): undefined reference to `__stack_chk_guard'
-> arch/x86/kernel/head.o: In function `reserve_ebda_region':
-> head.c:(.init.text+0xb): undefined reference to `__stack_chk_guard'
-> arch/x86/kernel/head.o:head.c:(.init.text+0x87): more undefined references to 
-> `__stack_chk_guard' follow
+> Sounds plausible. We need a fix for this - it's broken upstream.
 
-Call to __stack_chk_guard is probably generated automatically.
-Strangely, my gcc only generates calls to __stack_chk_fail.
+Hmm.  Can || be used under obj-$() ?
 
- > gcc --version
- gcc (SUSE Linux) 4.3.2 [gcc-4_3-branch revision 141291]
- Copyright (C) 2008 Free Software Foundation, Inc.
- This is free software; see the source for copying conditions.  There is NO
- warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- > nm build/vmlinux|grep __stack_chk_
- 00000000f0fdf6cb A __crc___stack_chk_fail
- ffffffff80d53e50 r __kcrctab___stack_chk_fail
- ffffffff80d5ff81 r __kstrtab___stack_chk_fail
- ffffffff80d3d140 r __ksymtab___stack_chk_fail
- ffffffff80248619 T __stack_chk_fail
-
-I'll try other compilers but which version are you using?  The
-difference is that before the patchset, -fno-stack-protector was
-always added whether stackprotector was enabled or not so this problem
-wasn't visible (at the cost of bogus stackprotector of course).  We'll
-probably need to add __stack_chk_guard or disable if gcc generates
-such symbol.  I'll play with different gccs.
-
-Thanks.
-
--- 
-tejun
+Rafael
