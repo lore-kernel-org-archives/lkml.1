@@ -1,80 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756952AbZBJWhG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757015AbZBJWlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756952AbZBJWhG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 17:37:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756001AbZBJWgx
+	id S1757015AbZBJWlS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 17:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756119AbZBJWlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 17:36:53 -0500
-Received: from os.inf.tu-dresden.de ([141.76.48.99]:56686 "EHLO
-	os.inf.tu-dresden.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755936AbZBJWgw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 17:36:52 -0500
-X-Greylist: delayed 3404 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Feb 2009 17:36:52 EST
-Date: Tue, 10 Feb 2009 22:40:00 +0100
-From: Adam Lackorzynski <adam@os.inf.tu-dresden.de>
-To: linux-kernel@vger.kernel.org
-Cc: Scott H Kilau <Scott_Kilau@digi.com>, Wendy Xiong <wendyx@us.ibm.com>
-Subject: [PATCH] Add device to jsm driver
-Message-ID: <20090210214000.GB8307@os.inf.tu-dresden.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 10 Feb 2009 17:41:04 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:45367 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755674AbZBJWlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 17:41:03 -0500
+Date: Wed, 11 Feb 2009 09:40:50 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       James Morris <jmorris@namei.org>, Mimi Zohar <zohar@us.ibm.com>,
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: linux-next: Tree for February 10 (security/audit/ima)
+Message-Id: <20090211094050.47c4828d.sfr@canb.auug.org.au>
+In-Reply-To: <4991DBA0.1000008@oracle.com>
+References: <20090210194121.80256b72.sfr@canb.auug.org.au>
+	<4991DBA0.1000008@oracle.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__11_Feb_2009_09_40_50_+1100_Molc438UIbYsgJVG"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+--Signature=_Wed__11_Feb_2009_09_40_50_+1100_Molc438UIbYsgJVG
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I have a Digi Neo 8 PCI card (114f:00b1)
-Serial controller: Digi International Digi Neo 8 (rev 05)
+Hi Randy,
 
-that works with the jsm driver after using the following patch.
+On Tue, 10 Feb 2009 11:55:12 -0800 Randy Dunlap <randy.dunlap@oracle.com> w=
+rote:
+>
+> Stephen Rothwell wrote:
+> >=20
+> > Dropped trees (temporarily):
+> > 	audit (difficult conflicts)
+>=20
+> Maybe this is fixed by the dropped audit tree?
 
+The audit tree is Al Viro's (cc'd).  But I *think* everything in it has
+been applied upstream.
 
-Signed-off-by: Adam Lackorzynski <adam@os.inf.tu-dresden.de>
+> linux-next-20090210/security/integrity/ima/ima_policy.c:111: error: impli=
+cit declaration of function 'security_audit_rule_match'
+> linux-next-20090210/security/integrity/ima/ima_policy.c:230: error: impli=
+cit declaration of function 'security_audit_rule_init'
+>=20
+> when
+> CONFIG_SECURITY=3Dy
+> CONFIG_AUDIT=3Dn
+> CONFIG_IMA=3Dy
+> CONFIG_IMA_AUDIT=3Dy
 
----
- drivers/serial/jsm/jsm_driver.c |    3 +++
- include/linux/pci_ids.h         |    1 +
- 2 files changed, 4 insertions(+)
+This looks more like a security subsystem than audit to me?
 
-diff --git a/drivers/serial/jsm/jsm_driver.c b/drivers/serial/jsm/jsm_driver.c
-index 92187e2..ac79cbe 100644
---- a/drivers/serial/jsm/jsm_driver.c
-+++ b/drivers/serial/jsm/jsm_driver.c
-@@ -84,6 +84,8 @@ static int jsm_probe_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	brd->pci_dev = pdev;
- 	if (pdev->device == PCIE_DEVICE_ID_NEO_4_IBM)
- 		brd->maxports = 4;
-+	else if (pdev->device == PCI_DEVICE_ID_DIGI_NEO_8)
-+		brd->maxports = 8;
- 	else
- 		brd->maxports = 2;
- 
-@@ -212,6 +214,7 @@ static struct pci_device_id jsm_pci_tbl[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_DIGI, PCI_DEVICE_ID_NEO_2RJ45), 0, 0, 2 },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_DIGI, PCI_DEVICE_ID_NEO_2RJ45PRI), 0, 0, 3 },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_DIGI, PCIE_DEVICE_ID_NEO_4_IBM), 0, 0, 4 },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_DIGI, PCI_DEVICE_ID_DIGI_NEO_8), 0, 0, 5 },
- 	{ 0, }
- };
- MODULE_DEVICE_TABLE(pci, jsm_pci_tbl);
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index 52a9fe0..49ff54a 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -1444,6 +1444,7 @@
- #define PCI_DEVICE_ID_DIGI_DF_M_E	0x0071
- #define PCI_DEVICE_ID_DIGI_DF_M_IOM2_A	0x0072
- #define PCI_DEVICE_ID_DIGI_DF_M_A	0x0073
-+#define PCI_DEVICE_ID_DIGI_NEO_8	0x00B1
- #define PCI_DEVICE_ID_NEO_2DB9          0x00C8
- #define PCI_DEVICE_ID_NEO_2DB9PRI       0x00C9
- #define PCI_DEVICE_ID_NEO_2RJ45         0x00CA
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Adam
--- 
-Adam                 adam@os.inf.tu-dresden.de
-  Lackorzynski         http://os.inf.tu-dresden.de/~adam/
+--Signature=_Wed__11_Feb_2009_09_40_50_+1100_Molc438UIbYsgJVG
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmSAnIACgkQjjKRsyhoI8yqxwCfcMvbQCBSoSy0ZTRO9E7AJyTL
+zkwAn1/2ndYUtMuZOctxvz/AoedjlyoN
+=HWxH
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__11_Feb_2009_09_40_50_+1100_Molc438UIbYsgJVG--
