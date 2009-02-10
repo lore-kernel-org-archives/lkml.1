@@ -1,112 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756647AbZBJViV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756799AbZBJVjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756647AbZBJViV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 16:38:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755648AbZBJViN
+	id S1756799AbZBJVjY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 16:39:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755579AbZBJVjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 16:38:13 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:51331 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755573AbZBJViM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 16:38:12 -0500
-Date: Tue, 10 Feb 2009 22:35:05 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jerome Marchand <jmarchan@redhat.com>,
-       Denys Vlasenko <dvlasenk@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] ptrace_untrace: use wake_up_process() instead of
-	bogus signal_wake_up()
-Message-ID: <20090210213505.GA4257@redhat.com>
-References: <20090208184727.GA27081@redhat.com> <20090209013804.C99B3FC330@magilla.sf.frob.com> <20090209024236.GB28280@redhat.com> <20090209034255.E95A7FC330@magilla.sf.frob.com>
+	Tue, 10 Feb 2009 16:39:15 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:46580 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754688AbZBJVjP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 16:39:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=VHEalXRz5UID3SoGgTLnsWbWLluGTlXSFbXuC7ya74yBUP+2HiEL1Hq+SAb/woRa8t
+         QFe0b4FaoXdPdcJ7VfsEBIN6zVjYRCTTj+PBcjSkmV1qR77lZiMdvaAxJ6PfXzytL8WC
+         /ZZQJIq2aX5G/tbkdkUH79CfsMWGHuddx5ndk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090209034255.E95A7FC330@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090210101019.GB27018@atrey.karlin.mff.cuni.cz>
+References: <1233967681-6378-1-git-send-email-giuseppe.bilotta@gmail.com>
+	 <498D9F02.9000107@tremplin-utc.net>
+	 <cb7bb73a0902071559w70b3367el9471db894872257f@mail.gmail.com>
+	 <20090209094748.GC4358@atrey.karlin.mff.cuni.cz>
+	 <cb7bb73a0902090153q30a5337bj45d41a3e3919e189@mail.gmail.com>
+	 <20090209095803.GD4358@atrey.karlin.mff.cuni.cz>
+	 <cb7bb73a0902090345y4ef5d544ta374ee96791a80df@mail.gmail.com>
+	 <cb7bb73a0902090533q3acc45b2r7d00b44aa0bdfc90@mail.gmail.com>
+	 <20090210101019.GB27018@atrey.karlin.mff.cuni.cz>
+Date: Tue, 10 Feb 2009 22:39:13 +0100
+Message-ID: <cb7bb73a0902101339g351bdd8cq442bafbeb7985a00@mail.gmail.com>
+Subject: Re: [PATCH] lis3lv02d: add axes knowledge of HP Pavilion dv5 models
+From: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: "?ric Piel" <eric.piel@tremplin-utc.net>, linux-kernel@vger.kernel.org,
+       Palatis Tseng <palatis@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have already asked Andrew to ignore this series.
-
-But since I am a bore...
-
-On 02/08, Roland McGrath wrote:
-> > We are holding ->siglock, and task->state is TASK_TRACED. We can not do
-> > the "wrong" wakeup, afaics.
+On Tue, Feb 10, 2009 at 11:10 AM, Pavel Machek <pavel@suse.cz> wrote:
 >
-> I guess that's true with the siglock.  But you'd be wrong to think that
-> this sort of detailed thinking is why wake_up_process() appears *anywhere
-> at all* in ptrace-related code.  I'm really quite sure that it's the
-> aforementioned (ancient) lack of detailed thinking about it that led to
-> wake_up_process() appearing originally--so any use of it reminds us of that
-> dubious past.
+> Yeah, that patch. Not sure what to do next... you could grab lis3
+> manual and see if you can setup chip by hand to get better results...
 
-Yes, wake_up_process() is not always right. But without ->siglock
-signal_wake_up() is not "safe" too if we want to wake up the
-TRACED/STOPPED task.
+As Eric pointed out, it looks definitely like an endianness problem,
+although there are a few strange things which are happening at the
+same time. Is the lis3 manual available online somewhere, or can I
+request it to the mfgr?
 
-If we change ptrace_resume() to use signal_wake_up(), we won't fix
-this minor problem. Fortunately, this is really minor, if the task
-is not TASK_TRACED any longer - it must be dying.
-
-> > Because it complicates the understanding of this code. I spent a lot
-> > of time trying to understand this signal_wake_up().
-> >
-> > Perhaps this is just me. But when you see the code which does something,
-> > it is always good to understand the reason, otherwise the code at least
-> > looks wrong.
->
-> I had presumed most people interpret it the way I do: it does
-> signal_wake_up(,1), meaning "whatever it is that works right for SIGKILL or
-> SIGCONT", which it seems intuitive to think is right for this case too.
-> You don't have to think about exactly what is always exactly right for this
-> case, because it makes sense to think that this is like the wakeup that
-> SIGCONT would do.
-
-No, SIGCONT uses wake_up_state(), not signal_wake_up(). Because unless
-we have a handler for SIGCONT, we don't need to set TIF_SIGPENDING.
-And I think this is right, and this is also right for ptrace_untrace().
-
-So, in fact SIGCONT votes for this patch ;)
-
-As for SIGKILL. Of course we should set TIF_SIGPENDING when we send
-the signal, SIGKILL or any other. Yes, complete_signal() checks
-sig == SIGKILL to figure out the correct mask. But ptrace_untrace()
-already knows it.
-
-> To me, it takes much more thought to be convinced that
-> wake_up_process() without other considerations is correct here--because it
-> looks like such a scary, unconditional thing, whereas normally that is
-> wrapped up inside calls that handle appropriate bookkeeping--signal_wake_up()
-> being one of those.
-
-We have the rule: if we see the task in TASK_TRACED/STOPPED state
-under ->siglock, it can do nothing except sleep or spin for ->siglock.
-IOW, it can't "escape" from TRACED/STOPPED state even if it is already
-TASK_RUNNING. do_wait() depends on this.
-
-To me, signal_wake_up() means: we do have a reason for TIF_SIGPENDING,
-otherwise the task can wrongly return to userspace without noticing
-a signal (or pseudo signal). (and we call it with resume == 1, because
-we can't pass the mask which is "exactly correct").
-
-
-I strongly believe the code should be simplified as much as possible,
-to simplify the understanding of the details. I spent more than 2 days
-trying to understand whats going on with the bug-report which I wasn't
-able to reproduce (it was actually the problem in glibc). It looked as
-if the ptraced task can miss SIGKILL if it races with detach. When
-I read this code I was really puzzled by this signal_wake_up().
-I thought that perhaps it adresses some signal related problem which
-I am not aware of, and perhaps the lost SIGKILL actually "belongs"
-to this problem. It took me a lot of time to convince myself this
-signal_wake_up() is just unneeded, and I should dig somewhere else.
-
-
-That said. I agree this is harmless, and the matter of taste.
-I don't think I can convince you, let's forget this patch.
-
-Oleg.
-
+-- 
+Giuseppe "Oblomov" Bilotta
