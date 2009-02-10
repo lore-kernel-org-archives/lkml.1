@@ -1,48 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbZBJLlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbZBJLnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754716AbZBJLlS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 06:41:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbZBJLlE
+	id S1754503AbZBJLnk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 06:43:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbZBJLnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 06:41:04 -0500
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:32960 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750772AbZBJLlC (ORCPT
+	Tue, 10 Feb 2009 06:43:32 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35447 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751202AbZBJLnb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 06:41:02 -0500
-Subject: Re: [Patch] [s390] Fix init irq proc build break.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: "Sachin P. Sant" <sachinp@in.ibm.com>
-Cc: linux-s390@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       heiko.carstens@de.ibm.com, Mel Gorman <mel@csn.ul.ie>
-In-Reply-To: <499161C3.2070407@in.ibm.com>
-References: <20090210194121.80256b72.sfr@canb.auug.org.au>
-	 <4991573C.8000609@in.ibm.com>  <499161C3.2070407@in.ibm.com>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Tue, 10 Feb 2009 12:40:58 +0100
-Message-Id: <1234266058.23901.0.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 10 Feb 2009 06:43:31 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: MinChan Kim <minchan.kim@gmail.com>
+Subject: Re: [RFC] vmscan: initialize sc->nr_reclaimed in do_try_to_free_pages()
+Cc: kosaki.motohiro@jp.fujitsu.com, Johannes Weiner <hannes@cmpxchg.org>,
+       Rik van Riel <riel@redhat.com>,
+       William Lee Irwin III <wli@movementarian.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <28c262360902100247x1d537dc2kfef3c4c0f769a259@mail.gmail.com>
+References: <20090209222416.GA9758@cmpxchg.org> <28c262360902100247x1d537dc2kfef3c4c0f769a259@mail.gmail.com>
+Message-Id: <20090210204210.6FEF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Tue, 10 Feb 2009 20:43:27 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-10 at 16:45 +0530, Sachin P. Sant wrote:
-> * Embed init_irq_proc(s390) within CONFIG_PROC_FS to fix a build
-> break.
+> ---
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index 9a27c44..18406ee 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -1699,6 +1699,7 @@ unsigned long try_to_free_pages(struct zonelist
+> *zonelist, int order,
+>                 .order = order,
+>                 .mem_cgroup = NULL,
+>                 .isolate_pages = isolate_pages_global,
+> +               .nr_reclaimed = 0,
+>         };
 > 
-> Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
+>         return do_try_to_free_pages(zonelist, &sc);
+> @@ -1719,6 +1720,7 @@ unsigned long
+> try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont,
+>                 .order = 0,
+>                 .mem_cgroup = mem_cont,
+>                 .isolate_pages = mem_cgroup_isolate_pages,
+> +               .nr_reclaimed = 0;
+>         };
+>         struct zonelist *zonelist;
 
-I'll queue the patch to git390.
+I think this code is better.
 
--- 
-blue skies,
-  Martin.
+and, I think we also need to 
 
-"Reality continues to ruin my life." - Calvin.
+
+static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+{
+        /* Minimum pages needed in order to stay on node */
+        const unsigned long nr_pages = 1 << order;
+        struct task_struct *p = current;
+        struct reclaim_state reclaim_state;
+        int priority;
+        struct scan_control sc = {
+                .may_writepage = !!(zone_reclaim_mode & RECLAIM_WRITE),
+                .may_swap = !!(zone_reclaim_mode & RECLAIM_SWAP),
+                .swap_cluster_max = max_t(unsigned long, nr_pages,
+                                        SWAP_CLUSTER_MAX),
+                .gfp_mask = gfp_mask,
+                .swappiness = vm_swappiness,
+                .isolate_pages = isolate_pages_global,
++               .nr_reclaimed = 0;
+        };
+
+
 
 
