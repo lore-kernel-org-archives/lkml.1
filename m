@@ -1,73 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755024AbZBJQQI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbZBJQVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755024AbZBJQQI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 11:16:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754070AbZBJQPy
+	id S1754736AbZBJQVi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 11:21:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbZBJQV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 11:15:54 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:54335 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754038AbZBJQPx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 11:15:53 -0500
-Date: Tue, 10 Feb 2009 11:04:51 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: Dan Williams <dcbw@redhat.com>, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Cliff Cai <cliff.cai@analog.com>
-Subject: Re: [PATCH] wireless: introduce POWEROF2_BLOCKSIZE_ONLY option
-Message-ID: <20090210160451.GD3534@tuxdriver.com>
-References: <1233819002-6912-1-git-send-email-cooloney@kernel.org> <1233846195.3028.14.camel@localhost> <386072610902052347m5754262bif18339809a00cb9f@mail.gmail.com> <386072610902060000s2e150e4cla19aca70f38b0474@mail.gmail.com>
-MIME-Version: 1.0
+	Tue, 10 Feb 2009 11:21:29 -0500
+Received: from cmpxchg.org ([85.214.51.133]:40873 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752995AbZBJQV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 11:21:28 -0500
+Date: Tue, 10 Feb 2009 17:20:52 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: MinChan Kim <minchan.kim@gmail.com>, Rik van Riel <riel@redhat.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       William Lee Irwin III <wli@movementarian.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] shrink_all_memory() use sc.nr_reclaimed
+Message-ID: <20090210162052.GB2371@cmpxchg.org>
+References: <28c262360902100440v765d3f7bnd56cc4b5510349c0@mail.gmail.com> <20090210215718.700D.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090210215811.7010.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <386072610902060000s2e150e4cla19aca70f38b0474@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090210215811.7010.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 06, 2009 at 04:00:28PM +0800, Bryan Wu wrote:
-> On Fri, Feb 6, 2009 at 3:47 PM, Bryan Wu <cooloney@kernel.org> wrote:
-> > On Thu, Feb 5, 2009 at 11:03 PM, Dan Williams <dcbw@redhat.com> wrote:
-> >> On Thu, 2009-02-05 at 15:30 +0800, Bryan Wu wrote:
-> >>> From: Cliff Cai <cliff.cai@analog.com>
-> >>>
-> >>> Introduce POWEROF2_BLOCKSIZE_ONLY option for those SD/SDIO host
-> >>> which only support transferring block with size of power-of-2
-> >>
-> >> Is the point here to avoid copying in the controller code?  As with the
-> >> other patches on libertas-dev, I really dislike adding code to *every
-> >> SDIO driver* just because the host has certain restrictions.  I'd much
-> >> rather that the host/controller code became aware of it's own
-> >> restrictions, and exposed those generically to drivers above it.
-> >> Without a KConfig option.
-> >>
-> >> Seriously.  The host knows what it needs.  The code to handle that
-> >> should go in the host.
-> >>
-> >
-> > I agree here.
-> >
-> >> How about adding a method like "sdio_align_size" that takes the
-> >> controller's constraints into account?  That seems a lot cleaner than
-> >> adding #define/KConfig junk to every SDIO driver in the kernel.  One
-> >> less codepath to test, makes your life and all our lives easier.
-> >>
-> >
-> > So we plan to add method ".sdio_align_size" to SDIO stack.
-> > And Blackfin host driver will implement this method while others will
-> > implement this as a dummy function.
-> >
+On Tue, Feb 10, 2009 at 10:00:26PM +0900, KOSAKI Motohiro wrote:
+> Impact: cleanup
 > 
-> sdio_align_size is already in SDIO stack, so we just need to add our
-> constraints to this function.
+> Commit a79311c14eae4bb946a97af25f3e1b17d625985d "vmscan: bail out of
+> direct reclaim after swap_cluster_max pages" moved the nr_reclaimed
+> counter into the scan control to accumulate the number of all
+> reclaimed pages in a reclaim invocation.
+> 
+> shrink_all_memory() can use the same mechanism. it increase code 
+> consistency.
+> 
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Cc: MinChan Kim <minchan.kim@gmail.com>
+> Cc: Johannes Weiner <hannes@cmpxchg.org>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Cc: Rik van Riel <riel@redhat.com>
+> ---
+>  mm/vmscan.c |   49 ++++++++++++++++++++++++-------------------------
+>  1 file changed, 24 insertions(+), 25 deletions(-)
+> 
+> Index: b/mm/vmscan.c
+> ===================================================================
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -2004,16 +2004,15 @@ unsigned long global_lru_pages(void)
+>  #ifdef CONFIG_PM
+>  /*
+>   * Helper function for shrink_all_memory().  Tries to reclaim 'nr_pages' pages
+> - * from LRU lists system-wide, for given pass and priority, and returns the
+> - * number of reclaimed pages
+> + * from LRU lists system-wide, for given pass and priority.
+>   *
+>   * For pass > 3 we also try to shrink the LRU lists that contain a few pages
+>   */
+> -static unsigned long shrink_all_zones(unsigned long nr_pages, int prio,
+> +static void shrink_all_zones(unsigned long nr_pages, int prio,
+>  				      int pass, struct scan_control *sc)
+>  {
+>  	struct zone *zone;
+> -	unsigned long nr_to_scan, ret = 0;
+> +	unsigned long nr_to_scan;
+>  	enum lru_list l;
 
-I'm reading this as "this patch is unnecessary or will be replaced
-by something better", so I'm dropping it.  If I misread that, feel
-free to repost...thanks!
+Basing it on swsusp-clean-up-shrink_all_zones.patch probably makes it
+easier for Andrew to pick it up.
 
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+>  	for_each_zone(zone) {
+> @@ -2038,15 +2037,13 @@ static unsigned long shrink_all_zones(un
+>  				nr_to_scan = min(nr_pages,
+>  					zone_page_state(zone,
+>  							NR_LRU_BASE + l));
+> -				ret += shrink_list(l, nr_to_scan, zone,
+> -								sc, prio);
+> -				if (ret >= nr_pages)
+> -					return ret;
+> +				sc->nr_reclaimed += shrink_list(l, nr_to_scan,
+> +								zone, sc, prio);
+> +				if (sc->nr_reclaimed >= nr_pages)
+> +					return;
+>  			}
+>  		}
+>  	}
+> -
+> -	return ret;
+>  }
+>  
+>  /*
+> @@ -2060,10 +2057,10 @@ static unsigned long shrink_all_zones(un
+>  unsigned long shrink_all_memory(unsigned long nr_pages)
+>  {
+>  	unsigned long lru_pages, nr_slab;
+> -	unsigned long ret = 0;
+>  	int pass;
+>  	struct reclaim_state reclaim_state;
+>  	struct scan_control sc = {
+> +		.nr_reclaimed = 0,
+>  		.gfp_mask = GFP_KERNEL,
+>  		.may_swap = 0,
+>  		.swap_cluster_max = nr_pages,
+> @@ -2083,8 +2080,8 @@ unsigned long shrink_all_memory(unsigned
+>  		if (!reclaim_state.reclaimed_slab)
+>  			break;
+>  
+> -		ret += reclaim_state.reclaimed_slab;
+> -		if (ret >= nr_pages)
+> +		sc.nr_reclaimed += reclaim_state.reclaimed_slab;
+> +		if (sc.nr_reclaimed >= nr_pages)
+>  			goto out;
+>  
+>  		nr_slab -= reclaim_state.reclaimed_slab;
+> @@ -2108,18 +2105,18 @@ unsigned long shrink_all_memory(unsigned
+>  		}
+>  
+>  		for (prio = DEF_PRIORITY; prio >= 0; prio--) {
+> -			unsigned long nr_to_scan = nr_pages - ret;
+> +			unsigned long nr_to_scan = nr_pages - sc.nr_reclaimed;
+>  
+>  			sc.nr_scanned = 0;
+> -			ret += shrink_all_zones(nr_to_scan, prio, pass, &sc);
+> -			if (ret >= nr_pages)
+> +			shrink_all_zones(nr_to_scan, prio, pass, &sc);
+> +			if (sc.nr_reclaimed >= nr_pages)
+>  				goto out;
+>  
+>  			reclaim_state.reclaimed_slab = 0;
+>  			shrink_slab(sc.nr_scanned, sc.gfp_mask,
+>  					global_lru_pages());
+> -			ret += reclaim_state.reclaimed_slab;
+> -			if (ret >= nr_pages)
+> +			sc.nr_reclaimed += reclaim_state.reclaimed_slab;
+> +			if (sc.nr_reclaimed >= nr_pages)
+>  				goto out;
+>  
+>  			if (sc.nr_scanned && prio < DEF_PRIORITY - 2)
+> @@ -2128,21 +2125,23 @@ unsigned long shrink_all_memory(unsigned
+>  	}
+>  
+>  	/*
+> -	 * If ret = 0, we could not shrink LRUs, but there may be something
+> -	 * in slab caches
+> +	 * If sc.nr_reclaimed = 0, we could not shrink LRUs, but there may be
+> +	 * something in slab caches
+>  	 */
+> -	if (!ret) {
+> +	if (!sc.nr_reclaimed) {
+>  		do {
+>  			reclaim_state.reclaimed_slab = 0;
+> -			shrink_slab(nr_pages, sc.gfp_mask, global_lru_pages());
+> -			ret += reclaim_state.reclaimed_slab;
+> -		} while (ret < nr_pages && reclaim_state.reclaimed_slab > 0);
+> +			shrink_slab(nr_pages, sc.gfp_mask,
+> +				    global_lru_pages());
+> +			sc.nr_reclaimed += reclaim_state.reclaimed_slab;
+> +		} while (sc.nr_reclaimed < nr_pages &&
+> +			 reclaim_state.reclaimed_slab > 0);
+
+:(
+
+Is this really an improvement?  `ret' is better to read than
+`sc.nr_reclaimed'.
+
+	Hannes
