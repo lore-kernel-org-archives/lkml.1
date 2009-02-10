@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbZBJKI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754152AbZBJKK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753861AbZBJKI0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 05:08:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbZBJKIS
+	id S1754152AbZBJKK3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 05:10:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbZBJKKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 05:08:18 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57769 "EHLO
+	Tue, 10 Feb 2009 05:10:21 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60718 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752433AbZBJKIS (ORCPT
+	with ESMTP id S1752443AbZBJKKU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 05:08:18 -0500
-Date: Tue, 10 Feb 2009 11:08:16 +0100
+	Tue, 10 Feb 2009 05:10:20 -0500
+Date: Tue, 10 Feb 2009 11:10:19 +0100
 From: Pavel Machek <pavel@suse.cz>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: lenb@kernel.org, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/1] x86_64: fix s3 fail path
-Message-ID: <20090210100816.GA27018@atrey.karlin.mff.cuni.cz>
-References: <1234190120-6268-1-git-send-email-jirislaby@gmail.com>
+To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+Cc: ?ric Piel <eric.piel@tremplin-utc.net>, linux-kernel@vger.kernel.org,
+       Palatis Tseng <palatis@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] lis3lv02d: add axes knowledge of HP Pavilion dv5 models
+Message-ID: <20090210101019.GB27018@atrey.karlin.mff.cuni.cz>
+References: <1233967681-6378-1-git-send-email-giuseppe.bilotta@gmail.com> <498D9F02.9000107@tremplin-utc.net> <cb7bb73a0902071559w70b3367el9471db894872257f@mail.gmail.com> <20090209094748.GC4358@atrey.karlin.mff.cuni.cz> <cb7bb73a0902090153q30a5337bj45d41a3e3919e189@mail.gmail.com> <20090209095803.GD4358@atrey.karlin.mff.cuni.cz> <cb7bb73a0902090345y4ef5d544ta374ee96791a80df@mail.gmail.com> <cb7bb73a0902090533q3acc45b2r7d00b44aa0bdfc90@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1234190120-6268-1-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <cb7bb73a0902090533q3acc45b2r7d00b44aa0bdfc90@mail.gmail.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> As acpi_enter_sleep_state can fail, take this into account in
-> do_suspend_lowlevel and don't return to the do_suspend_lowlevel's
-> caller. This would break (currently) fpu status and preempt count.
+> On Mon, Feb 9, 2009 at 12:45 PM, Giuseppe Bilotta
+> <giuseppe.bilotta@gmail.com> wrote:
+> > I will try this patch
+> > http://lkml.indiana.edu/hypermail/linux/kernel/0901.2/00164.html in
+> > the mean time, in case that's the patch which is in -mm.
 > 
-> Technically, this means use `call' instead of `jmp' and `jmp' to
-> the `resume_point' after the `call' (i.e. if
-> acpi_enter_sleep_state returns=fails). `resume_point' will handle
-> the restore of fpu and preempt count gracefully.
-> 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> Cc: Len Brown <lenb@kernel.org>
-> Cc: Pavel Machek <pavel@suse.cz>
+> With that patch I still get the same range of fluctuations.
 
-Acked-by: Pavel Machek <pavel@suse.cz>
-
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  arch/x86/kernel/acpi/wakeup_64.S |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wakeup_64.S
-> index b5dee6a..96258d9 100644
-> --- a/arch/x86/kernel/acpi/wakeup_64.S
-> +++ b/arch/x86/kernel/acpi/wakeup_64.S
-> @@ -73,7 +73,9 @@ ENTRY(do_suspend_lowlevel)
->  	addq	$8, %rsp
->  	movl	$3, %edi
->  	xorl	%eax, %eax
-> -	jmp	acpi_enter_sleep_state
-> +	call	acpi_enter_sleep_state
-> +	/* in case something went wrong, restore the machine status and go on */
-> +	jmp	resume_point
->  
->  	.align 4
->  resume_point:
+Yeah, that patch. Not sure what to do next... you could grab lis3
+manual and see if you can setup chip by hand to get better results...
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
