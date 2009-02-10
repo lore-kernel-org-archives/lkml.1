@@ -1,47 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbZBJAL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754111AbZBJAWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756057AbZBJAL6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 19:11:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753145AbZBJALt
+	id S1754111AbZBJAWU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 19:22:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbZBJAWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 19:11:49 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:58282 "EHLO smtp.gentoo.org"
+	Mon, 9 Feb 2009 19:22:08 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:46012 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752243AbZBJALs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 19:11:48 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Subject: Re: [PATCH] sh: maple: add support for Visual Memory Card devices, and make consequential changes to maple input drivers - 2/3 - v5
-Date: Mon, 9 Feb 2009 19:11:43 -0500
-User-Agent: KMail/1.11.0 (Linux/2.6.28; KDE/4.2.0; x86_64; ; )
-Cc: Paul Mundt <lethal@linux-sh.org>, Greg KH <greg@kroah.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       dwmw2 <dwmw2@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       MTD <linux-mtd@lists.infradead.org>,
-       "linux-sh" <linux-sh@vger.kernel.org>,
-       "linux-input" <linux-input@vger.kernel.org>
-References: <1234122069.6736.8.camel@localhost.localdomain> <200902091433.57126.vapier@gentoo.org> <1234215716.6756.18.camel@localhost.localdomain>
-In-Reply-To: <1234215716.6756.18.camel@localhost.localdomain>
+	id S1751128AbZBJAWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 19:22:06 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH 1/3] PCI PM: Do not disable and enable bridges during suspend-resume
+Date: Tue, 10 Feb 2009 01:21:22 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200902012229.27517.rjw@sisk.pl> <200902081423.08991.rjw@sisk.pl> <20090209093926.GA4358@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20090209093926.GA4358@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200902091911.46383.vapier@gentoo.org>
+Message-Id: <200902100121.23552.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 February 2009 16:41:56 Adrian McMenamin wrote:
-> But the basic point here is that changing the bus code is necessary to
-> get the VMU driver (or *any* VMU driver) to work, but changing the bus
-> driver also breaks the two existing drivers in mainline that use the
-> bus. The breakage in terms of lines to be fixed is small, but it still
-> needs to be done 'all at once'.
+On Monday 09 February 2009, Pavel Machek wrote:
+> > On Sunday 08 February 2009, Pavel Machek wrote:
+> > > Hi!
+> > > 
+> > > > > > their standard config spaces are restored.  Fix this by not attempting
+> > > > > > to disable bridges during suspend and enable them during resume.
+> > > > > ...
+> > > > > > @@ -428,16 +428,18 @@ static int pci_pm_default_resume(struct 
+> > > > > >  {
+> > > > > >  	pci_fixup_device(pci_fixup_resume, pci_dev);
+> > > > > >  
+> > > > > > -	if (!pci_is_bridge(pci_dev))
+> > > > > > -		pci_enable_wake(pci_dev, PCI_D0, false);
+> > > > > > +	if (pci_is_bridge(pci_dev))
+> > > > > > +		return 0;
+> > > > > >  
+> > > > > > +	pci_enable_wake(pci_dev, PCI_D0, false);
+> > > > > >  	return pci_pm_reenable_device(pci_dev);
+> > > > > >  }
+> > > > > 
+> > > > > Are you sure? This goes from doing reenable_device to not doing it for
+> > > > > bridges, seemingly contradicting changelog?
+> > > > 
+> > > > Can you explain what you mean, please?
+> > > 
+> > > It looks to me like the patch does not match the changelog.
+> > > 
+> > > Changelog says "enable bridge during resume", but code does return 0
+> > > if it seems bridge.
+> > 
+> > Ah, I see.  The changelog was supposed to mean that the bridges would not
+> > be disabled during suspend and also would not be enabled during resume
+> > (which shouldn't be necessary, since they would be automatically enabled
+> > as a result of restoring their configuration registers).
+> 
+> You can add my acked-by: when you resubmit with fixed
+> changelog... :-).
 
-the bus change and the resulting fallout in those drivers should be 1 
-changeset.  if you want to do more work than just transitioning those drivers, 
-that should be additional patches that depend on that bus changeset.  that way 
-bisection will not break as Paul highlighted.
--mike
+It's merged, so that wouldn't be of any use.
+
+Thanks,
+Rafael
