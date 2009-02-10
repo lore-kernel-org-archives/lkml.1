@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbZBJSpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbZBJSon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756108AbZBJSpA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 13:45:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbZBJSor
+	id S1755955AbZBJSon (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 13:44:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754654AbZBJSoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 13:44:47 -0500
+	Tue, 10 Feb 2009 13:44:32 -0500
 Received: from mail-fx0-f20.google.com ([209.85.220.20]:56226 "EHLO
 	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755983AbZBJSoq (ORCPT
+	with ESMTP id S1755827AbZBJSo3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 13:44:46 -0500
+	Tue, 10 Feb 2009 13:44:29 -0500
 From: Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH 2/3] trace: fix sparse warnings: fix (un-)signedness
+Subject: [PATCH 1/3] trace: fix sparse warnings: make symbols static
 To: Ingo Molnar <mingo@elte.hu>
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Tue, 10 Feb 2009 19:44:34 +0100
-Message-ID: <20090210184420.28131.58330.stgit@vmbox.hanneseder.net>
+Date: Tue, 10 Feb 2009 19:44:12 +0100
+Message-ID: <20090210184357.28131.39458.stgit@vmbox.hanneseder.net>
 In-Reply-To: <20090210184214.28131.90564.stgit@vmbox.hanneseder.net>
 References: <20090210184214.28131.90564.stgit@vmbox.hanneseder.net>
 User-Agent: StGit/0.14.3.292.gb975.dirty
@@ -26,83 +26,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Impact: make global variables and a global function static
+
+The function '__trace_userstack' does not seem to have a caller, so it
+is commented out.
+
 Fix this sparse warnings:
-  kernel/trace/ring_buffer.c:70:37: warning: incorrect type in argument 2 (different signedness)
-  kernel/trace/ring_buffer.c:84:39: warning: incorrect type in argument 2 (different signedness)
-  kernel/trace/ring_buffer.c:96:43: warning: incorrect type in argument 2 (different signedness)
-  kernel/trace/ring_buffer.c:2475:13: warning: incorrect type in argument 2 (different signedness)
-  kernel/trace/ring_buffer.c:2475:13: warning: incorrect type in argument 2 (different signedness)
-  kernel/trace/ring_buffer.c:2478:42: warning: incorrect type in argument 2 (different signedness)
-  kernel/trace/ring_buffer.c:2478:42: warning: incorrect type in argument 2 (different signedness)
-  kernel/trace/ring_buffer.c:2500:40: warning: incorrect type in argument 3 (different signedness)
-  kernel/trace/ring_buffer.c:2505:44: warning: incorrect type in argument 2 (different signedness)
-  kernel/trace/ring_buffer.c:2507:46: warning: incorrect type in argument 2 (different signedness)
-  kernel/trace/trace.c:2130:40: warning: incorrect type in argument 3 (different signedness)
-  kernel/trace/trace.c:2280:40: warning: incorrect type in argument 3 (different signedness)
+  kernel/trace/trace.c:82:5: warning: symbol 'tracing_disabled' was not declared. Should it be static?
+  kernel/trace/trace.c:600:10: warning: symbol 'trace_record_cmdline_disabled' was not declared. Should it be static?
+  kernel/trace/trace.c:957:6: warning: symbol '__trace_userstack' was not declared. Should it be static?
+  kernel/trace/trace.c:1694:5: warning: symbol 'tracing_release' was not declared. Should it be static?
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- kernel/trace/ring_buffer.c |    8 ++++----
- kernel/trace/trace.c       |    6 +++---
- 2 files changed, 7 insertions(+), 7 deletions(-)
+ kernel/trace/trace.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index aee76b3..6249e71 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -57,7 +57,7 @@ enum {
- 	RB_BUFFERS_DISABLED	= 1 << RB_BUFFERS_DISABLED_BIT,
- };
- 
--static long ring_buffer_flags __read_mostly = RB_BUFFERS_ON;
-+static unsigned long ring_buffer_flags __read_mostly = RB_BUFFERS_ON;
- 
- /**
-  * tracing_on - enable all tracing buffers
-@@ -2468,7 +2468,7 @@ static ssize_t
- rb_simple_read(struct file *filp, char __user *ubuf,
- 	       size_t cnt, loff_t *ppos)
- {
--	long *p = filp->private_data;
-+	unsigned long *p = filp->private_data;
- 	char buf[64];
- 	int r;
- 
-@@ -2484,9 +2484,9 @@ static ssize_t
- rb_simple_write(struct file *filp, const char __user *ubuf,
- 		size_t cnt, loff_t *ppos)
- {
--	long *p = filp->private_data;
-+	unsigned long *p = filp->private_data;
- 	char buf[64];
--	long val;
-+	unsigned long val;
- 	int ret;
- 
- 	if (cnt >= sizeof(buf))
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 0e7c84f..16b8be4 100644
+index ef4dbac..0e7c84f 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -2118,7 +2118,7 @@ tracing_ctrl_write(struct file *filp, const char __user *ubuf,
- {
- 	struct trace_array *tr = filp->private_data;
- 	char buf[64];
--	long val;
-+	unsigned long val;
- 	int ret;
+@@ -79,7 +79,7 @@ static int dummy_set_flag(u32 old_flags, u32 bit, int set)
+  * of the tracer is successful. But that is the only place that sets
+  * this back to zero.
+  */
+-int tracing_disabled = 1;
++static int tracing_disabled = 1;
  
- 	if (cnt >= sizeof(buf))
-@@ -2266,9 +2266,9 @@ static ssize_t
- tracing_max_lat_write(struct file *filp, const char __user *ubuf,
- 		      size_t cnt, loff_t *ppos)
- {
--	long *ptr = filp->private_data;
-+	unsigned long *ptr = filp->private_data;
- 	char buf[64];
--	long val;
-+	unsigned long val;
- 	int ret;
+ static DEFINE_PER_CPU(local_t, ftrace_cpu_disabled);
  
- 	if (cnt >= sizeof(buf))
+@@ -597,7 +597,7 @@ static int cmdline_idx;
+ static DEFINE_SPINLOCK(trace_cmdline_lock);
+ 
+ /* temporary disable recording */
+-atomic_t trace_record_cmdline_disabled __read_mostly;
++static atomic_t trace_record_cmdline_disabled __read_mostly;
+ 
+ static void trace_init_cmdlines(void)
+ {
+@@ -954,10 +954,12 @@ static void ftrace_trace_userstack(struct trace_array *tr,
+ #endif
+ }
+ 
+-void __trace_userstack(struct trace_array *tr, unsigned long flags)
++#ifdef UNUSED
++static void __trace_userstack(struct trace_array *tr, unsigned long flags)
+ {
+ 	ftrace_trace_userstack(tr, flags, preempt_count());
+ }
++#endif /* UNUSED */
+ 
+ static void
+ ftrace_trace_special(void *__tr,
+@@ -1691,7 +1693,7 @@ int tracing_open_generic(struct inode *inode, struct file *filp)
+ 	return 0;
+ }
+ 
+-int tracing_release(struct inode *inode, struct file *file)
++static int tracing_release(struct inode *inode, struct file *file)
+ {
+ 	struct seq_file *m = (struct seq_file *)file->private_data;
+ 	struct trace_iterator *iter = m->private;
 
