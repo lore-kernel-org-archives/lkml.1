@@ -1,148 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbZBJDh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbZBJDnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754817AbZBJDh7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 22:37:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbZBJDhu
+	id S1754195AbZBJDnP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 22:43:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbZBJDmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 22:37:50 -0500
-Received: from rtp-iport-1.cisco.com ([64.102.122.148]:31183 "EHLO
-	rtp-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752078AbZBJDht convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 22:37:49 -0500
-X-Greylist: delayed 572 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Feb 2009 22:37:49 EST
-X-IronPort-AV: E=Sophos;i="4.38,183,1233532800"; 
-   d="scan'208";a="36528932"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] Propagate CRAMFS uncompression errors
-Date: Mon, 9 Feb 2009 22:28:15 -0500
-Message-ID: <FF038EB85946AA46B18DFEE6E6F8A289950C30@xmb-rtp-218.amer.cisco.com>
-In-Reply-To: <20090209151630.4d87ad13.akpm@linux-foundation.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] Propagate CRAMFS uncompression errors
-Thread-Index: AcmLDHXY+0u/CWjMTeSDGiBBtoGX9AAItmDg
-References: <FF038EB85946AA46B18DFEE6E6F8A2899507E0@xmb-rtp-218.amer.cisco.com> <20090209151630.4d87ad13.akpm@linux-foundation.org>
-From: "David VomLehn (dvomlehn)" <dvomlehn@cisco.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 10 Feb 2009 03:28:16.0660 (UTC) FILETIME=[9CC43D40:01C98B2F]
-Authentication-Results: rtp-dkim-2; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/rtpdkim2001 verified; ); 
+	Mon, 9 Feb 2009 22:42:55 -0500
+Received: from cantor.suse.de ([195.135.220.2]:39913 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752183AbZBJDmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 22:42:54 -0500
+Date: Tue, 10 Feb 2009 04:42:50 +0100
+From: Karsten Keil <kkeil@suse.de>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Michal Hocko <mhocko@suse.cz>, "David S. Miller" <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, richard kennedy <richard@rsk.demon.co.uk>,
+       Dan Williams <dan.j.williams@intel.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>, dwmw2@infradead.org,
+       Scott Wood <scottwood@freescale.com>, netdev@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [RFC] Suspicious bug in module refcounting
+Message-ID: <20090210034250.GA9938@pingi.kke.suse.de>
+References: <20090203134721.GA11069@pingi.kke.suse.de> <200902041418.09630.rusty@rustcorp.com.au> <20090209151830.GC6018@dhcp35.suse.cz> <200902101345.08580.rusty@rustcorp.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200902101345.08580.rusty@rustcorp.com.au>
+Organization: SuSE Linux AG
+X-Operating-System: Linux 2.6.16.60-0.34-smp x86_64
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Feb 10, 2009 at 01:45:07PM +1030, Rusty Russell wrote:
+> On Tuesday 10 February 2009 01:48:31 Michal Hocko wrote:
+> > Based on this change, would it make sense to update sys_accept to change
+> > __module_get to try_module_get like in the following patch?
+> 
+> I don't think so:
+> 
+> >  	/*
+> > -	 * We don't need try_module_get here, as the listening socket (sock)
+> > -	 * has the protocol module (sock->ops->owner) held.
+> > +	 * Socket's owner cannot be in unloading path because there
+> > +	 * must be at least one listening reference
+> >  	 */
+> > -	__module_get(newsock->ops->owner);
+> > +	if (unlikely(!try_module_get(newsock->ops->owner)))
+> > +		BUG();
+> 
+> rmmod --wait can make try_module_get fail even if the reference count isn't
+> zero.  But in this case, we should return an error from the accept call;
+> presumably the admin really doesn't want us to keep using the module...
+> 
 
-> From: Andrew Morton [mailto:akpm@linux-foundation.org] 
-> Sent: Monday, February 09, 2009 3:17 PM
-> Subject: Re: [PATCH] Propagate CRAMFS uncompression errors
-> 
-> "David VomLehn (dvomlehn)" <dvomlehn@cisco.com> wrote:
-> 
-> > If cramfs_uncompress_block detects an error uncompressing it will
-> > return a zero value. This patch checks the return value and 
-> propagates
-> > the error back up to the block layer.
-> > 
-> > Signed-off-by: David VomLehn <dvomlehn@cisco.com>
-> > ---
-> >  fs/cramfs/inode.c |   10 +++++++++-
-> >  1 files changed, 9 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/fs/cramfs/inode.c b/fs/cramfs/inode.c
-> > index a07338d..6ff8a5e 100644
-> > --- a/fs/cramfs/inode.c
-> > +++ b/fs/cramfs/inode.c
-> > @@ -493,7 +493,15 @@ static int cramfs_readpage(struct file *file,
-> > struct page * page)
-> 
-> Your email client is wordwrapping the patches.
+I was thinking about this for a while too, but I did not find a valid
+error value for this case, the current accept syscall API only allow few
+error codes and I think we should not break this.
+Maybe -ECONNABORTED  could be used but it doesn't fit 100% and applications
+may interpret this in a wrong way.
+If the admin decide to remove the module, he should also stop the services
+needing this resource. In this case  the effect of __module_get(newsock->ops->owner);
+is ok, if the service is still in use, the module will not be removed and
+still does the expected work, if all sockets are closed the module refcount
+will reach zero and the module will go away.
 
-Sorry. I sent it to myself first, and didn't have a problem. I hate
-email programs.
-
-> >  	memset(pgdata + bytes_filled, 0, PAGE_CACHE_SIZE -
-> > bytes_filled);
-> >  	kunmap(page);
-> >  	flush_dcache_page(page);
-> > -	SetPageUptodate(page);
-> > +
-> > +	if (bytes_filled == 0) {
-> > +		ClearPageUptodate(page);
-> > +		SetPageError(page);
-> > +	}
-> > +
-> > +	else
-> > +		SetPageUptodate(page);
-> > +
-> >  	unlock_page(page);
-> >  	return 0;
-> 
-> A more typical code layout would be
-> 
-> 	if (bytes_filled == 0) {
-> 		ClearPageUptodate(page);
-> 		SetPageError(page);
-> 	} else
-> 		SetPageUptodate(page);
-> 
-> or (better, IMO):
-> 
-> 	if (bytes_filled == 0) {
-> 		ClearPageUptodate(page);
-> 		SetPageError(page);
-> 	} else {
-> 		SetPageUptodate(page);
-> 	}
-> 
-> 
-> This patch will incorrectly cause the driver to report an IO error if
-> the (page->index < maxblock) test returns false.  For example, a
-> pread() which is wholly outside the end-of-file should return 
-> zero, not
-> -EIO.
-> 
-> cramfs_readpage() handles this case very strangely, although not
-> obviously buggily.  Probably this function never even gets 
-> called for a
-> read wholly outside i_size.
-> 
-> How does this version look to you?
-> 
-> --- a/fs/cramfs/inode.c~propagate-cramfs-uncompression-errors
-> +++ a/fs/cramfs/inode.c
-> @@ -488,12 +488,19 @@ static int cramfs_readpage(struct file *
->  				 compr_len);
->  			mutex_unlock(&read_mutex);
->  		}
-> -	} else
-> -		pgdata = kmap(page);
-> -	memset(pgdata + bytes_filled, 0, PAGE_CACHE_SIZE - 
-> bytes_filled);
-> -	kunmap(page);
-> -	flush_dcache_page(page);
-> -	SetPageUptodate(page);
-> +
-> +		if (bytes_filled == 0) {
-> +			/* Decompression error */
-> +			ClearPageUptodate(page);
-> +			SetPageError(page);
-> +		} else {
-> +			memset(pgdata + bytes_filled, 0,
-> +					PAGE_CACHE_SIZE - bytes_filled);
-> +			flush_dcache_page(page);
-> +			SetPageUptodate(page);
-> +		}
-> +		kunmap(page);
-> +	}
->  	unlock_page(page);
->  	return 0;
->  }
-
-Better, thanks!
+-- 
+Karsten Keil
+SuSE Labs
