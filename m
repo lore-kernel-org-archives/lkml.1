@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758767AbZBJTUE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758146AbZBJTTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758767AbZBJTUE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 14:20:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755518AbZBJTEU
+	id S1758146AbZBJTTo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 14:19:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755977AbZBJTET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 14:04:20 -0500
-Received: from kroah.org ([198.145.64.141]:54111 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 14:04:19 -0500
+Received: from kroah.org ([198.145.64.141]:33907 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755961AbZBJTES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 14:04:18 -0500
-Date: Tue, 10 Feb 2009 11:01:27 -0800
+	id S1755938AbZBJTEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 14:04:15 -0500
+Date: Tue, 10 Feb 2009 11:01:23 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dan Williams <dcbw@redhat.com>
-Subject: [patch 46/53] Revert USB: option: add Pantech cards
-Message-ID: <20090210190127.GU14308@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Helmut Schaa <helmut.schaa@googlemail.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 44/53] ipw2200: fix scanning while associated
+Message-ID: <20090210190123.GS14308@kroah.com>
 References: <20090210185337.000769713@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="revert-usb-option-add-pantech-cards.patch"
+Content-Disposition: inline; filename="ipw2200-fix-scanning-while-associated.patch"
 In-Reply-To: <20090210185924.GA14308@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,47 +39,109 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Greg Kroah-Hartman <gregkh@suse.de>
+From: Helmut Schaa <helmut.schaa@googlemail.com>
 
-commit 6b40c0057a7935bcf63a38a924094c7e61d4731f upstream.
+commit 14a4dfe2ff8c353f59ae8324059ded1cfe22c7d9 upstream.
 
-Revert 8b6346ec899713a90890c9e832f7eff91ea73504 as these devices really
-work just fine with the cdc-acm driver, as they follow the spec
-properly.
+This patch fixes sporadic firmware restarts when scanning while associated.
 
-Thanks to Chuck Ebbert for pointing out the problem here.
+The firmware will quietly cancel a scan (while associated) if the dwell time
+for a channel to be scanned is larger than the time it may stay away from the
+operating channel (because of DTIM catching). Unfortunately the driver is not
+notified about the canceled scan and therefore the scan watchdog timeout will
+be hit and the driver causes a firmware restart which results in
+disassociation. This mainly happens on passive channels which use a dwell time
+of 120 whereas a typical beacon interval is around 100.
 
-Cc: Chuck Ebbert <cebbert@redhat.com>
-Cc: Dan Williams <dcbw@redhat.com>
+The patch changes the dwell time for passive channels to be slightly smaller
+than the actual beacon interval to work around the firmware issue. Furthermore
+the number of allowed beacon misses is increased from one to three as otherwise
+most scans (while associated) won't complete successfully.
+
+However scanning while associated will still fail in corner cases such as a
+beacon intervals below 30.
+
+Signed-off-by: Helmut Schaa <helmut.schaa@googlemail.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/option.c |    9 ---------
- 1 file changed, 9 deletions(-)
+ drivers/net/wireless/ipw2200.c |   28 ++++++++++++++++++++++------
+ drivers/net/wireless/ipw2200.h |    1 +
+ 2 files changed, 23 insertions(+), 6 deletions(-)
 
---- a/drivers/usb/serial/option.c
-+++ b/drivers/usb/serial/option.c
-@@ -267,12 +267,6 @@ static int  option_send_setup(struct tty
- #define ERICSSON_VENDOR_ID			0x0bdb
- #define ERICSSON_PRODUCT_F3507G			0x1900
+--- a/drivers/net/wireless/ipw2200.c
++++ b/drivers/net/wireless/ipw2200.c
+@@ -4347,7 +4347,8 @@ static void ipw_handle_missed_beacon(str
+ 		return;
+ 	}
  
--/* Pantech products */
--#define PANTECH_VENDOR_ID			0x106c
--#define PANTECH_PRODUCT_PC5740			0x3701
--#define PANTECH_PRODUCT_PC5750			0x3702  /* PX-500 */
--#define PANTECH_PRODUCT_UM150			0x3711
--
- static struct usb_device_id option_ids[] = {
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_COLT) },
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_RICOLA) },
-@@ -476,9 +470,6 @@ static struct usb_device_id option_ids[]
- 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_MF628) },
- 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_CDMA_TECH) },
- 	{ USB_DEVICE(ERICSSON_VENDOR_ID, ERICSSON_PRODUCT_F3507G) },
--	{ USB_DEVICE(PANTECH_VENDOR_ID, PANTECH_PRODUCT_PC5740) },
--	{ USB_DEVICE(PANTECH_VENDOR_ID, PANTECH_PRODUCT_PC5750) },
--	{ USB_DEVICE(PANTECH_VENDOR_ID, PANTECH_PRODUCT_UM150) },
- 	{ } /* Terminating entry */
- };
- MODULE_DEVICE_TABLE(usb, option_ids);
+-	if (priv->status & STATUS_SCANNING) {
++	if (priv->status & STATUS_SCANNING &&
++	    missed_count > IPW_MB_SCAN_CANCEL_THRESHOLD) {
+ 		/* Stop scan to keep fw from getting
+ 		 * stuck (only if we aren't roaming --
+ 		 * otherwise we'll never scan more than 2 or 3
+@@ -6277,6 +6278,20 @@ static void ipw_add_scan_channels(struct
+ 	}
+ }
+ 
++static int ipw_passive_dwell_time(struct ipw_priv *priv)
++{
++	/* staying on passive channels longer than the DTIM interval during a
++	 * scan, while associated, causes the firmware to cancel the scan
++	 * without notification. Hence, don't stay on passive channels longer
++	 * than the beacon interval.
++	 */
++	if (priv->status & STATUS_ASSOCIATED
++	    && priv->assoc_network->beacon_interval > 10)
++		return priv->assoc_network->beacon_interval - 10;
++	else
++		return 120;
++}
++
+ static int ipw_request_scan_helper(struct ipw_priv *priv, int type, int direct)
+ {
+ 	struct ipw_scan_request_ext scan;
+@@ -6320,16 +6335,16 @@ static int ipw_request_scan_helper(struc
+ 	scan.full_scan_index = cpu_to_le32(ieee80211_get_scans(priv->ieee));
+ 
+ 	if (type == IW_SCAN_TYPE_PASSIVE) {
+-	  	IPW_DEBUG_WX("use passive scanning\n");
+-	  	scan_type = IPW_SCAN_PASSIVE_FULL_DWELL_SCAN;
++		IPW_DEBUG_WX("use passive scanning\n");
++		scan_type = IPW_SCAN_PASSIVE_FULL_DWELL_SCAN;
+ 		scan.dwell_time[IPW_SCAN_PASSIVE_FULL_DWELL_SCAN] =
+-			cpu_to_le16(120);
++			cpu_to_le16(ipw_passive_dwell_time(priv));
+ 		ipw_add_scan_channels(priv, &scan, scan_type);
+ 		goto send_request;
+ 	}
+ 
+ 	/* Use active scan by default. */
+-  	if (priv->config & CFG_SPEED_SCAN)
++	if (priv->config & CFG_SPEED_SCAN)
+ 		scan.dwell_time[IPW_SCAN_ACTIVE_BROADCAST_SCAN] =
+ 			cpu_to_le16(30);
+ 	else
+@@ -6339,7 +6354,8 @@ static int ipw_request_scan_helper(struc
+ 	scan.dwell_time[IPW_SCAN_ACTIVE_BROADCAST_AND_DIRECT_SCAN] =
+ 		cpu_to_le16(20);
+ 
+-  	scan.dwell_time[IPW_SCAN_PASSIVE_FULL_DWELL_SCAN] = cpu_to_le16(120);
++	scan.dwell_time[IPW_SCAN_PASSIVE_FULL_DWELL_SCAN] =
++		cpu_to_le16(ipw_passive_dwell_time(priv));
+ 	scan.dwell_time[IPW_SCAN_ACTIVE_DIRECT_SCAN] = cpu_to_le16(20);
+ 
+ #ifdef CONFIG_IPW2200_MONITOR
+--- a/drivers/net/wireless/ipw2200.h
++++ b/drivers/net/wireless/ipw2200.h
+@@ -244,6 +244,7 @@ enum connection_manager_assoc_states {
+ #define HOST_NOTIFICATION_S36_MEASUREMENT_REFUSED       31
+ 
+ #define HOST_NOTIFICATION_STATUS_BEACON_MISSING         1
++#define IPW_MB_SCAN_CANCEL_THRESHOLD                    3
+ #define IPW_MB_ROAMING_THRESHOLD_MIN                    1
+ #define IPW_MB_ROAMING_THRESHOLD_DEFAULT                8
+ #define IPW_MB_ROAMING_THRESHOLD_MAX                    30
 
