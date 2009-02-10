@@ -1,88 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbZBJMqK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbZBJMwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755936AbZBJMqK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 07:46:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755921AbZBJMpp
+	id S1754884AbZBJMwQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 07:52:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbZBJMwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 07:45:45 -0500
-Received: from viefep16-int.chello.at ([62.179.121.36]:50219 "EHLO
-	viefep16-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755307AbZBJMpo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 07:45:44 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [PATCH 0/2] fix the itimer regression (BZ 12618)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Lin Ming <ming.m.lin@intel.com>, Mike Galbraith <efault@gmx.de>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "oleg@redhat.com" <oleg@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "seto.hidetoshi@jp.fujitsu.com" <seto.hidetoshi@jp.fujitsu.com>
-In-Reply-To: <20090209214723.GA2664@elte.hu>
-References: <20090205112414.104100700@chello.nl>
-	 <20090205120608.GB8799@elte.hu> <1233895919.2604.323.camel@ymzhang>
-	 <20090206151832.GL18368@elte.hu>
-	 <1234161961.5991.41.camel@minggr.sh.intel.com>
-	 <20090209214723.GA2664@elte.hu>
-Content-Type: text/plain
-Date: Tue, 10 Feb 2009 13:47:24 +0100
-Message-Id: <1234270044.23438.7.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Feb 2009 07:52:00 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:59664 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753503AbZBJMv6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 07:51:58 -0500
+Date: Tue, 10 Feb 2009 06:51:57 -0600
+From: Robin Holt <holt@sgi.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Jack Steiner <steiner@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-next <linux-next@vger.kernel.org>,
+       linux-ia64 <linux-ia64@vger.kernel.org>,
+       Tony Luck <tony.luck@intel.com>, Dean Nelson <dcn@sgi.com>
+Subject: Re: [PATCH 2/2] don't compile SGI XP/GRU on ia64_generic
+Message-ID: <20090210125157.GT8577@sgi.com>
+References: <20090210162821.6FC1.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090210210110.7001.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090210210110.7001.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-09 at 22:47 +0100, Ingo Molnar wrote:
-> * Lin Ming <ming.m.lin@intel.com> wrote:
+Dean Nelson submitted a patch yesterday to make this work.
+
+Robin
+
+
+On Tue, Feb 10, 2009 at 09:03:40PM +0900, KOSAKI Motohiro wrote:
+> Subject: [PATCH] ia64: don't compile SGI-XP on ia64 generic.
+> Impact: fix build error
 > 
-> > On Fri, 2009-02-06 at 23:18 +0800, Ingo Molnar wrote:
-> > > * Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
-> > > 
-> > > > On Thu, 2009-02-05 at 13:06 +0100, Ingo Molnar wrote:
-> > > > > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > > > > 
-> > > > > > This should hopefully address all the itimer borkage.
-> > > > > 
-> > > > > Applied to tip:timers/urgent, thanks Peter!
-> > > > > 
-> > > > > Yanmin: could you check hacbench_pth with latest tip/master, do
-> > > > > these fixes resolve that 3% regression you reported?
-> > > >
-> > > > Lin Ming tested it and hackbench_pth/volanoMark regression all disappear. 
-> > > > But oltp has a regression. We think oltp new regression isn't related to 
-> > > > the patch. Ming is investigating it.
-> > > 
-> > > Potential suspects for oltp regression would be:
-> > > 
-> > >  3d39870: sched_rt: don't use first_cpu on cpumask created with cpumask_and
-> > >  a571bbe: sched: fix buddie group latency
-> > >  a9f3e2b: sched: clear buddies more aggressively
-> > >  1596e29: sched: symmetric sync vs avg_overlap
-> > >  d942fb6: sched: fix sync wakeups
-> > 
-> > I tested the latest tip-master branch.
-> > After reverting "d942fb6: sched: fix sync wakeups", the oltp regression
-> > on the 8cores Stockley machine is mostly fixed.
-> > 
-> > On another 4*4 cores Tigerton machine, oltp has more than 10% regression
-> > with 2.6.29-rc4 compared with 2.6.29-rc3.
+> Currently sgi-xp driver depend on "uv.h" header file.
+> but only x86 have "uv.h" header.
 > 
-> ok, that commit needs fixed or reverted. Peter, Mike?
-
-Yanmin, is that tigerton regression also due to the sync changes?
-
-That is, if you revert both d942fb6 and 1596e29, does it get back to
--rc3 state, or is the tigerton regression due to something else?
-
-This isn't quite clear to me.
-
-Ingo, if that is the case, I'm fine with reverting those changes for
-now, and have another look at them later on -- preferably when someone
-ships me a 4*4 machine so I can validate :-)
-
-
-
+> Then, ia64 hit following build error.
+> 
+>   In file included from drivers/misc/sgi-xp/xp_main.c:19:
+>   drivers/misc/sgi-xp/xp.h:18:23: error: asm/uv/uv.h: No such file or directory
+>   make[3]: *** [drivers/misc/sgi-xp/xp_main.o] Error 1
+>   make[2]: *** [drivers/misc/sgi-xp] Error 2
+> 
+> Cc: Jack Steiner <steiner@sgi.com>
+> Cc: Dean Nelson <dcn@sgi.com>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> ---
+>  drivers/misc/Kconfig |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: b/drivers/misc/Kconfig
+> ===================================================================
+> --- a/drivers/misc/Kconfig
+> +++ b/drivers/misc/Kconfig
+> @@ -162,7 +162,7 @@ config ENCLOSURE_SERVICES
+>  config SGI_XP
+>  	tristate "Support communication between SGI SSIs"
+>  	depends on NET
+> -	depends on (IA64_GENERIC || IA64_SGI_SN2 || IA64_SGI_UV || X86_UV) && SMP
+> +	depends on (IA64_SGI_SN2 || IA64_SGI_UV || X86_UV) && SMP
+>  	select IA64_UNCACHED_ALLOCATOR if IA64_GENERIC || IA64_SGI_SN2
+>  	select GENERIC_ALLOCATOR if IA64_GENERIC || IA64_SGI_SN2
+>  	select SGI_GRU if (IA64_SGI_UV || X86_UV) && SMP
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ia64" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
