@@ -1,81 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbZBJLnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbZBJLrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754503AbZBJLnk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 06:43:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbZBJLnc
+	id S1754654AbZBJLrN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 06:47:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753320AbZBJLq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 06:43:32 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35447 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751202AbZBJLnb (ORCPT
+	Tue, 10 Feb 2009 06:46:56 -0500
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:38542 "EHLO
+	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751202AbZBJLqz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 06:43:31 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: MinChan Kim <minchan.kim@gmail.com>
-Subject: Re: [RFC] vmscan: initialize sc->nr_reclaimed in do_try_to_free_pages()
-Cc: kosaki.motohiro@jp.fujitsu.com, Johannes Weiner <hannes@cmpxchg.org>,
-       Rik van Riel <riel@redhat.com>,
-       William Lee Irwin III <wli@movementarian.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <28c262360902100247x1d537dc2kfef3c4c0f769a259@mail.gmail.com>
-References: <20090209222416.GA9758@cmpxchg.org> <28c262360902100247x1d537dc2kfef3c4c0f769a259@mail.gmail.com>
-Message-Id: <20090210204210.6FEF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 10 Feb 2009 06:46:55 -0500
+Message-ID: <49916927.9080200@intertwingly.net>
+Date: Tue, 10 Feb 2009 06:46:47 -0500
+From: Sam Ruby <rubys@intertwingly.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Tue, 10 Feb 2009 20:43:27 +0900 (JST)
+To: yakui_zhao <yakui.zhao@intel.com>
+CC: Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [APIC] Kernel panic, rsync corruption, intel q8200, 2.6.28-rc8
+References: <4978767D.4060700@intertwingly.net>	 <20090130000758.1dff0113.akpm@linux-foundation.org>	 <498885CC.4060509@intertwingly.net>	 <20090203114849.b661f1ce.akpm@linux-foundation.org>	 <alpine.LFD.2.00.0902032152180.22800@localhost.localdomain>	 <49890B46.8020308@intertwingly.net>	 <alpine.LFD.2.00.0902032336000.5607@localhost.localdomain>	 <4990C14B.7060802@intertwingly.net> <1234231805.3706.80.camel@localhost.localdomain>
+In-Reply-To: <1234231805.3706.80.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> ---
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index 9a27c44..18406ee 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1699,6 +1699,7 @@ unsigned long try_to_free_pages(struct zonelist
-> *zonelist, int order,
->                 .order = order,
->                 .mem_cgroup = NULL,
->                 .isolate_pages = isolate_pages_global,
-> +               .nr_reclaimed = 0,
->         };
+yakui_zhao wrote:
+> On Tue, 2009-02-10 at 07:50 +0800, Sam Ruby wrote:
+>> Len Brown wrote:
+>>>>> Do you have a second computer around with a serial port ? If yes, then
+>>>>> please add the following to the kernel command line:
+>>>>>
+>>>>>        earlyprintk=serial,ttyS0,115200 apic=debug
+>>>>>
+>>>>> and connect the serial ports with a null modem cable. Fire up a
+>>>>> terminal program on the second machine and capture the output.
+>>>> I do have a second computer, and went out and bought a null modem adapter for
+>>>> my serial cable and connected the two machines.  I've tried installing minicom
+>>>> and also connecting it to ttyS0 at 115200 baud on the second machine, but when
+>>>> I boot the first machine I don't see any output on the terminal.
+>>> /boot/grub/menu.lst:
+>>>
+>>> serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1
+>>> terminal --timeout=300 serial console
+> Do you have an opportunity to try the boot option of "acpi=off" as
+> suggested by Lenb?
+
+That also produces the "MP-BIOS bug" message and halts.
+
+>      From the log it seems that there exists the following warning
+> message:
+>     >﻿MP-BIOS bug: 8254 timer not connected to IO-APIC
 > 
->         return do_try_to_free_pages(zonelist, &sc);
-> @@ -1719,6 +1720,7 @@ unsigned long
-> try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont,
->                 .order = 0,
->                 .mem_cgroup = mem_cont,
->                 .isolate_pages = mem_cgroup_isolate_pages,
-> +               .nr_reclaimed = 0;
->         };
->         struct zonelist *zonelist;
+>     Can you try the following boot options?
+>     a. acpi_use_timer_override
 
-I think this code is better.
+That also produces the "MP-BIOS bug" message and halts.
 
-and, I think we also need to 
+>     b. acpi_skip_timer_override
 
+That also produces the "MP-BIOS bug" message and halts.
 
-static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
-{
-        /* Minimum pages needed in order to stay on node */
-        const unsigned long nr_pages = 1 << order;
-        struct task_struct *p = current;
-        struct reclaim_state reclaim_state;
-        int priority;
-        struct scan_control sc = {
-                .may_writepage = !!(zone_reclaim_mode & RECLAIM_WRITE),
-                .may_swap = !!(zone_reclaim_mode & RECLAIM_SWAP),
-                .swap_cluster_max = max_t(unsigned long, nr_pages,
-                                        SWAP_CLUSTER_MAX),
-                .gfp_mask = gfp_mask,
-                .swappiness = vm_swappiness,
-                .isolate_pages = isolate_pages_global,
-+               .nr_reclaimed = 0;
-        };
+>     c. noapic
 
+With that, I can boot, but I get data corruption problems.  Data 
+corruption problems I don't see when using the same hardware but with 
+Microsoft Vista.  More details can be found here:
 
+http://intertwingly.net/blog/2009/01/20/noAPIC
+http://intertwingly.net/stories/2009/01/22/
 
+I am willing to install new kernels on fresh hard drives, run diagnostic 
+programs and report the output, including capturing serial output.  Is 
+there any data I can gather to help diagnose this problem?
 
+>     Thanks.
+>>> is what I use.
+>>>
+>>> this will give you a prompt from grub even before the kernel boots
+>>> so you can select (and edit) your kernel via menu over the serial line
+>>> if you wish.
+>> I've got that working now.  I used minicom on the remote machine, 
+>> capturing the output.  You can see me fumbling around, editing the 
+>> kernel command and booting here:
+>>
+>> http://intertwingly.net/stories/2009/02/09/minicom.out
+>>
+>> While it is difficult to make out what I did given line wrapping, etc, 
+>> what I started with was:
+>>
+>> /boot/vmlinuz-2.6.27-11-generic 
+>> root=UUID=4fce230e-fe72-4685-aab0-294ef1c20efa ro noapic quiet splash
+>>
+>> After editing, what I had was
+>>
+>> /boot/vmlinuz-2.6.27-11-generic 
+>> root=UUID=4fce230e-fe72-4685-aab0-294ef1c20efa ro quiet splash 
+>> earlyprintk=serial,ttyS0,115200 apic=debug
+>>
+>> As you can see, the last line I saw was "Starting up ...", after which 
+>> point the "MP-BIOS bug: 8254 timer not connected to IO-APIC" etc output 
+>> appeared on the monitor that is directly connected to the machine being 
+>> booted (i.e., this text did not appear on the minicom session).
+>>
+>>> If this doesn't work, then the kernel earlyprintk is unlikely to work 
+>>> also.
+>> At the moment, it looks like it works, but earlyprintk does not work for 
+>> me, at least not on Ubuntu 8.10, kernel 2.6.27-11-generic.
+>>
+>>> Note that there may be some BIOS SETUP options related to the serial port 
+>>> -- worth checking.
+>>>
+>>> Also, in minicom, be sure to turn off HW flow control
+>>>
+>>> there is a fancy serial console document someplace on this,
+>>> probably at http://tldp.org/
+>> As I have managed to get grub to talk to the serial console, I did not 
+>> explore these options further.  Please let me know if there is something 
+>> in particular I should explore.
+>>
+>>> good luck,
+>>> -Len
+>> - Sam Ruby
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+- Sam Ruby
