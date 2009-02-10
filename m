@@ -1,88 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755942AbZBJUYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbZBJUYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755942AbZBJUYN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 15:24:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754490AbZBJUX5
+	id S1756202AbZBJUYe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 15:24:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbZBJUYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 15:23:57 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39603 "EHLO
+	Tue, 10 Feb 2009 15:24:25 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50599 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753896AbZBJUX5 (ORCPT
+	with ESMTP id S1754490AbZBJUYY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 15:23:57 -0500
-Date: Tue, 10 Feb 2009 21:23:47 +0100
+	Tue, 10 Feb 2009 15:24:24 -0500
+Date: Tue, 10 Feb 2009 21:24:05 +0100
 From: Pavel Machek <pavel@suse.cz>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>,
-       David Safford <safford@watson.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
-       Mimi Zohar <zohar@us.ibm.com>
-Subject: Re: [PATCH 2/7] integrity: IMA as an integrity service provider
-Message-ID: <20090210202347.GA1382@ucw.cz>
-References: <cover.1233750611.git.zohar@linux.vnet.ibm.com> <ce9dbebd2ec91ddaf302f5d8146b01311b6b1bd2.1233750615.git.zohar@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Floris Kraak <randakar@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Trivial Patch Monkey <trivial@kernel.org>
+Subject: Re: [PATCH] Kbuild: Disable the -Wformat-security gcc flag
+Message-ID: <20090210202405.GB1382@ucw.cz>
+References: <56e1b5710902040628w5ceb36f5kdb1f433087355f80@mail.gmail.com> <20090204221451.GA27254@uranus.ravnborg.org> <adavdrplty2.fsf@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ce9dbebd2ec91ddaf302f5d8146b01311b6b1bd2.1233750615.git.zohar@linux.vnet.ibm.com>
+In-Reply-To: <adavdrplty2.fsf@cisco.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed 2009-02-04 14:26:45, Roland Dreier wrote:
+>  > Before judging on this patch could you please post what warning it
+>  > triggers and one or a few patches to fix some of them.
+> 
+> The warnings are things like:
+> 
+>     init/main.c: In function 'start_kernel':
+>     init/main.c:557: warning: format not a string literal and no format arguments
+> 
 
-> --- /dev/null
-> +++ b/security/integrity/ima/Kconfig
-> @@ -0,0 +1,49 @@
-> +# IBM Integrity Measurement Architecture
-> +#
-> +config IMA
-> +	bool "Integrity Measurement Architecture(IMA)"
-> +	depends on ACPI
+Would it be possible to declare linux_banner const or something?
 
-Ugh?
+> diff --git a/init/main.c b/init/main.c
+> index 8442094..78fc0d8 100644
+> --- a/init/main.c
+> +++ b/init/main.c
+> @@ -554,7 +554,7 @@ asmlinkage void __init start_kernel(void)
+>  	boot_cpu_init();
+>  	page_address_init();
+>  	printk(KERN_NOTICE);
+> -	printk(linux_banner);
+> +	printk("%s", linux_banner);
 
-> +	select SECURITYFS
-> +	select CRYPTO
-> +	select CRYPTO_HMAC
-> +	select CRYPTO_MD5
-> +	select CRYPTO_SHA1
-> +	select TCG_TPM
-> +	select TCG_TIS
-> +	help
-> +	  The Trusted Computing Group(TCG) runtime Integrity
-> +	  Measurement Architecture(IMA) maintains a list of hash
-> +	  values of executables and other sensitive system files,
-> +	  as they are read or executed. If an attacker manages
-> +	  to change the contents of an important system file
-> +	  being measured, we can tell.
-> +
-> +	  If your system has a TPM chip, then IMA also maintains
-> +	  an aggregate integrity value over this list inside the
-> +	  TPM hardware, so that the TPM can prove to a third party
-> +	  whether or not critical system files have been modified.
+Actually 
+	 printk(KERN_NOTICE "%s", linux_banner);
 
-Sound like 'well use this so people with homegrown distros can't
-access our e-shop'...
+is a better fix that will save some code, too.
 
-> +	  Read <http://www.usenix.org/events/sec04/tech/sailer.html>
-> +	  to learn more about IMA.
-
-Maybe some basic docs should go into Documentation?
-
-> +config IMA_MEASURE_PCR_IDX
-> +	int
-> +	depends on IMA
-> +	range 8 14
-> +	default 10
-> +	help
-> +	  IMA_MEASURE_PCR_IDX determines the TPM PCR register index
-> +	  that IMA uses to maintain the integrity aggregate of the
-> +	  measurement list.  If unsure, use the default 10.
-
-This is quite ugly. How do you expect enduser to get this right?
-How do you expect distro to get it right for all users?
-								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
