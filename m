@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758975AbZBJTV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757733AbZBJTUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758975AbZBJTV6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 14:21:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbZBJTE2
+	id S1757733AbZBJTUz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 14:20:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbZBJTEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 14:04:28 -0500
+	Tue, 10 Feb 2009 14:04:23 -0500
 Received: from kroah.org ([198.145.64.141]:33907 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755948AbZBJTEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 14:04:22 -0500
-Date: Tue, 10 Feb 2009 11:01:37 -0800
+	id S1755982AbZBJTEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 14:04:20 -0500
+Date: Tue, 10 Feb 2009 11:01:31 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Joseph Chan <josephchan@via.com.tw>,
-       Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 51/53] sata_via: Add VT8261 support
-Message-ID: <20090210190137.GZ14308@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Oliver Neukum <oneukum@suse.de>
+Subject: [patch 48/53] USB: new id for ti_usb_3410_5052 driver
+Message-ID: <20090210190131.GW14308@kroah.com>
 References: <20090210185337.000769713@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sata_via-add-vt8261-support.patch"
+Content-Disposition: inline; filename="usb-new-id-for-ti_usb_3410_5052-driver.patch"
 In-Reply-To: <20090210185924.GA14308@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,27 +38,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: JosephChan@via.com.tw <JosephChan@via.com.tw>
+From: Oliver Neukum <oliver@neukum.org>
 
-commit 6813952021a7820a505002de260bda36978671f7 upstream.
+commit 1a1fab513734b3a4fca1bee8229e5ff7e1cb873c upstream.
 
-Signed-off-by: Joseph Chan <josephchan@via.com.tw>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+This adds a new device id
+
+Signed-off-by: Oliver Neukum <oneukum@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/sata_via.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/usb/serial/ti_usb_3410_5052.c |    3 +++
+ drivers/usb/serial/ti_usb_3410_5052.h |    2 ++
+ 2 files changed, 5 insertions(+)
 
---- a/drivers/ata/sata_via.c
-+++ b/drivers/ata/sata_via.c
-@@ -92,6 +92,8 @@ static const struct pci_device_id svia_p
- 	{ PCI_VDEVICE(VIA, 0x5372), vt6420 },
- 	{ PCI_VDEVICE(VIA, 0x7372), vt6420 },
- 	{ PCI_VDEVICE(VIA, 0x5287), vt8251 }, /* 2 sata chnls (Master/Slave) */
-+	{ PCI_VDEVICE(VIA, 0x9000), vt8251 },
-+	{ PCI_VDEVICE(VIA, 0x9040), vt8251 },
- 
- 	{ }	/* terminate list */
+--- a/drivers/usb/serial/ti_usb_3410_5052.c
++++ b/drivers/usb/serial/ti_usb_3410_5052.c
+@@ -179,6 +179,7 @@ static unsigned int product_5052_count;
+ static struct usb_device_id ti_id_table_3410[1+TI_EXTRA_VID_PID_COUNT+1] = {
+ 	{ USB_DEVICE(TI_VENDOR_ID, TI_3410_PRODUCT_ID) },
+ 	{ USB_DEVICE(TI_VENDOR_ID, TI_3410_EZ430_ID) },
++	{ USB_DEVICE(IBM_VENDOR_ID, IBM_4543_PRODUCT_ID) },
  };
+ 
+ static struct usb_device_id ti_id_table_5052[4+TI_EXTRA_VID_PID_COUNT+1] = {
+@@ -186,6 +187,7 @@ static struct usb_device_id ti_id_table_
+ 	{ USB_DEVICE(TI_VENDOR_ID, TI_5152_BOOT_PRODUCT_ID) },
+ 	{ USB_DEVICE(TI_VENDOR_ID, TI_5052_EEPROM_PRODUCT_ID) },
+ 	{ USB_DEVICE(TI_VENDOR_ID, TI_5052_FIRMWARE_PRODUCT_ID) },
++	{ USB_DEVICE(IBM_VENDOR_ID, IBM_4543_PRODUCT_ID) },
+ };
+ 
+ static struct usb_device_id ti_id_table_combined[] = {
+@@ -195,6 +197,7 @@ static struct usb_device_id ti_id_table_
+ 	{ USB_DEVICE(TI_VENDOR_ID, TI_5152_BOOT_PRODUCT_ID) },
+ 	{ USB_DEVICE(TI_VENDOR_ID, TI_5052_EEPROM_PRODUCT_ID) },
+ 	{ USB_DEVICE(TI_VENDOR_ID, TI_5052_FIRMWARE_PRODUCT_ID) },
++	{ USB_DEVICE(IBM_VENDOR_ID, IBM_4543_PRODUCT_ID) },
+ 	{ }
+ };
+ 
+--- a/drivers/usb/serial/ti_usb_3410_5052.h
++++ b/drivers/usb/serial/ti_usb_3410_5052.h
+@@ -27,7 +27,9 @@
+ 
+ /* Vendor and product ids */
+ #define TI_VENDOR_ID			0x0451
++#define IBM_VENDOR_ID			0x04b3
+ #define TI_3410_PRODUCT_ID		0x3410
++#define IBM_4543_PRODUCT_ID		0x4543
+ #define TI_3410_EZ430_ID		0xF430  /* TI ez430 development tool */
+ #define TI_5052_BOOT_PRODUCT_ID		0x5052	/* no EEPROM, no firmware */
+ #define TI_5152_BOOT_PRODUCT_ID		0x5152	/* no EEPROM, no firmware */
 
