@@ -1,90 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbZBJXvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757391AbZBJXwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756848AbZBJXvn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 18:51:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbZBJXv3
+	id S1757391AbZBJXwU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 18:52:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbZBJXwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 18:51:29 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:61592 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753620AbZBJXv2 convert rfc822-to-8bit (ORCPT
+	Tue, 10 Feb 2009 18:52:07 -0500
+Received: from sabine.webhoster.ag ([212.172.221.12]:39975 "EHLO
+	sabine.webhoster.ag" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752150AbZBJXwF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 18:51:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=BCulZ1Bw9UMfw1xANFZWU/oKcBDVXB8Ji2kyMwjaTJABNVV+7FbFHzYvBZa206TNg8
-         vKmFD4vbPdxCs1E7Cl0N9rNC2Sa6IDrmup437mrJkHkNWROPSjR5tDdfBInC0o5iRPaq
-         MBCV9VfBHFoGh392nrPeCTiMdGDR9BIlmcc7A=
+	Tue, 10 Feb 2009 18:52:05 -0500
+X-Greylist: delayed 1651 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Feb 2009 18:52:05 EST
+Message-ID: <49920CA6.603@nicce.at>
+Date: Wed, 11 Feb 2009 00:24:22 +0100
+From: Michael Friedl <linux@nicce.at>
+Reply-To: linux@nicce.at
+User-Agent: Thunderbird 2.0.0.19 (X11/20090130)
 MIME-Version: 1.0
-In-Reply-To: <499211D0.3090705@tremplin-utc.net>
-References: <1234309249-13672-1-git-send-email-giuseppe.bilotta@gmail.com>
-	 <499211D0.3090705@tremplin-utc.net>
-Date: Wed, 11 Feb 2009 00:51:25 +0100
-Message-ID: <cb7bb73a0902101551o30dde0aesaeba399f1ab732af@mail.gmail.com>
-Subject: Re: [PATCHv2] lis3lv02d: support both one- and two-byte sensors
-From: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
-To: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>
-Cc: git@vger.kernel.org, Pavel Machek <pavel@suse.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: linux-kernel@vger.kernel.org
+Subject: duplicate usb device ids
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 11, 2009 at 12:46 AM, Éric Piel <Eric.Piel@tremplin-utc.net> wrote:
-> Giuseppe Bilotta schreef:
->>
->> Sensors responding with 0x3B to WHO_AM_I only have one data register per
->> direction, thus returning a signed byte from the position which is
->> occupied by the MSB in sensors responding with 0x3A.
->>
->> We support both kind of sensors by checking for the sensor type on init
->> and defining appropriate data-access routines and sensor limits (for the
->> joystick) depending on what we find.
->>
->> Signed-off-by: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
->> ---
->>
->> This is the other version of the patch, and it changes access to use the
->> base address from the 8-bit, so the 16-bit routine is changed to access
->> the PREVIOUS byte for the LSB.
->>
->> Choose whichever of the patches is deemed more correct 8-)
->>
->> Note that both patches are based off Linus tree, so I don't know how
->> they cope with Pavel's "don't touch too much on init" one. I'll try to
->> work out a patch on top of that too.
->
-> Yes, great, and this one looks even better than v1 :-)
+I got a new CCD 800B barcode scanner, but it has the same device id like 
+an other product from Tenx, which is on the ignore list for hid devices.
 
-And don't forget about the v3 for -mm ;-)
+Found nothing about the old product so I report it here.
+If the old one get removed from the ignore list the bardcode scanner 
+works perfect!
 
-> However I'm not sure about the conversion between s8 and s16:
->
->> +static s16 lis3lv02d_read_8(acpi_handle handle, int reg)
->> +{
->> +       u8 lo;
->> +       adev.read(handle, reg, &lo);
->> +       return *((s8*)(&lo));
->> +}
->
-> Does it really extend the sign to 16 bits? I would have written it this way:
-> +static s16 lis3lv02d_read_8(acpi_handle handle, int reg)
-> +{
-> +       s8 lo;
-> +       adev.read(handle, reg, &lo);
-> +       return (s16)lo;
-> +}
-> Doesn't it work better?
+Im not sure how to handle duplicate ids..
 
-Well, the previous one works, but I admit it's horribly convoluted.
-I'll double check with this one and resubmit (I'll only resubmit the
-one based on Pavel's "don't touch anything on init" probably though,
-hope it's ok)
+Current state (2.6.29-rc4):
+
+drivers/hid/hid-core.c:
+line 1481: static const struct hid_device_id hid_ignore_list[] = {
+line 1613: { HID_USB_DEVICE(USB_VENDOR_ID_TENX, 
+USB_DEVICE_ID_TENX_IBUDDY1) },
+line 1614: { HID_USB_DEVICE(USB_VENDOR_ID_TENX, 
+USB_DEVICE_ID_TENX_IBUDDY2) },
+
+drivers/hid/hid-ids.h:
+#define USB_VENDOR_ID_TENX              0x1130
+#define USB_DEVICE_ID_TENX_IBUDDY1      0x0001
+#define USB_DEVICE_ID_TENX_IBUDDY2      0x0002
 
 
--- 
-Giuseppe "Oblomov" Bilotta
+
+My CCD 800B barcode scanner (Vendor 0x1130, Device 0x0001 )
+lsusb -v -s 005:002:
+
+Bus 005 Device 002: ID 1130:0001 Tenx Technology, Inc.
+Device Descriptor:
+   bLength                18
+   bDescriptorType         1
+   bcdUSB               1.10
+   bDeviceClass            0 (Defined at Interface level)
+   bDeviceSubClass         0
+   bDeviceProtocol         0
+   bMaxPacketSize0         8
+   idVendor           0x1130 Tenx Technology, Inc.
+   idProduct          0x0001
+   bcdDevice            1.00
+   iManufacturer           0
+   iProduct                2 USB-TMU-V3
+   iSerial                 0
+   bNumConfigurations      1
+   Configuration Descriptor:
+     bLength                 9
+     bDescriptorType         2
+     wTotalLength           34
+     bNumInterfaces          1
+     bConfigurationValue     1
+     iConfiguration          0
+     bmAttributes         0xa0
+       (Bus Powered)
+       Remote Wakeup
+     MaxPower              100mA
+     Interface Descriptor:
+       bLength                 9
+       bDescriptorType         4
+       bInterfaceNumber        0
+       bAlternateSetting       0
+       bNumEndpoints           1
+       bInterfaceClass         3 Human Interface Device
+       bInterfaceSubClass      1 Boot Interface Subclass
+       bInterfaceProtocol      1 Keyboard
+       iInterface              0
+         HID Device Descriptor:
+           bLength                 9
+           bDescriptorType        33
+           bcdHID               1.10
+           bCountryCode            0 Not supported
+           bNumDescriptors         1
+           bDescriptorType        34 Report
+           wDescriptorLength      78
+          Report Descriptors:
+            ** UNAVAILABLE **
+       Endpoint Descriptor:
+         bLength                 7
+         bDescriptorType         5
+         bEndpointAddress     0x81  EP 1 IN
+         bmAttributes            3
+           Transfer Type            Interrupt
+           Synch Type               None
+           Usage Type               Data
+         wMaxPacketSize     0x0008  1x 8 bytes
+         bInterval              10
+Device Status:     0x0002
+   (Bus Powered)
+   Remote Wakeup Enabled
+
+
+
+
+thanks!
+Michael Friedl
+
+
+
