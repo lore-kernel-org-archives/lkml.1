@@ -1,47 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754896AbZBJNcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752103AbZBJNcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754896AbZBJNcU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 08:32:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbZBJNcH
+	id S1752103AbZBJNcg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 08:32:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbZBJNcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 08:32:07 -0500
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:60329 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753942AbZBJNcG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 08:32:06 -0500
-Date: Tue, 10 Feb 2009 14:31:58 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Glauber Costa <glommer@redhat.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       avi@redhat.com, akataria@vmware.com
-Subject: Re: [PATCH 2/2] show hypervisor information on sysfs
-Message-ID: <20090210143158.056bbd43@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20090210132023.GB13577@poweredge.glommer>
-References: <1233935217-24090-1-git-send-email-glommer@redhat.com>
-	<1233935217-24090-2-git-send-email-glommer@redhat.com>
-	<1233935217-24090-3-git-send-email-glommer@redhat.com>
-	<20090207114331.49bb30bc@osiris.boeblingen.de.ibm.com>
-	<20090210132023.GB13577@poweredge.glommer>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 10 Feb 2009 08:32:25 -0500
+Received: from ozlabs.org ([203.10.76.45]:35835 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755183AbZBJNcX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 08:32:23 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: Re: [PATCH 3/3] use the new request_module_nowait() in drivers/media
+Date: Wed, 11 Feb 2009 00:02:15 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       jkosina@suse.cz, linux-media@vger.kernel.org
+References: <20090208104201.6124ab6a@infradead.org> <20090208110052.6f3deafc@infradead.org> <20090209143456.1c5d7f0b@pedra.chehab.org>
+In-Reply-To: <20090209143456.1c5d7f0b@pedra.chehab.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902110002.16840.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Feb 2009 11:20:23 -0200
-Glauber Costa <glommer@redhat.com> wrote:
-> > Anyway, just wanted to make you aware of what might come next.
+On Tuesday 10 February 2009 03:04:56 Mauro Carvalho Chehab wrote:
+> On Sun, 8 Feb 2009 11:00:52 -0800
+> Arjan van de Ven <arjan@infradead.org> wrote:
+> > From: Arjan van de Ven <arjan@linux.intel.com>
+> > Subject: [PATCH] use the new request_module_nowait() in drivers/media
+...
+> Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 > 
-> Why wouldn't it be extensible? So far, I've only added an attribute. But we
-> can easily add others, and directories with even more attributes if we must.
+> Cheers,
+> Mauro
 
-Oh, sure it's easily extensible, the question is if the first attribute
-you now add will be at the right place. That is: is all information
-about the 1st level hypervisor supposed to be found in /sys/hypervisor
-or should it be in a subdirectory? E.g. /sys/hypervisor/level1 or
-something like that.
-But adding your attribute won't hurt. The worst case is that it gets
-duplicated.
+Thanks Mauro.  Since I have the prereq, I've taken this into my tree too.
+
+Thanks,
+Rusty.
