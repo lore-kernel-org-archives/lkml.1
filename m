@@ -1,61 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753611AbZBJIz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754718AbZBJIzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753611AbZBJIz3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 03:55:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbZBJIyn
+	id S1754718AbZBJIzp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 03:55:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbZBJIyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 03:54:43 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:28002 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753941AbZBJIym (ORCPT
+	Tue, 10 Feb 2009 03:54:47 -0500
+Received: from intermatrixgroup.ru ([195.178.208.66]:41303 "EHLO
+	tservice.net.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754070AbZBJIyq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 03:54:42 -0500
-From: Wenji Huang <wenji.huang@oracle.com>
-To: linux-kernel@vger.kernel.org
-Cc: rostedt@goodmis.org, fweisbec@gmail.com,
-       Wenji Huang <wenji.huang@oracle.com>
-Subject: [PATCH 1/3] trace: remove unneeded variable.
-Date: Tue, 10 Feb 2009 01:02:46 -0500
-Message-Id: <1234245766-14506-1-git-send-email-wenji.huang@oracle.com>
-X-Mailer: git-send-email 1.5.6
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010208.499140CB.006B:SCFSTAT928724,ss=1,fgs=0
+	Tue, 10 Feb 2009 03:54:46 -0500
+Date: Tue, 10 Feb 2009 11:54:37 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, ian@beware.dropbear.id.au
+Subject: Re: [1/1] w1: w1 temp calculation overflow fix.
+Message-ID: <20090210085437.GA3513@ioremap.net>
+References: <20090209214217.GA14958@ioremap.net> <20090209135641.0367a71f.akpm@linux-foundation.org> <20090209220830.GA15633@ioremap.net> <20090209144803.821aa33e.akpm@linux-foundation.org> <20090209153125.04210608.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090209153125.04210608.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the unnecessary variable ret.
+On Mon, Feb 09, 2009 at 03:31:25PM -0800, Andrew Morton (akpm@linux-foundation.org) wrote:
+> On Mon, 9 Feb 2009 14:48:03 -0800
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > But we still don't have a _reason_.  Presumably the bug causes the
+> > driver to malfunction in some manner.
+> 
+> ah-hah.  I discovered http://bugzilla.kernel.org/show_bug.cgi?id=12646
+> 
+> Now all is revealed!
 
-Impact: clean up.
+Argh, I did not get that you need this description :)
+Yes, reading sysfs temperature file may return wrong (overflown) value.
 
-Signed-off-by: Wenji Huang <wenji.huang@oracle.com>
----
- kernel/trace/trace_branch.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
-index f8ae2c5..c2e68d4 100644
---- a/kernel/trace/trace_branch.c
-+++ b/kernel/trace/trace_branch.c
-@@ -91,8 +91,6 @@ void trace_likely_condition(struct ftrace_branch_data *f, int val, int expect)
- 
- int enable_branch_tracing(struct trace_array *tr)
- {
--	int ret = 0;
--
- 	mutex_lock(&branch_tracing_mutex);
- 	branch_tracer = tr;
- 	/*
-@@ -103,7 +101,7 @@ int enable_branch_tracing(struct trace_array *tr)
- 	branch_tracing_enabled++;
- 	mutex_unlock(&branch_tracing_mutex);
- 
--	return ret;
-+	return 0;
- }
- 
- void disable_branch_tracing(void)
 -- 
-1.5.6
-
+	Evgeniy Polyakov
