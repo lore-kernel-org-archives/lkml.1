@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758424AbZBJTSD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758568AbZBJTSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758424AbZBJTSD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 14:18:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbZBJTEN
+	id S1758568AbZBJTSo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 14:18:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbZBJTEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 14:04:13 -0500
-Received: from kroah.org ([198.145.64.141]:54111 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 14:04:15 -0500
+Received: from kroah.org ([198.145.64.141]:33907 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755922AbZBJTEK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 14:04:10 -0500
-Date: Tue, 10 Feb 2009 11:01:08 -0800
+	id S1755935AbZBJTEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 14:04:13 -0500
+Date: Tue, 10 Feb 2009 11:01:19 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Michael Bramer <grisu@deb-support.de>,
-       Alan Cox <number6@the-village.bc.nu>
-Subject: [patch 40/53] Add support for 8-port RS-232 MIC-3620 from advantech
-Message-ID: <20090210190108.GO14308@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Roland McGrath <roland@redhat.com>
+Subject: [patch 42/53] elf core dump: fix get_user use
+Message-ID: <20090210190119.GQ14308@kroah.com>
 References: <20090210185337.000769713@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="add-support-for-8-port-rs-232-mic-3620-from-advantech.patch"
+Content-Disposition: inline; filename="elf-core-dump-fix-get_user-use.patch"
 In-Reply-To: <20090210185924.GA14308@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,42 +38,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Michael Bramer <michael@debsupport.de>
+From: Roland McGrath <roland@redhat.com>
 
-commit 78d70d48132ce4c678a95b771ffa1af4fb5a03ec upstream.
+commit 92dc07b1f988e8c237a38e23be660b9b8533e6fd upstream.
 
-This Patch add the device information for the
-MIC-3620 8-port RS-232 cPCI card from Advantech Co. Ltd.
+The elf_core_dump() code does its work with set_fs(KERNEL_DS) in force,
+so vma_dump_size() needs to switch back with set_fs(USER_DS) to safely
+use get_user() for a normal user-space address.
 
-Signed-off-by: Michael Bramer <grisu@deb-support.de>
-Signed-off-by: Alan Cox <number6@the-village.bc.nu>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Checking for VM_READ optimizes out the case where get_user() would fail
+anyway.  The vm_file check here was already superfluous given the control
+flow earlier in the function, so that is a cleanup/optimization unrelated
+to other changes but an obvious and trivial one.
+
+Reported-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Signed-off-by: Roland McGrath <roland@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/serial/8250_pci.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ fs/binfmt_elf.c |   14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
 
---- a/drivers/serial/8250_pci.c
-+++ b/drivers/serial/8250_pci.c
-@@ -766,6 +766,8 @@ pci_default_setup(struct serial_private 
- #define PCI_SUBDEVICE_ID_OCTPRO422	0x0208
- #define PCI_SUBDEVICE_ID_POCTAL232	0x0308
- #define PCI_SUBDEVICE_ID_POCTAL422	0x0408
-+#define PCI_VENDOR_ID_ADVANTECH		0x13fe
-+#define PCI_DEVICE_ID_ADVANTECH_PCI3620	0x3620
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -1196,9 +1196,11 @@ static unsigned long vma_dump_size(struc
+ 	 * check for an ELF header.  If we find one, dump the first page to
+ 	 * aid in determining what was mapped here.
+ 	 */
+-	if (FILTER(ELF_HEADERS) && vma->vm_file != NULL && vma->vm_pgoff == 0) {
++	if (FILTER(ELF_HEADERS) &&
++	    vma->vm_pgoff == 0 && (vma->vm_flags & VM_READ)) {
+ 		u32 __user *header = (u32 __user *) vma->vm_start;
+ 		u32 word;
++		mm_segment_t fs = get_fs();
+ 		/*
+ 		 * Doing it this way gets the constant folded by GCC.
+ 		 */
+@@ -1211,7 +1213,15 @@ static unsigned long vma_dump_size(struc
+ 		magic.elfmag[EI_MAG1] = ELFMAG1;
+ 		magic.elfmag[EI_MAG2] = ELFMAG2;
+ 		magic.elfmag[EI_MAG3] = ELFMAG3;
+-		if (get_user(word, header) == 0 && word == magic.cmp)
++		/*
++		 * Switch to the user "segment" for get_user(),
++		 * then put back what elf_core_dump() had in place.
++		 */
++		set_fs(USER_DS);
++		if (unlikely(get_user(word, header)))
++			word = 0;
++		set_fs(fs);
++		if (word == magic.cmp)
+ 			return PAGE_SIZE;
+ 	}
  
- /* Unknown vendors/cards - this should not be in linux/pci_ids.h */
- #define PCI_SUBDEVICE_ID_UNKNOWN_0x1584	0x1584
-@@ -2132,6 +2134,10 @@ static int pciserial_resume_one(struct p
- #endif
- 
- static struct pci_device_id serial_pci_tbl[] = {
-+	/* Advantech use PCI_DEVICE_ID_ADVANTECH_PCI3620 (0x3620) as 'PCI_SUBVENDOR_ID' */
-+	{	PCI_VENDOR_ID_ADVANTECH, PCI_DEVICE_ID_ADVANTECH_PCI3620,
-+		PCI_DEVICE_ID_ADVANTECH_PCI3620, 0x0001, 0, 0,
-+		pbn_b2_8_921600 },
- 	{	PCI_VENDOR_ID_V3, PCI_DEVICE_ID_V3_V960,
- 		PCI_SUBVENDOR_ID_CONNECT_TECH,
- 		PCI_SUBDEVICE_ID_CONNECT_TECH_BH8_232, 0, 0,
 
