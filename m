@@ -1,45 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752721AbZBJIVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752859AbZBJIcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752721AbZBJIVW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 03:21:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750772AbZBJIVN
+	id S1752859AbZBJIcz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 03:32:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbZBJIcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 03:21:13 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:59588 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750735AbZBJIVN (ORCPT
+	Tue, 10 Feb 2009 03:32:45 -0500
+Received: from casper.infradead.org ([85.118.1.10]:58997 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750772AbZBJIco (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 03:21:13 -0500
-X-Sasl-enc: KwmYl20UvJa3ePxnwIoLj3s4iJgQxrUKcCQXPQSRkxiQ 1234254071
-Message-ID: <499138F3.9060903@ladisch.de>
-Date: Tue, 10 Feb 2009 09:21:07 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Pierre Ossman <drzeus@drzeus.cx>
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] i8327: fix outb() parameter order
-Content-Type: text/plain; charset=us-ascii
+	Tue, 10 Feb 2009 03:32:44 -0500
+Subject: Re: [cgroup or VFS ?] INFO: possible recursive locking detected
+From: Peter Zijlstra <peterz@infradead.org>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Menage <menage@google.com>, Arjan van de Ven <arjan@infradead.org>,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <4990EF3F.3010501@cn.fujitsu.com>
+References: <49617D2E.8050502@cn.fujitsu.com> <496576E7.1@cn.fujitsu.com>
+	 <20090209112321.GW28946@ZenIV.linux.org.uk>
+	 <1234180131.5951.85.camel@laptop>  <4990EF3F.3010501@cn.fujitsu.com>
+Content-Type: text/plain
+Date: Tue, 10 Feb 2009 09:32:35 +0100
+Message-Id: <1234254755.4893.3.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.90 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In i8237A_resume(), when resetting the DMA controller, the parameters to
-dma_outb() were mixed up.
+On Tue, 2009-02-10 at 11:06 +0800, Li Zefan wrote:
+> > It seems to me we can simply put the new s_umount instance in a
+> > different subclass. Its a bit unusual to use _nested for the outer lock,
+> > but lockdep doesn't particularly cares about subclass order.
+> > 
+> > If there's any issue with the callers of sget() assuming the s_umount
+> > lock being of sublcass 0, then there is another annotation we can use to
+> > fix that, but lets not bother with that if this is sufficient.
+> > 
+> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> 
+> Tested-by: Li Zefan <lizf@cn.fujitsu.com>
+> 
+> Thanks!
+> 
+> a minor comment
+> 
+> > +		 * lock of the old one. Since these are clearly distrinct
+> 
+> s/distrinct/distinct
 
-Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+Yes, someone else was kind enough to point that out as well :-)
 
---- linux-2.6.orig/arch/x86/kernel/i8237.c
-+++ linux-2.6/arch/x86/kernel/i8237.c
-@@ -28,8 +28,8 @@ static int i8237A_resume(struct sys_devi
- 
- 	flags = claim_dma_lock();
- 
--	dma_outb(DMA1_RESET_REG, 0);
--	dma_outb(DMA2_RESET_REG, 0);
-+	dma_outb(0, DMA1_RESET_REG);
-+	dma_outb(0, DMA2_RESET_REG);
- 
- 	for (i = 0;i < 8;i++) {
- 		set_dma_addr(i, 0x000000);
+Al, do you want a resend or will you fix that up when you add the patch
+to your queue?
+
+> BTW, I found another bug in current code:
+
+Yep, looks good, freeing held locks makes lockdep unhappy.
+
+> From: Li Zefan <lizf@cn.fujitsu.com>
+> Date: Tue, 10 Feb 2009 10:55:53 +0800
+> Subject: [PATCH] vfs: add missing unlock in sget()
+> 
+> We should release s->s_umount before calling destroy_super(s).
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+
