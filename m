@@ -1,97 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754749AbZBJMiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbZBJMj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754749AbZBJMiT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 07:38:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbZBJMiJ
+	id S1754893AbZBJMj0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 07:39:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbZBJMjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 07:38:09 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44580 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753503AbZBJMiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 07:38:08 -0500
-Date: Tue, 10 Feb 2009 13:37:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Cheng Renquan <crquan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/2] kprobes: check CONFIG_FREEZER instead of CONFIG_PM
-Message-ID: <20090210123734.GB21531@elte.hu>
-References: <200901062112.29227.rjw@sisk.pl> <200901062115.33286.rjw@sisk.pl> <20090107121659.GA16268@elte.hu> <alpine.LFD.2.00.0901091530090.16697@localhost.localdomain> <20090210010546.GA28129@elte.hu> <49909764.3020303@redhat.com>
+	Tue, 10 Feb 2009 07:39:16 -0500
+Received: from e23smtp03.au.ibm.com ([202.81.31.145]:38448 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750798AbZBJMjP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 07:39:15 -0500
+X-Sieve: CMU Sieve 2.3
+X-Spam-TestScore: ALL_TRUSTED=-1.44,DNS_FROM_RFC_ABUSE=0.479
+X-Spam-TokenSummary: Bayes not run.
+X-Spam-Relay-Country: 
+Date: Tue, 10 Feb 2009 18:05:14 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>,
+       mingo@elte.hu, richardj_moore@uk.ibm.com, jason.wessel@windriver.com,
+       prasad@linux.vnet.ibm.com, naren@linux.vnet.ibm.com
+Subject: [Patch 0/10] Hardware Breakpoint interfaces - v2
+Message-ID: <20090210123514.GA4199@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49909764.3020303@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Xagent-From: prasad@linux.vnet.ibm.com
+X-Xagent-To: prasad@linux.vnet.ibm.com
+X-Xagent-Gateway: sydvm9.vnet.ibm.com (XAGENTU at SYDVM9)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Andrew and all,
 
-* Masami Hiramatsu <mhiramat@redhat.com> wrote:
+	Please find the patches that introduce interfaces to access
+Hardware Breakpoint (or watchpoint) registers and an arch-specific
+implementation for x86/x86_64 architecture. The earlier patchset (sent to
+you here: http://lkml.org/lkml/2009/1/29/36) generated some discussion
+over the employment of RCU synchronisation in the patchset. They're now
+resolved. The other changes over the previous patchset include:
 
-> Ingo Molnar wrote:
->> * Len Brown <lenb@kernel.org> wrote:
->>
->>>>> Check CONFIG_FREEZER instead of CONFIG_PM because kprobe booster
->>>>> depends on freeze_processes() and thaw_processes() when CONFIG_PREEMPT=y.
->>>>>
->>>>> This fixes a linkage error which occurs when CONFIG_PREEMPT=y, CONFIG_PM=y
->>>>> and CONFIG_FREEZER=n.
->>>>>
->>>>> Reported-by: Cheng Renquan <crquan@gmail.com>
->>>>> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
->>>>> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
->>>>> ---
->>>>>  arch/ia64/kernel/kprobes.c |    2 +-
->>>>>  arch/x86/kernel/kprobes.c  |    2 +-
->>>>>  kernel/kprobes.c           |    2 +-
->>>>>  3 files changed, 3 insertions(+), 3 deletions(-)
->>>> looks good, the x86 bits:
->>>>
->>>> Acked-by: Ingo Molnar <mingo@elte.hu>
->>> man, we have too many config options:-)
->>
->> the non-x86 bits (kernel/kprobes.c) are crappy though, and broke -rc4
->> allnoconfig:
->>
->> kernel/built-in.o: In function `collect_garbage_slots':
->> kprobes.c:(.kprobes.text+0x16e4): undefined reference to `freeze_processes'
->> kprobes.c:(.kprobes.text+0x16f2): undefined reference to `thaw_processes'
->> kprobes.c:(.kprobes.text+0x176b): undefined reference to `thaw_processes'
->
-> Hmm, it seems that kernel/power/built-in.o was not linked to .tmp_vmlinux1.
->
->   ld -m elf_i386 --build-id -o .tmp_vmlinux1 -T arch/x86/kernel/vmlinux.lds
-> arch/x86/kernel/head_32.o arch/x86/kernel/head32.o arch/x86/kernel/head.o
-> arch/x86/kernel/init_task.o  init/built-in.o --start-group  usr/built-in.o
-> arch/x86/kernel/built-in.o  arch/x86/mm/built-in.o  arch/x86/mach-default/built-in.o
-> arch/x86/crypto/built-in.o  arch/x86/vdso/built-in.o  kernel/built-in.o
-> mm/built-in.o  fs/built-in.o  ipc/built-in.o  security/built-in.o  crypto/built-in.o
-> block/built-in.o  lib/lib.a  arch/x86/lib/lib.a  lib/built-in.o
-> arch/x86/lib/built-in.o  drivers/built-in.o  sound/built-in.o  firmware/built-in.o
-> arch/x86/pci/built-in.o  net/built-in.o --end-group
-> kernel/built-in.o: In function `collect_garbage_slots':
-> kprobes.c:(.kprobes.text+0x16e4): undefined reference to `freeze_processes'
-> kprobes.c:(.kprobes.text+0x16f2): undefined reference to `thaw_processes'
-> kprobes.c:(.kprobes.text+0x176b): undefined reference to `thaw_processes'
->
-> At kernel/Makefile:53, I can see
->
-> obj-$(CONFIG_PM) += power/
->
-> but CONFIG_PM was not set in config
+- Modified kernel/hw_breakpoint.c and arch/x86/kernel/hw_breakpoint.c
+into independently compilable units. Made necessary declarations in
+header files.
 
-Sounds plausible. We need a fix for this - it's broken upstream.
+- One pair of read-side RCU locks were introduced in
+load_debug_registers() following discussions about RCU synchronisation
+in the patchset. 
 
-	Ingo
+A short description of the framework and interfaces is provided
+below. Some of the details will be specific to x86/x86_64 architecture
+and may vary depending upon the support provided by the target
+processor.
+
+The patches are based of -mm tree (commit
+6a522c468fe6d01679224edfe78586c95b6d9872) and have been tested on x86
+architecture over 2.6.29-rc2. Kindly accept these patches to be a part
+of -mm tree.
+
+Description
+-------------
+The Hardware Breakpoint registers can be used for tracing changes to a
+variable or data location (even I/O ports in x86/x86_64) and will be
+extremely helpful in debugging problems such as memory corruption. While
+these registers have been used by user-space debuggers for long (through
+'ptrace' syscalls), KGDB exploited them for kernel-space addresses.
+
+The proposed framework, introduces interfaces to use them directly on
+both  user- and kernel-space addresses apart from arbitrating requests
+from various such users for the limited number of registers.
+
+The interfaces are:
+
+int register_kernel_hw_breakpoint(struct hw_breakpoint *);
+void unregister_kernel_hw_breakpoint(struct hw_breakpoint *bp);
+
+int register_user_hw_breakpoint(struct task_struct *tsk,
+                                 struct hw_breakpoint *bp);
+void unregister_user_hw_breakpoint(struct task_struct *tsk,
+                struct hw_breakpoint *bp);
+
+The 'struct hw_breakpoint' will be the anchor data-structure containing
+all the necessary information such as name or address, type, length,
+priority and pointers to handler functions (some of which are
+arch-specific). More information about the role of each field, the
+handler
+functions and their return values can be found in the descriptive
+comments
+preceding these functions and in "include/asm-generic/hw_breakpoint.h".
+
+While (un)register_user_hw_breakpoint() isn't exported yet, its
+worker-routine __register_user-hw_breakpoint() is used by ptrace syscall
+for all breakpoint register requirements. For the kernel-space, a simple
+use case to trace 'write' operations on a kernel variable can be found
+in samples/hw_breakpoint/data_breakpoint.c.
+
+In the current patchset, support is provided only for read and
+read-write breakpoints on data locations, which can be later expand to
+include instruction and I/O breakpoints for x86/x86_64.
+
+The patches are based on 2.6.29-rc2 and have been tested on an x86
+machine along with concurrent sessions of a kprobe-module and a GDB
+session using HW breakpoints on the target program.
+
+There is pending integration with 'KGDB' without which mutual exclusion
+between them (KGDB and HW breakpoint use through above interfaces) needs
+to be observed.
+
+Thanks,
+K.Prasad
+
