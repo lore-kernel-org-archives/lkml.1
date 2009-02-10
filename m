@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755612AbZBJTEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756457AbZBJTHO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755612AbZBJTEa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 14:04:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754596AbZBJTD1
+	id S1756457AbZBJTHO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 14:07:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbZBJTDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 14:03:27 -0500
-Received: from kroah.org ([198.145.64.141]:53573 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 14:03:35 -0500
+Received: from kroah.org ([198.145.64.141]:53679 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754548AbZBJTD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 14:03:26 -0500
-Date: Tue, 10 Feb 2009 10:59:43 -0800
+	id S1754906AbZBJTDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 14:03:34 -0500
+Date: Tue, 10 Feb 2009 11:00:00 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Carsten Otte <cotte@de.ibm.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 02/53] do_wp_page: fix regression with execute in place
-Message-ID: <20090210185943.GC14308@kroah.com>
+       alan@lxorguk.ukuu.org.uk,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Len Brown <len.brown@intel.com>
+Subject: [patch 10/53] ACPI: Enable bit 11 in _PDC to advertise hw coord
+Message-ID: <20090210190000.GK14308@kroah.com>
 References: <20090210185337.000769713@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="do_wp_page-fix-regression-with-execute-in-place.patch"
+Content-Disposition: inline; filename="acpi-enable-bit-11-in-_pdc-to-advertise-hw-coord.patch"
 In-Reply-To: <20090210185924.GA14308@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,44 +40,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Carsten Otte <cotte@de.ibm.com>
+From: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
 
-commit ab92661d5d9514647346047f30f67a7f35ffea67 upstream.
+commit d96f94c604453f87fe24154b87e1e9a3a72511f8 upstream.
 
-Fix do_wp_page for VM_MIXEDMAP mappings.
+Bit 11 in intel PDC definitions is meant for OS capability to handle
+hardware coordination of P-states. In Linux we have always supported
+hwardware coordination of P-states. Just let the BIOSes know that we
+support it, by setting this bit.
 
-In the case where pfn_valid returns 0 for a pfn at the beginning of
-do_wp_page and the mapping is not shared writable, the code branches to
-label `gotten:' with old_page == NULL.
+Some BIOSes use this bit to choose between hardware or software coordination
+and without this change below, BIOSes switch to software coordination, which
+is not very optimal in terms of power consumption and extra wakeups from idle.
 
-In case the vma is locked (vma->vm_flags & VM_LOCKED), lock_page,
-clear_page_mlock, and unlock_page try to access the old_page.
-
-This patch checks whether old_page is valid before it is dereferenced.
-
-The regression was introduced by "mlock: mlocked pages are unevictable"
-(commit b291f000393f5a0b679012b39d79fbc85c018233).
-
-Signed-off-by: Carsten Otte <cotte@de.ibm.com>
-Cc: Nick Piggin <npiggin@suse.de>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/memory.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/acpi/pdc_intel.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -1881,7 +1881,7 @@ gotten:
- 	 * Don't let another task, with possibly unlocked vma,
- 	 * keep the mlocked page.
- 	 */
--	if (vma->vm_flags & VM_LOCKED) {
-+	if ((vma->vm_flags & VM_LOCKED) && old_page) {
- 		lock_page(old_page);	/* for LRU manipulation */
- 		clear_page_mlock(old_page);
- 		unlock_page(old_page);
+--- a/include/acpi/pdc_intel.h
++++ b/include/acpi/pdc_intel.h
+@@ -14,6 +14,7 @@
+ #define ACPI_PDC_SMP_T_SWCOORD		(0x0080)
+ #define ACPI_PDC_C_C1_FFH		(0x0100)
+ #define ACPI_PDC_C_C2C3_FFH		(0x0200)
++#define ACPI_PDC_SMP_P_HWCOORD		(0x0800)
+ 
+ #define ACPI_PDC_EST_CAPABILITY_SMP	(ACPI_PDC_SMP_C1PT | \
+ 					 ACPI_PDC_C_C1_HALT | \
+@@ -22,6 +23,7 @@
+ #define ACPI_PDC_EST_CAPABILITY_SWSMP	(ACPI_PDC_SMP_C1PT | \
+ 					 ACPI_PDC_C_C1_HALT | \
+ 					 ACPI_PDC_SMP_P_SWCOORD | \
++					 ACPI_PDC_SMP_P_HWCOORD | \
+ 					 ACPI_PDC_P_FFH)
+ 
+ #define ACPI_PDC_C_CAPABILITY_SMP	(ACPI_PDC_SMP_C2C3  | \
 
