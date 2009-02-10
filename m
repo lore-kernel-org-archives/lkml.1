@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754111AbZBJEVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753240AbZBJEWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754111AbZBJEVw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 23:21:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbZBJEVl
+	id S1753240AbZBJEWM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 23:22:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZBJEVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 23:21:41 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49960
+	Mon, 9 Feb 2009 23:21:43 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49962
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752123AbZBJEVk (ORCPT
+	by vger.kernel.org with ESMTP id S1752546AbZBJEVl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 23:21:40 -0500
-Date: Mon, 09 Feb 2009 20:21:34 -0800 (PST)
-Message-Id: <20090209.202134.172521671.davem@davemloft.net>
+	Mon, 9 Feb 2009 23:21:41 -0500
+Date: Mon, 09 Feb 2009 20:21:31 -0800 (PST)
+Message-Id: <20090209.202131.85160609.davem@davemloft.net>
 To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
+Subject: [GIT]: Sparc
 From: David Miller <davem@davemloft.net>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -26,36 +26,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-1) Memory leak fixes in ATM and ISDN from Julia Lawall
+FWIW I'm waiting for the patch in:
 
-2) Proper IPV6 tunnel name not used in ipv6 tunneling driver, fix from
-   Noriaki Takamiya.
+	http://marc.info/?l=linux-kernel&m=123391426917099&w=2
 
-3) Flowlabel socket options can be specified with rediculious sizes
-   leading to order 9 page allocations etc., for sanity limit them to
-   64K just like we do for other similar cases.
+to settle and make it's way into the tree as that bug has been
+crashing my machines for a while.  It's definitely something
+needed for -stable as well.
 
-4) Fix sunhme device detection in the case where the system has both
-   SBUS and PCI sunhme chips.
+1) Don't try to use the NMI watchdog on cpus where we know it won't work.
+   These chips lack the performance counter overflow interrupt which is
+   essential to this scheme.
 
-5) Unicast filter overflow is handled wrongly in TUN driver, fix
-   from Alex Williamson.
+2) We have a million exception fixup stubs generated which are all
+   essentially the same, so have one stub for each case and point the
+   exception table entries to them.
 
-6) Neighbour entry dumping can skip entries due to a bug, fix from
-   Gautam Kachroo.
-
-7) NULL deref fix in rxrpc from David Howells
-
-8) LRO packets can crash bridging due to a misplaced check, fix from
-   Herbert Xu
-
-9) Netfilter fixes from Pablo Neira Ayuso, Qu Haoran, and Eric Leblond via
-   Patrick McHardy.
-
-10) Fix 3c509 resum from hibernation on PnP cards, from Ondrej Zery.
-
-11) DE2104X driver code releases TX ring entry to chip (by setting "own" bit)
-    before writing the buffer address field.  Fix from Risto Suominen.
+3) Fix probe_kernel_{read,write}() on sparc64, based upon reports and patches
+   from Chris Torek.
 
 Please pull, thanks a lot.
 
@@ -65,88 +53,29 @@ The following changes since commit 4c098bcd55fad34dcf224bf8343db6a9ac58fc68:
 
 are available in the git repository at:
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
 
-Alex Williamson (1):
-      tun: Fix unicast filter overflow
+David S. Miller (4):
+      sparc64: Call dump_stack() in die_nmi().
+      sparc64: Don't hook up pcr_ops on spitfire chips.
+      sparc64: Kill .fixup section bloat.
+      sparc64: Fix probe_kernel_{read,write}().
 
-David Howells (1):
-      RxRPC: Fix a potential NULL dereference
-
-David S. Miller (3):
-      ipv6: Disallow rediculious flowlabel option sizes.
-      net_dma: call dmaengine_get only if NET_DMA enabled
-      sunhme: Don't match PCI devices in SBUS probe.
-
-Dhananjay Phadke (1):
-      netxen: fix msi-x interrupt handling
-
-Eric Leblond (2):
-      netfilter: fix tuple inversion for Node information request
-      netfilter: nf_conntrack_ipv6: don't track ICMPv6 negotiation message
-
-Eric Van Hensbergen (1):
-      9p: fix endian issues [attempt 3]
-
-Gautam Kachroo (1):
-      neigh: some entries can be skipped during dumping
-
-Herbert Xu (1):
-      bridge: Fix LRO crash with tun
-
-Ilkka Virta (1):
-      sungem: Soft lockup in sungem on Netra AC200 when switching interface up
-
-Ivan Vecera (1):
-      r8169: Don't update statistics counters when interface is down
-
-Jarek Poplawski (1):
-      gianfar: Fix boot hangs while bringing up gianfar ethernet
-
-Jesper Dangaard Brouer (1):
-      udp: Fix potential wrong ip_hdr(skb) pointers
-
-Julia Lawall (2):
-      drivers/atm: introduce missing kfree
-      drivers/isdn: introduce missing kfree
-
-Noriaki TAKAMIYA (1):
-      IPv6: fix to set device name when new IPv6 over IPv6 tunnel device is created.
-
-Ondrej Zary (1):
-      3c509: Fix resume from hibernation for PnP mode.
-
-Pablo Neira Ayuso (2):
-      netfilter: ctnetlink: allow changing NAT sequence adjustment in creation
-      netfilter: ctnetlink: fix echo if not subscribed to any multicast group
-
-Qu Haoran (1):
-      netfilter: xt_sctp: sctp chunk mapping doesn't work
-
-Risto Suominen (1):
-      de2104x: force correct order when writing to rx ring
-
- drivers/atm/solos-pci.c                        |    1 +
- drivers/isdn/hardware/mISDN/hfcmulti.c         |    2 +
- drivers/net/3c509.c                            |    1 +
- drivers/net/gianfar.c                          |    6 ++
- drivers/net/netxen/netxen_nic.h                |    2 +-
- drivers/net/netxen/netxen_nic_main.c           |   13 +++-
- drivers/net/r8169.c                            |   93 +++++++++++++++---------
- drivers/net/sungem.c                           |    8 +-
- drivers/net/sunhme.c                           |   12 ++-
- drivers/net/tulip/de2104x.c                    |    3 +-
- drivers/net/tun.c                              |   10 ++-
- include/linux/dmaengine.h                      |   12 +++
- net/9p/protocol.c                              |   22 ++++---
- net/bridge/br_forward.c                        |    7 ++-
- net/core/dev.c                                 |    4 +-
- net/core/neighbour.c                           |   14 ++--
- net/ipv4/udp.c                                 |    6 +-
- net/ipv6/ip6_flowlabel.c                       |    8 ++-
- net/ipv6/ip6_tunnel.c                          |    2 +-
- net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c |   25 ++++++-
- net/netfilter/nf_conntrack_netlink.c           |   15 ++++-
- net/netfilter/xt_sctp.c                        |    2 +-
- net/rxrpc/af_rxrpc.c                           |    5 +-
- 23 files changed, 195 insertions(+), 78 deletions(-)
+ arch/sparc/kernel/head_64.S        |   31 ++++++++++++++++--
+ arch/sparc/kernel/nmi.c            |    1 +
+ arch/sparc/kernel/pcr.c            |    7 +++-
+ arch/sparc/lib/GENbzero.S          |    6 +---
+ arch/sparc/lib/GENcopy_from_user.S |    8 +---
+ arch/sparc/lib/GENcopy_to_user.S   |    8 +---
+ arch/sparc/lib/NG2copy_from_user.S |    9 +----
+ arch/sparc/lib/NG2copy_to_user.S   |    9 +----
+ arch/sparc/lib/NGbzero.S           |    6 +---
+ arch/sparc/lib/NGcopy_from_user.S  |    9 +----
+ arch/sparc/lib/NGcopy_to_user.S    |    9 +----
+ arch/sparc/lib/U1copy_from_user.S  |    8 +---
+ arch/sparc/lib/U1copy_to_user.S    |    8 +---
+ arch/sparc/lib/U3copy_from_user.S  |    6 +---
+ arch/sparc/lib/U3copy_to_user.S    |    8 +---
+ arch/sparc/lib/bzero.S             |    6 +---
+ arch/sparc/lib/copy_in_user.S      |   61 ++++++++++--------------------------
+ 17 files changed, 74 insertions(+), 126 deletions(-)
