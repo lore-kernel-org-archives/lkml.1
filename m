@@ -1,42 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754439AbZBJMpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbZBJMqK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754439AbZBJMpt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 07:45:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755722AbZBJMpg
+	id S1755936AbZBJMqK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 07:46:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755921AbZBJMpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 07:45:36 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:40505 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755851AbZBJMpf (ORCPT
+	Tue, 10 Feb 2009 07:45:45 -0500
+Received: from viefep16-int.chello.at ([62.179.121.36]:50219 "EHLO
+	viefep16-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755307AbZBJMpo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 07:45:35 -0500
-Date: Tue, 10 Feb 2009 12:45:27 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Paul Menage <menage@google.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: Re: [PATCH] cgroups: fix possible use after free
-Message-ID: <20090210124527.GA28946@ZenIV.linux.org.uk>
-References: <4991497B.4030200@cn.fujitsu.com> <6599ad830902100215o185edd31k8731e033717dbb49@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6599ad830902100215o185edd31k8731e033717dbb49@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 10 Feb 2009 07:45:44 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [PATCH 0/2] fix the itimer regression (BZ 12618)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Lin Ming <ming.m.lin@intel.com>, Mike Galbraith <efault@gmx.de>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "oleg@redhat.com" <oleg@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "seto.hidetoshi@jp.fujitsu.com" <seto.hidetoshi@jp.fujitsu.com>
+In-Reply-To: <20090209214723.GA2664@elte.hu>
+References: <20090205112414.104100700@chello.nl>
+	 <20090205120608.GB8799@elte.hu> <1233895919.2604.323.camel@ymzhang>
+	 <20090206151832.GL18368@elte.hu>
+	 <1234161961.5991.41.camel@minggr.sh.intel.com>
+	 <20090209214723.GA2664@elte.hu>
+Content-Type: text/plain
+Date: Tue, 10 Feb 2009 13:47:24 +0100
+Message-Id: <1234270044.23438.7.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 02:15:36AM -0800, Paul Menage wrote:
-> On Tue, Feb 10, 2009 at 1:31 AM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> > In cgroup_kill_sb(), root is freed before sb is detached from the list,
-> > so another sget() may find this sb and call cgroup_test_super(),
-> > which will access the root that has been freed.
+On Mon, 2009-02-09 at 22:47 +0100, Ingo Molnar wrote:
+> * Lin Ming <ming.m.lin@intel.com> wrote:
 > 
-> I think that I'd assumed that by the time we get to cgroup_kill_sb()
-> there's no chance of the sb being resurrected by sget().
+> > On Fri, 2009-02-06 at 23:18 +0800, Ingo Molnar wrote:
+> > > * Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
+> > > 
+> > > > On Thu, 2009-02-05 at 13:06 +0100, Ingo Molnar wrote:
+> > > > > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > > > > 
+> > > > > > This should hopefully address all the itimer borkage.
+> > > > > 
+> > > > > Applied to tip:timers/urgent, thanks Peter!
+> > > > > 
+> > > > > Yanmin: could you check hacbench_pth with latest tip/master, do
+> > > > > these fixes resolve that 3% regression you reported?
+> > > >
+> > > > Lin Ming tested it and hackbench_pth/volanoMark regression all disappear. 
+> > > > But oltp has a regression. We think oltp new regression isn't related to 
+> > > > the patch. Ming is investigating it.
+> > > 
+> > > Potential suspects for oltp regression would be:
+> > > 
+> > >  3d39870: sched_rt: don't use first_cpu on cpumask created with cpumask_and
+> > >  a571bbe: sched: fix buddie group latency
+> > >  a9f3e2b: sched: clear buddies more aggressively
+> > >  1596e29: sched: symmetric sync vs avg_overlap
+> > >  d942fb6: sched: fix sync wakeups
+> > 
+> > I tested the latest tip-master branch.
+> > After reverting "d942fb6: sched: fix sync wakeups", the oltp regression
+> > on the 8cores Stockley machine is mostly fixed.
+> > 
+> > On another 4*4 cores Tigerton machine, oltp has more than 10% regression
+> > with 2.6.29-rc4 compared with 2.6.29-rc3.
+> 
+> ok, that commit needs fixed or reverted. Peter, Mike?
 
-There is none.  grab_super() will fail to get it, so sget() will go
-through retry logics.  Which doesn't mean that test won't be called
-on it in the meanwhile.
+Yanmin, is that tigerton regression also due to the sync changes?
+
+That is, if you revert both d942fb6 and 1596e29, does it get back to
+-rc3 state, or is the tigerton regression due to something else?
+
+This isn't quite clear to me.
+
+Ingo, if that is the case, I'm fine with reverting those changes for
+now, and have another look at them later on -- preferably when someone
+ships me a 4*4 machine so I can validate :-)
+
+
+
