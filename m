@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755077AbZBJPBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbZBJPEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755077AbZBJPBk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 10:01:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754224AbZBJPB3
+	id S1755175AbZBJPEu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 10:04:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbZBJPEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 10:01:29 -0500
-Received: from lon1-post-3.mail.demon.net ([195.173.77.150]:50973 "EHLO
-	lon1-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754104AbZBJPB2 (ORCPT
+	Tue, 10 Feb 2009 10:04:41 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:52552 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753531AbZBJPEk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 10:01:28 -0500
-Date: Tue, 10 Feb 2009 14:54:56 +0000
-From: Darren Salt <ds@youmustbejoking.demon.co.uk>
+	Tue, 10 Feb 2009 10:04:40 -0500
+Date: Tue, 10 Feb 2009 15:04:31 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
        linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
        Len Brown <lenb@kernel.org>,
@@ -19,76 +19,43 @@ To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
        Jesse Barnes <jbarnes@virtuousgeek.org>,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Matthew Garrett <mjg@redhat.com>,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>,
        Corentin Chary <corentincj@iksaif.net>
-Message-ID: <5030E5F170%ds@youmustbejoking.demon.co.uk>
-In-Reply-To: <5030E21460%linux@youmustbejoking.demon.co.uk>
-References: <alpine.LFD.2.00.0902081251090.3048@localhost.localdomain> 
- <gemini.ket9w800w44dc0hvg.linux@youmustbejoking.demon.co.uk> 
- <20090209234911.GB862@elte.hu> <5030E21460%linux@youmustbejoking.demon.co.uk>
-Mail-Followup-To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, 
- linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown 
- <lenb@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton 
- <akpm@linux-foundation.org>, Jesse Barnes <jbarnes@virtuousgeek.org>, Thomas 
- Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Matthew Garrett 
- <mjg@redhat.com>, Corentin Chary <corentincj@iksaif.net>, Darren Salt 
- <ds@youmustbejoking.demon.co.uk>
-User-Agent: Gemini/2.29m (Qt/3.3.8b) (Linux-x86_64)
-X-SDate: Tue, 5642 Sep 1993 14:54:56 +0000
+Subject: Re: Oopses and ACPI problems (Linus 2.6.29-rc4)
+Message-ID: <20090210150431.GA26798@srcf.ucam.org>
+References: <alpine.LFD.2.00.0902081251090.3048@localhost.localdomain> <gemini.ket9w800w44dc0hvg.linux@youmustbejoking.demon.co.uk> <20090209234911.GB862@elte.hu> <5030E21460%linux@youmustbejoking.demon.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 192.168.0.5
-X-SA-Exim-Mail-From: ds@youmustbejoking.demon.co.uk
-Subject: [PATCH 2.6.29-rc4] Restore ACPI reporting via /proc/acpi/events for EeePC & other Asus laptops.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on pentagram.youmustbejoking.demon.co.uk)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <5030E21460%linux@youmustbejoking.demon.co.uk>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The descriptions for the following two commits
-  2a7dc0d8c60325e9bf820900bf919430e5a419ab (asus-laptop)
-  2b25c9f01aa58d48129b2f93748dfb5d1f7ab0a2 (eeepc-laptop)
-say that events should ALSO be exported via netlink, but the effect is that
-they are INSTEAD exported via netlink. The latter commit breaks use of acpid
-on my EeePC 901.
+On Tue, Feb 10, 2009 at 02:12:44PM +0000, Darren Salt wrote:
 
-Signed-off-by: Darren Salt <linux@youmustbejoking.demon.co.uk>
+> Reverting this fixes the rfkill oops; things work correctly again. I don't
+> know why this appears to be needed, since things work fine without this patch
+> ‒ both Fn-F2 and echoing to /sys/class/rfkill/rfkill0/state ‒ even when I
+> start up with init=/bin/sh and test directly from that shell.
 
-diff --git a/drivers/platform/x86/asus-laptop.c
-b/drivers/platform/x86/asus-laptop.c
-index 56af6cf..42ecf6a 100644
---- a/drivers/platform/x86/asus-laptop.c
-+++ b/drivers/platform/x86/asus-laptop.c
-@@ -832,6 +832,8 @@ static void asus_hotk_notify(acpi_handle handle, u32
-event, void *data)
- 		lcd_blank(FB_BLANK_POWERDOWN);
- 	}
- 
-+	acpi_bus_generate_proc_event(ehotk->device, event,
-+				     ehotk->event_count[event % 128]);
- 	acpi_bus_generate_netlink_event(hotk->device->pnp.device_class,
- 					dev_name(&hotk->device->dev), event,
- 					hotk->event_count[event % 128]++);
-diff --git a/drivers/platform/x86/eeepc-laptop.c
-b/drivers/platform/x86/eeepc-laptop.c
-index 786ed86..8511891 100644
---- a/drivers/platform/x86/eeepc-laptop.c
-+++ b/drivers/platform/x86/eeepc-laptop.c
-@@ -561,6 +561,8 @@ static void eeepc_hotk_notify(acpi_handle handle, u32
-event, void *data)
- 		return;
- 	if (event >= NOTIFY_BRN_MIN && event <= NOTIFY_BRN_MAX)
- 		notify_brn();
-+	acpi_bus_generate_proc_event(ehotk->device, event,
-+				     ehotk->event_count[event % 128]);
- 	acpi_bus_generate_netlink_event(ehotk->device->pnp.device_class,
- 					dev_name(&ehotk->device->dev), event,
- 					ehotk->event_count[event % 128]++);
+If this is BIOS version specific I'm going to be upset, but the general 
+case behaviour is that rfkill only works on the 901 if you either (a) 
+pass force=1 to pciehp (which you shouldn't) or (b) have native support 
+in a driver. My /guess/ is that you've got pciehp loaded, and there's 
+some kind of awkward race between it and eeepc-laptop.
+
+>   input: ETPS/2 Elantech Touchpad as /class/input/input5
+>   eeepc: Hotkey init flags 0x41
+> (not seen in .28 or .28.1; not checked later .28.*.)
+
+BIOS bug. There's an explicit delay in the eee bios for some reason, and 
+I haven't found any straightforward way to avoid it.
 
 -- 
-| Darren Salt    | d @ youmustbejoking,demon,co,uk | nr. Ashington, | Toon
-| RISC OS, Linux | s   zap,tartarus,org            | Northumberland | Army
-| + Use more efficient products. Use less.          BE MORE ENERGY EFFICIENT.
-
-Never drink from your finger bowl; it contains only water.
+Matthew Garrett | mjg59@srcf.ucam.org
