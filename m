@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbZBJJF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbZBJJFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbZBJJF1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 04:05:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbZBJJDh
+	id S1754206AbZBJJFy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 04:05:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbZBJJDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 04:03:37 -0500
+	Tue, 10 Feb 2009 04:03:51 -0500
 Received: from mga09.intel.com ([134.134.136.24]:4654 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752275AbZBJJDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 04:03:22 -0500
+	id S1752992AbZBJJDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 04:03:40 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.38,185,1233561600"; 
-   d="scan'208";a="488749257"
+   d="scan'208";a="488749315"
 From: Yu Zhao <yu.zhao@intel.com>
 To: jbarnes@virtuousgeek.org
 Cc: linux-pci@vger.kernel.org, kvm@vger.kernel.org,
        linux-kernel@vger.kernel.org, Yu Zhao <yu.zhao@intel.com>
-Subject: [PATCH v8 1/7] PCI: initialize and release SR-IOV capability
-Date: Tue, 10 Feb 2009 16:59:09 +0800
-Message-Id: <1234256355-23153-2-git-send-email-yu.zhao@intel.com>
+Subject: [PATCH v8 7/7] PCI: manual for SR-IOV user and driver developer
+Date: Tue, 10 Feb 2009 16:59:15 +0800
+Message-Id: <1234256355-23153-8-git-send-email-yu.zhao@intel.com>
 X-Mailer: git-send-email 1.6.1
 In-Reply-To: <1234256355-23153-1-git-send-email-yu.zhao@intel.com>
 References: <1234256355-23153-1-git-send-email-yu.zhao@intel.com>
@@ -28,417 +28,135 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 ---
- drivers/pci/Kconfig      |   13 ++++
- drivers/pci/Makefile     |    3 +
- drivers/pci/iov.c        |  178 ++++++++++++++++++++++++++++++++++++++++++++++
- drivers/pci/pci.c        |    7 ++
- drivers/pci/pci.h        |   37 ++++++++++
- drivers/pci/probe.c      |    4 +
- include/linux/pci.h      |    8 ++
- include/linux/pci_regs.h |   33 +++++++++
- 8 files changed, 283 insertions(+), 0 deletions(-)
- create mode 100644 drivers/pci/iov.c
+ Documentation/DocBook/kernel-api.tmpl |    1 +
+ Documentation/PCI/pci-iov-howto.txt   |  106 +++++++++++++++++++++++++++++++++
+ 2 files changed, 107 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/PCI/pci-iov-howto.txt
 
-diff --git a/drivers/pci/Kconfig b/drivers/pci/Kconfig
-index 2a4501d..2d0ca01 100644
---- a/drivers/pci/Kconfig
-+++ b/drivers/pci/Kconfig
-@@ -59,3 +59,16 @@ config HT_IRQ
- 	   This allows native hypertransport devices to use interrupts.
- 
- 	   If unsure say Y.
-+
-+config PCI_IOV
-+	bool "PCI IOV support"
-+	depends on PCI
-+	select PCI_MSI
-+	default n
-+	help
-+	  PCI-SIG I/O Virtualization (IOV) Specifications support.
-+	  Single Root IOV: allows the Physical Function driver to enable
-+	  the hardware capability, so the Virtual Function is accessible
-+	  via the PCI Configuration Space using its own Bus, Device and
-+	  Function Numbers. Each Virtual Function also has the PCI Memory
-+	  Space to map the device specific register set.
-diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
-index 3d07ce2..ba99282 100644
---- a/drivers/pci/Makefile
-+++ b/drivers/pci/Makefile
-@@ -29,6 +29,9 @@ obj-$(CONFIG_DMAR) += dmar.o iova.o intel-iommu.o
- 
- obj-$(CONFIG_INTR_REMAP) += dmar.o intr_remapping.o
- 
-+# PCI IOV support
-+obj-$(CONFIG_PCI_IOV) += iov.o
-+
- #
- # Some architectures use the generic PCI setup functions
- #
-diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+diff --git a/Documentation/DocBook/kernel-api.tmpl b/Documentation/DocBook/kernel-api.tmpl
+index 5818ff7..506e611 100644
+--- a/Documentation/DocBook/kernel-api.tmpl
++++ b/Documentation/DocBook/kernel-api.tmpl
+@@ -251,6 +251,7 @@ X!Edrivers/pci/hotplug.c
+ -->
+ !Edrivers/pci/probe.c
+ !Edrivers/pci/rom.c
++!Edrivers/pci/iov.c
+      </sect1>
+      <sect1><title>PCI Hotplug Support Library</title>
+ !Edrivers/pci/hotplug/pci_hotplug_core.c
+diff --git a/Documentation/PCI/pci-iov-howto.txt b/Documentation/PCI/pci-iov-howto.txt
 new file mode 100644
-index 0000000..9a1fabd
+index 0000000..9029369
 --- /dev/null
-+++ b/drivers/pci/iov.c
-@@ -0,0 +1,178 @@
-+/*
-+ * drivers/pci/iov.c
-+ *
-+ * Copyright (C) 2009 Intel Corporation, Yu Zhao <yu.zhao@intel.com>
-+ *
-+ * PCI Express I/O Virtualization (IOV) support.
-+ *   Single Root IOV 1.0
-+ */
-+
-+#include <linux/pci.h>
-+#include "pci.h"
++++ b/Documentation/PCI/pci-iov-howto.txt
+@@ -0,0 +1,106 @@
++		PCI Express I/O Virtualization Howto
++		Copyright (C) 2009 Intel Corporation
++		    Yu Zhao <yu.zhao@intel.com>
 +
 +
-+static int sriov_init(struct pci_dev *dev, int pos)
++1. Overview
++
++1.1 What is SR-IOV
++
++Single Root I/O Virtualization (SR-IOV) is a PCI Express Extended
++capability which makes one physical device appear as multiple virtual
++devices. The physical device is referred to as Physical Function (PF)
++while the virtual devices are referred to as Virtual Functions (VF).
++Allocation of the VF can be dynamically controlled by the PF via
++registers encapsulated in the capability. By default, this feature is
++not enabled and the PF behaves as traditional PCIe device. Once it's
++turned on, each VF's PCI configuration space can be accessed by its own
++Bus, Device and Function Number (Routing ID). And each VF also has PCI
++Memory Space, which is used to map its register set. VF device driver
++operates on the register set so it can be functional and appear as a
++real existing PCI device.
++
++2. User Guide
++
++2.1 How can I enable SR-IOV capability
++
++The device driver (PF driver) will control the enabling and disabling
++of the capability via API provided by SR-IOV core. If the hardware
++has SR-IOV capability, loading its PF driver would enable it and all
++VFs associated with the PF.
++
++2.2 How can I use the Virtual Functions
++
++The VF is treated as hot-plugged PCI devices in the kernel, so they
++should be able to work in the same way as real PCI devices. The VF
++requires device driver that is same as a normal PCI device's.
++
++3. Developer Guide
++
++3.1 SR-IOV API
++
++To enable SR-IOV capability:
++	int pci_enable_sriov(struct pci_dev *dev, int nr_virtfn);
++	'nr_virtfn' is number of VFs to be enabled.
++
++To disable SR-IOV capability:
++	void pci_disable_sriov(struct pci_dev *dev);
++
++To notify SR-IOV core of Virtual Function Migration:
++	irqreturn_t pci_sriov_migration(struct pci_dev *dev);
++
++3.2 Usage example
++
++Following piece of code illustrates the usage of the SR-IOV API.
++
++static int __devinit dev_probe(struct pci_dev *dev, const struct pci_device_id *id)
 +{
-+	int i;
-+	int rc;
-+	int nres;
-+	u32 pgsz;
-+	u16 ctrl, total, offset, stride;
-+	struct pci_sriov *iov;
-+	struct resource *res;
-+	struct pci_dev *pdev;
 +
-+	if (dev->pcie_type != PCI_EXP_TYPE_RC_END &&
-+	    dev->pcie_type != PCI_EXP_TYPE_ENDPOINT)
-+		return -ENODEV;
++	dev->current_state = PCI_D0;
 +
-+	pci_read_config_word(dev, pos + PCI_SRIOV_CTRL, &ctrl);
-+	if (ctrl & PCI_SRIOV_CTRL_VFE) {
-+		pci_write_config_word(dev, pos + PCI_SRIOV_CTRL, 0);
-+		msleep(100);
-+	}
++	pci_enable_sriov(dev, NR_VIRTFN);
 +
-+	pci_read_config_word(dev, pos + PCI_SRIOV_TOTAL_VF, &total);
-+	if (!total)
-+		return 0;
-+
-+	list_for_each_entry(pdev, &dev->bus->devices, bus_list)
-+		if (pdev->sriov)
-+			break;
-+	if (list_empty(&dev->bus->devices) || !pdev->sriov)
-+		pdev = NULL;
-+
-+	ctrl = 0;
-+	if (!pdev && pci_ari_enabled(dev->bus))
-+		ctrl |= PCI_SRIOV_CTRL_ARI;
-+
-+	pci_write_config_word(dev, pos + PCI_SRIOV_CTRL, ctrl);
-+	pci_write_config_word(dev, pos + PCI_SRIOV_NUM_VF, total);
-+	pci_read_config_word(dev, pos + PCI_SRIOV_VF_OFFSET, &offset);
-+	pci_read_config_word(dev, pos + PCI_SRIOV_VF_STRIDE, &stride);
-+	if (!offset || (total > 1 && !stride))
-+		return -EIO;
-+
-+	pci_read_config_dword(dev, pos + PCI_SRIOV_SUP_PGSIZE, &pgsz);
-+	i = PAGE_SHIFT > 12 ? PAGE_SHIFT - 12 : 0;
-+	pgsz &= ~((1 << i) - 1);
-+	if (!pgsz)
-+		return -EIO;
-+
-+	pgsz &= ~(pgsz - 1);
-+	pci_write_config_dword(dev, pos + PCI_SRIOV_SYS_PGSIZE, pgsz);
-+
-+	nres = 0;
-+	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
-+		res = dev->resource + PCI_SRIOV_RESOURCES + i;
-+		i += __pci_read_base(dev, pci_bar_unknown, res,
-+				     pos + PCI_SRIOV_BAR + i * 4);
-+		if (!res->flags)
-+			continue;
-+		if (resource_size(res) & (PAGE_SIZE - 1)) {
-+			rc = -EIO;
-+			goto failed;
-+		}
-+		res->end = res->start + resource_size(res) * total - 1;
-+		nres++;
-+	}
-+
-+	iov = kzalloc(sizeof(*iov), GFP_KERNEL);
-+	if (!iov) {
-+		rc = -ENOMEM;
-+		goto failed;
-+	}
-+
-+	iov->pos = pos;
-+	iov->nres = nres;
-+	iov->ctrl = ctrl;
-+	iov->total = total;
-+	iov->offset = offset;
-+	iov->stride = stride;
-+	iov->pgsz = pgsz;
-+	iov->self = dev;
-+	pci_read_config_dword(dev, pos + PCI_SRIOV_CAP, &iov->cap);
-+	pci_read_config_byte(dev, pos + PCI_SRIOV_FUNC_LINK, &iov->link);
-+
-+	if (pdev)
-+		iov->pdev = pci_dev_get(pdev);
-+	else {
-+		iov->pdev = dev;
-+		mutex_init(&iov->lock);
-+	}
-+
-+	dev->sriov = iov;
++	...
 +
 +	return 0;
-+
-+failed:
-+	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
-+		res = dev->resource + PCI_SRIOV_RESOURCES + i;
-+		res->flags = 0;
-+	}
-+
-+	return rc;
 +}
 +
-+static void sriov_release(struct pci_dev *dev)
++static void __devexit dev_remove(struct pci_dev *dev)
 +{
-+	if (dev == dev->sriov->pdev)
-+		mutex_destroy(&dev->sriov->lock);
-+	else
-+		pci_dev_put(dev->sriov->pdev);
++	pci_disable_sriov(dev);
 +
-+	kfree(dev->sriov);
-+	dev->sriov = NULL;
++	...
 +}
 +
-+/**
-+ * pci_iov_init - initialize the IOV capability
-+ * @dev: the PCI device
-+ *
-+ * Returns 0 on success, or negative on failure.
-+ */
-+int pci_iov_init(struct pci_dev *dev)
++static int dev_suspend(struct pci_dev *dev, pm_message_t state)
 +{
-+	int pos;
++	...
 +
-+	if (!dev->is_pcie)
-+		return -ENODEV;
-+
-+	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_SRIOV);
-+	if (pos)
-+		return sriov_init(dev, pos);
-+
-+	return -ENODEV;
-+}
-+
-+/**
-+ * pci_iov_release - release resources used by the IOV capability
-+ * @dev: the PCI device
-+ */
-+void pci_iov_release(struct pci_dev *dev)
-+{
-+	if (dev->sriov)
-+		sriov_release(dev);
-+}
-+
-+/**
-+ * pci_iov_resource_bar - get position of the SR-IOV BAR
-+ * @dev: the PCI device
-+ * @resno: the resource number
-+ * @type: the BAR type to be filled in
-+ *
-+ * Returns position of the BAR encapsulated in the SR-IOV capability.
-+ */
-+int pci_iov_resource_bar(struct pci_dev *dev, int resno,
-+			 enum pci_bar_type *type)
-+{
-+	if (resno < PCI_SRIOV_RESOURCES || resno > PCI_SRIOV_RESOURCE_END)
-+		return 0;
-+
-+	BUG_ON(!dev->sriov);
-+
-+	*type = pci_bar_unknown;
-+
-+	return dev->sriov->pos + PCI_SRIOV_BAR +
-+		4 * (resno - PCI_SRIOV_RESOURCES);
-+}
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index e3efe6b..c4f14f3 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -2341,12 +2341,19 @@ int pci_select_bars(struct pci_dev *dev, unsigned long flags)
-  */
- int pci_resource_bar(struct pci_dev *dev, int resno, enum pci_bar_type *type)
- {
-+	int reg;
-+
- 	if (resno < PCI_ROM_RESOURCE) {
- 		*type = pci_bar_unknown;
- 		return PCI_BASE_ADDRESS_0 + 4 * resno;
- 	} else if (resno == PCI_ROM_RESOURCE) {
- 		*type = pci_bar_mem32;
- 		return dev->rom_base_reg;
-+	} else if (resno < PCI_BRIDGE_RESOURCES) {
-+		/* device specific resource */
-+		reg = pci_iov_resource_bar(dev, resno, type);
-+		if (reg)
-+			return reg;
- 	}
- 
- 	dev_err(&dev->dev, "BAR: invalid resource #%d\n", resno);
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index 26ddf78..d2dc6b7 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -195,4 +195,41 @@ static inline int pci_ari_enabled(struct pci_bus *bus)
- 	return bus->self && bus->self->ari_enabled;
- }
- 
-+/* Single Root I/O Virtualization */
-+struct pci_sriov {
-+	int pos;		/* capability position */
-+	int nres;		/* number of resources */
-+	u32 cap;		/* SR-IOV Capabilities */
-+	u16 ctrl;		/* SR-IOV Control */
-+	u16 total;		/* total VFs associated with the PF */
-+	u16 offset;		/* first VF Routing ID offset */
-+	u16 stride;		/* following VF stride */
-+	u32 pgsz;		/* page size for BAR alignment */
-+	u8 link;		/* Function Dependency Link */
-+	struct pci_dev *pdev;	/* lowest numbered PF */
-+	struct pci_dev *self;	/* this PF */
-+	struct mutex lock;	/* lock for VF bus */
-+};
-+
-+#ifdef CONFIG_PCI_IOV
-+extern int pci_iov_init(struct pci_dev *dev);
-+extern void pci_iov_release(struct pci_dev *dev);
-+extern int pci_iov_resource_bar(struct pci_dev *dev, int resno,
-+				enum pci_bar_type *type);
-+#else
-+static inline int pci_iov_init(struct pci_dev *dev)
-+{
-+	return -ENODEV;
-+}
-+static inline void pci_iov_release(struct pci_dev *dev)
-+
-+{
-+}
-+static inline int pci_iov_resource_bar(struct pci_dev *dev, int resno,
-+				       enum pci_bar_type *type)
-+{
 +	return 0;
 +}
-+#endif /* CONFIG_PCI_IOV */
 +
- #endif /* DRIVERS_PCI_H */
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 55ec44a..03b6f29 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -785,6 +785,7 @@ static int pci_setup_device(struct pci_dev * dev)
- static void pci_release_capabilities(struct pci_dev *dev)
- {
- 	pci_vpd_release(dev);
-+	pci_iov_release(dev);
- }
- 
- /**
-@@ -972,6 +973,9 @@ static void pci_init_capabilities(struct pci_dev *dev)
- 
- 	/* Alternative Routing-ID Forwarding */
- 	pci_enable_ari(dev);
++static int dev_resume(struct pci_dev *dev)
++{
++	pci_restore_state(dev);
 +
-+	/* Single Root I/O Virtualization */
-+	pci_iov_init(dev);
- }
- 
- void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 7bd624b..f4d740e 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -93,6 +93,12 @@ enum {
- 	/* #6: expansion ROM resource */
- 	PCI_ROM_RESOURCE,
- 
-+	/* device specific resources */
-+#ifdef CONFIG_PCI_IOV
-+	PCI_SRIOV_RESOURCES,
-+	PCI_SRIOV_RESOURCE_END = PCI_SRIOV_RESOURCES + PCI_SRIOV_NUM_BARS - 1,
++	...
++
++	return 0;
++}
++
++static void dev_shutdown(struct pci_dev *dev)
++{
++	...
++}
++
++static struct pci_driver dev_driver = {
++	.name =		"SR-IOV Physical Function driver",
++	.id_table =	dev_id_table,
++	.probe =	dev_probe,
++	.remove =	__devexit_p(dev_remove),
++#ifdef CONFIG_PM
++	.suspend =	dev_suspend,
++	.resume =	dev_resume,
 +#endif
-+
- 	/* resources assigned to buses behind the bridge */
- #define PCI_BRIDGE_RESOURCE_NUM 4
- 
-@@ -180,6 +186,7 @@ struct pci_cap_saved_state {
- 
- struct pcie_link_state;
- struct pci_vpd;
-+struct pci_sriov;
- 
- /*
-  * The pci_dev structure is used to describe PCI devices.
-@@ -270,6 +277,7 @@ struct pci_dev {
- 	struct list_head msi_list;
- #endif
- 	struct pci_vpd *vpd;
-+	struct pci_sriov *sriov;	/* SR-IOV capability related */
- };
- 
- extern struct pci_dev *alloc_pci_dev(void);
-diff --git a/include/linux/pci_regs.h b/include/linux/pci_regs.h
-index 027815b..4ce5eb0 100644
---- a/include/linux/pci_regs.h
-+++ b/include/linux/pci_regs.h
-@@ -375,6 +375,7 @@
- #define  PCI_EXP_TYPE_UPSTREAM	0x5	/* Upstream Port */
- #define  PCI_EXP_TYPE_DOWNSTREAM 0x6	/* Downstream Port */
- #define  PCI_EXP_TYPE_PCI_BRIDGE 0x7	/* PCI/PCI-X Bridge */
-+#define  PCI_EXP_TYPE_RC_END	0x9	/* Root Complex Integrated Endpoint */
- #define PCI_EXP_FLAGS_SLOT	0x0100	/* Slot implemented */
- #define PCI_EXP_FLAGS_IRQ	0x3e00	/* Interrupt message number */
- #define PCI_EXP_DEVCAP		4	/* Device capabilities */
-@@ -498,6 +499,7 @@
- #define PCI_EXT_CAP_ID_DSN	3
- #define PCI_EXT_CAP_ID_PWR	4
- #define PCI_EXT_CAP_ID_ARI	14
-+#define PCI_EXT_CAP_ID_SRIOV	16
- 
- /* Advanced Error Reporting */
- #define PCI_ERR_UNCOR_STATUS	4	/* Uncorrectable Error Status */
-@@ -615,4 +617,35 @@
- #define  PCI_ARI_CTRL_ACS	0x0002	/* ACS Function Groups Enable */
- #define  PCI_ARI_CTRL_FG(x)	(((x) >> 4) & 7) /* Function Group */
- 
-+/* Single Root I/O Virtualization */
-+#define PCI_SRIOV_CAP		0x04	/* SR-IOV Capabilities */
-+#define  PCI_SRIOV_CAP_VFM	0x01	/* VF Migration Capable */
-+#define  PCI_SRIOV_CAP_INTR(x)	((x) >> 21) /* Interrupt Message Number */
-+#define PCI_SRIOV_CTRL		0x08	/* SR-IOV Control */
-+#define  PCI_SRIOV_CTRL_VFE	0x01	/* VF Enable */
-+#define  PCI_SRIOV_CTRL_VFM	0x02	/* VF Migration Enable */
-+#define  PCI_SRIOV_CTRL_INTR	0x04	/* VF Migration Interrupt Enable */
-+#define  PCI_SRIOV_CTRL_MSE	0x08	/* VF Memory Space Enable */
-+#define  PCI_SRIOV_CTRL_ARI	0x10	/* ARI Capable Hierarchy */
-+#define PCI_SRIOV_STATUS	0x0a	/* SR-IOV Status */
-+#define  PCI_SRIOV_STATUS_VFM	0x01	/* VF Migration Status */
-+#define PCI_SRIOV_INITIAL_VF	0x0c	/* Initial VFs */
-+#define PCI_SRIOV_TOTAL_VF	0x0e	/* Total VFs */
-+#define PCI_SRIOV_NUM_VF	0x10	/* Number of VFs */
-+#define PCI_SRIOV_FUNC_LINK	0x12	/* Function Dependency Link */
-+#define PCI_SRIOV_VF_OFFSET	0x14	/* First VF Offset */
-+#define PCI_SRIOV_VF_STRIDE	0x16	/* Following VF Stride */
-+#define PCI_SRIOV_VF_DID	0x1a	/* VF Device ID */
-+#define PCI_SRIOV_SUP_PGSIZE	0x1c	/* Supported Page Sizes */
-+#define PCI_SRIOV_SYS_PGSIZE	0x20	/* System Page Size */
-+#define PCI_SRIOV_BAR		0x24	/* VF BAR0 */
-+#define  PCI_SRIOV_NUM_BARS	6	/* Number of VF BARs */
-+#define PCI_SRIOV_VFM		0x3c	/* VF Migration State Array Offset*/
-+#define  PCI_SRIOV_VFM_BIR(x)	((x) & 7)	/* State BIR */
-+#define  PCI_SRIOV_VFM_OFFSET(x) ((x) & ~7)	/* State Offset */
-+#define  PCI_SRIOV_VFM_UA	0x0	/* Inactive.Unavailable */
-+#define  PCI_SRIOV_VFM_MI	0x1	/* Dormant.MigrateIn */
-+#define  PCI_SRIOV_VFM_MO	0x2	/* Active.MigrateOut */
-+#define  PCI_SRIOV_VFM_AV	0x3	/* Active.Available */
-+
- #endif /* LINUX_PCI_REGS_H */
++	.shutdown =	dev_shutdown,
++};
 -- 
 1.5.6.4
 
