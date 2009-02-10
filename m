@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756382AbZBJTFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756912AbZBJTIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756382AbZBJTFd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 14:05:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711AbZBJTDa
+	id S1756912AbZBJTIq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 14:08:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbZBJTDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 14:03:30 -0500
-Received: from kroah.org ([198.145.64.141]:53621 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 14:03:40 -0500
+Received: from kroah.org ([198.145.64.141]:53737 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754593AbZBJTD3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 14:03:29 -0500
-Date: Tue, 10 Feb 2009 10:59:50 -0800
+	id S1755345AbZBJTDj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 14:03:39 -0500
+Date: Tue, 10 Feb 2009 11:00:07 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Adam Tkac <vonsch@gmail.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>
-Subject: [patch 05/53] revert "rlimit: permit setting RLIMIT_NOFILE to
-	RLIM_INFINITY"
-Message-ID: <20090210185950.GF14308@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [patch 14/53] firewire: sbp2: fix DMA mapping leak on the failure
+	path
+Message-ID: <20090210190007.GO14308@kroah.com>
 References: <20090210185337.000769713@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="revert-rlimit-permit-setting-rlimit_nofile-to-rlim_infinity.patch"
+Content-Disposition: inline; filename="firewire-sbp2-fix-dma-mapping-leak-on-the-failure-path.patch"
 In-Reply-To: <20090210185924.GA14308@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,101 +39,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Andrew Morton <akpm@linux-foundation.org>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-commit 60fd760fb9ff7034360bab7137c917c0330628c2 upstream.
+Commit 5e2125677fd72d36396cc537466e07ffcbbd4b2b upstream.
 
-Revert commit 0c2d64fb6cae9aae480f6a46cfe79f8d7d48b59f because it causes
-(arguably poorly designed) existing userspace to spend interminable
-periods closing billions of not-open file descriptors.
+Reported-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+who also provided a first version of the fix.
 
-We could bring this back, with some sort of opt-in tunable in /proc, which
-defaults to "off".
-
-Peter's alanysis follows:
-
-: I spent several hours trying to get to the bottom of a serious
-: performance issue that appeared on one of our servers after upgrading to
-: 2.6.28.  In the end it's what could be considered a userspace bug that
-: was triggered by a change in 2.6.28.  Since this might also affect other
-: people I figured I'd at least document what I found here, and maybe we
-: can even do something about it:
-:
-:
-: So, I upgraded some of debian.org's machines to 2.6.28.1 and immediately
-: the team maintaining our ftp archive complained that one of their
-: scripts that previously ran in a few minutes still hadn't even come
-: close to being done after an hour or so.  Downgrading to 2.6.27 fixed
-: that.
-:
-: Turns out that script is forking a lot and something in it or python or
-: whereever closes all the file descriptors it doesn't want to pass on.
-: That is, it starts at zero and goes up to ulimit -n/RLIMIT_NOFILE and
-: closes them all with a few exceptions.
-:
-: Turns out that takes a long time when your limit -n is now 2^20 (1048576).
-:
-: With 2.6.27.* the ulimit -n was the standard 1024, but with 2.6.28 it is
-: now a thousand times that.
-:
-: 2.6.28 included a patch titled "rlimit: permit setting RLIMIT_NOFILE to
-: RLIM_INFINITY" (0c2d64fb6cae9aae480f6a46cfe79f8d7d48b59f)[1] that
-: allows, as the title implies, to set the limit for number of files to
-: infinity.
-:
-: Closer investigation showed that the broken default ulimit did not apply
-: to "system" processes (like stuff started from init).  In the end I
-: could establish that all processes that passed through pam_limit at one
-: point had the bad resource limit.
-:
-: Apparently the pam library in Debian etch (4.0) initializes the limits
-: to some default values when it doesn't have any settings in limit.conf
-: to override them.  Turns out that for nofiles this is RLIM_INFINITY.
-: Commenting out "case RLIMIT_NOFILE" in pam_limit.c:267 of our pam
-: package version 0.79-5 fixes that - tho I'm not sure what side effects
-: that has.
-:
-: Debian lenny (the upcoming 5.0 version) doesn't have this issue as it
-: uses a different pam (version).
-
-Reported-by: Peter Palfrader <weasel@debian.org>
-Cc: Adam Tkac <vonsch@gmail.com>
-Cc: Michael Kerrisk <mtk.manpages@googlemail.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/sys.c |   16 ++++------------
- 1 file changed, 4 insertions(+), 12 deletions(-)
+ drivers/firewire/fw-sbp2.c |   27 +++++++++++++++++----------
+ 1 file changed, 17 insertions(+), 10 deletions(-)
 
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -1447,22 +1447,14 @@ SYSCALL_DEFINE2(setrlimit, unsigned int,
- 		return -EINVAL;
- 	if (copy_from_user(&new_rlim, rlim, sizeof(*rlim)))
- 		return -EFAULT;
-+	if (new_rlim.rlim_cur > new_rlim.rlim_max)
-+		return -EINVAL;
- 	old_rlim = current->signal->rlim + resource;
- 	if ((new_rlim.rlim_max > old_rlim->rlim_max) &&
- 	    !capable(CAP_SYS_RESOURCE))
- 		return -EPERM;
--
--	if (resource == RLIMIT_NOFILE) {
--		if (new_rlim.rlim_max == RLIM_INFINITY)
--			new_rlim.rlim_max = sysctl_nr_open;
--		if (new_rlim.rlim_cur == RLIM_INFINITY)
--			new_rlim.rlim_cur = sysctl_nr_open;
--		if (new_rlim.rlim_max > sysctl_nr_open)
--			return -EPERM;
--	}
--
--	if (new_rlim.rlim_cur > new_rlim.rlim_max)
--		return -EINVAL;
-+	if (resource == RLIMIT_NOFILE && new_rlim.rlim_max > sysctl_nr_open)
-+		return -EPERM;
+--- a/drivers/firewire/fw-sbp2.c
++++ b/drivers/firewire/fw-sbp2.c
+@@ -1282,6 +1282,19 @@ static struct fw_driver sbp2_driver = {
+ 	.id_table = sbp2_id_table,
+ };
  
- 	retval = security_task_setrlimit(resource, &new_rlim);
- 	if (retval)
++static void sbp2_unmap_scatterlist(struct device *card_device,
++				   struct sbp2_command_orb *orb)
++{
++	if (scsi_sg_count(orb->cmd))
++		dma_unmap_sg(card_device, scsi_sglist(orb->cmd),
++			     scsi_sg_count(orb->cmd),
++			     orb->cmd->sc_data_direction);
++
++	if (orb->request.misc & cpu_to_be32(COMMAND_ORB_PAGE_TABLE_PRESENT))
++		dma_unmap_single(card_device, orb->page_table_bus,
++				 sizeof(orb->page_table), DMA_TO_DEVICE);
++}
++
+ static unsigned int
+ sbp2_status_to_sense_data(u8 *sbp2_status, u8 *sense_data)
+ {
+@@ -1361,15 +1374,7 @@ complete_command_orb(struct sbp2_orb *ba
+ 
+ 	dma_unmap_single(device->card->device, orb->base.request_bus,
+ 			 sizeof(orb->request), DMA_TO_DEVICE);
+-
+-	if (scsi_sg_count(orb->cmd) > 0)
+-		dma_unmap_sg(device->card->device, scsi_sglist(orb->cmd),
+-			     scsi_sg_count(orb->cmd),
+-			     orb->cmd->sc_data_direction);
+-
+-	if (orb->page_table_bus != 0)
+-		dma_unmap_single(device->card->device, orb->page_table_bus,
+-				 sizeof(orb->page_table), DMA_TO_DEVICE);
++	sbp2_unmap_scatterlist(device->card->device, orb);
+ 
+ 	orb->cmd->result = result;
+ 	orb->done(orb->cmd);
+@@ -1500,8 +1505,10 @@ static int sbp2_scsi_queuecommand(struct
+ 	orb->base.request_bus =
+ 		dma_map_single(device->card->device, &orb->request,
+ 			       sizeof(orb->request), DMA_TO_DEVICE);
+-	if (dma_mapping_error(device->card->device, orb->base.request_bus))
++	if (dma_mapping_error(device->card->device, orb->base.request_bus)) {
++		sbp2_unmap_scatterlist(device->card->device, orb);
+ 		goto out;
++	}
+ 
+ 	sbp2_send_orb(&orb->base, lu, lu->tgt->node_id, generation,
+ 		      lu->command_block_agent_address + SBP2_ORB_POINTER);
 
