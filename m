@@ -1,74 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757199AbZBJXHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbZBJXNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757199AbZBJXHF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 18:07:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756101AbZBJXGy
+	id S1757136AbZBJXNT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 18:13:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756148AbZBJXNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 18:06:54 -0500
-Received: from casper.infradead.org ([85.118.1.10]:38408 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755995AbZBJXGx (ORCPT
+	Tue, 10 Feb 2009 18:13:11 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36358 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756101AbZBJXNK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 18:06:53 -0500
-Date: Tue, 10 Feb 2009 15:06:43 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Pavel Machek <pavel@suse.cz>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [patch 0/2] Make the touchpad on the MSI Wind netbook work
-Message-ID: <20090210150643.45278cf1@infradead.org>
-In-Reply-To: <20090210202558.GH1382@ucw.cz>
-References: <20090204191540.2d6abd87@infradead.org>
-	<20090210202558.GH1382@ucw.cz>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+	Tue, 10 Feb 2009 18:13:10 -0500
+Date: Tue, 10 Feb 2009 15:12:47 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: MinChan Kim <minchan.kim@gmail.com>
+Cc: kosaki.motohiro@jp.fujitsu.com, kamezawa.hiroyu@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, riel@redhat.com
+Subject: Re: [PATCH] mm: remove zone->prev_prioriy
+Message-Id: <20090210151247.6747f66e.akpm@linux-foundation.org>
+In-Reply-To: <28c262360902100257o6a8e2374v42f1ae906c53bcec@mail.gmail.com>
+References: <20090210184055.6FCB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<28c262360902100257o6a8e2374v42f1ae906c53bcec@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Feb 2009 21:25:58 +0100
-Pavel Machek <pavel@suse.cz> wrote:
+On Tue, 10 Feb 2009 19:57:01 +0900
+MinChan Kim <minchan.kim@gmail.com> wrote:
 
-> On Wed 2009-02-04 19:15:40, Arjan van de Ven wrote:
-> > Hi,
-> > 
-> > A MSI Wind (100) netbook landed on my desk with the comment
-> > "touchpad doesn't work in Linux but works in XP". 
-> > 
-> > It turns out that there are a 2 separate issues with this netbook
-> > that needed fixing 
-> > 
-> > 1) The touchpad requires the equivalent of "i8042.reset", which
-> > resets the controller before probing. (This is done via a DMI quirk
-> > in patch 2/2)
-> > 
-> > 2) About half the time, the reset will fail the first time. In the
-> > current code, this is fatal and then also disables the keyboard in
-> > addition to the touchpad. Ungood. Patch 1 makes the kernel retry the
-> > reset upto five times before giving up (it seems the 2nd or 3rd time
-> > succeed for me), and also adds an option to not make such a failure
-> > fatal to the keyboard.
-> > 
-> > I don't think this is a regression, but it is pretty nasty behavior
-> > (the machine is useless without) so it could be a 2.6.29
-> > candidate...
+> As you know, prev_priority is used as a measure of how much stress page reclaim.
+> But now we doesn't need it due to split-lru's way.
 > 
-> Well, that beast was selling with linux preloaded, no? Or was it
-> another msi wind? In such case I'd expect old kernel to work... or
-> maybe some reasonable workaround somewhere...
-
-afaik the newer ones have a different touchpad
-
-
+> I think it would be better to remain why prev_priority isn't needed any more
+> and how split-lru can replace prev_priority's role in changelog.
 > 
+> In future, it help mm newbies understand change history, I think.
 
+Yes, I'd be fascinated to see that explanation.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+In http://groups.google.pn/group/linux.kernel/browse_thread/thread/fea9c9a0b43162a1
+it was asserted that we intend to use prev_priority again in the future.
+
+We discussed this back in November:
+http://lkml.indiana.edu/hypermail/linux/kernel/0811.2/index.html#00001
+
+And I think that I still think that the VM got worse due to its (new)
+failure to track previous state.  IIRC, the response to that concern
+was quite similar to handwavy waffling.
+
