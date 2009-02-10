@@ -1,193 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbZBJEIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754111AbZBJEVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754882AbZBJEIu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 23:08:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754410AbZBJEIe
+	id S1754111AbZBJEVw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 23:21:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbZBJEVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 23:08:34 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:55003 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753574AbZBJEId (ORCPT
+	Mon, 9 Feb 2009 23:21:41 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49960
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752123AbZBJEVk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 23:08:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:from:to:cc:date:subject;
-        b=AoWSkRsmbajjK1aN/qDAGujUP9NYiouVeEr6yTLKQfM2XpXAQjRXR44xyqSi71DHX2
-         h19GhkEhJr0Fp4UPGlHfyujFvZEWXlLyqtKBBO80TpW2e6tM+B2LklobpVazEnyzW1bF
-         4EH6dxJjo/81ZvGY4At6d1YaplclKtIeACpjg=
-Message-ID: <4990fdc0.0af5660a.678f.ffffd47b@mx.google.com>
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Date: Tue, 10 Feb 2009 04:47:22 +0100
-Subject: [PATCH 2/2] tracing/core: use appropriate waiting on trace_pipe
+	Mon, 9 Feb 2009 23:21:40 -0500
+Date: Mon, 09 Feb 2009 20:21:34 -0800 (PST)
+Message-Id: <20090209.202134.172521671.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, the waiting used in tracing_read_pipe() was done through a
-scheduling_timeout() loop for 100 msecs which periodically checked
-if there was traces on the buffer.
 
-This can cause small latencies for programs which are reading the incoming
-events.
+1) Memory leak fixes in ATM and ISDN from Julia Lawall
 
-This patch makes the reader waiting for the trace_wait waitqueue except
-for few tracers such as sched_switch and the function tracers which might be
-already hold the runqueue lock while waking up the reader.
+2) Proper IPV6 tunnel name not used in ipv6 tunneling driver, fix from
+   Noriaki Takamiya.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- kernel/trace/trace.c                 |   48 ++++++++++++++++++++++------------
- kernel/trace/trace.h                 |    6 ++++
- kernel/trace/trace_functions.c       |    2 +-
- kernel/trace/trace_functions_graph.c |    2 +-
- kernel/trace/trace_sched_switch.c    |    2 +-
- 5 files changed, 40 insertions(+), 20 deletions(-)
+3) Flowlabel socket options can be specified with rediculious sizes
+   leading to order 9 page allocations etc., for sanity limit them to
+   64K just like we do for other similar cases.
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index d898212..b136e4b 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -240,6 +240,13 @@ static DECLARE_WAIT_QUEUE_HEAD(trace_wait);
- unsigned long trace_flags = TRACE_ITER_PRINT_PARENT | TRACE_ITER_PRINTK |
- 	TRACE_ITER_ANNOTATE | TRACE_ITER_CONTEXT_INFO;
- 
-+
-+static inline int might_hold_runqueue_lock(struct tracer *t)
-+{
-+	return t == &sched_switch_trace || t == &function_trace ||
-+		t == &graph_trace;
-+}
-+
- /**
-  * trace_wake_up - wake up tasks waiting for trace input
-  *
-@@ -2391,34 +2398,39 @@ tracing_poll_pipe(struct file *filp, poll_table *poll_table)
- /* Must be called with trace_types_lock mutex held. */
- static int tracing_wait_pipe(struct file *filp)
- {
-+	DEFINE_WAIT(wait);
- 	struct trace_iterator *iter = filp->private_data;
- 
- 	while (trace_empty(iter)) {
--
- 		if ((filp->f_flags & O_NONBLOCK)) {
- 			return -EAGAIN;
- 		}
- 
--		/*
--		 * This is a make-shift waitqueue. The reason we don't use
--		 * an actual wait queue is because:
--		 *  1) we only ever have one waiter
--		 *  2) the tracing, traces all functions, we don't want
--		 *     the overhead of calling wake_up and friends
--		 *     (and tracing them too)
--		 *     Anyway, this is really very primitive wakeup.
--		 */
--		set_current_state(TASK_INTERRUPTIBLE);
--		iter->tr->waiter = current;
--
- 		mutex_unlock(&trace_types_lock);
- 
--		/* sleep for 100 msecs, and try again. */
--		schedule_timeout(HZ/10);
-+		if (might_hold_runqueue_lock(iter->trace)) {
-+			/*
-+			 * This is a make-shift waitqueue. The reason we don't
-+			 * use an actual wait queue is because:
-+			 *  1) we only ever have one waiter
-+			 *  2) the tracing, traces all functions, we don't want
-+			 *     the overhead of calling wake_up and friends
-+			 *     (and tracing them too)
-+			 *     Anyway, this is really very primitive wakeup.
-+			 */
-+			set_current_state(TASK_INTERRUPTIBLE);
-+			schedule_timeout(HZ / 10);
- 
--		mutex_lock(&trace_types_lock);
-+		} else {
-+			prepare_to_wait(&trace_wait, &wait, TASK_INTERRUPTIBLE);
-+
-+			if (trace_empty(iter))
-+				schedule();
-+
-+			finish_wait(&trace_wait, &wait);
-+		}
- 
--		iter->tr->waiter = NULL;
-+		mutex_lock(&trace_types_lock);
- 
- 		if (signal_pending(current)) {
- 			return -EINTR;
-@@ -3032,6 +3044,8 @@ int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
-  out:
- 	preempt_enable_notrace();
- 
-+	trace_wake_up();
-+
- 	return len;
- }
- EXPORT_SYMBOL_GPL(trace_vprintk);
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index dbff020..5680936 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -625,6 +625,12 @@ enum trace_iterator_flags {
- 
- extern struct tracer nop_trace;
- 
-+/*
-+ * Tracers for which the user shouldn't wait the traces in common ways,
-+ * since the tracer can hold the runqueue lock.
-+ */
-+extern struct tracer sched_switch_trace, function_trace, graph_trace;
-+
- /**
-  * ftrace_preempt_disable - disable preemption scheduler safe
-  *
-diff --git a/kernel/trace/trace_functions.c b/kernel/trace/trace_functions.c
-index 36bf956..dbca500 100644
---- a/kernel/trace/trace_functions.c
-+++ b/kernel/trace/trace_functions.c
-@@ -218,7 +218,7 @@ static int func_set_flag(u32 old_flags, u32 bit, int set)
- 	return -EINVAL;
- }
- 
--static struct tracer function_trace __read_mostly =
-+struct tracer function_trace __read_mostly =
- {
- 	.name		= "function",
- 	.init		= function_trace_init,
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index 782ec0f..0715f19 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -753,7 +753,7 @@ static void graph_trace_close(struct trace_iterator *iter)
- 	percpu_free(iter->private);
- }
- 
--static struct tracer graph_trace __read_mostly = {
-+struct tracer graph_trace __read_mostly = {
- 	.name	     	= "function_graph",
- 	.open		= graph_trace_open,
- 	.close		= graph_trace_close,
-diff --git a/kernel/trace/trace_sched_switch.c b/kernel/trace/trace_sched_switch.c
-index 30e14fe..8ec54e3 100644
---- a/kernel/trace/trace_sched_switch.c
-+++ b/kernel/trace/trace_sched_switch.c
-@@ -214,7 +214,7 @@ static void sched_switch_trace_stop(struct trace_array *tr)
- 	tracing_stop_sched_switch();
- }
- 
--static struct tracer sched_switch_trace __read_mostly =
-+struct tracer sched_switch_trace __read_mostly =
- {
- 	.name		= "sched_switch",
- 	.init		= sched_switch_trace_init,
--- 
-1.6.1
+4) Fix sunhme device detection in the case where the system has both
+   SBUS and PCI sunhme chips.
 
+5) Unicast filter overflow is handled wrongly in TUN driver, fix
+   from Alex Williamson.
 
+6) Neighbour entry dumping can skip entries due to a bug, fix from
+   Gautam Kachroo.
+
+7) NULL deref fix in rxrpc from David Howells
+
+8) LRO packets can crash bridging due to a misplaced check, fix from
+   Herbert Xu
+
+9) Netfilter fixes from Pablo Neira Ayuso, Qu Haoran, and Eric Leblond via
+   Patrick McHardy.
+
+10) Fix 3c509 resum from hibernation on PnP cards, from Ondrej Zery.
+
+11) DE2104X driver code releases TX ring entry to chip (by setting "own" bit)
+    before writing the buffer address field.  Fix from Risto Suominen.
+
+Please pull, thanks a lot.
+
+The following changes since commit 4c098bcd55fad34dcf224bf8343db6a9ac58fc68:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../mason/btrfs-unstable
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Alex Williamson (1):
+      tun: Fix unicast filter overflow
+
+David Howells (1):
+      RxRPC: Fix a potential NULL dereference
+
+David S. Miller (3):
+      ipv6: Disallow rediculious flowlabel option sizes.
+      net_dma: call dmaengine_get only if NET_DMA enabled
+      sunhme: Don't match PCI devices in SBUS probe.
+
+Dhananjay Phadke (1):
+      netxen: fix msi-x interrupt handling
+
+Eric Leblond (2):
+      netfilter: fix tuple inversion for Node information request
+      netfilter: nf_conntrack_ipv6: don't track ICMPv6 negotiation message
+
+Eric Van Hensbergen (1):
+      9p: fix endian issues [attempt 3]
+
+Gautam Kachroo (1):
+      neigh: some entries can be skipped during dumping
+
+Herbert Xu (1):
+      bridge: Fix LRO crash with tun
+
+Ilkka Virta (1):
+      sungem: Soft lockup in sungem on Netra AC200 when switching interface up
+
+Ivan Vecera (1):
+      r8169: Don't update statistics counters when interface is down
+
+Jarek Poplawski (1):
+      gianfar: Fix boot hangs while bringing up gianfar ethernet
+
+Jesper Dangaard Brouer (1):
+      udp: Fix potential wrong ip_hdr(skb) pointers
+
+Julia Lawall (2):
+      drivers/atm: introduce missing kfree
+      drivers/isdn: introduce missing kfree
+
+Noriaki TAKAMIYA (1):
+      IPv6: fix to set device name when new IPv6 over IPv6 tunnel device is created.
+
+Ondrej Zary (1):
+      3c509: Fix resume from hibernation for PnP mode.
+
+Pablo Neira Ayuso (2):
+      netfilter: ctnetlink: allow changing NAT sequence adjustment in creation
+      netfilter: ctnetlink: fix echo if not subscribed to any multicast group
+
+Qu Haoran (1):
+      netfilter: xt_sctp: sctp chunk mapping doesn't work
+
+Risto Suominen (1):
+      de2104x: force correct order when writing to rx ring
+
+ drivers/atm/solos-pci.c                        |    1 +
+ drivers/isdn/hardware/mISDN/hfcmulti.c         |    2 +
+ drivers/net/3c509.c                            |    1 +
+ drivers/net/gianfar.c                          |    6 ++
+ drivers/net/netxen/netxen_nic.h                |    2 +-
+ drivers/net/netxen/netxen_nic_main.c           |   13 +++-
+ drivers/net/r8169.c                            |   93 +++++++++++++++---------
+ drivers/net/sungem.c                           |    8 +-
+ drivers/net/sunhme.c                           |   12 ++-
+ drivers/net/tulip/de2104x.c                    |    3 +-
+ drivers/net/tun.c                              |   10 ++-
+ include/linux/dmaengine.h                      |   12 +++
+ net/9p/protocol.c                              |   22 ++++---
+ net/bridge/br_forward.c                        |    7 ++-
+ net/core/dev.c                                 |    4 +-
+ net/core/neighbour.c                           |   14 ++--
+ net/ipv4/udp.c                                 |    6 +-
+ net/ipv6/ip6_flowlabel.c                       |    8 ++-
+ net/ipv6/ip6_tunnel.c                          |    2 +-
+ net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c |   25 ++++++-
+ net/netfilter/nf_conntrack_netlink.c           |   15 ++++-
+ net/netfilter/xt_sctp.c                        |    2 +-
+ net/rxrpc/af_rxrpc.c                           |    5 +-
+ 23 files changed, 195 insertions(+), 78 deletions(-)
