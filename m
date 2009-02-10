@@ -1,142 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753970AbZBJLHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbZBJLIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753970AbZBJLHt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 06:07:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbZBJLHk
+	id S1754623AbZBJLIT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 06:08:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961AbZBJLID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 06:07:40 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:51901 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752992AbZBJLHj convert rfc822-to-8bit (ORCPT
+	Tue, 10 Feb 2009 06:08:03 -0500
+Received: from static-220-247-10-204.b-man.svips.gol.ne.jp ([220.247.10.204]:41350
+	"EHLO smtp.kamineko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753041AbZBJLIA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 06:07:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=aUzJTxLQCi65QfxKhO1a79GJTsQAe/iNQqmK17K58u/G5itaLQ2mKzGihwH5QQYaBJ
-         a+AmJFTjO/76CfiXXHhBd6WYorGBQFpQcwQDJngRLPH9XSp/UYOl3QGo8JuViW9FJw73
-         Wy2/aIbhgvrEqZZghQjVijg9sWepOwtYjxx6A=
+	Tue, 10 Feb 2009 06:08:00 -0500
+Date: Tue, 10 Feb 2009 20:08:02 +0900
+From: Mattia Dongili <malattia@linux.it>
+To: Guilherme Malschitzky Schroeder <guilherme.m.schroeder@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: ACPI regression in 2.6.29 - cpufreq_performance doesn't work
+Message-ID: <20090210110802.GB31755@kamineko.org>
+References: <cc0fa41f0902091953y2ab718fcmdbd1c42acf270e08@mail.gmail.com> <20090210045803.GA31755@kamineko.org> <cc0fa41f0902092215i44823962t39033f6b987f273f@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <49915832.1090501@tremplin-utc.net>
-References: <1233967681-6378-1-git-send-email-giuseppe.bilotta@gmail.com>
-	 <498D9F02.9000107@tremplin-utc.net> <498E46F2.1020401@gmail.com>
-	 <4990BE23.8080301@tremplin-utc.net> <4990DEFD.4010700@gmail.com>
-	 <49915832.1090501@tremplin-utc.net>
-Date: Tue, 10 Feb 2009 12:07:37 +0100
-Message-ID: <cb7bb73a0902100307m4eab8ff2nfe9be8bed6a3b5b5@mail.gmail.com>
-Subject: Re: [PATCH] lis3lv02d: add axes knowledge of HP Pavilion dv5 models
-From: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
-To: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
-Cc: Palatis Tseng <palatis@gmail.com>, Pavel Machek <pavel@suse.cz>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cc0fa41f0902092215i44823962t39033f6b987f273f@mail.gmail.com>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.26-1 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 11:34 AM, Éric Piel <eric.piel@tremplin-utc.net> wrote:
-> (putting back the cc's, please keep them when answering)
->
-> Palatis Tseng schreef:
->> Éric Piel 提到:
->>> No problem, the patch from Giuseppe will get the axex fine :-)
->>>
->>> However, could you let use know if you too, on your laptop, have huge
->>> fluctuations even when the laptop is not moving? Could you give an idea
->>> of the minimum and maximum values of each axis when the laptop is set
->>> normally on the desk without touching it?
->>>
->>> Thanks,
->>> Eric
->> I took a look at the patch but my axis on dv5 is Y_inverted (instead of
->> X_inverted.) i patched my lis3lv02d.c and added:
->>
->> === cut here ===
->>    AXIS_DMI_MATCH("HPDV5", "HP Pavilion dv5", y_inverted),
->> === cut here ===
->>
->> and neverball worked just correct with it so i'm kinda sure my patch
->> about the axis should be correct.
->>
->> i've also tested with x_inverted, but whenever i evaluate the left side
->> of my notebook the ball goes to the left side too which is not real-world
->> behavier.
->>
->> mine is a HP Pavilion dv5 1003ax with AMD PUMA platform.
->> `dmidecode | grep "Product Name" says:
->> (under "System Information"...)
->>    Product Name: HP Pavilion dv5 Notebook PC
-> Giuseppe,
-> Palatis mentions that on his laptop the sensor is actually y_inverted.
-> Could you check your laptop? In particular it would be nice if you could
->  describe the values for the four positions defined in the documentation
-> file. BTW, what is the exact version of your laptop? Is it the same as
-> Palatis?
+A: Because it messes up the order in which people normally read text.
+Q: Why is top-posting such a bad thing?
+A: Top-posting.
+Q: What is the most annoying thing in e-mail?
 
-With my patch applied:
+On Tue, Feb 10, 2009 at 04:15:00AM -0200, Guilherme Malschitzky Schroeder wrote:
+> yeah mattia, you were right about ondemand module was being used on
+> cpu1, so i couldn't remove it.
+> with this commited patch, both cpu's can now have different speeds.
 
-Left raised: 0 -> 32k
-Right raised: 0 -> -32k
+afair this has always been the case. the only difference the patch
+introduces is telling the BIOS where the coordination is actually done.
 
-Front raised: 1 -> -32k
-back raised: 1 -> 32k
+> i was just comparing cat /proc/cpuinfo and didn't notice that cpu0 was
+> at 2268MHz.
+> cpufrequtils will need an update do deal with this change.
 
-Upside down: 2 -> 32k
+why? what's wrong with cpufrequtils?
 
-So it seems that my model inverts the Z axis too, I'll have to fix
-that. However, this last test is tricky because unless the laptop is
-completely upside down the Z axis can go from -32k to +32k with just a
-couple of degrees (around the 90°)
+> btw, this looks strange:
+> 
+> dub:~# echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+> dub:~# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+> performance
+> ondemand
+> 
+> dub:~# cat /proc/cpuinfo | grep MH
+> cpu MHz         : 2268.000
+> cpu MHz         : 800.000
+> 
+> dub:~# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/cpuinfo_cur_freq
+> 2267000
+> 2267000
 
-I'll update my patch to invert the X and Z axis for my model.
+well the former displays what the kernel thinks the frequency is, the
+latter reads from hw registers and displays the real frequency.
+It's consistent. The kernel doesn't (and can't) know about what the hw
+is doing behind its back and present the user consistent information.
 
-> Palatis, could you let us know if you also have a lot of "noise" in the
-> values. That is, if when using jstest /dev/input/js0 you see big changes
-> in the values. Is it like on Giuseppe's laptop of around 8000?
->
-> Moreover I'm wondering if this could be an error on LSB/MSB ordering.
-> Maybe looking at the raw values (cat
-> /sys/devices/platform/lis3lv02d/position) would give more insight...
+> dub:~# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_min_freq
+> 800000
+> 800000
+> 
+> dub:~# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_available_frequencies
+> 2268000 2267000 1600000 800000
+> 2268000 2267000 1600000 800000
+> 
+> doesn't cpu0/cpufreq/scaling_min_freq needs to be 2268000 and
+> scaling_frequencies
+> just have 2268000 because it's set to "performance"?
+> 
+> am i forgetting anything else to set?
 
-amd64 architecture here. Laptop flat:
+no, if I understand your question correctly you're just misinterpreting
+what those files are for, take a look at Documentation/cpu-freq
 
-oblomov@oblomov:~$ cat /sys/devices/platform/lis3lv02d/position
-(-256,256,14592)
-oblomov@oblomov:~$ cat /sys/devices/platform/lis3lv02d/position
-(0,256,14848)
-oblomov@oblomov:~$ cat /sys/devices/platform/lis3lv02d/position
-(-256,256,14848)
-oblomov@oblomov:~$ cat /sys/devices/platform/lis3lv02d/position
-(-256,0,14336)
-oblomov@oblomov:~$ cat /sys/devices/platform/lis3lv02d/position
-(-256,512,14336)
-oblomov@oblomov:~$ cat /sys/devices/platform/lis3lv02d/position
-(256,256,14592)
-
-Left edge raised:
-oblomov@oblomov:~$ cat /sys/devices/platform/lis3lv02d/position
-(5120,512,13312)
-oblomov@oblomov:~$ cat /sys/devices/platform/lis3lv02d/position
-(5632,512,13312)
-
-You might be onto something.
-
-The dmi for my Pavilion is:
-
-Handle 0x0001, DMI type 1, 27 bytes
-System Information
-        Manufacturer: Hewlett-Packard
-        Product Name: HP Pavilion dv5 Notebook PC
-        Version: F.09
-        Serial Number: (x-ed out)
-        UUID: (x-ed out)
-        Wake-up Type: Power Switch
-        SKU Number: (x-ed out)
-        Family: 103C_5335KV
-
-So it might be that different pavilions have different sensors?
-
+> thanks,
+> 
+> 
+> On Tue, Feb 10, 2009 at 2:58 AM, Mattia Dongili <malattia@linux.it> wrote:
+> > On Tue, Feb 10, 2009 at 01:53:13AM -0200, Guilherme Malschitzky Schroeder wrote:
+> >> Hi,
+> >>
+> >> If i set performance for scaling_governor using 2.6.29-rc4-git2,
+> >> ondemand stills control my CPU.
+> >> I get just 800MHz instead of 2268MHz.
+> >>
+> >> dub:/sys/devices/system/cpu/cpu0/cpufreq# cat cpuinfo_cur_freq
+> >> 800000
+> >> dub:/sys/devices/system/cpu/cpu0/cpufreq# echo performance > scaling_governor
+> >> dub:/sys/devices/system/cpu/cpu0/cpufreq# cat scaling_governor
+> >> performance
+> >> dub:/sys/devices/system/cpu/cpu0/cpufreq# cat cpuinfo_cur_freq
+> >> 2267000
+> >>
+> >> But, /proc/cpuinfo still shows 800MHz:
+> >>
+> >> model name      : Intel(R) Core(TM)2 Duo CPU     P8400  @ 2.26GHz
+> >> stepping        : 6
+> >> cpu MHz         : 800.000
+> >>
+> >> And i cannot remove the ondemand module, that is not used anymore:
+> >>
+> >> dub:/sys/devices/system/cpu/cpu0/cpufreq# rmmod cpufreq_ondemand
+> >> ERROR: Module cpufreq_ondemand is in use
+> >
+> > yes, I guess it is used by cpu1, you should repeat the above commands
+> > for /sys/devices/system/cpu/cpu1/cpufreq too.
+> >
+> > ...
+> >> I've git bisect from 2.6.28.4 (which was working) to 2.6.29-rc4-git2
+> >> and i get into this:
+> >>
+> >> alemao@dub:~/linux-2.6$ git bisect good
+> >> d96f94c604453f87fe24154b87e1e9a3a72511f8 is first bad commit
+> >> commit d96f94c604453f87fe24154b87e1e9a3a72511f8
+> >> Author: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
+> >> Date:   Mon Feb 2 11:57:18 2009 -0800
+> >>
+> >>     ACPI: Enable bit 11 in _PDC to advertise hw coord
+> >>
+> >>     Bit 11 in intel PDC definitions is meant for OS capability to handle
+> >>     hardware coordination of P-states. In Linux we have always supported
+> >>     hwardware coordination of P-states. Just let the BIOSes know that we
+> >>     support it, by setting this bit.
+> >>
+> >>     Some BIOSes use this bit to choose between hardware or software coordination
+> >>     and without this change below, BIOSes switch to software coordination, which
+> >>     is not very optimal in terms of power consumption and extra
+> >> wakeups from idle.
+> >>
+> >>     Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> >>     Signed-off-by: Len Brown <len.brown@intel.com>
+> >
+> > the "coordination of P-states" is required when you have an SMP system
+> > that cannot scale cpu voltage independently on each cpu, so the best
+> > voltage/frequency have to be selected mediating between all the applied
+> > policies.
+> > The commit you found above just makes use hw coordination instead of sw
+> > and the message explains why.
+> >
+> > If you make sure you change *all* of the cpu policies you won't see the
+> > behaviour you describe.
+> >
+> > hth
+> > --
+> > mattia
+> > :wq
+> >
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 -- 
-Giuseppe "Oblomov" Bilotta
+mattia
+:wq!
