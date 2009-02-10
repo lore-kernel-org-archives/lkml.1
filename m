@@ -1,81 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753240AbZBJEWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbZBJEhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753240AbZBJEWM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 23:22:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZBJEVn
+	id S1754052AbZBJEhu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 23:37:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbZBJEhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 23:21:43 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49962
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752546AbZBJEVl (ORCPT
+	Mon, 9 Feb 2009 23:37:40 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:50291 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750869AbZBJEhj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 23:21:41 -0500
-Date: Mon, 09 Feb 2009 20:21:31 -0800 (PST)
-Message-Id: <20090209.202131.85160609.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Sparc
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Feb 2009 23:37:39 -0500
+Date: Tue, 10 Feb 2009 04:37:33 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Menage <menage@google.com>, Arjan van de Ven <arjan@infradead.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [cgroup or VFS ?] INFO: possible recursive locking detected
+Message-ID: <20090210043733.GY28946@ZenIV.linux.org.uk>
+References: <49617D2E.8050502@cn.fujitsu.com> <496576E7.1@cn.fujitsu.com> <20090209112321.GW28946@ZenIV.linux.org.uk> <1234180131.5951.85.camel@laptop> <4990EF3F.3010501@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4990EF3F.3010501@cn.fujitsu.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Feb 10, 2009 at 11:06:39AM +0800, Li Zefan wrote:
 
-FWIW I'm waiting for the patch in:
+> BTW, I found another bug in current code:
 
-	http://marc.info/?l=linux-kernel&m=123391426917099&w=2
-
-to settle and make it's way into the tree as that bug has been
-crashing my machines for a while.  It's definitely something
-needed for -stable as well.
-
-1) Don't try to use the NMI watchdog on cpus where we know it won't work.
-   These chips lack the performance counter overflow interrupt which is
-   essential to this scheme.
-
-2) We have a million exception fixup stubs generated which are all
-   essentially the same, so have one stub for each case and point the
-   exception table entries to them.
-
-3) Fix probe_kernel_{read,write}() on sparc64, based upon reports and patches
-   from Chris Torek.
-
-Please pull, thanks a lot.
-
-The following changes since commit 4c098bcd55fad34dcf224bf8343db6a9ac58fc68:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../mason/btrfs-unstable
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
-
-David S. Miller (4):
-      sparc64: Call dump_stack() in die_nmi().
-      sparc64: Don't hook up pcr_ops on spitfire chips.
-      sparc64: Kill .fixup section bloat.
-      sparc64: Fix probe_kernel_{read,write}().
-
- arch/sparc/kernel/head_64.S        |   31 ++++++++++++++++--
- arch/sparc/kernel/nmi.c            |    1 +
- arch/sparc/kernel/pcr.c            |    7 +++-
- arch/sparc/lib/GENbzero.S          |    6 +---
- arch/sparc/lib/GENcopy_from_user.S |    8 +---
- arch/sparc/lib/GENcopy_to_user.S   |    8 +---
- arch/sparc/lib/NG2copy_from_user.S |    9 +----
- arch/sparc/lib/NG2copy_to_user.S   |    9 +----
- arch/sparc/lib/NGbzero.S           |    6 +---
- arch/sparc/lib/NGcopy_from_user.S  |    9 +----
- arch/sparc/lib/NGcopy_to_user.S    |    9 +----
- arch/sparc/lib/U1copy_from_user.S  |    8 +---
- arch/sparc/lib/U1copy_to_user.S    |    8 +---
- arch/sparc/lib/U3copy_from_user.S  |    6 +---
- arch/sparc/lib/U3copy_to_user.S    |    8 +---
- arch/sparc/lib/bzero.S             |    6 +---
- arch/sparc/lib/copy_in_user.S      |   61 ++++++++++--------------------------
- 17 files changed, 74 insertions(+), 126 deletions(-)
+Why is that a bug?  If _anything_ had been trying to acquire the
+rwsem in question, it would be fscked anyway.  Not to mention
+that nothing could have ever seen that struct super_block in this
+particular case, as a general rule
+	* if something might be blocked on your mutex/rwsem or spinning
+on a spinlock, releasing it before you free the object won't save your
+arse.
+	You have no promise whatsoever that whoever's been trying to
+get the lock in question will even get out of the locking primitive
+before the memory that contains the lock gets freed.  In case of superblocks
+in general, you don't free them until ->s_count hits zero.  At that point
+anything as much as remembering the address of that superblock is already
+FUBAR.
