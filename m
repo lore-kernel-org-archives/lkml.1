@@ -1,44 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754152AbZBJKK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbZBJKPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754152AbZBJKK3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 05:10:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbZBJKKV
+	id S1754010AbZBJKPs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 05:15:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbZBJKPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 05:10:21 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60718 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752443AbZBJKKU (ORCPT
+	Tue, 10 Feb 2009 05:15:40 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:60695 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752443AbZBJKPj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 05:10:20 -0500
-Date: Tue, 10 Feb 2009 11:10:19 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
-Cc: ?ric Piel <eric.piel@tremplin-utc.net>, linux-kernel@vger.kernel.org,
-       Palatis Tseng <palatis@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] lis3lv02d: add axes knowledge of HP Pavilion dv5 models
-Message-ID: <20090210101019.GB27018@atrey.karlin.mff.cuni.cz>
-References: <1233967681-6378-1-git-send-email-giuseppe.bilotta@gmail.com> <498D9F02.9000107@tremplin-utc.net> <cb7bb73a0902071559w70b3367el9471db894872257f@mail.gmail.com> <20090209094748.GC4358@atrey.karlin.mff.cuni.cz> <cb7bb73a0902090153q30a5337bj45d41a3e3919e189@mail.gmail.com> <20090209095803.GD4358@atrey.karlin.mff.cuni.cz> <cb7bb73a0902090345y4ef5d544ta374ee96791a80df@mail.gmail.com> <cb7bb73a0902090533q3acc45b2r7d00b44aa0bdfc90@mail.gmail.com>
+	Tue, 10 Feb 2009 05:15:39 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=k3BzUd8vs3SOuEcqhswy60qU96jSdfW1OJ9lLwbZDIU+nkj54HJOZJeUmRz64hQu4
+	l71hJkRtk+ovDzTaVEsWg==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cb7bb73a0902090533q3acc45b2r7d00b44aa0bdfc90@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4991497B.4030200@cn.fujitsu.com>
+References: <4991497B.4030200@cn.fujitsu.com>
+Date: Tue, 10 Feb 2009 02:15:36 -0800
+Message-ID: <6599ad830902100215o185edd31k8731e033717dbb49@mail.gmail.com>
+Subject: Re: [PATCH] cgroups: fix possible use after free
+From: Paul Menage <menage@google.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@zeniv.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, Feb 9, 2009 at 12:45 PM, Giuseppe Bilotta
-> <giuseppe.bilotta@gmail.com> wrote:
-> > I will try this patch
-> > http://lkml.indiana.edu/hypermail/linux/kernel/0901.2/00164.html in
-> > the mean time, in case that's the patch which is in -mm.
-> 
-> With that patch I still get the same range of fluctuations.
+On Tue, Feb 10, 2009 at 1:31 AM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+> In cgroup_kill_sb(), root is freed before sb is detached from the list,
+> so another sget() may find this sb and call cgroup_test_super(),
+> which will access the root that has been freed.
 
-Yeah, that patch. Not sure what to do next... you could grab lis3
-manual and see if you can setup chip by hand to get better results...
+I think that I'd assumed that by the time we get to cgroup_kill_sb()
+there's no chance of the sb being resurrected by sget().
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+If anyone can call cgroup_test_super() on the sb that we're trying to
+free, isn't that bad? Since even with this patch we free root just
+after calling kill_litter_sb(), if anyone tries to reuse that super
+block then they're toast.
+
+Would it be better to set sb->s_fs_info to NULL, before calling
+kill_litter_sb(), and have cgroup_test_super() just return 0 for any
+sb with a NULL sb->s_fs_info.
+
+Paul
+
+>
+> Reported-by: Al Viro <viro@ZenIV.linux.org.uk>
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  kernel/cgroup.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index 5a54ff4..42fd3f2 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -1122,8 +1122,8 @@ static void cgroup_kill_sb(struct super_block *sb) {
+>
+>        mutex_unlock(&cgroup_mutex);
+>
+> -       kfree(root);
+>        kill_litter_super(sb);
+> +       kfree(root);
+>  }
+>
+>  static struct file_system_type cgroup_fs_type = {
+> --
+> 1.5.4.rc3
+>
