@@ -1,63 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbZBJNgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755347AbZBJNie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755201AbZBJNgu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 08:36:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbZBJNgj
+	id S1755347AbZBJNie (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 08:38:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbZBJNiY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 08:36:39 -0500
-Received: from ozlabs.org ([203.10.76.45]:41845 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751920AbZBJNgi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 08:36:38 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Michal Hocko <mhocko@suse.cz>
-Subject: Re: [RFC] Suspicious bug in module refcounting
-Date: Wed, 11 Feb 2009 00:06:31 +1030
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
-Cc: "David S. Miller" <davem@davemloft.net>, Karsten Keil <kkeil@suse.de>,
-       linux-kernel@vger.kernel.org, richard kennedy <richard@rsk.demon.co.uk>,
-       Dan Williams <dan.j.williams@intel.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>, dwmw2@infradead.org,
-       Scott Wood <scottwood@freescale.com>, netdev@vger.kernel.org,
-       Al Viro <viro@zeniv.linux.org.uk>
-References: <20090203134721.GA11069@pingi.kke.suse.de> <200902101345.08580.rusty@rustcorp.com.au> <20090210103136.GB7096@dhcp35.suse.cz>
-In-Reply-To: <20090210103136.GB7096@dhcp35.suse.cz>
+	Tue, 10 Feb 2009 08:38:24 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:35143 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753422AbZBJNiX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 08:38:23 -0500
+Date: Tue, 10 Feb 2009 07:38:21 -0600
+From: Dean Nelson <dcn@sgi.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Tony Luck <tony.luck@intel.com>
+Cc: Jack Steiner <steiner@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-ia64 <linux-ia64@vger.kernel.org>,
+       linux-next <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] don't compile SGI XP/GRU on ia64_generic
+Message-ID: <20090210133821.GA23973@sgi.com>
+References: <20090210162821.6FC1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902110006.33132.rusty@rustcorp.com.au>
+In-Reply-To: <20090210162821.6FC1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 10 February 2009 21:01:37 Michal Hocko wrote:
-> On Tue 10-02-09 13:45:07, Rusty Russell wrote:
-> > On Tuesday 10 February 2009 01:48:31 Michal Hocko wrote:
-> > > Based on this change, would it make sense to update sys_accept to change
-> > > __module_get to try_module_get like in the following patch?
-> > 
-> > I don't think so:
-> > 
-> > >  	/*
-> > > -	 * We don't need try_module_get here, as the listening socket (sock)
-> > > -	 * has the protocol module (sock->ops->owner) held.
-> > > +	 * Socket's owner cannot be in unloading path because there
-> > > +	 * must be at least one listening reference
-> > >  	 */
-> > > -	__module_get(newsock->ops->owner);
-> > > +	if (unlikely(!try_module_get(newsock->ops->owner)))
-> > > +		BUG();
-> > 
-> > rmmod --wait can make try_module_get fail even if the reference count isn't
-> > zero.  
+On Tue, Feb 10, 2009 at 04:35:46PM +0900, KOSAKI Motohiro wrote:
+> Impact: fix build error
 > 
-> OK, I though that rmmod --wait waits for refcount==0 and then changes
-> the state.
+> Currently sgi-xp driver depend on "uv.h" header file.
+> but only x86 have "uv.h" header.
 
-No, it has to stop all future use, otherwise it's useless under load.
+Yesterday I submitted a patch that introduces a 'uv.h' header file for
+ia64 and eliminates the ia64 build error. Link to any one of the following
+to see the patch.
 
-Cheers,
-Rusty.
+	http://marc.info/?l=linux-ia64&m=123419673126499&w=2
+	http://marc.info/?l=linux-next&m=123419673226503&w=2
+	http://marc.info/?l=linux-kernel&m=123419682026636&w=2
+
+That is the preferred solution to this problem.
+
+
+> Then, ia64 hit following build error.
+> 
+>   In file included from drivers/misc/sgi-gru/grufile.c:39:
+>   drivers/misc/sgi-gru/gru.h:22:23: error: asm/uv/uv.h: No such file or directory
+> 
+> Cc: Jack Steiner <steiner@sgi.com>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> 
+> ---
+>  drivers/misc/Kconfig |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: b/drivers/misc/Kconfig
+> ===================================================================
+> --- a/drivers/misc/Kconfig
+> +++ b/drivers/misc/Kconfig
+> @@ -165,7 +165,7 @@ config SGI_XP
+>  	depends on (IA64_GENERIC || IA64_SGI_SN2 || IA64_SGI_UV || X86_UV) && SMP
+>  	select IA64_UNCACHED_ALLOCATOR if IA64_GENERIC || IA64_SGI_SN2
+>  	select GENERIC_ALLOCATOR if IA64_GENERIC || IA64_SGI_SN2
+> -	select SGI_GRU if (IA64_GENERIC || IA64_SGI_UV || X86_64) && SMP
+> +	select SGI_GRU if (IA64_SGI_UV || X86_UV) && SMP
+>  	---help---
+>  	  An SGI machine can be divided into multiple Single System
+>  	  Images which act independently of each other and have
+> @@ -189,7 +189,7 @@ config HP_ILO
+>  
+>  config SGI_GRU
+>  	tristate "SGI GRU driver"
+> -	depends on (X86_UV || IA64_SGI_UV || IA64_GENERIC) && SMP
+> +	depends on (X86_UV || IA64_SGI_UV) && SMP
+>  	default n
+>  	select MMU_NOTIFIER
+>  	---help---
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ia64" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
