@@ -1,57 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754475AbZBJCsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668AbZBJDH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754475AbZBJCsT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 21:48:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZBJCsK
+	id S1753668AbZBJDH3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 22:07:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbZBJDHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 21:48:10 -0500
-Received: from wf-out-1314.google.com ([209.85.200.174]:8678 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752275AbZBJCsJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 21:48:09 -0500
+	Mon, 9 Feb 2009 22:07:17 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:49533 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752306AbZBJDHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Feb 2009 22:07:16 -0500
+Message-ID: <4990EF3F.3010501@cn.fujitsu.com>
+Date: Tue, 10 Feb 2009 11:06:39 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-In-Reply-To: <20090205120608.GB8799@elte.hu>
-References: <20090205112414.104100700@chello.nl>
-	 <20090205120608.GB8799@elte.hu>
-Date: Tue, 10 Feb 2009 10:48:07 +0800
-Message-ID: <d3f22a0902091848y43661118ie4ddf90e44357c46@mail.gmail.com>
-Subject: Re: [PATCH 0/2] fix the itimer regression (BZ 12618)
-From: Lin Ming <lin@minggr.cn>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, tglx@linutronix.de,
-       oleg@redhat.com, linux-kernel@vger.kernel.org,
-       yanmin_zhang@linux.intel.com, seto.hidetoshi@jp.fujitsu.com
-Content-Type: text/plain; charset=ISO-8859-1
+To: Peter Zijlstra <peterz@infradead.org>, Al Viro <viro@ZenIV.linux.org.uk>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Menage <menage@google.com>, Arjan van de Ven <arjan@infradead.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [cgroup or VFS ?] INFO: possible recursive locking detected
+References: <49617D2E.8050502@cn.fujitsu.com> <496576E7.1@cn.fujitsu.com>	 <20090209112321.GW28946@ZenIV.linux.org.uk> <1234180131.5951.85.camel@laptop>
+In-Reply-To: <1234180131.5951.85.camel@laptop>
+Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 5, 2009 at 8:06 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->
->> This should hopefully address all the itimer borkage.
->
-> Applied to tip:timers/urgent, thanks Peter!
->
-> Yanmin: could you check hacbench_pth with latest tip/master, do
-> these fixes resolve that 3% regression you reported?
+> It seems to me we can simply put the new s_umount instance in a
+> different subclass. Its a bit unusual to use _nested for the outer lock,
+> but lockdep doesn't particularly cares about subclass order.
+> 
+> If there's any issue with the callers of sget() assuming the s_umount
+> lock being of sublcass 0, then there is another annotation we can use to
+> fix that, but lets not bother with that if this is sufficient.
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-hacbench_pth still has regression with 2.6.29-rc4.
-Below 2 patches that fixed the regression are not merged into 2.6.29-rc4.
+Tested-by: Li Zefan <lizf@cn.fujitsu.com>
 
-commit 32bd671d6cbeda60dc73be77fa2b9037d9a9bfa0
-Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date:   Thu Feb 5 12:24:15 2009 +0100
+Thanks!
 
-    signal: re-add dead task accumulation stats.
+a minor comment
 
-commit 4cd4c1b40d40447fb5e7ba80746c6d7ba91d7a53
-Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date:   Thu Feb 5 12:24:16 2009 +0100
+> +		 * lock of the old one. Since these are clearly distrinct
 
-    timers: split process wide cpu clocks/timers
+s/distrinct/distinct
 
-Lin Ming
+
+BTW, I found another bug in current code:
+
+From: Li Zefan <lizf@cn.fujitsu.com>
+Date: Tue, 10 Feb 2009 10:55:53 +0800
+Subject: [PATCH] vfs: add missing unlock in sget()
+
+We should release s->s_umount before calling destroy_super(s).
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ fs/super.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/fs/super.c b/fs/super.c
+index 61dce00..8bdf981 100644
+--- a/fs/super.c
++++ b/fs/super.c
+@@ -356,8 +356,10 @@ retry:
+ 				continue;
+ 			if (!grab_super(old))
+ 				goto retry;
+-			if (s)
++			if (s) {
++				up_write(&s->s_umount);
+ 				destroy_super(s);
++			}
+ 			return old;
+ 		}
+ 	}
+-- 
+1.5.4.rc3
+
+
