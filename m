@@ -1,85 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754446AbZBJD4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbZBJEG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754446AbZBJD4i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 22:56:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbZBJD41
+	id S1754059AbZBJEG3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Feb 2009 23:06:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbZBJEGU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 22:56:27 -0500
-Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:39504 "HELO
-	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752479AbZBJD40 (ORCPT
+	Mon, 9 Feb 2009 23:06:20 -0500
+Received: from rtp-iport-2.cisco.com ([64.102.122.149]:39148 "EHLO
+	rtp-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752700AbZBJEGT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 22:56:26 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=sxP5ObuIMgq2uEDYh/Igr6nvbK7g+sBKgdVF0dSaFI932SyKVrxa+UHtxGP7My4DbmeOx1qNyETUuIZUFfR1/Cj5oOwskxGFPTXlbUT97OyyWLg6DkP/GTBajfvLxxVCNr9vDU7YJarj/eO4P2h87yT4bSuzG5G2eWrPkxtq/ls=  ;
-X-YMail-OSG: cKb2_DcVM1kS.GTjOOs5mVUIX6mUCGJj3oJ4qhFppxabXTY_DR_ppT1Mon.n1B4ld5x6UCmARxJgnUG2WBb3D53F8GVfO9zyExDC1FafkBcrmLldEVQR0zYSCbqSFIQRbveUSkpI6vQr6e7TR4kAHiCWyDRbaHvuNUbFwYliJ1D0Yp5OKNJEifgyXn7BEdVIfrKTlfbUw7yqdDimXpQ6GVuiiflstIvQ
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH] mm fix page writeback accounting to fix oom condition under heavy I/O
-Date: Tue, 10 Feb 2009 14:55:55 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jens Axboe <jens.axboe@oracle.com>, akpm@linux-foundation.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, thomas.pi@arcor.dea,
-       Yuriy Lalym <ylalym@gmail.com>, ltt-dev@lists.casi.polymtl.ca,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-References: <20090120122855.GF30821@kernel.dk> <20090123220009.34DF.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090210033652.GA28435@Krystal>
-In-Reply-To: <20090210033652.GA28435@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 9 Feb 2009 23:06:19 -0500
+X-IronPort-AV: E=Sophos;i="4.38,183,1233532800"; 
+   d="scan'208";a="36493944"
+Subject: Re: [PATCH] Propagate CRAMFS uncompression errors
+From: David VomLehn <dvomlehn@cisco.com>
+Reply-To: dvomlehn@cisco.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20090209194825.e052e07a.akpm@linux-foundation.org>
+References: <FF038EB85946AA46B18DFEE6E6F8A2899507E0@xmb-rtp-218.amer.cisco.com>
+	 <20090209151630.4d87ad13.akpm@linux-foundation.org>
+	 <FF038EB85946AA46B18DFEE6E6F8A289950C30@xmb-rtp-218.amer.cisco.com>
+	 <20090209194825.e052e07a.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 09 Feb 2009 20:06:01 -0800
+Message-Id: <1234238761.17414.2.camel@cuplxvomd02.corp.sa.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8)
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902101455.56789.nickpiggin@yahoo.com.au>
+X-OriginalArrivalTime: 10 Feb 2009 04:06:15.0900 (UTC) FILETIME=[EB4CA9C0:01C98B34]
+X-ST-MF-Message-Resent: 2/9/2009 23:06
+Authentication-Results: rtp-dkim-1; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/rtpdkim1001 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 10 February 2009 14:36:53 Mathieu Desnoyers wrote:
-> Related to :
-> http://bugzilla.kernel.org/show_bug.cgi?id=12309
->
-> Very annoying I/O latencies (20-30 seconds) are occuring under heavy I/O
-> since ~2.6.18.
->
-> Yuriy Lalym noticed that the oom killer was eventually called. So I took a
-> look at /proc/meminfo and noticed that under my test case (fio job created
-> from a LTTng block I/O trace, reproducing dd writing to a 20GB file and ssh
-> sessions being opened), the Inactive(file) value increased, and the total
-> memory consumed increased until only 80kB (out of 16GB) were left.
->
-> So I first used cgroups to limit the memory usable by fio (or dd). This
-> seems to fix the problem.
->
-> Thomas noted that there seems to be a problem with pages being passed to
-> the block I/O elevator not being counted as dirty. I looked at
-> clear_page_dirty_for_io and noticed that page_mkclean clears the dirty bit
-> and then set_page_dirty(page) is called on the page. This calls
-> mm/page-writeback.c:set_page_dirty(). I assume that the
-> mapping->a_ops->set_page_dirty is NULL, so it calls
-> buffer.c:__set_page_dirty_buffers(). This calls set_buffer_dirty(bh).
->
-> So we come back in clear_page_dirty_for_io where we decrement the dirty
-> accounting. This is a problem, because we assume that the block layer will
-> re-increment it when it gets the page, but because the buffer is marked as
-> dirty, this won't happen.
->
-> So this patch fixes this behavior by only decrementing the page accounting
-> _after_ the block I/O writepage has been done.
->
-> The effect on my workload is that the memory stops being completely filled
-> by page cache under heavy I/O. The vfs_cache_pressure value seems to work
-> again.
 
-I don't think we're supposed to assume the block layer will re-increment
-the dirty count? It should be all in the VM. And the VM should increment
-writeback count before sending it to the block device, and dirty page
-throttling also takes into account the number of writeback pages, so it
-should not be allowed to fill up memory with dirty pages even if the
-block device queue size is unlimited.
+On Mon, 2009-02-09 at 19:48 -0800, Andrew Morton wrote:
+...
+> 
+> umm...
+> 
+> Nope, it's still not right.  We'll treat this case:
+> 
+> 		if (compr_len == 0)
+> 			; /* hole */
+> 
+> as an IO error.  grr.
+> 
+> --- a/fs/cramfs/inode.c~cramfs-propagate-uncompression-errors
+> +++ a/fs/cramfs/inode.c
+> @@ -477,7 +477,7 @@ static int cramfs_readpage(struct file *
+>  		mutex_unlock(&read_mutex);
+>  		pgdata = kmap(page);
+>  		if (compr_len == 0)
+> -			; /* hole */
+> +			goto out; /* hole */
+>  		else if (compr_len > (PAGE_CACHE_SIZE << 1))
+>  			printk(KERN_ERR "cramfs: bad compressed blocksize %u\n", compr_len);
+>  		else {
+> @@ -488,12 +488,20 @@ static int cramfs_readpage(struct file *
+>  				 compr_len);
+>  			mutex_unlock(&read_mutex);
+>  		}
+> -	} else
+> -		pgdata = kmap(page);
+> -	memset(pgdata + bytes_filled, 0, PAGE_CACHE_SIZE - bytes_filled);
+> -	kunmap(page);
+> -	flush_dcache_page(page);
+> -	SetPageUptodate(page);
+> +
+> +		if (bytes_filled == 0) {
+> +			/* Decompression error */
+> +			ClearPageUptodate(page);
+> +			SetPageError(page);
+> +		} else {
+> +			memset(pgdata + bytes_filled, 0,
+> +					PAGE_CACHE_SIZE - bytes_filled);
+> +			flush_dcache_page(page);
+> +			SetPageUptodate(page);
+> +		}
+> +		kunmap(page);
+> +	}
+> +out:
+>  	unlock_page(page);
+>  	return 0;
+>  }
+
+Is that actually an error. The comment in the code is, uh, a bit terse,
+but I took it to mean that there was a deliberate hole, just like holes
+in files that should read as all zeroes. But even if it's actually an
+error, we still need to kunmap the page
+-- 
+David VomLehn, dvomlehn@cisco.com
+
+
+
+
+     - - - - -                              Cisco                            - - - - -         
+This e-mail and any attachments may contain information which is confidential, 
+proprietary, privileged or otherwise protected by law. The information is solely 
+intended for the named addressee (or a person responsible for delivering it to 
+the addressee). If you are not the intended recipient of this message, you are 
+not authorized to read, print, retain, copy or disseminate this message or any 
+part of it. If you have received this e-mail in error, please notify the sender 
+immediately by return e-mail and delete it from your computer.
 
