@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870AbZBJTHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756710AbZBJTIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754870AbZBJTHo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 14:07:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbZBJTDh
+	id S1756710AbZBJTIb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 14:08:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755315AbZBJTDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 14:03:37 -0500
-Received: from kroah.org ([198.145.64.141]:53693 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 14:03:38 -0500
+Received: from kroah.org ([198.145.64.141]:53721 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755104AbZBJTDg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 14:03:36 -0500
-Date: Tue, 10 Feb 2009 11:00:02 -0800
+	id S1755291AbZBJTDi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 14:03:38 -0500
+Date: Tue, 10 Feb 2009 11:00:05 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Holger Macht <hmacht@suse.de>,
-       Len Brown <len.brown@intel.com>
-Subject: [patch 11/53] ACPI: dock: Dont eval _STA on every show_docked
-	sysfs read
-Message-ID: <20090210190002.GL14308@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [patch 13/53] firewire: ohci: increase AT req. retries, fix
+	ack_busy_X from Panasonic camcorders and others
+Message-ID: <20090210190005.GN14308@kroah.com>
 References: <20090210185337.000769713@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-dock-don-t-eval-_sta-on-every-show_docked-sysfs-read.patch"
+Content-Disposition: inline; filename="firewire-ohci-increase-at-req.-retries-fix-ack_busy_x-from-panasonic-camcorders-and-others.patch"
 In-Reply-To: <20090210185924.GA14308@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,46 +39,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Holger Macht <hmacht@suse.de>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-commit fc5a9f8841ee87d93376ada5d73117d4d6a373ea upstream.
+Commit 8b7b6afaa84708d08139daa08538ca3e56c351f1 upstream.
 
-Some devices trigger a DEVICE_CHECK on every evalutation of _STA. This
-can also be seen in commit 8b59560a3baf2e7c24e0fb92ea5d09eca92805db
-(ACPI: dock: avoid check _STA method).  If an undock is processed, the
-dock driver sends a uevent and userspace might read the show_docked
-property in sysfs. This causes an evaluation of _STA of the particular
-device which causes the dock driver to immediately dock again.
+Camcorders have a tendency to fail read requests to their config ROM and
+write request to their FCP command register with ack_busy_X.  This has
+become a problem with newer kernels and especially Panasonic camcorders,
+causing AV/C in dvgrab and kino to fail.  Dvgrab for example frequently
+logs "send oops"; kino reports loss of AV/C control.  I suspect that
+lower CPU scheduling latencies in newer kernels made this issue more
+prominent now.
 
-In any case, evaluation of _STA (show_docked) does not necessarily mean
-that we are docked, so check with the internal device structure.
+According to
+https://sourceforge.net/tracker/?func=detail&atid=114103&aid=2492640&group_id=14103
+this can be fixed by configuring the FireWire controller for more
+hardware retries for request transmission; these retries are evidently
+more successful than libavc1394's own retry loop (typically 3 tries on
+top of hardware retries).
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12360
+Presumably the same issue has been reported at
+https://bugzilla.redhat.com/show_bug.cgi?id=449252 and
+https://bugzilla.redhat.com/show_bug.cgi?id=477279 .
 
-Signed-off-by: Holger Macht <hmacht@suse.de>
-Signed-off-by: Len Brown <len.brown@intel.com>
+In a quick test with a JVC camcorder (which didn't malfunction like the
+reported camcorders), this change decreased the number of ack_busy_X
+from 16 in three runs of dvgrab to 4 in three runs of the same capture
+duration.
+
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/dock.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/firewire/fw-ohci.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/acpi/dock.c
-+++ b/drivers/acpi/dock.c
-@@ -855,10 +855,14 @@ fdd_out:
- static ssize_t show_docked(struct device *dev,
- 			   struct device_attribute *attr, char *buf)
- {
-+	struct acpi_device *tmp;
-+
- 	struct dock_station *dock_station = *((struct dock_station **)
- 		dev->platform_data);
--	return snprintf(buf, PAGE_SIZE, "%d\n", dock_present(dock_station));
+--- a/drivers/firewire/fw-ohci.c
++++ b/drivers/firewire/fw-ohci.c
+@@ -226,7 +226,7 @@ static inline struct fw_ohci *fw_ohci(st
+ #define CONTEXT_DEAD	0x0800
+ #define CONTEXT_ACTIVE	0x0400
  
-+	if (ACPI_SUCCESS(acpi_bus_get_device(dock_station->handle, &tmp)))
-+		return snprintf(buf, PAGE_SIZE, "1\n");
-+	return snprintf(buf, PAGE_SIZE, "0\n");
- }
- static DEVICE_ATTR(docked, S_IRUGO, show_docked, NULL);
+-#define OHCI1394_MAX_AT_REQ_RETRIES	0x2
++#define OHCI1394_MAX_AT_REQ_RETRIES	0xf
+ #define OHCI1394_MAX_AT_RESP_RETRIES	0x2
+ #define OHCI1394_MAX_PHYS_RESP_RETRIES	0x8
  
 
