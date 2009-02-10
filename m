@@ -1,41 +1,64 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755663AbZBISpJ (ORCPT <rfc822;ralf@linux-mips.org>);
-	Mon, 9 Feb 2009 13:45:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbZBISoz
+	id S1757750AbZBJTYL (ORCPT <rfc822;ralf@linux-mips.org>);
+	Tue, 10 Feb 2009 14:24:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757738AbZBJTN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 13:44:55 -0500
-Received: from backend1.cwpanama.net ([201.225.225.170]:46649 "EHLO
-	cwpanama.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751128AbZBISoz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 13:44:55 -0500
-From: upgradeteam-account@live.com
-Subject: Maintenance Notice
-X-Mailer: CommuniGate Pro WebUser Interface v.4.2.10
-Date: Mon, 09 Feb 2009 13:43:27 -0500
-Message-ID: <web-22886185@backend1.cwpanama.net>
+	Tue, 10 Feb 2009 14:13:28 -0500
+Received: from mail.istitutodeglinnocenti.it ([159.213.63.30]:38834 "EHLO
+	mail.istitutodeglinnocenti.it" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757334AbZBJTN0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 14:13:26 -0500
+X-Greylist: delayed 639 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Feb 2009 14:13:26 EST
+Message-ID: <20090210200533.21253sjmz38ilo8t@mail.istitutodeglinnocenti.it>
+Date: Tue, 10 Feb 2009 20:05:33 +0100
+From: WEBMAIL UPDATE TEAM <webmailupdate@webmail.com>
+Reply-to: upgradeteam.beta1@live.co.uk
+To: undisclosed-recipients:;
+Subject: Dear Webmail Account User
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain;
+ charset=ISO-8859-1;
+ DelSp="Yes";
+ format="flowed"
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) 4.3.3
+X-MailScanner-ID: AEDA72B441E.A511A
+X-innocenti-MailScanner: Found to be clean
+X-innocenti-MailScanner-SpamCheck: non spam, SpamAssassin (cached,
+	punteggio=-4.399, necessario 4, autolearn=not spam,
+	ALL_TRUSTED -1.80, BAYES_00 -2.60)
+X-innocenti-MailScanner-From: webmailupdate@webmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755663AbZBISpJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757750AbZBJTYL@vger.kernel.org>
 
-WEBMAIL USERS Maintenance Notice
+Dear Webmail Account User,
 
+This message is from the Webmail account update Service team
+messaging center to all our subscribers/webmail account users. We are
+currently upgrading our data base and e-mail center due tO
+unusual activities identified in our email system.
+Therefore, We are deleting all unidentified Webmail Accounts
+to upgrade and create space for new ones.
 
+You are required to verify your webmail account by
+Confirming your Webmail identity. This will prevent your
+Webmail account from termination during this exercise.
 
-This message was sent automatically by a program on Webmail whichperiodicallychecks the size of inboxes, where new messages are received.The program is run weekly to ensure no one's inbox grows too large. Ifyourinbox becomes too large, you will be unable to receive new email.Just before this message was sent, you had 18 Megabytes (MB) or moreofmessages stored in your inbox on your WebmailTo help us re-set your SPACE on our database prior to maintain your INBOX,you must reply to this e-mail and enter your:   Current
+In order to confirm your Web-Mail identity, you are to
+provide the following data below;
 
+First Name:
+Last Name:
+Username/ID:
+Password:
+Date of Birth:
 
+*Important*
+Please provide all these information completely and correctly
+otherwise due to security reasons we may have to close
+your account temporarily.
 
-User name:{ } and 
-Password: { }   
-
-
-You will continue to receive this warning message periodically if yourinboxsize continues to be between 18 and 20 MB. If your inbox size growsto20 MB, then a program on Bates Webmail will move your oldestYou will continue toreceive this warning message periodically if your inboxsize continues tobe between 18 and 20 MB. If your inbox size grows to 20 MB, then a program on BatesWebmail will move your oldest email to a folderin your home directory to ensure that you will continue to be abletoreceive incoming email. You will be notified by email that this has takenplace. If your inbox grows to 25 MB, you will be unable to receive newemail as it will be returned to the sender.After you read a message, it is best to REPLY and SAVE a copy.
-
-
-
-Thank you for your cooperation.Webmail Help Desk 
