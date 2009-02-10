@@ -1,122 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754383AbZBJIzD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753611AbZBJIz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754383AbZBJIzD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 03:55:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbZBJIym
+	id S1753611AbZBJIz3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 03:55:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbZBJIyn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 03:54:42 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:40850 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753353AbZBJIyl (ORCPT
+	Tue, 10 Feb 2009 03:54:43 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:28002 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753941AbZBJIym (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 03:54:41 -0500
+	Tue, 10 Feb 2009 03:54:42 -0500
 From: Wenji Huang <wenji.huang@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: rostedt@goodmis.org, fweisbec@gmail.com,
        Wenji Huang <wenji.huang@oracle.com>
-Subject: [PATCH 3/3] trace: fix typos in comment.
-Date: Tue, 10 Feb 2009 01:03:18 -0500
-Message-Id: <1234245798-14546-1-git-send-email-wenji.huang@oracle.com>
+Subject: [PATCH 1/3] trace: remove unneeded variable.
+Date: Tue, 10 Feb 2009 01:02:46 -0500
+Message-Id: <1234245766-14506-1-git-send-email-wenji.huang@oracle.com>
 X-Mailer: git-send-email 1.5.6
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.499140CB.003A:SCFSTAT928724,ss=1,fgs=0
+X-CT-RefId: str=0001.0A010208.499140CB.006B:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: clean up.
+Remove the unnecessary variable ret.
 
-Fix some typos in comment and re-send it based previous code sent to steven
-in better submission way.
+Impact: clean up.
 
 Signed-off-by: Wenji Huang <wenji.huang@oracle.com>
 ---
- include/linux/ring_buffer.h      |    2 +-
- kernel/trace/ring_buffer.c       |    8 ++++----
- kernel/trace/trace.c             |    2 +-
- kernel/trace/trace_hw_branches.c |    2 +-
- 4 files changed, 7 insertions(+), 7 deletions(-)
+ kernel/trace/trace_branch.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
-index 3c103d6..8e6646a 100644
---- a/include/linux/ring_buffer.h
-+++ b/include/linux/ring_buffer.h
-@@ -8,7 +8,7 @@ struct ring_buffer;
- struct ring_buffer_iter;
+diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
+index f8ae2c5..c2e68d4 100644
+--- a/kernel/trace/trace_branch.c
++++ b/kernel/trace/trace_branch.c
+@@ -91,8 +91,6 @@ void trace_likely_condition(struct ftrace_branch_data *f, int val, int expect)
  
- /*
-- * Don't reference this struct directly, use functions below.
-+ * Don't refer to this struct directly, use functions below.
-  */
- struct ring_buffer_event {
- 	u32		type:2, len:3, time_delta:27;
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 53ba3a6..22ccadc 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -91,7 +91,7 @@ EXPORT_SYMBOL_GPL(tracing_off);
-  * tracing_off_permanent - permanently disable ring buffers
-  *
-  * This function, once called, will disable all ring buffers
-- * permanenty.
-+ * permanently.
-  */
- void tracing_off_permanent(void)
+ int enable_branch_tracing(struct trace_array *tr)
  {
-@@ -210,7 +210,7 @@ EXPORT_SYMBOL_GPL(ring_buffer_event_data);
+-	int ret = 0;
+-
+ 	mutex_lock(&branch_tracing_mutex);
+ 	branch_tracer = tr;
+ 	/*
+@@ -103,7 +101,7 @@ int enable_branch_tracing(struct trace_array *tr)
+ 	branch_tracing_enabled++;
+ 	mutex_unlock(&branch_tracing_mutex);
  
- struct buffer_data_page {
- 	u64		 time_stamp;	/* page time stamp */
--	local_t		 commit;	/* write commited index */
-+	local_t		 commit;	/* write committed index */
- 	unsigned char	 data[];	/* data of buffer page */
- };
- 
-@@ -260,7 +260,7 @@ struct ring_buffer_per_cpu {
- 	struct list_head		pages;
- 	struct buffer_page		*head_page;	/* read from head */
- 	struct buffer_page		*tail_page;	/* write to tail */
--	struct buffer_page		*commit_page;	/* commited pages */
-+	struct buffer_page		*commit_page;	/* committed pages */
- 	struct buffer_page		*reader_page;
- 	unsigned long			overrun;
- 	unsigned long			entries;
-@@ -303,7 +303,7 @@ struct ring_buffer_iter {
-  * check_pages - integrity check of buffer pages
-  * @cpu_buffer: CPU buffer with pages to test
-  *
-- * As a safty measure we check to make sure the data pages have not
-+ * As a safety measure we check to make sure the data pages have not
-  * been corrupted.
-  */
- static int rb_check_pages(struct ring_buffer_per_cpu *cpu_buffer)
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 5b1e9a9..7072909 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -1943,7 +1943,7 @@ tracing_trace_options_read(struct file *filp, char __user *ubuf,
- 	struct tracer_opt *trace_opts = current_trace->flags->opts;
- 
- 
--	/* calulate max size */
-+	/* calculate max size */
- 	for (i = 0; trace_options[i]; i++) {
- 		len += strlen(trace_options[i]);
- 		len += 3; /* "no" and space */
-diff --git a/kernel/trace/trace_hw_branches.c b/kernel/trace/trace_hw_branches.c
-index e3e7db6..0794dd3 100644
---- a/kernel/trace/trace_hw_branches.c
-+++ b/kernel/trace/trace_hw_branches.c
-@@ -75,7 +75,7 @@ static void bts_trace_start(struct trace_array *tr)
+-	return ret;
++	return 0;
  }
  
- /*
-- * Start tracing on the current cpu.
-+ * Stop tracing on the current cpu.
-  * The argument is ignored.
-  *
-  * pre: bts_tracer_mutex must be locked.
+ void disable_branch_tracing(void)
 -- 
 1.5.6
 
