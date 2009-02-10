@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757046AbZBJTNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757149AbZBJTNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757046AbZBJTNV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 14:13:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755785AbZBJTDz
+	id S1757149AbZBJTNi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 14:13:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755801AbZBJTD4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 14:03:55 -0500
-Received: from kroah.org ([198.145.64.141]:53927 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 14:03:56 -0500
+Received: from kroah.org ([198.145.64.141]:53917 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755746AbZBJTDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755745AbZBJTDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 10 Feb 2009 14:03:54 -0500
-Date: Tue, 10 Feb 2009 11:00:40 -0800
+Date: Tue, 10 Feb 2009 11:00:38 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,12 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
-Subject: [patch 28/53] ALSA: hda - Add missing initialization for ALC272
-Message-ID: <20090210190040.GC14308@kroah.com>
+Subject: [patch 27/53] ALSA: hda - Add missing COEF initialization for
+	ALC887
+Message-ID: <20090210190038.GB14308@kroah.com>
 References: <20090210185337.000769713@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-hda-add-missing-initialization-for-alc272.patch"
+Content-Disposition: inline; filename="alsa-hda-add-missing-coef-initialization-for-alc887.patch"
 In-Reply-To: <20090210185924.GA14308@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,10 +41,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Takashi Iwai <tiwai@suse.de>
 
-commit c6e8f2daadc6d61a32b7486a1058c8f1f9baa499 upstream.
-
-ALC272 needs EAPD for speaker outputs as well as other similar ALC
-codecs.
+commit 4a5a4c56b443a213fa9c2ad27984a8681a3d7087 upstream.
 
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
@@ -54,12 +52,12 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 --- a/sound/pci/hda/patch_realtek.c
 +++ b/sound/pci/hda/patch_realtek.c
-@@ -967,6 +967,7 @@ do_sku:
- 		case 0x10ec0267:
- 		case 0x10ec0268:
- 		case 0x10ec0269:
-+		case 0x10ec0272:
- 		case 0x10ec0660:
- 		case 0x10ec0662:
- 		case 0x10ec0663:
+@@ -995,6 +995,7 @@ do_sku:
+ 		case 0x10ec0882:
+ 		case 0x10ec0883:
+ 		case 0x10ec0885:
++		case 0x10ec0887:
+ 		case 0x10ec0889:
+ 			snd_hda_codec_write(codec, 0x20, 0,
+ 					    AC_VERB_SET_COEF_INDEX, 7);
 
