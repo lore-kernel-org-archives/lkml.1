@@ -1,121 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbZBJNtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755227AbZBJNvG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755163AbZBJNtc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 08:49:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754183AbZBJNtX
+	id S1755227AbZBJNvG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 08:51:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbZBJNuy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 08:49:23 -0500
-Received: from fk-out-0910.google.com ([209.85.128.190]:51485 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754094AbZBJNtW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 08:49:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=rjI+jAzySgC6xz0t9FnGt5SlcmlHeOc1e+5Ar/ckJv6CbIS15pWp+Dt2+THqxDM3eP
-         0vN+WySng+l0z1nU2TvYxAVurHpkoZUIR9tDO88DqdxeaiHQf9IIQnPnkS9ZXaZpN/no
-         QRnMuYpsjnwZ2xegegdACVWmu9/f5UEMDFv7c=
+	Tue, 10 Feb 2009 08:50:54 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:40439 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753429AbZBJNux (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 08:50:53 -0500
+Date: Tue, 10 Feb 2009 13:50:51 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] introduce for_each_populated_zone() macro
+Message-ID: <20090210135050.GB4023@csn.ul.ie>
+References: <20090210162220.6FBC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Date: Tue, 10 Feb 2009 14:49:20 +0100
-Message-ID: <56e1b5710902100549s67d02216k8101045e4247ab52@mail.gmail.com>
-Subject: [PATCH]: Cleanup: Remove trivial gcc format string warnings when 
-	compiling with -Wformat-security (part 3: verified code)
-From: Floris Kraak <randakar@gmail.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Robert Hancock <hancockrwd@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Trivial Patch Monkey <trivial@kernel.org>,
-       Andreas Schwab <schwab@suse.de>, Mike Isely <isely@isely.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090210162220.6FBC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 2:26 PM, Floris Kraak <randakar@gmail.com> wrote:
-> On Thu, Feb 5, 2009 at 3:41 PM, Floris Kraak <randakar@gmail.com> wrote:
->>
->> Here's the patch that I get when I blindly patch every single location
->> that emits this warning.
->>
->> If needed I can attempt to split this monster into 135 patches but
->> given my limited experience with the tools involved a little help on
->> how to go about creating such a series would be appreciated ;-)
->>
->
-> Here's the first part of a split series of patches dealing with this.
-> I will reply to this message with further patches in the series.
->
+On Tue, Feb 10, 2009 at 04:39:13PM +0900, KOSAKI Motohiro wrote:
+> 
+> Impact: cleanup
+> 
+> In almost case, for_each_zone() is used with populated_zone().
+> It's because almost function doesn't need memoryless node information.
+> Therefore, for_each_populated_zone() can help to make code simplify.
+> 
+> This patch doesn't have any functional change.
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Cc: Mel Gorman <mel@csn.ul.ie>
+> ---
+>  include/linux/mmzone.h  |   11 +++++++++++
+>  kernel/power/snapshot.c |    9 +++------
+>  kernel/power/swsusp.c   |   17 ++++++++---------
+>  mm/page_alloc.c         |   26 +++++---------------------
+>  mm/vmscan.c             |    6 +-----
+>  mm/vmstat.c             |   11 ++---------
+>  6 files changed, 30 insertions(+), 50 deletions(-)
+> 
+> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> index 09c14e2..abda5ec 100644
+> --- a/include/linux/mmzone.h
+> +++ b/include/linux/mmzone.h
+> @@ -806,6 +806,17 @@ extern struct zone *next_zone(struct zone *zone);
+>  	     zone;					\
+>  	     zone = next_zone(zone))
+>  
+> +#define for_each_populated_zone(zone)		        \
+> +	for (zone = (first_online_pgdat())->node_zones; \
+> +	     zone;					\
+> +	     zone = next_zone(zone))			\
+> +		if (!populated_zone(zone))		\
+> +			; /* do nothing */		\
+> +		else
+> +
+> +
+> +
+> +
 
-This patch contains changes that have been verified / acked by
-responsible kernel devs.
-Right now that list is limited to a single dev & driver - in this case
-no bug beyond surpressing the warning is fixed.
+There is tabs vs whitespace damage in there. Multiple empty lines are introduced
+for no apparent reason. It's not clear why you did not use
 
----
-[PATCH]: Cleanup: Remove trivial gcc format string warnings when
-compiling with -Wformat-security (part 3: verified code)
+if (populated_zone(zone))
 
-When compiling the kernel with an allyesconfig and the gcc flags
--Wformat and -Wformat-security the build process emits ~150 warnings
-along these lines:
+instead of an if/else.
 
-init/main.c:557: warning: format not a string literal and no format arguments
-init/initramfs.c:582: warning: format not a string literal and no
-format arguments
-arch/x86/kernel/dumpstack.c:115: warning: format not a string literal
-and no format arguments
-...
+Otherwise, I did not spot anything out of the ordinary. Nice cleanup.
 
-Many of these warnings are harmless - the format string is statically
-set within the kernel itself and is known to not contain any format
-qualifiers.
-This patch contains changes to the pvrusb2 driver.
+>  static inline struct zone *zonelist_zone(struct zoneref *zoneref)
+>  {
+>  	return zoneref->zone;
+> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+> index f5fc2d7..33e2e4a 100644
+> --- a/kernel/power/snapshot.c
+> +++ b/kernel/power/snapshot.c
+> @@ -321,13 +321,10 @@ static int create_mem_extents(struct list_head *list, gfp_t gfp_mask)
+>  
+>  	INIT_LIST_HEAD(list);
+>  
+> -	for_each_zone(zone) {
+> +	for_each_populated_zone(zone) {
+>  		unsigned long zone_start, zone_end;
+>  		struct mem_extent *ext, *cur, *aux;
+>  
+> -		if (!populated_zone(zone))
+> -			continue;
+> -
+>  		zone_start = zone->zone_start_pfn;
+>  		zone_end = zone->zone_start_pfn + zone->spanned_pages;
+>  
+> @@ -804,8 +801,8 @@ static unsigned int count_free_highmem_pages(void)
+>  	struct zone *zone;
+>  	unsigned int cnt = 0;
+>  
+> -	for_each_zone(zone)
+> -		if (populated_zone(zone) && is_highmem(zone))
+> +	for_each_populated_zone(zone)
+> +		if (is_highmem(zone))
+>  			cnt += zone_page_state(zone, NR_FREE_PAGES);
+>  
+>  	return cnt;
+> diff --git a/kernel/power/swsusp.c b/kernel/power/swsusp.c
+> index a92c914..1ee6636 100644
+> --- a/kernel/power/swsusp.c
+> +++ b/kernel/power/swsusp.c
+> @@ -229,17 +229,16 @@ int swsusp_shrink_memory(void)
+>  		size = count_data_pages() + PAGES_FOR_IO + SPARE_PAGES;
+>  		tmp = size;
+>  		size += highmem_size;
+> -		for_each_zone (zone)
+> -			if (populated_zone(zone)) {
+> -				tmp += snapshot_additional_pages(zone);
+> -				if (is_highmem(zone)) {
+> -					highmem_size -=
+> +		for_each_populated_zone(zone) {
+> +			tmp += snapshot_additional_pages(zone);
+> +			if (is_highmem(zone)) {
+> +				highmem_size -=
+>  					zone_page_state(zone, NR_FREE_PAGES);
+> -				} else {
+> -					tmp -= zone_page_state(zone, NR_FREE_PAGES);
+> -					tmp += zone->lowmem_reserve[ZONE_NORMAL];
+> -				}
+> +			} else {
+> +				tmp -= zone_page_state(zone, NR_FREE_PAGES);
+> +				tmp += zone->lowmem_reserve[ZONE_NORMAL];
+>  			}
+> +		}
+>  
+>  		if (highmem_size < 0)
+>  			highmem_size = 0;
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 5675b30..68610a9 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -922,13 +922,10 @@ static void drain_pages(unsigned int cpu)
+>  	unsigned long flags;
+>  	struct zone *zone;
+>  
+> -	for_each_zone(zone) {
+> +	for_each_populated_zone(zone) {
+>  		struct per_cpu_pageset *pset;
+>  		struct per_cpu_pages *pcp;
+>  
+> -		if (!populated_zone(zone))
+> -			continue;
+> -
+>  		pset = zone_pcp(zone, cpu);
+>  
+>  		pcp = &pset->pcp;
+> @@ -1874,10 +1871,7 @@ void show_free_areas(void)
+>  	int cpu;
+>  	struct zone *zone;
+>  
+> -	for_each_zone(zone) {
+> -		if (!populated_zone(zone))
+> -			continue;
+> -
+> +	for_each_populated_zone(zone) {
+>  		show_node(zone);
+>  		printk("%s per-cpu:\n", zone->name);
+>  
+> @@ -1917,12 +1911,9 @@ void show_free_areas(void)
+>  		global_page_state(NR_PAGETABLE),
+>  		global_page_state(NR_BOUNCE));
+>  
+> -	for_each_zone(zone) {
+> +	for_each_populated_zone(zone) {
+>  		int i;
+>  
+> -		if (!populated_zone(zone))
+> -			continue;
+> -
+>  		show_node(zone);
+>  		printk("%s"
+>  			" free:%lukB"
+> @@ -1962,12 +1953,9 @@ void show_free_areas(void)
+>  		printk("\n");
+>  	}
+>  
+> -	for_each_zone(zone) {
+> +	for_each_populated_zone(zone) {
+>   		unsigned long nr[MAX_ORDER], flags, order, total = 0;
+>  
+> -		if (!populated_zone(zone))
+> -			continue;
+> -
+>  		show_node(zone);
+>  		printk("%s: ", zone->name);
+>  
+> @@ -2779,11 +2767,7 @@ static int __cpuinit process_zones(int cpu)
+>  
+>  	node_set_state(node, N_CPU);	/* this node has a cpu */
+>  
+> -	for_each_zone(zone) {
+> -
+> -		if (!populated_zone(zone))
+> -			continue;
+> -
+> +	for_each_populated_zone(zone) {
+>  		zone_pcp(zone, cpu) = kmalloc_node(sizeof(struct per_cpu_pageset),
+>  					 GFP_KERNEL, node);
+>  		if (!zone_pcp(zone, cpu))
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index 9a27c44..b9c3cea 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -2060,11 +2060,7 @@ static unsigned long shrink_all_zones(unsigned long nr_pages, int prio,
+>  	unsigned long nr_to_scan, ret = 0;
+>  	enum lru_list l;
+>  
+> -	for_each_zone(zone) {
+> -
+> -		if (!populated_zone(zone))
+> -			continue;
+> -
+> +	for_each_populated_zone(zone) {
+>  		if (zone_is_all_unreclaimable(zone) && prio != DEF_PRIORITY)
+>  			continue;
+>  
+> diff --git a/mm/vmstat.c b/mm/vmstat.c
+> index 9114974..6fb76fa 100644
+> --- a/mm/vmstat.c
+> +++ b/mm/vmstat.c
+> @@ -135,11 +135,7 @@ static void refresh_zone_stat_thresholds(void)
+>  	int cpu;
+>  	int threshold;
+>  
+> -	for_each_zone(zone) {
+> -
+> -		if (!zone->present_pages)
+> -			continue;
+> -
+> +	for_each_populated_zone(zone) {
+>  		threshold = calculate_threshold(zone);
+>  
+>  		for_each_online_cpu(cpu)
+> @@ -301,12 +297,9 @@ void refresh_cpu_vm_stats(int cpu)
+>  	int i;
+>  	int global_diff[NR_VM_ZONE_STAT_ITEMS] = { 0, };
+>  
+> -	for_each_zone(zone) {
+> +	for_each_populated_zone(zone) {
+>  		struct per_cpu_pageset *p;
+>  
+> -		if (!populated_zone(zone))
+> -			continue;
+> -
+>  		p = zone_pcp(zone, cpu);
+>  
+>  		for (i = 0; i < NR_VM_ZONE_STAT_ITEMS; i++)
 
-Signed-off-by: Floris Kraak <randakar@gmail.com>
-Acked-by: Mike Isely <isely@pobox.com>
----
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-hdw.c
-b/drivers/media/video/pvrusb2/pvrusb2-hdw.c
-index fa304e5..42ccab0 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-hdw.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-hdw.c
-@@ -1967,7 +1967,7 @@ static void pvr2_hdw_setup_low(struct pvr2_hdw *hdw)
- 	if (!pvr2_hdw_dev_ok(hdw)) return;
-
- 	for (idx = 0; idx < hdw->hdw_desc->client_modules.cnt; idx++) {
--		request_module(hdw->hdw_desc->client_modules.lst[idx]);
-+		request_module("%s", hdw->hdw_desc->client_modules.lst[idx]);
- 	}
-
- 	if (!hdw->hdw_desc->flag_no_powerup) {
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-std.c
-b/drivers/media/video/pvrusb2/pvrusb2-std.c
-index ca9f83a..c18091e 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-std.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-std.c
-@@ -216,7 +216,7 @@ unsigned int pvr2_std_id_to_str(char *bufPtr,
-unsigned int bufSize,
- 			bufSize -= c2;
- 			bufPtr += c2;
- 			c2 = scnprintf(bufPtr,bufSize,
--				       ip->name);
-+				       "%s", ip->name);
- 			c1 += c2;
- 			bufSize -= c2;
- 			bufPtr += c2;
-
----
-Regards,
-Floris
----
-"They that give up essential liberty to obtain temporary safety,
-deserve neither liberty nor safety."
-  -- Ben Franklin
-
-"The course of history shows that as a government grows, liberty
-decreases."
-  -- Thomas Jefferson
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
