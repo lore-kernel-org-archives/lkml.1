@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756504AbZBJWBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbZBJWIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756504AbZBJWBP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 17:01:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756990AbZBJWAv
+	id S1756738AbZBJWIA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 17:08:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755717AbZBJWHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 17:00:51 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:51064 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756906AbZBJWAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 17:00:50 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@suse.cz>
-Subject: Re: [patch 0/2] Make the touchpad on the MSI Wind netbook work
-Date: Tue, 10 Feb 2009 23:00:18 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <20090204191540.2d6abd87@infradead.org> <20090210202558.GH1382@ucw.cz>
-In-Reply-To: <20090210202558.GH1382@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 10 Feb 2009 17:07:51 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54996 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755569AbZBJWHv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 17:07:51 -0500
+Date: Tue, 10 Feb 2009 14:06:37 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: minchan.kim@gmail.com, hannes@cmpxchg.org, kosaki.motohiro@jp.fujitsu.com,
+       riel@redhat.com, wli@movementarian.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] vmscan: initialize sc->nr_reclaimed properly take2
+Message-Id: <20090210140637.902e4dcc.akpm@linux-foundation.org>
+In-Reply-To: <20090210215718.700D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20090210213502.7007.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<28c262360902100440v765d3f7bnd56cc4b5510349c0@mail.gmail.com>
+	<20090210215718.700D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902102300.19065.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 10 February 2009, Pavel Machek wrote:
-> On Wed 2009-02-04 19:15:40, Arjan van de Ven wrote:
-> > Hi,
-> > 
-> > A MSI Wind (100) netbook landed on my desk with the comment "touchpad
-> > doesn't work in Linux but works in XP". 
-> > 
-> > It turns out that there are a 2 separate issues with this netbook that
-> > needed fixing 
-> > 
-> > 1) The touchpad requires the equivalent of "i8042.reset", which resets
-> > the controller before probing. (This is done via a DMI quirk in patch
-> > 2/2)
-> > 
-> > 2) About half the time, the reset will fail the first time. In the
-> > current code, this is fatal and then also disables the keyboard in
-> > addition to the touchpad. Ungood. Patch 1 makes the kernel retry the
-> > reset upto five times before giving up (it seems the 2nd or 3rd time
-> > succeed for me), and also adds an option to not make such a failure
-> > fatal to the keyboard.
-> > 
-> > I don't think this is a regression, but it is pretty nasty behavior
-> > (the machine is useless without) so it could be a 2.6.29 candidate...
-> 
-> Well, that beast was selling with linux preloaded, no? Or was it
-> another msi wind? In such case I'd expect old kernel to work... or
-> maybe some reasonable workaround somewhere...
+On Tue, 10 Feb 2009 21:58:04 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-In fact I have an MSI Wind and the touchpad is works on it just fine with the
-current mainline.
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -1665,6 +1665,7 @@ unsigned long try_to_free_pages(struct z
+>  								gfp_t gfp_mask)
+>  {
+>  	struct scan_control sc = {
+> +		.nr_reclaimed = 0,
+>  		.gfp_mask = gfp_mask,
+>  		.may_writepage = !laptop_mode,
+>  		.swap_cluster_max = SWAP_CLUSTER_MAX,
+> @@ -1686,6 +1687,7 @@ unsigned long try_to_free_mem_cgroup_pag
+>  					   unsigned int swappiness)
+>  {
+>  	struct scan_control sc = {
+> +		.nr_reclaimed = 0,
+>  		.may_writepage = !laptop_mode,
+>  		.may_swap = 1,
+>  		.swap_cluster_max = SWAP_CLUSTER_MAX,
+> @@ -2245,6 +2247,7 @@ static int __zone_reclaim(struct zone *z
+>  	struct reclaim_state reclaim_state;
+>  	int priority;
+>  	struct scan_control sc = {
+> +		.nr_reclaimed = 0,
+>  		.may_writepage = !!(zone_reclaim_mode & RECLAIM_WRITE),
+>  		.may_swap = !!(zone_reclaim_mode & RECLAIM_SWAP),
+>  		.swap_cluster_max = max_t(unsigned long, nr_pages,
 
-Perhaps this one is just another MSI Wind.  What model is it?
+Confused.  The compiler already initialises any unmentioned fields to zero,
+so this patch has no effect.
 
-Rafael
