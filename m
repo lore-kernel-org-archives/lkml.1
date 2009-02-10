@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbZBJLjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbZBJLlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754605AbZBJLjy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 06:39:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbZBJLjo
+	id S1754716AbZBJLlS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 06:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbZBJLlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 06:39:44 -0500
-Received: from mu-out-0910.google.com ([209.85.134.189]:40170 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751202AbZBJLjn (ORCPT
+	Tue, 10 Feb 2009 06:41:04 -0500
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:32960 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750772AbZBJLlC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 06:39:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent;
-        b=QjYHjRCCndOf4d+Yk7OGyxDYR6mJj7/Gl3bgY9hVhbL3V+mtnY7kuZQ+L5fCpSM29M
-         RwNcWs1HAVsyCZmoqcLMwiW6CM2Jwi3f8ui/vmYk8um2Sj6EnhszFUMsPldSeOmOYfpv
-         JnfHawDORcEtQNhl04a1tZWXc+Zk4Z3zH9TfE=
-Date: Tue, 10 Feb 2009 11:39:35 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Ira Snyder <iws@ovro.caltech.edu>
-Cc: Peter Korsgaard <jacmet@sunsite.dk>, Dai Haruki <dai.haruki@freescale.com>,
-       Andy Fleming <afleming@freescale.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH net] gianfar: Fix boot hangs while bringing up gianfar
-	ethernet
-Message-ID: <20090210113935.GA14808@ff.dom.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090209193440.GA2537@ami.dom.local>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 10 Feb 2009 06:41:02 -0500
+Subject: Re: [Patch] [s390] Fix init irq proc build break.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: "Sachin P. Sant" <sachinp@in.ibm.com>
+Cc: linux-s390@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       heiko.carstens@de.ibm.com, Mel Gorman <mel@csn.ul.ie>
+In-Reply-To: <499161C3.2070407@in.ibm.com>
+References: <20090210194121.80256b72.sfr@canb.auug.org.au>
+	 <4991573C.8000609@in.ibm.com>  <499161C3.2070407@in.ibm.com>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Tue, 10 Feb 2009 12:40:58 +0100
+Message-Id: <1234266058.23901.0.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09-02-2009 20:34, Jarek Poplawski wrote:
-...
-> PS: Ira, your mta config is a bit unusual here wrt. reply; I hope you
-> will forgive me adding you to CC anyway.
+On Tue, 2009-02-10 at 16:45 +0530, Sachin P. Sant wrote:
+> * Embed init_irq_proc(s390) within CONFIG_PROC_FS to fix a build
+> break.
+> 
+> Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
 
-FYI, AFAIR long time ago Ingo Molnar asked me to turn off this nice
-feature called in mutt "followup_to". But, of course, if you find it
-useful for you, then forget it.
+I'll queue the patch to git390.
 
-Cheers,
-Jarek P. 
+-- 
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
