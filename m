@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928AbZBJOO0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbZBJOQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755928AbZBJOO0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 09:14:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbZBJOOP
+	id S1755721AbZBJOQi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 09:16:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbZBJOQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 09:14:15 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43929 "EHLO mx3.mail.elte.hu"
+	Tue, 10 Feb 2009 09:16:30 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50460 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752271AbZBJOOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 09:14:14 -0500
-Date: Tue, 10 Feb 2009 15:14:05 +0100
+	id S1754450AbZBJOQ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 09:16:29 -0500
+Date: Tue, 10 Feb 2009 15:16:12 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Pengfei Hu <hpfei.cn@gmail.com>, Vegard Nossum <vegard.nossum@gmail.com>
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: Using module private memory to simulate microkernel's memory
-	protection
-Message-ID: <20090210141405.GA16147@elte.hu>
-References: <a5f59d880902100542x7243b13fuf40e7dd21faf7d7a@mail.gmail.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: hpa@zytor.com, jeremy@goop.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, x86@kernel.org, rusty@rustcorp.com.au
+Subject: Re: [PATCHSET x86/master] add stack protector support for x86_32
+Message-ID: <20090210141612.GB16147@elte.hu>
+References: <1234186798-16820-1-git-send-email-tj@kernel.org> <20090209135557.GB14785@elte.hu> <20090209140610.GA21560@elte.hu> <20090209203005.GA10473@elte.hu> <4991878C.9040802@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a5f59d880902100542x7243b13fuf40e7dd21faf7d7a@mail.gmail.com>
+In-Reply-To: <4991878C.9040802@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,25 +35,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Pengfei Hu <hpfei.cn@gmail.com> wrote:
+* Tejun Heo <tj@kernel.org> wrote:
 
-> diff -Nurp old/arch/x86/Kconfig.debug new/arch/x86/Kconfig.debug
-> --- old/arch/x86/Kconfig.debug	2008-10-10 06:13:53.000000000 +0800
-> +++ new/arch/x86/Kconfig.debug	2008-12-07 19:19:40.000000000 +0800
-> @@ -67,6 +67,16 @@ config DEBUG_PAGEALLOC
->  	  This results in a large slowdown, but helps to find certain types
->  	  of memory corruptions.
+> Ingo Molnar wrote:
+> >> Note that i spread the patches the following way: #001-003 are in tip:x86/urgent, 
+> > 
+> > FYI, -tip testing found this new build failure with MATH_EMU:
+> > 
+> > arch/x86/kernel/traps.c:904: error: conflicting types for 'math_emulate'
+> > /home/mingo/tip/arch/x86/include/asm/traps.h:80: error: previous declaration of 'math_emulate' was here
 > 
-> +config DEBUG_KM_PROTECT
-> +        bool "Debug kernel memory protect"
-> +        depends on DEBUG_KERNEL
-> +        select DEBUG_PAGEALLOC
-> +        select SLUB
-> +        help
-> +          Change page table's present flag to prevent other module's accidental
-> +          access. This results in a large slowdown and waste more memory, but
-> +          helps to find certain types of memory corruptions.
+> This is the missing asmlinkage one, right?
 
-Hm, are you aware of the kmemcheck project?
+yeah - fixed this already by amending that commit. No new problems with
+these particular commits.
 
 	Ingo
