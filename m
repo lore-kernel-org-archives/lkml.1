@@ -1,126 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756324AbZBJVpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756222AbZBJVsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756324AbZBJVpX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 16:45:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755548AbZBJVpK
+	id S1756222AbZBJVsZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 16:48:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754688AbZBJVsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 16:45:10 -0500
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:39834 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755468AbZBJVpJ (ORCPT
+	Tue, 10 Feb 2009 16:48:17 -0500
+Received: from mail.fieldses.org ([141.211.133.115]:46563 "EHLO
+	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753271AbZBJVsQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 16:45:09 -0500
-Subject: Re: [PATCH] mm: rearrange exit_mmap() to unlock before
-	arch_exit_mmap
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, jeremy@goop.org,
-       keir.fraser@eu.citrix.com, christophe@saout.de, alex.williamson@hp.com,
-       npiggin@suse.de
-In-Reply-To: <20090210133102.9573b2a7.akpm@linux-foundation.org>
-References: <1234200588.22359.30.camel@lts-notebook>
-	 <20090210133102.9573b2a7.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Tue, 10 Feb 2009 16:45:05 -0500
-Message-Id: <1234302305.6200.117.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Feb 2009 16:48:16 -0500
+Date: Tue, 10 Feb 2009 16:48:22 -0500
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk
+Subject: Re: [RFC PATCH 0/2] Add VFS support for looking up paths on remote
+	servers using a temporary mount namespace
+Message-ID: <20090210214822.GF32393@fieldses.org>
+References: <20090209184534.23040.82605.stgit@heimdal.trondhjem.org> <20090210155820.GB29075@fieldses.org> <1234290708.7423.72.camel@heimdal.trondhjem.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1234290708.7423.72.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-10 at 13:31 -0800, Andrew Morton wrote:
-> On Mon, 09 Feb 2009 12:29:48 -0500
-> Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
+On Tue, Feb 10, 2009 at 01:31:48PM -0500, Trond Myklebust wrote:
+> On Tue, 2009-02-10 at 10:58 -0500, J. Bruce Fields wrote:
+> > On Mon, Feb 09, 2009 at 01:45:34PM -0500, Trond Myklebust wrote:
+> > > The following two patches attempt to improve NFSv4's ability to look up
+> > > the mount path on a remote server.
+> > > 
+> > > The first patch adds VFS support for walking the remote path, using a
+> > > temporary mount namespace to represent the server's namespace, so that
+> > > symlinks
+> > 
+> > I'm a bit confused about the symlink case--I take it you're assuming
+> > that symlinks in the pseudofs should be interpreted as relative to the
+> > server's namespace (in keeping with traditional implementations of
+> > server exports), while symlinks elsewhere should continue to be
+> > intepreted relative to the client's namespace.
+
+Maybe I shouldn't have said "symlinks in the pseudofs", as that's not
+entirely well defined--a complicated namespace may transition between
+"pseudofs" and "real" filesystems multiple times.  So it's really a
+statement about the client's mount behavior: symlinks found along the
+mount path will be interpreted one way, symlinks found elsewhere
+another.  Right?
+
+Though put that way it's harder to decide what to store in a symlink,
+since you can't necessarily control which paths a given client may
+decide to mount.
+
+> > Do the rfc's say anything about this?
 > 
-> > From: Jeremy Fitzhardinge <jeremy@goop.org>
-> > 
-> > Subject: mm: rearrange exit_mmap() to unlock before arch_exit_mmap
-> > 
-> > Applicable to 29-rc4 and 28-stable
-> > 
-> > Christophe Saout reported [in precursor to:
-> > http://marc.info/?l=linux-kernel&m=123209902707347&w=4]:
-> > 
-> > > Note that I also some a different issue with CONFIG_UNEVICTABLE_LRU.
-> > > Seems like Xen tears down current->mm early on process termination, so
-> > > that __get_user_pages in exit_mmap causes nasty messages when the
-> > > process had any mlocked pages.  (in fact, it somehow manages to get into
-> > > the swapping code and produces a null pointer dereference trying to get
-> > > a swap token)
-> > 
-> > Jeremy explained:
-> > 
-> > Yes.  In the normal case under Xen, an in-use pagetable is "pinned", 
-> > meaning that it is RO to the kernel, and all updates must go via 
-> > hypercall (or writes are trapped and emulated, which is much the same 
-> > thing).  An unpinned pagetable is not currently in use by any process, 
-> > and can be directly accessed as normal RW pages.
-> > 
-> > As an optimisation at process exit time, we unpin the pagetable as early 
-> > as possible (switching the process to init_mm), so that all the normal 
-> > pagetable teardown can happen with direct memory accesses.
-> > 
-> > This happens in exit_mmap() -> arch_exit_mmap().  The munlocking happens 
-> > a few lines below.  The obvious thing to do would be to move 
-> > arch_exit_mmap() to below the munlock code, but I think we'd want to 
-> > call it even if mm->mmap is NULL, just to be on the safe side.
-> > 
-> > Thus, this patch:
-> > 
-> > exit_mmap() needs to unlock any locked vmas before calling
-> > arch_exit_mmap, as the latter may switch the current mm to init_mm,
-> > which would cause the former to fail.
-> > 
-> > Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> > Acked-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
-> > 
-> > ---
-> >  mm/mmap.c |   10 ++++++----
-> >  1 file changed, 6 insertions(+), 4 deletions(-)
-> > 
-> > ===================================================================
-> > --- a/mm/mmap.c
-> > +++ b/mm/mmap.c
-> > @@ -2078,12 +2078,8 @@
-> >  	unsigned long end;
-> >  
-> >  	/* mm's last user has gone, and its about to be pulled down */
-> > -	arch_exit_mmap(mm);
-> >  	mmu_notifier_release(mm);
-> >  
-> > -	if (!mm->mmap)	/* Can happen if dup_mmap() received an OOM */
-> > -		return;
-> > -
-> >  	if (mm->locked_vm) {
-> >  		vma = mm->mmap;
-> >  		while (vma) {
-> > @@ -2092,7 +2088,13 @@
-> >  			vma = vma->vm_next;
-> >  		}
-> >  	}
-> > +
-> > +	arch_exit_mmap(mm);
-> > +
-> >  	vma = mm->mmap;
-> > +	if (!vma)	/* Can happen if dup_mmap() received an OOM */
-> > +		return;
-> > +
-> >  	lru_add_drain();
-> >  	flush_cache_mm(mm);
-> >  	tlb = tlb_gather_mmu(mm, 1);
-> 
-> The patch as it stands doesn't apply cleanly to 2.6.28.  I didn't look
-> into what needs to be done to fix it up.  Presumably the stable beavers
-> would like a fixed-up and tested version for backporting sometime.
+> No, the RFCs say nothing, but interpreting symlinks as being relative to
+> the server namespace would be consistent with the mount behaviour of
+> NFSv2/v3. It also makes me uncomfortable to have a remote mount path
+> that could refer back to the client's namespace: that would not be an
+> NFS mount, but a local bind mount...
 
-The only difference I can see in this area, looking at a 28.2 tree I
-have, the 28.4 patch on kernel.org and the context in the patch, is that
-"flush_cache_mm(mm);" line.
+Some may be surprised to find that /mntsymlink/ and /mnt/symlink/ will
+be different after
 
-Lee
+	mount file:/path/symlink/ /mntsymlink/
+	mount file:/path/	  /mnt/
 
+I see your point, though it might also be an argument for continuing to
+error out on symlinks.
 
+It could also be argued that if a given symlink is expected to be
+interpreted on the server side, then the server should just go ahead and
+do that for the client, rather than returning it as a symlink.
 
+Seems worth at least mentioning to the ietf group, as different behavior
+across different clients would be confusing.
+
+--b.
