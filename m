@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756879AbZBJTMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757046AbZBJTNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756879AbZBJTMT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 14:12:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755654AbZBJTDw
+	id S1757046AbZBJTNV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 14:13:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755785AbZBJTDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 14:03:52 -0500
-Received: from kroah.org ([198.145.64.141]:53858 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 14:03:55 -0500
+Received: from kroah.org ([198.145.64.141]:53927 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755577AbZBJTDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 14:03:51 -0500
-Date: Tue, 10 Feb 2009 11:00:31 -0800
+	id S1755746AbZBJTDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 14:03:54 -0500
+Date: Tue, 10 Feb 2009 11:00:40 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Zhenyu Wang <zhenyu.z.wang@intel.com>,
-       Eric Anholt <eric@anholt.net>, Dave Airlie <airlied@linux.ie>
-Subject: [patch 24/53] agp/intel: add support for G41 chipset
-Message-ID: <20090210190031.GY14308@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
+Subject: [patch 28/53] ALSA: hda - Add missing initialization for ALC272
+Message-ID: <20090210190040.GC14308@kroah.com>
 References: <20090210185337.000769713@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="agp-intel-add-support-for-g41-chipset.patch"
+Content-Disposition: inline; filename="alsa-hda-add-missing-initialization-for-alc272.patch"
 In-Reply-To: <20090210185924.GA14308@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,63 +38,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Zhenyu Wang <zhenyu.z.wang@intel.com>
+From: Takashi Iwai <tiwai@suse.de>
 
-commit a50ccc6c6623ab0e64f2109881e07c176b2d876f upstream.
+commit c6e8f2daadc6d61a32b7486a1058c8f1f9baa499 upstream.
 
-Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
-Signed-off-by: Eric Anholt <eric@anholt.net>
-Signed-off-by: Dave Airlie <airlied@linux.ie>
+ALC272 needs EAPD for speaker outputs as well as other similar ALC
+codecs.
+
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/agp/intel-agp.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ sound/pci/hda/patch_realtek.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/char/agp/intel-agp.c
-+++ b/drivers/char/agp/intel-agp.c
-@@ -40,6 +40,8 @@
- #define PCI_DEVICE_ID_INTEL_Q45_IG          0x2E12
- #define PCI_DEVICE_ID_INTEL_G45_HB          0x2E20
- #define PCI_DEVICE_ID_INTEL_G45_IG          0x2E22
-+#define PCI_DEVICE_ID_INTEL_G41_HB          0x2E30
-+#define PCI_DEVICE_ID_INTEL_G41_IG          0x2E32
- 
- /* cover 915 and 945 variants */
- #define IS_I915 (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_E7221_HB || \
-@@ -63,7 +65,8 @@
- #define IS_G4X (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_IGD_E_HB || \
- 		agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_Q45_HB || \
- 		agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_G45_HB || \
--		agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_GM45_HB)
-+		agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_GM45_HB || \
-+		agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_G41_HB)
- 
- extern int agp_memory_reserved;
- 
-@@ -1196,6 +1199,7 @@ static void intel_i965_get_gtt_range(int
- 	case PCI_DEVICE_ID_INTEL_IGD_E_HB:
- 	case PCI_DEVICE_ID_INTEL_Q45_HB:
- 	case PCI_DEVICE_ID_INTEL_G45_HB:
-+	case PCI_DEVICE_ID_INTEL_G41_HB:
- 		*gtt_offset = *gtt_size = MB(2);
- 		break;
- 	default:
-@@ -2163,6 +2167,8 @@ static const struct intel_driver_descrip
- 	    "Q45/Q43", NULL, &intel_i965_driver },
- 	{ PCI_DEVICE_ID_INTEL_G45_HB, PCI_DEVICE_ID_INTEL_G45_IG, 0,
- 	    "G45/G43", NULL, &intel_i965_driver },
-+	{ PCI_DEVICE_ID_INTEL_G41_HB, PCI_DEVICE_ID_INTEL_G41_IG, 0,
-+	    "G41", NULL, &intel_i965_driver },
- 	{ 0, 0, 0, NULL, NULL, NULL }
- };
- 
-@@ -2360,6 +2366,7 @@ static struct pci_device_id agp_intel_pc
- 	ID(PCI_DEVICE_ID_INTEL_IGD_E_HB),
- 	ID(PCI_DEVICE_ID_INTEL_Q45_HB),
- 	ID(PCI_DEVICE_ID_INTEL_G45_HB),
-+	ID(PCI_DEVICE_ID_INTEL_G41_HB),
- 	{ }
- };
- 
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -967,6 +967,7 @@ do_sku:
+ 		case 0x10ec0267:
+ 		case 0x10ec0268:
+ 		case 0x10ec0269:
++		case 0x10ec0272:
+ 		case 0x10ec0660:
+ 		case 0x10ec0662:
+ 		case 0x10ec0663:
 
