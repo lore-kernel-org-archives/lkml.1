@@ -1,101 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbZBJUvB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbZBJUxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756034AbZBJUvB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 15:51:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755355AbZBJUux
+	id S1756178AbZBJUxq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 15:53:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbZBJUxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 15:50:53 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:42236 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755352AbZBJUuw (ORCPT
+	Tue, 10 Feb 2009 15:53:38 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:41829 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755217AbZBJUxh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 15:50:52 -0500
-Date: Tue, 10 Feb 2009 14:49:28 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>,
-       David Safford <safford@watson.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-Subject: Re: [PATCH 2/7] integrity: IMA as an integrity service provider
-Message-ID: <20090210204928.GA9454@us.ibm.com>
-References: <cover.1233750611.git.zohar@linux.vnet.ibm.com> <ce9dbebd2ec91ddaf302f5d8146b01311b6b1bd2.1233750615.git.zohar@linux.vnet.ibm.com> <20090210202347.GA1382@ucw.cz>
+	Tue, 10 Feb 2009 15:53:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ARhAVfIlF3YI+kFKAO6/XGAs7ZhuNUVmh+fH3jqz4em93e5q8+fS1s+jZ4D4iHl1fG
+         ouEHmu2nMaSgeabNeXvSFQgoHsa+b9pdH9tCQIQU5YS5xhQd12qtHfssEP7LPVBXFkAr
+         lb9xv8Z4YwwbfinaXrNSbQ9sCqBiPozx8agRk=
+Message-ID: <4991E812.80606@gmail.com>
+Date: Tue, 10 Feb 2009 21:48:18 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090210202347.GA1382@ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@shipmail.org>
+CC: airlied@linux.ie, dri-devel@lists.sourceforge.net,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2] drm: count reaches -1, tested 0
+References: <498EEB42.1050509@gmail.com> <4990ACA7.2080100@shipmail.org>
+In-Reply-To: <4990ACA7.2080100@shipmail.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Pavel Machek (pavel@suse.cz):
-> Hi!
-> 
-> > --- /dev/null
-> > +++ b/security/integrity/ima/Kconfig
-> > @@ -0,0 +1,49 @@
-> > +# IBM Integrity Measurement Architecture
-> > +#
-> > +config IMA
-> > +	bool "Integrity Measurement Architecture(IMA)"
-> > +	depends on ACPI
-> 
-> Ugh?
-> 
-> > +	select SECURITYFS
-> > +	select CRYPTO
-> > +	select CRYPTO_HMAC
-> > +	select CRYPTO_MD5
-> > +	select CRYPTO_SHA1
-> > +	select TCG_TPM
-> > +	select TCG_TIS
-> > +	help
-> > +	  The Trusted Computing Group(TCG) runtime Integrity
-> > +	  Measurement Architecture(IMA) maintains a list of hash
-> > +	  values of executables and other sensitive system files,
-> > +	  as they are read or executed. If an attacker manages
-> > +	  to change the contents of an important system file
-> > +	  being measured, we can tell.
-> > +
-> > +	  If your system has a TPM chip, then IMA also maintains
-> > +	  an aggregate integrity value over this list inside the
-> > +	  TPM hardware, so that the TPM can prove to a third party
-> > +	  whether or not critical system files have been modified.
-> 
-> Sound like 'well use this so people with homegrown distros can't
-> access our e-shop'...
+Thomas Hellström wrote:
 
-That would be tough to pull off, as they would have to have your
-TPM's public key stored.
-
-So a small shop could pull this off for their employees, I suppose, but
-it's not practical for say a bank to do.  (And if they did, well, I'll
-bank elsewhere.)
-
-> > +	  Read <http://www.usenix.org/events/sec04/tech/sailer.html>
-> > +	  to learn more about IMA.
+> This code is about to be abandoned, but if we're going to fix it,
+> instead of pushing the problem to then next while loop, what about
 > 
-> Maybe some basic docs should go into Documentation?
+> while (count && condition)
+>    count--;
 > 
-> > +config IMA_MEASURE_PCR_IDX
-> > +	int
-> > +	depends on IMA
-> > +	range 8 14
-> > +	default 10
-> > +	help
-> > +	  IMA_MEASURE_PCR_IDX determines the TPM PCR register index
-> > +	  that IMA uses to maintain the integrity aggregate of the
-> > +	  measurement list.  If unsure, use the default 10.
-> 
-> This is quite ugly. How do you expect enduser to get this right?
-> How do you expect distro to get it right for all users?
+> Can you redo the patch based on that?
 
-I'd asked about this before, and here's how I understood it:
+Very well reviewed, thanks. Like this?
+------------------->8-----------------------8<------------------------
 
-End-users aren't expected to get this right - note that it's
-hidden.  If it changes, then that will be because some other
-software using TPM (like trousers) uses 10, so it will be
-changed in the upstream kernel for everyone.
+With a postfix decrement in the test count will reach -1 rather than 0,
+subsequent tests fail.
 
--serge
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/drivers/gpu/drm/via/via_dma.c b/drivers/gpu/drm/via/via_dma.c
+index 7a339db..029c22a 100644
+--- a/drivers/gpu/drm/via/via_dma.c
++++ b/drivers/gpu/drm/via/via_dma.c
+@@ -481,11 +481,12 @@ static int via_wait_idle(drm_via_private_t * dev_priv)
+ {
+ 	int count = 10000000;
+ 
+-	while (!(VIA_READ(VIA_REG_STATUS) & VIA_VR_QUEUE_BUSY) && count--);
++	while (!(VIA_READ(VIA_REG_STATUS) & VIA_VR_QUEUE_BUSY) && --count)
++		;
+ 
+-	while (count-- && (VIA_READ(VIA_REG_STATUS) &
+-			   (VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY |
+-			    VIA_3D_ENG_BUSY))) ;
++	while (count && (VIA_READ(VIA_REG_STATUS) & (VIA_CMD_RGTR_BUSY |
++					VIA_2D_ENG_BUSY | VIA_3D_ENG_BUSY)))
++		count--;
+ 	return count;
+ }
+ 
+@@ -705,7 +706,7 @@ static int via_cmdbuf_size(struct drm_device *dev, void *data, struct drm_file *
+ 	switch (d_siz->func) {
+ 	case VIA_CMDBUF_SPACE:
+ 		while (((tmp_size = via_cmdbuf_space(dev_priv)) < d_siz->size)
+-		       && count--) {
++		       && --count) {
+ 			if (!d_siz->wait) {
+ 				break;
+ 			}
+@@ -717,7 +718,7 @@ static int via_cmdbuf_size(struct drm_device *dev, void *data, struct drm_file *
+ 		break;
+ 	case VIA_CMDBUF_LAG:
+ 		while (((tmp_size = via_cmdbuf_lag(dev_priv)) > d_siz->size)
+-		       && count--) {
++		       && --count) {
+ 			if (!d_siz->wait) {
+ 				break;
+ 			}
