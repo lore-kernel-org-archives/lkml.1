@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbZBJJFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755149AbZBJJGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754206AbZBJJFy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 04:05:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbZBJJDv
+	id S1755149AbZBJJGU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 04:06:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbZBJJDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 04:03:51 -0500
-Received: from mga09.intel.com ([134.134.136.24]:4654 "EHLO mga09.intel.com"
+	Tue, 10 Feb 2009 04:03:55 -0500
+Received: from mga09.intel.com ([134.134.136.24]:4656 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752992AbZBJJDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 04:03:40 -0500
+	id S1752705AbZBJJDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 04:03:34 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.38,185,1233561600"; 
-   d="scan'208";a="488749315"
+   d="scan'208";a="488749295"
 From: Yu Zhao <yu.zhao@intel.com>
 To: jbarnes@virtuousgeek.org
 Cc: linux-pci@vger.kernel.org, kvm@vger.kernel.org,
        linux-kernel@vger.kernel.org, Yu Zhao <yu.zhao@intel.com>
-Subject: [PATCH v8 7/7] PCI: manual for SR-IOV user and driver developer
-Date: Tue, 10 Feb 2009 16:59:15 +0800
-Message-Id: <1234256355-23153-8-git-send-email-yu.zhao@intel.com>
+Subject: [PATCH v8 5/7] PCI: handle SR-IOV Virtual Function Migration
+Date: Tue, 10 Feb 2009 16:59:13 +0800
+Message-Id: <1234256355-23153-6-git-send-email-yu.zhao@intel.com>
 X-Mailer: git-send-email 1.6.1
 In-Reply-To: <1234256355-23153-1-git-send-email-yu.zhao@intel.com>
 References: <1234256355-23153-1-git-send-email-yu.zhao@intel.com>
@@ -28,135 +28,212 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 ---
- Documentation/DocBook/kernel-api.tmpl |    1 +
- Documentation/PCI/pci-iov-howto.txt   |  106 +++++++++++++++++++++++++++++++++
- 2 files changed, 107 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/PCI/pci-iov-howto.txt
+ drivers/pci/iov.c   |  119 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/pci/pci.h   |    4 ++
+ include/linux/pci.h |    6 +++
+ 3 files changed, 129 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/DocBook/kernel-api.tmpl b/Documentation/DocBook/kernel-api.tmpl
-index 5818ff7..506e611 100644
---- a/Documentation/DocBook/kernel-api.tmpl
-+++ b/Documentation/DocBook/kernel-api.tmpl
-@@ -251,6 +251,7 @@ X!Edrivers/pci/hotplug.c
- -->
- !Edrivers/pci/probe.c
- !Edrivers/pci/rom.c
-+!Edrivers/pci/iov.c
-      </sect1>
-      <sect1><title>PCI Hotplug Support Library</title>
- !Edrivers/pci/hotplug/pci_hotplug_core.c
-diff --git a/Documentation/PCI/pci-iov-howto.txt b/Documentation/PCI/pci-iov-howto.txt
-new file mode 100644
-index 0000000..9029369
---- /dev/null
-+++ b/Documentation/PCI/pci-iov-howto.txt
-@@ -0,0 +1,106 @@
-+		PCI Express I/O Virtualization Howto
-+		Copyright (C) 2009 Intel Corporation
-+		    Yu Zhao <yu.zhao@intel.com>
-+
-+
-+1. Overview
-+
-+1.1 What is SR-IOV
-+
-+Single Root I/O Virtualization (SR-IOV) is a PCI Express Extended
-+capability which makes one physical device appear as multiple virtual
-+devices. The physical device is referred to as Physical Function (PF)
-+while the virtual devices are referred to as Virtual Functions (VF).
-+Allocation of the VF can be dynamically controlled by the PF via
-+registers encapsulated in the capability. By default, this feature is
-+not enabled and the PF behaves as traditional PCIe device. Once it's
-+turned on, each VF's PCI configuration space can be accessed by its own
-+Bus, Device and Function Number (Routing ID). And each VF also has PCI
-+Memory Space, which is used to map its register set. VF device driver
-+operates on the register set so it can be functional and appear as a
-+real existing PCI device.
-+
-+2. User Guide
-+
-+2.1 How can I enable SR-IOV capability
-+
-+The device driver (PF driver) will control the enabling and disabling
-+of the capability via API provided by SR-IOV core. If the hardware
-+has SR-IOV capability, loading its PF driver would enable it and all
-+VFs associated with the PF.
-+
-+2.2 How can I use the Virtual Functions
-+
-+The VF is treated as hot-plugged PCI devices in the kernel, so they
-+should be able to work in the same way as real PCI devices. The VF
-+requires device driver that is same as a normal PCI device's.
-+
-+3. Developer Guide
-+
-+3.1 SR-IOV API
-+
-+To enable SR-IOV capability:
-+	int pci_enable_sriov(struct pci_dev *dev, int nr_virtfn);
-+	'nr_virtfn' is number of VFs to be enabled.
-+
-+To disable SR-IOV capability:
-+	void pci_disable_sriov(struct pci_dev *dev);
-+
-+To notify SR-IOV core of Virtual Function Migration:
-+	irqreturn_t pci_sriov_migration(struct pci_dev *dev);
-+
-+3.2 Usage example
-+
-+Following piece of code illustrates the usage of the SR-IOV API.
-+
-+static int __devinit dev_probe(struct pci_dev *dev, const struct pci_device_id *id)
+diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+index d576160..d622167 100644
+--- a/drivers/pci/iov.c
++++ b/drivers/pci/iov.c
+@@ -203,6 +203,97 @@ static void sriov_release_dev(struct device *dev)
+ 	iov->nr_virtfn = 0;
+ }
+ 
++static int sriov_migration(struct pci_dev *dev)
 +{
++	u16 status;
++	struct pci_sriov *iov = dev->sriov;
 +
-+	dev->current_state = PCI_D0;
++	if (!iov->nr_virtfn)
++		return 0;
 +
-+	pci_enable_sriov(dev, NR_VIRTFN);
++	if (!(iov->cap & PCI_SRIOV_CAP_VFM))
++		return 0;
 +
-+	...
++	pci_read_config_word(iov->self, iov->pos + PCI_SRIOV_STATUS, &status);
++	if (!(status & PCI_SRIOV_STATUS_VFM))
++		return 0;
++
++	schedule_work(&iov->mtask);
++
++	return 1;
++}
++
++static void sriov_migration_task(struct work_struct *work)
++{
++	int i;
++	u8 state;
++	u16 status;
++	struct pci_sriov *iov = container_of(work, struct pci_sriov, mtask);
++
++	for (i = iov->initial; i < iov->nr_virtfn; i++) {
++		state = readb(iov->mstate + i);
++		if (state == PCI_SRIOV_VFM_MI) {
++			writeb(PCI_SRIOV_VFM_AV, iov->mstate + i);
++			state = readb(iov->mstate + i);
++			if (state == PCI_SRIOV_VFM_AV)
++				virtfn_add(iov->self, i, 1);
++		} else if (state == PCI_SRIOV_VFM_MO) {
++			virtfn_remove(iov->self, i, 1);
++			writeb(PCI_SRIOV_VFM_UA, iov->mstate + i);
++			state = readb(iov->mstate + i);
++			if (state == PCI_SRIOV_VFM_AV)
++				virtfn_add(iov->self, i, 0);
++		}
++	}
++
++	pci_read_config_word(iov->self, iov->pos + PCI_SRIOV_STATUS, &status);
++	status &= ~PCI_SRIOV_STATUS_VFM;
++	pci_write_config_word(iov->self, iov->pos + PCI_SRIOV_STATUS, status);
++}
++
++static int sriov_enable_migration(struct pci_dev *dev, int nr_virtfn)
++{
++	int bir;
++	u32 table;
++	resource_size_t pa;
++	struct pci_sriov *iov = dev->sriov;
++
++	if (nr_virtfn <= iov->initial)
++		return 0;
++
++	pci_read_config_dword(dev, iov->pos + PCI_SRIOV_VFM, &table);
++	bir = PCI_SRIOV_VFM_BIR(table);
++	if (bir > PCI_STD_RESOURCE_END)
++		return -EIO;
++
++	table = PCI_SRIOV_VFM_OFFSET(table);
++	if (table + nr_virtfn > pci_resource_len(dev, bir))
++		return -EIO;
++
++	pa = pci_resource_start(dev, bir) + table;
++	iov->mstate = ioremap(pa, nr_virtfn);
++	if (!iov->mstate)
++		return -ENOMEM;
++
++	INIT_WORK(&iov->mtask, sriov_migration_task);
++
++	iov->ctrl |= PCI_SRIOV_CTRL_VFM | PCI_SRIOV_CTRL_INTR;
++	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
 +
 +	return 0;
 +}
 +
-+static void __devexit dev_remove(struct pci_dev *dev)
++static void sriov_disable_migration(struct pci_dev *dev)
 +{
-+	pci_disable_sriov(dev);
++	struct pci_sriov *iov = dev->sriov;
 +
-+	...
++	iov->ctrl &= ~(PCI_SRIOV_CTRL_VFM | PCI_SRIOV_CTRL_INTR);
++	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
++
++	cancel_work_sync(&iov->mtask);
++	iounmap(iov->mstate);
 +}
 +
-+static int dev_suspend(struct pci_dev *dev, pm_message_t state)
+ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+ {
+ 	int rc;
+@@ -287,6 +378,12 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+ 			goto failed2;
+ 	}
+ 
++	if (iov->cap & PCI_SRIOV_CAP_VFM) {
++		rc = sriov_enable_migration(dev, nr_virtfn);
++		if (rc)
++			goto failed2;
++	}
++
+ 	kobject_uevent(&dev->dev.kobj, KOBJ_CHANGE);
+ 	iov->nr_virtfn = nr_virtfn;
+ 
+@@ -316,6 +413,9 @@ static void sriov_disable(struct pci_dev *dev)
+ 	if (!iov->nr_virtfn)
+ 		return;
+ 
++	if (iov->cap & PCI_SRIOV_CAP_VFM)
++		sriov_disable_migration(dev);
++
+ 	for (i = 0; i < iov->nr_virtfn; i++)
+ 		virtfn_remove(dev, i, 0);
+ 
+@@ -571,3 +671,22 @@ void pci_disable_sriov(struct pci_dev *dev)
+ 		sriov_disable(dev);
+ }
+ EXPORT_SYMBOL_GPL(pci_disable_sriov);
++
++/**
++ * pci_sriov_migration - notify SR-IOV core of Virtual Function Migration
++ * @dev: the PCI device
++ *
++ * Returns IRQ_HANDLED if the IRQ is handled, or IRQ_NONE if not.
++ *
++ * Physical Function driver is responsible to register IRQ handler using
++ * VF Migration Interrupt Message Number, and call this function when the
++ * interrupt is generated by the hardware.
++ */
++irqreturn_t pci_sriov_migration(struct pci_dev *dev)
 +{
-+	...
++	if (!dev->sriov)
++		return IRQ_NONE;
 +
-+	return 0;
++	return sriov_migration(dev) ? IRQ_HANDLED : IRQ_NONE;
 +}
++EXPORT_SYMBOL_GPL(pci_sriov_migration);
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index 328a611..51bebb2 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -1,6 +1,8 @@
+ #ifndef DRIVERS_PCI_H
+ #define DRIVERS_PCI_H
+ 
++#include <linux/workqueue.h>
 +
-+static int dev_resume(struct pci_dev *dev)
+ #define PCI_CFG_SPACE_SIZE	256
+ #define PCI_CFG_SPACE_EXP_SIZE	4096
+ 
+@@ -211,6 +213,8 @@ struct pci_sriov {
+ 	struct pci_dev *pdev;	/* lowest numbered PF */
+ 	struct pci_dev *self;	/* this PF */
+ 	struct mutex lock;	/* lock for VF bus */
++	struct work_struct mtask; /* VF Migration task */
++	u8 __iomem *mstate;	/* VF Migration State Array */
+ 	struct device dev;
+ };
+ 
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index b14ecf0..84caf8c 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -52,6 +52,7 @@
+ #include <asm/atomic.h>
+ #include <linux/device.h>
+ #include <linux/io.h>
++#include <linux/irqreturn.h>
+ 
+ /* Include the ID list */
+ #include <linux/pci_ids.h>
+@@ -1206,6 +1207,7 @@ void __iomem *pci_ioremap_bar(struct pci_dev *pdev, int bar);
+ #ifdef CONFIG_PCI_IOV
+ extern int pci_enable_sriov(struct pci_dev *dev, int nr_virtfn);
+ extern void pci_disable_sriov(struct pci_dev *dev);
++extern irqreturn_t pci_sriov_migration(struct pci_dev *dev);
+ #else
+ static inline int pci_enable_sriov(struct pci_dev *dev, int nr_virtfn)
+ {
+@@ -1214,6 +1216,10 @@ static inline int pci_enable_sriov(struct pci_dev *dev, int nr_virtfn)
+ static inline void pci_disable_sriov(struct pci_dev *dev)
+ {
+ }
++static inline irqreturn_t pci_sriov_migration(struct pci_dev *dev)
 +{
-+	pci_restore_state(dev);
-+
-+	...
-+
-+	return 0;
++	return IRQ_NONE;
 +}
-+
-+static void dev_shutdown(struct pci_dev *dev)
-+{
-+	...
-+}
-+
-+static struct pci_driver dev_driver = {
-+	.name =		"SR-IOV Physical Function driver",
-+	.id_table =	dev_id_table,
-+	.probe =	dev_probe,
-+	.remove =	__devexit_p(dev_remove),
-+#ifdef CONFIG_PM
-+	.suspend =	dev_suspend,
-+	.resume =	dev_resume,
-+#endif
-+	.shutdown =	dev_shutdown,
-+};
+ #endif
+ 
+ #endif /* __KERNEL__ */
 -- 
 1.5.6.4
 
