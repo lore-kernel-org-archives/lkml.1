@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754046AbZBJJcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753012AbZBJJdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754046AbZBJJcT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 04:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751398AbZBJJcK
+	id S1753012AbZBJJdd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 04:33:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbZBJJdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 04:32:10 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:59403 "EHLO song.cn.fujitsu.com"
+	Tue, 10 Feb 2009 04:33:25 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:50303 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751212AbZBJJcJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 04:32:09 -0500
-Message-ID: <4991497B.4030200@cn.fujitsu.com>
-Date: Tue, 10 Feb 2009 17:31:39 +0800
+	id S1751398AbZBJJdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 04:33:24 -0500
+Message-ID: <499149C4.2040606@cn.fujitsu.com>
+Date: Tue, 10 Feb 2009 17:32:52 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Paul Menage <menage@google.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: [PATCH] cgroups: fix possible use after free
+To: Al Viro <viro@ZenIV.linux.org.uk>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] vfs: add missing unlock in sget()
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In cgroup_kill_sb(), root is freed before sb is detached from the list,
-so another sget() may find this sb and call cgroup_test_super(),
-which will access the root that has been freed.
+In sget(), destroy_super(s) is called with s->s_umount held, which makes
+lockdep unhappy.
 
-Reported-by: Al Viro <viro@ZenIV.linux.org.uk>
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- kernel/cgroup.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ fs/super.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 5a54ff4..42fd3f2 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -1122,8 +1122,8 @@ static void cgroup_kill_sb(struct super_block *sb) {
- 
- 	mutex_unlock(&cgroup_mutex);
- 
--	kfree(root);
- 	kill_litter_super(sb);
-+	kfree(root);
- }
- 
- static struct file_system_type cgroup_fs_type = {
+diff --git a/fs/super.c b/fs/super.c
+index 61dce00..f849485 100644
+--- a/fs/super.c
++++ b/fs/super.c
+@@ -356,8 +356,10 @@ retry:
+ 				continue;
+ 			if (!grab_super(old))
+ 				goto retry;
+-			if (s)
++			if (s) {
++				up_write(&s->s_umount);
+ 				destroy_super(s);
++			}
+ 			return old;
+ 		}
+ 	}
+@@ -372,6 +374,7 @@ retry:
+ 	err = set(s, data);
+ 	if (err) {
+ 		spin_unlock(&sb_lock);
++		up_write(&s->s_umount);
+ 		destroy_super(s);
+ 		return ERR_PTR(err);
+ 	}
 -- 
 1.5.4.rc3
+
