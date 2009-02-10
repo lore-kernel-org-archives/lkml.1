@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753503AbZBJKmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754450AbZBJKnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753503AbZBJKmz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 05:42:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbZBJKmr
+	id S1754450AbZBJKnX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 05:43:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbZBJKnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 05:42:47 -0500
-Received: from cmpxchg.org ([85.214.51.133]:54414 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750793AbZBJKmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 05:42:46 -0500
-Date: Tue, 10 Feb 2009 11:42:22 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] mm: remove zone->prev_prioriy
-Message-ID: <20090210104222.GB1740@cmpxchg.org>
-References: <20090210184055.6FCB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Mime-Version: 1.0
+	Tue, 10 Feb 2009 05:43:10 -0500
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:32533 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753694AbZBJKnJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 05:43:09 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAE/okEl5LClx/2dsb2JhbADTCoQaBg
+X-IronPort-AV: E=Sophos;i="4.38,185,1233495000"; 
+   d="scan'208";a="287384453"
+Date: Tue, 10 Feb 2009 21:43:04 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Alessandro Bono <alessandro.bono@gmail.com>,
+       linux-xfs <linux-xfs@oss.sgi.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: XFS kernel BUG at fs/buffer.c:470! with 2.6.28.4
+Message-ID: <20090210104304.GP8830@disturbed>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Alessandro Bono <alessandro.bono@gmail.com>,
+	linux-xfs <linux-xfs@oss.sgi.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <1234011974.7435.11.camel@champagne.cantina> <20090208222859.GA2532@infradead.org> <1234132752.12370.0.camel@champagne.cantina> <20090208224249.GA11931@infradead.org> <1234133120.12370.7.camel@champagne.cantina> <20090209075308.GA7360@infradead.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090210184055.6FCB.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20090209075308.GA7360@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 06:42:30PM +0900, KOSAKI Motohiro wrote:
+On Mon, Feb 09, 2009 at 02:53:08AM -0500, Christoph Hellwig wrote:
+> On Sun, Feb 08, 2009 at 11:45:20PM +0100, Alessandro Bono wrote:
+> > sure, attached
 > 
-> KAMEZAWA Hiroyuki sugessted to remove zone->prev_priority.
-> it's because Split-LRU VM doesn't use this parameter at all.
-> 
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  include/linux/memcontrol.h |   27 -------------------------
->  include/linux/mmzone.h     |   15 --------------
->  mm/memcontrol.c            |   31 -----------------------------
->  mm/page_alloc.c            |    2 -
->  mm/vmscan.c                |   48 ++-------------------------------------------
->  mm/vmstat.c                |    2 -
->  6 files changed, 3 insertions(+), 122 deletions(-)
+> That would be a missing PagePrivate bit in page_buffers() called from
+> end_buffer_async_write.  PG_private can only be cleared via drop_buffers
+> which requires the page not having PG_writeback set which must be
+> set until end_buffer_async_write is done.  Very strange, and all this
+> is generic code without xfs involvement.  Did this happen once
+> or can you reproduce it?
 
-> Index: b/include/linux/memcontrol.h
-> ===================================================================
-> --- a/include/linux/memcontrol.h
-> +++ b/include/linux/memcontrol.h
-> @@ -88,14 +88,7 @@ extern void mem_cgroup_end_migration(str
->  /*
->   * For memory reclaim.
->   */
-> -extern int mem_cgroup_calc_mapped_ratio(struct mem_cgroup *mem);
+Hmmmm - i wonder if this has anything to do with the writeback fixes
+that went into 2.6.28.2? Alessandro, can you revert to 2.6.28.1 (not
+plain 2.6.28) and see if you can reproduce the problem?
 
-This bit crept in from the next patch, I think.
+Cheers,
 
->  extern long mem_cgroup_reclaim_imbalance(struct mem_cgroup *mem);
-> -
-> -extern int mem_cgroup_get_reclaim_priority(struct mem_cgroup *mem);
-> -extern void mem_cgroup_note_reclaim_priority(struct mem_cgroup *mem,
-> -							int priority);
-> -extern void mem_cgroup_record_reclaim_priority(struct mem_cgroup *mem,
-> -							int priority);
->  int mem_cgroup_inactive_anon_is_low(struct mem_cgroup *memcg);
->  unsigned long mem_cgroup_zone_nr_pages(struct mem_cgroup *memcg,
->  				       struct zone *zone,
-> @@ -209,31 +202,11 @@ static inline void mem_cgroup_end_migrat
->  {
->  }
->  
-> -static inline int mem_cgroup_calc_mapped_ratio(struct mem_cgroup *mem)
-> -{
-> -	return 0;
-> -}
-> -
-
-:)
-
-Looks good to me otherwise.
-
-Reviewed-by: Johannes Weiner <hannes@cmpxchg.org>
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
