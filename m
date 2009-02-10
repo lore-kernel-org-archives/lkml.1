@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbZBJPQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755077AbZBJPTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754820AbZBJPQy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 10:16:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbZBJPQp
+	id S1755077AbZBJPTW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 10:19:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbZBJPTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 10:16:45 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:40059 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753448AbZBJPQo (ORCPT
+	Tue, 10 Feb 2009 10:19:11 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:4839 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750841AbZBJPTJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 10:16:44 -0500
-Date: Tue, 10 Feb 2009 16:16:39 +0100
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Frank Seidel <fseidel@suse.de>,
-       linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       ben-linux@fluff.org, linux-i2c@vger.kernel.org, frank@f-seidel.de,
-       "David S. Miller" <davem@davemloft.net>,
-       ukleinek@informatik.uni-freiburg.de, Frans Pop <elendil@planet.nl>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCHv2 2/2] i2c: adapt debug macros for KERN_* constants
-Message-ID: <20090210151639.GB15678@pengutronix.de>
-References: <498C3EEA.5060508@suse.de> <498EE9C9.4080002@suse.de> <498EEA2F.5050601@suse.de> <20090209161644.35e3154d@hyperion.delvare>
+	Tue, 10 Feb 2009 10:19:09 -0500
+Date: Tue, 10 Feb 2009 15:19:03 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: Kalle Jokiniemi <kalle.jokiniemi@digia.com>
+Cc: David Brownell <david-b@pacbell.net>, Liam Girdwood <lrg@slimlogic.co.uk>,
+       lkml <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org,
+       OMAP <linux-omap@vger.kernel.org>
+Subject: Re: [patch 2.6.29-rc3-git 2/2] USB: disable twl4030 USB regulators when cable unplugged
+Message-ID: <20090210151902.GA31365@sirena.org.uk>
+References: <200902081053.00255.david-b@pacbell.net> <1234271294.17391.12.camel@ubuntu>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="oC1+HKm2/end4ao3"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090209161644.35e3154d@hyperion.delvare>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:221:70ff:fe71:1890
-X-SA-Exim-Mail-From: w.sang@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+In-Reply-To: <1234271294.17391.12.camel@ubuntu>
+X-Cookie: To the landlord belongs the doorknobs.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Feb 10, 2009 at 03:08:14PM +0200, Kalle Jokiniemi wrote:
 
---oC1+HKm2/end4ao3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> A bug has been discovered here. If the twl-regulator is not compiled in,
+> the twl4030-usb fails while trying to access the reg-fw interfaces (and
 
-> Wolfram, I would appreciate if you could test the patch and confirm it
-> doesn't break anything:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/jdelvare/linux-2.6/jdelvare-=
-i2c/i2c-algo-pca-adapt-debug-macros-for-KERN-constants.patch
+reg-fw is the regulator framework?
 
-Will do, but may take until the end of the week. Patch looks good,
-though.
+> not checking error values). Also it's bit confusing how we get different
+> error values if reg_fw is not compiled (no error) vs. reg_fw is
+> compiled, but twl_regulator is not... (error)
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---oC1+HKm2/end4ao3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmRmlcACgkQD27XaX1/VRtDIQCeKN51QfbmMMM2NDEKSj9/+jZJ
-CqcAnAo0Uw+mrxq/JtTYiJLdGjHa77Ca
-=4zoK
------END PGP SIGNATURE-----
-
---oC1+HKm2/end4ao3--
+The general model is that if you've got regulator API support enabled
+then you'll have the relevant regulator drivers enabled.  The support
+for compiling out the core is intended to allow configurations that
+don't use regulators at all.  This is a bit restrictive but works well
+for most users.
