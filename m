@@ -1,137 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbZBJOGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755825AbZBJOIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755999AbZBJOGw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 09:06:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755839AbZBJOGa
+	id S1755825AbZBJOIu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 09:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbZBJOIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 09:06:30 -0500
-Received: from harmaja.edelkey.net ([213.138.147.141]:37262 "EHLO
-	harmaja.edelkey.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755811AbZBJOG2 (ORCPT
+	Tue, 10 Feb 2009 09:08:39 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:41842 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754435AbZBJOIj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 09:06:28 -0500
-Subject: Re: [patch 2.6.29-rc3-git 2/2] USB: disable twl4030 USB regulators
-	when cable unplugged
-From: Kalle Jokiniemi <kalle.jokiniemi@digia.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, Mark Brown <broonie@sirena.org.uk>,
-       lkml <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org,
-       OMAP <linux-omap@vger.kernel.org>
-In-Reply-To: <200902081053.00255.david-b@pacbell.net>
-References: <200902081053.00255.david-b@pacbell.net>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Digia / Pori
-Date: Tue, 10 Feb 2009 16:06:07 +0200
-Message-Id: <1234274767.17391.20.camel@ubuntu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-X-OriginalArrivalTime: 10 Feb 2009 14:06:09.0764 (UTC) FILETIME=[B9507240:01C98B88]
+	Tue, 10 Feb 2009 09:08:39 -0500
+Date: Tue, 10 Feb 2009 14:08:29 +0000
+From: Matthew Garrett <mjg@redhat.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Hans de Goede <hdegoede@redhat.com>, Len Brown <lenb@kernel.org>,
+       Luca Tettamanti <kronos.it@gmail.com>, Thomas Renninger <trenn@suse.de>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ACPI: add "auto" to acpi_enforce_resources
+Message-ID: <20090210140829.GA25397@srcf.ucam.org>
+References: <20090125210520.GA12963@dreamland.darkstar.lan> <200901291130.35434.trenn@suse.de> <68676e00901290716g1aabd6c0p1e5202fbdbc659a4@mail.gmail.com> <alpine.LFD.2.00.0902040042570.9833@localhost.localdomain> <20090204060513.GA28321@srcf.ucam.org> <498953DF.5050306@redhat.com> <20090204131708.GA2739@srcf.ucam.org> <20090204142606.1823661b@hyperion.delvare> <20090204142015.GB3923@srcf.ucam.org> <20090210145716.105ab58b@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090210145716.105ab58b@hyperion.delvare>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-02-08 at 10:52 -0800, David Brownell wrote:
-> From: Kalle Jokiniemi <kalle.jokiniemi@digia.com>
-> 
-> This patch disables LDO regulators VUSB1V5, VUSB1V8, and VUSB3V1
-> when the USB cable is unplugged, to eliminate that source of power
-> waste.  (Enabled LDOs consume power at all times.)
+On Tue, Feb 10, 2009 at 02:57:16PM +0100, Jean Delvare wrote:
 
-Please put this on hold for a while. This won't work if we don't have
-TWL regulator support enabled. Also it's missing error value checking.
+> In theory you are, of course, perfectly right. The question is, how do
+> we get there without making people angry because of the regression? 
 
-I'll post new patch(es) soon.
+The only thing we can do is add a printk that informs users that passing 
+a boot argument will allow them to use the drivers as they used to.
 
-- Kalle
+> The same chip can be driven by our native it87 driver, which, on this
+> specific board, provides support for 9 voltages, 3 fans, and 1 working
+> temperature. Do we really have to tell the user to not use the it87
+> driver and instead use the ACPI thermal driver "because that's what the
+> firmware wants"?
 
+It's valid (if dumb) for vendors to design their platforms such that 
+enabling ACPI and then not using the thermal code may result in hardware 
+damage. We have no way of determining that in advance, so all we can do 
+is tell the user that they can pass an argument if they know it's safe 
+to do so.
 
-> 
-> Signed-off-by: Kalle Jokiniemi <kalle.jokiniemi@digia.com>
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> ---
-> Depends on the twl4030 regulator driver, so I'm suggesting this
-> be merged (with that driver) through the regulator patch queue
-> to simplify things.
-> 
->  drivers/usb/otg/twl4030-usb.c |   30 ++++++++++++++++++++++++------
->  1 file changed, 24 insertions(+), 6 deletions(-)
-> 
-> --- a/drivers/usb/otg/twl4030-usb.c
-> +++ b/drivers/usb/otg/twl4030-usb.c
-> @@ -34,6 +34,7 @@
->  #include <linux/delay.h>
->  #include <linux/usb/otg.h>
->  #include <linux/i2c/twl4030.h>
-> +#include <linux/regulator/consumer.h>
->  
-> 
->  /* Register defines */
-> @@ -246,6 +247,11 @@ struct twl4030_usb {
->  	struct otg_transceiver	otg;
->  	struct device		*dev;
->  
-> +	/* TWL4030 internal USB regulator supplies */
-> +	struct regulator	*usb1v5;
-> +	struct regulator	*usb1v8;
-> +	struct regulator	*usb3v1;
-> +
->  	/* for vbus reporting with irqs disabled */
->  	spinlock_t		lock;
->  
-> @@ -434,6 +440,9 @@ static void twl4030_phy_power(struct twl
->  
->  	pwr = twl4030_usb_read(twl, PHY_PWR_CTRL);
->  	if (on) {
-> +		regulator_enable(twl->usb1v5);
-> +		regulator_enable(twl->usb1v8);
-> +		regulator_enable(twl->usb3v1);
->  		pwr &= ~PHY_PWR_PHYPWD;
->  		WARN_ON(twl4030_usb_write_verify(twl, PHY_PWR_CTRL, pwr) < 0);
->  		twl4030_usb_write(twl, PHY_CLK_CTRL,
-> @@ -443,6 +452,9 @@ static void twl4030_phy_power(struct twl
->  	} else  {
->  		pwr |= PHY_PWR_PHYPWD;
->  		WARN_ON(twl4030_usb_write_verify(twl, PHY_PWR_CTRL, pwr) < 0);
-> +		regulator_disable(twl->usb1v5);
-> +		regulator_disable(twl->usb1v8);
-> +		regulator_disable(twl->usb3v1);
->  	}
->  }
->  
-> @@ -480,16 +492,19 @@ static void twl4030_usb_ldo_init(struct 
->  	/* input to VUSB3V1 LDO is from VBAT, not VBUS */
->  	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0x14, VUSB_DEDICATED1);
->  
-> -	/* turn on 3.1V regulator */
-> -	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0x20, VUSB3V1_DEV_GRP);
-> +	/* Initialize 3.1V regulator */
-> +	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0, VUSB3V1_DEV_GRP);
-> +	twl->usb3v1 = regulator_get(twl->dev, "usb3v1");
->  	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0, VUSB3V1_TYPE);
->  
-> -	/* turn on 1.5V regulator */
-> -	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0x20, VUSB1V5_DEV_GRP);
-> +	/* Initialize 1.5V regulator */
-> +	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0, VUSB1V5_DEV_GRP);
-> +	twl->usb1v5 = regulator_get(twl->dev, "usb1v5");
->  	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0, VUSB1V5_TYPE);
->  
-> -	/* turn on 1.8V regulator */
-> -	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0x20, VUSB1V8_DEV_GRP);
-> +	/* Initialize 1.8V regulator */
-> +	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0, VUSB1V8_DEV_GRP);
-> +	twl->usb1v8 = regulator_get(twl->dev, "usb1v8");
->  	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0, VUSB1V8_TYPE);
->  
->  	/* disable access to power configuration registers */
-> @@ -688,6 +703,9 @@ static int __exit twl4030_usb_remove(str
->  	twl4030_usb_clear_bits(twl, POWER_CTRL, POWER_CTRL_OTG_ENAB);
->  
->  	twl4030_phy_power(twl, 0);
-> +	regulator_put(twl->usb1v5);
-> +	regulator_put(twl->usb1v8);
-> +	regulator_put(twl->usb3v1);
->  
->  	kfree(twl);
->  
+> But I guess there is no way to know what exactly the ACPI thermal zone
+> is doing, except by looking at the DSDT, so this can't be automated?
+
+Correct.
+
+> Is it at least possible to disable the ACPI thermal zone either as a
+> command-line parameter or an internal blacklist?
+
+It's possible, and we could certainly add an argument to do so. However, 
+removing support for the kernel use of the thermal zone doesn't prevent 
+the firmware from making calls to the thermal code itself. There's no 
+real way we can block that.
+
+> One approach that may work is to change the default based on the ACPI
+> implementation year (I think the info is available, right?) We could
+> default to strict for systems with year >= 2009. This may still prevent
+> users from getting the best out of their system, but at least won't
+> cause a regression for users of older systems where the native driver
+> has been used so far. I know it's not an ideal solution, but ACPI
+> implementations aren't ideal either.
+
+The problem with this approach is that we still end up with a large 
+number of malfunctioning machines. Really, I don't think there's any way 
+to handle this other than defaulting to strict, letting the default be 
+changed at run and boot time and printing a message when a driver is 
+refused permission to bind. Distributions that want to obtain the 
+previous behaviour can change the default back.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
