@@ -1,60 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbZBJPpw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbZBJPy6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753984AbZBJPpw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 10:45:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbZBJPpl
+	id S1754596AbZBJPy6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 10:54:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbZBJPyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 10:45:41 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:42191 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755224AbZBJPpk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 10:45:40 -0500
-Date: Tue, 10 Feb 2009 15:45:33 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Corentin Chary <corentincj@iksaif.net>,
-       Darren Salt <linux@youmustbejoking.demon.co.uk>
-Subject: Re: Oopses and ACPI problems (Linus 2.6.29-rc4)
-Message-ID: <20090210154533.GA27596@srcf.ucam.org>
-References: <alpine.LFD.2.00.0902081251090.3048@localhost.localdomain> <gemini.ket9w800w44dc0hvg.linux@youmustbejoking.demon.co.uk> <20090209234911.GB862@elte.hu> <5030E21460%linux@youmustbejoking.demon.co.uk> <20090210150431.GA26798@srcf.ucam.org> <5030E7CFF4%linux@youmustbejoking.demon.co.uk>
+	Tue, 10 Feb 2009 10:54:49 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:58497 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752271AbZBJPys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 10:54:48 -0500
+Message-ID: <4991A349.8090005@redhat.com>
+Date: Tue, 10 Feb 2009 10:54:49 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5030E7CFF4%linux@youmustbejoking.demon.co.uk>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       Cheng Renquan <crquan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/2] kprobes: check CONFIG_FREEZER instead of CONFIG_PM
+References: <200901062112.29227.rjw@sisk.pl> <49909764.3020303@redhat.com> <20090210123734.GB21531@elte.hu> <200902101456.20147.rjw@sisk.pl>
+In-Reply-To: <200902101456.20147.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 03:15:21PM +0000, Darren Salt wrote:
-
-> As things stand, this is likely to be a problem for anybody using lenny on
-> Eee hardware and upgrading (on their own) to 2.6.29, given that that
-> workaround is present in eeepc-acpi-scripts in lenny.
+Rafael J. Wysocki wrote:
+> On Tuesday 10 February 2009, Ingo Molnar wrote:
+>> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+>>
+>>> Ingo Molnar wrote:
+>>>> * Len Brown <lenb@kernel.org> wrote:
+>>>>
+>>>>>>> Check CONFIG_FREEZER instead of CONFIG_PM because kprobe booster
+>>>>>>> depends on freeze_processes() and thaw_processes() when CONFIG_PREEMPT=y.
+>>>>>>>
+>>>>>>> This fixes a linkage error which occurs when CONFIG_PREEMPT=y, CONFIG_PM=y
+>>>>>>> and CONFIG_FREEZER=n.
+>>>>>>>
+>>>>>>> Reported-by: Cheng Renquan <crquan@gmail.com>
+>>>>>>> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+>>>>>>> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+>>>>>>> ---
+>>>>>>>  arch/ia64/kernel/kprobes.c |    2 +-
+>>>>>>>  arch/x86/kernel/kprobes.c  |    2 +-
+>>>>>>>  kernel/kprobes.c           |    2 +-
+>>>>>>>  3 files changed, 3 insertions(+), 3 deletions(-)
+>>>>>> looks good, the x86 bits:
+>>>>>>
+>>>>>> Acked-by: Ingo Molnar <mingo@elte.hu>
+>>>>> man, we have too many config options:-)
+>>>> the non-x86 bits (kernel/kprobes.c) are crappy though, and broke -rc4
+>>>> allnoconfig:
+>>>>
+>>>> kernel/built-in.o: In function `collect_garbage_slots':
+>>>> kprobes.c:(.kprobes.text+0x16e4): undefined reference to `freeze_processes'
+>>>> kprobes.c:(.kprobes.text+0x16f2): undefined reference to `thaw_processes'
+>>>> kprobes.c:(.kprobes.text+0x176b): undefined reference to `thaw_processes'
+>>> Hmm, it seems that kernel/power/built-in.o was not linked to .tmp_vmlinux1.
+>>>
+>>>   ld -m elf_i386 --build-id -o .tmp_vmlinux1 -T arch/x86/kernel/vmlinux.lds
+>>> arch/x86/kernel/head_32.o arch/x86/kernel/head32.o arch/x86/kernel/head.o
+>>> arch/x86/kernel/init_task.o  init/built-in.o --start-group  usr/built-in.o
+>>> arch/x86/kernel/built-in.o  arch/x86/mm/built-in.o  arch/x86/mach-default/built-in.o
+>>> arch/x86/crypto/built-in.o  arch/x86/vdso/built-in.o  kernel/built-in.o
+>>> mm/built-in.o  fs/built-in.o  ipc/built-in.o  security/built-in.o  crypto/built-in.o
+>>> block/built-in.o  lib/lib.a  arch/x86/lib/lib.a  lib/built-in.o
+>>> arch/x86/lib/built-in.o  drivers/built-in.o  sound/built-in.o  firmware/built-in.o
+>>> arch/x86/pci/built-in.o  net/built-in.o --end-group
+>>> kernel/built-in.o: In function `collect_garbage_slots':
+>>> kprobes.c:(.kprobes.text+0x16e4): undefined reference to `freeze_processes'
+>>> kprobes.c:(.kprobes.text+0x16f2): undefined reference to `thaw_processes'
+>>> kprobes.c:(.kprobes.text+0x176b): undefined reference to `thaw_processes'
+>>>
+>>> At kernel/Makefile:53, I can see
+>>>
+>>> obj-$(CONFIG_PM) += power/
+>>>
+>>> but CONFIG_PM was not set in config
+>> Sounds plausible. We need a fix for this - it's broken upstream.
 > 
-> Anyway, removing that option fixes the problem.
+> Hmm.  Can || be used under obj-$() ?
 
-Ok. I'll look into ensuring that these don't collide, but fundamentally 
-the problem here is distributions using broken options rather than 
-fixing the problem properly in the first place.
+I think just adding a line "obj-$(CONFIG_FREEZER) += power/" is enough.
+(you can see similar lines of "trace/" at the bottom of obj- lines
+ in kernel/Makefile )
 
-> > BIOS bug. There's an explicit delay in the eee bios for some reason, and 
-> > I haven't found any straightforward way to avoid it.
+Thanks,
+
 > 
-> BIOS bug or no, the fact remains that this is (AFAICS) a regression.
+> Rafael
 
-You don't get properly working hotkeys otherwise, to the best of my 
-recollection. There's an entry on the kernel bugzilla about this 
-somewhere.
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
