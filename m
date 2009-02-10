@@ -1,91 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980AbZBJE6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753216AbZBJFEN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753980AbZBJE6J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Feb 2009 23:58:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbZBJE54
+	id S1753216AbZBJFEN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 00:04:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750772AbZBJFD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Feb 2009 23:57:56 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:43342 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750887AbZBJE54 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Feb 2009 23:57:56 -0500
-Date: Tue, 10 Feb 2009 15:57:49 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Alexander Clouter <alex@digriz.org.uk>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCHv2] hw_random: add timeriomem-rng driver
-Message-ID: <20090210045748.GA17236@gondor.apana.org.au>
-References: <20090207095317.GB8800@woodchuck>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090207095317.GB8800@woodchuck>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 10 Feb 2009 00:03:58 -0500
+Received: from gate.crashing.org ([63.228.1.57]:56764 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750750AbZBJFD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 00:03:57 -0500
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 10 Feb 2009 16:03:12 +1100
+Message-Id: <1234242192.31963.472.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 07, 2009 at 09:53:17AM +0000, Alexander Clouter wrote:
->
-> +/*
-> + * have data return 1, however return 0 if we have nothing
-> + */
-> +static int timeriomem_rng_data_present(struct hwrng *rng, int wait)
-> +{
-> +	s32 delay;
-> +
-> +	if (rng->priv == 0)
-> +		return 1;
-> +
-> +	if (del_timer_sync(&timeriomem_rng_timer)) {
-> +		if (!wait)
-> +			return 0;
-> +
-> +		delay = timeriomem_rng_timer.expires - jiffies;
-> +
-> +		schedule_timeout_uninterruptible(delay);
-> +	}
+Hi Linus !
 
-Sorry, but this just doesn't work for O_NONBLOCK reads.  What'll
-happen is that the first failed read will return -EAGAIN, and when
-we're called again immediately (because hwrng polling support is
-non-existant), it'll just read the data right away because now
-there is no timer.
+A few powerpc bits for you for 2.6.29. A few bug and regression fixes
+(after this pull, it will be regressions only), a couple of board
+device tree updates and some trivialities such as build breakage with
+random config options due to missing includes.
 
-> +static int timeriomem_rng_data_read(struct hwrng *rng, u32 *data)
-> +{
-> +	unsigned long cur;
-> +	s32 delay;
-> +
-> +	*data = readl(timeriomem_rng_data->address);
-> +
-> +	if (rng->priv != 0) {
-> +		cur = jiffies;
-> +
-> +		delay = cur - timeriomem_rng_timer.expires;
-> +		delay = rng->priv - (delay % rng->priv);
-> +
-> +		timeriomem_rng_timer.expires = cur + delay;
-> +		add_timer(&timeriomem_rng_timer);
-> +	}
+Among others, this should solve the regressions with X being broken
+on PowerMacs due to the legacy_mem files in sysfs returning an error on
+mmap.
 
-Instead of deleting the timer above, why not create a rng->present
-variable which you set to zero here, and the timer sets it to
-non-zero.  Then you just need to return rng->present in your
-data_present function.
+The following changes since commit 4c098bcd55fad34dcf224bf8343db6a9ac58fc68:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../mason/btrfs-unstable
 
-> +static void timeriomem_rng_trigger(unsigned long dummy)
-> +{
-> +	del_timer_sync(&timeriomem_rng_timer);
-> +}
+are available in the git repository at:
 
-This is going to create an infinite loop.  There is no point in
-deleting yourself.
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Ananth N Mavinakayanahalli (1):
+      powerpc: Don't emulate mr. instructions
+
+Anton Vorontsov (2):
+      powerpc/83xx: Fix missing #{address,size}-cells in mpc8313erdb.dts
+      powerpc/83xx: Fix TSEC0 workability on MPC8313E-RDB boards
+
+Benjamin Herrenschmidt (1):
+      powerpc/pci: mmap anonymous memory when legacy_mem doesn't exist
+
+Julia Lawall (1):
+      arch/powerpc: Eliminate double sizeof
+
+Kumar Gala (1):
+      powerpc/fsl-booke: Fix mapping functions to use phys_addr_t
+
+Michael Neuling (3):
+      powerpc/83xx: Build breakage for CONFIG_PM but no CONFIG_SUSPEND
+      powerpc/cell: Add missing #include for oprofile
+      powerpc: Add missing sparsemem.h include
+
+Steven Rostedt (1):
+      powerpc/ftrace: Fix math to calculate offset in TOC
+
+paulfax (1):
+      powerpc/cpm2: Fix set interrupt type
+
+ arch/powerpc/boot/dts/mpc8313erdb.dts           |   11 ++++-------
+ arch/powerpc/configs/83xx/mpc8313_rdb_defconfig |    2 +-
+ arch/powerpc/kernel/ftrace.c                    |    5 +++--
+ arch/powerpc/kernel/pci-common.c                |   17 +++++++++++++++--
+ arch/powerpc/lib/sstep.c                        |    2 ++
+ arch/powerpc/mm/fsl_booke_mmu.c                 |    4 ++--
+ arch/powerpc/mm/pgtable_32.c                    |    4 ++--
+ arch/powerpc/oprofile/cell/spu_profiler.c       |    1 +
+ arch/powerpc/platforms/82xx/pq2ads-pci-pic.c    |    2 +-
+ arch/powerpc/platforms/pseries/hotplug-memory.c |    1 +
+ arch/powerpc/sysdev/cpm2_pic.c                  |    2 +-
+ arch/powerpc/sysdev/ipic.c                      |    2 +-
+ 12 files changed, 34 insertions(+), 19 deletions(-)
+
+
