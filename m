@@ -1,142 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbZBJQWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755302AbZBJQYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755496AbZBJQWT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 11:22:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753869AbZBJQWH
+	id S1755302AbZBJQYk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 11:24:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbZBJQY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 11:22:07 -0500
-Received: from mailout.artfiles.de ([80.252.97.80]:43747 "EHLO
-	mailout.artfiles.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752995AbZBJQWF convert rfc822-to-8bit (ORCPT
+	Tue, 10 Feb 2009 11:24:29 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:13479 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753550AbZBJQY2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 11:22:05 -0500
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: warning in arch/x86/kernel/cpu/mtrr/generic.c:400 with 2.6.29-rc3 on IBM x3400
-Content-class: urn:content-classes:message
-Date: Tue, 10 Feb 2009 17:21:57 +0100
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Message-ID: <B4ED8DE8E195E84A872496A085BC07822F21@exchange01.corp.win-professional.com>
-In-Reply-To: <4990E90D.30005@kernel.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: warning in arch/x86/kernel/cpu/mtrr/generic.c:400 with 2.6.29-rc3 on IBM x3400
-Thread-Index: AcmLKP7P/zEvQLfrSaaXqIGHMnGDlAAcgN4Q
-References: <B4ED8DE8E195E84A872496A085BC07822F18@exchange01.corp.win-professional.com> <B4ED8DE8E195E84A872496A085BC07822F1D@exchange01.corp.win-professional.com> <20090209234528.GA862@elte.hu> <4990E90D.30005@kernel.org>
-From: "Morten P.D. Stevens" <mstevens@win-professional.com>
-To: "Yinghai Lu" <yinghai@kernel.org>, "Ingo Molnar" <mingo@elte.hu>
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 10 Feb 2009 16:21:57.0852 (UTC) FILETIME=[B1F401C0:01C98B9B]
+	Tue, 10 Feb 2009 11:24:28 -0500
+Date: Tue, 10 Feb 2009 17:24:08 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Matthew Garrett <mjg@redhat.com>, Len Brown <lenb@kernel.org>,
+       Luca Tettamanti <kronos.it@gmail.com>, Thomas Renninger <trenn@suse.de>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ACPI: add "auto" to acpi_enforce_resources
+Message-ID: <20090210172408.400cacee@hyperion.delvare>
+In-Reply-To: <49919E08.5050002@redhat.com>
+References: <20090125210520.GA12963@dreamland.darkstar.lan>
+	<200901291130.35434.trenn@suse.de>
+	<68676e00901290716g1aabd6c0p1e5202fbdbc659a4@mail.gmail.com>
+	<alpine.LFD.2.00.0902040042570.9833@localhost.localdomain>
+	<20090204060513.GA28321@srcf.ucam.org>
+	<498953DF.5050306@redhat.com>
+	<20090204131708.GA2739@srcf.ucam.org>
+	<20090204142606.1823661b@hyperion.delvare>
+	<20090204142015.GB3923@srcf.ucam.org>
+	<20090210145716.105ab58b@hyperion.delvare>
+	<20090210140829.GA25397@srcf.ucam.org>
+	<49919E08.5050002@redhat.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 10 Feb 2009 16:32:24 +0100, Hans de Goede wrote:
+> Matthew Garrett wrote:
+> > On Tue, Feb 10, 2009 at 02:57:16PM +0100, Jean Delvare wrote:
+> > 
+>   year (I think the info is available, right?) We could
+> >> default to strict for systems with year >= 2009. This may still prevent
+> >> users from getting the best out of their system, but at least won't
+> >> cause a regression for users of older systems where the native driver
+> >> has been used so far. I know it's not an ideal solution, but ACPI
+> >> implementations aren't ideal either.
+> > 
+> > The problem with this approach is that we still end up with a large 
+> > number of malfunctioning machines. Really, I don't think there's any way 
+> > to handle this other than defaulting to strict, letting the default be 
+> > changed at run and boot time and printing a message when a driver is 
+> > refused permission to bind. Distributions that want to obtain the 
+> > previous behaviour can change the default back.
 
-> please try:
-> diff --git a/arch/x86/kernel/cpu/mtrr/generic.c
-b/arch/x86/kernel/cpu/mtrr/generic.c
-> index 0c0a455..7a359ce 100644
-> --- a/arch/x86/kernel/cpu/mtrr/generic.c
-> +++ b/arch/x86/kernel/cpu/mtrr/generic.c
-> @@ -397,7 +397,8 @@ static void generic_get_mtrr(unsigned int reg,
-unsigned long *base,
-> 		tmp |= ~((1<<(hi - 1)) - 1);
-> 
-> 		if (tmp != mask_lo) {
-> -			WARN_ONCE(1, KERN_INFO "mtrr: your BIOS has set
-up an incorrect mask, fixing it up.\n");
-> +			printk(KERN_INFO "mtrr: BIOS set mask_lo: %x
-should be %x, fixing it up\n", mask_lo, tmp);
-> +			WARN_ONCE(1, KERN_INFO "mtrr: your BIOS has set
-up an incorrect mask.\n");
->			mask_lo = tmp;
-> 		}
-> 	}
+If we expect different distributions / user classes to set a different
+default, then it might make sense to make acpi_enforce_resources's
+default value a config option?
 
-result:
+> For the record we have changed the default to strict in Fedora's 
+> development branch, for 2 weeks or so now, including in the recently 
+> released Fedora 11 release and we've had 0 complaints so far.
 
-[    0.000000] ------------[ cut here ]------------
-[    0.000000] WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:405
-generic_get_mtrr+0xd0/0x10a()
-[    0.000000] mtrr: your BIOS has set up an incorrect mask.
-[    0.000000] Modules linked in:
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.28.4-ibm #1
-[    0.000000] Call Trace:
-[    0.000000]  [<ffffffff8023acca>] warn_slowpath+0xb4/0xda
-[    0.000000]  [<ffffffff8023b8c6>] vprintk+0x2a4/0x2d1
-[    0.000000]  [<ffffffff80221bea>] default_spin_lock_flags+0x6/0x8
-[    0.000000]  [<ffffffff80451cf9>] printk+0x4e/0x5d
-[    0.000000]  [<ffffffff80453e6a>] _spin_lock_irqsave+0x25/0x2c
-[    0.000000]  [<ffffffff802194c0>] mtrr_wrmsr+0x1b/0x48
-[    0.000000]  [<ffffffff805e5f88>] get_mtrr_state+0x2e5/0x2f1
-[    0.000000]  [<ffffffff8021960e>] generic_get_mtrr+0xd0/0x10a
-[    0.000000]  [<ffffffff805e4e0d>] mtrr_bp_init+0x1f5/0xc39
-[    0.000000]  [<ffffffff805e58e4>]
-mtrr_trim_uncached_memory+0x93/0x374
-[    0.000000]  [<ffffffff805f07c9>] early_iounmap+0x13d/0x19d
-[    0.000000]  [<ffffffff805f07c9>] early_iounmap+0x13d/0x19d
-[    0.000000]  [<ffffffff805da140>] early_idt_handler+0x0/0x71
-[    0.000000]  [<ffffffff805e0d56>] setup_arch+0x407/0x78c
-[    0.000000]  [<ffffffff805f4c81>] cgroup_init_subsys+0x2a/0xd9
-[    0.000000]  [<ffffffff805f4f5e>] cgroup_init_early+0x1a4/0x1b6
-[    0.000000]  [<ffffffff80453f10>] _spin_lock+0x6/0x7
-[    0.000000]  [<ffffffff805da931>] start_kernel+0x7b/0x38b
-[    0.000000]  [<ffffffff805da140>] early_idt_handler+0x0/0x71
-[    0.000000]  [<ffffffff805da3a1>] x86_64_start_kernel+0xe7/0xf4
-[    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
+Well, if the number of affected systems is small, this is good news.
+But this is only 2 weeks and one distribution, coverage isn't
+sufficient to claim anything yet IMHO.
 
+That being said... if there's a common consensus that switching to
+strict and dealing with fallouts is the best thing to do, and I'm the
+only one objecting to this, then I am ready to admit that I was wrong
+and let you proceed.
 
-
------Original Message-----
-From: Yinghai Lu [mailto:yinghai@kernel.org] 
-Sent: Tuesday, February 10, 2009 3:40 AM
-To: Ingo Molnar
-Cc: Morten P.D. Stevens; Thomas Gleixner; H. Peter Anvin; Arjan van de
-Ven; linux-kernel@vger.kernel.org
-Subject: Re: warning in arch/x86/kernel/cpu/mtrr/generic.c:400 with
-2.6.29-rc3 on IBM x3400
-
-Ingo Molnar wrote:
-> * Morten P.D. Stevens <mstevens@win-professional.com> wrote:
-> 
->> Hi,
->>
->> Update:
->>
->> the same issue with a linux 2.6.28.4 kernel.
->>
->> [    0.000000] ------------[ cut here ]------------
->> [    0.000000] WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:404
-generic_get_mtrr+0xdf/0x119()
->> [    0.000000] mtrr: your BIOS has set up an incorrect mask, fixing
-it up.
-> 
-> buggy BIOS most likely. Had the kernel not fixed up the MTRRs you'd
-have
-> a very slow and unhappy system now.
-
-please try:
-diff --git a/arch/x86/kernel/cpu/mtrr/generic.c
-b/arch/x86/kernel/cpu/mtrr/generic.c
-index 0c0a455..7a359ce 100644
---- a/arch/x86/kernel/cpu/mtrr/generic.c
-+++ b/arch/x86/kernel/cpu/mtrr/generic.c
-@@ -397,7 +397,8 @@ static void generic_get_mtrr(unsigned int reg,
-unsigned long *base,
- 		tmp |= ~((1<<(hi - 1)) - 1);
- 
- 		if (tmp != mask_lo) {
--			WARN_ONCE(1, KERN_INFO "mtrr: your BIOS has set
-up an incorrect mask, fixing it up.\n");
-+			printk(KERN_INFO "mtrr: BIOS set mask_lo: %x
-should be %x, fixing it up\n", mask_lo, tmp);
-+			WARN_ONCE(1, KERN_INFO "mtrr: your BIOS has set
-up an incorrect mask.\n");
- 			mask_lo = tmp;
- 		}
- 	}
+-- 
+Jean Delvare
