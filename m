@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754901AbZBJRwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753436AbZBJRxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754901AbZBJRwT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 12:52:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbZBJRwJ
+	id S1753436AbZBJRxV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 12:53:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754361AbZBJRxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 12:52:09 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:39744 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753795AbZBJRwG (ORCPT
+	Tue, 10 Feb 2009 12:53:12 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:33076 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753795AbZBJRxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 12:52:06 -0500
-Subject: Re: +
-	powerpc-fix-code-for-reserved-memory-spanning-across-nodes.patch added to
-	-mm tree
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
-       chandru@in.ibm.com, chandru@linux.vnet.ibm.com, paulus@samba.org,
-       akpm@linux-foundation.org, Johannes Weiner <hannes@cmpxchg.org>,
-       "Jon M. Tollefson [imap]" <kniht@us.ibm.com>
-In-Reply-To: <1234139464.31963.79.camel@pasglop>
-References: <200812250806.mBP86LPQ018399@imap1.linux-foundation.org>
-	 <20090208204725.GA5514@cmpxchg.org>  <1234139464.31963.79.camel@pasglop>
-Content-Type: text/plain
-Date: Tue, 10 Feb 2009 09:51:50 -0800
-Message-Id: <1234288310.30155.27.camel@nimitz>
+	Tue, 10 Feb 2009 12:53:11 -0500
+Date: Tue, 10 Feb 2009 09:53:19 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Cc: linux-next@vger.kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: [PATCH] oqo: depends on INPUT_POLLDEV
+Message-Id: <20090210095319.b1848fd2.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt702.oracle.com [141.146.40.80]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.4991BEF9.0247:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-09 at 11:31 +1100, Benjamin Herrenschmidt wrote:
-> Dave, you've had your hands in that code more than I did lately, do
-> that
-> look ok to you ?
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-I still think that patch is bogus.  I don't know how it is still around.
-I described the problem pretty completely here:
+oqo driver uses polled input functions, so make it depend
+on INPUT_POLLDEV.
 
-http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=4a6186696e7f15b3ea4dafcdb64ee0703e0e4487
+ERROR: "input_register_polled_device" [drivers/platform/x86/oqo-wmi.ko] undefined!
+ERROR: "input_allocate_polled_device" [drivers/platform/x86/oqo-wmi.ko] undefined!
+ERROR: "input_free_polled_device" [drivers/platform/x86/oqo-wmi.ko] undefined!
+ERROR: "input_unregister_polled_device" [drivers/platform/x86/oqo-wmi.ko] undefined!
 
-Chandru effectively reverted my bugfix from that patch in this one.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+cc:	Matthew Garrett <mjg59@srcf.ucam.org>
+---
+ drivers/platform/x86/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> (BTW. On another note, do you still have pending bug fixes that didn't
-> got in .29 ?)
-
-No, I don't think so.  There were some distro fixes but I couldn't
-reproduce the bugs on mainline.
-
--- Dave
-
+--- linux-next-20090210.orig/drivers/platform/x86/Kconfig
++++ linux-next-20090210/drivers/platform/x86/Kconfig
+@@ -137,7 +137,7 @@ config MSI_LAPTOP
+ config OQO_WMI
+        tristate "OQO WMI extras"
+        depends on ACPI_WMI
+-       depends on INPUT
++       depends on INPUT && INPUT_POLLDEV
+        depends on RFKILL
+        depends on BACKLIGHT_CLASS_DEVICE
+        help
