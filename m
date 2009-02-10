@@ -1,81 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757015AbZBJWlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757244AbZBJWmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757015AbZBJWlS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 17:41:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756119AbZBJWlE
+	id S1757244AbZBJWmS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 17:42:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756180AbZBJWmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 17:41:04 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:45367 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755674AbZBJWlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 17:41:03 -0500
-Date: Wed, 11 Feb 2009 09:40:50 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, Mimi Zohar <zohar@us.ibm.com>,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: linux-next: Tree for February 10 (security/audit/ima)
-Message-Id: <20090211094050.47c4828d.sfr@canb.auug.org.au>
-In-Reply-To: <4991DBA0.1000008@oracle.com>
-References: <20090210194121.80256b72.sfr@canb.auug.org.au>
-	<4991DBA0.1000008@oracle.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	Tue, 10 Feb 2009 17:42:08 -0500
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:48254 "EHLO
+	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756119AbZBJWmG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 17:42:06 -0500
+Subject: Re: [Bug #12574] possible circular locking dependency detected
+From: Eric Anholt <eric@anholt.net>
+To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+Cc: Dave Airlie <airlied@linux.ie>, dri-devel@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <20090210223711.GA6809@google.com>
+References: <AIghyjFgMFP.A.uZD._10jJB@chimera>
+	 <sWhNs83kKPE.A.4cG.E30jJB@chimera>  <20090210223711.GA6809@google.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-1Z7gR/hHA0tX+ZN1mhZM"
+Date: Tue, 10 Feb 2009 14:41:56 -0800
+Message-Id: <1234305716.32506.10.camel@gaiman>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__11_Feb_2009_09_40_50_+1100_Molc438UIbYsgJVG"
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__11_Feb_2009_09_40_50_+1100_Molc438UIbYsgJVG
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+
+--=-1Z7gR/hHA0tX+ZN1mhZM
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Hi Randy,
-
-On Tue, 10 Feb 2009 11:55:12 -0800 Randy Dunlap <randy.dunlap@oracle.com> w=
-rote:
->
-> Stephen Rothwell wrote:
-> >=20
-> > Dropped trees (temporarily):
-> > 	audit (difficult conflicts)
+On Wed, 2009-02-11 at 00:37 +0200, Michael S. Tsirkin wrote:
+> Dave, dri guys,
+> Could you take a look at this circular dependency please (below)?  I
+> observe it when suspending laptop with radeon drm loaded and with
+> lockdep enabled. It seems that the root of the problem is that
+> various vm ops such as drm_vm_open, drm_mmap) are called with mm
+> semaphore taken, and take dev->struct_mutex. On the other hand,
+> drm_rmmap_locked is called with dev->struct_mutex, and calls mtrr_del
+> which depends on mm semaphore indirectly.
 >=20
-> Maybe this is fixed by the dropped audit tree?
+> What do you think?
 
-The audit tree is Al Viro's (cc'd).  But I *think* everything in it has
-been applied upstream.
-
-> linux-next-20090210/security/integrity/ima/ima_policy.c:111: error: impli=
-cit declaration of function 'security_audit_rule_match'
-> linux-next-20090210/security/integrity/ima/ima_policy.c:230: error: impli=
-cit declaration of function 'security_audit_rule_init'
->=20
-> when
-> CONFIG_SECURITY=3Dy
-> CONFIG_AUDIT=3Dn
-> CONFIG_IMA=3Dy
-> CONFIG_IMA_AUDIT=3Dy
-
-This looks more like a security subsystem than audit to me?
+Yes, there are real lock inversions now due to the GTT mmap code.  It's
+going to be a pain to fix (I tried getting the mmap_sem -> struct_mutex
+path to go away, but the fact that mmap_sem is held over the fault
+handler pretty much kills that).  It's high on the list, though.
 
 --=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
 
---Signature=_Wed__11_Feb_2009_09_40_50_+1100_Molc438UIbYsgJVG
-Content-Type: application/pgp-signature
+
+
+--=-1Z7gR/hHA0tX+ZN1mhZM
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkmSAnIACgkQjjKRsyhoI8yqxwCfcMvbQCBSoSy0ZTRO9E7AJyTL
-zkwAn1/2ndYUtMuZOctxvz/AoedjlyoN
-=HWxH
+iEYEABECAAYFAkmSArQACgkQHUdvYGzw6ved3ACff4huObnqoU+6sC0vjVh1NYy4
+CFAAoIKSScvTf88cLX+SVQh+PDgQbU8B
+=GKtc
 -----END PGP SIGNATURE-----
 
---Signature=_Wed__11_Feb_2009_09_40_50_+1100_Molc438UIbYsgJVG--
+--=-1Z7gR/hHA0tX+ZN1mhZM--
+
