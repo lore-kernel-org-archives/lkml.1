@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757187AbZBJTJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757083AbZBJTJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757187AbZBJTJq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 14:09:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbZBJTDq
+	id S1757083AbZBJTJb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 14:09:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469AbZBJTDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 14:03:46 -0500
-Received: from kroah.org ([198.145.64.141]:53781 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755463AbZBJTDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 10 Feb 2009 14:03:42 -0500
-Date: Tue, 10 Feb 2009 11:00:13 -0800
+Received: from kroah.org ([198.145.64.141]:53768 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755456AbZBJTDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 14:03:41 -0500
+Date: Tue, 10 Feb 2009 11:00:11 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Karsten Keil <kkeil@suse.de>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: [patch 17/53] module: remove over-zealous check in __module_get()
-Message-ID: <20090210190013.GR14308@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Jarod Wilson <jarod@redhat.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [patch 16/53] ieee1394: sbp2: add workarounds for 2nd and 3rd
+	generation iPods
+Message-ID: <20090210190011.GQ14308@kroah.com>
 References: <20090210185337.000769713@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="module-remove-over-zealous-check-in-__module_get.patch"
+Content-Disposition: inline; filename="ieee1394-sbp2-add-workarounds-for-2nd-and-3rd-generation-ipods.patch"
 In-Reply-To: <20090210185924.GA14308@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,36 +40,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Rusty Russell <rusty@rustcorp.com.au>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-commit 7f9a50a5b89b87f8e754f59ae9968da28be618a5 upstream.
+Commit 1448d7c6a2ff96d3b52ecae49e2d0f046a097fe0 upstream.
 
-Impact: fix spurious BUG_ON() triggered under load
+As per https://bugs.launchpad.net/bugs/294391.  These got one sample of
+each iPod generation going.  However there still occurred I/O stalls
+with the 3rd generation iPod which remain undiagnosed at the time of
+this writing.
 
-module_refcount() isn't reliable outside stop_machine(), as demonstrated
-by Karsten Keil <kkeil@suse.de>, networking can trigger it under load
-(an inc on one cpu and dec on another while module_refcount() is tallying
- can give false results, for example).
-
-Almost noone should be using __module_get, but that's another issue.
-
-Cc: Karsten Keil <kkeil@suse.de>
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Acked-by: Jarod Wilson <jarod@redhat.com>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/module.h |    1 -
- 1 file changed, 1 deletion(-)
+ drivers/ieee1394/sbp2.c |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -391,7 +391,6 @@ void symbol_put_addr(void *addr);
- static inline void __module_get(struct module *module)
- {
- 	if (module) {
--		BUG_ON(module_refcount(module) == 0);
- 		local_inc(&module->ref[get_cpu()].count);
- 		put_cpu();
- 	}
+--- a/drivers/ieee1394/sbp2.c
++++ b/drivers/ieee1394/sbp2.c
+@@ -395,6 +395,16 @@ static const struct {
+ 		.model_id		= SBP2_ROM_VALUE_WILDCARD,
+ 		.workarounds		= SBP2_WORKAROUND_128K_MAX_TRANS,
+ 	},
++	/*
++	 * iPod 2nd generation: needs 128k max transfer size workaround
++	 * iPod 3rd generation: needs fix capacity workaround
++	 */
++	{
++		.firmware_revision	= 0x0a2700,
++		.model_id		= 0x000000,
++		.workarounds		= SBP2_WORKAROUND_128K_MAX_TRANS |
++					  SBP2_WORKAROUND_FIX_CAPACITY,
++	},
+ 	/* iPod 4th generation */ {
+ 		.firmware_revision	= 0x0a2700,
+ 		.model_id		= 0x000021,
 
