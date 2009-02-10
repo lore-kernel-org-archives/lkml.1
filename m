@@ -1,62 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754144AbZBJLM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754159AbZBJLPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754144AbZBJLM0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 06:12:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750904AbZBJLMO
+	id S1754159AbZBJLPe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 06:15:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbZBJLPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 06:12:14 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52738 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750759AbZBJLMM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 06:12:12 -0500
-Date: Tue, 10 Feb 2009 12:11:54 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Tejun Heo <tj@kernel.org>, hpa@zytor.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, x86@kernel.org, rusty@rustcorp.com.au
-Subject: Re: [PATCH 08/11] x86: use asm .macro instead of cpp #define in
-	entry_32.S
-Message-ID: <20090210111154.GA7822@elte.hu>
-References: <1234186798-16820-1-git-send-email-tj@kernel.org> <1234186798-16820-9-git-send-email-tj@kernel.org> <4990774E.5080206@goop.org> <4990D4E3.1010109@kernel.org> <4990D5F5.9030409@goop.org>
+	Tue, 10 Feb 2009 06:15:25 -0500
+Received: from e23smtp05.au.ibm.com ([202.81.31.147]:50781 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750904AbZBJLPX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 06:15:23 -0500
+Message-ID: <499161C3.2070407@in.ibm.com>
+Date: Tue, 10 Feb 2009 16:45:15 +0530
+From: "Sachin P. Sant" <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4990D5F5.9030409@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: linux-s390@vger.kernel.org
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, Mel Gorman <mel@csn.ul.ie>
+Subject: [Patch] [s390] Fix init irq proc build break.
+References: <20090210194121.80256b72.sfr@canb.auug.org.au> <4991573C.8000609@in.ibm.com>
+In-Reply-To: <4991573C.8000609@in.ibm.com>
+Content-Type: multipart/mixed;
+ boundary="------------080908080101070106080007"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------080908080101070106080007
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+* Embed init_irq_proc(s390) within CONFIG_PROC_FS to fix a build break.
 
-> Tejun Heo wrote:
->> Hmm... I originally did the conversion because I had some .if trick in
->> SAVE_ALL which got removed later.  Even after the removal, it
->> generally looked like a good idea as x86_64 asm was primarily using
->> .macro too.  I do like being able to see the post-processing output of
->> cpp too but for assembler disassembling the output often seem to give
->> enough clue,
->
-> That's assuming that the file assembles.  But if you're trying to assemble
-> and the best error the assembler comes up with is "bad operand" on the line
-> where you're using the macro, its extremely frustrating trying to work out
-> where the problem actually lies.
+Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
+---
 
-Yeah, i had that experience with GAS usability with all the CFI restructuring
-we did.
+Thanks
+-Sachin
 
-But it should be pretty rare that we come up with instructions that do not
-assemble - and even rarer that we come up with a _lot_ of new instructions
-that do not assemble. The trick i used was to remove bits of the macro to
-hone in on the bad instruction/construct. Stone-age tool but works.
 
-	Ingo
+
+--------------080908080101070106080007
+Content-Type: text/x-patch;
+ name="fix-init-irq-proc-build-break-on-s390.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="fix-init-irq-proc-build-break-on-s390.patch"
+
+* Embed init_irq_proc(s390) within CONFIG_PROC_FS to fix a build break.
+
+Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
+---
+
+diff -Naurp a/arch/s390/kernel/irq.c b/arch/s390/kernel/irq.c
+--- a/arch/s390/kernel/irq.c	2009-02-10 18:30:01.000000000 +0530
++++ b/arch/s390/kernel/irq.c	2009-02-10 19:01:44.000000000 +0530
+@@ -95,6 +95,7 @@ asmlinkage void do_softirq(void)
+ 	local_irq_restore(flags);
+ }
+ 
++#ifdef CONFIG_PROC_FS
+ void init_irq_proc(void)
+ {
+ 	struct proc_dir_entry *root_irq_dir;
+@@ -102,3 +103,4 @@ void init_irq_proc(void)
+ 	root_irq_dir = proc_mkdir("irq", NULL);
+ 	create_prof_cpu_mask(root_irq_dir);
+ }
++#endif
+
+--------------080908080101070106080007--
