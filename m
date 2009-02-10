@@ -1,103 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755986AbZBJOVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbZBJOZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755986AbZBJOVt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 09:21:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbZBJOVl
+	id S1755282AbZBJOZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 09:25:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbZBJOZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 09:21:41 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:46798 "EHLO gir.skynet.ie"
+	Tue, 10 Feb 2009 09:25:51 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60635 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752271AbZBJOVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 09:21:40 -0500
-Date: Tue, 10 Feb 2009 14:21:39 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] introduce for_each_populated_zone() macro
-Message-ID: <20090210142138.GD4023@csn.ul.ie>
-References: <20090210162220.6FBC.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090210135050.GB4023@csn.ul.ie> <2f11576a0902100613g311f8387sb23f866c94bd48bf@mail.gmail.com>
+	id S1754221AbZBJOZu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 09:25:50 -0500
+Date: Tue, 10 Feb 2009 15:25:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: Re: [PATCH 1/2] tracing/sysprof: add missing
+	tracing_{start,stop}_record_cmdline()
+Message-ID: <20090210142543.GF16147@elte.hu>
+References: <4990fdb7.0e0f660a.1d27.5399@mx.google.com> <20090210122726.GA21531@elte.hu> <20090210123145.GA1403@elte.hu> <20090210141052.GA5836@nowhere>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <2f11576a0902100613g311f8387sb23f866c94bd48bf@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090210141052.GA5836@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 11:13:12PM +0900, KOSAKI Motohiro wrote:
-> Hi
-> 
-> >> +#define for_each_populated_zone(zone)                        \
-> >> +     for (zone = (first_online_pgdat())->node_zones; \
-> >> +          zone;                                      \
-> >> +          zone = next_zone(zone))                    \
-> >> +             if (!populated_zone(zone))              \
-> >> +                     ; /* do nothing */              \
-> >> +             else
-> >> +
-> >> +
-> >> +
-> >> +
-> >
-> > There is tabs vs whitespace damage in there.
-> 
-> ??
-> I'm look at it again. but I don't found whitespace damage.
-> 
 
-Maybe there is some oddity in my mailer, but the second part of the for
-loop with "zone;" looks like a tab followed by spaces to me. Not a big
-deal, probably looks better with the spaces in this case.
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> > Multiple empty lines are introduced for no apparent reason.
+> On Tue, Feb 10, 2009 at 01:31:45PM +0100, Ingo Molnar wrote:
+> > 
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> > > 
+> > > > Add the missing pair tracing_{start,stop}_record_cmdline() to record well
+> > > > the cmdline associated with pid.
+> > > > 
+> > > > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> > > > ---
+> > > >  kernel/trace/trace_sysprof.c |    3 +++
+> > > >  1 files changed, 3 insertions(+), 0 deletions(-)
+> > > 
+> > > applied to tip/tracing/sysprof, thanks Frederic!
+> > 
+> > hm, causes a build failure:
+> > 
+> > kernel/built-in.o: In function `stack_trace_reset':
+> > trace_sysprof.c:(.text+0x3e91a): undefined reference to `tracing_stop_cmdline_record'
+> > kernel/built-in.o: In function `stack_trace_init':
+> > trace_sysprof.c:(.text+0x3e953): undefined reference to `tracing_start_cmdline_record'
+> > 
+> > 	Ingo
 > 
-> Will fix. thanks.
-> 
-> > It's not clear why you did not use if (populated_zone(zone))
-> > instead of an if/else.
-> 
-> Good question.
-> if we make following macro,
-> 
-> #define for_each_populated_zone(zone)                        \
->      for (zone = (first_online_pgdat())->node_zones; \
->           zone;                                      \
->           zone = next_zone(zone))                    \
->              if (populated_zone(zone))
-> 
-> and, writing following caller code.
-> 
-> if (always_true_assumption)
->   for_each_populated_zone(){
->      /* some code */
->   }
-> else
->   panic();
-> 
-> expand to
-> 
-> if (always_true_assumption)
->   for()
->      if (populated_zone() {
->      /* some code */
->   }
-> else
->   panic();
-> 
-> then, memoryless node cause panic().
-> 
+> Sorry, this fixlet solves the problem:
 
-Oof, that's tricky but you're correct. The macro has to work as you suggest
-or weird things can happen.
+Could you please send one combo patch? The patch was so small and was at
+the tail of tracing/sysprof that i didnt apply it after all.
 
-> >
-> > Otherwise, I did not spot anything out of the ordinary. Nice cleanup.
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+	Ingo
