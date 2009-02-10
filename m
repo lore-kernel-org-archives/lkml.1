@@ -1,37 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753384AbZBJHrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754024AbZBJHru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753384AbZBJHrV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 02:47:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbZBJHrN
+	id S1754024AbZBJHru (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 02:47:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbZBJHrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 02:47:13 -0500
-Received: from yx-out-2324.google.com ([74.125.44.28]:25364 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750735AbZBJHrN (ORCPT
+	Tue, 10 Feb 2009 02:47:39 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:63038 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751405AbZBJHri (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 02:47:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=fxmhg3dwjC/xMWgFNIHpAejYVBZhVezAq47V+/uinjAp1+roGsfJCECy6iOeUrL471
-         mX0KQ725JO101X1lpYl0R13/m8X05n0kFdWQvQ0B5DTSO4i2HooBId65QBKwvFHfnie3
-         Tap1MDVJnVYNvLPUAR4wD7pxywm87MW6BV3Tw=
+	Tue, 10 Feb 2009 02:47:38 -0500
+Message-ID: <499130DF.2090104@nokia.com>
+Date: Tue, 10 Feb 2009 09:46:39 +0200
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Reply-To: Artem.Bityutskiy@nokia.com
+Organization: Nokia OYJ
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Date: Tue, 10 Feb 2009 05:47:11 -0200
-Message-ID: <cc0fa41f0902092347g16ed3454ue6af25364ddf0e07@mail.gmail.com>
-Subject: Re: X200: Resume and iwlwifi on 2.6.29-rc4-ikn-00001-gd5b5623
-From: Guilherme Malschitzky Schroeder <guilherme.m.schroeder@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Federico Cuello <fedux@lugmen.org.ar>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH] write-back: fix break condition
+References: <1233977610-8919-1-git-send-email-fedux@lugmen.org.ar> <20090209152140.aa3f50aa.akpm@linux-foundation.org>
+In-Reply-To: <20090209152140.aa3f50aa.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 10 Feb 2009 07:46:38.0452 (UTC) FILETIME=[B48DFB40:01C98B53]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've the same problem here. After suspend i cannot use wireless anymore.
-I just didn't tried to rmmod/modprobe to see if it works again. Have you tried?
+Andrew Morton wrote:
+>>
+>> -                     if (nr_to_write > 0)
+>> +                     if (nr_to_write > 0) {
+>>                               nr_to_write--;
+>> -                     else if (wbc->sync_mode == WB_SYNC_NONE) {
+>> -                             /*
+>> -                              * We stop writing back only if we are not
+>> -                              * doing integrity sync. In case of integrity
+>> -                              * sync we have to keep going because someone
+>> -                              * may be concurrently dirtying pages, and we
+>> -                              * might have synced a lot of newly appeared
+>> -                              * dirty pages, but have not synced all of the
+>> -                              * old dirty pages.
+>> -                              */
+>> -                             done = 1;
+>> -                             break;
+>> +                             if (nr_to_write == 0 && wbc->sync_mode == WB_SYNC_NONE) {
+>> +                                     /*
+>> +                                      * We stop writing back only if we are not
+>> +                                      * doing integrity sync. In case of integrity
+>> +                                      * sync we have to keep going because someone
+>> +                                      * may be concurrently dirtying pages, and we
+>> +                                      * might have synced a lot of newly appeared
+>> +                                      * dirty pages, but have not synced all of the
+>> +                                      * old dirty pages.
+>> +                                      */
+>> +                                     done = 1;
+>> +                                     break;
+>> +                             }
+>>                       }
+>>
+>>                       if (wbc->nonblocking && bdi_write_congested(bdi)) {
+> 
+> Artem, Nick, please check?
 
-alemao@dub:~$ lspci | grep AGN
-0c:00.0 Network controller: Intel Corporation PRO/Wireless 5300 AGN
-[Shiloh] Network Connection
+I have not tested it, but it looks OK to me.
+
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
