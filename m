@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754133AbZBJKaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753616AbZBJKbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754133AbZBJKaf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 05:30:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbZBJKa0
+	id S1753616AbZBJKbw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 05:31:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbZBJKbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 05:30:26 -0500
-Received: from e28smtp09.in.ibm.com ([59.145.155.9]:59195 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752728AbZBJKaZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 05:30:25 -0500
-Message-ID: <4991573C.8000609@in.ibm.com>
-Date: Tue, 10 Feb 2009 16:00:20 +0530
-From: "Sachin P. Sant" <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
+	Tue, 10 Feb 2009 05:31:39 -0500
+Received: from styx.suse.cz ([82.119.242.94]:50336 "EHLO dhcp35"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752722AbZBJKbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 05:31:38 -0500
+Date: Tue, 10 Feb 2009 11:31:37 +0100
+From: Michal Hocko <mhocko@suse.cz>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: "David S. Miller" <davem@davemloft.net>, Karsten Keil <kkeil@suse.de>,
+       linux-kernel@vger.kernel.org, richard kennedy <richard@rsk.demon.co.uk>,
+       Dan Williams <dan.j.williams@intel.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>, dwmw2@infradead.org,
+       Scott Wood <scottwood@freescale.com>, netdev@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [RFC] Suspicious bug in module refcounting
+Message-ID: <20090210103136.GB7096@dhcp35.suse.cz>
+References: <20090203134721.GA11069@pingi.kke.suse.de> <200902041418.09630.rusty@rustcorp.com.au> <20090209151830.GC6018@dhcp35.suse.cz> <200902101345.08580.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-s390@vger.kernel.org, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, Mel Gorman <mel@csn.ul.ie>
-Subject: Next Feb 10 : build/break arch/s390kernel.irq.o 
-References: <20090210194121.80256b72.sfr@canb.auug.org.au>
-In-Reply-To: <20090210194121.80256b72.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200902101345.08580.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-randconfig build on s390 fails with
+On Tue 10-02-09 13:45:07, Rusty Russell wrote:
+> On Tuesday 10 February 2009 01:48:31 Michal Hocko wrote:
+> > Based on this change, would it make sense to update sys_accept to change
+> > __module_get to try_module_get like in the following patch?
+> 
+> I don't think so:
+> 
+> >  	/*
+> > -	 * We don't need try_module_get here, as the listening socket (sock)
+> > -	 * has the protocol module (sock->ops->owner) held.
+> > +	 * Socket's owner cannot be in unloading path because there
+> > +	 * must be at least one listening reference
+> >  	 */
+> > -	__module_get(newsock->ops->owner);
+> > +	if (unlikely(!try_module_get(newsock->ops->owner)))
+> > +		BUG();
+> 
+> rmmod --wait can make try_module_get fail even if the reference count isn't
+> zero.  
 
-  CC      arch/s390/kernel/irq.o
-arch/s390/kernel/irq.c:99: error: redefinition of init_irq_proc
-include/linux/interrupt.h:475: error: previous definition of init_irq_proc was here
-make[1]: *** [arch/s390/kernel/irq.o] Error 1
-make: *** [arch/s390/kernel] Error 2
+OK, I though that rmmod --wait waits for refcount==0 and then changes
+the state.
 
-CONFIG_PROC_FS is not set. Probably introduced by commit
-("Declare init_irq_proc before we use it.")
-
-Thanks
--Sachin
+> But in this case, we should return an error from the accept call;
+> presumably the admin really doesn't want us to keep using the module...
+> 
+> Thanks,
+> Rusty.
 
 -- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
-
+Michal Hocko
+L3 team 
+SUSE LINUX s.r.o.
+Lihovarska 1060/12
+190 00 Praha 9    
+Czech Republic
