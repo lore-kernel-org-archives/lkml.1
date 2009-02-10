@@ -1,157 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755485AbZBJQLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755024AbZBJQQI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755485AbZBJQLU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 11:11:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104AbZBJQLG
+	id S1755024AbZBJQQI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 11:16:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754070AbZBJQPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 11:11:06 -0500
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:12319 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752623AbZBJQLF (ORCPT
+	Tue, 10 Feb 2009 11:15:54 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:54335 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754038AbZBJQPx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 11:11:05 -0500
-Date: Tue, 10 Feb 2009 09:11:03 -0700
-From: Alex Chiang <achiang@hp.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: tony.luck@intel.com, stable@kernel.org, linux-ia64@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 0/2] ia64: prevent irq migration race in
-	__cpu_disable path
-Message-ID: <20090210161103.GA28371@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-	tony.luck@intel.com, stable@kernel.org, linux-ia64@vger.kernel.org,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <20090209181338.GD19064@ldl.fc.hp.com> <20090210123645.GA7542@linux.vnet.ibm.com>
+	Tue, 10 Feb 2009 11:15:53 -0500
+Date: Tue, 10 Feb 2009 11:04:51 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: Dan Williams <dcbw@redhat.com>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Cliff Cai <cliff.cai@analog.com>
+Subject: Re: [PATCH] wireless: introduce POWEROF2_BLOCKSIZE_ONLY option
+Message-ID: <20090210160451.GD3534@tuxdriver.com>
+References: <1233819002-6912-1-git-send-email-cooloney@kernel.org> <1233846195.3028.14.camel@localhost> <386072610902052347m5754262bif18339809a00cb9f@mail.gmail.com> <386072610902060000s2e150e4cla19aca70f38b0474@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090210123645.GA7542@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <386072610902060000s2e150e4cla19aca70f38b0474@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com>:
-> On Mon, Feb 09, 2009 at 11:13:38AM -0700, Alex Chiang wrote:
-> > This is v2 of my attempt to prevent an oops while offlining CPUs.
-> > 
-> > The change is that the patch becomes a full revert of Paul's
-> > original patch, along with a long changelog that explains the
-> > situation as best as I can determine. It's not 100% satisfactory
-> > to me right now, but the testing we've done supports the patch.
-> > 
-> > The 2nd patch in the series is mostly cosmetic, and removes a
-> > redundant call to cpu_clear() that we no longer need().
-> > 
-> > Tony, if you agree with the rationale in 1/2, then this series is
-> > a candidate for .29.
-> > 
-> > stable team, if Tony pushes upstream for .29, then this series
-> > should be applied to the .27 and .28 stable series.
+On Fri, Feb 06, 2009 at 04:00:28PM +0800, Bryan Wu wrote:
+> On Fri, Feb 6, 2009 at 3:47 PM, Bryan Wu <cooloney@kernel.org> wrote:
+> > On Thu, Feb 5, 2009 at 11:03 PM, Dan Williams <dcbw@redhat.com> wrote:
+> >> On Thu, 2009-02-05 at 15:30 +0800, Bryan Wu wrote:
+> >>> From: Cliff Cai <cliff.cai@analog.com>
+> >>>
+> >>> Introduce POWEROF2_BLOCKSIZE_ONLY option for those SD/SDIO host
+> >>> which only support transferring block with size of power-of-2
+> >>
+> >> Is the point here to avoid copying in the controller code?  As with the
+> >> other patches on libertas-dev, I really dislike adding code to *every
+> >> SDIO driver* just because the host has certain restrictions.  I'd much
+> >> rather that the host/controller code became aware of it's own
+> >> restrictions, and exposed those generically to drivers above it.
+> >> Without a KConfig option.
+> >>
+> >> Seriously.  The host knows what it needs.  The code to handle that
+> >> should go in the host.
+> >>
+> >
+> > I agree here.
+> >
+> >> How about adding a method like "sdio_align_size" that takes the
+> >> controller's constraints into account?  That seems a lot cleaner than
+> >> adding #define/KConfig junk to every SDIO driver in the kernel.  One
+> >> less codepath to test, makes your life and all our lives easier.
+> >>
+> >
+> > So we plan to add method ".sdio_align_size" to SDIO stack.
+> > And Blackfin host driver will implement this method while others will
+> > implement this as a dummy function.
+> >
 > 
-> OK, I'll bite...
-> 
-> Why not use cpu_active_map rather than cpu_online_map to select which
-> CPU to migrate interrupts to?  That way, we can delay clearing the
-> bit in cpu_online_map and avoid the questionable scenario where irqs
-> are being handled by a CPU that appears to be offline.
+> sdio_align_size is already in SDIO stack, so we just need to add our
+> constraints to this function.
 
-I did explain a little bit yesterday here:
+I'm reading this as "this patch is unnecessary or will be replaced
+by something better", so I'm dropping it.  If I misread that, feel
+free to repost...thanks!
 
-	http://lkml.org/lkml/2009/2/9/508
-
-The upshot is that on ia64, in the cpu_down() path, in practice,
-we're only seeing the timer interrupt fire, even on a heavily
-loaded system with lots of I/O.
-
-And in our timer interrupt routine, we're checking to make sure
-that the CPU is online before handling the interrupt.
-
-So at least empirically, we don't seem to allow any offline CPUs
-to handle interrupts.
-
-I played around with cpu_active_map yesterday, and realized the
-patch I posted was incomplete. When I started fleshing it out a
-bit more, I learned that we're simply not using cpu_active_map in
-the kernel to the extent that we're using cpu_online_map, and I'm
-a bit hesitant to start introducing regressions because I missed
-a usage somewhere.
-
-With this below patch, I can't even offline a single CPU, and the
-patch is already twice as big as the revert. At this point, the
-revert has held up to testing, and in my view, is the clear short
-term winner.
-
-I can keep exploring the cpu_active_mask option, but that would
-be a .30 activity, and I'd like to get this particular oops fixed
-for .29.
-
-Seem like a reasonable way forward?
-
-Thanks.
-
-/ac
-
-
-diff --git a/arch/ia64/kernel/irq.c b/arch/ia64/kernel/irq.c
-index a58f64c..9eaab3c 100644
---- a/arch/ia64/kernel/irq.c
-+++ b/arch/ia64/kernel/irq.c
-@@ -155,7 +155,7 @@ static void migrate_irqs(void)
- 			 */
- 			vectors_in_migration[irq] = irq;
- 
--			new_cpu = cpumask_any(cpu_online_mask);
-+			new_cpu = cpumask_any(cpu_active_mask);
- 
- 			/*
- 			 * Al three are essential, currently WARN_ON.. maybe panic?
-diff --git a/arch/ia64/kernel/smpboot.c b/arch/ia64/kernel/smpboot.c
-index 1146399..a08175b 100644
---- a/arch/ia64/kernel/smpboot.c
-+++ b/arch/ia64/kernel/smpboot.c
-@@ -396,7 +396,8 @@ smp_callin (void)
- 	/* Setup the per cpu irq handling data structures */
- 	__setup_vector_irq(cpuid);
- 	notify_cpu_starting(cpuid);
--	cpu_set(cpuid, cpu_online_map);
-+	set_cpu_online(cpuid, true);
-+	set_cpu_active(cpuid, true);
- 	per_cpu(cpu_state, cpuid) = CPU_ONLINE;
- 	spin_unlock(&vector_lock);
- 	ipi_call_unlock_irq();
-@@ -694,7 +695,7 @@ int migrate_platform_irqs(unsigned int cpu)
- 			/*
- 			 * Now re-target the CPEI to a different processor
- 			 */
--			new_cpei_cpu = any_online_cpu(cpu_online_map);
-+			new_cpei_cpu = cpumask_any(cpu_active_mask);
- 			mask = cpumask_of(new_cpei_cpu);
- 			set_cpei_target_cpu(new_cpei_cpu);
- 			desc = irq_desc + ia64_cpe_irq;
-diff --git a/arch/ia64/kernel/time.c b/arch/ia64/kernel/time.c
-index f0ebb34..f8ae866 100644
---- a/arch/ia64/kernel/time.c
-+++ b/arch/ia64/kernel/time.c
-@@ -158,7 +158,7 @@ timer_interrupt (int irq, void *dev_id)
- {
- 	unsigned long new_itm;
- 
--	if (unlikely(cpu_is_offline(smp_processor_id()))) {
-+	if (unlikely(!cpu_active(smp_processor_id()))) {
- 		return IRQ_HANDLED;
- 	}
- 
-diff --git a/init/main.c b/init/main.c
-index 8442094..c126d23 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -514,6 +514,7 @@ static void __init boot_cpu_init(void)
- 	int cpu = smp_processor_id();
- 	/* Mark the boot cpu "present", "online" etc for SMP and UP case */
- 	set_cpu_online(cpu, true);
-+	set_cpu_active(cpu, true);
- 	set_cpu_present(cpu, true);
- 	set_cpu_possible(cpu, true);
- }
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
