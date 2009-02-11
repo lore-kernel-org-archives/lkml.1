@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbZBKScu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757982AbZBKSev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757347AbZBKScu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 13:32:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbZBKScm
+	id S1757982AbZBKSev (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 13:34:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755636AbZBKSen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 13:32:42 -0500
-Received: from smtp.opengridcomputing.com ([209.198.142.2]:49717 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751833AbZBKScl (ORCPT
+	Wed, 11 Feb 2009 13:34:43 -0500
+Received: from mga09.intel.com ([134.134.136.24]:18813 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754592AbZBKSem convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 13:32:41 -0500
-Message-ID: <499319CF.6050204@opengridcomputing.com>
-Date: Wed, 11 Feb 2009 12:32:47 -0600
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 11 Feb 2009 13:34:42 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,193,1233561600"; 
+   d="scan'208";a="385987068"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "isimatu.yasuaki@jp.fujitsu.com" <isimatu.yasuaki@jp.fujitsu.com>,
+       "kaneshige.kenji@jp.fujitsu.com" <kaneshige.kenji@jp.fujitsu.com>
+Date: Wed, 11 Feb 2009 10:34:39 -0800
+Subject: RE: [PATCH 0/8] git pull request for tip/tracing/core
+Thread-Topic: [PATCH 0/8] git pull request for tip/tracing/core
+Thread-Index: AcmMddbtccWrrjeRSN+VWueYCQ9e+AAAPRGw
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA361689CF0@orsmsx505.amr.corp.intel.com>
+References: <20090208054955.777429253@goodmis.org>
+ <20090209093751.GD7930@elte.hu> <20090211153650.GA19576@elte.hu>
+ <alpine.DEB.1.10.0902111147450.15438@gandalf.stny.rr.com>
+ <alpine.DEB.1.10.0902111158380.15438@gandalf.stny.rr.com>
+ <20090211171622.GA13239@elte.hu>
+ <alpine.DEB.1.10.0902111227570.15438@gandalf.stny.rr.com>
+ <20090211173131.GA27546@elte.hu>
+ <57C9024A16AD2D4C97DC78E552063EA361689C3B@orsmsx505.amr.corp.intel.com>
+ <alpine.DEB.1.10.0902111320010.15438@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.1.10.0902111320010.15438@gandalf.stny.rr.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: randy.dunlap@oracle.com, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [ofa-general] [PATCH 2.6.30] RDMA/cxgb3: Remove modulo math.
-References: <20090210184448.22891.31130.stgit@dell3.ogc.int>	<adamyctajv8.fsf@cisco.com> <4992F26A.4030800@opengridcomputing.com> <adatz70972e.fsf@cisco.com>
-In-Reply-To: <adatz70972e.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
->  > Note that wr->sg_list[i].addr was being cast to a u32.  That was wrong.
+> The bits in question is really the number of possible nested interrupts
+> that can happen. We take the paranoid approach that we can have a max
+> nesting of NR_IRQS. Perhaps this can be changed, and just do a max of
+> 1<<10 nesting? And have a big warn on if it happens to be bigger, or fall
+> to another counter if it is bigger.
 >
-> Is it possible for the page to be bigger than 4GB?  If so then yes you
-> might be chopping off high-order bits or something.
->   
-Yes it is possible.
+> 1000 nested IRQs seems a bit extreme :-/
 
-A MR can be created with an iov_base of say 0xffffffff00000000.
+Ah, I see.  Then the answer is very different.  The number of nested
+interrupts possible on a cpu is limited by the number of priority
+classes for interrupts (See Table 5-8 on page 2:112 of the Itanium
+software developers manual).  Effectively the max nesting depth is
+16.
 
-Then any sge.addr entries would be the iob_base + any offset.
+1000 nested interrupts would be certain to run us out of stack.
 
-> Anyway please send me this change as a separate patch with a changelog
-> explaining that you're avoiding the div etc.... I don't want to roll it
-> in with the other unrelated fix (which changes code that was never
-> upstream anyway).
->   
-
-will do. 
-
-So you are handling the offset patch that will make it u64 and remove 
-the mod usage, correct?
-
-I will post a new patch with just this send change.
-
-Steve.
+-Tony
