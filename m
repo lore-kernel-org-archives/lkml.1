@@ -1,74 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbZBKMx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756163AbZBKMz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755881AbZBKMx7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 07:53:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbZBKMxt
+	id S1756163AbZBKMz2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 07:55:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbZBKMzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 07:53:49 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45544 "EHLO mx3.mail.elte.hu"
+	Wed, 11 Feb 2009 07:55:18 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:51385 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755061AbZBKMxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 07:53:48 -0500
-Date: Wed, 11 Feb 2009 13:53:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>, Oleg Nesterov <oleg@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: x86-tip.today: flood of WARNING: at include/linux/sched.h:2238
-	run_posix_cpu_timers+0xea/0x79f()
-Message-ID: <20090211125340.GK16535@elte.hu>
-References: <1233910614.23431.18.camel@marge.simson.net> <20090206140134.GC3415@elte.hu> <1234280251.23438.73.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1234280251.23438.73.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1753467AbZBKMzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 07:55:17 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090211212208.C3C6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20090211212208.C3C6.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090210142443.629E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <19f34abd0902092310g513fb776s2e4d37285c8fa7be@mail.gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: dhowells@redhat.com, Vegard Nossum <vegard.nossum@gmail.com>,
+       Serge Hallyn <serue@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Eric Sesterhenn <snakebyte@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>, containers@lists.osdl.org
+Subject: Re: [CRED bug?] 2.6.29-rc3 don't survive on stress workload
+Date: Wed, 11 Feb 2009 12:54:06 +0000
+Message-ID: <27972.1234356846@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> f6  : 1003e6b6b6b6b6b6b6b6b f7  : 0ffe6af8e85a500000000
 
-> On Fri, 2009-02-06 at 15:01 +0100, Ingo Molnar wrote:
-> > * Mike Galbraith <efault@gmx.de> wrote:
-> > 
-> > > Greetings,
-> > > 
-> > > Futzing with kerneltop this morning, I fired up amarok to give it
-> > > something light to monitor while I hunt missing events.  Something bad
-> > > happened, and when I finally (SysRq-E took minutes) got control of box
-> > > back, dmesg was full of a steady stream of the below.
-> > > 
-> > > That warning can be kinda unfriendly.
-> > > 
-> > > 
-> > > [ 9964.600004] ------------[ cut here ]------------
-> > > [ 9964.600006] WARNING: at include/linux/sched.h:2238 run_posix_cpu_timers+0xea/0x79f()
-> > 
-> > ah, that's Peter's stuff:
-> > 
-> >  4cd4c1b: timers: split process wide cpu clocks/timers
-> >  32bd671: signal: re-add dead task accumulation stats.
-> > 
-> > The discussion with Oleg resulted in the conclusion i 
-> > think that the warning is spurious and should be removed.
-> > 
-> > I've commited the minimal fix below to tip:master. There's
-> > more fixes needed too but this should solve the warning
-> > flood at least.
-> 
-> I think this is the 'minimal' paranoia version.
+I'd guess you now have CONFIG_DEBUG_SLAB turned on.  That looks like slab
+poisoning in register f6.
 
-applied to tip:timers/urgent, thanks Peter!
+> r17 : 00000000dead4ead r18 : a000000100cd2274 r19 : a000000100d6b6c0
 
-	Ingo
+And that looks like SPINLOCK_MAGIC in r17, so I'd guess something just
+successfully validated a spinlock, possibly atomic_dec_and_lock() in
+free_uid().
+
+This may mean that the user_struct being released is valid, but the
+user_namespace it refers to is already released.
+
+David
