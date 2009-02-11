@@ -1,110 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757229AbZBKAyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756735AbZBKA5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757229AbZBKAyN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:54:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757794AbZBKApk
+	id S1756735AbZBKA5U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:57:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbZBKA5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:45:40 -0500
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:38471 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758934AbZBKApi (ORCPT
+	Tue, 10 Feb 2009 19:57:07 -0500
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:57497 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752351AbZBKA5F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:45:38 -0500
-Subject: Re: [BUGFIX/x86] Fix initialization of wakeup_cpu.
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <49921C4F.9050601@kernel.org>
-References: <1234297715.24155.29.camel@alok-dev1>
-	 <86802c440902101303u2fe671b0xe811543d40e0cd9@mail.gmail.com>
-	 <1234303240.24155.36.camel@alok-dev1>  <49921C4F.9050601@kernel.org>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Tue, 10 Feb 2009 16:45:37 -0800
-Message-Id: <1234313137.30391.13.camel@alok-dev1>
+	Tue, 10 Feb 2009 19:57:05 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArEEACyxkUlMQWt2/2dsb2JhbACBbtIMhBoG
+Date: Tue, 10 Feb 2009 19:57:01 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
+Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
+	(repost)
+Message-ID: <20090211005701.GA550@Krystal>
+References: <20090208224419.GA19512@Krystal> <20090209041153.GR7120@linux.vnet.ibm.com> <20090209045352.GA28653@Krystal> <20090209051737.GA29254@Krystal> <20090209070317.GA31583@Krystal> <20090209153305.GA6802@linux.vnet.ibm.com> <20090210191731.GA20867@Krystal> <20090210211643.GL6742@linux.vnet.ibm.com> <20090210212833.GA27578@Krystal> <20090210222115.GN6742@linux.vnet.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090210222115.GN6742@linux.vnet.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 19:48:56 up 41 days, 47 min,  4 users,  load average: 0.62, 0.73,
+	0.60
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-10 at 16:31 -0800, Yinghai Lu wrote:
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> On Tue, Feb 10, 2009 at 04:28:33PM -0500, Mathieu Desnoyers wrote:
+> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > On Tue, Feb 10, 2009 at 02:17:31PM -0500, Mathieu Desnoyers wrote:
+> > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > > > On Mon, Feb 09, 2009 at 02:03:17AM -0500, Mathieu Desnoyers wrote:
+> > > > > 
+> > > > > [ . . . ]
+> > > > > 
+> > > > > > I just added modified rcutorture.h and api.h from your git tree
+> > > > > > specifically for an urcutorture program to the repository. Some results :
+> > > > > > 
+> > > > > > 8-way x86_64
+> > > > > > E5405 @2 GHZ
+> > > > > > 
+> > > > > > ./urcutorture 8 perf
+> > > > > > n_reads: 1937650000  n_updates: 3  nreaders: 8  nupdaters: 1 duration: 1
+> > > > > > ns/read: 4.12871  ns/update: 3.33333e+08
+> > > > > > 
+> > > > > > ./urcutorture 8 uperf
+> > > > > > n_reads: 0  n_updates: 4413892  nreaders: 0  nupdaters: 8 duration: 1
+> > > > > > ns/read: nan  ns/update: 1812.46
+> > > > > > 
+> > > > > > n_reads: 98844204  n_updates: 10  n_mberror: 0
+> > > > > > rcu_stress_count: 98844171 33 0 0 0 0 0 0 0 0 0
+> > > > > > 
+> > > > > > However, I've tried removing the second switch_qparity() call, and the
+> > > > > > rcutorture test did not detect anything wrong. I also did a variation
+> > > > > > which calls the "sched_yield" version of the urcu, "urcutorture-yield".
+> > > > > 
+> > > > > My confusion -- I was testing my old approach where the memory barriers
+> > > > > are in rcu_read_lock() and rcu_read_unlock().  To force the failures in
+> > > > > your signal-handler-memory-barrier approach, I suspect that you are
+> > > > > going to need a bigger hammer.  In this case, one such bigger hammer
+> > > > > would be:
+> > > > > 
+> > > > > o	Just before exit from the signal handler, do a
+> > > > > 	pthread_cond_wait() under a pthread_mutex().
+> > > > > 
+> > > > > o	In force_mb_all_threads(), refrain from sending a signal to self.
+> > > > > 
+> > > > > 	Then it should be safe in force_mb_all_threads() to do a
+> > > > > 	pthread_cond_broadcast() under the same pthread_mutex().
+> > > > > 
+> > > > > This should raise the probability of seeing the failure in the case
+> > > > > where there is a single switch_qparity().
+> > > > > 
+> > > > 
+> > > > I just did a mb() version of the urcu :
+> > > > 
+> > > > (uncomment CFLAGS=+-DDEBUG_FULL_MB in the Makefile)
+> > > > 
+> > > > Time per read : 48.4086 cycles
+> > > > (about 6-7 times slower, as expected)
+> > > > 
+> > > > This will be useful especially to increase the chance to trigger races.
+> > > > 
+> > > > I tried removing the second parity switch from the writer. The rcu
+> > > > torture test did not find the problem yet (maybe I am not using the
+> > > > correct parameters ? It does not run for more than 5 seconds).
+> > > > 
+> > > > So I added a "-n" option to test_urcu, so it can make the usleep(1)
+> > > > between the writes optional. I also changed the yield for a usleep with
+> > > > random delay. I also now use a circular buffer rather than malloc so we
+> > > > are sure the memory is not quickly reused by the writer and stays longer
+> > > > in an invalid state.
+> > > > 
+> > > > So what really make the problem appear quickly is to add a delay between
+> > > > the rcu_dereference and the assertion on the data validity in thr_reader.
+> > > > 
+> > > > It now appears after just a few seconds when running
+> > > > ./test_urcu_yield 20 -r -n
+> > > > Compiled with CFLAGS=+-DDEBUG_FULL_MB
+> > > > 
+> > > > It seem to be much harder to trigger with the signal-based version. It's
+> > > > expected, because the writer takes about 50 times longer to execute than
+> > > > with the -DDEBUG_FULL_MB version.
+> > > > 
+> > > > So I'll let the ./test_urcu_yield NN -r -n run for a while on the
+> > > > correct version (with DEBUG_FULL_MB) and see what it gives.
+> > > 
+> > > Hmmm...  I had worse luck this time, took three 10-second tries to
+> > > see a failure:
+> > > 
+> > > paulmck@paulmck-laptop:~/paper/perfbook/CodeSamples/defer$ ./rcu_nest32 1 stress
+> > > n_reads: 44682055  n_updates: 9609503  n_mberror: 0
+> > > rcu_stress_count: 44679377 2678 0 0 0 0 0 0 0 0 0
+> > > paulmck@paulmck-laptop:~/paper/perfbook/CodeSamples/defer$ !!
+> > > ./rcu_nest32 1 stress
+> > > n_reads: 42281884  n_updates: 9870129  n_mberror: 0
+> > > rcu_stress_count: 42277756 4128 0 0 0 0 0 0 0 0 0
+> > > paulmck@paulmck-laptop:~/paper/perfbook/CodeSamples/defer$ !!
+> > > ./rcu_nest32 1 stress
+> > > n_reads: 41384304  n_updates: 10040805  n_mberror: 0
+> > > rcu_stress_count: 41380075 4228 1 0 0 0 0 0 0 0 0
+> > > paulmck@paulmck-laptop:~/paper/perfbook/CodeSamples/defer$
+> > > 
+> > > This is my prototype version, with read-side memory barriers, no
+> > > signals, and without your initialization-value speedup.
+> > > 
 > > 
-> >> 2. also will break 64 bit....
-> > isn't the default_x86_quirks defined for 64 bit too ? 
-> > 
-> 64 bit doesn't have genapic_apic_probe()
+> > It would be interesting to re-sync our trees, or if you can point me to
+> > a current version of your prototype, I could review it.
 > 
-> need to change that to 
-> #ifdef CONFIG_X86_32
-> 	genapic_apic_probe();
-> #endif
+> Look at:
+> 
+> 	CodeSamples/defer/rcu_nest32.[hc]
+> 
+> In the git archive:
+> 
+> 	git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/perfbook.git
 > 
 
-Ok here it is. 
---
+flip_counter_and_wait : yours do rcu_gp_ctr += RCU_GP_CTR_BOTTOM_BIT
+mine : rcu_gp_ctr ^= RCU_GP_CTR_BOTTOM_BIT.
 
-With refactoring of wake_cpu macros the 32bit code in tip doesn't 
-execute generic_apic_probe if CONFIG_X86_32_NON_STANDARD is not set.
+Another major difference between our tree is the lack of smp_mb() at the
+end of flip_counter_and_wait() (in your tree).
 
-Even on a x86 STANDARD cpu we need to execute the generic_apic_probe
-function, as we rely on this function to execute the update_genapic
-quirk which initilizes apic->wakeup_cpu. 
+Your code does :
 
-Failing to do so results in we making a call to a null function in do_boot_cpu.
+  smp_mb()
+  switch parity
+  smp_mb()
+  wait for each thread ongoing old gp
+    <<<<<<< ---- missing smp_mb.
+  switch parity
+  smp_mb()
+  wait for each thread ongoing old gp
+  smp_mb()
 
-The stack trace without the patch goes like this.
+I also wonder why you have a smp_mb() after spin_unlock() in your
+synchronize_rcu() -> if you follow the Linux kernel semantics for
+spinlocks, the smp_mb() should be implied. (but I have not looked at
+your spin_lock/unlock primitives yet).
 
-Booting processor 1 APIC 0x1 ip 0x6000
-BUG: unable to handle kernel NULL pointer dereference at (null)
-IP: [<(null)>] (null)
-*pdpt = 0000000000839001 *pde = 0000000000c97067 *pte = 0000000000000163 
-Oops: 0000 [#1] SMP 
-last sysfs file: 
-Modules linked in:
+Mathieu
 
-Pid: 1, comm: swapper Not tainted (2.6.29-rc4-tip #18) VMware Virtual Platform
-EIP: 0062:[<00000000>] EFLAGS: 00010293 CPU: 0
-EIP is at 0x0
-EAX: 00000001 EBX: 00006000 ECX: c077ed00 EDX: 00006000
-ESI: 00000001 EDI: 00000001 EBP: ef04cf40 ESP: ef04cf1c
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 006a
-Process swapper (pid: 1, ti=ef04c000 task=ef050000 task.ti=ef04c000)
-Stack:
- c0644e52 00000000 ef04cf24 ef04cf24 c064468d c0886dc0 00000000 c0702aea
- ef055480 00000001 00000101 dead4ead ffffffff ffffffff c08af530 00000000
- c0709715 ef04cf60 ef04cf60 00000001 00000000 00000000 dead4ead ffffffff
-Call Trace:
- [<c0644e52>] ? native_cpu_up+0x2de/0x45b
- [<c064468d>] ? do_fork_idle+0x0/0x19
- [<c0645c5e>] ? _cpu_up+0x88/0xe8
- [<c0645d20>] ? cpu_up+0x42/0x4e
- [<c07e7462>] ? kernel_init+0x99/0x14b
- [<c07e73c9>] ? kernel_init+0x0/0x14b
- [<c040375f>] ? kernel_thread_helper+0x7/0x10
-Code:  Bad EIP value.
-EIP: [<00000000>] 0x0 SS:ESP 006a:ef04cf1c
+> 							Thanx, Paul
+> 
+> _______________________________________________
+> ltt-dev mailing list
+> ltt-dev@lists.casi.polymtl.ca
+> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
+> 
 
-I think we should call generic_apic_probe unconditionally for 32 bit now.
-
-Signed-off-by: Alok N Kataria <akataria@vmware.com>
-Cc: Yinghai Lu <yinghai@kernel.org>
-
-Index: linux-tip-master/arch/x86/kernel/setup.c
-===================================================================
---- linux-tip-master.orig/arch/x86/kernel/setup.c	2009-02-10 12:05:18.000000000 -0800
-+++ linux-tip-master/arch/x86/kernel/setup.c	2009-02-10 16:37:59.000000000 -0800
-@@ -936,7 +936,7 @@
- 	map_vsyscall();
- #endif
- 
--#if defined(CONFIG_X86_32_NON_STANDARD) || defined(CONFIG_X86_BIGSMP)
-+#ifdef CONFIG_X86_32
- 	generic_apic_probe();
- #endif
- 
-
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
