@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758529AbZBKAsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758468AbZBKAsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758529AbZBKAsc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:48:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757937AbZBKA3A
+	id S1758468AbZBKAsB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:48:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757929AbZBKA27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:29:00 -0500
-Received: from kroah.org ([198.145.64.141]:51704 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 19:28:59 -0500
+Received: from kroah.org ([198.145.64.141]:51693 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756436AbZBKA26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:58 -0500
-Date: Tue, 10 Feb 2009 16:26:10 -0800
+	id S1756706AbZBKA25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:28:57 -0500
+Date: Tue, 10 Feb 2009 16:26:08 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dean Nelson <dcn@sgi.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 56/56] genirq: NULL struct irq_descs member name in
-	dynamic_irq_cleanup()
-Message-ID: <20090211002610.GE14660@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Vlad Yasevich <vladislav.yasevich@hp.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 55/56] sctp: Fix another socket race during accept/peeloff
+Message-ID: <20090211002608.GD14660@kroah.com>
 References: <20090211001439.873435357@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="genirq-null-struct-irq_desc-s-member-name-in-dynamic_irq_cleanup.patch"
+Content-Disposition: inline; filename="sctp-fix-another-socket-race-during-accept-peeloff.patch"
 In-Reply-To: <20090211002328.GA14660@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,39 +39,58 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Dean Nelson <dcn@sgi.com>
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
 
-commit b6f3b7803a9231eddc36d0a2a6d2d8105ef89344 upstream.
+commit ae53b5bd77719fed58086c5be60ce4f22bffe1c6 upstream.
 
-If the member 'name' of the irq_desc structure happens to point to a
-character string that is resident within a kernel module, problems ensue
-if that module is rmmod'd (at which time dynamic_irq_cleanup() is called)
-and then later show_interrupts() is called by someone.
+There is a race between sctp_rcv() and sctp_accept() where we
+have moved the association from the listening socket to the
+accepted socket, but sctp_rcv() processing cached the old
+socket and continues to use it.
 
-It is also not a good thing if the character string resided in kmalloc'd
-space that has been kfree'd (after having called dynamic_irq_cleanup()).
-dynamic_irq_cleanup() fails to NULL the 'name' member and
-show_interrupts() references it on a few architectures (like h8300, sh and
-x86).
+The easy solution is to check for the socket mismatch once we've
+grabed the socket lock.  If we hit a mis-match, that means
+that were are currently holding the lock on the listening socket,
+but the association is refrencing a newly accepted socket.  We need
+to drop the lock on the old socket and grab the lock on the new one.
 
-Signed-off-by: Dean Nelson <dcn@sgi.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+A more proper solution might be to create accepted sockets when
+the new association is established, similar to TCP.  That would
+eliminate the race for 1-to-1 style sockets, but it would still
+existing for 1-to-many sockets where a user wished to peeloff an
+association.  For now, we'll live with this easy solution as
+it addresses the problem.
+
+Reported-by: Michal Hocko <mhocko@suse.cz>
+Reported-by: Karsten Keil <kkeil@suse.de>
+Signed-off-by: Vlad Yasevich <vladislav.yasevich@hp.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/irq/chip.c |    1 +
- 1 file changed, 1 insertion(+)
+ net/sctp/input.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
---- a/kernel/irq/chip.c
-+++ b/kernel/irq/chip.c
-@@ -78,6 +78,7 @@ void dynamic_irq_cleanup(unsigned int ir
- 	desc->chip_data = NULL;
- 	desc->handle_irq = handle_bad_irq;
- 	desc->chip = &no_irq_chip;
-+	desc->name = NULL;
- 	spin_unlock_irqrestore(&desc->lock, flags);
- }
+--- a/net/sctp/input.c
++++ b/net/sctp/input.c
+@@ -249,6 +249,19 @@ int sctp_rcv(struct sk_buff *skb)
+ 	 */
+ 	sctp_bh_lock_sock(sk);
  
++	if (sk != rcvr->sk) {
++		/* Our cached sk is different from the rcvr->sk.  This is
++		 * because migrate()/accept() may have moved the association
++		 * to a new socket and released all the sockets.  So now we
++		 * are holding a lock on the old socket while the user may
++		 * be doing something with the new socket.  Switch our veiw
++		 * of the current sk.
++		 */
++		sctp_bh_unlock_sock(sk);
++		sk = rcvr->sk;
++		sctp_bh_lock_sock(sk);
++	}
++
+ 	if (sock_owned_by_user(sk)) {
+ 		SCTP_INC_STATS_BH(SCTP_MIB_IN_PKT_BACKLOG);
+ 		sctp_add_backlog(sk, skb);
 
