@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbZBKOPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755085AbZBKOP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756505AbZBKOPh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 09:15:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbZBKOP2
+	id S1755085AbZBKOP6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 09:15:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756622AbZBKOPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 09:15:28 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60509 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753143AbZBKOP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 09:15:27 -0500
-Message-ID: <4992DD63.5080308@kernel.org>
-Date: Wed, 11 Feb 2009 23:14:59 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 11 Feb 2009 09:15:44 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:38318 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753254AbZBKOPn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 09:15:43 -0500
+Message-ID: <4992DD86.1030607@s5r6.in-berlin.de>
+Date: Wed, 11 Feb 2009 15:15:34 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Brian Gerst <brgerst@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] x86: Pass in pt_regs pointer for syscalls that	need
- it
-References: <1234277507-4987-1-git-send-email-brgerst@gmail.com> <1234277507-4987-3-git-send-email-brgerst@gmail.com> <4992812B.1050800@kernel.org> <20090211101846.GH20518@elte.hu>
-In-Reply-To: <20090211101846.GH20518@elte.hu>
-X-Enigmail-Version: 0.95.7
+To: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
+CC: jeff@garzik.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       netdev@vger.kernel.org, ossrosch@linux.vnet.ibm.com,
+       ossthema@de.ibm.com, raisch@de.ibm.com, themann@de.ibm.com,
+       osstklei@de.ibm.com
+Subject: Re: [PATCH] ehea: Fix: Remove adapter from adapter list in error
+ path
+References: <200902111329.02954.hannes.hering@linux.vnet.ibm.com>
+In-Reply-To: <200902111329.02954.hannes.hering@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 11 Feb 2009 14:15:16 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Tejun Heo <tj@kernel.org> wrote:
-> 
->> Hello, Brian.
->>
->> Brian Gerst wrote:
->>> Some syscalls need to access the pt_regs structure, either to copy
->>> user register state or to modifiy it.  This patch adds stubs to load
->>> the address of the pt_regs struct into the %eax register, and changes
->>> the syscalls to regparm(1) to receive the pt_regs pointer as the
->>> first argument.
->> Heh... neat.  Just one question.
->>
->>> -asmlinkage long sys_iopl(unsigned long regsp)
->>> +ptregscall long sys_iopl(struct pt_regs *regs, unsigned int level)
->>>  {
->>> -	struct pt_regs *regs = (struct pt_regs *)&regsp;
->>> -	unsigned int level = regs->bx;
->> Here and at other places where the function takes more than one
->> arguments, wouldn't it be better to just take *regs and use other
->> parameters from regs?  That way we won't have to worry about gcc
->> corrupting register frame at all and I think it's cleaner that way.
-> 
-> Hm, gcc cannot corrupt register arguments only on-stack arguments - but
-> your suggestion nevertheless makes sense as an optimization. I'd suggest
-> this to be done as a separate patch though, both for regression analysis
-> reasons (easier to bisect - the patch is large enough already) and from
-> a size/performance analysis POV. (so we can see the benefits in isolation)
+Hannes Hering wrote:
+> Remove adapter from adapter list before freeing data structure in error path.
+...
+> --- linux-2.6.29-rc4/drivers/net/ehea/ehea_main.c	2009-02-11 13:13:47.812542928 +0100
+> +++ patched_kernel/drivers/net/ehea/ehea_main.c	2009-02-11 13:14:04.197540184 +0100
+> @@ -3448,6 +3448,7 @@ out_kill_eq:
+>  	ehea_destroy_eq(adapter->neq);
+>  
+>  out_free_ad:
+> +	list_del(&adapter->list);
+>  	kfree(adapter);
+>  
+>  out:
 
-ptregscall is regparm(1) so arguments are on-stack from the second
-one, so the callee can corrupt them.
+On a related note, ehea_set_mac_addr()/ehea_update_bcmc_registrations()
+accesses adapter_list without serialization by ehea_fw_handles.lock and
+thus apparently unsafely.
 
-Thanks.
-
+There may be other unsafe accesses of adapter_list; that's just the
+first one which I spotted.
 -- 
-tejun
+Stefan Richter
+-=====-==--= --=- -=-==
+http://arcgraph.de/sr/
