@@ -1,261 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757587AbZBKQe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbZBKQiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757587AbZBKQe3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 11:34:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756756AbZBKQeT
+	id S1757357AbZBKQiW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 11:38:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbZBKQiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 11:34:19 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:34167 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756741AbZBKQeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 11:34:18 -0500
-Date: Wed, 11 Feb 2009 16:34:16 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andy Whitcroft <apw@canonical.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Hugh Dickins <hugh@veritas.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Greg KH <gregkh@suse.de>,
-       Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, will@crowder-design.com,
-       Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Mikos Szeredi <miklos@szeredi.hu>, wli@movementarian.org
-Subject: Re: [PATCH] Do not account for the address space used by hugetlbfs
-	using VM_ACCOUNT V2 (Was Linus 2.6.29-rc4)
-Message-ID: <20090211163416.GA2733@csn.ul.ie>
-References: <alpine.LFD.2.00.0902081251090.3048@localhost.localdomain> <20090210140227.GC4023@csn.ul.ie> <20090211094329.GE26746@shadowen.org> <20090211103000.GA2416@csn.ul.ie> <20090211120317.GB25898@shadowen.org> <20090211142004.GB25799@csn.ul.ie> <20090211160340.GH25898@shadowen.org>
+	Wed, 11 Feb 2009 11:38:14 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:56548 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753807AbZBKQiM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 11:38:12 -0500
+Date: Wed, 11 Feb 2009 10:37:53 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, Eric Sesterhenn <snakebyte@gmx.de>,
+       containers@lists.osdl.org, linux-kernel@vger.kernel.org,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: namespaces?: bug at mm/slub.c:2750
+Message-ID: <20090211163753.GA29372@us.ibm.com>
+References: <20090206113556.GA3161@alice> <20090206161518.81e7d42c.akpm@linux-foundation.org> <19f34abd0902102355o5bf51096o9aa3737e87104fb9@mail.gmail.com> <20090211000740.f1de7cec.akpm@linux-foundation.org> <19f34abd0902110248n22f8de12lccfa99faafafb942@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090211160340.GH25898@shadowen.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <19f34abd0902110248n22f8de12lccfa99faafafb942@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 11, 2009 at 04:03:40PM +0000, Andy Whitcroft wrote:
-> On Wed, Feb 11, 2009 at 02:20:04PM +0000, Mel Gorman wrote:
-> > On Wed, Feb 11, 2009 at 12:03:17PM +0000, Andy Whitcroft wrote:
-> > > > <SNIP>
-> > > >
-> > > > Yes, and this was a mistake. For noreserve mappings, we may now be taking
-> > > > twice the amount of quota and probably leaking it. This is wrong and I need
-> > > > to move the check for quota below the check for VM_NORESERVE. Good spot.
-> > > 
-> > > Thanks.
-> > > 
-> > 
-> > How about this?
-> > 
-> > =====
-> > [PATCH] Do not account for hugetlbfs quota at mmap() time if mapping *_NORESERVE
-> > 
-> > Commit 5a6fe125950676015f5108fb71b2a67441755003 brought hugetlbfs more in line
-> > with the core VM by obeying VM_NORESERVE and not reserving hugepages for both
-> > shared and private mappings when [SHM|MAP]_NORESERVE are specified. However,
-> > it is still taking filesystem quota unconditionally and this leads to
-> > double-accounting.
-> > 
-> > At fault time, if there are no reserves and attempt is made to allocate the
-> > page and account for filesystem quota. If either fail, the fault fails. This
-> > patch prevents quota being taken when [SHM|MAP]_NORESERVE is specified.
-> > To help prevent this mistake happening again, it improves the documentation
-> > of hugetlb_reserve_pages().
-> > 
-> > Reported-by: Andy Whitcroft <apw@canonical.com>
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > --- 
-> >  hugetlb.c |   29 +++++++++++++++++++++++------
-> >  1 file changed, 23 insertions(+), 6 deletions(-)
-> > 
-> > diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> > index 2074642..b0b63cd 100644
-> > --- a/mm/hugetlb.c
-> > +++ b/mm/hugetlb.c
-> > @@ -2289,24 +2289,41 @@ int hugetlb_reserve_pages(struct inode *inode,
-> >  	if (chg < 0)
-> >  		return chg;
-> >  
-> > -	if (hugetlb_get_quota(inode->i_mapping, chg))
-> > -		return -ENOSPC;
-> > -
-> >  	/*
-> > -	 * Only apply hugepage reservation if asked. We still have to
-> > -	 * take the filesystem quota because it is an upper limit
-> > -	 * defined for the mount and not necessarily memory as a whole
-> > +	 * Only apply hugepage reservation if asked. At fault time, an
-> > +	 * attempt will be made for VM_NORESERVE to allocate a page
-> > +	 * and filesystem quota without using reserves
-> >  	 */
-> >  	if (acctflag & VM_NORESERVE) {
-> >  		reset_vma_resv_huge_pages(vma);
-> >  		return 0;
-> >  	}
-> >  
-> > +	/* There must be enough filesystem quota for the mapping */
-> > +	if (hugetlb_get_quota(inode->i_mapping, chg))
-> > +		return -ENOSPC;
-> > +
-> > +	/*
-> > +	 * Check enough hugepages are available for the reservation.
-> > +	 * Hand back the quota if there are not
-> > +	 */
-> >  	ret = hugetlb_acct_memory(h, chg);
-> >  	if (ret < 0) {
-> >  		hugetlb_put_quota(inode->i_mapping, chg);
-> >  		return ret;
-> >  	}
-> > +
-> > +	/*
-> > +	 * Account for the reservations made. Shared mappings record regions
-> > +	 * that have reservations as they are shared by multiple VMAs.
-> > +	 * When the last VMA disappears, the region map says how much
-> > +	 * the reservation was and the page cache tells how much of
+Quoting Vegard Nossum (vegard.nossum@gmail.com):
+> On Wed, Feb 11, 2009 at 9:07 AM, Andrew Morton
+> <akpm@linux-foundation.org> wrote:
+> >> In case you missed it, KOSAKI Motohiro posted a similar stack-trace
+> >> (but not the same BUG) in this thread:
+> >> http://lkml.org/lkml/2009/2/10/7
+> >>
+> >
+> > Both traces include the newly-added put_cred_rcu().  Suspicious.
+> >
 > 
-> how much of the area had a reservation and the page cache ...
+> I have this test case which triggers it regularly after some minutes:
 > 
-> > +	 * the reservation was consumed. Private mappings are per-VMA and
-> > +	 * only the consumed reservations are tracked. When the VMA
-> > +	 * disappears, the original reservation is the VMA size and the
-> > +	 * consumed reservations are stored in the map. Here, we just need
-> > +	 * to allocate the region map.
-> > +	 */
-> >  	if (!vma || vma->vm_flags & VM_SHARED)
-> >  		region_add(&inode->i_mapping->private_list, from, to);
-> >  	else {
+> #include <sys/wait.h>
+> #include <sys/types.h>
 > 
-> I am worried about the failure semantics here.  For shared mappings we
-> alloc any memory we need with region_chg(), then take quota, then apply
-> it and done.  For private mappings we take the quota and then allocate
-> any memory we need.  If that fails we do not return the quota?  Sounds
-> like a quota leak to me?
+> #include <errno.h>
+> #include <stdio.h>
+> #include <stdlib.h>
+> #include <string.h>
+> #include <unistd.h>
 > 
-
-It is a quota leak.
-
-> I think we do need to allocate the private map up when we do the
-> region_chg() for the shared case.  And I think neither of those is needed
-> for NORESERVE mappings?
+> int main(int argc, char* argv[])
+> {
+>         unsigned int i;
 > 
+>         if (fork() == 0) {
+>                 while (1)
+>                         system("echo -n .");
+>         }
+> 
+>         for (i = 0; i < 2; ++i) {
+>                 if (fork() == 0) {
+>                         while (1) {
+>                                 setreuid(0, 0xcafeba);
+>                                 setreuid(0xcafeba, 0);
+> 
+>                                 setreuid(0, 0xcafebb);
+>                                 setreuid(0xcafebb, 0);
+>                         }
+> 
+>                         exit(EXIT_SUCCESS);
+>                 }
+>         }
+> 
+>         while (!(wait(NULL) == -1 && errno == ECHILD))
+>                 ;
+> 
+>         return 0;
+> }
+> 
+> It seems to be the combination of exec() and setreuid(), but I
+> couldn't get it to work with just exec() instead of system(). It is
+> possible that CONFIG_USER_SCHED must be =y for this to work. It can
+> probably be simplified too...
+> 
+> 
+> Vegard
 
-Right. This shuffle was based on the assumption quota mattered and had to
-be accounted for. As you have pointed out, this was wrong and so all the
-shuffling was pointless. The correct thing to do is a partial revert of
-the hunk that alters hugetlb_reserve_pages() and then add back acctflag to
-check VM_NORESERVE so that SHM_NORESERVE still has meaning.
+I haven't yet been able to reproduce it, but I'm wondering whether
+something like the following is needed.
 
-After the following patch is applied, the net change to hugetlb_reserve_pages()
-is small - mainly additional comments documenting what's going on.
+Note that free_user() still seems wrong there, as it won't call
+uid_hash_remove(up) for a user which is not inthe init_user_ns at
+all, right?
 
-======
-Subject: [PATCH] Do not account for hugetlbfs quota at mmap() time if mapping [SHM|MAP]_NORESERVE
 
-Commit 5a6fe125950676015f5108fb71b2a67441755003 brought hugetlbfs more in line
-with the core VM by obeying VM_NORESERVE and not reserving hugepages for both
-shared and private mappings when [SHM|MAP]_NORESERVE are specified. However,
-it is still taking filesystem quota unconditionally.
+>From 2bc9da9728e0a4242bd8b1362d34e8d425be1b66 Mon Sep 17 00:00:00 2001
+From: Serge E. Hallyn <serue@us.ibm.com>
+Date: Wed, 11 Feb 2009 11:29:52 -0500
+Subject: [PATCH 1/1] user namespaces: only put the userns when we unhash the uid
 
-At fault time, if there are no reserves and attempt is made to allocate
-the page and account for filesystem quota. If either fail, the fault
-fails. The impact is that quota is getting accounted for twice. This patch
-partially reverts 5a6fe125950676015f5108fb71b2a67441755003.  To help
-prevent this mistake happening again, it improves the documentation of
-hugetlb_reserve_pages()
+uids in namespaces other than init don't get a sysfs entry.
 
-Reported-by: Andy Whitcroft <apw@canonical.com>
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+For those in the init namespace, while we're waiting to remove
+the sysfs entry for the uid the uid is still hashed, and
+alloc_uid() may re-grab that uid without getting a new
+reference to the user_ns, which we've already put in free_user
+before scheduling remove_user_sysfs_dir().
 
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 2074642..107da3d 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -2272,10 +2272,18 @@ int hugetlb_reserve_pages(struct inode *inode,
- 					struct vm_area_struct *vma,
- 					int acctflag)
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+---
+ kernel/user.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/user.c b/kernel/user.c
+index 477b666..bb401a5 100644
+--- a/kernel/user.c
++++ b/kernel/user.c
+@@ -71,6 +71,7 @@ static void uid_hash_insert(struct user_struct *up, struct hlist_head *hashent)
+ 
+ static void uid_hash_remove(struct user_struct *up)
  {
--	long ret = 0, chg;
-+	long ret, chg;
- 	struct hstate *h = hstate_inode(inode);
- 
- 	/*
-+	 * Only apply hugepage reservation if asked. At fault time, an
-+	 * attempt will be made for VM_NORESERVE to allocate a page
-+	 * and filesystem quota without using reserves
-+	 */
-+	if (acctflag & VM_NORESERVE)
-+		return 0;
-+
-+	/*
- 	 * Shared mappings base their reservation on the number of pages that
- 	 * are already allocated on behalf of the file. Private mappings need
- 	 * to reserve the full area even if read-only as mprotect() may be
-@@ -2283,42 +2291,47 @@ int hugetlb_reserve_pages(struct inode *inode,
- 	 */
- 	if (!vma || vma->vm_flags & VM_SHARED)
- 		chg = region_chg(&inode->i_mapping->private_list, from, to);
--	else
-+	else {
-+		struct resv_map *resv_map = resv_map_alloc();
-+		if (!resv_map)
-+			return -ENOMEM;
-+
- 		chg = to - from;
- 
-+		set_vma_resv_map(vma, resv_map);
-+		set_vma_resv_flags(vma, HPAGE_RESV_OWNER);
-+	}
-+
- 	if (chg < 0)
- 		return chg;
- 
-+	/* There must be enough filesystem quota for the mapping */
- 	if (hugetlb_get_quota(inode->i_mapping, chg))
- 		return -ENOSPC;
- 
- 	/*
--	 * Only apply hugepage reservation if asked. We still have to
--	 * take the filesystem quota because it is an upper limit
--	 * defined for the mount and not necessarily memory as a whole
-+	 * Check enough hugepages are available for the reservation.
-+	 * Hand back the quota if there are not
- 	 */
--	if (acctflag & VM_NORESERVE) {
--		reset_vma_resv_huge_pages(vma);
--		return 0;
--	}
--
- 	ret = hugetlb_acct_memory(h, chg);
- 	if (ret < 0) {
- 		hugetlb_put_quota(inode->i_mapping, chg);
- 		return ret;
- 	}
-+
-+	/*
-+	 * Account for the reservations made. Shared mappings record regions
-+	 * that have reservations as they are shared by multiple VMAs.
-+	 * When the last VMA disappears, the region map says how much
-+	 * the reservation was and the page cache tells how much of
-+	 * the reservation was consumed. Private mappings are per-VMA and
-+	 * only the consumed reservations are tracked. When the VMA
-+	 * disappears, the original reservation is the VMA size and the
-+	 * consumed reservations are stored in the map. Hence, nothing
-+	 * else has to be done for private mappings here
-+	 */
- 	if (!vma || vma->vm_flags & VM_SHARED)
- 		region_add(&inode->i_mapping->private_list, from, to);
--	else {
--		struct resv_map *resv_map = resv_map_alloc();
--
--		if (!resv_map)
--			return -ENOMEM;
--
--		set_vma_resv_map(vma, resv_map);
--		set_vma_resv_flags(vma, HPAGE_RESV_OWNER);
--	}
--
- 	return 0;
++	put_user_ns(up->user_ns);
+ 	hlist_del_init(&up->uidhash_node);
  }
  
+@@ -334,7 +335,6 @@ static void free_user(struct user_struct *up, unsigned long flags)
+ 	atomic_inc(&up->__count);
+ 	spin_unlock_irqrestore(&uidhash_lock, flags);
+ 
+-	put_user_ns(up->user_ns);
+ 	INIT_WORK(&up->work, remove_user_sysfs_dir);
+ 	schedule_work(&up->work);
+ }
+@@ -357,7 +357,6 @@ static void free_user(struct user_struct *up, unsigned long flags)
+ 	sched_destroy_user(up);
+ 	key_put(up->uid_keyring);
+ 	key_put(up->session_keyring);
+-	put_user_ns(up->user_ns);
+ 	kmem_cache_free(uid_cachep, up);
+ }
+ 
+-- 
+1.6.1
+
