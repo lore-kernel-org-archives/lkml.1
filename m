@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758264AbZBKAfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760106AbZBKAji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758264AbZBKAfp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:35:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757694AbZBKA21
+	id S1760106AbZBKAji (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:39:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757814AbZBKA2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:28:27 -0500
-Received: from kroah.org ([198.145.64.141]:51194 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 19:28:38 -0500
+Received: from kroah.org ([198.145.64.141]:51359 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757654AbZBKA2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:23 -0500
-Date: Tue, 10 Feb 2009 16:25:00 -0800
+	id S1757776AbZBKA2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:28:35 -0500
+Date: Tue, 10 Feb 2009 16:25:24 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jiri Slaby <jirislaby@gmail.com>,
-       Alan Cox <alan@redhat.com>
-Subject: [patch 22/56] 8250_pci: add support for netmos 9835 IBM devices
-Message-ID: <20090211002500.GW14660@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Eric Biederman <ebiederm@xmission.com>,
+       Paul Turner <pjt@google.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: [patch 33/56] seq_file: move traverse so it can be used from
+	seq_read
+Message-ID: <20090211002524.GH14660@kroah.com>
 References: <20090211001439.873435357@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="8250_pci-add-support-for-netmos-9835-ibm-devices.patch"
+Content-Disposition: inline; filename="seq_file-move-traverse-so-it-can-be-used-from-seq_read.patch"
 In-Reply-To: <20090211002328.GA14660@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,48 +41,158 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Jiri Slaby <jirislaby@gmail.com>
+From: Eric Biederman <ebiederm@xmission.com>
 
-commit 25cf9bc1fcb085daaeb82b09bab0fb3c40570887 upstream.
+commit 33da8892a2f9e7d4b2d9a35fc80833ba2d2b1aa6 upstream.
 
-Most of netmos 9835 hardware is handled by parport-serial.  IBM introduces
-a device which doesn't have any parallel ports and have screwed subdevice
-PCI id (not corresponding to port numbers).
+In 2.6.25 some /proc files were converted to use the seq_file
+infrastructure.  But seq_files do not correctly support pread(), which
+broke some usersapce applications.
 
-Handle this device (9710:9835 1014:0299) properly.
+To handle pread correctly we can't assume that f_pos is where we left it
+in seq_read.  So move traverse() so that we can eventually use it in
+seq_read and do thus some day support pread().
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Signed-off-by: Eric Biederman <ebiederm@xmission.com>
+Cc: Paul Turner <pjt@google.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Alan Cox <alan@redhat.com>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/serial/8250_pci.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ fs/seq_file.c |  114 +++++++++++++++++++++++++++++-----------------------------
+ 1 file changed, 57 insertions(+), 57 deletions(-)
 
---- a/drivers/serial/8250_pci.c
-+++ b/drivers/serial/8250_pci.c
-@@ -599,6 +599,10 @@ static int pci_netmos_init(struct pci_de
- 	/* subdevice 0x00PS means <P> parallel, <S> serial */
- 	unsigned int num_serial = dev->subsystem_device & 0xf;
+--- a/fs/seq_file.c
++++ b/fs/seq_file.c
+@@ -54,6 +54,63 @@ int seq_open(struct file *file, const st
+ }
+ EXPORT_SYMBOL(seq_open);
  
-+	if (dev->subsystem_vendor == PCI_VENDOR_ID_IBM &&
-+			dev->subsystem_device == 0x0299)
++static int traverse(struct seq_file *m, loff_t offset)
++{
++	loff_t pos = 0, index;
++	int error = 0;
++	void *p;
++
++	m->version = 0;
++	index = 0;
++	m->count = m->from = 0;
++	if (!offset) {
++		m->index = index;
 +		return 0;
++	}
++	if (!m->buf) {
++		m->buf = kmalloc(m->size = PAGE_SIZE, GFP_KERNEL);
++		if (!m->buf)
++			return -ENOMEM;
++	}
++	p = m->op->start(m, &index);
++	while (p) {
++		error = PTR_ERR(p);
++		if (IS_ERR(p))
++			break;
++		error = m->op->show(m, p);
++		if (error < 0)
++			break;
++		if (unlikely(error)) {
++			error = 0;
++			m->count = 0;
++		}
++		if (m->count == m->size)
++			goto Eoverflow;
++		if (pos + m->count > offset) {
++			m->from = offset - pos;
++			m->count -= m->from;
++			m->index = index;
++			break;
++		}
++		pos += m->count;
++		m->count = 0;
++		if (pos == offset) {
++			index++;
++			m->index = index;
++			break;
++		}
++		p = m->op->next(m, p, &index);
++	}
++	m->op->stop(m, p);
++	return error;
 +
- 	if (num_serial == 0)
- 		return -ENODEV;
- 	return num_serial;
-@@ -2846,6 +2850,10 @@ static struct pci_device_id serial_pci_t
- 		0,
- 		pbn_b0_8_115200 },
++Eoverflow:
++	m->op->stop(m, p);
++	kfree(m->buf);
++	m->buf = kmalloc(m->size <<= 1, GFP_KERNEL);
++	return !m->buf ? -ENOMEM : -EAGAIN;
++}
++
+ /**
+  *	seq_read -	->read() method for sequential files.
+  *	@file: the file to read from
+@@ -186,63 +243,6 @@ Efault:
+ }
+ EXPORT_SYMBOL(seq_read);
  
-+	{	PCI_VENDOR_ID_NETMOS, PCI_DEVICE_ID_NETMOS_9835,
-+		PCI_VENDOR_ID_IBM, 0x0299,
-+		0, 0, pbn_b0_bt_2_115200 },
-+
- 	/*
- 	 * These entries match devices with class COMMUNICATION_SERIAL,
- 	 * COMMUNICATION_MODEM or COMMUNICATION_MULTISERIAL
+-static int traverse(struct seq_file *m, loff_t offset)
+-{
+-	loff_t pos = 0, index;
+-	int error = 0;
+-	void *p;
+-
+-	m->version = 0;
+-	index = 0;
+-	m->count = m->from = 0;
+-	if (!offset) {
+-		m->index = index;
+-		return 0;
+-	}
+-	if (!m->buf) {
+-		m->buf = kmalloc(m->size = PAGE_SIZE, GFP_KERNEL);
+-		if (!m->buf)
+-			return -ENOMEM;
+-	}
+-	p = m->op->start(m, &index);
+-	while (p) {
+-		error = PTR_ERR(p);
+-		if (IS_ERR(p))
+-			break;
+-		error = m->op->show(m, p);
+-		if (error < 0)
+-			break;
+-		if (unlikely(error)) {
+-			error = 0;
+-			m->count = 0;
+-		}
+-		if (m->count == m->size)
+-			goto Eoverflow;
+-		if (pos + m->count > offset) {
+-			m->from = offset - pos;
+-			m->count -= m->from;
+-			m->index = index;
+-			break;
+-		}
+-		pos += m->count;
+-		m->count = 0;
+-		if (pos == offset) {
+-			index++;
+-			m->index = index;
+-			break;
+-		}
+-		p = m->op->next(m, p, &index);
+-	}
+-	m->op->stop(m, p);
+-	return error;
+-
+-Eoverflow:
+-	m->op->stop(m, p);
+-	kfree(m->buf);
+-	m->buf = kmalloc(m->size <<= 1, GFP_KERNEL);
+-	return !m->buf ? -ENOMEM : -EAGAIN;
+-}
+-
+ /**
+  *	seq_lseek -	->llseek() method for sequential files.
+  *	@file: the file in question
 
