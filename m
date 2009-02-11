@@ -1,85 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756013AbZBKN1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756641AbZBKN2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756013AbZBKN1f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 08:27:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbZBKN11
+	id S1756641AbZBKN2a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 08:28:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbZBKN2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 08:27:27 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:44260 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750808AbZBKN10 (ORCPT
+	Wed, 11 Feb 2009 08:28:21 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:53494 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750808AbZBKN2U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 08:27:26 -0500
-Date: Thu, 12 Feb 2009 00:27:22 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Alexander Clouter <alex@digriz.org.uk>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCHv2] hw_random: add timeriomem-rng driver
-Message-ID: <20090211132722.GA3258@gondor.apana.org.au>
-References: <20090207095317.GB8800@woodchuck> <20090210045748.GA17236@gondor.apana.org.au> <20090210193904.GT11872@woodchuck>
+	Wed, 11 Feb 2009 08:28:20 -0500
+Date: Wed, 11 Feb 2009 13:28:17 +0000
+From: Andy Whitcroft <apw@canonical.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       Arjan van de Ven <arjan@infradead.org>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 0/2] Make the touchpad on the MSI Wind netbook work
+Message-ID: <20090211132817.GD25898@shadowen.org>
+References: <20090204191540.2d6abd87@infradead.org> <20090211014506.GA5075@srcf.ucam.org> <alpine.LRH.1.10.0902111315360.22097@twin.jikos.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090210193904.GT11872@woodchuck>
+In-Reply-To: <alpine.LRH.1.10.0902111315360.22097@twin.jikos.cz>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 07:39:04PM +0000, Alexander Clouter wrote:
->
-> My original code[1] approach, with timer_pending() in there, would have 
-> been okay then, right?
-> ----
-> if (timer_pending(&timeriomem_rng_timer)) {
->   if (!wait)
->     return 0;
+On Wed, Feb 11, 2009 at 01:17:02PM +0100, Jiri Kosina wrote:
+> On Wed, 11 Feb 2009, Matthew Garrett wrote:
 > 
->   del_timer_sync(&timeriomem_rng_timer);
->   delay = timeriomem_rng_timer.expires - jiffies;
+> > https://lists.ubuntu.com/archives/kernel-team/2009-February/004335.html 
+> > be related? It seems quite plausible that we want to do this on all 
+> > hardware.
 > 
->   schedule_timeout_uninterruptible(delay);
-> }
+> Actually I have also hit this on several machines. Dmitry, I would propose 
+> to take Andy's patch (maybe even for 2.6.29?), it would save us a lot of 
+> bugreports in the future.
 
-Yes probably but it is racy.  Also it's better if we can avoid
-the expires - jiffies calculation if only because then we won't
-have to tell Andrew why it can't be negative :)
+Yes I was about to push this upstream.  I was supprised we had not seen
+any other reports of it, seems that we have all been seeing it and not
+realised.
 
-> > Instead of deleting the timer above, why not create a rng->present
-> > variable which you set to zero here, and the timer sets it to
-> > non-zero.  Then you just need to return rng->present in your
-> > data_present function.
->
-> Sounds fair, better than the timer_pending approach and easier to 
-> understand.
+Including the patch inline for those who prefer to avoid links.
 
-Oh I forgot about the blocking case.  We can probably add a
-completion object to handle that.  So something like
+-apw
 
-	if (!wait || rng->present)
-		return rng->present;
+>From cce152ae74a5084c7e3dffc25032d43908a5fa77 Mon Sep 17 00:00:00 2001
+From: Andy Whitcroft <apw@canonical.com>
+Date: Mon, 2 Feb 2009 16:32:25 +0000
+Subject: [PATCH 1/1] psmouse/synaptics: ensure we reset the device on resume
 
-	wait_for_completion(&rng->completion);
-	return 1;
+When resuming from suspend newer Synaptics touchpads do not recover
+correctly.  Analysis of the resume sequence as applied in Linux was
+compared to that of other operating systems.  This indicated that the
+other OSs were resetting the mouse before attempting to detect it (for
+all Synaptics touchpads, old and new).  Applying this same modification
+fixes these newer Synaptics touchpads and brings the driver into line
+with common OS reset behaviour.
 
-The timer would do
+This patch adds this reset by default providing a module option to
+restore the previous non-reset behaviour:
 
-	rng->present = 1;
-	complete(&rng->completion);
+	psmouse.synaptics_resume_reset=N
 
-And the reader would do
+Also a message is emmitted on resume hinting as to how to fix a broken
+touchpad.
 
-	rng->present = 0;
-	INIT_COMPLETION(rng->completion);
-	add_timer(...)
+Signed-off-by: Andy Whitcroft <apw@canonical.com>
+---
+ drivers/input/mouse/synaptics.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-Note that everything but the timer is completely serialised by
-the hwrng mutex so we only need to worry about racing against
-the timer.
-
-Cheers,
+diff --git a/drivers/input/mouse/synaptics.c b/drivers/input/mouse/synaptics.c
+index d349c4a..5b01c14 100644
+--- a/drivers/input/mouse/synaptics.c
++++ b/drivers/input/mouse/synaptics.c
+@@ -60,11 +60,21 @@ static int synaptics_mode_cmd(struct psmouse *psmouse, unsigned char mode)
+ 	return 0;
+ }
+ 
++static int synaptics_resume_reset = 1;
++module_param(synaptics_resume_reset, bool, 0);
++MODULE_PARM_DESC(synaptics_resume_reset,
++				"Enable reset on resume for Synaptics");
++
+ int synaptics_detect(struct psmouse *psmouse, int set_properties)
+ {
+ 	struct ps2dev *ps2dev = &psmouse->ps2dev;
+ 	unsigned char param[4];
+ 
++	if (synaptics_resume_reset) {
++		printk(KERN_CRIT "WARNING: synaptics was reset on resume, see synaptics_resume_reset if you have trouble on resume\n");
++		psmouse_reset(psmouse);
++	}
++
+ 	param[0] = 0;
+ 
+ 	ps2_command(ps2dev, param, PSMOUSE_CMD_SETRES);
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+1.6.1.2.419.g0d87e
