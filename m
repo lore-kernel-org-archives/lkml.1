@@ -1,146 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758025AbZBKQuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757633AbZBKQwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758025AbZBKQuw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 11:50:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756692AbZBKQuA
+	id S1757633AbZBKQwd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 11:52:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755153AbZBKQwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 11:50:00 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:50389 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756510AbZBKQt6 convert rfc822-to-8bit (ORCPT
+	Wed, 11 Feb 2009 11:52:22 -0500
+Received: from exprod6ob117.obsmtp.com ([64.18.1.38]:42019 "HELO psmtp.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1754595AbZBKQwV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 11:49:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=N7KuPWOSTzBFkX3Eh5FjrPU9jB4fv+08mxb4SODiDeA/1QME1rfxaVuQXzb/SWVVz2
-         EhsK8k2CGDnrhqC4SPtHCRvrjtz3yXSihIulcV5cF9vtCv33vWWn6gmuAKi4tUNGsdQP
-         7Y118wcGzTh0eZKyVXBO+DLfYHa/1dFDE0+bM=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 5/6] ide: remove ide_execute_pkt_cmd()
-Date: Wed, 11 Feb 2009 17:37:07 +0100
-User-Agent: KMail/1.10.4 (Linux/2.6.29-rc4-next-20090210; KDE/4.1.4; i686; ; )
-Cc: petkovbb@gmail.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20090209231945.32406.14874.sendpatchset@localhost.localdomain> <9ea470500902110537g4d6c67a3o35d1d8a4dcca0927@mail.gmail.com> <4992D77F.3090802@ru.mvista.com>
-In-Reply-To: <4992D77F.3090802@ru.mvista.com>
+	Wed, 11 Feb 2009 11:52:21 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+	charset="US-ASCII"
 Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200902111737.07551.bzolnier@gmail.com>
+Subject: RE: [PATCH] auxdisplay: remove PARPORT dependency
+Date: Wed, 11 Feb 2009 11:51:59 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090120C583@mi8nycmail19.Mi8.com>
+In-Reply-To: <ca2dc2820902110237u7c050e98t29019cc89d66a6a3@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] auxdisplay: remove PARPORT dependency
+Thread-Index: AcmMNMTdEt0/pT4BQxurrmKFRnZopQAMlGwg
+References: <BD79186B4FD85F4B8E60E381CAEE19090120BD69@mi8nycmail19.Mi8.com> <20090209143716.57467016.akpm@linux-foundation.org> <BD79186B4FD85F4B8E60E381CAEE19090120C0B8@mi8nycmail19.Mi8.com> <ca2dc2820902110237u7c050e98t29019cc89d66a6a3@mail.gmail.com>
+From: "hartleys" <hartleys@visionengravers.com>
+To: "Miguel Ojeda" <miguel.ojeda.sandonis@gmail.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 11 Feb 2009 16:52:16.0761 (UTC) FILETIME=[18853E90:01C98C69]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 February 2009, Sergei Shtylyov wrote:
-> Hello.
-> 
-> Borislav Petkov wrote:
-> 
-> >>>> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> >>>> Subject: [PATCH] ide: remove ide_execute_pkt_cmd()
-> >>>>
-> >>>> * Pass command structure to ide_execute_command() and skip
-> >>>>  __ide_set_handler() for ATAPI protocols.
-> >>>>
-> >>>> * Convert ide_issue_pc() to always use ide_execute_command()
-> >>>>  and remove no longer needed ide_execute_pkt_cmd().
-> >>>>
-> >>>> There should be no functional changes caused by this patch.
-> >>>>
-> >>>> Cc: Borislav Petkov <petkovbb@gmail.com>
-> >>>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> >>>> ---
-> >>>>  drivers/ide/ide-atapi.c    |   15 +++++++--------
-> >>>>  drivers/ide/ide-iops.c     |   23 ++++++-----------------
-> >>>>  drivers/ide/ide-taskfile.c |    6 ++----
-> >>>>  include/linux/ide.h        |    5 ++---
-> >>>>  4 files changed, 17 insertions(+), 32 deletions(-)
-> >>>>
-> >>>> Index: b/drivers/ide/ide-atapi.c
-> >>>> ===================================================================
-> >>>> --- a/drivers/ide/ide-atapi.c
-> >>>> +++ b/drivers/ide/ide-atapi.c
-> >>>> @@ -481,6 +481,7 @@ static void ide_init_packet_cmd(struct i
-> >>>>        cmd->protocol  = dma ? ATAPI_PROT_DMA : ATAPI_PROT_PIO;
-> >>>>        cmd->tf_flags |= IDE_TFLAG_OUT_LBAH | IDE_TFLAG_OUT_LBAM |
-> >>>>                         IDE_TFLAG_OUT_FEATURE | tf_flags;
-> >>>> +       cmd->tf.command = ATA_CMD_PACKET;
-> >>>>        cmd->tf.feature = dma;          /* Use PIO/DMA */
-> >>>>        cmd->tf.lbam    = bcount & 0xff;
-> >>>>        cmd->tf.lbah    = (bcount >> 8) & 0xff;
-> >>>> @@ -626,6 +627,7 @@ ide_startstop_t ide_issue_pc(ide_drive_t
-> >>>>        unsigned int timeout;
-> >>>>        u32 tf_flags;
-> >>>>        u16 bcount;
-> >>>> +       u8 drq_int = !!(drive->atapi_flags & IDE_AFLAG_DRQ_INTERRUPT);
-> >>>>
-> >>>>         
-> >>> How about we finally add those check macros in block layer fashion like
-> >>> blk_pc_request et al and do
-> >>>
-> >>> #define drv_can_drq_interrupt(drive)    ((drive)->atapi_flags &
-> >>> IDE_AFLAG_DRQ_INTERRUPT)
-> >>>
-> >>>       
-> >>  I suppose it's for the devices that interrupt on packet DRQ? Then it's
-> >> hardly a good name because it's not like this is some optional capability.
-> >>     
-> >
-> > No, I was alluding to the command packet DRQ type used by the device as it is
-> > put in SFF8020i, 7.1.7.1 General Conﬁguration Word.
-> >   
-> 
->    I was talking about exactly the same feature. :-)
-> 
-> >>> or similar instead of wasting stack space?
-> >>>       
-> >>  It doesn't necessarily waste stack space. Haven't you heard about compiler
-> >> putting local vairables into registers?
-> >>     
-> >
-> > Yes, have you heard of unnecessary register spilling?
-> >   
-> 
->    No -- only about stack spilling on CPUs "caching" the top of stack in 
-> their register file (like SPARC).
->    Linux runs not only on x86 and many RISCs can store several local 
-> variables in the dedicated registers -- it's the part of say MIPS ABIs...
-> 
-> >>> It'll also read better in the if() check:
-> >>>
-> >>> if (drv_can_irq_interrupt(drive)) { ...
-> >>>
-> >>>       
-> >>  It's faster to checj a local variable than to dereference drv several times
-> >> -- unless gcc optimizes that away (by creating an implicit local variable
-> >> :-).
-> >>     
-> >
-> > I hope gcc is smart enough to do that.
-> >   
-> 
->    Then where's the win?
+On Wednesday, February 11, 2009 3:38 AM, Miguel Ojeda wrote:
+>> I think the dependency will be handled automatically.  Both
+>> cfag12864b.c and cfag12864bfb.c are enabled by CFAG12864B which
+>> has a dependency on KS0108, which it turn depends on PARPORT_PC.
+>
+> That's true; however, I think it is intentional: cfag12864bfb
+> depends on cfags12864b, and this one depends on ks0108, which
+> depends on parport and, for the moment, there aren't more entries
+> on "Auxiliary Display support". Thereafter, if PARPORT is not
+> selected, the user is not bothered with an additional menu entry
+> on "Device Drivers".
+>
+> I don't know which is the trend nowadays in this subject (i.e. to
+> show every menu althought empty or not). I see Andrew has already
+> added the patch, so I bet on his decision ;)
 
-In having shorter & cleaner code:
+The arm branch Kconfig was updated awhile back to include auxdisplay.
 
-	ide_dev_drq_int(drive)
+I have been messing with a couple LCD devices similar to the cfag12864.
+Every time I update my kernel source I have needed to add this patch
+since my arm platform does not have PARPORT_PC.
 
-vs
+That was my stimulus for the patch.  It does cause the empty menu to
+appear but some others already do that so I didn't think it was a
+problem.
 
-	((drive)->atapi_flags & IDE_AFLAG_DRQ_INTERRUPT)
-
-We can of course have both things -- using macros for all checks
-but still cache the result when it makes sense.
-
-The idea of having macros for ->dev_flags and ->atapi_flags sounds
-fine to me (+ it abstracts the actual ->dev_flags + ->atapi_flags
-split allowing easier sanitizations / enhancements later).
-
-Thanks,
-Bart
+Regards,
+Hartley
