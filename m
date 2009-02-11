@@ -1,323 +1,392 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbZBKGfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbZBKGgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754691AbZBKGfe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 01:35:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbZBKGfZ
+	id S1755165AbZBKGgh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 01:36:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbZBKGg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 01:35:25 -0500
-Received: from tomts16.bellnexxia.net ([209.226.175.4]:57052 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751510AbZBKGfY convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 01:35:24 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AugEAIP+kUlMQWt2/2dsb2JhbACBbtFXhBoG
-Date: Wed, 11 Feb 2009 01:35:20 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
-	(repost)
-Message-ID: <20090211063520.GE8132@Krystal>
-References: <20090209045352.GA28653@Krystal> <20090209051737.GA29254@Krystal> <20090209070317.GA31583@Krystal> <20090209153305.GA6802@linux.vnet.ibm.com> <20090210191731.GA20867@Krystal> <20090210211643.GL6742@linux.vnet.ibm.com> <20090210212833.GA27578@Krystal> <20090210222115.GN6742@linux.vnet.ibm.com> <20090211005701.GA550@Krystal> <20090211052828.GQ6742@linux.vnet.ibm.com>
+	Wed, 11 Feb 2009 01:36:28 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:62720 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751539AbZBKGg0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 01:36:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
+         :references:mime-version:content-type:content-disposition
+         :in-reply-to:user-agent;
+        b=xV63X4JX/lRCPQ5yEXtocUgAl0AIRh/APKPI63aUnNBlPEkZ+/ou071UtpUKUcR3B9
+         hH4OcKBqHmGIjDoe0HL3bsy70US7qaq4ENlXZrHJ7yrqR0EWh7lnplep/rw9J1pRcDZW
+         XxJQcaaOLYkj7dcB2rYYRgsnf0wu1HgH0sJJ4=
+Date: Wed, 11 Feb 2009 07:36:23 +0100
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] ide: pass command to ide_map_sg()
+Message-ID: <20090211063623.GB937@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20090209231945.32406.14874.sendpatchset@localhost.localdomain> <20090209231952.32406.58013.sendpatchset@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20090211052828.GQ6742@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 00:40:00 up 41 days,  5:38,  4 users,  load average: 0.73, 0.71,
-	0.70
+In-Reply-To: <20090209231952.32406.58013.sendpatchset@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> On Tue, Feb 10, 2009 at 07:57:01PM -0500, Mathieu Desnoyers wrote:
-> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > On Tue, Feb 10, 2009 at 04:28:33PM -0500, Mathieu Desnoyers wrote:
-> > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > > On Tue, Feb 10, 2009 at 02:17:31PM -0500, Mathieu Desnoyers wrote:
-> > > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > > > > On Mon, Feb 09, 2009 at 02:03:17AM -0500, Mathieu Desnoyers wrote:
-> > > > > > > 
-> > > > > > > [ . . . ]
-> > > > > > > 
-> > > > > > > > I just added modified rcutorture.h and api.h from your git tree
-> > > > > > > > specifically for an urcutorture program to the repository. Some results :
-> > > > > > > > 
-> > > > > > > > 8-way x86_64
-> > > > > > > > E5405 @2 GHZ
-> > > > > > > > 
-> > > > > > > > ./urcutorture 8 perf
-> > > > > > > > n_reads: 1937650000  n_updates: 3  nreaders: 8  nupdaters: 1 duration: 1
-> > > > > > > > ns/read: 4.12871  ns/update: 3.33333e+08
-> > > > > > > > 
-> > > > > > > > ./urcutorture 8 uperf
-> > > > > > > > n_reads: 0  n_updates: 4413892  nreaders: 0  nupdaters: 8 duration: 1
-> > > > > > > > ns/read: nan  ns/update: 1812.46
-> > > > > > > > 
-> > > > > > > > n_reads: 98844204  n_updates: 10  n_mberror: 0
-> > > > > > > > rcu_stress_count: 98844171 33 0 0 0 0 0 0 0 0 0
-> > > > > > > > 
-> > > > > > > > However, I've tried removing the second switch_qparity() call, and the
-> > > > > > > > rcutorture test did not detect anything wrong. I also did a variation
-> > > > > > > > which calls the "sched_yield" version of the urcu, "urcutorture-yield".
-> > > > > > > 
-> > > > > > > My confusion -- I was testing my old approach where the memory barriers
-> > > > > > > are in rcu_read_lock() and rcu_read_unlock().  To force the failures in
-> > > > > > > your signal-handler-memory-barrier approach, I suspect that you are
-> > > > > > > going to need a bigger hammer.  In this case, one such bigger hammer
-> > > > > > > would be:
-> > > > > > > 
-> > > > > > > o	Just before exit from the signal handler, do a
-> > > > > > > 	pthread_cond_wait() under a pthread_mutex().
-> > > > > > > 
-> > > > > > > o	In force_mb_all_threads(), refrain from sending a signal to self.
-> > > > > > > 
-> > > > > > > 	Then it should be safe in force_mb_all_threads() to do a
-> > > > > > > 	pthread_cond_broadcast() under the same pthread_mutex().
-> > > > > > > 
-> > > > > > > This should raise the probability of seeing the failure in the case
-> > > > > > > where there is a single switch_qparity().
-> > > > > > > 
-> > > > > > 
-> > > > > > I just did a mb() version of the urcu :
-> > > > > > 
-> > > > > > (uncomment CFLAGS=+-DDEBUG_FULL_MB in the Makefile)
-> > > > > > 
-> > > > > > Time per read : 48.4086 cycles
-> > > > > > (about 6-7 times slower, as expected)
-> > > > > > 
-> > > > > > This will be useful especially to increase the chance to trigger races.
-> > > > > > 
-> > > > > > I tried removing the second parity switch from the writer. The rcu
-> > > > > > torture test did not find the problem yet (maybe I am not using the
-> > > > > > correct parameters ? It does not run for more than 5 seconds).
-> > > > > > 
-> > > > > > So I added a "-n" option to test_urcu, so it can make the usleep(1)
-> > > > > > between the writes optional. I also changed the yield for a usleep with
-> > > > > > random delay. I also now use a circular buffer rather than malloc so we
-> > > > > > are sure the memory is not quickly reused by the writer and stays longer
-> > > > > > in an invalid state.
-> > > > > > 
-> > > > > > So what really make the problem appear quickly is to add a delay between
-> > > > > > the rcu_dereference and the assertion on the data validity in thr_reader.
-> > > > > > 
-> > > > > > It now appears after just a few seconds when running
-> > > > > > ./test_urcu_yield 20 -r -n
-> > > > > > Compiled with CFLAGS=+-DDEBUG_FULL_MB
-> > > > > > 
-> > > > > > It seem to be much harder to trigger with the signal-based version. It's
-> > > > > > expected, because the writer takes about 50 times longer to execute than
-> > > > > > with the -DDEBUG_FULL_MB version.
-> > > > > > 
-> > > > > > So I'll let the ./test_urcu_yield NN -r -n run for a while on the
-> > > > > > correct version (with DEBUG_FULL_MB) and see what it gives.
-> > > > > 
-> > > > > Hmmm...  I had worse luck this time, took three 10-second tries to
-> > > > > see a failure:
-> > > > > 
-> > > > > paulmck@paulmck-laptop:~/paper/perfbook/CodeSamples/defer$ ./rcu_nest32 1 stress
-> > > > > n_reads: 44682055  n_updates: 9609503  n_mberror: 0
-> > > > > rcu_stress_count: 44679377 2678 0 0 0 0 0 0 0 0 0
-> > > > > paulmck@paulmck-laptop:~/paper/perfbook/CodeSamples/defer$ !!
-> > > > > ./rcu_nest32 1 stress
-> > > > > n_reads: 42281884  n_updates: 9870129  n_mberror: 0
-> > > > > rcu_stress_count: 42277756 4128 0 0 0 0 0 0 0 0 0
-> > > > > paulmck@paulmck-laptop:~/paper/perfbook/CodeSamples/defer$ !!
-> > > > > ./rcu_nest32 1 stress
-> > > > > n_reads: 41384304  n_updates: 10040805  n_mberror: 0
-> > > > > rcu_stress_count: 41380075 4228 1 0 0 0 0 0 0 0 0
-> > > > > paulmck@paulmck-laptop:~/paper/perfbook/CodeSamples/defer$
-> > > > > 
-> > > > > This is my prototype version, with read-side memory barriers, no
-> > > > > signals, and without your initialization-value speedup.
-> > > > > 
-> > > > 
-> > > > It would be interesting to re-sync our trees, or if you can point me to
-> > > > a current version of your prototype, I could review it.
-> > > 
-> > > Look at:
-> > > 
-> > > 	CodeSamples/defer/rcu_nest32.[hc]
-> > > 
-> > > In the git archive:
-> > > 
-> > > 	git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/perfbook.git
-> > 
-> > flip_counter_and_wait : yours do rcu_gp_ctr += RCU_GP_CTR_BOTTOM_BIT
-> > mine : rcu_gp_ctr ^= RCU_GP_CTR_BOTTOM_BIT.
+On Tue, Feb 10, 2009 at 12:19:52AM +0100, Bartlomiej Zolnierkiewicz wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] ide: pass command to ide_map_sg()
 > 
-> Yep, this is before your optimization.
+> * Set IDE_TFLAG_WRITE flag and ->rq also for ATA_CMD_PACKET
+>   commands.
 > 
-
-Hrm, and given the RCU_GP_CTR_BOTTOM_BIT is in the MSBs, there is no
-possible effect on the LSBs. That should work even if it overflows. OK.
-That should even work with my optimization. But I somehow prefer the xor
-(if it's not slower), because we really only need 1 bit to flip on and
-off.
-
-> > Another major difference between our tree is the lack of smp_mb() at the
-> > end of flip_counter_and_wait() (in your tree).
-> > 
-> > Your code does :
-> > 
-> >   smp_mb()
-> >   switch parity
-> >   smp_mb()
-> >   wait for each thread ongoing old gp
-> >     <<<<<<< ---- missing smp_mb.
-> >   switch parity
-> >   smp_mb()
-> >   wait for each thread ongoing old gp
-> >   smp_mb()
+> * Pass command to ->dma_setup method and update all its
+>   implementations accordingly.
 > 
-> This should be OK -- or am I missing a failure scenario?
-> Keep in mind that I get failures only when omitting a counter
-> flip, not with the above code.
+> * Pass command instead of request to ide_build_sglist(),
+>   *_build_dmatable() and ide_map_sg().
 > 
-
-OK, it's good that you point out that the failure only occurs when
-omitting the counter flip.
-
-So if we leave out the mb() we can end up in a situation where a reader
-thread is still in an ongoing old gp and we switch the parity. The big
-question is : should we be concerned about this ?
-
->From the writer point of view :
-
-Given there is no data dependency between the parity update and the
-per_thread(rcu_reader_gp, t) read done in the while loop waiting for
-threads, and given even the compiler barrier() has no effect wrt the
-last test done after the last iteration of the loop, we could think of
-compiler optimizations doing the following to our code (let's focus on a
-single loop of for_each_thread) :
-
-transforming
-
-                while (rcu_old_gp_ongoing(t))
-                        barrier();
-                rcu_gp_ctr += RCU_GP_CTR_BOTTOM_BIT;
-
-into
-
-                if (!rcu_old_gp_ongoing(t))
-                  goto end;
-                while (rcu_old_gp_ongoing(t))
-                        barrier();
-end:
-                rcu_gp_ctr += RCU_GP_CTR_BOTTOM_BIT;
-
-This leaves the choice to the compiler to perform the rcu_gp_ctr
-increment before the per_thread(rcu_reader_gp, t) read, because there is
-no barrier.
-
-Not only does this apply to the compiler, but also to the memory
-barriers. We can end up in a situation where the CPU decides to to the
-rcu_gp_ctr increment before reading the last rcu_old_gp_ongoing value,
-given there is no data dependency between those two.
-
-You could argue that ACCESS_ONCE() around the per_thread(rcu_reader_gp,
-t) read will order reads, but I don't think we should rely on this on
-SMP. This is really supposed to be there just to make sure we don't end
-up doing multiple variable reads on UP wrt to local interrupts.
-
-You could also argue that rcu_gp_ctr is read within
-rcu_old_gp_ongoing(), which should normally order the memory accesses.
-It actually does only order memory access to the rcu_gp_ctr variable,
-not the per_thread(rcu_reader_gp, t), because, here again, there if no
-data dependency whatsoever between per_thread(rcu_reader_gp, t) and
-rcu_gp_ctr. A possible scenario : rcu_gp_ctr could be read, then we have
-the rcu_gp_ctr increment, and only then could the
-per_thread(rcu_reader_gp, t) variable be read to perform the test.
-
-But I see that even in rcu_read_lock, there is no strict ordering
-between __get_thread_var(rcu_reader_gp) and rcu_gp_ctr read. Therefore,
-I conclude that ordering between those two variables does not matter at
-all. I also suspect that this is the core reason for doing 2 q.s. period
-flip at each update.
-
-Am I correct ?
-
-
-> > I also wonder why you have a smp_mb() after spin_unlock() in your
-> > synchronize_rcu() -> if you follow the Linux kernel semantics for
-> > spinlocks, the smp_mb() should be implied. (but I have not looked at
-> > your spin_lock/unlock primitives yet).
+> While at it:
 > 
-> Perhaps things have changed, but last I knew, spin_lock() and
-> spin_unlock() were only required to keep the critical section in, not
-> to keep things out of the critical section.
+> * Fix scc_dma_setup() documentation + use ATA_DMA_WR define.
 > 
-
-Hrm, reading Documentation/memory-barriers.txt again tells me things
-might have changed (if I am reading correctly the section LOCKS VS
-MEMORY ACCESSES).
-
-Correct me if I am wrong, but I don't think it makes sense to insure
-memory barriers to keep accesses within the critical section and not
-outside, because such memory access could well be another spinlock.
-
-Therefore, we could end up in a situation where we have two locks, A and
-B, taken in the following order in the source code :
-
-LOCK A
-
-UNLOCK A
-
-LOCK B
-
-UNLOCK B
-
-Then, following your assumption, it would be possible for a CPU to do
-the memory accesses associated to lock A and B in a random order one vs
-the other. Given there would be no requirement to keep things out of
-those respective critical sections, LOCK A could be taken within LOCK B,
-and the opposite would also be valid.
-
-Valid memory access orders :
-
-1)
-LOCK A
-LOCK B
-UNLOCK B
-UNLOCK A
-
-2)
-LOCK B
-LOCK A
-UNLOCK A
-UNLOCK B
-
-The only constraint that ensures we won't end up in this situation is
-the fact that memory accesses done outside of the critical section stays
-outside of the critical section.
-
-Mathieu
-
-
-
-> 							Thanx, Paul
+> * Rename sgiioc4_build_dma_table() to sgiioc4_build_dmatable(),
+>   change return value type to 'int' and drop unused 'ddir'
+>   argument.
 > 
-> > Mathieu
-> > 
-> > > 							Thanx, Paul
-> > > 
-> > > _______________________________________________
-> > > ltt-dev mailing list
-> > > ltt-dev@lists.casi.polymtl.ca
-> > > http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> > > 
-> > 
-> > -- 
-> > Mathieu Desnoyers
-> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> * Do some minor cleanups in [tx4939]ide_dma_setup().
 > 
+> There should be no functional changes caused by this patch.
+> 
+> Cc: Borislav Petkov <petkovbb@gmail.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+>  drivers/ide/alim15x3.c     |    7 ++++---
+>  drivers/ide/au1xxx-ide.c   |   15 ++++++---------
+>  drivers/ide/icside.c       |    7 +++----
+>  drivers/ide/ide-atapi.c    |   16 ++++++++++++----
+>  drivers/ide/ide-disk.c     |   10 +++++-----
+>  drivers/ide/ide-dma-sff.c  |   18 +++++++++---------
+>  drivers/ide/ide-dma.c      |   15 +++++++--------
+>  drivers/ide/ide-floppy.c   |    6 +++++-
+>  drivers/ide/ide-io.c       |    6 +++---
+>  drivers/ide/ide-taskfile.c |    4 ++--
+>  drivers/ide/ns87415.c      |    4 ++--
+>  drivers/ide/pmac.c         |   19 ++++++++-----------
+>  drivers/ide/scc_pata.c     |   19 +++++++------------
+>  drivers/ide/sgiioc4.c      |   21 +++++++--------------
+>  drivers/ide/trm290.c       |   10 +++++-----
+>  drivers/ide/tx4939ide.c    |   26 ++++++++++----------------
+>  include/linux/ide.h        |   12 ++++++------
+>  17 files changed, 101 insertions(+), 114 deletions(-)
+> 
+> Index: b/drivers/ide/alim15x3.c
+> ===================================================================
+> --- a/drivers/ide/alim15x3.c
+> +++ b/drivers/ide/alim15x3.c
+> @@ -191,17 +191,18 @@ static void ali_set_dma_mode(ide_drive_t
+>  /**
+>   *	ali15x3_dma_setup	-	begin a DMA phase
+>   *	@drive:	target device
+> + *	@cmd: command
+>   *
+>   *	Returns 1 if the DMA cannot be performed, zero on success.
+>   */
+>  
+> -static int ali15x3_dma_setup(ide_drive_t *drive)
+> +static int ali15x3_dma_setup(ide_drive_t *drive, struct ide_cmd *cmd)
+>  {
+>  	if (m5229_revision < 0xC2 && drive->media != ide_disk) {
+> -		if (rq_data_dir(drive->hwif->rq))
+> +		if (cmd->tf_flags & IDE_TFLAG_WRITE)
+>  			return 1;	/* try PIO instead of DMA */
+>  	}
+> -	return ide_dma_setup(drive);
+> +	return ide_dma_setup(drive, cmd);
+>  }
+>  
+>  /**
+> Index: b/drivers/ide/au1xxx-ide.c
+> ===================================================================
+> --- a/drivers/ide/au1xxx-ide.c
+> +++ b/drivers/ide/au1xxx-ide.c
+> @@ -209,15 +209,14 @@ static void auide_set_dma_mode(ide_drive
+>   */
+>  
+>  #ifdef CONFIG_BLK_DEV_IDE_AU1XXX_MDMA2_DBDMA
+> -static int auide_build_dmatable(ide_drive_t *drive)
+> +static int auide_build_dmatable(ide_drive_t *drive, struct ide_cmd *cmd)
+>  {
+>  	ide_hwif_t *hwif = drive->hwif;
+> -	struct request *rq = hwif->rq;
+>  	_auide_hwif *ahwif = &auide_hwif;
+>  	struct scatterlist *sg;
+> -	int i = hwif->cmd.sg_nents, iswrite, count = 0;
+> +	int i = cmd->sg_nents, count = 0;
+> +	int iswrite = !!(cmd->tf_flags & IDE_TFLAG_WRITE);
+>  
+> -	iswrite = (rq_data_dir(rq) == WRITE);
+>  	/* Save for interrupt context */
+>  	ahwif->drive = drive;
+>  
+> @@ -298,12 +297,10 @@ static void auide_dma_exec_cmd(ide_drive
+>  			    (2*WAIT_CMD), NULL);
+>  }
+>  
+> -static int auide_dma_setup(ide_drive_t *drive)
+> +static int auide_dma_setup(ide_drive_t *drive, struct ide_cmd *cmd)
+>  {
+> -	struct request *rq = drive->hwif->rq;
+> -
+> -	if (!auide_build_dmatable(drive)) {
+> -		ide_map_sg(drive, rq);
+> +	if (auide_build_dmatable(drive, cmd) == 0) {
+> +		ide_map_sg(drive, cmd);
+>  		return 1;
+>  	}
+>  
+> Index: b/drivers/ide/icside.c
+> ===================================================================
+> --- a/drivers/ide/icside.c
+> +++ b/drivers/ide/icside.c
+> @@ -307,15 +307,14 @@ static void icside_dma_start(ide_drive_t
+>  	enable_dma(ec->dma);
+>  }
+>  
+> -static int icside_dma_setup(ide_drive_t *drive)
+> +static int icside_dma_setup(ide_drive_t *drive, struct ide_cmd *cmd)
+>  {
+>  	ide_hwif_t *hwif = drive->hwif;
+>  	struct expansion_card *ec = ECARD_DEV(hwif->dev);
+>  	struct icside_state *state = ecard_get_drvdata(ec);
+> -	struct request *rq = hwif->rq;
+>  	unsigned int dma_mode;
+>  
+> -	if (rq_data_dir(rq))
+> +	if (cmd->tf_flags & IDE_TFLAG_WRITE)
+>  		dma_mode = DMA_MODE_WRITE;
+>  	else
+>  		dma_mode = DMA_MODE_READ;
+> @@ -344,7 +343,7 @@ static int icside_dma_setup(ide_drive_t 
+>  	 * Tell the DMA engine about the SG table and
+>  	 * data direction.
+>  	 */
+> -	set_dma_sg(ec->dma, hwif->sg_table, hwif->cmd.sg_nents);
+> +	set_dma_sg(ec->dma, hwif->sg_table, cmd->sg_nents);
+>  	set_dma_mode(ec->dma, dma_mode);
+>  
+>  	drive->waiting_for_dma = 1;
+> Index: b/drivers/ide/ide-atapi.c
+> ===================================================================
+> --- a/drivers/ide/ide-atapi.c
+> +++ b/drivers/ide/ide-atapi.c
+> @@ -626,12 +626,20 @@ ide_startstop_t ide_issue_pc(ide_drive_t
+>  {
+>  	struct ide_atapi_pc *pc;
+>  	ide_hwif_t *hwif = drive->hwif;
+> +	const struct ide_dma_ops *dma_ops = hwif->dma_ops;
+> +	struct ide_cmd *cmd = &hwif->cmd;
+>  	ide_expiry_t *expiry = NULL;
+>  	struct request *rq = hwif->rq;
+>  	unsigned int timeout;
+>  	u32 tf_flags;
+>  	u16 bcount;
+>  
+> +	if (drive->media != ide_floppy) {
+> +		if (rq_data_dir(rq))
+> +			cmd->tf_flags |= IDE_TFLAG_WRITE;
+> +		cmd->rq = rq;
+> +	}
+> +
+>  	if (dev_is_idecd(drive)) {
+>  		tf_flags = IDE_TFLAG_OUT_NSECT | IDE_TFLAG_OUT_LBAL;
+>  		bcount = ide_cd_get_xferlen(rq);
+> @@ -639,8 +647,8 @@ ide_startstop_t ide_issue_pc(ide_drive_t
+>  		timeout = ATAPI_WAIT_PC;
+>  
+>  		if (drive->dma) {
+> -			if (ide_build_sglist(drive, rq))
+> -				drive->dma = !hwif->dma_ops->dma_setup(drive);
+> +			if (ide_build_sglist(drive, cmd))
+> +				drive->dma = !dma_ops->dma_setup(drive, cmd);
+>  			else
+>  				drive->dma = 0;
+>  		}
+> @@ -663,8 +671,8 @@ ide_startstop_t ide_issue_pc(ide_drive_t
+>  
+>  		if ((pc->flags & PC_FLAG_DMA_OK) &&
+>  		     (drive->dev_flags & IDE_DFLAG_USING_DMA)) {
+> -			if (ide_build_sglist(drive, rq))
+> -				drive->dma = !hwif->dma_ops->dma_setup(drive);
+> +			if (ide_build_sglist(drive, cmd))
+> +				drive->dma = !dma_ops->dma_setup(drive, cmd);
+>  			else
+>  				drive->dma = 0;
+>  		}
+> Index: b/drivers/ide/ide-disk.c
+> ===================================================================
+> --- a/drivers/ide/ide-disk.c
+> +++ b/drivers/ide/ide-disk.c
+> @@ -99,11 +99,6 @@ static ide_startstop_t __ide_do_rw_disk(
+>  	memset(&cmd, 0, sizeof(cmd));
+>  	cmd.tf_flags = IDE_TFLAG_TF | IDE_TFLAG_DEVICE;
+>  
+> -	if (dma == 0) {
+> -		ide_init_sg_cmd(&cmd, nsectors);
+> -		ide_map_sg(drive, rq);
+> -	}
+> -
+>  	if (drive->dev_flags & IDE_DFLAG_LBA) {
+>  		if (lba48) {
+>  			pr_debug("%s: LBA=0x%012llx\n", drive->name,
+> @@ -156,6 +151,11 @@ static ide_startstop_t __ide_do_rw_disk(
+>  	ide_tf_set_cmd(drive, &cmd, dma);
+>  	cmd.rq = rq;
+>  
+> +	if (dma == 0) {
+> +		ide_init_sg_cmd(&cmd, nsectors);
+> +		ide_map_sg(drive, &cmd);
+> +	}
+> +
+>  	rc = do_rw_taskfile(drive, &cmd);
+>  
+>  	if (rc == ide_stopped && dma) {
+> Index: b/drivers/ide/ide-dma-sff.c
+> ===================================================================
+> --- a/drivers/ide/ide-dma-sff.c
+> +++ b/drivers/ide/ide-dma-sff.c
+> @@ -111,7 +111,7 @@ EXPORT_SYMBOL_GPL(ide_dma_host_set);
+>   *	May also be invoked from trm290.c
+>   */
+>  
+> -int ide_build_dmatable(ide_drive_t *drive, struct request *rq)
+> +int ide_build_dmatable(ide_drive_t *drive, struct ide_cmd *cmd)
+>  {
+>  	ide_hwif_t *hwif = drive->hwif;
+>  	__le32 *table = (__le32 *)hwif->dmatable_cpu;
+> @@ -120,7 +120,7 @@ int ide_build_dmatable(ide_drive_t *driv
+>  	struct scatterlist *sg;
+>  	u8 is_trm290 = !!(hwif->host_flags & IDE_HFLAG_TRM290);
+>  
+> -	for_each_sg(hwif->sg_table, sg, hwif->cmd.sg_nents, i) {
+> +	for_each_sg(hwif->sg_table, sg, cmd->sg_nents, i) {
+>  		u32 cur_addr, cur_len, xcount, bcount;
+>  
+>  		cur_addr = sg_dma_address(sg);
+> @@ -175,6 +175,7 @@ EXPORT_SYMBOL_GPL(ide_build_dmatable);
+>  /**
+>   *	ide_dma_setup	-	begin a DMA phase
+>   *	@drive: target device
+> + *	@cmd: command
+>   *
+>   *	Build an IDE DMA PRD (IDE speak for scatter gather table)
+>   *	and then set up the DMA transfer registers for a device
+> @@ -185,17 +186,16 @@ EXPORT_SYMBOL_GPL(ide_build_dmatable);
+>   *	is returned.
+>   */
+>  
+> -int ide_dma_setup(ide_drive_t *drive)
+> +int ide_dma_setup(ide_drive_t *drive, struct ide_cmd *cmd)
+>  {
+>  	ide_hwif_t *hwif = drive->hwif;
+> -	struct request *rq = hwif->rq;
+> -	unsigned int reading = rq_data_dir(rq) ? 0 : ATA_DMA_WR;
+>  	u8 mmio = (hwif->host_flags & IDE_HFLAG_MMIO) ? 1 : 0;
+> +	u8 rw = (cmd->tf_flags & IDE_TFLAG_WRITE) ? 0 : ATA_DMA_WR;
+>  	u8 dma_stat;
+>  
+>  	/* fall back to pio! */
+> -	if (!ide_build_dmatable(drive, rq)) {
+> -		ide_map_sg(drive, rq);
+> +	if (ide_build_dmatable(drive, cmd) == 0) {
+> +		ide_map_sg(drive, cmd);
+>  		return 1;
+>  	}
+>  
+> @@ -208,9 +208,9 @@ int ide_dma_setup(ide_drive_t *drive)
+>  
+>  	/* specify r/w */
+>  	if (mmio)
+> -		writeb(reading, (void __iomem *)(hwif->dma_base + ATA_DMA_CMD));
+> +		writeb(rw, (void __iomem *)(hwif->dma_base + ATA_DMA_CMD));
+>  	else
+> -		outb(reading, hwif->dma_base + ATA_DMA_CMD);
+> +		outb(rw, hwif->dma_base + ATA_DMA_CMD);
+>  
+>  	/* read DMA status for INTR & ERROR flags */
+>  	dma_stat = hwif->dma_ops->dma_sff_read_status(hwif);
+> Index: b/drivers/ide/ide-dma.c
+> ===================================================================
+> --- a/drivers/ide/ide-dma.c
+> +++ b/drivers/ide/ide-dma.c
+> @@ -120,7 +120,7 @@ int ide_dma_good_drive(ide_drive_t *driv
+>  /**
+>   *	ide_build_sglist	-	map IDE scatter gather for DMA I/O
+>   *	@drive: the drive to build the DMA table for
+> - *	@rq: the request holding the sg list
+> + *	@cmd: command
+>   *
+>   *	Perform the DMA mapping magic necessary to access the source or
+>   *	target buffers of a request via DMA.  The lower layers of the
+> @@ -128,23 +128,22 @@ int ide_dma_good_drive(ide_drive_t *driv
+>   *	operate in a portable fashion.
+>   */
+>  
+> -int ide_build_sglist(ide_drive_t *drive, struct request *rq)
+> +int ide_build_sglist(ide_drive_t *drive, struct ide_cmd *cmd)
+>  {
+>  	ide_hwif_t *hwif = drive->hwif;
+>  	struct scatterlist *sg = hwif->sg_table;
+> -	struct ide_cmd *cmd = &hwif->cmd;
+>  	int i;
+>  
+> -	ide_map_sg(drive, rq);
+> +	ide_map_sg(drive, cmd);
+>  
+> -	if (rq_data_dir(rq) == READ)
+> -		cmd->sg_dma_direction = DMA_FROM_DEVICE;
+> -	else
+> +	if (cmd->tf_flags & IDE_TFLAG_WRITE)
+>  		cmd->sg_dma_direction = DMA_TO_DEVICE;
+> +	else
+> +		cmd->sg_dma_direction = DMA_FROM_DEVICE;
+>  
+>  	i = dma_map_sg(hwif->dev, sg, cmd->sg_nents, cmd->sg_dma_direction);
+>  	if (i == 0)
+> -		ide_map_sg(drive, rq);
+> +		ide_map_sg(drive, cmd);
+>  
+>  	return i;
+>  }
+> Index: b/drivers/ide/ide-floppy.c
+> ===================================================================
+> --- a/drivers/ide/ide-floppy.c
+> +++ b/drivers/ide/ide-floppy.c
+> @@ -285,8 +285,12 @@ static ide_startstop_t ide_floppy_do_req
+>  		goto out_end;
+>  	}
+>  
+> +	if (rq_data_dir(rq))
+> +		cmd->tf_flags |= IDE_TFLAG_WRITE;
+> +	cmd->rq = rq;
+> +
+>  	ide_init_sg_cmd(cmd, rq->nr_sectors);
+> -	ide_map_sg(drive, rq);
+> +	ide_map_sg(drive, cmd);
+
+How about we push those mappings in ide_issue_pc() in the else-branch
+after we've tried setting up dma and we've failed? This way we don't
+have to do that in the ->do_request of every device and do it for all at
+one place instead. Only ide-cd will have to have ->ide_io_buffers for
+PIO transfers (which I was working on before bugs :))
+
+[..]
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Regards/Gruss,
+    Boris.
