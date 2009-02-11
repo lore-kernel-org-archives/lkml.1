@@ -1,53 +1,315 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757969AbZBKTDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbZBKTQF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757969AbZBKTDu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 14:03:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755778AbZBKTDk
+	id S1756547AbZBKTQF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 14:16:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755387AbZBKTPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 14:03:40 -0500
-Received: from sous-sol.org ([216.99.217.87]:56052 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752567AbZBKTDj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 14:03:39 -0500
-Date: Wed, 11 Feb 2009 10:59:45 -0800
-From: Chris Wright <chrisw@sous-sol.org>
-To: Fenghua Yu <fenghua.yu@intel.com>
-Cc: David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.sc.intel.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
-       Tomas Winkler <tomas.winkler@intel.com>, Zhu Yi <yi.zhu@intel.com>,
-       Chris Wright <chrisw@sous-sol.org>, LKML <linux-kernel@vger.kernel.org>,
-       iommu@lists.linux-foundation.org
-Subject: Re: [PATCH]iwlan dma mapping read and write changes
-Message-ID: <20090211185945.GQ27684@sequoia.sous-sol.org>
-References: <20081001165606.GA21279@linux-os.sc.intel.com> <20090211182648.GA1661@linux-os.sc.intel.com>
+	Wed, 11 Feb 2009 14:15:54 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:60213 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755114AbZBKTPw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 14:15:52 -0500
+Date: Wed, 11 Feb 2009 14:12:12 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: davem@davemloft.net
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org
+Subject: pull request: wireless-2.6 2009-02-11
+Message-ID: <20090211191212.GA7033@tuxdriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090211182648.GA1661@linux-os.sc.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Fenghua Yu (fenghua.yu@intel.com) wrote:
-> When iwlan runs on IOMMU, IOMMU generates a lot of PTE write faults because PTE
-> write bit is not set on some of PTE's. This is because iwlan driver calls DMA
-> mapping with PCI_DMA_TODEVICE which is read only in mapping PTE. But iwlan device
-> actually writes to the mapped page to update its contents. This issue is not
-> exposed in swiotlb. But VT-d hardware can capture this fault and stop the fault
-> transaction.
-> 
-> The following patch fixes the issue.
+Dave,
 
-Yes, plain old driver bug!  This fixes the iwlagn vt-d issue.
+Here are a few more intended for 2.6.29.  The ath5k one is already in
+-next, but it turns-out to affect 2.6.29 as well.  The two zd1211rw ones
+are one-liners that enable new hardware for that driver.
 
+The iwlwifi patch corrects a problem (introduced by the previous iwlwifi
+fix) that disables the iwlwifi devices after suspend/resume.  It will
+conflict with what is already in -next -- just take the hunks that are
+already in -next and ignore the hunks introduced here.
 
-> Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+Please let me know if there are problems!
 
-Tested-by: Chris Wright <chrisw@sous-sol.org>
+Thanks,
 
-thanks,
-chris
+John
+
+---
+
+Individual patches are available here:
+
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
+
+---
+
+The following changes since commit 7b7a799d664a46eec6cb7de200c90f40730497a7:
+  Meelis Roos (1):
+        sunhme: Fix Quattro HME irq registration on proble failures
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
+
+Bob Copeland (1):
+      ath5k: fix bf->skb==NULL panic in ath5k_tasklet_rx
+
+Hin-Tak Leung (2):
+      zd1211rw: adding 0ace:0xa211 as a ZD1211 device
+      zd1211rw: treat MAXIM_NEW_RF(0x08) as UW2453_RF(0x09) for TP-Link WN322/422G
+
+Johannes Berg (1):
+      mac80211: restrict to AP in outgoing interface heuristic
+
+Reinette Chatre (1):
+      iwlwifi: fix suspend/resume and its usage of pci saved state
+
+ drivers/net/wireless/ath5k/base.c           |   85 +++++++++++++++++----------
+ drivers/net/wireless/iwlwifi/iwl-agn.c      |   15 ++++-
+ drivers/net/wireless/iwlwifi/iwl3945-base.c |   15 ++++-
+ drivers/net/wireless/zd1211rw/zd_rf.c       |    1 +
+ drivers/net/wireless/zd1211rw/zd_usb.c      |    1 +
+ net/mac80211/tx.c                           |    2 +
+ 6 files changed, 83 insertions(+), 36 deletions(-)
+
+diff --git a/drivers/net/wireless/ath5k/base.c b/drivers/net/wireless/ath5k/base.c
+index a533ed6..1d77ee9 100644
+--- a/drivers/net/wireless/ath5k/base.c
++++ b/drivers/net/wireless/ath5k/base.c
+@@ -1098,6 +1098,42 @@ ath5k_hw_to_driver_rix(struct ath5k_softc *sc, int hw_rix)
+ * Buffers setup *
+ \***************/
+ 
++static
++struct sk_buff *ath5k_rx_skb_alloc(struct ath5k_softc *sc, dma_addr_t *skb_addr)
++{
++	struct sk_buff *skb;
++	unsigned int off;
++
++	/*
++	 * Allocate buffer with headroom_needed space for the
++	 * fake physical layer header at the start.
++	 */
++	skb = dev_alloc_skb(sc->rxbufsize + sc->cachelsz - 1);
++
++	if (!skb) {
++		ATH5K_ERR(sc, "can't alloc skbuff of size %u\n",
++				sc->rxbufsize + sc->cachelsz - 1);
++		return NULL;
++	}
++	/*
++	 * Cache-line-align.  This is important (for the
++	 * 5210 at least) as not doing so causes bogus data
++	 * in rx'd frames.
++	 */
++	off = ((unsigned long)skb->data) % sc->cachelsz;
++	if (off != 0)
++		skb_reserve(skb, sc->cachelsz - off);
++
++	*skb_addr = pci_map_single(sc->pdev,
++		skb->data, sc->rxbufsize, PCI_DMA_FROMDEVICE);
++	if (unlikely(pci_dma_mapping_error(sc->pdev, *skb_addr))) {
++		ATH5K_ERR(sc, "%s: DMA mapping failed\n", __func__);
++		dev_kfree_skb(skb);
++		return NULL;
++	}
++	return skb;
++}
++
+ static int
+ ath5k_rxbuf_setup(struct ath5k_softc *sc, struct ath5k_buf *bf)
+ {
+@@ -1105,37 +1141,11 @@ ath5k_rxbuf_setup(struct ath5k_softc *sc, struct ath5k_buf *bf)
+ 	struct sk_buff *skb = bf->skb;
+ 	struct ath5k_desc *ds;
+ 
+-	if (likely(skb == NULL)) {
+-		unsigned int off;
+-
+-		/*
+-		 * Allocate buffer with headroom_needed space for the
+-		 * fake physical layer header at the start.
+-		 */
+-		skb = dev_alloc_skb(sc->rxbufsize + sc->cachelsz - 1);
+-		if (unlikely(skb == NULL)) {
+-			ATH5K_ERR(sc, "can't alloc skbuff of size %u\n",
+-					sc->rxbufsize + sc->cachelsz - 1);
++	if (!skb) {
++		skb = ath5k_rx_skb_alloc(sc, &bf->skbaddr);
++		if (!skb)
+ 			return -ENOMEM;
+-		}
+-		/*
+-		 * Cache-line-align.  This is important (for the
+-		 * 5210 at least) as not doing so causes bogus data
+-		 * in rx'd frames.
+-		 */
+-		off = ((unsigned long)skb->data) % sc->cachelsz;
+-		if (off != 0)
+-			skb_reserve(skb, sc->cachelsz - off);
+-
+ 		bf->skb = skb;
+-		bf->skbaddr = pci_map_single(sc->pdev,
+-			skb->data, sc->rxbufsize, PCI_DMA_FROMDEVICE);
+-		if (unlikely(pci_dma_mapping_error(sc->pdev, bf->skbaddr))) {
+-			ATH5K_ERR(sc, "%s: DMA mapping failed\n", __func__);
+-			dev_kfree_skb(skb);
+-			bf->skb = NULL;
+-			return -ENOMEM;
+-		}
+ 	}
+ 
+ 	/*
+@@ -1664,7 +1674,8 @@ ath5k_tasklet_rx(unsigned long data)
+ {
+ 	struct ieee80211_rx_status rxs = {};
+ 	struct ath5k_rx_status rs = {};
+-	struct sk_buff *skb;
++	struct sk_buff *skb, *next_skb;
++	dma_addr_t next_skb_addr;
+ 	struct ath5k_softc *sc = (void *)data;
+ 	struct ath5k_buf *bf, *bf_last;
+ 	struct ath5k_desc *ds;
+@@ -1749,10 +1760,17 @@ ath5k_tasklet_rx(unsigned long data)
+ 				goto next;
+ 		}
+ accept:
++		next_skb = ath5k_rx_skb_alloc(sc, &next_skb_addr);
++
++		/*
++		 * If we can't replace bf->skb with a new skb under memory
++		 * pressure, just skip this packet
++		 */
++		if (!next_skb)
++			goto next;
++
+ 		pci_unmap_single(sc->pdev, bf->skbaddr, sc->rxbufsize,
+ 				PCI_DMA_FROMDEVICE);
+-		bf->skb = NULL;
+-
+ 		skb_put(skb, rs.rs_datalen);
+ 
+ 		/* The MAC header is padded to have 32-bit boundary if the
+@@ -1825,6 +1843,9 @@ accept:
+ 			ath5k_check_ibss_tsf(sc, skb, &rxs);
+ 
+ 		__ieee80211_rx(sc->hw, skb, &rxs);
++
++		bf->skb = next_skb;
++		bf->skbaddr = next_skb_addr;
+ next:
+ 		list_move_tail(&bf->list, &sc->rxbuf);
+ 	} while (ath5k_rxbuf_setup(sc, bf) == 0);
+diff --git a/drivers/net/wireless/iwlwifi/iwl-agn.c b/drivers/net/wireless/iwlwifi/iwl-agn.c
+index c01ea48..36bafeb 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-agn.c
++++ b/drivers/net/wireless/iwlwifi/iwl-agn.c
+@@ -4042,7 +4042,19 @@ static int iwl_pci_suspend(struct pci_dev *pdev, pm_message_t state)
+ 		priv->is_open = 1;
+ 	}
+ 
+-	pci_save_state(pdev);
++	/* pci driver assumes state will be saved in this function.
++	 * pci state is saved and device disabled when interface is
++	 * stopped, so at this time pci device will always be disabled -
++	 * whether interface was started or not. saving pci state now will
++	 * cause saved state be that of a disabled device, which will cause
++	 * problems during resume in that we will end up with a disabled device.
++	 *
++	 * indicate that the current saved state (from when interface was
++	 * stopped) is valid. if interface was never up at time of suspend
++	 * then the saved state will still be valid as it was saved during
++	 * .probe. */
++	pdev->state_saved = true;
++
+ 	pci_set_power_state(pdev, PCI_D3hot);
+ 
+ 	return 0;
+@@ -4053,7 +4065,6 @@ static int iwl_pci_resume(struct pci_dev *pdev)
+ 	struct iwl_priv *priv = pci_get_drvdata(pdev);
+ 
+ 	pci_set_power_state(pdev, PCI_D0);
+-	pci_restore_state(pdev);
+ 
+ 	if (priv->is_open)
+ 		iwl_mac_start(priv->hw);
+diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+index 5b44d32..93be74a 100644
+--- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
++++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+@@ -8143,7 +8143,19 @@ static int iwl3945_pci_suspend(struct pci_dev *pdev, pm_message_t state)
+ 		priv->is_open = 1;
+ 	}
+ 
+-	pci_save_state(pdev);
++	/* pci driver assumes state will be saved in this function.
++	 * pci state is saved and device disabled when interface is
++	 * stopped, so at this time pci device will always be disabled -
++	 * whether interface was started or not. saving pci state now will
++	 * cause saved state be that of a disabled device, which will cause
++	 * problems during resume in that we will end up with a disabled device.
++	 *
++	 * indicate that the current saved state (from when interface was
++	 * stopped) is valid. if interface was never up at time of suspend
++	 * then the saved state will still be valid as it was saved during
++	 * .probe. */
++	pdev->state_saved = true;
++
+ 	pci_set_power_state(pdev, PCI_D3hot);
+ 
+ 	return 0;
+@@ -8154,7 +8166,6 @@ static int iwl3945_pci_resume(struct pci_dev *pdev)
+ 	struct iwl3945_priv *priv = pci_get_drvdata(pdev);
+ 
+ 	pci_set_power_state(pdev, PCI_D0);
+-	pci_restore_state(pdev);
+ 
+ 	if (priv->is_open)
+ 		iwl3945_mac_start(priv->hw);
+diff --git a/drivers/net/wireless/zd1211rw/zd_rf.c b/drivers/net/wireless/zd1211rw/zd_rf.c
+index 7207bfd..c875ee0 100644
+--- a/drivers/net/wireless/zd1211rw/zd_rf.c
++++ b/drivers/net/wireless/zd1211rw/zd_rf.c
+@@ -86,6 +86,7 @@ int zd_rf_init_hw(struct zd_rf *rf, u8 type)
+ 	case AL7230B_RF:
+ 		r = zd_rf_init_al7230b(rf);
+ 		break;
++	case MAXIM_NEW_RF:
+ 	case UW2453_RF:
+ 		r = zd_rf_init_uw2453(rf);
+ 		break;
+diff --git a/drivers/net/wireless/zd1211rw/zd_usb.c b/drivers/net/wireless/zd1211rw/zd_usb.c
+index 17527f7..f0e5e94 100644
+--- a/drivers/net/wireless/zd1211rw/zd_usb.c
++++ b/drivers/net/wireless/zd1211rw/zd_usb.c
+@@ -37,6 +37,7 @@
+ static struct usb_device_id usb_ids[] = {
+ 	/* ZD1211 */
+ 	{ USB_DEVICE(0x0ace, 0x1211), .driver_info = DEVICE_ZD1211 },
++	{ USB_DEVICE(0x0ace, 0xa211), .driver_info = DEVICE_ZD1211 },
+ 	{ USB_DEVICE(0x07b8, 0x6001), .driver_info = DEVICE_ZD1211 },
+ 	{ USB_DEVICE(0x126f, 0xa006), .driver_info = DEVICE_ZD1211 },
+ 	{ USB_DEVICE(0x6891, 0xa727), .driver_info = DEVICE_ZD1211 },
+diff --git a/net/mac80211/tx.c b/net/mac80211/tx.c
+index 4278e54..94de503 100644
+--- a/net/mac80211/tx.c
++++ b/net/mac80211/tx.c
+@@ -1343,6 +1343,8 @@ int ieee80211_master_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 						list) {
+ 				if (!netif_running(sdata->dev))
+ 					continue;
++				if (sdata->vif.type != NL80211_IFTYPE_AP)
++					continue;
+ 				if (compare_ether_addr(sdata->dev->dev_addr,
+ 						       hdr->addr2)) {
+ 					dev_hold(sdata->dev);
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
