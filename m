@@ -1,73 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756561AbZBKBT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbZBKBTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756561AbZBKBT0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 20:19:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755763AbZBKBSx
+	id S1757233AbZBKBTn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 20:19:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755958AbZBKBSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 10 Feb 2009 20:18:54 -0500
+Received: from mx1.suse.de ([195.135.220.2]:48371 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755533AbZBKBSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 10 Feb 2009 20:18:53 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:59162 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755368AbZBKBSv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 20:18:51 -0500
-X-IronPort-AV: E=Sophos;i="4.38,188,1233532800"; 
-   d="scan'208";a="247038214"
-From: Roland Dreier <rdreier@cisco.com>
-To: David Miller <davem@davemloft.net>
-Cc: swise@opengridcomputing.com, randy.dunlap@oracle.com,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Subject: Re: [ofa-general] [PATCH 2.6.30] RDMA/cxgb3: Remove modulo math.
-References: <20090210184448.22891.31130.stgit@dell3.ogc.int>
-	<adamyctajv8.fsf@cisco.com> <499223F8.1010204@opengridcomputing.com>
-	<20090210.170740.208470781.davem@davemloft.net>
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 10 Feb 2009 17:18:49 -0800
-In-Reply-To: <20090210.170740.208470781.davem@davemloft.net> (David Miller's
-	message of "Tue, 10 Feb 2009 17:07:40 -0800 (PST)")
-Message-ID: <adaeiy5ahza.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+Date: Wed, 11 Feb 2009 02:18:48 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@suse.cz>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [patch 0/2] Make the touchpad on the MSI Wind netbook work
+In-Reply-To: <20090210171358.78c34d41@infradead.org>
+Message-ID: <alpine.LNX.1.10.0902110216190.11630@jikos.suse.cz>
+References: <20090204191540.2d6abd87@infradead.org> <20090210202558.GH1382@ucw.cz> <200902102300.19065.rjw@sisk.pl> <alpine.LRH.1.10.0902110156390.22097@twin.jikos.cz> <20090210171358.78c34d41@infradead.org>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 11 Feb 2009 01:18:50.0667 (UTC) FILETIME=[B2497FB0:01C98BE6]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Is this required?  Strength reduction optimization should do this
-> > automatically (and the code has been there for quite a while, so
-> > obviously it isn't causing problems)
+On Tue, 10 Feb 2009, Arjan van de Ven wrote:
 
-> GCC won't optimize that modulus the way you expect, try for yourself
-> and look at the assembler if you don't believe me. :-)
+> > > From what I have heard there are different models of MSI Wind out 
+> > > there, with different set of hardware configurations.
+> > Arjan, Rafael, could you please provide the dmidecode outputs for the 
+> > working and non-working systems, so that we can see what are the 
+> > differences?
+> does this matter for the patch ?
 
-Are you thinking of the case when there are signed integers involved and
-so "% modulus" might produce a different result than "& (modulus - 1)"
-(because the compiler can't know that things are never negative)?
-Because in this case the compiler seems to do what I thought it would;
-the relevant part of the i386 assembly for
+Only in a very minor way -- if the board name in the DMI is the same, we 
+could avoid performing the extra resets when not needed by specifying a 
+different DMI match criteria.
 
-		wqe->recv.sgl[i].to = cpu_to_be64(((u32) wr->sg_list[i].addr) %
-				(1UL << (12 + page_size[i])));
-
-is
-
-        movl    %eax, 28(%edi,%ebx)     # <variable>.length,
-        <variable>.len
-        movzbl  28(%esp,%esi), %ecx     # page_size, tmp89
-        movl    $1, %eax        #, tmp92
-        addl    $12, %ecx       #, tmp90
-        sall    %cl, %eax       # tmp90, tmp92
-        movl    (%esp), %ecx    # wr,
-        decl    %eax    # tmp93
-        movl    12(%ecx), %edx  # <variable>.sg_list, <variable>.sg_list
-        andl    (%edx,%ebx), %eax       # <variable>.addr, tmp93
-
-ie the compiler computes the modulus, then does decl to compute
-modulus-1 and then &s with it.
-
-Or am I misunderstanding your point?
-
- - R.
+-- 
+Jiri Kosina
+SUSE Labs
