@@ -1,95 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758162AbZBKWKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758609AbZBKWLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758162AbZBKWKy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 17:10:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755017AbZBKWKp
+	id S1758609AbZBKWLY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 17:11:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbZBKWLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 17:10:45 -0500
-Received: from mga09.intel.com ([134.134.136.24]:38756 "EHLO mga09.intel.com"
+	Wed, 11 Feb 2009 17:11:12 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:53588 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753429AbZBKWKo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 17:10:44 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,194,1233561600"; 
-   d="scan'208";a="489243202"
-From: "Winkler, Tomas" <tomas.winkler@intel.com>
-To: Johannes Berg <johannes@sipsolutions.net>,
-       "Yu, Fenghua" <fenghua.yu@intel.com>
-CC: "Yu, Fenghua" <fenghua.yu@intel.com>,
-       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "Grumbach, Emmanuel" <emmanuel.grumbach@intel.com>,
-       "Zhu, Yi" <yi.zhu@intel.com>, Chris Wright <chrisw@sous-sol.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>
-Date: Thu, 12 Feb 2009 00:10:16 +0200
-Subject: RE: [PATCH]iwlan dma mapping read and write changes
-Thread-Topic: [PATCH]iwlan dma mapping read and write changes
-Thread-Index: AcmMktofl5rEWi+eSHmBjEuWh0f/UwAAktnA
-Message-ID: <6F5C1D715B2DA5498A628E6B9C124F04F633E2FA@hasmsx504.ger.corp.intel.com>
-References: <20081001165606.GA21279@linux-os.sc.intel.com>
-	 <20090211182648.GA1661@linux-os.sc.intel.com>
-	 <6F5C1D715B2DA5498A628E6B9C124F04F633E2CD@hasmsx504.ger.corp.intel.com>
-	 <1234388027.16004.50.camel@johannes.local>
-	 <6F5C1D715B2DA5498A628E6B9C124F04F633E2D5@hasmsx504.ger.corp.intel.com>
-	 <1234388845.16004.53.camel@johannes.local>
- <1234389007.16004.55.camel@johannes.local>
-In-Reply-To: <1234389007.16004.55.camel@johannes.local>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
+	id S1755961AbZBKWLL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 17:11:11 -0500
+Date: Wed, 11 Feb 2009 23:08:21 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Markus Metzger <markus.t.metzger@intel.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, markus.t.metzger@gmail.com, roland@redhat.com,
+       eranian@googlemail.com, juan.villacis@intel.com
+Subject: Re: [patch] x86, ptrace: fix double-free on race
+Message-ID: <20090211220821.GA17637@redhat.com>
+References: <20090211151027.A16643@sedona.ch.intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090211151027.A16643@sedona.ch.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
->-----Original Message-----
->From: Johannes Berg [mailto:johannes@sipsolutions.net]
->Sent: Wednesday, February 11, 2009 11:50 PM
->To: Winkler, Tomas
->Cc: Yu, Fenghua; David Woodhouse; Ingo Molnar; Stephen Rothwell; Grumbach,
->Emmanuel; Zhu, Yi; Chris Wright; LKML; iommu@lists.linux-foundation.org
->Subject: RE: [PATCH]iwlan dma mapping read and write changes
+On 02/11, Markus Metzger wrote:
 >
->On Wed, 2009-02-11 at 22:47 +0100, Johannes Berg wrote:
->> > >> Indeed the firmware/ucode write back to host memory to update retry
->> > >> counter for APMDU packets. I'm not sure if this is needed for legacy
->> > >> traffic, though.
->> > >
->> > >I don't think they can be seeing AMPDU packets since that is, well,
->> > >broken?
->> >
->> > Currently I'm not aware of any other cases where memory is accessed
->> > back but I may have not complete info.  Will be back with the answer
->> > tomorrow.
->>
->> I don't think it really matters, since AMPDU packets will be fixed soon,
->> and for those you know it's necessary (and the report says that under
->> some other circumstances it's also necessary). Unless there'd be some
->> benefit from using BIDI only when we know it'll be needed, and using
->> TODEV in the other cases?
+> Ptrace_detach() races with __ptrace_unlink() if the traced task is
+> reaped while detaching. This might cause a double-free of the BTS
+> buffer.
 >
->Or if there's a firmware bug.
+> Change the ptrace_detach() path to only do the memory accounting in
+> ptrace_bts_detach() and leave the buffer free to ptrace_bts_untrace()
+> which will be called from __ptrace_unlink().
 
-That's why it's better to clear the picture. 
-Fenghua
-What exact HW do you get this error?
+Thanks Markus, I think this should close the "really bad" problems
+for 2.6.29.
 
-Thanks
-Tomas 
 
----------------------------------------------------------------------
-Intel Israel (74) Limited
+Off-topic. This is subjective, so please feel to ignore, but personally
+I dislike the usage of ptrace_fork() in copy_process(). And ptrace_fork()
+itself.
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+To me, this has nothing to do with ptrace at all. copy_process() or
+dup_task_struct() just must clear/tweak some fields after memcpy().
+
+Perhaps it is better to kill all these ptrace_fork/arch_ptrace_fork/
+x86_ptrace_fork/ptrace_bts_fork helpers, and make a single function
+
+	static inline void arch_bts_init(struct task_struct *p)
+	{
+	#ifdef CONFIG_X86_PTRACE_BTS
+		if (unlikely(p->bts)) {
+			p->bts = NULL;
+			p->bts_buffer = NULL;
+			p->bts_size = 0;
+			p->thread.bts_ovfl_signal = 0;
+		}
+	#endif /* CONFIG_X86_PTRACE_BTS */
+	}
+
+which is called by arch_dup_task_struct(). The "if (ptrace)" check
+in copy_process() is just wrong imho, even if it is currently correct.
+Let's suppose we add, say, bts_spinlock to the fields above. In that
+case we must initialize it even if the forking task is not ptraced.
+
+Of course, in any case this is not 2.6.29 material.
+
+
+Btw, just curious, bts_ovfl_signal is not used, except the user can
+set/get it via PTRACE_BTS_CONFIG/PTRACE_BTS_STATUS ?
+
+Oleg.
 
