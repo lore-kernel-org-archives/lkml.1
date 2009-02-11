@@ -1,82 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbZBKLXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755731AbZBKLdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756161AbZBKLXv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 06:23:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754629AbZBKLXn
+	id S1755731AbZBKLdd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 06:33:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbZBKLdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 06:23:43 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46720 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751156AbZBKLXm (ORCPT
+	Wed, 11 Feb 2009 06:33:25 -0500
+Received: from an-out-0708.google.com ([209.85.132.240]:27813 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754629AbZBKLdY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 06:23:42 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] mm: remove zone->prev_prioriy
-Cc: kosaki.motohiro@jp.fujitsu.com, MinChan Kim <minchan.kim@gmail.com>,
-       kamezawa.hiroyu@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, riel@redhat.com
-In-Reply-To: <20090211031201.cace1c68.akpm@linux-foundation.org>
-References: <20090211195252.C3BD.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090211031201.cace1c68.akpm@linux-foundation.org>
-Message-Id: <20090211201706.C3C0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 11 Feb 2009 06:33:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ixNgLVhv1yHceUauj9r7/CclCIT3R0hGh/ALAU1rEbFusNSoi9QhPn0vtXqwsUYjp2
+         XobD4f4u5R9/iI5DUYmj+rrDZCqY1Vm5eU9wrCavV8iNGNFtsa4zr660GCSeGZPjzaTt
+         uxyttp8qXVMvvekDnJZ1JOeaseAv1mKxoQan0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+In-Reply-To: <1234295613.4699.1.camel@laptop>
+References: <b6a2d2e20902091130ha452a97rcfaa2972bfdbe710@mail.gmail.com>
+	 <1234209174.5951.165.camel@laptop>
+	 <b6a2d2e20902091204p2391799p160ce13971e9f779@mail.gmail.com>
+	 <1234271177.23438.24.camel@twins>
+	 <b6a2d2e20902100646q6c7073cse86b8f5790a120ac@mail.gmail.com>
+	 <1234281602.23438.96.camel@twins>
+	 <b6a2d2e20902100932i475c1ee8va99de6e433a6d89a@mail.gmail.com>
+	 <1234295613.4699.1.camel@laptop>
+Date: Wed, 11 Feb 2009 11:33:22 +0000
+Message-ID: <b6a2d2e20902110333j37cf76b4v73abc2be3631738c@mail.gmail.com>
+Subject: Re: cgroup, RT reservation per core(s)?
+From: Rolando Martins <rolando.martins@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Wed, 11 Feb 2009 20:23:39 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 11 Feb 2009 20:06:46 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> 
-> > > On Tue, 10 Feb 2009 19:57:01 +0900
-> > > MinChan Kim <minchan.kim@gmail.com> wrote:
-> > > 
-> > > > As you know, prev_priority is used as a measure of how much stress page reclaim.
-> > > > But now we doesn't need it due to split-lru's way.
-> > > > 
-> > > > I think it would be better to remain why prev_priority isn't needed any more
-> > > > and how split-lru can replace prev_priority's role in changelog.
-> > > > 
-> > > > In future, it help mm newbies understand change history, I think.
-> > > 
-> > > Yes, I'd be fascinated to see that explanation.
-> > > 
-> > > In http://groups.google.pn/group/linux.kernel/browse_thread/thread/fea9c9a0b43162a1
-> > > it was asserted that we intend to use prev_priority again in the future.
-> > > 
-> > > We discussed this back in November:
-> > > http://lkml.indiana.edu/hypermail/linux/kernel/0811.2/index.html#00001
-> > > 
-> > > And I think that I still think that the VM got worse due to its (new)
-> > > failure to track previous state.  IIRC, the response to that concern
-> > > was quite similar to handwavy waffling.
-> > 
-> > Yes.
-> > I still think it's valuable code.
-> > I think, In theory, VM sould take parallel reclaim bonus.
-> 
-> prev_priority had nothing to do with concurrent reclaim?
-> 
-> It was there so that when a task enters direct reclaim against a zone,
-> it will immediately adopt the state which the task which most recently
-> ran direct reclaim had.
-> 
-> Without this feature, each time a task enters direct reclaim it will need
-> to "relearn" that state - ramping up, making probably-incorrect
-> decisions as it does so.
+On 2/10/09, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Tue, 2009-02-10 at 17:32 +0000, Rolando Martins wrote:
+>  >
+>  > For helping others:
+>  >
+>  > mkdir /dev/cpuset
+>  > mount -t cgroup -o cpuset none /dev/cpuset
+>  > cd /dev/cpuset
+>  > echo 0 > cpuset.sched_load_balance
+>
+>
+> I'm not quite sure that its allowed to disable load-balance before
+>  creating children. Other than that it looks ok.
+>
+>
+>  > mkdir A
+>  > echo 0-1 > A/cpuset.cpus
+>  > echo 0 > A/cpuset.mems
+>  > mkdir B
+>  > echo 2-3 > B/cpuset.cpus
+>  > echo 0 > B/cpuset.mems
+>  >
+>  >
+>  > mount -t cgroup -o cpu none /dev/sched_domain
+>  > cd /dev/sched_domain
+>  > mkdir 1
+>  > echo cpu.rt_runtime_ns > 1/cpu.rt_runtime_ns
+>  > mkdir 1/2
+>  > echo 33333 > 1/2/cpu.rt_runtime_ns
+>  > mkdir 1/3
+>  > echo 33333 > 1/3/cpu.rt_runtime_ns
+>  > mkdir 1/4
+>  > echo 33333 > 1/3/cpu.rt_runtime_ns
+>  >
+>  > For example, setting the current shell to a specific cpuset(A) and
+>  > sched(1/2):
+>  >
+>  > echo $$ > /dev/cpuset/A/tasks
+>  > echo $$ > /dev/sched_domain/1/2/tasks
+>  > "execute program"
+>
+>
 
-Yes, I perfectly agree to you.
-theorically, prev_priority is very valuable stuff.
+Hi again,
 
-rest only problem is, I should found good workload and re-integrate
-prev_priority to reclaim code.
+is there any way to have multiple "distinct" sched domains, i.e.:
+mount -t cgroup -o cpu none /dev/sched_domain_0
+... setup sched_domain_0 (ex:  90% RT, 10% Others)
+mount -t cgroup -o cpu none /dev/sched_domain_1
+... setup sched_domain_1 (ex:  20% RT, 80% Others)
+Then give sched_domain_0 to cpuset A and sched_domain_1 to B?
 
-I (and many VM people) strongly dislike any regression.
-then, if I can't find good workload, I can't change any VM behavior.
-
-Do you have any suggestion?
-
-
-
+Thanks,
+Rol
