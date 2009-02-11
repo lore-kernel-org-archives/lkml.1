@@ -1,190 +1,365 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbZBKF2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754115AbZBKF6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754131AbZBKF2i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 00:28:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750730AbZBKF23
+	id S1754115AbZBKF6W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 00:58:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750934AbZBKF6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 00:28:29 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:47724 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750719AbZBKF22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 00:28:28 -0500
-Date: Tue, 10 Feb 2009 21:28:28 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
-	(repost)
-Message-ID: <20090211052828.GQ6742@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090209041153.GR7120@linux.vnet.ibm.com> <20090209045352.GA28653@Krystal> <20090209051737.GA29254@Krystal> <20090209070317.GA31583@Krystal> <20090209153305.GA6802@linux.vnet.ibm.com> <20090210191731.GA20867@Krystal> <20090210211643.GL6742@linux.vnet.ibm.com> <20090210212833.GA27578@Krystal> <20090210222115.GN6742@linux.vnet.ibm.com> <20090211005701.GA550@Krystal>
+	Wed, 11 Feb 2009 00:58:11 -0500
+Received: from an-out-0708.google.com ([209.85.132.240]:4859 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750760AbZBKF6J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 00:58:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=pJ6rgeTfcgXJ34H7e7nOabgZeKR/ys5xBovM6fLYRLuPXlcR4WOjHgzNASMAtauIXt
+         eOTNlgBAaC2Pd/oztLsBvU7YSavem6xGT66pSCpWSqiVvGaGW4Q/vNYLH/fVxzPj4Fv8
+         r2g4UIVEhPNmTrhzWjN7jDVTXNoCqKmIQbpao=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090211005701.GA550@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20090211051017.GA641@kamineko.org>
+References: <cc0fa41f0902091953y2ab718fcmdbd1c42acf270e08@mail.gmail.com>
+	 <20090210045803.GA31755@kamineko.org>
+	 <cc0fa41f0902092215i44823962t39033f6b987f273f@mail.gmail.com>
+	 <20090210110802.GB31755@kamineko.org>
+	 <cc0fa41f0902101810m77d7054ar7df7b3804cc61e66@mail.gmail.com>
+	 <cc0fa41f0902101815s149b3b06mb3fbb72363b49765@mail.gmail.com>
+	 <20090211051017.GA641@kamineko.org>
+Date: Wed, 11 Feb 2009 03:58:07 -0200
+Message-ID: <cc0fa41f0902102158y146aa60dmcddbe4c6be2ad56f@mail.gmail.com>
+Subject: Re: ACPI regression in 2.6.29 - cpufreq_performance doesn't work
+From: Guilherme Malschitzky Schroeder <guilherme.m.schroeder@gmail.com>
+To: Mattia Dongili <malattia@linux.it>
+Cc: linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com,
+       CPUFreq Mailing List <cpufreq@lists.linux.org.uk>,
+       ACPI Devel Mailing List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 07:57:01PM -0500, Mathieu Desnoyers wrote:
-> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > On Tue, Feb 10, 2009 at 04:28:33PM -0500, Mathieu Desnoyers wrote:
-> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > On Tue, Feb 10, 2009 at 02:17:31PM -0500, Mathieu Desnoyers wrote:
-> > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > > > On Mon, Feb 09, 2009 at 02:03:17AM -0500, Mathieu Desnoyers wrote:
-> > > > > > 
-> > > > > > [ . . . ]
-> > > > > > 
-> > > > > > > I just added modified rcutorture.h and api.h from your git tree
-> > > > > > > specifically for an urcutorture program to the repository. Some results :
-> > > > > > > 
-> > > > > > > 8-way x86_64
-> > > > > > > E5405 @2 GHZ
-> > > > > > > 
-> > > > > > > ./urcutorture 8 perf
-> > > > > > > n_reads: 1937650000  n_updates: 3  nreaders: 8  nupdaters: 1 duration: 1
-> > > > > > > ns/read: 4.12871  ns/update: 3.33333e+08
-> > > > > > > 
-> > > > > > > ./urcutorture 8 uperf
-> > > > > > > n_reads: 0  n_updates: 4413892  nreaders: 0  nupdaters: 8 duration: 1
-> > > > > > > ns/read: nan  ns/update: 1812.46
-> > > > > > > 
-> > > > > > > n_reads: 98844204  n_updates: 10  n_mberror: 0
-> > > > > > > rcu_stress_count: 98844171 33 0 0 0 0 0 0 0 0 0
-> > > > > > > 
-> > > > > > > However, I've tried removing the second switch_qparity() call, and the
-> > > > > > > rcutorture test did not detect anything wrong. I also did a variation
-> > > > > > > which calls the "sched_yield" version of the urcu, "urcutorture-yield".
-> > > > > > 
-> > > > > > My confusion -- I was testing my old approach where the memory barriers
-> > > > > > are in rcu_read_lock() and rcu_read_unlock().  To force the failures in
-> > > > > > your signal-handler-memory-barrier approach, I suspect that you are
-> > > > > > going to need a bigger hammer.  In this case, one such bigger hammer
-> > > > > > would be:
-> > > > > > 
-> > > > > > o	Just before exit from the signal handler, do a
-> > > > > > 	pthread_cond_wait() under a pthread_mutex().
-> > > > > > 
-> > > > > > o	In force_mb_all_threads(), refrain from sending a signal to self.
-> > > > > > 
-> > > > > > 	Then it should be safe in force_mb_all_threads() to do a
-> > > > > > 	pthread_cond_broadcast() under the same pthread_mutex().
-> > > > > > 
-> > > > > > This should raise the probability of seeing the failure in the case
-> > > > > > where there is a single switch_qparity().
-> > > > > > 
-> > > > > 
-> > > > > I just did a mb() version of the urcu :
-> > > > > 
-> > > > > (uncomment CFLAGS=+-DDEBUG_FULL_MB in the Makefile)
-> > > > > 
-> > > > > Time per read : 48.4086 cycles
-> > > > > (about 6-7 times slower, as expected)
-> > > > > 
-> > > > > This will be useful especially to increase the chance to trigger races.
-> > > > > 
-> > > > > I tried removing the second parity switch from the writer. The rcu
-> > > > > torture test did not find the problem yet (maybe I am not using the
-> > > > > correct parameters ? It does not run for more than 5 seconds).
-> > > > > 
-> > > > > So I added a "-n" option to test_urcu, so it can make the usleep(1)
-> > > > > between the writes optional. I also changed the yield for a usleep with
-> > > > > random delay. I also now use a circular buffer rather than malloc so we
-> > > > > are sure the memory is not quickly reused by the writer and stays longer
-> > > > > in an invalid state.
-> > > > > 
-> > > > > So what really make the problem appear quickly is to add a delay between
-> > > > > the rcu_dereference and the assertion on the data validity in thr_reader.
-> > > > > 
-> > > > > It now appears after just a few seconds when running
-> > > > > ./test_urcu_yield 20 -r -n
-> > > > > Compiled with CFLAGS=+-DDEBUG_FULL_MB
-> > > > > 
-> > > > > It seem to be much harder to trigger with the signal-based version. It's
-> > > > > expected, because the writer takes about 50 times longer to execute than
-> > > > > with the -DDEBUG_FULL_MB version.
-> > > > > 
-> > > > > So I'll let the ./test_urcu_yield NN -r -n run for a while on the
-> > > > > correct version (with DEBUG_FULL_MB) and see what it gives.
-> > > > 
-> > > > Hmmm...  I had worse luck this time, took three 10-second tries to
-> > > > see a failure:
-> > > > 
-> > > > paulmck@paulmck-laptop:~/paper/perfbook/CodeSamples/defer$ ./rcu_nest32 1 stress
-> > > > n_reads: 44682055  n_updates: 9609503  n_mberror: 0
-> > > > rcu_stress_count: 44679377 2678 0 0 0 0 0 0 0 0 0
-> > > > paulmck@paulmck-laptop:~/paper/perfbook/CodeSamples/defer$ !!
-> > > > ./rcu_nest32 1 stress
-> > > > n_reads: 42281884  n_updates: 9870129  n_mberror: 0
-> > > > rcu_stress_count: 42277756 4128 0 0 0 0 0 0 0 0 0
-> > > > paulmck@paulmck-laptop:~/paper/perfbook/CodeSamples/defer$ !!
-> > > > ./rcu_nest32 1 stress
-> > > > n_reads: 41384304  n_updates: 10040805  n_mberror: 0
-> > > > rcu_stress_count: 41380075 4228 1 0 0 0 0 0 0 0 0
-> > > > paulmck@paulmck-laptop:~/paper/perfbook/CodeSamples/defer$
-> > > > 
-> > > > This is my prototype version, with read-side memory barriers, no
-> > > > signals, and without your initialization-value speedup.
-> > > > 
-> > > 
-> > > It would be interesting to re-sync our trees, or if you can point me to
-> > > a current version of your prototype, I could review it.
-> > 
-> > Look at:
-> > 
-> > 	CodeSamples/defer/rcu_nest32.[hc]
-> > 
-> > In the git archive:
-> > 
-> > 	git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/perfbook.git
-> 
-> flip_counter_and_wait : yours do rcu_gp_ctr += RCU_GP_CTR_BOTTOM_BIT
-> mine : rcu_gp_ctr ^= RCU_GP_CTR_BOTTOM_BIT.
+On Wed, Feb 11, 2009 at 3:10 AM, Mattia Dongili <malattia@linux.it> wrote:
+> On Wed, Feb 11, 2009 at 12:15:35AM -0200, Guilherme Malschitzky Schroeder wrote:
+>> On Tue, Feb 10, 2009 at 9:08 AM, Mattia Dongili <malattia@linux.it> wrote:
+>> > A: Because it messes up the order in which people normally read text.
+>> > Q: Why is top-posting such a bad thing?
+>> > A: Top-posting.
+>> > Q: What is the most annoying thing in e-mail?
+>> >
+>> > On Tue, Feb 10, 2009 at 04:15:00AM -0200, Guilherme Malschitzky Schroeder wrote:
+>> >> yeah mattia, you were right about ondemand module was being used on
+>> >> cpu1, so i couldn't remove it.
+>> >> with this commited patch, both cpu's can now have different speeds.
+>> >
+>> > afair this has always been the case. the only difference the patch
+>> > introduces is telling the BIOS where the coordination is actually done.
+>> >> i was just comparing cat /proc/cpuinfo and didn't notice that cpu0 was
+>> >> at 2268MHz.
+>> >> cpufrequtils will need an update do deal with this change.
+>> >
+>> > why? what's wrong with cpufrequtils?
+>>
+>> The thing i said about changing cpufrequtils it's because cpufreq-set
+>> just set cpu0 governor.
+>> With 2.6.29, it'll need to change cpu1 too from what i have understood right?
+>>
+>> 2.6.28:
+>>
+>> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+>> ondemand
+>> ondemand
+>> # cpufreq-set -g performance
+>> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+>> performance
+>> performance
+>>
+>> 2.6.29:
+>>
+>> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+>> performance
+>> performance
+>> # cpufreq-set -g ondemand
+>> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+>> ondemand
+>> performance
+>
+> Ha! can you check the value for
+> /sys/devices/system/cpu/cpu{0,1}/cpufreq/related_cpus
+> ?
+> or even include the full output of cpufreq-info with both kernels.
 
-Yep, this is before your optimization.
+Here it's:
 
-> Another major difference between our tree is the lack of smp_mb() at the
-> end of flip_counter_and_wait() (in your tree).
-> 
-> Your code does :
-> 
->   smp_mb()
->   switch parity
->   smp_mb()
->   wait for each thread ongoing old gp
->     <<<<<<< ---- missing smp_mb.
->   switch parity
->   smp_mb()
->   wait for each thread ongoing old gp
->   smp_mb()
+2.6.28.4
 
-This should be OK -- or am I missing a failure scenario?
-Keep in mind that I get failures only when omitting a counter
-flip, not with the above code.
+# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+ondemand
+ondemand
+# cpufreq-set -g performance
+# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+performance
+performance
+# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/related_cpus
+0 1
+0 1
+# cpufreq-info
+cpufrequtils 004: cpufreq-info (C) Dominik Brodowski 2004-2006
+Report errors and bugs to cpufreq@lists.linux.org.uk, please.
+analyzing CPU 0:
+  driver: acpi-cpufreq
+  CPUs which need to switch frequency at the same time: 0 1
+  hardware limits: 800 MHz - 2.27 GHz
+  available frequency steps: 2.27 GHz, 2.27 GHz, 1.60 GHz, 800 MHz
+  available cpufreq governors: powersave, performance, ondemand, userspace
+  current policy: frequency should be within 800 MHz and 2.27 GHz.
+                  The governor "performance" may decide which speed to use
+                  within this range.
+  current CPU frequency is 2.27 GHz (asserted by call to hardware).
+  cpufreq stats: 2.27 GHz:45.66%, 2.27 GHz:0.11%, 1.60 GHz:0.21%, 800
+MHz:54.01%  (69)
+analyzing CPU 1:
+  driver: acpi-cpufreq
+  CPUs which need to switch frequency at the same time: 0 1
+  hardware limits: 800 MHz - 2.27 GHz
+  available frequency steps: 2.27 GHz, 2.27 GHz, 1.60 GHz, 800 MHz
+  available cpufreq governors: powersave, performance, ondemand, userspace
+  current policy: frequency should be within 800 MHz and 2.27 GHz.
+                  The governor "performance" may decide which speed to use
+                  within this range.
+  current CPU frequency is 2.27 GHz (asserted by call to hardware).
+  cpufreq stats: 2.27 GHz:45.66%, 2.27 GHz:0.11%, 1.60 GHz:0.21%, 800
+MHz:54.01%  (69)
 
-> I also wonder why you have a smp_mb() after spin_unlock() in your
-> synchronize_rcu() -> if you follow the Linux kernel semantics for
-> spinlocks, the smp_mb() should be implied. (but I have not looked at
-> your spin_lock/unlock primitives yet).
+2.6.29-rc4
 
-Perhaps things have changed, but last I knew, spin_lock() and
-spin_unlock() were only required to keep the critical section in, not
-to keep things out of the critical section.
+# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+ondemand
+ondemand
+# cpufreq-set -g performance
+# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+performance
+ondemand
+dub:~# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/related_cpus
+0 1
+0 1
+# cpufreq-info
+cpufrequtils 004: cpufreq-info (C) Dominik Brodowski 2004-2006
+Report errors and bugs to cpufreq@lists.linux.org.uk, please.
+analyzing CPU 0:
+  driver: acpi-cpufreq
+  CPUs which need to switch frequency at the same time: 0
+  hardware limits: 800 MHz - 2.27 GHz
+  available frequency steps: 2.27 GHz, 2.27 GHz, 1.60 GHz, 800 MHz
+  available cpufreq governors: powersave, performance, ondemand, userspace
+  current policy: frequency should be within 800 MHz and 800 MHz.
+                  The governor "performance" may decide which speed to use
+                  within this range.
+  current CPU frequency is 800 MHz (asserted by call to hardware).
+  cpufreq stats: 2.27 GHz:8.67%, 2.27 GHz:0.01%, 1.60 GHz:0.01%, 800
+MHz:91.31%  (321)
+analyzing CPU 1:
+  driver: acpi-cpufreq
+  CPUs which need to switch frequency at the same time: 1
+  hardware limits: 800 MHz - 2.27 GHz
+  available frequency steps: 2.27 GHz, 2.27 GHz, 1.60 GHz, 800 MHz
+  available cpufreq governors: powersave, performance, ondemand, userspace
+  current policy: frequency should be within 800 MHz and 2.27 GHz.
+                  The governor "ondemand" may decide which speed to use
+                  within this range.
+  current CPU frequency is 800 MHz (asserted by call to hardware).
+  cpufreq stats: 2.27 GHz:2.69%, 2.27 GHz:0.28%, 1.60 GHz:0.80%, 800
+MHz:96.23%  (21447)
 
-							Thanx, Paul
-
-> Mathieu
-> 
-> > 							Thanx, Paul
-> > 
-> > _______________________________________________
-> > ltt-dev mailing list
-> > ltt-dev@lists.casi.polymtl.ca
-> > http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> > 
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+>
+> cpufreq-set behaviour has always been to only change on cpu at a time
+> (defaults to cpu0, check the manpage or the notes with --help), what
+> might have changed is the cpus that are required to change at the same
+> time, i.e. the coordination actually switched from sw to hw for you
+> (with d96f94c604453f87fe24154b87e1e9a3a72511f8).
+>
+> I'm adding linux-acpi and cpufreq ML for more. Also, leaving the full
+> context below for them.
+>
+>> >> btw, this looks strange:
+>> >>
+>> >> dub:~# echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+>> >> dub:~# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+>> >> performance
+>> >> ondemand
+>> >>
+>> >> dub:~# cat /proc/cpuinfo | grep MH
+>> >> cpu MHz         : 2268.000
+>> >> cpu MHz         : 800.000
+>> >>
+>> >> dub:~# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/cpuinfo_cur_freq
+>> >> 2267000
+>> >> 2267000
+>> >
+>> > well the former displays what the kernel thinks the frequency is, the
+>> > latter reads from hw registers and displays the real frequency.
+>> > It's consistent. The kernel doesn't (and can't) know about what the hw
+>> > is doing behind its back and present the user consistent information.
+>>
+>> Still, i have a doubt with the frequencie of cpu1:
+>>
+>> # uname -a
+>> Linux dub 2.6.28.4 #1 SMP Tue Feb 10 16:35:16 BRST 2009 x86_64 GNU/Linux
+>>
+>> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+>> ondemand
+>> ondemand
+>>
+>> # echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+>> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+>> performance
+>> performance
+>>
+>> # cat /proc/cpuinfo | grep MH
+>> cpu MHz         : 2268.000
+>> cpu MHz         : 2268.000
+>>
+>> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/cpuinfo_cur_freq
+>> 2267000
+>> 2267000
+>>
+>> # echo ondemand > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+>> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+>> ondemand
+>> ondemand
+>>
+>> # uname -a
+>> Linux dub 2.6.29-rc4 #28 SMP Tue Feb 10 02:22:06 BRST 2009 x86_64 GNU/Linux
+>>
+>> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+>> ondemand
+>> ondemand
+>>
+>> # echo performance > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+>> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_governor
+>> performance
+>> ondemand
+>>
+>> # cat /proc/cpuinfo | grep MH
+>> cpu MHz         : 2268.000
+>> cpu MHz         : 800.000
+>>
+>> # cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/cpuinfo_cur_freq
+>> 2267000
+>> 2268000
+>>
+>> So, cpu1 is working at 2268MHz or 800? It's using the ondemand
+>> governor or performance governor?
+>>
+>> >
+>> >> dub:~# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_min_freq
+>> >> 800000
+>> >> 800000
+>> >>
+>> >> dub:~# cat /sys/devices/system/cpu/cpu{0,1}/cpufreq/scaling_available_frequencies
+>> >> 2268000 2267000 1600000 800000
+>> >> 2268000 2267000 1600000 800000
+>> >>
+>> >> doesn't cpu0/cpufreq/scaling_min_freq needs to be 2268000 and
+>> >> scaling_frequencies
+>> >> just have 2268000 because it's set to "performance"?
+>> >>
+>> >> am i forgetting anything else to set?
+>> >
+>> > no, if I understand your question correctly you're just misinterpreting
+>> > what those files are for, take a look at Documentation/cpu-freq
+>> >
+>> >> thanks,
+>> >>
+>> >>
+>> >> On Tue, Feb 10, 2009 at 2:58 AM, Mattia Dongili <malattia@linux.it> wrote:
+>> >> > On Tue, Feb 10, 2009 at 01:53:13AM -0200, Guilherme Malschitzky Schroeder wrote:
+>> >> >> Hi,
+>> >> >>
+>> >> >> If i set performance for scaling_governor using 2.6.29-rc4-git2,
+>> >> >> ondemand stills control my CPU.
+>> >> >> I get just 800MHz instead of 2268MHz.
+>> >> >>
+>> >> >> dub:/sys/devices/system/cpu/cpu0/cpufreq# cat cpuinfo_cur_freq
+>> >> >> 800000
+>> >> >> dub:/sys/devices/system/cpu/cpu0/cpufreq# echo performance > scaling_governor
+>> >> >> dub:/sys/devices/system/cpu/cpu0/cpufreq# cat scaling_governor
+>> >> >> performance
+>> >> >> dub:/sys/devices/system/cpu/cpu0/cpufreq# cat cpuinfo_cur_freq
+>> >> >> 2267000
+>> >> >>
+>> >> >> But, /proc/cpuinfo still shows 800MHz:
+>> >> >>
+>> >> >> model name      : Intel(R) Core(TM)2 Duo CPU     P8400  @ 2.26GHz
+>> >> >> stepping        : 6
+>> >> >> cpu MHz         : 800.000
+>> >> >>
+>> >> >> And i cannot remove the ondemand module, that is not used anymore:
+>> >> >>
+>> >> >> dub:/sys/devices/system/cpu/cpu0/cpufreq# rmmod cpufreq_ondemand
+>> >> >> ERROR: Module cpufreq_ondemand is in use
+>> >> >
+>> >> > yes, I guess it is used by cpu1, you should repeat the above commands
+>> >> > for /sys/devices/system/cpu/cpu1/cpufreq too.
+>> >> >
+>> >> > ...
+>> >> >> I've git bisect from 2.6.28.4 (which was working) to 2.6.29-rc4-git2
+>> >> >> and i get into this:
+>> >> >>
+>> >> >> alemao@dub:~/linux-2.6$ git bisect good
+>> >> >> d96f94c604453f87fe24154b87e1e9a3a72511f8 is first bad commit
+>> >> >> commit d96f94c604453f87fe24154b87e1e9a3a72511f8
+>> >> >> Author: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
+>> >> >> Date:   Mon Feb 2 11:57:18 2009 -0800
+>> >> >>
+>> >> >>     ACPI: Enable bit 11 in _PDC to advertise hw coord
+>> >> >>
+>> >> >>     Bit 11 in intel PDC definitions is meant for OS capability to handle
+>> >> >>     hardware coordination of P-states. In Linux we have always supported
+>> >> >>     hwardware coordination of P-states. Just let the BIOSes know that we
+>> >> >>     support it, by setting this bit.
+>> >> >>
+>> >> >>     Some BIOSes use this bit to choose between hardware or software coordination
+>> >> >>     and without this change below, BIOSes switch to software coordination, which
+>> >> >>     is not very optimal in terms of power consumption and extra
+>> >> >> wakeups from idle.
+>> >> >>
+>> >> >>     Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+>> >> >>     Signed-off-by: Len Brown <len.brown@intel.com>
+>> >> >
+>> >> > the "coordination of P-states" is required when you have an SMP system
+>> >> > that cannot scale cpu voltage independently on each cpu, so the best
+>> >> > voltage/frequency have to be selected mediating between all the applied
+>> >> > policies.
+>> >> > The commit you found above just makes use hw coordination instead of sw
+>> >> > and the message explains why.
+>> >> >
+>> >> > If you make sure you change *all* of the cpu policies you won't see the
+>> >> > behaviour you describe.
+>> >> >
+>> >> > hth
+>> >> > --
+>> >> > mattia
+>> >> > :wq
+>> >> >
+>> >> --
+>> >> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> >> the body of a message to majordomo@vger.kernel.org
+>> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> >> Please read the FAQ at  http://www.tux.org/lkml/
+>> >>
+>> > --
+>> > mattia
+>> > :wq!
+>> >
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+> --
+> mattia
+> :wq!
+>
