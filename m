@@ -1,112 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbZBKUkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757639AbZBKUoL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757939AbZBKUkl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 15:40:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757611AbZBKUkT
+	id S1757639AbZBKUoL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 15:44:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755524AbZBKUn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 15:40:19 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:56361 "EHLO mx2.redhat.com"
+	Wed, 11 Feb 2009 15:43:58 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:43721 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757614AbZBKUkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 15:40:17 -0500
-Date: Wed, 11 Feb 2009 15:37:27 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-To: "Theodore Ts'o" <tytso@mit.edu>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Ext4 tree backports for 2.6.27.13 and 2.6.28.2
-Message-ID: <20090211153727.008033fd@dhcp-100-2-144.bos.redhat.com>
-In-Reply-To: <20090210183602.404ee561@dhcp-100-2-144.bos.redhat.com>
-References: <E1LT8MN-0003Ps-Ur@closure.thunk.org>
-	<20090210183602.404ee561@dhcp-100-2-144.bos.redhat.com>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1755085AbZBKUn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 15:43:58 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090211193846.GB1344@us.ibm.com>
+References: <20090211193846.GB1344@us.ibm.com> <20090211172416.GA30756@us.ibm.com> <20090211163753.GA29372@us.ibm.com> <20090206113556.GA3161@alice> <20090206161518.81e7d42c.akpm@linux-foundation.org> <19f34abd0902102355o5bf51096o9aa3737e87104fb9@mail.gmail.com> <20090211000740.f1de7cec.akpm@linux-foundation.org> <19f34abd0902110248n22f8de12lccfa99faafafb942@mail.gmail.com> <1538.1234371764@redhat.com> <2532.1234375381@redhat.com> 
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: dhowells@redhat.com, Vegard Nossum <vegard.nossum@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Sesterhenn <snakebyte@gmx.de>, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: namespaces?: bug at mm/slub.c:2750
+Date: Wed, 11 Feb 2009 20:42:41 +0000
+Message-ID: <6369.1234384961@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Feb 2009 18:36:02 -0500
-Chuck Ebbert <cebbert@redhat.com> wrote:
+Serge E. Hallyn <serue@us.ibm.com> wrote:
 
-> On Sat, 31 Jan 2009 00:25:39 -0500
-> "Theodore Ts'o" <tytso@mit.edu> wrote:
+> Yes, but noone will pull the user_struct off the list without
+> taking the lock.
 > 
-> > I've updated the ext4 backport branches on the ext4 git tree:
-> > 
-> >    git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git
-> >    http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git
-> > 
-> > The for-stable branch is branched off of 2.6.28.2, and has a candidate
-> > set of patches to be included in the next stable release.  The
-> > for-stable-2.6.27 branch is branched off of 2.6.27.13.  
-> > 
-> > I'm more confident with the 2.6.28 stable candidate than the 2.6.27
-> > stable candidates at the moment, but given that we just missed the
-> > 2.6.27.14 and 2.6.28.3 release cycles, that should give us plenty of
-> > time to test the patches.
-> > 
-> 
-> .27 has a bug and one patch got merged in .27.14...
-> 
-> > 
-> > mainline 2.6.28  2.6.27
-> >     commit-description
-> > -------------------------------------------------------------------------
-> > c894058d -----   71ae3e25
-> >     ext4: Use an rbtree for tracking blocks freed during transaction.
-> > 
-> 
-> The chunk that creates the ext4_free_block_extents cache is misapplied: it
-> ended up at the end of ext4_mb_use_preallocated() instead of
-> init_ext4_mballoc(). The null cache pointer then causes oopses when trying
-> to delete files.
-> 
+> what am I missing?
 
-Here's the fix for that:
+I believe that the hash link (uidhash_node) in the user_struct that is passed
+to uid_hash_remove() points to, and is pointed to by the user_namespace to
+which the user_struct belongs.
+
+In which case calling put_user_ns() may kfree the head pointer of the list
+_before_ hlist_del_init() is invoked - in which case hlist_del_init() will act
+upon freed memory.
+
+At least, I think it works like this.
 
 
-Move init of the ext4_free_block_extents cache to the right place.
-Original patch that misapplies this is at:
-http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=commitdiff;h=71ae3e256af82b77100bd2e7392fd510aca0b8b9
-"ext4: Use an rbtree for tracking blocks freed during transaction."
+Anyway, I have no objection to your new patch.
 
-Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
-
-Index: linux-2.6.27.noarch/fs/ext4/mballoc.c
-===================================================================
---- linux-2.6.27.noarch.orig/fs/ext4/mballoc.c
-+++ linux-2.6.27.noarch/fs/ext4/mballoc.c
-@@ -3060,6 +3060,16 @@ int __init init_ext4_mballoc(void)
- 		kmem_cache_destroy(ext4_pspace_cachep);
- 		return -ENOMEM;
- 	}
-+
-+	ext4_free_ext_cachep =
-+		kmem_cache_create("ext4_free_block_extents",
-+				     sizeof(struct ext4_free_data),
-+				     0, SLAB_RECLAIM_ACCOUNT, NULL);
-+	if (ext4_free_ext_cachep == NULL) {
-+		kmem_cache_destroy(ext4_pspace_cachep);
-+		kmem_cache_destroy(ext4_ac_cachep);
-+		return -ENOMEM;
-+	}
- #ifdef CONFIG_PROC_FS
- 	proc_root_ext4 = proc_mkdir("fs/ext4", NULL);
- 	if (proc_root_ext4 == NULL)
-@@ -3597,15 +3607,6 @@ ext4_mb_use_preallocated(struct ext4_all
- 		return 1;
- 	}
- 
--	ext4_free_ext_cachep =
--		kmem_cache_create("ext4_free_block_extents",
--				     sizeof(struct ext4_free_data),
--				     0, SLAB_RECLAIM_ACCOUNT, NULL);
--	if (ext4_free_ext_cachep == NULL) {
--		kmem_cache_destroy(ext4_pspace_cachep);
--		kmem_cache_destroy(ext4_ac_cachep);
--		return -ENOMEM;
--	}
- 	return 0;
- }
- 
+Acked-by: David Howells <dhowells@redhat.com>
