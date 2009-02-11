@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758642AbZBKAc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbZBKAma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758642AbZBKAc1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:32:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757333AbZBKA2P
+	id S1758668AbZBKAma (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:42:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756353AbZBKA2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:28:15 -0500
-Received: from kroah.org ([198.145.64.141]:51050 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 19:28:44 -0500
+Received: from kroah.org ([198.145.64.141]:51467 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756424AbZBKA2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:13 -0500
-Date: Tue, 10 Feb 2009 16:24:39 -0800
+	id S1757836AbZBKA2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:28:42 -0500
+Date: Tue, 10 Feb 2009 16:25:38 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dean Nelson <dcn@sgi.com>
-Subject: [patch 12/56] sgi-xp: fix writing past the end of kzalloc()d space
-Message-ID: <20090211002439.GM14660@kroah.com>
+       alan@lxorguk.ukuu.org.uk, "Alexander V. Lukyanov" <lav@netis.ru>,
+       Tony Jones <tonyj@suse.de>
+Subject: [patch 40/56] Revert "vt: fix background color on line feed"
+Message-ID: <20090211002538.GO14660@kroah.com>
 References: <20090211001439.873435357@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sgi-xp-fix-writing-past-the-end-of-kzalloc-d-space.patch"
+Content-Disposition: inline; filename="revert-vt-fix-background-color-on-line-feed.patch"
 In-Reply-To: <20090211002328.GA14660@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,78 +39,233 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Dean Nelson <dcn@sgi.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-commit 361916a943cd9dbda1c0b00879d0225cc919d868 upstream.
+commit 93f78da405685a756beeaeae4b5e41fcec39eab3 upstream.
 
-A missing type cast results in writing way beyond the end of a kzalloc()'d
-memory segment resulting in slab corruption. But it seems like the better
-solution is to define ->recv_msg_slots as a 'void *' rather than a
-'struct xpc_notify_mq_msg_uv *' and add the type cast.
+This reverts commit c9e587abfdec2c2aaa55fab83bcb4972e2f84f9b, and the
+subsequent commits that fixed it up:
 
-Signed-off-by: Dean Nelson <dcn@sgi.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+ - afa9b649 "fbcon: prevent cursor disappearance after switching to 512
+   character font"
+
+ - d850a2fa "vt/fbcon: fix background color on line feed"
+
+ - 7fe3915a "vt/fbcon: update scrl_erase_char after 256/512-glyph font
+   switch"
+
+by request of Alan Cox. Quoth Alan:
+  "Unfortunately it's wrong and its been causing breakages because
+   various apps like ncurses expect our previous (and correct)
+   behaviour."
+
+Alexander sent out a similar patch.
+
+Requested-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Tested-by: Jan Engelhardt <jengelh@medozas.de>
+Cc: Alexander V. Lukyanov <lav@netis.ru>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Tony Jones <tonyj@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/misc/sgi-xp/xpc.h    |    5 +++--
- drivers/misc/sgi-xp/xpc_uv.c |   11 +++++------
- 2 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/char/vt.c              |    5 ++---
+ drivers/video/console/fbcon.c  |   39 ++++++++++-----------------------------
+ drivers/video/console/mdacon.c |    2 +-
+ drivers/video/console/sticon.c |    4 ++--
+ drivers/video/console/vgacon.c |    4 ++--
+ include/linux/console_struct.h |    1 -
+ 6 files changed, 17 insertions(+), 38 deletions(-)
 
---- a/drivers/misc/sgi-xp/xpc.h
-+++ b/drivers/misc/sgi-xp/xpc.h
-@@ -3,7 +3,7 @@
-  * License.  See the file "COPYING" in the main directory of this archive
-  * for more details.
-  *
-- * Copyright (c) 2004-2008 Silicon Graphics, Inc.  All Rights Reserved.
-+ * Copyright (c) 2004-2009 Silicon Graphics, Inc.  All Rights Reserved.
-  */
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -301,7 +301,7 @@ static void scrup(struct vc_data *vc, un
+ 	d = (unsigned short *)(vc->vc_origin + vc->vc_size_row * t);
+ 	s = (unsigned short *)(vc->vc_origin + vc->vc_size_row * (t + nr));
+ 	scr_memmovew(d, s, (b - t - nr) * vc->vc_size_row);
+-	scr_memsetw(d + (b - t - nr) * vc->vc_cols, vc->vc_scrl_erase_char,
++	scr_memsetw(d + (b - t - nr) * vc->vc_cols, vc->vc_video_erase_char,
+ 		    vc->vc_size_row * nr);
+ }
  
- /*
-@@ -502,7 +502,8 @@ struct xpc_channel_uv {
- 						/* partition's notify mq */
+@@ -319,7 +319,7 @@ static void scrdown(struct vc_data *vc, 
+ 	s = (unsigned short *)(vc->vc_origin + vc->vc_size_row * t);
+ 	step = vc->vc_cols * nr;
+ 	scr_memmovew(s + step, s, (b - t - nr) * vc->vc_size_row);
+-	scr_memsetw(s, vc->vc_scrl_erase_char, 2 * step);
++	scr_memsetw(s, vc->vc_video_erase_char, 2 * step);
+ }
  
- 	struct xpc_send_msg_slot_uv *send_msg_slots;
--	struct xpc_notify_mq_msg_uv *recv_msg_slots;
-+	void *recv_msg_slots;	/* each slot will hold a xpc_notify_mq_msg_uv */
-+				/* structure plus the user's payload */
+ static void do_update_region(struct vc_data *vc, unsigned long start, int count)
+@@ -434,7 +434,6 @@ static void update_attr(struct vc_data *
+ 	              vc->vc_blink, vc->vc_underline,
+ 	              vc->vc_reverse ^ vc->vc_decscnm, vc->vc_italic);
+ 	vc->vc_video_erase_char = (build_attr(vc, vc->vc_color, 1, vc->vc_blink, 0, vc->vc_decscnm, 0) << 8) | ' ';
+-	vc->vc_scrl_erase_char = (build_attr(vc, vc->vc_def_color, 1, false, false, vc->vc_decscnm, false) << 8) | ' ';
+ }
  
- 	struct xpc_fifo_head_uv msg_slot_free_list;
- 	struct xpc_fifo_head_uv recv_msg_list;	/* deliverable payloads */
---- a/drivers/misc/sgi-xp/xpc_uv.c
-+++ b/drivers/misc/sgi-xp/xpc_uv.c
-@@ -3,7 +3,7 @@
-  * License.  See the file "COPYING" in the main directory of this archive
-  * for more details.
-  *
-- * Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-+ * Copyright (c) 2008-2009 Silicon Graphics, Inc.  All Rights Reserved.
-  */
+ /* Note: inverting the screen twice should revert to the original state */
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -1855,8 +1855,6 @@ static int fbcon_scroll(struct vc_data *
+ 	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
+ 	struct display *p = &fb_display[vc->vc_num];
+ 	int scroll_partial = info->flags & FBINFO_PARTIAL_PAN_OK;
+-	unsigned short saved_ec;
+-	int ret;
  
- /*
-@@ -825,8 +825,8 @@ xpc_allocate_recv_msg_slot_uv(struct xpc
- 			continue;
+ 	if (fbcon_is_inactive(vc, info))
+ 		return -EINVAL;
+@@ -1869,11 +1867,6 @@ static int fbcon_scroll(struct vc_data *
+ 	 *           whole screen (prevents flicker).
+ 	 */
  
- 		for (entry = 0; entry < nentries; entry++) {
--			msg_slot = ch_uv->recv_msg_slots + entry *
--			    ch->entry_size;
-+			msg_slot = ch_uv->recv_msg_slots +
-+			    entry * ch->entry_size;
+-	saved_ec = vc->vc_video_erase_char;
+-	vc->vc_video_erase_char = vc->vc_scrl_erase_char;
+-
+-	ret = 0;
+-
+ 	switch (dir) {
+ 	case SM_UP:
+ 		if (count > vc->vc_rows)	/* Maximum realistic size */
+@@ -1890,9 +1883,9 @@ static int fbcon_scroll(struct vc_data *
+ 			scr_memsetw((unsigned short *) (vc->vc_origin +
+ 							vc->vc_size_row *
+ 							(b - count)),
+-				    vc->vc_scrl_erase_char,
++				    vc->vc_video_erase_char,
+ 				    vc->vc_size_row * count);
+-			ret = 1;
++			return 1;
+ 			break;
  
- 			msg_slot->hdr.msg_slot_number = entry;
+ 		case SCROLL_WRAP_MOVE:
+@@ -1962,10 +1955,9 @@ static int fbcon_scroll(struct vc_data *
+ 			scr_memsetw((unsigned short *) (vc->vc_origin +
+ 							vc->vc_size_row *
+ 							(b - count)),
+-				    vc->vc_scrl_erase_char,
++				    vc->vc_video_erase_char,
+ 				    vc->vc_size_row * count);
+-			ret = 1;
+-			break;
++			return 1;
  		}
-@@ -1123,9 +1123,8 @@ xpc_handle_notify_mq_msg_uv(struct xpc_p
- 	/* we're dealing with a normal message sent via the notify_mq */
- 	ch_uv = &ch->sn.uv;
+ 		break;
  
--	msg_slot = (struct xpc_notify_mq_msg_uv *)((u64)ch_uv->recv_msg_slots +
--		    (msg->hdr.msg_slot_number % ch->remote_nentries) *
--		    ch->entry_size);
-+	msg_slot = ch_uv->recv_msg_slots +
-+	    (msg->hdr.msg_slot_number % ch->remote_nentries) * ch->entry_size;
+@@ -1982,9 +1974,9 @@ static int fbcon_scroll(struct vc_data *
+ 			scr_memsetw((unsigned short *) (vc->vc_origin +
+ 							vc->vc_size_row *
+ 							t),
+-				    vc->vc_scrl_erase_char,
++				    vc->vc_video_erase_char,
+ 				    vc->vc_size_row * count);
+-			ret = 1;
++			return 1;
+ 			break;
  
- 	BUG_ON(msg->hdr.msg_slot_number != msg_slot->hdr.msg_slot_number);
- 	BUG_ON(msg_slot->hdr.size != 0);
+ 		case SCROLL_WRAP_MOVE:
+@@ -2052,15 +2044,12 @@ static int fbcon_scroll(struct vc_data *
+ 			scr_memsetw((unsigned short *) (vc->vc_origin +
+ 							vc->vc_size_row *
+ 							t),
+-				    vc->vc_scrl_erase_char,
++				    vc->vc_video_erase_char,
+ 				    vc->vc_size_row * count);
+-			ret = 1;
+-			break;
++			return 1;
+ 		}
+-		break;
+ 	}
+-	vc->vc_video_erase_char = saved_ec;
+-	return ret;
++	return 0;
+ }
+ 
+ 
+@@ -2522,9 +2511,6 @@ static int fbcon_do_set_font(struct vc_d
+ 			c = vc->vc_video_erase_char;
+ 			vc->vc_video_erase_char =
+ 			    ((c & 0xfe00) >> 1) | (c & 0xff);
+-			c = vc->vc_scrl_erase_char;
+-			vc->vc_scrl_erase_char =
+-			    ((c & 0xFE00) >> 1) | (c & 0xFF);
+ 			vc->vc_attr >>= 1;
+ 		}
+ 	} else if (!vc->vc_hi_font_mask && cnt == 512) {
+@@ -2555,14 +2541,9 @@ static int fbcon_do_set_font(struct vc_d
+ 			if (vc->vc_can_do_color) {
+ 				vc->vc_video_erase_char =
+ 				    ((c & 0xff00) << 1) | (c & 0xff);
+-				c = vc->vc_scrl_erase_char;
+-				vc->vc_scrl_erase_char =
+-				    ((c & 0xFF00) << 1) | (c & 0xFF);
+ 				vc->vc_attr <<= 1;
+-			} else {
++			} else
+ 				vc->vc_video_erase_char = c & ~0x100;
+-				vc->vc_scrl_erase_char = c & ~0x100;
+-			}
+ 		}
+ 
+ 	}
+--- a/drivers/video/console/mdacon.c
++++ b/drivers/video/console/mdacon.c
+@@ -533,7 +533,7 @@ static void mdacon_cursor(struct vc_data
+ 
+ static int mdacon_scroll(struct vc_data *c, int t, int b, int dir, int lines)
+ {
+-	u16 eattr = mda_convert_attr(c->vc_scrl_erase_char);
++	u16 eattr = mda_convert_attr(c->vc_video_erase_char);
+ 
+ 	if (!lines)
+ 		return 0;
+--- a/drivers/video/console/sticon.c
++++ b/drivers/video/console/sticon.c
+@@ -170,12 +170,12 @@ static int sticon_scroll(struct vc_data 
+     switch (dir) {
+     case SM_UP:
+ 	sti_bmove(sti, t + count, 0, t, 0, b - t - count, conp->vc_cols);
+-	sti_clear(sti, b - count, 0, count, conp->vc_cols, conp->vc_scrl_erase_char);
++	sti_clear(sti, b - count, 0, count, conp->vc_cols, conp->vc_video_erase_char);
+ 	break;
+ 
+     case SM_DOWN:
+ 	sti_bmove(sti, t, 0, t + count, 0, b - t - count, conp->vc_cols);
+-	sti_clear(sti, t, 0, count, conp->vc_cols, conp->vc_scrl_erase_char);
++	sti_clear(sti, t, 0, count, conp->vc_cols, conp->vc_video_erase_char);
+ 	break;
+     }
+ 
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -1350,7 +1350,7 @@ static int vgacon_scroll(struct vc_data 
+ 		} else
+ 			c->vc_origin += delta;
+ 		scr_memsetw((u16 *) (c->vc_origin + c->vc_screenbuf_size -
+-				     delta), c->vc_scrl_erase_char,
++				     delta), c->vc_video_erase_char,
+ 			    delta);
+ 	} else {
+ 		if (oldo - delta < vga_vram_base) {
+@@ -1363,7 +1363,7 @@ static int vgacon_scroll(struct vc_data 
+ 		} else
+ 			c->vc_origin -= delta;
+ 		c->vc_scr_end = c->vc_origin + c->vc_screenbuf_size;
+-		scr_memsetw((u16 *) (c->vc_origin), c->vc_scrl_erase_char,
++		scr_memsetw((u16 *) (c->vc_origin), c->vc_video_erase_char,
+ 			    delta);
+ 	}
+ 	c->vc_scr_end = c->vc_origin + c->vc_screenbuf_size;
+--- a/include/linux/console_struct.h
++++ b/include/linux/console_struct.h
+@@ -53,7 +53,6 @@ struct vc_data {
+ 	unsigned short	vc_hi_font_mask;	/* [#] Attribute set for upper 256 chars of font or 0 if not supported */
+ 	struct console_font vc_font;		/* Current VC font set */
+ 	unsigned short	vc_video_erase_char;	/* Background erase character */
+-	unsigned short	vc_scrl_erase_char;	/* Erase character for scroll */
+ 	/* VT terminal data */
+ 	unsigned int	vc_state;		/* Escape sequence parser state */
+ 	unsigned int	vc_npar,vc_par[NPAR];	/* Parameters of current escape sequence */
 
