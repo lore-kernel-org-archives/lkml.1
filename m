@@ -1,70 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbZBKJy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755557AbZBKKC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756591AbZBKJy1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 04:54:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbZBKJyR
+	id S1755557AbZBKKC3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 05:02:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441AbZBKKCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 04:54:17 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:33716 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752341AbZBKJyP (ORCPT
+	Wed, 11 Feb 2009 05:02:20 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36623 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754274AbZBKKCT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 04:54:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=tx+tCXId7yFtX0TdxnLch+bwKPXS564oloKvZ+50NkCdIPSAy+CZ/azqj3gopiuUlt
-         YwdmZr5+5NoU/uyHLlzlzeAa+t7rF+2c8CsGKLzlNX5lq4/Zm95nRJN3uQ6Hpd/YxS8N
-         F5ZJfLhCwT69DlHkJPhJgDnMbFdcyOEDs62s8=
-Message-ID: <4992A040.6080302@gmail.com>
-Date: Wed, 11 Feb 2009 10:54:08 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
-       Greg KH <gregkh@suse.de>, USB list <linux-usb@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, linux-input@vger.kernel.org
-Subject: Re: dead USB devices after resume [mmotm 2009-02-10-16-35]
-References: <200902110036.n1B0aBZs013975@imap1.linux-foundation.org> <49928FDB.5020007@gmail.com> <200902111044.57869.rjw@sisk.pl>
-In-Reply-To: <200902111044.57869.rjw@sisk.pl>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
+	Wed, 11 Feb 2009 05:02:19 -0500
+Date: Wed, 11 Feb 2009 10:02:49 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Keith Mannthey <kmannth@us.ibm.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>
+Subject: Re: [RFC][Patch] IBM Real-Time "SMI Free" mode driver
+Message-ID: <20090211100249.1ce0a170@lxorguk.ukuu.org.uk>
+In-Reply-To: <1234312633.15410.546.camel@keith-laptop>
+References: <1234312633.15410.546.camel@keith-laptop>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/11/2009 10:44 AM, Rafael J. Wysocki wrote:
-> Please test current mainline, it may be a regression in there.
+> +	if (readb(rtl+RTL_STATE) != value) {
+> +		if (value == 1)
+> +			writeb(1, (rtl+RTL_CMD));
+> +		else
+> +			writeb(2, (rtl+RTL_CMD));
 
-OK, will do.
+		writeb( 1 + value , ... ) ??
 
-> How exactly are the failing devices connected to the box?
+> +	rtl = ioremap(table_addr, RTL_TABLE_SIZE);
+> +
+> +	if (!rtl) {
+> +		ret = -ENOMEM;
+> +		goto err_out;
 
-There is a hub in the kbd. The mouse and kbd is behind it, I suppose:
+Would it be better to eliminate all the ioremap special test casing and
+just remap it once at load time, or at least use a single function so the
+tests/printks don't all get duplicated ? That would also eliminate the
+fact you can get multiple mappings of the same thing if there are
+multiple parallel users.
 
-/:  Bus 08.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
-/:  Bus 07.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
-/:  Bus 06.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
-    |__ Port 1: Dev 2, If 0, Class=hub, Driver=hub/3p, 12M
-        |__ Port 1: Dev 3, If 0, Class=HID, Driver=usbhid, 12M
-        |__ Port 1: Dev 3, If 1, Class=HID, Driver=usbhid, 12M
-        |__ Port 2: Dev 4, If 0, Class=HID, Driver=usbhid, 1.5M
-/:  Bus 05.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
-/:  Bus 04.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
-/:  Bus 03.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
-/:  Bus 02.Port 1: Dev 1, Class=root_hub, Driver=ehci_hcd/6p, 480M
-/:  Bus 01.Port 1: Dev 1, Class=root_hub, Driver=ehci_hcd/6p, 480M
+I note also there is no locking versus multiple accessors - eg when
+writing the RTL_CMD registers
 
-There is also a wheel at 6.3 if 1...
 
-Bus 006 Device 004: ID 045e:00f0 Microsoft Corp.
-Bus 006 Device 003: ID 0458:004c KYE Systems Corp. (Mouse Systems) Slimstar Pro
-Keyboard
-Bus 006 Device 002: ID 04b4:2050 Cypress Semiconductor Corp.
-Bus 006 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+> +	/*get the address for the RTL table from the EBDA */
+> +	ebda_addr = *(unsigned short *)phys_to_virt(0x40E);
+> +	ebda_addr <<= 4;
+> +	ebda_size = 64*1024;
+> +
+> +	data = ioremap(ebda_addr, ebda_size);
 
-I may try to plug the mouse directly to the root hub if it might help anyhow.
+Careful - it is perfectly valid for a BIOS EBDA table to be zero
+indicating no EBDA is present, and at this point you've not checked if
+the driver is being loaded on a relevant IBM platform.
+
+> +		unsigned int *tmp = (unsigned int *) data++;
+
+Use u32 - it makea it obvious what is going on here.
+
+> +/*needed to decode CmdPortAddress and CmdPortValue*/
+> +#define bios_to_value(rtl, offset) (u32)((readb(rtl+(offset+1)) << 8) + \
+> +							readb(rtl+offset))
+
+What is wrong with readw() ?
+
+
+Alan
