@@ -1,150 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758647AbZBKWyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbZBKW6B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758647AbZBKWyd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 17:54:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758246AbZBKWyS
+	id S1757315AbZBKW6B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 17:58:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbZBKW5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 17:54:18 -0500
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:44212 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758081AbZBKWyR (ORCPT
+	Wed, 11 Feb 2009 17:57:52 -0500
+Received: from ti-out-0910.google.com ([209.85.142.187]:55160 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753559AbZBKW5w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 17:54:17 -0500
-Subject: Re: [Bug #12409] NULL pointer dereference at get_stats()
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: "frederik.deweerdt@xprog.eu" <frederik.deweerdt@xprog.eu>,
-       "rjw@sisk.pl" <rjw@sisk.pl>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>
-In-Reply-To: <200902092019.CHE32301.JLFVFMtQSOOFHO@I-love.SAKURA.ne.jp>
-References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera>
-	 <cX2gZ6Cy9nC.A.N0B.pJRdJB@chimera>	<20090121161828.GA2739@gambetta>
-	 <200902071133.AJJ09378.MOHLFFtOSOVQFJ@I-love.SAKURA.ne.jp>
-	 <200902092019.CHE32301.JLFVFMtQSOOFHO@I-love.SAKURA.ne.jp>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Wed, 11 Feb 2009 14:54:16 -0800
-Message-Id: <1234392856.25791.27.camel@alok-dev1>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+	Wed, 11 Feb 2009 17:57:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:cc:message-id:mime-version:content-type
+         :content-transfer-encoding:x-mailer;
+        b=uUVWQmcIR0tXCJXMQGst/e9Q0H6i8RqBtm5hc+8gi4iBNqDPeG5UgIL8olMc1+Z7uu
+         qm4nRpfwrW6v5qD3YHrbzGV+MoDI9umHct2k43MFNw2rNcYO8lqz5/WF+3LEzaAOmLRa
+         uvzm7t3MWaYX+bIXEjRK58rGe8JL051bbCiDU=
+Date: Thu, 12 Feb 2009 06:57:50 +0800
+From: Huang Weiyi <weiyi.huang@gmail.com>
+To: srostedt@redhat.com
+Subject: tracing, x86: remove duplicated #include's
+Cc: linux-kernel@vger.kernel.org
+Message-Id: <20090212065605.93A0.WEIYI.HUANG@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.24.02 [en]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tetsuo,
+Removed duplicated #include's in arch/x86/kernel/ftrace.c
 
-Thanks for reporting this. Yes i tried it here with a slightly
-different .config and i did see the problem. I will try to figure out
-what is happening over here, but before doing that let me ask if this
-bug is only in the stable series ? 
-Do we know for which kernel does the "nolapic" option doesn't hit this
-bug ? 
+Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
 
-Also, I assume its not present in 2.6.29-rc ?
+diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+index 231bdd3..1829b28 100644
+--- a/arch/x86/kernel/ftrace.c
++++ b/arch/x86/kernel/ftrace.c
+@@ -19,7 +19,6 @@
+ #include <linux/list.h>
 
-Thanks,
-Alok
+ #include <asm/ftrace.h>
+-#include <linux/ftrace.h>
+ #include <asm/nops.h>
+ #include <asm/nmi.h>
 
-On Mon, 2009-02-09 at 03:19 -0800, Tetsuo Handa wrote:
-> Hello.
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12409
-> > Subject		: NULL pointer dereference at get_stats()
-> > Submitter	: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-> > Date		: 2008-12-30 12:53 (21 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=123064167008695&w=4
-> > Handled-By	: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
-> 
-> I made custom initramfs and tested on native environment and KVM and VMware.
-> This problem happened only in VMware.
-> 
-> Alok and Daniel (cc: added), can you reproduce this problem?
-> 
-> Problem description:
-> 
->   Compiling 2.6.28.4 using config at http://I-love.SAKURA.ne.jp/tmp/config-2.6.28-bug
->   and booting with "nolapic" option on x86 machine with 2 CPUs, NULL pointer
->   dereference happens at get_stats() because for_each_possible_cpu() reaches
->   CPU 1 while "nolapic" option should prevent for_each_possible_cpu() from
->   reaching CPU 1.
-> 
->   Compiling 2.6.28.4 using config at http://I-love.SAKURA.ne.jp/tmp/config-2.6.28-nobug
->   (all options in "Power management and ACPI options" section disabled)
->   solves this problem.
-> 
->   Also, this problem seems to be VMware specific.
->   I couldn't reproduce this problem on native environment and KVM.
-> 
-> Native environment (no problem):
-> 
->   CentOS 5.2 (x86_64) and Ubuntu 8.04 (i386) on ThinkPad X60
-> 
-> KVM environment (no problem):
-> 
->   kvm -kernel /boot/vmlinuz-2.6.28.4 -initrd /boot/init -net none -hda /var/tmp/image.img -vnc xx.xx.xx.xx:0 --append "ro nolapic" -smp 2
->   on Ubuntu 8.04 (i386) on ThinkPad X60
-> 
-> VMware environment (problematic):
-> 
->   Debian Sarge (i386) / CentOS 5.2 (i386) on VMware workstation 6.5.1 (x86_64)
->   on CentOS 5.2 (x86_64) on ThinkPad X60
-> 
-> Problematic kernel versions:
-> 
->   2.6.27.x and 2.6.28.x .
-> 
-> Regards.
-> 
-> ----- Custom initramfs -----
-> /*
->   gcc -Wall -O3 -static -o init init.c
->   echo init | cpio -o -H newc | gzip -9 > /boot/init
->  */
-> #include <sys/mount.h>
-> #include <sys/types.h>
-> #include <sys/stat.h>
-> #include <fcntl.h>
-> #include <unistd.h>
-> #include <stdio.h>
-> #include <string.h>
-> 
-> int main(int argc, char *argv[]) {
-> 	FILE *fp;
-> 	char buffer[1024];
-> 	memset(buffer, 0, sizeof(buffer));
-> 	mkdir("/proc", 0755);
-> 	mount("none", "/proc", "proc", 0, NULL);
-> 	fp = fopen("/proc/cpuinfo", "r");
-> 	while (fgets(buffer, sizeof(buffer) - 1, fp))
-> 		if (strstr(buffer, "processor"))
-> 			printf("%s", buffer);
-> 	fclose(fp);
-> 	fp = fopen("/proc/cmdline", "r");
-> 	fgets(buffer, sizeof(buffer) - 1, fp);
-> 	fclose(fp);
-> 	printf("%s", buffer);
-> 	fflush(stdout);
-> 	if (mkdir("/sys", 0755) || mount("/sys/", "/sys/", "sysfs", 0, NULL)) {
-> 		printf("mount failed\n");
-> 		while (1)
-> 			sleep(1);
-> 	}
-> 	fp = fopen("/sys/class/net/lo/statistics/rx_packets", "r");
-> 	if (!fp) {
-> 		printf("open failed\n");
-> 		while (1)
-> 			sleep(1);
-> 	}
-> 	while (fgets(buffer, sizeof(buffer) - 1, fp))
-> 		;
-> 	fclose(fp);
-> 	printf("done\n");
-> 	while (1)
-> 		sleep(1);
-> 	return 0;
-> }
 
