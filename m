@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758519AbZBKSot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757864AbZBKStz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758519AbZBKSot (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 13:44:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757939AbZBKSok
+	id S1757864AbZBKStz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 13:49:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbZBKStp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 13:44:40 -0500
-Received: from smtp.opengridcomputing.com ([209.198.142.2]:34328 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756137AbZBKSoj (ORCPT
+	Wed, 11 Feb 2009 13:49:45 -0500
+Received: from mga01.intel.com ([192.55.52.88]:4659 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755790AbZBKSto convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 13:44:39 -0500
-Message-ID: <49931C9D.2090604@opengridcomputing.com>
-Date: Wed, 11 Feb 2009 12:44:45 -0600
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 11 Feb 2009 13:49:44 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,193,1233561600"; 
+   d="scan'208";a="430181824"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Ingo Molnar <mingo@elte.hu>, Dean Nelson <dcn@sgi.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       linux-ia64 <linux-ia64@vger.kernel.org>,
+       linux-next <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Date: Wed, 11 Feb 2009 10:49:41 -0800
+Subject: RE: [PATCH] SGI IA64 UV: fix ia64 build error in the linux-next	tree
+Thread-Topic: [PATCH] SGI IA64 UV: fix ia64 build error in the linux-next
+	tree
+Thread-Index: AcmMRN3+aU1QqjB7RumXWjhMqnH/6wANI7TA
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA361689D41@orsmsx505.amr.corp.intel.com>
+References: <20090209162520.GA4882@sgi.com> <20090211123249.GE16535@elte.hu>
+In-Reply-To: <20090211123249.GE16535@elte.hu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: randy.dunlap@oracle.com, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [ofa-general] [PATCH 2.6.30] RDMA/cxgb3: Remove modulo math.
-References: <20090210184448.22891.31130.stgit@dell3.ogc.int>	<adamyctajv8.fsf@cisco.com> <4992F26A.4030800@opengridcomputing.com>	<adatz70972e.fsf@cisco.com> <499319CF.6050204@opengridcomputing.com> <adak57w95ym.fsf@cisco.com>
-In-Reply-To: <adak57w95ym.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
->  > > Is it possible for the page to be bigger than 4GB?  If so then yes you
->  > > might be chopping off high-order bits or something.
->
->  > Yes it is possible.
->  > 
->  > A MR can be created with an iov_base of say 0xffffffff00000000.
->  > 
->  > Then any sge.addr entries would be the iob_base + any offset.
->
-> But the code we're talking about is:
->
-> 		/* to in the WQE == the offset into the page */
-> 		wqe->recv.sgl[i].to = cpu_to_be64(((u32) wr->sg_list[i].addr) %
-> 				(1UL << (12 + page_size[i])));
->
-> so it seems the top address bits don't matter unless page_size[i] is at
-> least 20 -- in which case using 1UL to shift overflows on 32 bits anyway...
->
->   
+> Tony, since this breakage is an accidental side-effect of the x86 tree (that
+> has to be fixed there), mind if we carry it there?
 
-Yes yes...you're right.   This code is really just saving the offset in 
-a page.
+Ingo,
 
-I'll send a new patch.
+I don't mind at all.
 
+-Tony
