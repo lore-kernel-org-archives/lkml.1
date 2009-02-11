@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbZBKJax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbZBKJeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755483AbZBKJax (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 04:30:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbZBKJao
+	id S1755455AbZBKJeX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 04:34:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754038AbZBKJeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 04:30:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36752 "EHLO mx2.mail.elte.hu"
+	Wed, 11 Feb 2009 04:34:15 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49853 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752827AbZBKJan (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 04:30:43 -0500
-Date: Wed, 11 Feb 2009 10:30:29 +0100
+	id S1752827AbZBKJeN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 04:34:13 -0500
+Date: Wed, 11 Feb 2009 10:33:54 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jason Baron <jbaron@redhat.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, lenb@kernel.org,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Subject: Re: PATCH] ftrace: Add a C/P state tracer to help power
-	optimization
-Message-ID: <20090211093029.GC14265@elte.hu>
-References: <20081006102640.481acd23@infradead.org> <20081027155920.GS5704@elte.hu> <20081027110522.6cb7b142@infradead.org> <y0m3aihx1kd.fsf@ton.toronto.redhat.com> <20081027140630.521f933d@infradead.org> <20090210205747.GA3114@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Markus Metzger <markus.t.metzger@intel.com>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, for 2.6.29] ptrace: fix the usage of ptrace_fork()
+Message-ID: <20090211093354.GD14265@elte.hu>
+References: <20090209010233.GA26444@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090210205747.GA3114@redhat.com>
+In-Reply-To: <20090209010233.GA26444@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,84 +36,49 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jason Baron <jbaron@redhat.com> wrote:
+* Oleg Nesterov <oleg@redhat.com> wrote:
 
-> On Mon, Oct 27, 2008 at 02:06:30PM -0700, Arjan van de Ven wrote:
-> > > Arjan van de Ven <arjan@infradead.org> writes:
-> > > 
-> > > > [...]
-> > > > --- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-> > > > +++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-> > > > [...]
-> > > > @@ -427,6 +429,8 @@ static int acpi_cpufreq_target(struct
-> > > > cpufreq_policy *policy, }
-> > > >  	}
-> > > >  
-> > > > +	trace_power_mark(&it, POWER_PSTATE, next_perf_state);
-> > > > +
-> > > >  	switch (data->cpu_feature) {
-> > > >  	case SYSTEM_INTEL_MSR_CAPABLE:
-> > > >  		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
-> > > > [...]
-> > > 
-> > > Is there some reason that this doesn't use tracepoints instead
-> > > of such a single-backend hook?
-> > 
-> > because it's a ton simpler this way? do simple things simpe and all
-> > that....
-> > 
+> I noticed by pure accident we have ptrace_fork() and friends. This was
+> added by "x86, bts: add fork and exit handling", commit
+> bf53de907dfdaac178c92d774aae7370d7b97d20
 > 
-> hi,
+> I can't test this, ds_request_bts() returns -EOPNOTSUPP, but I strongly
+> believe this needs the fix. I think something like this program
 > 
-> I wrote a patch to make c/p state tracer dependent on tracepoints and
-> then realized that the discussion had already been had. However, the
-> patch to use tracepoints is fairly simple, allows for other consumers,
-> and avoids a function call in the off case. please consider.
+> 	int main(void)
+> 	{
+> 		int pid = fork();
 > 
-> thanks,
+> 		if (!pid) {
+> 			ptrace(PTRACE_TRACEME, 0, NULL, NULL);
+> 			kill(getpid(), SIGSTOP);
+> 			fork();
+> 		} else {
+> 			struct ptrace_bts_config bts = {
+> 				.flags = PTRACE_BTS_O_ALLOC,
+> 				.size  = 4 * 4096,
+> 			};
 > 
-> -Jason
+> 			wait(NULL);
 > 
-> Signed-off-by: Jason Baron <jbaron@redhat.com>
+> 			ptrace(PTRACE_SETOPTIONS, pid, NULL, PTRACE_O_TRACEFORK);
+> 			ptrace(PTRACE_BTS_CONFIG, pid, &bts, sizeof(bts));
+> 			ptrace(PTRACE_CONT, pid, NULL, NULL);
 > 
-> ---
+> 			sleep(1);
+> 		}
 > 
->  arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    3 +++
->  arch/x86/kernel/process.c                  |    4 ++++
->  include/linux/ftrace.h                     |   15 ---------------
->  include/trace/power.h                      |   18 ++++++++++++++++++
->  kernel/trace/trace_power.c                 |   28 ++++++++++++++++++++--------
->  5 files changed, 45 insertions(+), 23 deletions(-)
->  create mode 100644 include/trace/power.h
+> 		return 0;
+> 	}
+> 
+> should crash the kernel.
+> 
+> If the task is traced by its natural parent ptrace_reparented() returns 0
+> but we should clear ->btsxxx anyway.
+> 
+> This is a minimal fix for 2.6.29, we need further cleanups imho.
 
-Looks good, but could you please base this on latest -tip? There's a number of 
-pending changes in the tracing tree that conflict:
-
-patching file arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-Hunk #1 FAILED at 34.
-1 out of 2 hunks FAILED -- rejects in file 
-arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-patching file arch/x86/kernel/process.c
-Hunk #1 FAILED at 9.
-1 out of 2 hunks FAILED -- rejects in file arch/x86/kernel/process.c
-patching file include/linux/ftrace.h
-Hunk #1 FAILED at 342.
-1 out of 1 hunk FAILED -- rejects in file include/linux/ftrace.h
-The next patch would create the file include/trace/power.h,
-which already exists!  Applying it anyway.
-patching file include/trace/power.h
-Patch attempted to create file include/trace/power.h, which already exists.
-Hunk #1 FAILED at 1.
-1 out of 1 hunk FAILED -- rejects in file include/trace/power.h
-patching file kernel/trace/trace_power.c
-Hunk #1 FAILED at 14.
-Hunk #2 succeeded at 111 (offset 1 line).
-Hunk #4 succeeded at 148 (offset -5 lines).
-Hunk #5 succeeded at 183 (offset -6 lines).
-1 out of 5 hunks FAILED -- rejects in file kernel/trace/trace_power.c
-
-See:
-
-  http://people.redhat.com/mingo/tip.git/README
+I've applied this fix to tip:x86/urgent for now, until the other fix
+from Markus gets finalized.
 
 	Ingo
