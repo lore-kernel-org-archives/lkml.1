@@ -1,74 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756943AbZBKQRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756943AbZBKQXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756943AbZBKQRe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 11:17:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755775AbZBKQR0
+	id S1756943AbZBKQXh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 11:23:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbZBKQX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 11:17:26 -0500
-Received: from mx1.emlix.com ([193.175.82.87]:47286 "EHLO mx1.emlix.com"
+	Wed, 11 Feb 2009 11:23:27 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44971 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755718AbZBKQRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 11:17:25 -0500
-X-Greylist: delayed 1809 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Feb 2009 11:17:25 EST
-Date: Wed, 11 Feb 2009 16:47:19 +0100
-From: Johannes Weiner <jw@emlix.com>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [patch][trivial] dmaengine: update kerneldoc
-Mime-Version: 1.0
+	id S1754158AbZBKQX0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 11:23:26 -0500
+Date: Wed, 11 Feb 2009 17:22:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
+       mm-commits@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Pavel Machek <pavel@suse.cz>
+Subject: Re: ACPI: S4 disappeared [mmotm 2009-02-10-16-35]
+Message-ID: <20090211162247.GA32301@elte.hu>
+References: <200902110036.n1B0aBZs013975@imap1.linux-foundation.org> <499291A3.9070501@gmail.com> <4992A59F.5090502@gmail.com> <200902111643.10191.rjw@sisk.pl>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
-Message-Id: <E1LXHIv-00021Q-Vm@mailer.emlix.com>
-Organization: emlix gmbh, Goettingen, Germany
+In-Reply-To: <200902111643.10191.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some of the kerneldoc comments in the dmaengine header describe
-already removed structure members.  Remove them.
 
-Also add a short description for dma_device->device_is_tx_complete.
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-Signed-off-by: Johannes Weiner <jw@emlix.com>
+> On Wednesday 11 February 2009, Jiri Slaby wrote:
+> > On 02/11/2009 09:51 AM, Jiri Slaby wrote:
+> > > On 02/11/2009 01:36 AM, akpm@linux-foundation.org wrote:
+> > >> The mm-of-the-moment snapshot 2009-02-10-16-35 has been uploaded
+> > > 
+> > > Hi,
+> > > 
+> > > I've found out, that S4 disappeared in this release, in comparison to mmotm
+> > > based on 2.6.29-rc2:
+> > > -ACPI: (supports S0 S1 S3 S4 S5)
+> > > +ACPI: (supports S0 S1 S3 S5)
+> > > 
+> > > Any ideas what could have caused this?
+> > 
+> > I think this one
+> > ARCH_HIBERNATION_POSSIBLE=n
+> > because
+> > SMP=y
+> > since
+> >  config ARCH_HIBERNATION_POSSIBLE
+> >         def_bool y
+> > -       depends on !SMP || !X86_VOYAGER
+> > +       depends on !SMP
+> > 
+> > The condition was wrong, ok, anyway it worked. Would
+> > depends on !SMP || EXPERIMENTAL
+> > make sense? The smp is handled in disable_nonboot_cpus manner, right?
+> 
+> Ah, someone removed X86_VOYAGER and left this gem.  I guess that went in
+> through -tip (Ingo CCed).
+> 
+> After removing X86_VOYAGER, ARCH_HIBERNATION_POSSIBLE should always be set
+> on x86.  Just make it
+> 
+> config ARCH_HIBERNATION_POSSIBLE
+>          def_bool y
+
+heh, indeed :-) Fixed via the commit below.
+
+Thanks,
+
+	Ingo
+
+---------------->
+>From 17993b49b1f540aace8e9b4242530d0b3376eb2a Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Wed, 11 Feb 2009 17:20:51 +0100
+Subject: [PATCH] x86: make hibernation always-possible
+
+This commit:
+
+  aced3ce: x86/Voyager: remove HIBERNATION Kconfig quirk
+
+Made hibernation only available on UP - instead of making it available
+on all of x86. Fix it.
+
+Reported-by: Jiri Slaby <jirislaby@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ arch/x86/Kconfig |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index 3e68469..087e79a 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -97,7 +97,6 @@ typedef struct { DECLARE_BITMAP(bits, DMA_TX_TYPE_END); } dma_cap_mask_t;
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 4a27aa4..148c112 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -140,7 +140,6 @@ config HAVE_CPUMASK_OF_CPU_MAP
  
- /**
-  * struct dma_chan_percpu - the per-CPU part of struct dma_chan
-- * @refcount: local_t used for open-coded "bigref" counting
-  * @memcpy_count: transaction counter
-  * @bytes_transferred: byte counter
-  */
-@@ -114,9 +113,6 @@ struct dma_chan_percpu {
-  * @cookie: last cookie value returned to client
-  * @chan_id: channel ID for sysfs
-  * @dev: class device for sysfs
-- * @refcount: kref, used in "bigref" slow-mode
-- * @slow_ref: indicates that the DMA channel is free
-- * @rcu: the DMA channel's RCU head
-  * @device_node: used to add this to the device chan list
-  * @local: per-cpu pointer to a struct dma_chan_percpu
-  * @client-count: how many clients are using this channel
-@@ -211,8 +207,6 @@ struct dma_async_tx_descriptor {
-  * @global_node: list_head for global dma_device_list
-  * @cap_mask: one or more dma_capability flags
-  * @max_xor: maximum number of xor sources, 0 if no capability
-- * @refcount: reference count
-- * @done: IO completion struct
-  * @dev_id: unique device ID
-  * @dev: struct device reference for dma mapping api
-  * @device_alloc_chan_resources: allocate resources and return the
-@@ -225,6 +219,7 @@ struct dma_async_tx_descriptor {
-  * @device_prep_dma_interrupt: prepares an end of chain interrupt operation
-  * @device_prep_slave_sg: prepares a slave dma operation
-  * @device_terminate_all: terminate all pending operations
-+ * @device_is_tx_complete: poll for transaction completion
-  * @device_issue_pending: push pending transactions to hardware
-  */
- struct dma_device {
+ config ARCH_HIBERNATION_POSSIBLE
+ 	def_bool y
+-	depends on !SMP
+ 
+ config ARCH_SUSPEND_POSSIBLE
+ 	def_bool y
