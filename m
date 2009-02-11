@@ -1,166 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758785AbZBKAvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757229AbZBKAyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758785AbZBKAvu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:51:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758148AbZBKAep
+	id S1757229AbZBKAyN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:54:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757794AbZBKApk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:34:45 -0500
-Received: from e37.co.us.ibm.com ([32.97.110.158]:40439 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759201AbZBKAem (ORCPT
+	Tue, 10 Feb 2009 19:45:40 -0500
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:38471 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758934AbZBKApi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:34:42 -0500
-Subject: [PATCH 3/3] Convert sparc to use arch_getoffset() infrastructure
-From: john stultz <johnstul@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: rmk+lkml@arm.linux.org.uk, cooloney@kernel.org, starvik@axis.com,
-       takata@linux-m32r.org, geert@linux-m68k.org,
-       Roman Zippel <zippel@linux-m68k.org>, lethal@linux-sh.org,
-       Magnus Damm <magnus.damm@gmail.com>, wli@holomorphy.com,
-       chris@zankel.net, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1234312382.7801.31.camel@localhost>
-References: <1234312149.7801.26.camel@localhost>
-	 <1234312299.7801.29.camel@localhost>  <1234312382.7801.31.camel@localhost>
+	Tue, 10 Feb 2009 19:45:38 -0500
+Subject: Re: [BUGFIX/x86] Fix initialization of wakeup_cpu.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <49921C4F.9050601@kernel.org>
+References: <1234297715.24155.29.camel@alok-dev1>
+	 <86802c440902101303u2fe671b0xe811543d40e0cd9@mail.gmail.com>
+	 <1234303240.24155.36.camel@alok-dev1>  <49921C4F.9050601@kernel.org>
 Content-Type: text/plain
-Date: Tue, 10 Feb 2009 16:34:38 -0800
-Message-Id: <1234312478.7801.33.camel@localhost>
+Organization: VMware INC.
+Date: Tue, 10 Feb 2009 16:45:37 -0800
+Message-Id: <1234313137.30391.13.camel@alok-dev1>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew, please consider for inclusion into -mm in preparation for 2.6.30
+On Tue, 2009-02-10 at 16:31 -0800, Yinghai Lu wrote:
+> > 
+> >> 2. also will break 64 bit....
+> > isn't the default_x86_quirks defined for 64 bit too ? 
+> > 
+> 64 bit doesn't have genapic_apic_probe()
+> 
+> need to change that to 
+> #ifdef CONFIG_X86_32
+> 	genapic_apic_probe();
+> #endif
+> 
 
-This patch converts sparc to use GENERIC_TIME via the arch_getoffset()
-infrastructure 
+Ok here it is. 
+--
 
-I do not have cross compilers for these architectures, and in some cases
-the architectures can be compiles both with and without clocksources. So
-I've taken my best swing at converting this, but I'm not confident I got
-it right. Any assistance from arch maintainers or testers would be
-great.
+With refactoring of wake_cpu macros the 32bit code in tip doesn't 
+execute generic_apic_probe if CONFIG_X86_32_NON_STANDARD is not set.
 
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-Acked-by: David S. Miller <davem@davemloft.net>
+Even on a x86 STANDARD cpu we need to execute the generic_apic_probe
+function, as we rely on this function to execute the update_genapic
+quirk which initilizes apic->wakeup_cpu. 
 
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index c3ea215..a5b465f 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -55,8 +55,11 @@ config BITS
- 	default 64 if SPARC64
+Failing to do so results in we making a call to a null function in do_boot_cpu.
+
+The stack trace without the patch goes like this.
+
+Booting processor 1 APIC 0x1 ip 0x6000
+BUG: unable to handle kernel NULL pointer dereference at (null)
+IP: [<(null)>] (null)
+*pdpt = 0000000000839001 *pde = 0000000000c97067 *pte = 0000000000000163 
+Oops: 0000 [#1] SMP 
+last sysfs file: 
+Modules linked in:
+
+Pid: 1, comm: swapper Not tainted (2.6.29-rc4-tip #18) VMware Virtual Platform
+EIP: 0062:[<00000000>] EFLAGS: 00010293 CPU: 0
+EIP is at 0x0
+EAX: 00000001 EBX: 00006000 ECX: c077ed00 EDX: 00006000
+ESI: 00000001 EDI: 00000001 EBP: ef04cf40 ESP: ef04cf1c
+ DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 006a
+Process swapper (pid: 1, ti=ef04c000 task=ef050000 task.ti=ef04c000)
+Stack:
+ c0644e52 00000000 ef04cf24 ef04cf24 c064468d c0886dc0 00000000 c0702aea
+ ef055480 00000001 00000101 dead4ead ffffffff ffffffff c08af530 00000000
+ c0709715 ef04cf60 ef04cf60 00000001 00000000 00000000 dead4ead ffffffff
+Call Trace:
+ [<c0644e52>] ? native_cpu_up+0x2de/0x45b
+ [<c064468d>] ? do_fork_idle+0x0/0x19
+ [<c0645c5e>] ? _cpu_up+0x88/0xe8
+ [<c0645d20>] ? cpu_up+0x42/0x4e
+ [<c07e7462>] ? kernel_init+0x99/0x14b
+ [<c07e73c9>] ? kernel_init+0x0/0x14b
+ [<c040375f>] ? kernel_thread_helper+0x7/0x10
+Code:  Bad EIP value.
+EIP: [<00000000>] 0x0 SS:ESP 006a:ef04cf1c
+
+I think we should call generic_apic_probe unconditionally for 32 bit now.
+
+Signed-off-by: Alok N Kataria <akataria@vmware.com>
+Cc: Yinghai Lu <yinghai@kernel.org>
+
+Index: linux-tip-master/arch/x86/kernel/setup.c
+===================================================================
+--- linux-tip-master.orig/arch/x86/kernel/setup.c	2009-02-10 12:05:18.000000000 -0800
++++ linux-tip-master/arch/x86/kernel/setup.c	2009-02-10 16:37:59.000000000 -0800
+@@ -936,7 +936,7 @@
+ 	map_vsyscall();
+ #endif
  
- config GENERIC_TIME
-+	def_bool y
-+
-+config ARCH_USES_GETTIMEOFFSET
- 	bool
--	default y if SPARC64
-+	default y if SPARC32
+-#if defined(CONFIG_X86_32_NON_STANDARD) || defined(CONFIG_X86_BIGSMP)
++#ifdef CONFIG_X86_32
+ 	generic_apic_probe();
+ #endif
  
- config GENERIC_CMOS_UPDATE
- 	bool
-diff --git a/arch/sparc/kernel/time_32.c b/arch/sparc/kernel/time_32.c
-index 614ac7b..e946b55 100644
---- a/arch/sparc/kernel/time_32.c
-+++ b/arch/sparc/kernel/time_32.c
-@@ -227,7 +227,7 @@ void __init time_init(void)
- 	sbus_time_init();
- }
- 
--static inline unsigned long do_gettimeoffset(void)
-+u32 arch_gettimeoffset(void)
- {
- 	unsigned long val = *master_l10_counter;
- 	unsigned long usec = (val >> 10) & 0x1fffff;
-@@ -236,84 +236,7 @@ static inline unsigned long do_gettimeoffset(void)
- 	if (val & 0x80000000)
- 		usec += 1000000 / HZ;
- 
--	return usec;
--}
--
--/* Ok, my cute asm atomicity trick doesn't work anymore.
-- * There are just too many variables that need to be protected
-- * now (both members of xtime, et al.)
-- */
--void do_gettimeofday(struct timeval *tv)
--{
--	unsigned long flags;
--	unsigned long seq;
--	unsigned long usec, sec;
--	unsigned long max_ntp_tick = tick_usec - tickadj;
--
--	do {
--		seq = read_seqbegin_irqsave(&xtime_lock, flags);
--		usec = do_gettimeoffset();
--
--		/*
--		 * If time_adjust is negative then NTP is slowing the clock
--		 * so make sure not to go into next possible interval.
--		 * Better to lose some accuracy than have time go backwards..
--		 */
--		if (unlikely(time_adjust < 0))
--			usec = min(usec, max_ntp_tick);
--
--		sec = xtime.tv_sec;
--		usec += (xtime.tv_nsec / 1000);
--	} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
--
--	while (usec >= 1000000) {
--		usec -= 1000000;
--		sec++;
--	}
--
--	tv->tv_sec = sec;
--	tv->tv_usec = usec;
--}
--
--EXPORT_SYMBOL(do_gettimeofday);
--
--int do_settimeofday(struct timespec *tv)
--{
--	int ret;
--
--	write_seqlock_irq(&xtime_lock);
--	ret = bus_do_settimeofday(tv);
--	write_sequnlock_irq(&xtime_lock);
--	clock_was_set();
--	return ret;
--}
--
--EXPORT_SYMBOL(do_settimeofday);
--
--static int sbus_do_settimeofday(struct timespec *tv)
--{
--	time_t wtm_sec, sec = tv->tv_sec;
--	long wtm_nsec, nsec = tv->tv_nsec;
--
--	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
--		return -EINVAL;
--
--	/*
--	 * This is revolting. We need to set "xtime" correctly. However, the
--	 * value in this location is the value at the most recent update of
--	 * wall time.  Discover what correction gettimeofday() would have
--	 * made, and then undo it!
--	 */
--	nsec -= 1000 * do_gettimeoffset();
--
--	wtm_sec  = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
--	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - nsec);
--
--	set_normalized_timespec(&xtime, sec, nsec);
--	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
--
--	ntp_clear();
--	return 0;
-+	return usec * 1000;
- }
- 
- static int set_rtc_mmss(unsigned long secs)
 
 
