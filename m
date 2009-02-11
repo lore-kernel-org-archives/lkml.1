@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbZBKCW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbZBKC1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755980AbZBKCW5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 21:22:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbZBKCWr
+	id S1756146AbZBKC1o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 21:27:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbZBKC1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 21:22:47 -0500
-Received: from home.keithp.com ([63.227.221.253]:37801 "EHLO keithp.com"
+	Tue, 10 Feb 2009 21:27:36 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:46367 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752357AbZBKCWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 21:22:47 -0500
-X-Greylist: delayed 535 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Feb 2009 21:22:47 EST
-Subject: Re: [patch 05/56] agp/intel: Reduce extraneous PCI posting reads
-	during init
-From: Keith Packard <keithp@keithp.com>
-To: Greg KH <gregkh@suse.de>
-Cc: keithp@keithp.com, linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Eric Anholt <eric@anholt.net>,
-       Dave Airlie <airlied@redhat.com>
-In-Reply-To: <20090211002422.GF14660@kroah.com>
-References: <20090211001439.873435357@mini.kroah.org>
-	 <20090211002422.GF14660@kroah.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-7JZ511tD+eTV1atAbhQS"
-Date: Tue, 10 Feb 2009 18:13:42 -0800
-Message-Id: <1234318422.11303.51.camel@aiko.keithp.com>
+	id S1752502AbZBKC1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 21:27:35 -0500
+Date: Wed, 11 Feb 2009 13:27:18 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, James Morris <jmorris@namei.org>,
+       Mimi Zohar <zohar@us.ibm.com>
+Subject: Re: linux-next: Tree for February 10 (security/audit/ima)
+Message-Id: <20090211132718.95107bd5.sfr@canb.auug.org.au>
+In-Reply-To: <20090211012925.GC28946@ZenIV.linux.org.uk>
+References: <20090210194121.80256b72.sfr@canb.auug.org.au>
+	<4991DBA0.1000008@oracle.com>
+	<20090211012925.GC28946@ZenIV.linux.org.uk>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__11_Feb_2009_13_27_18_+1100_Wo7RF.gKESYWge_j"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-7JZ511tD+eTV1atAbhQS
-Content-Type: text/plain
+--Signature=_Wed__11_Feb_2009_13_27_18_+1100_Wo7RF.gKESYWge_j
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2009-02-10 at 16:24 -0800, Greg KH wrote:
-> plain text document attachment
-> (agp-intel-reduce-extraneous-pci-posting-reads-during-init.patch)
-> 2.6.27-stable review patch.  If anyone has any objections, please let us =
-know.
+Hi Al,
 
-Not exactly a critical fix; more like a janitorial change, and only in
-the start-up code path.
+On Wed, 11 Feb 2009 01:29:25 +0000 Al Viro <viro@ZenIV.linux.org.uk> wrote:
+>
+> Everything in the public audit tree is applied, AFAICT (and for-{linus,ne=
+xt}
+> is reset to current mainline HEAD to avoid the conflicts; sorry about
+> that).
+
+Thanks.
 
 --=20
-keith.packard@intel.com
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
---=-7JZ511tD+eTV1atAbhQS
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+--Signature=_Wed__11_Feb_2009_13_27_18_+1100_Wo7RF.gKESYWge_j
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iD8DBQBJkjRWQp8BWwlsTdMRAmz1AJ9F37DekCHrOTxwUOKtQdc/ZRqNEgCg5qhq
-eihyNOBEUW070wbtioBczVc=
-=CxNL
+iEYEARECAAYFAkmSN4YACgkQjjKRsyhoI8wIeACdGKVr+XkiTmQVvxh4J9LQEQkx
+TacAn1/VkVzJP2zephUZ8Iec2U248Plf
+=0IIL
 -----END PGP SIGNATURE-----
 
---=-7JZ511tD+eTV1atAbhQS--
-
+--Signature=_Wed__11_Feb_2009_13_27_18_+1100_Wo7RF.gKESYWge_j--
