@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759533AbZBKAgo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759474AbZBKAg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759533AbZBKAgo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:36:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757724AbZBKA2a
+	id S1759474AbZBKAg1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:36:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757691AbZBKA23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:28:30 -0500
-Received: from kroah.org ([198.145.64.141]:51235 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 19:28:29 -0500
+Received: from kroah.org ([198.145.64.141]:51224 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757646AbZBKA21 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:27 -0500
-Date: Tue, 10 Feb 2009 16:25:06 -0800
+	id S1757627AbZBKA2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:28:25 -0500
+Date: Tue, 10 Feb 2009 16:25:04 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Zhao Yakui <yakui.zhao@intel.com>,
-       Len Brown <len.brown@intel.com>
-Subject: [patch 25/56] ACPI: proc_dir_entry video/VGA already registered
-Message-ID: <20090211002506.GZ14660@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Len Brown <len.brown@intel.com>
+Subject: [patch 24/56] ACPI: disable ACPI cleanly when bad RSDP found
+Message-ID: <20090211002504.GY14660@kroah.com>
 References: <20090211001439.873435357@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-proc_dir_entry-video-vga-already-registered.patch"
+Content-Disposition: inline; filename="acpi-disable-acpi-cleanly-when-bad-rsdp-found.patch"
 In-Reply-To: <20090211002328.GA14660@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,35 +38,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Zhao Yakui <yakui.zhao@intel.com>
+From: Len Brown <len.brown@intel.com>
 
-commit f3b39f1393d5cebe56f43a584ef47efbebd2702c upstream.
+commit 9e3a9d1ed8cc8db93e5c53e9a5b09065bd95de8b upstream.
 
-eliminate the duplicate the name of "VGA"
+When ACPI is disabled in the BIOS of this VIA C3 box,
+it invalidates the RSDP, which Linux notices:
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12514
+ACPI Error (tbxfroot-0218): A valid RSDP was not found [20080926]
 
-Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
+Bug Linux neglected to disable ACPI at that stage,
+and later scribbled on smp_found_config:
+
+ACPI: No APIC-table, disabling MPS
+
+But this box doesn't run well in legacy PIC mode,
+it needed IOAPIC mode to perform correctly:
+
+http://lkml.org/lkml/2009/2/5/39
+
+So exit ACPI mode cleanly when we first detect
+that it is hopeless.
+
 Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/video.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/acpi/tables.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -1983,6 +1983,12 @@ static int acpi_video_bus_add(struct acp
- 			device->pnp.bus_id[3] = '0' + instance;
- 		instance ++;
- 	}
-+	/* a hack to fix the duplicate name "VGA" problem on Pa 3553 */
-+	if (!strcmp(device->pnp.bus_id, "VGA")) {
-+		if (instance)
-+			device->pnp.bus_id[3] = '0' + instance;
-+		instance++;
-+	}
+--- a/drivers/acpi/tables.c
++++ b/drivers/acpi/tables.c
+@@ -293,7 +293,12 @@ static void __init check_multiple_madt(v
  
- 	video->device = device;
- 	strcpy(acpi_device_name(device), ACPI_VIDEO_BUS_NAME);
+ int __init acpi_table_init(void)
+ {
+-	acpi_initialize_tables(initial_tables, ACPI_MAX_TABLES, 0);
++	acpi_status status;
++
++	status = acpi_initialize_tables(initial_tables, ACPI_MAX_TABLES, 0);
++	if (ACPI_FAILURE(status))
++		return 1;
++
+ 	check_multiple_madt();
+ 	return 0;
+ }
 
