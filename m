@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758477AbZBKRa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbZBKRb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758477AbZBKRa7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 12:30:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757355AbZBKRaL
+	id S1758064AbZBKRb4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 12:31:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbZBKRbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 12:30:11 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:45126 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757332AbZBKRaK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 12:30:10 -0500
-Date: Wed, 11 Feb 2009 11:24:16 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: David Howells <dhowells@redhat.com>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Sesterhenn <snakebyte@gmx.de>, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: namespaces?: bug at mm/slub.c:2750
-Message-ID: <20090211172416.GA30756@us.ibm.com>
-References: <20090211163753.GA29372@us.ibm.com> <20090206113556.GA3161@alice> <20090206161518.81e7d42c.akpm@linux-foundation.org> <19f34abd0902102355o5bf51096o9aa3737e87104fb9@mail.gmail.com> <20090211000740.f1de7cec.akpm@linux-foundation.org> <19f34abd0902110248n22f8de12lccfa99faafafb942@mail.gmail.com> <1538.1234371764@redhat.com>
+	Wed, 11 Feb 2009 12:31:47 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40796 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753193AbZBKRbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 12:31:46 -0500
+Date: Wed, 11 Feb 2009 18:31:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>, Tony Luck <tony.luck@intel.com>,
+       Mike Travis <travis@sgi.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 0/8] git pull request for tip/tracing/core
+Message-ID: <20090211173131.GA27546@elte.hu>
+References: <20090208054955.777429253@goodmis.org> <20090209093751.GD7930@elte.hu> <20090211153650.GA19576@elte.hu> <alpine.DEB.1.10.0902111147450.15438@gandalf.stny.rr.com> <alpine.DEB.1.10.0902111158380.15438@gandalf.stny.rr.com> <20090211171622.GA13239@elte.hu> <alpine.DEB.1.10.0902111227570.15438@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1538.1234371764@redhat.com>
+In-Reply-To: <alpine.DEB.1.10.0902111227570.15438@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting David Howells (dhowells@redhat.com):
-> Serge E. Hallyn <serue@us.ibm.com> wrote:
+
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> On Wed, 11 Feb 2009, Ingo Molnar wrote:
+> > > 
+> > > I just looked at alpha and arm, I'm now looking at ia64. And this could
+> > > be an issue, since it has 14 bits for hard irqs.
+> > > 
+> > > What would be the impact to make the preempt count a long?
+> > 
+> > Assembly code has to be audited i guess, whether it's treated as an int anywhere. 
+> > Should work i guess.
 > 
-> >  static void uid_hash_remove(struct user_struct *up)
-> >  {
-> > +	put_user_ns(up->user_ns);
-> >  	hlist_del_init(&up->uidhash_node);
-> >  }
+> Before we go and make the change, Peter brought up a good point on IRC. Is 
+> there any reason that ia64 needs 1 << 14 IRQs?  That's 16384!
 > 
-> Don't you need to do the hlist_del_init() first?  Otherwise, mightn't the
-> put_user_ns() cause the namespace to be freed before hlist_del_init() removes
-> the user_struct from it?
+> Perhaps the better solution wolud be (if possible), to simply lower the 
+> number of bits.
 
-It's called under uidhash_lock spinlock so should be ok, but in
-principle you're right so it's probably a good idea.
+i'm the wrong person to be asked about that. (Cc:-ed the right people)
 
-The main point is that without this patch, put_user_ns is done before
-the hlist_del_init and *not* atomically under uidhash_lock.
-
-thanks,
--serge
+	Ingo
