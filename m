@@ -1,98 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757242AbZBKWob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758102AbZBKWpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757242AbZBKWob (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 17:44:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbZBKWoX
+	id S1758102AbZBKWpb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 17:45:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755795AbZBKWpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 17:44:23 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:59022 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752831AbZBKWoW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 17:44:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Z7QPe6yAFVVqZFBRbAiMtNgGnhulArd0UFsFsjjkEcmT2dl57cWfxgkvqbrYUK8por
-         vugJX4nlRzts+c2DFIu2rdxjIAQZFOzkjVrqPmBSRXdJ8P2FITjVAJqKr5PeBnuqFZR1
-         VD3QrD23nYpgupaiBM2Oo1/ln8R5m7ev4NVpQ=
+	Wed, 11 Feb 2009 17:45:18 -0500
+Received: from www.tglx.de ([62.245.132.106]:33961 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755661AbZBKWpQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 17:45:16 -0500
+Date: Wed, 11 Feb 2009 23:43:44 +0100 (CET)
+From: Thomas Gleixner <tglx@tglx.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>
+Subject: [Announce] 2.6.29-rc4-rt1
+Message-ID: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20090211143844.27ca0d6c.akpm@linux-foundation.org>
-References: <49929EB8.4020802@tremplin-utc.net>
-	 <1234346803-19811-1-git-send-email-giuseppe.bilotta@gmail.com>
-	 <20090211143844.27ca0d6c.akpm@linux-foundation.org>
-Date: Wed, 11 Feb 2009 23:44:20 +0100
-Message-ID: <cb7bb73a0902111444h46be9b65pa01d4b2b9c31afe8@mail.gmail.com>
-Subject: Re: [PATCHv7] lis3lv02d: support both one- and two-byte sensors
-From: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, eric.piel@tremplin-utc.net, pavel@suse.cz
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 11, 2009 at 11:38 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Wed, 11 Feb 2009 11:06:43 +0100
-> Giuseppe Bilotta <giuseppe.bilotta@gmail.com> wrote:
->
->> Sensors responding with 0x3B to WHO_AM_I only have one data register per
->> direction, thus returning a signed byte from the position which is
->> occupied by the MSB in sensors responding with 0x3A.
->>
->> Since multiple sensors share the reply to WHO_AM_I, we rename the
->> defines to better indicate what they identify (family of single and
->> double precision sensors).
->>
->> We support both kind of sensors by checking for the sensor type on init
->> and defining appropriate data-access routines and sensor limits (for the
->> joystick) depending on what we find.
->>
->
-> Which tree is this patch against?
->
->> --- a/drivers/hwmon/lis3lv02d.c
->> +++ b/drivers/hwmon/lis3lv02d.c
->> @@ -53,9 +53,6 @@
->>   * joystick.
->>   */
->>
->> -/* Maximum value our axis may get for the input device (signed 12 bits) */
->> -#define MDPS_MAX_VAL 2048
->> -
->>  struct acpi_lis3lv02d adev = {
->>       .misc_wait   = __WAIT_QUEUE_HEAD_INITIALIZER(adev.misc_wait),
->>  };
->
-> Current Linus mainline has
->
-> struct acpi_lis3lv02d adev;
-> EXPORT_SYMBOL_GPL(adev);
->
-> here.
+After a 1.5 years sabbatical from preempt-rt we are pleased to
+announce a refactored preempt-rt patch against linux-2.6.29-rc4.
 
-I based my patch on Linus' tree, plus Pavel's patch which I've been
-told is on your tree.
+The patch is working on x86 (32 and 64bit) but we have not yet updated
+ARM, PPC and MIPS (work in progress).
 
-Is your tree available for git? I can try basing it on yours directly.
+We also dropped some experimental features of the base preempt-rt
+queue 2.6.26.8-rt15 simply because we wanted to survive the forward
+port over 3 kernel releases with the least amount of surprises. These
+features (e.g. multiple reader PI locks) are not essential for the
+preempt-rt functionality and need some serious overhaul anyway.
 
-> Also, this comment:
->
-> /*
->  * The sensor can also generate interrupts (DRDY) but it's pretty pointless
->  * because their are generated even if the data do not change. So it's better
->  * to keep the interrupt for the free-fall event. The values are updated at
->  * 40Hz (at the lowest frequency), but as it can be pretty time consuming on
->  * some low processor, we poll the sensor only at 20Hz... enough for the
->  * joystick.
->  */
->
-> seems to be describing something which isn't there.
+The interested -rt observer might have noticed that we based our work
+on the 2.6.26.8-rt15 patch queue and did not pick the git-rt tree
+which is based on 2.6.28. The reason for this is that we wanted to pick
+the most stable patch queue and the git-rt tree has a lot of rewritten
+new code. Our work is not making the work which was done over the last
+months in the git-rt tree obsolete, quite the contrary: we want to
+provide a stable yet latest-kernel based foundation and integrate those
+changes gradually, as they become ready.
 
-I have no idea about that, I didn't touch it at all.
+The further plan for the new -rt series is to merge it fully into git
+and integrate it into the -tip git tree so it gets the same treatment
+as all of our -tip based work: fully automated compile and boot
+testing. Furthermore an automated multi architecture -rt performance
+regression test based on the same infrastructure is currently being
+built.
 
--- 
-Giuseppe "Oblomov" Bilotta
+The integration into the -tip tree also allows us to seperate out parts
+of -rt which are ready for mainline more easily and integrate them
+with our usual propagation to mainline.
+
+The structure of the patches is likely to change over the next days
+when we tackle the git integration, but we appreciate your feedback in
+the form of comments, bugreports and patches.
+
+Enough said. You can find the new patches at the following location:
+
+  http://www.kernel.org/pub/linux/kernel/projects/rt/
+
+Information on the RT patch can be found at:
+
+  http://rt.wiki.kernel.org/index.php/Main_Page
+
+to build the 2.6.29-rc4-rt1 tree, the following patches should be
+applied:
+
+  http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc4.tar.bz2
+  http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29-rc4-rt1.bz2
+
+The broken out patches are also available at the same download
+location.
+
+Enjoy !
+
+      Thomas, Ingo
