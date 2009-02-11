@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756384AbZBKOCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756582AbZBKOE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756384AbZBKOCU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 09:02:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755014AbZBKOCL
+	id S1756582AbZBKOE0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 09:04:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbZBKOES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 09:02:11 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:44363 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754378AbZBKOCK (ORCPT
+	Wed, 11 Feb 2009 09:04:18 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:57999 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755080AbZBKOER (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 09:02:10 -0500
-Subject: Re: next-20090211: BUG: MAX_LOCKDEP_SUBCLASSES too low!
-From: Chris Mason <chris.mason@oracle.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Alexander Beregalov <a.beregalov@gmail.com>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1234360834.23438.162.camel@twins>
-References: <a4423d670902110414r72f14c1eq850cda59533bd9db@mail.gmail.com>
-	 <1234355010.23438.132.camel@twins> <1234355070.23438.133.camel@twins>
-	 <1234355201.23438.134.camel@twins>
-	 <a4423d670902110452s5fb6d041l2363c8ad9b9618fb@mail.gmail.com>
-	 <1234357467.23438.151.camel@twins>  <1234360834.23438.162.camel@twins>
-Content-Type: text/plain
-Date: Wed, 11 Feb 2009 09:01:36 -0500
-Message-Id: <1234360896.8537.0.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Wed, 11 Feb 2009 09:04:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=KUKunK9DF43bxSeJqPNwBrU9DiOypcJlvKgVAqZ91hLmK/wj4IZCY9qkHElR99okV+
+         5FB32xtY8uzvCPVV4aRcFrlLHoY6T/+/sW1r1CWkHfAcPsx1XrcjrE6va50VewTZIq42
+         CDQ8hhR0rEOqrGWhrHp2FQW6qqPrqWFfr9DS8=
+MIME-Version: 1.0
+In-Reply-To: <20090210141405.GA16147@elte.hu>
+References: <a5f59d880902100542x7243b13fuf40e7dd21faf7d7a@mail.gmail.com>
+	 <20090210141405.GA16147@elte.hu>
+Date: Wed, 11 Feb 2009 22:04:16 +0800
+Message-ID: <a5f59d880902110604g40cf17b5w92431f60e6f16fa4@mail.gmail.com>
+Subject: Re: Using module private memory to simulate microkernel's memory 
+	protection
+From: Pengfei Hu <hpfei.cn@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Vegard Nossum <vegard.nossum@gmail.com>
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A09020B.4992DA44.01FB:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-11 at 15:00 +0100, Peter Zijlstra wrote:
+>
+> Hm, are you aware of the kmemcheck project?
+>
+>        Ingo
+>
 
-> > > > Could you run with the below patch, so that we can see where this
-> > > > happens?
-> > 
-> > Tssk, Chris what you have been doing?
-> 
-> Would something like this work?
-> 
+Frankly, I only know this project's name. Just when I nearly finished
+this patch, I browsed http://git.kernel.org/ first time. I am only a
+beginner in Linux kernel. Maybe I should first discuss before write
+code. But I think it is not too late.
 
-It's almost perfect ;) I just need BTRFS_MAX_LEVEL, which is 8, will
-test and merge up.  Thanks!
-
--chris
-
-
+Can you tell me more about this project? I realy appreciate it.
