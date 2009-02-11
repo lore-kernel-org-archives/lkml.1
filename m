@@ -1,111 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756884AbZBKOZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756398AbZBKObT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756884AbZBKOZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 09:25:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755061AbZBKOZv
+	id S1756398AbZBKObT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 09:31:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbZBKObH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 09:25:51 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37226 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754943AbZBKOZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 09:25:51 -0500
-Date: Wed, 11 Feb 2009 15:25:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [git pull] tracing fixes
-Message-ID: <20090211142534.GA31297@elte.hu>
+	Wed, 11 Feb 2009 09:31:07 -0500
+Received: from yw-out-2324.google.com ([74.125.46.29]:10453 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750730AbZBKObE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 09:31:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=A82v6rR3s2/nStgnLgXUMmx3M6nUpRg1vLRvPNLl8UX1wOusX/ZDw9g2Lp3ubxI1w0
+         rkKQx8YGVYWgCYe8i83byD9YP1PQG4OxFhb3LY0VrEwMu2vQ0pilARVuMbxPnS0mq+nS
+         +qG4mCYpIAD4EYUuaNXZYqyqzf3Po+mKvNiNA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4992812B.1050800@kernel.org>
+References: <1234277507-4987-1-git-send-email-brgerst@gmail.com>
+	 <1234277507-4987-3-git-send-email-brgerst@gmail.com>
+	 <4992812B.1050800@kernel.org>
+Date: Wed, 11 Feb 2009 09:31:02 -0500
+Message-ID: <73c1f2160902110631j68e58202h3e49288cfe613d66@mail.gmail.com>
+Subject: Re: [PATCH 2/3] x86: Pass in pt_regs pointer for syscalls that need 
+	it
+From: Brian Gerst <brgerst@gmail.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Wed, Feb 11, 2009 at 2:41 AM, Tejun Heo <tj@kernel.org> wrote:
+> Hello, Brian.
+>
+> Brian Gerst wrote:
+>> Some syscalls need to access the pt_regs structure, either to copy
+>> user register state or to modifiy it.  This patch adds stubs to load
+>> the address of the pt_regs struct into the %eax register, and changes
+>> the syscalls to regparm(1) to receive the pt_regs pointer as the
+>> first argument.
+>
+> Heh... neat.  Just one question.
+>
+>> -asmlinkage long sys_iopl(unsigned long regsp)
+>> +ptregscall long sys_iopl(struct pt_regs *regs, unsigned int level)
+>>  {
+>> -     struct pt_regs *regs = (struct pt_regs *)&regsp;
+>> -     unsigned int level = regs->bx;
+>
+> Here and at other places where the function takes more than one
+> arguments, wouldn't it be better to just take *regs and use other
+> parameters from regs?  That way we won't have to worry about gcc
+> corrupting register frame at all and I think it's cleaner that way.
 
-Please pull the latest tracing-fixes-for-linus git tree from:
+Expanding the parameters is good documentation.  If there is a risk of
+tail-call optimization causing the register corruption, then
+asmlinkage_protect() should be used.  The problem isn't limited to
+just the syscalls that take pt_regs.  It's just getting the args out
+of the pt_regs struct was an easy hack to get around it.  I checked
+the disassembly of these functions and didn't see this happen on gcc
+4.3.0.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tracing-fixes-for-linus
-
- Thanks,
-
-	Ingo
-
------------------->
-Hugh Dickins (1):
-      profiling: fix broken profiling regression
-
-Steven Rostedt (2):
-      tracing, x86: fix fixup section to return to original code
-      tracing, x86: fix constraint for parent variable
-
-
- arch/x86/kernel/ftrace.c |   17 +++++++++--------
- kernel/profile.c         |    3 +++
- 2 files changed, 12 insertions(+), 8 deletions(-)
-
-diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-index 1b43086..231bdd3 100644
---- a/arch/x86/kernel/ftrace.c
-+++ b/arch/x86/kernel/ftrace.c
-@@ -488,20 +488,21 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
- 	 * ignore such a protection.
- 	 */
- 	asm volatile(
--		"1: " _ASM_MOV " (%[parent_old]), %[old]\n"
--		"2: " _ASM_MOV " %[return_hooker], (%[parent_replaced])\n"
-+		"1: " _ASM_MOV " (%[parent]), %[old]\n"
-+		"2: " _ASM_MOV " %[return_hooker], (%[parent])\n"
- 		"   movl $0, %[faulted]\n"
-+		"3:\n"
- 
- 		".section .fixup, \"ax\"\n"
--		"3: movl $1, %[faulted]\n"
-+		"4: movl $1, %[faulted]\n"
-+		"   jmp 3b\n"
- 		".previous\n"
- 
--		_ASM_EXTABLE(1b, 3b)
--		_ASM_EXTABLE(2b, 3b)
-+		_ASM_EXTABLE(1b, 4b)
-+		_ASM_EXTABLE(2b, 4b)
- 
--		: [parent_replaced] "=r" (parent), [old] "=r" (old),
--		  [faulted] "=r" (faulted)
--		: [parent_old] "0" (parent), [return_hooker] "r" (return_hooker)
-+		: [old] "=r" (old), [faulted] "=r" (faulted)
-+		: [parent] "r" (parent), [return_hooker] "r" (return_hooker)
- 		: "memory"
- 	);
- 
-diff --git a/kernel/profile.c b/kernel/profile.c
-index 784933a..7724e04 100644
---- a/kernel/profile.c
-+++ b/kernel/profile.c
-@@ -114,12 +114,15 @@ int __ref profile_init(void)
- 	if (!slab_is_available()) {
- 		prof_buffer = alloc_bootmem(buffer_bytes);
- 		alloc_bootmem_cpumask_var(&prof_cpu_mask);
-+		cpumask_copy(prof_cpu_mask, cpu_possible_mask);
- 		return 0;
- 	}
- 
- 	if (!alloc_cpumask_var(&prof_cpu_mask, GFP_KERNEL))
- 		return -ENOMEM;
- 
-+	cpumask_copy(prof_cpu_mask, cpu_possible_mask);
-+
- 	prof_buffer = kzalloc(buffer_bytes, GFP_KERNEL);
- 	if (prof_buffer)
- 		return 0;
+--
+Brian Gerst
