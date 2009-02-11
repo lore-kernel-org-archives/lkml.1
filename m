@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbZBKBOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755870AbZBKBRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755716AbZBKBOV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 20:14:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbZBKBOL
+	id S1755870AbZBKBRd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 20:17:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbZBKBRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 20:14:11 -0500
-Received: from casper.infradead.org ([85.118.1.10]:35874 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753823AbZBKBOK (ORCPT
+	Tue, 10 Feb 2009 20:17:23 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:63909 "EHLO
+	VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752952AbZBKBRW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 20:14:10 -0500
-Date: Tue, 10 Feb 2009 17:13:58 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@suse.cz>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [patch 0/2] Make the touchpad on the MSI Wind netbook work
-Message-ID: <20090210171358.78c34d41@infradead.org>
-In-Reply-To: <alpine.LRH.1.10.0902110156390.22097@twin.jikos.cz>
-References: <20090204191540.2d6abd87@infradead.org>
-	<20090210202558.GH1382@ucw.cz>
-	<200902102300.19065.rjw@sisk.pl>
-	<alpine.LRH.1.10.0902110156390.22097@twin.jikos.cz>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 10 Feb 2009 20:17:22 -0500
+X-BigFish: VS-34(zz119bM1432R98dR1805M3117K103dKzz10c0jzzz2dh6bh63h)
+X-Spam-TCS-SCL: 2:0
+Message-ID: <499226F9.5000307@am.sony.com>
+Date: Tue, 10 Feb 2009 17:16:41 -0800
+From: Frank Rowand <frank.rowand@am.sony.com>
+Reply-To: frank.rowand@am.sony.com
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: wuzj@lemote.com
+CC: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: the current status of RT_PREEMPT for mips
+References: <20955.222.92.8.142.1234138032.squirrel@mail.lemote.com>
+In-Reply-To: <20955.222.92.8.142.1234138032.squirrel@mail.lemote.com>
+Content-Type: text/plain; charset="GB2312"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-OriginalArrivalTime: 11 Feb 2009 01:16:49.0674 (UTC) FILETIME=[6A2B6EA0:01C98BE6]
+X-SEL-encryption-scan: scanned
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Feb 2009 02:00:21 +0100 (CET)
-Jiri Kosina <jkosina@suse.cz> wrote:
-
-> On Tue, 10 Feb 2009, Rafael J. Wysocki wrote:
+wuzj@lemote.com wrote:
+> HI!
 > 
-> > > Well, that beast was selling with linux preloaded, no? Or was it 
-> > > another msi wind? In such case I'd expect old kernel to work...
-> > > or maybe some reasonable workaround somewhere...
-> > In fact I have an MSI Wind and the touchpad is works on it just
-> > fine with the current mainline.
-> > Perhaps this one is just another MSI Wind.  What model is it?
+> I'm planning to port RE_PREEMPT to loongson2f(a mipsel compatible
+> processor), the "FAQ" web page of RTWiKi(rt.wiki.kernel.org) shows that
+> "There are systems representing the x86, x86_64, ARM, MIPS, and Power
+> architectures using the CONFIG_PREEMPT_RT patch.", does it means that
+> RT_PREEMPT support  MIPS architecture? because i can not find any more
+> information about it, I tried to use the latest RT_PREEMPT on qemu
+> 0.9.1/mipssim, it can not boot, so I come to get your help, could you give
+> any current status of RT_PREEMPT for mips? such as:
 > 
-> >From what I have heard there are different models of MSI Wind out
-> >there, 
-> with different set of hardware configurations.
+> 1. does the latest RT_PREEMPT(for linux 2.6.26.8) support MIPS
+> architecture? or any older one support it?
+> 2. if Yes, which MIPS processors have been successfully running RT_PREEMPT?
 > 
-> Arjan, Rafael, could you please provide the dmidecode outputs for the 
-> working and non-working systems, so that we can see what are the 
-> differences?
+> looking forward to your reply, thanks!
+> 
+> Best Regards,
+> falcon
 
-does this matter for the patch ?
+I do not have information for current versions of the kernel, but last year
+I was running 2.6.24-rt1 on a Toshiba tx4937 to do some experiments.
 
+I have a few trivial patches for the latency tracer, but if you use a newer
+kernel they are not needed because ftrace replaced the latency tracer
+in 2.6.24-rt2.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+-Frank Rowand
+Sony Corporation of America
+
