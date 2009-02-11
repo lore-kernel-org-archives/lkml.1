@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758184AbZBKRT6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758138AbZBKRVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758184AbZBKRT6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 12:19:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757680AbZBKRTl
+	id S1758138AbZBKRVi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 12:21:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756885AbZBKRV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 12:19:41 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44808 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757593AbZBKRTl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 12:19:41 -0500
-Date: Wed, 11 Feb 2009 18:19:23 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Howells <dhowells@redhat.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Serge Hallyn <serue@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: Re: [CRED bug?] 2.6.29-rc3 don't survive on stress workload
-Message-ID: <20090211171923.GD13239@elte.hu>
-References: <20090211163331.GA4251@elte.hu> <20090211214639.C3D0.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090210142443.629E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <27780.1234356078@redhat.com> <31230.1234357767@redhat.com> <1576.1234372068@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1576.1234372068@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 11 Feb 2009 12:21:29 -0500
+Received: from web.proformatique.com ([91.194.179.68]:39742 "EHLO
+	proformatique.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756908AbZBKRV3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 12:21:29 -0500
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Feb 2009 12:21:28 EST
+Date: Wed, 11 Feb 2009 18:14:31 +0100
+From: Guillaume Knispel <gknispel@proformatique.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: Interrupt synchronisation questions for SMP experts
+Message-ID: <20090211181431.47f42dde@xilun.lan.proformatique.com>
+Organization: Proformatique
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* David Howells <dhowells@redhat.com> wrote:
+1. Imagine an interrupt storm from an evil device on an evil SMP
+machine, is there any guarantee that if the ISR call
+disable_irq_nosync() on its own irq it won't be called again just after
+it returns?  I feel this could be a reasonable expectation while i fail
+to see anything that could provide it in the for (;;) loop of
+__do_IRQ().
 
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > include/linux/cred.h: In function 'get_cred':
-> > include/linux/cred.h:188: warning: passing argument 1 of 'get_new_cred' discards 
-> > qualifiers from pointer target type
-> 
-> This is a known compiler bug in some versions of gcc.  It fails to observe the
-> fact that a const pointer is cast to the equivalent non-const pointer in
-> get_cred():
-> 
-> 	static inline const struct cred *get_cred(const struct cred *cred)
-> 	{
-> 		return get_new_cred((struct cred *) cred);
-> 	}
+2. Does using synchronizing functions like disable_irq(),
+tasklet_kill(), or del_timer_sync() provide sequentiality between the
+effects of the end of the interrupt servicing code and the effects of
+the code immediately after the call to the synchronizing function?
 
-If by 'some versions of gcc' you mean 'gcc 4.2.2' then yes. And in any case
-it's a very annoying warning.
+3. Consider this:
 
-	Ingo
+(a initially set to 0)
+  CPU 1.          CPU 2.
+
+  z = 3;          while (!a) barrier();
+  smp_wmb();      smp_mb();
+  a = 1;          z = 42;
+
+Does the semantic of smp_mb() and smp_wmb() guarantee that the final
+value of z will be 42?  (This has something to do with 2.)
+
+Cheers,
+Guillaume KNISPEL
