@@ -1,99 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755785AbZBKKOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbZBKKRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755785AbZBKKOT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 05:14:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZBKKOI
+	id S1755830AbZBKKRW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 05:17:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbZBKKRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 05:14:08 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48281 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752451AbZBKKOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 05:14:05 -0500
-Date: Wed, 11 Feb 2009 11:13:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: Brian Gerst <brgerst@gmail.com>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 1/3] x86: Use pt_regs pointer in
-	do_device_not_available()
-Message-ID: <20090211101359.GG20518@elte.hu>
-References: <1234277507-4987-1-git-send-email-brgerst@gmail.com> <1234277507-4987-2-git-send-email-brgerst@gmail.com> <499281B5.2070502@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <499281B5.2070502@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 11 Feb 2009 05:17:10 -0500
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:60426 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750730AbZBKKRI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 05:17:08 -0500
+Subject: Re: [PATCH -mmotm] mm: unify some pmd_*() functions
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: David Howells <dhowells@redhat.com>, akpm@linux-foundation.org,
+       linux-mm@kvack.org, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <a2776ec50902100541p1503adaay52d221411d92c842@mail.gmail.com>
+References: <1232919337-21434-1-git-send-email-righi.andrea@gmail.com>
+	 <16182.1234199195@redhat.com>
+	 <a2776ec50902100541p1503adaay52d221411d92c842@mail.gmail.com>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Wed, 11 Feb 2009 11:16:55 +0100
+Message-Id: <1234347415.19362.5.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Tejun Heo <tj@kernel.org> wrote:
-
-> Hello, Brian.
+On Tue, 2009-02-10 at 14:41 +0100, Andrea Righi wrote: 
+> On Mon, Feb 9, 2009 at 6:06 PM, David Howells <dhowells@redhat.com> wrote:
+> > Andrea Righi <righi.andrea@gmail.com> wrote:
+> >
+> >> Unify all the identical implementations of pmd_free(), __pmd_free_tlb(),
+> >> pmd_alloc_one(), pmd_addr_end() in include/asm-generic/pgtable-nopmd.h
+> >
+> > NAK for FRV on two fronts:
 > 
-> Brian Gerst wrote:
-> > The generic exception handler (error_code) passes in the pt_regs
-> > pointer and the error code (unused in this case).  The commit
-> > "x86: fix math_emu register frame access" changed this to pass by
-> > value, which doesn't work correctly with stack protector enabled.
-> > Change it back to use the pt_regs pointer.
-> > 
-> > Signed-off-by: Brian Gerst <brgerst@gmail.com>
-> > ---
-> >  arch/x86/include/asm/traps.h |    2 +-
-> >  arch/x86/kernel/traps.c      |    9 +++++----
-> >  2 files changed, 6 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/arch/x86/include/asm/traps.h b/arch/x86/include/asm/traps.h
-> > index cf3bb05..0d53425 100644
-> > --- a/arch/x86/include/asm/traps.h
-> > +++ b/arch/x86/include/asm/traps.h
-> > @@ -41,7 +41,7 @@ dotraplinkage void do_int3(struct pt_regs *, long);
-> >  dotraplinkage void do_overflow(struct pt_regs *, long);
-> >  dotraplinkage void do_bounds(struct pt_regs *, long);
-> >  dotraplinkage void do_invalid_op(struct pt_regs *, long);
-> > -dotraplinkage void do_device_not_available(struct pt_regs);
-> > +dotraplinkage void do_device_not_available(struct pt_regs *, long);
-> >  dotraplinkage void do_coprocessor_segment_overrun(struct pt_regs *, long);
-> >  dotraplinkage void do_invalid_TSS(struct pt_regs *, long);
-> >  dotraplinkage void do_segment_not_present(struct pt_regs *, long);
-> > diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
-> > index 3b7b2e1..71a8f87 100644
-> > --- a/arch/x86/kernel/traps.c
-> > +++ b/arch/x86/kernel/traps.c
-> > @@ -905,19 +905,20 @@ void math_emulate(struct math_emu_info *info)
-> >  }
-> >  #endif /* CONFIG_MATH_EMULATION */
-> >  
-> > -dotraplinkage void __kprobes do_device_not_available(struct pt_regs regs)
-> > +dotraplinkage void __kprobes
-> > +do_device_not_available(struct pt_regs *regs, long error_code)
+> This patch generates too many followup fixes and it's better to simply drop it
+> for now.
 > 
-> What do you think about just taking pt_regs and accessing
-> regs->orig_eax instead of having separate call convention for pt_regs
-> ones and trap ones?  Too much work without enough benefit?
+> I think we need to use a different approach and, more important, we need to
+> clean a lot of .h files before to avoid the include hell problems.
 
-Looks worthwile to me. [ Cleanups rarely have clear benefits of their own,
-it's the sheer mass of them that makes a difference in the end. Like the
-many snowflakes that can bend a tree ;-) ]
+I'm in favour of getting rid of include/asm-generic/pgtable-nopmd.h and
+include/asm-generic/pgtable-nopud.h altogether. The folding of page
+table levels is hard enough to understand but with the definitions
+scattered in five different files it is no fun. At least my brain starts
+to hurt everytime I have to look at an architecture that uses the
+generic folding. As an example I hacked together the conversion for
+sparc64. It compiles, dunno if it works.
 
-There's one small namespace complication here: it's pt_regs->orig_eax on
-32-bit and pt_regs->orig_rax on 64-bit.
+-- 
+blue skies,
+  Martin.
 
-So i'd suggest the introduction of an anonymous union "error_code" field
-which overlays orig_eax and that can be used just fine from unified code too.
-That would also be more readable.
+"Reality continues to ruin my life." - Calvin.
 
-Or we could rename orig_eax/orig_rax to error_code. (it might be a bit
-confusing in the syscall entry context though.)
 
-	Ingo
+---
+diff -urpN linux-2.6/arch/sparc/include/asm/page_64.h linux-2.6-example/arch/sparc/include/asm/page_64.h
+--- linux-2.6/arch/sparc/include/asm/page_64.h	2008-10-12 22:12:26.000000000 +0200
++++ linux-2.6-example/arch/sparc/include/asm/page_64.h	2009-02-11 11:03:56.000000000 +0100
+@@ -61,18 +61,21 @@ extern void copy_user_page(void *to, voi
+ typedef struct { unsigned long pte; } pte_t;
+ typedef struct { unsigned long iopte; } iopte_t;
+ typedef struct { unsigned int pmd; } pmd_t;
++typedef struct { unsigned int pud; } pud_t;
+ typedef struct { unsigned int pgd; } pgd_t;
+ typedef struct { unsigned long pgprot; } pgprot_t;
+ 
+ #define pte_val(x)	((x).pte)
+ #define iopte_val(x)	((x).iopte)
+ #define pmd_val(x)      ((x).pmd)
++#define pud_val(x)	((x).pud)
+ #define pgd_val(x)	((x).pgd)
+ #define pgprot_val(x)	((x).pgprot)
+ 
+ #define __pte(x)	((pte_t) { (x) } )
+ #define __iopte(x)	((iopte_t) { (x) } )
+ #define __pmd(x)        ((pmd_t) { (x) } )
++#define __pud(x)	((pud_t) { (x) } )
+ #define __pgd(x)	((pgd_t) { (x) } )
+ #define __pgprot(x)	((pgprot_t) { (x) } )
+ 
+diff -urpN linux-2.6/arch/sparc/include/asm/pgalloc_64.h linux-2.6-example/arch/sparc/include/asm/pgalloc_64.h
+--- linux-2.6/arch/sparc/include/asm/pgalloc_64.h	2008-07-29 10:11:30.000000000 +0200
++++ linux-2.6-example/arch/sparc/include/asm/pgalloc_64.h	2009-02-11 11:11:29.000000000 +0100
+@@ -24,6 +24,12 @@ static inline void pgd_free(struct mm_st
+ 	quicklist_free(0, NULL, pgd);
+ }
+ 
++#define pgd_populate(mm, pgd, pud)	do { } while (0)
++
++#define pud_alloc_one(mm, address)	(NULL)
++#define pud_free(mm, x)			do { } while (0)
++#define __pud_free_tlb(tlb, x)		do { } while (0)
++
+ #define pud_populate(MM, PUD, PMD)	pud_set(PUD, PMD)
+ 
+ static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
+diff -urpN linux-2.6/arch/sparc/include/asm/pgtable_64.h linux-2.6-example/arch/sparc/include/asm/pgtable_64.h
+--- linux-2.6/arch/sparc/include/asm/pgtable_64.h	2008-10-12 22:12:26.000000000 +0200
++++ linux-2.6-example/arch/sparc/include/asm/pgtable_64.h	2009-02-11 11:07:00.000000000 +0100
+@@ -12,8 +12,6 @@
+  * the SpitFire page tables.
+  */
+ 
+-#include <asm-generic/pgtable-nopud.h>
+-
+ #include <linux/compiler.h>
+ #include <linux/const.h>
+ #include <asm/types.h>
+@@ -68,6 +66,11 @@
+ #define PMD_MASK	(~(PMD_SIZE-1))
+ #define PMD_BITS	(PAGE_SHIFT - 2)
+ 
++#define PUD_SHIFT	(PAGE_SHIFT + (PAGE_SHIFT-3) + PMD_BITS)
++#define PUD_SIZE	(_AC(1,UL) << PUD_SHIFT)
++#define PUD_MASK	(~(PUD_SIZE-1))
++#define PUD_BITS	(PAGE_SHIFT - 2)
++
+ /* PGDIR_SHIFT determines what a third-level page table entry can map */
+ #define PGDIR_SHIFT	(PAGE_SHIFT + (PAGE_SHIFT-3) + PMD_BITS)
+ #define PGDIR_SIZE	(_AC(1,UL) << PGDIR_SHIFT)
+@@ -81,6 +84,7 @@
+ /* Entries per page directory level. */
+ #define PTRS_PER_PTE	(1UL << (PAGE_SHIFT-3))
+ #define PTRS_PER_PMD	(1UL << PMD_BITS)
++#define PTRS_PER_PUD	(1UL)
+ #define PTRS_PER_PGD	(1UL << PGDIR_BITS)
+ 
+ /* Kernel has a separate 44bit address space. */
+@@ -88,6 +92,7 @@
+ 
+ #define pte_ERROR(e)	__builtin_trap()
+ #define pmd_ERROR(e)	__builtin_trap()
++#define pud_ERROR(e)	__builtin_trap()
+ #define pgd_ERROR(e)	__builtin_trap()
+ 
+ #endif /* !(__ASSEMBLY__) */
+@@ -630,6 +635,10 @@ static inline int pte_special(pte_t pte)
+ #define pud_bad(pud)			(0)
+ #define pud_present(pud)		(pud_val(pud) != 0U)
+ #define pud_clear(pudp)			(pud_val(*(pudp)) = 0U)
++#define pgd_none(pgd)			(0)
++#define pgd_bad(pgd)			(0)
++#define pgd_present(pgd)		(1)
++#define pgd_clear(pgd)			do { } while (0)
+ 
+ /* Same in both SUN4V and SUN4U.  */
+ #define pte_none(pte) 			(!pte_val(pte))
+@@ -641,6 +650,8 @@ static inline int pte_special(pte_t pte)
+ /* to find an entry in a kernel page-table-directory */
+ #define pgd_offset_k(address) pgd_offset(&init_mm, address)
+ 
++#define pud_offset(pgdp, address) ((pud_t *) pgdp)
++
+ /* Find an entry in the second-level page table.. */
+ #define pmd_offset(pudp, address)	\
+ 	((pmd_t *) pud_page_vaddr(*(pudp)) + \
+
+
