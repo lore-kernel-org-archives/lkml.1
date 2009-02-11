@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756345AbZBKBB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbZBKBEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756345AbZBKBB1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 20:01:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbZBKBBS
+	id S1756893AbZBKBEO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 20:04:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbZBKBD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 20:01:18 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:56101 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752721AbZBKBBR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 20:01:17 -0500
-Date: Wed, 11 Feb 2009 02:00:21 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Pavel Machek <pavel@suse.cz>, Arjan van de Ven <arjan@infradead.org>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [patch 0/2] Make the touchpad on the MSI Wind netbook work
-In-Reply-To: <200902102300.19065.rjw@sisk.pl>
-Message-ID: <alpine.LRH.1.10.0902110156390.22097@twin.jikos.cz>
-References: <20090204191540.2d6abd87@infradead.org> <20090210202558.GH1382@ucw.cz> <200902102300.19065.rjw@sisk.pl>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	Tue, 10 Feb 2009 20:03:58 -0500
+Received: from smtp.opengridcomputing.com ([209.198.142.2]:57782 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752103AbZBKBD5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 20:03:57 -0500
+Message-ID: <499223F8.1010204@opengridcomputing.com>
+Date: Tue, 10 Feb 2009 19:03:52 -0600
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Roland Dreier <rdreier@cisco.com>
+CC: randy.dunlap@oracle.com, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: [ofa-general] [PATCH 2.6.30] RDMA/cxgb3: Remove modulo math.
+References: <20090210184448.22891.31130.stgit@dell3.ogc.int> <adamyctajv8.fsf@cisco.com>
+In-Reply-To: <adamyctajv8.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Feb 2009, Rafael J. Wysocki wrote:
-
-> > Well, that beast was selling with linux preloaded, no? Or was it 
-> > another msi wind? In such case I'd expect old kernel to work... or 
-> > maybe some reasonable workaround somewhere...
-> In fact I have an MSI Wind and the touchpad is works on it just fine with the
-> current mainline.
-> Perhaps this one is just another MSI Wind.  What model is it?
-
->From what I have heard there are different models of MSI Wind out there, 
-with different set of hardware configurations.
-
-Arjan, Rafael, could you please provide the dmidecode outputs for the 
-working and non-working systems, so that we can see what are the 
-differences?
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
-
+Roland Dreier wrote:
+> I'll roll this into the offending patch (that is in -next).
+>
+> But:
+>
+>  > -		wqe->recv.sgl[i].to = cpu_to_be64(((u32) wr->sg_list[i].addr) %
+>  > -				(1UL << (12 + page_size[i])));
+>  > +		wqe->recv.sgl[i].to = cpu_to_be64(((u64) wr->sg_list[i].addr) &
+>  > +				((1UL << (12 + page_size[i]))-1));
+>
+> Is this required?  Strength reduction optimization should do this
+> automatically (and the code has been there for quite a while, so
+> obviously it isn't causing problems)
+>
+>  - R.
+>   
+Ok.
