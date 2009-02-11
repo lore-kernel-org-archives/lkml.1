@@ -1,113 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755197AbZBKI7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755557AbZBKJDA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755197AbZBKI7Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 03:59:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbZBKI67
+	id S1755557AbZBKJDA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 04:03:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbZBKJCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 03:58:59 -0500
-Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:42735 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751275AbZBKI66 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 03:58:58 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AugEAKshkklMQWt2/2dsb2JhbACBbtF0hBoG
-Date: Wed, 11 Feb 2009 03:58:52 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
-	(repost)
-Message-ID: <20090211085852.GA14973@Krystal>
-References: <20090206130640.GB10918@linux.vnet.ibm.com> <20090206163432.GF10918@linux.vnet.ibm.com> <20090208224419.GA19512@Krystal> <20090209041153.GR7120@linux.vnet.ibm.com> <20090209045352.GA28653@Krystal> <20090209051737.GA29254@Krystal> <20090209070317.GA31583@Krystal> <20090209153305.GA6802@linux.vnet.ibm.com> <20090210191731.GA20867@Krystal> <49925D31.6050006@cn.fujitsu.com>
-Mime-Version: 1.0
+	Wed, 11 Feb 2009 04:02:47 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48286 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752903AbZBKJCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 04:02:45 -0500
+Date: Wed, 11 Feb 2009 10:02:29 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: git pull request for tip/tracing/urgent
+Message-ID: <20090211090229.GG21105@elte.hu>
+References: <alpine.DEB.1.10.0902101314440.23505@gandalf.stny.rr.com> <20090210183046.GA1342@nowhere> <alpine.DEB.1.10.0902101724190.23505@gandalf.stny.rr.com> <20090211012856.GA4921@nowhere>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49925D31.6050006@cn.fujitsu.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 03:50:17 up 41 days,  8:48,  3 users,  load average: 0.14, 0.34,
-	0.25
+In-Reply-To: <20090211012856.GA4921@nowhere>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
-> Mathieu Desnoyers wrote:
+
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> > > 
+> > > 
+> > > It thought after the fixup section, the code would continue to rest of the C code.
+> > > Where would it go without the jmp?
 > > 
-> > I just did a mb() version of the urcu :
+> > To the next item the linker placed into the .fixup section.  And that 
+> > would jump back to the location for that fixup. Basically, what you have 
+> > is this:
 > > 
-> > (uncomment CFLAGS=+-DDEBUG_FULL_MB in the Makefile)
+> > (just picking random and factitious registers)
 > > 
-> > Time per read : 48.4086 cycles
-> > (about 6-7 times slower, as expected)
+> > .section .text
+> > [...]
+> > L1:	mov	%a, %b
+> > L2:	cmp	%x, $1
+> > <continue code>
 > > 
+> > 
+> > <Someplace else>
+> > 
+> > .section .text
+> > [...]
+> > L3:	mov	%c, %d
+> > L4:	cmp	%x, $22
+> > [...]
+> > 
+> > .section .fixup
+> > [...]
+> > L5:	mov	$1, %x
+> > 	jmp L2
+> > L6:	mov	$22, %x
+> > 	jmp L4
+> > [...]
+> > 
+> > 
+> > .section __ex_table
+> > [...]
+> > .long	L1, L5
+> > .long	L3, L6
+> > [...]
+> > 
+> > 
+> > So when we take an exception at label L1, the page fault code will look 
+> > to see if it is OK, by doing a binary search of the exception table.
+> > When it finds the L1, L5 pair, it will then set up a return to the L5 
+> > label.
+> > 
+> > When the fault returns to L5, it loads that reg %x with $1 and jumps back 
+> > to L2, where it can see that it took a fault.
+> > 
+> > Now lets look at what happens when we do not have that jump back to L2. 
+> > Instead of going back to the original code, it will load $22 into %x and 
+> > jmp back to the wrong area. God knows what will happen then, since the 
+> > stack pointer thinks it is from where the original fault occurred.
 > 
-> I had read many papers of Paul.
-> (http://www.rdrop.com/users/paulmck/RCU/)
-> and I know Paul did his endeavor to remove memory barrier in
-> RCU read site in kernel. His work is of consequence.
 > 
-> But, I think,
-> 1) Userspace RCU's read site can pay for the latency of
-> memory barrier(include atomic operator).
->    Userspace does not access to shared data so frequently as kernel.
-> and userspace's read site is not so fast as kernel.
+> Heh, that's fairly logic. Don't ask me why, but I did not imagine each
+> part of .fixup unified in a separate contiguous section (but what else can it be?...).
 > 
-> 2) Userspace uses RCU is for RCU's excellence, not saving a little cpu cycles
->    (http://lwn.net/Articles/263130/)
->    One of the most important excellence is lock-free.
-> 
-> 
-> If my thinking is right, the following opinion has some meaning too.
-> 
-> Use All-SYSTEM 's RCU for Userspace RCU.
-> 
-> All-SYSTEM 's RCU is QRCU which is implemented by Paul.
-> http://lwn.net/Articles/223752/
-> 
-> Any system which has mechanisms equivalent to atomic_op,
-> __wait_event, wake_up, mutex, This system can also implement QRCU.
-> So most system can implement QRCU, and I say QRCU is All-SYSTEM 's RCU.
-> 
-> Obviously, we can implement a portable QRCU highly simply in NPTL.
-> and read lock is:
-> 	for (;;) {
-> 		int idx = qp->completed & 0x1;
-> 		if (likely(atomic_inc_not_zero(qp->ctr + idx)))
-> 			return idx;
-> 	}
-> "atomic_inc_not_zero" is called once likely, it's fast enough.
-> 
+> Thanks for your explanations :-)
 
-Hi Lai,
+This bit:
 
-There are a few reasons why we need rcu in userspace for tracing :
+  	".section .fixup, \"ax\"\n"
+ 	"4: movl $1, %[faulted]\n"
+ 	"   jmp 3b\n"
+ 	".previous\n"
 
-- We need very fast per-cpu read-side synchronization for data structure
-  handling. Updates are rare (enabling/disabling tracing). Therefore,
-  your argument about userspace not needing "fast" rcu does not hold in
-  this case. Note that LTTng has the performance it has today in the
-  kernel because I made sure to use no memory barriers when unnecessary
-  and because I used the minimal amount of atomic operations required.
-  Those represent costly synchronization primitives on quite a few
-  architectures.
-- Being lock-free (atomic). To trace code executed in signal handlers,
-  we need to be able to nest over any user code. With the solution you
-  propose above, the busy-loop in the read-lock does not seems to be
-  signal-safe : if it nests over a writer, it could busy-loop forever.
+Can be thought of as an 'embedded' or 'nested' section - the '.previous'
+directive jumps back to whatever section we were in before. This can be
+nested multiple times too:
 
-Mathieu
+   .section A
+   [...]
+     .section B
+     [...]
+        .section C
+        [...]
+        .previous
+     [...]
+     .previous
+   [...]
+   .previous
 
-> Lai.
-> 
-> 
-> 
+For whatever reason the interaction of the assembler with the linker and
+in particular linker scripts are one of the most undocumented areas of OSS.
+Does anyone know any good reference to start with? 
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Something that explains the principles, how it all works, what the various
+section flags mean in practice, including details like dwarf2/CFI annotations.
+
+I do not know about any coherent documentation in this area and as a result
+many developers shy away from this area, frequently mess it up if they have to
+touch it and generally treat it as voodoo.
+
+	Ingo
