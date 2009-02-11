@@ -1,69 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757568AbZBKRhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757898AbZBKRiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757568AbZBKRhj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 12:37:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755457AbZBKRh2
+	id S1757898AbZBKRiu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 12:38:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756299AbZBKRik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 12:37:28 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:37060 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755620AbZBKRh2 (ORCPT
+	Wed, 11 Feb 2009 12:38:40 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:58508 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755085AbZBKRik (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 12:37:28 -0500
-Date: Wed, 11 Feb 2009 12:37:25 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: netdev@vger.kernel.org
-cc: Kernel development list <linux-kernel@vger.kernel.org>
-Subject: [BUG] SNAT sometimes allows packets to pass through unchanged
-Message-ID: <Pine.LNX.4.44L0.0902111151040.3231-100000@iolanthe.rowland.org>
+	Wed, 11 Feb 2009 12:38:40 -0500
+Date: Wed, 11 Feb 2009 10:38:38 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Yu Zhao <yu.zhao@intel.com>
+Cc: jbarnes@virtuousgeek.org, dwmw2@infradead.org, linux-pci@vger.kernel.org,
+       iommu@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 1/6] PCI: support the ATS capability
+Message-ID: <20090211173838.GC3624@parisc-linux.org>
+References: <1232252254-7614-1-git-send-email-yu.zhao@intel.com> <1232252254-7614-2-git-send-email-yu.zhao@intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1232252254-7614-2-git-send-email-yu.zhao@intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm seeing some strange behavior on my firewall, which is running 
-Fedora 8's version of 2.6.26.  Every so often a packet with a private 
-source address is sent out the public interface unchanged, when it 
-should be dropped.
+On Sun, Jan 18, 2009 at 12:17:29PM +0800, Yu Zhao wrote:
+> +/**
+> + * pci_ats_qdep - query ATS invalidate queue depth
+> + * @dev: the PCI device
+> + *
+> + * Returns the queue depth on success, or 0 on error.
+> + */
+> +int pci_ats_qdep(struct pci_dev *dev)
+> +{
+> +	int pos;
+> +	u16 cap;
+> +
+> +	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ATS);
+> +	if (!pos)
+> +		return 0;
+> +
+> +	pci_read_config_word(dev, pos + PCI_ATS_CAP, &cap);
+> +
+> +	return PCI_ATS_CAP_QDEP(cap) ? : PCI_ATS_MAX_QDEP;
+> +}
 
-This happens when internal hosts are slow to close their end of a TCP 
-connection.  For example:
+The only concern I have with this patch is that every time we enable,
+disable or call qdep (ok, maybe I have a second problem with 'qdep'
+instead of spelling out 'queue_depth'), we call
+pci_find_ext_capability() which is not necessarily cheap.  I can't tell
+from this series of patches whether this is a real performance problem
+or whether we ask for the qdep once per device per boot.
 
-	Internal host A (using a private address) initiates a TCP
-	connection to an external server B.
+There was a performance problem with the MSI code when it would try to
+pci_find_capability() the MSI cap in the interrupt handler.  This was
+fixed long ago by caching the pos of the cap, so I want to be sure we're
+not making the same mistake again here.
 
-	Data is sent back and forth.
+Hm, a third problem is that the empty ? : is really confusing and
+generally to be avoided.  GCC should be able to figure out that it's a
+pure/const function anyway and avoid recalculating it.
 
-	External host B sends a FIN and host A responds with ACK.
-
-	Several minutes later (after the tracking for this connection
-	has expired), host A sends a FIN to host B.  This packet
-	goes through the firewall unchanged and is sent out the
-	public interface with the private source address intact.
-
-Now I would expect that such packets would be dropped, because they 
-don't belong to an existing connection and they can't be the start of a 
-new connection.  The fact that this doesn't happen indicates there is a 
-bug in the netfilter code somewhere.
-
-For reference, here is a lightly-edited extract from my iptables 
-script on the firewall:
-
-------------------------------------------------------------------------
-# Use SNAT for new outgoing connections from private addresses.
-OUTIP=...  # The IP address of the firewall's public interface, eth1
-iptables -t nat -N startnat
-iptables -t nat -A startnat -p tcp -j SNAT --to-source $OUTIP:7000-65500
-iptables -t nat -A startnat -p udp -j SNAT --to-source $OUTIP:7000-65500
-iptables -t nat -A startnat -p icmp -j SNAT --to-source $OUTIP
-iptables -t nat -A startnat -j DROP
-
-iptables -t nat -A POSTROUTING -o eth1 -s 10.0.0.0/8 -j startnat
-------------------------------------------------------------------------
-
-Can anyone help figure out what's wrong?
-
-Alan Stern
-
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
