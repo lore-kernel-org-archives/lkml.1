@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755085AbZBKOP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757110AbZBKOQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755085AbZBKOP6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 09:15:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756622AbZBKOPo
+	id S1757110AbZBKOQc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 09:16:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755114AbZBKOQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 09:15:44 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:38318 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753254AbZBKOPn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 09:15:43 -0500
-Message-ID: <4992DD86.1030607@s5r6.in-berlin.de>
-Date: Wed, 11 Feb 2009 15:15:34 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14
+	Wed, 11 Feb 2009 09:16:22 -0500
+Received: from hera.kernel.org ([140.211.167.34]:60539 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755063AbZBKOQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 09:16:22 -0500
+Message-ID: <4992DD8E.2080809@kernel.org>
+Date: Wed, 11 Feb 2009 23:15:42 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
-CC: jeff@garzik.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org, ossrosch@linux.vnet.ibm.com,
-       ossthema@de.ibm.com, raisch@de.ibm.com, themann@de.ibm.com,
-       osstklei@de.ibm.com
-Subject: Re: [PATCH] ehea: Fix: Remove adapter from adapter list in error
- path
-References: <200902111329.02954.hannes.hering@linux.vnet.ibm.com>
-In-Reply-To: <200902111329.02954.hannes.hering@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Brian Gerst <brgerst@gmail.com>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 0/3] x86: Fix pt_regs passed by value
+References: <1234277507-4987-1-git-send-email-brgerst@gmail.com> <20090211114224.GA23873@elte.hu>
+In-Reply-To: <20090211114224.GA23873@elte.hu>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 11 Feb 2009 14:15:56 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hannes Hering wrote:
-> Remove adapter from adapter list before freeing data structure in error path.
-...
-> --- linux-2.6.29-rc4/drivers/net/ehea/ehea_main.c	2009-02-11 13:13:47.812542928 +0100
-> +++ patched_kernel/drivers/net/ehea/ehea_main.c	2009-02-11 13:14:04.197540184 +0100
-> @@ -3448,6 +3448,7 @@ out_kill_eq:
->  	ehea_destroy_eq(adapter->neq);
->  
->  out_free_ad:
-> +	list_del(&adapter->list);
->  	kfree(adapter);
->  
->  out:
+Ingo Molnar wrote:
+> * Brian Gerst <brgerst@gmail.com> wrote:
+> 
+>> Several syscalls and one trap handler currently rely on the pt_regs
+>> struct being passed in by value.  This causes problems with stack
+>> protector, and can also cause problems with corruption due to tail-call
+>> optimization.  Change them to use a pointer to the pt_regs struct
+>> instead.
+> 
+> looks good! Applied them to tip:core/percpu, thanks Brian.
+> 
+> Tejun, i have added your Acked-by lines. (let me know if that's
+> incorrect). The review feedback you gave is correct and can/should
+> be addressed in separate patches.
 
-On a related note, ehea_set_mac_addr()/ehea_update_bcmc_registrations()
-accesses adapter_list without serialization by ehea_fw_handles.lock and
-thus apparently unsafely.
+Yeah, sure.  I like the direction.  Brian, are you interested in
+pursuing further changes?
 
-There may be other unsafe accesses of adapter_list; that's just the
-first one which I spotted.
+Thanks.
+
 -- 
-Stefan Richter
--=====-==--= --=- -=-==
-http://arcgraph.de/sr/
+tejun
