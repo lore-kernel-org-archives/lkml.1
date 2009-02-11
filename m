@@ -1,50 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755778AbZBKBvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbZBKBxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755778AbZBKBvY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 20:51:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbZBKBvP
+	id S1755873AbZBKBxO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 20:53:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbZBKBw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 20:51:15 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:59513 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753434AbZBKBvP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 20:51:15 -0500
-Date: Tue, 10 Feb 2009 20:51:01 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Rodolfo Giometti <giometti@linux.it>, linux-kernel@vger.kernel.org,
-       dwmw2@infradead.org, davej@redhat.com, sam@ravnborg.org, greg@kroah.com,
-       randy.dunlap@oracle.com, kay.sievers@vrfy.org, alan@lxorguk.ukuu.org.uk,
-       mingo@elte.hu, mtk.manpages@gmail.com, hch@infradead.org
-Subject: Re: LinuxPPS core (Version 2): the PPS Linux implementation.
-Message-ID: <20090211015101.GA8869@infradead.org>
-References: <1234274752-29847-1-git-send-email-giometti@linux.it> <20090210155452.60ffa06b.akpm@linux-foundation.org> <499214B5.8070200@zytor.com>
-MIME-Version: 1.0
+	Tue, 10 Feb 2009 20:52:58 -0500
+Received: from cmpxchg.org ([85.214.51.133]:33966 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751075AbZBKBw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 20:52:58 -0500
+Date: Wed, 11 Feb 2009 02:52:27 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] vmscan: initialize sc.order in indirect shrink_list() users
+Message-ID: <20090211015227.GA4605@cmpxchg.org>
+References: <20090210165134.GA2457@cmpxchg.org> <20090210162948.bd20d853.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <499214B5.8070200@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20090210162948.bd20d853.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 03:58:45PM -0800, H. Peter Anvin wrote:
-> Andrew Morton wrote:
->>
->> Is it hard to do this?  Just a matter of putting some things into
->> pps_user.h, others into pps_kernel.h and then including both into
->> pps.h?  
->>
->
-> Or perhaps better...
->
-> The user code in <linux/pps.h>, and then #include <linux/pps.h> from  
-> <linux/pps_kernel.h>  That way we don't need any #ifdefs at all.
+[added Mel to CC]
 
-*nod*
+On Tue, Feb 10, 2009 at 04:29:48PM -0800, Andrew Morton wrote:
+> On Tue, 10 Feb 2009 17:51:35 +0100
+> Johannes Weiner <hannes@cmpxchg.org> wrote:
+> 
+> > shrink_all_memory() and __zone_reclaim() currently don't initialize
+> > the .order field of their scan control.
+> > 
+> > Both of them call into functions which use that field and make certain
+> > decisions based on a random value.
+> > 
+> > The functions depending on the .order field are marked with a star,
+> > the faulty entry points are marked with a percentage sign:
+> > 
+> > * shrink_page_list()
+> >   * shrink_inactive_list()
+> >   * shrink_active_list()
+> >     shrink_list()
+> >       shrink_all_zones()
+> >         % shrink_all_memory()
+> >       shrink_zone()
+> >         % __zone_reclaim()
+> > 
+> > Initialize .order to zero in shrink_all_memory().  Initialize .order
+> > to the order parameter in __zone_reclaim().
+> > 
+> > Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> > ---
+> >  mm/vmscan.c |    2 ++
+> >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/mm/vmscan.c b/mm/vmscan.c
+> > index 4422301..9ce85ea 100644
+> > --- a/mm/vmscan.c
+> > +++ b/mm/vmscan.c
+> > @@ -2112,6 +2112,7 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
+> >  		.may_unmap = 0,
+> >  		.swap_cluster_max = nr_pages,
+> >  		.may_writepage = 1,
+> > +		.order = 0,
+> >  		.isolate_pages = isolate_pages_global,
+> >  	};
+> >  
+> > @@ -2294,6 +2295,7 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+> >  					SWAP_CLUSTER_MAX),
+> >  		.gfp_mask = gfp_mask,
+> >  		.swappiness = vm_swappiness,
+> > +		.order = order,
+> >  		.isolate_pages = isolate_pages_global,
+> >  	};
+> >  	unsigned long slab_reclaimable;
+> 
+> The second hunk might fix something, but it would need a correcter
+> changelog, and some thought about what its runtimes effects are likely
+> to be, please.
 
-that's what I had in mind.
+zone_reclaim() is used by the watermark rebalancing of the buddy
+allocator right before trying to do an allocation.  Even though it
+tries to reclaim at least 1 << order pages, it doesn't raise sc.order
+to increase clustering efforts.
+
+I think this happens with the assumption that the upcoming allocation
+can still succeed and in that case we don't want to lump too
+aggressively to refill the zone.  The allocation might succeed on
+another zone and now we have evicted precious pages due to clustering
+while we are still not sure it's even needed.
+
+If the allocation fails from all zones, we still will use lumpy
+reclaim for higher orders in kswapd and try_to_free_pages().
+
+So I think that __zone_reclaim() leaves sc.order = 0 intentionally.
+
+Mel?
+
+	Hannes
