@@ -1,108 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757947AbZBKRId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756750AbZBKRJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757947AbZBKRId (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 12:08:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757348AbZBKRIP
+	id S1756750AbZBKRJU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 12:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbZBKRJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 12:08:15 -0500
-Received: from stz-softwaretechnik.de ([217.160.223.211]:2450 "EHLO
-	stlx01.stz-softwaretechnik.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757298AbZBKRIN (ORCPT
+	Wed, 11 Feb 2009 12:09:04 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:50816 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751169AbZBKRJD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 12:08:13 -0500
-X-Greylist: delayed 2071 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Feb 2009 12:08:13 EST
-Date: Wed, 11 Feb 2009 17:33:17 +0100
-From: Ralf Gross <Ralf-Lists@ralfgross.de>
-To: linux-kernel@vger.kernel.org
-Subject: Machine Check Exception with kernels > 2.6.18 and Supermicro Board
-Message-ID: <20090211163317.GC32352@p15145560.pureserver.info>
+	Wed, 11 Feb 2009 12:09:03 -0500
+Subject: [PATCH -v4] futex: fix reference leak
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Darren Hart <dvhltc@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20090211162618.GC32301@elte.hu>
+References: <1234197950.5951.132.camel@laptop>
+	 <1234198023.5951.133.camel@laptop>
+	 <1234200538.16083.52.camel@pc1117.cambridge.arm.com>
+	 <1234203975.5951.143.camel@laptop>
+	 <1234205595.4286.223.camel@localhost.localdomain>
+	 <1234205874.5951.151.camel@laptop> <20090211122849.GD16535@elte.hu>
+	 <1234366605.23438.179.camel@twins> <20090211154952.GB24408@elte.hu>
+	 <1234367802.23438.183.camel@twins>  <20090211162618.GC32301@elte.hu>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 11 Feb 2009 18:10:10 +0100
+Message-Id: <1234372210.23438.192.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.24.3 
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Subject: futex: fix reference leak
+From: Peter Zijlstra <peterz@infradead.org>
 
-I'm running debian etch (amd64) on a Supermicro Server (Supermicro
-Board X7DBE+, 16 GB RAM). Since upgrading to kernel 2.6.24 or 2.6.26
-from the default etch kernel 2.6.18, I get Machine Check Exceptions.
+Catalin noticed that (38d47c1b7075: futex: rely on get_user_pages() for
+shared futexes) caused an mm_struct leak.
 
-HARDWARE ERROR
-CPU 1: Machine Check Exception:   0 Bank 5: 1000001004000e0f
-TSC 0
-This is not a software problem!
-Run through mcelog --ascii to decode and contact your hardware vendor
-Kernel panic - not syncing: Machine check
+Some tracing with the function graph tracer quickly pointed out that
+futex_wait() has exit paths with unbalanced reference counts.
 
+This regression was discovered by kmemleak.
 
-With mcelog decoded error message:
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Tested-by: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Tested-by: Catalin Marinas <catalin.marinas@arm.com>
+Reported-by: Catalin Marinas <catalin.marinas@arm.com>
+---
+ kernel/futex.c |   53 ++++++++++++++++++++++++++++-------------------------
+ 1 files changed, 28 insertions(+), 25 deletions(-)
 
-HARDWARE ERROR. This is *NOT* a software problem!
-Please contact your hardware vendor
-CPU 1 BANK 5 MCG status:
-MCi status:
-Invalid log
-BQ_DCU_READ_TYPE BQ_ERR_AERR2_TYPE BQ_ERR_AERR2_TYPE response parity error
-STATUS 1000001004000e0f MCGSTATUS 0
-
-
-
-Any idea if this really is a hardware problem (bus, cpu, ram...?), or maybe
-caused by a faulty driver? Our hardware vendor told me that at least on windows
-this could be caused by a bad driver.
-
-
-TIA
-Ralf
-
-(Please CC me, because I'm not subscribed to the LKML, thanks!)
-
-
-
-Hardware setup:
-
-Supermicro X7DBE+
-2x Xeon 5110
-Intel 5000P Chipset
-16 GB FB DDR2-RAM with ECC, PC667 
-
-lspci output:
-
-00:00.0 Host bridge: Intel Corporation 5000P Chipset Memory Controller Hub (rev b1)
-00:02.0 PCI bridge: Intel Corporation 5000 Series Chipset PCI Express x8 Port 2-3 (rev b1)
-00:04.0 PCI bridge: Intel Corporation 5000 Series Chipset PCI Express x8 Port 4-5 (rev b1)
-00:06.0 PCI bridge: Intel Corporation 5000 Series Chipset PCI Express x8 Port 6-7 (rev b1)
-00:08.0 System peripheral: Intel Corporation 5000 Series Chipset DMA Engine (rev b1)
-00:10.0 Host bridge: Intel Corporation 5000 Series Chipset Error Reporting Registers (rev b1)
-00:10.1 Host bridge: Intel Corporation 5000 Series Chipset Error Reporting Registers (rev b1)
-00:10.2 Host bridge: Intel Corporation 5000 Series Chipset Error Reporting Registers (rev b1)
-00:11.0 Host bridge: Intel Corporation 5000 Series Chipset Reserved Registers (rev b1)
-00:13.0 Host bridge: Intel Corporation 5000 Series Chipset Reserved Registers (rev b1)
-00:15.0 Host bridge: Intel Corporation 5000 Series Chipset FBD Registers (rev b1)
-00:16.0 Host bridge: Intel Corporation 5000 Series Chipset FBD Registers (rev b1)
-00:1c.0 PCI bridge: Intel Corporation 631xESB/632xESB/3100 Chipset PCI Express Root Port 1 (rev 09)
-00:1d.0 USB Controller: Intel Corporation 631xESB/632xESB/3100 Chipset UHCI USB Controller #1 (rev 09)
-00:1d.1 USB Controller: Intel Corporation 631xESB/632xESB/3100 Chipset UHCI USB Controller #2 (rev 09)
-00:1d.2 USB Controller: Intel Corporation 631xESB/632xESB/3100 Chipset UHCI USB Controller #3 (rev 09)
-00:1d.7 USB Controller: Intel Corporation 631xESB/632xESB/3100 Chipset EHCI USB2 Controller (rev 09)
-00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev d9)
-00:1f.0 ISA bridge: Intel Corporation 631xESB/632xESB/3100 Chipset LPC Interface Controller (rev 09)
-00:1f.1 IDE interface: Intel Corporation 631xESB/632xESB IDE Controller (rev 09)
-00:1f.2 SATA controller: Intel Corporation 631xESB/632xESB SATA Storage Controller AHCI (rev 09)
-00:1f.3 SMBus: Intel Corporation 631xESB/632xESB/3100 Chipset SMBus Controller (rev 09)
-01:00.0 PCI bridge: Intel Corporation 6311ESB/6321ESB PCI Express Upstream Port (rev 01)
-01:00.3 PCI bridge: Intel Corporation 6311ESB/6321ESB PCI Express to PCI-X Bridge (rev 01)
-02:00.0 PCI bridge: Intel Corporation 6311ESB/6321ESB PCI Express Downstream Port E1 (rev 01)
-02:02.0 PCI bridge: Intel Corporation 6311ESB/6321ESB PCI Express Downstream Port E3 (rev 01)
-03:00.0 PCI bridge: Intel Corporation 6700PXH PCI Express-to-PCI Bridge A (rev 09)
-03:00.2 PCI bridge: Intel Corporation 6700PXH PCI Express-to-PCI Bridge B (rev 09)
-05:01.0 Ethernet controller: Intel Corporation 82546GB Gigabit Ethernet Controller (rev 03)
-05:01.1 Ethernet controller: Intel Corporation 82546GB Gigabit Ethernet Controller (rev 03)
-06:00.0 Ethernet controller: Intel Corporation 631xESB/632xESB DPT LAN Controller Copper (rev 01)
-06:00.1 Ethernet controller: Intel Corporation 631xESB/632xESB DPT LAN Controller Copper (rev 01)
-07:01.0 Fibre Channel: QLogic Corp. QLA2422 Fibre Channel Adapter (rev 02)
-0b:01.0 VGA compatible controller: ATI Technologies Inc ES1000 (rev 02)
+diff --git a/kernel/futex.c b/kernel/futex.c
+index f89d373..438701a 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -1165,6 +1165,7 @@ static int futex_wait(u32 __user *uaddr, int fshared,
+ 		      u32 val, ktime_t *abs_time, u32 bitset, int clockrt)
+ {
+ 	struct task_struct *curr = current;
++	struct restart_block *restart;
+ 	DECLARE_WAITQUEUE(wait, curr);
+ 	struct futex_hash_bucket *hb;
+ 	struct futex_q q;
+@@ -1216,11 +1217,13 @@ retry:
+ 
+ 		if (!ret)
+ 			goto retry;
+-		return ret;
++		goto out;
+ 	}
+ 	ret = -EWOULDBLOCK;
+-	if (uval != val)
+-		goto out_unlock_put_key;
++	if (unlikely(uval != val)) {
++		queue_unlock(&q, hb);
++		goto out_put_key;
++	}
+ 
+ 	/* Only actually queue if *uaddr contained val.  */
+ 	queue_me(&q, hb);
+@@ -1284,38 +1287,38 @@ retry:
+ 	 */
+ 
+ 	/* If we were woken (and unqueued), we succeeded, whatever. */
++	ret = 0;
+ 	if (!unqueue_me(&q))
+-		return 0;
++		goto out_put_key;
++	ret = -ETIMEDOUT;
+ 	if (rem)
+-		return -ETIMEDOUT;
++		goto out_put_key;
+ 
+ 	/*
+ 	 * We expect signal_pending(current), but another thread may
+ 	 * have handled it for us already.
+ 	 */
++	ret = -ERESTARTSYS;
+ 	if (!abs_time)
+-		return -ERESTARTSYS;
+-	else {
+-		struct restart_block *restart;
+-		restart = &current_thread_info()->restart_block;
+-		restart->fn = futex_wait_restart;
+-		restart->futex.uaddr = (u32 *)uaddr;
+-		restart->futex.val = val;
+-		restart->futex.time = abs_time->tv64;
+-		restart->futex.bitset = bitset;
+-		restart->futex.flags = 0;
+-
+-		if (fshared)
+-			restart->futex.flags |= FLAGS_SHARED;
+-		if (clockrt)
+-			restart->futex.flags |= FLAGS_CLOCKRT;
+-		return -ERESTART_RESTARTBLOCK;
+-	}
++		goto out_put_key;
+ 
+-out_unlock_put_key:
+-	queue_unlock(&q, hb);
+-	put_futex_key(fshared, &q.key);
++	restart = &current_thread_info()->restart_block;
++	restart->fn = futex_wait_restart;
++	restart->futex.uaddr = (u32 *)uaddr;
++	restart->futex.val = val;
++	restart->futex.time = abs_time->tv64;
++	restart->futex.bitset = bitset;
++	restart->futex.flags = 0;
++
++	if (fshared)
++		restart->futex.flags |= FLAGS_SHARED;
++	if (clockrt)
++		restart->futex.flags |= FLAGS_CLOCKRT;
+ 
++	ret = -ERESTART_RESTARTBLOCK;
++
++out_put_key:
++	put_futex_key(fshared, &q.key);
+ out:
+ 	return ret;
+ }
 
