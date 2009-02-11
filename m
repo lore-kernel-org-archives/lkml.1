@@ -1,54 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755112AbZBKH7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755077AbZBKIBK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755112AbZBKH7h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 02:59:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbZBKH71
+	id S1755077AbZBKIBK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 03:01:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbZBKIA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 02:59:27 -0500
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:54643 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750920AbZBKH70 (ORCPT
+	Wed, 11 Feb 2009 03:00:56 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47067
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750920AbZBKIAz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 02:59:26 -0500
-Date: Wed, 11 Feb 2009 13:29:14 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: "Theodore Ts'o" <tytso@mit.edu>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Ext4 tree backports for 2.6.27.13 and 2.6.28.2
-Message-ID: <20090211075914.GC20842@skywalker>
-References: <E1LT8MN-0003Ps-Ur@closure.thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1LT8MN-0003Ps-Ur@closure.thunk.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 11 Feb 2009 03:00:55 -0500
+Date: Wed, 11 Feb 2009 00:00:49 -0800 (PST)
+Message-Id: <20090211.000049.193727089.davem@davemloft.net>
+To: rdreier@cisco.com
+Cc: randy.dunlap@oracle.com, linux-next@vger.kernel.org,
+       general@lists.openfabrics.org, linux-kernel@vger.kernel.org
+Subject: Re: [ofa-general] [PATCH 2.6.30] RDMA/cxgb3: Remove modulo math.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <ada4oz1a188.fsf@cisco.com>
+References: <adaeiy5ahza.fsf@cisco.com>
+	<20090210.172347.189515015.davem@davemloft.net>
+	<ada4oz1a188.fsf@cisco.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 31, 2009 at 12:25:39AM -0500, Theodore Ts'o wrote:
-> I've updated the ext4 backport branches on the ext4 git tree:
-> 
->    git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git
->    http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git
-> 
-> The for-stable branch is branched off of 2.6.28.2, and has a candidate
-> set of patches to be included in the next stable release.  The
-> for-stable-2.6.27 branch is branched off of 2.6.27.13.  
-> 
-> I'm more confident with the 2.6.28 stable candidate than the 2.6.27
-> stable candidates at the moment, but given that we just missed the
-> 2.6.27.14 and 2.6.28.3 release cycles, that should give us plenty of
-> time to test the patches.
-> 
-> 						- Ted
-> 
-> 
-> 8556e8f3 18d5cb0 fd3bd090
->     ext4: Don't allow new groups to be added during block allocation
-> 
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 10 Feb 2009 23:20:39 -0800
 
-This commit on for-stable-2.6.27 is not complete.
-ac->alloc_semp is not assigned in the code.
+>  > unsigned long page_size[4];
+>  > 
+>  > int main(int argc)
+>  > {
+>  >         unsigned long long x = argc;
+>  > 
+>  >         return x % (1UL << (12 + page_size[argc]));
+>  > }
+>  > 
+>  > I get a call to __umoddi3:
+> 
+> You're not testing the same thing.  The original code was:
+> 
+> 		wqe->recv.sgl[i].to = cpu_to_be64(((u32) wr->sg_list[i].addr) %
+> 				(1UL << (12 + page_size[i])));
+> 
+> and it's not that easy to see with all the parentheses, but the
+> expression being done is (u32) % (unsigned long).  So rather than
+> unsigned long long in your program, you should have just done unsigned
+> (u32 is unsigned int on all Linux architectures).  In that case gcc does
+> not generate a call to any library function in all the versions I have
+> handy, although gcc 4.1 does do a div instead of an and.  (And I don't
+> think any 32-bit architectures require a library function for (unsigned)
+> % (unsigned), so the code should be OK)
+> 
+> Your example shows that gcc is missing a strength reduction opportunity
+> in not handling (u64) % (unsigned long) on 32 bit architectures, but I
+> guess it is a more difficult optimization to do, since gcc has to know
+> that it can simply zero the top 32 bits.
 
--aneesh
+Indeed, I get the divide if I use "unsigned int" for "x".
+
+I still think you should make this change, as many systems out
+there are getting the expensive divide.
+
+main:
+	sethi	%hi(page_size), %g1
+	or	%g1, %lo(page_size), %g1
+	mov	%o0, %g3
+	sll	%o0, 2, %g4
+	ld	[%g1+%g4], %g2
+	mov	1, %g1
+	add	%g2, 12, %g2
+	sll	%g1, %g2, %g1
+	wr	%g0, %g0, %y
+	nop
+	nop
+	nop
+	udiv	%o0, %g1, %o0
+	smul	%o0, %g1, %o0
+	jmp	%o7+8
+	 sub	%g3, %o0, %o0
