@@ -1,74 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756682AbZBKOTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756868AbZBKOUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756682AbZBKOTR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 09:19:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754943AbZBKOTB
+	id S1756868AbZBKOUU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 09:20:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbZBKOUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 09:19:01 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60588 "EHLO hera.kernel.org"
+	Wed, 11 Feb 2009 09:20:05 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59736 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754496AbZBKOTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 09:19:00 -0500
-Message-ID: <4992DE21.80706@kernel.org>
-Date: Wed, 11 Feb 2009 23:18:09 +0900
+	id S1755237AbZBKOUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 09:20:03 -0500
+Message-ID: <4992DE69.4020205@kernel.org>
+Date: Wed, 11 Feb 2009 23:19:21 +0900
 From: Tejun Heo <tj@kernel.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-CC: Brian Gerst <brgerst@gmail.com>, hpa@zytor.com, jeremy@goop.org,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org, x86@kernel.org,
-       rusty@rustcorp.com.au
-Subject: Re: [PATCH x86#core/percpu] x86: fix x86_32 stack protector bugs
-References: <1234186798-16820-1-git-send-email-tj@kernel.org> <1234186798-16820-12-git-send-email-tj@kernel.org> <73c1f2160902100725w2503d693v5a3d1ae93ada75de@mail.gmail.com> <49919FA2.9050309@kernel.org> <49927EB4.3050507@kernel.org> <20090211103456.GK20518@elte.hu>
-In-Reply-To: <20090211103456.GK20518@elte.hu>
+CC: hpa@zytor.com, jeremy@goop.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, x86@kernel.org, rusty@rustcorp.com.au
+Subject: Re: [PATCH] stackprotector: fix multi-word cross-builds
+References: <1234186798-16820-1-git-send-email-tj@kernel.org> <20090209135557.GB14785@elte.hu> <20090209141209.GA24323@elte.hu> <499186FB.4070506@kernel.org> <49918C3C.8030208@kernel.org> <20090210142026.GD16147@elte.hu> <49918E86.4020304@kernel.org> <20090211105729.GO20518@elte.hu> <20090211111846.GA22772@elte.hu>
+In-Reply-To: <20090211111846.GA22772@elte.hu>
 X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 11 Feb 2009 14:18:25 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 11 Feb 2009 14:19:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Ingo Molnar wrote:
-> * Tejun Heo <tj@kernel.org> wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
->> Impact: fix x86_32 stack protector
+>> * Tejun Heo <tj@kernel.org> wrote:
 >>
->> Brian Gerst found out that %gs was being initialized to stack_canary
->> instead of stack_canary - 20, which basically gave the same canary
->> value for all threads.  Fixing this also exposed the following bugs.
+>>> Ingo Molnar wrote:
+>>>>>> I'll try other compilers but which version are you using?  The
+>>>>>> difference is that before the patchset, -fno-stack-protector was
+>>>>>> always added whether stackprotector was enabled or not so this problem
+>>>>>> wasn't visible (at the cost of bogus stackprotector of course).  We'll
+>>>>>> probably need to add __stack_chk_guard or disable if gcc generates
+>>>>>> such symbol.  I'll play with different gccs.
+>>>>> Can't reproduce with gcc-4.1 or 4.2.  Any chance you're using distcc
+>>>>> w/ a build machine w/ glibc < 2.4?  __stack_chk_guard is the symbol
+>>>>> gcc fetches stack canary from if TLS is not supported, so somehow gcc
+>>>>> thought that TLS wasn't available while building head64.
+>>>> yeah - i also used distcc. Maybe the nostackp makefile magic gets confused
+>>>> about that?
+>>> It seems that even with the same gcc versions, gcc built against libc
+>>> w/o TLS support generates __stack_chk_guard, so if you mix the two
+>>> flavors, the has-stack-protector check can be compiled on machines w/
+>>> TLS while some other files end up being built on machines w/o TLS
+>>> support thus circumventing the support check.  Can you please see
+>>> whether non-distcc build fails too?
+>> That build succeeds:
 >>
->> * cpu_idle() didn't call boot_init_stack_canary()
+>> rhea:~/tip> make -j30 bzImage ARCH=x86_64 CROSS_COMPILE='/opt/crosstool/gcc-4.2.3-glibc-2.3.6/x86_64-unknown-linux-gnu/bin/x86_64-unknown-linux-gnu-'
+>> /home/mingo/tip/arch/x86/Makefile:82: stack protector enabled but no compiler support
+>>   CHK     include/linux/version.h
+>> [...]
+>> BFD: arch/x86/boot/compressed/vmlinux.bin: warning: allocated section `.bss' not in segment
+>> [...]
+>> Root device is (8, 3)
+>> Setup is 11996 bytes (padded to 12288 bytes).
+>> System is 5690 kB
+>> CRC be1b2e21
+>> Kernel: arch/x86/boot/bzImage is ready  (#3)
 >>
->> * stack canary switching in switch_to() was being done too late making
->>   the initial run of a new thread use the old stack canary value.
->>
->> Fix all of them and while at it update comment in cpu_idle() about
->> calling boot_init_stack_canary().
->>
->> Signed-off-by: Tejun Heo <tj@kernel.org>
->> Reported-by: Brian Gerst <brgerst@gmail.com>
->> ---
->>  arch/x86/include/asm/stackprotector.h |    2 +-
->>  arch/x86/include/asm/system.h         |    8 +++-----
->>  arch/x86/kernel/head_32.S             |    1 +
->>  arch/x86/kernel/process_32.c          |   10 ++++++++++
->>  arch/x86/kernel/process_64.c          |   11 +++++------
->>  5 files changed, 20 insertions(+), 12 deletions(-)
+>> Some shell variable expansion bug? If CROSS_COMPILE is not a single word
+>> we fail to detect the compiler borkage at arch/x86/Makefile line 82?
 > 
-> Applied to tip:core/percpu, thanks guys!
-> 
-> I never got around to finding his bug in practice as the latest bits of 
-> tip:core/percpu are not in tip/master at the moment, due to that 64-bit
-> build failure.
+> Yep - i'm testing the fix below now - it's looking good so far.
 
-I was kind of waiting for your test result (whether the build issue
-can be reproduced without distcc) before going ahead and building a
-cross compiler.  I don't see how the cross compiler would pass the
-gcc-x86_*-has-stack-protector.sh test which builds a minimalistic c
-file and greps for %gs access.
+Ah... okay.  No wonder I couldn't reproduce the problem.  :-)
 
-Thanks.
+Thanks for hunting it down.
 
 -- 
 tejun
