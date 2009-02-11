@@ -1,103 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755408AbZBKKsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755020AbZBKKtO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755408AbZBKKsy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 05:48:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbZBKKso
+	id S1755020AbZBKKtO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 05:49:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756523AbZBKKsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 05:48:44 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:58497 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754820AbZBKKsn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 05:48:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=tEntiq9zK7xLA86Ha4AFllZzGNFsgjoQvGrzCIfP4K9VFYxdFcd8c4+GDz9Igp/kBq
-         eW87xdL90nr+Fphl3EwisOoEm1dCpHWX49F/zlcWPQIW56CPRyt65JXPg8Wv+8ePA1UZ
-         ak6Us1tSMV1Xuh3WG8qqcwiDxaOy7LZ7OoiQI=
-MIME-Version: 1.0
-In-Reply-To: <20090211000740.f1de7cec.akpm@linux-foundation.org>
-References: <20090206113556.GA3161@alice>
-	 <20090206161518.81e7d42c.akpm@linux-foundation.org>
-	 <19f34abd0902102355o5bf51096o9aa3737e87104fb9@mail.gmail.com>
-	 <20090211000740.f1de7cec.akpm@linux-foundation.org>
-Date: Wed, 11 Feb 2009 11:48:41 +0100
-Message-ID: <19f34abd0902110248n22f8de12lccfa99faafafb942@mail.gmail.com>
-Subject: Re: namespaces?: bug at mm/slub.c:2750
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Eric Sesterhenn <snakebyte@gmx.de>, linux-kernel@vger.kernel.org,
-       David Howells <dhowells@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       containers@lists.osdl.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Feb 2009 05:48:54 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:33249 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756493AbZBKKsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 05:48:53 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <19f34abd0902101956t2af01f9cifeab655c1f6625eb@mail.gmail.com>
+References: <19f34abd0902101956t2af01f9cifeab655c1f6625eb@mail.gmail.com> <20090210142443.629E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <19f34abd0902092310g513fb776s2e4d37285c8fa7be@mail.gmail.com> <20090210162708.6FBF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Cc: dhowells@redhat.com, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Serge Hallyn <serue@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Subject: Re: [CRED bug?] 2.6.29-rc3 don't survive on stress workload
+Date: Wed, 11 Feb 2009 10:48:31 +0000
+Message-ID: <12760.1234349311@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 11, 2009 at 9:07 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
->> In case you missed it, KOSAKI Motohiro posted a similar stack-trace
->> (but not the same BUG) in this thread:
->> http://lkml.org/lkml/2009/2/10/7
->>
->
-> Both traces include the newly-added put_cred_rcu().  Suspicious.
->
+Vegard Nossum <vegard.nossum@gmail.com> wrote:
 
-I have this test case which triggers it regularly after some minutes:
+> Will refine my test program to see if I can trigger this immediately
+> and accurately.
 
-#include <sys/wait.h>
-#include <sys/types.h>
+I'm running two copies of:
 
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+	#include <stdlib.h>
+	#include <unistd.h>
 
-int main(int argc, char* argv[])
-{
-        unsigned int i;
+	int main()
+	{
+		for (;;) {
+			if (setreuid(0, 99999) < 0) {
+				perror("setreuid A");
+				exit(1);
+			}
+			if (setreuid(99999, 0) < 0) {
+				perror("setreuid B");
+				exit(1);
+			}
+		}
+	}
 
-        if (fork() == 0) {
-                while (1)
-                        system("echo -n .");
-        }
+but it doesn't seem to be showing anything interesting.  I have the attached
+patch compiled into my kernel and enabled in the hope it might catch either
+this bug or Ingo's key slab corruption bug.
 
-        for (i = 0; i < 2; ++i) {
-                if (fork() == 0) {
-                        while (1) {
-                                setreuid(0, 0xcafeba);
-                                setreuid(0xcafeba, 0);
+David
+---
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] Attempt to catch atomic_dec_and_test() on freed and poisoned slab memory
 
-                                setreuid(0, 0xcafebb);
-                                setreuid(0xcafebb, 0);
-                        }
+Add an option to attempt to catch atomic_dec_and_test() on freed and poisoned
+slab memory by complaining if the counter LSB is the poison value.
 
-                        exit(EXIT_SUCCESS);
-                }
-        }
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-        while (!(wait(NULL) == -1 && errno == ECHILD))
-                ;
-
-        return 0;
-}
-
-It seems to be the combination of exec() and setreuid(), but I
-couldn't get it to work with just exec() instead of system(). It is
-possible that CONFIG_USER_SCHED must be =y for this to work. It can
-probably be simplified too...
+ arch/x86/include/asm/atomic_32.h |    8 ++++++++
+ arch/x86/include/asm/atomic_64.h |    8 ++++++++
+ lib/Kconfig.debug                |   10 ++++++++++
+ lib/Makefile                     |    1 +
+ lib/debug_poisoned_put.c         |   39 ++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 66 insertions(+), 0 deletions(-)
+ create mode 100644 lib/debug_poisoned_put.c
 
 
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
+index 85b46fb..b0b1a7c 100644
+--- a/arch/x86/include/asm/atomic_32.h
++++ b/arch/x86/include/asm/atomic_32.h
+@@ -101,6 +101,10 @@ static inline void atomic_dec(atomic_t *v)
+ 		     : "+m" (v->counter));
+ }
+ 
++#ifdef CONFIG_DEBUG_POISONED_PUT
++extern void check_atomic_dec_and_test(atomic_t *v);
++#endif
++
+ /**
+  * atomic_dec_and_test - decrement and test
+  * @v: pointer of type atomic_t
+@@ -113,6 +117,10 @@ static inline int atomic_dec_and_test(atomic_t *v)
+ {
+ 	unsigned char c;
+ 
++#ifdef CONFIG_DEBUG_POISONED_PUT
++	check_atomic_dec_and_test(v);
++#endif
++
+ 	asm volatile(LOCK_PREFIX "decl %0; sete %1"
+ 		     : "+m" (v->counter), "=qm" (c)
+ 		     : : "memory");
+diff --git a/arch/x86/include/asm/atomic_64.h b/arch/x86/include/asm/atomic_64.h
+index 8c21731..6a7f228 100644
+--- a/arch/x86/include/asm/atomic_64.h
++++ b/arch/x86/include/asm/atomic_64.h
+@@ -102,6 +102,10 @@ static inline void atomic_dec(atomic_t *v)
+ 		     : "m" (v->counter));
+ }
+ 
++#ifdef CONFIG_DEBUG_POISONED_PUT
++extern void check_atomic_dec_and_test(atomic_t *v);
++#endif
++
+ /**
+  * atomic_dec_and_test - decrement and test
+  * @v: pointer of type atomic_t
+@@ -114,6 +118,10 @@ static inline int atomic_dec_and_test(atomic_t *v)
+ {
+ 	unsigned char c;
+ 
++#ifdef CONFIG_DEBUG_POISONED_PUT
++	check_atomic_dec_and_test(v);
++#endif
++
+ 	asm volatile(LOCK_PREFIX "decl %0; sete %1"
+ 		     : "=m" (v->counter), "=qm" (c)
+ 		     : "m" (v->counter) : "memory");
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 29044f5..bb5801b 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -221,6 +221,16 @@ config TIMER_STATS
+ 	  (it defaults to deactivated on bootup and will only be activated
+ 	  if some application like powertop activates it explicitly).
+ 
++config DEBUG_POISONED_PUT
++	bool "Catch puts of already released memory"
++	depends on DEBUG_KERNEL
++	help
++	  If you say Y here, atomic_dec_and_test() will complain if it sees
++	  what might be a poisoned value from a released slab object or a
++	  counter already reduced to nothing.  Note that this test cannot say
++	  for certain that the value is in error - the value on the counter
++	  might be completely legitimate.
++
+ config DEBUG_OBJECTS
+ 	bool "Debug object operations"
+ 	depends on DEBUG_KERNEL
+diff --git a/lib/Makefile b/lib/Makefile
+index 32b0e64..c47cc74 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -44,6 +44,7 @@ obj-$(CONFIG_PLIST) += plist.o
+ obj-$(CONFIG_DEBUG_PREEMPT) += smp_processor_id.o
+ obj-$(CONFIG_DEBUG_LIST) += list_debug.o
+ obj-$(CONFIG_DEBUG_OBJECTS) += debugobjects.o
++obj-$(CONFIG_DEBUG_POISONED_PUT) += debug_poisoned_put.o
+ 
+ ifneq ($(CONFIG_HAVE_DEC_LOCK),y)
+   lib-y += dec_and_lock.o
+diff --git a/lib/debug_poisoned_put.c b/lib/debug_poisoned_put.c
+new file mode 100644
+index 0000000..1e04325
+--- /dev/null
++++ b/lib/debug_poisoned_put.c
+@@ -0,0 +1,39 @@
++/* Deal with a poisoned atomic counter
++ *
++ * Copyright (C) 2009 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public Licence
++ * as published by the Free Software Foundation; either version
++ * 2 of the Licence, or (at your option) any later version.
++ */
++
++#include <linux/kernel.h>
++#include <linux/poison.h>
++#include <linux/module.h>
++#include <asm/atomic.h>
++
++/*
++ * Check to see if an atomic_dec_and_test() is being performed on released
++ * and poisoned memory
++ */
++extern void check_atomic_dec_and_test(atomic_t *v)
++{
++	int c = v->counter;
++
++	if (unlikely(
++#ifdef CONFIG_DEBUG_SLAB
++		    c == (POISON_FREE << 24 |
++			  POISON_FREE << 16 |
++			  POISON_FREE << 8 |
++			  POISON_FREE) ||
++#endif
++		    c <= 0)) {
++		printk(KERN_WARNING "atomic_dec_and_test() of suspicious value."
++		       " insn=%p addr=%p val=%d\n",
++		       __builtin_return_address(0), v, c);
++		dump_stack();
++	}
++}
++EXPORT_SYMBOL(check_atomic_dec_and_test);
