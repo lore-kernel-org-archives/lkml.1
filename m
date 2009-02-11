@@ -1,78 +1,1385 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758609AbZBKWLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758723AbZBKWL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758609AbZBKWLY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 17:11:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbZBKWLM
+	id S1758723AbZBKWL4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 17:11:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbZBKWLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 17:11:12 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:53588 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755961AbZBKWLL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 17:11:11 -0500
-Date: Wed, 11 Feb 2009 23:08:21 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Markus Metzger <markus.t.metzger@intel.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com, markus.t.metzger@gmail.com, roland@redhat.com,
-       eranian@googlemail.com, juan.villacis@intel.com
-Subject: Re: [patch] x86, ptrace: fix double-free on race
-Message-ID: <20090211220821.GA17637@redhat.com>
-References: <20090211151027.A16643@sedona.ch.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090211151027.A16643@sedona.ch.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 11 Feb 2009 17:11:45 -0500
+Received: from yw-out-2324.google.com ([74.125.46.29]:50183 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756200AbZBKWLm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 17:11:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=PnN3sMgZvXMPNeJimEqTovqPiCvbsXaQFRsv7eMviBsK4VRun3Ztq33TYz0Y+rJxng
+         KL08Yry1miTRJraUkb3Wg8EEdjpZDzuaiDNT434l+swJlKld4AyfXibUZnAfF4X2FEvY
+         y4e5u7BaXprlQiJlMOU6E0OmG3JXk2ZQ9Ofj4=
+Subject: [PATCH] usb: replace uses of __constant_{endian}
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 11 Feb 2009 14:11:36 -0800
+Message-Id: <1234390296.5566.10.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/11, Markus Metzger wrote:
->
-> Ptrace_detach() races with __ptrace_unlink() if the traced task is
-> reaped while detaching. This might cause a double-free of the BTS
-> buffer.
->
-> Change the ptrace_detach() path to only do the memory accounting in
-> ptrace_bts_detach() and leave the buffer free to ptrace_bts_untrace()
-> which will be called from __ptrace_unlink().
+The base versions handle constant folding now.
 
-Thanks Markus, I think this should close the "really bad" problems
-for 2.6.29.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ drivers/usb/core/hcd.c              |    2 +-
+ drivers/usb/core/hub.c              |    8 ++++----
+ drivers/usb/gadget/amd5536udc.c     |    2 +-
+ drivers/usb/gadget/atmel_usba_udc.c |   20 ++++++++++----------
+ drivers/usb/gadget/cdc2.c           |    8 ++++----
+ drivers/usb/gadget/dummy_hcd.c      |    2 +-
+ drivers/usb/gadget/epautoconf.c     |    2 +-
+ drivers/usb/gadget/ether.c          |    8 ++++----
+ drivers/usb/gadget/f_acm.c          |   10 +++++-----
+ drivers/usb/gadget/f_ecm.c          |   16 ++++++++--------
+ drivers/usb/gadget/f_loopback.c     |    4 ++--
+ drivers/usb/gadget/f_obex.c         |    8 ++++----
+ drivers/usb/gadget/f_phonet.c       |    8 ++++----
+ drivers/usb/gadget/f_rndis.c        |   10 +++++-----
+ drivers/usb/gadget/f_serial.c       |    4 ++--
+ drivers/usb/gadget/f_sourcesink.c   |    4 ++--
+ drivers/usb/gadget/f_subset.c       |   14 +++++++-------
+ drivers/usb/gadget/file_storage.c   |   22 +++++++++++-----------
+ drivers/usb/gadget/gmidi.c          |   16 ++++++++--------
+ drivers/usb/gadget/goku_udc.c       |    8 ++++----
+ drivers/usb/gadget/inode.c          |    4 ++--
+ drivers/usb/gadget/net2280.c        |   16 ++++++++--------
+ drivers/usb/gadget/printer.c        |   18 +++++++++---------
+ drivers/usb/gadget/serial.c         |   12 ++++++------
+ drivers/usb/gadget/u_serial.c       |    2 +-
+ drivers/usb/gadget/zero.c           |    8 ++++----
+ drivers/usb/host/ehci-sched.c       |    2 +-
+ drivers/usb/host/ehci.h             |    2 +-
+ drivers/usb/host/isp1760-hcd.c      |    4 ++--
+ drivers/usb/host/oxu210hp-hcd.c     |   22 +++++++++++-----------
+ drivers/usb/host/oxu210hp.h         |    8 ++++----
+ drivers/usb/host/uhci-hcd.h         |   10 +++++-----
+ drivers/usb/host/uhci-q.c           |   10 +++++-----
+ drivers/usb/image/mdc800.c          |    8 ++++----
+ drivers/usb/musb/musb_virthub.c     |    2 +-
+ 35 files changed, 152 insertions(+), 152 deletions(-)
+
+diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
+index 3c711db..0eee32a 100644
+--- a/drivers/usb/core/hcd.c
++++ b/drivers/usb/core/hcd.c
+@@ -901,7 +901,7 @@ static int register_root_hub(struct usb_hcd *hcd)
+ 
+ 	mutex_lock(&usb_bus_list_lock);
+ 
+-	usb_dev->ep0.desc.wMaxPacketSize = __constant_cpu_to_le16(64);
++	usb_dev->ep0.desc.wMaxPacketSize = cpu_to_le16(64);
+ 	retval = usb_get_device_descriptor(usb_dev, USB_DT_DEVICE_SIZE);
+ 	if (retval != sizeof usb_dev->descriptor) {
+ 		mutex_unlock(&usb_bus_list_lock);
+diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+index cd50d86..7e33d63 100644
+--- a/drivers/usb/core/hub.c
++++ b/drivers/usb/core/hub.c
+@@ -2471,20 +2471,20 @@ hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
+ 	 */
+ 	switch (udev->speed) {
+ 	case USB_SPEED_VARIABLE:	/* fixed at 512 */
+-		udev->ep0.desc.wMaxPacketSize = __constant_cpu_to_le16(512);
++		udev->ep0.desc.wMaxPacketSize = cpu_to_le16(512);
+ 		break;
+ 	case USB_SPEED_HIGH:		/* fixed at 64 */
+-		udev->ep0.desc.wMaxPacketSize = __constant_cpu_to_le16(64);
++		udev->ep0.desc.wMaxPacketSize = cpu_to_le16(64);
+ 		break;
+ 	case USB_SPEED_FULL:		/* 8, 16, 32, or 64 */
+ 		/* to determine the ep0 maxpacket size, try to read
+ 		 * the device descriptor to get bMaxPacketSize0 and
+ 		 * then correct our initial guess.
+ 		 */
+-		udev->ep0.desc.wMaxPacketSize = __constant_cpu_to_le16(64);
++		udev->ep0.desc.wMaxPacketSize = cpu_to_le16(64);
+ 		break;
+ 	case USB_SPEED_LOW:		/* fixed at 8 */
+-		udev->ep0.desc.wMaxPacketSize = __constant_cpu_to_le16(8);
++		udev->ep0.desc.wMaxPacketSize = cpu_to_le16(8);
+ 		break;
+ 	default:
+ 		goto fail;
+diff --git a/drivers/usb/gadget/amd5536udc.c b/drivers/usb/gadget/amd5536udc.c
+index abf8192..826f3ad 100644
+--- a/drivers/usb/gadget/amd5536udc.c
++++ b/drivers/usb/gadget/amd5536udc.c
+@@ -551,7 +551,7 @@ udc_alloc_request(struct usb_ep *usbep, gfp_t gfp)
+ 		dma_desc->status = AMD_ADDBITS(dma_desc->status,
+ 						UDC_DMA_STP_STS_BS_HOST_BUSY,
+ 						UDC_DMA_STP_STS_BS);
+-		dma_desc->bufptr = __constant_cpu_to_le32(DMA_DONT_USE);
++		dma_desc->bufptr = cpu_to_le32(DMA_DONT_USE);
+ 		req->td_data = dma_desc;
+ 		req->td_data_last = NULL;
+ 		req->chain_len = 1;
+diff --git a/drivers/usb/gadget/atmel_usba_udc.c b/drivers/usb/gadget/atmel_usba_udc.c
+index 65b03e3..c22fab1 100644
+--- a/drivers/usb/gadget/atmel_usba_udc.c
++++ b/drivers/usb/gadget/atmel_usba_udc.c
+@@ -1017,7 +1017,7 @@ static struct usb_endpoint_descriptor usba_ep0_desc = {
+ 	.bDescriptorType = USB_DT_ENDPOINT,
+ 	.bEndpointAddress = 0,
+ 	.bmAttributes = USB_ENDPOINT_XFER_CONTROL,
+-	.wMaxPacketSize = __constant_cpu_to_le16(64),
++	.wMaxPacketSize = cpu_to_le16(64),
+ 	/* FIXME: I have no idea what to put here */
+ 	.bInterval = 1,
+ };
+@@ -1207,21 +1207,21 @@ static int do_test_mode(struct usba_udc *udc)
+ /* Avoid overly long expressions */
+ static inline bool feature_is_dev_remote_wakeup(struct usb_ctrlrequest *crq)
+ {
+-	if (crq->wValue == __constant_cpu_to_le16(USB_DEVICE_REMOTE_WAKEUP))
++	if (crq->wValue == cpu_to_le16(USB_DEVICE_REMOTE_WAKEUP))
+ 		return true;
+ 	return false;
+ }
+ 
+ static inline bool feature_is_dev_test_mode(struct usb_ctrlrequest *crq)
+ {
+-	if (crq->wValue == __constant_cpu_to_le16(USB_DEVICE_TEST_MODE))
++	if (crq->wValue == cpu_to_le16(USB_DEVICE_TEST_MODE))
+ 		return true;
+ 	return false;
+ }
+ 
+ static inline bool feature_is_ep_halt(struct usb_ctrlrequest *crq)
+ {
+-	if (crq->wValue == __constant_cpu_to_le16(USB_ENDPOINT_HALT))
++	if (crq->wValue == cpu_to_le16(USB_ENDPOINT_HALT))
+ 		return true;
+ 	return false;
+ }
+@@ -1239,7 +1239,7 @@ static int handle_ep0_setup(struct usba_udc *udc, struct usba_ep *ep,
+ 			status = cpu_to_le16(udc->devstatus);
+ 		} else if (crq->bRequestType
+ 				== (USB_DIR_IN | USB_RECIP_INTERFACE)) {
+-			status = __constant_cpu_to_le16(0);
++			status = cpu_to_le16(0);
+ 		} else if (crq->bRequestType
+ 				== (USB_DIR_IN | USB_RECIP_ENDPOINT)) {
+ 			struct usba_ep *target;
+@@ -1250,12 +1250,12 @@ static int handle_ep0_setup(struct usba_udc *udc, struct usba_ep *ep,
+ 
+ 			status = 0;
+ 			if (is_stalled(udc, target))
+-				status |= __constant_cpu_to_le16(1);
++				status |= cpu_to_le16(1);
+ 		} else
+ 			goto delegate;
+ 
+ 		/* Write directly to the FIFO. No queueing is done. */
+-		if (crq->wLength != __constant_cpu_to_le16(sizeof(status)))
++		if (crq->wLength != cpu_to_le16(sizeof(status)))
+ 			goto stall;
+ 		ep->state = DATA_STAGE_IN;
+ 		__raw_writew(status, ep->fifo);
+@@ -1274,7 +1274,7 @@ static int handle_ep0_setup(struct usba_udc *udc, struct usba_ep *ep,
+ 		} else if (crq->bRequestType == USB_RECIP_ENDPOINT) {
+ 			struct usba_ep *target;
+ 
+-			if (crq->wLength != __constant_cpu_to_le16(0)
++			if (crq->wLength != cpu_to_le16(0)
+ 					|| !feature_is_ep_halt(crq))
+ 				goto stall;
+ 			target = get_ep_by_addr(udc, le16_to_cpu(crq->wIndex));
+@@ -1308,7 +1308,7 @@ static int handle_ep0_setup(struct usba_udc *udc, struct usba_ep *ep,
+ 		} else if (crq->bRequestType == USB_RECIP_ENDPOINT) {
+ 			struct usba_ep *target;
+ 
+-			if (crq->wLength != __constant_cpu_to_le16(0)
++			if (crq->wLength != cpu_to_le16(0)
+ 					|| !feature_is_ep_halt(crq))
+ 				goto stall;
+ 
+@@ -1514,7 +1514,7 @@ restart:
+ 			 */
+ 			ep->state = DATA_STAGE_IN;
+ 		} else {
+-			if (crq.crq.wLength != __constant_cpu_to_le16(0))
++			if (crq.crq.wLength != cpu_to_le16(0))
+ 				ep->state = DATA_STAGE_OUT;
+ 			else
+ 				ep->state = STATUS_STAGE_IN;
+diff --git a/drivers/usb/gadget/cdc2.c b/drivers/usb/gadget/cdc2.c
+index 5495b17..928137d 100644
+--- a/drivers/usb/gadget/cdc2.c
++++ b/drivers/usb/gadget/cdc2.c
+@@ -66,7 +66,7 @@ static struct usb_device_descriptor device_desc = {
+ 	.bLength =		sizeof device_desc,
+ 	.bDescriptorType =	USB_DT_DEVICE,
+ 
+-	.bcdUSB =		__constant_cpu_to_le16(0x0200),
++	.bcdUSB =		cpu_to_le16(0x0200),
+ 
+ 	.bDeviceClass =		USB_CLASS_COMM,
+ 	.bDeviceSubClass =	0,
+@@ -74,8 +74,8 @@ static struct usb_device_descriptor device_desc = {
+ 	/* .bMaxPacketSize0 = f(hardware) */
+ 
+ 	/* Vendor and product id can be overridden by module parameters.  */
+-	.idVendor =		__constant_cpu_to_le16(CDC_VENDOR_NUM),
+-	.idProduct =		__constant_cpu_to_le16(CDC_PRODUCT_NUM),
++	.idVendor =		cpu_to_le16(CDC_VENDOR_NUM),
++	.idProduct =		cpu_to_le16(CDC_PRODUCT_NUM),
+ 	/* .bcdDevice = f(hardware) */
+ 	/* .iManufacturer = DYNAMIC */
+ 	/* .iProduct = DYNAMIC */
+@@ -193,7 +193,7 @@ static int __init cdc_bind(struct usb_composite_dev *cdev)
+ 				gadget->name,
+ 				cdc_config_driver.label);
+ 		device_desc.bcdDevice =
+-			__constant_cpu_to_le16(0x0300 | 0x0099);
++			cpu_to_le16(0x0300 | 0x0099);
+ 	}
+ 
+ 
+diff --git a/drivers/usb/gadget/dummy_hcd.c b/drivers/usb/gadget/dummy_hcd.c
+index 9064696..3b42888 100644
+--- a/drivers/usb/gadget/dummy_hcd.c
++++ b/drivers/usb/gadget/dummy_hcd.c
+@@ -1626,7 +1626,7 @@ static int dummy_hub_control (
+ 		hub_descriptor ((struct usb_hub_descriptor *) buf);
+ 		break;
+ 	case GetHubStatus:
+-		*(__le32 *) buf = __constant_cpu_to_le32 (0);
++		*(__le32 *) buf = cpu_to_le32 (0);
+ 		break;
+ 	case GetPortStatus:
+ 		if (wIndex != 1)
+diff --git a/drivers/usb/gadget/epautoconf.c b/drivers/usb/gadget/epautoconf.c
+index a36b117..cd0914e 100644
+--- a/drivers/usb/gadget/epautoconf.c
++++ b/drivers/usb/gadget/epautoconf.c
+@@ -148,7 +148,7 @@ ep_matches (
+ 			return 0;
+ 
+ 		/* BOTH:  "high bandwidth" works only at high speed */
+-		if ((desc->wMaxPacketSize & __constant_cpu_to_le16(3<<11))) {
++		if ((desc->wMaxPacketSize & cpu_to_le16(3<<11))) {
+ 			if (!gadget->is_dualspeed)
+ 				return 0;
+ 			/* configure your hardware with enough buffering!! */
+diff --git a/drivers/usb/gadget/ether.c b/drivers/usb/gadget/ether.c
+index 37252d0..d006dc6 100644
+--- a/drivers/usb/gadget/ether.c
++++ b/drivers/usb/gadget/ether.c
+@@ -156,7 +156,7 @@ static struct usb_device_descriptor device_desc = {
+ 	.bLength =		sizeof device_desc,
+ 	.bDescriptorType =	USB_DT_DEVICE,
+ 
+-	.bcdUSB =		__constant_cpu_to_le16 (0x0200),
++	.bcdUSB =		cpu_to_le16 (0x0200),
+ 
+ 	.bDeviceClass =		USB_CLASS_COMM,
+ 	.bDeviceSubClass =	0,
+@@ -167,8 +167,8 @@ static struct usb_device_descriptor device_desc = {
+ 	 * we support.  (As does bNumConfigurations.)  These values can
+ 	 * also be overridden by module parameters.
+ 	 */
+-	.idVendor =		__constant_cpu_to_le16 (CDC_VENDOR_NUM),
+-	.idProduct =		__constant_cpu_to_le16 (CDC_PRODUCT_NUM),
++	.idVendor =		cpu_to_le16 (CDC_VENDOR_NUM),
++	.idProduct =		cpu_to_le16 (CDC_PRODUCT_NUM),
+ 	/* .bcdDevice = f(hardware) */
+ 	/* .iManufacturer = DYNAMIC */
+ 	/* .iProduct = DYNAMIC */
+@@ -318,7 +318,7 @@ static int __init eth_bind(struct usb_composite_dev *cdev)
+ 				gadget->name,
+ 				eth_config_driver.label);
+ 		device_desc.bcdDevice =
+-			__constant_cpu_to_le16(0x0300 | 0x0099);
++			cpu_to_le16(0x0300 | 0x0099);
+ 	}
+ 
+ 
+diff --git a/drivers/usb/gadget/f_acm.c b/drivers/usb/gadget/f_acm.c
+index c1d34df..7953948 100644
+--- a/drivers/usb/gadget/f_acm.c
++++ b/drivers/usb/gadget/f_acm.c
+@@ -125,7 +125,7 @@ static struct usb_cdc_header_desc acm_header_desc __initdata = {
+ 	.bLength =		sizeof(acm_header_desc),
+ 	.bDescriptorType =	USB_DT_CS_INTERFACE,
+ 	.bDescriptorSubType =	USB_CDC_HEADER_TYPE,
+-	.bcdCDC =		__constant_cpu_to_le16(0x0110),
++	.bcdCDC =		cpu_to_le16(0x0110),
+ };
+ 
+ static struct usb_cdc_call_mgmt_descriptor
+@@ -159,7 +159,7 @@ static struct usb_endpoint_descriptor acm_fs_notify_desc __initdata = {
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 	.bEndpointAddress =	USB_DIR_IN,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_INT,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(GS_NOTIFY_MAXPACKET),
++	.wMaxPacketSize =	cpu_to_le16(GS_NOTIFY_MAXPACKET),
+ 	.bInterval =		1 << GS_LOG2_NOTIFY_INTERVAL,
+ };
+ 
+@@ -197,7 +197,7 @@ static struct usb_endpoint_descriptor acm_hs_notify_desc __initdata = {
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 	.bEndpointAddress =	USB_DIR_IN,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_INT,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(GS_NOTIFY_MAXPACKET),
++	.wMaxPacketSize =	cpu_to_le16(GS_NOTIFY_MAXPACKET),
+ 	.bInterval =		GS_LOG2_NOTIFY_INTERVAL+4,
+ };
+ 
+@@ -205,14 +205,14 @@ static struct usb_endpoint_descriptor acm_hs_in_desc __initdata = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(512),
++	.wMaxPacketSize =	cpu_to_le16(512),
+ };
+ 
+ static struct usb_endpoint_descriptor acm_hs_out_desc __initdata = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(512),
++	.wMaxPacketSize =	cpu_to_le16(512),
+ };
+ 
+ static struct usb_descriptor_header *acm_hs_function[] __initdata = {
+diff --git a/drivers/usb/gadget/f_ecm.c b/drivers/usb/gadget/f_ecm.c
+index 4ae5799..ecf5bdd 100644
+--- a/drivers/usb/gadget/f_ecm.c
++++ b/drivers/usb/gadget/f_ecm.c
+@@ -130,7 +130,7 @@ static struct usb_cdc_header_desc ecm_header_desc __initdata = {
+ 	.bDescriptorType =	USB_DT_CS_INTERFACE,
+ 	.bDescriptorSubType =	USB_CDC_HEADER_TYPE,
+ 
+-	.bcdCDC =		__constant_cpu_to_le16(0x0110),
++	.bcdCDC =		cpu_to_le16(0x0110),
+ };
+ 
+ static struct usb_cdc_union_desc ecm_union_desc __initdata = {
+@@ -148,9 +148,9 @@ static struct usb_cdc_ether_desc ecm_desc __initdata = {
+ 
+ 	/* this descriptor actually adds value, surprise! */
+ 	/* .iMACAddress = DYNAMIC */
+-	.bmEthernetStatistics =	__constant_cpu_to_le32(0), /* no statistics */
+-	.wMaxSegmentSize =	__constant_cpu_to_le16(ETH_FRAME_LEN),
+-	.wNumberMCFilters =	__constant_cpu_to_le16(0),
++	.bmEthernetStatistics =	cpu_to_le32(0), /* no statistics */
++	.wMaxSegmentSize =	cpu_to_le16(ETH_FRAME_LEN),
++	.wNumberMCFilters =	cpu_to_le16(0),
+ 	.bNumberPowerFilters =	0,
+ };
+ 
+@@ -192,7 +192,7 @@ static struct usb_endpoint_descriptor fs_ecm_notify_desc __initdata = {
+ 
+ 	.bEndpointAddress =	USB_DIR_IN,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_INT,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(ECM_STATUS_BYTECOUNT),
++	.wMaxPacketSize =	cpu_to_le16(ECM_STATUS_BYTECOUNT),
+ 	.bInterval =		1 << LOG2_STATUS_INTERVAL_MSEC,
+ };
+ 
+@@ -236,7 +236,7 @@ static struct usb_endpoint_descriptor hs_ecm_notify_desc __initdata = {
+ 
+ 	.bEndpointAddress =	USB_DIR_IN,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_INT,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(ECM_STATUS_BYTECOUNT),
++	.wMaxPacketSize =	cpu_to_le16(ECM_STATUS_BYTECOUNT),
+ 	.bInterval =		LOG2_STATUS_INTERVAL_MSEC + 4,
+ };
+ static struct usb_endpoint_descriptor hs_ecm_in_desc __initdata = {
+@@ -245,7 +245,7 @@ static struct usb_endpoint_descriptor hs_ecm_in_desc __initdata = {
+ 
+ 	.bEndpointAddress =	USB_DIR_IN,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(512),
++	.wMaxPacketSize =	cpu_to_le16(512),
+ };
+ 
+ static struct usb_endpoint_descriptor hs_ecm_out_desc __initdata = {
+@@ -254,7 +254,7 @@ static struct usb_endpoint_descriptor hs_ecm_out_desc __initdata = {
+ 
+ 	.bEndpointAddress =	USB_DIR_OUT,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(512),
++	.wMaxPacketSize =	cpu_to_le16(512),
+ };
+ 
+ static struct usb_descriptor_header *ecm_hs_function[] __initdata = {
+diff --git a/drivers/usb/gadget/f_loopback.c b/drivers/usb/gadget/f_loopback.c
+index 8affe1d..83301bd 100644
+--- a/drivers/usb/gadget/f_loopback.c
++++ b/drivers/usb/gadget/f_loopback.c
+@@ -100,7 +100,7 @@ static struct usb_endpoint_descriptor hs_loop_source_desc = {
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(512),
++	.wMaxPacketSize =	cpu_to_le16(512),
+ };
+ 
+ static struct usb_endpoint_descriptor hs_loop_sink_desc = {
+@@ -108,7 +108,7 @@ static struct usb_endpoint_descriptor hs_loop_sink_desc = {
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(512),
++	.wMaxPacketSize =	cpu_to_le16(512),
+ };
+ 
+ static struct usb_descriptor_header *hs_loopback_descs[] = {
+diff --git a/drivers/usb/gadget/f_obex.c b/drivers/usb/gadget/f_obex.c
+index 80c2e7e..0104b54 100644
+--- a/drivers/usb/gadget/f_obex.c
++++ b/drivers/usb/gadget/f_obex.c
+@@ -123,7 +123,7 @@ static struct usb_cdc_header_desc obex_cdc_header_desc __initdata = {
+ 	.bLength		= sizeof(obex_cdc_header_desc),
+ 	.bDescriptorType	= USB_DT_CS_INTERFACE,
+ 	.bDescriptorSubType	= USB_CDC_HEADER_TYPE,
+-	.bcdCDC			= __constant_cpu_to_le16(0x0120),
++	.bcdCDC			= cpu_to_le16(0x0120),
+ };
+ 
+ static struct usb_cdc_union_desc obex_cdc_union_desc __initdata = {
+@@ -138,7 +138,7 @@ static struct usb_cdc_obex_desc obex_desc __initdata = {
+ 	.bLength		= sizeof(obex_desc),
+ 	.bDescriptorType	= USB_DT_CS_INTERFACE,
+ 	.bDescriptorSubType	= USB_CDC_OBEX_TYPE,
+-	.bcdVersion		= __constant_cpu_to_le16(0x0100),
++	.bcdVersion		= cpu_to_le16(0x0100),
+ };
+ 
+ /* High-Speed Support */
+@@ -149,7 +149,7 @@ static struct usb_endpoint_descriptor obex_hs_ep_out_desc __initdata = {
+ 
+ 	.bEndpointAddress	= USB_DIR_OUT,
+ 	.bmAttributes		= USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize		= __constant_cpu_to_le16(512),
++	.wMaxPacketSize		= cpu_to_le16(512),
+ };
+ 
+ static struct usb_endpoint_descriptor obex_hs_ep_in_desc __initdata = {
+@@ -158,7 +158,7 @@ static struct usb_endpoint_descriptor obex_hs_ep_in_desc __initdata = {
+ 
+ 	.bEndpointAddress	= USB_DIR_IN,
+ 	.bmAttributes		= USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize		= __constant_cpu_to_le16(512),
++	.wMaxPacketSize		= cpu_to_le16(512),
+ };
+ 
+ static struct usb_descriptor_header *hs_function[] __initdata = {
+diff --git a/drivers/usb/gadget/f_phonet.c b/drivers/usb/gadget/f_phonet.c
+index c0916c7..c1abeb8 100644
+--- a/drivers/usb/gadget/f_phonet.c
++++ b/drivers/usb/gadget/f_phonet.c
+@@ -79,7 +79,7 @@ pn_header_desc = {
+ 	.bLength =		sizeof pn_header_desc,
+ 	.bDescriptorType =	USB_DT_CS_INTERFACE,
+ 	.bDescriptorSubType =	USB_CDC_HEADER_TYPE,
+-	.bcdCDC =		__constant_cpu_to_le16(0x0110),
++	.bcdCDC =		cpu_to_le16(0x0110),
+ };
+ 
+ static const struct usb_cdc_header_desc
+@@ -87,7 +87,7 @@ pn_phonet_desc = {
+ 	.bLength =		sizeof pn_phonet_desc,
+ 	.bDescriptorType =	USB_DT_CS_INTERFACE,
+ 	.bDescriptorSubType =	USB_CDC_PHONET_TYPE,
+-	.bcdCDC =		__constant_cpu_to_le16(0x1505), /* ??? */
++	.bcdCDC =		cpu_to_le16(0x1505), /* ??? */
+ };
+ 
+ static struct usb_cdc_union_desc
+@@ -138,7 +138,7 @@ pn_hs_sink_desc = {
+ 
+ 	.bEndpointAddress =	USB_DIR_OUT,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(512),
++	.wMaxPacketSize =	cpu_to_le16(512),
+ };
+ 
+ static struct usb_endpoint_descriptor
+@@ -157,7 +157,7 @@ pn_hs_source_desc = {
+ 
+ 	.bEndpointAddress =	USB_DIR_IN,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(512),
++	.wMaxPacketSize =	cpu_to_le16(512),
+ };
+ 
+ static struct usb_descriptor_header *fs_pn_function[] = {
+diff --git a/drivers/usb/gadget/f_rndis.c b/drivers/usb/gadget/f_rndis.c
+index 3a8bb53..3122fb9 100644
+--- a/drivers/usb/gadget/f_rndis.c
++++ b/drivers/usb/gadget/f_rndis.c
+@@ -137,7 +137,7 @@ static struct usb_cdc_header_desc header_desc __initdata = {
+ 	.bDescriptorType =	USB_DT_CS_INTERFACE,
+ 	.bDescriptorSubType =	USB_CDC_HEADER_TYPE,
+ 
+-	.bcdCDC =		__constant_cpu_to_le16(0x0110),
++	.bcdCDC =		cpu_to_le16(0x0110),
+ };
+ 
+ static struct usb_cdc_call_mgmt_descriptor call_mgmt_descriptor __initdata = {
+@@ -187,7 +187,7 @@ static struct usb_endpoint_descriptor fs_notify_desc __initdata = {
+ 
+ 	.bEndpointAddress =	USB_DIR_IN,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_INT,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(STATUS_BYTECOUNT),
++	.wMaxPacketSize =	cpu_to_le16(STATUS_BYTECOUNT),
+ 	.bInterval =		1 << LOG2_STATUS_INTERVAL_MSEC,
+ };
+ 
+@@ -230,7 +230,7 @@ static struct usb_endpoint_descriptor hs_notify_desc __initdata = {
+ 
+ 	.bEndpointAddress =	USB_DIR_IN,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_INT,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(STATUS_BYTECOUNT),
++	.wMaxPacketSize =	cpu_to_le16(STATUS_BYTECOUNT),
+ 	.bInterval =		LOG2_STATUS_INTERVAL_MSEC + 4,
+ };
+ static struct usb_endpoint_descriptor hs_in_desc __initdata = {
+@@ -239,7 +239,7 @@ static struct usb_endpoint_descriptor hs_in_desc __initdata = {
+ 
+ 	.bEndpointAddress =	USB_DIR_IN,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(512),
++	.wMaxPacketSize =	cpu_to_le16(512),
+ };
+ 
+ static struct usb_endpoint_descriptor hs_out_desc __initdata = {
+@@ -248,7 +248,7 @@ static struct usb_endpoint_descriptor hs_out_desc __initdata = {
+ 
+ 	.bEndpointAddress =	USB_DIR_OUT,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(512),
++	.wMaxPacketSize =	cpu_to_le16(512),
+ };
+ 
+ static struct usb_descriptor_header *eth_hs_function[] __initdata = {
+diff --git a/drivers/usb/gadget/f_serial.c b/drivers/usb/gadget/f_serial.c
+index fe5674d..db0aa93 100644
+--- a/drivers/usb/gadget/f_serial.c
++++ b/drivers/usb/gadget/f_serial.c
+@@ -89,14 +89,14 @@ static struct usb_endpoint_descriptor gser_hs_in_desc __initdata = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(512),
++	.wMaxPacketSize =	cpu_to_le16(512),
+ };
+ 
+ static struct usb_endpoint_descriptor gser_hs_out_desc __initdata = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(512),
++	.wMaxPacketSize =	cpu_to_le16(512),
+ };
+ 
+ static struct usb_descriptor_header *gser_hs_function[] __initdata = {
+diff --git a/drivers/usb/gadget/f_sourcesink.c b/drivers/usb/gadget/f_sourcesink.c
+index dc84d26..6aca5c8 100644
+--- a/drivers/usb/gadget/f_sourcesink.c
++++ b/drivers/usb/gadget/f_sourcesink.c
+@@ -118,7 +118,7 @@ static struct usb_endpoint_descriptor hs_source_desc = {
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(512),
++	.wMaxPacketSize =	cpu_to_le16(512),
+ };
+ 
+ static struct usb_endpoint_descriptor hs_sink_desc = {
+@@ -126,7 +126,7 @@ static struct usb_endpoint_descriptor hs_sink_desc = {
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(512),
++	.wMaxPacketSize =	cpu_to_le16(512),
+ };
+ 
+ static struct usb_descriptor_header *hs_source_sink_descs[] = {
+diff --git a/drivers/usb/gadget/f_subset.c b/drivers/usb/gadget/f_subset.c
+index fe18328..a9c98fd 100644
+--- a/drivers/usb/gadget/f_subset.c
++++ b/drivers/usb/gadget/f_subset.c
+@@ -108,7 +108,7 @@ static struct usb_cdc_header_desc mdlm_header_desc __initdata = {
+ 	.bDescriptorType =	USB_DT_CS_INTERFACE,
+ 	.bDescriptorSubType =	USB_CDC_HEADER_TYPE,
+ 
+-	.bcdCDC =		__constant_cpu_to_le16(0x0110),
++	.bcdCDC =		cpu_to_le16(0x0110),
+ };
+ 
+ static struct usb_cdc_mdlm_desc mdlm_desc __initdata = {
+@@ -116,7 +116,7 @@ static struct usb_cdc_mdlm_desc mdlm_desc __initdata = {
+ 	.bDescriptorType =	USB_DT_CS_INTERFACE,
+ 	.bDescriptorSubType =	USB_CDC_MDLM_TYPE,
+ 
+-	.bcdVersion =		__constant_cpu_to_le16(0x0100),
++	.bcdVersion =		cpu_to_le16(0x0100),
+ 	.bGUID = {
+ 		0x5d, 0x34, 0xcf, 0x66, 0x11, 0x18, 0x11, 0xd6,
+ 		0xa2, 0x1a, 0x00, 0x01, 0x02, 0xca, 0x9a, 0x7f,
+@@ -144,9 +144,9 @@ static struct usb_cdc_ether_desc ether_desc __initdata = {
+ 
+ 	/* this descriptor actually adds value, surprise! */
+ 	/* .iMACAddress = DYNAMIC */
+-	.bmEthernetStatistics =	__constant_cpu_to_le32(0), /* no statistics */
+-	.wMaxSegmentSize =	__constant_cpu_to_le16(ETH_FRAME_LEN),
+-	.wNumberMCFilters =	__constant_cpu_to_le16(0),
++	.bmEthernetStatistics =	cpu_to_le32(0), /* no statistics */
++	.wMaxSegmentSize =	cpu_to_le16(ETH_FRAME_LEN),
++	.wNumberMCFilters =	cpu_to_le16(0),
+ 	.bNumberPowerFilters =	0,
+ };
+ 
+@@ -186,7 +186,7 @@ static struct usb_endpoint_descriptor hs_subset_in_desc __initdata = {
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(512),
++	.wMaxPacketSize =	cpu_to_le16(512),
+ };
+ 
+ static struct usb_endpoint_descriptor hs_subset_out_desc __initdata = {
+@@ -194,7 +194,7 @@ static struct usb_endpoint_descriptor hs_subset_out_desc __initdata = {
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(512),
++	.wMaxPacketSize =	cpu_to_le16(512),
+ };
+ 
+ static struct usb_descriptor_header *hs_eth_function[] __initdata = {
+diff --git a/drivers/usb/gadget/file_storage.c b/drivers/usb/gadget/file_storage.c
+index 26f5a08..573c909 100644
+--- a/drivers/usb/gadget/file_storage.c
++++ b/drivers/usb/gadget/file_storage.c
+@@ -847,13 +847,13 @@ device_desc = {
+ 	.bLength =		sizeof device_desc,
+ 	.bDescriptorType =	USB_DT_DEVICE,
+ 
+-	.bcdUSB =		__constant_cpu_to_le16(0x0200),
++	.bcdUSB =		cpu_to_le16(0x0200),
+ 	.bDeviceClass =		USB_CLASS_PER_INTERFACE,
+ 
+ 	/* The next three values can be overridden by module parameters */
+-	.idVendor =		__constant_cpu_to_le16(DRIVER_VENDOR_ID),
+-	.idProduct =		__constant_cpu_to_le16(DRIVER_PRODUCT_ID),
+-	.bcdDevice =		__constant_cpu_to_le16(0xffff),
++	.idVendor =		cpu_to_le16(DRIVER_VENDOR_ID),
++	.idProduct =		cpu_to_le16(DRIVER_PRODUCT_ID),
++	.bcdDevice =		cpu_to_le16(0xffff),
+ 
+ 	.iManufacturer =	STRING_MANUFACTURER,
+ 	.iProduct =		STRING_PRODUCT,
+@@ -926,7 +926,7 @@ fs_intr_in_desc = {
+ 
+ 	.bEndpointAddress =	USB_DIR_IN,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_INT,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(2),
++	.wMaxPacketSize =	cpu_to_le16(2),
+ 	.bInterval =		32,	// frames -> 32 ms
+ };
+ 
+@@ -954,7 +954,7 @@ dev_qualifier = {
+ 	.bLength =		sizeof dev_qualifier,
+ 	.bDescriptorType =	USB_DT_DEVICE_QUALIFIER,
+ 
+-	.bcdUSB =		__constant_cpu_to_le16(0x0200),
++	.bcdUSB =		cpu_to_le16(0x0200),
+ 	.bDeviceClass =		USB_CLASS_PER_INTERFACE,
+ 
+ 	.bNumConfigurations =	1,
+@@ -967,7 +967,7 @@ hs_bulk_in_desc = {
+ 
+ 	/* bEndpointAddress copied from fs_bulk_in_desc during fsg_bind() */
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(512),
++	.wMaxPacketSize =	cpu_to_le16(512),
+ };
+ 
+ static struct usb_endpoint_descriptor
+@@ -977,7 +977,7 @@ hs_bulk_out_desc = {
+ 
+ 	/* bEndpointAddress copied from fs_bulk_out_desc during fsg_bind() */
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(512),
++	.wMaxPacketSize =	cpu_to_le16(512),
+ 	.bInterval =		1,	// NAK every 1 uframe
+ };
+ 
+@@ -988,7 +988,7 @@ hs_intr_in_desc = {
+ 
+ 	/* bEndpointAddress copied from fs_intr_in_desc during fsg_bind() */
+ 	.bmAttributes =		USB_ENDPOINT_XFER_INT,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(2),
++	.wMaxPacketSize =	cpu_to_le16(2),
+ 	.bInterval =		9,	// 2**(9-1) = 256 uframes -> 32 ms
+ };
+ 
+@@ -2651,7 +2651,7 @@ static int send_status(struct fsg_dev *fsg)
+ 		struct bulk_cs_wrap	*csw = bh->buf;
+ 
+ 		/* Store and send the Bulk-only CSW */
+-		csw->Signature = __constant_cpu_to_le32(USB_BULK_CS_SIG);
++		csw->Signature = cpu_to_le32(USB_BULK_CS_SIG);
+ 		csw->Tag = fsg->tag;
+ 		csw->Residue = cpu_to_le32(fsg->residue);
+ 		csw->Status = status;
+@@ -3094,7 +3094,7 @@ static int received_cbw(struct fsg_dev *fsg, struct fsg_buffhd *bh)
+ 
+ 	/* Is the CBW valid? */
+ 	if (req->actual != USB_BULK_CB_WRAP_LEN ||
+-			cbw->Signature != __constant_cpu_to_le32(
++			cbw->Signature != cpu_to_le32(
+ 				USB_BULK_CB_SIG)) {
+ 		DBG(fsg, "invalid CBW: len %u sig 0x%x\n",
+ 				req->actual,
+diff --git a/drivers/usb/gadget/gmidi.c b/drivers/usb/gadget/gmidi.c
+index 14e09ab..b9312dc 100644
+--- a/drivers/usb/gadget/gmidi.c
++++ b/drivers/usb/gadget/gmidi.c
+@@ -199,10 +199,10 @@ DECLARE_USB_MS_ENDPOINT_DESCRIPTOR(1);
+ static struct usb_device_descriptor device_desc = {
+ 	.bLength =		USB_DT_DEVICE_SIZE,
+ 	.bDescriptorType =	USB_DT_DEVICE,
+-	.bcdUSB =		__constant_cpu_to_le16(0x0200),
++	.bcdUSB =		cpu_to_le16(0x0200),
+ 	.bDeviceClass =		USB_CLASS_PER_INTERFACE,
+-	.idVendor =		__constant_cpu_to_le16(DRIVER_VENDOR_NUM),
+-	.idProduct =		__constant_cpu_to_le16(DRIVER_PRODUCT_NUM),
++	.idVendor =		cpu_to_le16(DRIVER_VENDOR_NUM),
++	.idProduct =		cpu_to_le16(DRIVER_PRODUCT_NUM),
+ 	.iManufacturer =	STRING_MANUFACTURER,
+ 	.iProduct =		STRING_PRODUCT,
+ 	.bNumConfigurations =	1,
+@@ -241,8 +241,8 @@ static const struct usb_ac_header_descriptor_1 ac_header_desc = {
+ 	.bLength =		USB_DT_AC_HEADER_SIZE(1),
+ 	.bDescriptorType =	USB_DT_CS_INTERFACE,
+ 	.bDescriptorSubtype =	USB_MS_HEADER,
+-	.bcdADC =		__constant_cpu_to_le16(0x0100),
+-	.wTotalLength =		__constant_cpu_to_le16(USB_DT_AC_HEADER_SIZE(1)),
++	.bcdADC =		cpu_to_le16(0x0100),
++	.wTotalLength =		cpu_to_le16(USB_DT_AC_HEADER_SIZE(1)),
+ 	.bInCollection =	1,
+ 	.baInterfaceNr = {
+ 		[0] =		GMIDI_MS_INTERFACE,
+@@ -265,8 +265,8 @@ static const struct usb_ms_header_descriptor ms_header_desc = {
+ 	.bLength =		USB_DT_MS_HEADER_SIZE,
+ 	.bDescriptorType =	USB_DT_CS_INTERFACE,
+ 	.bDescriptorSubtype =	USB_MS_HEADER,
+-	.bcdMSC =		__constant_cpu_to_le16(0x0100),
+-	.wTotalLength =		__constant_cpu_to_le16(USB_DT_MS_HEADER_SIZE
++	.bcdMSC =		cpu_to_le16(0x0100),
++	.wTotalLength =		cpu_to_le16(USB_DT_MS_HEADER_SIZE
+ 				+ 2*USB_DT_MIDI_IN_SIZE
+ 				+ 2*USB_DT_MIDI_OUT_SIZE(1)),
+ };
+@@ -1226,7 +1226,7 @@ autoconf_fail:
+ 		 */
+ 		pr_warning("%s: controller '%s' not recognized\n",
+ 			shortname, gadget->name);
+-		device_desc.bcdDevice = __constant_cpu_to_le16(0x9999);
++		device_desc.bcdDevice = cpu_to_le16(0x9999);
+ 	}
+ 
+ 
+diff --git a/drivers/usb/gadget/goku_udc.c b/drivers/usb/gadget/goku_udc.c
+index 63419c4..de010c9 100644
+--- a/drivers/usb/gadget/goku_udc.c
++++ b/drivers/usb/gadget/goku_udc.c
+@@ -1472,7 +1472,7 @@ static void ep0_setup(struct goku_udc *dev)
+ 				/* active endpoint */
+ 				if (tmp > 3 || (!dev->ep[tmp].desc && tmp != 0))
+ 					goto stall;
+-				if (ctrl.wIndex & __constant_cpu_to_le16(
++				if (ctrl.wIndex & cpu_to_le16(
+ 						USB_DIR_IN)) {
+ 					if (!dev->ep[tmp].is_in)
+ 						goto stall;
+@@ -1480,7 +1480,7 @@ static void ep0_setup(struct goku_udc *dev)
+ 					if (dev->ep[tmp].is_in)
+ 						goto stall;
+ 				}
+-				if (ctrl.wValue != __constant_cpu_to_le16(
++				if (ctrl.wValue != cpu_to_le16(
+ 						USB_ENDPOINT_HALT))
+ 					goto stall;
+ 				if (tmp)
+@@ -1493,7 +1493,7 @@ succeed:
+ 				return;
+ 			case USB_RECIP_DEVICE:
+ 				/* device remote wakeup: always clear */
+-				if (ctrl.wValue != __constant_cpu_to_le16(1))
++				if (ctrl.wValue != cpu_to_le16(1))
+ 					goto stall;
+ 				VDBG(dev, "clear dev remote wakeup\n");
+ 				goto succeed;
+@@ -1519,7 +1519,7 @@ succeed:
+ 	dev->req_config = (ctrl.bRequest == USB_REQ_SET_CONFIGURATION
+ 				&& ctrl.bRequestType == USB_RECIP_DEVICE);
+ 	if (unlikely(dev->req_config))
+-		dev->configured = (ctrl.wValue != __constant_cpu_to_le16(0));
++		dev->configured = (ctrl.wValue != cpu_to_le16(0));
+ 
+ 	/* delegate everything to the gadget driver.
+ 	 * it may respond after this irq handler returns.
+diff --git a/drivers/usb/gadget/inode.c b/drivers/usb/gadget/inode.c
+index 317b48f..d20937f 100644
+--- a/drivers/usb/gadget/inode.c
++++ b/drivers/usb/gadget/inode.c
+@@ -1334,7 +1334,7 @@ static void make_qualifier (struct dev_data *dev)
+ 
+ 	qual.bLength = sizeof qual;
+ 	qual.bDescriptorType = USB_DT_DEVICE_QUALIFIER;
+-	qual.bcdUSB = __constant_cpu_to_le16 (0x0200);
++	qual.bcdUSB = cpu_to_le16 (0x0200);
+ 
+ 	desc = dev->dev;
+ 	qual.bDeviceClass = desc->bDeviceClass;
+@@ -1908,7 +1908,7 @@ dev_config (struct file *fd, const char __user *buf, size_t len, loff_t *ptr)
+ 			|| dev->dev->bNumConfigurations != 1)
+ 		goto fail;
+ 	dev->dev->bNumConfigurations = 1;
+-	dev->dev->bcdUSB = __constant_cpu_to_le16 (0x0200);
++	dev->dev->bcdUSB = cpu_to_le16 (0x0200);
+ 
+ 	/* triggers gadgetfs_bind(); then we can enumerate. */
+ 	spin_unlock_irq (&dev->lock);
+diff --git a/drivers/usb/gadget/net2280.c b/drivers/usb/gadget/net2280.c
+index 12c6d83..9498be8 100644
+--- a/drivers/usb/gadget/net2280.c
++++ b/drivers/usb/gadget/net2280.c
+@@ -142,8 +142,8 @@ static char *type_string (u8 bmAttributes)
+ 
+ #include "net2280.h"
+ 
+-#define valid_bit	__constant_cpu_to_le32 (1 << VALID_BIT)
+-#define dma_done_ie	__constant_cpu_to_le32 (1 << DMA_DONE_INTERRUPT_ENABLE)
++#define valid_bit	cpu_to_le32 (1 << VALID_BIT)
++#define dma_done_ie	cpu_to_le32 (1 << DMA_DONE_INTERRUPT_ENABLE)
+ 
+ /*-------------------------------------------------------------------------*/
+ 
+@@ -425,7 +425,7 @@ net2280_alloc_request (struct usb_ep *_ep, gfp_t gfp_flags)
+ 			return NULL;
+ 		}
+ 		td->dmacount = 0;	/* not VALID */
+-		td->dmaaddr = __constant_cpu_to_le32 (DMA_ADDR_INVALID);
++		td->dmaaddr = cpu_to_le32 (DMA_ADDR_INVALID);
+ 		td->dmadesc = td->dmaaddr;
+ 		req->td = td;
+ 	}
+@@ -775,7 +775,7 @@ static void start_dma (struct net2280_ep *ep, struct net2280_request *req)
+ 	fill_dma_desc (ep, req, 1);
+ 
+ 	if (!use_dma_chaining)
+-		req->td->dmacount |= __constant_cpu_to_le32 (1 << END_OF_CHAIN);
++		req->td->dmacount |= cpu_to_le32 (1 << END_OF_CHAIN);
+ 
+ 	start_queue (ep, tmp, req->td_dma);
+ }
+@@ -2407,9 +2407,9 @@ static void handle_stat0_irqs (struct net2280 *dev, u32 stat)
+ 
+ 			if (readl (&e->regs->ep_rsp)
+ 					& (1 << SET_ENDPOINT_HALT))
+-				status = __constant_cpu_to_le32 (1);
++				status = cpu_to_le32 (1);
+ 			else
+-				status = __constant_cpu_to_le32 (0);
++				status = cpu_to_le32 (0);
+ 
+ 			/* don't bother with a request object! */
+ 			writel (0, &dev->epregs [0].ep_irqenb);
+@@ -2667,7 +2667,7 @@ static void handle_stat1_irqs (struct net2280 *dev, u32 stat)
+ 				req = list_entry (ep->queue.next,
+ 						struct net2280_request, queue);
+ 				dmacount = req->td->dmacount;
+-				dmacount &= __constant_cpu_to_le32 (
++				dmacount &= cpu_to_le32 (
+ 						(1 << VALID_BIT)
+ 						| DMA_BYTE_COUNT_MASK);
+ 				if (dmacount && (dmacount & valid_bit) == 0)
+@@ -2881,7 +2881,7 @@ static int net2280_probe (struct pci_dev *pdev, const struct pci_device_id *id)
+ 			goto done;
+ 		}
+ 		td->dmacount = 0;	/* not VALID */
+-		td->dmaaddr = __constant_cpu_to_le32 (DMA_ADDR_INVALID);
++		td->dmaaddr = cpu_to_le32 (DMA_ADDR_INVALID);
+ 		td->dmadesc = td->dmaaddr;
+ 		dev->ep [i].dummy = td;
+ 	}
+diff --git a/drivers/usb/gadget/printer.c b/drivers/usb/gadget/printer.c
+index 5a3034f..2950015 100644
+--- a/drivers/usb/gadget/printer.c
++++ b/drivers/usb/gadget/printer.c
+@@ -225,12 +225,12 @@ module_param(qlen, uint, S_IRUGO|S_IWUSR);
+ static struct usb_device_descriptor device_desc = {
+ 	.bLength =		sizeof device_desc,
+ 	.bDescriptorType =	USB_DT_DEVICE,
+-	.bcdUSB =		__constant_cpu_to_le16(0x0200),
++	.bcdUSB =		cpu_to_le16(0x0200),
+ 	.bDeviceClass =		USB_CLASS_PER_INTERFACE,
+ 	.bDeviceSubClass =	0,
+ 	.bDeviceProtocol =	0,
+-	.idVendor =		__constant_cpu_to_le16(PRINTER_VENDOR_NUM),
+-	.idProduct =		__constant_cpu_to_le16(PRINTER_PRODUCT_NUM),
++	.idVendor =		cpu_to_le16(PRINTER_VENDOR_NUM),
++	.idProduct =		cpu_to_le16(PRINTER_PRODUCT_NUM),
+ 	.iManufacturer =	STRING_MANUFACTURER,
+ 	.iProduct =		STRING_PRODUCT,
+ 	.iSerialNumber =	STRING_SERIALNUM,
+@@ -299,20 +299,20 @@ static struct usb_endpoint_descriptor hs_ep_in_desc = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(512)
++	.wMaxPacketSize =	cpu_to_le16(512)
+ };
+ 
+ static struct usb_endpoint_descriptor hs_ep_out_desc = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+ 	.bDescriptorType =	USB_DT_ENDPOINT,
+ 	.bmAttributes =		USB_ENDPOINT_XFER_BULK,
+-	.wMaxPacketSize =	__constant_cpu_to_le16(512)
++	.wMaxPacketSize =	cpu_to_le16(512)
+ };
+ 
+ static struct usb_qualifier_descriptor dev_qualifier = {
+ 	.bLength =		sizeof dev_qualifier,
+ 	.bDescriptorType =	USB_DT_DEVICE_QUALIFIER,
+-	.bcdUSB =		__constant_cpu_to_le16(0x0200),
++	.bcdUSB =		cpu_to_le16(0x0200),
+ 	.bDeviceClass =		USB_CLASS_PRINTER,
+ 	.bNumConfigurations =	1
+ };
+@@ -1406,16 +1406,16 @@ printer_bind(struct usb_gadget *gadget)
+ 			gadget->name);
+ 		/* unrecognized, but safe unless bulk is REALLY quirky */
+ 		device_desc.bcdDevice =
+-			__constant_cpu_to_le16(0xFFFF);
++			cpu_to_le16(0xFFFF);
+ 	}
+ 	snprintf(manufacturer, sizeof(manufacturer), "%s %s with %s",
+ 		init_utsname()->sysname, init_utsname()->release,
+ 		gadget->name);
+ 
+ 	device_desc.idVendor =
+-		__constant_cpu_to_le16(PRINTER_VENDOR_NUM);
++		cpu_to_le16(PRINTER_VENDOR_NUM);
+ 	device_desc.idProduct =
+-		__constant_cpu_to_le16(PRINTER_PRODUCT_NUM);
++		cpu_to_le16(PRINTER_PRODUCT_NUM);
+ 
+ 	/* support optional vendor/distro customization */
+ 	if (idVendor) {
+diff --git a/drivers/usb/gadget/serial.c b/drivers/usb/gadget/serial.c
+index 37879af..f46a609 100644
+--- a/drivers/usb/gadget/serial.c
++++ b/drivers/usb/gadget/serial.c
+@@ -87,12 +87,12 @@ static struct usb_gadget_strings *dev_strings[] = {
+ static struct usb_device_descriptor device_desc = {
+ 	.bLength =		USB_DT_DEVICE_SIZE,
+ 	.bDescriptorType =	USB_DT_DEVICE,
+-	.bcdUSB =		__constant_cpu_to_le16(0x0200),
++	.bcdUSB =		cpu_to_le16(0x0200),
+ 	/* .bDeviceClass = f(use_acm) */
+ 	.bDeviceSubClass =	0,
+ 	.bDeviceProtocol =	0,
+ 	/* .bMaxPacketSize0 = f(hardware) */
+-	.idVendor =		__constant_cpu_to_le16(GS_VENDOR_ID),
++	.idVendor =		cpu_to_le16(GS_VENDOR_ID),
+ 	/* .idProduct =	f(use_acm) */
+ 	/* .bcdDevice = f(hardware) */
+ 	/* .iManufacturer = DYNAMIC */
+@@ -216,7 +216,7 @@ static int __init gs_bind(struct usb_composite_dev *cdev)
+ 		pr_warning("gs_bind: controller '%s' not recognized\n",
+ 			gadget->name);
+ 		device_desc.bcdDevice =
+-			__constant_cpu_to_le16(GS_VERSION_NUM | 0x0099);
++			cpu_to_le16(GS_VERSION_NUM | 0x0099);
+ 	}
+ 
+ 	if (gadget_is_otg(cdev->gadget)) {
+@@ -255,19 +255,19 @@ static int __init init(void)
+ 		serial_config_driver.bConfigurationValue = 2;
+ 		device_desc.bDeviceClass = USB_CLASS_COMM;
+ 		device_desc.idProduct =
+-				__constant_cpu_to_le16(GS_CDC_PRODUCT_ID);
++				cpu_to_le16(GS_CDC_PRODUCT_ID);
+ 	} else if (use_obex) {
+ 		serial_config_driver.label = "CDC OBEX config";
+ 		serial_config_driver.bConfigurationValue = 3;
+ 		device_desc.bDeviceClass = USB_CLASS_COMM;
+ 		device_desc.idProduct =
+-			__constant_cpu_to_le16(GS_CDC_OBEX_PRODUCT_ID);
++			cpu_to_le16(GS_CDC_OBEX_PRODUCT_ID);
+ 	} else {
+ 		serial_config_driver.label = "Generic Serial config";
+ 		serial_config_driver.bConfigurationValue = 1;
+ 		device_desc.bDeviceClass = USB_CLASS_VENDOR_SPEC;
+ 		device_desc.idProduct =
+-				__constant_cpu_to_le16(GS_PRODUCT_ID);
++				cpu_to_le16(GS_PRODUCT_ID);
+ 	}
+ 	strings_dev[STRING_DESCRIPTION_IDX].s = serial_config_driver.label;
+ 
+diff --git a/drivers/usb/gadget/u_serial.c b/drivers/usb/gadget/u_serial.c
+index 53d5928..0a4d99a 100644
+--- a/drivers/usb/gadget/u_serial.c
++++ b/drivers/usb/gadget/u_serial.c
+@@ -1092,7 +1092,7 @@ int __init gserial_setup(struct usb_gadget *g, unsigned count)
+ 	gs_tty_driver->init_termios.c_ispeed = 9600;
+ 	gs_tty_driver->init_termios.c_ospeed = 9600;
+ 
+-	coding.dwDTERate = __constant_cpu_to_le32(9600);
++	coding.dwDTERate = cpu_to_le32(9600);
+ 	coding.bCharFormat = 8;
+ 	coding.bParityType = USB_CDC_NO_PARITY;
+ 	coding.bDataBits = USB_CDC_1_STOP_BITS;
+diff --git a/drivers/usb/gadget/zero.c b/drivers/usb/gadget/zero.c
+index 361d965..20614dc 100644
+--- a/drivers/usb/gadget/zero.c
++++ b/drivers/usb/gadget/zero.c
+@@ -113,11 +113,11 @@ static struct usb_device_descriptor device_desc = {
+ 	.bLength =		sizeof device_desc,
+ 	.bDescriptorType =	USB_DT_DEVICE,
+ 
+-	.bcdUSB =		__constant_cpu_to_le16(0x0200),
++	.bcdUSB =		cpu_to_le16(0x0200),
+ 	.bDeviceClass =		USB_CLASS_VENDOR_SPEC,
+ 
+-	.idVendor =		__constant_cpu_to_le16(DRIVER_VENDOR_NUM),
+-	.idProduct =		__constant_cpu_to_le16(DRIVER_PRODUCT_NUM),
++	.idVendor =		cpu_to_le16(DRIVER_VENDOR_NUM),
++	.idProduct =		cpu_to_le16(DRIVER_PRODUCT_NUM),
+ 	.bNumConfigurations =	2,
+ };
+ 
+@@ -265,7 +265,7 @@ static int __init zero_bind(struct usb_composite_dev *cdev)
+ 		 */
+ 		pr_warning("%s: controller '%s' not recognized\n",
+ 			longname, gadget->name);
+-		device_desc.bcdDevice = __constant_cpu_to_le16(0x9999);
++		device_desc.bcdDevice = cpu_to_le16(0x9999);
+ 	}
+ 
+ 
+diff --git a/drivers/usb/host/ehci-sched.c b/drivers/usb/host/ehci-sched.c
+index a081ee6..3bd3f1f 100644
+--- a/drivers/usb/host/ehci-sched.c
++++ b/drivers/usb/host/ehci-sched.c
+@@ -563,7 +563,7 @@ static int qh_unlink_periodic(struct ehci_hcd *ehci, struct ehci_qh *qh)
+ 	//   and this qh is active in the current uframe
+ 	//   (and overlay token SplitXstate is false?)
+ 	// THEN
+-	//   qh->hw_info1 |= __constant_cpu_to_hc32(1 << 7 /* "ignore" */);
++	//   qh->hw_info1 |= cpu_to_hc32(1 << 7 /* "ignore" */);
+ 
+ 	/* high bandwidth, or otherwise part of every microframe */
+ 	if ((period = qh->period) == 0)
+diff --git a/drivers/usb/host/ehci.h b/drivers/usb/host/ehci.h
+index fb7054c..e238e7f 100644
+--- a/drivers/usb/host/ehci.h
++++ b/drivers/usb/host/ehci.h
+@@ -281,7 +281,7 @@ struct ehci_qtd {
+ 
+ /*
+  * Now the following defines are not converted using the
+- * __constant_cpu_to_le32() macro anymore, since we have to support
++ * cpu_to_le32() macro anymore, since we have to support
+  * "dynamic" switching between be and le support, so that the driver
+  * can be used on one system with SoC EHCI controller using big-endian
+  * descriptors as well as a normal little-endian PCI EHCI controller.
+diff --git a/drivers/usb/host/isp1760-hcd.c b/drivers/usb/host/isp1760-hcd.c
+index b899f1a..a869a66 100644
+--- a/drivers/usb/host/isp1760-hcd.c
++++ b/drivers/usb/host/isp1760-hcd.c
+@@ -644,7 +644,7 @@ static void transform_add_int(struct isp1760_hcd *priv, struct isp1760_qh *qh,
+ 
+ 	if (urb->dev->speed != USB_SPEED_HIGH) {
+ 		/* split */
+-		ptd->dw5 = __constant_cpu_to_le32(0x1c);
++		ptd->dw5 = cpu_to_le32(0x1c);
+ 
+ 		if (qh->period >= 32)
+ 			period = qh->period / 2;
+@@ -1054,7 +1054,7 @@ static void do_atl_int(struct usb_hcd *usb_hcd)
+ 			priv_write_copy(priv, (u32 *)&ptd, usb_hcd->regs +
+ 					atl_regs, sizeof(ptd));
+ 
+-			ptd.dw0 |= __constant_cpu_to_le32(PTD_VALID);
++			ptd.dw0 |= cpu_to_le32(PTD_VALID);
+ 			priv_write_copy(priv, (u32 *)&ptd, usb_hcd->regs +
+ 					atl_regs, sizeof(ptd));
+ 
+diff --git a/drivers/usb/host/oxu210hp-hcd.c b/drivers/usb/host/oxu210hp-hcd.c
+index 75548f7..2947c69 100644
+--- a/drivers/usb/host/oxu210hp-hcd.c
++++ b/drivers/usb/host/oxu210hp-hcd.c
+@@ -845,14 +845,14 @@ static inline void qh_update(struct oxu_hcd *oxu,
+ 		is_out = !(qtd->hw_token & cpu_to_le32(1 << 8));
+ 		epnum = (le32_to_cpup(&qh->hw_info1) >> 8) & 0x0f;
+ 		if (unlikely(!usb_gettoggle(qh->dev, epnum, is_out))) {
+-			qh->hw_token &= ~__constant_cpu_to_le32(QTD_TOGGLE);
++			qh->hw_token &= ~cpu_to_le32(QTD_TOGGLE);
+ 			usb_settoggle(qh->dev, epnum, is_out, 1);
+ 		}
+ 	}
+ 
+ 	/* HC must see latest qtd and qh data before we clear ACTIVE+HALT */
+ 	wmb();
+-	qh->hw_token &= __constant_cpu_to_le32(QTD_TOGGLE | QTD_STS_PING);
++	qh->hw_token &= cpu_to_le32(QTD_TOGGLE | QTD_STS_PING);
+ }
+ 
+ /* If it weren't for a common silicon quirk (writing the dummy into the qh
+@@ -937,7 +937,7 @@ __acquires(oxu->lock)
+ 		struct ehci_qh	*qh = (struct ehci_qh *) urb->hcpriv;
+ 
+ 		/* S-mask in a QH means it's an interrupt urb */
+-		if ((qh->hw_info2 & __constant_cpu_to_le32(QH_SMASK)) != 0) {
++		if ((qh->hw_info2 & cpu_to_le32(QH_SMASK)) != 0) {
+ 
+ 			/* ... update hc-wide periodic stats (for usbfs) */
+ 			oxu_to_hcd(oxu)->self.bandwidth_int_reqs--;
+@@ -981,7 +981,7 @@ static void unlink_async(struct oxu_hcd *oxu, struct ehci_qh *qh);
+ static void intr_deschedule(struct oxu_hcd *oxu, struct ehci_qh *qh);
+ static int qh_schedule(struct oxu_hcd *oxu, struct ehci_qh *qh);
+ 
+-#define HALT_BIT __constant_cpu_to_le32(QTD_STS_HALT)
++#define HALT_BIT cpu_to_le32(QTD_STS_HALT)
+ 
+ /* Process and free completed qtds for a qh, returning URBs to drivers.
+  * Chases up to qh->hw_current.  Returns number of completions called,
+@@ -1160,7 +1160,7 @@ halt:
+ 			/* should be rare for periodic transfers,
+ 			 * except maybe high bandwidth ...
+ 			 */
+-			if ((__constant_cpu_to_le32(QH_SMASK)
++			if ((cpu_to_le32(QH_SMASK)
+ 					& qh->hw_info2) != 0) {
+ 				intr_deschedule(oxu, qh);
+ 				(void) qh_schedule(oxu, qh);
+@@ -1350,7 +1350,7 @@ static struct list_head *qh_urb_transaction(struct oxu_hcd *oxu,
+ 	}
+ 
+ 	/* by default, enable interrupt on urb completion */
+-		qtd->hw_token |= __constant_cpu_to_le32(QTD_IOC);
++		qtd->hw_token |= cpu_to_le32(QTD_IOC);
+ 	return head;
+ 
+ cleanup:
+@@ -1539,7 +1539,7 @@ static void qh_link_async(struct oxu_hcd *oxu, struct ehci_qh *qh)
+ 	/* qtd completions reported later by interrupt */
+ }
+ 
+-#define	QH_ADDR_MASK	__constant_cpu_to_le32(0x7f)
++#define	QH_ADDR_MASK	cpu_to_le32(0x7f)
+ 
+ /*
+  * For control/bulk/interrupt, return QH with these TDs appended.
+@@ -2012,7 +2012,7 @@ static void qh_unlink_periodic(struct oxu_hcd *oxu, struct ehci_qh *qh)
+ 	 *   and this qh is active in the current uframe
+ 	 *   (and overlay token SplitXstate is false?)
+ 	 * THEN
+-	 *   qh->hw_info1 |= __constant_cpu_to_le32(1 << 7 "ignore");
++	 *   qh->hw_info1 |= cpu_to_le32(1 << 7 "ignore");
+ 	 */
+ 
+ 	/* high bandwidth, or otherwise part of every microframe */
+@@ -2057,7 +2057,7 @@ static void intr_deschedule(struct oxu_hcd *oxu, struct ehci_qh *qh)
+ 	 * active high speed queues may need bigger delays...
+ 	 */
+ 	if (list_empty(&qh->qtd_list)
+-		|| (__constant_cpu_to_le32(QH_CMASK) & qh->hw_info2) != 0)
++		|| (cpu_to_le32(QH_CMASK) & qh->hw_info2) != 0)
+ 		wait = 2;
+ 	else
+ 		wait = 55;	/* worst case: 3 * 1024 */
+@@ -2183,10 +2183,10 @@ static int qh_schedule(struct oxu_hcd *oxu, struct ehci_qh *qh)
+ 		qh->start = frame;
+ 
+ 		/* reset S-frame and (maybe) C-frame masks */
+-		qh->hw_info2 &= __constant_cpu_to_le32(~(QH_CMASK | QH_SMASK));
++		qh->hw_info2 &= cpu_to_le32(~(QH_CMASK | QH_SMASK));
+ 		qh->hw_info2 |= qh->period
+ 			? cpu_to_le32(1 << uframe)
+-			: __constant_cpu_to_le32(QH_SMASK);
++			: cpu_to_le32(QH_SMASK);
+ 		qh->hw_info2 |= c_mask;
+ 	} else
+ 		oxu_dbg(oxu, "reused qh %p schedule\n", qh);
+diff --git a/drivers/usb/host/oxu210hp.h b/drivers/usb/host/oxu210hp.h
+index 8910e27..1c216ad 100644
+--- a/drivers/usb/host/oxu210hp.h
++++ b/drivers/usb/host/oxu210hp.h
+@@ -235,21 +235,21 @@ struct ehci_qtd {
+ } __attribute__ ((aligned(32)));
+ 
+ /* mask NakCnt+T in qh->hw_alt_next */
+-#define QTD_MASK __constant_cpu_to_le32 (~0x1f)
++#define QTD_MASK cpu_to_le32 (~0x1f)
+ 
+ #define IS_SHORT_READ(token) (QTD_LENGTH(token) != 0 && QTD_PID(token) == 1)
+ 
+ /* Type tag from {qh, itd, sitd, fstn}->hw_next */
+-#define Q_NEXT_TYPE(dma) ((dma) & __constant_cpu_to_le32 (3 << 1))
++#define Q_NEXT_TYPE(dma) ((dma) & cpu_to_le32 (3 << 1))
+ 
+ /* values for that type tag */
+-#define Q_TYPE_QH	__constant_cpu_to_le32 (1 << 1)
++#define Q_TYPE_QH	cpu_to_le32 (1 << 1)
+ 
+ /* next async queue entry, or pointer to interrupt/periodic QH */
+ #define	QH_NEXT(dma)	(cpu_to_le32(((u32)dma)&~0x01f)|Q_TYPE_QH)
+ 
+ /* for periodic/async schedules and qtd lists, mark end of list */
+-#define	EHCI_LIST_END	__constant_cpu_to_le32(1) /* "null pointer" to hw */
++#define	EHCI_LIST_END	cpu_to_le32(1) /* "null pointer" to hw */
+ 
+ /*
+  * Entries in periodic shadow table are pointers to one of four kinds
+diff --git a/drivers/usb/host/uhci-hcd.h b/drivers/usb/host/uhci-hcd.h
+index 7d01c56..26bd1b2 100644
+--- a/drivers/usb/host/uhci-hcd.h
++++ b/drivers/usb/host/uhci-hcd.h
+@@ -73,11 +73,11 @@
+ #define   USBLEGSUP_RWC		0x8f00	/* the R/WC bits */
+ #define   USBLEGSUP_RO		0x5040	/* R/O and reserved bits */
+ 
+-#define UHCI_PTR_BITS		__constant_cpu_to_le32(0x000F)
+-#define UHCI_PTR_TERM		__constant_cpu_to_le32(0x0001)
+-#define UHCI_PTR_QH		__constant_cpu_to_le32(0x0002)
+-#define UHCI_PTR_DEPTH		__constant_cpu_to_le32(0x0004)
+-#define UHCI_PTR_BREADTH	__constant_cpu_to_le32(0x0000)
++#define UHCI_PTR_BITS		cpu_to_le32(0x000F)
++#define UHCI_PTR_TERM		cpu_to_le32(0x0001)
++#define UHCI_PTR_QH		cpu_to_le32(0x0002)
++#define UHCI_PTR_DEPTH		cpu_to_le32(0x0004)
++#define UHCI_PTR_BREADTH	cpu_to_le32(0x0000)
+ 
+ #define UHCI_NUMFRAMES		1024	/* in the frame list [array] */
+ #define UHCI_MAX_SOF_NUMBER	2047	/* in an SOF packet */
+diff --git a/drivers/usb/host/uhci-q.c b/drivers/usb/host/uhci-q.c
+index 5631d89..58f8736 100644
+--- a/drivers/usb/host/uhci-q.c
++++ b/drivers/usb/host/uhci-q.c
+@@ -402,7 +402,7 @@ static void uhci_fixup_toggles(struct uhci_qh *qh, int skip_first)
+ 		/* Otherwise all the toggles in the URB have to be switched */
+ 		} else {
+ 			list_for_each_entry(td, &urbp->td_list, list) {
+-				td->token ^= __constant_cpu_to_le32(
++				td->token ^= cpu_to_le32(
+ 							TD_TOKEN_TOGGLE);
+ 				toggle ^= 1;
+ 			}
+@@ -883,7 +883,7 @@ static int uhci_submit_control(struct uhci_hcd *uhci, struct urb *urb,
+ 
+ 	uhci_fill_td(td, 0, USB_PID_OUT | uhci_explen(0), 0);
+ 	wmb();
+-	qh->dummy_td->status |= __constant_cpu_to_le32(TD_CTRL_ACTIVE);
++	qh->dummy_td->status |= cpu_to_le32(TD_CTRL_ACTIVE);
+ 	qh->dummy_td = td;
+ 
+ 	/* Low-speed transfers get a different queue, and won't hog the bus.
+@@ -1003,7 +1003,7 @@ static int uhci_submit_common(struct uhci_hcd *uhci, struct urb *urb,
+ 	 * fast side but not enough to justify delaying an interrupt
+ 	 * more than 2 or 3 URBs, so we will ignore the URB_NO_INTERRUPT
+ 	 * flag setting. */
+-	td->status |= __constant_cpu_to_le32(TD_CTRL_IOC);
++	td->status |= cpu_to_le32(TD_CTRL_IOC);
+ 
+ 	/*
+ 	 * Build the new dummy TD and activate the old one
+@@ -1015,7 +1015,7 @@ static int uhci_submit_common(struct uhci_hcd *uhci, struct urb *urb,
+ 
+ 	uhci_fill_td(td, 0, USB_PID_OUT | uhci_explen(0), 0);
+ 	wmb();
+-	qh->dummy_td->status |= __constant_cpu_to_le32(TD_CTRL_ACTIVE);
++	qh->dummy_td->status |= cpu_to_le32(TD_CTRL_ACTIVE);
+ 	qh->dummy_td = td;
+ 
+ 	usb_settoggle(urb->dev, usb_pipeendpoint(urb->pipe),
+@@ -1317,7 +1317,7 @@ static int uhci_submit_isochronous(struct uhci_hcd *uhci, struct urb *urb,
+ 	}
+ 
+ 	/* Set the interrupt-on-completion flag on the last packet. */
+-	td->status |= __constant_cpu_to_le32(TD_CTRL_IOC);
++	td->status |= cpu_to_le32(TD_CTRL_IOC);
+ 
+ 	/* Add the TDs to the frame list */
+ 	frame = urb->start_frame;
+diff --git a/drivers/usb/image/mdc800.c b/drivers/usb/image/mdc800.c
+index 878c77c..efc075c 100644
+--- a/drivers/usb/image/mdc800.c
++++ b/drivers/usb/image/mdc800.c
+@@ -188,7 +188,7 @@ static struct usb_endpoint_descriptor mdc800_ed [4] =
+ 		.bDescriptorType =	0,
+ 		.bEndpointAddress =	0x01,
+ 		.bmAttributes = 	0x02,
+-		.wMaxPacketSize =	__constant_cpu_to_le16(8),
++		.wMaxPacketSize =	cpu_to_le16(8),
+ 		.bInterval = 		0,
+ 		.bRefresh = 		0,
+ 		.bSynchAddress = 	0,
+@@ -198,7 +198,7 @@ static struct usb_endpoint_descriptor mdc800_ed [4] =
+ 		.bDescriptorType = 	0,
+ 		.bEndpointAddress = 	0x82,
+ 		.bmAttributes = 	0x03,
+-		.wMaxPacketSize = 	__constant_cpu_to_le16(8),
++		.wMaxPacketSize = 	cpu_to_le16(8),
+ 		.bInterval = 		0,
+ 		.bRefresh = 		0,
+ 		.bSynchAddress = 	0,
+@@ -208,7 +208,7 @@ static struct usb_endpoint_descriptor mdc800_ed [4] =
+ 		.bDescriptorType = 	0,
+ 		.bEndpointAddress = 	0x03,
+ 		.bmAttributes = 	0x02,
+-		.wMaxPacketSize = 	__constant_cpu_to_le16(64),
++		.wMaxPacketSize = 	cpu_to_le16(64),
+ 		.bInterval = 		0,
+ 		.bRefresh = 		0,
+ 		.bSynchAddress = 	0,
+@@ -218,7 +218,7 @@ static struct usb_endpoint_descriptor mdc800_ed [4] =
+ 		.bDescriptorType = 	0,
+ 		.bEndpointAddress = 	0x84,
+ 		.bmAttributes = 	0x02,
+-		.wMaxPacketSize = 	__constant_cpu_to_le16(64),
++		.wMaxPacketSize = 	cpu_to_le16(64),
+ 		.bInterval = 		0,
+ 		.bRefresh = 		0,
+ 		.bSynchAddress = 	0,
+diff --git a/drivers/usb/musb/musb_virthub.c b/drivers/usb/musb/musb_virthub.c
+index e0e9ce5..bf677ac 100644
+--- a/drivers/usb/musb/musb_virthub.c
++++ b/drivers/usb/musb/musb_virthub.c
+@@ -285,7 +285,7 @@ int musb_hub_control(
+ 		desc->bDescLength = 9;
+ 		desc->bDescriptorType = 0x29;
+ 		desc->bNbrPorts = 1;
+-		desc->wHubCharacteristics = __constant_cpu_to_le16(
++		desc->wHubCharacteristics = cpu_to_le16(
+ 				  0x0001	/* per-port power switching */
+ 				| 0x0010	/* no overcurrent reporting */
+ 				);
+-- 
+1.6.2.rc0.218.gde7c
 
 
-Off-topic. This is subjective, so please feel to ignore, but personally
-I dislike the usage of ptrace_fork() in copy_process(). And ptrace_fork()
-itself.
-
-To me, this has nothing to do with ptrace at all. copy_process() or
-dup_task_struct() just must clear/tweak some fields after memcpy().
-
-Perhaps it is better to kill all these ptrace_fork/arch_ptrace_fork/
-x86_ptrace_fork/ptrace_bts_fork helpers, and make a single function
-
-	static inline void arch_bts_init(struct task_struct *p)
-	{
-	#ifdef CONFIG_X86_PTRACE_BTS
-		if (unlikely(p->bts)) {
-			p->bts = NULL;
-			p->bts_buffer = NULL;
-			p->bts_size = 0;
-			p->thread.bts_ovfl_signal = 0;
-		}
-	#endif /* CONFIG_X86_PTRACE_BTS */
-	}
-
-which is called by arch_dup_task_struct(). The "if (ptrace)" check
-in copy_process() is just wrong imho, even if it is currently correct.
-Let's suppose we add, say, bts_spinlock to the fields above. In that
-case we must initialize it even if the forking task is not ptraced.
-
-Of course, in any case this is not 2.6.29 material.
-
-
-Btw, just curious, bts_ovfl_signal is not used, except the user can
-set/get it via PTRACE_BTS_CONFIG/PTRACE_BTS_STATUS ?
-
-Oleg.
 
