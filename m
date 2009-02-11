@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758054AbZBKVPR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758157AbZBKVPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758054AbZBKVPR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 16:15:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757152AbZBKVOy
+	id S1758157AbZBKVPn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 16:15:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757724AbZBKVO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 16:14:54 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:36171 "EHLO mx2.redhat.com"
+	Wed, 11 Feb 2009 16:14:58 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:36179 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756920AbZBKVOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 16:14:52 -0500
-Date: Wed, 11 Feb 2009 22:12:16 +0100
+	id S1757621AbZBKVO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 16:14:57 -0500
+Date: Wed, 11 Feb 2009 22:12:21 +0100
 From: Oleg Nesterov <oleg@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
        "Metzger, Markus T" <markus.t.metzger@intel.com>,
        Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/4] forget_original_parent: split out the un-ptrace part
-Message-ID: <20090211211216.GA16847@redhat.com>
+Subject: [PATCH 3/4] move exit_ptrace() from forget_original_parent() to
+	do_exit()
+Message-ID: <20090211211221.GA16857@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -27,275 +28,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 By discussion with Roland.
 
-- Rename ptrace_exit() to exit_ptrace(), and change it to do all the
-  necessary work with ->ptraced list by its own.
+Call exit_ptrace() from do_exit(), no need to delay this call until
+forget_original_parent().
 
-- Move this code from exit.c to ptrace.c
-
-- Update the comment in ptrace_detach() to explain the rechecking of
-  the child->ptrace.
+If we ever change exit_ptrace() to do the blocking calls, it makes
+sense to move it after exit_signals().
 
 Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
- include/linux/ptrace.h |    2 -
- include/linux/sched.h  |    5 ++
- kernel/exit.c          |   95 +++----------------------------------------------
- kernel/ptrace.c        |   78 +++++++++++++++++++++++++++++++++++++++-
- 4 files changed, 88 insertions(+), 92 deletions(-)
-
---- 6.29-rc3/include/linux/ptrace.h~1_UNTRACE	2009-01-29 17:11:30.000000000 +0100
-+++ 6.29-rc3/include/linux/ptrace.h	2009-02-11 02:41:08.000000000 +0100
-@@ -94,7 +94,7 @@ extern void ptrace_notify(int exit_code)
- extern void __ptrace_link(struct task_struct *child,
- 			  struct task_struct *new_parent);
- extern void __ptrace_unlink(struct task_struct *child);
--extern int __ptrace_detach(struct task_struct *tracer, struct task_struct *p);
-+extern void exit_ptrace(struct task_struct *tracer);
- extern void ptrace_fork(struct task_struct *task, unsigned long clone_flags);
- #define PTRACE_MODE_READ   1
- #define PTRACE_MODE_ATTACH 2
---- 6.29-rc3/include/linux/sched.h~1_UNTRACE	2009-01-29 01:13:55.000000000 +0100
-+++ 6.29-rc3/include/linux/sched.h	2009-02-11 03:05:20.000000000 +0100
-@@ -2014,6 +2014,11 @@ static inline int thread_group_empty(str
- #define delay_group_leader(p) \
- 		(thread_group_leader(p) && !thread_group_empty(p))
- 
-+static inline int task_detached(struct task_struct *p)
-+{
-+	return p->exit_signal == -1;
-+}
-+
- /*
-  * Protects ->fs, ->files, ->mm, ->group_info, ->comm, keyring
-  * subscriptions and synchronises with wait4().  Also used in procfs.  Also
---- 6.29-rc3/kernel/exit.c~1_UNTRACE	2009-02-11 01:48:57.000000000 +0100
-+++ 6.29-rc3/kernel/exit.c	2009-02-11 03:01:46.000000000 +0100
-@@ -61,11 +61,6 @@ DEFINE_TRACE(sched_process_wait);
- 
- static void exit_mm(struct task_struct * tsk);
- 
--static inline int task_detached(struct task_struct *p)
--{
--	return p->exit_signal == -1;
--}
--
- static void __unhash_process(struct task_struct *p)
- {
- 	nr_threads--;
-@@ -728,85 +723,6 @@ static void exit_mm(struct task_struct *
- 	mmput(mm);
- }
- 
--/*
-- * Called with irqs disabled, returns true if childs should reap themselves.
-- */
--static int ignoring_children(struct sighand_struct *sigh)
--{
--	int ret;
--	spin_lock(&sigh->siglock);
--	ret = (sigh->action[SIGCHLD-1].sa.sa_handler == SIG_IGN) ||
--	      (sigh->action[SIGCHLD-1].sa.sa_flags & SA_NOCLDWAIT);
--	spin_unlock(&sigh->siglock);
--	return ret;
--}
--
--/* Returns nonzero if the tracee should be released. */
--int __ptrace_detach(struct task_struct *tracer, struct task_struct *p)
--{
--	__ptrace_unlink(p);
--
--	if (p->exit_state != EXIT_ZOMBIE)
--		return 0;
--	/*
--	 * If it's a zombie, our attachedness prevented normal
--	 * parent notification or self-reaping.  Do notification
--	 * now if it would have happened earlier.  If it should
--	 * reap itself we return true.
--	 *
--	 * If it's our own child, there is no notification to do.
--	 * But if our normal children self-reap, then this child
--	 * was prevented by ptrace and we must reap it now.
--	 */
--	if (!task_detached(p) && thread_group_empty(p)) {
--		if (!same_thread_group(p->real_parent, tracer))
--			do_notify_parent(p, p->exit_signal);
--		else if (ignoring_children(tracer->sighand))
--			p->exit_signal = -1;
--	}
--
--	if (!task_detached(p))
--		return 0;
--
--	/* Mark it as in the process of being reaped. */
--	p->exit_state = EXIT_DEAD;
--	return 1;
--}
--
--/*
-- * Detach all tasks we were using ptrace on.
-- * Any that need to be release_task'd are put on the @dead list.
-- *
-- * Called with write_lock(&tasklist_lock) held.
-- */
--static void ptrace_exit(struct task_struct *parent, struct list_head *dead)
--{
--	struct task_struct *p, *n;
--
--	list_for_each_entry_safe(p, n, &parent->ptraced, ptrace_entry) {
--		if (__ptrace_detach(parent, p))
--			list_add(&p->ptrace_entry, dead);
--	}
--}
--
--/*
-- * Finish up exit-time ptrace cleanup.
-- *
-- * Called without locks.
-- */
--static void ptrace_exit_finish(struct task_struct *parent,
--			       struct list_head *dead)
--{
--	struct task_struct *p, *n;
--
--	BUG_ON(!list_empty(&parent->ptraced));
--
--	list_for_each_entry_safe(p, n, dead, ptrace_entry) {
--		list_del_init(&p->ptrace_entry);
--		release_task(p);
--	}
--}
--
- /* Returns nonzero if the child should be released. */
- static int reparent_thread(struct task_struct *p, struct task_struct *father)
- {
-@@ -891,12 +807,10 @@ static void forget_original_parent(struc
+--- 6.29-rc3/kernel/exit.c~3_MOVE	2009-02-11 06:37:36.000000000 +0100
++++ 6.29-rc3/kernel/exit.c	2009-02-11 07:20:54.000000000 +0100
+@@ -803,8 +803,6 @@ static void forget_original_parent(struc
  	struct task_struct *p, *n, *reaper;
- 	LIST_HEAD(ptrace_dead);
+ 	LIST_HEAD(dead_childs);
  
-+	exit_ptrace(father);
-+
+-	exit_ptrace(father);
+-
  	write_lock_irq(&tasklist_lock);
  	reaper = find_new_reaper(father);
--	/*
--	 * First clean up ptrace if we were using it.
--	 */
--	ptrace_exit(father, &ptrace_dead);
  
- 	list_for_each_entry_safe(p, n, &father->children, sibling) {
- 		p->real_parent = reaper;
-@@ -911,7 +825,10 @@ static void forget_original_parent(struc
- 	write_unlock_irq(&tasklist_lock);
- 	BUG_ON(!list_empty(&father->children));
+@@ -956,6 +954,7 @@ NORET_TYPE void do_exit(long code)
+ 		schedule();
+ 	}
  
--	ptrace_exit_finish(father, &ptrace_dead);
-+	list_for_each_entry_safe(p, n, &ptrace_dead, ptrace_entry) {
-+		list_del_init(&p->ptrace_entry);
-+		release_task(p);
-+	}
- }
- 
- /*
---- 6.29-rc3/kernel/ptrace.c~1_UNTRACE	2009-02-11 01:44:52.000000000 +0100
-+++ 6.29-rc3/kernel/ptrace.c	2009-02-11 04:04:17.000000000 +0100
-@@ -235,9 +235,57 @@ out:
- 	return retval;
- }
- 
-+/*
-+ * Called with irqs disabled, returns true if childs should reap themselves.
-+ */
-+static int ignoring_children(struct sighand_struct *sigh)
-+{
-+	int ret;
-+	spin_lock(&sigh->siglock);
-+	ret = (sigh->action[SIGCHLD-1].sa.sa_handler == SIG_IGN) ||
-+	      (sigh->action[SIGCHLD-1].sa.sa_flags & SA_NOCLDWAIT);
-+	spin_unlock(&sigh->siglock);
-+	return ret;
-+}
-+
-+/*
-+ * Called with tasklist_lock held for writing.
-+ * Unlink a traced task, and clean it up if it was a traced zombie.
-+ * Return true if it needs to be reaped with release_task().
-+ * (We can't call release_task() here because we already hold tasklist_lock.)
-+ *
-+ * If it's a zombie, our attachedness prevented normal parent notification
-+ * or self-reaping.  Do notification now if it would have happened earlier.
-+ * If it should reap itself, return true.
-+ *
-+ * If it's our own child, there is no notification to do.
-+ * But if our normal children self-reap, then this child
-+ * was prevented by ptrace and we must reap it now.
-+ */
-+static bool __ptrace_detach(struct task_struct *tracer, struct task_struct *p)
-+{
-+	__ptrace_unlink(p);
-+
-+	if (p->exit_state == EXIT_ZOMBIE) {
-+		if (!task_detached(p) && thread_group_empty(p)) {
-+			if (!same_thread_group(p->real_parent, tracer))
-+				do_notify_parent(p, p->exit_signal);
-+			else if (ignoring_children(tracer->sighand))
-+				p->exit_signal = -1;
-+		}
-+		if (task_detached(p)) {
-+			/* Mark it as in the process of being reaped. */
-+			p->exit_state = EXIT_DEAD;
-+			return true;
-+		}
-+	}
-+
-+	return false;
-+}
-+
- int ptrace_detach(struct task_struct *child, unsigned int data)
- {
--	int dead = 0;
-+	bool dead = false;
- 
- 	if (!valid_signal(data))
- 		return -EIO;
-@@ -247,7 +295,10 @@ int ptrace_detach(struct task_struct *ch
- 	clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
- 
- 	write_lock_irq(&tasklist_lock);
--	/* protect against de_thread()->release_task() */
-+	/*
-+	 * This child can be already killed. Make sure de_thread() or
-+	 * our sub-thread doing do_wait() didn't do release_task() yet.
-+	 */
- 	if (child->ptrace) {
- 		child->exit_code = data;
- 
-@@ -264,6 +315,29 @@ int ptrace_detach(struct task_struct *ch
- 	return 0;
- }
- 
-+/*
-+ * Detach all tasks we were using ptrace on.
-+ */
-+void exit_ptrace(struct task_struct *tracer)
-+{
-+	struct task_struct *p, *n;
-+	LIST_HEAD(ptrace_dead);
-+
-+	write_lock_irq(&tasklist_lock);
-+	list_for_each_entry_safe(p, n, &tracer->ptraced, ptrace_entry) {
-+		if (__ptrace_detach(tracer, p))
-+			list_add(&p->ptrace_entry, &ptrace_dead);
-+	}
-+	write_unlock_irq(&tasklist_lock);
-+
-+	BUG_ON(!list_empty(&tracer->ptraced));
-+
-+	list_for_each_entry_safe(p, n, &ptrace_dead, ptrace_entry) {
-+		list_del_init(&p->ptrace_entry);
-+		release_task(p);
-+	}
-+}
-+
- int ptrace_readdata(struct task_struct *tsk, unsigned long src, char __user *dst, int len)
- {
- 	int copied = 0;
++	exit_ptrace(tsk);
+ 	exit_signals(tsk);  /* sets PF_EXITING */
+ 	/*
+ 	 * tsk->flags are checked in the futex code to protect against
 
