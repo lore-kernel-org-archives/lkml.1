@@ -1,91 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757373AbZBKUgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbZBKUkK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757373AbZBKUgU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 15:36:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755666AbZBKUgE
+	id S1757458AbZBKUkK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 15:40:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755457AbZBKUj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 15:36:04 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:40065 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755473AbZBKUgC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 15:36:02 -0500
-Date: Wed, 11 Feb 2009 15:33:28 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Ext4 tree backports for 2.6.27.13 and 2.6.28.2
-Message-ID: <20090211153328.37ef255f@dhcp-100-2-144.bos.redhat.com>
-In-Reply-To: <20090211075914.GC20842@skywalker>
-References: <E1LT8MN-0003Ps-Ur@closure.thunk.org>
-	<20090211075914.GC20842@skywalker>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Feb 2009 15:39:57 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:45563 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755085AbZBKUj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 15:39:57 -0500
+Date: Wed, 11 Feb 2009 14:39:55 -0600
+From: Jack Steiner <steiner@sgi.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Mike Travis <travis@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "isimatu.yasuaki@jp.fujitsu.com" <isimatu.yasuaki@jp.fujitsu.com>,
+       "kaneshige.kenji@jp.fujitsu.com" <kaneshige.kenji@jp.fujitsu.com>
+Subject: Re: [PATCH 0/8] git pull request for tip/tracing/core
+Message-ID: <20090211203954.GA9137@sgi.com>
+References: <20090208054955.777429253@goodmis.org> <20090209093751.GD7930@elte.hu> <20090211153650.GA19576@elte.hu> <alpine.DEB.1.10.0902111147450.15438@gandalf.stny.rr.com> <alpine.DEB.1.10.0902111158380.15438@gandalf.stny.rr.com> <20090211171622.GA13239@elte.hu> <alpine.DEB.1.10.0902111227570.15438@gandalf.stny.rr.com> <20090211173131.GA27546@elte.hu> <57C9024A16AD2D4C97DC78E552063EA361689C3B@orsmsx505.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA361689C3B@orsmsx505.amr.corp.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Feb 2009 13:29:14 +0530
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
-
-> On Sat, Jan 31, 2009 at 12:25:39AM -0500, Theodore Ts'o wrote:
-> > I've updated the ext4 backport branches on the ext4 git tree:
-> > 
-> >    git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git
-> >    http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git
-> > 
-> > The for-stable branch is branched off of 2.6.28.2, and has a candidate
-> > set of patches to be included in the next stable release.  The
-> > for-stable-2.6.27 branch is branched off of 2.6.27.13.  
-> > 
-> > I'm more confident with the 2.6.28 stable candidate than the 2.6.27
-> > stable candidates at the moment, but given that we just missed the
-> > 2.6.27.14 and 2.6.28.3 release cycles, that should give us plenty of
-> > time to test the patches.
-> > 
-> > 						- Ted
-> > 
-> > 
-> > 8556e8f3 18d5cb0 fd3bd090
-> >     ext4: Don't allow new groups to be added during block allocation
-> > 
+On Wed, Feb 11, 2009 at 09:57:00AM -0800, Luck, Tony wrote:
+> > > Before we go and make the change, Peter brought up a good point on IRC. Is
+> > > there any reason that ia64 needs 1 << 14 IRQs?  That's 16384!
+> > >
+> > > Perhaps the better solution wolud be (if possible), to simply lower the
+> > > number of bits.
+> >
+> > i'm the wrong person to be asked about that. (Cc:-ed the right people)
 > 
-> This commit on for-stable-2.6.27 is not complete.
-> ac->alloc_semp is not assigned in the code.
-> 
+> People build some pretty big systems on ia64.  SGI's largest has 4096
+> cpus ... so 16384 IRQs is only 4 per cpu.  That doesn't sound like very
+> many to me.
 
-I think this fixes that one:
+As long as per-cpu interrupts (ex., timer, cpe_hndlr, cmc_hndlr, etc) are not counted
+in the IRQ count, SGI is ok with  256 IRQs. We had problems overflowing the old
+limit of 256 but have worked around it.
+
+If per-cpu interrupts ARE counted in the total IRQs, then we currently use 5
+per-cpu interrupts for each cpu. A 4k cpu config will need 20k IRQs + additional
+IRQs for real devices.
+
+I know the IRQ infrastructure has changed recently so this may no longer apply.
 
 
-Add missing pieces to the below patch in the 2.6.27 ext4 patchset.
-http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=commitdiff;h=fd3bd090d7cc93292d3fa361b9c323752417bd7b
-"ext4: Don't allow new groups to be added during block allocation"
-
-Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
-
-Index: linux-2.6.27.noarch/fs/ext4/mballoc.c
-===================================================================
---- linux-2.6.27.noarch.orig/fs/ext4/mballoc.c
-+++ linux-2.6.27.noarch/fs/ext4/mballoc.c
-@@ -1055,7 +1055,8 @@ static void ext4_mb_release_desc(struct 
- 	if (e4b->bd_buddy_page)
- 		page_cache_release(e4b->bd_buddy_page);
- 	/* Done with the buddy cache */
--	up_read(e4b->alloc_semp);
-+	if (e4b->alloc_semp)
-+		up_read(e4b->alloc_semp);
- }
- 
- 
-@@ -1375,6 +1376,9 @@ static void ext4_mb_use_best_found(struc
- 	get_page(ac->ac_bitmap_page);
- 	ac->ac_buddy_page = e4b->bd_buddy_page;
- 	get_page(ac->ac_buddy_page);
-+	/* on allocation we use ac to track the held semaphore */
-+	ac->alloc_semp =  e4b->alloc_semp;
-+	e4b->alloc_semp = NULL;
- 	/* store last allocated for subsequent stream allocation */
- 	if ((ac->ac_flags & EXT4_MB_HINT_DATA)) {
- 		spin_lock(&sbi->s_md_lock);
+--- jack
