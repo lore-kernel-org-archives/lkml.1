@@ -1,127 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756959AbZBKBYP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbZBKB3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756959AbZBKBYP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 20:24:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbZBKBXz
+	id S1756043AbZBKB3R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 20:29:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbZBKB3D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 20:23:55 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44608
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756271AbZBKBXy (ORCPT
+	Tue, 10 Feb 2009 20:29:03 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:42362 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754109AbZBKB3B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 20:23:54 -0500
-Date: Tue, 10 Feb 2009 17:23:47 -0800 (PST)
-Message-Id: <20090210.172347.189515015.davem@davemloft.net>
-To: rdreier@cisco.com
-Cc: swise@opengridcomputing.com, randy.dunlap@oracle.com,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Subject: Re: [ofa-general] [PATCH 2.6.30] RDMA/cxgb3: Remove modulo math.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <adaeiy5ahza.fsf@cisco.com>
-References: <499223F8.1010204@opengridcomputing.com>
-	<20090210.170740.208470781.davem@davemloft.net>
-	<adaeiy5ahza.fsf@cisco.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Feb 2009 20:29:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=hWZrsSTGdJevAATHAwkQZeRw5zg5i+FFeSolXhPrk2rI6lT6jBoxJuUig5YA9Sx4Mg
+         dmAqj/xvDN0KqRPdJZhog9tS/Yli0/PEQBjviplgF6zg3gg5vRKtFxlVVrTMu/4P4g+L
+         qT7yb41TFc8ynCu2c1pR20GwhSmcZpys4rFfA=
+Date: Wed, 11 Feb 2009 02:28:56 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: git pull request for tip/tracing/urgent
+Message-ID: <20090211012856.GA4921@nowhere>
+References: <alpine.DEB.1.10.0902101314440.23505@gandalf.stny.rr.com> <20090210183046.GA1342@nowhere> <alpine.DEB.1.10.0902101724190.23505@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0902101724190.23505@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 10 Feb 2009 17:18:49 -0800
-
-> > > Is this required?  Strength reduction optimization should do this
-> > > automatically (and the code has been there for quite a while, so
-> > > obviously it isn't causing problems)
+On Tue, Feb 10, 2009 at 06:00:14PM -0500, Steven Rostedt wrote:
 > 
-> > GCC won't optimize that modulus the way you expect, try for yourself
-> > and look at the assembler if you don't believe me. :-)
 > 
-> Are you thinking of the case when there are signed integers involved and
-> so "% modulus" might produce a different result than "& (modulus - 1)"
-> (because the compiler can't know that things are never negative)?
-> Because in this case the compiler seems to do what I thought it would;
-> the relevant part of the i386 assembly for
+> On Tue, 10 Feb 2009, Frederic Weisbecker wrote:
+> > > 
+> > > diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+> > > index 1b43086..9d549e4 100644
+> > > --- a/arch/x86/kernel/ftrace.c
+> > > +++ b/arch/x86/kernel/ftrace.c
+> > > @@ -491,13 +491,15 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+> > >  		"1: " _ASM_MOV " (%[parent_old]), %[old]\n"
+> > >  		"2: " _ASM_MOV " %[return_hooker], (%[parent_replaced])\n"
+> > >  		"   movl $0, %[faulted]\n"
+> > > +		"3:\n"
+> > >  
+> > >  		".section .fixup, \"ax\"\n"
+> > > -		"3: movl $1, %[faulted]\n"
+> > > +		"4: movl $1, %[faulted]\n"
+> > > +		"   jmp 3b\n"
+> > >  		".previous\n"
+> > 
+> > 
+> > It thought after the fixup section, the code would continue to rest of the C code.
+> > Where would it go without the jmp?
 > 
-> 		wqe->recv.sgl[i].to = cpu_to_be64(((u32) wr->sg_list[i].addr) %
-> 				(1UL << (12 + page_size[i])));
+> To the next item the linker placed into the .fixup section.  And that 
+> would jump back to the location for that fixup. Basically, what you have 
+> is this:
 > 
-> is
+> (just picking random and factitious registers)
 > 
->         movl    %eax, 28(%edi,%ebx)     # <variable>.length,
->         <variable>.len
->         movzbl  28(%esp,%esi), %ecx     # page_size, tmp89
->         movl    $1, %eax        #, tmp92
->         addl    $12, %ecx       #, tmp90
->         sall    %cl, %eax       # tmp90, tmp92
->         movl    (%esp), %ecx    # wr,
->         decl    %eax    # tmp93
->         movl    12(%ecx), %edx  # <variable>.sg_list, <variable>.sg_list
->         andl    (%edx,%ebx), %eax       # <variable>.addr, tmp93
+> .section .text
+> [...]
+> L1:	mov	%a, %b
+> L2:	cmp	%x, $1
+> <continue code>
 > 
-> ie the compiler computes the modulus, then does decl to compute
-> modulus-1 and then &s with it.
 > 
-> Or am I misunderstanding your point?
+> <Someplace else>
+> 
+> .section .text
+> [...]
+> L3:	mov	%c, %d
+> L4:	cmp	%x, $22
+> [...]
+> 
+> .section .fixup
+> [...]
+> L5:	mov	$1, %x
+> 	jmp L2
+> L6:	mov	$22, %x
+> 	jmp L4
+> [...]
+> 
+> 
+> .section __ex_table
+> [...]
+> .long	L1, L5
+> .long	L3, L6
+> [...]
+> 
+> 
+> So when we take an exception at label L1, the page fault code will look 
+> to see if it is OK, by doing a binary search of the exception table.
+> When it finds the L1, L5 pair, it will then set up a return to the L5 
+> label.
+> 
+> When the fault returns to L5, it loads that reg %x with $1 and jumps back 
+> to L2, where it can see that it took a fault.
+> 
+> Now lets look at what happens when we do not have that jump back to L2. 
+> Instead of going back to the original code, it will load $22 into %x and 
+> jmp back to the wrong area. God knows what will happen then, since the 
+> stack pointer thinks it is from where the original fault occurred.
 
-Must be compiler and platform specific because with gcc-4.1.3 on
-sparc with -O2, for the test program:
 
-unsigned long page_size[4];
+Heh, that's fairly logic. Don't ask me why, but I did not imagine each
+part of .fixup unified in a separate contiguous section (but what else can it be?...).
 
-int main(int argc)
-{
-        unsigned long long x = argc;
+Thanks for your explanations :-)
 
-        return x % (1UL << (12 + page_size[argc]));
-}
+ 
+> -- Steve
+> 
 
-I get a call to __umoddi3:
-
-main:
-        save    %sp, -112, %sp
-        sethi   %hi(page_size), %g1
-        sll     %i0, 2, %g3
-        or      %g1, %lo(page_size), %g1
-        mov     1, %o2
-        ld      [%g1+%g3], %g2
-        add     %g2, 12, %g2
-        sll     %o2, %g2, %o2
-        mov     %i0, %o1
-        mov     %o2, %o3
-        sra     %i0, 31, %o0
-        call    __umoddi3, 0
-         mov    0, %o2
-        jmp     %i7+8
-         restore %g0, %o1, %o0
-
-I get the same with gcc-4.3.0 and -O2 on 32-bit x86:
-
-main:
-	leal	4(%esp), %ecx
-	andl	$-16, %esp
-	pushl	-4(%ecx)
-	movl	$1, %eax
-	pushl	%ebp
-	movl	%esp, %ebp
-	pushl	%ecx
-	subl	$20, %esp
-	movl	(%ecx), %edx
-	movl	page_size(,%edx,4), %ecx
-	movl	$0, 12(%esp)
-	movl	%edx, (%esp)
-	addl	$12, %ecx
-	sall	%cl, %eax
-	movl	%eax, 8(%esp)
-	movl	%edx, %eax
-	sarl	$31, %eax
-	movl	%eax, 4(%esp)
-	call	__umoddi3
-	addl	$20, %esp
-	popl	%ecx
-	popl	%ebp
-	leal	-4(%ecx), %esp
-	ret
