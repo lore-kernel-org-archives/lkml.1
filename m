@@ -1,83 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757571AbZBKV1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758486AbZBKV1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757571AbZBKV1W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 16:27:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757591AbZBKV0w
+	id S1758486AbZBKV1f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 16:27:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757665AbZBKV0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 16:26:52 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:45218 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757520AbZBKV0v (ORCPT
+	Wed, 11 Feb 2009 16:26:53 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:22949 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757520AbZBKV0x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 16:26:51 -0500
-Date: Wed, 11 Feb 2009 13:15:39 -0800
+	Wed, 11 Feb 2009 16:26:53 -0500
+Date: Wed, 11 Feb 2009 13:16:37 -0800
 From: Randy Dunlap <randy.dunlap@oracle.com>
 To: lkml <linux-kernel@vger.kernel.org>
 Cc: gregkh@suse.de
-Subject: [PATCH 2/9] staging/android/binder: fix printk format warnings
-Message-Id: <20090211131539.f391d6dd.randy.dunlap@oracle.com>
+Subject: [PATCH 3/9] staging/android/ram_console: fix printk format warning
+Message-Id: <20090211131637.05a752ef.randy.dunlap@oracle.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.49934294.0062:SCFSTAT928724,ss=1,fgs=0
+X-CT-RefId: str=0001.0A090201.49934295.02D9:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Fix printk format warnings in android binder:
+Fix android printk format warnings:
 
-drivers/staging/android/binder.c:2652: warning: format '%lx' expects type 'long unsigned int', but argument 7 has type 'pgprotval_t'
-drivers/staging/android/binder.c:2659: warning: format '%lx' expects type 'long unsigned int', but argument 7 has type 'pgprotval_t'
-drivers/staging/android/binder.c:2680: warning: format '%lx' expects type 'long unsigned int', but argument 7 has type 'pgprotval_t'
+linux-next-20090209/drivers/staging/android/ram_console.c:228: warning: format '%d' expects type 'int', but argument 3 has type 'size_t'
+linux-next-20090209/drivers/staging/android/ram_console.c:228: warning: format '%d' expects type 'int', but argument 4 has type 'size_t'
+linux-next-20090209/drivers/staging/android/ram_console.c:326: warning: format '%x' expects type 'unsigned int', but argument 2 has type 'size_t'
+linux-next-20090209/drivers/staging/android/ram_console.c:326: warning: format '%x' expects type 'unsigned int', but argument 3 has type 'size_t'
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- drivers/staging/android/binder.c |   18 +++++++++++++++---
- 1 file changed, 15 insertions(+), 3 deletions(-)
+ drivers/staging/android/ram_console.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- mmotm-2009-0210-1635.orig/drivers/staging/android/binder.c
-+++ mmotm-2009-0210-1635/drivers/staging/android/binder.c
-@@ -2649,14 +2649,22 @@ static void binder_vma_open(struct vm_ar
- {
- 	struct binder_proc *proc = vma->vm_private_data;
- 	if (binder_debug_mask & BINDER_DEBUG_OPEN_CLOSE)
--		printk(KERN_INFO "binder: %d open vm area %lx-%lx (%ld K) vma %lx pagep %lx\n", proc->pid, vma->vm_start, vma->vm_end, (vma->vm_end - vma->vm_start) / SZ_1K, vma->vm_flags, pgprot_val(vma->vm_page_prot));
-+		printk(KERN_INFO
-+			"binder: %d open vm area %lx-%lx (%ld K) vma %lx pagep %lx\n",
-+			proc->pid, vma->vm_start, vma->vm_end,
-+			(vma->vm_end - vma->vm_start) / SZ_1K, vma->vm_flags,
-+			(unsigned long)pgprot_val(vma->vm_page_prot));
- 	dump_stack();
- }
- static void binder_vma_close(struct vm_area_struct *vma)
- {
- 	struct binder_proc *proc = vma->vm_private_data;
- 	if (binder_debug_mask & BINDER_DEBUG_OPEN_CLOSE)
--		printk(KERN_INFO "binder: %d close vm area %lx-%lx (%ld K) vma %lx pagep %lx\n", proc->pid, vma->vm_start, vma->vm_end, (vma->vm_end - vma->vm_start) / SZ_1K, vma->vm_flags, pgprot_val(vma->vm_page_prot));
-+		printk(KERN_INFO
-+			"binder: %d close vm area %lx-%lx (%ld K) vma %lx pagep %lx\n",
-+			proc->pid, vma->vm_start, vma->vm_end,
-+			(vma->vm_end - vma->vm_start) / SZ_1K, vma->vm_flags,
-+			(unsigned long)pgprot_val(vma->vm_page_prot));
- 	proc->vma = NULL;
- }
+--- mmotm-2009-0210-1635.orig/drivers/staging/android/ram_console.c
++++ mmotm-2009-0210-1635/drivers/staging/android/ram_console.c
+@@ -225,7 +225,7 @@ static int __init ram_console_init(struc
+ 		buffer_size - sizeof(struct ram_console_buffer);
  
-@@ -2677,7 +2685,11 @@ static int binder_mmap(struct file *filp
- 		vma->vm_end = vma->vm_start + SZ_4M;
- 
- 	if (binder_debug_mask & BINDER_DEBUG_OPEN_CLOSE)
--		printk(KERN_INFO "binder_mmap: %d %lx-%lx (%ld K) vma %lx pagep %lx\n", proc->pid, vma->vm_start, vma->vm_end, (vma->vm_end - vma->vm_start) / SZ_1K, vma->vm_flags, pgprot_val(vma->vm_page_prot));
-+		printk(KERN_INFO
-+			"binder_mmap: %d %lx-%lx (%ld K) vma %lx pagep %lx\n",
-+			proc->pid, vma->vm_start, vma->vm_end,
-+			(vma->vm_end - vma->vm_start) / SZ_1K, vma->vm_flags,
-+			(unsigned long)pgprot_val(vma->vm_page_prot));
- 
- 	if (vma->vm_flags & FORBIDDEN_MMAP_FLAGS) {
- 		ret = -EPERM;
+ 	if (ram_console_buffer_size > buffer_size) {
+-		pr_err("ram_console: buffer %p, invalid size %d, datasize %d\n",
++		pr_err("ram_console: buffer %p, invalid size %zu, datasize %zu\n",
+ 		       buffer, buffer_size, ram_console_buffer_size);
+ 		return 0;
+ 	}
+@@ -322,7 +322,7 @@ static int ram_console_driver_probe(stru
+ 	}
+ 	buffer_size = res->end - res->start + 1;
+ 	start = res->start;
+-	printk(KERN_INFO "ram_console: got buffer at %x, size %x\n",
++	printk(KERN_INFO "ram_console: got buffer at %zx, size %zx\n",
+ 	       start, buffer_size);
+ 	buffer = ioremap(res->start, buffer_size);
+ 	if (buffer == NULL) {
