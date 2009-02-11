@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbZBKNli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756787AbZBKNnH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756781AbZBKNli (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 08:41:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755071AbZBKNl2
+	id S1756787AbZBKNnH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 08:43:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754691AbZBKNmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 08:41:28 -0500
-Received: from mail.suse.de ([195.135.220.2]:37579 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752645AbZBKNl1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 08:41:27 -0500
-Date: Wed, 11 Feb 2009 14:41:25 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Bill Nottingham <notting@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
-Subject: Re: [PATCH] Declare PIO_CMAP/GIO_CMAP as compatbile ioctls.
-In-Reply-To: <1234279525-25143-1-git-send-email-notting@redhat.com>
-Message-ID: <alpine.LNX.1.10.0902111438280.31014@jikos.suse.cz>
-References: <1234279525-25143-1-git-send-email-notting@redhat.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 11 Feb 2009 08:42:55 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:25397 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752645AbZBKNmy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 08:42:54 -0500
+Message-ID: <4992D90E.10506@nokia.com>
+Date: Wed, 11 Feb 2009 15:56:30 +0200
+From: Adrian Hunter <ext-adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Matt Fleming <matt@console-pimps.org>
+CC: Pierre Ossman <drzeus-mmc@drzeus.cx>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] mmc_core: fix data timeout for SEND_EXT_CSD
+References: <4991A00B.8040002@nokia.com> <20090211133004.GH478@console-pimps.org>
+In-Reply-To: <20090211133004.GH478@console-pimps.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Feb 2009 13:42:43.0784 (UTC) FILETIME=[9DB2AC80:01C98C4E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Feb 2009, Bill Nottingham wrote:
-
-> Otherwise, these don't work when called from 32-bit userspace on 64-bit kernels.
-> ---
->  fs/compat_ioctl.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
+Matt Fleming wrote:
+> On Tue, Feb 10, 2009 at 05:40:59PM +0200, Adrian Hunter wrote:
+>> diff --git a/drivers/mmc/core/mmc_ops.c b/drivers/mmc/core/mmc_ops.c
+>> index 9c50e6f..418a270 100644
+>> --- a/drivers/mmc/core/mmc_ops.c
+>> +++ b/drivers/mmc/core/mmc_ops.c
+>> @@ -248,12 +248,16 @@ mmc_send_cxd_data(struct mmc_card *card, struct mmc_host *host,
+>>
+>>       sg_init_one(&sg, data_buf, len);
+>>
+>> -     /*
+>> -      * The spec states that CSR and CID accesses have a timeout
+>> -      * of 64 clock cycles.
+>> -      */
+>> -     data.timeout_ns = 0;
+>> -     data.timeout_clks = 64;
+>> +     if (!mmc_host_is_spi(card->host) && opcode == MMC_SEND_EXT_CSD)
+>> +             mmc_set_data_timeout(&data, card);
+>> +     else {
+>> +             /*
+>> +              * The spec states that CSR and CID accesses have a timeout
+>> +              * of 64 clock cycles (8 for SPI).
+>> +              */
+>> +             data.timeout_ns = 0;
+>> +             data.timeout_clks = 64;
+>> +     }
+>>
+>>       mmc_wait_for_req(host, &mrq);
+>>
 > 
-> diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
-> index 5235c67..9ee71a0 100644
-> --- a/fs/compat_ioctl.c
-> +++ b/fs/compat_ioctl.c
-> @@ -1937,6 +1937,8 @@ ULONG_IOCTL(SET_BITMAP_FILE)
->  /* Big K */
->  COMPATIBLE_IOCTL(PIO_FONT)
->  COMPATIBLE_IOCTL(GIO_FONT)
-> +COMPATIBLE_IOCTL(PIO_CMAP)
-> +COMPATIBLE_IOCTL(GIO_CMAP)
->  ULONG_IOCTL(KDSIGACCEPT)
->  COMPATIBLE_IOCTL(KDGETKEYCODE)
->  COMPATIBLE_IOCTL(KDSETKEYCODE)
-> -- 
-> 1.6.1.2
+> Doh! You're right, I did inadvertently break this. Your fix looks good.
+> 
 
-Alan, I am hesitant to consider this material implicitly applicable for 
-trivial tree. Could you please give your Acked-by for it so that I can 
-merge, or take it through your tree completely?
+Actually looking at it now, it seems to have an error, because card may be
+NULL in the MMC_SEND_CID case.
 
-Thanks,
+Should be 
 
--- 
-Jiri Kosina
-SUSE Labs
+	if (!mmc_host_is_spi(host) && opcode == MMC_SEND_EXT_CSD)
+
+I will resend.
