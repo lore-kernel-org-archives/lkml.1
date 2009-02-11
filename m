@@ -1,223 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756701AbZBKTVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756776AbZBKT0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756701AbZBKTVn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 14:21:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754869AbZBKTVf
+	id S1756776AbZBKT0X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 14:26:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbZBKT0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 14:21:35 -0500
-Received: from mga14.intel.com ([143.182.124.37]:2855 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755246AbZBKTVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 14:21:34 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,193,1233561600"; 
-   d="scan'208";a="109672009"
-Subject: [patch] x86, pat: fix warn_on_once() while mapping 0-1MB range
-	with /dev/mem
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com,
-       jeffm@suse.com
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Wed, 11 Feb 2009 11:20:23 -0800
-Message-Id: <1234380023.16238.52.camel@vayu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Feb 2009 14:26:14 -0500
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:33259 "EHLO
+	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750875AbZBKT0N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 14:26:13 -0500
+Message-ID: <49932655.2020702@intertwingly.net>
+Date: Wed, 11 Feb 2009 14:26:13 -0500
+From: Sam Ruby <rubys@intertwingly.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: yakui_zhao <yakui.zhao@intel.com>
+CC: Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [APIC] Kernel panic, rsync corruption, intel q8200, 2.6.28-rc8
+References: <4978767D.4060700@intertwingly.net>	 <20090130000758.1dff0113.akpm@linux-foundation.org>	 <498885CC.4060509@intertwingly.net>	 <20090203114849.b661f1ce.akpm@linux-foundation.org>	 <alpine.LFD.2.00.0902032152180.22800@localhost.localdomain>	 <49890B46.8020308@intertwingly.net>	 <alpine.LFD.2.00.0902032336000.5607@localhost.localdomain>	 <4990C14B.7060802@intertwingly.net>	 <1234231805.3706.80.camel@localhost.localdomain>	 <49916927.9080200@intertwingly.net> <1234316533.3706.104.camel@localhost.localdomain>
+In-Reply-To: <1234316533.3706.104.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: x86, pat: fix warn_on_once() while mapping 0-1MB range
-with /dev/mem
+yakui_zhao wrote:
+> On Tue, 2009-02-10 at 19:46 +0800, Sam Ruby wrote:
+>> yakui_zhao wrote:
+>>> On Tue, 2009-02-10 at 07:50 +0800, Sam Ruby wrote:
+>>>> Len Brown wrote:
+>>>>>>> Do you have a second computer around with a serial port ? If yes, then
+>>>>>>> please add the following to the kernel command line:
+>>>>>>>
+>>>>>>>        earlyprintk=serial,ttyS0,115200 apic=debug
+>>>>>>>
+>>>>>>> and connect the serial ports with a null modem cable. Fire up a
+>>>>>>> terminal program on the second machine and capture the output.
+>>>>>> I do have a second computer, and went out and bought a null modem adapter for
+>>>>>> my serial cable and connected the two machines.  I've tried installing minicom
+>>>>>> and also connecting it to ttyS0 at 115200 baud on the second machine, but when
+>>>>>> I boot the first machine I don't see any output on the terminal.
+>>>>> /boot/grub/menu.lst:
+>>>>>
+>>>>> serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1
+>>>>> terminal --timeout=300 serial console
+>>> Do you have an opportunity to try the boot option of "acpi=off" as
+>>> suggested by Lenb?
+>> That also produces the "MP-BIOS bug" message and halts.
+> Do you mean that the box still can't be booted with ACPI disabled? If
+> so, it should be a BIOS bug. It had better be fixed by bios upgrading.
 
-Jeff Mahoney reported:
-> With Suse's hwinfo tool, on -tip:
-> WARNING: at arch/x86/mm/pat.c:637 reserve_pfn_range+0x5b/0x26d()
+BIOS information, in case it is helpful to anyone:
 
-reserve_pfn_range() is not tracking the memory range below 1MB
-as non-RAM and as such is inconsistent with similar checks in
-reserve_memtype() and free_memtype()
+http://intertwingly.net/stories/2009/02/11/dmidecode.out
 
-Rename the pagerange_is_ram() to pat_pagerange_is_ram() and add the
-"track legacy 1MB region as non RAM" condition.
-
-And also, fix reserve_pfn_range() to return -EINVAL, when the pfn
-range is RAM. This is to be consistent with this API design.
-
-Reported-and-tested-by: Jeff Mahoney <jeffm@suse.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
----
-
-Index: tip/arch/x86/mm/pat.c
-===================================================================
---- tip/arch/x86/mm/pat.c.orig
-+++ tip/arch/x86/mm/pat.c
-@@ -220,6 +220,33 @@ chk_conflict(struct memtype *new, struct
- static struct memtype *cached_entry;
- static u64 cached_start;
- 
-+static int pat_pagerange_is_ram(unsigned long start, unsigned long end)
-+{
-+	int ram_page = 0, not_rampage = 0;
-+	unsigned long page_nr;
-+
-+	for (page_nr = (start >> PAGE_SHIFT); page_nr < (end >> PAGE_SHIFT);
-+	     ++page_nr) {
-+		/*
-+		 * For legacy reasons, physical address range in the legacy ISA
-+		 * region is tracked as non-RAM. This will allow users of
-+		 * /dev/mem to map portions of legacy ISA region, even when
-+		 * some of those portions are listed(or not even listed) with
-+		 * different e820 types(RAM/reserved/..)
-+		 */
-+		if (page_nr >= (ISA_END_ADDRESS >> PAGE_SHIFT) &&
-+		    page_is_ram(page_nr))
-+			ram_page = 1;
-+		else
-+			not_rampage = 1;
-+
-+		if (ram_page == not_rampage)
-+			return -1;
-+	}
-+
-+	return ram_page;
-+}
-+
- /*
-  * For RAM pages, mark the pages as non WB memory type using
-  * PageNonWB (PG_arch_1). We allow only one set_memory_uc() or
-@@ -345,20 +372,12 @@ int reserve_memtype(u64 start, u64 end, 
- 	if (new_type)
- 		*new_type = actual_type;
- 
--	/*
--	 * For legacy reasons, some parts of the physical address range in the
--	 * legacy 1MB region is treated as non-RAM (even when listed as RAM in
--	 * the e820 tables).  So we will track the memory attributes of this
--	 * legacy 1MB region using the linear memtype_list always.
--	 */
--	if (end >= ISA_END_ADDRESS) {
--		is_range_ram = pagerange_is_ram(start, end);
--		if (is_range_ram == 1)
--			return reserve_ram_pages_type(start, end, req_type,
--						      new_type);
--		else if (is_range_ram < 0)
--			return -EINVAL;
--	}
-+	is_range_ram = pat_pagerange_is_ram(start, end);
-+	if (is_range_ram == 1)
-+		return reserve_ram_pages_type(start, end, req_type,
-+					      new_type);
-+	else if (is_range_ram < 0)
-+		return -EINVAL;
- 
- 	new  = kmalloc(sizeof(struct memtype), GFP_KERNEL);
- 	if (!new)
-@@ -455,19 +474,11 @@ int free_memtype(u64 start, u64 end)
- 	if (is_ISA_range(start, end - 1))
- 		return 0;
- 
--	/*
--	 * For legacy reasons, some parts of the physical address range in the
--	 * legacy 1MB region is treated as non-RAM (even when listed as RAM in
--	 * the e820 tables).  So we will track the memory attributes of this
--	 * legacy 1MB region using the linear memtype_list always.
--	 */
--	if (end >= ISA_END_ADDRESS) {
--		is_range_ram = pagerange_is_ram(start, end);
--		if (is_range_ram == 1)
--			return free_ram_pages_type(start, end);
--		else if (is_range_ram < 0)
--			return -EINVAL;
--	}
-+	is_range_ram = pat_pagerange_is_ram(start, end);
-+	if (is_range_ram == 1)
-+		return free_ram_pages_type(start, end);
-+	else if (is_range_ram < 0)
-+		return -EINVAL;
- 
- 	spin_lock(&memtype_lock);
- 	list_for_each_entry(entry, &memtype_list, nd) {
-@@ -635,17 +646,13 @@ static int reserve_pfn_range(u64 paddr, 
- 	unsigned long flags;
- 	unsigned long want_flags = (pgprot_val(*vma_prot) & _PAGE_CACHE_MASK);
- 
--	is_ram = pagerange_is_ram(paddr, paddr + size);
-+	is_ram = pat_pagerange_is_ram(paddr, paddr + size);
- 
--	if (is_ram != 0) {
--		/*
--		 * For mapping RAM pages, drivers need to call
--		 * set_memory_[uc|wc|wb] directly, for reserve and free, before
--		 * setting up the PTE.
--		 */
--		WARN_ON_ONCE(1);
--		return 0;
--	}
-+	/*
-+	 * reserve_pfn_range() doesn't support RAM pages.
-+	 */
-+	if (is_ram != 0)
-+		return -EINVAL;
- 
- 	ret = reserve_memtype(paddr, paddr + size, want_flags, &flags);
- 	if (ret)
-@@ -702,7 +709,7 @@ static void free_pfn_range(u64 paddr, un
- {
- 	int is_ram;
- 
--	is_ram = pagerange_is_ram(paddr, paddr + size);
-+	is_ram = pat_pagerange_is_ram(paddr, paddr + size);
- 	if (is_ram == 0)
- 		free_memtype(paddr, paddr + size);
- }
-Index: tip/arch/x86/mm/ioremap.c
-===================================================================
---- tip/arch/x86/mm/ioremap.c.orig
-+++ tip/arch/x86/mm/ioremap.c
-@@ -134,25 +134,6 @@ int page_is_ram(unsigned long pagenr)
- 	return 0;
- }
- 
--int pagerange_is_ram(unsigned long start, unsigned long end)
--{
--	int ram_page = 0, not_rampage = 0;
--	unsigned long page_nr;
--
--	for (page_nr = (start >> PAGE_SHIFT); page_nr < (end >> PAGE_SHIFT);
--	     ++page_nr) {
--		if (page_is_ram(page_nr))
--			ram_page = 1;
--		else
--			not_rampage = 1;
--
--		if (ram_page == not_rampage)
--			return -1;
--	}
--
--	return ram_page;
--}
--
- /*
-  * Fix up the linear direct mapping of the kernel to avoid cache
-attribute
-  * conflicts.
-Index: tip/arch/x86/include/asm/page.h
-===================================================================
---- tip/arch/x86/include/asm/page.h.orig
-+++ tip/arch/x86/include/asm/page.h
-@@ -57,7 +57,6 @@ typedef struct { pgdval_t pgd; } pgd_t;
- typedef struct { pgprotval_t pgprot; } pgprot_t;
- 
- extern int page_is_ram(unsigned long pagenr);
--extern int pagerange_is_ram(unsigned long start, unsigned long end);
- extern int devmem_is_allowed(unsigned long pagenr);
- extern void map_devmem(unsigned long pfn, unsigned long size,
- 		       pgprot_t vma_prot);
-
+>    From the following test it seems that there exists the MPS table,
+> which describes how the timer is connected with I/O APIC. But
+> unfortunately it is still incorrect. 
+>    And the timer still can't work w/o the timer override.
+>    
+>    Only when I/O apic is skipped can the box be booted. The timer is
+> connected with 8259.  And the timer can work as expected. But there
+> still exist other issue.
+>     
+>>>      From the log it seems that there exists the following warning
+>>> message:
+>>>     >﻿MP-BIOS bug: 8254 timer not connected to IO-APIC
+>>>
+>>>     Can you try the following boot options?
+>>>     a. acpi_use_timer_override
+>> That also produces the "MP-BIOS bug" message and halts.
+>>
+>>>     b. acpi_skip_timer_override
+>> That also produces the "MP-BIOS bug" message and halts.
+>>
+>>>     c. noapic
+>> With that, I can boot, but I get data corruption problems.  Data 
+>> corruption problems I don't see when using the same hardware but with 
+>> Microsoft Vista.  More details can be found here:
+>>
+>> http://intertwingly.net/blog/2009/01/20/noAPIC
+>> http://intertwingly.net/stories/2009/01/22/
+>>
+>> I am willing to install new kernels on fresh hard drives, run diagnostic 
+>> programs and report the output, including capturing serial output.  Is 
+>> there any data I can gather to help diagnose this problem?
+>>
+>>>     Thanks.
+>>>>> is what I use.
+>>>>>
+>>>>> this will give you a prompt from grub even before the kernel boots
+>>>>> so you can select (and edit) your kernel via menu over the serial line
+>>>>> if you wish.
+>>>> I've got that working now.  I used minicom on the remote machine, 
+>>>> capturing the output.  You can see me fumbling around, editing the 
+>>>> kernel command and booting here:
+>>>>
+>>>> http://intertwingly.net/stories/2009/02/09/minicom.out
+>>>>
+>>>> While it is difficult to make out what I did given line wrapping, etc, 
+>>>> what I started with was:
+>>>>
+>>>> /boot/vmlinuz-2.6.27-11-generic 
+>>>> root=UUID=4fce230e-fe72-4685-aab0-294ef1c20efa ro noapic quiet splash
+>>>>
+>>>> After editing, what I had was
+>>>>
+>>>> /boot/vmlinuz-2.6.27-11-generic 
+>>>> root=UUID=4fce230e-fe72-4685-aab0-294ef1c20efa ro quiet splash 
+>>>> earlyprintk=serial,ttyS0,115200 apic=debug
+>>>>
+>>>> As you can see, the last line I saw was "Starting up ...", after which 
+>>>> point the "MP-BIOS bug: 8254 timer not connected to IO-APIC" etc output 
+>>>> appeared on the monitor that is directly connected to the machine being 
+>>>> booted (i.e., this text did not appear on the minicom session).
+>>>>
+>>>>> If this doesn't work, then the kernel earlyprintk is unlikely to work 
+>>>>> also.
+>>>> At the moment, it looks like it works, but earlyprintk does not work for 
+>>>> me, at least not on Ubuntu 8.10, kernel 2.6.27-11-generic.
+>>>>
+>>>>> Note that there may be some BIOS SETUP options related to the serial port 
+>>>>> -- worth checking.
+>>>>>
+>>>>> Also, in minicom, be sure to turn off HW flow control
+>>>>>
+>>>>> there is a fancy serial console document someplace on this,
+>>>>> probably at http://tldp.org/
+>>>> As I have managed to get grub to talk to the serial console, I did not 
+>>>> explore these options further.  Please let me know if there is something 
+>>>> in particular I should explore.
+>>>>
+>>>>> good luck,
+>>>>> -Len
+>>>> - Sam Ruby
+>>>> --
+>>>> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+>>>> the body of a message to majordomo@vger.kernel.org
+>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> - Sam Ruby
+> 
 
