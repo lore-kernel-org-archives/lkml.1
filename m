@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759562AbZBKAn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbZBKAlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759562AbZBKAn4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:43:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757869AbZBKA2s
+	id S1754782AbZBKAlA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:41:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757829AbZBKA2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:28:48 -0500
-Received: from kroah.org ([198.145.64.141]:51540 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 19:28:41 -0500
+Received: from kroah.org ([198.145.64.141]:51401 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756802AbZBKA2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:46 -0500
-Date: Tue, 10 Feb 2009 16:25:46 -0800
+	id S1757813AbZBKA2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:28:38 -0500
+Date: Tue, 10 Feb 2009 16:25:30 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
-       Denis Joseph Barrow <D.Barow@option.com>,
-       Jeff Garzik <jgarzik@redhat.com>, Frank Seidel <fseidel@suse.de>
-Subject: [patch 44/56] hso: rfkill type should be WWAN
-Message-ID: <20090211002546.GS14660@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Roland McGrath <roland@redhat.com>
+Subject: [patch 36/56] elf core dump: fix get_user use
+Message-ID: <20090211002530.GK14660@kroah.com>
 References: <20090211001439.873435357@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="hso-rfkill-type-should-be-wwan.patch"
+Content-Disposition: inline; filename="elf-core-dump-fix-get_user-use.patch"
 In-Reply-To: <20090211002328.GA14660@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,29 +38,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+From: Roland McGrath <roland@redhat.com>
 
-commit db053c6b447d083f3c63e5540b70a3e521b468ca upstream.
+commit 92dc07b1f988e8c237a38e23be660b9b8533e6fd upstream.
 
-Signed-off-by: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
-Cc: Denis Joseph Barrow <D.Barow@option.com>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-Signed-off-by: Frank Seidel <fseidel@suse.de>
+The elf_core_dump() code does its work with set_fs(KERNEL_DS) in force,
+so vma_dump_size() needs to switch back with set_fs(USER_DS) to safely
+use get_user() for a normal user-space address.
+
+Checking for VM_READ optimizes out the case where get_user() would fail
+anyway.  The vm_file check here was already superfluous given the control
+flow earlier in the function, so that is a cleanup/optimization unrelated
+to other changes but an obvious and trivial one.
+
+Reported-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Signed-off-by: Roland McGrath <roland@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/usb/hso.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/binfmt_elf.c |   14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
 
---- a/drivers/net/usb/hso.c
-+++ b/drivers/net/usb/hso.c
-@@ -2047,7 +2047,7 @@ static void hso_create_rfkill(struct hso
- 	char *rfkn;
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -1188,9 +1188,11 @@ static unsigned long vma_dump_size(struc
+ 	 * check for an ELF header.  If we find one, dump the first page to
+ 	 * aid in determining what was mapped here.
+ 	 */
+-	if (FILTER(ELF_HEADERS) && vma->vm_file != NULL && vma->vm_pgoff == 0) {
++	if (FILTER(ELF_HEADERS) &&
++	    vma->vm_pgoff == 0 && (vma->vm_flags & VM_READ)) {
+ 		u32 __user *header = (u32 __user *) vma->vm_start;
+ 		u32 word;
++		mm_segment_t fs = get_fs();
+ 		/*
+ 		 * Doing it this way gets the constant folded by GCC.
+ 		 */
+@@ -1203,7 +1205,15 @@ static unsigned long vma_dump_size(struc
+ 		magic.elfmag[EI_MAG1] = ELFMAG1;
+ 		magic.elfmag[EI_MAG2] = ELFMAG2;
+ 		magic.elfmag[EI_MAG3] = ELFMAG3;
+-		if (get_user(word, header) == 0 && word == magic.cmp)
++		/*
++		 * Switch to the user "segment" for get_user(),
++		 * then put back what elf_core_dump() had in place.
++		 */
++		set_fs(USER_DS);
++		if (unlikely(get_user(word, header)))
++			word = 0;
++		set_fs(fs);
++		if (word == magic.cmp)
+ 			return PAGE_SIZE;
+ 	}
  
- 	hso_net->rfkill = rfkill_allocate(&interface_to_usbdev(interface)->dev,
--				 RFKILL_TYPE_WLAN);
-+				 RFKILL_TYPE_WWAN);
- 	if (!hso_net->rfkill) {
- 		dev_err(dev, "%s - Out of memory", __func__);
- 		return;
 
