@@ -1,114 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbZBKLoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbZBKLuy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755897AbZBKLoi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 06:44:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZBKLo3
+	id S1755999AbZBKLuy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 06:50:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbZBKLuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 06:44:29 -0500
-Received: from mailrelay005.isp.belgacom.be ([195.238.6.171]:46568 "EHLO
-	mailrelay005.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750958AbZBKLo3 (ORCPT
+	Wed, 11 Feb 2009 06:50:44 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48822 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750958AbZBKLun (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 06:44:29 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApkFACtHkknCTsYx/2dsb2JhbACBbtFQhBoG
-From: Laurent Pinchart <laurent.pinchart@skynet.be>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: Re: [build bug] uvc_status_cleanup(): undefined reference to `input_unregister_device'
-Date: Wed, 11 Feb 2009 12:47:39 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.28; KDE/4.2.0; x86_64; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <20090208145835.GA1649@elte.hu> <200902100144.22532.laurent.pinchart@skynet.be> <20090211062933.3c9cd5a5@pedra.chehab.org>
-In-Reply-To: <20090211062933.3c9cd5a5@pedra.chehab.org>
+	Wed, 11 Feb 2009 06:50:43 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: MinChan Kim <minchan.kim@gmail.com>
+Subject: Re: [PATCH] shrink_all_memory() use sc.nr_reclaimed
+Cc: kosaki.motohiro@jp.fujitsu.com, Johannes Weiner <hannes@cmpxchg.org>,
+       Rik van Riel <riel@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       William Lee Irwin III <wli@movementarian.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20090211003715.GB6422@barrios-desktop>
+References: <2f11576a0902101241j5a006e09w46ecdbdb9c77e081@mail.gmail.com> <20090211003715.GB6422@barrios-desktop>
+Message-Id: <20090211204453.C3C3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902111247.39922.laurent.pinchart@skynet.be>
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Wed, 11 Feb 2009 20:50:37 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mauro,
+> On Wed, Feb 11, 2009 at 05:41:21AM +0900, KOSAKI Motohiro wrote:
+> > >>  {
+> > >>       struct zone *zone;
+> > >> -     unsigned long nr_to_scan, ret = 0;
+> > >> +     unsigned long nr_to_scan;
+> > >>       enum lru_list l;
+> > >
+> > > Basing it on swsusp-clean-up-shrink_all_zones.patch probably makes it
+> > > easier for Andrew to pick it up.
+> > 
+> > ok, thanks.
+> > 
+> > >>                       reclaim_state.reclaimed_slab = 0;
+> > >> -                     shrink_slab(nr_pages, sc.gfp_mask, global_lru_pages());
+> > >> -                     ret += reclaim_state.reclaimed_slab;
+> > >> -             } while (ret < nr_pages && reclaim_state.reclaimed_slab > 0);
+> > >> +                     shrink_slab(nr_pages, sc.gfp_mask,
+> > >> +                                 global_lru_pages());
+> > >> +                     sc.nr_reclaimed += reclaim_state.reclaimed_slab;
+> > >> +             } while (sc.nr_reclaimed < nr_pages &&
+> > >> +                      reclaim_state.reclaimed_slab > 0);
+> > >
+> > > :(
+> > >
+> > > Is this really an improvement?  `ret' is better to read than
+> > > `sc.nr_reclaimed'.
+> > 
+> > I know it's debetable thing.
+> > but I still think code consistency is important than variable name preference.
+> 
+> How about this ?
+> 
+> I followed do_try_to_free_pages coding style.
+> It use both 'sc->nr_reclaimed' and 'ret'.
+> It can support code consistency and readability. 
+> 
+> So, I think it would be better.  
+> If you don't mind, I will resend with your sign-off.
 
-On Wednesday 11 February 2009 09:29:33 Mauro Carvalho Chehab wrote:
-> On Tue, 10 Feb 2009 01:44:22 +0100
->
-> Laurent Pinchart <laurent.pinchart@skynet.be> wrote:
-> >
-> > I'm not completely satisfied with this though, as the
-> > USB_VIDEO_CLASS_INPUT_EVDEV completely disappears from the configuration
-> > menu if INPUT is set to 'm' and USB_VIDEO_CLASS to 'y'. Being no Kconfig
-> > guru, I'd appreciate if someone could help me to find a nicer fix (if
-> > that's possible at all).
->
-> This doesn't seem to be right. You're just disabling INPUT, if CONFIG_INPUT
-> = m and USB_VIDEO_CLASS=y. You should, instead, force USB_VIDEO_CLASS to be
-> 'm' or 'n' on such case.
->
-> IMO, a better approach would be the one on the patch bellow.
->
-> Cheers,
-> Mauro
->
-> Fix input dependencies on uvc driver
->
-> As reported by Ingo:
-> -tip testing found that certain (user-reachable) Kconfig combinations
-> can cause this build failure on latest mainline:
->
->  drivers/built-in.o: In function `uvc_status_cleanup':
->   (.text+0x221cca): undefined reference to `input_unregister_device'
->   drivers/built-in.o: In function `uvc_status_init':
->   (.text+0x221d4c): undefined reference to `input_allocate_device'
->   drivers/built-in.o: In function `uvc_status_init':
->   (.text+0x221db3): undefined reference to `input_free_device'
->   drivers/built-in.o: In function `uvc_status_init':
->   (.text+0x221ec6): undefined reference to `input_register_device'
->   drivers/built-in.o: In function `uvc_status_complete':
->   uvc_status.c:(.text+0x2222ec): undefined reference to `input_event'
->
-> triggered on v2.6.29-rc3-697-gae1a25d. The problem is this combination:
->
->   CONFIG_INPUT=m
->   CONFIG_USB_VIDEO_CLASS=y
->   CONFIG_USB_VIDEO_CLASS_INPUT_EVDEV=y
->
-> Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
->
-> diff --git a/drivers/media/video/uvc/Kconfig
-> b/drivers/media/video/uvc/Kconfig index c2d9760..fab4733 100644
-> --- a/drivers/media/video/uvc/Kconfig
-> +++ b/drivers/media/video/uvc/Kconfig
-> @@ -1,5 +1,6 @@
->  config USB_VIDEO_CLASS
->  	tristate "USB Video Class (UVC)"
-> +	depends on !USB_VIDEO_CLASS_INPUT_EVDEV || INPUT
->  	---help---
->  	  Support for the USB Video Class (UVC).  Currently only video
->  	  input devices, such as webcams, are supported.
-> @@ -9,7 +10,7 @@ config USB_VIDEO_CLASS
->  config USB_VIDEO_CLASS_INPUT_EVDEV
->  	bool "UVC input events device support"
->  	default y
-> -	depends on USB_VIDEO_CLASS && INPUT
-> +	depends on INPUT
->  	---help---
->  	  This option makes USB Video Class devices register an input device
->  	  to report button events.
+looks good. thanks.
 
-That's even worse. The following configurations would then be valid
 
-INPUT = m/y
-USB_VIDEO_CLASS = n
-USB_VIDEO_CLASS_INPUT_EVDEV = m/y
+> -static unsigned long shrink_all_zones(unsigned long nr_pages, int prio,
+> +static void shrink_all_zones(unsigned long nr_pages, int prio,
+>  				      int pass, struct scan_control *sc)
+>  {
+>  	struct zone *zone;
+>  	unsigned long nr_to_scan, ret = 0;
+> +	unsigned long nr_reclaimed = sc->nr_reclaimed;
+>  	enum lru_list l;
 
-USB_VIDEO_CLASS_INPUT_EVDEV must depend on USB_VIDEO_CLASS to be displayed as 
-a child of USB_VIDEO_CLASS in the configuration menu.
+and, please changelog change.
+this patch have behavior change.
 
-Regards,
+old bale-out checking didn't checked properly.
+it's because shrink_all_memory() has five pass. but shrink_all_zones()
+initialize ret = 0 every time.
 
-Laurent Pinchart
+then, at pass 1-4, if(ret >= nr_pages) don't judge reclaimed enough page or not.
+
+
+
 
