@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759011AbZBKApz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760013AbZBKAqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759011AbZBKApz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:45:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757883AbZBKA2x
+	id S1760013AbZBKAqZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:46:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756466AbZBKA2y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:28:53 -0500
-Received: from kroah.org ([198.145.64.141]:51612 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 19:28:54 -0500
+Received: from kroah.org ([198.145.64.141]:51624 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757884AbZBKA2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:51 -0500
-Date: Tue, 10 Feb 2009 16:25:55 -0800
+	id S1757892AbZBKA2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:28:52 -0500
+Date: Tue, 10 Feb 2009 16:25:57 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Zhang Rui <rui.zhang@intel.com>,
-       Len Brown <len.brown@intel.com>, Thomas Renninger <trenn@suse.de>
-Subject: [patch 49/56] ACPI: video: Fix reversed brightness behavior on
-	ThinkPad SL series
-Message-ID: <20090211002555.GX14660@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Dan Williams <dcbw@redhat.com>
+Subject: [patch 50/56] Revert USB: option: add Pantech cards
+Message-ID: <20090211002557.GY14660@kroah.com>
 References: <20090211001439.873435357@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-video-fix-reversed-brightness-behavior-on-thinkpad-sl-series.patch"
+Content-Disposition: inline; filename="revert-usb-option-add-pantech-cards.patch"
 In-Reply-To: <20090211002328.GA14660@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,69 +38,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Zhang Rui <rui.zhang@intel.com>
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-commit 935e5f290ec1eb0f1c15004421f5fd3154380fd5 upstream.
+commit 6b40c0057a7935bcf63a38a924094c7e61d4731f upstream.
 
-Section B.6.2 of ACPI 3.0b specification that defines _BCL method
-doesn't require the brightness levels returned to be sorted.
-At least ThinkPad SL300 (and probably all IdeaPads) returns the
-array reversed (i.e. bightest levels have lowest indexes), which
-causes the brightness management behave in completely reversed
-manner on these machines (brightness increases when the laptop is
-idle, while the display dims when used).
+Revert 8b6346ec899713a90890c9e832f7eff91ea73504 as these devices really
+work just fine with the cdc-acm driver, as they follow the spec
+properly.
 
-Sorting the array by brightness level values after reading the list
-fixes the issue.
+Thanks to Chuck Ebbert for pointing out the problem here.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12037
-
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-Tested-by: Lubomir Rintel <lkundrak@v3.sk>
-Signed-off-by: Len Brown <len.brown@intel.com>
-Signed-off-by: Thomas Renninger <trenn@suse.de>
+Cc: Chuck Ebbert <cebbert@redhat.com>
+Cc: Dan Williams <dcbw@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/video.c |   15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ drivers/usb/serial/option.c |    9 ---------
+ 1 file changed, 9 deletions(-)
 
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -36,6 +36,7 @@
- #include <linux/backlight.h>
- #include <linux/thermal.h>
- #include <linux/video_output.h>
-+#include <linux/sort.h>
- #include <asm/uaccess.h>
+--- a/drivers/usb/serial/option.c
++++ b/drivers/usb/serial/option.c
+@@ -267,12 +267,6 @@ static int  option_send_setup(struct tty
+ #define ERICSSON_VENDOR_ID			0x0bdb
+ #define ERICSSON_PRODUCT_F3507G			0x1900
  
- #include <acpi/acpi_bus.h>
-@@ -632,6 +633,16 @@ acpi_video_bus_DOS(struct acpi_video_bus
- }
- 
- /*
-+ * Simple comparison function used to sort backlight levels.
-+ */
-+
-+static int
-+acpi_video_cmp_level(const void *a, const void *b)
-+{
-+	return *(int *)a - *(int *)b;
-+}
-+
-+/*
-  *  Arg:	
-  *  	device	: video output device (LCD, CRT, ..)
-  *
-@@ -682,6 +693,10 @@ acpi_video_init_brightness(struct acpi_v
- 		count++;
- 	}
- 
-+	/* don't sort the first two brightness levels */
-+	sort(&br->levels[2], count - 2, sizeof(br->levels[2]),
-+		acpi_video_cmp_level, NULL);
-+
- 	if (count < 2)
- 		goto out_free_levels;
- 
+-/* Pantech products */
+-#define PANTECH_VENDOR_ID			0x106c
+-#define PANTECH_PRODUCT_PC5740			0x3701
+-#define PANTECH_PRODUCT_PC5750			0x3702  /* PX-500 */
+-#define PANTECH_PRODUCT_UM150			0x3711
+-
+ static struct usb_device_id option_ids[] = {
+ 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_COLT) },
+ 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_RICOLA) },
+@@ -476,9 +470,6 @@ static struct usb_device_id option_ids[]
+ 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_MF628) },
+ 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_CDMA_TECH) },
+ 	{ USB_DEVICE(ERICSSON_VENDOR_ID, ERICSSON_PRODUCT_F3507G) },
+-	{ USB_DEVICE(PANTECH_VENDOR_ID, PANTECH_PRODUCT_PC5740) },
+-	{ USB_DEVICE(PANTECH_VENDOR_ID, PANTECH_PRODUCT_PC5750) },
+-	{ USB_DEVICE(PANTECH_VENDOR_ID, PANTECH_PRODUCT_UM150) },
+ 	{ } /* Terminating entry */
+ };
+ MODULE_DEVICE_TABLE(usb, option_ids);
 
