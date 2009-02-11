@@ -1,82 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbZBKGDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577AbZBKGKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754512AbZBKGDn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 01:03:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751009AbZBKGDe
+	id S1754577AbZBKGKM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 01:10:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbZBKGJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 01:03:34 -0500
-Received: from mx1.suse.de ([195.135.220.2]:54158 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750967AbZBKGDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 01:03:34 -0500
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] check bh->b_blocknr only if BH_Mapped is set
-Date: Wed, 11 Feb 2009 11:31:00 +0530
-User-Agent: KMail/1.10.3 (Linux/2.6.27.7-9-default; KDE/4.1.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, stack.box@gmail.com
-References: <200902091748.12545.knikanth@suse.de> <20090210124640.81d25a27.akpm@linux-foundation.org>
-In-Reply-To: <20090210124640.81d25a27.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 11 Feb 2009 01:09:59 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:49758 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751207AbZBKGJ7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 01:09:59 -0500
+Subject: 2.6.24.7-rt27 and 2.6.26.8-rt16
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <srostedt@redhat.com>
+Content-Type: text/plain
+Date: Wed, 11 Feb 2009 01:09:55 -0500
+Message-Id: <1234332595.13863.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902111131.00539.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 February 2009 02:16:40 Andrew Morton wrote:
-> On Mon, 9 Feb 2009 17:48:11 +0530
->
-> Nikanth Karthikesan <knikanth@suse.de> wrote:
-> > check bh->b_blocknr only if BH_Mapped is set
->
-> Why?
->
+We are pleased to announce the 2.6.24.7-rt27 and 2.6.26.8-rt16 trees,
+which can be downloaded from the location:
 
-b_blocknr will have a valid blocknr only when BH_Mapped is set.
+  http://rt.et.redhat.com/download/
 
-> > diff --git a/fs/buffer.c b/fs/buffer.c
-> > index 665d446..782c365 100644
-> > --- a/fs/buffer.c
-> > +++ b/fs/buffer.c
-> > @@ -344,13 +344,13 @@ __find_get_block_slow(struct block_device *bdev,
-> > sector_t block)
-> >  	head = page_buffers(page);
-> >  	bh = head;
-> >  	do {
-> > -		if (bh->b_blocknr == block) {
-> > +		if (!buffer_mapped(bh))
-> > +			all_mapped = 0;
-> > +		else if (bh->b_blocknr == block) {
-> >  			ret = bh;
-> >  			get_bh(bh);
-> >  			goto out_unlock;
-> >  		}
-> > -		if (!buffer_mapped(bh))
-> > -			all_mapped = 0;
-> >  		bh = bh->b_this_page;
-> >  	} while (bh != head);
->
-> Does this fix some user-visible misbehaviour?  If so, what was that
-> behaviour?
->
+Information on the RT patch can be found at:
 
-No. I was looking at the "Bug 12593 - __find_get_block_slow while using 
-parted." Even though this may not be the cause of that bug, I think this could 
-be a potential problem elsewhere.
+  http://rt.wiki.kernel.org/index.php/Main_Page
 
-> Please write good changelogs.  This is not some pointless book-keeping
-> exercise.  People will make decisions about which kernel versions
-> patches should be merged into, and they will want to know if a
-> particular patch addresses a particular problem which they are
-> experiencing.  For this, they need information.
->
+Changes since 2.6.24.7-rt26
 
-Sorry for the bad changelog. Thanks for pointing it out.
+Carsten Emde (1):
+      ftrace: display real preempt_count in ftracer
 
-Thanks
-Nikanth
+Thomas Gleixner (4):
+      hrtimer: prevent negative expiry value after clock_was_set()
+      x86: remove redundant local_irq_enable() in handle_signal()
+      trace: warn if irqs already enabled in irqs_off latency check
+      sched: fix the cpuprio count really
+
+
+Changes since 2.6.26.8-rt15
+
+Steven Rostedt (1):
+      Reverted sched-properly-account-irq-and-rt-load.patch
+
+Thomas Gleixner (1):
+      sched: fix the cpuprio count really
+
+
+to build a 2.6.24.7-rt27 tree, the following patches should be applied:
+
+  http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.24.tar.bz2
+  http://kernel.org/pub/linux/kernel/v2.6/patch-2.6.24.7.bz2
+  http://rt.et.redhat.com/download/patch-2.6.24.7-rt27.bz2
+
+
+to build a 2.6.26.8-rt16 tree, the following patches should be applied:
+
+  http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.26.tar.bz2
+  http://kernel.org/pub/linux/kernel/v2.6/patch-2.6.26.8.bz2
+  http://rt.et.redhat.com/download/patch-2.6.26.8-rt16.bz2
+
+
+And like always, my RT version of Matt Mackall's ketchup will get this
+for you nicely:
+
+  http://people.redhat.com/srostedt/rt/tools/ketchup-0.9.8-rt3
+
+
+The broken out patches are also available.
+
+The git tree is almost finished. It has most of the patches of the rt
+tree in already.
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-rt.git
+
+-- Steve
+
+
+
