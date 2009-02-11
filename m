@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756943AbZBKQXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757244AbZBKQZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756943AbZBKQXh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 11:23:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbZBKQX1
+	id S1757244AbZBKQZx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 11:25:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756003AbZBKQZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 11:23:27 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44971 "EHLO mx2.mail.elte.hu"
+	Wed, 11 Feb 2009 11:25:44 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33462 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754158AbZBKQX0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 11:23:26 -0500
-Date: Wed, 11 Feb 2009 17:22:48 +0100
+	id S1754592AbZBKQZo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 11:25:44 -0500
+Date: Wed, 11 Feb 2009 17:25:30 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
-       mm-commits@vger.kernel.org, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Pavel Machek <pavel@suse.cz>
-Subject: Re: ACPI: S4 disappeared [mmotm 2009-02-10-16-35]
-Message-ID: <20090211162247.GA32301@elte.hu>
-References: <200902110036.n1B0aBZs013975@imap1.linux-foundation.org> <499291A3.9070501@gmail.com> <4992A59F.5090502@gmail.com> <200902111643.10191.rjw@sisk.pl>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 0/8] git pull request for tip/tracing/core
+Message-ID: <20090211162530.GB32301@elte.hu>
+References: <20090208054955.777429253@goodmis.org> <20090209093751.GD7930@elte.hu> <20090211153650.GA19576@elte.hu> <alpine.DEB.1.10.0902111045390.14873@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902111643.10191.rjw@sisk.pl>
+In-Reply-To: <alpine.DEB.1.10.0902111045390.14873@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,79 +37,35 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> On Wednesday 11 February 2009, Jiri Slaby wrote:
-> > On 02/11/2009 09:51 AM, Jiri Slaby wrote:
-> > > On 02/11/2009 01:36 AM, akpm@linux-foundation.org wrote:
-> > >> The mm-of-the-moment snapshot 2009-02-10-16-35 has been uploaded
-> > > 
-> > > Hi,
-> > > 
-> > > I've found out, that S4 disappeared in this release, in comparison to mmotm
-> > > based on 2.6.29-rc2:
-> > > -ACPI: (supports S0 S1 S3 S4 S5)
-> > > +ACPI: (supports S0 S1 S3 S5)
-> > > 
-> > > Any ideas what could have caused this?
+> 
+> On Wed, 11 Feb 2009, Ingo Molnar wrote:
+> 
 > > 
-> > I think this one
-> > ARCH_HIBERNATION_POSSIBLE=n
-> > because
-> > SMP=y
-> > since
-> >  config ARCH_HIBERNATION_POSSIBLE
-> >         def_bool y
-> > -       depends on !SMP || !X86_VOYAGER
-> > +       depends on !SMP
+> > > > Steven Rostedt (7):
+> > > >       ring-buffer: add NMI protection for spinlocks
+> > > >       nmi: add generic nmi tracking state
 > > 
-> > The condition was wrong, ok, anyway it worked. Would
-> > depends on !SMP || EXPERIMENTAL
-> > make sense? The smp is handled in disable_nonboot_cpus manner, right?
+> > hm, this commit breaks a number of non-x86 architectures the following way:
+> > 
+> > In file included from /home/mingo/tip/include/linux/interrupt.h:12,
+> >                  from /home/mingo/tip/arch/ia64/include/asm/mca.h:16,
+> >                  from /home/mingo/tip/arch/ia64/kernel/asm-offsets.c:17:
+> > /home/mingo/tip/include/linux/hardirq.h:67:2: #error PREEMPT_ACTIVE too high!
+> > make[2]: *** [arch/ia64/kernel/asm-offsets.s] Error 1
+> > 
+> > Alpha and ARM are broken too. (and possibly others)
 > 
-> Ah, someone removed X86_VOYAGER and left this gem.  I guess that went in
-> through -tip (Ingo CCed).
+> I'm glad we had that check.
 > 
-> After removing X86_VOYAGER, ARCH_HIBERNATION_POSSIBLE should always be set
-> on x86.  Just make it
-> 
-> config ARCH_HIBERNATION_POSSIBLE
->          def_bool y
+> OK, revert it and I'll take a look to see what other options we have.
 
-heh, indeed :-) Fixed via the commit below.
+Reverting it is neither simple nor desired: 1) it's now embedded in other
+tracing commits 2) my test-boxes stopped doing those rare lockups with the
+NMI fix in place ...
 
-Thanks,
+Any better approach to fix those platforms? I reported this ftrace NMI problem 
+to you about a year ago ...
 
 	Ingo
-
----------------->
->From 17993b49b1f540aace8e9b4242530d0b3376eb2a Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed, 11 Feb 2009 17:20:51 +0100
-Subject: [PATCH] x86: make hibernation always-possible
-
-This commit:
-
-  aced3ce: x86/Voyager: remove HIBERNATION Kconfig quirk
-
-Made hibernation only available on UP - instead of making it available
-on all of x86. Fix it.
-
-Reported-by: Jiri Slaby <jirislaby@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/Kconfig |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 4a27aa4..148c112 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -140,7 +140,6 @@ config HAVE_CPUMASK_OF_CPU_MAP
- 
- config ARCH_HIBERNATION_POSSIBLE
- 	def_bool y
--	depends on !SMP
- 
- config ARCH_SUSPEND_POSSIBLE
- 	def_bool y
