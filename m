@@ -1,69 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756388AbZBKQtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757789AbZBKQuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756388AbZBKQtZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 11:49:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757357AbZBKQtJ
+	id S1757789AbZBKQuP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 11:50:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756336AbZBKQt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 11:49:09 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:42940 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757271AbZBKQtH (ORCPT
+	Wed, 11 Feb 2009 11:49:57 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:55526 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756328AbZBKQtz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 11:49:07 -0500
-Date: Wed, 11 Feb 2009 11:49:04 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/8] git pull request for tip/tracing/core
-In-Reply-To: <20090211153650.GA19576@elte.hu>
-Message-ID: <alpine.DEB.1.10.0902111147450.15438@gandalf.stny.rr.com>
-References: <20090208054955.777429253@goodmis.org> <20090209093751.GD7930@elte.hu> <20090211153650.GA19576@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 11 Feb 2009 11:49:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=Rtk5Q9LLDYVlZJR6WrA9wdQ3IphV18uHSaXIWFmD3x1msjhpQUbIeSC/vzU91HriUg
+         VAuK8zOsQRCP39CvzZI8nhnYpx7wAInHhXoZYSf+xV/SzyHoK1U7qyfGXGnts8ILi4qj
+         iG9SAcaUQrKaUA/fwfR70kXxa2e3ZESD8bSLM=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: petkovbb@gmail.com
+Subject: Re: [PATCH 1/6] ide: pass command to ide_map_sg()
+Date: Wed, 11 Feb 2009 17:28:27 +0100
+User-Agent: KMail/1.10.4 (Linux/2.6.29-rc4-next-20090210; KDE/4.1.4; i686; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20090209231945.32406.14874.sendpatchset@localhost.localdomain> <20090209231952.32406.58013.sendpatchset@localhost.localdomain> <20090211063623.GB937@gollum.tnic>
+In-Reply-To: <20090211063623.GB937@gollum.tnic>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902111728.28070.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 11 February 2009, Borislav Petkov wrote:
+> On Tue, Feb 10, 2009 at 12:19:52AM +0100, Bartlomiej Zolnierkiewicz wrote:
+> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > Subject: [PATCH] ide: pass command to ide_map_sg()
+> > 
+> > * Set IDE_TFLAG_WRITE flag and ->rq also for ATA_CMD_PACKET
+> >   commands.
+> > 
+> > * Pass command to ->dma_setup method and update all its
+> >   implementations accordingly.
+> > 
+> > * Pass command instead of request to ide_build_sglist(),
+> >   *_build_dmatable() and ide_map_sg().
+> > 
+> > While at it:
+> > 
+> > * Fix scc_dma_setup() documentation + use ATA_DMA_WR define.
+> > 
+> > * Rename sgiioc4_build_dma_table() to sgiioc4_build_dmatable(),
+> >   change return value type to 'int' and drop unused 'ddir'
+> >   argument.
+> > 
+> > * Do some minor cleanups in [tx4939]ide_dma_setup().
+> > 
+> > There should be no functional changes caused by this patch.
+> > 
+> > Cc: Borislav Petkov <petkovbb@gmail.com>
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-On Wed, 11 Feb 2009, Ingo Molnar wrote:
+[...]
 
+[ please cut needless parts when replying, thanks ]
+
+> > Index: b/drivers/ide/ide-floppy.c
+> > ===================================================================
+> > --- a/drivers/ide/ide-floppy.c
+> > +++ b/drivers/ide/ide-floppy.c
+> > @@ -285,8 +285,12 @@ static ide_startstop_t ide_floppy_do_req
+> >  		goto out_end;
+> >  	}
+> >  
+> > +	if (rq_data_dir(rq))
+> > +		cmd->tf_flags |= IDE_TFLAG_WRITE;
+> > +	cmd->rq = rq;
+> > +
+> >  	ide_init_sg_cmd(cmd, rq->nr_sectors);
+> > -	ide_map_sg(drive, rq);
+> > +	ide_map_sg(drive, cmd);
 > 
-> > > Steven Rostedt (7):
-> > >       ring-buffer: add NMI protection for spinlocks
-> > >       nmi: add generic nmi tracking state
-> 
-> hm, this commit breaks a number of non-x86 architectures the following way:
-> 
-> In file included from /home/mingo/tip/include/linux/interrupt.h:12,
->                  from /home/mingo/tip/arch/ia64/include/asm/mca.h:16,
->                  from /home/mingo/tip/arch/ia64/kernel/asm-offsets.c:17:
-> /home/mingo/tip/include/linux/hardirq.h:67:2: #error PREEMPT_ACTIVE too high!
-> make[2]: *** [arch/ia64/kernel/asm-offsets.s] Error 1
-> 
-> Alpha and ARM are broken too. (and possibly others)
+> How about we push those mappings in ide_issue_pc() in the else-branch
+> after we've tried setting up dma and we've failed? This way we don't
+> have to do that in the ->do_request of every device and do it for all at
 
-Looking at this, it doesn't seem like it should be a problem. Perhaps the 
-CPP is treating the number as signed. Does this patch fix the compile?
+Sounds OK to me.
 
--- Steve
+> one place instead. Only ide-cd will have to have ->ide_io_buffers for
+> PIO transfers (which I was working on before bugs :))
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+BTW I have now a draft patch making ide-cd use ide_pio_bytes() for fs
+requests (I still need to do it for non-fs requests, polish, document
+and do more testing).  The hard parts (== more like mind melting ones)
+were in untagling cdrom_end_request() uses and getting rid of partial
+completions without making the whole transfer fail on errors...
 
-diff --git a/include/linux/hardirq.h b/include/linux/hardirq.h
-index f3cf86e..9bd4302 100644
---- a/include/linux/hardirq.h
-+++ b/include/linux/hardirq.h
-@@ -63,7 +63,7 @@
- 
- #define NMI_OFFSET	(PREEMPT_ACTIVE << 1)
- 
--#if NMI_OFFSET >= 0x80000000
-+#if NMI_OFFSET >= 0x80000000UL
- #error PREEMPT_ACTIVE too high!
- #endif
- 
+Thanks,
+Bart
