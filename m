@@ -1,157 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757024AbZBKMf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757333AbZBKMfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757024AbZBKMf1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 07:35:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbZBKMfM
+	id S1757333AbZBKMfn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 07:35:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756217AbZBKMfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 07:35:12 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37167 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753467AbZBKMfK (ORCPT
+	Wed, 11 Feb 2009 07:35:18 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:41004 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755805AbZBKMfQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 07:35:10 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Hugh Dickins <hugh@veritas.com>,
-       Rik van Riel <riel@redhat.com>
-Subject: [PATCH 2/2] mm: update_page_reclaim_stat() is called form page fault path
-Cc: kosaki.motohiro@jp.fujitsu.com
-In-Reply-To: <20090211213201.C3CA.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20090211213201.C3CA.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Message-Id: <20090211213340.C3CD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 11 Feb 2009 07:35:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=c7I1xr0hfEggYE0UqOGlMP77b/IWENSHH8kXuJD5aPCznEzc4OEYc0Lh2d9JwwFDkm
+         HF5qDDtlLPC6Nccn9AryWCSe4/tM7L6RI+tXl+7Jh9Fg/lLRu1tdFFg5M5UDIBy8cnFH
+         Jd1XuCe4/0r7wa2lUqGpk07N6mvD/gS/P1bh8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+In-Reply-To: <46e1c7760902101350r5a04d076j49cc611a843e6429@mail.gmail.com>
+References: <46e1c7760901230433i3045f273oa109ce97e790bca3@mail.gmail.com>
+	 <Pine.LNX.4.64.0901240951110.13803@anakin>
+	 <46e1c7760901240109m5a0f3a85p788aa3ce35b49fa9@mail.gmail.com>
+	 <Pine.LNX.4.64.0901241425310.13803@anakin>
+	 <46e1c7760901240649v1e45bbb1v8c9997f236a3ec4c@mail.gmail.com>
+	 <46e1c7760902101337qe239336n9ef2652a47f89aed@mail.gmail.com>
+	 <46e1c7760902101350r5a04d076j49cc611a843e6429@mail.gmail.com>
+Date: Wed, 11 Feb 2009 14:35:14 +0200
+Message-ID: <46e1c7760902110435i2be8b7cex310de05e4fa3dcd2@mail.gmail.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH] fb: hide cursor in graphics mode
+From: Risto Suominen <risto.suominen@gmail.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net,
+       lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Wed, 11 Feb 2009 21:35:07 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I can now confirm that the problem exists in 2.6.24, and the same
+patch corrects it.
 
-Unfortunately, following two patch have a bit conflicted concept.
-  1. commit 9ff473b9a72942c5ac0ad35607cae28d8d59ed7a 
-     (vmscan: evict streaming IO first)
-  2. commit bf3f3bc5e734706730c12a323f9b2068052aa1f0
-     (mm: don't mark_page_accessed in fault path)
-
-(1) require page fault update reclaim stat via mark_page_accessed(), but
-(2) removed mark_page_accessed() perfectly. 
-
-However, (1) actually only need to update reclaim stat, but not activate page.
-Then, fault-path calling update_page_reclaim_stat() solve thsi confliction.
-
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Nick Piggin <npiggin@suse.de>
-Cc: Hugh Dickins <hugh@veritas.com>
-Cc: Rik van Riel <riel@redhat.com>
----
- include/linux/swap.h |    1 +
- mm/filemap.c         |    1 +
- mm/memory.c          |    2 ++
- mm/swap.c            |   24 +++++++++++++++++++-----
- 4 files changed, 23 insertions(+), 5 deletions(-)
-
-Index: b/include/linux/swap.h
-===================================================================
---- a/include/linux/swap.h
-+++ b/include/linux/swap.h
-@@ -179,6 +179,7 @@ extern void __lru_cache_add(struct page 
- extern void lru_cache_add_lru(struct page *, enum lru_list lru);
- extern void activate_page(struct page *);
- extern void mark_page_accessed(struct page *);
-+extern void update_page_reclaim_stat(struct page *page);
- extern void lru_add_drain(void);
- extern int lru_add_drain_all(void);
- extern void rotate_reclaimable_page(struct page *page);
-Index: b/mm/filemap.c
-===================================================================
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -1545,6 +1545,7 @@ retry_find:
- 	/*
- 	 * Found the page and have a reference on it.
- 	 */
-+	update_page_reclaim_stat(page);
- 	ra->prev_pos = (loff_t)page->index << PAGE_CACHE_SHIFT;
- 	vmf->page = page;
- 	return ret | VM_FAULT_LOCKED;
-Index: b/mm/memory.c
-===================================================================
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2492,6 +2492,8 @@ static int do_swap_page(struct mm_struct
- 		try_to_free_swap(page);
- 	unlock_page(page);
- 
-+	update_page_reclaim_stat(page);
-+
- 	if (write_access) {
- 		ret |= do_wp_page(mm, vma, address, page_table, pmd, ptl, pte);
- 		if (ret & VM_FAULT_ERROR)
-Index: b/mm/swap.c
-===================================================================
---- a/mm/swap.c
-+++ b/mm/swap.c
-@@ -151,8 +151,9 @@ void  rotate_reclaimable_page(struct pag
- 	}
- }
- 
--static void update_page_reclaim_stat(struct zone *zone, struct page *page,
--				     int file, int rotated)
-+static void update_page_reclaim_stat_locked(struct zone *zone,
-+					    struct page *page,
-+					    int file, int rotated)
- {
- 	struct zone_reclaim_stat *reclaim_stat = &zone->reclaim_stat;
- 	struct zone_reclaim_stat *memcg_reclaim_stat;
-@@ -171,6 +172,19 @@ static void update_page_reclaim_stat(str
- 		memcg_reclaim_stat->recent_rotated[file]++;
- }
- 
-+void update_page_reclaim_stat(struct page *page)
-+{
-+	struct zone *zone = page_zone(page);
-+
-+	spin_lock_irq(&zone->lru_lock);
-+	/* if the page isn't reclaimable, it doesn't update reclaim stat */
-+	if (PageLRU(page) && !PageUnevictable(page)) {
-+		update_page_reclaim_stat_locked(zone, page,
-+					 !!page_is_file_cache(page), 1);
-+	}
-+	spin_unlock_irq(&zone->lru_lock);
-+}
-+
- /*
-  * FIXME: speed this up?
-  */
-@@ -182,14 +196,14 @@ void activate_page(struct page *page)
- 	if (PageLRU(page) && !PageActive(page) && !PageUnevictable(page)) {
- 		int file = page_is_file_cache(page);
- 		int lru = LRU_BASE + file;
--		del_page_from_lru_list(zone, page, lru);
- 
-+		del_page_from_lru_list(zone, page, lru);
- 		SetPageActive(page);
- 		lru += LRU_ACTIVE;
- 		add_page_to_lru_list(zone, page, lru);
- 		__count_vm_event(PGACTIVATE);
- 
--		update_page_reclaim_stat(zone, page, !!file, 1);
-+		update_page_reclaim_stat_locked(zone, page, !!file, 1);
- 	}
- 	spin_unlock_irq(&zone->lru_lock);
- }
-@@ -427,7 +441,7 @@ void ____pagevec_lru_add(struct pagevec 
- 		file = is_file_lru(lru);
- 		if (active)
- 			SetPageActive(page);
--		update_page_reclaim_stat(zone, page, file, active);
-+		update_page_reclaim_stat_locked(zone, page, file, active);
- 		add_page_to_lru_list(zone, page, lru);
- 	}
- 	if (zone)
-
-
+Risto
