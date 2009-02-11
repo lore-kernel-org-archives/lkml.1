@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758186AbZBKWux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbZBKWxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758186AbZBKWux (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 17:50:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbZBKWul
+	id S1757357AbZBKWxT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 17:53:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755536AbZBKWxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 17:50:41 -0500
-Received: from smtp-in.kfki.hu ([148.6.0.28]:32782 "EHLO smtp2.kfki.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754664AbZBKWuk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 17:50:40 -0500
-Date: Wed, 11 Feb 2009 23:50:38 +0100 (CET)
-From: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
-To: =?ISO-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
-cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] Update jhash.h with the new version of Jenkins' hash
-In-Reply-To: <20090211201908.GA25398@rere.qmqm.pl>
-Message-ID: <alpine.DEB.2.00.0902112334570.17583@blackhole.kfki.hu>
-References: <alpine.DEB.2.00.0902111107480.15665@blackhole.kfki.hu> <20090211201908.GA25398@rere.qmqm.pl>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 11 Feb 2009 17:53:10 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:43223 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755237AbZBKWxJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 17:53:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=Je8DDcUWeoqtJ7oT68kxbdh2AiCwaP/7Y3S3E/M7LhB25JOUAQ01MUq+iQjfzhSjOZ
+         jFkX8kEdkHvWzNilS+xpnA6DgsQ4rtFzkyTVzs1tHIsC2GNIxrxozGy7v6qmKAYP+/Ir
+         HOMCwq2YvChzelWX26P281JDV0Stpo/nkJmuc=
+Message-ID: <499356CF.2060706@gmail.com>
+Date: Wed, 11 Feb 2009 23:53:03 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Brian Gerst <brgerst@gmail.com>, Tejun Heo <tj@kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] x86: Use linker to offset symbols by __per_cpu_load
+References: <1234105120-19731-1-git-send-email-brgerst@gmail.com> <1234105120-19731-2-git-send-email-brgerst@gmail.com> <20090209092951.GB7930@elte.hu>
+In-Reply-To: <20090209092951.GB7930@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Feb 2009, Micha? Miros?aw wrote:
-
-> On Wed, Feb 11, 2009 at 11:19:20AM +0100, Jozsef Kadlecsik wrote:
-> >  /* The golden ration: an arbitrary value */
-> > -#define JHASH_GOLDEN_RATIO	0x9e3779b9
-> > +#define JHASH_GOLDEN_RATIO	0xdeadbeef
+On 02/09/2009 10:29 AM, Ingo Molnar wrote:
+> * Brian Gerst <brgerst@gmail.com> wrote:
 > 
-> I have a stupid question: if this is arbitrary value, then why not
-> just get rid of it (IOW use zero as it's used in addition)?
+>> Impact: cleanup and bug fix
+>>
+>> Use the linker to create symbols for certain per-cpu variables
+>> that are offset by __per_cpu_load.  This allows the removal of
+>> the runtime fixup of the GDT pointer, which fixes a bug with
+>> resume reported by Jiri Slaby.
+>>
+>> Signed-off-by: Brian Gerst <brgerst@gmail.com>
+>> Cc: Jiri Slaby <jirislaby@gmail.com>
+>> ---
+>>  arch/x86/include/asm/percpu.h    |   22 ++++++++++++++++++++++
+>>  arch/x86/include/asm/processor.h |    2 ++
+>>  arch/x86/kernel/cpu/common.c     |    6 +-----
+>>  arch/x86/kernel/head_64.S        |   21 ++-------------------
+>>  arch/x86/kernel/vmlinux_64.lds.S |    8 ++++++++
+>>  5 files changed, 35 insertions(+), 24 deletions(-)
+> 
+> applied to tip/core/percpu, thanks!
+> 
+> Also added these tags:
+> 
+> Reported-by: Jiri Slaby <jirislaby@gmail.com>
+> Acked-by: Jiri Slaby <jirislaby@gmail.com>
 
-lookup3() is a quite generic hash function and it supports 0-byte strings 
-as input keys too. If the input key is a 0-byte string and the arbitrary 
-value is zero, then the hash value simply equal to the initval. In order 
-to avoid that case, the arbitrary value must be nonzero.
-
-Best regards,
-Jozsef
--
-E-mail  : kadlec@blackhole.kfki.hu, kadlec@mail.kfki.hu
-PGP key : http://www.kfki.hu/~kadlec/pgp_public_key.txt
-Address : KFKI Research Institute for Particle and Nuclear Physics
-          H-1525 Budapest 114, POB. 49, Hungary
+Ok, fixes the problem for me, thanks.
