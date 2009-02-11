@@ -1,96 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758468AbZBKAsB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759843AbZBKAtM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758468AbZBKAsB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:48:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757929AbZBKA27
+	id S1759843AbZBKAtM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:49:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757939AbZBKAaE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:28:59 -0500
-Received: from kroah.org ([198.145.64.141]:51693 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756706AbZBKA25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:57 -0500
-Date: Tue, 10 Feb 2009 16:26:08 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Vlad Yasevich <vladislav.yasevich@hp.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 55/56] sctp: Fix another socket race during accept/peeloff
-Message-ID: <20090211002608.GD14660@kroah.com>
-References: <20090211001439.873435357@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sctp-fix-another-socket-race-during-accept-peeloff.patch"
-In-Reply-To: <20090211002328.GA14660@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 10 Feb 2009 19:30:04 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51608 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757972AbZBKAaA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:30:00 -0500
+Date: Tue, 10 Feb 2009 16:29:48 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch] vmscan: initialize sc.order in indirect shrink_list()
+ users
+Message-Id: <20090210162948.bd20d853.akpm@linux-foundation.org>
+In-Reply-To: <20090210165134.GA2457@cmpxchg.org>
+References: <20090210165134.GA2457@cmpxchg.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
-------------------
+On Tue, 10 Feb 2009 17:51:35 +0100
+Johannes Weiner <hannes@cmpxchg.org> wrote:
 
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
+> shrink_all_memory() and __zone_reclaim() currently don't initialize
+> the .order field of their scan control.
+> 
+> Both of them call into functions which use that field and make certain
+> decisions based on a random value.
+> 
+> The functions depending on the .order field are marked with a star,
+> the faulty entry points are marked with a percentage sign:
+> 
+> * shrink_page_list()
+>   * shrink_inactive_list()
+>   * shrink_active_list()
+>     shrink_list()
+>       shrink_all_zones()
+>         % shrink_all_memory()
+>       shrink_zone()
+>         % __zone_reclaim()
+> 
+> Initialize .order to zero in shrink_all_memory().  Initialize .order
+> to the order parameter in __zone_reclaim().
+> 
+> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> ---
+>  mm/vmscan.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index 4422301..9ce85ea 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -2112,6 +2112,7 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
+>  		.may_unmap = 0,
+>  		.swap_cluster_max = nr_pages,
+>  		.may_writepage = 1,
+> +		.order = 0,
+>  		.isolate_pages = isolate_pages_global,
+>  	};
+>  
+> @@ -2294,6 +2295,7 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>  					SWAP_CLUSTER_MAX),
+>  		.gfp_mask = gfp_mask,
+>  		.swappiness = vm_swappiness,
+> +		.order = order,
+>  		.isolate_pages = isolate_pages_global,
+>  	};
+>  	unsigned long slab_reclaimable;
 
-commit ae53b5bd77719fed58086c5be60ce4f22bffe1c6 upstream.
-
-There is a race between sctp_rcv() and sctp_accept() where we
-have moved the association from the listening socket to the
-accepted socket, but sctp_rcv() processing cached the old
-socket and continues to use it.
-
-The easy solution is to check for the socket mismatch once we've
-grabed the socket lock.  If we hit a mis-match, that means
-that were are currently holding the lock on the listening socket,
-but the association is refrencing a newly accepted socket.  We need
-to drop the lock on the old socket and grab the lock on the new one.
-
-A more proper solution might be to create accepted sockets when
-the new association is established, similar to TCP.  That would
-eliminate the race for 1-to-1 style sockets, but it would still
-existing for 1-to-many sockets where a user wished to peeloff an
-association.  For now, we'll live with this easy solution as
-it addresses the problem.
-
-Reported-by: Michal Hocko <mhocko@suse.cz>
-Reported-by: Karsten Keil <kkeil@suse.de>
-Signed-off-by: Vlad Yasevich <vladislav.yasevich@hp.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- net/sctp/input.c |   13 +++++++++++++
- 1 file changed, 13 insertions(+)
-
---- a/net/sctp/input.c
-+++ b/net/sctp/input.c
-@@ -249,6 +249,19 @@ int sctp_rcv(struct sk_buff *skb)
- 	 */
- 	sctp_bh_lock_sock(sk);
- 
-+	if (sk != rcvr->sk) {
-+		/* Our cached sk is different from the rcvr->sk.  This is
-+		 * because migrate()/accept() may have moved the association
-+		 * to a new socket and released all the sockets.  So now we
-+		 * are holding a lock on the old socket while the user may
-+		 * be doing something with the new socket.  Switch our veiw
-+		 * of the current sk.
-+		 */
-+		sctp_bh_unlock_sock(sk);
-+		sk = rcvr->sk;
-+		sctp_bh_lock_sock(sk);
-+	}
-+
- 	if (sock_owned_by_user(sk)) {
- 		SCTP_INC_STATS_BH(SCTP_MIB_IN_PKT_BACKLOG);
- 		sctp_add_backlog(sk, skb);
+The second hunk might fix something, but it would need a correcter
+changelog, and some thought about what its runtimes effects are likely
+to be, please.
 
