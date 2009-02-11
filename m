@@ -1,81 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756896AbZBKWjK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756711AbZBKWnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756896AbZBKWjK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 17:39:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750730AbZBKWi4
+	id S1756711AbZBKWnX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 17:43:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZBKWnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 17:38:56 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57033 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755061AbZBKWiz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 17:38:55 -0500
-Date: Wed, 11 Feb 2009 14:38:44 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
-Cc: linux-kernel@vger.kernel.org, eric.piel@tremplin-utc.net, pavel@suse.cz,
-       giuseppe.bilotta@gmail.com
-Subject: Re: [PATCHv7] lis3lv02d: support both one- and two-byte sensors
-Message-Id: <20090211143844.27ca0d6c.akpm@linux-foundation.org>
-In-Reply-To: <1234346803-19811-1-git-send-email-giuseppe.bilotta@gmail.com>
-References: <49929EB8.4020802@tremplin-utc.net>
-	<1234346803-19811-1-git-send-email-giuseppe.bilotta@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Feb 2009 17:43:15 -0500
+Received: from ns1.suse.de ([195.135.220.2]:58349 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751209AbZBKWnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 17:43:15 -0500
+Date: Wed, 11 Feb 2009 14:39:03 -0800
+From: Greg KH <gregkh@suse.de>
+To: Alex Chiang <achiang@hp.com>, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sysfs: sysfs_add_one tells you _where_ the duplicate
+	file is
+Message-ID: <20090211223903.GA21100@suse.de>
+References: <20090211202601.GC3402@ldl.fc.hp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090211202601.GC3402@ldl.fc.hp.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Feb 2009 11:06:43 +0100
-Giuseppe Bilotta <giuseppe.bilotta@gmail.com> wrote:
-
-> Sensors responding with 0x3B to WHO_AM_I only have one data register per
-> direction, thus returning a signed byte from the position which is
-> occupied by the MSB in sensors responding with 0x3A.
+On Wed, Feb 11, 2009 at 01:26:01PM -0700, Alex Chiang wrote:
+> Give a better clue about where we might be creating duplicate
+> files by displaying the parent's name as well.
 > 
-> Since multiple sensors share the reply to WHO_AM_I, we rename the
-> defines to better indicate what they identify (family of single and
-> double precision sensors).
-> 
-> We support both kind of sensors by checking for the sensor type on init
-> and defining appropriate data-access routines and sensor limits (for the
-> joystick) depending on what we find.
-> 
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> ---
+> It would be nice to get a full path, but simply printing out the
+> parent is cheap and more useful than what we have now.
 
-Which tree is this patch against?
+What happens if you don't have a parent?  will this oops if you are
+creating a duplicate device in the root of the sysfs tree?
 
-> --- a/drivers/hwmon/lis3lv02d.c
-> +++ b/drivers/hwmon/lis3lv02d.c
-> @@ -53,9 +53,6 @@
->   * joystick.
->   */
->  
-> -/* Maximum value our axis may get for the input device (signed 12 bits) */
-> -#define MDPS_MAX_VAL 2048
-> -
->  struct acpi_lis3lv02d adev = {
->  	.misc_wait   = __WAIT_QUEUE_HEAD_INITIALIZER(adev.misc_wait),
->  };
+thanks,
 
-Current Linus mainline has
-
-struct acpi_lis3lv02d adev;
-EXPORT_SYMBOL_GPL(adev);
-
-here.
-
-Also, this comment:
-
-/*
- * The sensor can also generate interrupts (DRDY) but it's pretty pointless
- * because their are generated even if the data do not change. So it's better
- * to keep the interrupt for the free-fall event. The values are updated at
- * 40Hz (at the lowest frequency), but as it can be pretty time consuming on
- * some low processor, we poll the sensor only at 20Hz... enough for the
- * joystick.
- */
-
-seems to be describing something which isn't there.
-
+greg k-h
