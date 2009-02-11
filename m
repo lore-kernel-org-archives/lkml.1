@@ -1,92 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbZBKLfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755583AbZBKLkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755533AbZBKLfU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 06:35:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbZBKLfG
+	id S1755583AbZBKLkg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 06:40:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZBKLk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 06:35:06 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:49027 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750724AbZBKLfF (ORCPT
+	Wed, 11 Feb 2009 06:40:28 -0500
+Received: from casper.infradead.org ([85.118.1.10]:34356 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752624AbZBKLk1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 06:35:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type;
-        b=YzZsPASl+VkxmPSTCMYQksQY6jbGEvvgpUPBd2OWcKEdXfF1RXvqbMGaHAJUx54jWm
-         ds3pFkK9tGdKKhyDW/yJnyvQellokdqoh+acSwZjSitG6uiN719t8tKy6TSlTwM3o+m4
-         2YHF/S1VSRNFti/Q+yaWLk/wQmAFGJeYZsgrc=
-Message-ID: <4992B7EE.8020601@gmail.com>
-Date: Wed, 11 Feb 2009 13:35:10 +0200
-From: Lior Dotan <liodot@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
-MIME-Version: 1.0
-To: gregkh@suse.de
-CC: Christopher Harrer <charrer@alacritech.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH]  SLICOSS - use gfp_kernel where possible
-Content-Type: multipart/mixed;
- boundary="------------000602030102020005000608"
+	Wed, 11 Feb 2009 06:40:27 -0500
+Subject: Re: cgroup, RT reservation per core(s)?
+From: Peter Zijlstra <peterz@infradead.org>
+To: Rolando Martins <rolando.martins@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Paul Menage <menage@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+In-Reply-To: <b6a2d2e20902110333j37cf76b4v73abc2be3631738c@mail.gmail.com>
+References: <b6a2d2e20902091130ha452a97rcfaa2972bfdbe710@mail.gmail.com>
+	 <1234209174.5951.165.camel@laptop>
+	 <b6a2d2e20902091204p2391799p160ce13971e9f779@mail.gmail.com>
+	 <1234271177.23438.24.camel@twins>
+	 <b6a2d2e20902100646q6c7073cse86b8f5790a120ac@mail.gmail.com>
+	 <1234281602.23438.96.camel@twins>
+	 <b6a2d2e20902100932i475c1ee8va99de6e433a6d89a@mail.gmail.com>
+	 <1234295613.4699.1.camel@laptop>
+	 <b6a2d2e20902110333j37cf76b4v73abc2be3631738c@mail.gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 11 Feb 2009 12:42:14 +0100
+Message-Id: <1234352534.23438.130.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000602030102020005000608
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Wed, 2009-02-11 at 11:33 +0000, Rolando Martins wrote:
 
-Use GFP_KERNEL instead of GFP_ATOMIC where possible.
+> Hi again,
+> 
+> is there any way to have multiple "distinct" sched domains, i.e.:
+> mount -t cgroup -o cpu none /dev/sched_domain_0
+> .... setup sched_domain_0 (ex:  90% RT, 10% Others)
+> mount -t cgroup -o cpu none /dev/sched_domain_1
+> .... setup sched_domain_1 (ex:  20% RT, 80% Others)
+> Then give sched_domain_0 to cpuset A and sched_domain_1 to B?
 
-Signed_off-by: Lior Dotan <liodot@gmail.com>
+Nope.
 
+We currently only support a single instance of a cgroup controller.
 
-
---------------000602030102020005000608
-Content-Type: text/plain;
- name="slicoss-gfp-kernel.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="slicoss-gfp-kernel.patch"
-
-diff -X /usr/src/linux/Documentation/dontdiff -purN a/drivers/staging/slicoss/slicoss.c b/drivers/staging/slicoss/slicoss.c
---- a/drivers/staging/slicoss/slicoss.c	2009-02-11 13:33:18.000000000 +0200
-+++ b/drivers/staging/slicoss/slicoss.c	2009-02-11 13:32:53.000000000 +0200
-@@ -1492,7 +1492,7 @@ static int slic_mcast_add_list(struct ad
- 	}
- 
- 	/* Doesn't already exist.  Allocate a structure to hold it */
--	mcaddr = kmalloc(sizeof(struct mcast_address), GFP_ATOMIC);
-+	mcaddr = kmalloc(sizeof(struct mcast_address), GFP_KERNEL);
- 	if (mcaddr == NULL)
- 		return 1;
- 
-@@ -2648,7 +2648,7 @@ static int slic_card_init(struct sliccar
- 
- #if SLIC_DUMP_ENABLED
- 	if (!card->dumpbuffer) {
--		card->dumpbuffer = kmalloc(DUMP_PAGE_SIZE, GFP_ATOMIC);
-+		card->dumpbuffer = kmalloc(DUMP_PAGE_SIZE, GFP_KERNEL);
- 
- 		ASSERT(card->dumpbuffer);
- 		if (card->dumpbuffer == NULL)
-@@ -2667,7 +2667,7 @@ static int slic_card_init(struct sliccar
- 	 *  Allocate COMMAND BUFFER
- 	 */
- 	if (!card->cmdbuffer) {
--		card->cmdbuffer = kmalloc(sizeof(struct dump_cmd), GFP_ATOMIC);
-+		card->cmdbuffer = kmalloc(sizeof(struct dump_cmd), GFP_KERNEL);
- 
- 		ASSERT(card->cmdbuffer);
- 		if (card->cmdbuffer == NULL)
-@@ -2808,7 +2808,7 @@ static u32 slic_card_locate(struct adapt
- 	}
- 	if (!physcard) {
- 		/* no structure allocated for this physical card yet */
--		physcard = kzalloc(sizeof(struct physcard), GFP_ATOMIC);
-+		physcard = kzalloc(sizeof(struct physcard), GFP_KERNEL);
- 		ASSERT(physcard);
- 
- 		DBG_MSG
-
---------------000602030102020005000608--
+I see the use for what you propose, however implementing that will be
+'interesting'.
