@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758213AbZBKAaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759657AbZBKAoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758213AbZBKAaj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:30:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756405AbZBKA2L
+	id S1759657AbZBKAoX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:44:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757879AbZBKA2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:28:11 -0500
-Received: from kroah.org ([198.145.64.141]:50989 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 19:28:50 -0500
+Received: from kroah.org ([198.145.64.141]:51557 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756172AbZBKA2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:08 -0500
-Date: Tue, 10 Feb 2009 16:24:27 -0800
+	id S1756344AbZBKA2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:28:47 -0500
+Date: Tue, 10 Feb 2009 16:25:48 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Karsten Keil <kkeil@suse.de>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 07/56] e1000: Fix PCI enable to honor the need_ioport flag
-Message-ID: <20090211002427.GH14660@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Chandra Seetharaman <sekharan@us.ibm.com>,
+       Alasdair G Kergon <agk@redhat.com>, Hannes Reinecke <hare@suse.de>
+Subject: [patch 45/56] dm mpath: avoid attempting to activate null path
+Message-ID: <20090211002548.GT14660@kroah.com>
 References: <20090211001439.873435357@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="e1000-fix-pci-enable-to-honor-the-need_ioport-flag.patch"
+Content-Disposition: inline; filename="dm-mpath-avoid-attempting-to-activate-null-path.patch"
 In-Reply-To: <20090211002328.GA14660@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,31 +39,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Karsten Keil <kkeil@suse.de>
+From: Chandra Seetharaman <sekharan@us.ibm.com>
 
-commit 4d7155b932b8129c72e2f2714890e20b2a05e0b7 upstream.
+commit b81aa1c79201cb424114fd198607951900babe18 upstream.
 
-On machine were no IO ports are assigned the call
-to pci_enable_device() will fail, even if need_ioport
-is false, we need to use pci_enable_device_mem() here.
+Path activation code is called even when the pgpath is NULL. This could
+lead to a panic in activate_path(). Such a panic is seen in -rt kernel.
 
-Signed-off-by: Karsten Keil <kkeil@suse.de>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+This problem has been there before the pg_init() was moved to a
+workqueue.
+
+Signed-off-by: Chandra Seetharaman <sekharan@us.ibm.com>
+Signed-off-by: Alasdair G Kergon <agk@redhat.com>
+Signed-off-by: Hannes Reinecke <hare@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/e1000/e1000_main.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/md/dm-mpath.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/net/e1000/e1000_main.c
-+++ b/drivers/net/e1000/e1000_main.c
-@@ -927,7 +927,7 @@ static int __devinit e1000_probe(struct 
- 		err = pci_enable_device(pdev);
- 	} else {
- 		bars = pci_select_bars(pdev, IORESOURCE_MEM);
--		err = pci_enable_device(pdev);
-+		err = pci_enable_device_mem(pdev);
- 	}
- 	if (err)
- 		return err;
+--- a/drivers/md/dm-mpath.c
++++ b/drivers/md/dm-mpath.c
+@@ -427,13 +427,13 @@ static void process_queued_ios(struct wo
+ 		__choose_pgpath(m);
+ 
+ 	pgpath = m->current_pgpath;
+-	m->pgpath_to_activate = m->current_pgpath;
+ 
+ 	if ((pgpath && !m->queue_io) ||
+ 	    (!pgpath && !m->queue_if_no_path))
+ 		must_queue = 0;
+ 
+-	if (m->pg_init_required && !m->pg_init_in_progress) {
++	if (m->pg_init_required && !m->pg_init_in_progress && pgpath) {
++		m->pgpath_to_activate = pgpath;
+ 		m->pg_init_count++;
+ 		m->pg_init_required = 0;
+ 		m->pg_init_in_progress = 1;
 
