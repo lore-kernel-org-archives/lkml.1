@@ -1,128 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756392AbZBKNZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756013AbZBKN1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756392AbZBKNZg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 08:25:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbZBKNZ2
+	id S1756013AbZBKN1f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 08:27:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbZBKN11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 08:25:28 -0500
-Received: from viefep12-int.chello.at ([62.179.121.32]:40072 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750875AbZBKNZ1 (ORCPT
+	Wed, 11 Feb 2009 08:27:27 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:44260 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750808AbZBKN10 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 08:25:27 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [PATCH 0/2] fix the itimer regression (BZ 12618)
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Lin Ming <ming.m.lin@intel.com>, Mike Galbraith <efault@gmx.de>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "oleg@redhat.com" <oleg@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "seto.hidetoshi@jp.fujitsu.com" <seto.hidetoshi@jp.fujitsu.com>
-In-Reply-To: <20090211131156.GN16535@elte.hu>
-References: <20090205112414.104100700@chello.nl>
-	 <20090205120608.GB8799@elte.hu> <1233895919.2604.323.camel@ymzhang>
-	 <20090206151832.GL18368@elte.hu>
-	 <1234161961.5991.41.camel@minggr.sh.intel.com>
-	 <20090209214723.GA2664@elte.hu> <1234270044.23438.7.camel@twins>
-	 <20090211131156.GN16535@elte.hu>
-Content-Type: text/plain
-Date: Wed, 11 Feb 2009 14:27:17 +0100
-Message-Id: <1234358837.23438.161.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Feb 2009 08:27:26 -0500
+Date: Thu, 12 Feb 2009 00:27:22 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Alexander Clouter <alex@digriz.org.uk>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCHv2] hw_random: add timeriomem-rng driver
+Message-ID: <20090211132722.GA3258@gondor.apana.org.au>
+References: <20090207095317.GB8800@woodchuck> <20090210045748.GA17236@gondor.apana.org.au> <20090210193904.GT11872@woodchuck>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090210193904.GT11872@woodchuck>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-11 at 14:11 +0100, Ingo Molnar wrote:
+On Tue, Feb 10, 2009 at 07:39:04PM +0000, Alexander Clouter wrote:
+>
+> My original code[1] approach, with timer_pending() in there, would have 
+> been okay then, right?
+> ----
+> if (timer_pending(&timeriomem_rng_timer)) {
+>   if (!wait)
+>     return 0;
+> 
+>   del_timer_sync(&timeriomem_rng_timer);
+>   delay = timeriomem_rng_timer.expires - jiffies;
+> 
+>   schedule_timeout_uninterruptible(delay);
+> }
 
-> Could you please send a changelogged minimal reverter patch with Reported-by
-> and Bisected-by tags in place, etc? It does not have to be a full revert,
-> if you think we can do with less that's fine too.
+Yes probably but it is racy.  Also it's better if we can avoid
+the expires - jiffies calculation if only because then we won't
+have to tell Andrew why it can't be negative :)
 
-I don't think its worth playing games with at this point, lets just do a
-full revert.
+> > Instead of deleting the timer above, why not create a rng->present
+> > variable which you set to zero here, and the timer sets it to
+> > non-zero.  Then you just need to return rng->present in your
+> > data_present function.
+>
+> Sounds fair, better than the timer_pending approach and easier to 
+> understand.
 
----
-Subject: sched: revert recent sync wakeup changes
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Wed Feb 11 14:22:24 CET 2009
+Oh I forgot about the blocking case.  We can probably add a
+completion object to handle that.  So something like
 
-Intel reported a hefty 10% regression on a 16-way machine with these patches:
+	if (!wait || rng->present)
+		return rng->present;
 
-  1596e29: sched: symmetric sync vs avg_overlap
-  d942fb6: sched: fix sync wakeups
+	wait_for_completion(&rng->completion);
+	return 1;
 
-Revert them.
+The timer would do
 
-Reported-by: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Bisected-by: Lin Ming <ming.m.lin@intel.com>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/sched.c      |   10 ----------
- kernel/sched_fair.c |   11 +++++++++--
- 2 files changed, 9 insertions(+), 12 deletions(-)
+	rng->present = 1;
+	complete(&rng->completion);
 
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -2362,16 +2362,6 @@ static int try_to_wake_up(struct task_st
- 	if (!sched_feat(SYNC_WAKEUPS))
- 		sync = 0;
- 
--	if (!sync) {
--		if (current->se.avg_overlap < sysctl_sched_migration_cost &&
--			  p->se.avg_overlap < sysctl_sched_migration_cost)
--			sync = 1;
--	} else {
--		if (current->se.avg_overlap >= sysctl_sched_migration_cost ||
--			  p->se.avg_overlap >= sysctl_sched_migration_cost)
--			sync = 0;
--	}
--
- #ifdef CONFIG_SMP
- 	if (sched_feat(LB_WAKEUP_UPDATE)) {
- 		struct sched_domain *sd;
-Index: linux-2.6/kernel/sched_fair.c
-===================================================================
---- linux-2.6.orig/kernel/sched_fair.c
-+++ linux-2.6/kernel/sched_fair.c
-@@ -1191,15 +1191,20 @@ wake_affine(struct sched_domain *this_sd
- 	    int idx, unsigned long load, unsigned long this_load,
- 	    unsigned int imbalance)
- {
-+	struct task_struct *curr = this_rq->curr;
-+	struct task_group *tg;
- 	unsigned long tl = this_load;
- 	unsigned long tl_per_task;
--	struct task_group *tg;
- 	unsigned long weight;
- 	int balanced;
- 
- 	if (!(this_sd->flags & SD_WAKE_AFFINE) || !sched_feat(AFFINE_WAKEUPS))
- 		return 0;
- 
-+	if (sync && (curr->se.avg_overlap > sysctl_sched_migration_cost ||
-+			p->se.avg_overlap > sysctl_sched_migration_cost))
-+		sync = 0;
-+
- 	/*
- 	 * If sync wakeup then subtract the (maximum possible)
- 	 * effect of the currently running task from the load
-@@ -1473,7 +1478,9 @@ static void check_preempt_wakeup(struct 
- 	if (!sched_feat(WAKEUP_PREEMPT))
- 		return;
- 
--	if (sched_feat(WAKEUP_OVERLAP) && sync) {
-+	if (sched_feat(WAKEUP_OVERLAP) && (sync ||
-+			(se->avg_overlap < sysctl_sched_migration_cost &&
-+			 pse->avg_overlap < sysctl_sched_migration_cost))) {
- 		resched_task(curr);
- 		return;
- 	}
+And the reader would do
 
+	rng->present = 0;
+	INIT_COMPLETION(rng->completion);
+	add_timer(...)
 
+Note that everything but the timer is completely serialised by
+the hwrng mutex so we only need to worry about racing against
+the timer.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
