@@ -1,78 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbZBKKuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbZBKKvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756648AbZBKKuV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 05:50:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754959AbZBKKuH
+	id S1756505AbZBKKvw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 05:51:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754792AbZBKKvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 05:50:07 -0500
-Received: from main.gmane.org ([80.91.229.2]:38327 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754954AbZBKKuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 05:50:05 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Harald Hoyer <harald@redhat.com>
-Subject: Re: [PATCH] tracer for sys_open() - sreadahead
-Date: Wed, 11 Feb 2009 11:44:01 +0100
-Message-ID: <4992ABF1.3080007@redhat.com>
-References: <497F69A4.2070007@intel.com> <20090130202219.GA1253@ucw.cz> <20090203133251.GD29046@elte.hu> <gmeu0q$n13$1@ger.gmane.org> <20090209131354.GC3205@nb.net.home> <49902E57.5000406@redhat.com> <20090209135431.GD3205@nb.net.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 11 Feb 2009 05:51:44 -0500
+Received: from casper.infradead.org ([85.118.1.10]:40089 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754386AbZBKKvn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 05:51:43 -0500
+Subject: [PATCH] timers: fix TIMER_ABSTIME for process wide cpu timers
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mike Galbraith <efault@gmx.de>, Oleg Nesterov <oleg@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>
+In-Reply-To: <1234280251.23438.73.camel@twins>
+References: <1233910614.23431.18.camel@marge.simson.net>
+	 <20090206140134.GC3415@elte.hu>  <1234280251.23438.73.camel@twins>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: p578ffed9.dip.t-dialin.net
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-In-Reply-To: <20090209135431.GD3205@nb.net.home>
-Cc: power@bughost.org
+Date: Wed, 11 Feb 2009 11:53:21 +0100
+Message-Id: <1234349601.23438.125.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Karel Zak wrote:
-> On Mon, Feb 09, 2009 at 02:23:35PM +0100, Harald Hoyer wrote:
->> Karel Zak wrote:
->>> On Thu, Feb 05, 2009 at 03:44:42PM +0100, Harald Hoyer wrote:
->>>> Ingo Molnar wrote:
->>>>> * Pavel Machek <pavel@suse.cz> wrote:
->>>>>
->>>>>> On Tue 2009-01-27 12:08:04, Kok, Auke wrote:
->>>>>>> This tracer monitors regular file open() syscalls. This is a fast
->>>>>>> and low-overhead alternative to strace, and does not allow or
->>>>>>> require to be attached to every process.
->>>>>>>
->>>>>>> The tracer only logs succesfull calls, as those are the only ones we
->>>>>>> are currently interested in, and we can determine the absolute path
->>>>>>> of these files as we log.
->>>>>> Maybe fanotify() should be used instead?
->>>>>>
->>>>>> Or maybe just plain strace? One slow boot should not really hurt...
->>>>> ptrace is out of question for good tracing because it's not a  
->>>>> transparent probe. (ptrace monopolizes the traced task - if we use 
->>>>> that then we break regular strace usage.)
->>>>>
->>>>> 	Ingo
->>>> Can strace can be used on init?
->>>>
->>>> $ man strace
->>>> ...
->>>>        On Linux, exciting as it would be, tracing the init process is forbidden.
->>>> ...
->>>>
->>>> Any hope getting _any_ mechanism in the kernel??
->>>  Do you remember Linux Auditing System? That's RH's baby with hooks to
->>>  all relevant syscalls. It would be better to fix/improve the current
->>>  kernel mechanisms that introduce a new one.
->> Yes, I do remember it, because this is how the current fedora readahead
->> gathers its data. It delays the audit daemon, because there is no clean 
->> way to hook into the stream. I asked to add a second "channel" (auditd 
->> wants the kernel socket for its own)...
-> 
->  yes, it'd be nice to support arbitrary number of connections and
->  rules per connection. (.. or export audit stuff to userspace by a
->  special pseudo filesystem (see cgroups, debugfs, ...)).
-> 
->     Karel
-> 
+While going through the man-pages Michael prepared for the posix timer
+interface I realized that posix timers do expose the absolute time value
+through the use of TIMER_ABSTIME.
 
-right! if only someone would implement that *hint, hint* :-/
+---
+Subject: timers: fix TIMER_ABSTIME for process wide cpu timers
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Wed Feb 11 11:30:27 CET 2009
+
+The POSIX timer interface allows for absolute time expiry values through the
+TIMER_ABSTIME flag, therefore we have to synchronize the timer to the clock
+every time we start it.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/linux/sched.h     |   13 +------------
+ kernel/posix-cpu-timers.c |   34 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 35 insertions(+), 12 deletions(-)
+
+Index: linux-2.6/include/linux/sched.h
+===================================================================
+--- linux-2.6.orig/include/linux/sched.h
++++ linux-2.6/include/linux/sched.h
+@@ -2229,18 +2229,7 @@ static inline int spin_needbreak(spinloc
+  * Thread group CPU time accounting.
+  */
+ void thread_group_cputime(struct task_struct *tsk, struct task_cputime *times);
+-
+-static inline
+-void thread_group_cputimer(struct task_struct *tsk, struct task_cputime *times)
+-{
+-	struct thread_group_cputimer *cputimer = &tsk->signal->cputimer;
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&cputimer->lock, flags);
+-	cputimer->running = 1;
+-	*times = cputimer->cputime;
+-	spin_unlock_irqrestore(&cputimer->lock, flags);
+-}
++void thread_group_cputimer(struct task_struct *tsk, struct task_cputime *times);
+ 
+ static inline void thread_group_cputime_init(struct signal_struct *sig)
+ {
+Index: linux-2.6/kernel/posix-cpu-timers.c
+===================================================================
+--- linux-2.6.orig/kernel/posix-cpu-timers.c
++++ linux-2.6/kernel/posix-cpu-timers.c
+@@ -261,6 +261,40 @@ out:
+ 	rcu_read_unlock();
+ }
+ 
++static void update_gt_cputime(struct task_cputime *a, struct task_cputime *b)
++{
++	if (cputime_gt(b->utime, a->utime))
++		a->utime = b->utime;
++
++	if (cputime_gt(b->stime, a->stime))
++		a->stime = b->stime;
++
++	if (b->sum_exec_runtime > a->sum_exelt rec_runtime)
++		a->sum_exec_runtime = b->sum_exec_runtime;
++}
++
++void thread_group_cputimer(struct task_struct *tsk, struct task_cputime *times)
++{
++	struct thread_group_cputimer *cputimer = &tsk->signal->cputimer;
++	struct task_cputime sum;
++	unsigned long flags;
++
++	spin_lock_irqsave(&cputimer->lock, flags);
++	if (!cputimer->running) {
++		cputimer->running = 1;
++		/*
++		 * The POSIX timer interface allows for absolute time expiry
++		 * values through the TIMER_ABSTIME flag, therefore we have
++		 * to synchronize the timer to the clock every time we start
++		 * it.
++		 */
++		thread_group_cputime(tsk, &sum);
++		update_gt_cputime(&cputimer->cputime, &sum);
++	}
++	*times = cputimer->cputime;
++	spin_unlock_irqrestore(&cputimer->lock, flags);
++}
++
+ /*
+  * Sample a process (thread group) clock for the given group_leader task.
+  * Must be called with tasklist_lock held for reading.
 
