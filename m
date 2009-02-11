@@ -1,88 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755584AbZBKHMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbZBKHQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755584AbZBKHMW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 02:12:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbZBKHMN
+	id S1755417AbZBKHQx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 02:16:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbZBKHQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 02:12:13 -0500
-Received: from ns2.gothnet.se ([82.193.160.251]:25152 "EHLO
-	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751600AbZBKHMM (ORCPT
+	Wed, 11 Feb 2009 02:16:44 -0500
+Received: from fk-out-0910.google.com ([209.85.128.191]:50370 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751510AbZBKHQn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 02:12:12 -0500
-Message-ID: <49927A02.9020006@shipmail.org>
-Date: Wed, 11 Feb 2009 08:10:58 +0100
-From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@shipmail.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+	Wed, 11 Feb 2009 02:16:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
+         :references:mime-version:content-type:content-disposition
+         :in-reply-to:user-agent;
+        b=riofAtJcV/vLLdG23RSWUYri/jl55WM+jbDbjidJz58EaCtYp0DTiPUTWDVrdIfXAO
+         zaDLoL/kNlmkw3FfWTD7k1Ll3+SQDul0q/p7NgQswWVPWC0CVL7GRHXdWmvktw0ZJ+6v
+         YxE5MAPEQh/oeCyWpQloOrqBU4zYLgdqAGwsA=
+Date: Wed, 11 Feb 2009 08:16:40 +0100
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/6] ide: more unifications of ATA and ATAPI support
+Message-ID: <20090211071640.GD937@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20090209231945.32406.14874.sendpatchset@localhost.localdomain>
 MIME-Version: 1.0
-To: Eric Anholt <eric@anholt.net>
-CC: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>,
-       Dave Airlie <airlied@linux.ie>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       dri-devel@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12574] possible circular locking dependency detected
-References: <AIghyjFgMFP.A.uZD._10jJB@chimera>	<sWhNs83kKPE.A.4cG.E30jJB@chimera> <20090210223711.GA6809@google.com> <1234305716.32506.10.camel@gaiman>
-In-Reply-To: <1234305716.32506.10.camel@gaiman>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-BitDefender-Scanner: Mail not scanned due to license constraints
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20090209231945.32406.14874.sendpatchset@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Anholt wrote:
-> On Wed, 2009-02-11 at 00:37 +0200, Michael S. Tsirkin wrote:
->   
->> Dave, dri guys,
->> Could you take a look at this circular dependency please (below)?  I
->> observe it when suspending laptop with radeon drm loaded and with
->> lockdep enabled. It seems that the root of the problem is that
->> various vm ops such as drm_vm_open, drm_mmap) are called with mm
->> semaphore taken, and take dev->struct_mutex. On the other hand,
->> drm_rmmap_locked is called with dev->struct_mutex, and calls mtrr_del
->> which depends on mm semaphore indirectly.
->>
->> What do you think?
->>     
->
-> Yes, there are real lock inversions now due to the GTT mmap code.  It's
-> going to be a pain to fix (I tried getting the mmap_sem -> struct_mutex
-> path to go away, but the fact that mmap_sem is held over the fault
-> handler pretty much kills that).  It's high on the list, though.
->   
-Shouldn't it be possible to relax this given that in the fault() 
-handler, the mmap_sem() is taken in read mode only. This means that it 
-should be deadlock-safe (but still a little ugly) to take the mmap_sem() 
-in read mode when the struct mutex is held.
+On Tue, Feb 10, 2009 at 12:19:45AM +0100, Bartlomiej Zolnierkiewicz wrote:
+> 
+> After this patchset we have a valid struct ide_cmd available also for
+> ATA_CMD_PACKET commands and comparing struct ide_atapi_pc with ide_cmd it
+> seems that there are many similarities between them and that we may just
+> merge both structs (this should also allow us to unify ide-cd code with
+> non-ide-cd one in ide-atapi.c later).  From the quick look the only gotcha
+> is REQUEST SENSE handling, ->request_sense_pc needs to be converted to
+> ->request_sense_cmd and we have to be careful with choosing right 'cmd'
+> in *_issue_pc()...
+> 
+> Borislav, please take a look and tell me what do you think about it
+> (also feel free to go ahead with patches :-)...
 
-Another quick way to fix potential deadlocks, would be to take the 
-struct mutex in the following way in fault():
+Yep, like it, especially the idea of a unified ide_cmd thingy and
+removing the atapi_pc :).
 
-if (!mutex_trylock(&dev->struct_mutex)) {
-      needs_resched();
-      return VM_FAULT_NOPAGE;
-}
+ACK.
 
-/Thomas
-
->   
-> ------------------------------------------------------------------------
->
-> ------------------------------------------------------------------------------
-> Create and Deploy Rich Internet Apps outside the browser with Adobe(R)AIR(TM)
-> software. With Adobe AIR, Ajax developers can use existing skills and code to
-> build responsive, highly engaging applications that combine the power of local
-> resources and data with the reach of the web. Download the Adobe AIR SDK and
-> Ajax docs to start building applications today-http://p.sf.net/sfu/adobe-com
-> ------------------------------------------------------------------------
->
-> --
-> _______________________________________________
-> Dri-devel mailing list
-> Dri-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/dri-devel
->   
-
-
-
+-- 
+Regards/Gruss,
+    Boris.
