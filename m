@@ -1,44 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbZBKAHO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbZBKANh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756783AbZBKAHO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:07:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbZBKAHA
+	id S1756820AbZBKANh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:13:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbZBKAN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:07:00 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:50166 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754156AbZBKAHA (ORCPT
+	Tue, 10 Feb 2009 19:13:28 -0500
+Received: from mail-fx0-f25.google.com ([209.85.220.25]:36249 "EHLO
+	mail-fx0-f25.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754187AbZBKAN2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:07:00 -0500
-Message-ID: <499214B5.8070200@zytor.com>
-Date: Tue, 10 Feb 2009 15:58:45 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Rodolfo Giometti <giometti@linux.it>, linux-kernel@vger.kernel.org,
-       dwmw2@infradead.org, davej@redhat.com, sam@ravnborg.org, greg@kroah.com,
-       randy.dunlap@oracle.com, kay.sievers@vrfy.org, alan@lxorguk.ukuu.org.uk,
-       mingo@elte.hu, mtk.manpages@gmail.com, hch@infradead.org
-Subject: Re: LinuxPPS core (Version 2): the PPS Linux implementation.
-References: <1234274752-29847-1-git-send-email-giometti@linux.it> <20090210155452.60ffa06b.akpm@linux-foundation.org>
-In-Reply-To: <20090210155452.60ffa06b.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Feb 2009 19:13:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=XAEGBip5MNzaGhz4XYlmFOWte01sS8vqYhNJkM9lhqEU0OMJVCPQCK+himLu4utf8W
+         MjCDv5VZiMlEq7BoCNxytZoCzP4oy4yscM/XE9R0okylQwuAFeCh83Lfx3N8KS+jQ+cR
+         zgnIEmV13NUtvAK5Q26xhF1WSTknqK8njXg4Q=
+From: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: =?utf-8?q?=C3=89ric=20Piel?= <Eric.Piel@tremplin-utc.net>,
+       Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+Subject: [PATCHv4 (resend)] lis3lv02d: support both one- and two-byte sensors
+Date: Wed, 11 Feb 2009 01:13:23 +0100
+Message-Id: <1234311203-14871-1-git-send-email-giuseppe.bilotta@gmail.com>
+X-Mailer: git-send-email 1.6.2.rc0.173.g5e148
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> 
-> Is it hard to do this?  Just a matter of putting some things into
-> pps_user.h, others into pps_kernel.h and then including both into
-> pps.h?  
-> 
+Sensors responding with 0x3B to WHO_AM_I only have one data register per
+direction, thus returning a signed byte from the position which is
+occupied by the MSB in sensors responding with 0x3A.
 
-Or perhaps better...
+We support both kind of sensors by checking for the sensor type on init
+and defining appropriate data-access routines and sensor limits (for the
+joystick) depending on what we find.
 
-The user code in <linux/pps.h>, and then #include <linux/pps.h> from 
-<linux/pps_kernel.h>  That way we don't need any #ifdefs at all.
+Signed-off-by: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+---
 
-	-hpa
+Sorry for the mess, sent by mistake to the git instead of kernel mailing list.
+
+/me should probably stop hacking at 1am
+
+ drivers/hwmon/lis3lv02d.c |   41 ++++++++++++++++++++++++++++++-----------
+ drivers/hwmon/lis3lv02d.h |   12 +++++++++++-
+ 2 files changed, 41 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/hwmon/lis3lv02d.c b/drivers/hwmon/lis3lv02d.c
+index 3afa3af..0f6528f 100644
+--- a/drivers/hwmon/lis3lv02d.c
++++ b/drivers/hwmon/lis3lv02d.c
+@@ -53,9 +53,6 @@
+  * joystick.
+  */
+ 
+-/* Maximum value our axis may get for the input device (signed 12 bits) */
+-#define MDPS_MAX_VAL 2048
+-
+ struct acpi_lis3lv02d adev = {
+ 	.misc_wait   = __WAIT_QUEUE_HEAD_INITIALIZER(adev.misc_wait),
+ };
+@@ -68,12 +65,19 @@ static s16 lis3lv02d_read_16(acpi_handle handle, int reg)
+ {
+ 	u8 lo, hi;
+ 
+-	adev.read(handle, reg, &lo);
+-	adev.read(handle, reg + 1, &hi);
++	adev.read(handle, reg - 1, &lo);
++	adev.read(handle, reg, &hi);
+ 	/* In "12 bit right justified" mode, bit 6, bit 7, bit 8 = bit 5 */
+ 	return (s16)((hi << 8) | lo);
+ }
+ 
++static s16 lis3lv02d_read_8(acpi_handle handle, int reg)
++{
++	s8 lo;
++	adev.read(handle, reg, &lo);
++	return lo;
++}
++
+ /**
+  * lis3lv02d_get_axis - For the given axis, give the value converted
+  * @axis:      1,2,3 - can also be negative
+@@ -102,9 +106,9 @@ static void lis3lv02d_get_xyz(acpi_handle handle, int *x, int *y, int *z)
+ {
+ 	int position[3];
+ 
+-	position[0] = lis3lv02d_read_16(handle, OUTX_L);
+-	position[1] = lis3lv02d_read_16(handle, OUTY_L);
+-	position[2] = lis3lv02d_read_16(handle, OUTZ_L);
++	position[0] = adev.lis3lv02d_read(handle, OUTX);
++	position[1] = adev.lis3lv02d_read(handle, OUTY);
++	position[2] = adev.lis3lv02d_read(handle, OUTZ);
+ 
+ 	*x = lis3lv02d_get_axis(adev.ac.x, position);
+ 	*y = lis3lv02d_get_axis(adev.ac.y, position);
+@@ -121,6 +125,21 @@ void lis3lv02d_poweron(acpi_handle handle)
+ {
+ 	adev.is_on = 1;
+ 	adev.init(handle);
++	adev.read(handle, WHO_AM_I, &adev.whoami);
++	/* Tell apart LISxLV02Dy from LISx02Dy family by checking the LSB
++	 * (0x3A vs 0x3B). TODO More sophisticated checks on other registers
++	 * could be implemented, for example to see if we have 2 or 3 axes, and
++	 * configure the joystick accordingly.
++	 */
++	if (adev.whoami & 1) {
++		printk(KERN_INFO DRIVER_NAME ": 1-byte sensor found\n");
++		adev.lis3lv02d_read = lis3lv02d_read_8;
++		adev.mdps_max_val = 128;
++	} else {
++		printk(KERN_INFO DRIVER_NAME ": 2-byte sensor found\n");
++		adev.lis3lv02d_read = lis3lv02d_read_16;
++		adev.mdps_max_val = 2048;
++	}
+ }
+ EXPORT_SYMBOL_GPL(lis3lv02d_poweron);
+ 
+@@ -355,9 +374,9 @@ int lis3lv02d_joystick_enable(void)
+ 	adev.idev->close      = lis3lv02d_joystick_close;
+ 
+ 	set_bit(EV_ABS, adev.idev->evbit);
+-	input_set_abs_params(adev.idev, ABS_X, -MDPS_MAX_VAL, MDPS_MAX_VAL, 3, 3);
+-	input_set_abs_params(adev.idev, ABS_Y, -MDPS_MAX_VAL, MDPS_MAX_VAL, 3, 3);
+-	input_set_abs_params(adev.idev, ABS_Z, -MDPS_MAX_VAL, MDPS_MAX_VAL, 3, 3);
++	input_set_abs_params(adev.idev, ABS_X, -adev.mdps_max_val, adev.mdps_max_val, 3, 3);
++	input_set_abs_params(adev.idev, ABS_Y, -adev.mdps_max_val, adev.mdps_max_val, 3, 3);
++	input_set_abs_params(adev.idev, ABS_Z, -adev.mdps_max_val, adev.mdps_max_val, 3, 3);
+ 
+ 	err = input_register_device(adev.idev);
+ 	if (err) {
+diff --git a/drivers/hwmon/lis3lv02d.h b/drivers/hwmon/lis3lv02d.h
+index 2e7597c..cd0e838 100644
+--- a/drivers/hwmon/lis3lv02d.h
++++ b/drivers/hwmon/lis3lv02d.h
+@@ -22,11 +22,14 @@
+ /*
+  * The actual chip is STMicroelectronics LIS3LV02DL or LIS3LV02DQ that seems to
+  * be connected via SPI. There exists also several similar chips (such as LIS302DL or
+- * LIS3L02DQ) but not in the HP laptops and they have slightly different registers.
++ * LIS3L02DQ) and they have slightly different registers, but we can provide a
++ * common interface for all of them.
+  * They can also be connected via I²C.
+  */
+ 
++/* 2-byte registers */
+ #define LIS3LV02DL_ID	0x3A /* Also the LIS3LV02DQ */
++/* 1-byte registers */
+ #define LIS302DL_ID	0x3B /* Also the LIS202DL! */
+ 
+ enum lis3lv02d_reg {
+@@ -44,10 +47,13 @@ enum lis3lv02d_reg {
+ 	STATUS_REG	= 0x27,
+ 	OUTX_L		= 0x28,
+ 	OUTX_H		= 0x29,
++	OUTX		= 0x29,
+ 	OUTY_L		= 0x2A,
+ 	OUTY_H		= 0x2B,
++	OUTY		= 0x2B,
+ 	OUTZ_L		= 0x2C,
+ 	OUTZ_H		= 0x2D,
++	OUTZ		= 0x2D,
+ 	FF_WU_CFG	= 0x30,
+ 	FF_WU_SRC	= 0x31,
+ 	FF_WU_ACK	= 0x32,
+@@ -159,6 +165,10 @@ struct acpi_lis3lv02d {
+ 	acpi_status (*write) (acpi_handle handle, int reg, u8 val);
+ 	acpi_status (*read) (acpi_handle handle, int reg, u8 *ret);
+ 
++	u8			whoami;    /* 3Ah: 2-byte registries, 3Bh: 1-byte registries */
++	s16 (*lis3lv02d_read) (acpi_handle handle, int reg);
++	int			mdps_max_val;
++
+ 	struct input_dev	*idev;     /* input device */
+ 	struct task_struct	*kthread;  /* kthread for input */
+ 	struct mutex            lock;
+-- 
+1.6.2.rc0.173.g5e148
+
