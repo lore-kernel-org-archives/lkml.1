@@ -1,65 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757344AbZBKP7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757160AbZBKQCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757344AbZBKP7t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 10:59:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbZBKP7k
+	id S1757160AbZBKQCR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 11:02:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbZBKQCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 10:59:40 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34834 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752831AbZBKP7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 10:59:40 -0500
-Date: Wed, 11 Feb 2009 16:59:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Brian Gerst <brgerst@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] x86: Pass in pt_regs pointer for syscalls that
-	need it
-Message-ID: <20090211155926.GA26194@elte.hu>
-References: <1234277507-4987-1-git-send-email-brgerst@gmail.com> <1234277507-4987-3-git-send-email-brgerst@gmail.com> <4992812B.1050800@kernel.org> <73c1f2160902110631j68e58202h3e49288cfe613d66@mail.gmail.com> <4992E396.6000205@kernel.org> <4992E551.4060901@gmail.com> <73c1f2160902110659i776e1d89qc23d89363881572e@mail.gmail.com> <4992E92C.5000000@gmail.com> <73c1f2160902110710u77a563bftf09c460fab6f9136@mail.gmail.com> <4992EB62.3000501@gmail.com>
+	Wed, 11 Feb 2009 11:02:00 -0500
+Received: from mailout.artfiles.de ([80.252.97.80]:59400 "EHLO
+	mailout.artfiles.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753143AbZBKQCA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 11:02:00 -0500
+Subject: RE: warning in arch/x86/kernel/cpu/mtrr/generic.c:400 with 2.6.29-rc3 on IBM x3400
+Date: Wed, 11 Feb 2009 17:01:54 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4992EB62.3000501@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <B4ED8DE8E195E84A872496A085BC07822F2A@exchange01.corp.win-professional.com>
+In-Reply-To: <86802c440902102106o54e4ea2fua4d108c8564ff8a@mail.gmail.com>
+Content-class: urn:content-classes:message
+X-MS-Has-Attach: 
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-MS-TNEF-Correlator: 
+Thread-Topic: warning in arch/x86/kernel/cpu/mtrr/generic.c:400 with 2.6.29-rc3 on IBM x3400
+Thread-Index: AcmMBocs3CPkQfldR2a3xwHoZ9ZdIwAWsXfQ
+References: <B4ED8DE8E195E84A872496A085BC07822F18@exchange01.corp.win-professional.com> <B4ED8DE8E195E84A872496A085BC07822F1D@exchange01.corp.win-professional.com> <20090209234528.GA862@elte.hu> <4990E90D.30005@kernel.org> <B4ED8DE8E195E84A872496A085BC07822F21@exchange01.corp.win-professional.com> <86802c440902101052m223792ddi43d27423844b1d5b@mail.gmail.com> <B4ED8DE8E195E84A872496A085BC07822F22@exchange01.corp.win-professional.com> <4991E752.8010903@kernel.org> <B4ED8DE8E195E84A872496A085BC07822F23@exchange01.corp.win-professional.com> <86802c440902102106o54e4ea2fua4d108c8564ff8a@mail.gmail.com>
+From: "Morten P.D. Stevens" <mstevens@win-professional.com>
+To: "Yinghai Lu" <yinghai@kernel.org>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 11 Feb 2009 16:01:55.0049 (UTC) FILETIME=[0F709590:01C98C62]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Tejun Heo <htejun@gmail.com> wrote:
+> so there is some problem with your BIOS, please ask the vendor to
+> provide one to make
+> 2.6.24 happy.
 
-> Brian Gerst wrote:
-> > x86-64 doesn't have the tail-call problem because it doesn't use the
-> > pt_regs on stack trick for syscall args.  All the args are passed in
-> > registers.
-> 
-> Yeah, I was saying that we can do about the same thing on x86_32 by
-> passing in pointer to pt_regs and defining proper syscall wrappers.
-> It will cost a bit of performance by increasing register pressure tho.
+I'll report the issue to the IBM support.
 
-Do you mean converting:
+on our IBM x3400 servers running RHEL the same output:
 
-ptregscall int sys_execve(struct pt_regs *regs, char __user *u_filename,
-                          char __user * __user *argv,
-                          char __user * __user *envp)
+2.6.18-92.1.10.el5 #
 
-to:
+reg00: base=0xc0000000 (3072MB), size=1024MB: uncachable, count=1
+reg01: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
+reg02: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
+reg03: base=0xbff80000 (3071MB), size=196608MB: uncachable, count=1
 
-ptregscall int sys_execve(struct pt_regs *regs)
-{
-	char __user *u_filename		= syscall_arg1(regs);
-	char __user * __user *argv	= syscall_arg2(regs);
-	char __user * __user *envp	= syscall_arg3(regs);
+and in dmesg:
 
-etc.?
+mtrr: type mismatch for d0000000,1000000 old: uncachable new:
+write-combining
 
-	Ingo
+
+Is this a big problem for direct usage? The performance on these servers
+is still fine...?
+
+Thanks for your assistance.
+
+-
+
+Morten
+
+-----Original Message-----
+From: yhlu.kernel@gmail.com [mailto:yhlu.kernel@gmail.com] On Behalf Of
+Yinghai Lu
+Sent: Wednesday, February 11, 2009 6:07 AM
+To: Morten P.D. Stevens
+Cc: Ingo Molnar; Thomas Gleixner; H. Peter Anvin; Arjan van de Ven;
+linux-kernel@vger.kernel.org
+Subject: Re: warning in arch/x86/kernel/cpu/mtrr/generic.c:400 with
+2.6.29-rc3 on IBM x3400
+
+On Tue, Feb 10, 2009 at 1:19 PM, Morten P.D. Stevens
+<mstevens@win-professional.com> wrote:
+> Hi,
+>
+>> can you post /proc/mtrr in 2.6.29-rc3 and old kernel without
+> warn_on..?
+>
+> okay... affected are 2.6.26, 2.6.27, 2.6.28 and 2.6.29-rc3. (previous
+> kernels are not tested)
+> a small update: debian 2.6.26 lenny default kernel should be also
+> affected.
+>
+> here /proc/mtrr from 2.6.28.4:
+>
+> ibm-x3400:~# cat /proc/mtrr
+> reg00: base=0x0c0000000 ( 3072MB), size= 1024MB, count=1: uncachable
+> reg01: base=0x000000000 (    0MB), size= 4096MB, count=1: write-back
+> reg02: base=0x100000000 ( 4096MB), size= 1024MB, count=1: write-back
+> reg03: base=0x0bff80000 ( 3071MB), size=  512KB, count=1: uncachable
+>
+> /proc/mtrr linux 2.6.24 (from gentoo 2008.0 amd64 livecd) no errors in
+> dmesg
+>
+> reg00: base=0xc0000000 (3072MB), size=1024MB: uncachable, count=1
+> reg01: base=0x00000000 (   0MB), size=4096MB: write-back, count=1
+> reg02: base=0x100000000 (4096MB), size=1024MB: write-back, count=1
+> reg03: base=0xbff80000 (3071MB), size=196608MB: uncachable, count=1
+
+so there is some problem with your BIOS, please ask the vendor to
+provide one to make
+2.6.24 happy.
+
+YH
