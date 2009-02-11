@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758825AbZBKAdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758960AbZBKAd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758825AbZBKAdY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:33:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757556AbZBKA2S
+	id S1758960AbZBKAd5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:33:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757616AbZBKA2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:28:18 -0500
-Received: from kroah.org ([198.145.64.141]:51092 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 19:28:21 -0500
+Received: from kroah.org ([198.145.64.141]:51125 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757492AbZBKA2Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:16 -0500
-Date: Tue, 10 Feb 2009 16:24:45 -0800
+	id S1757552AbZBKA2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:28:18 -0500
+Date: Tue, 10 Feb 2009 16:24:50 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Johannes Weiner <hannes@cmpxchg.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Matthew Wilcox <matthew@wil.cx>, Chuck Lever <cel@citi.umich.edu>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 15/56] wait: prevent exclusive waiter starvation
-Message-ID: <20090211002445.GP14660@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [patch 17/56] ieee1394: ohci1394: increase AT req. retries, fix
+	ack_busy_X from Panasonic camcorders and others
+Message-ID: <20090211002450.GR14660@kroah.com>
 References: <20090211001439.873435357@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="wait-prevent-exclusive-waiter-starvation.patch"
+Content-Disposition: inline; filename="ieee1394-ohci1394-increase-at-req.-retries-fix-ack_busy_x-from-panasonic-camcorders-and-others.patch"
 In-Reply-To: <20090211002328.GA14660@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,192 +39,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Johannes Weiner <hannes@cmpxchg.org>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-commit 777c6c5f1f6e757ae49ecca2ed72d6b1f523c007 upstream.
+Commit 64c634ef83991b390ec0503e61f16efb0ba3c60b upstream.
 
-With exclusive waiters, every process woken up through the wait queue must
-ensure that the next waiter down the line is woken when it has finished.
+Camcorders have a tendency to fail read requests to their config ROM and
+write request to their FCP command register with ack_busy_X.  This has
+become a problem with newer kernels and especially Panasonic camcorders,
+causing AV/C in dvgrab and kino to fail.  Dvgrab for example frequently
+logs "send oops"; kino reports loss of AV/C control.  I suspect that
+lower CPU scheduling latencies in newer kernels made this issue more
+prominent now.
 
-Interruptible waiters don't do that when aborting due to a signal.  And if
-an aborting waiter is concurrently woken up through the waitqueue, noone
-will ever wake up the next waiter.
+According to
+https://sourceforge.net/tracker/?func=detail&atid=114103&aid=2492640&group_id=14103
+this can be fixed by configuring the FireWire controller for more
+hardware retries for request transmission; these retries are evidently
+more successful than libavc1394's own retry loop (typically 3 tries on
+top of hardware retries).
 
-This has been observed with __wait_on_bit_lock() used by
-lock_page_killable(): the first contender on the queue was aborting when
-the actual lock holder woke it up concurrently.  The aborted contender
-didn't acquire the lock and therefor never did an unlock followed by
-waking up the next waiter.
+Presumably the same issue has been reported at
+https://bugzilla.redhat.com/show_bug.cgi?id=449252 and
+https://bugzilla.redhat.com/show_bug.cgi?id=477279 .
 
-Add abort_exclusive_wait() which removes the process' wait descriptor from
-the waitqueue, iff still queued, or wakes up the next waiter otherwise.
-It does so under the waitqueue lock.  Racing with a wake up means the
-aborting process is either already woken (removed from the queue) and will
-wake up the next waiter, or it will remove itself from the queue and the
-concurrent wake up will apply to the next waiter after it.
-
-Use abort_exclusive_wait() in __wait_event_interruptible_exclusive() and
-__wait_on_bit_lock() when they were interrupted by other means than a wake
-up through the queue.
-
-[akpm@linux-foundation.org: coding-style fixes]
-Reported-by: Chris Mason <chris.mason@oracle.com>
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-Mentored-by: Oleg Nesterov <oleg@redhat.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Matthew Wilcox <matthew@wil.cx>
-Cc: Chuck Lever <cel@citi.umich.edu>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Tested-by: Mathias Beilstein
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/wait.h |   11 +++++++--
- kernel/sched.c       |    4 +--
- kernel/wait.c        |   59 ++++++++++++++++++++++++++++++++++++++++++++-------
- 3 files changed, 63 insertions(+), 11 deletions(-)
+ drivers/ieee1394/ohci1394.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/include/linux/wait.h
-+++ b/include/linux/wait.h
-@@ -141,6 +141,8 @@ static inline void __remove_wait_queue(w
- 	list_del(&old->task_list);
- }
+--- a/drivers/ieee1394/ohci1394.h
++++ b/drivers/ieee1394/ohci1394.h
+@@ -26,7 +26,7 @@
  
-+void __wake_up_common(wait_queue_head_t *q, unsigned int mode,
-+			int nr_exclusive, int sync, void *key);
- void __wake_up(wait_queue_head_t *q, unsigned int mode, int nr, void *key);
- extern void __wake_up_locked(wait_queue_head_t *q, unsigned int mode);
- extern void __wake_up_sync(wait_queue_head_t *q, unsigned int mode, int nr);
-@@ -342,16 +344,19 @@ do {									\
- 	for (;;) {							\
- 		prepare_to_wait_exclusive(&wq, &__wait,			\
- 					TASK_INTERRUPTIBLE);		\
--		if (condition)						\
-+		if (condition) {					\
-+			finish_wait(&wq, &__wait);			\
- 			break;						\
-+		}							\
- 		if (!signal_pending(current)) {				\
- 			schedule();					\
- 			continue;					\
- 		}							\
- 		ret = -ERESTARTSYS;					\
-+		abort_exclusive_wait(&wq, &__wait, 			\
-+				TASK_INTERRUPTIBLE, NULL);		\
- 		break;							\
- 	}								\
--	finish_wait(&wq, &__wait);					\
- } while (0)
+ #define OHCI1394_DRIVER_NAME      "ohci1394"
  
- #define wait_event_interruptible_exclusive(wq, condition)		\
-@@ -440,6 +445,8 @@ extern long interruptible_sleep_on_timeo
- void prepare_to_wait(wait_queue_head_t *q, wait_queue_t *wait, int state);
- void prepare_to_wait_exclusive(wait_queue_head_t *q, wait_queue_t *wait, int state);
- void finish_wait(wait_queue_head_t *q, wait_queue_t *wait);
-+void abort_exclusive_wait(wait_queue_head_t *q, wait_queue_t *wait,
-+			unsigned int mode, void *key);
- int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key);
- int wake_bit_function(wait_queue_t *wait, unsigned mode, int sync, void *key);
- 
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -4556,8 +4556,8 @@ EXPORT_SYMBOL(default_wake_function);
-  * started to run but is not in state TASK_RUNNING. try_to_wake_up() returns
-  * zero in this (rare) case, and we handle it by continuing to scan the queue.
-  */
--static void __wake_up_common(wait_queue_head_t *q, unsigned int mode,
--			     int nr_exclusive, int sync, void *key)
-+void __wake_up_common(wait_queue_head_t *q, unsigned int mode,
-+			int nr_exclusive, int sync, void *key)
- {
- 	wait_queue_t *curr, *next;
- 
---- a/kernel/wait.c
-+++ b/kernel/wait.c
-@@ -101,6 +101,15 @@ prepare_to_wait_exclusive(wait_queue_hea
- }
- EXPORT_SYMBOL(prepare_to_wait_exclusive);
- 
-+/*
-+ * finish_wait - clean up after waiting in a queue
-+ * @q: waitqueue waited on
-+ * @wait: wait descriptor
-+ *
-+ * Sets current thread back to running state and removes
-+ * the wait descriptor from the given waitqueue if still
-+ * queued.
-+ */
- void finish_wait(wait_queue_head_t *q, wait_queue_t *wait)
- {
- 	unsigned long flags;
-@@ -127,6 +136,39 @@ void finish_wait(wait_queue_head_t *q, w
- }
- EXPORT_SYMBOL(finish_wait);
- 
-+/*
-+ * abort_exclusive_wait - abort exclusive waiting in a queue
-+ * @q: waitqueue waited on
-+ * @wait: wait descriptor
-+ * @state: runstate of the waiter to be woken
-+ * @key: key to identify a wait bit queue or %NULL
-+ *
-+ * Sets current thread back to running state and removes
-+ * the wait descriptor from the given waitqueue if still
-+ * queued.
-+ *
-+ * Wakes up the next waiter if the caller is concurrently
-+ * woken up through the queue.
-+ *
-+ * This prevents waiter starvation where an exclusive waiter
-+ * aborts and is woken up concurrently and noone wakes up
-+ * the next waiter.
-+ */
-+void abort_exclusive_wait(wait_queue_head_t *q, wait_queue_t *wait,
-+			unsigned int mode, void *key)
-+{
-+	unsigned long flags;
-+
-+	__set_current_state(TASK_RUNNING);
-+	spin_lock_irqsave(&q->lock, flags);
-+	if (!list_empty(&wait->task_list))
-+		list_del_init(&wait->task_list);
-+	else if (waitqueue_active(q))
-+		__wake_up_common(q, mode, 1, 0, key);
-+	spin_unlock_irqrestore(&q->lock, flags);
-+}
-+EXPORT_SYMBOL(abort_exclusive_wait);
-+
- int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key)
- {
- 	int ret = default_wake_function(wait, mode, sync, key);
-@@ -187,17 +229,20 @@ int __sched
- __wait_on_bit_lock(wait_queue_head_t *wq, struct wait_bit_queue *q,
- 			int (*action)(void *), unsigned mode)
- {
--	int ret = 0;
--
- 	do {
-+		int ret;
-+
- 		prepare_to_wait_exclusive(wq, &q->wait, mode);
--		if (test_bit(q->key.bit_nr, q->key.flags)) {
--			if ((ret = (*action)(q->key.flags)))
--				break;
--		}
-+		if (!test_bit(q->key.bit_nr, q->key.flags))
-+			continue;
-+		ret = action(q->key.flags);
-+		if (!ret)
-+			continue;
-+		abort_exclusive_wait(wq, &q->wait, mode, &q->key);
-+		return ret;
- 	} while (test_and_set_bit(q->key.bit_nr, q->key.flags));
- 	finish_wait(wq, &q->wait);
--	return ret;
-+	return 0;
- }
- EXPORT_SYMBOL(__wait_on_bit_lock);
- 
+-#define OHCI1394_MAX_AT_REQ_RETRIES	0x2
++#define OHCI1394_MAX_AT_REQ_RETRIES	0xf
+ #define OHCI1394_MAX_AT_RESP_RETRIES	0x2
+ #define OHCI1394_MAX_PHYS_RESP_RETRIES	0x8
+ #define OHCI1394_MAX_SELF_ID_ERRORS	16
 
