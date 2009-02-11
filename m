@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758088AbZBKSzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758085AbZBKS6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758088AbZBKSzd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 13:55:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757042AbZBKSzX
+	id S1758085AbZBKS6b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 13:58:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756344AbZBKS6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 13:55:23 -0500
-Received: from gw.goop.org ([64.81.55.164]:38154 "EHLO mail.goop.org"
+	Wed, 11 Feb 2009 13:58:21 -0500
+Received: from mga11.intel.com ([192.55.52.93]:28097 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756624AbZBKSzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 13:55:22 -0500
-Message-ID: <49931F04.80605@goop.org>
-Date: Wed, 11 Feb 2009 10:55:00 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1755955AbZBKS6U convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 13:58:20 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,193,1233561600"; 
+   d="scan'208";a="430184192"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Ingo Molnar <mingo@elte.hu>, Dean Nelson <dcn@sgi.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
+       linux-ia64 <linux-ia64@vger.kernel.org>,
+       linux-next <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Date: Wed, 11 Feb 2009 10:58:19 -0800
+Subject: RE: [PATCH] SGI IA64 UV: fix ia64 build error in the linux-next	tree
+Thread-Topic: [PATCH] SGI IA64 UV: fix ia64 build error in the linux-next
+	tree
+Thread-Index: AcmMWj2Ha/2gb8L3QSS1BCj8zPINewAH0izQ
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA361689D7D@orsmsx505.amr.corp.intel.com>
+References: <20090209162520.GA4882@sgi.com>
+ <20090210132555.be1c1462.akpm@linux-foundation.org>
+ <20090211150103.GA15814@sgi.com> <20090211150536.GE10525@elte.hu>
+In-Reply-To: <20090211150536.GE10525@elte.hu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] x86: more header untangling
-References: <4991D626.5040009@goop.org> <20090211100323.GE20518@elte.hu> <49930485.3070204@goop.org> <20090211171439.GA9185@elte.hu>
-In-Reply-To: <20090211171439.GA9185@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> constants can be considered data types too.
+> What question was that? Folding back across that distance is not possible
+> in a Git workflow. I do regular cross-builds - the build bug did not trigger
+> with the ia64 defconfig.
 
-Huh, that's a pretty broad definition of "type", to the degree that's 
-its fairly counter-intuitive and misleading.  But I don't care that much.
+I'm confused by this, as it definitely triggered for me.  Perhaps
+my build scripts do things a bit differently.  Essentially I do:
 
->  Small inlines are borderlines,
-> they should generally not be in _types.h headers. Really, _types.h headers
-> are only there to instantiate a type, to enable dependent inline methods
-> to use them.
->   
+        $ for c in `ls arch/ia64/configs`
+        > do
+        >       cp arch/ia64/configs/$i .config
+        >       yes '' | make oldconfig
+        >       make
+        > done
 
-In this case the inlines are the accessor functions to do the pte_t <-> 
-pteval_t (un)wrapping.  They're trivial and have no dependencies apart 
-from the types they're right next to.
+Which takes the default answer for any new questions that crop
+up.  This enabled the GRU driver in the case of the generic_defconfig,
+and so the build failed because of the lack of asm/uv.h
 
-Anyway, check out 
-git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git 
-x86/untangle now.  I had to merge in tip/x86/paravirt to get the 
-pte_flags changes I made there, and unfortunately it didn't merge 
-completely cleanly, so there's probably some spurious changes in there.  
-I guess I can respin it into a clean branch.
-
-    J
+-Tony
