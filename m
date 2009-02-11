@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759651AbZBKAhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758596AbZBKAb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759651AbZBKAhe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:37:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757753AbZBKA2c
+	id S1758596AbZBKAb5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:31:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756984AbZBKA2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:28:32 -0500
-Received: from kroah.org ([198.145.64.141]:51264 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 19:28:14 -0500
+Received: from kroah.org ([198.145.64.141]:51040 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757708AbZBKA22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:28 -0500
-Date: Tue, 10 Feb 2009 16:25:11 -0800
+	id S1756550AbZBKA2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:28:12 -0500
+Date: Tue, 10 Feb 2009 16:24:36 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Michael Bramer <grisu@deb-support.de>,
-       Alan Cox <number6@the-village.bc.nu>
-Subject: [patch 27/56] Add support for 8-port RS-232 MIC-3620 from advantech
-Message-ID: <20090211002511.GB14660@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [patch 11/56] prevent kprobes from catching spurious page faults
+Message-ID: <20090211002436.GL14660@kroah.com>
 References: <20090211001439.873435357@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="add-support-for-8-port-rs-232-mic-3620-from-advantech.patch"
+Content-Disposition: inline; filename="prevent-kprobes-from-catching-spurious-page-faults.patch"
 In-Reply-To: <20090211002328.GA14660@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,42 +38,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Michael Bramer <michael@debsupport.de>
+From: Masami Hiramatsu <mhiramat@redhat.com>
 
-commit 78d70d48132ce4c678a95b771ffa1af4fb5a03ec upstream.
+commit 9be260a646bf76fa418ee519afa10196b3164681 upstream.
 
-This Patch add the device information for the
-MIC-3620 8-port RS-232 cPCI card from Advantech Co. Ltd.
+Prevent kprobes from catching spurious faults which will cause infinite
+recursive page-fault and memory corruption by stack overflow.
 
-Signed-off-by: Michael Bramer <grisu@deb-support.de>
-Signed-off-by: Alan Cox <number6@the-village.bc.nu>
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/serial/8250_pci.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/x86/mm/fault.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
---- a/drivers/serial/8250_pci.c
-+++ b/drivers/serial/8250_pci.c
-@@ -770,6 +770,8 @@ pci_default_setup(struct serial_private 
- #define PCI_SUBDEVICE_ID_OCTPRO422	0x0208
- #define PCI_SUBDEVICE_ID_POCTAL232	0x0308
- #define PCI_SUBDEVICE_ID_POCTAL422	0x0408
-+#define PCI_VENDOR_ID_ADVANTECH		0x13fe
-+#define PCI_DEVICE_ID_ADVANTECH_PCI3620	0x3620
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -607,8 +607,6 @@ void __kprobes do_page_fault(struct pt_r
  
- /* Unknown vendors/cards - this should not be in linux/pci_ids.h */
- #define PCI_SUBDEVICE_ID_UNKNOWN_0x1584	0x1584
-@@ -2055,6 +2057,10 @@ static int pciserial_resume_one(struct p
- #endif
+ 	si_code = SEGV_MAPERR;
  
- static struct pci_device_id serial_pci_tbl[] = {
-+	/* Advantech use PCI_DEVICE_ID_ADVANTECH_PCI3620 (0x3620) as 'PCI_SUBVENDOR_ID' */
-+	{	PCI_VENDOR_ID_ADVANTECH, PCI_DEVICE_ID_ADVANTECH_PCI3620,
-+		PCI_DEVICE_ID_ADVANTECH_PCI3620, 0x0001, 0, 0,
-+		pbn_b2_8_921600 },
- 	{	PCI_VENDOR_ID_V3, PCI_DEVICE_ID_V3_V960,
- 		PCI_SUBVENDOR_ID_CONNECT_TECH,
- 		PCI_SUBDEVICE_ID_CONNECT_TECH_BH8_232, 0, 0,
+-	if (notify_page_fault(regs))
+-		return;
+ 	if (unlikely(kmmio_fault(regs, address)))
+ 		return;
+ 
+@@ -638,6 +636,9 @@ void __kprobes do_page_fault(struct pt_r
+ 		if (spurious_fault(address, error_code))
+ 			return;
+ 
++		/* kprobes don't want to hook the spurious faults. */
++		if (notify_page_fault(regs))
++			return;
+ 		/*
+ 		 * Don't take the mm semaphore here. If we fixup a prefetch
+ 		 * fault we could otherwise deadlock.
+@@ -645,6 +646,9 @@ void __kprobes do_page_fault(struct pt_r
+ 		goto bad_area_nosemaphore;
+ 	}
+ 
++	/* kprobes don't want to hook the spurious faults. */
++	if (notify_page_fault(regs))
++		return;
+ 
+ #ifdef CONFIG_X86_32
+ 	/* It's safe to allow irq's after cr2 has been saved and the vmalloc
 
