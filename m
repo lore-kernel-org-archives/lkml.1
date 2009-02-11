@@ -1,53 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbZBKOEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbZBKOKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756920AbZBKOEl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 09:04:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756696AbZBKOE3
+	id S1755990AbZBKOKo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 09:10:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbZBKOKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 09:04:29 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:60391 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756644AbZBKOE1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 09:04:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=plafmuNoavpnWNydAQkPg6OR+9TgVpHePFSrYBqxxDBtJOxoKqcUrB0MrefA4sKolU
-         qFGyk8OdVUOZ9aEKFx809aJm7/sSVW9tX2Dx5ACP/ezqmFMJoVM7Aqxu8dh1FqQCi9Y4
-         EuTDld9H193hxyM0JFcSPozIducNzjZOgJpis=
-MIME-Version: 1.0
-In-Reply-To: <31230.1234357767@redhat.com>
-References: <20090210142443.629E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <27780.1234356078@redhat.com>
-	 <20090211214639.C3D0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <31230.1234357767@redhat.com>
-Date: Wed, 11 Feb 2009 23:04:26 +0900
-X-Google-Sender-Auth: ba2180a3627f19f7
-Message-ID: <2f11576a0902110604s525b3635yebe42aeef0e28ee3@mail.gmail.com>
-Subject: Re: [CRED bug?] 2.6.29-rc3 don't survive on stress workload
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: David Howells <dhowells@redhat.com>
-Cc: Serge Hallyn <serue@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 11 Feb 2009 09:10:36 -0500
+Received: from mga14.intel.com ([143.182.124.37]:63675 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752995AbZBKOKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 09:10:35 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,192,1233561600"; 
+   d="scan'208";a="109552961"
+Date: Wed, 11 Feb 2009 15:10:27 +0100
+From: Markus Metzger <markus.t.metzger@intel.com>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com
+Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
+       eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com
+Subject: [patch] x86, ptrace: fix double-free on race
+Message-ID: <20090211151027.A16643@sedona.ch.intel.com>
+Mime-Version: 1.0
+Content-Disposition: inline
+User-Agent: Mutt/1.2.5i
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Ptrace_detach() races with __ptrace_unlink() if the traced task is
+reaped while detaching. This might cause a double-free of the BTS
+buffer.
 
->
-> Can you see the attached patch?  You'll need to turn on
-> CONFIG_DEBUG_POISONED_PUT and you should keep CONFIG_DEBUG_SLAB on too.
->
-> I haven't tried compiling it for IA64, so the header change I made for that
-> may not compile.
+Change the ptrace_detach() path to only do the memory accounting in
+ptrace_bts_detach() and leave the buffer free to ptrace_bts_untrace()
+which will be called from __ptrace_unlink().
 
-maybe I can. but I can't do today.
-it because now is midnight in japan ;)
+The fix follows a proposal from Oleg Nesterov.
 
-please wait until tomorrow.
+
+Reported-by: Oleg Nesterov <oleg@redhat.com>
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+---
+
+Index: gits/arch/x86/kernel/ptrace.c
+===================================================================
+--- gits.orig/arch/x86/kernel/ptrace.c	2009-01-22 13:09:37.000000000 +0100
++++ gits/arch/x86/kernel/ptrace.c	2009-02-11 08:55:49.000000000 +0100
+@@ -810,12 +810,14 @@
+ 
+ static void ptrace_bts_detach(struct task_struct *child)
+ {
+-	if (unlikely(child->bts)) {
+-		ds_release_bts(child->bts);
+-		child->bts = NULL;
+-
+-		ptrace_bts_free_buffer(child);
+-	}
++	/* Ptrace_detach() races with ptrace_untrace() in case
++	 * the child dies and is reaped by another thread.
++	 *
++	 * We only do the memory accounting at this point and
++	 * leave the buffer deallocation and the bts tracer
++	 * release to ptrace_bts_untrace() which will be called
++	 * later on with tasklist_lock held. */
++	release_locked_buffer(child->bts_buffer, child->bts_size);
+ }
+ #else
+ static inline void ptrace_bts_fork(struct task_struct *tsk) {}
+Index: gits/include/linux/mm.h
+===================================================================
+--- gits.orig/include/linux/mm.h	2009-02-11 08:40:37.000000000 +0100
++++ gits/include/linux/mm.h	2009-02-11 08:51:28.000000000 +0100
+@@ -1304,5 +1304,6 @@
+ 
+ extern void *alloc_locked_buffer(size_t size);
+ extern void free_locked_buffer(void *buffer, size_t size);
++extern void release_locked_buffer(void *buffer, size_t size);
+ #endif /* __KERNEL__ */
+ #endif /* _LINUX_MM_H */
+Index: gits/mm/mlock.c
+===================================================================
+--- gits.orig/mm/mlock.c	2009-02-11 08:40:37.000000000 +0100
++++ gits/mm/mlock.c	2009-02-11 08:49:17.000000000 +0100
+@@ -660,7 +660,7 @@
+ 	return buffer;
+ }
+ 
+-void free_locked_buffer(void *buffer, size_t size)
++void release_locked_buffer(void *buffer, size_t size)
+ {
+ 	unsigned long pgsz = PAGE_ALIGN(size) >> PAGE_SHIFT;
+ 
+@@ -670,6 +670,11 @@
+ 	current->mm->locked_vm -= pgsz;
+ 
+ 	up_write(&current->mm->mmap_sem);
++}
++
++void free_locked_buffer(void *buffer, size_t size)
++{
++	release_locked_buffer(buffer, size);
+ 
+ 	kfree(buffer);
+ }
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
