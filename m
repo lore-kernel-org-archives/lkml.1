@@ -1,32 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757854AbZBKUUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757556AbZBKUZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757854AbZBKUUr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 15:20:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755061AbZBKUUj
+	id S1757556AbZBKUZk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 15:25:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756511AbZBKUZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 15:20:39 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60214 "EHLO mx3.mail.elte.hu"
+	Wed, 11 Feb 2009 15:25:30 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38021 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754784AbZBKUUi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 15:20:38 -0500
-Date: Wed, 11 Feb 2009 21:20:11 +0100
+	id S1756030AbZBKUZ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 15:25:29 -0500
+Date: Wed, 11 Feb 2009 21:25:12 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: "Luck, Tony" <tony.luck@intel.com>, Mike Travis <travis@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "isimatu.yasuaki@jp.fujitsu.com" <isimatu.yasuaki@jp.fujitsu.com>,
-       "kaneshige.kenji@jp.fujitsu.com" <kaneshige.kenji@jp.fujitsu.com>
-Subject: Re: [PATCH 0/8] git pull request for tip/tracing/core
-Message-ID: <20090211202011.GA8283@elte.hu>
-References: <20090211153650.GA19576@elte.hu> <alpine.DEB.1.10.0902111147450.15438@gandalf.stny.rr.com> <alpine.DEB.1.10.0902111158380.15438@gandalf.stny.rr.com> <20090211171622.GA13239@elte.hu> <alpine.DEB.1.10.0902111227570.15438@gandalf.stny.rr.com> <20090211173131.GA27546@elte.hu> <57C9024A16AD2D4C97DC78E552063EA361689C3B@orsmsx505.amr.corp.intel.com> <alpine.DEB.1.10.0902111320010.15438@gandalf.stny.rr.com> <57C9024A16AD2D4C97DC78E552063EA361689CF0@orsmsx505.amr.corp.intel.com> <alpine.DEB.1.10.0902111341170.15438@gandalf.stny.rr.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Dean Nelson <dcn@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Tejun Heo <tj@kernel.org>, linux-ia64 <linux-ia64@vger.kernel.org>,
+       linux-next <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] SGI IA64 UV: fix ia64 build error in the linux-next tree
+Message-ID: <20090211202512.GB8283@elte.hu>
+References: <20090209162520.GA4882@sgi.com> <20090210132555.be1c1462.akpm@linux-foundation.org> <20090211150103.GA15814@sgi.com> <20090211150536.GE10525@elte.hu> <57C9024A16AD2D4C97DC78E552063EA361689D7D@orsmsx505.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0902111341170.15438@gandalf.stny.rr.com>
+In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA361689D7D@orsmsx505.amr.corp.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,35 +37,33 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+* Luck, Tony <tony.luck@intel.com> wrote:
 
+> > What question was that? Folding back across that distance is not possible
+> > in a Git workflow. I do regular cross-builds - the build bug did not trigger
+> > with the ia64 defconfig.
 > 
-> On Wed, 11 Feb 2009, Luck, Tony wrote:
+> I'm confused by this, as it definitely triggered for me.  Perhaps
+> my build scripts do things a bit differently.  Essentially I do:
 > 
-> > > The bits in question is really the number of possible nested interrupts
-> > > that can happen. We take the paranoid approach that we can have a max
-> > > nesting of NR_IRQS. Perhaps this can be changed, and just do a max of
-> > > 1<<10 nesting? And have a big warn on if it happens to be bigger, or fall
-> > > to another counter if it is bigger.
-> > >
-> > > 1000 nested IRQs seems a bit extreme :-/
-> > 
-> > Ah, I see.  Then the answer is very different.  The number of nested
-> > interrupts possible on a cpu is limited by the number of priority
-> > classes for interrupts (See Table 5-8 on page 2:112 of the Itanium
-> > software developers manual).  Effectively the max nesting depth is
-> > 16.
-> > 
-> > 1000 nested interrupts would be certain to run us out of stack.
+>         $ for c in `ls arch/ia64/configs`
+>         > do
+>         >       cp arch/ia64/configs/$i .config
+>         >       yes '' | make oldconfig
+>         >       make
+>         > done
 > 
-> Ingo,
-> 
-> Do you think this is a good assumption to make, that no arch will have 
-> over 1<<10 nested interrupts. We can add a WARN_ON if it happens. Then we 
-> can make all archs have a 10 bit offset. Smaller may also be sufficient.
+> Which takes the default answer for any new questions that crop
+> up.  This enabled the GRU driver in the case of the generic_defconfig,
+> and so the build failed because of the lack of asm/uv.h
 
-That's a fair assumption, yes. No need for a WARN_ON() (it slows down a critical 
-path) - things will get very colorful much sooner than that, due to kernel stack 
-overflow.
+hm, my build scripts do (in essence):
+
+ make mrproper
+ make ARCH=ia64 defconfig
+
+hm, GRU is enabled as a module. I generally build the =y items, i.e. the
+vmlinux. There's around 20 thousand modules enabled in various defconfigs,
+that's a _lot_ of time to build.
 
 	Ingo
