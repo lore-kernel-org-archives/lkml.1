@@ -1,123 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757662AbZBKSfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758325AbZBKSgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757662AbZBKSfg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 13:35:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754886AbZBKSf2
+	id S1758325AbZBKSgV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 13:36:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758159AbZBKSgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 13:35:28 -0500
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:52247 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754378AbZBKSf1 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 13:35:27 -0500
-From: Bhavesh Davda <bhavesh@vmware.com>
-To: Fenghua Yu <fenghua.yu@intel.com>, David Woodhouse <dwmw2@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.sc.intel.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
-       Tomas Winkler <tomas.winkler@intel.com>, Zhu Yi <yi.zhu@intel.com>,
-       Chris Wright <chrisw@sous-sol.org>
-CC: "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Date: Wed, 11 Feb 2009 10:35:23 -0800
-Subject: RE: [PATCH]iwlan dma mapping read and write changes
-Thread-Topic: [PATCH]iwlan dma mapping read and write changes
-Thread-Index: AcmMd06axlaX3nZjTEykWUJ2Z4AU4AAACLxg
-Message-ID: <AF9CD7A487028E428749836D21102612201D593E65@PA-EXMBX02.vmware.com>
-References: <20081001165606.GA21279@linux-os.sc.intel.com>
- <20090211182648.GA1661@linux-os.sc.intel.com>
-In-Reply-To: <20090211182648.GA1661@linux-os.sc.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="Windows-1252"
-Content-Transfer-Encoding: 8BIT
+	Wed, 11 Feb 2009 13:36:09 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:26257 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757711AbZBKSgH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 13:36:07 -0500
+X-IronPort-AV: E=Sophos;i="4.38,193,1233532800"; 
+   d="scan'208";a="247549229"
+From: Roland Dreier <rdreier@cisco.com>
+To: Steve Wise <swise@opengridcomputing.com>
+Cc: randy.dunlap@oracle.com, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: [ofa-general] [PATCH 2.6.30] RDMA/cxgb3: Remove modulo math.
+References: <20090210184448.22891.31130.stgit@dell3.ogc.int>
+	<adamyctajv8.fsf@cisco.com> <4992F26A.4030800@opengridcomputing.com>
+	<adatz70972e.fsf@cisco.com> <499319CF.6050204@opengridcomputing.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 11 Feb 2009 10:36:01 -0800
+In-Reply-To: <499319CF.6050204@opengridcomputing.com> (Steve Wise's message of
+	"Wed, 11 Feb 2009 12:32:47 -0600")
+Message-ID: <adak57w95ym.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 11 Feb 2009 18:36:01.0842 (UTC) FILETIME=[96F53920:01C98C77]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Looks good to me. Ship it!
+ > > Is it possible for the page to be bigger than 4GB?  If so then yes you
+ > > might be chopping off high-order bits or something.
 
-- Bhavesh
- 
-Bhavesh P. Davda
+ > Yes it is possible.
+ > 
+ > A MR can be created with an iov_base of say 0xffffffff00000000.
+ > 
+ > Then any sge.addr entries would be the iob_base + any offset.
 
-> -----Original Message-----
-> From: iommu-bounces@lists.linux-foundation.org [mailto:iommu-
-> bounces@lists.linux-foundation.org] On Behalf Of Fenghua Yu
-> Sent: Wednesday, February 11, 2009 10:27 AM
-> To: David Woodhouse; Ingo Molnar; Stephen Rothwell; Andrew Morton;
-> Johannes Berg; Emmanuel Grumbach; Tomas Winkler; Zhu Yi; Chris Wright
-> Cc: iommu@lists.linux-foundation.org; LKML
-> Subject: [PATCH]iwlan dma mapping read and write changes
-> 
-> When iwlan runs on IOMMU, IOMMU generates a lot of PTE write faults
-> because PTE
-> write bit is not set on some of PTE's. This is because iwlan driver
-> calls DMA
-> mapping with PCI_DMA_TODEVICE which is read only in mapping PTE. But
-> iwlan device
-> actually writes to the mapped page to update its contents. This issue
-> is not
-> exposed in swiotlb. But VT-d hardware can capture this fault and stop
-> the fault
-> transaction.
-> 
-> The following patch fixes the issue.
-> 
-> Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
-> 
-> ---
-> 
->  iwl-tx.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> --- a/drivers/net/wireless/iwlwifi/iwl-tx.c.orig	2009-02-10
-> 21:28:45.000000000 -0800
-> +++ b/drivers/net/wireless/iwlwifi/iwl-tx.c	2009-02-10
-> 21:41:02.000000000 -0800
-> @@ -148,7 +148,7 @@ static void iwl_hw_txq_free_tfd(struct i
->  		pci_unmap_single(dev,
->  				pci_unmap_addr(&txq->cmd[index]->meta,
-> mapping),
->  				pci_unmap_len(&txq->cmd[index]->meta, len),
-> -				PCI_DMA_TODEVICE);
-> +				PCI_DMA_BIDIRECTIONAL);
-> 
->  	/* Unmap chunks, if any. */
->  	for (i = 1; i < num_tbs; i++) {
-> @@ -964,7 +964,7 @@ int iwl_tx_skb(struct iwl_priv *priv, st
->  	 * within command buffer array. */
->  	txcmd_phys = pci_map_single(priv->pci_dev,
->  				    out_cmd, sizeof(struct iwl_cmd),
-> -				    PCI_DMA_TODEVICE);
-> +				    PCI_DMA_BIDIRECTIONAL);
->  	pci_unmap_addr_set(&out_cmd->meta, mapping, txcmd_phys);
->  	pci_unmap_len_set(&out_cmd->meta, len, sizeof(struct iwl_cmd));
->  	/* Add buffer containing Tx command and MAC(!) header to TFD's
-> @@ -1115,7 +1115,7 @@ int iwl_enqueue_hcmd(struct iwl_priv *pr
->  			IWL_MAX_SCAN_SIZE : sizeof(struct iwl_cmd);
-> 
->  	phys_addr = pci_map_single(priv->pci_dev, out_cmd,
-> -				   len, PCI_DMA_TODEVICE);
-> +				   len, PCI_DMA_BIDIRECTIONAL);
->  	pci_unmap_addr_set(&out_cmd->meta, mapping, phys_addr);
->  	pci_unmap_len_set(&out_cmd->meta, len, len);
->  	phys_addr += offsetof(struct iwl_cmd, hdr);
-> @@ -1212,7 +1212,7 @@ static void iwl_hcmd_queue_reclaim(struc
->  	pci_unmap_single(priv->pci_dev,
->  		pci_unmap_addr(&txq->cmd[cmd_idx]->meta, mapping),
->  		pci_unmap_len(&txq->cmd[cmd_idx]->meta, len),
-> -		PCI_DMA_TODEVICE);
-> +		PCI_DMA_BIDIRECTIONAL);
-> 
->  	for (idx = iwl_queue_inc_wrap(idx, q->n_bd); q->read_ptr != idx;
->  	     q->read_ptr = iwl_queue_inc_wrap(q->read_ptr, q->n_bd)) {
-> _______________________________________________
-> iommu mailing list
-> iommu@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/iommu
+But the code we're talking about is:
+
+		/* to in the WQE == the offset into the page */
+		wqe->recv.sgl[i].to = cpu_to_be64(((u32) wr->sg_list[i].addr) %
+				(1UL << (12 + page_size[i])));
+
+so it seems the top address bits don't matter unless page_size[i] is at
+least 20 -- in which case using 1UL to shift overflows on 32 bits anyway...
+
+ > So you are handling the offset patch that will make it u64 and remove
+ > the mod usage, correct?
+
+Yeah, I rolled the fix into the "offset needs to be u64" patch, it
+should be in linux-next by now (or at least in my for-next branch).
+
+ - R.
