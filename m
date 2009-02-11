@@ -1,102 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbZBKHDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbZBKHH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755282AbZBKHDU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 02:03:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbZBKHDL
+	id S1755423AbZBKHH3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 02:07:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbZBKHHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 02:03:11 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:57166 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751555AbZBKHDK (ORCPT
+	Wed, 11 Feb 2009 02:07:09 -0500
+Received: from harmaja.edelkey.net ([213.138.147.141]:51275 "EHLO
+	harmaja.edelkey.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751555AbZBKHHI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 02:03:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=iT3LrmN4ZtfrndndOzye5XnXnG2QEGo3Db4blIF73OtviMxvBYVzqk9ZTzZQ7wYlX3
-         zIqRkBgrcGYK98JYiC8Uv++CsQOIU3pWPQ5ZTp1cASKjKCIeDE3nwcz/6mv0u6zxVWan
-         X3/SibUBW1dEFjtfmoR1yRgE2HbSfp0kbNNCw=
-Message-ID: <49927828.5090300@gmail.com>
-Date: Wed, 11 Feb 2009 08:03:04 +0100
-From: Markus Metzger <markus.t.metzger@googlemail.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: Markus Metzger <markus.t.metzger@googlemail.com>,
-       "Metzger, Markus T" <markus.t.metzger@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH, for 2.6.29] ptrace: fix the usage of ptrace_fork()
-References: <20090209010233.GA26444@redhat.com> <20090209012824.GA26461@redhat.com> <928CFBE8E7CB0040959E56B4EA41A77E4A1E7C8B@irsmsx504.ger.corp.intel.com> <20090209193625.GA4808@redhat.com> <928CFBE8E7CB0040959E56B4EA41A77E4A1E82FE@irsmsx504.ger.corp.intel.com> <20090210184014.GA30545@redhat.com> <1234297319.6112.23.camel@raistlin> <1234299614.6112.55.camel@raistlin> <20090210214804.GB4257@redhat.com>
-In-Reply-To: <20090210214804.GB4257@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Feb 2009 02:07:08 -0500
+From: Kalle Jokiniemi <kalle.jokiniemi@digia.com>
+To: david-b@pacbell.net
+Cc: lrg@slimlogic.co.uk, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, linux-omap@vger.kernel.org,
+       jouni.hogander@nokia.com, broonie@sirena.org.uk,
+       Kalle Jokiniemi <kalle.jokiniemi@digia.com>
+Subject: [PATCH 1/2] TWL: USB: disable VUSB regulators when cable unplugged
+Date: Wed, 11 Feb 2009 09:06:41 +0200
+Message-Id: <1234336002-26372-2-git-send-email-kalle.jokiniemi@digia.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <1234336002-26372-1-git-send-email-kalle.jokiniemi@digia.com>
+References: <>
+ <1234336002-26372-1-git-send-email-kalle.jokiniemi@digia.com>
+X-OriginalArrivalTime: 11 Feb 2009 07:06:45.0019 (UTC) FILETIME=[4C5ED6B0:01C98C17]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> On 02/10, Markus Metzger wrote:
->> On Tue, 2009-02-10 at 21:21 +0100, Markus Metzger wrote:
->>> On Tue, 2009-02-10 at 19:40 +0100, Oleg Nesterov wrote:
->>>> Perhaps, for 2.6.29, we can do something like the "patch" below?
->>>>
->>>> --- a/arch/x86/kernel/ptrace.c
->>>> +++ b/arch/x86/kernel/ptrace.c
->>>> @@ -810,11 +810,15 @@ static void ptrace_bts_untrace(struct ta
->>>>  
->>>>  static void ptrace_bts_detach(struct task_struct *child)
->>>>  {
->>>> +	// We can race with de_thread/do_wait which
->>>> +	// can do ptrace_bts_untrace() before us
->>>>  	if (unlikely(child->bts)) {
->>>> -		ds_release_bts(child->bts);
->>>> -		child->bts = NULL;
->>>> -
->>>> -		ptrace_bts_free_buffer(child);
->>>> +		// This all will be freed by ptrace_bts_untrace()
->>>> +		// later, but we should update ->mm
->>>> +		down_write(->mmap_sem);
->>>> +		mm->total_vm  -= bts_size;
->>>> +		mm->locked_vm -= bts_size);
->>>> +		up_write(->mmap_sem);
->>>>  	}
->>>>  }
->>>>  #else
->>>>
+From: Jouni Hogander <jouni.hogander@nokia.com>
 
-> The goal of this patch is to avoid the crash. The memory accounting
-> in ->mm is still not right. But at least, the tracer can not "steal"
-> the memory above the limits. And the "good" tracer should not exit
-> without detach, and it shouldn't release the tracee from sub-thread
-> if this can race with detach.
-> 
-> So, afaics, the worst thing which can happen is: the "bad" tracer
-> is punished by the "unfair" mm->xxx_vm numbers.
-> 
-> Except exec() can release the main thread whatever the tracer does...
-> 
->> We need to make ptrace_bts_untrace() ignore child->bts_size and clear
->> it in ptrace_bts_detach().
-> 
-> This is worse, now we can leak the memory if the tracer doesn't
-> do ptrace_detach().
+This patch disables USB regulators VUSB1V5, VUSB1V8, and VUSB3V1
+when the USB cable is unplugged to reduce power consumption.
 
-I see.
+Signed-off-by: Jouni Hogander <jouni.hogander@nokia.com>
+Signed-off-by: Kalle Jokiniemi <kalle.jokiniemi@digia.com>
+---
+ drivers/usb/otg/twl4030-usb.c |   45 +++++++++++++++++++++++++++++++++++-----
+ 1 files changed, 39 insertions(+), 6 deletions(-)
 
-If the tracer dies and bypasses detach, the next tracer to trace the tracee
-would get the memory refunded when he configures branch tracing - unless we take 
-care about this in ptrace_bts_configure() and only refund the memory when there 
-was a buffer to free.
+diff --git a/drivers/usb/otg/twl4030-usb.c b/drivers/usb/otg/twl4030-usb.c
+index 416e441..29df421 100644
+--- a/drivers/usb/otg/twl4030-usb.c
++++ b/drivers/usb/otg/twl4030-usb.c
+@@ -34,6 +34,8 @@
+ #include <linux/delay.h>
+ #include <linux/usb/otg.h>
+ #include <linux/i2c/twl4030.h>
++#include <linux/regulator/consumer.h>
++#include <linux/err.h>
+ 
+ 
+ /* Register defines */
+@@ -246,6 +248,11 @@ struct twl4030_usb {
+ 	struct otg_transceiver	otg;
+ 	struct device		*dev;
+ 
++	/* TWL4030 internal USB regulator supplies */
++	struct regulator	*usb1v5;
++	struct regulator	*usb1v8;
++	struct regulator	*usb3v1;
++
+ 	/* for vbus reporting with irqs disabled */
+ 	spinlock_t		lock;
+ 
+@@ -434,6 +441,12 @@ static void twl4030_phy_power(struct twl4030_usb *twl, int on)
+ 
+ 	pwr = twl4030_usb_read(twl, PHY_PWR_CTRL);
+ 	if (on) {
++		if (twl->usb1v5)
++			regulator_enable(twl->usb1v5);
++		if (twl->usb1v8)
++			regulator_enable(twl->usb1v8);
++		if (twl->usb3v1)
++			regulator_enable(twl->usb3v1);
+ 		pwr &= ~PHY_PWR_PHYPWD;
+ 		WARN_ON(twl4030_usb_write_verify(twl, PHY_PWR_CTRL, pwr) < 0);
+ 		twl4030_usb_write(twl, PHY_CLK_CTRL,
+@@ -443,6 +456,12 @@ static void twl4030_phy_power(struct twl4030_usb *twl, int on)
+ 	} else  {
+ 		pwr |= PHY_PWR_PHYPWD;
+ 		WARN_ON(twl4030_usb_write_verify(twl, PHY_PWR_CTRL, pwr) < 0);
++		if (twl->usb1v5)
++			regulator_disable(twl->usb1v5);
++		if (twl->usb1v8)
++			regulator_disable(twl->usb1v8);
++		if (twl->usb3v1)
++			regulator_disable(twl->usb3v1);
+ 	}
+ }
+ 
+@@ -470,6 +489,8 @@ static void twl4030_phy_resume(struct twl4030_usb *twl)
+ 
+ static void twl4030_usb_ldo_init(struct twl4030_usb *twl)
+ {
++	struct regulator	*reg;
++
+ 	/* Enable writing to power configuration registers */
+ 	twl4030_i2c_write_u8(TWL4030_MODULE_PM_MASTER, 0xC0, PROTECT_KEY);
+ 	twl4030_i2c_write_u8(TWL4030_MODULE_PM_MASTER, 0x0C, PROTECT_KEY);
+@@ -480,16 +501,25 @@ static void twl4030_usb_ldo_init(struct twl4030_usb *twl)
+ 	/* input to VUSB3V1 LDO is from VBAT, not VBUS */
+ 	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0x14, VUSB_DEDICATED1);
+ 
+-	/* turn on 3.1V regulator */
+-	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0x20, VUSB3V1_DEV_GRP);
++	/* Initialize 3.1V regulator */
++	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0, VUSB3V1_DEV_GRP);
++	reg = regulator_get(twl->dev, "usb3v1");
++	if (!IS_ERR(reg))
++		twl->usb3v1 = reg;
+ 	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0, VUSB3V1_TYPE);
+ 
+-	/* turn on 1.5V regulator */
+-	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0x20, VUSB1V5_DEV_GRP);
++	/* Initialize 1.5V regulator */
++	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0, VUSB1V5_DEV_GRP);
++	reg = regulator_get(twl->dev, "usb1v5");
++	if (!IS_ERR(reg))
++		twl->usb1v5 = reg;
+ 	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0, VUSB1V5_TYPE);
+ 
+-	/* turn on 1.8V regulator */
+-	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0x20, VUSB1V8_DEV_GRP);
++	/* Initialize 1.8V regulator */
++	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0, VUSB1V8_DEV_GRP);
++	reg = regulator_get(twl->dev, "usb1v8");
++	if (!IS_ERR(reg))
++		twl->usb1v8 = reg;
+ 	twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER, 0, VUSB1V8_TYPE);
+ 
+ 	/* disable access to power configuration registers */
+@@ -688,6 +718,9 @@ static int __exit twl4030_usb_remove(struct platform_device *pdev)
+ 	twl4030_usb_clear_bits(twl, POWER_CTRL, POWER_CTRL_OTG_ENAB);
+ 
+ 	twl4030_phy_power(twl, 0);
++	regulator_put(twl->usb1v5);
++	regulator_put(twl->usb1v8);
++	regulator_put(twl->usb3v1);
+ 
+ 	kfree(twl);
+ 
+-- 
+1.5.4.3
 
-But this would complicate the code even more.
-
-I think that the underlying problem is that ptrace_detach() can be bypassed.
-This bypasses also arch-specific cleanup code - that's why I added 
-arch_ptrace_untrace().
-It would all be very simple if that were not the case.
-
-regards,
-markus.
