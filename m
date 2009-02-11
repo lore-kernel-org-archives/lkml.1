@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760403AbZBKAqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757974AbZBKArZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760403AbZBKAqm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:46:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757908AbZBKA2z
+	id S1757974AbZBKArZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:47:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757922AbZBKA25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:28:55 -0500
-Received: from kroah.org ([198.145.64.141]:51638 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 19:28:57 -0500
+Received: from kroah.org ([198.145.64.141]:51664 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757899AbZBKA2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:53 -0500
-Date: Tue, 10 Feb 2009 16:25:59 -0800
+	id S1757915AbZBKA2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:28:55 -0500
+Date: Tue, 10 Feb 2009 16:26:04 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Oliver Neukum <oneukum@suse.de>
-Subject: [patch 51/56] USB: new id for ti_usb_3410_5052 driver
-Message-ID: <20090211002559.GZ14660@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Oliver Neukum <oneukum@suse.de>,
+       Chris Adams <cmadams@hiwaay.net>
+Subject: [patch 53/56] USB: two more usb ids for ti_usb_3410_5052
+Message-ID: <20090211002604.GB14660@kroah.com>
 References: <20090211001439.873435357@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-new-id-for-ti_usb_3410_5052-driver.patch"
+Content-Disposition: inline; filename="usb-two-more-usb-ids-for-ti_usb_3410_5052.patch"
 In-Reply-To: <20090211002328.GA14660@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,53 +41,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Oliver Neukum <oliver@neukum.org>
 
-commit 1a1fab513734b3a4fca1bee8229e5ff7e1cb873c upstream.
+commit 97dcf0416e390fc5c997d4ea60e6f975c7b7a1c3 upstream.
 
-This adds a new device id
+This patch adds device IDs and balances the counts to make the
+hot ID additioning mechanism work.
 
 Signed-off-by: Oliver Neukum <oneukum@suse.de>
+Cc: Chris Adams <cmadams@hiwaay.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/ti_usb_3410_5052.c |    3 +++
+ drivers/usb/serial/ti_usb_3410_5052.c |   10 +++++++---
  drivers/usb/serial/ti_usb_3410_5052.h |    2 ++
- 2 files changed, 5 insertions(+)
+ 2 files changed, 9 insertions(+), 3 deletions(-)
 
 --- a/drivers/usb/serial/ti_usb_3410_5052.c
 +++ b/drivers/usb/serial/ti_usb_3410_5052.c
-@@ -230,6 +230,7 @@ static unsigned int product_5052_count;
- static struct usb_device_id ti_id_table_3410[1+TI_EXTRA_VID_PID_COUNT+1] = {
+@@ -227,13 +227,15 @@ static unsigned int product_5052_count;
+ /* the array dimension is the number of default entries plus */
+ /* TI_EXTRA_VID_PID_COUNT user defined entries plus 1 terminating */
+ /* null entry */
+-static struct usb_device_id ti_id_table_3410[1+TI_EXTRA_VID_PID_COUNT+1] = {
++static struct usb_device_id ti_id_table_3410[10+TI_EXTRA_VID_PID_COUNT+1] = {
  	{ USB_DEVICE(TI_VENDOR_ID, TI_3410_PRODUCT_ID) },
  	{ USB_DEVICE(TI_VENDOR_ID, TI_3410_EZ430_ID) },
-+	{ USB_DEVICE(IBM_VENDOR_ID, IBM_4543_PRODUCT_ID) },
+ 	{ USB_DEVICE(IBM_VENDOR_ID, IBM_4543_PRODUCT_ID) },
++	{ USB_DEVICE(IBM_VENDOR_ID, IBM_454B_PRODUCT_ID) },
++	{ USB_DEVICE(IBM_VENDOR_ID, IBM_454C_PRODUCT_ID) },
  };
  
- static struct usb_device_id ti_id_table_5052[4+TI_EXTRA_VID_PID_COUNT+1] = {
-@@ -237,6 +238,7 @@ static struct usb_device_id ti_id_table_
+-static struct usb_device_id ti_id_table_5052[4+TI_EXTRA_VID_PID_COUNT+1] = {
++static struct usb_device_id ti_id_table_5052[5+TI_EXTRA_VID_PID_COUNT+1] = {
+ 	{ USB_DEVICE(TI_VENDOR_ID, TI_5052_BOOT_PRODUCT_ID) },
  	{ USB_DEVICE(TI_VENDOR_ID, TI_5152_BOOT_PRODUCT_ID) },
  	{ USB_DEVICE(TI_VENDOR_ID, TI_5052_EEPROM_PRODUCT_ID) },
- 	{ USB_DEVICE(TI_VENDOR_ID, TI_5052_FIRMWARE_PRODUCT_ID) },
-+	{ USB_DEVICE(IBM_VENDOR_ID, IBM_4543_PRODUCT_ID) },
+@@ -241,7 +243,7 @@ static struct usb_device_id ti_id_table_
+ 	{ USB_DEVICE(IBM_VENDOR_ID, IBM_4543_PRODUCT_ID) },
  };
  
- static struct usb_device_id ti_id_table_combined[] = {
-@@ -246,6 +248,7 @@ static struct usb_device_id ti_id_table_
- 	{ USB_DEVICE(TI_VENDOR_ID, TI_5152_BOOT_PRODUCT_ID) },
+-static struct usb_device_id ti_id_table_combined[] = {
++static struct usb_device_id ti_id_table_combined[14+2*TI_EXTRA_VID_PID_COUNT+1] = {
+ 	{ USB_DEVICE(TI_VENDOR_ID, TI_3410_PRODUCT_ID) },
+ 	{ USB_DEVICE(TI_VENDOR_ID, TI_3410_EZ430_ID) },
+ 	{ USB_DEVICE(TI_VENDOR_ID, TI_5052_BOOT_PRODUCT_ID) },
+@@ -249,6 +251,8 @@ static struct usb_device_id ti_id_table_
  	{ USB_DEVICE(TI_VENDOR_ID, TI_5052_EEPROM_PRODUCT_ID) },
  	{ USB_DEVICE(TI_VENDOR_ID, TI_5052_FIRMWARE_PRODUCT_ID) },
-+	{ USB_DEVICE(IBM_VENDOR_ID, IBM_4543_PRODUCT_ID) },
+ 	{ USB_DEVICE(IBM_VENDOR_ID, IBM_4543_PRODUCT_ID) },
++	{ USB_DEVICE(IBM_VENDOR_ID, IBM_454B_PRODUCT_ID) },
++	{ USB_DEVICE(IBM_VENDOR_ID, IBM_454C_PRODUCT_ID) },
  	{ }
  };
  
 --- a/drivers/usb/serial/ti_usb_3410_5052.h
 +++ b/drivers/usb/serial/ti_usb_3410_5052.h
-@@ -27,7 +27,9 @@
- 
- /* Vendor and product ids */
- #define TI_VENDOR_ID			0x0451
-+#define IBM_VENDOR_ID			0x04b3
+@@ -30,6 +30,8 @@
+ #define IBM_VENDOR_ID			0x04b3
  #define TI_3410_PRODUCT_ID		0x3410
-+#define IBM_4543_PRODUCT_ID		0x4543
+ #define IBM_4543_PRODUCT_ID		0x4543
++#define IBM_454B_PRODUCT_ID		0x454b
++#define IBM_454C_PRODUCT_ID		0x454c
  #define TI_3410_EZ430_ID		0xF430  /* TI ez430 development tool */
  #define TI_5052_BOOT_PRODUCT_ID		0x5052	/* no EEPROM, no firmware */
  #define TI_5152_BOOT_PRODUCT_ID		0x5152	/* no EEPROM, no firmware */
