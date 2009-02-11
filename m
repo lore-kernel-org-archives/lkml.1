@@ -1,66 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757921AbZBKUJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757544AbZBKULk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757921AbZBKUJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 15:09:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755342AbZBKUJs
+	id S1757544AbZBKULk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 15:11:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756053AbZBKULb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 15:09:48 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36633 "EHLO mx3.mail.elte.hu"
+	Wed, 11 Feb 2009 15:11:31 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41265 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750875AbZBKUJr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 15:09:47 -0500
-Date: Wed, 11 Feb 2009 21:09:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: hpa@zytor.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       venkatesh.pallipadi@intel.com, jeffm@suse.com
-Subject: Re: [patch] x86, pat: fix warn_on_once() while mapping 0-1MB range
-	with /dev/mem
-Message-ID: <20090211200938.GA2421@elte.hu>
-References: <1234380023.16238.52.camel@vayu>
+	id S1753084AbZBKULa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 15:11:30 -0500
+Message-ID: <499330D9.6090808@redhat.com>
+Date: Wed, 11 Feb 2009 22:11:05 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1234380023.16238.52.camel@vayu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Greg KH <greg@kroah.com>,
+       ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [BUG] Linux 2.6.28.4 freezing on a 32-bits x86 Thinkpad T43p
+References: <20090204211106.GA30824@Krystal> <20090204211759.GK22608@elte.hu> <20090211193125.GA30975@Krystal>
+In-Reply-To: <20090211193125.GA30975@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mathieu Desnoyers wrote:
+> * Ingo Molnar (mingo@elte.hu) wrote:
+>   
+>> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+>>
+>>     
+>>> Hi,
+>>>
+>>> I've started experiencing freezes on my uniprocessor laptop with a
+>>> 2.6.28.2/2.6.28.3 kernel with the LTTng patchset applied
+>>> (http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git;a=shortlog;h=2.6.28.3-lttng-0.88).
+>>> Instrumentation is dynamically disabled when this happens, so it's
+>>> unlikely that the LTTng patches would be causing this problem.
+>>>
+>>> It happens when I work in X. The keyboard and mouse stop responding, and
+>>> the machine stops answering to the network. It may take a few days to
+>>> reproduce, and happens randomly when I actively use the computer (e.g
+>>> surfing with firefox).
+>>>
+>>> I managed to install a 50' serial cable through my appartment to capture
+>>> the following OOPS. It points to a NULL pointer dereference in
+>>> kernel/timer.c:cascade(). My config has hrtimers and no_hz activated.
+>>> I suspect a race with with timer base lock or interrupt disabling
+>>> protecting the timer base.
+>>>
+>>> Any idea what is going on with the timers here ? In the meantime, I'll
+>>> try to enable more debugging options to get more information when the
+>>> problem reappears.
+>>>       
+>> hm, it would be nice to know which timer got corrupted. It could possibly 
+>> have gotten kfreed, reallocated, overwritten - and crashes things like this.
+>>
+>> There's two ways to debug such things more directly:
+>>
+>> 1) enable CONFIG_PAGEALLOC=y. These days its plenty fast and its overhead 
+>>    cannot be noticed.
+>>
+>> 2) enable DEBUGOBJECTS - you also need 'debugobjects' on the boot line for 
+>>    this to be activated. This will report such corruptions sooner and in a 
+>>    more specific way.
+>>
+>> 3) any particular reason why you have:
+>>
+>>     # CONFIG_DEBUG_KERNEL is not set
+>>
+>>    There's a number of goodies in that menu. CONFIG_LIST_DEBUG=y for 
+>>    example.
+>>
+>> It is highly unlikely that the timer list code is the culprit here - it has 
+>> not changed in ages and it is very intensively used by all subsystems so 
+>> breakages in it get found and reported very, very quickly.
+>>
+>> btw., your stacktrace also has this:
+>>
+>>     
+>>>  [<c1010000>] kvm_mmu_pte_write+0xb0/0xa60
+>>>       
+>> So in theory there could be some kvm induced memory corruption as well.
+>>
+>> Hope this helps,
+>>
+>> 	Ingo
+>>     
+>
+> Hi Ingo,
+>
+> Thanks for the hints.
+>
+> Here is a new backtrace, taken with a huge amount of debugging active,
+> which still points to an interrupt handler nested over kvm_mmu_pte_write
+> as the culprit. It's weird that the kvm code gets called on my modest
+> Pentium M laptop, which I think has no VT-x support at all. I am not
+> running any KVM VMs on this machine. The problem still happens on
+> 2.6.28.4, and Slub redzones did not identify any memory corruption. This
+> could be due to kvm_mmu_pte_write which either should not be called at
+> all, or due to improper interrupt disabling in this function.
+>
+>   
 
-* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+I think kvm_mmu_pte_write is just random crap on the stack here.  Your 
+cpu definitely has no VT support so that code cannot be enabled at all.
 
-> From: Suresh Siddha <suresh.b.siddha@intel.com>
-> Subject: x86, pat: fix warn_on_once() while mapping 0-1MB range
-> with /dev/mem
-> 
-> Jeff Mahoney reported:
-> > With Suse's hwinfo tool, on -tip:
-> > WARNING: at arch/x86/mm/pat.c:637 reserve_pfn_range+0x5b/0x26d()
-> 
-> reserve_pfn_range() is not tracking the memory range below 1MB
-> as non-RAM and as such is inconsistent with similar checks in
-> reserve_memtype() and free_memtype()
-> 
-> Rename the pagerange_is_ram() to pat_pagerange_is_ram() and add the
-> "track legacy 1MB region as non RAM" condition.
-> 
-> And also, fix reserve_pfn_range() to return -EINVAL, when the pfn
-> range is RAM. This is to be consistent with this API design.
-> 
-> Reported-and-tested-by: Jeff Mahoney <jeffm@suse.com>
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> ---
+Note the address is 64KB aligned which further suggests it isn't a real EIP.
 
-applied to tip:x86/urgent, thanks guys!
 
-	Ingo
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
