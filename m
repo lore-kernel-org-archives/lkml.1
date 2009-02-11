@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757861AbZBKAla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758188AbZBKAcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757861AbZBKAla (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:41:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757833AbZBKA2m
+	id S1758188AbZBKAcn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:32:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757488AbZBKA2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:28:42 -0500
-Received: from kroah.org ([198.145.64.141]:51411 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 19:28:16 -0500
+Received: from kroah.org ([198.145.64.141]:51068 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757819AbZBKA2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:39 -0500
-Date: Tue, 10 Feb 2009 16:25:32 -0800
+	id S1756968AbZBKA2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:28:14 -0500
+Date: Tue, 10 Feb 2009 16:24:41 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Lachlan McIlroy <lachlan@sgi.com>,
-       Neil Brown <neilb@suse.de>
-Subject: [patch 37/56] XFS: set b_error from bio error in xfs_buf_bio_end_io
-Message-ID: <20090211002532.GL14660@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Tony Battersby <tonyb@cybernetics.com>,
+       Jiri Kosina <jkosina@suse.cz>, Hugh Dickins <hugh@veritas.com>
+Subject: [patch 13/56] shm: fix shmctl(SHM_INFO) lockup with !CONFIG_SHMEM
+Message-ID: <20090211002441.GN14660@kroah.com>
 References: <20090211001439.873435357@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="xfs-set-b_error-from-bio-error-in-xfs_buf_bio_end_io.patch"
+Content-Disposition: inline; filename="shm-fix-shmctl-lockup-with-config_shmem.patch"
 In-Reply-To: <20090211002328.GA14660@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,32 +39,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Lachlan McIlroy <lachlan@redback.melbourne.sgi.com>
+From: Tony Battersby <tonyb@cybernetics.com>
 
-commit cfbe52672fbc6f333892e8dde82c35e0a76aa5f5 upstream.
+commit a68e61e8ff2d46327a37b69056998b47745db6fa upstream.
 
-Preserve any error returned by the bio layer.
+shm_get_stat() assumes that the inode is a "struct shmem_inode_info",
+which is incorrect for !CONFIG_SHMEM (see fs/ramfs/inode.c:
+ramfs_get_inode() vs.  mm/shmem.c: shmem_get_inode()).
 
-Reviewed-by: Eric Sandeen <sandeen@sandeen.net>
-Reviewed-by: Tim Shimmin <tes@sgi.com>
-Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
-Cc: Neil Brown <neilb@suse.de>
+This bad assumption can cause shmctl(SHM_INFO) to lockup when
+shm_get_stat() tries to spin_lock(&info->lock).  Users of !CONFIG_SHMEM
+may encounter this lockup simply by invoking the 'ipcs' command.
+
+Reported by Jiri Olsa back in February 2008:
+http://lkml.org/lkml/2008/2/29/74
+
+Signed-off-by: Tony Battersby <tonyb@cybernetics.com>
+Cc: Jiri Kosina <jkosina@suse.cz>
+Reported-by: Jiri Olsa <olsajiri@gmail.com>
+Cc: Hugh Dickins <hugh@veritas.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/xfs/linux-2.6/xfs_buf.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ ipc/shm.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
---- a/fs/xfs/linux-2.6/xfs_buf.c
-+++ b/fs/xfs/linux-2.6/xfs_buf.c
-@@ -1114,8 +1114,7 @@ xfs_buf_bio_end_io(
- 	unsigned int		blocksize = bp->b_target->bt_bsize;
- 	struct bio_vec		*bvec = bio->bi_io_vec + bio->bi_vcnt - 1;
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -565,11 +565,15 @@ static void shm_get_stat(struct ipc_name
+ 			struct hstate *h = hstate_file(shp->shm_file);
+ 			*rss += pages_per_huge_page(h) * mapping->nrpages;
+ 		} else {
++#ifdef CONFIG_SHMEM
+ 			struct shmem_inode_info *info = SHMEM_I(inode);
+ 			spin_lock(&info->lock);
+ 			*rss += inode->i_mapping->nrpages;
+ 			*swp += info->swapped;
+ 			spin_unlock(&info->lock);
++#else
++			*rss += inode->i_mapping->nrpages;
++#endif
+ 		}
  
--	if (!test_bit(BIO_UPTODATE, &bio->bi_flags))
--		bp->b_error = EIO;
-+	xfs_buf_ioerror(bp, -error);
- 
- 	do {
- 		struct page	*page = bvec->bv_page;
+ 		total++;
 
