@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757556AbZBKUZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756968AbZBKU0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757556AbZBKUZk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 15:25:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756511AbZBKUZa
+	id S1756968AbZBKU0U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 15:26:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756309AbZBKU0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 15:25:30 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38021 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756030AbZBKUZ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 15:25:29 -0500
-Date: Wed, 11 Feb 2009 21:25:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Dean Nelson <dcn@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Tejun Heo <tj@kernel.org>, linux-ia64 <linux-ia64@vger.kernel.org>,
-       linux-next <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] SGI IA64 UV: fix ia64 build error in the linux-next tree
-Message-ID: <20090211202512.GB8283@elte.hu>
-References: <20090209162520.GA4882@sgi.com> <20090210132555.be1c1462.akpm@linux-foundation.org> <20090211150103.GA15814@sgi.com> <20090211150536.GE10525@elte.hu> <57C9024A16AD2D4C97DC78E552063EA361689D7D@orsmsx505.amr.corp.intel.com>
+	Wed, 11 Feb 2009 15:26:05 -0500
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:42684 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756214AbZBKU0E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 15:26:04 -0500
+Date: Wed, 11 Feb 2009 13:26:01 -0700
+From: Alex Chiang <achiang@hp.com>
+To: gregkh@suse.de
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sysfs: sysfs_add_one tells you _where_ the duplicate file
+	is
+Message-ID: <20090211202601.GC3402@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>, gregkh@suse.de,
+	linux-kernel <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA361689D7D@orsmsx505.amr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Give a better clue about where we might be creating duplicate
+files by displaying the parent's name as well.
 
-* Luck, Tony <tony.luck@intel.com> wrote:
+Signed-off-by: Alex Chiang <achiang@hp.com>
+---
+It would be nice to get a full path, but simply printing out the
+parent is cheap and more useful than what we have now.
 
-> > What question was that? Folding back across that distance is not possible
-> > in a Git workflow. I do regular cross-builds - the build bug did not trigger
-> > with the ia64 defconfig.
-> 
-> I'm confused by this, as it definitely triggered for me.  Perhaps
-> my build scripts do things a bit differently.  Essentially I do:
-> 
->         $ for c in `ls arch/ia64/configs`
->         > do
->         >       cp arch/ia64/configs/$i .config
->         >       yes '' | make oldconfig
->         >       make
->         > done
-> 
-> Which takes the default answer for any new questions that crop
-> up.  This enabled the GRU driver in the case of the generic_defconfig,
-> and so the build failed because of the lack of asm/uv.h
-
-hm, my build scripts do (in essence):
-
- make mrproper
- make ARCH=ia64 defconfig
-
-hm, GRU is enabled as a module. I generally build the =y items, i.e. the
-vmlinux. There's around 20 thousand modules enabled in various defconfigs,
-that's a _lot_ of time to build.
-
-	Ingo
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index 82d3b79..5828d1d 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -459,7 +459,8 @@ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+ 
+ 	ret = __sysfs_add_one(acxt, sd);
+ 	WARN(ret == -EEXIST, KERN_WARNING "sysfs: duplicate filename '%s' "
+-		       "can not be created\n", sd->s_name);
++		       "can not be created in %s\n",
++		       sd->s_name, acxt->parent_sd->s_name);
+ 	return ret;
+ }
+ 
