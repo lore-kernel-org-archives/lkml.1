@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756683AbZBKCj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbZBKCpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756683AbZBKCj7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 21:39:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755980AbZBKCjs
+	id S1755533AbZBKCpf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 21:45:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbZBKCp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 21:39:48 -0500
-Received: from mail-bw0-f167.google.com ([209.85.218.167]:46894 "EHLO
-	mail-bw0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755654AbZBKCjr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 21:39:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:from:to:cc:date:subject;
-        b=ASFdqbuJbIEGRzMcz7uQrADPhtjtZ2Fp0nvONr6Y3MCSw1hYoR/cDflXQ9mk9KzN7X
-         ZFjYVYFaHyHeQ4LTCq7NxAdYwfQp8jlHVTAF9spqspti7GD1jPDnPgn9vohxxqLV4Vx4
-         2Xa/N9d37ZlxyiL4evQmJ9Hf2ytVARScOei2U=
-Message-ID: <49923a71.0637560a.3732.1d45@mx.google.com>
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Date: Wed, 11 Feb 2009 02:51:30 +0100
-Subject: [PATCH 2/2] tracing/core: remove unused parameter in tracing_fill_pipe_page()
+	Tue, 10 Feb 2009 21:45:27 -0500
+Received: from ns2.suse.de ([195.135.220.15]:42533 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752451AbZBKCp1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 21:45:27 -0500
+Date: Tue, 10 Feb 2009 18:40:47 -0800
+From: Greg KH <gregkh@suse.de>
+To: Keith Packard <keithp@keithp.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Eric Anholt <eric@anholt.net>,
+       Dave Airlie <airlied@redhat.com>
+Subject: Re: [patch 05/56] agp/intel: Reduce extraneous PCI posting reads
+	during init
+Message-ID: <20090211024047.GA16565@suse.de>
+References: <20090211001439.873435357@mini.kroah.org> <20090211002422.GF14660@kroah.com> <1234318422.11303.51.camel@aiko.keithp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1234318422.11303.51.camel@aiko.keithp.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup
+On Tue, Feb 10, 2009 at 06:13:42PM -0800, Keith Packard wrote:
+> On Tue, 2009-02-10 at 16:24 -0800, Greg KH wrote:
+> > plain text document attachment
+> > (agp-intel-reduce-extraneous-pci-posting-reads-during-init.patch)
+> > 2.6.27-stable review patch.  If anyone has any objections, please let us know.
+> 
+> Not exactly a critical fix; more like a janitorial change, and only in
+> the start-up code path.
 
-The struct page *pages parameter is unused.
+People care about the speed of things in the start-up code path :)
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- kernel/trace/trace.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+thanks,
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 9c3b684..dd66168 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -2567,8 +2567,7 @@ static struct pipe_buf_operations tracing_pipe_buf_ops = {
- };
- 
- static size_t
--tracing_fill_pipe_page(struct page *pages, size_t rem,
--			struct trace_iterator *iter)
-+tracing_fill_pipe_page(size_t rem, struct trace_iterator *iter)
- {
- 	size_t count;
- 	int ret;
-@@ -2645,7 +2644,7 @@ static ssize_t tracing_splice_read_pipe(struct file *filp,
- 		if (!pages[i])
- 			break;
- 
--		rem = tracing_fill_pipe_page(pages[i], rem, iter);
-+		rem = tracing_fill_pipe_page(rem, iter);
- 
- 		/* Copy the data into the page, so we can start over. */
- 		ret = trace_seq_to_buffer(&iter->seq,
--- 
-1.6.1
-
-
+greg k-h
