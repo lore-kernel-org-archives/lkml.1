@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755583AbZBKIJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbZBKILP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755583AbZBKIJq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 03:09:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbZBKIJh
+	id S1755897AbZBKILP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 03:11:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbZBKIK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 03:09:37 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:51307 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752995AbZBKIJg (ORCPT
+	Wed, 11 Feb 2009 03:10:59 -0500
+Received: from mail-bw0-f167.google.com ([209.85.218.167]:39952 "EHLO
+	mail-bw0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752995AbZBKIK7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 03:09:36 -0500
+	Wed, 11 Feb 2009 03:10:59 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:date:message-id:subject:from:to:content-type
          :content-transfer-encoding;
-        b=IgyJ7T/C3f/WVDb6judRv2YCQiznts+ji2Pl5pfvEzxNb12OcWKlM0uv/lImPV0GFK
-         jk/G+WCm0zjzp5WvpD6c2wJek94EGJ9G+P2vwVexQQLWtMxC5k7BmlJGTWT9CDa6wYYH
-         gg2pB0k/kWatu4QBrLJ0rcmYune/kCpmHIntw=
+        b=vPtjky4xwCs2LAbLJxUSkrOk1xt8G2KJ1Xk8xImt+jWVLSXGGl+kVV/PNmj79nsIHm
+         r82tT7SJjfhIPVozWutMR86dT15MWJooJX1L/PATkBG3HBNAXnopg0HkYCxmxosE8CKY
+         C3Es4I3dLyW8kVlW7waZsajn6G0n6m5I5hRSY=
 MIME-Version: 1.0
-Date: Wed, 11 Feb 2009 09:09:34 +0100
-Message-ID: <19f34abd0902110009g4cdb1754na1cbf0acb6a93cce@mail.gmail.com>
-Subject: 2.6.29-rc3: BUG: scheduling while atomic: udevd/917/0x10000100
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Date: Wed, 11 Feb 2009 09:10:54 +0100
+Message-ID: <76392ee90902110010m1818e56esa2da4e4e88e762d1@mail.gmail.com>
+Subject: [2.6.28.1] INFO: task cron:4841 blocked for more than 120 seconds
+From: Folkert van Heusden <folkert.van.heusden@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,45 +31,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-Just got this:
+Since 2.6.26 my system (quadcore intel core 2 system) and definately
+also with 2.6.28.1 crashes after a few days of uptime. Well, crashes:
+it becomes unresponsive (can't log in with ssh and creating new imap
+sessions etc also fails) but still forwards network traffic.
+The netconsole gets filled with these messages:
 
-[  774.115554] BUG: scheduling while atomic: udevd/917/0x10000100
-[  774.117293] Modules linked in:
-[  774.117293] CPU 1:
-[  774.117293] Modules linked in:
-[  774.117293] Pid: 917, comm: udevd Not tainted 2.6.29-rc3 #223
-[  774.117293] RIP: 0010:[<ffffffff811b0eff>]  [<ffffffff811b0eff>]
-find_next_bit+0x17/0xa1
-[  774.117293] RSP: 0018:ffff88003e40bcd8  EFLAGS: 00000246
-[  774.117293] RAX: 0000000000000000 RBX: ffff88003e40bcd8 RCX: 00000000ffffffff
-[  774.117293] RDX: 0000000000000000 RSI: 0000000000000040 RDI: ffffffff8181cd80
-[  774.117293] RBP: ffffffff8100cf6e R08: 0000000000000040 R09: 0000000000000000
-[  774.117293] R10: ffff88003b090000 R11: 000000000000000a R12: ffff88003e5165a0
-[  774.117293] R13: 000000000003b08f R14: 0000000100000001 R15: 0000000000000000
-[  774.117293] FS:  0000000000000000(0000) GS:ffff88003f156f80(0063)
-knlGS:00000000f7f6d700
-[  774.117293] CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
-[  774.117293] CR2: 0000000008ff28bc CR3: 000000003e407000 CR4: 00000000000006a0
-[  774.117293] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[  774.117293] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[  774.117293] Call Trace:
-[  774.117293]  [<ffffffff81108a90>] ? show_stat+0x43e/0x4d6
-[  774.117293]  [<ffffffff810d6122>] ? seq_read+0x130/0x31a
-[  774.117293]  [<ffffffff81101f40>] ? proc_reg_read+0x80/0x9a
-[  774.117293]  [<ffffffff810bf40b>] ? vfs_read+0xad/0x107
-[  774.117293]  [<ffffffff810bf533>] ? sys_read+0x4c/0x73
-[  774.117293]  [<ffffffff8102d398>] ? sysenter_dispatch+0x7/0x27
-[  774.291296] ------------[ cut here ]------------
+[42265.700129] INFO: task cron:4841 blocked for more than 120 seconds.
+[42265.700139] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
+disables this message.
+[42265.700142] cron          D ffff88002802e700     0  4841   5367
+[42265.700148]  ffff880065101dd8 0000000000000082 ffff880065101e8c
+0000000000000292
+[42265.700159]  ffff88009a990ab0 ffffffff80550340 ffff88009a990d28
+0000000000000000
+[42265.700168]  0000000000000296 ffff88012bc059c0 00000000000000d0
+0000000000004111
+[42265.700176] Call Trace:
+[42265.700184]  [<ffffffff80464cb0>] schedule_timeout+0x1e/0xad
+[42265.700188]  [<ffffffff8046427f>] wait_for_common+0xc4/0x13d
+[42265.700194]  [<ffffffff8023a6fc>] default_wake_function+0x0/0xe
+[42265.700199]  [<ffffffff80241632>] do_fork+0x21e/0x285
+[42265.700202]  [<ffffffff80210dba>] system_call_fastpath+0x16/0x1b
+[42265.700206]  [<ffffffff80211247>] ptregscall_common+0x67/0xb0
 
-$ addr2line -e vmlinux -i ffffffff811b0eff ffffffff81108a90
-lib/find_next_bit.c:26
-fs/proc/stat.c:95
+[42265.700331] INFO: task cron:4845 blocked for more than 120 seconds.
+[42265.700333] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
+disables this message.
+[42265.700335] cron          D ffff88002802e700     0  4845   5367
+[42265.700340]  ffff88008c407dd8 0000000000000082 ffff88008c407e8c
+0000000000000292
+[42265.700349]  ffff88009e14a100 ffffffff80550340 ffff88009e14a378
+0000000000000000
+[42265.700357]  ffffffff80465fb7 ffffffff802c073f 0000000800000001
+ffff88009e14a100
+[42265.700365] Call Trace:
+[42265.700368]  [<ffffffff80465fb7>] _spin_lock+0x5/0x7
+[42265.700373]  [<ffffffff802c073f>] dup_fd+0x216/0x2bf
+[42265.700378]  [<ffffffff80464cb0>] schedule_timeout+0x1e/0xad
+[42265.700381]  [<ffffffff8046427f>] wait_for_common+0xc4/0x13d
+[42265.700384]  [<ffffffff8023a6fc>] default_wake_function+0x0/0xe
+[42265.700388]  [<ffffffff80241632>] do_fork+0x21e/0x285
+[42265.700391]  [<ffffffff80210dba>] system_call_fastpath+0x16/0x1b
+[42265.700395]  [<ffffffff80211247>] ptregscall_common+0x67/0xb0
 
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+--
+www.unixexpert.nl
