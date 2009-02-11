@@ -1,83 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758102AbZBKWpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756458AbZBKWp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758102AbZBKWpb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 17:45:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755795AbZBKWpS
+	id S1756458AbZBKWp7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 17:45:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbZBKWpt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 17:45:18 -0500
-Received: from www.tglx.de ([62.245.132.106]:33961 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755661AbZBKWpQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 17:45:16 -0500
-Date: Wed, 11 Feb 2009 23:43:44 +0100 (CET)
-From: Thomas Gleixner <tglx@tglx.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>
-Subject: [Announce] 2.6.29-rc4-rt1
-Message-ID: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 11 Feb 2009 17:45:49 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58201 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755177AbZBKWps (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 17:45:48 -0500
+Date: Wed, 11 Feb 2009 14:45:09 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: benh@kernel.crashing.org, kosaki.motohiro@jp.fujitsu.com,
+       linux-mm@kvack.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] vmalloc: Add __get_vm_area_caller()
+Message-Id: <20090211144509.d22feeb8.akpm@linux-foundation.org>
+In-Reply-To: <20090211171804.7021.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20090211044854.969CEDDDA9@ozlabs.org>
+	<20090211171804.7021.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After a 1.5 years sabbatical from preempt-rt we are pleased to
-announce a refactored preempt-rt patch against linux-2.6.29-rc4.
+On Wed, 11 Feb 2009 17:22:47 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-The patch is working on x86 (32 and 64bit) but we have not yet updated
-ARM, PPC and MIPS (work in progress).
+> > I want to put into powerpc-next patches relying into that, so if the
+> > patch is ok with you guys, can I stick it in powerpc.git ?
+> 
+> hm.
+> Generally, all MM patch should merge into -mm tree at first.
+> but I don't think this patch have conflict risk. 
+> 
+> Andrew, What do you think?
 
-We also dropped some experimental features of the base preempt-rt
-queue 2.6.26.8-rt15 simply because we wanted to survive the forward
-port over 3 kernel releases with the least amount of surprises. These
-features (e.g. multiple reader PI locks) are not essential for the
-preempt-rt functionality and need some serious overhaul anyway.
-
-The interested -rt observer might have noticed that we based our work
-on the 2.6.26.8-rt15 patch queue and did not pick the git-rt tree
-which is based on 2.6.28. The reason for this is that we wanted to pick
-the most stable patch queue and the git-rt tree has a lot of rewritten
-new code. Our work is not making the work which was done over the last
-months in the git-rt tree obsolete, quite the contrary: we want to
-provide a stable yet latest-kernel based foundation and integrate those
-changes gradually, as they become ready.
-
-The further plan for the new -rt series is to merge it fully into git
-and integrate it into the -tip git tree so it gets the same treatment
-as all of our -tip based work: fully automated compile and boot
-testing. Furthermore an automated multi architecture -rt performance
-regression test based on the same infrastructure is currently being
-built.
-
-The integration into the -tip tree also allows us to seperate out parts
-of -rt which are ready for mainline more easily and integrate them
-with our usual propagation to mainline.
-
-The structure of the patches is likely to change over the next days
-when we tackle the git integration, but we appreciate your feedback in
-the form of comments, bugreports and patches.
-
-Enough said. You can find the new patches at the following location:
-
-  http://www.kernel.org/pub/linux/kernel/projects/rt/
-
-Information on the RT patch can be found at:
-
-  http://rt.wiki.kernel.org/index.php/Main_Page
-
-to build the 2.6.29-rc4-rt1 tree, the following patches should be
-applied:
-
-  http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc4.tar.bz2
-  http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29-rc4-rt1.bz2
-
-The broken out patches are also available at the same download
-location.
-
-Enjoy !
-
-      Thomas, Ingo
+We can sneak it into mainline later in the week?
