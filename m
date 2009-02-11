@@ -1,103 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbZBKBxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756304AbZBKByV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755873AbZBKBxO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 20:53:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbZBKBw6
+	id S1756304AbZBKByV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 20:54:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbZBKByM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 20:52:58 -0500
-Received: from cmpxchg.org ([85.214.51.133]:33966 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751075AbZBKBw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 20:52:58 -0500
-Date: Wed, 11 Feb 2009 02:52:27 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] vmscan: initialize sc.order in indirect shrink_list() users
-Message-ID: <20090211015227.GA4605@cmpxchg.org>
-References: <20090210165134.GA2457@cmpxchg.org> <20090210162948.bd20d853.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090210162948.bd20d853.akpm@linux-foundation.org>
+	Tue, 10 Feb 2009 20:54:12 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:12058 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753266AbZBKByL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 20:54:11 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=nkQvTv6NAcrzMksQpIdrZPoOfzlEEQFajrP/517GTPrTsPhYdAcF/Yw2drBpCfiwx
+	6GWTp+gCmXJ9wtRonwI5Q==
+MIME-Version: 1.0
+In-Reply-To: <20090211011933.GB28946@ZenIV.linux.org.uk>
+References: <4991497B.4030200@cn.fujitsu.com>
+	 <6599ad830902100215o185edd31k8731e033717dbb49@mail.gmail.com>
+	 <20090210124527.GA28946@ZenIV.linux.org.uk>
+	 <6599ad830902101601i294ffaa5xd01611c5121a5685@mail.gmail.com>
+	 <20090211011933.GB28946@ZenIV.linux.org.uk>
+Date: Tue, 10 Feb 2009 17:54:07 -0800
+Message-ID: <6599ad830902101754w50a64b0ds126510360fdef28e@mail.gmail.com>
+Subject: Re: [PATCH] cgroups: fix possible use after free
+From: Paul Menage <menage@google.com>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[added Mel to CC]
+On Tue, Feb 10, 2009 at 5:19 PM, Al Viro <viro@zeniv.linux.org.uk> wrote:
+>
+> So you can't wrap sget() into a mutex that might be grabbed at some
+> point of ->kill_sb() or it'll wait forever in that scenario.
 
-On Tue, Feb 10, 2009 at 04:29:48PM -0800, Andrew Morton wrote:
-> On Tue, 10 Feb 2009 17:51:35 +0100
-> Johannes Weiner <hannes@cmpxchg.org> wrote:
-> 
-> > shrink_all_memory() and __zone_reclaim() currently don't initialize
-> > the .order field of their scan control.
-> > 
-> > Both of them call into functions which use that field and make certain
-> > decisions based on a random value.
-> > 
-> > The functions depending on the .order field are marked with a star,
-> > the faulty entry points are marked with a percentage sign:
-> > 
-> > * shrink_page_list()
-> >   * shrink_inactive_list()
-> >   * shrink_active_list()
-> >     shrink_list()
-> >       shrink_all_zones()
-> >         % shrink_all_memory()
-> >       shrink_zone()
-> >         % __zone_reclaim()
-> > 
-> > Initialize .order to zero in shrink_all_memory().  Initialize .order
-> > to the order parameter in __zone_reclaim().
-> > 
-> > Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> > ---
-> >  mm/vmscan.c |    2 ++
-> >  1 files changed, 2 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/mm/vmscan.c b/mm/vmscan.c
-> > index 4422301..9ce85ea 100644
-> > --- a/mm/vmscan.c
-> > +++ b/mm/vmscan.c
-> > @@ -2112,6 +2112,7 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
-> >  		.may_unmap = 0,
-> >  		.swap_cluster_max = nr_pages,
-> >  		.may_writepage = 1,
-> > +		.order = 0,
-> >  		.isolate_pages = isolate_pages_global,
-> >  	};
-> >  
-> > @@ -2294,6 +2295,7 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
-> >  					SWAP_CLUSTER_MAX),
-> >  		.gfp_mask = gfp_mask,
-> >  		.swappiness = vm_swappiness,
-> > +		.order = order,
-> >  		.isolate_pages = isolate_pages_global,
-> >  	};
-> >  	unsigned long slab_reclaimable;
-> 
-> The second hunk might fix something, but it would need a correcter
-> changelog, and some thought about what its runtimes effects are likely
-> to be, please.
+Good point.
 
-zone_reclaim() is used by the watermark rebalancing of the buddy
-allocator right before trying to do an allocation.  Even though it
-tries to reclaim at least 1 << order pages, it doesn't raise sc.order
-to increase clustering efforts.
+>
+> So no exclusion is needed there at all.  If you don't want later remount
+> of the first mount to affect these flags of second one you shouldn't share
+> the superblock at all, obviously...
 
-I think this happens with the assumption that the upcoming allocation
-can still succeed and in that case we don't want to lump too
-aggressively to refill the zone.  The allocation might succeed on
-another zone and now we have evicted precious pages due to clustering
-while we are still not sure it's even needed.
+I have plans for some slightly more complex state in that structure -
+I'll probably just add a spinlock around accesses to those fields so
+that we can avoid exposing any inconsistent state.
 
-If the allocation fails from all zones, we still will use lumpy
-reclaim for higher orders in kswapd and try_to_free_pages().
-
-So I think that __zone_reclaim() leaves sc.order = 0 intentionally.
-
-Mel?
-
-	Hannes
+Paul
