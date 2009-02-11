@@ -1,47 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756843AbZBKMky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbZBKMli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756843AbZBKMky (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 07:40:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754496AbZBKMko
+	id S1757279AbZBKMli (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 07:41:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754886AbZBKMl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 07:40:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42799 "EHLO mx2.mail.elte.hu"
+	Wed, 11 Feb 2009 07:41:28 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41251 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752995AbZBKMko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 07:40:44 -0500
-Date: Wed, 11 Feb 2009 13:40:31 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: J K Rai <jk.anurag@yahoo.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: Time slice for SCHED_BATCH ( CFS)
-Message-ID: <20090211124031.GG16535@elte.hu>
-References: <315626.71453.qm@web94713.mail.in2.yahoo.com> <20090211102024.GI20518@elte.hu> <1234348436.23438.119.camel@twins> <303179.28635.qm@web94707.mail.in2.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <303179.28635.qm@web94707.mail.in2.yahoo.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1754496AbZBKMl1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 07:41:27 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090210142443.629E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20090210142443.629E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: dhowells@redhat.com, Serge Hallyn <serue@us.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Subject: Re: [CRED bug?] 2.6.29-rc3 don't survive on stress workload
+Date: Wed, 11 Feb 2009 12:41:18 +0000
+Message-ID: <27780.1234356078@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-* J K Rai <jk.anurag@yahoo.com> wrote:
+> I periodically test kernel on stress workload.
 
-> Thanks,
-> 
-> I want to do profiling (e.g. on-chip cache related behavior of processes) from 
-> user-land and want to study the impact of time-slice and sampling interval on the 
-> quality of profile. Hence thought of knowing the time-slice.
+Can you say more about the stress workload you're using?
 
-btw., how do you do that profiling? How do you measure cache behavior?
+And can you give us your kernel config?
 
-	Ingo
+David
