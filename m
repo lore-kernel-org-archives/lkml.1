@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbZBKAlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbZBKAbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754782AbZBKAlA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:41:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757829AbZBKA2l
+	id S1758037AbZBKAbk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:31:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756812AbZBKA2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:28:41 -0500
-Received: from kroah.org ([198.145.64.141]:51401 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 19:28:13 -0500
+Received: from kroah.org ([198.145.64.141]:51025 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757813AbZBKA2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:38 -0500
-Date: Tue, 10 Feb 2009 16:25:30 -0800
+	id S1756450AbZBKA2L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:28:11 -0500
+Date: Tue, 10 Feb 2009 16:24:34 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Roland McGrath <roland@redhat.com>
-Subject: [patch 36/56] elf core dump: fix get_user use
-Message-ID: <20090211002530.GK14660@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Karsten Keil <kkeil@suse.de>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [patch 10/56] module: remove over-zealous check in __module_get()
+Message-ID: <20090211002434.GK14660@kroah.com>
 References: <20090211001439.873435357@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="elf-core-dump-fix-get_user-use.patch"
+Content-Disposition: inline; filename="module-remove-over-zealous-check-in-__module_get.patch"
 In-Reply-To: <20090211002328.GA14660@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,57 +39,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Roland McGrath <roland@redhat.com>
+From: Rusty Russell <rusty@rustcorp.com.au>
 
-commit 92dc07b1f988e8c237a38e23be660b9b8533e6fd upstream.
+commit 7f9a50a5b89b87f8e754f59ae9968da28be618a5 upstream.
 
-The elf_core_dump() code does its work with set_fs(KERNEL_DS) in force,
-so vma_dump_size() needs to switch back with set_fs(USER_DS) to safely
-use get_user() for a normal user-space address.
+Impact: fix spurious BUG_ON() triggered under load
 
-Checking for VM_READ optimizes out the case where get_user() would fail
-anyway.  The vm_file check here was already superfluous given the control
-flow earlier in the function, so that is a cleanup/optimization unrelated
-to other changes but an obvious and trivial one.
+module_refcount() isn't reliable outside stop_machine(), as demonstrated
+by Karsten Keil <kkeil@suse.de>, networking can trigger it under load
+(an inc on one cpu and dec on another while module_refcount() is tallying
+ can give false results, for example).
 
-Reported-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-Signed-off-by: Roland McGrath <roland@redhat.com>
+Almost noone should be using __module_get, but that's another issue.
+
+Cc: Karsten Keil <kkeil@suse.de>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/binfmt_elf.c |   14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+ include/linux/module.h |    1 -
+ 1 file changed, 1 deletion(-)
 
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -1188,9 +1188,11 @@ static unsigned long vma_dump_size(struc
- 	 * check for an ELF header.  If we find one, dump the first page to
- 	 * aid in determining what was mapped here.
- 	 */
--	if (FILTER(ELF_HEADERS) && vma->vm_file != NULL && vma->vm_pgoff == 0) {
-+	if (FILTER(ELF_HEADERS) &&
-+	    vma->vm_pgoff == 0 && (vma->vm_flags & VM_READ)) {
- 		u32 __user *header = (u32 __user *) vma->vm_start;
- 		u32 word;
-+		mm_segment_t fs = get_fs();
- 		/*
- 		 * Doing it this way gets the constant folded by GCC.
- 		 */
-@@ -1203,7 +1205,15 @@ static unsigned long vma_dump_size(struc
- 		magic.elfmag[EI_MAG1] = ELFMAG1;
- 		magic.elfmag[EI_MAG2] = ELFMAG2;
- 		magic.elfmag[EI_MAG3] = ELFMAG3;
--		if (get_user(word, header) == 0 && word == magic.cmp)
-+		/*
-+		 * Switch to the user "segment" for get_user(),
-+		 * then put back what elf_core_dump() had in place.
-+		 */
-+		set_fs(USER_DS);
-+		if (unlikely(get_user(word, header)))
-+			word = 0;
-+		set_fs(fs);
-+		if (word == magic.cmp)
- 			return PAGE_SIZE;
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -387,7 +387,6 @@ void symbol_put_addr(void *addr);
+ static inline void __module_get(struct module *module)
+ {
+ 	if (module) {
+-		BUG_ON(module_refcount(module) == 0);
+ 		local_inc(&module->ref[get_cpu()].count);
+ 		put_cpu();
  	}
- 
 
