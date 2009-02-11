@@ -1,83 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759843AbZBKAtM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760854AbZBKAti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759843AbZBKAtM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:49:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757939AbZBKAaE
+	id S1760854AbZBKAti (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:49:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757962AbZBKAa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:30:04 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51608 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757972AbZBKAaA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:30:00 -0500
-Date: Tue, 10 Feb 2009 16:29:48 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch] vmscan: initialize sc.order in indirect shrink_list()
- users
-Message-Id: <20090210162948.bd20d853.akpm@linux-foundation.org>
-In-Reply-To: <20090210165134.GA2457@cmpxchg.org>
-References: <20090210165134.GA2457@cmpxchg.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Feb 2009 19:30:29 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:58997 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756450AbZBKAa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:30:27 -0500
+In-Reply-To: <20090211094050.47c4828d.sfr@canb.auug.org.au>
+References: <20090210194121.80256b72.sfr@canb.auug.org.au>	<4991DBA0.1000008@oracle.com> <20090211094050.47c4828d.sfr@canb.auug.org.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: James Morris <jmorris@namei.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-next@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Subject: Re: linux-next: Tree for February 10 (security/audit/ima)
+X-KeepSent: F3345B15:9471295A-8525755A:00024CFE;
+ type=4; name=$KeepSent
+X-Mailer: Lotus Notes Release 8.5 December 05, 2008
+Message-ID: <OFF3345B15.9471295A-ON8525755A.00024CFE-8525755A.0002C8E8@us.ibm.com>
+From: Mimi Zohar <zohar@us.ibm.com>
+Date: Tue, 10 Feb 2009 19:30:24 -0500
+X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Release 8.5|December 05, 2008) at
+ 02/10/2009 19:30:24,
+	Serialize complete at 02/10/2009 19:30:24
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Feb 2009 17:51:35 +0100
-Johannes Weiner <hannes@cmpxchg.org> wrote:
+Stephen Rothwell <sfr@canb.auug.org.au> wrote on 02/10/2009 05:40:50 PM:
 
-> shrink_all_memory() and __zone_reclaim() currently don't initialize
-> the .order field of their scan control.
+> Hi Randy,
 > 
-> Both of them call into functions which use that field and make certain
-> decisions based on a random value.
+> On Tue, 10 Feb 2009 11:55:12 -0800 Randy Dunlap 
+<randy.dunlap@oracle.com> wrote:
+> >
+> > Stephen Rothwell wrote:
+> > > 
+> > > Dropped trees (temporarily):
+> > >    audit (difficult conflicts)
+> > 
+> > Maybe this is fixed by the dropped audit tree?
 > 
-> The functions depending on the .order field are marked with a star,
-> the faulty entry points are marked with a percentage sign:
+> The audit tree is Al Viro's (cc'd).  But I *think* everything in it has
+> been applied upstream.
 > 
-> * shrink_page_list()
->   * shrink_inactive_list()
->   * shrink_active_list()
->     shrink_list()
->       shrink_all_zones()
->         % shrink_all_memory()
->       shrink_zone()
->         % __zone_reclaim()
+> > linux-next-20090210/security/integrity/ima/ima_policy.c:111: error: 
+implicit
+> declaration of function 'security_audit_rule_match'
+> > linux-next-20090210/security/integrity/ima/ima_policy.c:230: error: 
+implicit
+> declaration of function 'security_audit_rule_init'
+> > 
+> > when
+> > CONFIG_SECURITY=y
+> > CONFIG_AUDIT=n
+> > CONFIG_IMA=y
+> > CONFIG_IMA_AUDIT=y
 > 
-> Initialize .order to zero in shrink_all_memory().  Initialize .order
-> to the order parameter in __zone_reclaim().
-> 
-> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> ---
->  mm/vmscan.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index 4422301..9ce85ea 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -2112,6 +2112,7 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
->  		.may_unmap = 0,
->  		.swap_cluster_max = nr_pages,
->  		.may_writepage = 1,
-> +		.order = 0,
->  		.isolate_pages = isolate_pages_global,
->  	};
->  
-> @@ -2294,6 +2295,7 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
->  					SWAP_CLUSTER_MAX),
->  		.gfp_mask = gfp_mask,
->  		.swappiness = vm_swappiness,
-> +		.order = order,
->  		.isolate_pages = isolate_pages_global,
->  	};
->  	unsigned long slab_reclaimable;
+> This looks more like a security subsystem than audit to me?
 
-The second hunk might fix something, but it would need a correcter
-changelog, and some thought about what its runtimes effects are likely
-to be, please.
+These are the IMA Kconfig rules:
+CONFIG_IMA=y
+CONFIG_IMA_MEASURE_PCR_IDX=10
+CONFIG_IMA_AUDIT=y
+CONFIG_IMA_LSM_RULES=y
+
+CONFIG_IMA_LSM_RULES requires the audit subsystem.  The default
+measurement policy is not defined terms of the LSM extended
+attributes, and thus is not required.
+
+Mimi
+
 
