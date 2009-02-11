@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758934AbZBKApk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759011AbZBKApz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758934AbZBKApk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:45:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757893AbZBKA2w
+	id S1759011AbZBKApz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:45:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757883AbZBKA2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:28:52 -0500
-Received: from kroah.org ([198.145.64.141]:51585 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 19:28:53 -0500
+Received: from kroah.org ([198.145.64.141]:51612 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756344AbZBKA2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:50 -0500
-Date: Tue, 10 Feb 2009 16:25:54 -0800
+	id S1757884AbZBKA2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:28:51 -0500
+Date: Tue, 10 Feb 2009 16:25:55 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Yinghai Lu <yhlu.kernel@gmail.com>,
+       alan@lxorguk.ukuu.org.uk, Zhang Rui <rui.zhang@intel.com>,
        Len Brown <len.brown@intel.com>, Thomas Renninger <trenn@suse.de>
-Subject: [patch 48/56] ACPI: dont load acpi_cpufreq if acpi=off
-Message-ID: <20090211002554.GW14660@kroah.com>
+Subject: [patch 49/56] ACPI: video: Fix reversed brightness behavior on
+	ThinkPad SL series
+Message-ID: <20090211002555.GX14660@kroah.com>
 References: <20090211001439.873435357@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-don-t-load-acpi_cpufreq-if-acpi-off.patch"
+Content-Disposition: inline; filename="acpi-video-fix-reversed-brightness-behavior-on-thinkpad-sl-series.patch"
 In-Reply-To: <20090211002328.GA14660@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,29 +40,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Yinghai Lu <yhlu.kernel@gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
 
-commit ee297533279a802eac8b1cbea8e65b24b36a1aac upstream.
+commit 935e5f290ec1eb0f1c15004421f5fd3154380fd5 upstream.
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Section B.6.2 of ACPI 3.0b specification that defines _BCL method
+doesn't require the brightness levels returned to be sorted.
+At least ThinkPad SL300 (and probably all IdeaPads) returns the
+array reversed (i.e. bightest levels have lowest indexes), which
+causes the brightness management behave in completely reversed
+manner on these machines (brightness increases when the laptop is
+idle, while the display dims when used).
+
+Sorting the array by brightness level values after reading the list
+fixes the issue.
+
+http://bugzilla.kernel.org/show_bug.cgi?id=12037
+
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Tested-by: Lubomir Rintel <lkundrak@v3.sk>
 Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Thomas Renninger <trenn@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/acpi/video.c |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
---- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-+++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-@@ -779,6 +779,9 @@ static int __init acpi_cpufreq_init(void
- {
- 	int ret;
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -36,6 +36,7 @@
+ #include <linux/backlight.h>
+ #include <linux/thermal.h>
+ #include <linux/video_output.h>
++#include <linux/sort.h>
+ #include <asm/uaccess.h>
  
-+	if (acpi_disabled)
-+		return 0;
+ #include <acpi/acpi_bus.h>
+@@ -632,6 +633,16 @@ acpi_video_bus_DOS(struct acpi_video_bus
+ }
+ 
+ /*
++ * Simple comparison function used to sort backlight levels.
++ */
 +
- 	dprintk("acpi_cpufreq_init\n");
++static int
++acpi_video_cmp_level(const void *a, const void *b)
++{
++	return *(int *)a - *(int *)b;
++}
++
++/*
+  *  Arg:	
+  *  	device	: video output device (LCD, CRT, ..)
+  *
+@@ -682,6 +693,10 @@ acpi_video_init_brightness(struct acpi_v
+ 		count++;
+ 	}
  
- 	ret = acpi_cpufreq_early_init();
++	/* don't sort the first two brightness levels */
++	sort(&br->levels[2], count - 2, sizeof(br->levels[2]),
++		acpi_video_cmp_level, NULL);
++
+ 	if (count < 2)
+ 		goto out_free_levels;
+ 
 
