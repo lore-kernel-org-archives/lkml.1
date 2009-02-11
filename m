@@ -1,552 +1,433 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756101AbZBKJmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbZBKJoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756101AbZBKJmr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 04:42:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbZBKJmi
+	id S1756020AbZBKJoU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 04:44:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754574AbZBKJoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 04:42:38 -0500
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:43526 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751623AbZBKJmf (ORCPT
+	Wed, 11 Feb 2009 04:44:09 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:36470 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754418AbZBKJoH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 04:42:35 -0500
-Subject: [GIT PULL] s390 updates for 2.6.29-rc4
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-s390 <linux-s390@vger.kernel.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Wed, 11 Feb 2009 10:42:27 +0100
-Message-Id: <1234345347.19362.1.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Feb 2009 04:44:07 -0500
+Date: Wed, 11 Feb 2009 09:43:29 +0000
+From: Andy Whitcroft <apw@canonical.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Hugh Dickins <hugh@veritas.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Greg KH <gregkh@suse.de>,
+       Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, will@crowder-design.com,
+       Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Mikos Szeredi <miklos@szeredi.hu>, wli@movementarian.org
+Subject: Re: [PATCH] Do not account for the address space used by hugetlbfs
+	using VM_ACCOUNT V2 (Was Linus 2.6.29-rc4)
+Message-ID: <20090211094329.GE26746@shadowen.org>
+References: <alpine.LFD.2.00.0902081251090.3048@localhost.localdomain> <20090210140227.GC4023@csn.ul.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090210140227.GC4023@csn.ul.ie>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Tue, Feb 10, 2009 at 02:02:27PM +0000, Mel Gorman wrote:
+> On Sun, Feb 08, 2009 at 01:01:04PM -0800, Linus Torvalds wrote:
+> > 
+> > Another week (and a half), another -rc.
+> > 
+> > Arch updates (sparc, blackfin), driver updates (dvb, mmc, ide), ACPI 
+> > updates, FS updates (ubifs, btrfs), you name it. It's all there.
+> > 
+> > But more importantly, people really have been working on regressions, and 
+> > hopefully this closes a nice set of the top one, and hopefully without 
+> > introducing too many new ones.
+> > 
+> 
+> Hugepages are currently busted due to commit
+> fc8744adc870a8d4366908221508bb113d8b72ee and the problem is in
+> 2.6.29-rc4. There was a bit of a discussion but it didn't get very far and
+> then I went offline for the weekend. Here is a revised patch that tries to
+> bring hugetlbfs more in line with what the core VM is doing by dealing with
+> VM_ACCOUNT and VM_NORESERVE.
+> 
+> =============
+> Do not account for the address space used by hugetlbfs using VM_ACCOUNT
+> 
+> When overcommit is disabled, the core VM accounts for pages used by anonymous
+> shared, private mappings and special mappings. It keeps track of VMAs that
+> should be accounted for with VM_ACCOUNT and VMAs that never had a reserve
+> with VM_NORESERVE.
+> 
+> Overcommit for hugetlbfs is much riskier than overcommit for base pages
+> due to contiguity requirements. It avoids overcommiting on both shared and
+> private mappings using reservation counters that are checked and updated
+> during mmap(). This ensures (within limits) that hugepages exist in the
+> future when faults occurs or it is too easy to applications to be SIGKILLed.
+> 
+> As hugetlbfs makes its own reservations of a different unit to the base page
+> size, VM_ACCOUNT should never be set. Even if the units were correct, we would
+> double account for the usage in the core VM and hugetlbfs. VM_NORESERVE may
+> be set because an application can request no reserves be made for hugetlbfs
+> at the risk of getting killed later.
+> 
+> With commit fc8744adc870a8d4366908221508bb113d8b72ee, VM_NORESERVE and
+> VM_ACCOUNT are getting unconditionally set for hugetlbfs-backed mappings. This
+> breaks the accounting for both the core VM and hugetlbfs, can trigger an
+> OOM storm when hugepage pools are too small lockups and corrupted counters
+> otherwise are used. This patch brings hugetlbfs more in line with how the
+> core VM treats VM_NORESERVE but prevents VM_ACCOUNT being set.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> --- 
+>  fs/hugetlbfs/inode.c    |    8 +++++---
+>  include/linux/hugetlb.h |    5 +++--
+>  include/linux/mm.h      |    3 +--
+>  ipc/shm.c               |    8 +++++---
+>  mm/fremap.c             |    2 +-
+>  mm/hugetlb.c            |   39 +++++++++++++++++++++++++--------------
+>  mm/mmap.c               |   38 ++++++++++++++++++++++----------------
+>  mm/mprotect.c           |    5 +++--
+>  8 files changed, 65 insertions(+), 43 deletions(-)
+> 
+> diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
+> index 6903d37..9b800d9 100644
+> --- a/fs/hugetlbfs/inode.c
+> +++ b/fs/hugetlbfs/inode.c
+> @@ -108,7 +108,8 @@ static int hugetlbfs_file_mmap(struct file *file, struct vm_area_struct *vma)
+>  
+>  	if (hugetlb_reserve_pages(inode,
+>  				vma->vm_pgoff >> huge_page_order(h),
+> -				len >> huge_page_shift(h), vma))
+> +				len >> huge_page_shift(h), vma,
+> +				vma->vm_flags))
+>  		goto out;
+>  
+>  	ret = 0;
+> @@ -947,7 +948,7 @@ static int can_do_hugetlb_shm(void)
+>  			can_do_mlock());
+>  }
+>  
+> -struct file *hugetlb_file_setup(const char *name, size_t size)
+> +struct file *hugetlb_file_setup(const char *name, size_t size, int acctflag)
+>  {
+>  	int error = -ENOMEM;
+>  	struct file *file;
+> @@ -981,7 +982,8 @@ struct file *hugetlb_file_setup(const char *name, size_t size)
+>  
+>  	error = -ENOMEM;
+>  	if (hugetlb_reserve_pages(inode, 0,
+> -			size >> huge_page_shift(hstate_inode(inode)), NULL))
+> +			size >> huge_page_shift(hstate_inode(inode)), NULL,
+> +			acctflag))
+>  		goto out_inode;
+>  
+>  	d_instantiate(dentry, inode);
+> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+> index f1d2fba..af09660 100644
+> --- a/include/linux/hugetlb.h
+> +++ b/include/linux/hugetlb.h
+> @@ -33,7 +33,8 @@ unsigned long hugetlb_total_pages(void);
+>  int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+>  			unsigned long address, int write_access);
+>  int hugetlb_reserve_pages(struct inode *inode, long from, long to,
+> -						struct vm_area_struct *vma);
+> +						struct vm_area_struct *vma,
+> +						int acctflags);
+>  void hugetlb_unreserve_pages(struct inode *inode, long offset, long freed);
+>  
+>  extern unsigned long hugepages_treat_as_movable;
+> @@ -138,7 +139,7 @@ static inline struct hugetlbfs_sb_info *HUGETLBFS_SB(struct super_block *sb)
+>  
+>  extern const struct file_operations hugetlbfs_file_operations;
+>  extern struct vm_operations_struct hugetlb_vm_ops;
+> -struct file *hugetlb_file_setup(const char *name, size_t);
+> +struct file *hugetlb_file_setup(const char *name, size_t, int);
+>  int hugetlb_get_quota(struct address_space *mapping, long delta);
+>  void hugetlb_put_quota(struct address_space *mapping, long delta);
+>  
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index e8ddc98..3235615 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -1129,8 +1129,7 @@ extern unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
+>  	unsigned long flag, unsigned long pgoff);
+>  extern unsigned long mmap_region(struct file *file, unsigned long addr,
+>  	unsigned long len, unsigned long flags,
+> -	unsigned int vm_flags, unsigned long pgoff,
+> -	int accountable);
+> +	unsigned int vm_flags, unsigned long pgoff);
+>  
+>  static inline unsigned long do_mmap(struct file *file, unsigned long addr,
+>  	unsigned long len, unsigned long prot,
+> diff --git a/ipc/shm.c b/ipc/shm.c
+> index f8f69fa..05d51d2 100644
+> --- a/ipc/shm.c
+> +++ b/ipc/shm.c
+> @@ -340,6 +340,7 @@ static int newseg(struct ipc_namespace *ns, struct ipc_params *params)
+>  	struct file * file;
+>  	char name[13];
+>  	int id;
+> +	int acctflag = 0;
+>  
+>  	if (size < SHMMIN || size > ns->shm_ctlmax)
+>  		return -EINVAL;
+> @@ -364,11 +365,12 @@ static int newseg(struct ipc_namespace *ns, struct ipc_params *params)
+>  
+>  	sprintf (name, "SYSV%08x", key);
+>  	if (shmflg & SHM_HUGETLB) {
+> -		/* hugetlb_file_setup takes care of mlock user accounting */
+> -		file = hugetlb_file_setup(name, size);
+> +		/* hugetlb_file_setup applies strict accounting */
+> +		if (shmflg & SHM_NORESERVE)
+> +			acctflag = VM_NORESERVE;
+> +		file = hugetlb_file_setup(name, size, acctflag);
 
-please pull from 'for-linus' branch of
+Does this change semantics?  At first look it appears that you are now
+implementing SHM_NORESERVE for SHM_HUGETLB where we did not previously
+do so?  Not that this is necesarily a bad thing, just feels like its
+changing.
 
-	git://git390.marist.edu/pub/scm/linux-2.6.git for-linus
+>  		shp->mlock_user = current_user();
+>  	} else {
+> -		int acctflag = 0;
+>  		/*
+>  		 * Do not allow no accounting for OVERCOMMIT_NEVER, even
+>  	 	 * if it's asked for.
+> diff --git a/mm/fremap.c b/mm/fremap.c
+> index 736ba7f..b6ec85a 100644
+> --- a/mm/fremap.c
+> +++ b/mm/fremap.c
+> @@ -198,7 +198,7 @@ SYSCALL_DEFINE5(remap_file_pages, unsigned long, start, unsigned long, size,
+>  			flags &= MAP_NONBLOCK;
+>  			get_file(file);
+>  			addr = mmap_region(file, start, size,
+> -					flags, vma->vm_flags, pgoff, 1);
+> +					flags, vma->vm_flags, pgoff);
+>  			fput(file);
+>  			if (IS_ERR_VALUE(addr)) {
+>  				err = addr;
+> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> index 618e983..2074642 100644
+> --- a/mm/hugetlb.c
+> +++ b/mm/hugetlb.c
+> @@ -2269,14 +2269,12 @@ void hugetlb_change_protection(struct vm_area_struct *vma,
+>  
+>  int hugetlb_reserve_pages(struct inode *inode,
+>  					long from, long to,
+> -					struct vm_area_struct *vma)
+> +					struct vm_area_struct *vma,
+> +					int acctflag)
+>  {
+> -	long ret, chg;
+> +	long ret = 0, chg;
+>  	struct hstate *h = hstate_inode(inode);
+>  
+> -	if (vma && vma->vm_flags & VM_NORESERVE)
+> -		return 0;
+> -
+>  	/*
+>  	 * Shared mappings base their reservation on the number of pages that
+>  	 * are already allocated on behalf of the file. Private mappings need
+> @@ -2285,22 +2283,25 @@ int hugetlb_reserve_pages(struct inode *inode,
+>  	 */
+>  	if (!vma || vma->vm_flags & VM_SHARED)
+>  		chg = region_chg(&inode->i_mapping->private_list, from, to);
 
-to receive the following updates:
+I thought the region map for a VM_SHARED mapping is meant to contain
+those pages for which we already have a reservation allocated.  So that
+if we have overlapping VM_RESERVE and VM_NORESERVE mappings we know that
+we did have a page reserved at fault time and know whether we can take
+it from the reserve portion of the pool.  By letting this get executed
+for VM_NORESERVE mappings that would seem to be getting out of sync,
+which doesn't sound right.  I don't see any updates to the documentation
+on the meanings of reservation map if you are changing it?
 
-Cornelia Huck (1):
-      [S390] dasd: bus_id -> dev_name() conversion.
+Here is the commentry from mm/hugetlb.c:
 
-Martin Schwidefsky (2):
-      [S390] vdso: fix per cpu vdso pointer in lowcore
-      [S390] Update default configuration.
+ * The private mapping reservation is represented in a subtly different
+ * manner to a shared mapping.  A shared mapping has a region map associated
+ * with the underlying file, this region map represents the backing file
+ * pages which have ever had a reservation assigned which this persists even
+ * after the page is instantiated.  A private mapping has a region map
+ * associated with the original mmap which is attached to all VMAs which
+ * reference it, this region map represents those offsets which have consumed
+ * reservation ie. where pages have been instantiated.
 
-Sachin Sant (1):
-      [S390] Fix init irq proc build break.
+> -	else {
+> -		struct resv_map *resv_map = resv_map_alloc();
+> -		if (!resv_map)
+> -			return -ENOMEM;
+> -
+> +	else
+>  		chg = to - from;
+>  
+> -		set_vma_resv_map(vma, resv_map);
+> -		set_vma_resv_flags(vma, HPAGE_RESV_OWNER);
+> -	}
+> -
+>  	if (chg < 0)
+>  		return chg;
+>  
+>  	if (hugetlb_get_quota(inode->i_mapping, chg))
+>  		return -ENOSPC;
+> +
+> +	/*
+> +	 * Only apply hugepage reservation if asked. We still have to
+> +	 * take the filesystem quota because it is an upper limit
+> +	 * defined for the mount and not necessarily memory as a whole
+> +	 */
+> +	if (acctflag & VM_NORESERVE) {
+> +		reset_vma_resv_huge_pages(vma);
 
-Stefan Weinhuber (1):
-      [S390] dasd: fix race in dasd timer handling
+Why do we now need to do this in the non-reserve case?  We didn't need
+to do it before.
 
- arch/s390/defconfig              |   87 ++++++++++++++++++++++++++------------
- arch/s390/include/asm/lowcore.h  |    4 +-
- arch/s390/kernel/irq.c           |    2 +
- drivers/s390/block/dasd.c        |   46 +++++++-------------
- drivers/s390/block/dasd_devmap.c |    2 +-
- 5 files changed, 81 insertions(+), 60 deletions(-)
+> +		return 0;
+> +	}
+> +
 
-diff --git a/arch/s390/defconfig b/arch/s390/defconfig
-index a0e748d..31e809c 100644
---- a/arch/s390/defconfig
-+++ b/arch/s390/defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.28-rc6
--# Thu Nov 27 11:00:49 2008
-+# Linux kernel version: 2.6.29-rc4
-+# Wed Feb 11 10:07:16 2009
- #
- CONFIG_SCHED_MC=y
- CONFIG_MMU=y
-@@ -14,12 +14,14 @@ CONFIG_RWSEM_XCHGADD_ALGORITHM=y
- # CONFIG_ARCH_HAS_ILOG2_U64 is not set
- CONFIG_GENERIC_HWEIGHT=y
- CONFIG_GENERIC_TIME=y
-+CONFIG_GENERIC_TIME_VSYSCALL=y
- CONFIG_GENERIC_CLOCKEVENTS=y
- CONFIG_GENERIC_BUG=y
- CONFIG_NO_IOMEM=y
- CONFIG_NO_DMA=y
- CONFIG_GENERIC_LOCKBREAK=y
- CONFIG_PGSTE=y
-+CONFIG_VIRT_CPU_ACCOUNTING=y
- CONFIG_S390=y
- CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
- 
-@@ -39,20 +41,29 @@ CONFIG_POSIX_MQUEUE=y
- # CONFIG_TASKSTATS is not set
- CONFIG_AUDIT=y
- # CONFIG_AUDITSYSCALL is not set
-+
-+#
-+# RCU Subsystem
-+#
-+CONFIG_CLASSIC_RCU=y
-+# CONFIG_TREE_RCU is not set
-+# CONFIG_PREEMPT_RCU is not set
-+# CONFIG_TREE_RCU_TRACE is not set
-+# CONFIG_PREEMPT_RCU_TRACE is not set
- CONFIG_IKCONFIG=y
- CONFIG_IKCONFIG_PROC=y
- CONFIG_LOG_BUF_SHIFT=17
-+CONFIG_GROUP_SCHED=y
-+CONFIG_FAIR_GROUP_SCHED=y
-+# CONFIG_RT_GROUP_SCHED is not set
-+CONFIG_USER_SCHED=y
-+# CONFIG_CGROUP_SCHED is not set
- CONFIG_CGROUPS=y
- # CONFIG_CGROUP_DEBUG is not set
- CONFIG_CGROUP_NS=y
- # CONFIG_CGROUP_FREEZER is not set
- # CONFIG_CGROUP_DEVICE is not set
- # CONFIG_CPUSETS is not set
--CONFIG_GROUP_SCHED=y
--CONFIG_FAIR_GROUP_SCHED=y
--# CONFIG_RT_GROUP_SCHED is not set
--CONFIG_USER_SCHED=y
--# CONFIG_CGROUP_SCHED is not set
- # CONFIG_CGROUP_CPUACCT is not set
- # CONFIG_RESOURCE_COUNTERS is not set
- CONFIG_SYSFS_DEPRECATED=y
-@@ -63,6 +74,7 @@ CONFIG_UTS_NS=y
- CONFIG_IPC_NS=y
- # CONFIG_USER_NS is not set
- # CONFIG_PID_NS is not set
-+# CONFIG_NET_NS is not set
- CONFIG_BLK_DEV_INITRD=y
- CONFIG_INITRAMFS_SOURCE=""
- # CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
-@@ -91,17 +103,17 @@ CONFIG_SLAB=y
- # CONFIG_SLUB is not set
- # CONFIG_SLOB is not set
- # CONFIG_PROFILING is not set
--# CONFIG_MARKERS is not set
- CONFIG_HAVE_OPROFILE=y
- CONFIG_KPROBES=y
-+CONFIG_HAVE_SYSCALL_WRAPPERS=y
- CONFIG_KRETPROBES=y
- CONFIG_HAVE_KPROBES=y
- CONFIG_HAVE_KRETPROBES=y
- CONFIG_HAVE_ARCH_TRACEHOOK=y
-+CONFIG_USE_GENERIC_SMP_HELPERS=y
- # CONFIG_HAVE_GENERIC_DMA_COHERENT is not set
- CONFIG_SLABINFO=y
- CONFIG_RT_MUTEXES=y
--# CONFIG_TINY_SHMEM is not set
- CONFIG_BASE_SMALL=0
- CONFIG_MODULES=y
- # CONFIG_MODULE_FORCE_LOAD is not set
-@@ -109,7 +121,7 @@ CONFIG_MODULE_UNLOAD=y
- # CONFIG_MODULE_FORCE_UNLOAD is not set
- CONFIG_MODVERSIONS=y
- # CONFIG_MODULE_SRCVERSION_ALL is not set
--CONFIG_KMOD=y
-+CONFIG_INIT_ALL_POSSIBLE=y
- CONFIG_STOP_MACHINE=y
- CONFIG_BLOCK=y
- # CONFIG_BLK_DEV_IO_TRACE is not set
-@@ -130,7 +142,6 @@ CONFIG_DEFAULT_DEADLINE=y
- # CONFIG_DEFAULT_NOOP is not set
- CONFIG_DEFAULT_IOSCHED="deadline"
- CONFIG_PREEMPT_NOTIFIERS=y
--CONFIG_CLASSIC_RCU=y
- # CONFIG_FREEZER is not set
- 
- #
-@@ -161,6 +172,7 @@ CONFIG_S390_EXEC_PROTECT=y
- CONFIG_MARCH_Z900=y
- # CONFIG_MARCH_Z990 is not set
- # CONFIG_MARCH_Z9_109 is not set
-+# CONFIG_MARCH_Z10 is not set
- CONFIG_PACK_STACK=y
- # CONFIG_SMALL_STACK is not set
- CONFIG_CHECK_STACK=y
-@@ -174,7 +186,6 @@ CONFIG_ARCH_POPULATES_NODE_MAP=y
- # CONFIG_PREEMPT_NONE is not set
- # CONFIG_PREEMPT_VOLUNTARY is not set
- CONFIG_PREEMPT=y
--# CONFIG_PREEMPT_RCU is not set
- CONFIG_ARCH_SPARSEMEM_ENABLE=y
- CONFIG_ARCH_SPARSEMEM_DEFAULT=y
- CONFIG_ARCH_SELECT_MEMORY_MODEL=y
-@@ -195,7 +206,6 @@ CONFIG_MEMORY_HOTREMOVE=y
- CONFIG_PAGEFLAGS_EXTENDED=y
- CONFIG_SPLIT_PTLOCK_CPUS=4
- CONFIG_MIGRATION=y
--CONFIG_RESOURCES_64BIT=y
- CONFIG_PHYS_ADDR_T_64BIT=y
- CONFIG_ZONE_DMA_FLAG=1
- CONFIG_BOUNCE=y
-@@ -207,7 +217,6 @@ CONFIG_UNEVICTABLE_LRU=y
- #
- CONFIG_MACHCHK_WARNING=y
- CONFIG_QDIO=y
--# CONFIG_QDIO_DEBUG is not set
- CONFIG_CHSC_SCH=m
- 
- #
-@@ -227,15 +236,13 @@ CONFIG_PFAULT=y
- # CONFIG_SHARED_KERNEL is not set
- # CONFIG_CMM is not set
- # CONFIG_PAGE_STATES is not set
--CONFIG_VIRT_TIMER=y
--CONFIG_VIRT_CPU_ACCOUNTING=y
- # CONFIG_APPLDATA_BASE is not set
- CONFIG_HZ_100=y
- # CONFIG_HZ_250 is not set
- # CONFIG_HZ_300 is not set
- # CONFIG_HZ_1000 is not set
- CONFIG_HZ=100
--# CONFIG_SCHED_HRTICK is not set
-+CONFIG_SCHED_HRTICK=y
- CONFIG_S390_HYPFS_FS=y
- CONFIG_KEXEC=y
- # CONFIG_ZFCPDUMP is not set
-@@ -245,6 +252,7 @@ CONFIG_NET=y
- #
- # Networking options
- #
-+CONFIG_COMPAT_NET_DEV_OPS=y
- CONFIG_PACKET=y
- # CONFIG_PACKET_MMAP is not set
- CONFIG_UNIX=y
-@@ -383,6 +391,7 @@ CONFIG_NET_SCH_TBF=m
- CONFIG_NET_SCH_GRED=m
- CONFIG_NET_SCH_DSMARK=m
- # CONFIG_NET_SCH_NETEM is not set
-+# CONFIG_NET_SCH_DRR is not set
- # CONFIG_NET_SCH_INGRESS is not set
- 
- #
-@@ -400,6 +409,7 @@ CONFIG_CLS_U32_MARK=y
- CONFIG_NET_CLS_RSVP=m
- CONFIG_NET_CLS_RSVP6=m
- CONFIG_NET_CLS_FLOW=m
-+# CONFIG_NET_CLS_CGROUP is not set
- # CONFIG_NET_EMATCH is not set
- CONFIG_NET_CLS_ACT=y
- CONFIG_NET_ACT_POLICE=y
-@@ -411,6 +421,7 @@ CONFIG_NET_ACT_NAT=m
- # CONFIG_NET_ACT_SKBEDIT is not set
- # CONFIG_NET_CLS_IND is not set
- CONFIG_NET_SCH_FIFO=y
-+# CONFIG_DCB is not set
- 
- #
- # Network testing
-@@ -428,6 +439,7 @@ CONFIG_CAN_VCAN=m
- # CONFIG_CAN_DEBUG_DEVICES is not set
- # CONFIG_AF_RXRPC is not set
- # CONFIG_PHONET is not set
-+# CONFIG_WIMAX is not set
- # CONFIG_RFKILL is not set
- # CONFIG_NET_9P is not set
- # CONFIG_PCMCIA is not set
-@@ -475,11 +487,15 @@ CONFIG_DASD_DIAG=y
- CONFIG_DASD_EER=y
- CONFIG_VIRTIO_BLK=m
- CONFIG_MISC_DEVICES=y
--# CONFIG_EEPROM_93CX6 is not set
- # CONFIG_ENCLOSURE_SERVICES is not set
- # CONFIG_C2PORT is not set
- 
- #
-+# EEPROM support
-+#
-+# CONFIG_EEPROM_93CX6 is not set
-+
-+#
- # SCSI device support
- #
- # CONFIG_RAID_ATTRS is not set
-@@ -520,6 +536,7 @@ CONFIG_SCSI_FC_ATTRS=y
- # CONFIG_SCSI_SRP_ATTRS is not set
- CONFIG_SCSI_LOWLEVEL=y
- # CONFIG_ISCSI_TCP is not set
-+# CONFIG_LIBFC is not set
- # CONFIG_SCSI_DEBUG is not set
- CONFIG_ZFCP=y
- CONFIG_SCSI_DH=m
-@@ -566,6 +583,10 @@ CONFIG_NET_ETHERNET=y
- CONFIG_NETDEV_1000=y
- CONFIG_NETDEV_10000=y
- # CONFIG_TR is not set
-+
-+#
-+# Enable WiMAX (Networking options) to see the WiMAX drivers
-+#
- # CONFIG_WAN is not set
- 
- #
-@@ -593,9 +614,11 @@ CONFIG_VIRTIO_NET=m
- #
- CONFIG_DEVKMEM=y
- CONFIG_UNIX98_PTYS=y
-+# CONFIG_DEVPTS_MULTIPLE_INSTANCES is not set
- CONFIG_LEGACY_PTYS=y
- CONFIG_LEGACY_PTY_COUNT=256
- CONFIG_HVC_DRIVER=y
-+CONFIG_HVC_IUCV=y
- CONFIG_VIRTIO_CONSOLE=y
- CONFIG_HW_RANDOM=m
- CONFIG_HW_RANDOM_VIRTIO=m
-@@ -645,7 +668,6 @@ CONFIG_S390_VMUR=m
- # CONFIG_NEW_LEDS is not set
- CONFIG_ACCESSIBILITY=y
- # CONFIG_STAGING is not set
--CONFIG_STAGING_EXCLUDE_BUILD=y
- 
- #
- # File systems
-@@ -668,6 +690,7 @@ CONFIG_FILE_LOCKING=y
- # CONFIG_XFS_FS is not set
- # CONFIG_GFS2_FS is not set
- # CONFIG_OCFS2_FS is not set
-+# CONFIG_BTRFS_FS is not set
- CONFIG_DNOTIFY=y
- CONFIG_INOTIFY=y
- CONFIG_INOTIFY_USER=y
-@@ -703,10 +726,7 @@ CONFIG_TMPFS_POSIX_ACL=y
- # CONFIG_HUGETLBFS is not set
- # CONFIG_HUGETLB_PAGE is not set
- CONFIG_CONFIGFS_FS=m
--
--#
--# Miscellaneous filesystems
--#
-+CONFIG_MISC_FILESYSTEMS=y
- # CONFIG_ADFS_FS is not set
- # CONFIG_AFFS_FS is not set
- # CONFIG_HFS_FS is not set
-@@ -715,6 +735,7 @@ CONFIG_CONFIGFS_FS=m
- # CONFIG_BFS_FS is not set
- # CONFIG_EFS_FS is not set
- # CONFIG_CRAMFS is not set
-+# CONFIG_SQUASHFS is not set
- # CONFIG_VXFS_FS is not set
- # CONFIG_MINIX_FS is not set
- # CONFIG_OMFS_FS is not set
-@@ -808,6 +829,7 @@ CONFIG_DEBUG_BUGVERBOSE=y
- CONFIG_DEBUG_MEMORY_INIT=y
- # CONFIG_DEBUG_LIST is not set
- # CONFIG_DEBUG_SG is not set
-+# CONFIG_DEBUG_NOTIFIERS is not set
- # CONFIG_FRAME_POINTER is not set
- # CONFIG_RCU_TORTURE_TEST is not set
- # CONFIG_RCU_CPU_STALL_DETECTOR is not set
-@@ -818,15 +840,19 @@ CONFIG_DEBUG_MEMORY_INIT=y
- # CONFIG_FAULT_INJECTION is not set
- # CONFIG_LATENCYTOP is not set
- CONFIG_SYSCTL_SYSCALL_CHECK=y
-+CONFIG_HAVE_FUNCTION_TRACER=y
- 
- #
- # Tracers
- #
-+# CONFIG_FUNCTION_TRACER is not set
- # CONFIG_IRQSOFF_TRACER is not set
- # CONFIG_PREEMPT_TRACER is not set
- # CONFIG_SCHED_TRACER is not set
- # CONFIG_CONTEXT_SWITCH_TRACER is not set
- # CONFIG_BOOT_TRACER is not set
-+# CONFIG_TRACE_BRANCH_PROFILING is not set
-+# CONFIG_STACK_TRACER is not set
- # CONFIG_DYNAMIC_PRINTK_DEBUG is not set
- CONFIG_SAMPLES=y
- # CONFIG_SAMPLE_KOBJECT is not set
-@@ -847,11 +873,17 @@ CONFIG_CRYPTO=y
- #
- CONFIG_CRYPTO_FIPS=y
- CONFIG_CRYPTO_ALGAPI=y
--CONFIG_CRYPTO_AEAD=y
-+CONFIG_CRYPTO_ALGAPI2=y
-+CONFIG_CRYPTO_AEAD=m
-+CONFIG_CRYPTO_AEAD2=y
- CONFIG_CRYPTO_BLKCIPHER=y
--CONFIG_CRYPTO_HASH=y
--CONFIG_CRYPTO_RNG=y
-+CONFIG_CRYPTO_BLKCIPHER2=y
-+CONFIG_CRYPTO_HASH=m
-+CONFIG_CRYPTO_HASH2=y
-+CONFIG_CRYPTO_RNG=m
-+CONFIG_CRYPTO_RNG2=y
- CONFIG_CRYPTO_MANAGER=y
-+CONFIG_CRYPTO_MANAGER2=y
- CONFIG_CRYPTO_GF128MUL=m
- # CONFIG_CRYPTO_NULL is not set
- # CONFIG_CRYPTO_CRYPTD is not set
-@@ -885,7 +917,7 @@ CONFIG_CRYPTO_HMAC=m
- #
- # Digest
- #
--# CONFIG_CRYPTO_CRC32C is not set
-+CONFIG_CRYPTO_CRC32C=m
- # CONFIG_CRYPTO_MD4 is not set
- CONFIG_CRYPTO_MD5=m
- # CONFIG_CRYPTO_MICHAEL_MIC is not set
-@@ -942,6 +974,7 @@ CONFIG_S390_PRNG=m
- # Library routines
- #
- CONFIG_BITREVERSE=m
-+CONFIG_GENERIC_FIND_LAST_BIT=y
- # CONFIG_CRC_CCITT is not set
- # CONFIG_CRC16 is not set
- CONFIG_CRC_T10DIF=y
-diff --git a/arch/s390/include/asm/lowcore.h b/arch/s390/include/asm/lowcore.h
-index ffdef5f..f3720de 100644
---- a/arch/s390/include/asm/lowcore.h
-+++ b/arch/s390/include/asm/lowcore.h
-@@ -384,8 +384,8 @@ struct _lowcore
-         __u32        panic_magic;              /* 0xe00 */
- 
- 	/* Per cpu primary space access list */
--	__u8	     pad_0xe04[0xe3c-0xe04];   /* 0xe04 */
--	__u32	     vdso_per_cpu_data;	       /* 0xe3c */
-+	__u8	     pad_0xe04[0xe38-0xe04];   /* 0xe04 */
-+	__u64	     vdso_per_cpu_data;	       /* 0xe38 */
- 	__u32	     paste[16];		       /* 0xe40 */
- 
- 	__u8	     pad13[0x11b8-0xe80];      /* 0xe80 */
-diff --git a/arch/s390/kernel/irq.c b/arch/s390/kernel/irq.c
-index e7c5bfb..026a37a 100644
---- a/arch/s390/kernel/irq.c
-+++ b/arch/s390/kernel/irq.c
-@@ -95,6 +95,7 @@ asmlinkage void do_softirq(void)
- 	local_irq_restore(flags);
- }
- 
-+#ifdef CONFIG_PROC_FS
- void init_irq_proc(void)
- {
- 	struct proc_dir_entry *root_irq_dir;
-@@ -102,3 +103,4 @@ void init_irq_proc(void)
- 	root_irq_dir = proc_mkdir("irq", NULL);
- 	create_prof_cpu_mask(root_irq_dir);
- }
-+#endif
-diff --git a/drivers/s390/block/dasd.c b/drivers/s390/block/dasd.c
-index bd59149..08c23a9 100644
---- a/drivers/s390/block/dasd.c
-+++ b/drivers/s390/block/dasd.c
-@@ -57,6 +57,8 @@ static void dasd_device_tasklet(struct dasd_device *);
- static void dasd_block_tasklet(struct dasd_block *);
- static void do_kick_device(struct work_struct *);
- static void dasd_return_cqr_cb(struct dasd_ccw_req *, void *);
-+static void dasd_device_timeout(unsigned long);
-+static void dasd_block_timeout(unsigned long);
- 
- /*
-  * SECTION: Operations on the device structure.
-@@ -99,6 +101,8 @@ struct dasd_device *dasd_alloc_device(void)
- 		     (unsigned long) device);
- 	INIT_LIST_HEAD(&device->ccw_queue);
- 	init_timer(&device->timer);
-+	device->timer.function = dasd_device_timeout;
-+	device->timer.data = (unsigned long) device;
- 	INIT_WORK(&device->kick_work, do_kick_device);
- 	device->state = DASD_STATE_NEW;
- 	device->target = DASD_STATE_NEW;
-@@ -138,6 +142,8 @@ struct dasd_block *dasd_alloc_block(void)
- 	INIT_LIST_HEAD(&block->ccw_queue);
- 	spin_lock_init(&block->queue_lock);
- 	init_timer(&block->timer);
-+	block->timer.function = dasd_block_timeout;
-+	block->timer.data = (unsigned long) block;
- 
- 	return block;
- }
-@@ -915,19 +921,10 @@ static void dasd_device_timeout(unsigned long ptr)
-  */
- void dasd_device_set_timer(struct dasd_device *device, int expires)
- {
--	if (expires == 0) {
--		if (timer_pending(&device->timer))
--			del_timer(&device->timer);
--		return;
--	}
--	if (timer_pending(&device->timer)) {
--		if (mod_timer(&device->timer, jiffies + expires))
--			return;
--	}
--	device->timer.function = dasd_device_timeout;
--	device->timer.data = (unsigned long) device;
--	device->timer.expires = jiffies + expires;
--	add_timer(&device->timer);
-+	if (expires == 0)
-+		del_timer(&device->timer);
-+	else
-+		mod_timer(&device->timer, jiffies + expires);
- }
- 
- /*
-@@ -935,8 +932,7 @@ void dasd_device_set_timer(struct dasd_device *device, int expires)
-  */
- void dasd_device_clear_timer(struct dasd_device *device)
- {
--	if (timer_pending(&device->timer))
--		del_timer(&device->timer);
-+	del_timer(&device->timer);
- }
- 
- static void dasd_handle_killed_request(struct ccw_device *cdev,
-@@ -1586,19 +1582,10 @@ static void dasd_block_timeout(unsigned long ptr)
-  */
- void dasd_block_set_timer(struct dasd_block *block, int expires)
- {
--	if (expires == 0) {
--		if (timer_pending(&block->timer))
--			del_timer(&block->timer);
--		return;
--	}
--	if (timer_pending(&block->timer)) {
--		if (mod_timer(&block->timer, jiffies + expires))
--			return;
--	}
--	block->timer.function = dasd_block_timeout;
--	block->timer.data = (unsigned long) block;
--	block->timer.expires = jiffies + expires;
--	add_timer(&block->timer);
-+	if (expires == 0)
-+		del_timer(&block->timer);
-+	else
-+		mod_timer(&block->timer, jiffies + expires);
- }
- 
- /*
-@@ -1606,8 +1593,7 @@ void dasd_block_set_timer(struct dasd_block *block, int expires)
-  */
- void dasd_block_clear_timer(struct dasd_block *block)
- {
--	if (timer_pending(&block->timer))
--		del_timer(&block->timer);
-+	del_timer(&block->timer);
- }
- 
- /*
-diff --git a/drivers/s390/block/dasd_devmap.c b/drivers/s390/block/dasd_devmap.c
-index 300e28a..3433990 100644
---- a/drivers/s390/block/dasd_devmap.c
-+++ b/drivers/s390/block/dasd_devmap.c
-@@ -677,7 +677,7 @@ static ssize_t dasd_ff_show(struct device *dev, struct device_attribute *attr,
- 	struct dasd_devmap *devmap;
- 	int ff_flag;
- 
--	devmap = dasd_find_busid(dev->bus_id);
-+	devmap = dasd_find_busid(dev_name(dev));
- 	if (!IS_ERR(devmap))
- 		ff_flag = (devmap->features & DASD_FEATURE_FAILFAST) != 0;
- 	else
+This also seems like a semantic change.  Previously NO_RESERVE did not
+take quota, now it does.  NO_RESERVE used to mean that we took our
+chances on there being pages available at fault time both for quota and
+in the pools.  Now it means that we only risk there being no pages.
+Does that not significantly change semantics.  The main use case for
+NO_RESERVE was mapping a massive area to expand into, this might now be
+refused for quota when previously it was not.
 
+>  	ret = hugetlb_acct_memory(h, chg);
+>  	if (ret < 0) {
+>  		hugetlb_put_quota(inode->i_mapping, chg);
+> @@ -2308,6 +2309,16 @@ int hugetlb_reserve_pages(struct inode *inode,
+>  	}
+>  	if (!vma || vma->vm_flags & VM_SHARED)
+>  		region_add(&inode->i_mapping->private_list, from, to);
+> +	else {
+> +		struct resv_map *resv_map = resv_map_alloc();
+> +
+> +		if (!resv_map)
+> +			return -ENOMEM;
+> +
+> +		set_vma_resv_map(vma, resv_map);
+> +		set_vma_resv_flags(vma, HPAGE_RESV_OWNER);
+> +	}
+> +
+>  	return 0;
+>  }
+>  
+> diff --git a/mm/mmap.c b/mm/mmap.c
+> index 214b6a2..6f70db8 100644
+> --- a/mm/mmap.c
+> +++ b/mm/mmap.c
+> @@ -918,7 +918,6 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
+>  	struct inode *inode;
+>  	unsigned int vm_flags;
+>  	int error;
+> -	int accountable = 1;
+>  	unsigned long reqprot = prot;
+>  
+>  	/*
+> @@ -1019,8 +1018,6 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
+>  					return -EPERM;
+>  				vm_flags &= ~VM_MAYEXEC;
+>  			}
+> -			if (is_file_hugepages(file))
+> -				accountable = 0;
+>  
+>  			if (!file->f_op || !file->f_op->mmap)
+>  				return -ENODEV;
+> @@ -1053,8 +1050,7 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
+>  	if (error)
+>  		return error;
+>  
+> -	return mmap_region(file, addr, len, flags, vm_flags, pgoff,
+> -			   accountable);
+> +	return mmap_region(file, addr, len, flags, vm_flags, pgoff);
+>  }
+>  EXPORT_SYMBOL(do_mmap_pgoff);
+>  
+> @@ -1092,17 +1088,23 @@ int vma_wants_writenotify(struct vm_area_struct *vma)
+>  
+>  /*
+>   * We account for memory if it's a private writeable mapping,
+> - * and VM_NORESERVE wasn't set.
+> + * not hugepages and VM_NORESERVE wasn't set.
+>   */
+> -static inline int accountable_mapping(unsigned int vm_flags)
+> +static inline int accountable_mapping(struct file *file, unsigned int vm_flags)
+>  {
+> +	/*
+> +	 * hugetlb has its own accounting separate from the core VM
+> +	 * VM_HUGETLB may not be set yet so we cannot check for that flag.
+> +	 */
+> +	if (file && is_file_hugepages(file))
+> +		return 0;
+> +
+>  	return (vm_flags & (VM_NORESERVE | VM_SHARED | VM_WRITE)) == VM_WRITE;
+>  }
+>  
+>  unsigned long mmap_region(struct file *file, unsigned long addr,
+>  			  unsigned long len, unsigned long flags,
+> -			  unsigned int vm_flags, unsigned long pgoff,
+> -			  int accountable)
+> +			  unsigned int vm_flags, unsigned long pgoff)
+>  {
+>  	struct mm_struct *mm = current->mm;
+>  	struct vm_area_struct *vma, *prev;
+> @@ -1128,18 +1130,22 @@ munmap_back:
+>  
+>  	/*
+>  	 * Set 'VM_NORESERVE' if we should not account for the
+> -	 * memory use of this mapping. We only honor MAP_NORESERVE
+> -	 * if we're allowed to overcommit memory.
+> +	 * memory use of this mapping.
+>  	 */
+> -	if ((flags & MAP_NORESERVE) && sysctl_overcommit_memory != OVERCOMMIT_NEVER)
+> -		vm_flags |= VM_NORESERVE;
+> -	if (!accountable)
+> -		vm_flags |= VM_NORESERVE;
+> +	if ((flags & MAP_NORESERVE)) {
+> +	 	/* * We honor MAP_NORESERVE if allowed to overcommit */
+> +		if (sysctl_overcommit_memory != OVERCOMMIT_NEVER)
+> +			vm_flags |= VM_NORESERVE;
+> +
+> +		/* hugetlb applies strict overcommit unless MAP_NORESERVE */
+> +		if (file && is_file_hugepages(file))
+> +			vm_flags |= VM_NORESERVE;
+> +	}
+>  
+>  	/*
+>  	 * Private writable mapping: check memory availability
+>  	 */
+> -	if (accountable_mapping(vm_flags)) {
+> +	if (accountable_mapping(file, vm_flags)) {
+>  		charged = len >> PAGE_SHIFT;
+>  		if (security_vm_enough_memory(charged))
+>  			return -ENOMEM;
+> diff --git a/mm/mprotect.c b/mm/mprotect.c
+> index abe2694..258197b 100644
+> --- a/mm/mprotect.c
+> +++ b/mm/mprotect.c
+> @@ -151,10 +151,11 @@ mprotect_fixup(struct vm_area_struct *vma, struct vm_area_struct **pprev,
+>  	/*
+>  	 * If we make a private mapping writable we increase our commit;
+>  	 * but (without finer accounting) cannot reduce our commit if we
+> -	 * make it unwritable again.
+> +	 * make it unwritable again. hugetlb mapping were accounted for
+> +	 * even if read-only so there is no need to account for them here
+>  	 */
+>  	if (newflags & VM_WRITE) {
+> -		if (!(oldflags & (VM_ACCOUNT|VM_WRITE|
+> +		if (!(oldflags & (VM_ACCOUNT|VM_WRITE|VM_HUGETLB|
+>  						VM_SHARED|VM_NORESERVE))) {
+>  			charged = nrpages;
+>  			if (security_vm_enough_memory(charged))
+> 
 
+-apw
