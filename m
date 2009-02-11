@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759474AbZBKAg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759844AbZBKAiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759474AbZBKAg1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:36:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757691AbZBKA23
+	id S1759844AbZBKAiU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:38:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755692AbZBKA2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:28:29 -0500
-Received: from kroah.org ([198.145.64.141]:51224 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 19:28:34 -0500
+Received: from kroah.org ([198.145.64.141]:51297 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757627AbZBKA2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:25 -0500
-Date: Tue, 10 Feb 2009 16:25:04 -0800
+	id S1757734AbZBKA2a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:28:30 -0500
+Date: Tue, 10 Feb 2009 16:25:15 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Len Brown <len.brown@intel.com>
-Subject: [patch 24/56] ACPI: disable ACPI cleanly when bad RSDP found
-Message-ID: <20090211002504.GY14660@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
+Subject: [patch 29/56] ALSA: hda - Add missing initialization for ALC272
+Message-ID: <20090211002515.GD14660@kroah.com>
 References: <20090211001439.873435357@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-disable-acpi-cleanly-when-bad-rsdp-found.patch"
+Content-Disposition: inline; filename="alsa-hda-add-missing-initialization-for-alc272.patch"
 In-Reply-To: <20090211002328.GA14660@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,49 +38,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Len Brown <len.brown@intel.com>
+From: Takashi Iwai <tiwai@suse.de>
 
-commit 9e3a9d1ed8cc8db93e5c53e9a5b09065bd95de8b upstream.
+commit c6e8f2daadc6d61a32b7486a1058c8f1f9baa499 upstream.
 
-When ACPI is disabled in the BIOS of this VIA C3 box,
-it invalidates the RSDP, which Linux notices:
+ALC272 needs EAPD for speaker outputs as well as other similar ALC
+codecs.
 
-ACPI Error (tbxfroot-0218): A valid RSDP was not found [20080926]
-
-Bug Linux neglected to disable ACPI at that stage,
-and later scribbled on smp_found_config:
-
-ACPI: No APIC-table, disabling MPS
-
-But this box doesn't run well in legacy PIC mode,
-it needed IOAPIC mode to perform correctly:
-
-http://lkml.org/lkml/2009/2/5/39
-
-So exit ACPI mode cleanly when we first detect
-that it is hopeless.
-
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/tables.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ sound/pci/hda/patch_realtek.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/acpi/tables.c
-+++ b/drivers/acpi/tables.c
-@@ -293,7 +293,12 @@ static void __init check_multiple_madt(v
- 
- int __init acpi_table_init(void)
- {
--	acpi_initialize_tables(initial_tables, ACPI_MAX_TABLES, 0);
-+	acpi_status status;
-+
-+	status = acpi_initialize_tables(initial_tables, ACPI_MAX_TABLES, 0);
-+	if (ACPI_FAILURE(status))
-+		return 1;
-+
- 	check_multiple_madt();
- 	return 0;
- }
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -920,6 +920,7 @@ do_sku:
+ 		case 0x10ec0267:
+ 		case 0x10ec0268:
+ 		case 0x10ec0269:
++		case 0x10ec0272:
+ 		case 0x10ec0660:
+ 		case 0x10ec0662:
+ 		case 0x10ec0663:
 
