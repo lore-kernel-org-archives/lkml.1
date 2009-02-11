@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbZBKOyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756989AbZBKOzr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756713AbZBKOyU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 09:54:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbZBKOyL
+	id S1756989AbZBKOzr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 09:55:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbZBKOzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 09:54:11 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59352 "EHLO hera.kernel.org"
+	Wed, 11 Feb 2009 09:55:39 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40565 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752351AbZBKOyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 09:54:11 -0500
-Message-ID: <4992E670.609@kernel.org>
-Date: Wed, 11 Feb 2009 23:53:36 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1752351AbZBKOzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 09:55:38 -0500
+Date: Wed, 11 Feb 2009 15:55:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pengfei Hu <hpfei.cn@gmail.com>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Using module private memory to simulate microkernel's memory
+	protection
+Message-ID: <20090211145525.GB10525@elte.hu>
+References: <a5f59d880902100542x7243b13fuf40e7dd21faf7d7a@mail.gmail.com> <20090210141405.GA16147@elte.hu> <a5f59d880902110604g40cf17b5w92431f60e6f16fa4@mail.gmail.com>
 MIME-Version: 1.0
-To: Brian Gerst <brgerst@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] x86: Use pt_regs pointer in do_device_not_available()
-References: <1234277507-4987-1-git-send-email-brgerst@gmail.com>	 <1234277507-4987-2-git-send-email-brgerst@gmail.com>	 <499281B5.2070502@kernel.org>	 <73c1f2160902110634m779e16f6he9620a7c6c021d12@mail.gmail.com>	 <4992E3CF.4040100@kernel.org> <73c1f2160902110646o5c76785anb93efab5821eba23@mail.gmail.com>
-In-Reply-To: <73c1f2160902110646o5c76785anb93efab5821eba23@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 11 Feb 2009 14:53:52 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a5f59d880902110604g40cf17b5w92431f60e6f16fa4@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brian Gerst wrote:
-> On Wed, Feb 11, 2009 at 9:42 AM, Tejun Heo <tj@kernel.org> wrote:
->> Brian Gerst wrote:
->>> I don't quite follow what you are trying to say here.  Are you saying
->>> use the same calling convention for the exception handlers (anything
->>> called from error_code) and system calls?
->> Yeap.
+
+* Pengfei Hu <hpfei.cn@gmail.com> wrote:
+
+> >
+> > Hm, are you aware of the kmemcheck project?
+> >
+> >        Ingo
+> >
 > 
-> Doesn't make sense to me, two very fundamentally different things.  I
-> supposed you could eliminate the error_code parameter, but that's alot
-> of work to remove just one instruction.
+> Frankly, I only know this project's name. Just when I nearly finished
+> this patch, I browsed http://git.kernel.org/ first time. I am only a
+> beginner in Linux kernel. Maybe I should first discuss before write
+> code. But I think it is not too late.
+> 
+> Can you tell me more about this project? I realy appreciate it.
 
-I don't think they're fundamentally different.  Well, I guess it all
-depends on how you look at it.  Those are just functions called after
-kernel entry with register stack frame as argument.  Some might have
-more fields others might not.
+Sure:
 
-I don't think having two conventions is too bad, so whether to do this
-or not is basically a cleanup decision.  Eh... if you feel like doing
-it, please go ahead.  If not, well, maybe somebody will do it someday
-(or not).  :-)
+  http://tinyurl.com/cstjhb
 
-Thanks.
-
--- 
-tejun
+	Ingo
