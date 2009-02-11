@@ -1,140 +1,342 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbZBKJjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755807AbZBKJmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755423AbZBKJjm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 04:39:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbZBKJje
+	id S1755807AbZBKJmA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 04:42:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbZBKJlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 04:39:34 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:53279 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754038AbZBKJjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 04:39:33 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH 2/2] kprobes: check CONFIG_FREEZER instead of CONFIG_PM
-Date: Wed, 11 Feb 2009 10:38:45 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc4-tst; KDE/4.2.0; x86_64; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Cheng Renquan <crquan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200901062112.29227.rjw@sisk.pl> <200902102240.34313.rjw@sisk.pl> <49922896.6090605@redhat.com>
-In-Reply-To: <49922896.6090605@redhat.com>
+	Wed, 11 Feb 2009 04:41:51 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:7662 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754038AbZBKJlt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 04:41:49 -0500
+From: Jean Pihet <jpihet@mvista.com>
+Organization: MontaVista
+To: Adrian Hunter <ext-adrian.hunter@nokia.com>
+Subject: Re: [PATCH] OMAP: MMC: replace infinite loops with timeouts (was Re: [PATCH] OMAP: MMC: recover from transfer failures - Resend)
+Date: Wed, 11 Feb 2009 10:41:16 +0100
+User-Agent: KMail/1.9.9
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       "tony@atomide.com" <tony@atomide.com>, Paul Walmsley <paul@pwsan.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "Lavinen Jarkko (Nokia-D/Helsinki)" <jarkko.lavinen@nokia.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <20081207213617.10456.43951.stgit@localhost> <200902061653.12821.jpihet@mvista.com> <49905296.2060308@nokia.com>
+In-Reply-To: <49905296.2060308@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902111038.46368.rjw@sisk.pl>
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_90pkJ3ii6IMHtg9"
+Message-Id: <200902111041.17095.jpihet@mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 February 2009, Masami Hiramatsu wrote:
-> Rafael J. Wysocki wrote:
-> > On Tuesday 10 February 2009, Masami Hiramatsu wrote:
-> >> Rafael J. Wysocki wrote:
-> >>> On Tuesday 10 February 2009, Ingo Molnar wrote:
-> >>>> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> >>>>
-> >>>>> Ingo Molnar wrote:
-> >>>>>> * Len Brown <lenb@kernel.org> wrote:
-> >>>>>>
-> >>>>>>>>> Check CONFIG_FREEZER instead of CONFIG_PM because kprobe booster
-> >>>>>>>>> depends on freeze_processes() and thaw_processes() when CONFIG_PREEMPT=y.
-> >>>>>>>>>
-> >>>>>>>>> This fixes a linkage error which occurs when CONFIG_PREEMPT=y, CONFIG_PM=y
-> >>>>>>>>> and CONFIG_FREEZER=n.
-> >>>>>>>>>
-> >>>>>>>>> Reported-by: Cheng Renquan <crquan@gmail.com>
-> >>>>>>>>> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> >>>>>>>>> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> >>>>>>>>> ---
-> >>>>>>>>>  arch/ia64/kernel/kprobes.c |    2 +-
-> >>>>>>>>>  arch/x86/kernel/kprobes.c  |    2 +-
-> >>>>>>>>>  kernel/kprobes.c           |    2 +-
-> >>>>>>>>>  3 files changed, 3 insertions(+), 3 deletions(-)
-> >>>>>>>> looks good, the x86 bits:
-> >>>>>>>>
-> >>>>>>>> Acked-by: Ingo Molnar <mingo@elte.hu>
-> >>>>>>> man, we have too many config options:-)
-> >>>>>> the non-x86 bits (kernel/kprobes.c) are crappy though, and broke -rc4
-> >>>>>> allnoconfig:
-> >>>>>>
-> >>>>>> kernel/built-in.o: In function `collect_garbage_slots':
-> >>>>>> kprobes.c:(.kprobes.text+0x16e4): undefined reference to `freeze_processes'
-> >>>>>> kprobes.c:(.kprobes.text+0x16f2): undefined reference to `thaw_processes'
-> >>>>>> kprobes.c:(.kprobes.text+0x176b): undefined reference to `thaw_processes'
-> >>>>> Hmm, it seems that kernel/power/built-in.o was not linked to .tmp_vmlinux1.
-> >>>>>
-> >>>>>   ld -m elf_i386 --build-id -o .tmp_vmlinux1 -T arch/x86/kernel/vmlinux.lds
-> >>>>> arch/x86/kernel/head_32.o arch/x86/kernel/head32.o arch/x86/kernel/head.o
-> >>>>> arch/x86/kernel/init_task.o  init/built-in.o --start-group  usr/built-in.o
-> >>>>> arch/x86/kernel/built-in.o  arch/x86/mm/built-in.o  arch/x86/mach-default/built-in.o
-> >>>>> arch/x86/crypto/built-in.o  arch/x86/vdso/built-in.o  kernel/built-in.o
-> >>>>> mm/built-in.o  fs/built-in.o  ipc/built-in.o  security/built-in.o  crypto/built-in.o
-> >>>>> block/built-in.o  lib/lib.a  arch/x86/lib/lib.a  lib/built-in.o
-> >>>>> arch/x86/lib/built-in.o  drivers/built-in.o  sound/built-in.o  firmware/built-in.o
-> >>>>> arch/x86/pci/built-in.o  net/built-in.o --end-group
-> >>>>> kernel/built-in.o: In function `collect_garbage_slots':
-> >>>>> kprobes.c:(.kprobes.text+0x16e4): undefined reference to `freeze_processes'
-> >>>>> kprobes.c:(.kprobes.text+0x16f2): undefined reference to `thaw_processes'
-> >>>>> kprobes.c:(.kprobes.text+0x176b): undefined reference to `thaw_processes'
-> >>>>>
-> >>>>> At kernel/Makefile:53, I can see
-> >>>>>
-> >>>>> obj-$(CONFIG_PM) += power/
-> >>>>>
-> >>>>> but CONFIG_PM was not set in config
-> >>>> Sounds plausible. We need a fix for this - it's broken upstream.
-> >>> Hmm.  Can || be used under obj-$() ?
-> >> I think just adding a line "obj-$(CONFIG_FREEZER) += power/" is enough.
-> >> (you can see similar lines of "trace/" at the bottom of obj- lines
-> >>  in kernel/Makefile )
-> > 
-> > Indeed, thanks.
-> > 
-> > So, something like the appended patch should help, I think.
-> > 
-> > Rafael
-> 
-> Thank you for fixing. I've tested it.
-> 
-> Tested-by: Masami Hiramatsu <mhiramat@redhat.com>
+--Boundary-00=_90pkJ3ii6IMHtg9
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Thanks for testing.  I'll send a changelogged version shortly.
+Hi,
 
-Rafael
+Here is the new version of the patch, which now uses cpu_relax in an inline=
+=20
+function. The new function can be used from an irq handler as well.
+
+Regards,
+Jean
+
+=46rom 9d1993dcf4d217837437a1cd9f6e9c1b81533549 Mon Sep 17 00:00:00 2001
+=46rom: Jean Pihet <jpihet@mvista.com>
+Date: Fri, 6 Feb 2009 16:42:51 +0100
+Subject: [PATCH] OMAP: MMC: Change while(); loops with finite version
+
+Replace the infinite 'while() ;' loops
+with a finite loop version.
+
+Signed-off-by: Jean Pihet <jpihet@mvista.com>
+=2D--
+ drivers/mmc/host/omap_hsmmc.c |   54 ++++++++++++++++++++++---------------=
+=2D--
+ 1 files changed, 30 insertions(+), 24 deletions(-)
+
+diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+index 1ac6918..aabf28d 100644
+=2D-- a/drivers/mmc/host/omap_hsmmc.c
++++ b/drivers/mmc/host/omap_hsmmc.c
+@@ -375,6 +375,32 @@ static void mmc_omap_report_irq(struct mmc_omap_host=20
+*host, u32 status)
+ }
+ #endif  /* CONFIG_MMC_DEBUG */
+
++/*
++ * MMC controller internal state machines reset
++ *
++ * Used to reset command or data internal state machines, using respective=
+ly
++ *  SRC or SRD bit of SYSCTL register
++ * Can be called from interrupt context
++ */
++static inline void mmc_omap_reset_controller_fsm(struct mmc_omap_host *hos=
+t,
++               unsigned long bit)
++{
++       unsigned long i =3D 0;
++       unsigned long limit =3D (loops_per_jiffy *
++                               msecs_to_jiffies(MMC_TIMEOUT_MS));
++
++       OMAP_HSMMC_WRITE(host->base, SYSCTL,
++                        OMAP_HSMMC_READ(host->base, SYSCTL) | bit);
++
++       while ((OMAP_HSMMC_READ(host->base, SYSCTL) & bit) &&
++               (i++ < limit))
++               cpu_relax();
++
++       if (OMAP_HSMMC_READ(host->base, SYSCTL) & bit)
++               dev_err(mmc_dev(host->mmc),
++                       "Timeout waiting on controller reset in %s\n",
++                       __func__);
++}
+
+ /*
+  * MMC controller IRQ handler
+@@ -403,13 +429,7 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+                        (status & CMD_CRC)) {
+                        if (host->cmd) {
+                                if (status & CMD_TIMEOUT) {
+=2D                                       OMAP_HSMMC_WRITE(host->base, SYSC=
+TL,
+=2D                                               OMAP_HSMMC_READ(host->bas=
+e,
+=2D                                                               SYSCTL) |=
+=20
+SRC);
+=2D                                       while (OMAP_HSMMC_READ(host->base,
+=2D                                                       SYSCTL) & SRC)
+=2D                                               ;
+=2D
++                                       mmc_omap_reset_controller_fsm(host,=
+=20
+SRC);
+                                        host->cmd->error =3D -ETIMEDOUT;
+                                } else {
+                                        host->cmd->error =3D -EILSEQ;
+@@ -418,12 +438,7 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+                        }
+                        if (host->data) {
+                                mmc_dma_cleanup(host);
+=2D                               OMAP_HSMMC_WRITE(host->base, SYSCTL,
+=2D                                       OMAP_HSMMC_READ(host->base,
+=2D                                                       SYSCTL) | SRD);
+=2D                               while (OMAP_HSMMC_READ(host->base,
+=2D                                               SYSCTL) & SRD)
+=2D                                       ;
++                               mmc_omap_reset_controller_fsm(host, SRD);
+                        }
+                }
+                if ((status & DATA_TIMEOUT) ||
+@@ -433,12 +448,7 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+                                        mmc_dma_cleanup(host);
+                                else
+                                        host->data->error =3D -EILSEQ;
+=2D                               OMAP_HSMMC_WRITE(host->base, SYSCTL,
+=2D                                       OMAP_HSMMC_READ(host->base,
+=2D                                                       SYSCTL) | SRD);
+=2D                               while (OMAP_HSMMC_READ(host->base,
+=2D                                               SYSCTL) & SRD)
+=2D                                       ;
++                               mmc_omap_reset_controller_fsm(host, SRD);
+                                end_trans =3D 1;
+                        }
+                }
+@@ -529,11 +539,7 @@ static void mmc_omap_detect(struct work_struct *work)
+        if (host->carddetect) {
+                mmc_detect_change(host->mmc, (HZ * 200) / 1000);
+        } else {
+=2D               OMAP_HSMMC_WRITE(host->base, SYSCTL,
+=2D                       OMAP_HSMMC_READ(host->base, SYSCTL) | SRD);
+=2D               while (OMAP_HSMMC_READ(host->base, SYSCTL) & SRD)
+=2D                       ;
+=2D
++               mmc_omap_reset_controller_fsm(host, SRD);
+                mmc_detect_change(host->mmc, (HZ * 50) / 1000);
+        }
+ }
+=2D-
+1.6.0.1.42.gf8c9c
 
 
-> > ---
-> >  kernel/Makefile       |    1 +
-> >  kernel/power/Makefile |    2 +-
-> >  2 files changed, 2 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6/kernel/Makefile
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/Makefile
-> > +++ linux-2.6/kernel/Makefile
-> > @@ -51,6 +51,7 @@ obj-$(CONFIG_UID16) += uid16.o
-> >  obj-$(CONFIG_MODULES) += module.o
-> >  obj-$(CONFIG_KALLSYMS) += kallsyms.o
-> >  obj-$(CONFIG_PM) += power/
-> > +obj-$(CONFIG_FREEZER) += power/
-> >  obj-$(CONFIG_BSD_PROCESS_ACCT) += acct.o
-> >  obj-$(CONFIG_KEXEC) += kexec.o
-> >  obj-$(CONFIG_BACKTRACE_SELF_TEST) += backtracetest.o
-> > Index: linux-2.6/kernel/power/Makefile
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/power/Makefile
-> > +++ linux-2.6/kernel/power/Makefile
-> > @@ -3,7 +3,7 @@ ifeq ($(CONFIG_PM_DEBUG),y)
-> >  EXTRA_CFLAGS	+=	-DDEBUG
-> >  endif
-> >  
-> > -obj-y				:= main.o
-> > +obj-$(CONFIG_PM)		+= main.o
-> >  obj-$(CONFIG_PM_SLEEP)		+= console.o
-> >  obj-$(CONFIG_FREEZER)		+= process.o
-> >  obj-$(CONFIG_HIBERNATION)	+= swsusp.o disk.o snapshot.o swap.o user.o
+
+On Monday 09 February 2009 16:58:14 Adrian Hunter wrote:
+> Jean Pihet wrote:
+> > Hi,
+> >
+> >>>> On Thu, 5 Feb 2009, Andrew Morton wrote:
+> >>>>> An infinite loop which assumes the hardware is perfect is always a
+> >>>>> worry.  But I see the driver already does that, so we're no worse
+> >>>>> off..
+> >>>
+> >>> Do you want a finite loop with udelay in it? I located 4 places were
+> >>> this could be used. If so I can generate a new patch for that.
+> >>
+> >> Even if Andrew doesn't, I'd sure like it. (the finite bit at least) :)
+> >
+> > Ok here is a patch that replaces the infinite loops with a timeout
+> > version. This patch applies on top of the previous one I sent ('[PATCH]
+> > OMAP: MMC: recover from transfer failures - Resend'). Is that OK?
+>
+> What about making use of a function like this:
+>
+> static void reset_host_controller(struct mmc_omap_host *host, unsigned bi=
+t)
+> {
+> 	unsigned long i, limit =3D loops_per_jiffy;
+>
+> 	OMAP_HSMMC_WRITE(host->base, SYSCTL,
+> 			 OMAP_HSMMC_READ(host->base, SYSCTL) | bit);
+> 	for (i =3D 0; i < limit; i++) {
+> 		if (!(OMAP_HSMMC_READ(host->base, SYSCTL) & bit))
+> 			return;
+> 		cpu_relax();
+> 	}
+> 	dev_err(mmc_dev(host->mmc), "%s: timeout waiting on software reset\n",
+> 		mmc_hostname(host->mmc));
+> }
+>
+> And then just put:
+>
+> 	reset_host_controller(host, SRD);
+>
+> and
+>
+> 	reset_host_controller(host, SRC);
+>
+> in the right places.
+
+
+--Boundary-00=_90pkJ3ii6IMHtg9
+Content-Type: text/x-diff;
+  charset="iso 8859-15";
+  name="hsmmc_finite_timeout.patch"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment;
+	filename="hsmmc_finite_timeout.patch"
+
+=46rom 9d1993dcf4d217837437a1cd9f6e9c1b81533549 Mon Sep 17 00:00:00 2001
+=46rom: Jean Pihet <jpihet@mvista.com>
+Date: Fri, 6 Feb 2009 16:42:51 +0100
+Subject: [PATCH] OMAP: MMC: Change while(); loops with finite version
+
+Replace the infinite 'while() ;' loops
+with a finite loop version.
+
+Signed-off-by: Jean Pihet <jpihet@mvista.com>
+=2D--
+ drivers/mmc/host/omap_hsmmc.c |   54 ++++++++++++++++++++++---------------=
+=2D--
+ 1 files changed, 30 insertions(+), 24 deletions(-)
+
+diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+index 1ac6918..aabf28d 100644
+=2D-- a/drivers/mmc/host/omap_hsmmc.c
++++ b/drivers/mmc/host/omap_hsmmc.c
+@@ -375,6 +375,32 @@ static void mmc_omap_report_irq(struct mmc_omap_host *=
+host, u32 status)
+ }
+ #endif  /* CONFIG_MMC_DEBUG */
+=20
++/*
++ * MMC controller internal state machines reset
++ *
++ * Used to reset command or data internal state machines, using respective=
+ly
++ *  SRC or SRD bit of SYSCTL register
++ * Can be called from interrupt context
++ */
++static inline void mmc_omap_reset_controller_fsm(struct mmc_omap_host *hos=
+t,
++		unsigned long bit)
++{
++	unsigned long i =3D 0;
++	unsigned long limit =3D (loops_per_jiffy *
++				msecs_to_jiffies(MMC_TIMEOUT_MS));
++
++	OMAP_HSMMC_WRITE(host->base, SYSCTL,
++			 OMAP_HSMMC_READ(host->base, SYSCTL) | bit);
++
++	while ((OMAP_HSMMC_READ(host->base, SYSCTL) & bit) &&
++		(i++ < limit))
++		cpu_relax();
++
++	if (OMAP_HSMMC_READ(host->base, SYSCTL) & bit)
++		dev_err(mmc_dev(host->mmc),
++			"Timeout waiting on controller reset in %s\n",
++			__func__);
++}
+=20
+ /*
+  * MMC controller IRQ handler
+@@ -403,13 +429,7 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 			(status & CMD_CRC)) {
+ 			if (host->cmd) {
+ 				if (status & CMD_TIMEOUT) {
+=2D					OMAP_HSMMC_WRITE(host->base, SYSCTL,
+=2D						OMAP_HSMMC_READ(host->base,
+=2D								SYSCTL) | SRC);
+=2D					while (OMAP_HSMMC_READ(host->base,
+=2D							SYSCTL) & SRC)
+=2D						;
+=2D
++					mmc_omap_reset_controller_fsm(host, SRC);
+ 					host->cmd->error =3D -ETIMEDOUT;
+ 				} else {
+ 					host->cmd->error =3D -EILSEQ;
+@@ -418,12 +438,7 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 			}
+ 			if (host->data) {
+ 				mmc_dma_cleanup(host);
+=2D				OMAP_HSMMC_WRITE(host->base, SYSCTL,
+=2D					OMAP_HSMMC_READ(host->base,
+=2D							SYSCTL) | SRD);
+=2D				while (OMAP_HSMMC_READ(host->base,
+=2D						SYSCTL) & SRD)
+=2D					;
++				mmc_omap_reset_controller_fsm(host, SRD);
+ 			}
+ 		}
+ 		if ((status & DATA_TIMEOUT) ||
+@@ -433,12 +448,7 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 					mmc_dma_cleanup(host);
+ 				else
+ 					host->data->error =3D -EILSEQ;
+=2D				OMAP_HSMMC_WRITE(host->base, SYSCTL,
+=2D					OMAP_HSMMC_READ(host->base,
+=2D							SYSCTL) | SRD);
+=2D				while (OMAP_HSMMC_READ(host->base,
+=2D						SYSCTL) & SRD)
+=2D					;
++				mmc_omap_reset_controller_fsm(host, SRD);
+ 				end_trans =3D 1;
+ 			}
+ 		}
+@@ -529,11 +539,7 @@ static void mmc_omap_detect(struct work_struct *work)
+ 	if (host->carddetect) {
+ 		mmc_detect_change(host->mmc, (HZ * 200) / 1000);
+ 	} else {
+=2D		OMAP_HSMMC_WRITE(host->base, SYSCTL,
+=2D			OMAP_HSMMC_READ(host->base, SYSCTL) | SRD);
+=2D		while (OMAP_HSMMC_READ(host->base, SYSCTL) & SRD)
+=2D			;
+=2D
++		mmc_omap_reset_controller_fsm(host, SRD);
+ 		mmc_detect_change(host->mmc, (HZ * 50) / 1000);
+ 	}
+ }
+=2D-=20
+1.6.0.1.42.gf8c9c
+
+
+--Boundary-00=_90pkJ3ii6IMHtg9--
