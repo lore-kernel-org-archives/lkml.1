@@ -1,72 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757898AbZBKRiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757724AbZBKRlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757898AbZBKRiu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 12:38:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756299AbZBKRik
+	id S1757724AbZBKRlT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 12:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbZBKRlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 12:38:40 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:58508 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755085AbZBKRik (ORCPT
+	Wed, 11 Feb 2009 12:41:08 -0500
+Received: from outbound-mail-25.bluehost.com ([69.89.21.20]:46082 "HELO
+	outbound-mail-25.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754701AbZBKRlH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 12:38:40 -0500
-Date: Wed, 11 Feb 2009 10:38:38 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Yu Zhao <yu.zhao@intel.com>
-Cc: jbarnes@virtuousgeek.org, dwmw2@infradead.org, linux-pci@vger.kernel.org,
+	Wed, 11 Feb 2009 12:41:07 -0500
+X-Greylist: delayed 439 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Feb 2009 12:41:07 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=osMnIQkgkOkdWfMUifPL8tvtWW3z8KVBydUg1EQr2G1AqTVIy0BLS0BUvcgxbRmqgNQ28LDhC1Tz4CIpoNQnZfCuwfiyPHfDVZFfvN0si1Z73/c1TtF3y6WVHruMh/9l;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH v2 1/6] PCI: support the ATS capability
+Date: Wed, 11 Feb 2009 09:33:44 -0800
+User-Agent: KMail/1.9.10
+Cc: Yu Zhao <yu.zhao@intel.com>, linux-pci@vger.kernel.org,
        iommu@lists.linux-foundation.org, kvm@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 1/6] PCI: support the ATS capability
-Message-ID: <20090211173838.GC3624@parisc-linux.org>
-References: <1232252254-7614-1-git-send-email-yu.zhao@intel.com> <1232252254-7614-2-git-send-email-yu.zhao@intel.com>
+References: <1232252254-7614-1-git-send-email-yu.zhao@intel.com> <1232252254-7614-2-git-send-email-yu.zhao@intel.com> <1234265550.10484.62.camel@macbook.infradead.org>
+In-Reply-To: <1234265550.10484.62.camel@macbook.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1232252254-7614-2-git-send-email-yu.zhao@intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200902110933.44861.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 18, 2009 at 12:17:29PM +0800, Yu Zhao wrote:
-> +/**
-> + * pci_ats_qdep - query ATS invalidate queue depth
-> + * @dev: the PCI device
-> + *
-> + * Returns the queue depth on success, or 0 on error.
-> + */
-> +int pci_ats_qdep(struct pci_dev *dev)
-> +{
-> +	int pos;
-> +	u16 cap;
-> +
-> +	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ATS);
-> +	if (!pos)
-> +		return 0;
-> +
-> +	pci_read_config_word(dev, pos + PCI_ATS_CAP, &cap);
-> +
-> +	return PCI_ATS_CAP_QDEP(cap) ? : PCI_ATS_MAX_QDEP;
-> +}
+On Tuesday, February 10, 2009 3:32 am David Woodhouse wrote:
+> On Sun, 2009-01-18 at 12:17 +0800, Yu Zhao wrote:
+> > The ATS spec can be found at
+> > http://www.pcisig.com/specifications/iov/ats/ (it requires membership).
+> >
+> > Signed-off-by: Yu Zhao <yu.zhao@intel.com>
+>
+> If I can have an ack from Jesse for the PCI bits (which is basically
+> this patch), I'll take the whole lot through my iommu tree. OK?
 
-The only concern I have with this patch is that every time we enable,
-disable or call qdep (ok, maybe I have a second problem with 'qdep'
-instead of spelling out 'queue_depth'), we call
-pci_find_ext_capability() which is not necessarily cheap.  I can't tell
-from this series of patches whether this is a real performance problem
-or whether we ask for the qdep once per device per boot.
+Yep, looks fine.
 
-There was a performance problem with the MSI code when it would try to
-pci_find_capability() the MSI cap in the interrupt handler.  This was
-fixed long ago by caching the pos of the cap, so I want to be sure we're
-not making the same mistake again here.
-
-Hm, a third problem is that the empty ? : is really confusing and
-generally to be avoided.  GCC should be able to figure out that it's a
-pure/const function anyway and avoid recalculating it.
+Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Jesse Barnes, Intel Open Source Technology Center
