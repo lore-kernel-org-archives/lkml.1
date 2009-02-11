@@ -1,58 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757329AbZBKAVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757580AbZBKAWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757329AbZBKAVn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:21:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755815AbZBKAVf
+	id S1757580AbZBKAWV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:22:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754465AbZBKAWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:21:35 -0500
-Received: from mail-ew0-f26.google.com ([209.85.219.26]:41975 "EHLO
-	mail-ew0-f26.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754870AbZBKAVe convert rfc822-to-8bit (ORCPT
+	Tue, 10 Feb 2009 19:22:10 -0500
+Received: from cpsmtpo-eml01.KPNXCHANGE.COM ([213.75.38.150]:32798 "EHLO
+	cpsmtpo-eml01.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755815AbZBKAWJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:21:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ULWqWGS0vJPVmN5Ur1i1jkkDgBBmTIs5YbTOthdcSC2tiN/Iw4bgu7DXGo/9zRjzOp
-         kmu2nPuTV8RkLZpYy2Rh2Y8/mWizSkk+Chys37E6+CB00VufI5wPPRDEzG2uVl4jfYhm
-         P4nViJZdiK3DvX80/zvxEyKJxNYG1gBMO3rpA=
+	Tue, 10 Feb 2009 19:22:09 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH][BUILDERR] mm: Fix build error with !CONFIG_HUGETLBFS
+Date: Wed, 11 Feb 2009 01:22:03 +0100
+User-Agent: KMail/1.9.9
+Cc: elendil@planet.nl, linux-kernel@vger.kernel.org, mel@csn.ul.ie,
+       torvalds@linux-foundation.org
+References: <200902102351.30418.elendil@planet.nl> <200902102351.30418.elendil@planet.nl> <B5B23369-BEA0-4420-9967-28ABC53B3C4B@kernel.crashing.org>
+In-reply-To: <B5B23369-BEA0-4420-9967-28ABC53B3C4B@kernel.crashing.org>
 MIME-Version: 1.0
-In-Reply-To: <499213CD.6080903@tremplin-utc.net>
-References: <1234309249-13672-1-git-send-email-giuseppe.bilotta@gmail.com>
-	 <499211D0.3090705@tremplin-utc.net>
-	 <cb7bb73a0902101551o30dde0aesaeba399f1ab732af@mail.gmail.com>
-	 <499213CD.6080903@tremplin-utc.net>
-Date: Wed, 11 Feb 2009 01:21:32 +0100
-Message-ID: <cb7bb73a0902101621r56224b46id9ab59dfe9501e3c@mail.gmail.com>
-Subject: Re: [PATCHv2] lis3lv02d: support both one- and two-byte sensors
-From: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
-To: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>
-Cc: Pavel Machek <pavel@suse.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902110122.04974.elendil@planet.nl>
+X-OriginalArrivalTime: 11 Feb 2009 00:22:05.0546 (UTC) FILETIME=[C4AD44A0:01C98BDE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[removed git from the cc because that was a mistake]
+Kumar Gala wrote:
+> might be slightly better as:
+> 
+> #define hugetlb_file_setup(name,size,acctflag)  ERR_PTR(-ENOSYS)
+> 
+> otherwise ack.
 
-On Wed, Feb 11, 2009 at 12:54 AM, Éric Piel <Eric.Piel@tremplin-utc.net> wrote:
-> BTW, now that this is working. Could you double check the correct axes set
-> up. In particular, is it x_inverted or y_inverted, and what about z axis...
-
-Now that we have the 8 vs 16 bit mess sorted out, I re-checked and
-there my sensor definitely has the X (first) axis inverted, so the
-one-liner patch I sent at the beginning is still valid, at least as
-far as my laptop is involved. It might be that different dv5 Pavilions
-have different sensors though, which will make it quite harder to sort
-out.
-
-I'd be interested in hearing from the other user (the one reporting
-inverted Y): rather than checking neverball, could he use plain jstest
-and see if the results match the Documentation or not?
-
-
--- 
-Giuseppe "Oblomov" Bilotta
+Yes, I see. Better to take the patch from Stefan Richter then:
+http://lkml.org/lkml/2009/2/10/396
