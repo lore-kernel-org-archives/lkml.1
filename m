@@ -1,82 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757868AbZBKQ7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757893AbZBKRCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757868AbZBKQ7y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 11:59:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756879AbZBKQ7k
+	id S1757893AbZBKRCQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 12:02:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbZBKRCB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 11:59:40 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:41043 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756850AbZBKQ7j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 11:59:39 -0500
-Date: Wed, 11 Feb 2009 11:59:37 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/8] git pull request for tip/tracing/core
-In-Reply-To: <alpine.DEB.1.10.0902111147450.15438@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.1.10.0902111158380.15438@gandalf.stny.rr.com>
-References: <20090208054955.777429253@goodmis.org> <20090209093751.GD7930@elte.hu> <20090211153650.GA19576@elte.hu> <alpine.DEB.1.10.0902111147450.15438@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 11 Feb 2009 12:02:01 -0500
+Received: from gw.goop.org ([64.81.55.164]:41861 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755329AbZBKRCA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 12:02:00 -0500
+Message-ID: <49930485.3070204@goop.org>
+Date: Wed, 11 Feb 2009 09:01:57 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] x86: more header untangling
+References: <4991D626.5040009@goop.org> <20090211100323.GE20518@elte.hu>
+In-Reply-To: <20090211100323.GE20518@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> The difference is this:
+>
+>  - page*.h is for page frame definitions and general
+>    address space layout details that derive from the page frame.
+>
+>  - pgtable*.h is the pagetable hw format and all things related to it.
+>   
 
-On Wed, 11 Feb 2009, Steven Rostedt wrote:
+Right.
 
-> 
-> On Wed, 11 Feb 2009, Ingo Molnar wrote:
-> 
-> > 
-> > > > Steven Rostedt (7):
-> > > >       ring-buffer: add NMI protection for spinlocks
-> > > >       nmi: add generic nmi tracking state
-> > 
-> > hm, this commit breaks a number of non-x86 architectures the following way:
-> > 
-> > In file included from /home/mingo/tip/include/linux/interrupt.h:12,
-> >                  from /home/mingo/tip/arch/ia64/include/asm/mca.h:16,
-> >                  from /home/mingo/tip/arch/ia64/kernel/asm-offsets.c:17:
-> > /home/mingo/tip/include/linux/hardirq.h:67:2: #error PREEMPT_ACTIVE too high!
-> > make[2]: *** [arch/ia64/kernel/asm-offsets.s] Error 1
+> Sure, pgtable.h still has to inherit page.h (we cannot talk about a
+> page table without knowing about a page), but not the other way around.
+>
+> I.e. the practical difference is not to pgtable.h, but to page.h: we stop
+> polluting those places with pte_t/pteval_t/etc details that only need
+> page.h.
+>
+> I'm sure there will be .c code fallout from moving definitions like this,
+> but we'll fix those. The previous batch of changes from you stabilized
+> quickly (we needed only 3 build fixes), so this approach seems to scale
+> well so far.
+>
+> So please move those definitions to their logically consistent place and
+> dont worry about the build fallout.
+>   
 
-I just looked at alpha and arm, I'm now looking at ia64. And this could
-be an issue, since it has 14 bits for hard irqs.
+OK.
 
-What would be the impact to make the preempt count a long?
+> Another thing:
+>
+>   
+>> arch/x86/include/asm/page-defs.h       |  155 ++++++++++++++++++++++
+>> arch/x86/include/asm/page.h            |  146 +--------------------
+>> arch/x86/include/asm/page_32-defs.h    |   92 +++++++++++++
+>> arch/x86/include/asm/page_32.h         |   89 +------------
+>> arch/x86/include/asm/page_64-defs.h    |  105 +++++++++++++++
+>> arch/x86/include/asm/page_64.h         |  101 +--------------
+>> arch/x86/include/asm/paravirt.h        |    2 +-
+>> arch/x86/include/asm/pgtable-defs.h    |  227 +++++++++++++++++++++++++++++++
+>> arch/x86/include/asm/pgtable.h         |  228 +-------------------------------
+>> arch/x86/include/asm/pgtable_32-defs.h |   46 +++++++
+>> arch/x86/include/asm/pgtable_32.h      |   42 +------
+>> arch/x86/include/asm/pgtable_64-defs.h |   46 +++++++
+>> arch/x86/include/asm/pgtable_64.h      |   48 +-------
+>> 13 files changed, 688 insertions(+), 639 deletions(-)
+>>     
+>
+> The splitup looks good (sans the comment above), but could you please name
+> them page_types.h, pgtable_types.h, like we did it for other, cleaned up
+> headers like spinlock_types.h?
+>   
 
--- Steve
+I considered it, but I went with -defs because 1) there are the existing 
+-defs.h headers in this area, and 2) the define constants and small 
+inlines as well as types.
 
-
-> > 
-> > Alpha and ARM are broken too. (and possibly others)
-> 
-> Looking at this, it doesn't seem like it should be a problem. Perhaps the 
-> CPP is treating the number as signed. Does this patch fix the compile?
-> 
-> -- Steve
-> 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> 
-> diff --git a/include/linux/hardirq.h b/include/linux/hardirq.h
-> index f3cf86e..9bd4302 100644
-> --- a/include/linux/hardirq.h
-> +++ b/include/linux/hardirq.h
-> @@ -63,7 +63,7 @@
->  
->  #define NMI_OFFSET	(PREEMPT_ACTIVE << 1)
->  
-> -#if NMI_OFFSET >= 0x80000000
-> +#if NMI_OFFSET >= 0x80000000UL
->  #error PREEMPT_ACTIVE too high!
->  #endif
->  
-> 
+    J
