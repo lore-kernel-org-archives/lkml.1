@@ -1,112 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbZBKKS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbZBKKTH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756786AbZBKKS1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 05:18:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755030AbZBKKSR
+	id S1756705AbZBKKTH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 05:19:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbZBKKSz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 05:18:17 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:28728 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754899AbZBKKSQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 05:18:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type;
-        b=KiAkJnMQP+iFvD6/ODBI3+GyQVPQnUpGUqmZ9xYlbuZPZMMIPNW5MrlrkQgRvY6yp4
-         7rWCF/TwS6I4MWMqKkuCr3/NBKsxYtHvReE0rFsDkOJdrQQrRsgeHoatiJnVj+NvF4zT
-         aGkEKddhT2LB5qEMFeo2pVTqg0VWQ3CDDPAv8=
-Message-ID: <4992A5ED.5050800@gmail.com>
-Date: Wed, 11 Feb 2009 12:18:21 +0200
-From: Lior Dotan <liodot@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
+	Wed, 11 Feb 2009 05:18:55 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45451 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752432AbZBKKSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 05:18:54 -0500
+Date: Wed, 11 Feb 2009 11:18:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <tj@kernel.org>
+Cc: Brian Gerst <brgerst@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] x86: Pass in pt_regs pointer for syscalls that
+	need it
+Message-ID: <20090211101846.GH20518@elte.hu>
+References: <1234277507-4987-1-git-send-email-brgerst@gmail.com> <1234277507-4987-3-git-send-email-brgerst@gmail.com> <4992812B.1050800@kernel.org>
 MIME-Version: 1.0
-To: gregkh@suse.de
-CC: Christopher Harrer <charrer@alacritech.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH]  SLICOSS - free resources on entry_probe error path
-Content-Type: multipart/mixed;
- boundary="------------090400090901080902010605"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4992812B.1050800@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090400090901080902010605
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Call pci_disable_device() and free_netdev() if slic_entry_probe fails.
+* Tejun Heo <tj@kernel.org> wrote:
 
-Signed_off-by: Lior Dotan <liodot@gmail.com>
+> Hello, Brian.
+> 
+> Brian Gerst wrote:
+> > Some syscalls need to access the pt_regs structure, either to copy
+> > user register state or to modifiy it.  This patch adds stubs to load
+> > the address of the pt_regs struct into the %eax register, and changes
+> > the syscalls to regparm(1) to receive the pt_regs pointer as the
+> > first argument.
+> 
+> Heh... neat.  Just one question.
+> 
+> > -asmlinkage long sys_iopl(unsigned long regsp)
+> > +ptregscall long sys_iopl(struct pt_regs *regs, unsigned int level)
+> >  {
+> > -	struct pt_regs *regs = (struct pt_regs *)&regsp;
+> > -	unsigned int level = regs->bx;
+> 
+> Here and at other places where the function takes more than one
+> arguments, wouldn't it be better to just take *regs and use other
+> parameters from regs?  That way we won't have to worry about gcc
+> corrupting register frame at all and I think it's cleaner that way.
 
---------------090400090901080902010605
-Content-Type: text/plain;
- name="slicoss-clean-slic_entry_probe.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="slicoss-clean-slic_entry_probe.patch"
+Hm, gcc cannot corrupt register arguments only on-stack arguments - but
+your suggestion nevertheless makes sense as an optimization. I'd suggest
+this to be done as a separate patch though, both for regression analysis
+reasons (easier to bisect - the patch is large enough already) and from
+a size/performance analysis POV. (so we can see the benefits in isolation)
 
-diff -X /usr/src/linux/Documentation/dontdiff -purN a/drivers/staging/slicoss/slicoss.c b/drivers/staging/slicoss/slicoss.c
---- a/drivers/staging/slicoss/slicoss.c	2009-02-11 11:15:32.000000000 +0200
-+++ b/drivers/staging/slicoss/slicoss.c	2009-02-11 12:03:42.000000000 +0200
-@@ -335,7 +335,7 @@ static int __devinit slic_entry_probe(st
- {
- 	static int cards_found;
- 	static int did_version;
--	int err;
-+	int err = -ENODEV;
- 	struct net_device *netdev;
- 	struct adapter *adapter;
- 	void __iomem *memmapped_ioaddr = NULL;
-@@ -369,7 +369,7 @@ static int __devinit slic_entry_probe(st
- 			DBG_MSG
- 			    ("No usable DMA configuration, aborting  err[%x]\n",
- 			     err);
--			return err;
-+			goto err_out_disable_pci;
- 		}
- 		DBG_MSG("pci_set_dma_mask(DMA_32BIT_MASK) successful\n");
- 	}
-@@ -379,7 +379,7 @@ static int __devinit slic_entry_probe(st
- 	err = pci_request_regions(pcidev, DRV_NAME);
- 	if (err) {
- 		DBG_MSG("pci_request_regions FAILED err[%x]\n", err);
--		return err;
-+		goto err_out_disable_pci;
- 	}
- 
- 	DBG_MSG("call pci_set_master\n");
-@@ -413,7 +413,7 @@ static int __devinit slic_entry_probe(st
- 	if (!memmapped_ioaddr) {
- 		DBG_ERROR("%s cannot remap MMIO region %lx @ %lx\n",
- 			  __func__, mmio_len, mmio_start);
--		goto err_out_free_mmio_region;
-+		goto err_out_free_netdev;
- 	}
- 
- 	DBG_MSG
-@@ -497,16 +497,17 @@ static int __devinit slic_entry_probe(st
- 
- err_out_unmap:
- 	iounmap(memmapped_ioaddr);
--
- err_out_free_mmio_region:
- 	release_mem_region(mmio_start, mmio_len);
--
-+err_out_free_netdev:
-+	free_netdev(netdev);
- err_out_exit_slic_probe:
- 	pci_release_regions(pcidev);
- 	DBG_ERROR("%s EXIT jiffies[%lx] cpu %d\n", __func__, jiffies,
- 		  smp_processor_id());
--
--	return -ENODEV;
-+err_out_disable_pci:
-+	pci_disable_device(pcidev);
-+	return err;
- }
- 
- static int slic_entry_open(struct net_device *dev)
-
---------------090400090901080902010605--
+	Ingo
