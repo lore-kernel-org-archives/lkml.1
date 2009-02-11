@@ -1,110 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759780AbZBKAxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758785AbZBKAvu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759780AbZBKAxu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:53:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759353AbZBKAnY
+	id S1758785AbZBKAvu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:51:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758148AbZBKAep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:43:24 -0500
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:42969 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758844AbZBKAnW (ORCPT
+	Tue, 10 Feb 2009 19:34:45 -0500
+Received: from e37.co.us.ibm.com ([32.97.110.158]:40439 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759201AbZBKAem (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:43:22 -0500
-Subject: Re: [Bug #12491] i915 lockdep warning
-From: Eric Anholt <eric@anholt.net>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "drivers_video-dri@kernel-bugs.osdl.org" 
-	<drivers_video-dri@kernel-bugs.osdl.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       intel-gfx@lists.freedesktop.org
-In-Reply-To: <adabptfc90m.fsf@cisco.com>
-References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
-	 <pWZw1SZjMCH.A.ciH.4vYiJB@chimera> <adar62dltg1.fsf@cisco.com>
-	 <200902050203.40535.rjw@sisk.pl> <adar62bchfw.fsf@cisco.com>
-	 <F169D4F5E1F1974DBFAFABF47F60C10A1DFD867C@orsmsx507.amr.corp.intel.com>
-	 <adabptfc90m.fsf@cisco.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-kR0MQ7f70BrvLAu3AEdM"
-Date: Tue, 10 Feb 2009 16:43:12 -0800
-Message-Id: <1234312992.32506.30.camel@gaiman>
+	Tue, 10 Feb 2009 19:34:42 -0500
+Subject: [PATCH 3/3] Convert sparc to use arch_getoffset() infrastructure
+From: john stultz <johnstul@us.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: rmk+lkml@arm.linux.org.uk, cooloney@kernel.org, starvik@axis.com,
+       takata@linux-m32r.org, geert@linux-m68k.org,
+       Roman Zippel <zippel@linux-m68k.org>, lethal@linux-sh.org,
+       Magnus Damm <magnus.damm@gmail.com>, wli@holomorphy.com,
+       chris@zankel.net, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1234312382.7801.31.camel@localhost>
+References: <1234312149.7801.26.camel@localhost>
+	 <1234312299.7801.29.camel@localhost>  <1234312382.7801.31.camel@localhost>
+Content-Type: text/plain
+Date: Tue, 10 Feb 2009 16:34:38 -0800
+Message-Id: <1234312478.7801.33.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew, please consider for inclusion into -mm in preparation for 2.6.30
 
---=-kR0MQ7f70BrvLAu3AEdM
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This patch converts sparc to use GENERIC_TIME via the arch_getoffset()
+infrastructure 
 
-On Fri, 2009-02-06 at 17:48 -0800, Roland Dreier wrote:
-> [intel-gfx CC added]
->=20
->  > I tested this on my 965 based system that showed the issue and it seem=
-ed resolved, at least no warnings in dmesg.  Lockdep was confirmed to still=
- be enabled.
->=20
->  > I can mark the bug fixed in korg bugzilla too.
->=20
-> Probably we just want to add a comment saying the patch works -- the bug
-> should stay open until we get the fix upstream I guess.
->=20
->  > Thank you Roland for looking into this, good work!
->=20
-> Thanks for testing!  Patch with updated changelog (including your
-> tested-by) below.  Jesse [Barnes] and/or Eric please review and apply:
->=20
-> ---
->=20
-> i915: Fix potential AB-BA deadlock in i915_gem_execbuffer()
->=20
-> Lockdep warns that i915_gem_execbuffer() can trigger a page fault (which
-> takes mmap_sem) while holding dev->struct_mutex, while drm_vm_open()
-> (which is called with mmap_sem already held) takes dev->struct_mutex.
-> So this is a potential AB-BA deadlock.
->=20
-> The way that i915_gem_execbuffer() triggers a page fault is by doing
-> copy_to_user() when returning new buffer offsets back to userspace;
-> however there is no reason to hold the struct_mutex when doing this
-> copy, since what is being copied is the contents of an array private to
-> i915_gem_execbuffer() anyway.  So we can fix the potential deadlock (and
-> get rid of the lockdep warning) by simply moving the copy_to_user()
-> outside of where struct_mutex is held.
->=20
-> This fixes <http://bugzilla.kernel.org/show_bug.cgi?id=3D12491>.
->=20
-> Reported-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Tested-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Signed-off-by: Roland Dreier <rolandd@cisco.com>
+I do not have cross compilers for these architectures, and in some cases
+the architectures can be compiles both with and without clocksources. So
+I've taken my best swing at converting this, but I'm not confident I got
+it right. Any assistance from arch maintainers or testers would be
+great.
 
-This only fixes 1 of the about 4 of this type of deadlock, but it looks
-like a fine fix for that and I've put it in my tree.  Thanks!
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+Acked-by: David S. Miller <davem@davemloft.net>
 
-(I'd been holding off on hitting the easy ones to figure out if we could
-get the lock order the other way around.  It would be really nice if we
-could have struct_mutex -> mmap_sem, but it looks like that's just not
-going to happen.  pread and pwrite are going to be a mess.)
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index c3ea215..a5b465f 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -55,8 +55,11 @@ config BITS
+ 	default 64 if SPARC64
+ 
+ config GENERIC_TIME
++	def_bool y
++
++config ARCH_USES_GETTIMEOFFSET
+ 	bool
+-	default y if SPARC64
++	default y if SPARC32
+ 
+ config GENERIC_CMOS_UPDATE
+ 	bool
+diff --git a/arch/sparc/kernel/time_32.c b/arch/sparc/kernel/time_32.c
+index 614ac7b..e946b55 100644
+--- a/arch/sparc/kernel/time_32.c
++++ b/arch/sparc/kernel/time_32.c
+@@ -227,7 +227,7 @@ void __init time_init(void)
+ 	sbus_time_init();
+ }
+ 
+-static inline unsigned long do_gettimeoffset(void)
++u32 arch_gettimeoffset(void)
+ {
+ 	unsigned long val = *master_l10_counter;
+ 	unsigned long usec = (val >> 10) & 0x1fffff;
+@@ -236,84 +236,7 @@ static inline unsigned long do_gettimeoffset(void)
+ 	if (val & 0x80000000)
+ 		usec += 1000000 / HZ;
+ 
+-	return usec;
+-}
+-
+-/* Ok, my cute asm atomicity trick doesn't work anymore.
+- * There are just too many variables that need to be protected
+- * now (both members of xtime, et al.)
+- */
+-void do_gettimeofday(struct timeval *tv)
+-{
+-	unsigned long flags;
+-	unsigned long seq;
+-	unsigned long usec, sec;
+-	unsigned long max_ntp_tick = tick_usec - tickadj;
+-
+-	do {
+-		seq = read_seqbegin_irqsave(&xtime_lock, flags);
+-		usec = do_gettimeoffset();
+-
+-		/*
+-		 * If time_adjust is negative then NTP is slowing the clock
+-		 * so make sure not to go into next possible interval.
+-		 * Better to lose some accuracy than have time go backwards..
+-		 */
+-		if (unlikely(time_adjust < 0))
+-			usec = min(usec, max_ntp_tick);
+-
+-		sec = xtime.tv_sec;
+-		usec += (xtime.tv_nsec / 1000);
+-	} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
+-
+-	while (usec >= 1000000) {
+-		usec -= 1000000;
+-		sec++;
+-	}
+-
+-	tv->tv_sec = sec;
+-	tv->tv_usec = usec;
+-}
+-
+-EXPORT_SYMBOL(do_gettimeofday);
+-
+-int do_settimeofday(struct timespec *tv)
+-{
+-	int ret;
+-
+-	write_seqlock_irq(&xtime_lock);
+-	ret = bus_do_settimeofday(tv);
+-	write_sequnlock_irq(&xtime_lock);
+-	clock_was_set();
+-	return ret;
+-}
+-
+-EXPORT_SYMBOL(do_settimeofday);
+-
+-static int sbus_do_settimeofday(struct timespec *tv)
+-{
+-	time_t wtm_sec, sec = tv->tv_sec;
+-	long wtm_nsec, nsec = tv->tv_nsec;
+-
+-	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
+-		return -EINVAL;
+-
+-	/*
+-	 * This is revolting. We need to set "xtime" correctly. However, the
+-	 * value in this location is the value at the most recent update of
+-	 * wall time.  Discover what correction gettimeofday() would have
+-	 * made, and then undo it!
+-	 */
+-	nsec -= 1000 * do_gettimeoffset();
+-
+-	wtm_sec  = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
+-	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - nsec);
+-
+-	set_normalized_timespec(&xtime, sec, nsec);
+-	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
+-
+-	ntp_clear();
+-	return 0;
++	return usec * 1000;
+ }
+ 
+ static int set_rtc_mmss(unsigned long secs)
 
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
 
-
-
---=-kR0MQ7f70BrvLAu3AEdM
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkmSHyAACgkQHUdvYGzw6vdgnwCeIpmtGHVwkFNmGT0Iygc5p16U
-hrAAn2uGxAHY8YdRVY4GPIuwx+ggKQAP
-=3XT/
------END PGP SIGNATURE-----
-
---=-kR0MQ7f70BrvLAu3AEdM--
