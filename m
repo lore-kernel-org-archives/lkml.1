@@ -1,199 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757016AbZBKWCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758026AbZBKWFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757016AbZBKWCV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 17:02:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756282AbZBKWBv
+	id S1758026AbZBKWFW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 17:05:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbZBKWFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 17:01:51 -0500
-Received: from outbound-mail-130.bluehost.com ([67.222.38.30]:42959 "HELO
-	outbound-mail-130.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754038AbZBKWBt (ORCPT
+	Wed, 11 Feb 2009 17:05:09 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:51862 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754053AbZBKWFH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 17:01:49 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=itMgzTR4vvZLlyhwCcVW6cVgcDrDwDPDAYSQGkpEvgNRRGXCzbW3mTdfGnMTpCpOmMt4JJbtMH4hggcZO5R5eK0hqeb2hJzT+oAV8XDvDa1hTTEWFkqKfW5fe7Oij189;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: dri-devel@lists.sourceforge.net, Eric Anholt <eric@anholt.net>
-Subject: Re: Gem GTT mmaps..
-Date: Wed, 11 Feb 2009 14:01:46 -0800
-User-Agent: KMail/1.9.10
-Cc: Chris Wilson <chris@chris-wilson.co.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-References: <498A1760.7010108@shipmail.org> <200902061424.02906.jbarnes@virtuousgeek.org> <1233967941.11716.1009.camel@localhost>
-In-Reply-To: <1233967941.11716.1009.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902111401.46669.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+	Wed, 11 Feb 2009 17:05:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
+         :content-type;
+        b=Tkll8tVuMyS14y1Q/UHrdqG47N/90SJQZw+xbCPZJfJ5ZNRM1+my3wDiGVvqwZScsA
+         vhpEjtrxe2ENgYxXw5A+n+/QzSb9podCtV1wtKKHpSbUFfggj2mljbEqm2RsXhhliRRg
+         zdrPNlSHM5Y/i0xLOEPGUzsY0DcNWfKHHYJcY=
+Date: Wed, 11 Feb 2009 23:04:19 +0100
+From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "linux-fbdev-devel@lists.sourceforge.net" 
+	<linux-fbdev-devel@lists.sourceforge.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: PATCH - Also update values to s1d13xxxfb.h
+Message-Id: <20090211230419.fc987c98.kristoffer.ericson@gmail.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__11_Feb_2009_23_04_19_+0100_ac/M_CRq9=E+Pl66"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, February 6, 2009 4:52 pm Chris Wilson wrote:
-> I tried it, it's not too happy. My only concern is that this now relies
-> on userspace to correctly call SW_FINISH (and not unmap after mmapping
-> the GTT_MMAP) or otherwise the object is leaked? Patch comments inline.
+--Signature=_Wed__11_Feb_2009_23_04_19_+0100_ac/M_CRq9=E+Pl66
+Content-Type: multipart/mixed;
+ boundary="Multipart=_Wed__11_Feb_2009_23_04_19_+0100_.iPEufqQs4AE5cXv"
 
-This one relies on munmap or exit (as it should be).  I think we're leaking a
-refcount somewhere, but afaict it's not caused by this patch (failing to take
-a ref at mmap time leads to a panic in unpin).  That leak may have been fixed
-by one of your other patches, haven't updated & tested yet.
 
-  - ref at map time will keep the object around so fault shouldn't fail
-  - additional threads will take their refs in vm_open/close
-  - unmap will unref and remove mmap_offset allowing object to be freed
+--Multipart=_Wed__11_Feb_2009_23_04_19_+0100_.iPEufqQs4AE5cXv
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Tested with modetest while looking at /proc/dri/...
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+This pach updates the s1d13xxxfb.h file to reflect the recent
+changes to the driver.
 
-diff --git a/drivers/gpu/drm/drm_gem.c b/drivers/gpu/drm/drm_gem.c
-index 6915fb8..393d2db 100644
---- a/drivers/gpu/drm/drm_gem.c
-+++ b/drivers/gpu/drm/drm_gem.c
-@@ -460,6 +460,26 @@ drm_gem_object_handle_free(struct kref *kref)
- }
- EXPORT_SYMBOL(drm_gem_object_handle_free);
- 
-+void drm_gem_vm_open(struct vm_area_struct *vma)
-+{
-+	struct drm_gem_object *obj = vma->vm_private_data;
+Signed-off-by: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+
+diff --git a/include/video/s1d13xxxfb.h b/include/video/s1d13xxxfb.h
+index fe41b84..c3b2a2a 100644
+--- a/include/video/s1d13xxxfb.h
++++ b/include/video/s1d13xxxfb.h
+@@ -14,13 +14,16 @@
+ #define	S1D13XXXFB_H
+=20
+ #define S1D_PALETTE_SIZE		256
+-#define S1D13506_CHIP_REV		4	/* expected chip revision number for s1d13506=
+ */
+-#define S1D13806_CHIP_REV		7	/* expected chip revision number for s1d13806=
+ */
+-#define S1D_FBID			"S1D13806"
+-#define S1D_DEVICENAME			"s1d13806fb"
++#define S1D_FBID			"S1D13xxx"
++#define S1D_DEVICENAME			"s1d13xxxfb"
 +
-+	drm_gem_object_reference(obj);
-+}
-+EXPORT_SYMBOL(drm_gem_vm_open);
-+
-+void drm_gem_vm_close(struct vm_area_struct *vma)
-+{
-+	struct drm_gem_object *obj = vma->vm_private_data;
-+	struct drm_device *dev = obj->dev;
-+
-+	mutex_lock(&dev->struct_mutex);
-+	drm_gem_object_unreference(obj);
-+	mutex_unlock(&dev->struct_mutex);
-+}
-+EXPORT_SYMBOL(drm_gem_vm_close);
-+
-+
- /**
-  * drm_gem_mmap - memory map routine for GEM objects
-  * @filp: DRM file pointer
-@@ -521,6 +541,12 @@ int drm_gem_mmap(struct file *filp, struct vm_area_struct *vma)
- #endif
- 	vma->vm_page_prot = __pgprot(prot);
- 
-+	/* Take a ref here so our fault handler always has an object
-+	 * to work with.  This ref will be dropped when the last
-+	 * process does a vm_close (at munmap or exit time).
-+	 */
-+	drm_gem_object_reference(obj);
-+
- 	vma->vm_file = filp;	/* Needed for drm_vm_open() */
- 	drm_vm_open_locked(vma);
- 
-diff --git a/drivers/gpu/drm/i915/i915_drv.c b/drivers/gpu/drm/i915/i915_drv.c
-index aac12ee..a31cbdb 100644
---- a/drivers/gpu/drm/i915/i915_drv.c
-+++ b/drivers/gpu/drm/i915/i915_drv.c
-@@ -94,6 +94,8 @@ static int i915_resume(struct drm_device *dev)
- 
- static struct vm_operations_struct i915_gem_vm_ops = {
- 	.fault = i915_gem_fault,
-+	.open = drm_gem_vm_open,
-+	.close = drm_gem_vm_close,
++/* S1DREG_REV_CODE register =3D prod_id (6 bits) + revision (2 bits) */
++#define S1D13505_PROD_ID		0x3	/* 000011 */
++#define S1D13506_PROD_ID		0x4	/* 000100 */
++#define S1D13806_PROD_ID		0x7	/* 000111 */
+=20
+ /* register definitions (tested on s1d13896) */
+-#define S1DREG_REV_CODE			0x0000	/* Revision Code Register */
++#define S1DREG_REV_CODE			0x0000	/* Prod + Rev Code Register */
+ #define S1DREG_MISC			0x0001	/* Miscellaneous Register */
+ #define S1DREG_GPIO_CNF0		0x0004	/* General IO Pins Configuration Register=
+ 0 */
+ #define S1DREG_GPIO_CNF1		0x0005	/* General IO Pins Configuration Register=
+ 1 */
+@@ -141,10 +144,11 @@ struct s1d13xxxfb_regval {
+ 	u8	value;
  };
- 
- static struct drm_driver driver = {
-diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
-index 1441831..d1a031b 100644
---- a/drivers/gpu/drm/i915/i915_gem.c
-+++ b/drivers/gpu/drm/i915/i915_gem.c
-@@ -607,8 +607,6 @@ int i915_gem_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- 	case -EAGAIN:
- 		return VM_FAULT_OOM;
- 	case -EFAULT:
--	case -EBUSY:
--		DRM_ERROR("can't insert pfn??  fault or busy...\n");
- 		return VM_FAULT_SIGBUS;
- 	default:
- 		return VM_FAULT_NOPAGE;
-@@ -684,6 +682,30 @@ out_free_list:
- 	return ret;
- }
- 
-+static void
-+i915_gem_free_mmap_offset(struct drm_gem_object *obj)
-+{
-+	struct drm_device *dev = obj->dev;
-+	struct drm_i915_gem_object *obj_priv = obj->driver_private;
-+	struct drm_gem_mm *mm = dev->mm_private;
-+	struct drm_map_list *list;
-+
-+	list = &obj->map_list;
-+	drm_ht_remove_item(&mm->offset_hash, &list->hash);
-+
-+	if (list->file_offset_node) {
-+		drm_mm_put_block(list->file_offset_node);
-+		list->file_offset_node = NULL;
-+	}
-+
-+	if (list->map) {
-+		drm_free(list->map, sizeof(struct drm_map), DRM_MEM_DRIVER);
-+		list->map = NULL;
-+	}
-+
-+	obj_priv->mmap_offset = 0;
-+}
-+
- /**
-  * i915_gem_get_gtt_alignment - return required GTT alignment for an object
-  * @obj: object to check
-@@ -2885,9 +2907,6 @@ int i915_gem_init_object(struct drm_gem_object *obj)
- void i915_gem_free_object(struct drm_gem_object *obj)
- {
- 	struct drm_device *dev = obj->dev;
--	struct drm_gem_mm *mm = dev->mm_private;
--	struct drm_map_list *list;
--	struct drm_map *map;
- 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
- 
- 	while (obj_priv->pin_count > 0)
-@@ -2898,19 +2917,7 @@ void i915_gem_free_object(struct drm_gem_object *obj)
- 
- 	i915_gem_object_unbind(obj);
- 
--	list = &obj->map_list;
--	drm_ht_remove_item(&mm->offset_hash, &list->hash);
+=20
 -
--	if (list->file_offset_node) {
--		drm_mm_put_block(list->file_offset_node);
--		list->file_offset_node = NULL;
--	}
--
--	map = list->map;
--	if (map) {
--		drm_free(map, sizeof(*map), DRM_MEM_DRIVER);
--		list->map = NULL;
--	}
-+	i915_gem_free_mmap_offset(obj);
- 
- 	drm_free(obj_priv->page_cpu_valid, 1, DRM_MEM_DRIVER);
- 	drm_free(obj->driver_private, 1, DRM_MEM_DRIVER);
-diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-index 8190b9b..e5f4ae9 100644
---- a/include/drm/drmP.h
-+++ b/include/drm/drmP.h
-@@ -1321,6 +1321,8 @@ void drm_gem_object_free(struct kref *kref);
- struct drm_gem_object *drm_gem_object_alloc(struct drm_device *dev,
- 					    size_t size);
- void drm_gem_object_handle_free(struct kref *kref);
-+void drm_gem_vm_open(struct vm_area_struct *vma);
-+void drm_gem_vm_close(struct vm_area_struct *vma);
- int drm_gem_mmap(struct file *filp, struct vm_area_struct *vma);
- 
- static inline void
+ struct s1d13xxxfb_par {
+ 	void __iomem	*regs;
+ 	unsigned char	display;
++	unsigned char	prod_id;
++	unsigned char	revision;
+=20
+ 	unsigned int	pseudo_palette[16];
+ #ifdef CONFIG_PM
+
+
+
+--=20
+Kristoffer Ericson <kristoffer.ericson@gmail.com>
+
+--Multipart=_Wed__11_Feb_2009_23_04_19_+0100_.iPEufqQs4AE5cXv
+Content-Type: application/octet-stream;
+ name="s1d13xxxfb-proid-include-updated.patch"
+Content-Disposition: attachment;
+ filename="s1d13xxxfb-proid-include-updated.patch"
+Content-Transfer-Encoding: base64
+
+ZGlmZiAtLWdpdCBhL2luY2x1ZGUvdmlkZW8vczFkMTN4eHhmYi5oIGIvaW5jbHVkZS92aWRlby9z
+MWQxM3h4eGZiLmgKaW5kZXggZmU0MWI4NC4uYzNiMmEyYSAxMDA2NDQKLS0tIGEvaW5jbHVkZS92
+aWRlby9zMWQxM3h4eGZiLmgKKysrIGIvaW5jbHVkZS92aWRlby9zMWQxM3h4eGZiLmgKQEAgLTE0
+LDEzICsxNCwxNiBAQAogI2RlZmluZQlTMUQxM1hYWEZCX0gKIAogI2RlZmluZSBTMURfUEFMRVRU
+RV9TSVpFCQkyNTYKLSNkZWZpbmUgUzFEMTM1MDZfQ0hJUF9SRVYJCTQJLyogZXhwZWN0ZWQgY2hp
+cCByZXZpc2lvbiBudW1iZXIgZm9yIHMxZDEzNTA2ICovCi0jZGVmaW5lIFMxRDEzODA2X0NISVBf
+UkVWCQk3CS8qIGV4cGVjdGVkIGNoaXAgcmV2aXNpb24gbnVtYmVyIGZvciBzMWQxMzgwNiAqLwot
+I2RlZmluZSBTMURfRkJJRAkJCSJTMUQxMzgwNiIKLSNkZWZpbmUgUzFEX0RFVklDRU5BTUUJCQki
+czFkMTM4MDZmYiIKKyNkZWZpbmUgUzFEX0ZCSUQJCQkiUzFEMTN4eHgiCisjZGVmaW5lIFMxRF9E
+RVZJQ0VOQU1FCQkJInMxZDEzeHh4ZmIiCisKKy8qIFMxRFJFR19SRVZfQ09ERSByZWdpc3RlciA9
+IHByb2RfaWQgKDYgYml0cykgKyByZXZpc2lvbiAoMiBiaXRzKSAqLworI2RlZmluZSBTMUQxMzUw
+NV9QUk9EX0lECQkweDMJLyogMDAwMDExICovCisjZGVmaW5lIFMxRDEzNTA2X1BST0RfSUQJCTB4
+NAkvKiAwMDAxMDAgKi8KKyNkZWZpbmUgUzFEMTM4MDZfUFJPRF9JRAkJMHg3CS8qIDAwMDExMSAq
+LwogCiAvKiByZWdpc3RlciBkZWZpbml0aW9ucyAodGVzdGVkIG9uIHMxZDEzODk2KSAqLwotI2Rl
+ZmluZSBTMURSRUdfUkVWX0NPREUJCQkweDAwMDAJLyogUmV2aXNpb24gQ29kZSBSZWdpc3RlciAq
+LworI2RlZmluZSBTMURSRUdfUkVWX0NPREUJCQkweDAwMDAJLyogUHJvZCArIFJldiBDb2RlIFJl
+Z2lzdGVyICovCiAjZGVmaW5lIFMxRFJFR19NSVNDCQkJMHgwMDAxCS8qIE1pc2NlbGxhbmVvdXMg
+UmVnaXN0ZXIgKi8KICNkZWZpbmUgUzFEUkVHX0dQSU9fQ05GMAkJMHgwMDA0CS8qIEdlbmVyYWwg
+SU8gUGlucyBDb25maWd1cmF0aW9uIFJlZ2lzdGVyIDAgKi8KICNkZWZpbmUgUzFEUkVHX0dQSU9f
+Q05GMQkJMHgwMDA1CS8qIEdlbmVyYWwgSU8gUGlucyBDb25maWd1cmF0aW9uIFJlZ2lzdGVyIDEg
+Ki8KQEAgLTE0MSwxMCArMTQ0LDExIEBAIHN0cnVjdCBzMWQxM3h4eGZiX3JlZ3ZhbCB7CiAJdTgJ
+dmFsdWU7CiB9OwogCi0KIHN0cnVjdCBzMWQxM3h4eGZiX3BhciB7CiAJdm9pZCBfX2lvbWVtCSpy
+ZWdzOwogCXVuc2lnbmVkIGNoYXIJZGlzcGxheTsKKwl1bnNpZ25lZCBjaGFyCXByb2RfaWQ7CisJ
+dW5zaWduZWQgY2hhcglyZXZpc2lvbjsKIAogCXVuc2lnbmVkIGludAlwc2V1ZG9fcGFsZXR0ZVsx
+Nl07CiAjaWZkZWYgQ09ORklHX1BNCg==
+
+--Multipart=_Wed__11_Feb_2009_23_04_19_+0100_.iPEufqQs4AE5cXv--
+
+--Signature=_Wed__11_Feb_2009_23_04_19_+0100_ac/M_CRq9=E+Pl66
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmTS2MACgkQPQls10ERAGc43wCbBOfXCgLIvsHUviMJy2SpuXQk
+5MoAn3Wt/csnTIVMZrI+6oM/uFMSGwI4
+=7c47
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__11_Feb_2009_23_04_19_+0100_ac/M_CRq9=E+Pl66--
