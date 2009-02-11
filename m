@@ -1,77 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524AbZBKQde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757687AbZBKQeB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757524AbZBKQde (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 11:33:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755718AbZBKQd0
+	id S1757687AbZBKQeB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 11:34:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756741AbZBKQdv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 11:33:26 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41669 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755607AbZBKQd0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 11:33:26 -0500
-Date: Wed, 11 Feb 2009 11:33:24 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/8] git pull request for tip/tracing/core
-In-Reply-To: <20090211162530.GB32301@elte.hu>
-Message-ID: <alpine.DEB.1.10.0902111132010.15438@gandalf.stny.rr.com>
-References: <20090208054955.777429253@goodmis.org> <20090209093751.GD7930@elte.hu> <20090211153650.GA19576@elte.hu> <alpine.DEB.1.10.0902111045390.14873@gandalf.stny.rr.com> <20090211162530.GB32301@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 11 Feb 2009 11:33:51 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48371 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755607AbZBKQdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 11:33:50 -0500
+Date: Wed, 11 Feb 2009 17:33:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Howells <dhowells@redhat.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Serge Hallyn <serue@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Subject: Re: [CRED bug?] 2.6.29-rc3 don't survive on stress workload
+Message-ID: <20090211163331.GA4251@elte.hu>
+References: <20090211214639.C3D0.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090210142443.629E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <27780.1234356078@redhat.com> <31230.1234357767@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <31230.1234357767@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 11 Feb 2009, Ingo Molnar wrote:
+btw:
 
-> 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > 
-> > On Wed, 11 Feb 2009, Ingo Molnar wrote:
-> > 
-> > > 
-> > > > > Steven Rostedt (7):
-> > > > >       ring-buffer: add NMI protection for spinlocks
-> > > > >       nmi: add generic nmi tracking state
-> > > 
-> > > hm, this commit breaks a number of non-x86 architectures the following way:
-> > > 
-> > > In file included from /home/mingo/tip/include/linux/interrupt.h:12,
-> > >                  from /home/mingo/tip/arch/ia64/include/asm/mca.h:16,
-> > >                  from /home/mingo/tip/arch/ia64/kernel/asm-offsets.c:17:
-> > > /home/mingo/tip/include/linux/hardirq.h:67:2: #error PREEMPT_ACTIVE too high!
-> > > make[2]: *** [arch/ia64/kernel/asm-offsets.s] Error 1
-> > > 
-> > > Alpha and ARM are broken too. (and possibly others)
-> > 
-> > I'm glad we had that check.
-> > 
-> > OK, revert it and I'll take a look to see what other options we have.
-> 
-> Reverting it is neither simple nor desired: 1) it's now embedded in other
-> tracing commits 2) my test-boxes stopped doing those rare lockups with the
-> NMI fix in place ...
+include/linux/cred.h: In function 'get_cred':
+include/linux/cred.h:188: warning: passing argument 1 of 'get_new_cred' discards 
+qualifiers from pointer target type
+include/linux/cred.h: In function 'get_cred':
+include/linux/cred.h:188: warning: passing argument 1 of 'get_new_cred' discards 
+qualifiers from pointer target type
+include/linux/cred.h: In function 'get_cred':
+include/linux/cred.h:188: warning: passing argument 1 of 'get_new_cred' discards 
+qualifiers from pointer target type
+include/linux/cred.h: In function 'get_cred':
+include/linux/cred.h:188: warning: passing argument 1 of 'get_new_cred' discards 
+qualifiers from pointer target type
+include/linux/cred.h: In function 'get_cred':
+include/linux/cred.h:188: warning: passing argument 1 of 'get_new_cred' discards 
+qualifiers from pointer target type
 
-OK, I was thinking about coming up with another fix.
+probably unrelated.
 
-I'll have to look at the other archs and see what we can do to make this 
-work for all.
-
-> 
-> Any better approach to fix those platforms? I reported this ftrace NMI problem 
-> to you about a year ago ...
-
-Yeah, and I just found the bug ;-)
-
-
--- Steve
-
+	Ingo
