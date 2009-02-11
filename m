@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760106AbZBKAji@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755274AbZBKAkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760106AbZBKAji (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:39:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757814AbZBKA2i
+	id S1755274AbZBKAkm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:40:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757825AbZBKA2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:28:38 -0500
-Received: from kroah.org ([198.145.64.141]:51359 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 19:28:40 -0500
+Received: from kroah.org ([198.145.64.141]:51385 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757776AbZBKA2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:35 -0500
-Date: Tue, 10 Feb 2009 16:25:24 -0800
+	id S1757806AbZBKA2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:28:37 -0500
+Date: Tue, 10 Feb 2009 16:25:28 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Eric Biederman <ebiederm@xmission.com>,
-       Paul Turner <pjt@google.com>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: [patch 33/56] seq_file: move traverse so it can be used from
-	seq_read
-Message-ID: <20090211002524.GH14660@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Niels de Vos <niels.devos@wincor-nixdorf.com>,
+       Alan Cox <alan@redhat.com>
+Subject: [patch 35/56] serial: set correct baud_base for Oxford
+	Semiconductor Ltd EXSYS EX-41092 Dual 16950 Serial adapter
+Message-ID: <20090211002528.GJ14660@kroah.com>
 References: <20090211001439.873435357@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="seq_file-move-traverse-so-it-can-be-used-from-seq_read.patch"
+Content-Disposition: inline; filename="serial-set-correct-baud_base-for-oxford-semiconductor-ltd-exsys-ex-41092-dual-16950-serial-adapter.patch"
 In-Reply-To: <20090211002328.GA14660@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,158 +40,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Eric Biederman <ebiederm@xmission.com>
+From: Niels de Vos <niels.devos@wincor-nixdorf.com>
 
-commit 33da8892a2f9e7d4b2d9a35fc80833ba2d2b1aa6 upstream.
+commit 39aced68d664291db3324d0fcf0985ab5626aac2 upstream.
 
-In 2.6.25 some /proc files were converted to use the seq_file
-infrastructure.  But seq_files do not correctly support pread(), which
-broke some usersapce applications.
+The PCI-card identified as "Oxford Semiconductor Ltd EXSYS EX-41092 Dual
+16950 Serial adapter" is only usable with other devices (i.e. not the same
+card) after doing a "setserial /dev/ttyS<n> baud_base 115200".  This
+baud_base should be default for this card.
 
-To handle pread correctly we can't assume that f_pos is where we left it
-in seq_read.  So move traverse() so that we can eventually use it in
-seq_read and do thus some day support pread().
-
-Signed-off-by: Eric Biederman <ebiederm@xmission.com>
-Cc: Paul Turner <pjt@google.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Niels de Vos <niels.devos@wincor-nixdorf.com>
+Signed-off-by: Alan Cox <alan@redhat.com>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/seq_file.c |  114 +++++++++++++++++++++++++++++-----------------------------
- 1 file changed, 57 insertions(+), 57 deletions(-)
+ drivers/serial/8250_pci.c |    3 +++
+ include/linux/pci_ids.h   |    1 +
+ 2 files changed, 4 insertions(+)
 
---- a/fs/seq_file.c
-+++ b/fs/seq_file.c
-@@ -54,6 +54,63 @@ int seq_open(struct file *file, const st
- }
- EXPORT_SYMBOL(seq_open);
+--- a/drivers/serial/8250_pci.c
++++ b/drivers/serial/8250_pci.c
+@@ -2304,6 +2304,9 @@ static struct pci_device_id serial_pci_t
+ 		 * For now just used the hex ID 0x950a.
+ 		 */
+ 	{	PCI_VENDOR_ID_OXSEMI, 0x950a,
++		PCI_SUBVENDOR_ID_SIIG, PCI_SUBDEVICE_ID_SIIG_DUAL_SERIAL, 0, 0,
++		pbn_b0_2_115200 },
++	{	PCI_VENDOR_ID_OXSEMI, 0x950a,
+ 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+ 		pbn_b0_2_1130000 },
+ 	{	PCI_VENDOR_ID_OXSEMI, PCI_DEVICE_ID_OXSEMI_16PCI954,
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -1755,6 +1755,7 @@
+ #define PCI_DEVICE_ID_SIIG_8S_20x_650	0x2081
+ #define PCI_DEVICE_ID_SIIG_8S_20x_850	0x2082
+ #define PCI_SUBDEVICE_ID_SIIG_QUARTET_SERIAL	0x2050
++#define PCI_SUBDEVICE_ID_SIIG_DUAL_SERIAL	0x2530
  
-+static int traverse(struct seq_file *m, loff_t offset)
-+{
-+	loff_t pos = 0, index;
-+	int error = 0;
-+	void *p;
-+
-+	m->version = 0;
-+	index = 0;
-+	m->count = m->from = 0;
-+	if (!offset) {
-+		m->index = index;
-+		return 0;
-+	}
-+	if (!m->buf) {
-+		m->buf = kmalloc(m->size = PAGE_SIZE, GFP_KERNEL);
-+		if (!m->buf)
-+			return -ENOMEM;
-+	}
-+	p = m->op->start(m, &index);
-+	while (p) {
-+		error = PTR_ERR(p);
-+		if (IS_ERR(p))
-+			break;
-+		error = m->op->show(m, p);
-+		if (error < 0)
-+			break;
-+		if (unlikely(error)) {
-+			error = 0;
-+			m->count = 0;
-+		}
-+		if (m->count == m->size)
-+			goto Eoverflow;
-+		if (pos + m->count > offset) {
-+			m->from = offset - pos;
-+			m->count -= m->from;
-+			m->index = index;
-+			break;
-+		}
-+		pos += m->count;
-+		m->count = 0;
-+		if (pos == offset) {
-+			index++;
-+			m->index = index;
-+			break;
-+		}
-+		p = m->op->next(m, p, &index);
-+	}
-+	m->op->stop(m, p);
-+	return error;
-+
-+Eoverflow:
-+	m->op->stop(m, p);
-+	kfree(m->buf);
-+	m->buf = kmalloc(m->size <<= 1, GFP_KERNEL);
-+	return !m->buf ? -ENOMEM : -EAGAIN;
-+}
-+
- /**
-  *	seq_read -	->read() method for sequential files.
-  *	@file: the file to read from
-@@ -186,63 +243,6 @@ Efault:
- }
- EXPORT_SYMBOL(seq_read);
+ #define PCI_VENDOR_ID_RADISYS		0x1331
  
--static int traverse(struct seq_file *m, loff_t offset)
--{
--	loff_t pos = 0, index;
--	int error = 0;
--	void *p;
--
--	m->version = 0;
--	index = 0;
--	m->count = m->from = 0;
--	if (!offset) {
--		m->index = index;
--		return 0;
--	}
--	if (!m->buf) {
--		m->buf = kmalloc(m->size = PAGE_SIZE, GFP_KERNEL);
--		if (!m->buf)
--			return -ENOMEM;
--	}
--	p = m->op->start(m, &index);
--	while (p) {
--		error = PTR_ERR(p);
--		if (IS_ERR(p))
--			break;
--		error = m->op->show(m, p);
--		if (error < 0)
--			break;
--		if (unlikely(error)) {
--			error = 0;
--			m->count = 0;
--		}
--		if (m->count == m->size)
--			goto Eoverflow;
--		if (pos + m->count > offset) {
--			m->from = offset - pos;
--			m->count -= m->from;
--			m->index = index;
--			break;
--		}
--		pos += m->count;
--		m->count = 0;
--		if (pos == offset) {
--			index++;
--			m->index = index;
--			break;
--		}
--		p = m->op->next(m, p, &index);
--	}
--	m->op->stop(m, p);
--	return error;
--
--Eoverflow:
--	m->op->stop(m, p);
--	kfree(m->buf);
--	m->buf = kmalloc(m->size <<= 1, GFP_KERNEL);
--	return !m->buf ? -ENOMEM : -EAGAIN;
--}
--
- /**
-  *	seq_lseek -	->llseek() method for sequential files.
-  *	@file: the file in question
 
