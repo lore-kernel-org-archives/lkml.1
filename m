@@ -1,109 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756606AbZBKKz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756575AbZBKK6F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756606AbZBKKz2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 05:55:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754386AbZBKKzO
+	id S1756575AbZBKK6F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 05:58:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbZBKK5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 05:55:14 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:45454 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752645AbZBKKzM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 05:55:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=VYfdI4P35jdHESrSQXO+3T8BKuVx98Qd3NOebtrluXhc14R1xGg3cTTpeUy9I2K2XF
-         Bo5xggX5EhdQVWikFHZiaA3Kyti72phfQ15OJOwoOeUuC6jmv7kFG4UEUJ0uZEpe9On5
-         AYCxvUYG5mXWzH9lYvkOOdFdocATlCP0CkXJs=
+	Wed, 11 Feb 2009 05:57:54 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36422 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752827AbZBKK5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 05:57:53 -0500
+Date: Wed, 11 Feb 2009 11:57:29 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <tj@kernel.org>
+Cc: hpa@zytor.com, jeremy@goop.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, x86@kernel.org, rusty@rustcorp.com.au
+Subject: Re: [PATCHSET x86/master] add stack protector support for x86_32
+Message-ID: <20090211105729.GO20518@elte.hu>
+References: <1234186798-16820-1-git-send-email-tj@kernel.org> <20090209135557.GB14785@elte.hu> <20090209141209.GA24323@elte.hu> <499186FB.4070506@kernel.org> <49918C3C.8030208@kernel.org> <20090210142026.GD16147@elte.hu> <49918E86.4020304@kernel.org>
 MIME-Version: 1.0
-Date: Wed, 11 Feb 2009 13:55:08 +0300
-Message-ID: <2d42915c0902110255k3c0741a9s6830765bce6be052@mail.gmail.com>
-Subject: GFS2 file locking issues
-From: Kirill Kuvaldin <kirill.kuvaldin@gmail.com>
-To: linux-cluster@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49918E86.4020304@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I'm trying to understand how the FS locking mechanism should work.
+* Tejun Heo <tj@kernel.org> wrote:
 
-I'm running a clustered GFS2 across two nodes, each node is a Xen domU.
-To check if locking works correctly I wrote the simple perl script below.
-Basically the script opens a file, locks it to prevent others from
-writing into it, writes 20 lines into it, then unlocks and closes.
+> Ingo Molnar wrote:
+> >>> I'll try other compilers but which version are you using?  The
+> >>> difference is that before the patchset, -fno-stack-protector was
+> >>> always added whether stackprotector was enabled or not so this problem
+> >>> wasn't visible (at the cost of bogus stackprotector of course).  We'll
+> >>> probably need to add __stack_chk_guard or disable if gcc generates
+> >>> such symbol.  I'll play with different gccs.
+> >> Can't reproduce with gcc-4.1 or 4.2.  Any chance you're using distcc
+> >> w/ a build machine w/ glibc < 2.4?  __stack_chk_guard is the symbol
+> >> gcc fetches stack canary from if TLS is not supported, so somehow gcc
+> >> thought that TLS wasn't available while building head64.
+> > 
+> > yeah - i also used distcc. Maybe the nostackp makefile magic gets confused
+> > about that?
+> 
+> It seems that even with the same gcc versions, gcc built against libc
+> w/o TLS support generates __stack_chk_guard, so if you mix the two
+> flavors, the has-stack-protector check can be compiled on machines w/
+> TLS while some other files end up being built on machines w/o TLS
+> support thus circumventing the support check.  Can you please see
+> whether non-distcc build fails too?
 
-------------------------------------------------------------------------------
-#!/usr/bin/perl
+That build succeeds:
 
-# usage:
-#  lock.pl filename uniq
-#           filename - file name being written to
-#           uniq     - an unique label to distinguish output of
-different processes
+rhea:~/tip> make -j30 bzImage ARCH=x86_64 CROSS_COMPILE='/opt/crosstool/gcc-4.2.3-glibc-2.3.6/x86_64-unknown-linux-gnu/bin/x86_64-unknown-linux-gnu-'
+/home/mingo/tip/arch/x86/Makefile:82: stack protector enabled but no compiler support
+  CHK     include/linux/version.h
+[...]
+BFD: arch/x86/boot/compressed/vmlinux.bin: warning: allocated section `.bss' not in segment
+[...]
+Root device is (8, 3)
+Setup is 11996 bytes (padded to 12288 bytes).
+System is 5690 kB
+CRC be1b2e21
+Kernel: arch/x86/boot/bzImage is ready  (#3)
 
-use strict;
-use Time::HiRes qw(sleep);
-use FileHandle;
-use Fcntl ':flock';
+Some shell variable expansion bug? If CROSS_COMPILE is not a single word
+we fail to detect the compiler borkage at arch/x86/Makefile line 82?
 
-my $filename = $ARGV[0];
-my $uniq = $ARGV[1];
-
-open FH, '>>', $filename or die $!;
-flock(FH,LOCK_EX) or die $!;
-FH->autoflush(1);
-
-for (1..20) {
-        print FH "$uniq\n";
-        sleep (0.1);
-}
-
-flock(FH,LOCK_UN);
-close FH;
-------------------------------------------------------------------------------
-
-I ran that script on both nodes simultaneously with commands:
-
-vm01# perl lock.pl /gfs2/testfile a
-vm02# perl lock.pl /gfs2/testfile b
-
-Then to my surprise "a"s and "b"s are randomly shuffled in the testfile like
-
-...
-a
-a
-b
-a
-b
-b
-...
-
-whereas I supposed it should have been like
-
-...
-a
-a
-a
-b
-b
-b
-...
-
-
-It looks like either locking is broken in my GFS2 (I use kernel
-2.6.18-92.el5xen for CentOS 5.2) or my understanding of locking isn't
-correct.
-I also tested the script on GFS1 and OCFS2 and it worked well, i.e.
-the output was correct.
-
-
-
-Thanks,
-Kirill
+	Ingo
