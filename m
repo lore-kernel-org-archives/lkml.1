@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbZBKMxG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbZBKMx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756712AbZBKMxG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 07:53:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbZBKMwx
+	id S1755881AbZBKMx7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 07:53:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbZBKMxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 07:52:53 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34930 "EHLO mx2.mail.elte.hu"
+	Wed, 11 Feb 2009 07:53:49 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45544 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754852AbZBKMww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 07:52:52 -0500
-Date: Wed, 11 Feb 2009 13:52:40 +0100
+	id S1755061AbZBKMxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 07:53:48 -0500
+Date: Wed, 11 Feb 2009 13:53:40 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Mike Galbraith <efault@gmx.de>, Oleg Nesterov <oleg@redhat.com>,
        LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>
-Subject: Re: [PATCH] timers: fix TIMER_ABSTIME for process wide cpu timers
-Message-ID: <20090211125240.GJ16535@elte.hu>
-References: <1233910614.23431.18.camel@marge.simson.net> <20090206140134.GC3415@elte.hu> <1234280251.23438.73.camel@twins> <1234349601.23438.125.camel@twins>
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: x86-tip.today: flood of WARNING: at include/linux/sched.h:2238
+	run_posix_cpu_timers+0xea/0x79f()
+Message-ID: <20090211125340.GK16535@elte.hu>
+References: <1233910614.23431.18.camel@marge.simson.net> <20090206140134.GC3415@elte.hu> <1234280251.23438.73.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1234349601.23438.125.camel@twins>
+In-Reply-To: <1234280251.23438.73.camel@twins>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,23 +37,38 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-> While going through the man-pages Michael prepared for the posix timer
-> interface I realized that posix timers do expose the absolute time value
-> through the use of TIMER_ABSTIME.
+> On Fri, 2009-02-06 at 15:01 +0100, Ingo Molnar wrote:
+> > * Mike Galbraith <efault@gmx.de> wrote:
+> > 
+> > > Greetings,
+> > > 
+> > > Futzing with kerneltop this morning, I fired up amarok to give it
+> > > something light to monitor while I hunt missing events.  Something bad
+> > > happened, and when I finally (SysRq-E took minutes) got control of box
+> > > back, dmesg was full of a steady stream of the below.
+> > > 
+> > > That warning can be kinda unfriendly.
+> > > 
+> > > 
+> > > [ 9964.600004] ------------[ cut here ]------------
+> > > [ 9964.600006] WARNING: at include/linux/sched.h:2238 run_posix_cpu_timers+0xea/0x79f()
+> > 
+> > ah, that's Peter's stuff:
+> > 
+> >  4cd4c1b: timers: split process wide cpu clocks/timers
+> >  32bd671: signal: re-add dead task accumulation stats.
+> > 
+> > The discussion with Oleg resulted in the conclusion i 
+> > think that the warning is spurious and should be removed.
+> > 
+> > I've commited the minimal fix below to tip:master. There's
+> > more fixes needed too but this should solve the warning
+> > flood at least.
 > 
-> ---
-> Subject: timers: fix TIMER_ABSTIME for process wide cpu timers
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Wed Feb 11 11:30:27 CET 2009
-> 
-> The POSIX timer interface allows for absolute time expiry values through the
-> TIMER_ABSTIME flag, therefore we have to synchronize the timer to the clock
-> every time we start it.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> I think this is the 'minimal' paranoia version.
 
-Applied to tip:timers/urgent, thanks Peter!
+applied to tip:timers/urgent, thanks Peter!
 
 	Ingo
