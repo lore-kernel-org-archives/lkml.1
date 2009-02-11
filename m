@@ -1,71 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757103AbZBKMhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757158AbZBKMiw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757103AbZBKMhj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 07:37:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbZBKMha
+	id S1757158AbZBKMiw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 07:38:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754911AbZBKMin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 07:37:30 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:60442 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754567AbZBKMh3 convert rfc822-to-8bit (ORCPT
+	Wed, 11 Feb 2009 07:38:43 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:40774 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752995AbZBKMim (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 07:37:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fOUDJemVcBp2fsHrIYzJuNBbUM76eP8P6RgREcfTnFJHZgzeGjK6+5tAqAw36zXNgn
-         GAOtfhNJGwd7vYIcjMKnk6BAkFfMzUXKqwmTldsG8U554OEbkISn9z0ByFeXH6Nu9aYL
-         PXMyYBgMAQZu0yD1kZOPmEPHlOqbBcNmQkhZU=
+	Wed, 11 Feb 2009 07:38:42 -0500
+Message-ID: <4992CA04.406@nokia.com>
+Date: Wed, 11 Feb 2009 14:52:20 +0200
+From: Adrian Hunter <ext-adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-In-Reply-To: <cb7bb73a0902110402o58816f56qb6b7ee200ca24c2e@mail.gmail.com>
-References: <200902102347.n1ANlYkI011003@imap1.linux-foundation.org>
-	 <4992A7C1.7040607@tremplin-utc.net>
-	 <cb7bb73a0902110402o58816f56qb6b7ee200ca24c2e@mail.gmail.com>
-Date: Wed, 11 Feb 2009 13:37:26 +0100
-Message-ID: <cb7bb73a0902110437i230ed992s4d01b802473be2d6@mail.gmail.com>
-Subject: Re: lis3lv02d-add-axes-knowledge-of-hp-pavilion-dv5-models.patch 
-	removed from -mm tree
-From: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
-To: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
-Cc: akpm@linux-foundation.org, palatis@gmail.com, pavel@suse.cz,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] mmc: Add Extended CSD register to debugfs
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Feb 2009 12:38:33.0419 (UTC) FILETIME=[A6B399B0:01C98C45]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 11, 2009 at 1:02 PM, Giuseppe Bilotta
-<giuseppe.bilotta@gmail.com> wrote:
-> On Wed, Feb 11, 2009 at 11:26 AM, Éric Piel <eric.piel@tremplin-utc.net> wrote:
->> Palatis, if you could try this patch plus the patch "lis3lv02d: support
->> both one- and two-byte sensors" to confirm it does the right thing also
->> with your laptop, it would be great. Unfortunately, right now I think
->> they apply only on top of the -mm tree...
->
-> It's possible to apply them on top of Linus' tree modulo Pavel's
-> "don't touch init" patch.
->
-> However, I think my patch might not be good for Palatis. If the
-> dmidecode that was posted some time earlier was his (don't recall
-> right now) I remember it being an AMD board, whereas I'm on an Intel
-> board, so we have different dv5 models and we probably need different
-> fixes, so I need to work out a better patch, but I'll need Palatis'
-> help testing it.
+Extended CSD is a MMC card register.  As increasingly interesting
+fields are being added to Extended CSD, it is helpful to see its
+value.  Note that SD cards do not have an Extended CSD
+register, so it is MMC only.
 
-I took the liberty to publish my changes over at
-http://git.oblomov.eu/linux-2.6/oblomov : the topmost commits of this
-branch are (1) Pavel's no-init, (2) my one- and two-byte sensors
-support (3) an attempt at supporting both intel and amd hpdv5.
-Palatis, can you wget
+Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
+---
+ drivers/mmc/core/debugfs.c |   67 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 67 insertions(+), 0 deletions(-)
 
-http://git.oblomov.eu/linux-2.6/patches/1db8508cf483dc1ecf66141f90a7c03659d69512..oblomov
-
-git am it, remake the hp_accel and lis3lv02d modules, and see if you
-get proper directions for your laptop? If not, can you post your
-dmidecode and the results of testing axis orientation without the last
-patch?
-
+diff --git a/drivers/mmc/core/debugfs.c b/drivers/mmc/core/debugfs.c
+index 1237bb4..610dbd1 100644
+--- a/drivers/mmc/core/debugfs.c
++++ b/drivers/mmc/core/debugfs.c
+@@ -184,6 +184,68 @@ static int mmc_dbg_card_status_get(void *data, u64 *val)
+ DEFINE_SIMPLE_ATTRIBUTE(mmc_dbg_card_status_fops, mmc_dbg_card_status_get,
+ 		NULL, "%08llx\n");
+ 
++#define EXT_CSD_STR_LEN 1025
++
++static int mmc_ext_csd_open(struct inode *inode, struct file *filp)
++{
++	struct mmc_card *card = inode->i_private;
++	char *buf;
++	ssize_t n = 0;
++	u8 *ext_csd;
++	int err, i;
++
++	buf = kmalloc(EXT_CSD_STR_LEN + 1, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++
++	ext_csd = kmalloc(512, GFP_KERNEL);
++	if (!ext_csd) {
++		err = -ENOMEM;
++		goto out_free;
++	}
++
++	mmc_claim_host(card->host);
++	err = mmc_send_ext_csd(card, ext_csd);
++	mmc_release_host(card->host);
++	if (err)
++		goto out_free;
++
++	for (i = 511; i >= 0; i--)
++		n += sprintf(buf + n, "%02x", ext_csd[i]);
++	n += sprintf(buf + n, "\n");
++	BUG_ON(n != EXT_CSD_STR_LEN);
++
++	filp->private_data = buf;
++	kfree(ext_csd);
++	return 0;
++
++out_free:
++	kfree(buf);
++	kfree(ext_csd);
++	return err;
++}
++
++static ssize_t mmc_ext_csd_read(struct file *filp, char __user *ubuf,
++				size_t cnt, loff_t *ppos)
++{
++	char *buf = filp->private_data;
++
++	return simple_read_from_buffer(ubuf, cnt, ppos,
++				       buf, EXT_CSD_STR_LEN);
++}
++
++static int mmc_ext_csd_release(struct inode *inode, struct file *file)
++{
++	kfree(file->private_data);
++	return 0;
++}
++
++static struct file_operations mmc_dbg_ext_csd_fops = {
++	.open		= mmc_ext_csd_open,
++	.read		= mmc_ext_csd_read,
++	.release	= mmc_ext_csd_release,
++};
++
+ void mmc_add_card_debugfs(struct mmc_card *card)
+ {
+ 	struct mmc_host	*host = card->host;
+@@ -211,6 +273,11 @@ void mmc_add_card_debugfs(struct mmc_card *card)
+ 					&mmc_dbg_card_status_fops))
+ 			goto err;
+ 
++	if (mmc_card_mmc(card))
++		if (!debugfs_create_file("ext_csd", S_IRUSR, root, card,
++					&mmc_dbg_ext_csd_fops))
++			goto err;
++
+ 	return;
+ 
+ err:
 -- 
-Giuseppe "Oblomov" Bilotta
+1.5.6.3
