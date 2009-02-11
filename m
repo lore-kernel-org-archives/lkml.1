@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbZBKRb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757568AbZBKRhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758064AbZBKRb4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 12:31:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbZBKRbr
+	id S1757568AbZBKRhj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 12:37:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755457AbZBKRh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 12:31:47 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40796 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753193AbZBKRbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 12:31:46 -0500
-Date: Wed, 11 Feb 2009 18:31:31 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>, Tony Luck <tony.luck@intel.com>,
-       Mike Travis <travis@sgi.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/8] git pull request for tip/tracing/core
-Message-ID: <20090211173131.GA27546@elte.hu>
-References: <20090208054955.777429253@goodmis.org> <20090209093751.GD7930@elte.hu> <20090211153650.GA19576@elte.hu> <alpine.DEB.1.10.0902111147450.15438@gandalf.stny.rr.com> <alpine.DEB.1.10.0902111158380.15438@gandalf.stny.rr.com> <20090211171622.GA13239@elte.hu> <alpine.DEB.1.10.0902111227570.15438@gandalf.stny.rr.com>
+	Wed, 11 Feb 2009 12:37:28 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:37060 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755620AbZBKRh2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 12:37:28 -0500
+Date: Wed, 11 Feb 2009 12:37:25 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: netdev@vger.kernel.org
+cc: Kernel development list <linux-kernel@vger.kernel.org>
+Subject: [BUG] SNAT sometimes allows packets to pass through unchanged
+Message-ID: <Pine.LNX.4.44L0.0902111151040.3231-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0902111227570.15438@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I'm seeing some strange behavior on my firewall, which is running 
+Fedora 8's version of 2.6.26.  Every so often a packet with a private 
+source address is sent out the public interface unchanged, when it 
+should be dropped.
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+This happens when internal hosts are slow to close their end of a TCP 
+connection.  For example:
 
-> On Wed, 11 Feb 2009, Ingo Molnar wrote:
-> > > 
-> > > I just looked at alpha and arm, I'm now looking at ia64. And this could
-> > > be an issue, since it has 14 bits for hard irqs.
-> > > 
-> > > What would be the impact to make the preempt count a long?
-> > 
-> > Assembly code has to be audited i guess, whether it's treated as an int anywhere. 
-> > Should work i guess.
-> 
-> Before we go and make the change, Peter brought up a good point on IRC. Is 
-> there any reason that ia64 needs 1 << 14 IRQs?  That's 16384!
-> 
-> Perhaps the better solution wolud be (if possible), to simply lower the 
-> number of bits.
+	Internal host A (using a private address) initiates a TCP
+	connection to an external server B.
 
-i'm the wrong person to be asked about that. (Cc:-ed the right people)
+	Data is sent back and forth.
 
-	Ingo
+	External host B sends a FIN and host A responds with ACK.
+
+	Several minutes later (after the tracking for this connection
+	has expired), host A sends a FIN to host B.  This packet
+	goes through the firewall unchanged and is sent out the
+	public interface with the private source address intact.
+
+Now I would expect that such packets would be dropped, because they 
+don't belong to an existing connection and they can't be the start of a 
+new connection.  The fact that this doesn't happen indicates there is a 
+bug in the netfilter code somewhere.
+
+For reference, here is a lightly-edited extract from my iptables 
+script on the firewall:
+
+------------------------------------------------------------------------
+# Use SNAT for new outgoing connections from private addresses.
+OUTIP=...  # The IP address of the firewall's public interface, eth1
+iptables -t nat -N startnat
+iptables -t nat -A startnat -p tcp -j SNAT --to-source $OUTIP:7000-65500
+iptables -t nat -A startnat -p udp -j SNAT --to-source $OUTIP:7000-65500
+iptables -t nat -A startnat -p icmp -j SNAT --to-source $OUTIP
+iptables -t nat -A startnat -j DROP
+
+iptables -t nat -A POSTROUTING -o eth1 -s 10.0.0.0/8 -j startnat
+------------------------------------------------------------------------
+
+Can anyone help figure out what's wrong?
+
+Alan Stern
+
