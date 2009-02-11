@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756571AbZBKNDK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbZBKND2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756571AbZBKNDK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 08:03:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755922AbZBKNCs
+	id S1757233AbZBKND2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 08:03:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755325AbZBKNDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 08:02:48 -0500
-Received: from mx2.suse.de ([195.135.220.15]:55449 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755755AbZBKNCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 08:02:47 -0500
-Date: Wed, 11 Feb 2009 14:02:42 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Luca Bigliardi <shammash@artha.org>, jdike@addtoit.com
-Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix vde network backend in user mode linux
-In-Reply-To: <20090202172822.GA2801@pintsize>
-Message-ID: <alpine.LNX.1.10.0902111402000.31014@jikos.suse.cz>
-References: <20090202172822.GA2801@pintsize>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 11 Feb 2009 08:03:14 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37602 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757076AbZBKNDN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 08:03:13 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: MinChan Kim <minchan.kim@gmail.com>
+Subject: Re: [PATCH] shrink_all_memory() use sc.nr_reclaimed
+Cc: kosaki.motohiro@jp.fujitsu.com, Johannes Weiner <hannes@cmpxchg.org>,
+       Rik van Riel <riel@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       William Lee Irwin III <wli@movementarian.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20090211215654.C3D6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20090211214324.6a9cfb58.minchan.kim@barrios-desktop> <20090211215654.C3D6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-Id: <20090211220044.C3D9.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Wed, 11 Feb 2009 22:03:09 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Feb 2009, Luca Bigliardi wrote:
-
-> * Replace kmalloc() with uml_kmalloc()
->   (fix build failure)
-> * Remove unnecessary UM_KERN_INFO in printk()
->   (don't display '<6>' while printing info)
+> > I mean here.
+> > 
+> > '
+> >               NR_LRU_BASE + l)); 
+> >         ret += shrink_list(l, nr_to_scan, zone,
+> >                 sc, prio);
+> >         if (ret >= nr_pages)
+> >           return ret; 
+> >       }    
+> > '
+> > 
+> > I have to make patch again so that it will keep on old bale-out behavior. 
 > 
-> Signed-off-by: Luca Bigliardi <shammash@artha.org>
-> ---
->  arch/um/drivers/vde_user.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/um/drivers/vde_user.c b/arch/um/drivers/vde_user.c
-> index 56533db..c5c4325 100644
-> --- a/arch/um/drivers/vde_user.c
-> +++ b/arch/um/drivers/vde_user.c
-> @@ -78,7 +78,7 @@ void vde_init_libstuff(struct vde_data *vpri, struct vde_init *init)
->  {
->  	struct vde_open_args *args;
->  
-> -	vpri->args = kmalloc(sizeof(struct vde_open_args), UM_GFP_KERNEL);
-> +	vpri->args = uml_kmalloc(sizeof(struct vde_open_args), UM_GFP_KERNEL);
->  	if (vpri->args == NULL) {
->  		printk(UM_KERN_ERR "vde_init_libstuff - vde_open_args "
->  		       "allocation failed");
-> @@ -91,8 +91,8 @@ void vde_init_libstuff(struct vde_data *vpri, struct vde_init *init)
->  	args->group = init->group;
->  	args->mode = init->mode ? init->mode : 0700;
->  
-> -	args->port ?  printk(UM_KERN_INFO "port %d", args->port) :
-> -		printk(UM_KERN_INFO "undefined port");
-> +	args->port ?  printk("port %d", args->port) :
-> +		printk("undefined port");
->  }
->  
->  int vde_user_read(void *conn, void *buf, int len)
+> Sure.
+> thanks.
 
-Jeff, I don't see this in linux-next as of today. Are you going to take it 
-through your tree?
+As I mean,
 
--- 
-Jiri Kosina
-SUSE Labs
+@@ -2082,15 +2082,14 @@ static unsigned long shrink_all_zones(unsigned long nr_pages, int prio,
+ 				nr_to_scan = min(nr_pages,
+ 					zone_page_state(zone,
+ 							NR_LRU_BASE + l));
+				nr_reclaimed += shrink_list(l, nr_to_scan, zone,
+								sc, prio);
+-				if (nr_reclaimed >= nr_pages) 
+-				if (nr_reclaimed > sc.swap_cluster_max) 
+					break;
+ 		}
+ 	}
+
+
+this is keep old behavior and consist shrink_zone(), I think.
+
+
