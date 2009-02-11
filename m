@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757997AbZBKUMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757630AbZBKUOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757997AbZBKUMU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 15:12:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755342AbZBKUMK
+	id S1757630AbZBKUOJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 15:14:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755538AbZBKUNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 15:12:10 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:34526 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755085AbZBKUMJ (ORCPT
+	Wed, 11 Feb 2009 15:13:55 -0500
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:49594 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750875AbZBKUNy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 15:12:09 -0500
-Date: Wed, 11 Feb 2009 18:34:51 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Doug Bazarnic <kernel@bazarnic.net>
-cc: linux-kernel@vger.kernel.org, Sami Farin <safari-kernel@safari.iki.fi>,
-       Rafael Wysocki <rjw@sisk.pl>
-Subject: RE: 2.6.28.4 regression: mmap fails if mlockall used
-In-Reply-To: <033401c98c15$c868c100$593a4300$@net>
-Message-ID: <Pine.LNX.4.64.0902111827020.6392@blonde.anvils>
-References: <20090208105222.hj7zhcyxyqfjeobt@m.safari.iki.fi>
- <Pine.LNX.4.64.0902081802480.14394@blonde.anvils>
- <20090208192340.mydonrnzi3os734u@m.safari.iki.fi>
- <Pine.LNX.4.64.0902082025470.14955@blonde.anvils> <033401c98c15$c868c100$593a4300$@net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 11 Feb 2009 15:13:54 -0500
+X-Greylist: delayed 2537 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Feb 2009 15:13:54 EST
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArwEAN+/kklMQWt2/2dsb2JhbACBbtNdhBsG
+Date: Wed, 11 Feb 2009 15:13:49 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Avi Kivity <avi@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Greg KH <greg@kroah.com>,
+       ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [BUG] Linux 2.6.28.4 freezing on a 32-bits x86 Thinkpad T43p
+Message-ID: <20090211201349.GB32122@Krystal>
+References: <20090204211106.GA30824@Krystal> <20090204211759.GK22608@elte.hu> <20090211193125.GA30975@Krystal> <20090211195038.GC25968@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090211195038.GC25968@elte.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:09:58 up 41 days, 20:08,  4 users,  load average: 1.56, 0.55,
+	0.30
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Feb 2009, Doug Bazarnic wrote:
-> I can confirm the mlock.c patch works on 2.6.28.4.  2.6.28.3 works fine.
-> This issue happens on both Centos 5.2 x86_64 and RHEL 5.3 x86_64.
+* Ingo Molnar (mingo@elte.hu) wrote:
 > 
-> Without the mlock.c patch, ntpd fails to start on 2.6.28.4:
-> Feb 10 22:03:19 testbox ntpd[4030]: kernel time sync status 0040
-> Feb 10 22:03:19 testbox ntpd[4030]: getaddrinfo: "127.0.0.1" invalid host
-> address, ignored
-> Feb 10 22:03:19 testbox ntpd[4030]: getaddrinfo: "::1" invalid host address,
-> ignored
-> Feb 10 22:03:19 testbox ntpd[4030]: getaddrinfo: "127.127.1.0" invalid host
-> address, ignored
-> Feb 10 22:03:19 testbox ntpd[4030]: Cannot find user `ntp'
-> Feb 10 22:03:21 testbox ntpd_initres[4034]: parent died before we finished,
-> exiting
+> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 > 
-> Fyi.. gcc version 4.1.2 20071124 (Red Hat 4.1.2-42)
+> > Here is a new backtrace, taken with a huge amount of debugging active, which still 
+> > points to an interrupt handler nested over kvm_mmu_pte_write as the culprit. It's 
+> > weird that the kvm code gets called on my modest Pentium M laptop, which I think 
+> > has no VT-x support at all. I am not running any KVM VMs on this machine. The 
+> > problem still happens on 2.6.28.4, and Slub redzones did not identify any memory 
+> > corruption. This could be due to kvm_mmu_pte_write which either should not be 
+> > called at all, or due to improper interrupt disabling in this function.
 > 
-> Thanks to Sami for mentioning ntpd failures, as I was going nuts trying to
-> figure out why my ntpd.conf file wasn't working anymore.  
+> Does latest tip:master fix it? In particular this one:
 > 
-> Thanks for the patch as well.
+>   9cf161a: x86/cpa: make sure cpa is safe to call in lazy mmu mode
+> 
+> fixes a crasher related to KVM and mmu notifiers ...
+> 
+> 	Ingo
 
-Thanks a lot for testing and confirming:
-you should find the fix is in 2.6.28.5, due out maybe tomorrow.
+I'll try to apply commit 
+9cf161a: x86/cpa: make sure cpa is safe to call in lazy mmu mode
 
-Rafael, you did already close Bug #12669 - now please cancel my
-suggestion that it remain open until the fix has been confirmed ;)
+To my 2.6.28.4 kernel to change the configuration minimally and see if
+it helps. I guess we'll have to wait a few days before the problem is
+reproduced, and even more if it's not. :)
 
-Hugh
+Thanks a lot!
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
