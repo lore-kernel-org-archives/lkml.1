@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757301AbZBKT05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757021AbZBKT3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757301AbZBKT05 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 14:26:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755758AbZBKT0q
+	id S1757021AbZBKT3g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 14:29:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755942AbZBKT33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 14:26:46 -0500
-Received: from 30.mail-out.ovh.net ([213.186.62.213]:41543 "HELO
-	30.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755969AbZBKT0p (ORCPT
+	Wed, 11 Feb 2009 14:29:29 -0500
+Received: from mga01.intel.com ([192.55.52.88]:5442 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755917AbZBKT32 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 14:26:45 -0500
-From: "David CHAMPELOVIER" <david@champelovier.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: "heuristic overcommit" and fork()
-Date: Wed, 11 Feb 2009 20:26:32 +0100
-Message-ID: <ED3886372DB5491AAA799709DBA78F6F@david>
+	Wed, 11 Feb 2009 14:29:28 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,193,1233561600"; 
+   d="scan'208";a="664806744"
+From: "Yu, Fenghua" <fenghua.yu@intel.com>
+To: "'Bhavesh Davda'" <bhavesh@vmware.com>,
+       "'David Woodhouse'" <dwmw2@infradead.org>,
+       "'Ingo Molnar'" <mingo@elte.hu>,
+       "'Stephen Rothwell'" <sfr@canb.auug.org.au>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       "'Johannes Berg'" <johannes@sipsolutions.net>,
+       "Grumbach, Emmanuel" <emmanuel.grumbach@intel.com>,
+       "Winkler, Tomas" <tomas.winkler@intel.com>,
+       "Zhu, Yi" <yi.zhu@intel.com>, "'Chris Wright'" <chrisw@sous-sol.org>
+CC: "'iommu@lists.linux-foundation.org'" 
+	<iommu@lists.linux-foundation.org>,
+       "'LKML'" <linux-kernel@vger.kernel.org>
+Date: Wed, 11 Feb 2009 11:29:25 -0800
+Subject: RE: [PATCH]iwlan dma mapping read and write changes
+Thread-Topic: [PATCH]iwlan dma mapping read and write changes
+Thread-Index: AcmMd06axlaX3nZjTEykWUJ2Z4AU4AAACLxgAAHIuEA=
+Message-ID: <A6AD88C3F2289247BE726C37303E1EB894CF3EE2@orsmsx505.amr.corp.intel.com>
+References: <20081001165606.GA21279@linux-os.sc.intel.com>
+ <20090211182648.GA1661@linux-os.sc.intel.com>
+ <AF9CD7A487028E428749836D21102612201D593E65@PA-EXMBX02.vmware.com>
+In-Reply-To: <AF9CD7A487028E428749836D21102612201D593E65@PA-EXMBX02.vmware.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook, Build 10.0.6838
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
-Thread-Index: AcmMfqRrVSXw11ChQm2dkTKbl7QN+g==
-Importance: Normal
-X-Ovh-Tracer-Id: 2769150821079659544
-X-Ovh-Remote: 82.122.4.26 (agrenoble-152-1-5-26.w82-122.abo.wanadoo.fr)
-X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
-X-Spam-Check: DONE|H 0.500003/N
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Recently, I was unable to fork() a 38 GB process on a system with 64 GB RAM
-and no swap.
-Having a look at the kernel source, I surprisingly found that in "heuristic
-overcommit" mode, fork() always checks that there is enough memory to
-duplicate process memory.
 
-As far as I know, overcommit was introduced in the kernel for several
-reasons, and fork() was one of them, since applications often exec() just
-after fork(). I know fork() is not the most judicious choice in this case,
-but well, this is the way many applications are written.
+>Looks good to me. Ship it!
+>
+>- Bhavesh
+> 
+>Bhavesh P. Davda
 
-Moreover, I can read in the proc man page that in "heuristic overcommit
-mode", "obvious overcommits of address space are refused". I do not think
-fork() is an obvious overcommit, that's why I would expect fork() to be
-always accepted in this mode.
+Reviewed-by: Bhavesh Davda <bhavesh@vmware.com>
 
-So, is there a reason why fork() checks for available memory in "heuristic
-mode" ?
+Thanks.
 
-Thanks in advance.
-
---
-David Champelovier
-
+-Fenghua
