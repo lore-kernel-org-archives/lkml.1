@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbZBKJvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756280AbZBKJxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754812AbZBKJvj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 04:51:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755812AbZBKJvT
+	id S1756280AbZBKJxq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 04:53:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754238AbZBKJxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 04:51:19 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37520 "EHLO mx3.mail.elte.hu"
+	Wed, 11 Feb 2009 04:53:38 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58396 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755582AbZBKJvS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 04:51:18 -0500
-Date: Wed, 11 Feb 2009 10:51:02 +0100
+	id S1753429AbZBKJxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 04:53:37 -0500
+Date: Wed, 11 Feb 2009 10:53:25 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: x86@kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+To: Tejun Heo <tj@kernel.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: apic cleanups
-Message-ID: <20090211095102.GC20518@elte.hu>
-References: <cover.1234296039.git.jeremy.fitzhardinge@citrix.com>
+Subject: Re: git pull request for tip/tracing/urgent
+Message-ID: <20090211095325.GD20518@elte.hu>
+References: <alpine.DEB.1.10.0902101314440.23505@gandalf.stny.rr.com> <20090210183046.GA1342@nowhere> <alpine.DEB.1.10.0902101724190.23505@gandalf.stny.rr.com> <20090211012856.GA4921@nowhere> <20090211090229.GG21105@elte.hu> <49929763.3080608@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <cover.1234296039.git.jeremy.fitzhardinge@citrix.com>
+In-Reply-To: <49929763.3080608@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,37 +38,44 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com> wrote:
+* Tejun Heo <tj@kernel.org> wrote:
 
-> Hi all,
+> Hello,
 > 
-> This series of patches (against tip/x86/apic) makes some fairly
-> uncontroversial changes and cleanups to lay the groundwork for some more
-> Xen-specific patches (which will no doubt cause more of a discussion).
+> Ingo Molnar wrote:
+> > This bit:
+> > 
+> >   	".section .fixup, \"ax\"\n"
+> >  	"4: movl $1, %[faulted]\n"
+> >  	"   jmp 3b\n"
+> >  	".previous\n"
+> > 
+> > Can be thought of as an 'embedded' or 'nested' section - the '.previous'
+> > directive jumps back to whatever section we were in before. This can be
+> > nested multiple times too:
+> > 
+> >    .section A
+> >    [...]
+> >      .section B
+> >      [...]
+> >         .section C
+> >         [...]
+> >         .previous
+> >      [...]
+> >      .previous
+> >    [...]
+> >    .previous
 > 
-> These changes can also be pulled from
->    git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git x86/apic
+> That will result in...
 > 
-> Thanks,
-> 	J
+>  A->B->C->B->C->B
 > 
-> Ian Campbell (1):
->   xen: expose enable_IO_APIC for 32-bit
+> .pushsection and .popsection should be used for nesting, right?
 > 
-> Jeremy Fitzhardinge (4):
->   x86: make apic_* operations inline functions
->   x86: unstatic mp_find_ioapic so it can be used elsewhere
->   x86: add mp_find_ioapic_pin
->   x86: unstatic ioapic entry funcs
-> 
->  arch/x86/include/asm/apic.h    |   35 +++++++++++++++++++++++++++++------
->  arch/x86/include/asm/hw_irq.h  |    2 --
->  arch/x86/include/asm/io_apic.h |    6 ++++++
->  arch/x86/include/asm/mpspec.h  |    2 ++
->  arch/x86/kernel/acpi/boot.c    |   18 ++++++++++++++----
->  arch/x86/kernel/io_apic.c      |   10 +++++-----
->  6 files changed, 56 insertions(+), 17 deletions(-)
+> Thanks.
 
-Pulled into tip:x86/apic, thanks guys!
+hm ... doh, yes. I think we even had a bug in this area.
+
+Why is it implemented like this? These semantics seem to make no sense.
 
 	Ingo
