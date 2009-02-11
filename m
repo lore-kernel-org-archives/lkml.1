@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758140AbZBKRWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758255AbZBKRXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758140AbZBKRWu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 12:22:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755329AbZBKRWl
+	id S1758255AbZBKRXY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 12:23:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755329AbZBKRXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 12:22:41 -0500
-Received: from mail.zelnet.ru ([80.92.97.13]:44981 "EHLO mail.zelnet.ru"
+	Wed, 11 Feb 2009 12:23:11 -0500
+Received: from fogou.chygwyn.com ([195.171.2.24]:55936 "EHLO fogou.chygwyn.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756528AbZBKRWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 12:22:40 -0500
-Message-ID: <49930977.4060904@gmail.com>
-Date: Wed, 11 Feb 2009 20:23:03 +0300
-From: Edward Shishkin <edward.shishkin@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	id S1757313AbZBKRXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 12:23:10 -0500
+Date: Wed, 11 Feb 2009 17:18:16 +0000
+From: steve@chygwyn.com
+To: Kirill Kuvaldin <kirill.kuvaldin@gmail.com>
+Cc: linux-cluster@redhat.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: GFS2 file locking issues
+Message-ID: <20090211171816.GA14516@fogou.chygwyn.com>
+References: <2d42915c0902110255k3c0741a9s6830765bce6be052@mail.gmail.com> <20090211133648.GA10273@fogou.chygwyn.com> <2d42915c0902110637o2c0a88c7h72b280b972a6162e@mail.gmail.com>
 MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>
-Subject: Re: mmotm 2009-02-10-16-35 uploaded (reiser4-quota)
-References: <200902110036.n1B0aBZs013975@imap1.linux-foundation.org> <499305AD.4020900@oracle.com> <20090211171324.GC13817@duck.suse.cz>
-In-Reply-To: <20090211171324.GC13817@duck.suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2d42915c0902110637o2c0a88c7h72b280b972a6162e@mail.gmail.com>
+Organization: ChyGwyn Limited
+X-Registered-Office: Digital Technium, Singleton Park, Swansea. SA2 8PP
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara wrote:
-> On Wed 11-02-09 09:06:53, Randy Dunlap wrote:
->   
->> akpm@linux-foundation.org wrote:
->>     
->>> The mm-of-the-moment snapshot 2009-02-10-16-35 has been uploaded to
->>>
->>>    http://userweb.kernel.org/~akpm/mmotm/
->>>
->>> and will soon be available at
->>>
->>>    git://git.zen-sources.org/zen/mmotm.git
->>>       
->> mmotm-2009-0210-1635/fs/reiser4/plugin/inode_ops.c:456: error: implicit declaration of function 'DQUOT_TRANSFER'
->> mmotm-2009-0210-1635/fs/reiser4/plugin/inode_ops.c:596: error: implicit declaration of function 'DQUOT_ALLOC_INODE'
->> mmotm-2009-0210-1635/fs/reiser4/plugin/inode_ops.c:597: error: implicit declaration of function 'DQUOT_DROP'
->> mmotm-2009-0210-1635/fs/reiser4/plugin/inode_ops.c:611: error: implicit declaration of function 'DQUOT_FREE_INODE'
->>     
->   Ah, out of tree filesystems... Could some of Reiser4 guys convert the
-> quota names (they should be vfs_dq_transfer, vfs_dq_alloc_inode,
->   
+Hi,
 
-Ok, I'll fix it at the near future.
+On Wed, Feb 11, 2009 at 05:37:11PM +0300, Kirill Kuvaldin wrote:
+> On Wed, Feb 11, 2009 at 4:36 PM,  <steve@chygwyn.com> wrote:
+> > Hi,
+> >
+> > On Wed, Feb 11, 2009 at 01:55:08PM +0300, Kirill Kuvaldin wrote:
+> >> Hi,
+> >>
+> >> I'm trying to understand how the FS locking mechanism should work.
+> >>
+> >> I'm running a clustered GFS2 across two nodes, each node is a Xen domU.
+> >> To check if locking works correctly I wrote the simple perl script below.
+> >> Basically the script opens a file, locks it to prevent others from
+> >> writing into it, writes 20 lines into it, then unlocks and closes.
+> >>i
+> >
+> > It should be exactly the same on GFS and GFS2, after all the code for
+> > flock is almost identical between the two. What mount options did you
+> > use?
+> 
+> No specific options used, just mount -t gfs2 /dev/gfsc/lvol0 /gfs2...
+> 
+> > Which lock manager are you using - I presume lock_dlm?
+> >
+> 
+> Yes, the FS was created using to be used with lock_dlm. I'm not sure
+> if it is actually used for GFS2. How can I check that?
+> 
+> Kirill
+cat /proc/mounts
 
-Edward.
+It should be listed in the options. That will also tell you if localflocks
+has been set as well. We do know of a bug in the GFS/GFS2 flock code though,
+it ought to be using an interruptible wait and it doesn't at the moment.
+Otherwise I don't know of any other issues.
 
-> vfs_dq_drop, vfs_dq_free_inode)? I suppose I could do it myself but I'm not
-> sure if it won't clash with some other changes.
->   Thanks for report Randy.
->
-> 									Honza
->   
+Which kernel version are you using?
+
+Steve.
 
