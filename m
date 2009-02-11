@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbZBKBLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbZBKBOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755384AbZBKBLt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 20:11:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754408AbZBKBLj
+	id S1755716AbZBKBOV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 20:14:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbZBKBOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 20:11:39 -0500
-Received: from mga01.intel.com ([192.55.52.88]:47019 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751398AbZBKBLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 20:11:37 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,188,1233561600"; 
-   d="scan'208";a="429950108"
-Subject: Re: Oopses and ACPI problems (Linus 2.6.29-rc4)
-From: yakui_zhao <yakui.zhao@intel.com>
-To: Corentin Chary <corentin.chary@gmail.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Darren Salt <linux@youmustbejoking.demon.co.uk>
-In-Reply-To: <71cd59b00902100806s44f40812p441fae0b157cdb9c@mail.gmail.com>
-References: <alpine.LFD.2.00.0902081251090.3048@localhost.localdomain>
-	 <gemini.ket9w800w44dc0hvg.linux@youmustbejoking.demon.co.uk>
-	 <20090209234911.GB862@elte.hu>
-	 <5030E21460%linux@youmustbejoking.demon.co.uk>
-	 <20090210150431.GA26798@srcf.ucam.org>
-	 <5030E7CFF4%linux@youmustbejoking.demon.co.uk>
-	 <20090210154533.GA27596@srcf.ucam.org>
-	 <71cd59b00902100806s44f40812p441fae0b157cdb9c@mail.gmail.com>
-Content-Type: text/plain
-Organization: Intel Open Source Technology Center
-Date: Wed, 11 Feb 2009 09:23:20 +0800
-Message-Id: <1234315400.3706.88.camel@localhost.localdomain>
+	Tue, 10 Feb 2009 20:14:11 -0500
+Received: from casper.infradead.org ([85.118.1.10]:35874 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753823AbZBKBOK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 20:14:10 -0500
+Date: Tue, 10 Feb 2009 17:13:58 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@suse.cz>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [patch 0/2] Make the touchpad on the MSI Wind netbook work
+Message-ID: <20090210171358.78c34d41@infradead.org>
+In-Reply-To: <alpine.LRH.1.10.0902110156390.22097@twin.jikos.cz>
+References: <20090204191540.2d6abd87@infradead.org>
+	<20090210202558.GH1382@ucw.cz>
+	<200902102300.19065.rjw@sisk.pl>
+	<alpine.LRH.1.10.0902110156390.22097@twin.jikos.cz>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-11 at 00:06 +0800, Corentin Chary wrote:
-> On Tue, Feb 10, 2009 at 4:45 PM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> > On Tue, Feb 10, 2009 at 03:15:21PM +0000, Darren Salt wrote:
-> >
-> >> As things stand, this is likely to be a problem for anybody using lenny on
-> >> Eee hardware and upgrading (on their own) to 2.6.29, given that that
-> >> workaround is present in eeepc-acpi-scripts in lenny.
-> >>
-> >> Anyway, removing that option fixes the problem.
-> >
-> > Ok. I'll look into ensuring that these don't collide, but fundamentally
-> > the problem here is distributions using broken options rather than
-> > fixing the problem properly in the first place.
-> >
-> >> > BIOS bug. There's an explicit delay in the eee bios for some reason, and
-> >> > I haven't found any straightforward way to avoid it.
-> >>
-> >> BIOS bug or no, the fact remains that this is (AFAICS) a regression.
-> >
-> > You don't get properly working hotkeys otherwise, to the best of my
-> > recollection. There's an entry on the kernel bugzilla about this
-> > somewhere.
-> > --
-> > Matthew Garrett | mjg59@srcf.ucam.org
-> 
-> http://bugzilla.kernel.org/show_bug.cgi?id=12243
-> If I understand things correctly, this was already the case before,
-> but the kernel boot was slower, so we could'nt see that.
-> If it's not the case, someone with a 901 should try bisecting (I only
-> have a 701).
-I have an Asus EEEPC901. And it will take about 1 second to execute the
-ACPI INIT object, which is defined in BIOS.
-    From the ACPI AML code it seems that there exist some explicit
-delays. But we have nothing to avoid it.  
-> 
-> 
+On Wed, 11 Feb 2009 02:00:21 +0100 (CET)
+Jiri Kosina <jkosina@suse.cz> wrote:
 
+> On Tue, 10 Feb 2009, Rafael J. Wysocki wrote:
+> 
+> > > Well, that beast was selling with linux preloaded, no? Or was it 
+> > > another msi wind? In such case I'd expect old kernel to work...
+> > > or maybe some reasonable workaround somewhere...
+> > In fact I have an MSI Wind and the touchpad is works on it just
+> > fine with the current mainline.
+> > Perhaps this one is just another MSI Wind.  What model is it?
+> 
+> >From what I have heard there are different models of MSI Wind out
+> >there, 
+> with different set of hardware configurations.
+> 
+> Arjan, Rafael, could you please provide the dmidecode outputs for the 
+> working and non-working systems, so that we can see what are the 
+> differences?
+
+does this matter for the patch ?
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
