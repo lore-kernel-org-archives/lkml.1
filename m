@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756395AbZBKOMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbZBKOPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756395AbZBKOMf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 09:12:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZBKOMZ
+	id S1756505AbZBKOPh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 09:15:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbZBKOP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 09:12:25 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48861 "EHLO mx2.redhat.com"
+	Wed, 11 Feb 2009 09:15:28 -0500
+Received: from hera.kernel.org ([140.211.167.34]:60509 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750945AbZBKOMZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 09:12:25 -0500
-Subject: Re: [PATCH 1/3] Makefile: Include arch Makefiles as late as
-	possible
-From: Steven Rostedt <srostedt@redhat.com>
+	id S1753143AbZBKOP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 09:15:27 -0500
+Message-ID: <4992DD63.5080308@kernel.org>
+Date: Wed, 11 Feb 2009 23:14:59 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Paul Mackerras <paulus@samba.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-In-Reply-To: <20090211132338.GQ16535@elte.hu>
-References: <20090204150755.GA24163@oksana.dev.rtsoft.ru>
-	 <20090204150835.GA30027@oksana.dev.rtsoft.ru>
-	 <20090204212612.GN22608@elte.hu> <1234324294.29851.0.camel@pasglop>
-	 <20090211132338.GQ16535@elte.hu>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Wed, 11 Feb 2009 09:11:42 -0500
-Message-Id: <1234361502.31601.0.camel@localhost.localdomain>
-Mime-Version: 1.0
+CC: Brian Gerst <brgerst@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] x86: Pass in pt_regs pointer for syscalls that	need
+ it
+References: <1234277507-4987-1-git-send-email-brgerst@gmail.com> <1234277507-4987-3-git-send-email-brgerst@gmail.com> <4992812B.1050800@kernel.org> <20090211101846.GH20518@elte.hu>
+In-Reply-To: <20090211101846.GH20518@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 11 Feb 2009 14:15:16 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2009-02-11 at 14:23 +0100, Ingo Molnar wrote:
-> * Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Ingo Molnar wrote:
+> * Tejun Heo <tj@kernel.org> wrote:
 > 
-> > On Wed, 2009-02-04 at 22:26 +0100, Ingo Molnar wrote:
-> > > > +include $(srctree)/arch/$(SRCARCH)/Makefile
-> > > > +
-> > > >  # arch Makefile may override CC so keep this after arch Makefile is
-> > > included
-> > > >  NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC)
-> > > -print-file-name=include)
-> > > >  CHECKFLAGS     += $(NOSTDINC_FLAGS)
-> > > > -- 
-> > > 
-> > > this patch is really for Sam to judge - Cc:-ed him.
-> > 
-> > Sam ? I have a few more powerpc patches depending on that one... so I'd
-> > like to know if it's totally doomed or not :-)
+>> Hello, Brian.
+>>
+>> Brian Gerst wrote:
+>>> Some syscalls need to access the pt_regs structure, either to copy
+>>> user register state or to modifiy it.  This patch adds stubs to load
+>>> the address of the pt_regs struct into the %eax register, and changes
+>>> the syscalls to regparm(1) to receive the pt_regs pointer as the
+>>> first argument.
+>> Heh... neat.  Just one question.
+>>
+>>> -asmlinkage long sys_iopl(unsigned long regsp)
+>>> +ptregscall long sys_iopl(struct pt_regs *regs, unsigned int level)
+>>>  {
+>>> -	struct pt_regs *regs = (struct pt_regs *)&regsp;
+>>> -	unsigned int level = regs->bx;
+>> Here and at other places where the function takes more than one
+>> arguments, wouldn't it be better to just take *regs and use other
+>> parameters from regs?  That way we won't have to worry about gcc
+>> corrupting register frame at all and I think it's cleaner that way.
 > 
-> Well, toplevel Makefile changes are not to be taken lightly :-)
-> 
-> Looks good to me but it's handy to have Sam's Ack on it too.
-> 
+> Hm, gcc cannot corrupt register arguments only on-stack arguments - but
+> your suggestion nevertheless makes sense as an optimization. I'd suggest
+> this to be done as a separate patch though, both for regression analysis
+> reasons (easier to bisect - the patch is large enough already) and from
+> a size/performance analysis POV. (so we can see the benefits in isolation)
 
-Someone on IRC said that Sam is on vacation. This could take a while for
-an ACK.
+ptregscall is regparm(1) so arguments are on-stack from the second
+one, so the callee can corrupt them.
 
+Thanks.
 
--- Steve
-
-
+-- 
+tejun
