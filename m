@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756384AbZBKPZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757675AbZBKPZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756384AbZBKPZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 10:25:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754249AbZBKPZt
+	id S1757675AbZBKPZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 10:25:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755982AbZBKPYD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 10:25:49 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46895 "EHLO mx2.mail.elte.hu"
+	Wed, 11 Feb 2009 10:24:03 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46168 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753942AbZBKPZs convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 10:25:48 -0500
-Date: Wed, 11 Feb 2009 16:25:30 +0100
+	id S1755801AbZBKPYB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 10:24:01 -0500
+Date: Wed, 11 Feb 2009 16:23:42 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [bug] sata detection problem
-Message-ID: <20090211152530.GA18660@elte.hu>
-References: <20090208063516.GA2318@elte.hu> <4992EAAB.3010809@gmail.com>
+To: Pengfei Hu <hpfei.cn@gmail.com>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Using module private memory to simulate microkernel's memory
+	protection
+Message-ID: <20090211152342.GA16550@elte.hu>
+References: <a5f59d880902100542x7243b13fuf40e7dd21faf7d7a@mail.gmail.com> <20090210141405.GA16147@elte.hu> <a5f59d880902110604g40cf17b5w92431f60e6f16fa4@mail.gmail.com> <20090211145525.GB10525@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <4992EAAB.3010809@gmail.com>
+In-Reply-To: <20090211145525.GB10525@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,42 +37,41 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Tejun Heo <htejun@gmail.com> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> Hello,
+> * Pengfei Hu <hpfei.cn@gmail.com> wrote:
 > 
-> Ingo Molnar wrote:
-> > Hm, in a boot test i had this boot failure:
+> > >
+> > > Hm, are you aware of the kmemcheck project?
+> > >
+> > >        Ingo
+> > >
 > > 
-> > [   15.504053] calling  piix_init+0x0/0x30 @ 1
-> > [   15.508050] ata_piix 0000:00:1f.1: version 2.12
-> > [   15.516193] ACPI: PCI Interrupt Link [LNKG] enabled at IRQ 11
-> > [   15.520029] ata_piix 0000:00:1f.1: PCI INT A -> Link[LNKG] -> GSI 11 (level, low) -> IRQ 11
-> > [   15.524072] ata_piix 0000:00:1f.1: setting latency timer to 64
-> > [   15.528115] scsi0 : ata_piix
-> > [   15.531526] scsi1 : ata_piix
-> > [   15.544044] ata1: PATA max UDMA/100 cmd 0x1f0 ctl 0x3f6 bmdma 0xffa0 irq 14
-> > [   15.548028] ata2: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma 0xffa8 irq 15
-> > [   15.716358] ata1.00: ATAPI: ýVýVýVýVýVýýýýýýýýýýýýýýýýýýýýýýýýýýýýýý, ýýVýVýV, max UDMA7
-> > [   15.720044] ata1.00: limited to UDMA/33 due to 40-wire cable
-> > [   15.740296] ata1.00: configured for UDMA/33
+> > Frankly, I only know this project's name. Just when I nearly finished
+> > this patch, I browsed http://git.kernel.org/ first time. I am only a
+> > beginner in Linux kernel. Maybe I should first discuss before write
+> > code. But I think it is not too late.
+> > 
+> > Can you tell me more about this project? I realy appreciate it.
 > 
-> That's one strange ghost device detection.  Because PATA doesn't have
-> a reliable way of determining device presence, libata uses combination
-> of tests along the probing sequence to determine device presence.
-> Each test is intentionally made somewhat relaxed to avoid missing a
-> present device (and those condition often do trigger).  It seems
-> somehow it is passing all the existing tests.  The hardest part
-> probably is the IDENTIFY command sequence but for SFF controllers it's
-> done via polling instead of IRQ and thus by having the right (or
-> wrong) status register value a port with floating pins may be able to
-> pass it.
-> 
-> How reproducible is the problem?  It can probably be worked around by
-> making the NODEV_HINT checking a tad bit tighter in SFF host state
-> machine.  PATA device presence detection is an art not an exact
-> science.  :-)
+> Sure:
 
-it's very sporadic - out of thousands of bootups this is the first time :-/
+More info: kmemcheck was written by Vegard Nossum (and released more than
+a year ago) and it uses similar principles as your patch: it enforces
+memory usage constraints via pagetable access bits.
+
+More description about kmemcheck can be found in the following LWN article:
+
+  http://lwn.net/Articles/260068/
+
+I think your idea of limiting execution to individual modules could perhaps
+be combined with kmemcheck. It's the same general principle.
+
+The difference is that your patch calls back from the page fault handler and
+modifies the monitored pte's to present, brings in a TLB and then it modifies
+it to not present. So the page can be accessed up until the TLB gets flushed.
+
+Kmemcheck uses debug traps to execute a single instruction, and thus gets
+finer grained control of what is visible to a task.
 
 	Ingo
