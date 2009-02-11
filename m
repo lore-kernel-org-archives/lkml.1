@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757864AbZBKStz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbZBKSva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757864AbZBKStz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 13:49:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbZBKStp
+	id S1758030AbZBKSva (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 13:51:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755114AbZBKSvV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 13:49:45 -0500
-Received: from mga01.intel.com ([192.55.52.88]:4659 "EHLO mga01.intel.com"
+	Wed, 11 Feb 2009 13:51:21 -0500
+Received: from gw.goop.org ([64.81.55.164]:38124 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755790AbZBKSto convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 13:49:44 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,193,1233561600"; 
-   d="scan'208";a="430181824"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Ingo Molnar <mingo@elte.hu>, Dean Nelson <dcn@sgi.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       linux-ia64 <linux-ia64@vger.kernel.org>,
-       linux-next <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Date: Wed, 11 Feb 2009 10:49:41 -0800
-Subject: RE: [PATCH] SGI IA64 UV: fix ia64 build error in the linux-next	tree
-Thread-Topic: [PATCH] SGI IA64 UV: fix ia64 build error in the linux-next
-	tree
-Thread-Index: AcmMRN3+aU1QqjB7RumXWjhMqnH/6wANI7TA
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA361689D41@orsmsx505.amr.corp.intel.com>
-References: <20090209162520.GA4882@sgi.com> <20090211123249.GE16535@elte.hu>
-In-Reply-To: <20090211123249.GE16535@elte.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1752567AbZBKSvV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 13:51:21 -0500
+Message-ID: <49931E24.6080409@goop.org>
+Date: Wed, 11 Feb 2009 10:51:16 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
+To: Pekka Paalanen <pq@iki.fi>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Stuart Bennett <stuart@freedesktop.org>,
+       Oliver McFadden <z3ro.geek@gmail.com>,
+       david jeannot <djeannot24@gmail.com>
+Subject: Re: testing pmdval/pteval page presence bit
+References: <20090209215849.5a788261@daedalus.pq.iki.fi>	<499202F0.10108@goop.org> <20090211200832.016d3e59@daedalus.pq.iki.fi>
+In-Reply-To: <20090211200832.016d3e59@daedalus.pq.iki.fi>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Tony, since this breakage is an accidental side-effect of the x86 tree (that
-> has to be fixed there), mind if we carry it there?
+Pekka Paalanen wrote:
+> This is good to know. So far these are kernel mappings, as they are all
+> created by ioremap*(), but there are plans to extend mmiotrace to
+> trace IO-mappings accessed from user space. Do you have hints for that?
+>   
 
-Ingo,
+Set _PAGE_PROTNONE, which will make the kernel logically treat it as a 
+present pte with no page permissions, which is what you're doing.  Bear 
+in mind that _PAGE_PROTNONE is overloaded with _PAGE_GLOBAL, so you'll 
+need to make sure you restore that properly too (kernel mappings are 
+generally global).
 
-I don't mind at all.
+On the other hand, I assume you intercept mmiotrace faults fairly early 
+in the fault handler, so that path shouldn't ever see an unexpected 
+not-present pte.  But other code, like mprotect, mlock, etc, may inspect 
+those ptes and get a nasty surprise if it sees them non-present.
 
--Tony
+(What happens if someone uses mprotect on a mapping that mmiotrace has 
+made non-present?)
+
+> OTOH, we are always dealing with PCI IO-mem-mappings, so would those ever
+> be not present, excluding the mmiotrace case?
+>
+> Well, Stuart already found out that the kernel ioremap*()'ed pages might
+> not really be present, there are some fixes coming up to mmiotrace to
+> cope with that. The plan is to restore the state of the pte like it was
+> before mmiotrace cleared the _PAGE_PRESENT flag, and if the same
+> instruction and address faults again, fall through to the normal page
+> fault handling. How can/will this fail? And if it is a user page?
+>   
+
+My main concern is non-fault handler code which looks at ptes.  How will 
+it know what its looking at if mmiotrace has fiddled with the state?
+
+    J
