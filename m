@@ -1,145 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756206AbZBKBXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756959AbZBKBYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756206AbZBKBXw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 20:23:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbZBKBXo
+	id S1756959AbZBKBYP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 20:24:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbZBKBXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 20:23:44 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:45919 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753341AbZBKBXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 20:23:43 -0500
-Message-ID: <49922896.6090605@redhat.com>
-Date: Tue, 10 Feb 2009 20:23:34 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Pavel Machek <pavel@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Cheng Renquan <crquan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/2] kprobes: check CONFIG_FREEZER instead of CONFIG_PM
-References: <200901062112.29227.rjw@sisk.pl> <200902101456.20147.rjw@sisk.pl> <4991A349.8090005@redhat.com> <200902102240.34313.rjw@sisk.pl>
-In-Reply-To: <200902102240.34313.rjw@sisk.pl>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 10 Feb 2009 20:23:55 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44608
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756271AbZBKBXy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 20:23:54 -0500
+Date: Tue, 10 Feb 2009 17:23:47 -0800 (PST)
+Message-Id: <20090210.172347.189515015.davem@davemloft.net>
+To: rdreier@cisco.com
+Cc: swise@opengridcomputing.com, randy.dunlap@oracle.com,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] [PATCH 2.6.30] RDMA/cxgb3: Remove modulo math.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <adaeiy5ahza.fsf@cisco.com>
+References: <499223F8.1010204@opengridcomputing.com>
+	<20090210.170740.208470781.davem@davemloft.net>
+	<adaeiy5ahza.fsf@cisco.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Tuesday 10 February 2009, Masami Hiramatsu wrote:
->> Rafael J. Wysocki wrote:
->>> On Tuesday 10 February 2009, Ingo Molnar wrote:
->>>> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
->>>>
->>>>> Ingo Molnar wrote:
->>>>>> * Len Brown <lenb@kernel.org> wrote:
->>>>>>
->>>>>>>>> Check CONFIG_FREEZER instead of CONFIG_PM because kprobe booster
->>>>>>>>> depends on freeze_processes() and thaw_processes() when CONFIG_PREEMPT=y.
->>>>>>>>>
->>>>>>>>> This fixes a linkage error which occurs when CONFIG_PREEMPT=y, CONFIG_PM=y
->>>>>>>>> and CONFIG_FREEZER=n.
->>>>>>>>>
->>>>>>>>> Reported-by: Cheng Renquan <crquan@gmail.com>
->>>>>>>>> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
->>>>>>>>> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
->>>>>>>>> ---
->>>>>>>>>  arch/ia64/kernel/kprobes.c |    2 +-
->>>>>>>>>  arch/x86/kernel/kprobes.c  |    2 +-
->>>>>>>>>  kernel/kprobes.c           |    2 +-
->>>>>>>>>  3 files changed, 3 insertions(+), 3 deletions(-)
->>>>>>>> looks good, the x86 bits:
->>>>>>>>
->>>>>>>> Acked-by: Ingo Molnar <mingo@elte.hu>
->>>>>>> man, we have too many config options:-)
->>>>>> the non-x86 bits (kernel/kprobes.c) are crappy though, and broke -rc4
->>>>>> allnoconfig:
->>>>>>
->>>>>> kernel/built-in.o: In function `collect_garbage_slots':
->>>>>> kprobes.c:(.kprobes.text+0x16e4): undefined reference to `freeze_processes'
->>>>>> kprobes.c:(.kprobes.text+0x16f2): undefined reference to `thaw_processes'
->>>>>> kprobes.c:(.kprobes.text+0x176b): undefined reference to `thaw_processes'
->>>>> Hmm, it seems that kernel/power/built-in.o was not linked to .tmp_vmlinux1.
->>>>>
->>>>>   ld -m elf_i386 --build-id -o .tmp_vmlinux1 -T arch/x86/kernel/vmlinux.lds
->>>>> arch/x86/kernel/head_32.o arch/x86/kernel/head32.o arch/x86/kernel/head.o
->>>>> arch/x86/kernel/init_task.o  init/built-in.o --start-group  usr/built-in.o
->>>>> arch/x86/kernel/built-in.o  arch/x86/mm/built-in.o  arch/x86/mach-default/built-in.o
->>>>> arch/x86/crypto/built-in.o  arch/x86/vdso/built-in.o  kernel/built-in.o
->>>>> mm/built-in.o  fs/built-in.o  ipc/built-in.o  security/built-in.o  crypto/built-in.o
->>>>> block/built-in.o  lib/lib.a  arch/x86/lib/lib.a  lib/built-in.o
->>>>> arch/x86/lib/built-in.o  drivers/built-in.o  sound/built-in.o  firmware/built-in.o
->>>>> arch/x86/pci/built-in.o  net/built-in.o --end-group
->>>>> kernel/built-in.o: In function `collect_garbage_slots':
->>>>> kprobes.c:(.kprobes.text+0x16e4): undefined reference to `freeze_processes'
->>>>> kprobes.c:(.kprobes.text+0x16f2): undefined reference to `thaw_processes'
->>>>> kprobes.c:(.kprobes.text+0x176b): undefined reference to `thaw_processes'
->>>>>
->>>>> At kernel/Makefile:53, I can see
->>>>>
->>>>> obj-$(CONFIG_PM) += power/
->>>>>
->>>>> but CONFIG_PM was not set in config
->>>> Sounds plausible. We need a fix for this - it's broken upstream.
->>> Hmm.  Can || be used under obj-$() ?
->> I think just adding a line "obj-$(CONFIG_FREEZER) += power/" is enough.
->> (you can see similar lines of "trace/" at the bottom of obj- lines
->>  in kernel/Makefile )
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 10 Feb 2009 17:18:49 -0800
+
+> > > Is this required?  Strength reduction optimization should do this
+> > > automatically (and the code has been there for quite a while, so
+> > > obviously it isn't causing problems)
 > 
-> Indeed, thanks.
+> > GCC won't optimize that modulus the way you expect, try for yourself
+> > and look at the assembler if you don't believe me. :-)
 > 
-> So, something like the appended patch should help, I think.
+> Are you thinking of the case when there are signed integers involved and
+> so "% modulus" might produce a different result than "& (modulus - 1)"
+> (because the compiler can't know that things are never negative)?
+> Because in this case the compiler seems to do what I thought it would;
+> the relevant part of the i386 assembly for
 > 
-> Rafael
-
-Thank you for fixing. I've tested it.
-
-Tested-by: Masami Hiramatsu <mhiramat@redhat.com>
-
-
+> 		wqe->recv.sgl[i].to = cpu_to_be64(((u32) wr->sg_list[i].addr) %
+> 				(1UL << (12 + page_size[i])));
 > 
-> ---
->  kernel/Makefile       |    1 +
->  kernel/power/Makefile |    2 +-
->  2 files changed, 2 insertions(+), 1 deletion(-)
+> is
 > 
-> Index: linux-2.6/kernel/Makefile
-> ===================================================================
-> --- linux-2.6.orig/kernel/Makefile
-> +++ linux-2.6/kernel/Makefile
-> @@ -51,6 +51,7 @@ obj-$(CONFIG_UID16) += uid16.o
->  obj-$(CONFIG_MODULES) += module.o
->  obj-$(CONFIG_KALLSYMS) += kallsyms.o
->  obj-$(CONFIG_PM) += power/
-> +obj-$(CONFIG_FREEZER) += power/
->  obj-$(CONFIG_BSD_PROCESS_ACCT) += acct.o
->  obj-$(CONFIG_KEXEC) += kexec.o
->  obj-$(CONFIG_BACKTRACE_SELF_TEST) += backtracetest.o
-> Index: linux-2.6/kernel/power/Makefile
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/Makefile
-> +++ linux-2.6/kernel/power/Makefile
-> @@ -3,7 +3,7 @@ ifeq ($(CONFIG_PM_DEBUG),y)
->  EXTRA_CFLAGS	+=	-DDEBUG
->  endif
->  
-> -obj-y				:= main.o
-> +obj-$(CONFIG_PM)		+= main.o
->  obj-$(CONFIG_PM_SLEEP)		+= console.o
->  obj-$(CONFIG_FREEZER)		+= process.o
->  obj-$(CONFIG_HIBERNATION)	+= swsusp.o disk.o snapshot.o swap.o user.o
+>         movl    %eax, 28(%edi,%ebx)     # <variable>.length,
+>         <variable>.len
+>         movzbl  28(%esp,%esi), %ecx     # page_size, tmp89
+>         movl    $1, %eax        #, tmp92
+>         addl    $12, %ecx       #, tmp90
+>         sall    %cl, %eax       # tmp90, tmp92
+>         movl    (%esp), %ecx    # wr,
+>         decl    %eax    # tmp93
+>         movl    12(%ecx), %edx  # <variable>.sg_list, <variable>.sg_list
+>         andl    (%edx,%ebx), %eax       # <variable>.addr, tmp93
+> 
+> ie the compiler computes the modulus, then does decl to compute
+> modulus-1 and then &s with it.
+> 
+> Or am I misunderstanding your point?
 
--- 
-Masami Hiramatsu
+Must be compiler and platform specific because with gcc-4.1.3 on
+sparc with -O2, for the test program:
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+unsigned long page_size[4];
 
-e-mail: mhiramat@redhat.com
+int main(int argc)
+{
+        unsigned long long x = argc;
 
+        return x % (1UL << (12 + page_size[argc]));
+}
+
+I get a call to __umoddi3:
+
+main:
+        save    %sp, -112, %sp
+        sethi   %hi(page_size), %g1
+        sll     %i0, 2, %g3
+        or      %g1, %lo(page_size), %g1
+        mov     1, %o2
+        ld      [%g1+%g3], %g2
+        add     %g2, 12, %g2
+        sll     %o2, %g2, %o2
+        mov     %i0, %o1
+        mov     %o2, %o3
+        sra     %i0, 31, %o0
+        call    __umoddi3, 0
+         mov    0, %o2
+        jmp     %i7+8
+         restore %g0, %o1, %o0
+
+I get the same with gcc-4.3.0 and -O2 on 32-bit x86:
+
+main:
+	leal	4(%esp), %ecx
+	andl	$-16, %esp
+	pushl	-4(%ecx)
+	movl	$1, %eax
+	pushl	%ebp
+	movl	%esp, %ebp
+	pushl	%ecx
+	subl	$20, %esp
+	movl	(%ecx), %edx
+	movl	page_size(,%edx,4), %ecx
+	movl	$0, 12(%esp)
+	movl	%edx, (%esp)
+	addl	$12, %ecx
+	sall	%cl, %eax
+	movl	%eax, 8(%esp)
+	movl	%edx, %eax
+	sarl	$31, %eax
+	movl	%eax, 4(%esp)
+	call	__umoddi3
+	addl	$20, %esp
+	popl	%ecx
+	popl	%ebp
+	leal	-4(%ecx), %esp
+	ret
