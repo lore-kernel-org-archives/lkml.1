@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbZBKAma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbZBKAnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758668AbZBKAma (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:42:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756353AbZBKA2o
+	id S1755241AbZBKAnR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:43:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756422AbZBKA2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:28:44 -0500
-Received: from kroah.org ([198.145.64.141]:51467 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 19:28:46 -0500
+Received: from kroah.org ([198.145.64.141]:51497 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757836AbZBKA2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:42 -0500
-Date: Tue, 10 Feb 2009 16:25:38 -0800
+	id S1757849AbZBKA2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:28:44 -0500
+Date: Tue, 10 Feb 2009 16:25:42 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Alexander V. Lukyanov" <lav@netis.ru>,
-       Tony Jones <tonyj@suse.de>
-Subject: [patch 40/56] Revert "vt: fix background color on line feed"
-Message-ID: <20090211002538.GO14660@kroah.com>
+       alan@lxorguk.ukuu.org.uk, NeilBrown <neilb@suse.de>
+Subject: [patch 42/56] md: Allow metadata_version to be updated for
+	externally managed metadata.
+Message-ID: <20090211002542.GQ14660@kroah.com>
 References: <20090211001439.873435357@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="revert-vt-fix-background-color-on-line-feed.patch"
+Content-Disposition: inline; filename="md-allow-metadata_version-to-be-updated-for-externally-managed-metadata.patch"
 In-Reply-To: <20090211002328.GA14660@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,233 +39,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: NeilBrown <neilb@suse.de>
 
-commit 93f78da405685a756beeaeae4b5e41fcec39eab3 upstream.
+commit ea43ddd8491feccf36267349748ea91b1194481e upstream.
 
-This reverts commit c9e587abfdec2c2aaa55fab83bcb4972e2f84f9b, and the
-subsequent commits that fixed it up:
+For externally managed metadata, the 'metadata_version' sysfs
+attribute is really just a channel for user-space programs to
+communicate about how the array is being managed.
+It can be useful for this to be changed while the array is active.
 
- - afa9b649 "fbcon: prevent cursor disappearance after switching to 512
-   character font"
+Normally changes to metadata_version are not permitted while the array
+is active.  Change that so that if the metadata is externally managed,
+the metadata_version can be changed to a different flavour of external
+management.
 
- - d850a2fa "vt/fbcon: fix background color on line feed"
-
- - 7fe3915a "vt/fbcon: update scrl_erase_char after 256/512-glyph font
-   switch"
-
-by request of Alan Cox. Quoth Alan:
-  "Unfortunately it's wrong and its been causing breakages because
-   various apps like ncurses expect our previous (and correct)
-   behaviour."
-
-Alexander sent out a similar patch.
-
-Requested-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Tested-by: Jan Engelhardt <jengelh@medozas.de>
-Cc: Alexander V. Lukyanov <lav@netis.ru>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Tony Jones <tonyj@suse.de>
+Signed-off-by: NeilBrown <neilb@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/vt.c              |    5 ++---
- drivers/video/console/fbcon.c  |   39 ++++++++++-----------------------------
- drivers/video/console/mdacon.c |    2 +-
- drivers/video/console/sticon.c |    4 ++--
- drivers/video/console/vgacon.c |    4 ++--
- include/linux/console_struct.h |    1 -
- 6 files changed, 17 insertions(+), 38 deletions(-)
+ drivers/md/md.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -301,7 +301,7 @@ static void scrup(struct vc_data *vc, un
- 	d = (unsigned short *)(vc->vc_origin + vc->vc_size_row * t);
- 	s = (unsigned short *)(vc->vc_origin + vc->vc_size_row * (t + nr));
- 	scr_memmovew(d, s, (b - t - nr) * vc->vc_size_row);
--	scr_memsetw(d + (b - t - nr) * vc->vc_cols, vc->vc_scrl_erase_char,
-+	scr_memsetw(d + (b - t - nr) * vc->vc_cols, vc->vc_video_erase_char,
- 		    vc->vc_size_row * nr);
- }
- 
-@@ -319,7 +319,7 @@ static void scrdown(struct vc_data *vc, 
- 	s = (unsigned short *)(vc->vc_origin + vc->vc_size_row * t);
- 	step = vc->vc_cols * nr;
- 	scr_memmovew(s + step, s, (b - t - nr) * vc->vc_size_row);
--	scr_memsetw(s, vc->vc_scrl_erase_char, 2 * step);
-+	scr_memsetw(s, vc->vc_video_erase_char, 2 * step);
- }
- 
- static void do_update_region(struct vc_data *vc, unsigned long start, int count)
-@@ -434,7 +434,6 @@ static void update_attr(struct vc_data *
- 	              vc->vc_blink, vc->vc_underline,
- 	              vc->vc_reverse ^ vc->vc_decscnm, vc->vc_italic);
- 	vc->vc_video_erase_char = (build_attr(vc, vc->vc_color, 1, vc->vc_blink, 0, vc->vc_decscnm, 0) << 8) | ' ';
--	vc->vc_scrl_erase_char = (build_attr(vc, vc->vc_def_color, 1, false, false, vc->vc_decscnm, false) << 8) | ' ';
- }
- 
- /* Note: inverting the screen twice should revert to the original state */
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -1855,8 +1855,6 @@ static int fbcon_scroll(struct vc_data *
- 	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
- 	struct display *p = &fb_display[vc->vc_num];
- 	int scroll_partial = info->flags & FBINFO_PARTIAL_PAN_OK;
--	unsigned short saved_ec;
--	int ret;
- 
- 	if (fbcon_is_inactive(vc, info))
- 		return -EINVAL;
-@@ -1869,11 +1867,6 @@ static int fbcon_scroll(struct vc_data *
- 	 *           whole screen (prevents flicker).
- 	 */
- 
--	saved_ec = vc->vc_video_erase_char;
--	vc->vc_video_erase_char = vc->vc_scrl_erase_char;
--
--	ret = 0;
--
- 	switch (dir) {
- 	case SM_UP:
- 		if (count > vc->vc_rows)	/* Maximum realistic size */
-@@ -1890,9 +1883,9 @@ static int fbcon_scroll(struct vc_data *
- 			scr_memsetw((unsigned short *) (vc->vc_origin +
- 							vc->vc_size_row *
- 							(b - count)),
--				    vc->vc_scrl_erase_char,
-+				    vc->vc_video_erase_char,
- 				    vc->vc_size_row * count);
--			ret = 1;
-+			return 1;
- 			break;
- 
- 		case SCROLL_WRAP_MOVE:
-@@ -1962,10 +1955,9 @@ static int fbcon_scroll(struct vc_data *
- 			scr_memsetw((unsigned short *) (vc->vc_origin +
- 							vc->vc_size_row *
- 							(b - count)),
--				    vc->vc_scrl_erase_char,
-+				    vc->vc_video_erase_char,
- 				    vc->vc_size_row * count);
--			ret = 1;
--			break;
-+			return 1;
- 		}
- 		break;
- 
-@@ -1982,9 +1974,9 @@ static int fbcon_scroll(struct vc_data *
- 			scr_memsetw((unsigned short *) (vc->vc_origin +
- 							vc->vc_size_row *
- 							t),
--				    vc->vc_scrl_erase_char,
-+				    vc->vc_video_erase_char,
- 				    vc->vc_size_row * count);
--			ret = 1;
-+			return 1;
- 			break;
- 
- 		case SCROLL_WRAP_MOVE:
-@@ -2052,15 +2044,12 @@ static int fbcon_scroll(struct vc_data *
- 			scr_memsetw((unsigned short *) (vc->vc_origin +
- 							vc->vc_size_row *
- 							t),
--				    vc->vc_scrl_erase_char,
-+				    vc->vc_video_erase_char,
- 				    vc->vc_size_row * count);
--			ret = 1;
--			break;
-+			return 1;
- 		}
--		break;
- 	}
--	vc->vc_video_erase_char = saved_ec;
--	return ret;
-+	return 0;
- }
- 
- 
-@@ -2522,9 +2511,6 @@ static int fbcon_do_set_font(struct vc_d
- 			c = vc->vc_video_erase_char;
- 			vc->vc_video_erase_char =
- 			    ((c & 0xfe00) >> 1) | (c & 0xff);
--			c = vc->vc_scrl_erase_char;
--			vc->vc_scrl_erase_char =
--			    ((c & 0xFE00) >> 1) | (c & 0xFF);
- 			vc->vc_attr >>= 1;
- 		}
- 	} else if (!vc->vc_hi_font_mask && cnt == 512) {
-@@ -2555,14 +2541,9 @@ static int fbcon_do_set_font(struct vc_d
- 			if (vc->vc_can_do_color) {
- 				vc->vc_video_erase_char =
- 				    ((c & 0xff00) << 1) | (c & 0xff);
--				c = vc->vc_scrl_erase_char;
--				vc->vc_scrl_erase_char =
--				    ((c & 0xFF00) << 1) | (c & 0xFF);
- 				vc->vc_attr <<= 1;
--			} else {
-+			} else
- 				vc->vc_video_erase_char = c & ~0x100;
--				vc->vc_scrl_erase_char = c & ~0x100;
--			}
- 		}
- 
- 	}
---- a/drivers/video/console/mdacon.c
-+++ b/drivers/video/console/mdacon.c
-@@ -533,7 +533,7 @@ static void mdacon_cursor(struct vc_data
- 
- static int mdacon_scroll(struct vc_data *c, int t, int b, int dir, int lines)
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -2960,7 +2960,13 @@ metadata_store(mddev_t *mddev, const cha
  {
--	u16 eattr = mda_convert_attr(c->vc_scrl_erase_char);
-+	u16 eattr = mda_convert_attr(c->vc_video_erase_char);
+ 	int major, minor;
+ 	char *e;
+-	if (!list_empty(&mddev->disks))
++	/* Changing the details of 'external' metadata is
++	 * always permitted.  Otherwise there must be
++	 * no devices attached to the array.
++	 */
++	if (mddev->external && strncmp(buf, "external:", 9) == 0)
++		;
++	else if (!list_empty(&mddev->disks))
+ 		return -EBUSY;
  
- 	if (!lines)
- 		return 0;
---- a/drivers/video/console/sticon.c
-+++ b/drivers/video/console/sticon.c
-@@ -170,12 +170,12 @@ static int sticon_scroll(struct vc_data 
-     switch (dir) {
-     case SM_UP:
- 	sti_bmove(sti, t + count, 0, t, 0, b - t - count, conp->vc_cols);
--	sti_clear(sti, b - count, 0, count, conp->vc_cols, conp->vc_scrl_erase_char);
-+	sti_clear(sti, b - count, 0, count, conp->vc_cols, conp->vc_video_erase_char);
- 	break;
- 
-     case SM_DOWN:
- 	sti_bmove(sti, t, 0, t + count, 0, b - t - count, conp->vc_cols);
--	sti_clear(sti, t, 0, count, conp->vc_cols, conp->vc_scrl_erase_char);
-+	sti_clear(sti, t, 0, count, conp->vc_cols, conp->vc_video_erase_char);
- 	break;
-     }
- 
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -1350,7 +1350,7 @@ static int vgacon_scroll(struct vc_data 
- 		} else
- 			c->vc_origin += delta;
- 		scr_memsetw((u16 *) (c->vc_origin + c->vc_screenbuf_size -
--				     delta), c->vc_scrl_erase_char,
-+				     delta), c->vc_video_erase_char,
- 			    delta);
- 	} else {
- 		if (oldo - delta < vga_vram_base) {
-@@ -1363,7 +1363,7 @@ static int vgacon_scroll(struct vc_data 
- 		} else
- 			c->vc_origin -= delta;
- 		c->vc_scr_end = c->vc_origin + c->vc_screenbuf_size;
--		scr_memsetw((u16 *) (c->vc_origin), c->vc_scrl_erase_char,
-+		scr_memsetw((u16 *) (c->vc_origin), c->vc_video_erase_char,
- 			    delta);
- 	}
- 	c->vc_scr_end = c->vc_origin + c->vc_screenbuf_size;
---- a/include/linux/console_struct.h
-+++ b/include/linux/console_struct.h
-@@ -53,7 +53,6 @@ struct vc_data {
- 	unsigned short	vc_hi_font_mask;	/* [#] Attribute set for upper 256 chars of font or 0 if not supported */
- 	struct console_font vc_font;		/* Current VC font set */
- 	unsigned short	vc_video_erase_char;	/* Background erase character */
--	unsigned short	vc_scrl_erase_char;	/* Erase character for scroll */
- 	/* VT terminal data */
- 	unsigned int	vc_state;		/* Escape sequence parser state */
- 	unsigned int	vc_npar,vc_par[NPAR];	/* Parameters of current escape sequence */
+ 	if (cmd_match(buf, "none")) {
 
