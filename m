@@ -1,132 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757024AbZBKMZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbZBKM3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757024AbZBKMZc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 07:25:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754899AbZBKMZJ
+	id S1756839AbZBKM3X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 07:29:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755051AbZBKM3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 07:25:09 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41306 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754848AbZBKMZH (ORCPT
+	Wed, 11 Feb 2009 07:29:07 -0500
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:45628 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754498AbZBKM3G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 07:25:07 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: [CRED bug?] 2.6.29-rc3 don't survive on stress workload
-Cc: kosaki.motohiro@jp.fujitsu.com, David Howells <dhowells@redhat.com>,
-       Serge Hallyn <serue@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Eric Sesterhenn <snakebyte@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, containers@lists.osdl.org
-In-Reply-To: <19f34abd0902092310g513fb776s2e4d37285c8fa7be@mail.gmail.com>
-References: <20090210142443.629E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <19f34abd0902092310g513fb776s2e4d37285c8fa7be@mail.gmail.com>
-Message-Id: <20090211212208.C3C6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 11 Feb 2009 07:29:06 -0500
+From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
+To: jeff@garzik.org
+Subject: [PATCH] ehea: Fix: Remove adapter from adapter list in error path
+Date: Wed, 11 Feb 2009 13:29:02 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       netdev@vger.kernel.org, ossrosch@linux.vnet.ibm.com,
+       ossthema@de.ibm.com, raisch@de.ibm.com, themann@de.ibm.com,
+       osstklei@de.ibm.com
+Organization: IBM
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Wed, 11 Feb 2009 21:25:01 +0900 (JST)
+Content-Disposition: inline
+Message-Id: <200902111329.02954.hannes.hering@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Remove adapter from adapter list before freeing data structure in error path.
 
-> On Tue, Feb 10, 2009 at 6:41 AM, KOSAKI Motohiro
-> <kosaki.motohiro@jp.fujitsu.com> wrote:
-> > Hi
-> >
-> > I periodically test kernel on stress workload.
-> > Unfortunately, recent kerenel don't survive >24H.
-> >
-> > It paniced with following stack.
-> > Do you have any suggestions?
-> >
-> > thanks!
-> 
-> That stack trace looks somewhat similar to the one in
-> http://lkml.org/lkml/2009/2/6/136
-> 
-> If this is reproducible, maybe a patch like the one attached can help
-> pinpoint it?
+Signed-off-by: Hannes Hering <hering2@de.ibm.com>
 
-Unfortunately, your patch don't help analysis.
-(and slub debug option don't help too)
+---
 
-Today's panic information is here.
-
-
-----------------------------------------------------
- e100 processor container button mii dm_snapshot dm_zero dm_mirror dm_region_hash dm_log dm_mod lpfc mptspi mptscsih mptbase ehci_hcd ohci_hcd uhci_hcd usbcore
-
-Pid: 315753, CPU 0, comm:                pidof
-psr : 0000101008026038 ifs : 800000000000028a ip  : [<a0000001001c4b00>]    Not tainted (2.6.29-rc3)
-ip is at kfree+0x40/0x2c0
-unat: 0000000000000000 pfs : 0000000000000205 rsc : 0000000000000003
-rnat: 0000000000000000 bsps: 0000000000000000 pr  : 0000000000aa95a5
-ldrs: 0000000000000000 ccv : 0000000000000093 fpsr: 0009804c8a70033f
-csd : 0000000000000000 ssd : 0000000000000000
-b0  : a000000100123210 b6  : a0000001001231e0 b7  : a000000100014d20
-f6  : 1003e6b6b6b6b6b6b6b6b f7  : 0ffe6af8e85a500000000
-f8  : 1003e0000000000000a50 f9  : 1003efffffffffffffef8
-f10 : 100029ffffffff55c35f6 f11 : 1003e0000000000000000
-r1  : a000000100f683c0 r2  : 0000000000000092 r3  : 0000000000403400
-r8  : 00000000000100d0 r9  : a000000100d6fe60 r10 : a000000100d6fe60
-r11 : a0000001001231e0 r12 : e00000408c61fc30 r13 : e00000408c610000
-r14 : 0000000000000093 r15 : a040000000000000 r16 : ffffffffdead4ead
-r17 : 00000000dead4ead r18 : a000000100cd2274 r19 : a000000100d6b6c0
-r20 : 0000000000004000 r21 : 0000000000004000 r22 : 0000000000000011
-r23 : e000016006920a10 r24 : 0000000000000019 r25 : 5fc0000000000000
-r26 : e000016006920a0f r27 : e000016006920a12 r28 : 0000000000000000
-r29 : e00000408c610d54 r30 : 0000000000000000 r31 : 0000000000000008
-
-Call Trace:
- [<a000000100017780>] show_stack+0x80/0xa0
-                                sp=e00000408c61f800 bsp=e00000408c611598
- [<a000000100018080>] show_regs+0x880/0x8c0
-                                sp=e00000408c61f9d0 bsp=e00000408c611540
- [<a000000100040290>] die+0x1b0/0x2e0
-                                sp=e00000408c61f9d0 bsp=e00000408c6114f8
- [<a0000001007af0b0>] ia64_do_page_fault+0x810/0xb00
-                                sp=e00000408c61f9d0 bsp=e00000408c611498
- [<a00000010000c860>] ia64_native_leave_kernel+0x0/0x270
-                                sp=e00000408c61fa60 bsp=e00000408c611498
- [<a0000001001c4b00>] kfree+0x40/0x2c0
-                                sp=e00000408c61fc30 bsp=e00000408c611448
- [<a000000100123210>] free_user_ns+0x30/0x60
-                                sp=e00000408c61fc30 bsp=e00000408c611428
- [<a00000010037b5f0>] kref_put+0x110/0x140
-                                sp=e00000408c61fc30 bsp=e00000408c611400
- [<a0000001000c5bf0>] free_uid+0x110/0x1a0
-                                sp=e00000408c61fc30 bsp=e00000408c6113d0
- [<a0000001000ec340>] put_cred_rcu+0xa0/0xe0
-                                sp=e00000408c61fc40 bsp=e00000408c6113a8
- [<a00000010012db90>] __rcu_process_callbacks+0x2f0/0x580
-                                sp=e00000408c61fc40 bsp=e00000408c611368
- [<a00000010012de70>] rcu_process_callbacks+0x50/0xc0
-                                sp=e00000408c61fc40 bsp=e00000408c611348
- [<a0000001000b7ac0>] __do_softirq+0x220/0x320
-                                sp=e00000408c61fc40 bsp=e00000408c6112a8
- [<a0000001000b7c30>] do_softirq+0x70/0xc0
-                                sp=e00000408c61fc40 bsp=e00000408c611248
- [<a0000001000b7d00>] irq_exit+0x80/0xa0
-                                sp=e00000408c61fc40 bsp=e00000408c611230
- [<a000000100014600>] ia64_handle_irq+0x1e0/0x400
-                                sp=e00000408c61fc40 bsp=e00000408c6111b0
- [<a00000010000c860>] ia64_native_leave_kernel+0x0/0x270
-                                sp=e00000408c61fc40 bsp=e00000408c6111b0
- [<a0000001001c5940>] kmem_cache_alloc+0x1e0/0x260
-                                sp=e00000408c61fe10 bsp=e00000408c611150
- [<a000000100219e10>] seq_read+0x530/0x980
-                                sp=e00000408c61fe10 bsp=e00000408c6110b8
- [<a0000001001de180>] vfs_read+0x1a0/0x320
-                                sp=e00000408c61fe20 bsp=e00000408c611068
- [<a0000001001de830>] sys_read+0x70/0xe0
-                                sp=e00000408c61fe20 bsp=e00000408c610fe8
- [<a00000010000c6c0>] ia64_ret_from_syscall+0x0/0x20
-                                sp=e00000408c61fe30 bsp=e00000408c610fe8
- [<a000000000010720>] __kernel_syscall_via_break+0x0/0x20
-                                sp=e00000408c620000 bsp=e00000408c610fe8
-Kernel panic - not syncing: Fatal exception
-
-
+diff -Nurp -X dontdiff linux-2.6.29-rc4/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
+--- linux-2.6.29-rc4/drivers/net/ehea/ehea.h	2009-02-11 13:13:42.036506588 +0100
++++ patched_kernel/drivers/net/ehea/ehea.h	2009-02-11 13:14:04.197540184 +0100
+@@ -40,7 +40,7 @@
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0097"
++#define DRV_VERSION	"EHEA_0098"
+ 
+ /* eHEA capability flags */
+ #define DLPAR_PORT_ADD_REM 1
+diff -Nurp -X dontdiff linux-2.6.29-rc4/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
+--- linux-2.6.29-rc4/drivers/net/ehea/ehea_main.c	2009-02-11 13:13:47.812542928 +0100
++++ patched_kernel/drivers/net/ehea/ehea_main.c	2009-02-11 13:14:04.197540184 +0100
+@@ -3448,6 +3448,7 @@ out_kill_eq:
+ 	ehea_destroy_eq(adapter->neq);
+ 
+ out_free_ad:
++	list_del(&adapter->list);
+ 	kfree(adapter);
+ 
+ out:
