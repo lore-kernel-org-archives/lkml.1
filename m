@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757266AbZBKOga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbZBKOh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757266AbZBKOga (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 09:36:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbZBKOgW
+	id S1757267AbZBKOh3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 09:37:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755457AbZBKOhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 09:36:22 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:32874 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753467AbZBKOgV (ORCPT
+	Wed, 11 Feb 2009 09:37:15 -0500
+Received: from fk-out-0910.google.com ([209.85.128.189]:34699 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753971AbZBKOhN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 09:36:21 -0500
-Message-ID: <4992E597.2030404@nokia.com>
-Date: Wed, 11 Feb 2009 16:49:59 +0200
-From: Adrian Hunter <ext-adrian.hunter@nokia.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 11 Feb 2009 09:37:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=S+uYJjeSGxBwosWKw2NVul1ZcshNqKeXfdeH6DWXILSlf9ppRTZY3XFAq6ppTAqbWa
+         FLpQNApDfcT9DY1zkThBdMX+lXjg2AF+LjYDZHIzEIzH/Yp7H+4yeYwxtSNQJ/0GLd/J
+         otQDNjs8IOsX1y+4kPj6orFHWgOOxN0qaPMrA=
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-CC: Matt Fleming <matt@console-pimps.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] mmc_core: fix data timeout for SEND_EXT_CSD
-References: <4991A00B.8040002@nokia.com> <20090211133004.GH478@console-pimps.org> <4992D90E.10506@nokia.com>
-In-Reply-To: <4992D90E.10506@nokia.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20090211133648.GA10273@fogou.chygwyn.com>
+References: <2d42915c0902110255k3c0741a9s6830765bce6be052@mail.gmail.com>
+	 <20090211133648.GA10273@fogou.chygwyn.com>
+Date: Wed, 11 Feb 2009 17:37:11 +0300
+Message-ID: <2d42915c0902110637o2c0a88c7h72b280b972a6162e@mail.gmail.com>
+Subject: Re: GFS2 file locking issues
+From: Kirill Kuvaldin <kirill.kuvaldin@gmail.com>
+To: steve@chygwyn.com
+Cc: linux-cluster@redhat.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 11 Feb 2009 14:36:12.0998 (UTC) FILETIME=[1689DE60:01C98C56]
-X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 0d3e0460f307e84904968aad6cff97bd688583d8
-"MMC: CSD and CID timeout values" inadvertently broke
-the timeout for the MMC command SEND_EXT_CSD.
+On Wed, Feb 11, 2009 at 4:36 PM,  <steve@chygwyn.com> wrote:
+> Hi,
+>
+> On Wed, Feb 11, 2009 at 01:55:08PM +0300, Kirill Kuvaldin wrote:
+>> Hi,
+>>
+>> I'm trying to understand how the FS locking mechanism should work.
+>>
+>> I'm running a clustered GFS2 across two nodes, each node is a Xen domU.
+>> To check if locking works correctly I wrote the simple perl script below.
+>> Basically the script opens a file, locks it to prevent others from
+>> writing into it, writes 20 lines into it, then unlocks and closes.
+>>i
+>
+> It should be exactly the same on GFS and GFS2, after all the code for
+> flock is almost identical between the two. What mount options did you
+> use?
 
-This patch puts it back again.
+No specific options used, just mount -t gfs2 /dev/gfsc/lvol0 /gfs2...
 
-Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
----
- drivers/mmc/core/mmc_ops.c |   16 ++++++++++------
- 1 files changed, 10 insertions(+), 6 deletions(-)
+> Which lock manager are you using - I presume lock_dlm?
+>
 
-diff --git a/drivers/mmc/core/mmc_ops.c b/drivers/mmc/core/mmc_ops.c
-index 9c50e6f..418a270 100644
---- a/drivers/mmc/core/mmc_ops.c
-+++ b/drivers/mmc/core/mmc_ops.c
-@@ -248,12 +248,16 @@ mmc_send_cxd_data(struct mmc_card *card, struct mmc_host *host,
- 
- 	sg_init_one(&sg, data_buf, len);
- 
--	/*
--	 * The spec states that CSR and CID accesses have a timeout
--	 * of 64 clock cycles.
--	 */
--	data.timeout_ns = 0;
--	data.timeout_clks = 64;
-+	if (!mmc_host_is_spi(host) && opcode == MMC_SEND_EXT_CSD)
-+		mmc_set_data_timeout(&data, card);
-+	else {
-+		/*
-+		 * The spec states that CSR and CID accesses have a timeout
-+		 * of 64 clock cycles (8 for SPI).
-+		 */
-+		data.timeout_ns = 0;
-+		data.timeout_clks = 64;
-+	}
- 
- 	mmc_wait_for_req(host, &mrq);
- 
--- 
-1.5.6.3
+Yes, the FS was created using to be used with lock_dlm. I'm not sure
+if it is actually used for GFS2. How can I check that?
+
+Kirill
