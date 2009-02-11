@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759056AbZBKAeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759611AbZBKAhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759056AbZBKAeZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:34:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757644AbZBKA2W
+	id S1759611AbZBKAhA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:37:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757746AbZBKA2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:28:22 -0500
-Received: from kroah.org ([198.145.64.141]:51138 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 19:28:31 -0500
+Received: from kroah.org ([198.145.64.141]:51247 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757571AbZBKA2T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:19 -0500
-Date: Tue, 10 Feb 2009 16:24:52 -0800
+	id S1757700AbZBKA22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:28:28 -0500
+Date: Tue, 10 Feb 2009 16:25:08 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [patch 18/56] firewire: ohci: increase AT req. retries, fix
-	ack_busy_X from Panasonic camcorders and others
-Message-ID: <20090211002452.GS14660@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Zhao Yakui <yakui.zhao@intel.com>,
+       Len Brown <len.brown@intel.com>
+Subject: [patch 26/56] ACPI: Skip the first two elements in the _BCL package
+Message-ID: <20090211002508.GA14660@kroah.com>
 References: <20090211001439.873435357@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="firewire-ohci-increase-at-req.-retries-fix-ack_busy_x-from-panasonic-camcorders-and-others.patch"
+Content-Disposition: inline; filename="acpi-skip-the-first-two-elements-in-the-_bcl-package.patch"
 In-Reply-To: <20090211002328.GA14660@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,50 +39,71 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+From: Zhao Yakui <yakui.zhao@intel.com>
 
-Commit 8b7b6afaa84708d08139daa08538ca3e56c351f1 upstream.
+commit 0a3db1cec5d476804185114ff5d1845aed3936b3 upstream.
 
-Camcorders have a tendency to fail read requests to their config ROM and
-write request to their FCP command register with ack_busy_X.  This has
-become a problem with newer kernels and especially Panasonic camcorders,
-causing AV/C in dvgrab and kino to fail.  Dvgrab for example frequently
-logs "send oops"; kino reports loss of AV/C control.  I suspect that
-lower CPU scheduling latencies in newer kernels made this issue more
-prominent now.
+According to the Spec the first two elements in the _BCL package won't be
 
-According to
-https://sourceforge.net/tracker/?func=detail&atid=114103&aid=2492640&group_id=14103
-this can be fixed by configuring the FireWire controller for more
-hardware retries for request transmission; these retries are evidently
-more successful than libavc1394's own retry loop (typically 3 tries on
-top of hardware retries).
+regarded as the available brightness level. The first is the brightness when
+full power is connected to the box(It means that the AC adapter is plugged).
+The second is the brightness level when the box is on battery.
+    If the first two elements are still used while finding the next brightness
+level, it will fall back to the lowest level when keeping on pressing
+hotkey. (On some boxes the brightness will be changed twice when hotkey is
+pressed once. One is in the ACPI video driver. The other is changed by sys I/F.
+In the ACPI video driver the first two elements will be used while changing
+the brightness. But the first two elements is skipped while using sys I/F.
+In such case there exists the inconsistency).
+    So he first two elements had better be skipped while showing the available
+brightness or finding the next brightness level.
 
-Presumably the same issue has been reported at
-https://bugzilla.redhat.com/show_bug.cgi?id=449252 and
-https://bugzilla.redhat.com/show_bug.cgi?id=477279 .
+http://bugzilla.kernel.org/show_bug.cgi?id=12450
 
-In a quick test with a JVC camcorder (which didn't malfunction like the
-reported camcorders), this change decreased the number of ack_busy_X
-from 16 in three runs of dvgrab to 4 in three runs of the same capture
-duration.
-
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/firewire/fw-ohci.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/acpi/video.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- a/drivers/firewire/fw-ohci.c
-+++ b/drivers/firewire/fw-ohci.c
-@@ -226,7 +226,7 @@ static inline struct fw_ohci *fw_ohci(st
- #define CONTEXT_DEAD	0x0800
- #define CONTEXT_ACTIVE	0x0400
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -997,7 +997,7 @@ acpi_video_device_brightness_seq_show(st
+ 	}
  
--#define OHCI1394_MAX_AT_REQ_RETRIES	0x2
-+#define OHCI1394_MAX_AT_REQ_RETRIES	0xf
- #define OHCI1394_MAX_AT_RESP_RETRIES	0x2
- #define OHCI1394_MAX_PHYS_RESP_RETRIES	0x8
+ 	seq_printf(seq, "levels: ");
+-	for (i = 0; i < dev->brightness->count; i++)
++	for (i = 2; i < dev->brightness->count; i++)
+ 		seq_printf(seq, " %d", dev->brightness->levels[i]);
+ 	seq_printf(seq, "\ncurrent: %d\n", dev->brightness->curr);
  
+@@ -1036,7 +1036,7 @@ acpi_video_device_write_brightness(struc
+ 		return -EFAULT;
+ 
+ 	/* validate through the list of available levels */
+-	for (i = 0; i < dev->brightness->count; i++)
++	for (i = 2; i < dev->brightness->count; i++)
+ 		if (level == dev->brightness->levels[i]) {
+ 			if (ACPI_SUCCESS
+ 			    (acpi_video_device_lcd_set_level(dev, level)))
+@@ -1689,7 +1689,7 @@ acpi_video_get_next_level(struct acpi_vi
+ 	max = max_below = 0;
+ 	min = min_above = 255;
+ 	/* Find closest level to level_current */
+-	for (i = 0; i < device->brightness->count; i++) {
++	for (i = 2; i < device->brightness->count; i++) {
+ 		l = device->brightness->levels[i];
+ 		if (abs(l - level_current) < abs(delta)) {
+ 			delta = l - level_current;
+@@ -1699,7 +1699,7 @@ acpi_video_get_next_level(struct acpi_vi
+ 	}
+ 	/* Ajust level_current to closest available level */
+ 	level_current += delta;
+-	for (i = 0; i < device->brightness->count; i++) {
++	for (i = 2; i < device->brightness->count; i++) {
+ 		l = device->brightness->levels[i];
+ 		if (l < min)
+ 			min = l;
 
