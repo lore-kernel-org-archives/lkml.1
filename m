@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758960AbZBKAd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758142AbZBKAek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758960AbZBKAd5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:33:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757616AbZBKA2V
+	id S1758142AbZBKAek (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:34:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757653AbZBKA2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:28:21 -0500
-Received: from kroah.org ([198.145.64.141]:51125 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 19:28:23 -0500
+Received: from kroah.org ([198.145.64.141]:51153 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757552AbZBKA2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:18 -0500
-Date: Tue, 10 Feb 2009 16:24:50 -0800
+	id S1757522AbZBKA2U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:28:20 -0500
+Date: Tue, 10 Feb 2009 16:24:54 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,13 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [patch 17/56] ieee1394: ohci1394: increase AT req. retries, fix
-	ack_busy_X from Panasonic camcorders and others
-Message-ID: <20090211002450.GR14660@kroah.com>
+Subject: [patch 19/56] firewire: sbp2: fix DMA mapping leak on the failure
+	path
+Message-ID: <20090211002454.GT14660@kroah.com>
 References: <20090211001439.873435357@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ieee1394-ohci1394-increase-at-req.-retries-fix-ack_busy_x-from-panasonic-camcorders-and-others.patch"
+Content-Disposition: inline; filename="firewire-sbp2-fix-dma-mapping-leak-on-the-failure-path.patch"
 In-Reply-To: <20090211002328.GA14660@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,44 +41,67 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-Commit 64c634ef83991b390ec0503e61f16efb0ba3c60b upstream.
+Commit 5e2125677fd72d36396cc537466e07ffcbbd4b2b upstream.
 
-Camcorders have a tendency to fail read requests to their config ROM and
-write request to their FCP command register with ack_busy_X.  This has
-become a problem with newer kernels and especially Panasonic camcorders,
-causing AV/C in dvgrab and kino to fail.  Dvgrab for example frequently
-logs "send oops"; kino reports loss of AV/C control.  I suspect that
-lower CPU scheduling latencies in newer kernels made this issue more
-prominent now.
+Reported-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+who also provided a first version of the fix.
 
-According to
-https://sourceforge.net/tracker/?func=detail&atid=114103&aid=2492640&group_id=14103
-this can be fixed by configuring the FireWire controller for more
-hardware retries for request transmission; these retries are evidently
-more successful than libavc1394's own retry loop (typically 3 tries on
-top of hardware retries).
-
-Presumably the same issue has been reported at
-https://bugzilla.redhat.com/show_bug.cgi?id=449252 and
-https://bugzilla.redhat.com/show_bug.cgi?id=477279 .
-
-Tested-by: Mathias Beilstein
 Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ieee1394/ohci1394.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/firewire/fw-sbp2.c |   27 +++++++++++++++++----------
+ 1 file changed, 17 insertions(+), 10 deletions(-)
 
---- a/drivers/ieee1394/ohci1394.h
-+++ b/drivers/ieee1394/ohci1394.h
-@@ -26,7 +26,7 @@
+--- a/drivers/firewire/fw-sbp2.c
++++ b/drivers/firewire/fw-sbp2.c
+@@ -1293,6 +1293,19 @@ static struct fw_driver sbp2_driver = {
+ 	.id_table = sbp2_id_table,
+ };
  
- #define OHCI1394_DRIVER_NAME      "ohci1394"
++static void sbp2_unmap_scatterlist(struct device *card_device,
++				   struct sbp2_command_orb *orb)
++{
++	if (scsi_sg_count(orb->cmd))
++		dma_unmap_sg(card_device, scsi_sglist(orb->cmd),
++			     scsi_sg_count(orb->cmd),
++			     orb->cmd->sc_data_direction);
++
++	if (orb->request.misc & cpu_to_be32(COMMAND_ORB_PAGE_TABLE_PRESENT))
++		dma_unmap_single(card_device, orb->page_table_bus,
++				 sizeof(orb->page_table), DMA_TO_DEVICE);
++}
++
+ static unsigned int
+ sbp2_status_to_sense_data(u8 *sbp2_status, u8 *sense_data)
+ {
+@@ -1372,15 +1385,7 @@ complete_command_orb(struct sbp2_orb *ba
  
--#define OHCI1394_MAX_AT_REQ_RETRIES	0x2
-+#define OHCI1394_MAX_AT_REQ_RETRIES	0xf
- #define OHCI1394_MAX_AT_RESP_RETRIES	0x2
- #define OHCI1394_MAX_PHYS_RESP_RETRIES	0x8
- #define OHCI1394_MAX_SELF_ID_ERRORS	16
+ 	dma_unmap_single(device->card->device, orb->base.request_bus,
+ 			 sizeof(orb->request), DMA_TO_DEVICE);
+-
+-	if (scsi_sg_count(orb->cmd) > 0)
+-		dma_unmap_sg(device->card->device, scsi_sglist(orb->cmd),
+-			     scsi_sg_count(orb->cmd),
+-			     orb->cmd->sc_data_direction);
+-
+-	if (orb->page_table_bus != 0)
+-		dma_unmap_single(device->card->device, orb->page_table_bus,
+-				 sizeof(orb->page_table), DMA_TO_DEVICE);
++	sbp2_unmap_scatterlist(device->card->device, orb);
+ 
+ 	orb->cmd->result = result;
+ 	orb->done(orb->cmd);
+@@ -1530,8 +1535,10 @@ static int sbp2_scsi_queuecommand(struct
+ 	orb->base.request_bus =
+ 		dma_map_single(device->card->device, &orb->request,
+ 			       sizeof(orb->request), DMA_TO_DEVICE);
+-	if (dma_mapping_error(device->card->device, orb->base.request_bus))
++	if (dma_mapping_error(device->card->device, orb->base.request_bus)) {
++		sbp2_unmap_scatterlist(device->card->device, orb);
+ 		goto out;
++	}
+ 
+ 	sbp2_send_orb(&orb->base, lu, lu->tgt->node_id, lu->generation,
+ 		      lu->command_block_agent_address + SBP2_ORB_POINTER);
 
