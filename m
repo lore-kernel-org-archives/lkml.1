@@ -1,57 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbZBKQ6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757868AbZBKQ7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757543AbZBKQ6a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 11:58:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755738AbZBKQ6W
+	id S1757868AbZBKQ7y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 11:59:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756879AbZBKQ7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 11:58:22 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:60486 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755181AbZBKQ6V (ORCPT
+	Wed, 11 Feb 2009 11:59:40 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:41043 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756850AbZBKQ7j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 11:58:21 -0500
-Message-ID: <499303A3.2@oracle.com>
-Date: Wed, 11 Feb 2009 08:58:11 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 11 Feb 2009 11:59:39 -0500
+Date: Wed, 11 Feb 2009 11:59:37 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 0/8] git pull request for tip/tracing/core
+In-Reply-To: <alpine.DEB.1.10.0902111147450.15438@gandalf.stny.rr.com>
+Message-ID: <alpine.DEB.1.10.0902111158380.15438@gandalf.stny.rr.com>
+References: <20090208054955.777429253@goodmis.org> <20090209093751.GD7930@elte.hu> <20090211153650.GA19576@elte.hu> <alpine.DEB.1.10.0902111147450.15438@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Kristoffer Ericson <kristoffer.ericson@gmail.com>
-Subject: Re: mmotm 2009-02-10-16-35 uploaded (s1d13xfb)
-References: <200902110036.n1B0aBZs013975@imap1.linux-foundation.org>
-In-Reply-To: <200902110036.n1B0aBZs013975@imap1.linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt702.oracle.com [141.146.40.80]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010202.4993038C.0107:SCFSTAT928724,ss=1,fgs=0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-akpm@linux-foundation.org wrote:
-> The mm-of-the-moment snapshot 2009-02-10-16-35 has been uploaded to
+
+On Wed, 11 Feb 2009, Steven Rostedt wrote:
+
 > 
->    http://userweb.kernel.org/~akpm/mmotm/
+> On Wed, 11 Feb 2009, Ingo Molnar wrote:
 > 
-> and will soon be available at
-> 
->    git://git.zen-sources.org/zen/mmotm.git
-> 
-> It contains the following patches against 2.6.29-rc4:
+> > 
+> > > > Steven Rostedt (7):
+> > > >       ring-buffer: add NMI protection for spinlocks
+> > > >       nmi: add generic nmi tracking state
+> > 
+> > hm, this commit breaks a number of non-x86 architectures the following way:
+> > 
+> > In file included from /home/mingo/tip/include/linux/interrupt.h:12,
+> >                  from /home/mingo/tip/arch/ia64/include/asm/mca.h:16,
+> >                  from /home/mingo/tip/arch/ia64/kernel/asm-offsets.c:17:
+> > /home/mingo/tip/include/linux/hardirq.h:67:2: #error PREEMPT_ACTIVE too high!
+> > make[2]: *** [arch/ia64/kernel/asm-offsets.s] Error 1
+
+I just looked at alpha and arm, I'm now looking at ia64. And this could
+be an issue, since it has 14 bits for hard irqs.
+
+What would be the impact to make the preempt count a long?
+
+-- Steve
 
 
-
-mmotm-2009-0210-1635/drivers/video/s1d13xxxfb.c:57: error: 'S1D13505_PROD_ID' undeclared here (not in a function)
-mmotm-2009-0210-1635/drivers/video/s1d13xxxfb.c:58: error: 'S1D13506_PROD_ID' undeclared here (not in a function)
-mmotm-2009-0210-1635/drivers/video/s1d13xxxfb.c:59: error: 'S1D13806_PROD_ID' undeclared here (not in a function)
-mmotm-2009-0210-1635/drivers/video/s1d13xxxfb.c: In function 's1d13xxxfb_probe':
-mmotm-2009-0210-1635/drivers/video/s1d13xxxfb.c:637: error: 'struct s1d13xxxfb_par' has no member named 'prod_id'
-mmotm-2009-0210-1635/drivers/video/s1d13xxxfb.c:637: warning: statement with no effect
-mmotm-2009-0210-1635/drivers/video/s1d13xxxfb.c:638: error: 'struct s1d13xxxfb_par' has no member named 'revision'
-mmotm-2009-0210-1635/drivers/video/s1d13xxxfb.c:638: warning: statement with no effect
-
--- 
-~Randy
+> > 
+> > Alpha and ARM are broken too. (and possibly others)
+> 
+> Looking at this, it doesn't seem like it should be a problem. Perhaps the 
+> CPP is treating the number as signed. Does this patch fix the compile?
+> 
+> -- Steve
+> 
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> 
+> diff --git a/include/linux/hardirq.h b/include/linux/hardirq.h
+> index f3cf86e..9bd4302 100644
+> --- a/include/linux/hardirq.h
+> +++ b/include/linux/hardirq.h
+> @@ -63,7 +63,7 @@
+>  
+>  #define NMI_OFFSET	(PREEMPT_ACTIVE << 1)
+>  
+> -#if NMI_OFFSET >= 0x80000000
+> +#if NMI_OFFSET >= 0x80000000UL
+>  #error PREEMPT_ACTIVE too high!
+>  #endif
+>  
+> 
