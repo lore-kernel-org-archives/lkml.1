@@ -1,136 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbZBKNhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756751AbZBKNid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755955AbZBKNhx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 08:37:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbZBKNhn
+	id S1756751AbZBKNid (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 08:38:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbZBKNiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 08:37:43 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:53851 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751340AbZBKNhm convert rfc822-to-8bit (ORCPT
+	Wed, 11 Feb 2009 08:38:22 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:17321 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754700AbZBKNiU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 08:37:42 -0500
+	Wed, 11 Feb 2009 08:38:20 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=JSaBgNb7EJHTrW4Cas9LfVcrVZkZlbF1WLhw5kvM2i5yKMCQ1g7JPr6GQJG4MdcVV5
-         izzTDNu+utkB6NuQcOUjfN01JaDuGTzmKeiP9MtQDbMG4wZp9us/ZjHasnmHcp0nBq66
-         lFyS87/9l+vtBY+gGdVAaY5fjCqRgy+g7tag0=
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=DXgkcbr85Aj2igr2cN+mU/bAIzcfV96rRd/PK78erbmO7Q0ZErx/OcQid/AUF5rBc7
+         py8ycQJnDV1HJWwp0AmNvzazWTU7TvIHwMl1278wgJE7Jj8xjf6OXVLndI87/e3H0We+
+         Y248R2vcMxXO1Bva+QEg3bDdt3F5gmwZc9SeA=
+Message-ID: <4992D4C3.3050108@gmail.com>
+Date: Wed, 11 Feb 2009 14:38:11 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Reply-To: petkovbb@gmail.com
-In-Reply-To: <4992D108.2070709@ru.mvista.com>
-References: <20090209231945.32406.14874.sendpatchset@localhost.localdomain>
-	 <20090209232019.32406.98822.sendpatchset@localhost.localdomain>
-	 <20090211065535.GC937@gollum.tnic> <4992D108.2070709@ru.mvista.com>
-Date: Wed, 11 Feb 2009 14:37:40 +0100
-Message-ID: <9ea470500902110537g4d6c67a3o35d1d8a4dcca0927@mail.gmail.com>
-Subject: Re: [PATCH 5/6] ide: remove ide_execute_pkt_cmd()
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
+       Greg KH <gregkh@suse.de>, USB list <linux-usb@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, linux-input@vger.kernel.org
+Subject: Re: dead USB devices after resume [mmotm 2009-02-10-16-35]
+References: <200902110036.n1B0aBZs013975@imap1.linux-foundation.org> <49928FDB.5020007@gmail.com> <200902111044.57869.rjw@sisk.pl> <4992A040.6080302@gmail.com>
+In-Reply-To: <4992A040.6080302@gmail.com>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 02/11/2009 10:54 AM, Jiri Slaby wrote:
+> On 02/11/2009 10:44 AM, Rafael J. Wysocki wrote:
+>> Please test current mainline, it may be a regression in there.
+> 
+> OK, will do.
 
-On Wed, Feb 11, 2009 at 2:22 PM, Sergei Shtylyov
-<sshtylyov@ru.mvista.com> wrote:
-> Hello.
->
-> Borislav Petkov wrote:
->
->>> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->>> Subject: [PATCH] ide: remove ide_execute_pkt_cmd()
->>>
->>> * Pass command structure to ide_execute_command() and skip
->>>  __ide_set_handler() for ATAPI protocols.
->>>
->>> * Convert ide_issue_pc() to always use ide_execute_command()
->>>  and remove no longer needed ide_execute_pkt_cmd().
->>>
->>> There should be no functional changes caused by this patch.
->>>
->>> Cc: Borislav Petkov <petkovbb@gmail.com>
->>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->>> ---
->>>  drivers/ide/ide-atapi.c    |   15 +++++++--------
->>>  drivers/ide/ide-iops.c     |   23 ++++++-----------------
->>>  drivers/ide/ide-taskfile.c |    6 ++----
->>>  include/linux/ide.h        |    5 ++---
->>>  4 files changed, 17 insertions(+), 32 deletions(-)
->>>
->>> Index: b/drivers/ide/ide-atapi.c
->>> ===================================================================
->>> --- a/drivers/ide/ide-atapi.c
->>> +++ b/drivers/ide/ide-atapi.c
->>> @@ -481,6 +481,7 @@ static void ide_init_packet_cmd(struct i
->>>        cmd->protocol  = dma ? ATAPI_PROT_DMA : ATAPI_PROT_PIO;
->>>        cmd->tf_flags |= IDE_TFLAG_OUT_LBAH | IDE_TFLAG_OUT_LBAM |
->>>                         IDE_TFLAG_OUT_FEATURE | tf_flags;
->>> +       cmd->tf.command = ATA_CMD_PACKET;
->>>        cmd->tf.feature = dma;          /* Use PIO/DMA */
->>>        cmd->tf.lbam    = bcount & 0xff;
->>>        cmd->tf.lbah    = (bcount >> 8) & 0xff;
->>> @@ -626,6 +627,7 @@ ide_startstop_t ide_issue_pc(ide_drive_t
->>>        unsigned int timeout;
->>>        u32 tf_flags;
->>>        u16 bcount;
->>> +       u8 drq_int = !!(drive->atapi_flags & IDE_AFLAG_DRQ_INTERRUPT);
->>>
->>
->> How about we finally add those check macros in block layer fashion like
->> blk_pc_request et al and do
->>
->> #define drv_can_drq_interrupt(drive)    ((drive)->atapi_flags &
->> IDE_AFLAG_DRQ_INTERRUPT)
->>
->
->  I suppose it's for the devices that interrupt on packet DRQ? Then it's
-> hardly a good name because it's not like this is some optional capability.
+I was not able to reproduce it with 1db8508. So it highly likely hasn't leaked
+to the mainline.
 
-No, I was alluding to the command packet DRQ type used by the device as it is
-put in SFF8020i, 7.1.7.1 General Conﬁguration Word.
+>> How exactly are the failing devices connected to the box?
+> 
+> There is a hub in the kbd. The mouse and kbd is behind it, I suppose:
+> 
+> /:  Bus 08.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
+> /:  Bus 07.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
+> /:  Bus 06.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
+>     |__ Port 1: Dev 2, If 0, Class=hub, Driver=hub/3p, 12M
+>         |__ Port 1: Dev 3, If 0, Class=HID, Driver=usbhid, 12M
+>         |__ Port 1: Dev 3, If 1, Class=HID, Driver=usbhid, 12M
+>         |__ Port 2: Dev 4, If 0, Class=HID, Driver=usbhid, 1.5M
+> /:  Bus 05.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
+> /:  Bus 04.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
+> /:  Bus 03.Port 1: Dev 1, Class=root_hub, Driver=uhci_hcd/2p, 12M
+> /:  Bus 02.Port 1: Dev 1, Class=root_hub, Driver=ehci_hcd/6p, 480M
+> /:  Bus 01.Port 1: Dev 1, Class=root_hub, Driver=ehci_hcd/6p, 480M
+> 
+> There is also a wheel at 6.3 if 1...
+> 
+> Bus 006 Device 004: ID 045e:00f0 Microsoft Corp.
+> Bus 006 Device 003: ID 0458:004c KYE Systems Corp. (Mouse Systems) Slimstar Pro
+> Keyboard
+> Bus 006 Device 002: ID 04b4:2050 Cypress Semiconductor Corp.
+> Bus 006 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+> 
+> I may try to plug the mouse directly to the root hub if it might help anyhow.
 
->> or similar instead of wasting stack space?
->
->  It doesn't necessarily waste stack space. Haven't you heard about compiler
-> putting local vairables into registers?
+No change. Wherever it is connected it fails to emit anything.
 
-Yes, have you heard of unnecessary register spilling?
-
->> It'll also read better in the if() check:
->>
->> if (drv_can_irq_interrupt(drive)) { ...
->>
->
->  It's faster to checj a local variable than to dereference drv several times
-> -- unless gcc optimizes that away (by creating an implicit local variable
-> :-).
-
-I hope gcc is smart enough to do that.
-
->> If it's ok with you, I'll whip up patch(es) later.
->>
->
->>>        if (dev_is_idecd(drive)) {
->>>                tf_flags = IDE_TFLAG_OUT_NSECT | IDE_TFLAG_OUT_LBAL;
->>> @@ -675,17 +677,14 @@ ide_startstop_t ide_issue_pc(ide_drive_t
->>>
->
->  Don't leave uncommented fragment behind please.
->
-> MBR, Sergei
->
->
-
-[..]
-
-
--- 
-Regards/Gruss,
-Boris
+BTW It is sufficient to unplug the mouse from the kbd (i.e. the hub) and replug
+it back.
