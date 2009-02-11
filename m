@@ -1,75 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758031AbZBKV1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757571AbZBKV1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758031AbZBKV1A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 16:27:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757380AbZBKV0t
+	id S1757571AbZBKV1W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 16:27:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757591AbZBKV0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 16:26:49 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:43397 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757376AbZBKV0s (ORCPT
+	Wed, 11 Feb 2009 16:26:52 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:45218 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757520AbZBKV0v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 16:26:48 -0500
-Date: Wed, 11 Feb 2009 13:14:17 -0800
+	Wed, 11 Feb 2009 16:26:51 -0500
+Date: Wed, 11 Feb 2009 13:15:39 -0800
 From: Randy Dunlap <randy.dunlap@oracle.com>
 To: lkml <linux-kernel@vger.kernel.org>
 Cc: gregkh@suse.de
-Subject: [PATCH 1/9] staging/altera: fix printk format warnings
-Message-Id: <20090211131417.2cb62328.randy.dunlap@oracle.com>
+Subject: [PATCH 2/9] staging/android/binder: fix printk format warnings
+Message-Id: <20090211131539.f391d6dd.randy.dunlap@oracle.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.49934291.016E:SCFSTAT928724,ss=1,fgs=0
+X-CT-RefId: str=0001.0A090203.49934294.0062:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Fix printk format warnings in altera pcie chdma:
+Fix printk format warnings in android binder:
 
-drivers/staging/altpciechdma/altpciechdma.c:429: warning: format '%08x' expects type 'unsigned int', but argument 3 has type 'dma_addr_t'
-drivers/staging/altpciechdma/altpciechdma.c:433: warning: format '%08x' expects type 'unsigned int', but argument 3 has type 'dma_addr_t'
-drivers/staging/altpciechdma/altpciechdma.c:449: warning: format '%08x' expects type 'unsigned int', but argument 3 has type 'dma_addr_t'
-drivers/staging/altpciechdma/altpciechdma.c:450: warning: format '%08x' expects type 'unsigned int', but argument 3 has type 'dma_addr_t'
+drivers/staging/android/binder.c:2652: warning: format '%lx' expects type 'long unsigned int', but argument 7 has type 'pgprotval_t'
+drivers/staging/android/binder.c:2659: warning: format '%lx' expects type 'long unsigned int', but argument 7 has type 'pgprotval_t'
+drivers/staging/android/binder.c:2680: warning: format '%lx' expects type 'long unsigned int', but argument 7 has type 'pgprotval_t'
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- drivers/staging/altpciechdma/altpciechdma.c |   12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ drivers/staging/android/binder.c |   18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
 
---- mmotm-2009-0210-1635.orig/drivers/staging/altpciechdma/altpciechdma.c
-+++ mmotm-2009-0210-1635/drivers/staging/altpciechdma/altpciechdma.c
-@@ -426,11 +426,13 @@ static int ape_sg_to_chdma_table(struct 
- 		dma_addr_t next = sg_dma_address(&sgl[i + 1]);
- 		/* length of this entry i */
- 		len = sg_dma_len(&sgl[i]);
--		printk(KERN_DEBUG "%04d: addr=0x%08x length=0x%08x\n", i, addr, len);
-+		printk(KERN_DEBUG "%04d: addr=0x%Lx length=0x%08x\n", i,
-+			(unsigned long long)addr, len);
- 		/* entry i + 1 is non-contiguous with entry i? */
- 		if (next != addr + len) {
- 			/* TODO create entry here (we could overwrite i) */
--			printk(KERN_DEBUG "%4d: cont_addr=0x%08x cont_len=0x%08x\n", j, cont_addr, cont_len);
-+			printk(KERN_DEBUG "%4d: cont_addr=0x%Lx cont_len=0x%08x\n", j,
-+				(unsigned long long)cont_addr, cont_len);
- 			/* set descriptor for contiguous transfer */
- 			ape_chdma_desc_set(&desc[j], cont_addr, ep_addr, cont_len);
- 			/* next end point memory address */
-@@ -446,8 +448,10 @@ static int ape_sg_to_chdma_table(struct 
- 		addr = next;
- 	}
- 	/* TODO create entry here  (we could overwrite i) */
--	printk(KERN_DEBUG "%04d: addr=0x%08x length=0x%08x\n", i, addr, len);
--	printk(KERN_DEBUG "%4d: cont_addr=0x%08x length=0x%08x\n", j, cont_addr, cont_len);
-+	printk(KERN_DEBUG "%04d: addr=0x%Lx length=0x%08x\n", i,
-+		(unsigned long long)addr, len);
-+	printk(KERN_DEBUG "%4d: cont_addr=0x%Lx length=0x%08x\n", j,
-+		(unsigned long long)cont_addr, cont_len);
- 	j++;
- 	return j;
+--- mmotm-2009-0210-1635.orig/drivers/staging/android/binder.c
++++ mmotm-2009-0210-1635/drivers/staging/android/binder.c
+@@ -2649,14 +2649,22 @@ static void binder_vma_open(struct vm_ar
+ {
+ 	struct binder_proc *proc = vma->vm_private_data;
+ 	if (binder_debug_mask & BINDER_DEBUG_OPEN_CLOSE)
+-		printk(KERN_INFO "binder: %d open vm area %lx-%lx (%ld K) vma %lx pagep %lx\n", proc->pid, vma->vm_start, vma->vm_end, (vma->vm_end - vma->vm_start) / SZ_1K, vma->vm_flags, pgprot_val(vma->vm_page_prot));
++		printk(KERN_INFO
++			"binder: %d open vm area %lx-%lx (%ld K) vma %lx pagep %lx\n",
++			proc->pid, vma->vm_start, vma->vm_end,
++			(vma->vm_end - vma->vm_start) / SZ_1K, vma->vm_flags,
++			(unsigned long)pgprot_val(vma->vm_page_prot));
+ 	dump_stack();
  }
+ static void binder_vma_close(struct vm_area_struct *vma)
+ {
+ 	struct binder_proc *proc = vma->vm_private_data;
+ 	if (binder_debug_mask & BINDER_DEBUG_OPEN_CLOSE)
+-		printk(KERN_INFO "binder: %d close vm area %lx-%lx (%ld K) vma %lx pagep %lx\n", proc->pid, vma->vm_start, vma->vm_end, (vma->vm_end - vma->vm_start) / SZ_1K, vma->vm_flags, pgprot_val(vma->vm_page_prot));
++		printk(KERN_INFO
++			"binder: %d close vm area %lx-%lx (%ld K) vma %lx pagep %lx\n",
++			proc->pid, vma->vm_start, vma->vm_end,
++			(vma->vm_end - vma->vm_start) / SZ_1K, vma->vm_flags,
++			(unsigned long)pgprot_val(vma->vm_page_prot));
+ 	proc->vma = NULL;
+ }
+ 
+@@ -2677,7 +2685,11 @@ static int binder_mmap(struct file *filp
+ 		vma->vm_end = vma->vm_start + SZ_4M;
+ 
+ 	if (binder_debug_mask & BINDER_DEBUG_OPEN_CLOSE)
+-		printk(KERN_INFO "binder_mmap: %d %lx-%lx (%ld K) vma %lx pagep %lx\n", proc->pid, vma->vm_start, vma->vm_end, (vma->vm_end - vma->vm_start) / SZ_1K, vma->vm_flags, pgprot_val(vma->vm_page_prot));
++		printk(KERN_INFO
++			"binder_mmap: %d %lx-%lx (%ld K) vma %lx pagep %lx\n",
++			proc->pid, vma->vm_start, vma->vm_end,
++			(vma->vm_end - vma->vm_start) / SZ_1K, vma->vm_flags,
++			(unsigned long)pgprot_val(vma->vm_page_prot));
+ 
+ 	if (vma->vm_flags & FORBIDDEN_MMAP_FLAGS) {
+ 		ret = -EPERM;
