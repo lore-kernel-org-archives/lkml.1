@@ -1,51 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756968AbZBKU0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757373AbZBKUgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756968AbZBKU0U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 15:26:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756309AbZBKU0F
+	id S1757373AbZBKUgU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 15:36:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755666AbZBKUgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 15:26:05 -0500
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:42684 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756214AbZBKU0E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 15:26:04 -0500
-Date: Wed, 11 Feb 2009 13:26:01 -0700
-From: Alex Chiang <achiang@hp.com>
-To: gregkh@suse.de
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] sysfs: sysfs_add_one tells you _where_ the duplicate file
-	is
-Message-ID: <20090211202601.GC3402@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>, gregkh@suse.de,
-	linux-kernel <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 11 Feb 2009 15:36:04 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:40065 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755473AbZBKUgC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 15:36:02 -0500
+Date: Wed, 11 Feb 2009 15:33:28 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Ext4 tree backports for 2.6.27.13 and 2.6.28.2
+Message-ID: <20090211153328.37ef255f@dhcp-100-2-144.bos.redhat.com>
+In-Reply-To: <20090211075914.GC20842@skywalker>
+References: <E1LT8MN-0003Ps-Ur@closure.thunk.org>
+	<20090211075914.GC20842@skywalker>
+Organization: Red Hat, Inc.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Give a better clue about where we might be creating duplicate
-files by displaying the parent's name as well.
+On Wed, 11 Feb 2009 13:29:14 +0530
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
 
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
-It would be nice to get a full path, but simply printing out the
-parent is cheap and more useful than what we have now.
+> On Sat, Jan 31, 2009 at 12:25:39AM -0500, Theodore Ts'o wrote:
+> > I've updated the ext4 backport branches on the ext4 git tree:
+> > 
+> >    git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git
+> >    http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git
+> > 
+> > The for-stable branch is branched off of 2.6.28.2, and has a candidate
+> > set of patches to be included in the next stable release.  The
+> > for-stable-2.6.27 branch is branched off of 2.6.27.13.  
+> > 
+> > I'm more confident with the 2.6.28 stable candidate than the 2.6.27
+> > stable candidates at the moment, but given that we just missed the
+> > 2.6.27.14 and 2.6.28.3 release cycles, that should give us plenty of
+> > time to test the patches.
+> > 
+> > 						- Ted
+> > 
+> > 
+> > 8556e8f3 18d5cb0 fd3bd090
+> >     ext4: Don't allow new groups to be added during block allocation
+> > 
+> 
+> This commit on for-stable-2.6.27 is not complete.
+> ac->alloc_semp is not assigned in the code.
+> 
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 82d3b79..5828d1d 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -459,7 +459,8 @@ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
- 
- 	ret = __sysfs_add_one(acxt, sd);
- 	WARN(ret == -EEXIST, KERN_WARNING "sysfs: duplicate filename '%s' "
--		       "can not be created\n", sd->s_name);
-+		       "can not be created in %s\n",
-+		       sd->s_name, acxt->parent_sd->s_name);
- 	return ret;
+I think this fixes that one:
+
+
+Add missing pieces to the below patch in the 2.6.27 ext4 patchset.
+http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=commitdiff;h=fd3bd090d7cc93292d3fa361b9c323752417bd7b
+"ext4: Don't allow new groups to be added during block allocation"
+
+Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
+
+Index: linux-2.6.27.noarch/fs/ext4/mballoc.c
+===================================================================
+--- linux-2.6.27.noarch.orig/fs/ext4/mballoc.c
++++ linux-2.6.27.noarch/fs/ext4/mballoc.c
+@@ -1055,7 +1055,8 @@ static void ext4_mb_release_desc(struct 
+ 	if (e4b->bd_buddy_page)
+ 		page_cache_release(e4b->bd_buddy_page);
+ 	/* Done with the buddy cache */
+-	up_read(e4b->alloc_semp);
++	if (e4b->alloc_semp)
++		up_read(e4b->alloc_semp);
  }
  
+ 
+@@ -1375,6 +1376,9 @@ static void ext4_mb_use_best_found(struc
+ 	get_page(ac->ac_bitmap_page);
+ 	ac->ac_buddy_page = e4b->bd_buddy_page;
+ 	get_page(ac->ac_buddy_page);
++	/* on allocation we use ac to track the held semaphore */
++	ac->alloc_semp =  e4b->alloc_semp;
++	e4b->alloc_semp = NULL;
+ 	/* store last allocated for subsequent stream allocation */
+ 	if ((ac->ac_flags & EXT4_MB_HINT_DATA)) {
+ 		spin_lock(&sbi->s_md_lock);
