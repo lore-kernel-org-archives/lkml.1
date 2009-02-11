@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924AbZBKM7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbZBKM77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755924AbZBKM7S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 07:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754496AbZBKM7F
+	id S1756695AbZBKM77 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 07:59:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755061AbZBKM7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 07:59:05 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51802 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751873AbZBKM7E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 07:59:04 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: MinChan Kim <minchan.kim@gmail.com>
-Subject: Re: [PATCH] shrink_all_memory() use sc.nr_reclaimed
-Cc: kosaki.motohiro@jp.fujitsu.com, Johannes Weiner <hannes@cmpxchg.org>,
-       Rik van Riel <riel@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       William Lee Irwin III <wli@movementarian.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <20090211214324.6a9cfb58.minchan.kim@barrios-desktop>
-References: <20090211204453.C3C3.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090211214324.6a9cfb58.minchan.kim@barrios-desktop>
-Message-Id: <20090211215654.C3D6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 11 Feb 2009 07:59:51 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41586 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755002AbZBKM7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 07:59:50 -0500
+Date: Wed, 11 Feb 2009 13:59:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Lin Ming <lin@minggr.cn>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, tglx@linutronix.de,
+       oleg@redhat.com, linux-kernel@vger.kernel.org,
+       yanmin_zhang@linux.intel.com, seto.hidetoshi@jp.fujitsu.com
+Subject: Re: [PATCH 0/2] fix the itimer regression (BZ 12618)
+Message-ID: <20090211125931.GL16535@elte.hu>
+References: <20090205112414.104100700@chello.nl> <20090205120608.GB8799@elte.hu> <d3f22a0902091848y43661118ie4ddf90e44357c46@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Wed, 11 Feb 2009 21:58:59 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d3f22a0902091848y43661118ie4ddf90e44357c46@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hmm, I think old bale-out code is right. 
-> In shrink_all_memory, As more reclaiming with pass progressing, 
-> the smaller nr_to_scan is. The nr_to_scan is the number of page shrinking which
-> user want. 
-> The shrink_all_zones have to reclaim nr_to_scan's page by doing best effort.
-> So, If you use accumulation of reclaim, it can break bale-out in shrink_all_zones.
 
-you are right. thanks.
-shrink_all_zones()'s nr_pages != shrink_all_memory()'s nr_pages.
-(I don't like this misleading variable name scheme ;)
+* Lin Ming <lin@minggr.cn> wrote:
 
-
-> I mean here.
+> On Thu, Feb 5, 2009 at 8:06 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> >
+> >> This should hopefully address all the itimer borkage.
+> >
+> > Applied to tip:timers/urgent, thanks Peter!
+> >
+> > Yanmin: could you check hacbench_pth with latest tip/master, do
+> > these fixes resolve that 3% regression you reported?
 > 
-> '
->               NR_LRU_BASE + l)); 
->         ret += shrink_list(l, nr_to_scan, zone,
->                 sc, prio);
->         if (ret >= nr_pages)
->           return ret; 
->       }    
-> '
+> hacbench_pth still has regression with 2.6.29-rc4.
+> Below 2 patches that fixed the regression are not merged into 2.6.29-rc4.
 > 
-> I have to make patch again so that it will keep on old bale-out behavior. 
+> commit 32bd671d6cbeda60dc73be77fa2b9037d9a9bfa0
+> Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date:   Thu Feb 5 12:24:15 2009 +0100
+> 
+>     signal: re-add dead task accumulation stats.
+> 
+> commit 4cd4c1b40d40447fb5e7ba80746c6d7ba91d7a53
+> Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date:   Thu Feb 5 12:24:16 2009 +0100
+> 
+>     timers: split process wide cpu clocks/timers
 
-Sure.
-thanks.
+they are queued up but not fully baken yet. Maybe in -rc5.
 
-
-
+	Ingo
