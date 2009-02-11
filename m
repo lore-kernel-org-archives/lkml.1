@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758290AbZBKAay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758377AbZBKAbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758290AbZBKAay (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:30:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbZBKA2M
+	id S1758377AbZBKAbY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:31:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756677AbZBKA2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:28:12 -0500
-Received: from kroah.org ([198.145.64.141]:51004 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 19:28:13 -0500
+Received: from kroah.org ([198.145.64.141]:51017 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756221AbZBKA2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:09 -0500
-Date: Tue, 10 Feb 2009 16:24:29 -0800
+	id S1756391AbZBKA2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:28:10 -0500
+Date: Tue, 10 Feb 2009 16:24:31 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Darren Salt <linux@youmustbejoking.demon.co.uk>,
-       Len Brown <len.brown@intel.com>
-Subject: [patch 08/56] eeepc-laptop: fix oops when changing backlight
-	brightness during eeepc-laptop init
-Message-ID: <20090211002429.GI14660@kroah.com>
+       alan@lxorguk.ukuu.org.uk, NeilBrown <neilb@suse.de>
+Subject: [patch 09/56] md: Ensure an md array never has too many devices.
+Message-ID: <20090211002431.GJ14660@kroah.com>
 References: <20090211001439.873435357@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="eeepc-laptop-fix-oops-when-changing-backlight-brightness-during-eeepc-laptop-init.patch"
+Content-Disposition: inline; filename="md-ensure-an-md-array-never-has-too-many-devices.patch"
 In-Reply-To: <20090211002328.GA14660@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,64 +38,87 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Darren Salt <linux@youmustbejoking.demon.co.uk>
+From: NeilBrown <neilb@suse.de>
 
-commit 7695fb04aca62e2d8a7ca6ede50f6211e1d71e53 upstream.
+commit de01dfadf25bf83cfe3d85c163005c4320532658 upstream.
 
-I got the following oops while changing the backlight brightness during
-startup.  When it happens, it prevents use of the hotkeys, Fn-Fx, and the
-lid button.
+Each different metadata format supported by md supports a
+different maximum number of devices.
+We really should be enforcing this maximum in the kernel, but
+we aren't quite doing that properly.
 
-It's a clear use-before-init, as I verified by testing with an
-appropriately-placed "else printk".
+We currently only enforce it at the 'hot_add' point, which is an
+older interface which is not used by current userspace.
 
-BUG: unable to handle kernel NULL pointer dereference at 00000000
-*pde = 00000000
-Oops: 0002 [#1] PREEMPT SMP
-Pid: 160, comm: kacpi_notify Not tainted (2.6.28.1-eee901 #4) 901
-EIP: 0060:[<c0264e68>]  [<c0264e68>] eeepc_hotk_notify+26/da
-EFLAGS: 00010246 CPU: 1
-Using defaults from ksymoops -t elf32-i386 -a i386
-EAX: 00000009 EBX: 00000000 ECX: 00000009 EDX: f70dbf64
-ESI: 00000029 EDI: f7335188 EBP: c02112c9 ESP: f70dbf80
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
- f70731e0 f73acd50 c02164ac f7335180 f70aa040 c02112e6 f733518c c012b62f
- f70aa044 f70aa040 c012bdba f70aa04c 00000000 c012be6e 00000000 f70bdf80
- c012e198 f70dbfc4 f70dbfc4 f70aa040 c012bdba 00000000 c012e0c9 c012e091
-Call Trace:
- [<c02164ac>] ? acpi_ev_notify_dispatch+4c/55
- [<c02112e6>] ? acpi_os_execute_deferred+1d/25
- [<c012b62f>] ? run_workqueue+71/f1
- [<c012bdba>] ? worker_thread+0/bf
- [<c012be6e>] ? worker_thread+b4/bf
- [<c012e198>] ? autoremove_wake_function+0/2b
- [<c012bdba>] ? worker_thread+0/bf
- [<c012e0c9>] ? kthread+38/5f
- [<c012e091>] ? kthread+0/5f
- [<c0103abf>] ? kernel_thread_helper+7/10
-Code: 00 00 00 00 c3 83 3d 60 5c 50 c0 00 56 89 d6 53 0f 84 c4 00 00 00 8d 42
-e0 83 f8 0f 77 0f 8b 1d 68 5c 50 c0 89 d8 e8 a9 fa ff ff <89> 03 8b 1d 60 5c
-50 c0 89 f2 83 e2 7f 0f b7 4c 53 10 8d 41 01
+We need to also enforce it at 'add_new_disk' time for active arrays
+and at 'do_md_run' time when starting a new array.
 
-Signed-off-by: Darren Salt <linux@youmustbejoking.demon.co.uk>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Len Brown <len.brown@intel.com>
+So move the test from 'hot_add' into 'bind_rdev_to_array' which is
+called from both 'hot_add' and 'add_new_disk, and add a new
+test in 'analyse_sbs' which is called from 'do_md_run'.
+
+This bug (or missing feature) has been around "forever" and so
+the patch is suitable for any -stable that is currently maintained.
+
+Signed-off-by: NeilBrown <neilb@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/misc/eeepc-laptop.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/md/md.c |   24 ++++++++++++++----------
+ 1 file changed, 14 insertions(+), 10 deletions(-)
 
---- a/drivers/misc/eeepc-laptop.c
-+++ b/drivers/misc/eeepc-laptop.c
-@@ -381,7 +381,8 @@ static void notify_wlan(u32 *event)
- static void notify_brn(void)
- {
- 	struct backlight_device *bd = eeepc_backlight_device;
--	bd->props.brightness = read_brightness(bd);
-+	if (bd)
-+		bd->props.brightness = read_brightness(bd);
- }
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -1454,6 +1454,11 @@ static int bind_rdev_to_array(mdk_rdev_t
+ 		if (find_rdev_nr(mddev, rdev->desc_nr))
+ 			return -EBUSY;
+ 	}
++	if (mddev->max_disks && rdev->desc_nr >= mddev->max_disks) {
++		printk(KERN_WARNING "md: %s: array is limited to %d devices\n",
++		       mdname(mddev), mddev->max_disks);
++		return -EBUSY;
++	}
+ 	bdevname(rdev->bdev,b);
+ 	while ( (s=strchr(b, '/')) != NULL)
+ 		*s = '!';
+@@ -2362,6 +2367,15 @@ static void analyze_sbs(mddev_t * mddev)
  
- static void eeepc_hotk_notify(acpi_handle handle, u32 event, void *data)
+ 	i = 0;
+ 	rdev_for_each(rdev, tmp, mddev) {
++		if (rdev->desc_nr >= mddev->max_disks ||
++		    i > mddev->max_disks) {
++			printk(KERN_WARNING
++			       "md: %s: %s: only %d devices permitted\n",
++			       mdname(mddev), bdevname(rdev->bdev, b),
++			       mddev->max_disks);
++			kick_rdev_from_array(rdev);
++			continue;
++		}
+ 		if (rdev != freshest)
+ 			if (super_types[mddev->major_version].
+ 			    validate_super(mddev, rdev)) {
+@@ -4450,13 +4464,6 @@ static int hot_add_disk(mddev_t * mddev,
+ 	 * noticed in interrupt contexts ...
+ 	 */
+ 
+-	if (rdev->desc_nr == mddev->max_disks) {
+-		printk(KERN_WARNING "%s: can not hot-add to full array!\n",
+-			mdname(mddev));
+-		err = -EBUSY;
+-		goto abort_unbind_export;
+-	}
+-
+ 	rdev->raid_disk = -1;
+ 
+ 	md_update_sb(mddev, 1);
+@@ -4470,9 +4477,6 @@ static int hot_add_disk(mddev_t * mddev,
+ 	md_new_event(mddev);
+ 	return 0;
+ 
+-abort_unbind_export:
+-	unbind_rdev_from_array(rdev);
+-
+ abort_export:
+ 	export_rdev(rdev);
+ 	return err;
 
