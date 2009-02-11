@@ -1,161 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756443AbZBKBbL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbZBKBcH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756443AbZBKBbL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 20:31:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755157AbZBKBay
+	id S1756819AbZBKBcH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 20:32:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754447AbZBKBbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 20:30:54 -0500
-Received: from mga02.intel.com ([134.134.136.20]:55102 "EHLO mga02.intel.com"
+	Tue, 10 Feb 2009 20:31:53 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59278 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755130AbZBKBax (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 20:30:53 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,188,1233561600"; 
-   d="scan'208";a="488980714"
-Subject: Re: [APIC] Kernel panic, rsync corruption, intel q8200, 2.6.28-rc8
-From: yakui_zhao <yakui.zhao@intel.com>
-To: Sam Ruby <rubys@intertwingly.net>
-Cc: Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-In-Reply-To: <49916927.9080200@intertwingly.net>
-References: <4978767D.4060700@intertwingly.net>
-	 <20090130000758.1dff0113.akpm@linux-foundation.org>
-	 <498885CC.4060509@intertwingly.net>
-	 <20090203114849.b661f1ce.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.0902032152180.22800@localhost.localdomain>
-	 <49890B46.8020308@intertwingly.net>
-	 <alpine.LFD.2.00.0902032336000.5607@localhost.localdomain>
-	 <4990C14B.7060802@intertwingly.net>
-	 <1234231805.3706.80.camel@localhost.localdomain>
-	 <49916927.9080200@intertwingly.net>
-Content-Type: text/plain; charset=utf-8
-Organization: Intel Open Source Technology Center
-Date: Wed, 11 Feb 2009 09:42:13 +0800
-Message-Id: <1234316533.3706.104.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	id S1753341AbZBKBbw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 20:31:52 -0500
+Message-ID: <49922A7A.7090609@kernel.org>
+Date: Wed, 11 Feb 2009 10:31:38 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ondrej Zary <linux@rainbow-software.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH] Resume from hibernation fails with pata_it821x RAID volume
+References: <200902022242.01170.linux@rainbow-software.org>
+In-Reply-To: <200902022242.01170.linux@rainbow-software.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 11 Feb 2009 01:31:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-10 at 19:46 +0800, Sam Ruby wrote:
-> yakui_zhao wrote:
-> > On Tue, 2009-02-10 at 07:50 +0800, Sam Ruby wrote:
-> >> Len Brown wrote:
-> >>>>> Do you have a second computer around with a serial port ? If yes, then
-> >>>>> please add the following to the kernel command line:
-> >>>>>
-> >>>>>        earlyprintk=serial,ttyS0,115200 apic=debug
-> >>>>>
-> >>>>> and connect the serial ports with a null modem cable. Fire up a
-> >>>>> terminal program on the second machine and capture the output.
-> >>>> I do have a second computer, and went out and bought a null modem adapter for
-> >>>> my serial cable and connected the two machines.  I've tried installing minicom
-> >>>> and also connecting it to ttyS0 at 115200 baud on the second machine, but when
-> >>>> I boot the first machine I don't see any output on the terminal.
-> >>> /boot/grub/menu.lst:
-> >>>
-> >>> serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1
-> >>> terminal --timeout=300 serial console
-> > Do you have an opportunity to try the boot option of "acpi=off" as
-> > suggested by Lenb?
+Ondrej Zary wrote:
+> Hello,
+> hibernation didn't work for me since I started to use IT8212 controller. Now I 
+> did some debugging (booting with no_console_suspend init=/bin/sh).
 > 
-> That also produces the "MP-BIOS bug" message and halts.
-Do you mean that the box still can't be booted with ACPI disabled? If
-so, it should be a BIOS bug. It had better be fixed by bios upgrading.
-   From the following test it seems that there exists the MPS table,
-which describes how the timer is connected with I/O APIC. But
-unfortunately it is still incorrect. 
-   And the timer still can't work w/o the timer override.
-   
-   Only when I/O apic is skipped can the box be booted. The timer is
-connected with 8259.  And the timer can work as expected. But there
-still exist other issue.
-    
+> Found that resume fails (2.6.28) with "serial number mismatch 'some 
+> garbage' != 'some other garbage'" and "revalidation failed" messages. That's 
+> because the controller firmware fills different serial number in the IDENTIFY 
+> every boot.
 > 
-> >      From the log it seems that there exists the following warning
-> > message:
-> >     >﻿MP-BIOS bug: 8254 timer not connected to IO-APIC
-> > 
-> >     Can you try the following boot options?
-> >     a. acpi_use_timer_override
+> The patch below fixes the resume simply clearing the serial number. The proper 
+> fix would be probably to fill in the serial number of the RAID volume 
+> instead. I assume that there must be something like that stored on the drives 
+> but I don't know where.
 > 
-> That also produces the "MP-BIOS bug" message and halts.
 > 
-> >     b. acpi_skip_timer_override
+> Fix resume on pata_it821x RAID volume by clearing the serial number in 
+> IDENTIFY data, which is otherwise different on each boot.
 > 
-> That also produces the "MP-BIOS bug" message and halts.
+> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 > 
-> >     c. noapic
-> 
-> With that, I can boot, but I get data corruption problems.  Data 
-> corruption problems I don't see when using the same hardware but with 
-> Microsoft Vista.  More details can be found here:
-> 
-> http://intertwingly.net/blog/2009/01/20/noAPIC
-> http://intertwingly.net/stories/2009/01/22/
-> 
-> I am willing to install new kernels on fresh hard drives, run diagnostic 
-> programs and report the output, including capturing serial output.  Is 
-> there any data I can gather to help diagnose this problem?
-> 
-> >     Thanks.
-> >>> is what I use.
-> >>>
-> >>> this will give you a prompt from grub even before the kernel boots
-> >>> so you can select (and edit) your kernel via menu over the serial line
-> >>> if you wish.
-> >> I've got that working now.  I used minicom on the remote machine, 
-> >> capturing the output.  You can see me fumbling around, editing the 
-> >> kernel command and booting here:
-> >>
-> >> http://intertwingly.net/stories/2009/02/09/minicom.out
-> >>
-> >> While it is difficult to make out what I did given line wrapping, etc, 
-> >> what I started with was:
-> >>
-> >> /boot/vmlinuz-2.6.27-11-generic 
-> >> root=UUID=4fce230e-fe72-4685-aab0-294ef1c20efa ro noapic quiet splash
-> >>
-> >> After editing, what I had was
-> >>
-> >> /boot/vmlinuz-2.6.27-11-generic 
-> >> root=UUID=4fce230e-fe72-4685-aab0-294ef1c20efa ro quiet splash 
-> >> earlyprintk=serial,ttyS0,115200 apic=debug
-> >>
-> >> As you can see, the last line I saw was "Starting up ...", after which 
-> >> point the "MP-BIOS bug: 8254 timer not connected to IO-APIC" etc output 
-> >> appeared on the monitor that is directly connected to the machine being 
-> >> booted (i.e., this text did not appear on the minicom session).
-> >>
-> >>> If this doesn't work, then the kernel earlyprintk is unlikely to work 
-> >>> also.
-> >> At the moment, it looks like it works, but earlyprintk does not work for 
-> >> me, at least not on Ubuntu 8.10, kernel 2.6.27-11-generic.
-> >>
-> >>> Note that there may be some BIOS SETUP options related to the serial port 
-> >>> -- worth checking.
-> >>>
-> >>> Also, in minicom, be sure to turn off HW flow control
-> >>>
-> >>> there is a fancy serial console document someplace on this,
-> >>> probably at http://tldp.org/
-> >> As I have managed to get grub to talk to the serial console, I did not 
-> >> explore these options further.  Please let me know if there is something 
-> >> in particular I should explore.
-> >>
-> >>> good luck,
-> >>> -Len
-> >> - Sam Ruby
-> >> --
-> >> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> >> the body of a message to majordomo@vger.kernel.org
-> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> - Sam Ruby
+> --- linux-2.6.28-orig/drivers/ata/pata_it821x.c	2009-01-02 17:18:36.000000000 +0100
+> +++ linux/drivers/ata/pata_it821x.c	2009-02-02 17:47:57.000000000 +0100
+> @@ -561,6 +561,9 @@
+>  		id[83] |= 0x4400;	/* Word 83 is valid and LBA48 */
+>  		id[86] |= 0x0400;	/* LBA48 on */
+>  		id[ATA_ID_MAJOR_VER] |= 0x1F;
+> +		/* Clear the serial number because it's different each boot
+> +		   which breaks validation on resume */
+> +		memset(&id[ATA_ID_SERNO], 0x20, ATA_ID_SERNO_LEN);
+>  	}
+>  	return err_mask;
+>  }
 
+Looks good to me.  Alan, Jeff?
+
+-- 
+tejun
