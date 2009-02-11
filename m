@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758345AbZBKAdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759750AbZBKAhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758345AbZBKAdA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Feb 2009 19:33:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757521AbZBKA2R
+	id S1759750AbZBKAhx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Feb 2009 19:37:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757759AbZBKA2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 19:28:17 -0500
-Received: from kroah.org ([198.145.64.141]:51074 "EHLO coco.kroah.org"
+	Tue, 10 Feb 2009 19:28:33 -0500
+Received: from kroah.org ([198.145.64.141]:51292 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757349AbZBKA2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 19:28:15 -0500
-Date: Tue, 10 Feb 2009 16:24:43 -0800
+	id S1757722AbZBKA2a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Feb 2009 19:28:30 -0500
+Date: Tue, 10 Feb 2009 16:25:13 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Clemens Ladisch <clemens@ladisch.de>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [patch 14/56] sound: usb-audio: handle wMaxPacketSize for
-	FIXED_ENDPOINT devices
-Message-ID: <20090211002443.GO14660@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
+Subject: [patch 28/56] ALSA: hda - Add missing COEF initialization for
+	ALC887
+Message-ID: <20090211002513.GC14660@kroah.com>
 References: <20090211001439.873435357@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sound-usb-audio-handle-wmaxpacketsize-for-fixed_endpoint-devices.patch"
+Content-Disposition: inline; filename="alsa-hda-add-missing-coef-initialization-for-alc887.patch"
 In-Reply-To: <20090211002328.GA14660@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,32 +39,25 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 ------------------
 
-From: Clemens Ladisch <clemens@ladisch.de>
+From: Takashi Iwai <tiwai@suse.de>
 
-commit 894dcd78782842924527598b0b764c9b4e679e21 upstream.
+commit 4a5a4c56b443a213fa9c2ad27984a8681a3d7087 upstream.
 
-For audio devices that do not have proper audio descriptors (e.g.,
-Edirol UA-20), we use hardcoded parameters from our quirks list.
-However, we must still read the maximum packet size from the standard
-endpoint descriptor; otherwise, we might use packets that are too big
-and therefore rejected by the USB core.
-
-Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/usb/usbaudio.c |    1 +
+ sound/pci/hda/patch_realtek.c |    1 +
  1 file changed, 1 insertion(+)
 
---- a/sound/usb/usbaudio.c
-+++ b/sound/usb/usbaudio.c
-@@ -2958,6 +2958,7 @@ static int create_fixed_stream_quirk(str
- 		return -EINVAL;
- 	}
- 	alts = &iface->altsetting[fp->altset_idx];
-+	fp->maxpacksize = le16_to_cpu(get_endpoint(alts, 0)->wMaxPacketSize);
- 	usb_set_interface(chip->dev, fp->iface, 0);
- 	init_usb_pitch(chip->dev, fp->iface, alts, fp);
- 	init_usb_sample_rate(chip->dev, fp->iface, alts, fp, fp->rate_max);
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -948,6 +948,7 @@ do_sku:
+ 		case 0x10ec0882:
+ 		case 0x10ec0883:
+ 		case 0x10ec0885:
++		case 0x10ec0887:
+ 		case 0x10ec0889:
+ 			snd_hda_codec_write(codec, 0x20, 0,
+ 					    AC_VERB_SET_COEF_INDEX, 7);
 
