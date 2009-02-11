@@ -1,275 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757437AbZBKUzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757591AbZBKVAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757437AbZBKUzN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 15:55:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756087AbZBKUy7
+	id S1757591AbZBKVAQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 16:00:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756536AbZBKU76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 15:54:59 -0500
-Received: from vms173001pub.verizon.net ([206.46.173.1]:53197 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755457AbZBKUy6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 15:54:58 -0500
-Date: Wed, 11 Feb 2009 15:47:09 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: rob koendering <susegebr@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: kernels 2.6.29.rc3 2.1 3.1 4.1 5.1 6.1 7.1 and rc4 8.1 Is ACPI
- broken  ???????
-In-reply-to: <e63fe7530902111202t164fcfcerf421bf2e242f8957@mail.gmail.com>
-Message-id: <alpine.LFD.2.00.0902111539280.30410@localhost.localdomain>
-References: <e63fe7530902111202t164fcfcerf421bf2e242f8957@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 11 Feb 2009 15:59:58 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:48070 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756137AbZBKU75 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 15:59:57 -0500
+X-IronPort-AV: E=Sophos;i="4.38,194,1233561600"; 
+   d="scan'208";a="125903089"
+Subject: Re: [RFC PATCH 0/2] Add VFS support for looking up paths on remote
+ servers using a temporary mount namespace
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk
+In-Reply-To: <20090211195352.GA23974@fieldses.org>
+References: <20090209184534.23040.82605.stgit@heimdal.trondhjem.org>
+	 <20090210155820.GB29075@fieldses.org>
+	 <1234290708.7423.72.camel@heimdal.trondhjem.org>
+	 <20090210214822.GF32393@fieldses.org>
+	 <1234306135.7423.171.camel@heimdal.trondhjem.org>
+	 <20090211195352.GA23974@fieldses.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Wed, 11 Feb 2009 15:59:30 -0500
+Message-Id: <1234385970.7423.274.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+X-OriginalArrivalTime: 11 Feb 2009 20:59:55.0337 (UTC) FILETIME=[B0EC0390:01C98C8B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-> Hello all   new to this list
+On Wed, 2009-02-11 at 14:53 -0500, J. Bruce Fields wrote:
+> On Tue, Feb 10, 2009 at 05:48:55PM -0500, Trond Myklebust wrote:
+> > On Tue, 2009-02-10 at 16:48 -0500, J. Bruce Fields wrote:
+> > > On Tue, Feb 10, 2009 at 01:31:48PM -0500, Trond Myklebust wrote:
+> > > > On Tue, 2009-02-10 at 10:58 -0500, J. Bruce Fields wrote:
+> > > > > On Mon, Feb 09, 2009 at 01:45:34PM -0500, Trond Myklebust wrote:
+> > > > > > The following two patches attempt to improve NFSv4's ability to look up
+> > > > > > the mount path on a remote server.
+> > > > > > 
+> > > > > > The first patch adds VFS support for walking the remote path, using a
+> > > > > > temporary mount namespace to represent the server's namespace, so that
+> > > > > > symlinks
+> > > > > 
+> > > > > I'm a bit confused about the symlink case--I take it you're assuming
+> > > > > that symlinks in the pseudofs should be interpreted as relative to the
+> > > > > server's namespace (in keeping with traditional implementations of
+> > > > > server exports), while symlinks elsewhere should continue to be
+> > > > > intepreted relative to the client's namespace.
+> > > 
+> > > Maybe I shouldn't have said "symlinks in the pseudofs", as that's not
+> > > entirely well defined--a complicated namespace may transition between
+> > > "pseudofs" and "real" filesystems multiple times.  So it's really a
+> > > statement about the client's mount behavior: symlinks found along the
+> > > mount path will be interpreted one way, symlinks found elsewhere
+> > > another.  Right?
+> > > 
+> > > Though put that way it's harder to decide what to store in a symlink,
+> > > since you can't necessarily control which paths a given client may
+> > > decide to mount.
+> > 
+> > That has been the nature of an NFS mount path string since it was first
+> > introduced in NFSv2: it refers to the server namespace.
+> > People haven't complained about this previously, so why should we
+> > start changing the meaning of the mount path when we move to NFSv4?
 > 
-> I have acpi troublw with the rc3 and rc4  2.6.29  kernels
-> The acpi tables in bios are nor read wel
-> and interupt handling is out of control
+> It wasn't previously possible for servers to expose symlinks in the
+> mount path to clients, so it's not clear to me how to apply precedent.
 
-I don't clearly understand the problem statement,
-even after reading through the rest of this message.
+What are you talking about? Of course it was possible! What is
+the /bar/baz mount example below doing that is specific to NFSv4? The
+only difference here is the question of who is interpreting the mount
+path.
 
-> With the 2.6.27 kernels i never had this following type of errors
-> intalled the bios again to make sure the acpi tables are alright
+The precedent is that in NFSv2/v3, the client sent _all_ mount path
+lookup requests to the server's mount daemon. The mount daemon then did
+a path lookup in its namespace, following symlinks if necessary, and
+returned an NFSv2/v3 filehandle for the endpoint.
+In all lookup requests that were sent to the NFS server, symlinks were
+never followed, but were returned to the NFS client for interpretation
+relative to the user's namespace.
+
+In NFSv4, the mount path is looked up by the client. Why should it act
+any differently to the NFSv2/v3 mount daemon, and interpret symlinks
+relative to some other namespace?
+After the mount is complete, then all subsequent lookups are interpreted
+relative to the user's namespace, and so are the symlinks.
+
+> > > > > Do the rfc's say anything about this?
+> > > > 
+> > > > No, the RFCs say nothing, but interpreting symlinks as being relative to
+> > > > the server namespace would be consistent with the mount behaviour of
+> > > > NFSv2/v3. It also makes me uncomfortable to have a remote mount path
+> > > > that could refer back to the client's namespace: that would not be an
+> > > > NFS mount, but a local bind mount...
+> > > 
+> > > Some may be surprised to find that /mntsymlink/ and /mnt/symlink/ will
+> > > be different after
+> > > 
+> > > 	mount file:/path/symlink/ /mntsymlink/
+> > > 	mount file:/path/	  /mnt/
+> > 
+> > So, what then if I do
+> > 
+> > 	ln -s ../foo /bar/baz/symlink
+> > 
+> > on the server, then compare
+> > 
+> > 	mount server:/bar/baz /mnt
+> > and
+> > 	mount server:/bar/baz/symlink /mnt
+> > 
+> > Would you argue that those two should produce the same result? My
+> > interpretation would be as follows:
+> > 
+> > In the first case, the symlink is visible as /mnt/symlink, and so
+> > 'cd /mnt/symlink' will take you to the local path '/foo' on the client.
+> > 
+> > In the second case, I'd be very surprised if the mount code did anything
+> > other than to follow /bar/baz/symlink to remote path /bar/foo, and then
+> > mount that on '/mnt'
+> > 
+> > If you agree that the above behaviour is correct, then how would you
+> > argue that replacing '/bar/baz/symlink' with an absolute symlink
+> > (i.e. 'ln -sf /bar/foo /bar/baz/symlink') should suddenly cause mount to
+> > do a bind mount?
 > 
+> I certainly agree that mount shouldn't do a bind mount in that case.
 > 
+> > > I see your point, though it might also be an argument for continuing to
+> > > error out on symlinks.
+> > 
+> > Again, why? We don't do that today with NFSv2/v3.
 > 
-> from dmesg
+> The question doesn't arise with NFSv2/v3, since the mount protocol can't
+> return a symlink to the client.
+
+The mount daemon returns the filehandle of the end point mount path
+after interpreting the symlink relative to its namespace. It doesn't
+error out.
+
+Why should an NFSv4 mount that uses the exact same mount parameters
+suddenly have to return an EINVAL when it could do exactly the same
+thing as NFSv2/v3 did?
+
+> > > It could also be argued that if a given symlink is expected to be
+> > > interpreted on the server side, then the server should just go ahead and
+> > > do that for the client, rather than returning it as a symlink.
+> > 
+> > How would the server distinguish between a client that is doing a lookup
+> > of a mount path and one that is looking up a normal path?
 > 
-> last_map_addr: cfef0000 end: cfef0000
-> init_memory_mapping: 0000000100000000-0000000230000000
->  0100000000 - 0230000000 page 2M
-> kernel direct mapping tables up to 230000000 @ 14000-1e000
-> last_map_addr: 230000000 end: 230000000
-> RAMDISK: 37989000 - 37fef987
-> ACPI: RSDP 000F7CA0, 0024 (r2 Nvidia)
-> ACPI: XSDT CFEF30C0, 004C (r1 Nvidia ASUSACPI 42302E31 AWRD        0)
-> ACPI: FACP CFEFB680, 00F4 (r3 Nvidia ASUSACPI 42302E31 AWRD        0)
-> ACPI Warning (tbfadt-0568): 32/64X length mismatch in Pm1aEventBlock:
-> 32/8 [20081204]
-> ACPI Warning (tbfadt-0568): 32/64X length mismatch in
-> Pm1aControlBlock: 16/8 [20081204]
-> ACPI Warning (tbfadt-0568): 32/64X length mismatch in PmTimerBlock:
-> 32/8 [20081204]
-> ACPI Warning (tbfadt-0568): 32/64X length mismatch in Gpe0Block: 64/8
-> [20081204]
-> ACPI Warning (tbfadt-0568): 32/64X length mismatch in Gpe1Block: 128/8
-> [20081204]
-> ACPI Warning (tbfadt-0412): Invalid length for Pm1aEventBlock: 8,
-> using default 32 [20081204]
-> ACPI Warning (tbfadt-0412): Invalid length for Pm1aControlBlock: 8,
-> using default 16 [20081204]
-> ACPI Warning (tbfadt-0412): Invalid length for PmTimerBlock: 8, using
-> default 32 [20081204]
-> FADT: X_PM1a_EVT_BLK.bit_width (16) does not match PM1_EVT_LEN (4)
+> Exactly, it can't--that's what worries me.  Under your proposal, the
+> server will return symlinks to the client which the client will
+> sometimes interpret relative to the server namespace, and sometimes
+> relative to the client namespace.
 
-Are you asking about the "Warnings" above?
-If yes, please note that Warning != Error
+No! It means that we _always_ interprets mount paths as being relative
+to the server namespace, and that we _always_ interprets user path
+lookups as being relative to the user's namespace.
 
-Basically Linux is telling you that the BIOS writer
-who worked on your system is very sloppy and
-Linux has to guess what they intend the OS to do.
+That is fully consistent with all previous practice, and means that
 
-> ACPI: DSDT CFEF3240, 83FB (r1 NVIDIA AWRDACPI     1000 MSFT  3000000)
-> ACPI: FACS CFEF0000, 0040
-> ACPI: HPET CFEFB8C0, 0038 (r1 Nvidia ASUSACPI 42302E31 AWRD       98)
-> ACPI: MCFG CFEFB940, 003C (r1 Nvidia ASUSACPI 42302E31 AWRD        0)
-> ACPI: APIC CFEFB7C0, 0098 (r1 Nvidia ASUSACPI 42302E31 AWRD        0)
-> ACPI: SSDT CFEFC1C0, 087B (r1 Nvidia ASUSACPI 42302E31 AWRD        0)
-> ACPI: Local APIC address 0xfee00000
-> No NUMA configuration found
-> Faking a node at 0000000000000000-0000000230000000
-> Bootmem setup node 0 0000000000000000-0000000230000000
->  NODE_DATA [0000000000019000 - 0000000000030fff]
->  bootmap [0000000000031000 -  0000000000076fff] pages 46
-> (7 early reservations) ==> bootmem [0000000000 - 0230000000]
->  #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 -
-> 0000001000]
->  #1 [0000006000 - 0000008000]       TRAMPOLINE ==> [0000006000 -
-> 0000008000]
->  #2 [0000200000 - 0000aed830]    TEXT DATA BSS ==> [0000200000 -
-> 0000aed830]
->  #3 [0037989000 - 0037fef987]          RAMDISK ==> [0037989000 -
-> 0037fef987]
->  #4 [000009c000 - 0000100000]    BIOS reserved ==> [000009c000 -
-> 0000100000]
->  #5 [0000010000 - 0000014000]          PGTABLE ==> [0000010000 -
-> 0000014000]
->  #6 [0000014000 - 0000019000]          PGTABLE ==> [0000014000 -
-> 0000019000]
-> found SMP MP-table at [ffff8800000f6160] 000f6160
->  [ffffe20000000000-ffffe20007bfffff] PMD ->
-> [ffff880001200000-ffff8800083fffff] on node 0
-> Zone PFN ranges:
->  DMA      0x00000010 -> 0x00001000
->  DMA32    0x00001000 -> 0x00100000
->  Normal   0x00100000 -> 0x00230000
-> Movable zone start PFN for each node
-> early_n
+1)
+    mount -t nfs -overs=2 server:/bar/baz/mnt
+    mount -t nfs -overs=3 server:/bar/baz /mnt
+and
+    mount -t nfs4 server:/bar/baz /mnt
+
+always works and produces the same result. A subsequent
+'ls /mnt/symlink' will refer to the resulting user namespace, and so the
+symlink may point to a local file or directory
+
+2)
+    mount -t nfs -overs=2 server:/bar/baz/symlink /mnt
+    mount -t nfs -overs=3 server:/bar/baz/symlink /mnt
+and
+    mount -t nfs4 server:/bar/baz/symlink /mnt
+
+always produce the same result (but different to case 1). We mount the
+directory that 'symlink' points to on the server. A subsequent 'ls /mnt'
+shows no symlink, but points to the same NFS mounted directory in all 3
+cases.
+
+3)
+    mount -t nfs -overs=2 server:/bar/baz/symlink/foo /mnt
+    mount -t nfs -overs=3 server:/bar/baz/symlink/foo /mnt
+and
+    mount -t nfs4 server:/bar/baz/symlink/foo /mnt
+
+always produce the same result (but different to cases 1 and 2). We
+mount the same sub-directory of case 2 onto /mnt.
+
+> Since the server can't know which the client will do, I don't see how to
+> make any sensible decision about what the value of that symlink should
+> be.
 > 
-> Initializing the cpus on a Intel(R) Core(TM)2 Quad CPU    Q6600  @
-> 2.40GHz stepping 0b
-> 
-> Initializing CPU#0
-> Experimental hierarchical RCU implementation.
-> Experimental hierarchical RCU init done.
-> PID hash table entries: 4096 (order: 12, 32768 bytes)
-> Extended CMOS year: 2000
-> Fast TSC calibration using PIT
-> Detected 2400.086 MHz processor.
-> spurious 8259A interrupt: IRQ7.
+> In your example, if the intention of creating /bar/baz/symlink was
+> really to direct clients mounting that path to mount /bar/foo, I wonder
+> if the most helpful thing might just be for the server to return
+> a filehandle for the directory /bar/foo/ instead of for the symlink
+> /bar/foo/symlink.
 
-Spurious interrupts are not good, but also not fatal.
+It can't do that. It has no idea whether or not this is a mount path
+lookup or a user path lookup, and as I've said before, the two refer to
+completely different namespaces.
 
-> Console: colour dummy device 80x25
-> console [tty0] enabled
-> Checking aperture...
-> No AGP bridge found
-> PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
-> Placing 64MB software IO TLB between ffff880008484000 -
-> ffff88000c484000
-> software IO TLB at phys 0x8484000 - 0xc484000
-> Memory: 8187972k/9175040k available (3041k kernel code, 787984k
-> absent, 199084k reserved, 3451k data, 884k init)
-> hpet clockevent registered
-> HPET: 3 timers in total, 0 timers will be used for per-cpu timer
-> Calibrating delay loop (skipped), value calculated using timer
-> frequency.. 4800.17 BogoMIPS (lpj=9600344)
-> kdb version 4.4 by Keith Owens, Scott Lurndal. Copyright SGI, All
-> Rights Reserved
-> Security Framework initialized
-> SELinux:  Disabled at boot.
-> Dentry cache hash table entries: 1048576 (order: 11, 8388608 bytes)
-> Inode-cache hash table entries: 524288 (order: 10, 4194304 bytes)
-> Mount-cache hash table entries: 256
-> Initializing cgroup subsys ns
-> Initializing cgroup subsys cpuacct
-> Initializing cgroup subsys memory
-> Initializing cgroup subsys devices
-> Initializing cgroup subsys freezer
-> Initializing cgroup subsys net_cls
-> CPU: L1 I cache: 32K, L1 D cache: 32K
-> CPU: L2 cache: 4096K
-> [ds] using Core 2/Atom configuration
-> CPU 0/0x0 -> Node 0
-> CPU: Physical Processor ID: 0
-> CPU: Processor Core ID: 0
-> CPU0: Thermal monitoring enabled (TM2)
-> using mwait in idle threads.
-> ACPI: Core revision 20081204
-> ACPI: Checking initramfs for custom DSDT
-> ACPI: setting ELCR to 0ea0 (from 0ca0)
-> Setting APIC routing to flat
-> ExtINT not setup in hardware but reported by MP table
-> ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=0 pin2=0
-> CPU0: Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz stepping 0b
-> Booting processor 1 APIC 0x1 ip 0x6000
-> Initializing CPU#1
-> Calibrating delay using timer specific routine.. 4799.94 BogoMIPS
-> (lpj=9599891)
-> CPU: L1 I cache: 32K, L1 D cache: 32K
-> CPU: L2 cache: 4096K
-> [ds] using Core 2/Atom configuration
-> CPU 1/0x1 -> Node 0
-> CPU: Physical Processor ID: 0
-> CPU: Processor Core ID: 1
-> CPU1: Thermal monitoring enabled (TM2)
-> x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
-> CPU1: Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz stepping 0b
-> checking TSC synchronization [CPU#0 -> CPU#1]: passed.
-> Booting processor 2 APIC 0x3 ip 0x6000
-> Initializing CPU#2
-> Calibrating delay using timer specific routine.. 4800.00 BogoMIPS
-> (lpj=9600002)
-> CPU: L1 I cache: 32K, L1 D cache: 32K
-> CPU: L2 cache: 4096K
-> [ds] using Core 2/Atom configuration
-> CPU 2/0x3 -> Node 0
-> CPU: Physical Processor ID: 0
-> CPU: Processor Core ID: 3
-> CPU2: Thermal monitoring enabled (TM2)
-> x86 PAT enabled: cpu 2, old 0x7040600070406, new 0x7010600070106
-> CPU2: Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz stepping 0b
-> checking TSC synchronization [CPU#1 -> CPU#2]: passed.
-> Booting processor 3 APIC 0x2 ip 0x6000
-> Initializing CPU#3
-> Calibrating delay using timer specific routine.. 4799.98 BogoMIPS
-> (lpj=9599960)
-> CPU: L1 I cache: 32K, L1 D cache: 32K
-> CPU: L2 cache: 4096K
-> [ds] using Core 2/Atom configuration
-> CPU 3/0x2 -> Node 0
-> CPU: Physical Processor ID: 0
-> CPU: Processor Core ID: 2
-> CPU3: Thermal monitoring enabled (TM2)
-> x86 PAT enabled: cpu 3, old 0x7040600070406, new 0x7010600070106
-> CPU3: Intel(R) Core(TM)2 Quad CPU    Q6600  @ 2.40GHz stepping 0b
-> checking TSC synchronization [CPU#2 -> CPU#3]: passed.
-> Brought up 4 CPUs
-> Total of 4 processors activated (19200.09 BogoMIPS).
-> CPU0 attaching sched-domain:
->  domain 0: span 0-1 level MC
->  groups: 0 1
->  domain 1: span 0-3 level CPU
->   groups: 0-1 2-3
-> CPU1 attaching sched-domain:
->  domain 0: span 0-1 level MC
->  groups: 1 0
->  domain 1: span 0-3 level CPU
->   groups: 0-1 2-3
-> CPU2 attaching sched-domain:
->  domain 0: span 2-3 level MC
->  groups: 2 3
->  domain 1: span 0-3 level CPU
->   groups: 2-3 0-1
-> CPU3 attaching sched-domain:
->  domain 0: span 2-3 level MC
->  groups: 3 2
->  domain 1: span 0-3 level CPU
->   groups: 2-3 0-1
-> 
-> the lines : [ds] using Core 2/Atom configuration
-> 
-> this is not a atom cpu
-> 
-> so i took out   "perfmon"  and  ck804xrom.ko     fom lib/modules
-> 
-> boot parameters are  pnpacpi=no pci=noacpi  acpi_irq_balance
+-- 
+Trond Myklebust
+Linux NFS client maintainer
 
-acpi_irq_balance has no effect because you're not using
-ACPI to configure interurpts, you disabled it with "pci=noacpi", why?
-
-> in this way the kernel gives more or less the same info in Gkrellm  as a 2.6.27
-> 
-> with out the boot parameters half the irq are routed to cpu 0
-> irq 14  15  16  17  18  19  20  21
-
-The mapping of device to IRQ is the job of ACPI (or MPS, or PIRQ).
-The job of mapping that IRQ to a cpu belongs to irq_balance,
-and the mapping will change depending on load.
-
-> 2 not used pcie's  irq 24  and irq25 are alwayes on cpu 0
-> 
-> alloc irq_desc for 24 on cpu 0 node 0
-> alloc kstat_irqs on cpu 0 node 0
-> 
-> alloc irq_desc for 25 on cpu 0 node 0
-> alloc kstat_irqs on cpu 0 node 0
-
-If you run your system in ACPI mode and have a problem,
-please let me know.  As you've disabled the IRQ part
-of ACPI with "pci=noacpi", I can't offer much help,
-other than to suggest you not do that.
-
--Len
-
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
