@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757852AbZBLB6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbZBLCDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757852AbZBLB6Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 20:58:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755524AbZBLB6Q
+	id S1757247AbZBLCDe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 21:03:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbZBLCDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 20:58:16 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:52399 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754581AbZBLB6P (ORCPT
+	Wed, 11 Feb 2009 21:03:24 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58291 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751207AbZBLCDX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 20:58:15 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=CjcMxel6pBKMMuiOH7yrBUg/CjFCzyZapq/59mfhWv+QX+l7qZJfULcv4VHjYqOtg
-	Nq41JYfJZCcehNG81QoPQ==
+	Wed, 11 Feb 2009 21:03:23 -0500
+Date: Wed, 11 Feb 2009 18:02:19 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Nick Piggin <npiggin@suse.de>
+cc: Jan Kara <jack@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Federico Cuello <fedux@lugmen.org.ar>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Subject: Re: [Bug #12604] Commit 31a12666d8f0c22235297e1c1575f82061480029
+ slows down Berkeley DB
+In-Reply-To: <20090212014718.GF30043@wotan.suse.de>
+Message-ID: <alpine.LFD.2.00.0902111757030.3189@localhost.localdomain>
+References: <AIghyjFgMFP.A.uZD._10jJB@chimera> <sWhNs83kKPE.A.gUG.420jJB@chimera> <20090210162830.GD12146@placka.suse.cz> <20090212014718.GF30043@wotan.suse.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <200902121255.43047.nickpiggin@yahoo.com.au>
-References: <4976D77C.3020107@cn.fujitsu.com>
-	 <200902121154.02868.nickpiggin@yahoo.com.au>
-	 <6599ad830902111719n2750ac29u458face30bf3f7cb@mail.gmail.com>
-	 <200902121255.43047.nickpiggin@yahoo.com.au>
-Date: Wed, 11 Feb 2009 17:58:11 -0800
-Message-ID: <6599ad830902111758r140d00c1wf6e757e337a1caa9@mail.gmail.com>
-Subject: Re: [PATCH] cpuset: fix allocating page cache/slab object on the 
-	unallowed node when memory spread is set
-From: Paul Menage <menage@google.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: miaox@cn.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, cl@linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 11, 2009 at 5:55 PM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
->> But if the old and new nodes are disjoint, that could lead to seeing no
->> nodes.
->
-> Well we could structure updates as setting all new allowed nodes,
-> then clearing newly disallowed ones.
->
 
-OK, good point.
 
-Paul
+On Thu, 12 Feb 2009, Nick Piggin wrote:
+
+> On Tue, Feb 10, 2009 at 05:28:30PM +0100, Jan Kara wrote:
+> > On Sun 08-02-09 20:21:42, Rafael J. Wysocki wrote:
+> > > This message has been generated automatically as a part of a report
+> > > of recent regressions.
+> > > 
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.28.  Please verify if it still should be listed and let me know
+> > > (either way).
+> >   Yes, I've verified with latest git and the regression is still there.
+> 
+> I'm working on this FWIW...
+
+Shouldn't we just revert it? The code does look to be broken.
+
+It also looks like the interaction with that ever-buggy "nr_to_write" 
+thing are totally wrong. I can see that whole
+
+	if (!cycled) {
+		..
+		index = 0;
+		goto retry
+	}
+
+doing all the wrong things: if we ever hit the combination of 
+"!cycled + nr_to-write==0", we're always screwed. It simply _cannot_ do 
+the right thing.
+
+I dunno. That whole piece-of-sh*t function has been incredibly buggy this 
+release. The code is an unreadable mess, and I think that "cyclic" stuff 
+is part of the reason for it being messy and buggy. Please convince me 
+it's worth saving, or let me revert the whole stinking pile of crud?
+
+Please?
+
+			Linus
