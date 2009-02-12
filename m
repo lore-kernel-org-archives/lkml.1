@@ -1,107 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757398AbZBLIaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757093AbZBLIhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757398AbZBLIaH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 03:30:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbZBLI3y
+	id S1757093AbZBLIhY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 03:37:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbZBLIhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 03:29:54 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:53575 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750968AbZBLI3y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 03:29:54 -0500
-Message-ID: <4993DD64.2090705@cn.fujitsu.com>
-Date: Thu, 12 Feb 2009 16:27:16 +0800
-From: Miao Xie <miaox@cn.fujitsu.com>
-Reply-To: miaox@cn.fujitsu.com
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Paul Menage <menage@google.com>, Paul Jackson <pj@usa.net>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, cl@linux-foundation.org,
-       Derek Fults <dfults@sgi.com>
-Subject: Re: [PATCH] cpuset: fix allocating page cache/slab object on the
- unallowed node when memory spread is set
-References: <4976D77C.3020107@cn.fujitsu.com> <200902121154.02868.nickpiggin@yahoo.com.au> <6599ad830902111719n2750ac29u458face30bf3f7cb@mail.gmail.com> <200902121255.43047.nickpiggin@yahoo.com.au>
-In-Reply-To: <200902121255.43047.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 12 Feb 2009 03:37:10 -0500
+Received: from casper.infradead.org ([85.118.1.10]:45885 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750968AbZBLIhJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 03:37:09 -0500
+Subject: Re: [PATCH] Don't override CONFIG_64BIT for ARCH={i386,x86_64}
+ builds
+From: David Woodhouse <dwmw2@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: x86 maintainers <x86@kernel.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090212072644.GA10253@elte.hu>
+References: <1234372298.3586.23.camel@macbook.infradead.org>
+	 <20090211172258.GE13239@elte.hu>  <20090212072644.GA10253@elte.hu>
+Content-Type: text/plain
+Date: Thu, 12 Feb 2009 08:36:59 +0000
+Message-Id: <1234427819.3586.142.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on 2009-2-12 9:55 Nick Piggin wrote:
-> On Thursday 12 February 2009 12:19:11 Paul Menage wrote:
->> On Wed, Feb 11, 2009 at 4:54 PM, Nick Piggin <nickpiggin@yahoo.com.au> 
-> wrote:
->>> It would be possible, depending on timing, for the allocating thread to
->>> see either pre or post mems_allowed even if access was fully locked.
->> Right - seeing either the pre set or the post set is fine.
->>
->>> The only difference is that a partially changed mems_allowed could be
->>> seen. But what does this really mean? Some combination of the new and
->>> the old nodes. I don't think this is too much of a problem.
->> But if the old and new nodes are disjoint, that could lead to seeing no
->> nodes.
+On Thu, 2009-02-12 at 08:26 +0100, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> Well we could structure updates as setting all new allowed nodes,
-> then clearing newly disallowed ones.
+> > 
+> > * David Woodhouse <dwmw2@infradead.org> wrote:
+> > 
+> > > It is a steaming great pain in the arse when the value of CONFIG_64BIT
+> > > explicitly written in my .config file is overridden by the value of
+> > > $ARCH inferred from the environment.
+> > > 
+> > > If I have a 32-bit .config and I happen to build it without remembering
+> > > to put 'ARCH=i386' on the make command line, it shouldn't force
+> > > CONFIG_64BIT=y and reconfigure.
+> > > 
+> > > This patch should fix that, while still allowing defconfig to work as it
+> > > currently does for both 32-bit and 64-bit environments, and still giving
+> > > the default value of CONFIG_64BIT according to $ARCH. It's just that it
+> > > won't _force_ a change to CONFIG_64BIT when it's set to something other
+> > > than what $ARCH would imply.
+> > > 
+> > > Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+> > 
+> > Applied to tip:x86/ugent, thanks David!
+> 
+> i removed it again, because it regresses randconfig behavior:
 
-But it still has the other problem. such as: 
-Task1							Task2
-get_page_from_freelist()				while(1) {
-{
-	for_each_zone_zonelist_nodemask() {
-								change Task1's mems_allowed
-		if (!cpuset_zone_allowed_softwall())
-			goto try_next_zone;
-try_next_zone:
-		...
-	}
-}							}
+Ew, that's a nasty thing to be prioritising over day-to-day usability,
+and the fact that I can't just do 'make bzImage' without it screwing up
+and asking me to reconfigure.
 
-In the extreme case, Task1 will be completely unable to allocate memory
-at worst. At least, it will lead to the delay of allocate pages. Though
-the probability of this case is very low, we have to take into account.
+Isn't there a CONFIG_RANDCONFIG option? We could make it
+   bool "64-bit kernel" if !CONFIG_RANDCONFIG
 
-Thanks!
-Miao
+Alternatively, we could just the top-level Makefile set ARCH=x86 when
+it's inferred from the environment, and let people override it to i386
+or x86_64 if they want to.
 
-> 
-> 
->> Also, having the results of cpuset_zone_allowed() and
->> cpuset_current_mems_allowed change at random times over the course of
->> a call to alloc_pages() might cause interesting effects (e.g. we make
->> progress freeing pages from one set of nodes, and then call
->> get_page_from_freelist() on a different set of nodes).
-> 
-> But again, is this really a problem? We're talking about a tiny
-> possibility in a very uncommon case anyway when the cpuset is
-> changing.
-> 
-> If it can cause an outright error like OOM of course that's no
-> good, but if it just requires us to go around the reclaim loop
-> or allocate from another zone... I don't think that's so bad.
-> 
-> 
->>> This could work if we *really* need an atomic snapshot of mems_allowed.
->>> seqcount synchronisation would be an alternative too that could allow
->>> sleeping more easily than SRCU (OTOH if you don't need sleeping, then
->>> RCU should be faster than seqcount).
->>>
->>> But I'm not convinced we do need this to be atomic.
->> It's possible that I'm being overly-paranoid here. The decision to
->> make mems_allowed updates be purely pulled by the task itself predates
->> my involvement with cpusets code by a long time.
-> 
-> It's not such a bad model, but the problem with it is that it needs
-> to be carefully spread over the VM, and in fastpaths too. Now if it
-> were something really critical, fine, but I'm hoping we can do
-> without.
-> 
-> 
-> 
-> 
-> 
-
+-- 
+dwmw2
 
