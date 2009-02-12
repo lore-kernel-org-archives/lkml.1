@@ -1,52 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759480AbZBLOtj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759538AbZBLOu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759480AbZBLOtj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 09:49:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469AbZBLOta
+	id S1759538AbZBLOu3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 09:50:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbZBLOuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 09:49:30 -0500
-Received: from 8bytes.org ([88.198.83.132]:37030 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752896AbZBLOta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 09:49:30 -0500
-Date: Thu, 12 Feb 2009 15:49:29 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, fujita.tomonori@lab.ntt.co.jp,
-       iommu@lists.linux-foundation.org, mingo@redhat.com,
-       linux-kernel@vger.kernel.org, davem@davemloft.net
-Subject: Re: [PATCH 08/16] dma-debug: add core checking functions
-Message-ID: <20090212144928.GB2125@8bytes.org>
-References: <1232376423-11067-1-git-send-email-joerg.roedel@amd.com> <1232376423-11067-9-git-send-email-joerg.roedel@amd.com> <1233868079.3548.699.camel@macbook.infradead.org>
+	Thu, 12 Feb 2009 09:50:20 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:41505 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755469AbZBLOuS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 09:50:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FN/FHyEwIgw8wnLQngI39sMNdQf2n4w8VyzER+yqDjOMaOvqyyMlbh/wzruyMTQ3aH
+         L0YzUguw9xWTv21cy78Rf2QfvE9lokt4H/aU0nVFYAlqmJsCSXpRPAj8WHvY/GL1CEGU
+         Y0u/liqsZxWVERTQKcWeHIvH5K0KD8TkQ5cKM=
+Date: Thu, 12 Feb 2009 15:50:11 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Thomas Gleixner <tglx@tglx.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>
+Subject: Re: [patch] rt: res_counter fix, v2
+Message-ID: <20090212145010.GB6056@nowhere>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <20090212005032.GA4788@nowhere> <20090212021257.GB4697@nowhere> <20090212101650.GA1096@elte.hu> <20090212102113.GA10031@elte.hu> <20090212142806.GA5865@nowhere> <1234449701.10603.10.camel@laptop> <20090212144624.GB14616@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1233868079.3548.699.camel@macbook.infradead.org>
+In-Reply-To: <20090212144624.GB14616@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 09:07:59PM +0000, David Woodhouse wrote:
-> On Mon, 2009-01-19 at 15:46 +0100, Joerg Roedel wrote:
-> >  
-> > +       if (ref->type != entry->type) {
-> > +               err_printk(ref->dev, "DMA-API: device driver frees "
-> > +                          "DMA memory with wrong function "
-> > +                          "[device address=0x%016llx] [size=%llu bytes] "
-> > +                          "[mapped as %s] [unmapped as %s]\n",
-> > +                          ref->dev_addr, ref->size,
-> > +                          type2name[entry->type], type2name[ref->type]);
+On Thu, Feb 12, 2009 at 03:46:24PM +0100, Ingo Molnar wrote:
 > 
-> e1000e 0000:00:19.0: DMA-API: device driver frees DMA memory with wrong
-> function [device address=0x00000000ffedc002] [size=90 bytes] [mapped as
-> single] [unmapped as page]
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 > 
-> 
-> <davem> That debug check is excessive, substituting those two things
-> works for every DMA API implementation I am aware of
+> > On Thu, 2009-02-12 at 15:28 +0100, Frederic Weisbecker wrote:
+> > > > [   45.228589] hardirqs last disabled at (0): [<ffffffff8025449d>] copy_process+0x68d/0x1500
+> > > > [   45.228602] softirqs last  enabled at (0): [<ffffffff8025449d>] copy_process+0x68d/0x1500
+> > > 
+> > > 
+> > > The reason for which I wanted to send an irqsoff trace is that the above lines are false.
+> > 
+> > copy_process() has:
+> > 
+> > #endif
+> > 	p->hardirq_enable_ip = 0;
+> > 	p->hardirq_enable_event = 0;
+> > 	p->hardirq_disable_ip = _THIS_IP_;
+> > 	p->hardirq_disable_event = 0;
+> > 	p->softirqs_enabled = 1;
+> > 	p->softirq_enable_ip = _THIS_IP_;
+> > 	p->softirq_enable_event = 0;
+> > 	p->softirq_disable_ip = 0;
+> > 	p->softirq_disable_event = 0;
+> > 	p->hardirq_context = 0;
+> > 	p->softirq_context = 0;
+> > #endif
+> > 
+> > the sequence count of 0 basically tells you it hasn't been set yet.
 
-True. Buts it is an API violation, isn't it?
 
-Joerg
+Oh I see now, thanks Peter.
+
+ 
+> maybe we should initialize it to -1 to make this more apparent?
+
+
+Or why not set p->{hard,soft}irq_disable_ip = NULL ? (or 0, I don't know its type).
+
+
+> 	Ingo
 
