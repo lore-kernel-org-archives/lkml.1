@@ -1,254 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759859AbZBLQst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759494AbZBLQve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759859AbZBLQst (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 11:48:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757465AbZBLQsh
+	id S1759494AbZBLQve (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 11:51:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757311AbZBLQvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 11:48:37 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:58925 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756963AbZBLQse (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 11:48:34 -0500
-Date: Thu, 12 Feb 2009 11:48:30 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>, linux-alpha@vger.kernel.org,
-       linux-arch@vger.kernel.org, linux-m68k@vger.kernel.org,
-       linux-ia64@vger.kernel.org, kernel@avr32linux.org
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Tony Luck <tony.luck@intel.com>, Mike Travis <travis@sgi.com>,
-       isimatu.yasuaki@jp.fujitsu.com
-Subject: [git pull] preempt-count: force hardirq-count to max of 10
-Message-ID: <alpine.DEB.1.10.0902121139230.15469@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 12 Feb 2009 11:51:25 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:40409 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757173AbZBLQvY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 11:51:24 -0500
+Date: Thu, 12 Feb 2009 10:50:34 -0600
+From: Clark Williams <williams@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@tglx.de>, LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>
+Subject: Re: [patch] irq threading: fix PF_HARDIRQ definition
+Message-ID: <20090212105034.586c53d1@torg>
+In-Reply-To: <20090212084222.GA32091@elte.hu>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
+	<20090211205533.329cea1c@torg>
+	<20090212083850.GA29995@elte.hu>
+	<20090212084222.GA32091@elte.hu>
+Organization: Red Hat, Inc
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id n1CGpcwM022927
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Ingo,
+On Thu, 12 Feb 2009 09:42:22 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> Anyway, my fix should solve this. Do you still see the lockup under X? (make
+> sure you also have the IPI fix applied, see the patch in this same thread.)
 
-Please pull the latest tip/tracing/core tree, which can be found at:
+That did it (the IPI patch and the redefinition). I'm up with:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/core
+$ uname -a
+Linux torg 2.6.29-rc4-rt1-tip #51 SMP PREEMPT RT Thu Feb 12 09:40:06
+CST 2009 x86_64 x86_64 x86_64 GNU/Linux
 
+Thanks, I'll do some latency testing on my test boxes next...
 
-Steven Rostedt (1):
-      preempt-count: force hardirq-count to max of 10
+Clark
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.10 (GNU/Linux)
 
-----
- arch/alpha/include/asm/hardirq.h |   13 ----------
- arch/avr32/include/asm/hardirq.h |   11 --------
- arch/ia64/include/asm/hardirq.h  |   10 --------
- include/linux/hardirq.h          |   48 +++++++++++++++++++-------------------
- 4 files changed, 24 insertions(+), 58 deletions(-)
----------------------------
-commit 5a5fb7dbe88dd57dc2bef0f3be9da991e789612d
-Author: Steven Rostedt <srostedt@redhat.com>
-Date:   Thu Feb 12 10:53:37 2009 -0500
-
-    preempt-count: force hardirq-count to max of 10
-    
-    To add a bit in the preempt_count to be set when in NMI context, we
-    found that some archs did not have enough bits to spare. This is
-    due to the hardirq_count being a mask that can hold NR_IRQS.
-    
-    Some archs allow for over 16000 IRQs, and that would require a mask
-    of 14 bits. The sofitrq mask is 8 bits and the preempt disable mask
-    is also 8 bits.  The PREEMP_ACTIVE bit is bit 30, and bit 31 would
-    make the preempt_count (which is type int) a negative number.
-    A negative preempt_count is a sign of failure.
-    
-    Add them up 14+8+8+1+1 you get 32 bits. No room for the NMI bit.
-    
-    But the hardirq_count is to track the number of nested IRQs, not
-    the number of total IRQs.  This originally took the paranoid approach
-    of setting the max nesting to NR_IRQS. But when we have archs with
-    over 1000 IRQs, it is not practical to think they will ever all
-    nest on a single CPU. Not to mention that this would most definitely
-    cause a stack overflow.
-    
-    This patch sets a max of 10 bits to be used for IRQ nesting.
-    I did a 'git grep HARDIRQ' to examine all users of HARDIRQ_BITS and
-    HARDIRQ_MASK, and found that making it a max of 10 would not hurt
-    anyone. I did find that the m68k expected it to be 8 bits, so
-    I allow for the archs to set the number to be less than 10.
-    
-    I removed the setting of HARDIRQ_BITS from the archs that set it
-    to more than 10. This includes ALPHA, ia64 and avr32.
-    
-    This will always allow room for the NMI bit, and if we need to allow
-    for NMI nesting, we have 4 bits to play with.
-    
-    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-
-diff --git a/arch/alpha/include/asm/hardirq.h b/arch/alpha/include/asm/hardirq.h
-index d953e23..8897146 100644
---- a/arch/alpha/include/asm/hardirq.h
-+++ b/arch/alpha/include/asm/hardirq.h
-@@ -14,17 +14,4 @@ typedef struct {
- 
- void ack_bad_irq(unsigned int irq);
- 
--#define HARDIRQ_BITS	12
--
--/*
-- * The hardirq mask has to be large enough to have
-- * space for potentially nestable IRQ sources in the system
-- * to nest on a single CPU. On Alpha, interrupts are masked at the CPU
-- * by IPL as well as at the system level. We only have 8 IPLs (UNIX PALcode)
-- * so we really only have 8 nestable IRQs, but allow some overhead
-- */
--#if (1 << HARDIRQ_BITS) < 16
--#error HARDIRQ_BITS is too low!
--#endif
--
- #endif /* _ALPHA_HARDIRQ_H */
-diff --git a/arch/avr32/include/asm/hardirq.h b/arch/avr32/include/asm/hardirq.h
-index 2673543..015bc75 100644
---- a/arch/avr32/include/asm/hardirq.h
-+++ b/arch/avr32/include/asm/hardirq.h
-@@ -20,15 +20,4 @@ void ack_bad_irq(unsigned int irq);
- 
- #endif /* __ASSEMBLY__ */
- 
--#define HARDIRQ_BITS	12
--
--/*
-- * The hardirq mask has to be large enough to have
-- * space for potentially all IRQ sources in the system
-- * nesting on a single CPU:
-- */
--#if (1 << HARDIRQ_BITS) < NR_IRQS
--# error HARDIRQ_BITS is too low!
--#endif
--
- #endif /* __ASM_AVR32_HARDIRQ_H */
-diff --git a/arch/ia64/include/asm/hardirq.h b/arch/ia64/include/asm/hardirq.h
-index 140e495..d514cd9 100644
---- a/arch/ia64/include/asm/hardirq.h
-+++ b/arch/ia64/include/asm/hardirq.h
-@@ -20,16 +20,6 @@
- 
- #define local_softirq_pending()		(local_cpu_data->softirq_pending)
- 
--#define HARDIRQ_BITS	14
--
--/*
-- * The hardirq mask has to be large enough to have space for potentially all IRQ sources
-- * in the system nesting on a single CPU:
-- */
--#if (1 << HARDIRQ_BITS) < NR_IRQS
--# error HARDIRQ_BITS is too low!
--#endif
--
- extern void __iomem *ipi_base_addr;
- 
- void ack_bad_irq(unsigned int irq);
-diff --git a/include/linux/hardirq.h b/include/linux/hardirq.h
-index f3cf86e..9841221 100644
---- a/include/linux/hardirq.h
-+++ b/include/linux/hardirq.h
-@@ -15,61 +15,61 @@
-  * - bits 0-7 are the preemption count (max preemption depth: 256)
-  * - bits 8-15 are the softirq count (max # of softirqs: 256)
-  *
-- * The hardirq count can be overridden per architecture, the default is:
-+ * The hardirq count can in theory reach the same as NR_IRQS.
-+ * In reality, the number of nested IRQS is limited to the stack
-+ * size as well. For archs with over 1000 IRQS it is not practical
-+ * to expect that they will all nest. We give a max of 10 bits for
-+ * hardirq nesting. An arch may choose to give less than 10 bits.
-+ * m68k expects it to be 8.
-  *
-- * - bits 16-27 are the hardirq count (max # of hardirqs: 4096)
-- * - ( bit 28 is the PREEMPT_ACTIVE flag. )
-+ * - bits 16-25 are the hardirq count (max # of nested hardirqs: 1024)
-+ * - bit 26 is the NMI_MASK
-+ * - bit 28 is the PREEMPT_ACTIVE flag
-  *
-  * PREEMPT_MASK: 0x000000ff
-  * SOFTIRQ_MASK: 0x0000ff00
-- * HARDIRQ_MASK: 0x0fff0000
-+ * HARDIRQ_MASK: 0x03ff0000
-+ *     NMI_MASK: 0x04000000
-  */
- #define PREEMPT_BITS	8
- #define SOFTIRQ_BITS	8
-+#define NMI_BITS	1
- 
--#ifndef HARDIRQ_BITS
--#define HARDIRQ_BITS	12
-+#define MAX_HARDIRQ_BITS 10
- 
--#ifndef MAX_HARDIRQS_PER_CPU
--#define MAX_HARDIRQS_PER_CPU NR_IRQS
-+#ifndef HARDIRQ_BITS
-+# define HARDIRQ_BITS	MAX_HARDIRQ_BITS
- #endif
- 
--/*
-- * The hardirq mask has to be large enough to have space for potentially
-- * all IRQ sources in the system nesting on a single CPU.
-- */
--#if (1 << HARDIRQ_BITS) < MAX_HARDIRQS_PER_CPU
--# error HARDIRQ_BITS is too low!
--#endif
-+#if HARDIRQ_BITS > MAX_HARDIRQ_BITS
-+#error HARDIRQ_BITS too high!
- #endif
- 
- #define PREEMPT_SHIFT	0
- #define SOFTIRQ_SHIFT	(PREEMPT_SHIFT + PREEMPT_BITS)
- #define HARDIRQ_SHIFT	(SOFTIRQ_SHIFT + SOFTIRQ_BITS)
-+#define NMI_SHIFT	(HARDIRQ_SHIFT + HARDIRQ_BITS)
- 
- #define __IRQ_MASK(x)	((1UL << (x))-1)
- 
- #define PREEMPT_MASK	(__IRQ_MASK(PREEMPT_BITS) << PREEMPT_SHIFT)
- #define SOFTIRQ_MASK	(__IRQ_MASK(SOFTIRQ_BITS) << SOFTIRQ_SHIFT)
- #define HARDIRQ_MASK	(__IRQ_MASK(HARDIRQ_BITS) << HARDIRQ_SHIFT)
-+#define NMI_MASK	(__IRQ_MASK(NMI_BITS)     << NMI_SHIFT)
- 
- #define PREEMPT_OFFSET	(1UL << PREEMPT_SHIFT)
- #define SOFTIRQ_OFFSET	(1UL << SOFTIRQ_SHIFT)
- #define HARDIRQ_OFFSET	(1UL << HARDIRQ_SHIFT)
-+#define NMI_OFFSET	(1UL << NMI_SHIFT)
- 
--#if PREEMPT_ACTIVE < (1 << (HARDIRQ_SHIFT + HARDIRQ_BITS))
-+#if PREEMPT_ACTIVE < (1 << (NMI_SHIFT + NMI_BITS))
- #error PREEMPT_ACTIVE is too low!
- #endif
- 
--#define NMI_OFFSET	(PREEMPT_ACTIVE << 1)
--
--#if NMI_OFFSET >= 0x80000000
--#error PREEMPT_ACTIVE too high!
--#endif
--
- #define hardirq_count()	(preempt_count() & HARDIRQ_MASK)
- #define softirq_count()	(preempt_count() & SOFTIRQ_MASK)
--#define irq_count()	(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK))
-+#define irq_count()	(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK \
-+				 | NMI_MASK))
- 
- /*
-  * Are we doing bottom half or hardware interrupt processing?
-@@ -82,7 +82,7 @@
- /*
-  * Are we in NMI context?
-  */
--#define in_nmi()	(preempt_count() & NMI_OFFSET)
-+#define in_nmi()	(preempt_count() & NMI_MASK)
- 
- #if defined(CONFIG_PREEMPT)
- # define PREEMPT_INATOMIC_BASE kernel_locked()
-
+iEYEARECAAYFAkmUU2gACgkQHyuj/+TTEp3c7wCgjnQuYgoLmGOmq26a2T198eh/
+KdgAnjmX+cqwxYAtzaHeMH6/nO6MNuUH
+=NHh/
+-----END PGP SIGNATURE-----
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
