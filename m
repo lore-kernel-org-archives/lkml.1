@@ -1,290 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758235AbZBLJlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757864AbZBLJsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758235AbZBLJlo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 04:41:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755961AbZBLJl3
+	id S1757864AbZBLJsU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 04:48:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754976AbZBLJsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 04:41:29 -0500
-Received: from smtp2.kfki.hu ([148.6.0.28]:50490 "EHLO smtp2.kfki.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755125AbZBLJl1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 04:41:27 -0500
-Date: Thu, 12 Feb 2009 10:41:25 +0100 (CET)
-From: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
-To: Patrick McHardy <kaber@trash.net>
-cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] Update jhash.h with the new version of Jenkins' hash
-In-Reply-To: <4993E8F7.6070007@trash.net>
-Message-ID: <alpine.DEB.2.00.0902121039100.18858@blackhole.kfki.hu>
-References: <alpine.DEB.2.00.0902111107480.15665@blackhole.kfki.hu> <20090212001223.GA5757@movementarian.org> <alpine.DEB.2.00.0902121006440.18739@blackhole.kfki.hu> <4993E8F7.6070007@trash.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 12 Feb 2009 04:48:05 -0500
+Received: from mu-out-0910.google.com ([209.85.134.188]:20867 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754816AbZBLJsB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 04:48:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer;
+        b=hi1QFlShfyytTYyf42tCc7oduIQyjEKycheQPfRDYRQrOrcCOu1dM4ek8aMP/pHVq/
+         uU8HF48iSL2F5Cpwfs96Rfwfx5GH6OX25XYo5QTJV0hxIyvVv2RI9OKtIb5FFO5HEvZX
+         PqE7fc9gkTIqS4UvJV5++dZUm+7Ye5WofcrHE=
+Subject: Re: XFS kernel BUG at fs/buffer.c:470! with 2.6.28.4
+From: Alessandro Bono <alessandro.bono@gmail.com>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-xfs <linux-xfs@oss.sgi.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090210104304.GP8830@disturbed>
+References: <1234011974.7435.11.camel@champagne.cantina>
+	 <20090208222859.GA2532@infradead.org>
+	 <1234132752.12370.0.camel@champagne.cantina>
+	 <20090208224249.GA11931@infradead.org>
+	 <1234133120.12370.7.camel@champagne.cantina>
+	 <20090209075308.GA7360@infradead.org>  <20090210104304.GP8830@disturbed>
+Content-Type: multipart/mixed; boundary="=-wB7tw1i+Q48e7GpfPeFA"
+Date: Thu, 12 Feb 2009 10:47:57 +0100
+Message-Id: <1234432077.9204.15.camel@champagne.cantina>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Feb 2009, Patrick McHardy wrote:
 
-> Jozsef Kadlecsik wrote:
-> > -#define __jhash_mix(a, b, c) \
-> > +#define __rot(x,k) (((x)<<(k)) | ((x)>>(32-(k))))
-> > +
-> > +/* __jhash_mix - mix 3 32-bit values reversibly. */
-> > +#define __jhash_mix(a,b,c) \
-> > +{ \
-> > +  a -= c;  a ^= __rot(c, 4);  c += b; \
-> > +  b -= a;  b ^= __rot(a, 6);  a += c; \
-> > +  c -= b;  c ^= __rot(b, 8);  b += a; \
-> > +  a -= c;  a ^= __rot(c,16);  c += b; \
-> > +  b -= a;  b ^= __rot(a,19);  a += c; \
-> > +  c -= b;  c ^= __rot(b, 4);  b += a; \
-> > +}
+--=-wB7tw1i+Q48e7GpfPeFA
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+
+On Tue, 2009-02-10 at 21:43 +1100, Dave Chinner wrote:
+> On Mon, Feb 09, 2009 at 02:53:08AM -0500, Christoph Hellwig wrote:
+> > On Sun, Feb 08, 2009 at 11:45:20PM +0100, Alessandro Bono wrote:
+> > > sure, attached
+> > 
+> > That would be a missing PagePrivate bit in page_buffers() called from
+> > end_buffer_async_write.  PG_private can only be cleared via drop_buffers
+> > which requires the page not having PG_writeback set which must be
+> > set until end_buffer_async_write is done.  Very strange, and all this
+> > is generic code without xfs involvement.  Did this happen once
+> > or can you reproduce it?
 > 
-> include/linux/bitops.h includes multiple rot variants. rol32()
-> looks approriate.
+> Hmmmm - i wonder if this has anything to do with the writeback fixes
+> that went into 2.6.28.2? Alessandro, can you revert to 2.6.28.1 (not
+> plain 2.6.28) and see if you can reproduce the problem?
 
-Thank Patrick, patch updated with rol32():
+another test another bug
+kernel 2.6.29-rc4-git4 with DEBUG_PAGEALLOC and CONFIG_DEBUG_LIST
+enabled (idea taken from a totally unrelated mail from Ingo Molnar to
+catch a memory corruption), usual bug attached
+2.6.27 from ubuntu not survived to rsync
 
-Signed-off-by: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+btw my first report of a similar problem was with a kernel 2.6.26.6 but
+at time I was using binary driver for my radeon card and Christoph
+suggest me that I have to recreate problem without any binary driver
+maybe it's not a recent regression, it's simply easier to hit with a
+newer kernel
 
-diff --git a/include/linux/jhash.h b/include/linux/jhash.h
-index 2a2f99f..e48ecc2 100644
---- a/include/linux/jhash.h
-+++ b/include/linux/jhash.h
-@@ -1,82 +1,97 @@
- #ifndef _LINUX_JHASH_H
- #define _LINUX_JHASH_H
- 
-+#include <linux/bitops.h>
-+
- /* jhash.h: Jenkins hash support.
-  *
-- * Copyright (C) 1996 Bob Jenkins (bob_jenkins@burtleburtle.net)
-+ * Copyright (C) 2006. Bob Jenkins (bob_jenkins@burtleburtle.net)
-  *
-  * http://burtleburtle.net/bob/hash/
-  *
-  * These are the credits from Bob's sources:
-  *
-- * lookup2.c, by Bob Jenkins, December 1996, Public Domain.
-- * hash(), hash2(), hash3, and mix() are externally useful functions.
-- * Routines to test the hash are included if SELF_TEST is defined.
-- * You can use this free for any purpose.  It has no warranty.
-+ * lookup3.c, by Bob Jenkins, May 2006, Public Domain.
-+ *
-+ * These are functions for producing 32-bit hashes for hash table lookup.
-+ * hashword(), hashlittle(), hashlittle2(), hashbig(), mix(), and final() 
-+ * are externally useful functions.  Routines to test the hash are included 
-+ * if SELF_TEST is defined.  You can use this free for any purpose.  It's in
-+ * the public domain.  It has no warranty.
-  *
-- * Copyright (C) 2003 David S. Miller (davem@redhat.com)
-+ * Copyright (C) 2009 Jozsef Kadlecsik (kadlec@blackhole.kfki.hu)
-  *
-  * I've modified Bob's hash to be useful in the Linux kernel, and
-- * any bugs present are surely my fault.  -DaveM
-+ * any bugs present are my fault.  Jozsef
-  */
- 
--/* NOTE: Arguments are modified. */
--#define __jhash_mix(a, b, c) \
-+/* __jhash_mix - mix 3 32-bit values reversibly. */
-+#define __jhash_mix(a,b,c) \
-+{ \
-+  a -= c;  a ^= rol32(c, 4);  c += b; \
-+  b -= a;  b ^= rol32(a, 6);  a += c; \
-+  c -= b;  c ^= rol32(b, 8);  b += a; \
-+  a -= c;  a ^= rol32(c,16);  c += b; \
-+  b -= a;  b ^= rol32(a,19);  a += c; \
-+  c -= b;  c ^= rol32(b, 4);  b += a; \
-+}
-+
-+/* __jhash_final - final mixing of 3 32-bit values (a,b,c) into c */
-+#define __jhash_final(a,b,c) \
- { \
--  a -= b; a -= c; a ^= (c>>13); \
--  b -= c; b -= a; b ^= (a<<8); \
--  c -= a; c -= b; c ^= (b>>13); \
--  a -= b; a -= c; a ^= (c>>12);  \
--  b -= c; b -= a; b ^= (a<<16); \
--  c -= a; c -= b; c ^= (b>>5); \
--  a -= b; a -= c; a ^= (c>>3);  \
--  b -= c; b -= a; b ^= (a<<10); \
--  c -= a; c -= b; c ^= (b>>15); \
-+  c ^= b; c -= rol32(b,14); \
-+  a ^= c; a -= rol32(c,11); \
-+  b ^= a; b -= rol32(a,25); \
-+  c ^= b; c -= rol32(b,16); \
-+  a ^= c; a -= rol32(c,4);  \
-+  b ^= a; b -= rol32(a,14); \
-+  c ^= b; c -= rol32(b,24); \
- }
- 
--/* The golden ration: an arbitrary value */
--#define JHASH_GOLDEN_RATIO	0x9e3779b9
-+/* An arbitrary initial parameter */
-+#define JHASH_INIT_PARAM	0xdeadbeef
- 
- /* The most generic version, hashes an arbitrary sequence
-  * of bytes.  No alignment or length assumptions are made about
-- * the input key.
-+ * the input key. The result depends on endianness.
-  */
- static inline u32 jhash(const void *key, u32 length, u32 initval)
- {
--	u32 a, b, c, len;
-+	u32 a,b,c;
- 	const u8 *k = key;
- 
--	len = length;
--	a = b = JHASH_GOLDEN_RATIO;
--	c = initval;
--
--	while (len >= 12) {
--		a += (k[0] +((u32)k[1]<<8) +((u32)k[2]<<16) +((u32)k[3]<<24));
--		b += (k[4] +((u32)k[5]<<8) +((u32)k[6]<<16) +((u32)k[7]<<24));
--		c += (k[8] +((u32)k[9]<<8) +((u32)k[10]<<16)+((u32)k[11]<<24));
--
--		__jhash_mix(a,b,c);
-+	/* Set up the internal state */
-+	a = b = c = JHASH_INIT_PARAM + length + initval;
- 
-+	/* all but the last block: affect some 32 bits of (a,b,c) */
-+	while (length > 12) {
-+    		a += (k[0] + ((u32)k[1]<<8) + ((u32)k[2]<<16) + ((u32)k[3]<<24));
-+		b += (k[4] + ((u32)k[5]<<8) + ((u32)k[6]<<16) + ((u32)k[7]<<24));
-+		c += (k[8] + ((u32)k[9]<<8) + ((u32)k[10]<<16) + ((u32)k[11]<<24));
-+		__jhash_mix(a, b, c);
-+		length -= 12;
- 		k += 12;
--		len -= 12;
- 	}
- 
--	c += length;
--	switch (len) {
--	case 11: c += ((u32)k[10]<<24);
--	case 10: c += ((u32)k[9]<<16);
--	case 9 : c += ((u32)k[8]<<8);
--	case 8 : b += ((u32)k[7]<<24);
--	case 7 : b += ((u32)k[6]<<16);
--	case 6 : b += ((u32)k[5]<<8);
-+	/* last block: affect all 32 bits of (c) */
-+	/* all the case statements fall through */
-+	switch (length) {
-+	case 12: c += (u32)k[11]<<24;
-+	case 11: c += (u32)k[10]<<16;
-+	case 10: c += (u32)k[9]<<8;
-+	case 9 : c += k[8];
-+	case 8 : b += (u32)k[7]<<24;
-+	case 7 : b += (u32)k[6]<<16;
-+	case 6 : b += (u32)k[5]<<8;
- 	case 5 : b += k[4];
--	case 4 : a += ((u32)k[3]<<24);
--	case 3 : a += ((u32)k[2]<<16);
--	case 2 : a += ((u32)k[1]<<8);
-+	case 4 : a += (u32)k[3]<<24;
-+	case 3 : a += (u32)k[2]<<16;
-+	case 2 : a += (u32)k[1]<<8;
- 	case 1 : a += k[0];
--	};
--
--	__jhash_mix(a,b,c);
-+		__jhash_final(a, b, c);
-+	case 0 :
-+		break;
-+	}
- 
- 	return c;
- }
-@@ -86,58 +101,57 @@ static inline u32 jhash(const void *key, u32 length, u32 initval)
-  */
- static inline u32 jhash2(const u32 *k, u32 length, u32 initval)
- {
--	u32 a, b, c, len;
-+	u32 a, b, c;
- 
--	a = b = JHASH_GOLDEN_RATIO;
--	c = initval;
--	len = length;
-+	/* Set up the internal state */
-+	a = b = c = JHASH_INIT_PARAM + (length<<2) + initval;
- 
--	while (len >= 3) {
-+	/* handle most of the key */
-+	while (length > 3) {
- 		a += k[0];
- 		b += k[1];
- 		c += k[2];
- 		__jhash_mix(a, b, c);
--		k += 3; len -= 3;
-+		length -= 3;
-+		k += 3;
- 	}
- 
--	c += length * 4;
--
--	switch (len) {
--	case 2 : b += k[1];
--	case 1 : a += k[0];
--	};
--
--	__jhash_mix(a,b,c);
-+	/* handle the last 3 u32's */
-+	/* all the case statements fall through */ 
-+	switch (length) {
-+	case 3: c += k[2];
-+	case 2: b += k[1];
-+	case 1: a += k[0];
-+		__jhash_final(a, b, c);
-+	case 0:     /* case 0: nothing left to add */
-+		break;
-+	}
- 
- 	return c;
- }
- 
--
- /* A special ultra-optimized versions that knows they are hashing exactly
-  * 3, 2 or 1 word(s).
-- *
-- * NOTE: In partilar the "c += length; __jhash_mix(a,b,c);" normally
-- *       done at the end is not done here.
-  */
- static inline u32 jhash_3words(u32 a, u32 b, u32 c, u32 initval)
- {
--	a += JHASH_GOLDEN_RATIO;
--	b += JHASH_GOLDEN_RATIO;
--	c += initval;
-+	a += JHASH_INIT_PARAM + initval;
-+	b += JHASH_INIT_PARAM + initval;
-+	c += JHASH_INIT_PARAM + initval;
- 
--	__jhash_mix(a, b, c);
-+	__jhash_final(a, b, c);
- 
- 	return c;
- }
- 
- static inline u32 jhash_2words(u32 a, u32 b, u32 initval)
- {
--	return jhash_3words(a, b, 0, initval);
-+	return jhash_3words(0, a, b, initval);
- }
- 
- static inline u32 jhash_1word(u32 a, u32 initval)
- {
--	return jhash_3words(a, 0, 0, initval);
-+	return jhash_3words(0, 0, a, initval);
- }
- 
- #endif /* _LINUX_JHASH_H */
+I don't have abandoned idea of a hardware problem but I don't know how
+to be sure
 
-Best regards,
-Jozsef
--
-E-mail  : kadlec@blackhole.kfki.hu, kadlec@mail.kfki.hu
-PGP key : http://www.kfki.hu/~kadlec/pgp_public_key.txt
-Address : KFKI Research Institute for Particle and Nuclear Physics
-          H-1525 Budapest 114, POB. 49, Hungary
+any suggestion?
+
+thanks
+
+> 
+> Cheers,
+> 
+> Dave.
+-- 
+---
+Cordiali Saluti
+Alessandro Bono
+
+--=-wB7tw1i+Q48e7GpfPeFA
+Content-Disposition: attachment; filename="bug-2.6.29-rc4-git4"
+Content-Type: text/plain; name="bug-2.6.29-rc4-git4"; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+Feb 12 10:11:09 champagne kernel: [ 2447.523803] ------------[ cut here ]------------
+Feb 12 10:11:09 champagne kernel: [ 2447.523808] kernel BUG at fs/buffer.c:534!
+Feb 12 10:11:09 champagne kernel: [ 2447.523809] invalid opcode: 0000 [#1] SMP DEBUG_PAGEALLOC
+Feb 12 10:11:09 champagne kernel: [ 2447.523812] last sysfs file: /sys/class/power_supply/C1F4/charge_full
+Feb 12 10:11:09 champagne kernel: [ 2447.523814] CPU 0
+Feb 12 10:11:09 champagne kernel: [ 2447.523816] Modules linked in: usb_storage libusual af_packet binfmt_misc rfcomm bridge stp llc bnep sco l2cap acpi_cpuf
+req cpufreq_userspace cpufreq_stats cpufreq_powersave cpufreq_ondemand freq_table cpufreq_conservative sbs sbshc pci_slot ipt_LOG xt_limit ipt_addrtype xt_st
+ate xt_tcpudp xt_conntrack ip6table_filter ip6_tables ipv6 nf_nat_irc nf_conntrack_irc nf_nat_ftp nf_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_conntrack_ftp nf
+_conntrack iptable_filter ip_tables x_tables ext3 jbd mbcache hp_wmi coretemp sbp2 loop snd_hda_codec_atihdmi snd_hda_codec_analog snd_hda_intel snd_hda_code
+c snd_hwdep snd_pcm_oss snd_pcm snd_mixer_oss arc4 snd_seq_dummy ecb snd_seq_oss snd_seq_midi snd_rawmidi snd_seq_midi_event iwlagn snd_seq parport_pc parpor
+t iwlcore rfkill pcmcia snd_timer snd_seq_device btusb ricoh_mmc joydev mac80211 snd wmi container sdhci_pci sdhci bluetooth psmouse yenta_socket rsrc_nonsta
+tic pcmcia_core serio_raw tpm_infineon tpm tpm_bios video output cfg80211 hp_accel lis3
+Feb 12 10:11:09 champagne kernel: v02d battery ac button mmc_core led_class pcspkr iTCO_wdt iTCO_vendor_support soundcore snd_page_alloc evdev dm_multipath x
+fs exportfs sd_mod crc_t10dif sg sr_mod cdrom ohci1394 ahci ata_piix ieee1394 libata scsi_mod ehci_hcd uhci_hcd usbcore e1000e dm_crypt dm_mirror dm_region_h
+ash dm_log dm_snapshot dm_mod thermal processor fan thermal_sys hwmon fuse
+Feb 12 10:11:09 champagne kernel: [ 2447.523885] Pid: 2557, comm: xfsdatad/0 Not tainted 2.6.29-rc4-git4 #1 HP Compaq 8510p
+Feb 12 10:11:09 champagne kernel: [ 2447.523886] RIP: 0010:[<ffffffff802bfc56>]  [<ffffffff802bfc56>] end_buffer_async_write+0x83/0xfb
+Feb 12 10:11:09 champagne kernel: [ 2447.523893] RSP: 0000:ffff8801384bbe30  EFLAGS: 00010246
+Feb 12 10:11:09 champagne kernel: [ 2447.523895] RAX: 0000000240000000 RBX: ffff880034be7e70 RCX: 0000000000000034
+Feb 12 10:11:09 champagne kernel: [ 2447.523897] RDX: 000000000000000c RSI: 0000000000000001 RDI: ffff880034be7e70
+Feb 12 10:11:09 champagne kernel: [ 2447.523899] RBP: ffff88000c777c60 R08: a000000000000000 R09: ffffffff8050f0cb
+Feb 12 10:11:09 champagne kernel: [ 2447.523900] R10: 0000000000000002 R11: ffff88013b85fee0 R12: ffff8800015a7d80
+Feb 12 10:11:09 champagne kernel: [ 2447.523902] R13: ffffe200012a960c R14: ffff88013b85ff00 R15: 0000000000000001
+Feb 12 10:11:09 champagne kernel: [ 2447.523904] FS:  0000000000000000(0000) GS:ffffffff80592040(0000) knlGS:0000000000000000
+Feb 12 10:11:09 champagne kernel: [ 2447.523906] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+Feb 12 10:11:09 champagne kernel: [ 2447.523907] CR2: 00000000044d4ff0 CR3: 00000000b3d96000 CR4: 00000000000006e0
+Feb 12 10:11:09 champagne kernel: [ 2447.523909] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+Feb 12 10:11:09 champagne kernel: [ 2447.523911] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Feb 12 10:11:09 champagne kernel: [ 2447.523913] Process xfsdatad/0 (pid: 2557, threadinfo ffff8801384ba000, task ffff8801394f4420)
+Feb 12 10:11:09 champagne kernel: [ 2447.523914] Stack:
+Feb 12 10:11:09 champagne kernel: [ 2447.523915]  ffffffff80582800 ffffffff8040a2be ffff8801394f47a0 000000008029e721
+Feb 12 10:11:09 champagne kernel: [ 2447.523918]  0000000000000286 ffff880034be7d20 ffff88000c777c60 ffff8800015a7d80
+Feb 12 10:11:09 champagne kernel: [ 2447.523921]  ffff8800015a7c00 ffffffffa01becf5 ffff88000c777c60 ffff880139494c80
+Feb 12 10:11:09 champagne kernel: [ 2447.523924] Call Trace:
+Feb 12 10:11:09 champagne kernel: [ 2447.523925]  [<ffffffff8040a2be>] ? __down_write_nested+0x15/0x95
+Feb 12 10:11:09 champagne kernel: [ 2447.523931]  [<ffffffffa01becf5>] ? xfs_destroy_ioend+0x33/0x7e [xfs]
+Feb 12 10:11:09 champagne kernel: [ 2447.523954]  [<ffffffffa01bee64>] ? xfs_end_bio_delalloc+0x0/0x19 [xfs]
+Feb 12 10:11:09 champagne kernel: [ 2447.523970]  [<ffffffff8024470a>] ? run_workqueue+0x79/0xfe
+Feb 12 10:11:09 champagne kernel: [ 2447.523974]  [<ffffffff80244867>] ? worker_thread+0xd8/0xe7
+Feb 12 10:11:09 champagne kernel: [ 2447.523976]  [<ffffffff80247bcd>] ? autoremove_wake_function+0x0/0x2e
+Feb 12 10:11:09 champagne kernel: [ 2447.523979]  [<ffffffff8024478f>] ? worker_thread+0x0/0xe7
+Feb 12 10:11:09 champagne kernel: [ 2447.523981]  [<ffffffff8024478f>] ? worker_thread+0x0/0xe7
+Feb 12 10:11:09 champagne kernel: [ 2447.523983]  [<ffffffff80247882>] ? kthread+0x47/0x73
+Feb 12 10:11:09 champagne kernel: [ 2447.523985]  [<ffffffff8020c5fa>] ? child_rip+0xa/0x20
+Feb 12 10:11:09 champagne kernel: [ 2447.523988]  [<ffffffff8024783b>] ? kthread+0x0/0x73
+Feb 12 10:11:09 champagne kernel: [ 2447.523990]  [<ffffffff8020c5f0>] ? child_rip+0x0/0x20
+Feb 12 10:11:09 champagne kernel: [ 2447.523993] Code: 14 00 49 8b 45 18 48 8d 50 62 f0 80 48 62 20 48 8d 43 01 f0 80 4b 01 08 f0 80 23 fe f0 41 80 4d 00 02
+49 8b 45 00 f6 c4 08 75 04 <0f> 0b eb fe 49 8b 6d 10 9c 41 5c fa eb 08 f3 90 f6 45 00 10 75
+Feb 12 10:11:09 champagne kernel: [ 2447.524020] RIP  [<ffffffff802bfc56>] end_buffer_async_write+0x83/0xfb
+Feb 12 10:11:09 champagne kernel: [ 2447.524023]  RSP <ffff8801384bbe30>
+Feb 12 10:11:09 champagne kernel: [ 2447.524121] ---[ end trace 8372db6c09f46582 ]---
+
+--=-wB7tw1i+Q48e7GpfPeFA--
+
