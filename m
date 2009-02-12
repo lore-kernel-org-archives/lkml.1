@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759452AbZBLRXH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759491AbZBLR1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759452AbZBLRXH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 12:23:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750742AbZBLRWz
+	id S1759491AbZBLR1n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 12:27:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757051AbZBLR1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 12:22:55 -0500
-Received: from smtprelay08.ispgateway.de ([80.67.29.8]:52187 "EHLO
-	smtprelay08.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750703AbZBLRWz (ORCPT
+	Thu, 12 Feb 2009 12:27:35 -0500
+Received: from casper.infradead.org ([85.118.1.10]:56322 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755017AbZBLR1e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 12:22:55 -0500
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: Peter Zijlstra <peterz@infradead.org>
+	Thu, 12 Feb 2009 12:27:34 -0500
 Subject: Re: git-send-email
-Date: Thu, 12 Feb 2009 18:25:34 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; x86_64; ; )
-Cc: Junio C Hamano <gitster@pobox.com>, "L-K" <linux-kernel@vger.kernel.org>,
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Oeser <ioe-lkml@rameria.de>
+Cc: Junio C Hamano <gitster@pobox.com>, L-K <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <200902121825.35021.ioe-lkml@rameria.de>
 References: <1234451714.10603.22.camel@laptop>
-In-Reply-To: <1234451714.10603.22.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	 <200902121825.35021.ioe-lkml@rameria.de>
+Content-Type: text/plain
+Date: Thu, 12 Feb 2009 18:27:23 +0100
+Message-Id: <1234459643.10603.33.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.90 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902121825.35021.ioe-lkml@rameria.de>
-X-Df-Sender: 849595
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 2009-02-12 at 18:25 +0100, Ingo Oeser wrote:
+> Hi,
+> 
+> On Thursday 12 February 2009, Peter Zijlstra wrote:
+> > could we change the default of git-send-email to --no-chain-reply-to?
+> > These incredibly deep mail threads are a nuisance.
+> 
+> No, they are great, if you like to skip over a topic, you are not
+> interested in at all!
 
-On Thursday 12 February 2009, Peter Zijlstra wrote:
-> could we change the default of git-send-email to --no-chain-reply-to?
-> These incredibly deep mail threads are a nuisance.
+A single depth thread can do that too.
 
-No, they are great, if you like to skip over a topic, you are not
-interested in at all!
+> If you don't like it, just switch off thread in your mailer and
+> don't force this on everybody else!
 
-If you don't like it, just switch off thread in your mailer and
-don't force this on everybody else!
+That's something quite different. I quite like the subject grouping,
+what I don't like is not being able to read distinct subject lines
+because the n-th email in the patch series in so deep the threading in
+my mailer can't display the subject anymore.
 
-Best Regards
-
-Ingo Oeser
