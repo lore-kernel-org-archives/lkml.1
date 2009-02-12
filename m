@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbZBLBgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757711AbZBLBi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757363AbZBLBgi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 20:36:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756191AbZBLBg3
+	id S1757711AbZBLBi6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 20:38:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754738AbZBLBiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 20:36:29 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55407 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756206AbZBLBg3 (ORCPT
+	Wed, 11 Feb 2009 20:38:50 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54092 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753143AbZBLBit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 20:36:29 -0500
-Date: Wed, 11 Feb 2009 17:35:52 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Lin Ming <ming.m.lin@intel.com>
-cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: specjbb2005 fails with 2.6.29-rc4
-In-Reply-To: <1234401390.7699.29.camel@minggr.sh.intel.com>
-Message-ID: <alpine.LFD.2.00.0902111733170.3189@localhost.localdomain>
-References: <1234401390.7699.29.camel@minggr.sh.intel.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 11 Feb 2009 20:38:49 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/2] mm: update_page_reclaim_stat() is called form page fault path
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, npiggin@suse.de, hugh@veritas.com, riel@redhat.com
+In-Reply-To: <20090211151801.d9e8c84b.akpm@linux-foundation.org>
+References: <20090211213340.C3CD.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090211151801.d9e8c84b.akpm@linux-foundation.org>
+Message-Id: <20090212103801.C8E1.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Thu, 12 Feb 2009 10:38:44 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 12 Feb 2009, Lin Ming wrote:
+> > +void update_page_reclaim_stat(struct page *page)
+> > +{
+> > +	struct zone *zone = page_zone(page);
+> > +
+> > +	spin_lock_irq(&zone->lru_lock);
+> > +	/* if the page isn't reclaimable, it doesn't update reclaim stat */
+> > +	if (PageLRU(page) && !PageUnevictable(page)) {
+> > +		update_page_reclaim_stat_locked(zone, page,
+> > +					 !!page_is_file_cache(page), 1);
+> > +	}
+> > +	spin_unlock_irq(&zone->lru_lock);
+> > +}
 > 
-> Test with Jrockit VM fails. And it works well if OpenJDK is used
-> instead.
+> And we just added a spin_lock_irq() and a bunch of other stuff to it.
+> 
+> Can we improve this?
+> 
+> Can we just omit it, even?
+> 
+> Can we update those stats locklessly and accomodate the resulting
+> inaccuracy over at the codesites where these statistics are actually
+> used?
 
-I suspect maybe it uses hugetlbs?
+fair enough.
+thanks good suggestion.
 
-There were a couple of commits to fix VM_ACCOUNT for hugepage areas 
-recently. See
+I'm working it on.
 
- - 5a6fe125950676015f5108fb71b2a67441755003: "Do not account for the 
-   address space used by hugetlbfs using VM_ACCOUNT"
 
- - 17c9d12e126cb0de8d535dc1908c4819d712bc68: "Do not account for hugetlbfs 
-   quota at mmap() time if mapping [SHM|MAP]_NORESERVE"
 
-because hugetlb mappings have their own magical VM accounting.
-
-So can you check if current -git fixes it?
-
-		Linus
