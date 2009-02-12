@@ -1,43 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760806AbZBLWLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932095AbZBLWLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760806AbZBLWLA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 17:11:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbZBLWKv
+	id S932095AbZBLWLl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 17:11:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753455AbZBLWLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 17:10:51 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51164 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751231AbZBLWKu (ORCPT
+	Thu, 12 Feb 2009 17:11:31 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:36785 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753083AbZBLWL3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 17:10:50 -0500
-Date: Thu, 12 Feb 2009 14:10:14 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
+	Thu, 12 Feb 2009 17:11:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=g/oKFL9VTgsDx4z2SCb+ps5M8KIaCgILJan4lDcg4RAz0Dv3G+AOXruylecKg7OZVF
+         pW8RnJ1DYw6MXQ8x1DwfWkcB56RJGu6yPK6cPoMjJAkkw65pJLZAaJLsGUky0Z4GG38/
+         TRucpWu/GWhzbWNC8WgKREVlG3wD1Ca1Ts130=
+Date: Fri, 13 Feb 2009 01:17:41 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
 To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: mpm@selenic.com, containers@lists.linux-foundation.org, hpa@zytor.com,
+Cc: Andrew Morton <akpm@linux-foundation.org>, Matt Mackall <mpm@selenic.com>,
+       containers@lists.linux-foundation.org, hpa@zytor.com,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        viro@zeniv.linux.org.uk, linux-api@vger.kernel.org, mingo@elte.hu,
-       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org
+       torvalds@linux-foundation.org, tglx@linutronix.de,
+       Pavel Emelyanov <xemul@openvz.org>
 Subject: Re: What can OpenVZ do?
-Message-Id: <20090212141014.2cd3d54d.akpm@linux-foundation.org>
+Message-ID: <20090212221741.GA13861@x200.localdomain>
+References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu> <1234285547.30155.6.camel@nimitz> <20090211141434.dfa1d079.akpm@linux-foundation.org> <1234462282.30155.171.camel@nimitz> <1234467035.3243.538.camel@calx> <20090212114207.e1c2de82.akpm@linux-foundation.org> <1234475483.30155.194.camel@nimitz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <1234475483.30155.194.camel@nimitz>
-References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu>
-	<1234285547.30155.6.camel@nimitz>
-	<20090211141434.dfa1d079.akpm@linux-foundation.org>
-	<1234462282.30155.171.camel@nimitz>
-	<1234467035.3243.538.camel@calx>
-	<20090212114207.e1c2de82.akpm@linux-foundation.org>
-	<1234475483.30155.194.camel@nimitz>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Feb 2009 13:51:23 -0800
-Dave Hansen <dave@linux.vnet.ibm.com> wrote:
-
+On Thu, Feb 12, 2009 at 01:51:23PM -0800, Dave Hansen wrote:
 > On Thu, 2009-02-12 at 11:42 -0800, Andrew Morton wrote:
 > > On Thu, 12 Feb 2009 13:30:35 -0600
 > > Matt Mackall <mpm@selenic.com> wrote:
@@ -86,47 +87,19 @@ Dave Hansen <dave@linux.vnet.ibm.com> wrote:
 >  628 files changed, 59597 insertions(+), 2927 deletions(-)
 > dave@nimitz:~/kernels/linux-2.6-openvz$ git diff v2.6.27.10... | wc 
 >   84887  290855 2308745
-> 
+
+	git-diff -- kernel/cpt/
+
+should give more realistic picture.
+
 > Unfortunately, the git tree doesn't have that great of a history.  It
 > appears that the forward-ports are just applications of huge single
 > patches which then get committed into git.  This tree has also
 > historically contained a bunch of stuff not directly related to
 > checkpoint/restart like resource management.
-> 
+
 > We'd be idiots not to take a hard look at what has been done in OpenVZ.
 > But, for the time being, we have absolutely no shortage of things that
 > we know are important and know have to be done.  Our largest problem is
 > not finding things to do, but is our large out-of-tree patch that is
 > growing by the day. :(
-> 
-
-Well we have a chicken-and-eggish thing.  The patchset will keep
-growing until we understand how much of this:
-
-> dave@nimitz:~/kernels/linux-2.6-openvz$ git diff v2.6.27.10... | diffstat | tail -1
->  628 files changed, 59597 insertions(+), 2927 deletions(-)
-
-we will be committed to if we were to merge the current patchset.
-
-
-Now, we've gone in blind before - most notably on the
-containers/cgroups/namespaces stuff.  That hail mary pass worked out
-acceptably, I think.  Maybe we got lucky.  I thought that
-net-namespaces in particular would never get there, but it did.
-
-That was a very large and quite long-term-important user-visible
-feature.
-
-checkpoint/restart/migration is also a long-term-...-feature.  But if
-at all possible I do think that we should go into it with our eyes a
-little less shut.
-
-Interestingly, there was also prior-art for
-containers/cgroups/namespaces within OpenVZ.  But we decided up-front
-(I think) that the eventual implementation would have little in common
-with preceding implementations.
-
-
-Oh, and I'd disagree with your new Subject:.  It's pretty easy to find
-out what OpenVZ can do.  The more important question here is "how much
-of a mess did it make when it did it?"
