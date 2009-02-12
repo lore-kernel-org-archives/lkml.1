@@ -1,122 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760025AbZBLT3E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760555AbZBLTaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760025AbZBLT3E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 14:29:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757247AbZBLT2s
+	id S1760555AbZBLTaL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 14:30:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758633AbZBLT3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 14:28:48 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:39386 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752896AbZBLT2r (ORCPT
+	Thu, 12 Feb 2009 14:29:55 -0500
+Received: from tomts5.bellnexxia.net ([209.226.175.25]:35471 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758320AbZBLT3y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 14:28:47 -0500
-From: Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH] drivers/isdn/hardware/mISDN: fix sparse warnings: make
-	symbols static
-To: netdev@vger.kernel.org
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Thu, 12 Feb 2009 20:28:40 +0100
-Message-ID: <20090212192810.7401.70271.stgit@vmbox.hanneseder.net>
-User-Agent: StGit/0.14.3.292.gb975.dirty
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Thu, 12 Feb 2009 14:29:54 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArMEAP8HlElMQWt2/2dsb2JhbACBbtJKhBgG
+Date: Thu, 12 Feb 2009 14:29:41 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bryan Wu <cooloney@kernel.org>, uclinux-dist-devel@blackfin.uclinux.org
+Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
+	(repost)
+Message-ID: <20090212192941.GC2047@Krystal>
+References: <20090211153246.GA6694@linux.vnet.ibm.com> <20090211185203.GA29852@Krystal> <20090211200903.GG6694@linux.vnet.ibm.com> <20090211214258.GA32407@Krystal> <20090212003549.GU6694@linux.vnet.ibm.com> <20090212023308.GA21157@linux.vnet.ibm.com> <20090212040824.GA12346@Krystal> <20090212050120.GA8317@linux.vnet.ibm.com> <20090212070539.GA15896@Krystal> <20090212164621.GC6759@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090212164621.GC6759@linux.vnet.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:47:47 up 42 days, 18:45,  6 users,  load average: 0.22, 0.27,
+	0.35
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix this sparse warnings:
-  drivers/isdn/hardware/mISDN/hfcpci.c:59:19: warning: symbol 'hfc_tl' was not declared. Should it be static?
-  drivers/isdn/hardware/mISDN/hfcpci.c:60:9: warning: symbol 'hfc_jiffies' was not declared. Should it be static?
-  drivers/isdn/hardware/mISDN/hfcsusb.h:201:6: warning: symbol 'conf_str' was not declared. Should it be static?
-  drivers/isdn/hardware/mISDN/hfcsusb.h:319:12: warning: symbol 'HFC_TE_LAYER1_STATES' was not declared. Should it be static?
-  drivers/isdn/hardware/mISDN/hfcsusb.h:331:12: warning: symbol 'HFC_NT_LAYER1_STATES' was not declared. Should it be static?
-  drivers/isdn/hardware/mISDN/hfcsusb.c:38:12: warning: symbol 'hfcsusb_rev' was not declared. Should it be static?
-  drivers/isdn/hardware/mISDN/hfcsusb.c:978:1: warning: symbol 'fill_isoc_urb' was not declared. Should it be static?
-  drivers/isdn/hardware/mISDN/hfcsusb.c:1724:1: warning: symbol 'setup_hfcsusb' was not declared. Should it be static?
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
----
- drivers/isdn/hardware/mISDN/hfcpci.c  |    4 ++--
- drivers/isdn/hardware/mISDN/hfcsusb.c |    6 +++---
- drivers/isdn/hardware/mISDN/hfcsusb.h |    6 +++---
- 3 files changed, 8 insertions(+), 8 deletions(-)
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+[...]
+> diff --git a/urcu.c b/urcu.c
+> index f2aae34..a696439 100644
+> --- a/urcu.c
+> +++ b/urcu.c
+> @@ -99,7 +99,8 @@ static void force_mb_single_thread(pthread_t tid)
+>  	 * BUSY-LOOP.
+>  	 */
+>  	while (sig_done < 1)
+> -		smp_rmb();	/* ensure we re-read sig-done */
+> +		barrier();	/* ensure compiler re-reads sig-done */
+> +				/* cache coherence guarantees CPU re-read. */
 
-diff --git a/drivers/isdn/hardware/mISDN/hfcpci.c b/drivers/isdn/hardware/mISDN/hfcpci.c
-index f0e14df..2bb85c4 100644
---- a/drivers/isdn/hardware/mISDN/hfcpci.c
-+++ b/drivers/isdn/hardware/mISDN/hfcpci.c
-@@ -56,8 +56,8 @@ static const char *hfcpci_revision = "2.0";
- static int HFC_cnt;
- static uint debug;
- static uint poll, tics;
--struct timer_list hfc_tl;
--u32	hfc_jiffies;
-+static struct timer_list hfc_tl;
-+static u32 hfc_jiffies;
- 
- MODULE_AUTHOR("Karsten Keil");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/isdn/hardware/mISDN/hfcsusb.c b/drivers/isdn/hardware/mISDN/hfcsusb.c
-index ba6925f..9c427fb 100644
---- a/drivers/isdn/hardware/mISDN/hfcsusb.c
-+++ b/drivers/isdn/hardware/mISDN/hfcsusb.c
-@@ -35,7 +35,7 @@
- #include <linux/mISDNhw.h>
- #include "hfcsusb.h"
- 
--const char *hfcsusb_rev = "Revision: 0.3.3 (socket), 2008-11-05";
-+static const char *hfcsusb_rev = "Revision: 0.3.3 (socket), 2008-11-05";
- 
- static unsigned int debug;
- static int poll = DEFAULT_TRANSP_BURST_SZ;
-@@ -974,7 +974,7 @@ hfcsusb_rx_frame(struct usb_fifo *fifo, __u8 *data, unsigned int len,
- 	spin_unlock(&hw->lock);
- }
- 
--void
-+static void
- fill_isoc_urb(struct urb *urb, struct usb_device *dev, unsigned int pipe,
- 	      void *buf, int num_packets, int packet_size, int interval,
- 	      usb_complete_t complete, void *context)
-@@ -1720,7 +1720,7 @@ hfcsusb_stop_endpoint(struct hfcsusb *hw, int channel)
- 
- 
- /* Hardware Initialization */
--int
-+static int
- setup_hfcsusb(struct hfcsusb *hw)
- {
- 	int err;
-diff --git a/drivers/isdn/hardware/mISDN/hfcsusb.h b/drivers/isdn/hardware/mISDN/hfcsusb.h
-index 098486b..43efe73 100644
---- a/drivers/isdn/hardware/mISDN/hfcsusb.h
-+++ b/drivers/isdn/hardware/mISDN/hfcsusb.h
-@@ -198,7 +198,7 @@ validconf[][19] = {
- };
- 
- /* string description of chosen config */
--char *conf_str[] = {
-+static char *conf_str[] = {
- 	"4 Interrupt IN + 3 Isochron OUT",
- 	"3 Interrupt IN + 3 Isochron OUT",
- 	"4 Isochron IN + 3 Isochron OUT",
-@@ -316,7 +316,7 @@ struct hfcsusb_vdata {
- #define HFC_MAX_TE_LAYER1_STATE 8
- #define HFC_MAX_NT_LAYER1_STATE 4
- 
--const char *HFC_TE_LAYER1_STATES[HFC_MAX_TE_LAYER1_STATE + 1] = {
-+static const char *HFC_TE_LAYER1_STATES[HFC_MAX_TE_LAYER1_STATE + 1] = {
- 	"TE F0 - Reset",
- 	"TE F1 - Reset",
- 	"TE F2 - Sensing",
-@@ -328,7 +328,7 @@ const char *HFC_TE_LAYER1_STATES[HFC_MAX_TE_LAYER1_STATE + 1] = {
- 	"TE F8 - Lost framing",
- };
- 
--const char *HFC_NT_LAYER1_STATES[HFC_MAX_NT_LAYER1_STATE + 1] = {
-+static const char *HFC_NT_LAYER1_STATES[HFC_MAX_NT_LAYER1_STATE + 1] = {
- 	"NT G0 - Reset",
- 	"NT G1 - Deactive",
- 	"NT G2 - Pending activation",
+OK, this is where I think our points of view differ. Please refer to
+http://lkml.org/lkml/2007/6/18/299.
 
+Basically, cpu_relax() used in the Linux kernel has an
+architecture-specific implementation which *could* include a smp_rmb()
+if the architecture doesn't notice writes done by other CPUs. I think
+Blackfin is the only architecture currently supported by the Linux
+kernel which defines cpu_relax() as a smp_mb(), because it does not have
+cache coherency.
+
+Therefore, I propose that we create a memory barrier macro which is
+defined as a 
+  barrier()   when the cpu has cache coherency
+  cache flush when the cpu does not have cache coherency and is
+              compiled with smp support.
+
+We could call that
+
+  smp_wmc() (for memory-coherency or memory commit)
+  smp_rmc()
+  smp_mc()
+
+It would be a good way to identify the location where data exchange
+between memory and the local cache are is required in the algorithm.
+What do you think ?
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
