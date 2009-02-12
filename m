@@ -1,72 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758477AbZBLN5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758320AbZBLOQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758477AbZBLN5B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 08:57:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbZBLN4u
+	id S1758320AbZBLOQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 09:16:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755183AbZBLOQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 08:56:50 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:32807 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751339AbZBLN4t (ORCPT
+	Thu, 12 Feb 2009 09:16:50 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:52920 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752896AbZBLOQu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 08:56:49 -0500
-Message-ID: <49942A9E.8090405@panasas.com>
-Date: Thu, 12 Feb 2009 15:56:46 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
-MIME-Version: 1.0
-To: jens.axboe@oracle.com, James.Bottomley@HansenPartnership.com,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: linux-scsi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [RFC] block: Don't let blk_put_request leak BIOs
-References: <4993DCCA.8080508@panasas.com>	<20090212174124S.fujita.tomonori@lab.ntt.co.jp>	<4993E85A.20805@panasas.com> <20090212184208X.fujita.tomonori@lab.ntt.co.jp> <499413DB.2020208@panasas.com> <499428E1.1000009@panasas.com>
-In-Reply-To: <499428E1.1000009@panasas.com>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 12 Feb 2009 09:16:50 -0500
+Subject: [PATCH] timers: more consistently use clock vs timer
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Cc: L-K <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>
+Content-Type: text/plain
+Date: Thu, 12 Feb 2009 15:16:31 +0100
+Message-Id: <1234448191.10603.9.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.90 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Feb 2009 13:56:48.0178 (UTC) FILETIME=[BF68B920:01C98D19]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boaz Harrosh wrote:
-> Boaz Harrosh wrote:
->> If a block ULD had allocated a request and mapped some memory into it,
->> using one of blk_rq_map_xxx routines, but then for some reason failed to
->> execute the request through one of the blk_execute_request routines.
->> Then the associated BIO would leak, unless ULD resorts to low-level loops
->> intimate of block internals.
->>
->> [RFC]
->>   This code will also catch situations where LLD failed to complete
->>   the request before aborting it. Such situations are a BUG. Should we
->>   use WARN_ON_ONCE() in that case. The situation above is possible and
->>   can happen normally in memory pressure situations so maybe we should
->>   devise a bit-flag that ULD denotes that the request was aborted and
->>   only WARN_ON if flag was not set.
->>
->>   I'm sending this before any-tests so people can comment on possible
->>   pitfalls.
->>
->> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
->> ---
-> 
-> I've booted a Linux PC with lots of sata disks, connected an iscsi
-> target, ran OSD tests. It looks like it's working which means
-> request->bio is set to NULL after it is used in the regular path.
-> 
-> This needs to sit in Linux next and be tested for a long while.
-> 
-> Jens I'll be waiting for your comment and will send a proper
-> patch for the block bits. We will have to time this with James
-> to see when the OSD bits can be submitted after that, then TOMO's
-> patch for un-exporting blk_req_append_bio can be merged. Or maybe
-> it can all go in one patch through scsi?
-> 
-> Thanks
-> Boaz
+Subject: timers: more consistently use clock vs timer
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Thu Feb 12 15:00:52 CET 2009
 
-Spock to soon this patch is shit, I'll look into it
+While reviewing the manpages, I noticed I'd missed some clock vs timer sites.
 
-Sorry for the noise
+Make sure that all timer functions call cpu_timer_sample_group() and not
+cpu_clock_sample_group(). This ensures that we enable the process wide timer
+in time, and therefore pay the O(n) thread group cost from the syscall.
 
-Boaz
+Not doing it here, will result in the first jiffy tick after setting the timer
+doing this, resulting in a very expensive tick (but only once) and a delay in
+actually starting the timer.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/posix-cpu-timers.c |   60 +++++++++++++++++++++++-----------------------
+ 1 file changed, 30 insertions(+), 30 deletions(-)
+
+Index: linux-2.6/kernel/posix-cpu-timers.c
+===================================================================
+--- linux-2.6.orig/kernel/posix-cpu-timers.c
++++ linux-2.6/kernel/posix-cpu-timers.c
+@@ -681,6 +681,33 @@ static void cpu_timer_fire(struct k_itim
+ }
+ 
+ /*
++ * Sample a process (thread group) timer for the given group_leader task.
++ * Must be called with tasklist_lock held for reading.
++ */
++static int cpu_timer_sample_group(const clockid_t which_clock,
++				  struct task_struct *p,
++				  union cpu_time_count *cpu)
++{
++	struct task_cputime cputime;
++
++	thread_group_cputimer(p, &cputime);
++	switch (CPUCLOCK_WHICH(which_clock)) {
++	default:
++		return -EINVAL;
++	case CPUCLOCK_PROF:
++		cpu->cpu = cputime_add(cputime.utime, cputime.stime);
++		break;
++	case CPUCLOCK_VIRT:
++		cpu->cpu = cputime.utime;
++		break;
++	case CPUCLOCK_SCHED:
++		cpu->sched = cputime.sum_exec_runtime + task_delta_exec(p);
++		break;
++	}
++	return 0;
++}
++
++/*
+  * Guts of sys_timer_settime for CPU timers.
+  * This is called with the timer locked and interrupts disabled.
+  * If we return TIMER_RETRY, it's necessary to release the timer's lock
+@@ -741,7 +768,7 @@ int posix_cpu_timer_set(struct k_itimer 
+ 	if (CPUCLOCK_PERTHREAD(timer->it_clock)) {
+ 		cpu_clock_sample(timer->it_clock, p, &val);
+ 	} else {
+-		cpu_clock_sample_group(timer->it_clock, p, &val);
++		cpu_timer_sample_group(timer->it_clock, p, &val);
+ 	}
+ 
+ 	if (old) {
+@@ -889,7 +916,7 @@ void posix_cpu_timer_get(struct k_itimer
+ 			read_unlock(&tasklist_lock);
+ 			goto dead;
+ 		} else {
+-			cpu_clock_sample_group(timer->it_clock, p, &now);
++			cpu_timer_sample_group(timer->it_clock, p, &now);
+ 			clear_dead = (unlikely(p->exit_state) &&
+ 				      thread_group_empty(p));
+ 		}
+@@ -1244,7 +1271,7 @@ void posix_cpu_timer_schedule(struct k_i
+ 			clear_dead_task(timer, now);
+ 			goto out_unlock;
+ 		}
+-		cpu_clock_sample_group(timer->it_clock, p, &now);
++		cpu_timer_sample_group(timer->it_clock, p, &now);
+ 		bump_cpu_timer(timer, now);
+ 		/* Leave the tasklist_lock locked for the call below.  */
+ 	}
+@@ -1409,33 +1436,6 @@ void run_posix_cpu_timers(struct task_st
+ }
+ 
+ /*
+- * Sample a process (thread group) timer for the given group_leader task.
+- * Must be called with tasklist_lock held for reading.
+- */
+-static int cpu_timer_sample_group(const clockid_t which_clock,
+-				  struct task_struct *p,
+-				  union cpu_time_count *cpu)
+-{
+-	struct task_cputime cputime;
+-
+-	thread_group_cputimer(p, &cputime);
+-	switch (CPUCLOCK_WHICH(which_clock)) {
+-	default:
+-		return -EINVAL;
+-	case CPUCLOCK_PROF:
+-		cpu->cpu = cputime_add(cputime.utime, cputime.stime);
+-		break;
+-	case CPUCLOCK_VIRT:
+-		cpu->cpu = cputime.utime;
+-		break;
+-	case CPUCLOCK_SCHED:
+-		cpu->sched = cputime.sum_exec_runtime + task_delta_exec(p);
+-		break;
+-	}
+-	return 0;
+-}
+-
+-/*
+  * Set one of the process-wide special case CPU timers.
+  * The tsk->sighand->siglock must be held by the caller.
+  * The *newval argument is relative and we update it to be absolute, *oldval
+
+
