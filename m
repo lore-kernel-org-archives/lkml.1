@@ -1,59 +1,365 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757929AbZBLHFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755738AbZBLHGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757929AbZBLHFx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 02:05:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbZBLHFj
+	id S1755738AbZBLHGQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 02:06:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755353AbZBLHFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 02:05:39 -0500
-Received: from e23smtp05.au.ibm.com ([202.81.31.147]:48715 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751154AbZBLHFh (ORCPT
+	Thu, 12 Feb 2009 02:05:44 -0500
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:56205 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754047AbZBLHFn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 02:05:37 -0500
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, tytso@mit.edu
-Cc: linux-ext4@vger.kernel.org, linux-next@vger.kernel.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] ext4: Initialize list properly
-Date: Thu, 12 Feb 2009 12:35:31 +0530
-Message-Id: <1234422331-32766-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.6.1.2.390.gba743
-In-Reply-To: <a4423d670902100906q36e7f36fo53ba2060f5644303@mail.gmail.com>
-References: <a4423d670902100906q36e7f36fo53ba2060f5644303@mail.gmail.com>
+	Thu, 12 Feb 2009 02:05:43 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AoQFABtWk0lMQWt2/2dsb2JhbACBbtIBhBsG
+Date: Thu, 12 Feb 2009 02:05:39 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
+Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
+	(repost)
+Message-ID: <20090212070539.GA15896@Krystal>
+References: <20090211052828.GQ6742@linux.vnet.ibm.com> <20090211063520.GE8132@Krystal> <20090211153246.GA6694@linux.vnet.ibm.com> <20090211185203.GA29852@Krystal> <20090211200903.GG6694@linux.vnet.ibm.com> <20090211214258.GA32407@Krystal> <20090212003549.GU6694@linux.vnet.ibm.com> <20090212023308.GA21157@linux.vnet.ibm.com> <20090212040824.GA12346@Krystal> <20090212050120.GA8317@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090212050120.GA8317@linux.vnet.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 02:03:31 up 42 days,  7:01,  5 users,  load average: 1.81, 1.56,
+	0.72
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We need to initialize the list_head properly before we add
-them to the any list. Otherwise with list debug on we get
-list corruption warnings.
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> On Wed, Feb 11, 2009 at 11:08:24PM -0500, Mathieu Desnoyers wrote:
+> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > On Wed, Feb 11, 2009 at 04:35:49PM -0800, Paul E. McKenney wrote:
+> > > > On Wed, Feb 11, 2009 at 04:42:58PM -0500, Mathieu Desnoyers wrote:
+> > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> 
+> [ . . . ]
+> 
+> > > And I had bugs in my model that allowed the rcu_read_lock() model
+> > > to nest indefinitely, which overflowed into the top bit, messing
+> > > things up.  :-/
+> > > 
+> > > Attached is a fixed model.  This model validates correctly (woo-hoo!).
+> > > Even better, gives the expected error if you comment out line 180 and
+> > > uncomment line 213, this latter corresponding to the error case I called
+> > > out a few days ago.
+> > > 
+> > 
+> > Great ! :) I added this version to the git repository, hopefully it's ok
+> > with you ?
+> 
+> Works for me!
+> 
+> > > I will play with removing models of mb...
+> > > 
+> > 
+> > OK, I see you already did..
+> 
+> I continued this, and surprisingly few are actually required, though
+> I don't fully trust the modeling of removed memory barriers.
+> 
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+On my side I cleaned up the code a lot, and actually added some barriers
+;) Especially in the busy loops, where we expect the other thread's
+value to change eventually between iterations. A smp_rmb() seems more
+appropriate that barrier(). I also added a lot of comments about
+barriers in the code, and made the reader side much easier to review.
 
----
- fs/ext4/mballoc.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+Please feel free to comment on my added code comments.
 
-diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
-index deba54f..0e9155a 100644
---- a/fs/ext4/mballoc.c
-+++ b/fs/ext4/mballoc.c
-@@ -3693,6 +3693,8 @@ ext4_mb_new_inode_pa(struct ext4_allocation_context *ac)
- 	pa->pa_free = pa->pa_len;
- 	atomic_set(&pa->pa_count, 1);
- 	spin_lock_init(&pa->pa_lock);
-+	INIT_LIST_HEAD(&pa->pa_inode_list);
-+	INIT_LIST_HEAD(&pa->pa_group_list);
- 	pa->pa_deleted = 0;
- 	pa->pa_linear = 0;
- 
-@@ -3755,6 +3757,7 @@ ext4_mb_new_group_pa(struct ext4_allocation_context *ac)
- 	atomic_set(&pa->pa_count, 1);
- 	spin_lock_init(&pa->pa_lock);
- 	INIT_LIST_HEAD(&pa->pa_inode_list);
-+	INIT_LIST_HEAD(&pa->pa_group_list);
- 	pa->pa_deleted = 0;
- 	pa->pa_linear = 1;
- 
+Mathieu
+
+> 							Thanx, Paul
+> 
+> > Mathieu
+> > 
+> > > 							Thanx, Paul
+> > 
+> > Content-Description: urcu.spin
+> > > /*
+> > >  * urcu.spin: Promela code to validate urcu.  See commit number
+> > >  *	3a9e6e9df706b8d39af94d2f027210e2e7d4106e of Mathieu Desnoyer's
+> > >  *      git archive at git://lttng.org/userspace-rcu.git
+> > >  *
+> > >  * This program is free software; you can redistribute it and/or modify
+> > >  * it under the terms of the GNU General Public License as published by
+> > >  * the Free Software Foundation; either version 2 of the License, or
+> > >  * (at your option) any later version.
+> > >  *
+> > >  * This program is distributed in the hope that it will be useful,
+> > >  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> > >  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> > >  * GNU General Public License for more details.
+> > >  *
+> > >  * You should have received a copy of the GNU General Public License
+> > >  * along with this program; if not, write to the Free Software
+> > >  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+> > >  *
+> > >  * Copyright (c) 2009 Paul E. McKenney, IBM Corporation.
+> > >  */
+> > > 
+> > > /* Promela validation variables. */
+> > > 
+> > > bit removed = 0;  /* Has RCU removal happened, e.g., list_del_rcu()? */
+> > > bit free = 0;     /* Has RCU reclamation happened, e.g., kfree()? */
+> > > bit need_mb = 0;  /* =1 says need reader mb, =0 for reader response. */
+> > > byte reader_progress[4];
+> > > 		  /* Count of read-side statement executions. */
+> > > 
+> > > /* urcu definitions and variables, taken straight from the algorithm. */
+> > > 
+> > > #define RCU_GP_CTR_BIT (1 << 7)
+> > > #define RCU_GP_CTR_NEST_MASK (RCU_GP_CTR_BIT - 1)
+> > > 
+> > > byte urcu_gp_ctr = 1;
+> > > byte urcu_active_readers = 0;
+> > > 
+> > > /* Model the RCU read-side critical section. */
+> > > 
+> > > proctype urcu_reader()
+> > > {
+> > > 	bit done = 0;
+> > > 	bit mbok;
+> > > 	byte tmp;
+> > > 	byte tmp_removed;
+> > > 	byte tmp_free;
+> > > 
+> > > 	/* Absorb any early requests for memory barriers. */
+> > > 	do
+> > > 	:: need_mb == 1 ->
+> > > 		need_mb = 0;
+> > > 	:: 1 -> skip;
+> > > 	:: 1 -> break;
+> > > 	od;
+> > > 
+> > > 	/*
+> > > 	 * Each pass through this loop executes one read-side statement
+> > > 	 * from the following code fragment:
+> > > 	 *
+> > > 	 *	rcu_read_lock(); [0a]
+> > > 	 *	rcu_read_lock(); [0b]
+> > > 	 *	p = rcu_dereference(global_p); [1]
+> > > 	 *	x = p->data; [2]
+> > > 	 *	rcu_read_unlock(); [3b]
+> > > 	 *	rcu_read_unlock(); [3a]
+> > > 	 *
+> > > 	 * Because we are modeling a weak-memory machine, these statements
+> > > 	 * can be seen in any order, the only restriction being that
+> > > 	 * rcu_read_unlock() cannot precede the corresponding rcu_read_lock().
+> > > 	 * The placement of the inner rcu_read_lock() and rcu_read_unlock()
+> > > 	 * is non-deterministic, the above is but one possible placement.
+> > > 	 * Intestingly enough, this model validates all possible placements
+> > > 	 * of the inner rcu_read_lock() and rcu_read_unlock() statements,
+> > > 	 * with the only constraint being that the rcu_read_lock() must
+> > > 	 * precede the rcu_read_unlock().
+> > > 	 *
+> > > 	 * We also respond to memory-barrier requests, but only if our
+> > > 	 * execution happens to be ordered.  If the current state is
+> > > 	 * misordered, we ignore memory-barrier requests.
+> > > 	 */
+> > > 	do
+> > > 	:: 1 ->
+> > > 		if
+> > > 		:: reader_progress[0] < 2 -> /* [0a and 0b] */
+> > > 			tmp = urcu_active_readers;
+> > > 			if
+> > > 			:: (tmp & RCU_GP_CTR_NEST_MASK) == 0 ->
+> > > 				tmp = urcu_gp_ctr;
+> > > 				do
+> > > 				:: (reader_progress[1] +
+> > > 				    reader_progress[2] +
+> > > 				    reader_progress[3] == 0) && need_mb == 1 ->
+> > > 					need_mb = 0;
+> > > 				:: 1 -> skip;
+> > > 				:: 1 -> break;
+> > > 				od;
+> > > 				urcu_active_readers = tmp;
+> > > 			 :: else ->
+> > > 				urcu_active_readers = tmp + 1;
+> > > 			fi;
+> > > 			reader_progress[0] = reader_progress[0] + 1;
+> > > 		:: reader_progress[1] == 0 -> /* [1] */
+> > > 			tmp_removed = removed;
+> > > 			reader_progress[1] = 1;
+> > > 		:: reader_progress[2] == 0 -> /* [2] */
+> > > 			tmp_free = free;
+> > > 			reader_progress[2] = 1;
+> > > 		:: ((reader_progress[0] > reader_progress[3]) &&
+> > > 		    (reader_progress[3] < 2)) -> /* [3a and 3b] */
+> > > 			tmp = urcu_active_readers - 1;
+> > > 			urcu_active_readers = tmp;
+> > > 			reader_progress[3] = reader_progress[3] + 1;
+> > > 		:: else -> break;
+> > > 		fi;
+> > > 
+> > > 		/* Process memory-barrier requests, if it is safe to do so. */
+> > > 		atomic {
+> > > 			mbok = 0;
+> > > 			tmp = 0;
+> > > 			do
+> > > 			:: tmp < 4 && reader_progress[tmp] == 0 ->
+> > > 				tmp = tmp + 1;
+> > > 				break;
+> > > 			:: tmp < 4 && reader_progress[tmp] != 0 ->
+> > > 				tmp = tmp + 1;
+> > > 			:: tmp >= 4 ->
+> > > 				done = 1;
+> > > 				break;
+> > > 			od;
+> > > 			do
+> > > 			:: tmp < 4 && reader_progress[tmp] == 0 ->
+> > > 				tmp = tmp + 1;
+> > > 			:: tmp < 4 && reader_progress[tmp] != 0 ->
+> > > 				break;
+> > > 			:: tmp >= 4 ->
+> > > 				mbok = 1;
+> > > 				break;
+> > > 			od
+> > > 
+> > > 		}
+> > > 
+> > > 		if
+> > > 		:: mbok == 1 ->
+> > > 			/* We get here if mb processing is safe. */
+> > > 			do
+> > > 			:: need_mb == 1 ->
+> > > 				need_mb = 0;
+> > > 			:: 1 -> skip;
+> > > 			:: 1 -> break;
+> > > 			od;
+> > > 		:: else -> skip;
+> > > 		fi;
+> > > 
+> > > 		/*
+> > > 		 * Check to see if we have modeled the entire RCU read-side
+> > > 		 * critical section, and leave if so.
+> > > 		 */
+> > > 		if
+> > > 		:: done == 1 -> break;
+> > > 		:: else -> skip;
+> > > 		fi
+> > > 	od;
+> > > 	assert((tmp_free == 0) || (tmp_removed == 1));
+> > > 
+> > > 	/* Process any late-arriving memory-barrier requests. */
+> > > 	do
+> > > 	:: need_mb == 1 ->
+> > > 		need_mb = 0;
+> > > 	:: 1 -> skip;
+> > > 	:: 1 -> break;
+> > > 	od;
+> > > }
+> > > 
+> > > /* Model the RCU update process. */
+> > > 
+> > > proctype urcu_updater()
+> > > {
+> > > 	/* Removal statement, e.g., list_del_rcu(). */
+> > > 	removed = 1;
+> > > 
+> > > 	/* synchronize_rcu(), first counter flip. */
+> > > 	need_mb = 1;
+> > > 	do
+> > > 	:: need_mb == 1 -> skip;
+> > > 	:: need_mb == 0 -> break;
+> > > 	od;
+> > > 	urcu_gp_ctr = urcu_gp_ctr + RCU_GP_CTR_BIT;
+> > > 	need_mb = 1;
+> > > 	do
+> > > 	:: need_mb == 1 -> skip;
+> > > 	:: need_mb == 0 -> break;
+> > > 	od;
+> > > 	do
+> > > 	:: 1 ->
+> > > 		printf("urcu_gp_ctr=%x urcu_active_readers=%x\n", urcu_gp_ctr, urcu_active_readers);
+> > > 		printf("urcu_gp_ctr&0x7f=%x urcu_active_readers&0x7f=%x\n", urcu_gp_ctr & ~RCU_GP_CTR_NEST_MASK, urcu_active_readers & ~RCU_GP_CTR_NEST_MASK);
+> > > 		if
+> > > 		:: (urcu_active_readers & RCU_GP_CTR_NEST_MASK) != 0 &&
+> > > 		   (urcu_active_readers & ~RCU_GP_CTR_NEST_MASK) !=
+> > > 		   (urcu_gp_ctr & ~RCU_GP_CTR_NEST_MASK) ->
+> > > 			skip;
+> > > 		:: else -> break;
+> > > 		fi
+> > > 	od;
+> > > 	need_mb = 1;
+> > > 	do
+> > > 	:: need_mb == 1 -> skip;
+> > > 	:: need_mb == 0 -> break;
+> > > 	od;
+> > > 
+> > > 	/* Erroneous removal statement, e.g., list_del_rcu(). */
+> > > 	/* removed = 1; */
+> > > 
+> > > 	/* synchronize_rcu(), second counter flip. */
+> > > 	need_mb = 1;
+> > > 	do
+> > > 	:: need_mb == 1 -> skip;
+> > > 	:: need_mb == 0 -> break;
+> > > 	od;
+> > > 	urcu_gp_ctr = urcu_gp_ctr + RCU_GP_CTR_BIT;
+> > > 	need_mb = 1;
+> > > 	do
+> > > 	:: need_mb == 1 -> skip;
+> > > 	:: need_mb == 0 -> break;
+> > > 	od;
+> > > 	do
+> > > 	:: 1 ->
+> > > 		printf("urcu_gp_ctr=%x urcu_active_readers=%x\n", urcu_gp_ctr, urcu_active_readers);
+> > > 		printf("urcu_gp_ctr&0x7f=%x urcu_active_readers&0x7f=%x\n", urcu_gp_ctr & ~RCU_GP_CTR_NEST_MASK, urcu_active_readers & ~RCU_GP_CTR_NEST_MASK);
+> > > 		if
+> > > 		:: (urcu_active_readers & RCU_GP_CTR_NEST_MASK) != 0 &&
+> > > 		   (urcu_active_readers & ~RCU_GP_CTR_NEST_MASK) !=
+> > > 		   (urcu_gp_ctr & ~RCU_GP_CTR_NEST_MASK) ->
+> > > 			skip;
+> > > 		:: else -> break;
+> > > 		fi;
+> > > 	od;
+> > > 	need_mb = 1;
+> > > 	do
+> > > 	:: need_mb == 1 -> skip;
+> > > 	:: need_mb == 0 -> break;
+> > > 	od;
+> > > 
+> > > 	/* free-up step, e.g., kfree(). */
+> > > 	free = 1;
+> > > }
+> > > 
+> > > /*
+> > >  * Initialize the array, spawn a reader and an updater.  Because readers
+> > >  * are independent of each other, only one reader is needed.
+> > >  */
+> > > 
+> > > init {
+> > > 	atomic {
+> > > 		reader_progress[0] = 0;
+> > > 		reader_progress[1] = 0;
+> > > 		reader_progress[2] = 0;
+> > > 		reader_progress[3] = 0;
+> > > 		run urcu_reader();
+> > > 		run urcu_updater();
+> > > 	}
+> > > }
+> > 
+> > 
+> > -- 
+> > Mathieu Desnoyers
+> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> 
+> _______________________________________________
+> ltt-dev mailing list
+> ltt-dev@lists.casi.polymtl.ca
+> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
+> 
+
 -- 
-tg: (b578f3f..) fix_list_corruption (depends on: master)
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
