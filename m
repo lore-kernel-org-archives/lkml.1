@@ -1,70 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbZBLImy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757870AbZBLIo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757474AbZBLImy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 03:42:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbZBLImp
+	id S1757870AbZBLIo0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 03:44:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbZBLIoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 03:42:45 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43356 "EHLO mx2.mail.elte.hu"
+	Thu, 12 Feb 2009 03:44:18 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:48907 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752831AbZBLImo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 03:42:44 -0500
-Date: Thu, 12 Feb 2009 09:42:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Clark Williams <williams@redhat.com>
-Cc: Thomas Gleixner <tglx@tglx.de>, LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>
-Subject: Re: [patch] irq threading: fix PF_HARDIRQ definition
-Message-ID: <20090212084222.GA32091@elte.hu>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <20090211205533.329cea1c@torg> <20090212083850.GA29995@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090212083850.GA29995@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752831AbZBLIoQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 03:44:16 -0500
+Date: Thu, 12 Feb 2009 19:44:08 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for February 12
+Message-Id: <20090212194408.ff7489c1.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__12_Feb_2009_19_44_08_+1100_Usa6t54RxJocPlOQ"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Thu__12_Feb_2009_19_44_08_+1100_Usa6t54RxJocPlOQ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Hi all,
 
-> hardirq_count() is correct, but looking at PF_HARDIRQ's definition in sched.h:
-> 
->  #define PF_EXITPIDONE  0x00000008      /* pi exit done on shut down */
->  #define PF_VCPU        0x00000010      /* I'm a virtual CPU */
->  #define PF_HARDIRQ     0x08000020      /* hardirq context */
->  #define PF_NOSCHED     0x00000020      /* Userspace does not expect scheduling */
->  #define PF_FORKNOEXEC  0x00000040      /* forked but didn't exec */
-> 
-> Reveals that due to a typo it not only overlaps the PF_NOSCHED bit, but
-> also has a spurious 0x08000000 component.
+Changes since 20090211:
 
-The reason is that when we forward ported the definition, i first moved it
-to the 0x08000000 slot - but that slot was already taken. (our PF_ task
-flag space is really crowded ...)
+The net tree gained 2 conflicts against the net-current tree.
 
-Then i moved it to a free spot, 0x20. Or so i thought: a later -rt patch
-in the queue introduced PF_NOSCHED which overlapped it.
+The kmemcheck tree gained 2 conflicts against the x86 tree.
 
-But the bigger problem was the spurious 0x08000000 component, which overlaps
-with:
+The wireless tree gained a build failure that caused me to revert several
+of its commits.
 
- #define PF_SOFTIRQ      0x08000000      /* softirq context */
+----------------------------------------------------------------------------
 
-Explaining why the warning triggered in ksoftirqd ;-)
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
 
-Anyway, my fix should solve this. Do you still see the lockup under X? (make
-sure you also have the IPI fix applied, see the patch in this same thread.)
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig,
+ppc44x_defconfig and allyesconfig (minus CONFIG_PROFILE_ALL_BRANCHES) and
+i386, sparc and sparc64 defconfig.
 
-	Ingo
+Below is a summary of the state of the merge.
+
+We are up to 133 trees (counting Linus' and 18 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging quilt/driver-core
+Merging quilt/usb
+Merging tip-core/auto-core-next
+CONFLICT (content): Merge conflict in arch/x86/include/asm/setup.h
+CONFLICT (content): Merge conflict in fs/btrfs/locking.c
+Merging cpus4096/auto-cpus4096-next
+Merging ftrace/auto-ftrace-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging pci/linux-next
+CONFLICT (content): Merge conflict in drivers/pci/pcie/portdrv_pci.c
+Merging quilt/device-mapper
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging quota/for_next
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ocfs2/linux-next
+Merging ext4/next
+CONFLICT (content): Merge conflict in fs/ext4/ext4.h
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+CONFLICT (content): Merge conflict in drivers/net/wireless/iwlwifi/iwl-agn.c
+CONFLICT (content): Merge conflict in drivers/net/wireless/iwlwifi/iwl3945-=
+base.c
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+CONFLICT (content): Merge conflict in sound/soc/pxa/pxa2xx-i2s.c
+Merging cpufreq/next
+Merging v9fs/for-next
+CONFLICT (content): Merge conflict in net/9p/protocol.c
+Merging quilt/rr
+CONFLICT (delete/modify): arch/x86/include/asm/es7000/apic.h deleted in HEA=
+D and modified in quilt/rr. Version quilt/rr of arch/x86/include/asm/es7000=
+/apic.h left in tree.
+CONFLICT (delete/modify): arch/x86/include/asm/numaq/apic.h deleted in HEAD=
+ and modified in quilt/rr. Version quilt/rr of arch/x86/include/asm/numaq/a=
+pic.h left in tree.
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/powernow-=
+k8.c
+CONFLICT (content): Merge conflict in drivers/net/virtio_net.c
+$ git rm -f arch/x86/include/asm/es7000/apic.h
+$ git rm -f arch/x86/include/asm/numaq/apic.h
+Applying: rr: fixup for cpumask:remove-address-of-CPU_MASK_ALL
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging bkl-removal/bkl-removal
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in sound/isa/Kconfig
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+CONFLICT (content): Merge conflict in include/linux/slub_def.h
+CONFLICT (content): Merge conflict in mm/slob.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging uclinux/for-next
+Merging md/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in arch/x86/include/asm/pgtable_32.h
+CONFLICT (content): Merge conflict in arch/x86/include/asm/pgtable_64.h
+CONFLICT (content): Merge conflict in mm/Makefile
+Merging generic-ipi/auto-generic-ipi-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+CONFLICT (content): Merge conflict in drivers/gpu/drm/drm_memory.c
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+Merging agp/agp-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+CONFLICT (content): Merge conflict in kernel/irq/handle.c
+Merging iommu/auto-iommu-next
+CONFLICT (content): Merge conflict in arch/x86/include/asm/dma-mapping.h
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging proc/proc
+CONFLICT (content): Merge conflict in security/selinux/hooks.c
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging fatfs/master
+Merging fuse/for-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging squashfs/master
+Merging omap/for-next
+Merging quilt/aoe
+Merging kmemleak/kmemleak
+CONFLICT (content): Merge conflict in include/linux/slab.h
+CONFLICT (content): Merge conflict in init/main.c
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+CONFLICT (content): Merge conflict in mm/slab.c
+CONFLICT (content): Merge conflict in mm/slob.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging quilt/staging
+Merging scsi-post-merge/master
+Created commit b6349c2: Revert "orinoco: Storage class should be before con=
+st qualifier"
+Created commit ed58c78: Revert "orinoco: hermes doesn't need to be a separa=
+te module"
+Created commit c52856e: Revert "orinoco: hermes_dld does not need to be a m=
+odule"
+Created commit ee9a469: Revert "orinoco: Move WEXT handlers into a separate=
+ file"
+Created commit e668502: Revert "orinoco: Move hardware functions into separ=
+ate file"
+Created commit d8d7390: Revert "orinoco: Add hardware function to set multi=
+cast mode"
+Created commit 6a4d487: Revert "orinoco: Use accessor functions for bitrate=
+ tables"
+Created commit ecac0c1: Revert "orinoco: Move firmware handling into a sepa=
+rate file"
+Created commit d2cf8c5: Revert "orinoco: Move MIC helpers into new file"
+
+--Signature=_Thu__12_Feb_2009_19_44_08_+1100_Usa6t54RxJocPlOQ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmT4VgACgkQjjKRsyhoI8yVVACfYC5WvV6LfNvp1p+w1cRuvQgj
+4pMAn2qy0do/3uOoMfitGQgZxMwCXp8z
+=ax7x
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__12_Feb_2009_19_44_08_+1100_Usa6t54RxJocPlOQ--
