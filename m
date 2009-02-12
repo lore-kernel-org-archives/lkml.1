@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759458AbZBLMzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758805AbZBLNFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759458AbZBLMzx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 07:55:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756860AbZBLMzo
+	id S1758805AbZBLNFj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 08:05:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757227AbZBLNFa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 07:55:44 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:4331 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755967AbZBLMzn (ORCPT
+	Thu, 12 Feb 2009 08:05:30 -0500
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:46998 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756643AbZBLNF3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 07:55:43 -0500
-Message-ID: <49941C4A.4050401@panasas.com>
-Date: Thu, 12 Feb 2009 14:55:38 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+	Thu, 12 Feb 2009 08:05:29 -0500
+Date: Thu, 12 Feb 2009 14:05:20 +0100
+To: linux-kernel@vger.kernel.org, ipw3945-devel@lists.sourceforge.net
+Subject: iwl breaking on suspend/resume, regression from 2.6.29-rc3
+Message-ID: <20090212130520.GA19991@gamma.logic.tuwien.ac.at>
 MIME-Version: 1.0
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-CC: Harvey Harrison <harvey.harrison@gmail.com>,
-       Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org
-Subject: Re: get/put unaligned helpers
-References: <20090211143521.GA18866@lst.de> <1234367339.5481.3.camel@brick> <4993E2CA.1070408@panasas.com> <alpine.LFD.1.10.0902121241570.7279@ftp.linux-mips.org>
-In-Reply-To: <alpine.LFD.1.10.0902121241570.7279@ftp.linux-mips.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Feb 2009 12:55:41.0311 (UTC) FILETIME=[35C938F0:01C98D11]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej W. Rozycki wrote:
-> On Thu, 12 Feb 2009, Boaz Harrosh wrote:
-> 
->> Speaking of which. When all this is done do you intend to also export
->> the unaligned.h headers to user-mode just like the aligned Endian helpers?
->>
->> That could help in a couple of projects, so you have my vote.
-> 
->  Why would you need that?  GCC provides a portable, platform-independent 
-> way.  It has had it for ten years at the very least.
-> 
+Hi all,
 
-Do you mean the __built_in_swabXX() and all these guys.
+since I have switched to 2.6.29-rc4 (from rc3) suspending and resuming
+takes MUCH longer due to iwlagn doing something strange:
+[ 6921.233094] iwlagn: Could not load the INST uCode section
+[ 6921.233097] iwlagn: Unable to set up bootstrap uCode: -110
+[ 6926.233096] iwlagn: Could not load the INST uCode section
+[ 6926.233098] iwlagn: Unable to set up bootstrap uCode: -110
+[ 6931.233136] iwlagn: Could not load the INST uCode section
+[ 6931.233138] iwlagn: Unable to set up bootstrap uCode: -110
+[ 6936.233096] iwlagn: Could not load the INST uCode section
+[ 6936.233098] iwlagn: Unable to set up bootstrap uCode: -110
+[ 6941.233094] iwlagn: Could not load the INST uCode section
+[ 6941.233096] iwlagn: Unable to set up bootstrap uCode: -110
+[ 6941.241144] iwlagn: Unable to initialize device after 5 attempts.
 
-I was under the impression they need to be aligned because otherwise that means
-something is done wrong. Because the aligned version on lots of CPUs is one instruction
-where unaligned access is better, or must, be emulated (byte accessed).
+Here is what I have in the laptop:
+[   13.028298] iwlagn: Intel(R) Wireless WiFi Link AGN driver for Linux, 1.3.27ks
+[   13.028366] iwlagn: Copyright(c) 2003-2008 Intel Corporation
+[   13.028496] iwlagn 0000:06:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+[   13.028580] iwlagn 0000:06:00.0: setting latency timer to 64
+[   13.028625] iwlagn: Detected Intel Wireless WiFi Link 5100AGN REV=0x54
+[   13.050694] iwlagn: Tunable channels: 13 802.11bg, 24 802.11a channels
+[   13.051006] iwlagn 0000:06:00.0: PCI INT A disabled
 
-Assembly wise the two accesses are different and sometimes the compiler has no way to
-know, where the programmer can know for sure.
 
-But I like to be educated any day, please explain what to use when.
+Best wishes
 
->   Maciej
+Norbert
 
-Thanks
-Boaz
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+NOTTAGE (n.)
+Nottage is the collective name for things which you find a use for
+immediately after you've thrown them away. For instance, your
+greenhouse has been cluttered up for years with a huge piece of
+cardboard and great fronds of gardening string. You at last decide to
+clear all this stuff out, and you burn it. Within twenty-four hours
+you will urgently need to wrap a large parcel, and suddenly remember
+that luckily in your greenhouse there is some cardb...
+			--- Douglas Adams, The Meaning of Liff
