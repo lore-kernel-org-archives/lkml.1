@@ -1,332 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761531AbZBLXEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759833AbZBLXFI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761531AbZBLXEl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 18:04:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758877AbZBLXER
+	id S1759833AbZBLXFI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 18:05:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756963AbZBLXEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 18:04:17 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:48549 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756963AbZBLXEQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 18:04:16 -0500
-Date: Thu, 12 Feb 2009 15:04:15 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
-	(repost)
-Message-ID: <20090212230415.GO6759@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090211214258.GA32407@Krystal> <20090212003549.GU6694@linux.vnet.ibm.com> <20090212023308.GA21157@linux.vnet.ibm.com> <20090212040824.GA12346@Krystal> <20090212050120.GA8317@linux.vnet.ibm.com> <20090212070539.GA15896@Krystal> <20090212164621.GC6759@linux.vnet.ibm.com> <20090212193826.GD2047@Krystal> <20090212201758.GH6759@linux.vnet.ibm.com> <20090212215340.GA8394@Krystal>
+	Thu, 12 Feb 2009 18:04:51 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:45318 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756528AbZBLXEu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 18:04:50 -0500
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: fweisbec@gmail.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       oleg@redhat.com, travis@sgi.com, a.p.zijlstra@chello.nl,
+       rusty@rustcorp.com.au
+Subject: Re: + work_on_cpu-rewrite-it-to-create-a-kernel-thread-on-demand.patch  added to -mm tree
+References: <200902031058.n13AwOoK016719@imap1.linux-foundation.org>
+	<20090203121147.GB19979@elte.hu>
+	<c62985530902030858y28906b2dh511c5868afabfd17@mail.gmail.com>
+	<20090203112529.26e6bf76.akpm@linux-foundation.org>
+	<m18wobcrw3.fsf@fess.ebiederm.org>
+	<20090212124835.2fc41620.akpm@linux-foundation.org>
+	<m1eiy3z4ty.fsf@fess.ebiederm.org> <m17i3vz4lp.fsf@fess.ebiederm.org>
+	<20090212142314.9ab6ad6f.akpm@linux-foundation.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 12 Feb 2009 15:04:31 -0800
+In-Reply-To: <20090212142314.9ab6ad6f.akpm@linux-foundation.org> (Andrew Morton's message of "Thu\, 12 Feb 2009 14\:23\:14 -0800")
+Message-ID: <m1fxijxnnk.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090212215340.GA8394@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, rusty@rustcorp.com.au, a.p.zijlstra@chello.nl, travis@sgi.com, oleg@redhat.com, linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 12, 2009 at 04:53:41PM -0500, Mathieu Desnoyers wrote:
-> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > On Thu, Feb 12, 2009 at 02:38:26PM -0500, Mathieu Desnoyers wrote:
-> > > Replying to a separate portion of the mail with less CC :
-> > > 
-> > > 
-> > > > On Thu, Feb 12, 2009 at 02:05:39AM -0500, Mathieu Desnoyers wrote:
-> > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > > > On Wed, Feb 11, 2009 at 11:08:24PM -0500, Mathieu Desnoyers wrote:
-> > > > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > > > > > On Wed, Feb 11, 2009 at 04:35:49PM -0800, Paul E. McKenney wrote:
-> > > > > > > > > On Wed, Feb 11, 2009 at 04:42:58PM -0500, Mathieu Desnoyers wrote:
-> > > > > > > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > > > 
-> > > > > > [ . . . ]
-> > > > > > 
-> > > > > > > > And I had bugs in my model that allowed the rcu_read_lock() model
-> > > > > > > > to nest indefinitely, which overflowed into the top bit, messing
-> > > > > > > > things up.  :-/
-> > > > > > > > 
-> > > > > > > > Attached is a fixed model.  This model validates correctly (woo-hoo!).
-> > > > > > > > Even better, gives the expected error if you comment out line 180 and
-> > > > > > > > uncomment line 213, this latter corresponding to the error case I called
-> > > > > > > > out a few days ago.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > > Great ! :) I added this version to the git repository, hopefully it's ok
-> > > > > > > with you ?
-> > > > > > 
-> > > > > > Works for me!
-> > > > > > 
-> > > > > > > > I will play with removing models of mb...
-> > > > > > > 
-> > > > > > > OK, I see you already did..
-> > > > > > 
-> > > > > > I continued this, and surprisingly few are actually required, though
-> > > > > > I don't fully trust the modeling of removed memory barriers.
-> > > > > 
-> > > > > On my side I cleaned up the code a lot, and actually added some barriers
-> > > > > ;) Especially in the busy loops, where we expect the other thread's
-> > > > > value to change eventually between iterations. A smp_rmb() seems more
-> > > > > appropriate that barrier(). I also added a lot of comments about
-> > > > > barriers in the code, and made the reader side much easier to review.
-> > > > > 
-> > > > > Please feel free to comment on my added code comments.
-> > > > 
-> > > > The torture test now looks much more familiar.  ;-)
-> > > > 
-> > > > I fixed some compiler warnings (in my original, sad to say), added an
-> > > > ACCESS_ONCE() to rcu_read_lock() (also in my original),
-> > > 
-> > > Yes, I thought about this ACCESS_ONCE during my sleep.. just did not
-> > > have to to update the source yet. :)
-> > > 
-> > > Merged. Thanks !
-> > > 
-> > > [...]
-> > > 
-> > > > --- a/urcu.c
-> > > > +++ b/urcu.c
-> > > > @@ -99,7 +99,8 @@ static void force_mb_single_thread(pthread_t tid)
-> > > >  	 * BUSY-LOOP.
-> > > >  	 */
-> > > >  	while (sig_done < 1)
-> > > > -		smp_rmb();	/* ensure we re-read sig-done */
-> > > > +		barrier();	/* ensure compiler re-reads sig-done */
-> > > > +				/* cache coherence guarantees CPU re-read. */
-> > > 
-> > > That could be a smp_rmc() ? (see other mail)
-> > 
-> > I prefer making ACCESS_ONCE() actually having the full semantics implied
-> > by its name.  ;-)
-> > 
-> > See patch at end of this email.
-> > 
-> 
-> See my email about LOAD_REMOTE/STORE_REMOTE :)
-> 
-> > > >  	smp_mb();	/* read sig_done before ending the barrier */
-> > > >  }
-> > > >  
-> > > > @@ -113,7 +114,8 @@ static void force_mb_all_threads(void)
-> > > >  	if (!reader_data)
-> > > >  		return;
-> > > >  	sig_done = 0;
-> > > > -	smp_mb();	/* write sig_done before sending the signals */
-> > > > +	/* smp_mb();	write sig_done before sending the signals */
-> > > > +			/* redundant with barriers in pthread_kill(). */
-> > > 
-> > > Absolutely not. pthread_kill does not send a signal to self in every
-> > > case because the writer thread has not requirement to register itself.
-> > > It *could* be registered as a reader too, but does not have to.
-> > 
-> > No, not the barrier in the signal handler, but rather the barriers in
-> > the system call invoked by pthread_kill().
-> > 
-> 
-> The barrier implied by going through a system call does not imply cache
-> flushing AFAIK. So we would have to at least leave a big comment here
-> saying that the kernel has to provide such guarantee. So under that
-> comment I would leave a smp_mc();.
-> 
-> > > >  	for (index = reader_data; index < reader_data + num_readers; index++)
-> > > >  		pthread_kill(index->tid, SIGURCU);
-> > > >  	/*
-> > > > @@ -121,7 +123,8 @@ static void force_mb_all_threads(void)
-> > > >  	 * BUSY-LOOP.
-> > > >  	 */
-> > > >  	while (sig_done < num_readers)
-> > > > -		smp_rmb();	/* ensure we re-read sig-done */
-> > > > +		barrier();	/* ensure compiler re-reads sig-done */
-> > > > +				/* cache coherence guarantees CPU re-read. */
-> > > 
-> > > That could be a smp_rmc() ?
-> > 
-> > Again, prefer:
-> > 
-> > 	while (ACCESS_ONCE() < num_readers)
-> > 
-> > after upgrading ACCESS_ONCE() to provide the full semantics.
-> > 
-> > I will send a patch.
-> 
-> I'll use a variation :
-> 
->         while (LOAD_REMOTE(sig_done) < num_readers)
->                 cpu_relax();
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-I suspect that LOAD_SHARED() and STORE_SHARED() would be more intuitive.
-But shouldn't we align with the Linux-kernel usage where reasonable?
-(Yes, this can be a moving target, but there isn't much else that
-currently supports this level of SMP function on quite the variety of
-CPU architectures.)
+> On Thu, 12 Feb 2009 14:13:06 -0800
+> ebiederm@xmission.com (Eric W. Biederman) wrote:
+>
+>> 
+>> I should follow up and say that the reason I care right now, is I am
+>> digging into pci hotplug.  One of the issues I'm fighting is that
+>> currently I appear to need a dedicated kernel thread for each pci
+>> hotplug slot.  It gets easy to deadlock the kernel hotplugging
+>> a hotplug controller otherwise.
+>> 
+>
+> um, ok, if you say so...
+>
+> I'd have thought that a short-lived kernel thread would be appropriate,
+> if poss.  Physical hotplug of a PCI device isn't a high-frequency
+> operation.
 
-> > > >  	smp_mb();	/* read sig_done before ending the barrier */
-> > > >  }
-> > > >  #endif
-> > > > @@ -181,7 +184,8 @@ void synchronize_rcu(void)
-> > > >  	 * the writer waiting forever while new readers are always accessing
-> > > >  	 * data (no progress).
-> > > >  	 */
-> > > > -	smp_mb();
-> > > > +	/* smp_mb(); Don't need this one for CPU, only compiler. */
-> > > > +	barrier();
-> > > 
-> > > smp_mc() ?
-> > 
-> > ACCESS_ONCE().
-> > 
-> 
-> Ah, this is what I dislike about using :
-> 
->   STORE_REMOTE(x, v);
-> ...
->   if (LOAD_REMOTE(y) ...)
-> rather than
->   x = v;
->   smp_mc();
->   if (y ...)
-> 
-> We will end up in a situation where we do 2 cache flushes rather than a
-> single one. So wherever possible, I would be tempted to leave the
-> smp_mc().
+Oh.  I'm working to find a way to get there.  The trouble is I have
+kick off all of this from interrupt context.
 
-Ummm...  There is a very real reason why I moved from bare
-smp_read_barrier_depends() calls to rcu_dereference().  Code with an
-rcu_dereference() style is -much- easier to read.
+> The new-fangled work_on_cpu() could do that, or maybe the new-fangled
+> kernel/async.c code.
 
-So I would flip that -- use the per-variable API unless you see
-measureable system-level pain.  Because the variable-free API will
-inflict very real readability pain!
+I will have to look.  A shared workqueue threatens to deadlock when I
+try and hotunplug a hotplug slot.  Running cancel_work_sync for work in
+your current workqueue is the problem I had. Maybe some of the rest of the
+solutions won't have that kind of problem.
 
-The problem is that the relationship of the variable-free API to the
-variables it is supposed to constrain gets lost.  With the per-variable
-APIs, the relationship is obvious and explicit.
+I have this crazy thought that workqueues should just be fixed to fork
+a short lived kernel thread for each request they process, and then we
+don't have to worry about stuff blocking indefinitely.  I think that
+will allow us to kill off explicitly named workqueues as well.
 
-> > > >  
-> > > >  	switch_next_urcu_qparity();	/* 1 -> 0 */
-> > > >  
-> > > 
-> > > Side-note :
-> > > on archs without cache coherency, all smp_[rw ]mb would turn into a
-> > > cache flush.
-> > 
-> > So I might need more in my ACCESS_ONCE() below.
-> > 
-> > Add .gitignore files, and redefine accesses in terms of a new
-> > ACCESS_ONCE().
-> 
-> I'll merge the .gitignore file, thanks,
-
-Sounds good!
-
-> Please see my updated git tree.
-
-Will do!
-
-							Thanx, Paul
-
-> Mathieu
-> 
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > ---
-> > 
-> >  .gitignore              |    9 +++++++++
-> >  formal-model/.gitignore |    3 +++
-> >  urcu.c                  |   10 ++++------
-> >  urcu.h                  |   12 ++++++++++++
-> >  4 files changed, 28 insertions(+), 6 deletions(-)
-> > 
-> > diff --git a/.gitignore b/.gitignore
-> > new file mode 100644
-> > index 0000000..29aa7e5
-> > --- /dev/null
-> > +++ b/.gitignore
-> > @@ -0,0 +1,9 @@
-> > +test_rwlock_timing
-> > +test_urcu
-> > +test_urcu_timing
-> > +test_urcu_yield
-> > +urcu-asm.o
-> > +urcu.o
-> > +urcutorture
-> > +urcutorture-yield
-> > +urcu-yield.o
-> > diff --git a/formal-model/.gitignore b/formal-model/.gitignore
-> > new file mode 100644
-> > index 0000000..49fdd8a
-> > --- /dev/null
-> > +++ b/formal-model/.gitignore
-> > @@ -0,0 +1,3 @@
-> > +pan
-> > +pan.*
-> > +urcu.spin.trail
-> > diff --git a/urcu.c b/urcu.c
-> > index a696439..f61d4c3 100644
-> > --- a/urcu.c
-> > +++ b/urcu.c
-> > @@ -98,9 +98,8 @@ static void force_mb_single_thread(pthread_t tid)
-> >  	 * Wait for sighandler (and thus mb()) to execute on every thread.
-> >  	 * BUSY-LOOP.
-> >  	 */
-> > -	while (sig_done < 1)
-> > -		barrier();	/* ensure compiler re-reads sig-done */
-> > -				/* cache coherence guarantees CPU re-read. */
-> > +	while (ACCESS_ONCE(sig_done) < 1)
-> > +		continue;
-> >  	smp_mb();	/* read sig_done before ending the barrier */
-> >  }
-> >  
-> > @@ -122,9 +121,8 @@ static void force_mb_all_threads(void)
-> >  	 * Wait for sighandler (and thus mb()) to execute on every thread.
-> >  	 * BUSY-LOOP.
-> >  	 */
-> > -	while (sig_done < num_readers)
-> > -		barrier();	/* ensure compiler re-reads sig-done */
-> > -				/* cache coherence guarantees CPU re-read. */
-> > +	while (ACCESS_ONCE(sig_done) < num_readers)
-> > +		continue;
-> >  	smp_mb();	/* read sig_done before ending the barrier */
-> >  }
-> >  #endif
-> > diff --git a/urcu.h b/urcu.h
-> > index 79d9464..dd040a5 100644
-> > --- a/urcu.h
-> > +++ b/urcu.h
-> > @@ -98,6 +98,9 @@ static inline unsigned long __xchg(unsigned long x, volatile void *ptr,
-> >  /* Nop everywhere except on alpha. */
-> >  #define smp_read_barrier_depends()
-> >  
-> > +#define CONFIG_ARCH_CACHE_COHERENT
-> > +#define cpu_relax barrier
-> > +
-> >  /*
-> >   * Prevent the compiler from merging or refetching accesses.  The compiler
-> >   * is also forbidden from reordering successive instances of ACCESS_ONCE(),
-> > @@ -110,7 +113,16 @@ static inline unsigned long __xchg(unsigned long x, volatile void *ptr,
-> >   * use is to mediate communication between process-level code and irq/NMI
-> >   * handlers, all running on the same CPU.
-> >   */
-> > +#ifdef CONFIG_ARCH_CACHE_COHERENT
-> >  #define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
-> > +#else /* #ifdef CONFIG_ARCH_CACHE_COHERENT */
-> > +#define ACCESS_ONCE(x)     ({ \
-> > +				typeof(x) _________x1; \
-> > +				_________x1 = (*(volatile typeof(x) *)&(x)); \
-> > +				cpu_relax(); \
-> > +				(_________x1); \
-> > +				})
-> > +#endif /* #else #ifdef CONFIG_ARCH_CACHE_COHERENT */
-> >  
-> >  /**
-> >   * rcu_dereference - fetch an RCU-protected pointer in an
-> > 
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Eric
