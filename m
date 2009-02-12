@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757889AbZBLD0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbZBLD2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757889AbZBLD0y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 22:26:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756637AbZBLD0p
+	id S1758008AbZBLD2e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 22:28:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755515AbZBLD2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 22:26:45 -0500
-Received: from mga09.intel.com ([134.134.136.24]:2217 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756629AbZBLD0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 22:26:44 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,194,1233561600"; 
-   d="scan'208";a="386115842"
-Subject: Re: specjbb2005 fails with 2.6.29-rc4
-From: Lin Ming <ming.m.lin@intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Mel Gorman <mel@csn.ul.ie>
-In-Reply-To: <alpine.LFD.2.00.0902111733170.3189@localhost.localdomain>
-References: <1234401390.7699.29.camel@minggr.sh.intel.com>
-	 <alpine.LFD.2.00.0902111733170.3189@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 12 Feb 2009 11:23:55 +0800
-Message-Id: <1234409035.7699.34.camel@minggr.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Feb 2009 22:28:24 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:54136 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751209AbZBLD2X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 22:28:23 -0500
+Date: Thu, 12 Feb 2009 03:28:21 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Description of open_to_namei_flags()?
+Message-ID: <20090212032821.GD28946@ZenIV.linux.org.uk>
+References: <200902120310.n1C3AwHL076677@www262.sakura.ne.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200902120310.n1C3AwHL076677@www262.sakura.ne.jp>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-12 at 09:35 +0800, Linus Torvalds wrote:
+On Thu, Feb 12, 2009 at 12:10:58PM +0900, Tetsuo Handa wrote:
+> > static inline int open_to_namei_flags(int flag)
+> > {
+> > 	if ((flag+1) & O_ACCMODE)
+> > 		flag++;
+> > 	return flag;
+> > }
 > 
-> On Thu, 12 Feb 2009, Lin Ming wrote:
-> > 
-> > Test with Jrockit VM fails. And it works well if OpenJDK is used
-> > instead.
+> I noticed that open_to_namei_flags() can't yield
+> "00 - no permissions needed" output for "11 - special" input.
+> To yield "00 - no permissions needed" output for "11 - special" input,
+> I think
 > 
-> I suspect maybe it uses hugetlbs?
+>   static inline int open_to_namei_flags(int flag)
+>   {
+>   	return (flag + 1) & O_ACCMODE;
+>   }
 > 
-> There were a couple of commits to fix VM_ACCOUNT for hugepage areas 
-> recently. See
-> 
->  - 5a6fe125950676015f5108fb71b2a67441755003: "Do not account for the 
->    address space used by hugetlbfs using VM_ACCOUNT"
-> 
->  - 17c9d12e126cb0de8d535dc1908c4819d712bc68: "Do not account for hugetlbfs 
->    quota at mmap() time if mapping [SHM|MAP]_NORESERVE"
-> 
-> because hugetlb mappings have their own magical VM accounting.
-> 
-> So can you check if current -git fixes it?
+> is needed.
 
-Yes, current -git fixes it.
+No.  Comments are rather misleading; the code is correct.
 
-Lin Ming
+> sys_open(path, 0) is open for reading.
+> sys_open(path, 1) is open for writing.
+> sys_open(path, 2) is open for reading and writing.
+> What is sys_open(path, 3) for?
 
+open for ioctls only; checks for rw permissions, doesn't allow read or
+write calls.  Note that the latter is controlled by ->f_mode, which does
+*not* come from open_to_namei_flags() (and is calculated as you suggested).
+Results of open_to_namei_flags() are used for permission checks, where
+3 -> read|write is correct.
