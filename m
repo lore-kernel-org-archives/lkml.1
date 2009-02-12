@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759833AbZBLXFI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761386AbZBLXH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759833AbZBLXFI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 18:05:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756963AbZBLXEv
+	id S1761386AbZBLXH0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 18:07:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756118AbZBLXHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 18:04:51 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:45318 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756528AbZBLXEu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 18:04:50 -0500
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: fweisbec@gmail.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       oleg@redhat.com, travis@sgi.com, a.p.zijlstra@chello.nl,
-       rusty@rustcorp.com.au
-Subject: Re: + work_on_cpu-rewrite-it-to-create-a-kernel-thread-on-demand.patch  added to -mm tree
-References: <200902031058.n13AwOoK016719@imap1.linux-foundation.org>
-	<20090203121147.GB19979@elte.hu>
-	<c62985530902030858y28906b2dh511c5868afabfd17@mail.gmail.com>
-	<20090203112529.26e6bf76.akpm@linux-foundation.org>
-	<m18wobcrw3.fsf@fess.ebiederm.org>
-	<20090212124835.2fc41620.akpm@linux-foundation.org>
-	<m1eiy3z4ty.fsf@fess.ebiederm.org> <m17i3vz4lp.fsf@fess.ebiederm.org>
-	<20090212142314.9ab6ad6f.akpm@linux-foundation.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 12 Feb 2009 15:04:31 -0800
-In-Reply-To: <20090212142314.9ab6ad6f.akpm@linux-foundation.org> (Andrew Morton's message of "Thu\, 12 Feb 2009 14\:23\:14 -0800")
-Message-ID: <m1fxijxnnk.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, rusty@rustcorp.com.au, a.p.zijlstra@chello.nl, travis@sgi.com, oleg@redhat.com, linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+	Thu, 12 Feb 2009 18:07:11 -0500
+Received: from waste.org ([66.93.16.53]:52803 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753038AbZBLXHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 18:07:10 -0500
+Subject: Re: [RFC v13][PATCH 00/14] Kernel based checkpoint/restart
+From: Matt Mackall <mpm@selenic.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       orenl@cs.columbia.edu, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, torvalds@linux-foundation.org,
+       viro@zeniv.linux.org.uk, hpa@zytor.com,
+       Thomas Gleixner <tglx@linutronix.de>, Cedric Le Goater <clg@fr.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+In-Reply-To: <1234479457.30155.214.camel@nimitz>
+References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu>
+	 <1234285547.30155.6.camel@nimitz>
+	 <20090211141434.dfa1d079.akpm@linux-foundation.org>
+	 <1234462282.30155.171.camel@nimitz>  <1234467035.3243.538.camel@calx>
+	 <1234479457.30155.214.camel@nimitz>
+Content-Type: text/plain
+Date: Thu, 12 Feb 2009 17:05:24 -0600
+Message-Id: <1234479924.3152.13.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+On Thu, 2009-02-12 at 14:57 -0800, Dave Hansen wrote:
+> > Also, what happens if I checkpoint a process in 2.6.30 and restore it in
+> > 2.6.31 which has an expanded idea of what should be restored? Do your
+> > file formats handle this sort of forward compatibility or am I
+> > restricted to one kernel?
+> 
+> In general, you're restricted to one kernel.  But, people have mentioned
+> that, if the formats change, we should be able to write in-userspace
+> converters for the checkpoint files.  
 
-> On Thu, 12 Feb 2009 14:13:06 -0800
-> ebiederm@xmission.com (Eric W. Biederman) wrote:
->
->> 
->> I should follow up and say that the reason I care right now, is I am
->> digging into pci hotplug.  One of the issues I'm fighting is that
->> currently I appear to need a dedicated kernel thread for each pci
->> hotplug slot.  It gets easy to deadlock the kernel hotplugging
->> a hotplug controller otherwise.
->> 
->
-> um, ok, if you say so...
->
-> I'd have thought that a short-lived kernel thread would be appropriate,
-> if poss.  Physical hotplug of a PCI device isn't a high-frequency
-> operation.
+I mentioned this because it seems like a key use case is upgrading
+kernels out from under long-lived applications.
 
-Oh.  I'm working to find a way to get there.  The trouble is I have
-kick off all of this from interrupt context.
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
-> The new-fangled work_on_cpu() could do that, or maybe the new-fangled
-> kernel/async.c code.
 
-I will have to look.  A shared workqueue threatens to deadlock when I
-try and hotunplug a hotplug slot.  Running cancel_work_sync for work in
-your current workqueue is the problem I had. Maybe some of the rest of the
-solutions won't have that kind of problem.
-
-I have this crazy thought that workqueues should just be fixed to fork
-a short lived kernel thread for each request they process, and then we
-don't have to worry about stuff blocking indefinitely.  I think that
-will allow us to kill off explicitly named workqueues as well.
-
-Eric
