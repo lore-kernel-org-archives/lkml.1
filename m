@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757569AbZBLCQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758197AbZBLCRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757569AbZBLCQy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 21:16:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755656AbZBLCQo
+	id S1758197AbZBLCRV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 21:17:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757866AbZBLCRA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 21:16:44 -0500
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:39028 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754976AbZBLCQn (ORCPT
+	Wed, 11 Feb 2009 21:17:00 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:47089 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755656AbZBLCRA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 21:16:43 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=yQKQgw47snu05EZr560rABznX7EVJHZe3z6MSgJuVnahT3zKUiJ10DoK35yM+ZE1/LZz8JPx4ADFcGaozAuDVBYveK3v/SPxs2n1O0jYiJQ/WMFH5DGSuCVj3QvVcZl141C4rai0v66f9v1TjthoSuhMRp92nBfu1UQRmxRz5gg=  ;
-X-YMail-OSG: KVtXez0VM1nDdA0DRG7TXQshvdBc8dL5.dRFGmL.1hvQitthsRWhFH8lolvJ2ZY.RGC2KNR6YYctMJaXJRICF32j5zGqFYMrkB1Fvo75Hj8nQHNk3H0f.tNvoop0TB58hMW_rJ5jp49H.CbGni6lLOWP
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Joonyoung Shim <dofmind@gmail.com>
-Subject: Re: [PATCH] twl4030-gpio: Fix getting the value of the TWL4030 GPIO  output pin
-Date: Wed, 11 Feb 2009 18:16:41 -0800
-User-Agent: KMail/1.9.10
-Cc: Tony Lindgren <tony@atomide.com>, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
-References: <4e1455be0902062213o769a4d15ha0c892508839dbad@mail.gmail.com> <200902070000.49089.david-b@pacbell.net> <4e1455be0902090502l554ca462m9c096e359a5b29c3@mail.gmail.com>
-In-Reply-To: <4e1455be0902090502l554ca462m9c096e359a5b29c3@mail.gmail.com>
+	Wed, 11 Feb 2009 21:17:00 -0500
+Date: Wed, 11 Feb 2009 21:16:57 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 0/7][RFC] function graph tracer port to PowerPC
+In-Reply-To: <20090212015503.GA4697@nowhere>
+Message-ID: <alpine.DEB.1.10.0902112116340.13595@gandalf.stny.rr.com>
+References: <20090212011051.265346435@goodmis.org> <20090212015503.GA4697@nowhere>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200902111816.41569.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 February 2009, Joonyoung Shim wrote:
-> but, it doesn't return actual value of the pin if twl4030 GPIO pin is output.
 
-So it would seem that these GPIOs don't support
-bidirectional usage.  Documentation/gpio.txt includes:
+On Thu, 12 Feb 2009, Frederic Weisbecker wrote:
 
->>>		However, note that not all platforms can
->>>	read the value of output pins; those that can't
->>>	should always return zero.  
-
-Which is exactly what's happening here, it seems...
-
-
-
-
-> For example, the GPIO13 pin of twl4030 is configured as an output
-> using gpio_direction_output() and assigns the GPIO's value to 1
-> using gpio_set_value_cansleep(), the result of "# cat /sys/kernel/debug/gpio"
-> reports to me as follows.
+> On Wed, Feb 11, 2009 at 08:10:51PM -0500, Steven Rostedt wrote:
+> > 
+> > The following set of patches are RFC and not for inclusion
+> > (unless everyone is fine with them as is).
+> > 
+> > This is the port to PowerPC of the function graph tracer that was written
+> > by Frederic Weisbecker for the x86 architecture.  It is broken up
+> > into a series of logical steps.
+> > 
+> > 1) get generic code ready for other archs
+> > 2) get PowerPC 64-bit working with just static function tracing
+> > 3) get PowerPC 64-bit working with dynamic function tracing
+> > 4) get PowerPC 32-bit working with just static function tracing
+> > 5) get PowerPC 32-bit working with dynamic function tracing
+> > 
+> > (with some clean ups in between)
+> > 
 > 
-> GPIOs 192-209, platform/twl4030_gpio, twl4030, can sleep:
->  gpio-205 (keyled              ) out lo
 > 
-> but it should have reported "hi" instead of "lo".
-> 
+> Thanks a lot Steven!
+> I'm sad to not having a Power Pc to test it...
 
+If you had a PowerPC, I doubt I would have been the one to port it ;-)
+
+-- Steve
 
