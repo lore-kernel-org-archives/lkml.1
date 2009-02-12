@@ -1,70 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759415AbZBLOqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759420AbZBLOs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759415AbZBLOqx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 09:46:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbZBLOqo
+	id S1759420AbZBLOs1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 09:48:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756312AbZBLOsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 09:46:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49920 "EHLO mx2.mail.elte.hu"
+	Thu, 12 Feb 2009 09:48:16 -0500
+Received: from 8bytes.org ([88.198.83.132]:37018 "EHLO 8bytes.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751339AbZBLOqn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 09:46:43 -0500
-Date: Thu, 12 Feb 2009 15:46:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@tglx.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: [patch] rt: res_counter fix, v2
-Message-ID: <20090212144624.GB14616@elte.hu>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <20090212005032.GA4788@nowhere> <20090212021257.GB4697@nowhere> <20090212101650.GA1096@elte.hu> <20090212102113.GA10031@elte.hu> <20090212142806.GA5865@nowhere> <1234449701.10603.10.camel@laptop>
+	id S1753084AbZBLOsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 09:48:15 -0500
+Date: Thu, 12 Feb 2009 15:48:13 +0100
+From: Joerg Roedel <joro@8bytes.org>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp, iommu@lists.linux-foundation.org,
+       mingo@redhat.com, netdev@vger.kernel.org
+Subject: Re: [PATCH 0/16] DMA-API debugging facility v2
+Message-ID: <20090212144813.GA2125@8bytes.org>
+References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1233874352.8135.12.camel@macbook.infradead.org> <20090206020535.GE27684@sequoia.sous-sol.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1234449701.10603.10.camel@laptop>
+In-Reply-To: <20090206020535.GE27684@sequoia.sous-sol.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Feb 05, 2009 at 06:05:35PM -0800, Chris Wright wrote:
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> (interesting hash_fn spread ;-)
 
-> On Thu, 2009-02-12 at 15:28 +0100, Frederic Weisbecker wrote:
-> > > [   45.228589] hardirqs last disabled at (0): [<ffffffff8025449d>] copy_process+0x68d/0x1500
-> > > [   45.228602] softirqs last  enabled at (0): [<ffffffff8025449d>] copy_process+0x68d/0x1500
-> > 
-> > 
-> > The reason for which I wanted to send an irqsoff trace is that the above lines are false.
-> 
-> copy_process() has:
-> 
-> #endif
-> 	p->hardirq_enable_ip = 0;
-> 	p->hardirq_enable_event = 0;
-> 	p->hardirq_disable_ip = _THIS_IP_;
-> 	p->hardirq_disable_event = 0;
-> 	p->softirqs_enabled = 1;
-> 	p->softirq_enable_ip = _THIS_IP_;
-> 	p->softirq_enable_event = 0;
-> 	p->softirq_disable_ip = 0;
-> 	p->softirq_disable_event = 0;
-> 	p->hardirq_context = 0;
-> 	p->softirq_context = 0;
-> #endif
-> 
-> the sequence count of 0 basically tells you it hasn't been set yet.
+Hmm, thats because all device addresses are 16kb aligned. The hashfn
+uses bits 13 to 21 as the index for the hash. I can move this window up
+to bits 18-26 if it improves the hash spread.
 
-maybe we should initialize it to -1 to make this more apparent?
-
-	Ingo
+Joerg
