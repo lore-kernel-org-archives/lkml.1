@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760157AbZBLTo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758968AbZBLT6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760157AbZBLTo7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 14:44:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755017AbZBLTou
+	id S1758968AbZBLT6X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 14:58:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbZBLT6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 14:44:50 -0500
-Received: from mga11.intel.com ([192.55.52.93]:20469 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754719AbZBLTot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 14:44:49 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,198,1233561600"; 
-   d="scan'208";a="665149576"
-Subject: Re: [ipw3945-devel] X200: Resume and iwlwifi on
-	2.6.29-rc4-ikn-00001-gd5b5623
-From: reinette chatre <reinette.chatre@intel.com>
-To: Nico Schottelius <nico-linux-20090209@schottelius.org>
-Cc: Linux Next Mailing List <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>
-In-Reply-To: <20090210070147.GA4684@denkbrett.schottelius.org>
-References: <20090209093507.GA27678@denkbrett.schottelius.org>
-	 <20090210070147.GA4684@denkbrett.schottelius.org>
-Content-Type: text/plain
-Date: Thu, 12 Feb 2009 11:48:40 -0800
-Message-Id: <1234468120.30608.30.camel@rc-desk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Feb 2009 14:58:04 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:33173 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751003AbZBLT6B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 14:58:01 -0500
+To: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+Cc: wli@movementarian.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] Update jhash.h with the new version of Jenkins' hash
+References: <alpine.DEB.2.00.0902111107480.15665@blackhole.kfki.hu>
+	<20090212001223.GA5757@movementarian.org>
+	<alpine.DEB.2.00.0902121006440.18739@blackhole.kfki.hu>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 12 Feb 2009 11:58:04 -0800
+In-Reply-To: <alpine.DEB.2.00.0902121006440.18739@blackhole.kfki.hu> (Jozsef Kadlecsik's message of "Thu\, 12 Feb 2009 10\:11\:43 +0100 \(CET\)")
+Message-ID: <m1wsbvctrn.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Rcpt-To: kadlec@blackhole.kfki.hu, rusty@rustcorp.com.au, netfilter-devel@vger.kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, wli@movementarian.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: No (on mx04.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-09 at 23:01 -0800, Nico Schottelius wrote:
-> Good morning!
-> 
-> Summary on the X200:
-> - First resume after suspend takes 20 seconds
-> - Further resumes work fine
-> - wlan works *before* first suspend and wakeup
-> - after that the same happens as on 2.6.29-rc3-ikn-00697-gae1a25d:
->   the device refuses to come up with the message
->   "iwlagn: Could not load the INST uCode section" and
->   "iwlagn: Unable to set up bootstrap uCode: -110"
+Jozsef Kadlecsik <kadlec@blackhole.kfki.hu> writes:
 
-Sorry that I missed responding to your email in all the messages
-regarding this problem. A patch was recently sent to address it - could
-you please try with
-http://marc.info/?l=linux-wireless&m=123429595818495&w=2 ?
+> On Wed, 11 Feb 2009, wli@movementarian.org wrote:
+>
+>> On Wed, Feb 11, 2009 at 11:19:20AM +0100, Jozsef Kadlecsik wrote:
+>> >  /* The golden ration: an arbitrary value */
+>> > -#define JHASH_GOLDEN_RATIO	0x9e3779b9
+>> > +#define JHASH_GOLDEN_RATIO	0xdeadbeef
+>> 
 
-Thanks
+0xdeadbeef is a really bad choice of an arbitrary value.  It is
+already used in multiple places.  Only a few of which are currently
+listed in linux/poison.h and if I happened to see that number in a
+debug trace having to sort through all of the possible sources looks
+like a major pain.
 
-Reinette
+I don't really care what we call it but somehow 0xdeadbeef strikes me
+as wrong and something that will make debugging harder.
 
-
+Eric
