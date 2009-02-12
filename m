@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756792AbZBLALe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757295AbZBLAMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756792AbZBLALe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 19:11:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753400AbZBLALZ
+	id S1757295AbZBLAMh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 19:12:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbZBLAM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 19:11:25 -0500
-Received: from gate.crashing.org ([63.228.1.57]:39622 "EHLO gate.crashing.org"
+	Wed, 11 Feb 2009 19:12:27 -0500
+Received: from movementarian.org ([79.99.65.163]:49918 "EHLO movementarian.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753248AbZBLALY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 19:11:24 -0500
-Subject: Re: [PATCH] vmalloc: Add __get_vm_area_caller()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090211144509.d22feeb8.akpm@linux-foundation.org>
-References: <20090211044854.969CEDDDA9@ozlabs.org>
-	 <20090211171804.7021.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20090211144509.d22feeb8.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 12 Feb 2009 11:11:04 +1100
-Message-Id: <1234397464.29851.20.camel@pasglop>
+	id S1753400AbZBLAM0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 19:12:26 -0500
+Date: Wed, 11 Feb 2009 19:12:23 -0500
+From: wli@movementarian.org
+To: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] Update jhash.h with the new version of Jenkins' hash
+Message-ID: <20090212001223.GA5757@movementarian.org>
+References: <alpine.DEB.2.00.0902111107480.15665@blackhole.kfki.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0902111107480.15665@blackhole.kfki.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-11 at 14:45 -0800, Andrew Morton wrote:
-> On Wed, 11 Feb 2009 17:22:47 +0900 (JST)
-> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> 
-> > > I want to put into powerpc-next patches relying into that, so if the
-> > > patch is ok with you guys, can I stick it in powerpc.git ?
-> > 
-> > hm.
-> > Generally, all MM patch should merge into -mm tree at first.
-> > but I don't think this patch have conflict risk. 
-> > 
-> > Andrew, What do you think?
-> 
-> We can sneak it into mainline later in the week?
+On Wed, Feb 11, 2009 at 11:19:20AM +0100, Jozsef Kadlecsik wrote:
+>  /* The golden ration: an arbitrary value */
+> -#define JHASH_GOLDEN_RATIO	0x9e3779b9
+> +#define JHASH_GOLDEN_RATIO	0xdeadbeef
 
-That would be best.
+The golden ratio is not an arbitrary value, nor is it a food ration.
+It is (sqrt(5)+1)/2. and the original value of JHASH_GOLDEN_RATIO
+approximated its reciprocal and/or fractional part in fixed point.
 
-Cheers,
-Ben.
+(double)0xdeadbeef/((unsigned long long)1 << 32) is a rather poor
+approximation of (sqrt(5)-1)/2. If this value which is not the
+golden ratio is arbitrary, calling it something different from
+JHASH_GOLDEN_RATIO would surprise the code's readers much less.
 
 
+-- wli
