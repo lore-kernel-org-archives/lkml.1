@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761248AbZBLWRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761335AbZBLWRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761248AbZBLWRZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 17:17:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758456AbZBLWRQ
+	id S1761335AbZBLWRt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 17:17:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758674AbZBLWRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 17:17:16 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:53058 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756079AbZBLWRP (ORCPT
+	Thu, 12 Feb 2009 17:17:38 -0500
+Received: from mail.fieldses.org ([141.211.133.115]:52620 "EHLO
+	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758080AbZBLWRi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 17:17:15 -0500
-Subject: Re: git-send-email
-From: Peter Zijlstra <peterz@infradead.org>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Ingo Oeser <ioe-lkml@rameria.de>, Junio C Hamano <gitster@pobox.com>,
-       L-K <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20090212192104.GD15809@csclub.uwaterloo.ca>
-References: <1234451714.10603.22.camel@laptop>
-	 <200902121825.35021.ioe-lkml@rameria.de>
-	 <20090212192104.GD15809@csclub.uwaterloo.ca>
-Content-Type: text/plain
-Date: Thu, 12 Feb 2009 23:17:05 +0100
-Message-Id: <1234477025.10603.38.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.90 
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Feb 2009 17:17:38 -0500
+Date: Thu, 12 Feb 2009 17:17:37 -0500
+To: NeilBrown <neilb@suse.de>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] nfs: replace uses of __constant_{endian}
+Message-ID: <20090212221737.GO23593@fieldses.org>
+References: <1234401418.5566.19.camel@brick> <2540bee2375afb6f08eb92d19e7a1bf0.squirrel@neil.brown.name> <1234407151.5566.21.camel@brick> <6f6ef82b3d3f7eb8445e2e40ce3b534d.squirrel@neil.brown.name>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6f6ef82b3d3f7eb8445e2e40ce3b534d.squirrel@neil.brown.name>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-12 at 14:21 -0500, Lennart Sorensen wrote:
-> On Thu, Feb 12, 2009 at 06:25:34PM +0100, Ingo Oeser wrote:
-> > No, they are great, if you like to skip over a topic, you are not
-> > interested in at all!
-> > 
-> > If you don't like it, just switch off thread in your mailer and
-> > don't force this on everybody else!
+On Thu, Feb 12, 2009 at 02:15:06PM +1100, NeilBrown wrote:
+> On Thu, February 12, 2009 1:52 pm, Harvey Harrison wrote:
+> > On Thu, 2009-02-12 at 13:50 +1100, NeilBrown wrote:
+> >> On Thu, February 12, 2009 12:16 pm, Harvey Harrison wrote:
+> >> > The base versions handle constant folding now, none of these headers
+> >> > are exported to userspace, so the __ prefixed versions are not
+> >> > necessary.
+> >>
+> >> I assume you compile tested this?
+> >>
+> >> I seem to recall that the reason we did it that way was that
+> >> some of the error codes are used in switch statements, and
+> >> the value for a 'case:' really has to look like a constant, not just
+> >> happen to evaluate to one.
+> >
+> > Yes, this requirement was explicitly built-in.  See how the various
+> > __swabXX bits are done in linux/swab.h.
 > 
-> Actually if (as apparently many people seem to manage to do) you have a
-> single starting email, with all the patches as replies to that first
-> email, it looks a lot better, and is much easier to follow.
-> 
-> Seperate threads would be bad.
-> 
-> foobar patch 0 (usually a summary/overview)
-> +-foobar patch 1
-> +-foobar patch 2
-> +-foobar patch 3
-> +-foobar patch 4
-> +-foobar patch 5
-> 
-> is much nicer than
-> 
-> foobar patch 0
-> +-foobar patch 1
->   +-foobar patch 2
->     +-foobar patch 3
->       +-foobar patch 4
->         +-foobar patch 5
-> 
-> which seems to be what git does itself.
+> Cool, thanks!
 
-Which happens to be exactly what my suggestion would accomplish.
-
---[no-]chain-reply-to
-        
-        If this is set, each email will be sent as a reply to the
-        previous email sent. If disabled with "--no-chain-reply-to", all
-        emails after the first will be sent as replies to the first
-        email sent. When using this, it is recommended that the first
-        file given be an overview of the entire patch series. Default is
-        the value of the sendemail.chainreplyto configuration value; if
-        that is unspecified, default to --chain-reply-to.
-        
-        
-
-
+Thanks, applied.--b.
