@@ -1,112 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760132AbZBLSmJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760132AbZBLSnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760132AbZBLSmJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 13:42:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758798AbZBLSlz
+	id S1760132AbZBLSnU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 13:43:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756983AbZBLSnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 13:41:55 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:50857 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758243AbZBLSlz (ORCPT
+	Thu, 12 Feb 2009 13:43:09 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:23345 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756076AbZBLSnG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 13:41:55 -0500
-Date: Thu, 12 Feb 2009 13:41:52 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-Subject: [git pull] ring-buffer: rename label out_unlock to out_reset
-Message-ID: <alpine.DEB.1.10.0902121334330.15469@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 12 Feb 2009 13:43:06 -0500
+Message-ID: <49946DB8.9030801@oracle.com>
+Date: Thu, 12 Feb 2009 10:43:04 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org
+Subject: [PATCH -next] x86_32: fix printk formats
+References: <20090212194408.ff7489c1.sfr@canb.auug.org.au>
+In-Reply-To: <20090212194408.ff7489c1.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A09020A.49946D9E.0221:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
+Fix printk format warnings and also change 2 %ld to %lu for unsigned long
+variables.
 
-Ingo,
+arch/x86/mm/init_32.c:727: warning: format '%u' expects type 'unsigned int', but argument 2 has type 'long unsigned int'
+arch/x86/mm/init_32.c:735: warning: format '%u' expects type 'unsigned int', but argument 2 has type 'long unsigned int'
 
-Please pull the latest tip/tracing/ftrace tree, which can be found at:
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ arch/x86/mm/init_32.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/ftrace
-
-
-Steven Rostedt (1):
-      ring-buffer: rename label out_unlock to out_reset
-
-----
- kernel/trace/ring_buffer.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
----------------------------
-commit 45141d4667d208421ca787a3301542b6a5e0b112
-Author: Steven Rostedt <srostedt@redhat.com>
-Date:   Thu Feb 12 13:19:48 2009 -0500
-
-    ring-buffer: rename label out_unlock to out_reset
-    
-    Impact: clean up
-    
-    While reviewing the ring buffer code, I thougth I saw a bug with
-    
-    	if (!__raw_spin_trylock(&cpu_buffer->lock))
-    		goto out_unlock;
-    
-    But I forgot that we use a variable "lock_taken" that is set if
-    the spinlock is taken, and only unlock it if that variable is set.
-    
-    To avoid further confusion from other reviewers, this patch
-    renames the label out_unlock with out_reset, which is the more
-    appropriate name.
-    
-    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index dc18b5b..f39d7e9 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -1017,7 +1017,7 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
- 		 */
- 		if (unlikely(in_nmi())) {
- 			if (!__raw_spin_trylock(&cpu_buffer->lock))
--				goto out_unlock;
-+				goto out_reset;
- 		} else
- 			__raw_spin_lock(&cpu_buffer->lock);
+--- linux-next-20090212.orig/arch/x86/mm/init_32.c
++++ linux-next-20090212/arch/x86/mm/init_32.c
+@@ -721,7 +721,7 @@ void __init find_low_pfn_range(void)
+ 			highmem_pages = 0;
+ #ifdef CONFIG_HIGHMEM
+ 		if (highmem_pages >= max_pfn) {
+-			printk(KERN_ERR "highmem size specified (%uMB) is "
++			printk(KERN_ERR "highmem size specified (%luMB) is "
+ 				"bigger than pages available (%luMB)!.\n",
+ 				pages_to_mb(highmem_pages),
+ 				pages_to_mb(max_pfn));
+@@ -730,7 +730,7 @@ void __init find_low_pfn_range(void)
+ 		if (highmem_pages) {
+ 			if (max_low_pfn - highmem_pages <
+ 			    64*1024*1024/PAGE_SIZE){
+-				printk(KERN_ERR "highmem size %uMB results in "
++				printk(KERN_ERR "highmem size %luMB results in "
+ 				"smaller than 64MB lowmem, ignoring it.\n"
+ 					, pages_to_mb(highmem_pages));
+ 				highmem_pages = 0;
+@@ -755,7 +755,7 @@ void __init initmem_init(unsigned long s
+ 		highstart_pfn = max_low_pfn;
+ 	memory_present(0, 0, highend_pfn);
+ 	e820_register_active_regions(0, 0, highend_pfn);
+-	printk(KERN_NOTICE "%ldMB HIGHMEM available.\n",
++	printk(KERN_NOTICE "%luMB HIGHMEM available.\n",
+ 		pages_to_mb(highend_pfn - highstart_pfn));
+ 	num_physpages = highend_pfn;
+ 	high_memory = (void *) __va(highstart_pfn * PAGE_SIZE - 1) + 1;
+@@ -768,7 +768,7 @@ void __init initmem_init(unsigned long s
+ #ifdef CONFIG_FLATMEM
+ 	max_mapnr = num_physpages;
+ #endif
+-	printk(KERN_NOTICE "%ldMB LOWMEM available.\n",
++	printk(KERN_NOTICE "%luMB LOWMEM available.\n",
+ 			pages_to_mb(max_low_pfn));
  
-@@ -1030,7 +1030,7 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
- 
- 		/* we grabbed the lock before incrementing */
- 		if (RB_WARN_ON(cpu_buffer, next_page == reader_page))
--			goto out_unlock;
-+			goto out_reset;
- 
- 		/*
- 		 * If for some reason, we had an interrupt storm that made
-@@ -1039,12 +1039,12 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
- 		 */
- 		if (unlikely(next_page == commit_page)) {
- 			WARN_ON_ONCE(1);
--			goto out_unlock;
-+			goto out_reset;
- 		}
- 
- 		if (next_page == head_page) {
- 			if (!(buffer->flags & RB_FL_OVERWRITE))
--				goto out_unlock;
-+				goto out_reset;
- 
- 			/* tail_page has not moved yet? */
- 			if (tail_page == cpu_buffer->tail_page) {
-@@ -1118,7 +1118,7 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
- 
- 	return event;
- 
-- out_unlock:
-+ out_reset:
- 	/* reset write */
- 	if (tail <= BUF_PAGE_SIZE)
- 		local_set(&tail_page->write, tail);
+ 	setup_bootmem_allocator();
