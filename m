@@ -1,65 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760791AbZBLUtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760274AbZBLU6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760791AbZBLUtp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 15:49:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758901AbZBLUtg
+	id S1760274AbZBLU6U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 15:58:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756803AbZBLU6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 15:49:36 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47582 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758620AbZBLUtf (ORCPT
+	Thu, 12 Feb 2009 15:58:08 -0500
+Received: from intermatrixgroup.ru ([195.178.208.66]:41341 "EHLO
+	tservice.net.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756181AbZBLU6H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 15:49:35 -0500
-Date: Thu, 12 Feb 2009 12:48:35 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: fweisbec@gmail.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       oleg@redhat.com, travis@sgi.com, a.p.zijlstra@chello.nl,
-       mm-commits@vger.kernel.org, rusty@rustcorp.com.au
-Subject: Re: +
- work_on_cpu-rewrite-it-to-create-a-kernel-thread-on-demand.patch  added to
- -mm tree
-Message-Id: <20090212124835.2fc41620.akpm@linux-foundation.org>
-In-Reply-To: <m18wobcrw3.fsf@fess.ebiederm.org>
-References: <200902031058.n13AwOoK016719@imap1.linux-foundation.org>
-	<20090203121147.GB19979@elte.hu>
-	<c62985530902030858y28906b2dh511c5868afabfd17@mail.gmail.com>
-	<20090203112529.26e6bf76.akpm@linux-foundation.org>
-	<m18wobcrw3.fsf@fess.ebiederm.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Feb 2009 15:58:07 -0500
+Date: Thu, 12 Feb 2009 23:58:04 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [0/9] pohmelfs for drivers/staging
+Message-ID: <20090212205804.GA24758@ioremap.net>
+References: <1234188162-14727-1-git-send-email-zbr@ioremap.net> <20090212194130.GA16214@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090212194130.GA16214@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Feb 2009 12:38:36 -0800
-ebiederm@xmission.com (Eric W. Biederman) wrote:
-
-> Andrew Morton <akpm@linux-foundation.org> writes:
-> >
-> > Series of four patches:
-> >
-> > - switch cstate.c frmo work_on_cpu to smp_call_function_single()
-> >
-> > - ditto acpi-cpufreq.c
-> >
-> > - ditto mce_amd_64.c
-> >
-> > The final work_on_cpu() caller is pci_call_probe().  I'd like to find a
-> > way of removing that callsite as well, so we can finally remove this
-> > turkey but for now, just fix the bugs in it:
+On Thu, Feb 12, 2009 at 11:41:31AM -0800, Greg KH (greg@kroah.com) wrote:
+> On Mon, Feb 09, 2009 at 05:02:33PM +0300, Evgeniy Polyakov wrote:
+> > Patch is against vanilla tree.
 > 
-> As far as I can tell when we are doing the probes we are in a function
-> that can sleep, so we should be able to just call set_cpus_allowed to
-> remove the need for work_on_cpu in pci_call_probe.  Possibly with a
-> save/restore of the allowed cpus.
-> 
-> Am I missing something?
-> 
+> Looks great, I've now added this to the -staging tree and it will show
+> up in the next -next releases and is queued up to go to Linus for
+> 2.6.30.
 
-The problem with set_cpus_allowed() is that some other
-suitably-privileged userspace process can come in from the side and
-modify your cpus_allowed at any time.
+Great, thanks a lot Greg!
 
+-- 
+	Evgeniy Polyakov
