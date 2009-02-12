@@ -1,104 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760866AbZBLUpK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760621AbZBLUsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760866AbZBLUpK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 15:45:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759560AbZBLUoy
+	id S1760621AbZBLUsy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 15:48:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758901AbZBLUsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 15:44:54 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:38185 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759537AbZBLUow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 15:44:52 -0500
-Date: Thu, 12 Feb 2009 12:44:50 -0800
-From: Mike Anderson <andmike@linux.vnet.ibm.com>
-To: Hannes Reinecke <hare@suse.de>, Jens Axboe <jens.axboe@oracle.com>
-Cc: Christof Schmitt <christof.schmitt@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: Deadlock during multipath failover
-Message-ID: <20090212204450.GA3556@linux.vnet.ibm.com>
-References: <20090212094022.GA4973@schmichrtp.de.ibm.com> <4994234D.1000404@suse.de>
+	Thu, 12 Feb 2009 15:48:45 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:49184 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756941AbZBLUso (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 15:48:44 -0500
+Date: Thu, 12 Feb 2009 14:48:42 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, containers@lists.linux-foundation.org,
+       hpa@zytor.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       viro@zeniv.linux.org.uk, linux-api@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, tglx@linutronix.de
+Subject: Re: [RFC v13][PATCH 00/14] Kernel based checkpoint/restart
+Message-ID: <20090212204842.GA16269@us.ibm.com>
+References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu> <1234285547.30155.6.camel@nimitz> <20090211141434.dfa1d079.akpm@linux-foundation.org> <20090212091721.GB1888@elte.hu> <1234462283.30155.173.camel@nimitz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4994234D.1000404@suse.de>
+In-Reply-To: <1234462283.30155.173.camel@nimitz>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hannes Reinecke <hare@suse.de> wrote:
-> Hi Christof,
->
-> Christof Schmitt wrote:
->> During failover tests on a current distribution kernel, we found this
->> problem. From reading the code, the upstream kernel has the same
->> problem:
->>
->> During multipath failover tests with SCSI on System z, the kernel
->> deadlocks in this situation:
->>
->>>  STACK:
->>>  0 blk_add_timer+206 [0x2981ea]
->>>  1 blk_rq_timed_out+132 [0x2982a8]
->>>  2 blk_abort_request+114 [0x29833e]
->>>  3 blk_abort_queue+92 [0x2983a8]
->>>  4 deactivate_path+74 [0x3e00009625a]
->>>  5 run_workqueue+236 [0x149e04]
->>>  6 worker_thread+294 [0x149fce]
->>>  7 kthread+110 [0x14f436]
->>>  8 kernel_thread_starter+6 [0x10941a]
->>
->> blk_abort_queue takes the queue_lock with spinlock_irqsave and walks
->> the timer_list with list_for_each_entry_safe. Since a path to a SCSI
->> device just failed, the rport state is FC_PORTSTATE_BLOCKED. This
->> rport state triggers blk_add_timer that calls list_add_tail to move
->> the request to the end of timer_list. Thus, the
->> list_for_each_entry_safe never reaches the end of the timer_list, it
->> continously moves the requests to the end of the list.
->>
-> Hmm. That would be fixes by using list_splice() here:
->
-> diff --git a/block/blk-timeout.c b/block/blk-timeout.c
-> index a095353..67bcc3f 100644
-> --- a/block/blk-timeout.c
-> +++ b/block/blk-timeout.c
-> @@ -209,12 +209,15 @@ void blk_abort_queue(struct request_queue *q)
-> {
->        unsigned long flags;
->        struct request *rq, *tmp;
-> +       LIST_HEAD(list);
->
->        spin_lock_irqsave(q->queue_lock, flags);
->
->        elv_abort_queue(q);
->
-> -       list_for_each_entry_safe(rq, tmp, &q->timeout_list, timeout_list)
-> +       list_splice_init(&q->timeout_list, &list);
-> +
-> +       list_for_each_entry_safe(rq, tmp, &list, timeout_list)
->                blk_abort_request(rq);
->
->        spin_unlock_irqrestore(q->queue_lock, flags);
->
->> The rport state FC_PORTSTATE_BLOCKED would end, when the function
->> fc_timeout_deleted_rport would run to remove the rport. But this
->> function was schedules from queue_delayed_work. The timer already
->> expired, but the timer function does not run, because the timer
->> interrupt is disabled from the spinlock_irqsave call.
->>
-> .. but this shouldn't happen anymore when using splice, as
-> the timer will be called _after_ the irqrestore above.
+Quoting Dave Hansen (dave@linux.vnet.ibm.com):
+> Patch 12/14 is supposed to address this *concept*.  But, it hasn't been
+> carried through so that it currently works.  My expectation was that we
+> would go through and add things over time.  I'll go make sure I push it
+> to the point that it actually works for at least the simple test
+> programs that we have.
+> 
+> What I will probably do is something BKL-style.  Basically put a "this
+> can't be checkpointed" marker over most everything I can think of and
+> selectively remove it as we add features.  
 
-If this patch does not address the deadlock another option to look into
-would be to run some testing without blk_abort_request (just using
-elv_abort_queue) and not try to abort in flight IOs at this time. 
+So the question is: when can we unset the uncheckpointable flag?
 
-We observed reduced IO delays during storage failover testing (target
-responsive but timing out IOs) with this code, but I do not have good
-breakdown data on the number of IOs handled by elv_abort_queue vs
-blk_abort_request vs IO delay (It is also config dependent).
+In your patch you suggest clone(CLONE_NEWPID).  But that would
+require that we at that point do a slew of checks for other
+things like open files of a type which are not supported.
 
--andmike
---
-Michael Anderson
-andmike@linux.vnet.ibm.com
+I'm wondering whether we should instead stick to calculating
+whether a task is checkpointable or not at checkpoint time.
+To help an application figure out whether it can be checkpointed,
+we can hook /proc/$$/checkpointable to the same function, and
+have the file output list all of the reasons the task is not
+checkpointable.  i.e.
+
+	mmap MAP_SHARED file which is not yet supported
+	open file from another mounts namespace
+	open TCP socket which is not yet supported
+	open epoll fd which is not yet supported
+	TASK NOT FROZEN
+
+So now every time we do a checkpoint we have to do all these
+checks, but that's better than at clone time.
+
+You suggested on irc having a fops->is_checkpointable()
+fn, which is imo a good idea to help implement the above.
+The default value can be a fn returning false.  I suppose
+we want to pass back a char* with the file type as well.
+
+-serge
