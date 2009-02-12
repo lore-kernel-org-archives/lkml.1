@@ -1,95 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760876AbZBLXBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760962AbZBLXEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760876AbZBLXBT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 18:01:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbZBLXBI
+	id S1760962AbZBLXEY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 18:04:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756825AbZBLXEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 18:01:08 -0500
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.120]:33933 "EHLO
-	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751107AbZBLXBH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 18:01:07 -0500
-Date: Thu, 12 Feb 2009 17:01:00 -0600
-From: David Engel <david@istwok.net>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.27.16
-Message-ID: <20090212230100.GA31159@opus.istwok.net>
-References: <20090212180448.GC15341@kroah.com> <20090212180505.GD15341@kroah.com> <20090212180448.GC15341@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090212180505.GD15341@kroah.com> <20090212180448.GC15341@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 12 Feb 2009 18:04:14 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:43169 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755524AbZBLXEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 18:04:13 -0500
+Subject: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ do?
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: mpm@selenic.com, containers@lists.linux-foundation.org, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       viro@zeniv.linux.org.uk, linux-api@vger.kernel.org, mingo@elte.hu,
+       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org,
+       Alexey Dobriyan <adobriyan@gmail.com>
+In-Reply-To: <20090212141014.2cd3d54d.akpm@linux-foundation.org>
+References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu>
+	 <1234285547.30155.6.camel@nimitz>
+	 <20090211141434.dfa1d079.akpm@linux-foundation.org>
+	 <1234462282.30155.171.camel@nimitz> <1234467035.3243.538.camel@calx>
+	 <20090212114207.e1c2de82.akpm@linux-foundation.org>
+	 <1234475483.30155.194.camel@nimitz>
+	 <20090212141014.2cd3d54d.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 12 Feb 2009 15:04:05 -0800
+Message-Id: <1234479845.30155.220.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 12, 2009 at 10:04:48AM -0800, Greg KH wrote:
-> We (the -stable team) are announcing the release of the 2.6.27.16
-> kernel.
+On Thu, 2009-02-12 at 14:10 -0800, Andrew Morton wrote:
+> On Thu, 12 Feb 2009 13:51:23 -0800
+> Dave Hansen <dave@linux.vnet.ibm.com> wrote:
 > 
-> It contains a wide range of bugfixes, and all users of the 2.6.27 kernel
-> series are strongly encouraged to upgrade.
+> > On Thu, 2009-02-12 at 11:42 -0800, Andrew Morton wrote:
+> > > On Thu, 12 Feb 2009 13:30:35 -0600
+> > > Matt Mackall <mpm@selenic.com> wrote:
+> > > 
+> > > > On Thu, 2009-02-12 at 10:11 -0800, Dave Hansen wrote:
+> > > > 
+> > > > > > - In bullet-point form, what features are missing, and should be added?
+> > > > > 
+> > > > >  * support for more architectures than i386
+> > > > >  * file descriptors:
+> > > > >   * sockets (network, AF_UNIX, etc...)
+> > > > >   * devices files
+> > > > >   * shmfs, hugetlbfs
+> > > > >   * epoll
+> > > > >   * unlinked files
+> > > > 
+> > > > >  * Filesystem state
+> > > > >   * contents of files
+> > > > >   * mount tree for individual processes
+> > > > >  * flock
+> > > > >  * threads and sessions
+> > > > >  * CPU and NUMA affinity
+> > > > >  * sys_remap_file_pages()
+> > > > 
+> > > > I think the real questions is: where are the dragons hiding? Some of
+> > > > these are known to be hard. And some of them are critical checkpointing
+> > > > typical applications. If you have plans or theories for implementing all
+> > > > of the above, then great. But this list doesn't really give any sense of
+> > > > whether we should be scared of what lurks behind those doors.
+> > > 
+> > > How close has OpenVZ come to implementing all of this?  I think the
+> > > implementatation is fairly complete?
+> > 
+> > I also believe it is "fairly complete".  At least able to be used
+> > practically.
+> > 
+> > > If so, perhaps that can be used as a guide.  Will the planned feature
+> > > have a similar design?  If not, how will it differ?  To what extent can
+> > > we use that implementation as a tool for understanding what this new
+> > > implementation will look like?
+> > 
+> > Yes, we can certainly use it as a guide.  However, there are some
+> > barriers to being able to do that:
+> > 
+> > dave@nimitz:~/kernels/linux-2.6-openvz$ git diff v2.6.27.10... | diffstat | tail -1
+> >  628 files changed, 59597 insertions(+), 2927 deletions(-)
+> > dave@nimitz:~/kernels/linux-2.6-openvz$ git diff v2.6.27.10... | wc 
+> >   84887  290855 2308745
+> > 
+> > Unfortunately, the git tree doesn't have that great of a history.  It
+> > appears that the forward-ports are just applications of huge single
+> > patches which then get committed into git.  This tree has also
+> > historically contained a bunch of stuff not directly related to
+> > checkpoint/restart like resource management.
+> > 
+> > We'd be idiots not to take a hard look at what has been done in OpenVZ.
+> > But, for the time being, we have absolutely no shortage of things that
+> > we know are important and know have to be done.  Our largest problem is
+> > not finding things to do, but is our large out-of-tree patch that is
+> > growing by the day. :(
+> > 
+> 
+> Well we have a chicken-and-eggish thing.  The patchset will keep
+> growing until we understand how much of this:
+> 
+> > dave@nimitz:~/kernels/linux-2.6-openvz$ git diff v2.6.27.10... | diffstat | tail -1
+> >  628 files changed, 59597 insertions(+), 2927 deletions(-)
+> 
+> we will be committed to if we were to merge the current patchset.
 
-I get the following oops when starting hald on my Sony VAIO SZ360.
+Here's the measurement that Alexey suggested:
 
-Starting Hardware abstraction layer: haldBUG: unable to handle kernel NULL pointer dereference at 00000000
-IP: [<c0220048>] show_docked+0xe/0x37
-*pde = 00000000
-Oops: 0000 [#2] SMP
-Modules linked in: autofs4 acpi_cpufreq cpufreq_conservative cpufreq_userspace cpufreq_powersave cpufreq_ondemand cpufreq_stats freq_table btusb bluetooth usbhid pcmcia arc4 ecb crypto_blkcipher cryptomgr crypto_algapi snd_hda_intel snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_dummy snd_seq_oss snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq snd_timer snd_seq_device joydev i2c_i801 iwl3945 pcspkr rtc_cmos tifm_7xx1 mac80211 thermal yenta_socket snd sky2 ide_cd_mod rsrc_nonstatic i2c_core rtc_core ehci_hcd pcmcia_core tifm_core bitrev soundcore uhci_hcd
-sony_laptop cdrom psmouse ohci1394 rng_core rtc_lib snd_page_alloc crc32 ieee1394 usbcore evdev cfg80211 backlight battery ac processor button intel_agp agpgart unix
+dave@nimitz:~/kernels/linux-2.6-openvz$ git diff v2.6.27.10... kernel/cpt/ | diffstat 
+ Makefile        |   53 +
+ cpt_conntrack.c |  365 ++++++++++++
+ cpt_context.c   |  257 ++++++++
+ cpt_context.h   |  215 +++++++
+ cpt_dump.c      | 1250 ++++++++++++++++++++++++++++++++++++++++++
+ cpt_dump.h      |   16 
+ cpt_epoll.c     |  113 +++
+ cpt_exports.c   |   13 
+ cpt_files.c     | 1626 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ cpt_files.h     |   71 ++
+ cpt_fsmagic.h   |   16 
+ cpt_inotify.c   |  144 ++++
+ cpt_kernel.c    |  177 ++++++
+ cpt_kernel.h    |   99 +++
+ cpt_mm.c        |  923 +++++++++++++++++++++++++++++++
+ cpt_mm.h        |   35 +
+ cpt_net.c       |  614 ++++++++++++++++++++
+ cpt_net.h       |    7 
+ cpt_obj.c       |  162 +++++
+ cpt_obj.h       |   62 ++
+ cpt_proc.c      |  595 ++++++++++++++++++++
+ cpt_process.c   | 1369 ++++++++++++++++++++++++++++++++++++++++++++++
+ cpt_process.h   |   13 
+ cpt_socket.c    |  790 ++++++++++++++++++++++++++
+ cpt_socket.h    |   33 +
+ cpt_socket_in.c |  450 +++++++++++++++
+ cpt_syscalls.h  |  101 +++
+ cpt_sysvipc.c   |  403 +++++++++++++
+ cpt_tty.c       |  215 +++++++
+ cpt_ubc.c       |  132 ++++
+ cpt_ubc.h       |   23 
+ cpt_x8664.S     |   67 ++
+ rst_conntrack.c |  283 +++++++++
+ rst_context.c   |  323 ++++++++++
+ rst_epoll.c     |  169 +++++
+ rst_files.c     | 1648 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ rst_inotify.c   |  196 ++++++
+ rst_mm.c        | 1151 +++++++++++++++++++++++++++++++++++++++
+ rst_net.c       |  741 +++++++++++++++++++++++++
+ rst_proc.c      |  580 +++++++++++++++++++
+ rst_process.c   | 1640 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ rst_socket.c    |  918 +++++++++++++++++++++++++++++++
+ rst_socket_in.c |  489 ++++++++++++++++
+ rst_sysvipc.c   |  633 +++++++++++++++++++++
+ rst_tty.c       |  384 +++++++++++++
+ rst_ubc.c       |  131 ++++
+ rst_undump.c    | 1007 ++++++++++++++++++++++++++++++++++
+ 47 files changed, 20702 insertions(+)
 
-Pid: 2404, comm: hald Tainted: G      D   (2.6.27.16 #1)
-EIP: 0060:[<c0220048>] EFLAGS: 00010282 CPU: 0
-EIP is at show_docked+0xe/0x37
-EAX: 00000000 EBX: f6d93000 ECX: f6d93000 EDX: f6d99f38
-ESI: c03af2fc EDI: c022003a EBP: f6cdb254 ESP: f6d99f38
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process hald (pid: 2404, ti=f6d98000 task=f72c78d0 task.ti=f6d98000)
-Stack: fffffff4 fffffffb c0246cc1 c03b5600 f6cdb240 f781e7c8 c01b6507 40038000
-       00000003 00001000 40038000 c03b5600 f7854480 f7016940 40038000 c01b6480
-       00001000 c017836d f6d99fa0 f7bf2774 f7016940 fffffff7 00000000 f6d98000
-Call Trace:
- [<c0246cc1>] dev_attr_show+0x21/0x50
- [<c01b6507>] sysfs_read_file+0x87/0x120
- [<c01b6480>] sysfs_read_file+0x0/0x120
- [<c017836d>] vfs_read+0x9d/0x140
- [<c01784e1>] sys_read+0x41/0x80
- [<c01032ca>] syscall_call+0x7/0xb
- =======================
-Code: fd ff 58 5a ba 02 00 00 00 8d 83 80 00 00 00 8d 4c 24 10 e8 bb f7 fc ff 83 c4 18 5b c3 53 89 cb 83 ec 04 8b 80 d8 00 00 00 89 e2 <8b> 00 8b 00 e8 77 d2 ff ff 85 c0 75 07 68 60 b1 37 c0 eb 05 68
-EIP: [<c0220048>] show_docked+0xe/0x37 SS:ESP 0068:f6d99f38
----[ end trace abcf04f7c3ef131b ]---
+One important thing that leaves out is the interaction that this code
+has with the rest of the kernel.  That's critically important when
+considering long-term maintenance, and I'd be curious how the OpenVZ
+folks view it. 
 
-The following change is the part which causes it.
+> Now, we've gone in blind before - most notably on the
+> containers/cgroups/namespaces stuff.  That hail mary pass worked out
+> acceptably, I think.  Maybe we got lucky.  I thought that
+> net-namespaces in particular would never get there, but it did.
+> 
+> That was a very large and quite long-term-important user-visible
+> feature.
+> 
+> checkpoint/restart/migration is also a long-term-...-feature.  But if
+> at all possible I do think that we should go into it with our eyes a
+> little less shut.
 
-> diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
-> index e28469e..eab790f 100644
-> --- a/drivers/acpi/dock.c
-> +++ b/drivers/acpi/dock.c
-> @@ -691,8 +691,14 @@ fdd_out:
->  static ssize_t show_docked(struct device *dev,
->  			   struct device_attribute *attr, char *buf)
->  {
-> -	return snprintf(buf, PAGE_SIZE, "%d\n", dock_present(dock_station));
-> +	struct acpi_device *tmp;
-> +
-> +	struct dock_station *dock_station = *((struct dock_station **)
-> +		dev->platform_data);
->  
-> +	if (ACPI_SUCCESS(acpi_bus_get_device(dock_station->handle, &tmp)))
-> +		return snprintf(buf, PAGE_SIZE, "1\n");
-> +	return snprintf(buf, PAGE_SIZE, "0\n");
->  }
->  static DEVICE_ATTR(docked, S_IRUGO, show_docked, NULL);
+One thing Ingo has asked for that I understand a bit more clearly is a
+programmatic statement of what is and is not covered by this current
+code.  That's certainly one eye-opening activity which I'll get to
+immediately.
 
-It seems that dev->platform_data is NULL on my system.
+-- Dave
 
-David
--- 
-David Engel
-david@istwok.net
