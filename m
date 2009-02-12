@@ -1,73 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbZBLCDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758013AbZBLCEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757247AbZBLCDe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 21:03:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbZBLCDY
+	id S1758013AbZBLCEc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 21:04:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756157AbZBLCEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 21:03:24 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58291 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751207AbZBLCDX (ORCPT
+	Wed, 11 Feb 2009 21:04:22 -0500
+Received: from charybdis-ext.suse.de ([195.135.221.2]:47681 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753099AbZBLCEV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 21:03:23 -0500
-Date: Wed, 11 Feb 2009 18:02:19 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Nick Piggin <npiggin@suse.de>
-cc: Jan Kara <jack@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Federico Cuello <fedux@lugmen.org.ar>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: Re: [Bug #12604] Commit 31a12666d8f0c22235297e1c1575f82061480029
- slows down Berkeley DB
-In-Reply-To: <20090212014718.GF30043@wotan.suse.de>
-Message-ID: <alpine.LFD.2.00.0902111757030.3189@localhost.localdomain>
-References: <AIghyjFgMFP.A.uZD._10jJB@chimera> <sWhNs83kKPE.A.gUG.420jJB@chimera> <20090210162830.GD12146@placka.suse.cz> <20090212014718.GF30043@wotan.suse.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 11 Feb 2009 21:04:21 -0500
+Subject: [Announce] Cpuset (cset) v. 1.5.0 available
+From: Alex Tsariounov <alext@novell.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-rt-users <linux-rt-users@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 11 Feb 2009 19:04:13 -0700
+Message-Id: <1234404253.5483.27.camel@zuul>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Greetings:
+
+We are pleased to announce the immediate availability of cpuset (cset)
+v1.5.0 from here:
+
+ Source:   http://developer.novell.com/wiki/index.php/Cpuset
+ Packages: http://download.opensuse.org/repositories/home:/tsariounov:/cpuset/
+
+Cpuset is a GPL v2 Python application to make using the cpusets
+facilities in the Linux kernel easier. It allows manipulation of cpusets
+on the system and provides higher level functions such as implementation
+and control of a basic CPU shielding setup.  The actual command is
+called cset.
+
+If you're tired of manipulating cpusets by hand, or writing and
+rewriting cpuset startup scripts to help manage shielding, then this
+tool could be for you.
+
+The source link above contains access to a subversion repository,
+bugzilla instance and mailing lists for cpuset.
+
+For an more in-depth writeup on cpuset, see the RT wiki at:
+http://rt.wiki.kernel.org/index.php/Cpuset_management_utility
+
+Which also includes the new tutorial:
+http://rt.wiki.kernel.org/index.php/Cpuset_management_utility/tutorial
+
+Thanks,
+Alex Tsariounov
 
 
-On Thu, 12 Feb 2009, Nick Piggin wrote:
+Changes from 1.04 -> 1.5.0 as follows:
+============================================================
+Cpuset 1.5.0 (February 7, 2009)
+https://forgesvn1.novell.com/svn/cpuset/tags/rel_1.5.0
+http://download.opensuse.org/repositories/home:/tsariounov:/cpuset/
 
-> On Tue, Feb 10, 2009 at 05:28:30PM +0100, Jan Kara wrote:
-> > On Sun 08-02-09 20:21:42, Rafael J. Wysocki wrote:
-> > > This message has been generated automatically as a part of a report
-> > > of recent regressions.
-> > > 
-> > > The following bug entry is on the current list of known regressions
-> > > from 2.6.28.  Please verify if it still should be listed and let me know
-> > > (either way).
-> >   Yes, I've verified with latest git and the regression is still there.
-> 
-> I'm working on this FWIW...
+Major upgrade since 1.04.  This release includes a number of bug fixes and
+enhancements as outlined below.  The release number also has transitioned to a
+three-digit number.  This release has many usability enhancements from the
+past months experience.  It also includes a lengthy tutorial to introduce
+users to the tool.
 
-Shouldn't we just revert it? The code does look to be broken.
+The bug numbers refer to cpuset's bugzilla instance which can be found
+here:  http://devzilla.novell.com/cpuset
 
-It also looks like the interaction with that ever-buggy "nr_to_write" 
-thing are totally wrong. I can see that whole
+Fixed Bugs:
+* Fix bug #1: Origination cpuset not accepted for process move...
+* Fix bug #2: Proc move from set to set does not recognize...
+* Fix bug #3: Interspersed arguments do not work
+* Fix bug #4: Add policy and priority to proc output list
+* Fix bug #5: Add ability to move all threads in a process container wi.
+* Fix bug #6: The -a option for set listing should be the default
+* Fix bug #7: Add destination cpuset for the proc move command
+* Fix bug #8: Let leading slash for nested cpuset spec be optional
+* Fix bug #9: Rearrange info output some, include machine readable output
+* Fix bug #10: Add a recursive cpuset delete with option
+* Fix bug #11: Add a configuration file
+* Fix bug #12: Add hex mask output for cpuset definition spec (cpuspec)
+* Fix bug #13: Add cpuset rename option to set command
+* Fix bug #21: Create shield shortcuts
 
-	if (!cycled) {
-		..
-		index = 0;
-		goto retry
-	}
+Other fixes:
+* Changed behavior of shield command, now it behaves more like the proc move
+  command: -s or -u needs a -p to shield or unshield, however, the shortcut of
+  shield pidspec still works.
+* Fixed exception when using cset with pipes
+* Fixed set list behavior if --set was specified but not --list
+* Added error message if proc list command does not specify a set
+* Fixed exception if proc is used with -l and -s
+* Location for cpuset filesystem mount can be specified in config file
+* Changed proc option -a/--all to --force only
+* Updated copyrights, URLs and documentation
+* Added spec file to svn which is used in build service
+* Cleaned up status output for clarity and consistency
+* Additional minor corner case bug fixes included
+============================================================
 
-doing all the wrong things: if we ever hit the combination of 
-"!cycled + nr_to-write==0", we're always screwed. It simply _cannot_ do 
-the right thing.
 
-I dunno. That whole piece-of-sh*t function has been incredibly buggy this 
-release. The code is an unreadable mess, and I think that "cyclic" stuff 
-is part of the reason for it being messy and buggy. Please convince me 
-it's worth saving, or let me revert the whole stinking pile of crud?
-
-Please?
-
-			Linus
