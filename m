@@ -1,43 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757182AbZBLA3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757568AbZBLAaD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757182AbZBLA3r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 19:29:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755899AbZBLA3f
+	id S1757568AbZBLAaD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 19:30:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757287AbZBLA3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 19:29:35 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51899
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755738AbZBLA3e (ORCPT
+	Wed, 11 Feb 2009 19:29:50 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54212 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757253AbZBLA3s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 19:29:34 -0500
-Date: Wed, 11 Feb 2009 16:29:28 -0800 (PST)
-Message-Id: <20090211.162928.193706021.davem@davemloft.net>
-To: wli@movementarian.org
-Cc: kadlec@blackhole.kfki.hu, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       rusty@rustcorp.com.au
-Subject: Re: [PATCH] Update jhash.h with the new version of Jenkins' hash
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090212001223.GA5757@movementarian.org>
-References: <alpine.DEB.2.00.0902111107480.15665@blackhole.kfki.hu>
-	<20090212001223.GA5757@movementarian.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 11 Feb 2009 19:29:48 -0500
+Date: Wed, 11 Feb 2009 16:29:44 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ed Cashin <ecashin@coraid.com>
+Cc: linux-kernel@vger.kernel.org, karaluh@karaluh.pl, ecashin@coraid.com
+Subject: Re: [PATCH 1/1] aoe: ignore vendor extension AoE responses
+Message-Id: <20090211162944.c1cdf8fb.akpm@linux-foundation.org>
+In-Reply-To: <1234397804-9034-1-git-send-email-ecashin@coraid.com>
+References: <1234397804-9034-1-git-send-email-ecashin@coraid.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: wli@movementarian.org
-Date: Wed, 11 Feb 2009 19:12:23 -0500
+On Wed, 11 Feb 2009 19:16:44 -0500
+Ed Cashin <ecashin@coraid.com> wrote:
 
-> (double)0xdeadbeef/((unsigned long long)1 << 32) is a rather poor
-> approximation of (sqrt(5)-1)/2. If this value which is not the
-> golden ratio is arbitrary, calling it something different from
-> JHASH_GOLDEN_RATIO would surprise the code's readers much less.
+> The Welland ME-747K-SI AoE target generates unsolicited AoE
+> responses that are marked as vendor extensions.  Instead of
+> ignoring these packets, the aoe driver was generating kernel
+> messages for each unrecognized response received.  This patch
+> corrects the behavior.
+> 
+> Signed-off-by: Ed Cashin <ecashin@coraid.com>
+> Reported-by: karaluh@karaluh.pl
+> Tested-by: karaluh@karaluh.pl
+> ---
+> 
+> I will place this patch in the new aoe quilt tree for
+> linux-next when this patch has passed LKML review.
+> 
+>  drivers/block/aoe/aoe.h    |    1 +
+>  drivers/block/aoe/aoenet.c |    2 ++
+>  2 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/block/aoe/aoe.h b/drivers/block/aoe/aoe.h
+> index c237527..5e41e6d 100644
+> --- a/drivers/block/aoe/aoe.h
+> +++ b/drivers/block/aoe/aoe.h
+> @@ -18,6 +18,7 @@
+>  enum {
+>  	AOECMD_ATA,
+>  	AOECMD_CFG,
+> +	AOECMD_VEND_MIN = 0xf0,
+>  
+>  	AOEFL_RSP = (1<<3),
+>  	AOEFL_ERR = (1<<2),
+> diff --git a/drivers/block/aoe/aoenet.c b/drivers/block/aoe/aoenet.c
+> index 30de5b1..c6099ba 100644
+> --- a/drivers/block/aoe/aoenet.c
+> +++ b/drivers/block/aoe/aoenet.c
+> @@ -142,6 +142,8 @@ aoenet_rcv(struct sk_buff *skb, struct net_device *ifp, struct packet_type *pt,
+>  		aoecmd_cfg_rsp(skb);
+>  		break;
+>  	default:
+> +		if (h->cmd >= AOECMD_VEND_MIN)
+> +			break;	/* don't complain about vendor commands */
+>  		printk(KERN_INFO "aoe: unknown cmd %d\n", h->cmd);
+>  	}
+>  exit:
 
-Then we can change the name, whatever...
+Do you believe that this fix should be backported into earlier kernel
+versions?  (2.6.28.x, 2.6.27.x, etc)
 
-But really, anyone truly interested will read the friggin' web site
-where all the design documents and hash test results live.
