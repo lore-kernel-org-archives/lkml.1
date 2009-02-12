@@ -1,130 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761073AbZBLUaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760565AbZBLUfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761073AbZBLUaz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 15:30:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760615AbZBLU3B
+	id S1760565AbZBLUfY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 15:35:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756528AbZBLUfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 15:29:01 -0500
-Received: from kroah.org ([198.145.64.141]:58998 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760601AbZBLU3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 15:29:00 -0500
-Subject: patch staging-stlc45xx-fix-printk-format-warnings.patch added to gregkh-2.6 tree
-To: randy.dunlap@oracle.com, gregkh@suse.de, linux-kernel@vger.kernel.org
-From: <gregkh@suse.de>
-Date: Thu, 12 Feb 2009 12:25:37 -0800
-In-Reply-To: <20090211132146.18e0e30b.randy.dunlap@oracle.com>
-Message-ID: <1234470337823@kroah.org>
+	Thu, 12 Feb 2009 15:35:08 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:34047 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753178AbZBLUfG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 15:35:06 -0500
+Date: Thu, 12 Feb 2009 12:35:04 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bryan Wu <cooloney@kernel.org>, uclinux-dist-devel@blackfin.uclinux.org
+Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
+	(repost)
+Message-ID: <20090212203504.GJ6759@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090211214258.GA32407@Krystal> <20090212003549.GU6694@linux.vnet.ibm.com> <20090212023308.GA21157@linux.vnet.ibm.com> <20090212040824.GA12346@Krystal> <20090212050120.GA8317@linux.vnet.ibm.com> <20090212070539.GA15896@Krystal> <20090212164621.GC6759@linux.vnet.ibm.com> <20090212192941.GC2047@Krystal> <20090212200249.GG6759@linux.vnet.ibm.com> <20090212200937.GE2047@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090212200937.GE2047@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Feb 12, 2009 at 03:09:37PM -0500, Mathieu Desnoyers wrote:
+> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > On Thu, Feb 12, 2009 at 02:29:41PM -0500, Mathieu Desnoyers wrote:
+> > > 
+> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > [...]
+> > > > diff --git a/urcu.c b/urcu.c
+> > > > index f2aae34..a696439 100644
+> > > > --- a/urcu.c
+> > > > +++ b/urcu.c
+> > > > @@ -99,7 +99,8 @@ static void force_mb_single_thread(pthread_t tid)
+> > > >  	 * BUSY-LOOP.
+> > > >  	 */
+> > > >  	while (sig_done < 1)
+> > > > -		smp_rmb();	/* ensure we re-read sig-done */
+> > > > +		barrier();	/* ensure compiler re-reads sig-done */
+> > > > +				/* cache coherence guarantees CPU re-read. */
+> > > 
+> > > OK, this is where I think our points of view differ. Please refer to
+> > > http://lkml.org/lkml/2007/6/18/299.
+> > > 
+> > > Basically, cpu_relax() used in the Linux kernel has an
+> > > architecture-specific implementation which *could* include a smp_rmb()
+> > > if the architecture doesn't notice writes done by other CPUs. I think
+> > > Blackfin is the only architecture currently supported by the Linux
+> > > kernel which defines cpu_relax() as a smp_mb(), because it does not have
+> > > cache coherency.
+> > > 
+> > > Therefore, I propose that we create a memory barrier macro which is
+> > > defined as a 
+> > >   barrier()   when the cpu has cache coherency
+> > >   cache flush when the cpu does not have cache coherency and is
+> > >               compiled with smp support.
+> > > 
+> > > We could call that
+> > > 
+> > >   smp_wmc() (for memory-coherency or memory commit)
+> > >   smp_rmc()
+> > >   smp_mc()
+> > > 
+> > > It would be a good way to identify the location where data exchange
+> > > between memory and the local cache are is required in the algorithm.
+> > > What do you think ?
+> > 
+> > Actually the best way to do this would be:
+> > 
+> > 	while (ACCESS_ONCE(sig_done) < 1)
+> > 		continue;
+> > 
+> 
+> Interesting idea. Maybe we should define an accessor for the data write
+> too ?
 
-This is a note to let you know that I've just added the patch titled
+I like having just ACCESS_ONCE(), but I suppose I could live with
+separate LOAD_ONCE() and STORE_ONCE() primitives.
 
-    Subject: Staging: stlc45xx: fix printk format warnings
+But I am not yet convinced that this is needed, as I am not aware of any
+architecture that would buffer writes forever.  (Doesn't mean that there
+isn't one, but it does not make sense to complicate the API just on
+speculation.)
 
-to my gregkh-2.6 tree.  Its filename is
+> But I suspect that in a lot of situations, what we will really want is
+> to do a bunch of read/writes, and only at a particular point do the
+> cache flush.
 
-    staging-stlc45xx-fix-printk-format-warnings.patch
+That could happen, and in fact is why the separate
+smp_read_barrier_depends() primitive exists.  But I -strongly-
+discourage its use -- code using rcu_dereference() is -much- easier to
+read and understand.  So if the series of reads/writes was short, I
+would say to just bite the bullet and take the multiple primitives.
 
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+If nothing else, this might encourage hardware manufacturers to do the
+right thing.  ;-)
 
+> > If ACCESS_ONCE() needs to be made architecture-specific to make this
+> > really work on Blackfin, we should make that change.  And, now that
+> > you mention it, I have heard rumors that other CPU families can violate
+> > cache coherence in some circumstances.
+> > 
+> > So perhaps ACCESS_ONCE() becomes:
+> > 
+> > #ifdef CONFIG_ARCH_CACHE_COHERENT
+> > #define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
+> > #else /* #ifdef CONFIG_ARCH_CACHE_COHERENT */
+> > #define ACCESS_ONCE(x)     ({ \
+> > 				typeof(x) _________x1; \
+> > 				_________x1 = (*(volatile typeof(x) *)&(x)); \
+> > 				cpu_relax(); \
+> 
+> I don't think cpu_relax would be the correct primitive to use here. We
+> definitely don't want a "rep; nop;" or anything like this which _slows
+> down_ the access. It's just a different goal we are pursuing. So using
+> something like smp_rmc within the ACCESS_ONCE() macro in this case as I
+> proposed in the other mail still seems to make sense.
 
->From randy.dunlap@oracle.com  Thu Feb 12 11:53:49 2009
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Date: Wed, 11 Feb 2009 13:21:46 -0800
-Subject: Staging: stlc45xx: fix printk format warnings
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: gregkh@suse.de
-Message-ID: <20090211132146.18e0e30b.randy.dunlap@oracle.com>
+Well, x86 would have CONFIG_ARCH_CACHE_COHERENT, so it would instead
+use the old definition -- so no "rep; nop;" in any case.
 
+Probably whatever takes the place of cpu_relax() is arch-dependent
+anyway.
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+							Thanx, Paul
 
-Fix staging/stlc45xx printk format warnings:
-
-drivers/staging/stlc45xx/stlc45xx.c:453: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
-drivers/staging/stlc45xx/stlc45xx.c:509: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
-drivers/staging/stlc45xx/stlc45xx.c:718: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
-drivers/staging/stlc45xx/stlc45xx.c:851: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
-drivers/staging/stlc45xx/stlc45xx.c:857: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
-drivers/staging/stlc45xx/stlc45xx.c:1508: warning: format '%d' expects type 'int', but argument 3 has type 'size_t'
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/staging/stlc45xx/stlc45xx.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
---- a/drivers/staging/stlc45xx/stlc45xx.c
-+++ b/drivers/staging/stlc45xx/stlc45xx.c
-@@ -450,7 +450,7 @@ static ssize_t stlc45xx_sysfs_store_cal_
- 	mutex_lock(&stlc->mutex);
- 
- 	if (count != RSSI_CAL_ARRAY_LEN) {
--		stlc45xx_error("invalid cal_rssi length: %d", count);
-+		stlc45xx_error("invalid cal_rssi length: %zu", count);
- 		count = 0;
- 		goto out_unlock;
- 	}
-@@ -506,7 +506,7 @@ static ssize_t stlc45xx_sysfs_store_cal_
- 	mutex_lock(&stlc->mutex);
- 
- 	if (count != CHANNEL_CAL_ARRAY_LEN) {
--		stlc45xx_error("invalid cal_channels size: %d ", count);
-+		stlc45xx_error("invalid cal_channels size: %zu ", count);
- 		count = 0;
- 		goto out_unlock;
- 	}
-@@ -715,7 +715,7 @@ static int stlc45xx_txbuffer_find(struct
- 		/* not enough room */
- 		pos = -1;
- 
--	stlc45xx_debug(DEBUG_TXBUFFER, "txbuffer: find %d B: 0x%x", len, pos);
-+	stlc45xx_debug(DEBUG_TXBUFFER, "txbuffer: find %zu B: 0x%x", len, pos);
- 
- out:
- 	return pos;
-@@ -848,13 +848,13 @@ static int stlc45xx_request_firmware(str
- 	}
- 
- 	if (fw->size % 4) {
--		stlc45xx_error("firmware size is not multiple of 32bit: %d",
-+		stlc45xx_error("firmware size is not multiple of 32bit: %zu",
- 			       fw->size);
- 		return -EILSEQ; /* Illegal byte sequence  */;
- 	}
- 
- 	if (fw->size < 1000) {
--		stlc45xx_error("firmware is too small: %d", fw->size);
-+		stlc45xx_error("firmware is too small: %zu", fw->size);
- 		return -EILSEQ;
- 	}
- 
-@@ -1505,7 +1505,7 @@ static int stlc45xx_tx_frame(struct stlc
- 
- 	stlc45xx_debug(DEBUG_FUNC, "%s", __func__);
- 
--	stlc45xx_debug(DEBUG_TX, "tx frame 0x%p %d B", buf, len);
-+	stlc45xx_debug(DEBUG_TX, "tx frame 0x%p %zu B", buf, len);
- 	stlc45xx_dump(DEBUG_TX_CONTENT, buf, len);
- 
- 	stlc45xx_wakeup(stlc);
-
-
-Patches currently in gregkh-2.6 which might be from randy.dunlap@oracle.com are
-
-pending/firmware-add-kconfig-and-makefile-to-build-the-firmware-samples.patch
-staging/staging-dst-kconfig-update.patch
-staging/staging-dst-fix-build-dependancy.patch
-staging/staging-rt2860-fix-printk-format-warnings.patch
-staging/staging-rtl8187se-fix-kconfig-dependencies.patch
-staging/staging-rtl8187se-fix-printk-format-warnings.patch
-staging/staging-stlc45xx-fix-printk-format-warnings.patch
-staging/staging-otus-fix-mixed-declarations.patch
-staging/staging-android-ram_console-fix-printk-format-warning.patch
-staging/staging-android-binder-fix-printk-format-warnings.patch
-staging/staging-altera-fix-printk-format-warnings.patch
+> Mathieu
+> 
+> > 				(_________x1); \
+> > 				})
+> > #endif /* #else #ifdef CONFIG_ARCH_CACHE_COHERENT */
+> > 
+> > Seem reasonable?
+> > 
+> > 							Thanx, Paul
+> > 
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
