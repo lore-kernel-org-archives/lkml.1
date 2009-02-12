@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760621AbZBLUsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760791AbZBLUtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760621AbZBLUsy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 15:48:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758901AbZBLUsp
+	id S1760791AbZBLUtp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 15:49:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758901AbZBLUtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 15:48:45 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:49184 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756941AbZBLUso (ORCPT
+	Thu, 12 Feb 2009 15:49:36 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47582 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758620AbZBLUtf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 15:48:44 -0500
-Date: Thu, 12 Feb 2009 14:48:42 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, containers@lists.linux-foundation.org,
-       hpa@zytor.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       viro@zeniv.linux.org.uk, linux-api@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, tglx@linutronix.de
-Subject: Re: [RFC v13][PATCH 00/14] Kernel based checkpoint/restart
-Message-ID: <20090212204842.GA16269@us.ibm.com>
-References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu> <1234285547.30155.6.camel@nimitz> <20090211141434.dfa1d079.akpm@linux-foundation.org> <20090212091721.GB1888@elte.hu> <1234462283.30155.173.camel@nimitz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1234462283.30155.173.camel@nimitz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 12 Feb 2009 15:49:35 -0500
+Date: Thu, 12 Feb 2009 12:48:35 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: fweisbec@gmail.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       oleg@redhat.com, travis@sgi.com, a.p.zijlstra@chello.nl,
+       mm-commits@vger.kernel.org, rusty@rustcorp.com.au
+Subject: Re: +
+ work_on_cpu-rewrite-it-to-create-a-kernel-thread-on-demand.patch  added to
+ -mm tree
+Message-Id: <20090212124835.2fc41620.akpm@linux-foundation.org>
+In-Reply-To: <m18wobcrw3.fsf@fess.ebiederm.org>
+References: <200902031058.n13AwOoK016719@imap1.linux-foundation.org>
+	<20090203121147.GB19979@elte.hu>
+	<c62985530902030858y28906b2dh511c5868afabfd17@mail.gmail.com>
+	<20090203112529.26e6bf76.akpm@linux-foundation.org>
+	<m18wobcrw3.fsf@fess.ebiederm.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Dave Hansen (dave@linux.vnet.ibm.com):
-> Patch 12/14 is supposed to address this *concept*.  But, it hasn't been
-> carried through so that it currently works.  My expectation was that we
-> would go through and add things over time.  I'll go make sure I push it
-> to the point that it actually works for at least the simple test
-> programs that we have.
+On Thu, 12 Feb 2009 12:38:36 -0800
+ebiederm@xmission.com (Eric W. Biederman) wrote:
+
+> Andrew Morton <akpm@linux-foundation.org> writes:
+> >
+> > Series of four patches:
+> >
+> > - switch cstate.c frmo work_on_cpu to smp_call_function_single()
+> >
+> > - ditto acpi-cpufreq.c
+> >
+> > - ditto mce_amd_64.c
+> >
+> > The final work_on_cpu() caller is pci_call_probe().  I'd like to find a
+> > way of removing that callsite as well, so we can finally remove this
+> > turkey but for now, just fix the bugs in it:
 > 
-> What I will probably do is something BKL-style.  Basically put a "this
-> can't be checkpointed" marker over most everything I can think of and
-> selectively remove it as we add features.  
+> As far as I can tell when we are doing the probes we are in a function
+> that can sleep, so we should be able to just call set_cpus_allowed to
+> remove the need for work_on_cpu in pci_call_probe.  Possibly with a
+> save/restore of the allowed cpus.
+> 
+> Am I missing something?
+> 
 
-So the question is: when can we unset the uncheckpointable flag?
+The problem with set_cpus_allowed() is that some other
+suitably-privileged userspace process can come in from the side and
+modify your cpus_allowed at any time.
 
-In your patch you suggest clone(CLONE_NEWPID).  But that would
-require that we at that point do a slew of checks for other
-things like open files of a type which are not supported.
-
-I'm wondering whether we should instead stick to calculating
-whether a task is checkpointable or not at checkpoint time.
-To help an application figure out whether it can be checkpointed,
-we can hook /proc/$$/checkpointable to the same function, and
-have the file output list all of the reasons the task is not
-checkpointable.  i.e.
-
-	mmap MAP_SHARED file which is not yet supported
-	open file from another mounts namespace
-	open TCP socket which is not yet supported
-	open epoll fd which is not yet supported
-	TASK NOT FROZEN
-
-So now every time we do a checkpoint we have to do all these
-checks, but that's better than at clone time.
-
-You suggested on irc having a fops->is_checkpointable()
-fn, which is imo a good idea to help implement the above.
-The default value can be a fn returning false.  I suppose
-we want to pass back a char* with the file type as well.
-
--serge
