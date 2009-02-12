@@ -1,117 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758046AbZBLHZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758209AbZBLH1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758046AbZBLHZu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 02:25:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbZBLHZm
+	id S1758209AbZBLH1R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 02:27:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbZBLH1D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 02:25:42 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46928 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752359AbZBLHZl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 02:25:41 -0500
-Date: Thu, 12 Feb 2009 16:24:21 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       davem@davemlloft.net, heiko.carstens@de.ibm.com
-Subject: [PATCH 2/2] fix memmap init for handling memory hole
-Message-Id: <20090212162421.65bb7aa2.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090212161920.deedea35.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090212161920.deedea35.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Feb 2009 02:27:03 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53209 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752359AbZBLH1B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 02:27:01 -0500
+Date: Thu, 12 Feb 2009 08:26:44 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: x86 maintainers <x86@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Don't override CONFIG_64BIT for ARCH={i386,x86_64}
+	builds
+Message-ID: <20090212072644.GA10253@elte.hu>
+References: <1234372298.3586.23.camel@macbook.infradead.org> <20090211172258.GE13239@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090211172258.GE13239@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Now, early_pfn_in_nid(PFN, NID) may returns false if PFN is a hole.
-and memmap initialization was not done. This was a trouble for
-sparc boot.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-To fix this, the PFN should be initialized and marked as PG_reserved.
-This patch changes early_pfn_in_nid() return true if PFN is a hole.
+> 
+> * David Woodhouse <dwmw2@infradead.org> wrote:
+> 
+> > It is a steaming great pain in the arse when the value of CONFIG_64BIT
+> > explicitly written in my .config file is overridden by the value of
+> > $ARCH inferred from the environment.
+> > 
+> > If I have a 32-bit .config and I happen to build it without remembering
+> > to put 'ARCH=i386' on the make command line, it shouldn't force
+> > CONFIG_64BIT=y and reconfigure.
+> > 
+> > This patch should fix that, while still allowing defconfig to work as it
+> > currently does for both 32-bit and 64-bit environments, and still giving
+> > the default value of CONFIG_64BIT according to $ARCH. It's just that it
+> > won't _force_ a change to CONFIG_64BIT when it's set to something other
+> > than what $ARCH would imply.
+> > 
+> > Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+> 
+> Applied to tip:x86/ugent, thanks David!
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- arch/ia64/mm/numa.c    |    2 +-
- include/linux/mmzone.h |    2 +-
- mm/page_alloc.c        |   23 ++++++++++++++++++++---
- 3 files changed, 22 insertions(+), 5 deletions(-)
+i removed it again, because it regresses randconfig behavior:
 
-Index: mmotm-2.6.29-Feb11/mm/page_alloc.c
-===================================================================
---- mmotm-2.6.29-Feb11.orig/mm/page_alloc.c
-+++ mmotm-2.6.29-Feb11/mm/page_alloc.c
-@@ -2985,16 +2985,33 @@ int __meminit __early_pfn_to_nid(unsigne
- 		if (start_pfn <= pfn && pfn < end_pfn)
- 			return early_node_map[i].nid;
- 	}
--
--	return 0;
-+	/* This is a memory hole */
-+	return -1;
- }
- #endif /* CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID */
- 
- int __meminit early_pfn_to_nid(unsigned long pfn)
- {
--	return __early_pfn_to_nid(pfn);
-+	int nid;
-+
-+	nid = __early_pfn_to_nid(pfn);
-+	if (nid >= 0)
-+		return nid;
-+	/* just returns 0 */
-+	return 0;
- }
- 
-+#ifdef CONFIG_NODES_SPAN_OTHER_NODES
-+bool __meminit early_pfn_in_nid(unsigned long pfn, int node)
-+{
-+	int nid;
-+
-+	nid = __early_pfn_to_nid(pfn);
-+	if (nid >= 0 && nid != node)
-+		return false;
-+	return true;
-+}
-+#endif
- 
- /* Basic iterator support to walk early_node_map[] */
- #define for_each_active_range_index_in_nid(i, nid) \
-Index: mmotm-2.6.29-Feb11/include/linux/mmzone.h
-===================================================================
---- mmotm-2.6.29-Feb11.orig/include/linux/mmzone.h
-+++ mmotm-2.6.29-Feb11/include/linux/mmzone.h
-@@ -1079,7 +1079,7 @@ void sparse_init(void);
- #endif /* CONFIG_SPARSEMEM */
- 
- #ifdef CONFIG_NODES_SPAN_OTHER_NODES
--#define early_pfn_in_nid(pfn, nid)	(early_pfn_to_nid(pfn) == (nid))
-+bool early_pfn_in_nid(unsigned long pfn, int nid);
- #else
- #define early_pfn_in_nid(pfn, nid)	(1)
- #endif
-Index: mmotm-2.6.29-Feb11/arch/ia64/mm/numa.c
-===================================================================
---- mmotm-2.6.29-Feb11.orig/arch/ia64/mm/numa.c
-+++ mmotm-2.6.29-Feb11/arch/ia64/mm/numa.c
-@@ -70,7 +70,7 @@ int __meminit __early_pfn_to_nid(unsigne
- 			return node_memblk[i].nid;
- 	}
- 
--	return 0;
-+	return -1;
- }
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
+ titan:~/tip> grep X86_32 .config; make ARCH=x86_64 randconfig; grep X86_32 .config
+ # CONFIG_X86_32 is not set
+ scripts/kconfig/conf -r arch/x86/Kconfig
+ #
+ # configuration written to .config
+ #
+ CONFIG_X86_32=y
+ CONFIG_X86_32_SMP=y
+ CONFIG_X86_32_LAZY_GS=y
+ CONFIG_X86_32_ALWAYS_ON=y
 
+I dont mind the change you are after, but randconfig should work as
+expected too: if ARCH=x86_64 is passed it should generate a 64-bit
+randconfig, not a 50% 32-bit one.
+
+	Ingo
