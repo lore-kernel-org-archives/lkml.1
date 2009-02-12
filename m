@@ -1,82 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752270AbZBLFJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbZBLFKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752270AbZBLFJW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 00:09:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750771AbZBLFJN
+	id S1756695AbZBLFKe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 00:10:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750742AbZBLFKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 00:09:13 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:33206 "EHLO e4.ny.us.ibm.com"
+	Thu, 12 Feb 2009 00:10:25 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:59265 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750721AbZBLFJM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 00:09:12 -0500
-Date: Wed, 11 Feb 2009 21:09:09 -0800
+	id S1750721AbZBLFKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 00:10:24 -0500
+Date: Wed, 11 Feb 2009 21:01:20 -0800
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
 Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
 Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
 	(repost)
-Message-ID: <20090212050909.GB8317@linux.vnet.ibm.com>
+Message-ID: <20090212050120.GA8317@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090211052828.GQ6742@linux.vnet.ibm.com> <20090211063520.GE8132@Krystal> <20090211153246.GA6694@linux.vnet.ibm.com> <20090211185203.GA29852@Krystal> <20090211200903.GG6694@linux.vnet.ibm.com> <20090211214258.GA32407@Krystal> <20090212003549.GU6694@linux.vnet.ibm.com> <20090212023308.GA21157@linux.vnet.ibm.com> <20090212023707.GA21193@linux.vnet.ibm.com> <20090212041044.GA12612@Krystal>
+References: <20090211005701.GA550@Krystal> <20090211052828.GQ6742@linux.vnet.ibm.com> <20090211063520.GE8132@Krystal> <20090211153246.GA6694@linux.vnet.ibm.com> <20090211185203.GA29852@Krystal> <20090211200903.GG6694@linux.vnet.ibm.com> <20090211214258.GA32407@Krystal> <20090212003549.GU6694@linux.vnet.ibm.com> <20090212023308.GA21157@linux.vnet.ibm.com> <20090212040824.GA12346@Krystal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090212041044.GA12612@Krystal>
+In-Reply-To: <20090212040824.GA12346@Krystal>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 11, 2009 at 11:10:44PM -0500, Mathieu Desnoyers wrote:
+On Wed, Feb 11, 2009 at 11:08:24PM -0500, Mathieu Desnoyers wrote:
 > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > On Wed, Feb 11, 2009 at 06:33:08PM -0800, Paul E. McKenney wrote:
-> > > On Wed, Feb 11, 2009 at 04:35:49PM -0800, Paul E. McKenney wrote:
-> > > > On Wed, Feb 11, 2009 at 04:42:58PM -0500, Mathieu Desnoyers wrote:
-> > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > On Wed, Feb 11, 2009 at 04:35:49PM -0800, Paul E. McKenney wrote:
+> > > On Wed, Feb 11, 2009 at 04:42:58PM -0500, Mathieu Desnoyers wrote:
+> > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+
+[ . . . ]
+
+> > And I had bugs in my model that allowed the rcu_read_lock() model
+> > to nest indefinitely, which overflowed into the top bit, messing
+> > things up.  :-/
 > > 
-> > [ . . . ]
-> > 
-> > > > > > (BTW, I do not trust my model yet, as it currently cannot detect the
-> > > > > > failure case I pointed out earlier.  :-/  Here and I thought that the
-> > > > > > point of such models was to detect additional failure cases!!!)
-> > > > > > 
-> > > > > 
-> > > > > Yes, I'll have to dig deeper into it.
-> > > > 
-> > > > Well, as I said, I attached the current model and the error trail.
-> > > 
-> > > And I had bugs in my model that allowed the rcu_read_lock() model
-> > > to nest indefinitely, which overflowed into the top bit, messing
-> > > things up.  :-/
-> > > 
-> > > Attached is a fixed model.  This model validates correctly (woo-hoo!).
-> > > Even better, gives the expected error if you comment out line 180 and
-> > > uncomment line 213, this latter corresponding to the error case I called
-> > > out a few days ago.
-> > > 
-> > > I will play with removing models of mb...
-> > 
-> > And commenting out the models of mb between the counter flips and the
-> > test for readers still passes validation, as expected, and as shown in
-> > the attached Promela code.
+> > Attached is a fixed model.  This model validates correctly (woo-hoo!).
+> > Even better, gives the expected error if you comment out line 180 and
+> > uncomment line 213, this latter corresponding to the error case I called
+> > out a few days ago.
 > > 
 > 
-> Hrm, in the email I sent you about the memory barrier, I said that it
-> would not make the algorithm incorrect, but that it would cause
-> situations where it would be impossible for the writer to do any
-> progress as long as there are readers active. I think we would have to
-> enhance the model or at least express this through some LTL statement to
-> validate this specific behavior.
+> Great ! :) I added this version to the git repository, hopefully it's ok
+> with you ?
 
-But if the writer fails to make progress, then the counter remains at a
-given value, which causes readers to drain, which allows the writer to
-eventually make progress again.  Right?
+Works for me!
 
-						Thanx, Paul
+> > I will play with removing models of mb...
+> > 
+> 
+> OK, I see you already did..
+
+I continued this, and surprisingly few are actually required, though
+I don't fully trust the modeling of removed memory barriers.
+
+							Thanx, Paul
 
 > Mathieu
 > 
-> > 						Thanx, Paul
+> > 							Thanx, Paul
 > 
 > Content-Description: urcu.spin
 > > /*
@@ -267,13 +253,15 @@ eventually make progress again.  Right?
 > > 	:: need_mb == 0 -> break;
 > > 	od;
 > > 	urcu_gp_ctr = urcu_gp_ctr + RCU_GP_CTR_BIT;
-> > 	/* need_mb = 1;
+> > 	need_mb = 1;
 > > 	do
 > > 	:: need_mb == 1 -> skip;
 > > 	:: need_mb == 0 -> break;
-> > 	od; */
+> > 	od;
 > > 	do
 > > 	:: 1 ->
+> > 		printf("urcu_gp_ctr=%x urcu_active_readers=%x\n", urcu_gp_ctr, urcu_active_readers);
+> > 		printf("urcu_gp_ctr&0x7f=%x urcu_active_readers&0x7f=%x\n", urcu_gp_ctr & ~RCU_GP_CTR_NEST_MASK, urcu_active_readers & ~RCU_GP_CTR_NEST_MASK);
 > > 		if
 > > 		:: (urcu_active_readers & RCU_GP_CTR_NEST_MASK) != 0 &&
 > > 		   (urcu_active_readers & ~RCU_GP_CTR_NEST_MASK) !=
@@ -298,13 +286,15 @@ eventually make progress again.  Right?
 > > 	:: need_mb == 0 -> break;
 > > 	od;
 > > 	urcu_gp_ctr = urcu_gp_ctr + RCU_GP_CTR_BIT;
-> > 	/* need_mb = 1;
+> > 	need_mb = 1;
 > > 	do
 > > 	:: need_mb == 1 -> skip;
 > > 	:: need_mb == 0 -> break;
-> > 	od; */
+> > 	od;
 > > 	do
 > > 	:: 1 ->
+> > 		printf("urcu_gp_ctr=%x urcu_active_readers=%x\n", urcu_gp_ctr, urcu_active_readers);
+> > 		printf("urcu_gp_ctr&0x7f=%x urcu_active_readers&0x7f=%x\n", urcu_gp_ctr & ~RCU_GP_CTR_NEST_MASK, urcu_active_readers & ~RCU_GP_CTR_NEST_MASK);
 > > 		if
 > > 		:: (urcu_active_readers & RCU_GP_CTR_NEST_MASK) != 0 &&
 > > 		   (urcu_active_readers & ~RCU_GP_CTR_NEST_MASK) !=
@@ -339,17 +329,7 @@ eventually make progress again.  Right?
 > > 	}
 > > }
 > 
-> > _______________________________________________
-> > ltt-dev mailing list
-> > ltt-dev@lists.casi.polymtl.ca
-> > http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> 
 > 
 > -- 
 > Mathieu Desnoyers
 > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
