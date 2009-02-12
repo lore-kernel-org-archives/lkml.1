@@ -1,130 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758178AbZBLMT6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758227AbZBLMad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758178AbZBLMT6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 07:19:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbZBLMTs
+	id S1758227AbZBLMad (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 07:30:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756607AbZBLMaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 07:19:48 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:3993 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751089AbZBLMTr (ORCPT
+	Thu, 12 Feb 2009 07:30:23 -0500
+Received: from moutng.kundenserver.de ([212.227.17.10]:55376 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756561AbZBLMaW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 07:19:47 -0500
-Message-ID: <499413DB.2020208@panasas.com>
-Date: Thu, 12 Feb 2009 14:19:39 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
-MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, jens.axboe@oracle.com
-CC: James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] [RFC] block: Don't let blk_put_request leak BIOs
-References: <4993DCCA.8080508@panasas.com>	<20090212174124S.fujita.tomonori@lab.ntt.co.jp>	<4993E85A.20805@panasas.com> <20090212184208X.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090212184208X.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Feb 2009 12:19:45.0719 (UTC) FILETIME=[30F3FC70:01C98D0C]
+	Thu, 12 Feb 2009 07:30:22 -0500
+From: Thierry Reding <thierry.reding@avionic-design.de>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: haavard.skinnemoen@atmel.com, linux-kernel@vger.kernel.org,
+       dan.j.williams@intel.com
+Subject: [PATCH v2] dmaengine: Fix oops on dmatest module unload.
+Date: Thu, 12 Feb 2009 13:30:11 +0100
+Message-Id: <1234441811-9628-1-git-send-email-thierry.reding@avionic-design.de>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <20090212.204840.124087545.nemoto@toshiba-tops.co.jp>
+References: <20090212.204840.124087545.nemoto@toshiba-tops.co.jp>
+X-Provags-ID: V01U2FsdGVkX18BhF9NWNysszVa5Q3gCdxqXrhbve+b009jG37
+ LxO8vJ9cwYP+Rh/S0GZyeaCODUQEVb73WWL5QVyUMOBUF59ka4
+ 1SMbNZVq1jfWgkg9MyZzQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch fixes an oops that happens when the dmatest module is unloaded. The
+dma_release_channel() function is called on channels that have already been
+cleaned up (and therefore freed) with dmatest_cleanup_channel().
 
-If a block ULD had allocated a request and mapped some memory into it,
-using one of blk_rq_map_xxx routines, but then for some reason failed to
-execute the request through one of the blk_execute_request routines.
-Then the associated BIO would leak, unless ULD resorts to low-level loops
-intimate of block internals.
+Signed-off-by: Thierry Reding <thierry.reding@avionic-design.de>
 
-[RFC]
-  This code will also catch situations where LLD failed to complete
-  the request before aborting it. Such situations are a BUG. Should we
-  use WARN_ON_ONCE() in that case. The situation above is possible and
-  can happen normally in memory pressure situations so maybe we should
-  devise a bit-flag that ULD denotes that the request was aborted and
-  only WARN_ON if flag was not set.
-
-  I'm sending this before any-tests so people can comment on possible
-  pitfalls.
-
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
 ---
- block/blk-core.c                 |   16 ++++++++++++++++
- drivers/scsi/osd/osd_initiator.c |   17 +----------------
- 2 files changed, 17 insertions(+), 16 deletions(-)
+ drivers/dma/dmatest.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index a824e49..eac96c2 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -1055,6 +1055,21 @@ void part_round_stats(int cpu, struct hd_struct *part)
- EXPORT_SYMBOL_GPL(part_round_stats);
+diff --git a/drivers/dma/dmatest.c b/drivers/dma/dmatest.c
+index 732fa1e..0fb053e 100644
+--- a/drivers/dma/dmatest.c
++++ b/drivers/dma/dmatest.c
+@@ -433,10 +433,10 @@ static void __exit dmatest_exit(void)
  
- /*
-+ * If one of the blk_rq_map_xxx() was called but the request was not
-+ * executed by the block layer, then we must release BIOs. Otherwise they
-+ * will leak.
-+ */
-+static void _abort_unexecuted_bios(struct request *req)
-+{
-+	struct bio *bio;
-+
-+	while ((bio = req->bio) != NULL) {
-+		req->bio = bio->bi_next;
-+		bio_endio(bio, 0);
-+	}
-+}
-+
-+/*
-  * queue lock must be held
-  */
- void __blk_put_request(struct request_queue *q, struct request *req)
-@@ -1066,6 +1081,7 @@ void __blk_put_request(struct request_queue *q, struct request *req)
- 
- 	elv_completed_request(q, req);
- 
-+	_abort_unexecuted_bios(req);
- 	/*
- 	 * Request may not have originated from ll_rw_blk. if not,
- 	 * it didn't come out of our reserved rq pools
-diff --git a/drivers/scsi/osd/osd_initiator.c b/drivers/scsi/osd/osd_initiator.c
-index 0bbbf27..8b1cf72 100644
---- a/drivers/scsi/osd/osd_initiator.c
-+++ b/drivers/scsi/osd/osd_initiator.c
-@@ -335,20 +335,6 @@ struct osd_request *osd_start_request(struct osd_dev *dev, gfp_t gfp)
- }
- EXPORT_SYMBOL(osd_start_request);
- 
--/*
-- * If osd_finalize_request() was called but the request was not executed through
-- * the block layer, then we must release BIOs.
-- */
--static void _abort_unexecuted_bios(struct request *rq)
--{
--	struct bio *bio;
--
--	while ((bio = rq->bio) != NULL) {
--		rq->bio = bio->bi_next;
--		bio_endio(bio, 0);
--	}
--}
--
- static void _osd_free_seg(struct osd_request *or __unused,
- 	struct _osd_req_data_segment *seg)
- {
-@@ -370,11 +356,10 @@ void osd_end_request(struct osd_request *or)
- 
- 	if (rq) {
- 		if (rq->next_rq) {
--			_abort_unexecuted_bios(rq->next_rq);
- 			blk_put_request(rq->next_rq);
-+			rq->next_rq = NULL;
- 		}
- 
--		_abort_unexecuted_bios(rq);
- 		blk_put_request(rq);
+ 	list_for_each_entry_safe(dtc, _dtc, &dmatest_channels, node) {
+ 		list_del(&dtc->node);
+-		dmatest_cleanup_channel(dtc);
+ 		pr_debug("dmatest: dropped channel %s\n",
+ 			 dma_chan_name(dtc->chan));
+ 		dma_release_channel(dtc->chan);
++		dmatest_cleanup_channel(dtc);
  	}
- 	_osd_request_free(or);
+ }
+ module_exit(dmatest_exit);
 -- 
-1.6.0.1
-
-
+tg: (8e49215..) adx/dma (depends on: adx/master)
