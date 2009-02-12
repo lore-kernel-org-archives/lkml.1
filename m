@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758275AbZBLKfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758567AbZBLKgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758275AbZBLKfb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 05:35:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755085AbZBLKfW
+	id S1758567AbZBLKgV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 05:36:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbZBLKgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 05:35:22 -0500
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:45634 "EHLO
+	Thu, 12 Feb 2009 05:36:13 -0500
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:45710 "EHLO
 	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754589AbZBLKfV (ORCPT
+	with ESMTP id S1754976AbZBLKgM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 05:35:21 -0500
-Subject: vfs: Improve readability off mount flag definitins by using offsets
+	Thu, 12 Feb 2009 05:36:12 -0500
+Subject: vfs: Add MS_FLUSHONFSYNC mount flag
 From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
 	<fernando@oss.ntt.co.jp>
 To: Jan Kara <jack@suse.cz>
@@ -34,8 +34,8 @@ References: <20090114165952.GH6222@mit.edu>
 	 <1234434811.15270.7.camel@sebastian.kern.oss.ntt.co.jp>
 Content-Type: text/plain
 Organization: NTT Open Source Software Center
-Date: Thu, 12 Feb 2009 19:35:20 +0900
-Message-Id: <1234434920.15433.2.camel@sebastian.kern.oss.ntt.co.jp>
+Date: Thu, 12 Feb 2009 19:36:10 +0900
+Message-Id: <1234434970.15433.4.camel@sebastian.kern.oss.ntt.co.jp>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -43,53 +43,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently mount flags are defined using both decimal values and offsets which
-is kind of confusing. Define all flags using offsets for the sake of
-readability.
+This mount flag will be used to determine whether the block device's write
+cache should be flush or not on fsync()/fdatasync().
 
 Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
 ---
 
+diff -urNp linux-2.6.29-rc3-orig/fs/namespace.c linux-2.6.29-rc3/fs/namespace.c
+--- linux-2.6.29-rc3-orig/fs/namespace.c	2009-01-29 09:47:51.000000000 +0900
++++ linux-2.6.29-rc3/fs/namespace.c	2009-01-29 18:40:04.000000000 +0900
+@@ -1933,8 +1933,8 @@ long do_mount(char *dev_name, char *dir_
+ 	if (flags & MS_RDONLY)
+ 		mnt_flags |= MNT_READONLY;
+ 
+-	flags &= ~(MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_ACTIVE |
+-		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME| MS_KERNMOUNT);
++	flags &= ~(MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME |
++		   MS_NODIRATIME | MS_RELATIME | MS_ACTIVE | MS_KERNMOUNT);
+ 
+ 	/* ... and get the mountpoint */
+ 	retval = kern_path(dir_name, LOOKUP_FOLLOW, &path);
 diff -urNp linux-2.6.29-rc3-orig/include/linux/fs.h linux-2.6.29-rc3/include/linux/fs.h
---- linux-2.6.29-rc3-orig/include/linux/fs.h	2009-01-29 09:47:51.000000000 +0900
-+++ linux-2.6.29-rc3/include/linux/fs.h	2009-01-29 10:01:58.000000000 +0900
-@@ -111,22 +111,22 @@ struct inodes_stat_t {
- /*
-  * These are the fs-independent mount-flags: up to 32 flags are supported
-  */
--#define MS_RDONLY	 1	/* Mount read-only */
--#define MS_NOSUID	 2	/* Ignore suid and sgid bits */
--#define MS_NODEV	 4	/* Disallow access to device special files */
--#define MS_NOEXEC	 8	/* Disallow program execution */
--#define MS_SYNCHRONOUS	16	/* Writes are synced at once */
--#define MS_REMOUNT	32	/* Alter flags of a mounted FS */
--#define MS_MANDLOCK	64	/* Allow mandatory locks on an FS */
--#define MS_DIRSYNC	128	/* Directory modifications are synchronous */
--#define MS_NOATIME	1024	/* Do not update access times. */
--#define MS_NODIRATIME	2048	/* Do not update directory access times */
--#define MS_BIND		4096
--#define MS_MOVE		8192
--#define MS_REC		16384
--#define MS_VERBOSE	32768	/* War is peace. Verbosity is silence.
-+#define MS_RDONLY	(1<<0)	/* Mount read-only */
-+#define MS_NOSUID	(1<<1)	/* Ignore suid and sgid bits */
-+#define MS_NODEV	(1<<2)	/* Disallow access to device special files */
-+#define MS_NOEXEC	(1<<3)	/* Disallow program execution */
-+#define MS_SYNCHRONOUS	(1<<4)	/* Writes are synced at once */
-+#define MS_REMOUNT	(1<<5)	/* Alter flags of a mounted FS */
-+#define MS_MANDLOCK	(1<<6)	/* Allow mandatory locks on an FS */
-+#define MS_DIRSYNC	(1<<7)	/* Directory modifications are synchronous */
-+#define MS_NOATIME	(1<<10)	/* Do not update access times. */
-+#define MS_NODIRATIME	(1<<11)	/* Do not update directory access times */
-+#define MS_BIND		(1<<12)
-+#define MS_MOVE		(1<<13)
-+#define MS_REC		(1<<14)
-+#define MS_VERBOSE	(1<<15)	/* War is peace. Verbosity is silence.
- 				   MS_VERBOSE is deprecated. */
--#define MS_SILENT	32768
-+#define MS_SILENT	(1<<15)
- #define MS_POSIXACL	(1<<16)	/* VFS does not apply the umask */
- #define MS_UNBINDABLE	(1<<17)	/* change to unbindable */
- #define MS_PRIVATE	(1<<18)	/* change to private */
+--- linux-2.6.29-rc3-orig/include/linux/fs.h	2009-01-29 10:04:18.000000000 +0900
++++ linux-2.6.29-rc3/include/linux/fs.h	2009-01-29 10:24:14.000000000 +0900
+@@ -135,6 +135,8 @@ struct inodes_stat_t {
+ #define MS_RELATIME	(1<<21)	/* Update atime relative to mtime/ctime. */
+ #define MS_KERNMOUNT	(1<<22) /* this is a kern_mount call */
+ #define MS_I_VERSION	(1<<23) /* Update inode I_version field */
++#define MS_FLUSHONFSYNC (1<<24)	/* Force block device flush on
++				   fsync()/fdatasync() */
+ #define MS_ACTIVE	(1<<30)
+ #define MS_NOUSER	(1<<31)
+ 
 
 
