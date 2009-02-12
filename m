@@ -1,45 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757930AbZBLBZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757472AbZBLB2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757930AbZBLBZW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 20:25:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756163AbZBLBZI
+	id S1757472AbZBLB2l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 20:28:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756232AbZBLB2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 20:25:08 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:47766 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755237AbZBLBZI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 20:25:08 -0500
-Message-ID: <49937A46.7050602@zytor.com>
-Date: Wed, 11 Feb 2009 17:24:22 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Tejun Heo <tj@kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: git pull request for tip/tracing/urgent
-References: <alpine.DEB.1.10.0902101314440.23505@gandalf.stny.rr.com> <20090210183046.GA1342@nowhere> <alpine.DEB.1.10.0902101724190.23505@gandalf.stny.rr.com> <20090211012856.GA4921@nowhere> <20090211090229.GG21105@elte.hu> <49929763.3080608@kernel.org> <20090211095325.GD20518@elte.hu>
-In-Reply-To: <20090211095325.GD20518@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 11 Feb 2009 20:28:33 -0500
+Received: from mga09.intel.com ([134.134.136.24]:7178 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756191AbZBLB2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 20:28:32 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,194,1233561600"; 
+   d="scan'208";a="386092632"
+Subject: Re: specjbb2005 fails with 2.6.29-rc4
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Lin Ming <ming.m.lin@intel.com>
+Cc: torvalds@linux-foundation.org, linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1234401644.7699.33.camel@minggr.sh.intel.com>
+References: <1234401390.7699.29.camel@minggr.sh.intel.com>
+	 <1234401644.7699.33.camel@minggr.sh.intel.com>
+Content-Type: text/plain
+Date: Thu, 12 Feb 2009 09:28:17 +0800
+Message-Id: <1234402097.2604.376.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> 
-> hm ... doh, yes. I think we even had a bug in this area.
-> 
-> Why is it implemented like this? These semantics seem to make no sense.
-> 
+On Thu, 2009-02-12 at 09:20 +0800, Lin Ming wrote:
+> On Thu, 2009-02-12 at 09:16 +0800, Lin Ming wrote:
+> > specjbb2005 fails with 2.6.29-rc4 in many testing machines.
+> > 
+> > On a 4*4cores Tigerton machine, run specjb2005 with
+> > starting_number_warehouses = 1 and ending_number_warehouses = 34.
+> > It fails when warehouses=16.
+> > 
+> > Test with Jrockit VM fails. And it works well if OpenJDK is used
+> > instead.
+One difference between Jrockit and OpenJDK is Jrokit uses huge pages.
 
-They don't, which is why .pushsection/.popsection now exists.
-
-.section/.previous really are rather broken, but like many things with 
-broken semantics there is too much that expect the broken semantics now...
-
-	-hpa
+> 
+> Bisect locates below commit.
+> 
+> > 
+> > commit fc8744adc870a8d4366908221508bb113d8b72ee
+> > Author: Linus Torvalds <torvalds@linux-foundation.org>
+> > Date:   Sat Jan 31 15:08:56 2009 -0800
+> > 
+> >     Stop playing silly games with the VM_ACCOUNT flag
+> >     
+> >     The mmap_region() code would temporarily set the VM_ACCOUNT flag for
+> >     anonymous shared mappings just to inform shmem_zero_setup() that it
+> >     should enable accounting for the resulting shm object.  It would then
+> >     clear the flag after calling ->mmap (for the /dev/zero case) or doing
+> >     shmem_zero_setup() (for the MAP_ANON case).
+> >     
+> >     This just resulted in vma merge issues, but also made for just
+> >     unnecessary confusion.  Use the already-existing VM_NORESERVE flag for
+> >     this instead, and let shmem_{zero|file}_setup() just figure it out from
+> >     that.
+> >     
+> >     This also happens to make it obvious that the new DRI2 GEM layer uses a
+> >     non-reserving backing store for its object allocation - which is quite
+> >     possibly not intentional.  But since I didn't want to change semantics
+> >     in this patch, I left it alone, and just updated the caller to use the
+> >     new flag semantics.
+> >     
+> >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> > ---
+> >  drivers/gpu/drm/drm_gem.c |    2 +-
+> >  ipc/shm.c                 |    4 +-
+> >  mm/mmap.c                 |   48 +++++++++++++++++++++++---------------------
+> >  mm/shmem.c                |    2 +-
+> >  4 files changed, 29 insertions(+), 27 deletions(-)
+> > 
+> 
 
