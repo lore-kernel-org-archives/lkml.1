@@ -1,168 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758584AbZBLO2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759088AbZBLO2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758584AbZBLO2Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 09:28:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbZBLO2O
+	id S1759088AbZBLO2u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 09:28:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756502AbZBLO2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 09:28:14 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:64381 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754719AbZBLO2N (ORCPT
+	Thu, 12 Feb 2009 09:28:40 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:37010 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755993AbZBLO2j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 09:28:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=H8OEPfeF1VmPxScji1HJjWp43h36PtC+iZBvOdXz0EyUI0Qx1YfnHXfefNbtija7Pi
-         Ekf/xXLZetouQO1QjLxLeZi2IKytmNQwpi6p/Xd1KmQEXg+kSicKpCCkqFmBy3ycXkMa
-         NHvdy46gptfnbcYQwwO6H3Yiz8xOgpG9jWzxA=
-Date: Thu, 12 Feb 2009 15:28:08 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Thomas Gleixner <tglx@tglx.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: [patch] rt: res_counter fix, v2
-Message-ID: <20090212142806.GA5865@nowhere>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <20090212005032.GA4788@nowhere> <20090212021257.GB4697@nowhere> <20090212101650.GA1096@elte.hu> <20090212102113.GA10031@elte.hu>
+	Thu, 12 Feb 2009 09:28:39 -0500
+Message-ID: <49943212.3080701@petalogix.com>
+Date: Thu, 12 Feb 2009 15:28:34 +0100
+From: Michal Simek <michal.simek@petalogix.com>
+Reply-To: michal.simek@petalogix.com
+User-Agent: Thunderbird 2.0.0.17 (X11/20081001)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090212102113.GA10031@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Network driver issue
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 12, 2009 at 11:21:13AM +0100, Ingo Molnar wrote:
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > Frederic, could you try the patch below?
-> 
-> Please try v2 below - it might even build ;-)
-> 
-> 	Ingo
+Hi guys,
+
+Could you give any hint what can be wrong? I use 2.6.29-rc4.
+Tcpdump and wireshark show me that board can send packet and get
+response but don't show
+timing ping info. For incomming packets (exclude ARP) isn't any response
+back. ARPs work well.
+
+Thanks,
+Michal
 
 
-Ok, I tested it through 3 bootups and it did not triggered.
-But it's absolutely not a guarantee, as I said, I tried to reproduce it
-with several bootups yesterday and I couln't see it again.
+~ # tcpdump &
+~ # device eth0 entered promiscuous mode
+tcpdump: listening on eth0
 
-But by reading the warning and your patch, yes it is supposed to solve it :)
+~ #
+~ # ping 192.168.0.102
+PING 192.168.0.102 (192.168.0.102): 56 data bytes
+00:00:34.639430 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
+00:00:34.642714 192.168.0.102 > 192.168.0.20: icmp: echo reply
+00:00:35.662135 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
+00:00:35.667248 192.168.0.102 > 192.168.0.20: icmp: echo reply
+00:00:36.671424 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
+00:00:36.676416 192.168.0.102 > 192.168.0.20: icmp: echo reply
+00:00:37.681470 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
+00:00:37.686573 192.168.0.102 > 192.168.0.20: icmp: echo reply
+00:00:38.691440 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
+00:00:38.696452 192.168.0.102 > 192.168.0.20: icmp: echo reply
+00:00:39.701454 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
+00:00:39.706520 192.168.0.102 > 192.168.0.20: icmp: echo reply
+00:00:40.711422 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
+00:00:40.716429 192.168.0.102 > 192.168.0.20: icmp: echo reply
+00:00:41.721460 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
+00:00:41.726542 192.168.0.102 > 192.168.0.20: icmp: echo reply
+00:00:42.731478 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
+00:00:42.736476 192.168.0.102 > 192.168.0.20: icmp: echo reply
+00:00:43.741444 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
+00:00:43.746525 192.168.0.102 > 192.168.0.20: icmp: echo reply
+00:00:44.751429 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
+00:00:44.756441 192.168.0.102 > 192.168.0.20: icmp: echo reply
+00:00:45.761449 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
+00:00:45.766528 192.168.0.102 > 192.168.0.20: icmp: echo reply
+00:00:46.771434 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
+00:00:46.776438 192.168.0.102 > 192.168.0.20: icmp: echo reply
 
-BTW, a small thing:
- 
-> [   45.228589] hardirqs last disabled at (0): [<ffffffff8025449d>] copy_process+0x68d/0x1500
-> [   45.228602] softirqs last  enabled at (0): [<ffffffff8025449d>] copy_process+0x68d/0x1500
+--- 192.168.0.102 ping statistics ---
+13 packets transmitted, 0 packets received, 100% packet loss
+~ # 00:01:06.468561 192.168.0.102 > 192.168.0.20: icmp: echo request (DF)
+00:01:07.477512 192.168.0.102 > 192.168.0.20: icmp: echo request (DF)
+00:01:08.477428 192.168.0.102 > 192.168.0.20: icmp: echo request (DF)
+00:01:09.477253 192.168.0.102 > 192.168.0.20: icmp: echo request (DF)
+00:01:10.477131 192.168.0.102 > 192.168.0.20: icmp: echo request (DF)
+00:01:11.466927 arp who-has 192.168.0.20 tell 192.168.0.102
+00:01:11.472649 arp reply 192.168.0.20 is-at 0:a:35:0:22:1
+00:01:11.477375 192.168.0.102 > 192.168.0.20: icmp: echo request (DF)
+00:01:12.476840 192.168.0.102 > 192.168.0.20: icmp: echo request (DF)
+
+~ # ifconfig
+eth0      Link encap:Ethernet  HWaddr 00:0A:35:00:22:01 
+          inet addr:192.168.0.20  Bcast:192.168.0.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING  MTU:1500  Metric:1
+          RX packets:26 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:19 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:2434 (2.3 KiB)  TX bytes:1694 (1.6 KiB)
+          Interrupt:5
+
+lo        Link encap:Local Loopback 
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+
+~ #
+~ # ping 127.0.0.1
+PING 127.0.0.1 (127.0.0.1): 56 data bytes
+64 bytes from 127.0.0.1: icmp_seq=0 ttl=64 time=7.4 ms
+64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=3.4 ms
+64 bytes from 127.0.0.1: icmp_seq=2 ttl=64 time=3.4 ms
+
+--- 127.0.0.1 ping statistics ---
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 3.4/4.7/7.4 ms
+~ #
 
 
-The reason for which I wanted to send an irqsoff trace is that the above lines are false.
-
-addr2line -e vmlinux ffffffff8025449d
-/home/me/linux/rt/linux-2.6.29-rc4/kernel/fork.c:1107  (before your patch)
-
-Which is this area in copy_process:
-
-#ifdef CONFIG_NUMA
-	p->mempolicy = mpol_dup(p->mempolicy);
- 	if (IS_ERR(p->mempolicy)) {
- 		retval = PTR_ERR(p->mempolicy);
- 		p->mempolicy = NULL;
- 		goto bad_fork_cleanup_cgroup;
- 	}
-	mpol_fix_fork_child_flag(p); // <-- 1107
-#endif
-
-Nothing here disables irq.
-That's why I wanted to provide an irqsoff trace. But, heh I only had to read
-res_counter_charge() :-)
-
-Anyway, there is a problem with these hardirqs/softirqs last disabled...
-
-
-> [   45.228609] softirqs last disabled at (0): [<(null)>] (null)
-> [   45.228617] Pid: 4290, comm: ntpdate Tainted: G        W  2.6.29-rc4-rt1-tip #1
-> [   45.228622] Call Trace:
-> [   45.228632]  [<ffffffff8027dfb0>] ? print_irqtrace_events+0xd0/0xe0
-> [   45.228639]  [<ffffffff8024cd73>] __might_sleep+0x113/0x130
-> [   45.228646]  [<ffffffff8077c811>] rt_spin_lock+0xa1/0xb0
-> [   45.228653]  [<ffffffff80296a3d>] res_counter_charge+0x5d/0x130
-> [   45.228660]  [<ffffffff802fb67f>] __mem_cgroup_try_charge+0x7f/0x180
-> [   45.228667]  [<ffffffff802fc407>] mem_cgroup_charge_common+0x57/0x90
-> [   45.228674]  [<ffffffff80212096>] ? ftrace_call+0x5/0x2b
-> [   45.228680]  [<ffffffff802fc49d>] mem_cgroup_newpage_charge+0x5d/0x60
-> [   45.228688]  [<ffffffff802d94ce>] __do_fault+0x29e/0x4c0
-> [   45.228694]  [<ffffffff8077c843>] ? rt_spin_unlock+0x23/0x80
-> [   45.228700]  [<ffffffff802db8b5>] handle_mm_fault+0x205/0x890
-> [   45.228707]  [<ffffffff80212096>] ? ftrace_call+0x5/0x2b
-> [   45.228714]  [<ffffffff8023495e>] do_page_fault+0x11e/0x2a0
-> [   45.228720]  [<ffffffff8077e5a5>] page_fault+0x25/0x30
-> [   45.228727]  [<ffffffff8043e1ed>] ? __clear_user+0x3d/0x70
-> [   45.228733]  [<ffffffff8043e1d1>] ? __clear_user+0x21/0x70
-> 
-> The reason is the raw IRQ flag use of kernel/res_counter.c.
-> 
-> The irq flags tricks there seem a bit pointless: it cannot
-> protect the c->parent linkage because local_irq_save() is
-> only per CPU.
-> 
-> So replace it with _nort(). This code needs a second look.
-> 
-> Reported-by: Frederic Weisbecker <fweisbec@gmail.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  kernel/res_counter.c |    9 +++++----
->  1 file changed, 5 insertions(+), 4 deletions(-)
-> 
-> Index: tip/kernel/res_counter.c
-> ===================================================================
-> --- tip.orig/kernel/res_counter.c
-> +++ tip/kernel/res_counter.c
-> @@ -14,6 +14,7 @@
->  #include <linux/res_counter.h>
->  #include <linux/uaccess.h>
->  #include <linux/mm.h>
-> +#include <linux/interrupt.h>
->  
->  void res_counter_init(struct res_counter *counter, struct res_counter *parent)
->  {
-> @@ -43,7 +44,7 @@ int res_counter_charge(struct res_counte
->  	struct res_counter *c, *u;
->  
->  	*limit_fail_at = NULL;
-> -	local_irq_save(flags);
-> +	local_irq_save_nort(flags);
->  	for (c = counter; c != NULL; c = c->parent) {
->  		spin_lock(&c->lock);
->  		ret = res_counter_charge_locked(c, val);
-> @@ -62,7 +63,7 @@ undo:
->  		spin_unlock(&u->lock);
->  	}
->  done:
-> -	local_irq_restore(flags);
-> +	local_irq_restore_nort(flags);
->  	return ret;
->  }
->  
-> @@ -79,13 +80,13 @@ void res_counter_uncharge(struct res_cou
->  	unsigned long flags;
->  	struct res_counter *c;
->  
-> -	local_irq_save(flags);
-> +	local_irq_save_nort(flags);
->  	for (c = counter; c != NULL; c = c->parent) {
->  		spin_lock(&c->lock);
->  		res_counter_uncharge_locked(c, val);
->  		spin_unlock(&c->lock);
->  	}
-> -	local_irq_restore(flags);
-> +	local_irq_restore_nort(flags);
->  }
->  
->  
+-- 
+Michal Simek, Ing. (M.Eng)
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
 
