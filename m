@@ -1,143 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758437AbZBLKVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758149AbZBLKdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758437AbZBLKVk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 05:21:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756713AbZBLKV3
+	id S1758149AbZBLKdn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 05:33:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755085AbZBLKdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 05:21:29 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33287 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756357AbZBLKV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 05:21:28 -0500
-Date: Thu, 12 Feb 2009 11:21:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Thomas Gleixner <tglx@tglx.de>, LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>
-Subject: [patch] rt: res_counter fix, v2
-Message-ID: <20090212102113.GA10031@elte.hu>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <20090212005032.GA4788@nowhere> <20090212021257.GB4697@nowhere> <20090212101650.GA1096@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090212101650.GA1096@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 12 Feb 2009 05:33:33 -0500
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:45565 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754589AbZBLKdc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 05:33:32 -0500
+Subject: Re: ext3: call blkdev_issue_flush on fsync
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: Jan Kara <jack@suse.cz>
+Cc: Theodore Tso <tytso@MIT.EDU>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com,
+       fernando@kic.ac.jp
+In-Reply-To: <20090128095518.GA16554@duck.suse.cz>
+References: <20090114165952.GH6222@mit.edu>
+	 <1232021211.14626.19.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090115234544.GA7579@duck.suse.cz>
+	 <1232109069.13775.35.camel@sebastian.kern.oss.ntt.co.jp>
+	 <1232114101.13775.63.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090116163039.GE10617@duck.suse.cz>
+	 <1232185639.4831.18.camel@sebastian.kern.oss.ntt.co.jp>
+	 <1232186449.4831.29.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090119120349.GA10193@duck.suse.cz>
+	 <1233135913.5399.57.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090128095518.GA16554@duck.suse.cz>
+Content-Type: text/plain; charset=utf-8
+Organization: NTT Open Source Software Center
+Date: Thu, 12 Feb 2009 19:33:31 +0900
+Message-Id: <1234434811.15270.7.camel@sebastian.kern.oss.ntt.co.jp>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-01-28 at 10:55 +0100, Jan Kara wrote: 
+> On Wed 28-01-09 18:45:13, Fernando Luis Vázquez Cao wrote:
+> > On Mon, 2009-01-19 at 13:03 +0100, Jan Kara wrote:
+> > > On Sat 17-01-09 19:00:49, Fernando Luis Vázquez Cao wrote:
+> > > > On Sat, 2009-01-17 at 18:47 +0900, Fernando Luis Vázquez Cao wrote:
+> > > > > On Fri, 2009-01-16 at 17:30 +0100, Jan Kara wrote:
+> > > > > > On Fri 16-01-09 22:55:01, Fernando Luis Vázquez Cao wrote:
+> > > > > > > To ensure that bits are truly on-disk after an fsync or fdatasync, we
+> > > > > > > should force a disk flush explicitly when there is dirty data/metadata
+> > > > > > > and the journal didn't emit a write barrier (either because metadata is
+> > > > > > > not being synched or barriers are disabled).
+> > > > > > > 
+> > > > > > > Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+> > > > > > > ---
+> > > > > >   Only two minor nits:
+> > > > > > 
+> > > > > > > --- linux-2.6.29-rc1-orig/fs/ext3/fsync.c	2008-12-25 08:26:37.000000000 +0900
+> > > > > > > +++ linux-2.6.29-rc1/fs/ext3/fsync.c	2009-01-16 22:18:53.000000000 +0900
+> > > > > > > @@ -27,6 +27,7 @@
+> > > > > > >  #include <linux/sched.h>
+> > > > > > >  #include <linux/writeback.h>
+> > > > > > >  #include <linux/jbd.h>
+> > > > > > > +#include <linux/blkdev.h>
+> > > > > > >  #include <linux/ext3_fs.h>
+> > > > > > >  #include <linux/ext3_jbd.h>
+> > > > > > >  
+> > > > > > > @@ -45,6 +46,8 @@
+> > > > > > >  int ext3_sync_file(struct file * file, struct dentry *dentry, int datasync)
+> > > > > > >  {
+> > > > > > >  	struct inode *inode = dentry->d_inode;
+> > > > > > > +	journal_t *journal = EXT3_SB(inode->i_sb)->s_journal;
+> > > > > > > +	unsigned long i_state = inode->i_state;
+> > > > > > >  	int ret = 0;
+> > > > > > >  
+> > > > > > >  	J_ASSERT(ext3_journal_current_handle() == NULL);
+> > > > > > > @@ -69,23 +72,33 @@ int ext3_sync_file(struct file * file, s
+> > > > > > >  	 */
+> > > > > > >  	if (ext3_should_journal_data(inode)) {
+> > > > > > >  		ret = ext3_force_commit(inode->i_sb);
+> > > > > > > +		if (!(journal->j_flags & JFS_BARRIER))
+> > > > > > > +			goto no_journal_barrier;
+> > > > > > >  		goto out;
+> > > > > > >  	}
+> > > > > > >  
+> > > > > > > -	if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
+> > > > > > > -		goto out;
+> > > > > > > +	if (datasync && !(i_state & I_DIRTY_DATASYNC))
+> > > > > > > +		goto flush_blkdev;
+> > > > > > >  
+> > > > > > >  	/*
+> > > > > > >  	 * The VFS has written the file data.  If the inode is unaltered
+> > > > > > >  	 * then we need not start a commit.
+> > > > > > >  	 */
+> > > > > > > -	if (inode->i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
+> > > > > > > +	if (i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
+> > > > > > >  		struct writeback_control wbc = {
+> > > > > > >  			.sync_mode = WB_SYNC_ALL,
+> > > > > > >  			.nr_to_write = 0, /* sys_fsync did this */
+> > > > > > >  		};
+> > > > > > >  		ret = sync_inode(inode, &wbc);
+> > > > > > > +		if (journal && !(journal->j_flags & JFS_BARRIER))
+> > > > > > > +			goto no_journal_barrier;
+> > > > > >   I cannot imagine "journal" will be NULL here.
+> > > > > 
+> > > > > I'll try to check whether that is always so just in case.
+> > > > > 
+> > > > > >   And we can also optimize here a bit and do "goto out" because here
+> > > > > > we know the barrier has been issued.
+> > > > > 
+> > > > > Yep, I was considering the same optimization. By the way, I was
+> > > > > wondering if we should honor ext3 and ext4's "barrier" mount option for
+> > > > > sys_fsync()/sys_fdatasync() and do not force a flush when "barrier=1".
+> > > > 
+> > > > The last phrase should read " do not force a flush when "barrier=0" ".
+> > >   I was hesitating about this a bit. But I don't think so. The reason is
+> > > that POSIX (or any other reasonable specification) mandates that fsync()
+> > > should return only after the data is safely on storage. So if we don't
+> > > flush blockdevice caches, we effectively violate POSIX and we should never
+> > > do that. With barriers the matter is a bit different - that is just a
+> > > filesystem specific thing, no standard guarantees anything.
+> > 
+> > Hi Jan,
+> > 
+> > Sorry it's taken me so long to get back to you.
+> > 
+> > Thinking a lit bit more about this issue, it occurred to me that adding
+> > a new mount option à la existing "barrier" is likely to be preferable.
+> > As an example where such an option could make sense, let's consider a
+> > system with battery-backup cache devices. Since the battery-backup
+> > guarantees the data still not committed to the platter will not vanish
+> > in the event of a power down, it should be possible to obtain a
+> > performance gain by optimizing out the device flush on every
+> > fsync()/fdatasync() call.
+>   Yes, I came to this conclusion as well when we were discussing how to fix
+> other filesystems which fail to issue flush in fsync
+> (https://kerneltrap.org/mailarchive/linux-ext4/2009/1/22/4788004/thread).
+> I think it makes sence there's a general mount option recognized at VFS
+> level which would set superblock flag whether flush on fsync is needed or
+> not. Then you could use this flag in your patch. 
+>   So if you have time, please write a (separate) patch introducing this
+> generic option. Thanks.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Sorry it's taken me so long to get back at you, but I got distracted
+with some high priority stuff. I finally got around writing the patches
+for both the kernel and util-linux which I am sending as a reply to this
+email. Can you tell me if this is what you had in mind?
 
-> Frederic, could you try the patch below?
+Regards,
 
-Please try v2 below - it might even build ;-)
+Fernando
 
-	Ingo
-
-------------------->
-Subject: rt: res_counter fix
-From: Ingo Molnar <mingo@elte.hu>
-Date: Thu Feb 12 11:11:47 CET 2009
-
-Frederic Weisbecker reported this warning:
-
-[   45.228562] BUG: sleeping function called from invalid context at kernel/rtmutex.c:683
-[   45.228571] in_atomic(): 0, irqs_disabled(): 1, pid: 4290, name: ntpdate
-[   45.228576] INFO: lockdep is turned off.
-[   45.228580] irq event stamp: 0
-[   45.228583] hardirqs last  enabled at (0): [<(null)>] (null)
-[   45.228589] hardirqs last disabled at (0): [<ffffffff8025449d>] copy_process+0x68d/0x1500
-[   45.228602] softirqs last  enabled at (0): [<ffffffff8025449d>] copy_process+0x68d/0x1500
-[   45.228609] softirqs last disabled at (0): [<(null)>] (null)
-[   45.228617] Pid: 4290, comm: ntpdate Tainted: G        W  2.6.29-rc4-rt1-tip #1
-[   45.228622] Call Trace:
-[   45.228632]  [<ffffffff8027dfb0>] ? print_irqtrace_events+0xd0/0xe0
-[   45.228639]  [<ffffffff8024cd73>] __might_sleep+0x113/0x130
-[   45.228646]  [<ffffffff8077c811>] rt_spin_lock+0xa1/0xb0
-[   45.228653]  [<ffffffff80296a3d>] res_counter_charge+0x5d/0x130
-[   45.228660]  [<ffffffff802fb67f>] __mem_cgroup_try_charge+0x7f/0x180
-[   45.228667]  [<ffffffff802fc407>] mem_cgroup_charge_common+0x57/0x90
-[   45.228674]  [<ffffffff80212096>] ? ftrace_call+0x5/0x2b
-[   45.228680]  [<ffffffff802fc49d>] mem_cgroup_newpage_charge+0x5d/0x60
-[   45.228688]  [<ffffffff802d94ce>] __do_fault+0x29e/0x4c0
-[   45.228694]  [<ffffffff8077c843>] ? rt_spin_unlock+0x23/0x80
-[   45.228700]  [<ffffffff802db8b5>] handle_mm_fault+0x205/0x890
-[   45.228707]  [<ffffffff80212096>] ? ftrace_call+0x5/0x2b
-[   45.228714]  [<ffffffff8023495e>] do_page_fault+0x11e/0x2a0
-[   45.228720]  [<ffffffff8077e5a5>] page_fault+0x25/0x30
-[   45.228727]  [<ffffffff8043e1ed>] ? __clear_user+0x3d/0x70
-[   45.228733]  [<ffffffff8043e1d1>] ? __clear_user+0x21/0x70
-
-The reason is the raw IRQ flag use of kernel/res_counter.c.
-
-The irq flags tricks there seem a bit pointless: it cannot
-protect the c->parent linkage because local_irq_save() is
-only per CPU.
-
-So replace it with _nort(). This code needs a second look.
-
-Reported-by: Frederic Weisbecker <fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/res_counter.c |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
-
-Index: tip/kernel/res_counter.c
-===================================================================
---- tip.orig/kernel/res_counter.c
-+++ tip/kernel/res_counter.c
-@@ -14,6 +14,7 @@
- #include <linux/res_counter.h>
- #include <linux/uaccess.h>
- #include <linux/mm.h>
-+#include <linux/interrupt.h>
- 
- void res_counter_init(struct res_counter *counter, struct res_counter *parent)
- {
-@@ -43,7 +44,7 @@ int res_counter_charge(struct res_counte
- 	struct res_counter *c, *u;
- 
- 	*limit_fail_at = NULL;
--	local_irq_save(flags);
-+	local_irq_save_nort(flags);
- 	for (c = counter; c != NULL; c = c->parent) {
- 		spin_lock(&c->lock);
- 		ret = res_counter_charge_locked(c, val);
-@@ -62,7 +63,7 @@ undo:
- 		spin_unlock(&u->lock);
- 	}
- done:
--	local_irq_restore(flags);
-+	local_irq_restore_nort(flags);
- 	return ret;
- }
- 
-@@ -79,13 +80,13 @@ void res_counter_uncharge(struct res_cou
- 	unsigned long flags;
- 	struct res_counter *c;
- 
--	local_irq_save(flags);
-+	local_irq_save_nort(flags);
- 	for (c = counter; c != NULL; c = c->parent) {
- 		spin_lock(&c->lock);
- 		res_counter_uncharge_locked(c, val);
- 		spin_unlock(&c->lock);
- 	}
--	local_irq_restore(flags);
-+	local_irq_restore_nort(flags);
- }
- 
- 
