@@ -1,89 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758047AbZBLBjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757854AbZBLBm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758047AbZBLBjm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 20:39:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbZBLBje
+	id S1757854AbZBLBm1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 20:42:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbZBLBmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 20:39:34 -0500
-Received: from mx2.suse.de ([195.135.220.15]:51673 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751207AbZBLBje (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 20:39:34 -0500
-Date: Thu, 12 Feb 2009 02:39:31 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: hch@infradead.org, linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [patch] mm: vmap fix overflow
-Message-ID: <20090212013931.GB30043@wotan.suse.de>
-References: <20090210055119.GE28301@wotan.suse.de> <20090210144420.2e7bb9a9.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	Wed, 11 Feb 2009 20:42:18 -0500
+Received: from mailhost13.gawab.com ([66.220.20.13]:38551 "HELO
+	info15.gawab.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756205AbZBLBmS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 20:42:18 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Feb 2009 20:42:17 EST
+X-Trusted: Whitelisted
+Message-ID: <49937CDF.10307@frugalware.org>
+Date: Thu, 12 Feb 2009 02:35:27 +0100
+From: Gabriel C <crazy@frugalware.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090128)
+MIME-Version: 1.0
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+CC: Justin Piszcz <jpiszcz@lucidpixels.com>,
+       Dan Williams <dan.j.williams@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>
+Subject: Re: [lm-sensors] Status/support for Linux HECI from Intel? (for temp/voltage
+ monitoring)
+References: <alpine.DEB.1.10.0812300700410.11356@p34.internal.lan>	<4964DB3E.6080908@intel.com>	<alpine.DEB.1.10.0901071142200.29147@p34.internal.lan> <1231356111.6648.2.camel@maxim-laptop>
+In-Reply-To: <1231356111.6648.2.camel@maxim-laptop>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090210144420.2e7bb9a9.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 02:44:20PM -0800, Andrew Morton wrote:
-> On Tue, 10 Feb 2009 06:51:19 +0100
-> Nick Piggin <npiggin@suse.de> wrote:
-> 
-> > This patch is appropriate for 2.6.28 too.
-> > 
-> > --
-> > 
-> > The new vmap allocator can wrap the address and get confused in the case of
-> > large allocations or VMALLOC_END near the end of address space.
-> > 
-> > Problem reported by Christoph Hellwig on a 32-bit XFS workload.
-> > 
-> > Signed-off-by: Nick Piggin <npiggin@suse.de>
-> > ---
-> >  mm/vmalloc.c |    6 ++++++
-> >  1 file changed, 6 insertions(+)
-> > 
-> > Index: linux-2.6/mm/vmalloc.c
-> > ===================================================================
-> > --- linux-2.6.orig/mm/vmalloc.c
-> > +++ linux-2.6/mm/vmalloc.c
-> > @@ -334,6 +334,9 @@ retry:
-> >  	addr = ALIGN(vstart, align);
-> >  
-> >  	spin_lock(&vmap_area_lock);
-> > +	if (addr + size < addr)
-> > +		goto overflow;
-> > +
-> >  	/* XXX: could have a last_hole cache */
-> >  	n = vmap_area_root.rb_node;
-> >  	if (n) {
-> > @@ -365,6 +368,8 @@ retry:
-> >  
-> >  		while (addr + size > first->va_start && addr + size <= vend) {
-> >  			addr = ALIGN(first->va_end + PAGE_SIZE, align);
-> > +			if (addr + size < addr)
-> > +				goto overflow;
-> >  
-> >  			n = rb_next(&first->rb_node);
-> >  			if (n)
-> > @@ -375,6 +380,7 @@ retry:
-> >  	}
-> >  found:
-> >  	if (addr + size > vend) {
-> > +overflow:
-> >  		spin_unlock(&vmap_area_lock);
-> >  		if (!purged) {
-> >  			purge_vmap_area_lazy();
-> 
-> well...
-> 
-> 
-> If a caller tries to allocate 0x1000 bytes at address 0xfffff000, this
-> code will think that it overflowed.  But it didn't.
-> 
-> Presumably nobody ever tries to do that, but it seems a bit sloppy?
+Maxim Levitsky wrote:
 
-Oh that's true, good catch. I guess that should be (addr + size - 1)?
-Because we care about the last byte that was actually allocated to us
-(inclusive, rather than exclusive).
+> On Wed, 2009-01-07 at 11:42 -0500, Justin Piszcz wrote:
+>> On Wed, 7 Jan 2009, Dan Williams wrote:
+>>
+>>> Justin Piszcz wrote:
+>>>> The HECI interface would allow lm_sensors developers to grab the
+>>>> temperatures off the chips on the board.
+>>>>
+>>>> From 2005(?)-2008 there was some chatter about supporting it but it never
+>>>> seemed to happen, is there any eventual planned support for supporting
+>>>> Intel's HECI interface or if the user wants to see the
+>>>> temperatures/voltages just buy a different motherboard with an ITE I/O
+>>>> controller?
+>>>>
+>>>> I have a couple DG965WH boards and it would be nice to see the
+>>>> temperature of the chipset etc without having to reboot into the BIOS.
+>>>>
+>>> Hi Justin,
+>>>
+>>> I am not up to date on the progress in this area, but perhaps this site 
+>>> (http://www.openamt.org/) has what you are looking for?
+>>>
+>>> Regards,
+>>> Dan
+>>>
+>> Yeah that is the site-- however, will it ever get merged?  I have not 
+>> heard anything about it for a year or so.
+> 
+> Nope, the heci is just a controller, but we need a way to tell that
+> controller to show us the temperature data.
+> But intel hasn't released the QST sdk, and probably never will.
+> 
+> Sad, 
+
+
+Well I found this interesting thread about :
+
+http://software.intel.com/en-us/forums/manageability-software-development/topic/54851/
+
+It looks like the QST SDK already exists and is planned to be released..
+(  http://software.intel.com/en-us/forums/manageability-software-development/topic/54851/reply/74068/ )
+
+> 
+> Best regards,
+> 	Maxim Levitsky
+> 
+
+Gabriel
 
