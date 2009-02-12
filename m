@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758700AbZBLKRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758437AbZBLKVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758700AbZBLKRh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 05:17:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758865AbZBLKRP
+	id S1758437AbZBLKVk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 05:21:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756713AbZBLKV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 05:17:15 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36251 "EHLO mx2.mail.elte.hu"
+	Thu, 12 Feb 2009 05:21:29 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33287 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758588AbZBLKRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 05:17:13 -0500
-Date: Thu, 12 Feb 2009 11:16:50 +0100
+	id S1756357AbZBLKV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 05:21:28 -0500
+Date: Thu, 12 Feb 2009 11:21:13 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Frederic Weisbecker <fweisbec@gmail.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
@@ -18,13 +18,13 @@ Cc: Thomas Gleixner <tglx@tglx.de>, LKML <linux-kernel@vger.kernel.org>,
        Steven Rostedt <rostedt@goodmis.org>,
        Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
        Clark Williams <williams@redhat.com>
-Subject: [patch] rt: res_counter fix
-Message-ID: <20090212101650.GA1096@elte.hu>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <20090212005032.GA4788@nowhere> <20090212021257.GB4697@nowhere>
+Subject: [patch] rt: res_counter fix, v2
+Message-ID: <20090212102113.GA10031@elte.hu>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <20090212005032.GA4788@nowhere> <20090212021257.GB4697@nowhere> <20090212101650.GA1096@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090212021257.GB4697@nowhere>
+In-Reply-To: <20090212101650.GA1096@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,24 +39,15 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> > I get some sleep while atomic warnings.
-> > I've put the log and my config in attachment.
-> 
-> Note, it's a wicked bug: I can't reproduce it anymore.
-> I would have been glad to give you an irqsoff trace but I can't :-)
+> Frederic, could you try the patch below?
 
-i tried your config and after a few bootups the warning did trigger.
-
-It's the new resource counter code. The IRQ flags disabling it does
-seems a bit dubious to me. Peter, what do you think?
-
-Frederic, could you try the patch below?
+Please try v2 below - it might even build ;-)
 
 	Ingo
 
------------>
+------------------->
 Subject: rt: res_counter fix
 From: Ingo Molnar <mingo@elte.hu>
 Date: Thu Feb 12 11:11:47 CET 2009
@@ -101,14 +92,22 @@ So replace it with _nort(). This code needs a second look.
 Reported-by: Frederic Weisbecker <fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/res_counter.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ kernel/res_counter.c |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
 Index: tip/kernel/res_counter.c
 ===================================================================
 --- tip.orig/kernel/res_counter.c
 +++ tip/kernel/res_counter.c
-@@ -43,7 +43,7 @@ int res_counter_charge(struct res_counte
+@@ -14,6 +14,7 @@
+ #include <linux/res_counter.h>
+ #include <linux/uaccess.h>
+ #include <linux/mm.h>
++#include <linux/interrupt.h>
+ 
+ void res_counter_init(struct res_counter *counter, struct res_counter *parent)
+ {
+@@ -43,7 +44,7 @@ int res_counter_charge(struct res_counte
  	struct res_counter *c, *u;
  
  	*limit_fail_at = NULL;
@@ -117,7 +116,7 @@ Index: tip/kernel/res_counter.c
  	for (c = counter; c != NULL; c = c->parent) {
  		spin_lock(&c->lock);
  		ret = res_counter_charge_locked(c, val);
-@@ -62,7 +62,7 @@ undo:
+@@ -62,7 +63,7 @@ undo:
  		spin_unlock(&u->lock);
  	}
  done:
@@ -126,7 +125,7 @@ Index: tip/kernel/res_counter.c
  	return ret;
  }
  
-@@ -79,13 +79,13 @@ void res_counter_uncharge(struct res_cou
+@@ -79,13 +80,13 @@ void res_counter_uncharge(struct res_cou
  	unsigned long flags;
  	struct res_counter *c;
  
