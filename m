@@ -1,63 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757442AbZBLGLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756768AbZBLGPY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757442AbZBLGLU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 01:11:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbZBLGLH
+	id S1756768AbZBLGPY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 01:15:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751231AbZBLGPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 01:11:07 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:63563 "EHLO song.cn.fujitsu.com"
+	Thu, 12 Feb 2009 01:15:10 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:55928 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751001AbZBLGLE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 01:11:04 -0500
-Message-ID: <4993BD5D.2020707@cn.fujitsu.com>
-Date: Thu, 12 Feb 2009 14:10:37 +0800
+	id S1750985AbZBLGPI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 01:15:08 -0500
+Message-ID: <4993BE57.9000705@cn.fujitsu.com>
+Date: Thu, 12 Feb 2009 14:14:47 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
 To: Al Viro <viro@ZenIV.linux.org.uk>
-CC: containers@lists.osdl.org, Paul Menage <menage@google.com>,
+CC: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [cgroup or VFS ?] WARNING: at	fs/namespace.c:636	mntput_no_expire+0xac/0xf2()
-References: <49617D35.4040805@cn.fujitsu.com>	<20090209004046.3ce1dde0.akpm@linux-foundation.org>	<20090209093414.GU28946@ZenIV.linux.org.uk> <499013CC.2060808@cn.fujitsu.com>
-In-Reply-To: <499013CC.2060808@cn.fujitsu.com>
+       Paul Menage <menage@google.com>, Arjan van de Ven <arjan@infradead.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [cgroup or VFS ?] INFO: possible recursive locking detected
+References: <49617D2E.8050502@cn.fujitsu.com> <496576E7.1@cn.fujitsu.com> <20090209112321.GW28946@ZenIV.linux.org.uk> <1234180131.5951.85.camel@laptop> <4990EF3F.3010501@cn.fujitsu.com> <20090210043733.GY28946@ZenIV.linux.org.uk> <49910E55.7050905@cn.fujitsu.com> <20090210060737.GZ28946@ZenIV.linux.org.uk> <49914815.4020209@cn.fujitsu.com>
+In-Reply-To: <49914815.4020209@cn.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> Al Viro wrote:
->> On Mon, Feb 09, 2009 at 12:40:46AM -0800, Andrew Morton wrote:
->>>> Thread 1:
->>>>   for ((; ;))
->>>>   {
->>>>       mount -t cgroup -o cpuset xxx /mnt > /dev/null 2>&1
->>>>       mkdir /mnt/0 > /dev/null 2>&1
->>>>       rmdir /mnt/0 > /dev/null 2>&1
->>>>       umount /mnt > /dev/null 2>&1
->>>>   }
->>>>
->>>> Thread 2:
->>>>   {
->>>>       mount -t cpuset xxx /mnt > /dev/null 2>&1
->>>>       umount /mnt > /dev/null 2>&1
->>>>   }
->> How cute...  Same mountpoint in both, so these mount(2) will sometimes
->> fail (cgroup picks the same sb on the same options, AFAICS) and fail
->> silently due to these redirects...
->>
->> That's a lovely way to stress-test a large part of ro-bind stuff *and*
->> umount()-related code.  Could you do C equivalent of the above (just
->> the same syscalls in loop, nothing fancier) and do time-stamped strace?
+>> BTW, which dentries are going to stick around until that point?
 >>
 > 
-> Sure, I'll write a C version and try to reproduce the warning.
+> Not sure if I got what you mean. cgroup_kill_sb() will be called only if there
+> are no sub-dirs.
 > 
 
-Unfortunately, the C equivalent can't reproduce the warning, I've run the
-test for the whole night. :( While using the script, often I can trigger
-the warning in several mins.
+Though at this point there won't be any sub-dirs, we have dentries of all the
+control files (normal file) in the root dir.
 
