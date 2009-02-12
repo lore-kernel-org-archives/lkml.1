@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758381AbZBLKhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758849AbZBLKiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758381AbZBLKhc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 05:37:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757444AbZBLKhK
+	id S1758849AbZBLKiT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 05:38:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756853AbZBLKiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 05:37:10 -0500
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:45805 "EHLO
+	Thu, 12 Feb 2009 05:38:05 -0500
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:45860 "EHLO
 	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756844AbZBLKhI (ORCPT
+	with ESMTP id S1754589AbZBLKiD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 05:37:08 -0500
-Subject: util-linux: Add new mount options flushonfsync and noflushonfsync
-	to mount
+	Thu, 12 Feb 2009 05:38:03 -0500
+Subject: util-linux: Add explanation for new mount options flushonfsync and
+	noflushonfsync to mount(8) man page
 From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
 	<fernando@oss.ntt.co.jp>
 To: Jan Kara <jack@suse.cz>
@@ -35,8 +35,8 @@ References: <20090114165952.GH6222@mit.edu>
 	 <1234434811.15270.7.camel@sebastian.kern.oss.ntt.co.jp>
 Content-Type: text/plain
 Organization: NTT Open Source Software Center
-Date: Thu, 12 Feb 2009 19:37:06 +0900
-Message-Id: <1234435026.15433.7.camel@sebastian.kern.oss.ntt.co.jp>
+Date: Thu, 12 Feb 2009 19:38:01 +0900
+Message-Id: <1234435081.15433.10.camel@sebastian.kern.oss.ntt.co.jp>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -44,42 +44,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This mount flag will be used to determine whether the block device's write
-cache should be flush or not on fsync()/fdatasync().
-
 Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
 ---
 
-diff -urp mount-orig/mount.c mount/mount.c
---- mount-orig/mount.c	2009-01-29 15:50:50.000000000 +0900
-+++ mount/mount.c	2009-01-29 14:56:19.000000000 +0900
-@@ -185,6 +185,13 @@ static const struct opt_map opt_map[] = 
-   { "norelatime", 0, 1, MS_RELATIME }, /* Update access time without regard
- 					  to mtime/ctime */
- #endif
-+#ifdef MS_FLUSHONFSYNC
-+  { "flushonfsync", 0, 0, MS_FLUSHONFSYNC },	/* Force block device flush on
-+						   fsync()/fdatasync() */
-+  { "noflushonfsync", 0, 1, MS_FLUSHONFSYNC },	/* Do not force block device
-+						   flush on
-+						   fsync()/fdatasync() */
-+#endif
-   { "nofail",	0, 0, MS_COMMENT},	/* Do not fail if ENOENT on dev */
-   { NULL,	0, 0, 0		}
- };
-diff -urp mount-orig/mount_constants.h mount/mount_constants.h
---- mount-orig/mount_constants.h	2008-04-22 17:59:53.000000000 +0900
-+++ mount/mount_constants.h	2009-01-29 13:40:42.000000000 +0900
-@@ -56,6 +56,10 @@
- #ifndef MS_SHARED
- #define MS_SHARED	(1<<20)	/* 1048576 Shared*/
- #endif
-+#ifndef MS_FLUSHONFSYNC
-+#define MS_FLUSHONFSYNC	(1<<24) /* Force block device flush on
-+				   fsync()/fdatasync() */
-+#endif
- /*
-  * Magic mount flag number. Had to be or-ed to the flag values.
-  */
+diff -urp mount-orig/mount.8 mount/mount.8
+--- mount-orig/mount.8	2009-01-29 15:50:50.000000000 +0900
++++ mount/mount.8	2009-01-29 15:40:39.000000000 +0900
+@@ -649,6 +649,18 @@ current modify or change time. (Similar 
+ mutt or other applications that need to know if a file has been read
+ since the last time it was modified.)
+ .TP
++.B flushonfsync
++Force block device flush on fsync()/fdatasync(). When using storage equipped
++with write caches that can be explicitly flushed by the kernel, this guarantees
++that the data/metadata actually made it to the physical media after invoking
++the respective file data/metadata synchronization system call.
++.TP
++.B noflushonfsync
++Do not force a flush of the backing device's write cache when a file
++data/metadata synchronization system call is executed. Unless the device is
++equipped with a battery-backup write cache, this behavior can cause data loss
++and/or file system corruption in the event of a power failure.
++.TP
+ .B noauto
+ Can only be mounted explicitly (i.e., the
+ .B \-a
 
 
