@@ -1,194 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757552AbZBLBz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758104AbZBLB4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757552AbZBLBz0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 20:55:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754429AbZBLBzM
+	id S1758104AbZBLB4Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 20:56:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755688AbZBLB4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 20:55:12 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:64013 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753248AbZBLBzK (ORCPT
+	Wed, 11 Feb 2009 20:56:14 -0500
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:36113 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755656AbZBLB4N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 20:55:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=fQvPsiioPY36YTwqBYE5w2AKGe8WT0JQJCNhNiZFYJcDcrWqAKEUQg2lPJSjXWQ+1x
-         xU+3HdZGlOQDf81J8bcXIWDFIpAyNjLYpVhMu0N6ZcyG7UL9fs4NRSKL0vD5b+szPcZA
-         +MOZWfP1tBFmQ7hFQfiWNN1o6uQ5ZPlPgdNiQ=
-Date: Thu, 12 Feb 2009 02:55:04 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 0/7][RFC] function graph tracer port to PowerPC
-Message-ID: <20090212015503.GA4697@nowhere>
-References: <20090212011051.265346435@goodmis.org>
+	Wed, 11 Feb 2009 20:56:13 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=4uklgp4A1fM03VpMFZxMoSnjnrwYUfM6m9sF/bCjg2uz1rq+VnyL78kgQxLkTAZfhzBNWA2Rw/gQrF8Z4ftscRIWvEbd05a/839d0NoD5sR9Ohf8N0Zb6Molq46ldp0zGD2lo2oJg+fDOyk5smZfiYkILF4vDT5ppVC0FmxK29s=  ;
+X-YMail-OSG: vIEkuksVM1kHzGlMkPl9JGfmiFPvwrZP1bWJHoVtvzmWuNUqiQPs1CC2VZatbRAiAvw7dCQjTq6hoTxIzCywrEUL1UEY1lO2r45c7V4DUUoM10lSUsfNwD6Mromo0ish7COWLZH9BogUEG594gmqsvnz8TAehNFBBMJ4YnZJmtxyMJUcMJ4JvrqtnfJEIT77JoQnRUNAXrwvEF.vAaYE8yL4efpbPA1MevM-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Paul Menage <menage@google.com>
+Subject: Re: [PATCH] cpuset: fix allocating page cache/slab object on the unallowed node when memory spread is set
+Date: Thu, 12 Feb 2009 12:55:42 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Paul Jackson <pj@sgi.com>, miaox@cn.fujitsu.com,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, cl@linux-foundation.org
+References: <4976D77C.3020107@cn.fujitsu.com> <200902121154.02868.nickpiggin@yahoo.com.au> <6599ad830902111719n2750ac29u458face30bf3f7cb@mail.gmail.com>
+In-Reply-To: <6599ad830902111719n2750ac29u458face30bf3f7cb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090212011051.265346435@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200902121255.43047.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 11, 2009 at 08:10:51PM -0500, Steven Rostedt wrote:
-> 
-> The following set of patches are RFC and not for inclusion
-> (unless everyone is fine with them as is).
-> 
-> This is the port to PowerPC of the function graph tracer that was written
-> by Frederic Weisbecker for the x86 architecture.  It is broken up
-> into a series of logical steps.
-> 
-> 1) get generic code ready for other archs
-> 2) get PowerPC 64-bit working with just static function tracing
-> 3) get PowerPC 64-bit working with dynamic function tracing
-> 4) get PowerPC 32-bit working with just static function tracing
-> 5) get PowerPC 32-bit working with dynamic function tracing
-> 
-> (with some clean ups in between)
-> 
+On Thursday 12 February 2009 12:19:11 Paul Menage wrote:
+> On Wed, Feb 11, 2009 at 4:54 PM, Nick Piggin <nickpiggin@yahoo.com.au> 
+wrote:
+> > It would be possible, depending on timing, for the allocating thread to
+> > see either pre or post mems_allowed even if access was fully locked.
+>
+> Right - seeing either the pre set or the post set is fine.
+>
+> > The only difference is that a partially changed mems_allowed could be
+> > seen. But what does this really mean? Some combination of the new and
+> > the old nodes. I don't think this is too much of a problem.
+>
+> But if the old and new nodes are disjoint, that could lead to seeing no
+> nodes.
+
+Well we could structure updates as setting all new allowed nodes,
+then clearing newly disallowed ones.
 
 
-Thanks a lot Steven!
-I'm sad to not having a Power Pc to test it...
+> Also, having the results of cpuset_zone_allowed() and
+> cpuset_current_mems_allowed change at random times over the course of
+> a call to alloc_pages() might cause interesting effects (e.g. we make
+> progress freeing pages from one set of nodes, and then call
+> get_page_from_freelist() on a different set of nodes).
 
- 
-> The function graph tracer not only traces the start of a function
-> (uses the function tracer part for that) but also uses the kprobes
-> trick to replace the return address with a hook to trace the exit
-> of the function. These hooks are generic in that other tracers
-> can also use them. But the function graph tracer itself is very
-> powerful. Simply doing the following:
-> 
-> # echo function_graph > /debug/tracing/current_tracer
-> # cat /debug/tracing/trace
-> 
-> # tracer: function_graph
-> #
-> # CPU OVERHEAD/DURATION            FUNCTION CALLS
-> # |   |        |                   |   |   |   |
->  ------------------------------------------
->  0)   less-2228    =>    cat-2229   
->  ------------------------------------------
-> 
->  0)               |    .__do_fault() {
->  0)               |      .filemap_fault() {
->  0)               |        .find_lock_page() {
->  0)               |          .find_get_page() {
->  0)   3.168 us    |            .__rcu_read_lock();
->  0)   2.704 us    |            .__rcu_read_unlock();
->  0) + 14.640 us   |          }
->  0) + 20.112 us   |        }
->  0) + 26.464 us   |      }
->  0)   2.912 us    |      ._spin_lock();
->  0)   2.656 us    |      .page_add_file_rmap();
->  0)               |      .update_mmu_cache() {
->  0)               |        .hash_preload() {
->  0)   2.368 us    |          .get_slice_psize();
->  0)   2.752 us    |          .hash_page_do_lazy_icache();
->  0)   3.568 us    |          .native_hpte_insert();
->  0) + 19.680 us   |        }
->  0) + 24.960 us   |      }
->  0)   2.336 us    |      ._spin_unlock();
->  0)               |      .unlock_page() {
->  0)   2.688 us    |        .page_waitqueue();
->  0)   2.608 us    |        .__wake_up_bit();
->  0) + 12.912 us   |      }
->  0) ! 351.776 us  |    }
->  0) ! 357.392 us  |  }
->  0)   3.040 us    |  .up_read();
->  0)               |  .compat_sys_ioctl() {
->  0)   3.024 us    |    .fget_light();
->  0)               |    .tty_compat_ioctl() {
->  0)   2.704 us    |      .tty_paranoia_check();
->  0)               |      .tty_ldisc_ref_wait() {
->  0)               |        .tty_ldisc_try() {
->  0)   2.880 us    |          ._spin_lock_irqsave();
->  0)   2.928 us    |          ._spin_unlock_irqrestore();
->  0) + 13.776 us   |        }
->  0) + 19.424 us   |      }
-> 
-> [...]
-> 
-> As you can see, it gives a nice call trace of the functions being called
-> at run time, as well as a time stamp of how much time the function
-> took to execute.
-> 
-> Adding dynamic tracing to the mix, we can trace a single function:
-> 
-> # echo .do_fork > /debug/tracing/set_graph_function
-> # echo function_graph > /debug/tracing/current_tracer
-> # cat /debug/tracing/trace
-> 
-> # tracer: function_graph
-> #
-> # CPU OVERHEAD/DURATION            FUNCTION CALLS
-> # |   |        |                   |   |   |   |
->  1)               |  .do_fork() {
->  1)               |    .copy_process() {
->  1)               |      .prepare_to_copy() {
->  1)   2.944 us    |        .flush_fp_to_thread();
->  1)   2.800 us    |        .flush_altivec_to_thread();
->  1)   2.608 us    |        .flush_vsx_to_thread();
->  1) + 19.184 us   |      }
->  1)               |      .kmem_cache_alloc() {
->  1)   2.464 us    |        .slab_should_failslab();
->  1)   8.304 us    |      }
->  1)               |      .alloc_thread_info() {
->  1)               |        .kmem_cache_alloc() {
->  1)   2.512 us    |          .slab_should_failslab();
->  1)   8.224 us    |        }
->  1) + 13.344 us   |      }
->  1)   7.584 us    |      .arch_dup_task_struct();
->  1)               |      .copy_creds() {
->  1)   2.736 us    |        .__mutex_init();
->  1)               |        .prepare_creds() {
->  1)               |          .kmem_cache_alloc() {
->  1)   2.640 us    |            .slab_should_failslab();
->  1)   8.368 us    |          }
-> 
-> [...]
-> 
-> 
-> Note, the '.' in the '.do_fork' is a PowerPC64 thing. PowerPC32 and
-> other archs just need to do 'do_fork', without the dot.
-> 
-> 
-> The following patches are in:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> 
->     branch: rfc/ppc/ftrace
-> 
-> 
-> Steven Rostedt (7):
->       tracing/function-graph-tracer: make arch generic push pop functions
->       powerpc64: port of the function graph tracer
->       powerpc64, tracing: add function graph tracer with dynamic tracing
->       powerpc64, ftrace: save toc only on modules for function graph
->       powerpc32, ftrace: save and restore mcount regs with macro
->       powerpc32, ftrace: port function graph tracer to ppc32, static only
->       powerpc32, ftrace: dynamic function graph tracer
-> 
-> ----
->  arch/powerpc/Kconfig                 |    1 +
->  arch/powerpc/include/asm/ftrace.h    |   39 ++++++++++-
->  arch/powerpc/kernel/Makefile         |    9 +-
->  arch/powerpc/kernel/entry_32.S       |  115 ++++++++++++++---------------
->  arch/powerpc/kernel/entry_64.S       |   89 +++++++++++++++++++++-
->  arch/powerpc/kernel/ftrace.c         |  135 ++++++++++++++++++++++++++++++++--
->  arch/powerpc/kernel/process.c        |   16 ++++
->  arch/powerpc/kernel/vmlinux.lds.S    |    1 +
->  arch/x86/include/asm/ftrace.h        |   25 ------
->  arch/x86/kernel/ftrace.c             |   75 +------------------
->  include/linux/ftrace.h               |   24 ++++++
->  kernel/trace/trace_functions_graph.c |   75 +++++++++++++++++++
->  12 files changed, 428 insertions(+), 176 deletions(-)
-> -- 
+But again, is this really a problem? We're talking about a tiny
+possibility in a very uncommon case anyway when the cpuset is
+changing.
+
+If it can cause an outright error like OOM of course that's no
+good, but if it just requires us to go around the reclaim loop
+or allocate from another zone... I don't think that's so bad.
+
+
+> > This could work if we *really* need an atomic snapshot of mems_allowed.
+> > seqcount synchronisation would be an alternative too that could allow
+> > sleeping more easily than SRCU (OTOH if you don't need sleeping, then
+> > RCU should be faster than seqcount).
+> >
+> > But I'm not convinced we do need this to be atomic.
+>
+> It's possible that I'm being overly-paranoid here. The decision to
+> make mems_allowed updates be purely pulled by the task itself predates
+> my involvement with cpusets code by a long time.
+
+It's not such a bad model, but the problem with it is that it needs
+to be carefully spread over the VM, and in fastpaths too. Now if it
+were something really critical, fine, but I'm hoping we can do
+without.
+
 
