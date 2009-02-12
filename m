@@ -1,82 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757575AbZBLGzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756988AbZBLHC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757575AbZBLGzh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 01:55:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbZBLGz2
+	id S1756988AbZBLHC5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 02:02:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991AbZBLHCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 01:55:28 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:58260 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751413AbZBLGz1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 01:55:27 -0500
-Message-ID: <4993C7C2.4060100@cn.fujitsu.com>
-Date: Thu, 12 Feb 2009 14:54:58 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 12 Feb 2009 02:02:47 -0500
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:49008 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751127AbZBLHCq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 02:02:46 -0500
+Date: Thu, 12 Feb 2009 00:02:10 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Greg KH <gregkh@suse.de>
+Cc: alex.williamson@hp.com, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sysfs: sysfs_add_one tells you _where_ the duplicate
+	file is
+Message-ID: <20090212070210.GB6916@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>, Greg KH <gregkh@suse.de>,
+	alex.williamson@hp.com, linux-kernel <linux-kernel@vger.kernel.org>
+References: <20090211202601.GC3402@ldl.fc.hp.com> <20090211223903.GA21100@suse.de> <20090212025655.GA6916@ldl.fc.hp.com> <20090212030227.GA4859@suse.de>
 MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>
-CC: containers@lists.osdl.org, Paul Menage <menage@google.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [cgroup or VFS ?] WARNING: at	fs/namespace.c:636	mntput_no_expire+0xac/0xf2()
-References: <49617D35.4040805@cn.fujitsu.com>	<20090209004046.3ce1dde0.akpm@linux-foundation.org>	<20090209093414.GU28946@ZenIV.linux.org.uk>	<499013CC.2060808@cn.fujitsu.com> <4993BD5D.2020707@cn.fujitsu.com>	<20090212062442.GE28946@ZenIV.linux.org.uk> <4993C2A0.3050507@cn.fujitsu.com>
-In-Reply-To: <4993C2A0.3050507@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090212030227.GA4859@suse.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
->>>>> How cute...  Same mountpoint in both, so these mount(2) will sometimes
->>>>> fail (cgroup picks the same sb on the same options, AFAICS) and fail
->>>>> silently due to these redirects...
->>>>>
->>>>> That's a lovely way to stress-test a large part of ro-bind stuff *and*
->>>>> umount()-related code.  Could you do C equivalent of the above (just
->>>>> the same syscalls in loop, nothing fancier) and do time-stamped strace?
->>>>>
->>>> Sure, I'll write a C version and try to reproduce the warning.
->>>>
->>> Unfortunately, the C equivalent can't reproduce the warning, I've run the
->>> test for the whole night. :( While using the script, often I can trigger
->>> the warning in several mins.
->> Ho-hum...  I wonder if we are hitting cgroup_clone() in all that fun...
+* Greg KH <gregkh@suse.de>:
+> On Wed, Feb 11, 2009 at 07:56:55PM -0700, Alex Chiang wrote:
+> > * Greg KH <gregkh@suse.de>:
+> > > On Wed, Feb 11, 2009 at 01:26:01PM -0700, Alex Chiang wrote:
+> > > > Give a better clue about where we might be creating duplicate
+> > > > files by displaying the parent's name as well.
+> > > > 
+> > > > Signed-off-by: Alex Chiang <achiang@hp.com>
+> > > > ---
+> > > > It would be nice to get a full path, but simply printing out the
+> > > > parent is cheap and more useful than what we have now.
+> > > 
+> > > What happens if you don't have a parent?  will this oops if you are
+> > > creating a duplicate device in the root of the sysfs tree?
+> > 
+> > We won't oops because if you attempt to create a device in the
+> > root of the sysfs tree with a NULL parent, then we say that your
+> > parent is sysfs_root:
+> > 
+> > int sysfs_create_dir(struct kobject * kobj)
+> > {
+> > 	...
+> >         if (kobj->parent)
+> > 		parent_sd = kobj->parent->sd;
+> > 	else
+> > 		parent_sd = &sysfs_root;
+> > 	...
+> > 
+> > But I do notice that we're not giving sysfs_root a name, so if
+> > you do hit the WARN for a duplicate entry in sysfs_root, you get
+> > a blank string for the location of the duplicate.
+> > 
+> > How about this instead?
+> > 
+> > From: Alex Chiang <achiang@hp.com>
+> > 
+> > sysfs: give sysfs_root a proper name; display parent in duplicate entry WARN
+> > 
+> > Name sysfs_root "/".
+> > 
+> > Make sysfs_add_one tell you _where_ you're attempting to create a
+> > duplicate file to help debug.
+> > 
+> > Giving sysfs_root a proper name covers the case when trying to
+> > create multiple entries with the same name in the root of the
+> > sysfs tree.
+> > 
+> > Signed-off-by: Alex Chiang <achiang@hp.com>
+> > ---
+> > Still would be nicer to get a full path.
 > 
-> I don't think so, I think cgroup_clone() will be called only if namespace is
-> used, like clone(CLONE_NEWNS). Even if cgroup_clone() gets called, it will
-> return before doing any vfs work unless the ns_cgroup subsystem is mounted.
+> It would, and you _almost_ might be able to get it, but it might take
+> some work.  We do store the last sysfs file accessed, and can compute
+> the path of that as we have a struct file * to play with.  You could
+> walk the tree of devices backwards to reconstruct the full path to
+> emulate this if you want to.
 > 
+> > I think that in the context of a sysfs WARN, claiming that you're
+> > trying to create a duplicate file in "/" really means "/sys" and
+> > shouldn't be confusing. Sample output:
+> 
+> While you and I mount sysfs at /sys/ and it is the "expected" place for
+> it to be, we shouldn't just assume that is where it is in the
+> filesystem, especially as I don't where the container people are placing
+> sysfs.
+> 
+> > sysfs: duplicate filename 'alex' can not be created in /
+> > 
+> > This maybe wants to be 2 patches, and I can split it up that way
+> > if you prefer.
+> 
+> Sure, that would probably be best.
 
-But the following testcase can also trigger the warning:
+Here's v3.
 
-thread 1:
-for ((; ;))
-{
-	mount -t cgroup -o ns xxx cgroup/ > /dev/null 2>&1
-	# remove the dirs generated by cgroup_clone()
-	rmdir cgroup/[1-9]* > /dev/null 2>&1
-	umount cgroup/ > /dev/null 2>&1
-}
+Seems like 1 patch makes sense because the logical change is that
+sysfs_add_one() now displays the full sysfs path to a duplicate
+entry. The fact that it relies on a helper function is an
+implementation detail. ;)
 
+I tested it by hacking up a kernel to create duplicate entries in
+both sysfs_root, as well as creating duplicate entries under a
+random sysfs directory.
 
-thread 2:
+Examples:
 
-int foo(void *arg)
-{ return 0; }
+-----------[ cut here ]------------
+WARNING: at fs/sysfs/dir.c:488 sysfs_add_one+0xe0/0x100()
+sysfs: cannot create duplicate filename '/alex'
 
-char *stack[4096];
+------------[ cut here ]------------
+WARNING: at fs/sysfs/dir.c:488 sysfs_add_one+0xe0/0x100()
+Hardware name: server rx6600                   
+sysfs: cannot create duplicate filename '/bus/pci/slots/5/alex'
 
-int main(int argc, char **argv)
-{
-        int usec = DEFAULT_USEC;
-        while (1) {
-                usleep(usec);
-		# cgroup_clone() will be called
-                clone(foo, stack+4096, CLONE_NEWNS, NULL);
-        }
+From: Alex Chiang <achiang@hp.com>
 
-        return 0;
-}
+sysfs: sysfs_add_one WARNs with full path to duplicate filename
 
+As a debugging aid, it can be useful to know the full path to a
+duplicate file being created in sysfs.
+
+We now will display warnings such as:
+
+	sysfs: cannot create duplicate filename '/foo'
+
+when attempting to create multiple files named 'foo' in the sysfs
+root, or:
+
+	sysfs: cannot create duplicate filename '/bus/pci/slots/5/foo'
+
+when attempting to create multiple files named 'foo' under a
+given directory in sysfs.
+
+The path displayed is always a relative path to sysfs_root. The
+leading '/' in the path name refers to the sysfs_root mount
+point, and should not be confused with the "real" '/'.
+
+Thanks to Alex Williamson for essentially writing sysfs_pathname.
+
+Cc: Alex Williamson <alex.williamson@hp.com>
+Signed-off-by: Alex Chiang <achiang@hp.com>
+---
+The strcat(strcat()) is a little ugly, but concise and accurate.
+
+Without the memset, I get all sorts of stack garbage when the
+path is finally printed out.
+
+ dir.c |   32 ++++++++++++++++++++++++++++++--
+ 1 file changed, 30 insertions(+), 2 deletions(-)
+
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index 82d3b79..73d34a0 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -434,6 +434,27 @@ int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+ }
+ 
+ /**
++ *	sysfs_pathname - return full path to sysfs dirent
++ *	@sd: sysfs_dirent whose path we want
++ *	@path: caller allocated buffer
++ *
++ *	Gives the name "/" to the sysfs_root entry; any path returned
++ *	is relative to wherever sysfs is mounted.
++ *
++ *	XXX: does no error checking on @path; assumes caller did something
++ *	     sane, like char path[PATH_MAX]
++ */
++static char *sysfs_pathname(struct sysfs_dirent *sd, char *path)
++{
++	if (sd->s_parent) {
++		sysfs_pathname(sd->s_parent, path);
++		strcat(path, "/");
++	}
++	strcat(path, sd->s_name);
++	return path;
++}
++
++/**
+  *	sysfs_add_one - add sysfs_dirent to parent
+  *	@acxt: addrm context to use
+  *	@sd: sysfs_dirent to be added
+@@ -458,8 +479,15 @@ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+ 	int ret;
+ 
+ 	ret = __sysfs_add_one(acxt, sd);
+-	WARN(ret == -EEXIST, KERN_WARNING "sysfs: duplicate filename '%s' "
+-		       "can not be created\n", sd->s_name);
++	if (ret == -EEXIST) {
++		char path[PATH_MAX];
++		memset(path, 0, PATH_MAX);
++		WARN(1, KERN_WARNING
++		     "sysfs: cannot create duplicate filename '%s'\n",
++		     strcat(strcat(sysfs_pathname(acxt->parent_sd, path), "/"),
++			    sd->s_name));
++	}
++
+ 	return ret;
+ }
+ 
