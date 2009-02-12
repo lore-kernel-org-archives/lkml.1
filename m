@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758270AbZBLELZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbZBLEN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758270AbZBLELZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 23:11:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756834AbZBLEK5
+	id S1757583AbZBLEN7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 23:13:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbZBLENt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 23:10:57 -0500
-Received: from tundra.namei.org ([65.99.196.166]:3437 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756785AbZBLEK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 23:10:56 -0500
-Date: Thu, 12 Feb 2009 15:08:50 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: David Howells <dhowells@redhat.com>
-cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, sds@tycho.nsa.gov,
-       spotter@cs.columbia.edu, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add in_execve flag into task_struct.
-In-Reply-To: <2690.1233841235@redhat.com>
-Message-ID: <alpine.LRH.1.10.0902121504130.18145@tundra.namei.org>
-References: <20090107190652.GA20311@us.ibm.com> <200901060514.n065E462074929@www262.sakura.ne.jp> <20090106155829.GA9773@us.ibm.com> <49639039.4060708@cs.columbia.edu> <1231267532.9746.116.camel@localhost.localdomain> <200901070634.n076YCxF061022@www262.sakura.ne.jp>
- <2690.1233841235@redhat.com>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	Wed, 11 Feb 2009 23:13:49 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:61383 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752143AbZBLENs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 23:13:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=tmmx8PwkDxiPMnSIqeXyeGYw4v4ygx2Td7lunm8l7khRYuw8s7Ne7/Jj/B7xl9PtUq
+         i4VZDOmmghEZmhsOuJvOOkPkYC5PDTkaiqyD3zBKZimsuzelqCtpDNlaEqZkH+AZRc0n
+         A9/vFdD39twNbx9miW50w52lOvJKrXjd8IFxM=
+From: Volker Armin Hemmann <volkerarmin@googlemail.com>
+To: reiserfs-devel@vger.kernel.org
+Subject: Re: mmotm 2009-02-10-16-35 uploaded (reiser4-quota)
+Date: Thu, 12 Feb 2009 05:13:37 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.27.15r4; KDE/4.2.0; x86_64; ; )
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Jan Kara <jack@suse.cz>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <499305AD.4020900@oracle.com> <20090211171324.GC13817@duck.suse.cz> <20090212114737.C8EA.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20090212114737.C8EA.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902120513.39382.volkerarmin@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Feb 2009, David Howells wrote:
+On Donnerstag 12 Februar 2009, KOSAKI Motohiro wrote:
+> > On Wed 11-02-09 09:06:53, Randy Dunlap wrote:
+> > > akpm@linux-foundation.org wrote:
+> > > > The mm-of-the-moment snapshot 2009-02-10-16-35 has been uploaded to
+> > > >
+> > > >    http://userweb.kernel.org/~akpm/mmotm/
+> > > >
+> > > > and will soon be available at
+> > > >
+> > > >    git://git.zen-sources.org/zen/mmotm.git
+> > >
+> > > mmotm-2009-0210-1635/fs/reiser4/plugin/inode_ops.c:456: error: implicit
+> > > declaration of function 'DQUOT_TRANSFER'
+> > > mmotm-2009-0210-1635/fs/reiser4/plugin/inode_ops.c:596: error: implicit
+> > > declaration of function 'DQUOT_ALLOC_INODE'
+> > > mmotm-2009-0210-1635/fs/reiser4/plugin/inode_ops.c:597: error: implicit
+> > > declaration of function 'DQUOT_DROP'
+> > > mmotm-2009-0210-1635/fs/reiser4/plugin/inode_ops.c:611: error: implicit
+> > > declaration of function 'DQUOT_FREE_INODE'
+> >
+> >   Ah, out of tree filesystems... Could some of Reiser4 guys convert the
+> > quota names (they should be vfs_dq_transfer, vfs_dq_alloc_inode,
+> > vfs_dq_drop, vfs_dq_free_inode)? I suppose I could do it myself but I'm
+> > not sure if it won't clash with some other changes.
+> >   Thanks for report Randy.
+> >
+> > 									Honza
+>
+> Andrew, recently I've never seen any reiser4 activity in LKML.
+> I would suggest to remove it from -mm.
 
-> Serge E. Hallyn <serue@us.ibm.com> wrote:
-> 
-> > It's ugly, you can't get me to say it isn't ugly :), and it sets a scary
-> > bad precedent.  But if David insists (in a reply to this msg) that this
-> > flag really is tops, then just ignore me.  Anyway my point wasn't to
-> > block the patch but to raise discussion (so someone else could decide to
-> > block it :) on both the flag and security implications of these
-> > semantics.
-> 
-> I think it's probably the best way to support Tomoyo's security model without
-> reworking a chunk of execve().
-
-Agreed.  It's somewhat less than perfect, but I don't see a better 
-alternative.
-
-
-- James
--- 
-James Morris
-<jmorris@namei.org>
+maybe you should look at the reiser4 list before asking for that?
