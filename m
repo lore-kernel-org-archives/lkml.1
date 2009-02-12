@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932102AbZBLXoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761726AbZBLXoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932102AbZBLXoO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 18:44:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753746AbZBLXn6
+	id S1761726AbZBLXoz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 18:44:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753746AbZBLXoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 18:43:58 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:47434 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753073AbZBLXn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 18:43:58 -0500
-Date: Thu, 12 Feb 2009 21:43:49 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+	Thu, 12 Feb 2009 18:44:46 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:61639 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753073AbZBLXoq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 18:44:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=r84CDn1n2SWXL0eo/vfLkOvhXURx5aW0YTOKJXrXexkgv/P8+rzfC+2kr5YmHy908m
+         N8vq4kFAK1mgSnvgE3DlBh8F9/+2MP5KT6WyXOfawgf/IcwJgoTitKim79gwpscE1zoZ
+         mrVYJsfLXCagaiWCoBI44K0dtTXp84IsaSgIM=
+Date: Thu, 12 Feb 2009 18:44:34 -0500
+From: Josh Boyer <jwboyer@gmail.com>
 To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] rt/threadirqs: don't need to save irqs in
-	do_hardirq()
-Message-ID: <20090212234349.GE5348@ghostprotocols.net>
-References: <4994ae18.1358560a.454d.403b@mx.google.com> <20090212232459.GD5348@ghostprotocols.net> <20090212232758.GA5865@nowhere> <alpine.DEB.1.10.0902121836530.15469@gandalf.stny.rr.com>
+Cc: Geoff Levand <geoffrey.levand@am.sony.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/7][RFC] function graph tracer port to PowerPC
+Message-ID: <20090212234434.GC2385@yoda.jdub.homelinux.org>
+References: <20090212011051.265346435@goodmis.org> <4994B1A3.8080502@am.sony.com> <alpine.DEB.1.10.0902121840590.15469@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0902121836530.15469@gandalf.stny.rr.com>
-X-Url: http://oops.ghostprotocols.net:81/blog
+In-Reply-To: <alpine.DEB.1.10.0902121840590.15469@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Thu, Feb 12, 2009 at 06:37:16PM -0500, Steven Rostedt escreveu:
-> 
-> On Fri, 13 Feb 2009, Frederic Weisbecker wrote:
-> 
-> > On Thu, Feb 12, 2009 at 09:24:59PM -0200, Arnaldo Carvalho de Melo wrote:
-> > > Em Thu, Feb 12, 2009 at 07:27:08PM +0100, Frederic Weisbecker escreveu:
-> > > > do_hardirq() has only one caller do_irqd() in a path where irq are already
-> > > > disabled. So we don't need to save irqs while holding desc->lock
-> > > > 
-> > > > Replace spin_lock_irqsave by spin_lock.
-> > > > 
-> > > > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > > > ---
-> > > >  kernel/irq/manage.c |    4 ++--
-> > > >  1 files changed, 2 insertions(+), 2 deletions(-)
-> > > > 
-> > > > diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-> > > > index ed7c5e3..6e9baf8 100644
-> > > > --- a/kernel/irq/manage.c
-> > > > +++ b/kernel/irq/manage.c
-> > > > @@ -905,7 +905,7 @@ static void do_hardirq(struct irq_desc *desc)
-> > > >  {
-> > > >  	unsigned long flags;
-> > > 
-> > > Can flags be removed too?
-> > 
-> > 
-> > Actually... I cheated.
-> > Once the two patches were done, I saw the unused variable warning. So I remade the second patch
-> > to remove flags but..yes it should be on the first patch, I must confess...
-> 
-> That's fine, I'll pull both of them in.
-> 
-> Thanks Frederic!
+On Thu, Feb 12, 2009 at 06:41:26PM -0500, Steven Rostedt wrote:
+>
+>On Thu, 12 Feb 2009, Geoff Levand wrote:
+>
+>> On 02/11/2009 05:10 PM, Steven Rostedt wrote:
+>> > This is the port to PowerPC of the function graph tracer that was written
+>> > by Frederic Weisbecker for the x86 architecture.  It is broken up
+>> > into a series of logical steps.
+>> 
+>> I added these to my ps3-linux.git tree.  Very casual testing shows
+>> they seem to work OK.
+>> 
+>> 
+>> Tested-by: Geoff Levand <geoffrey.levand@am.sony.com>  Working OK on PS3.
+>
+>Thanks!
+>
+>Is the ps3 64 or 32 bit? I'll put your tested by on the appropriate 
+>patches.
 
-Ditto, that was just a follow up thingy, nothing against the change :-)
+64-bit.
 
-- Arnaldo
+josh
