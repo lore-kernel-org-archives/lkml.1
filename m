@@ -1,154 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758904AbZBLMm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760024AbZBLMmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758904AbZBLMm7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 07:42:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759236AbZBLMkd
+	id S1760024AbZBLMmn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 07:42:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759472AbZBLMkb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 07:40:33 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:49252 "EHLO
+	Thu, 12 Feb 2009 07:40:31 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:49247 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759480AbZBLMkc (ORCPT
+	with ESMTP id S1759174AbZBLMka (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 07:40:32 -0500
+	Thu, 12 Feb 2009 07:40:30 -0500
 From: Andi Kleen <andi@firstfloor.org>
 References: <20090212139.634236515@firstfloor.org>
 In-Reply-To: <20090212139.634236515@firstfloor.org>
 To: akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de,
        hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] [2/10] x86: MCE: Don't disable machine checks during code patching
-Message-Id: <20090212123927.A8D7C3E666D@basil.firstfloor.org>
-Date: Thu, 12 Feb 2009 13:39:27 +0100 (CET)
+Subject: [PATCH] [1/10] x86: MCE: Reinitialize per cpu features on resume v3
+Message-Id: <20090212123926.A3C073E666E@basil.firstfloor.org>
+Date: Thu, 12 Feb 2009 13:39:26 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Impact: low priority bug fix
+Impact: Bug fix
 
-This removes part of a a patch I added myself some time ago. After some 
-consideration the patch was a bad idea. In particular it stopped machine check
-exceptions during code patching.
+This fixes a long standing bug in the machine check code. On resume the
+boot CPU wouldn't get its vendor specific state like thermal handling
+reinitialized. This means the boot cpu wouldn't ever get any thermal
+events reported again.
 
-To quote the comment:
+Call the respective initialization functions on resume
 
-        * MCEs only happen when something got corrupted and in this
-        * case we must do something about the corruption.
-        * Ignoring it is worse than a unlikely patching race.
-        * Also machine checks tend to be broadcast and if one CPU
-        * goes into machine check the others follow quickly, so we don't
-        * expect a machine check to cause undue problems during to code
-        * patching.
-
-So undo the machine check related parts of 
-8f4e956b313dcccbc7be6f10808952345e3b638c NMIs are still disabled.
-
-This only removes code, the only additions are a new comment.
-
+v2: Remove ancient init because they don't have a resume device anyways.
+Pointed out by Thomas Gleixner.
+v3: Now fix the Subject too to reflect v2 change
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- arch/x86/include/asm/mce.h          |    2 --
- arch/x86/kernel/alternative.c       |   17 +++++++++++------
- arch/x86/kernel/cpu/mcheck/mce_32.c |   14 --------------
- arch/x86/kernel/cpu/mcheck/mce_64.c |   14 --------------
- 4 files changed, 11 insertions(+), 36 deletions(-)
+ arch/x86/kernel/cpu/mcheck/mce_64.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-Index: linux/arch/x86/kernel/alternative.c
-===================================================================
---- linux.orig/arch/x86/kernel/alternative.c	2009-02-12 11:30:51.000000000 +0100
-+++ linux/arch/x86/kernel/alternative.c	2009-02-12 11:30:51.000000000 +0100
-@@ -414,9 +414,17 @@
- 	   that might execute the to be patched code.
- 	   Other CPUs are not running. */
- 	stop_nmi();
--#ifdef CONFIG_X86_MCE
--	stop_mce();
--#endif
-+
-+	/*
-+	 * Don't stop machine check exceptions while patching.
-+	 * MCEs only happen when something got corrupted and in this
-+	 * case we must do something about the corruption.
-+	 * Ignoring it is worse than a unlikely patching race.
-+	 * Also machine checks tend to be broadcast and if one CPU
-+	 * goes into machine check the others follow quickly, so we don't
-+	 * expect a machine check to cause undue problems during to code
-+	 * patching.
-+	 */
- 
- 	apply_alternatives(__alt_instructions, __alt_instructions_end);
- 
-@@ -456,9 +464,6 @@
- 				(unsigned long)__smp_locks_end);
- 
- 	restart_nmi();
--#ifdef CONFIG_X86_MCE
--	restart_mce();
--#endif
- }
- 
- /**
 Index: linux/arch/x86/kernel/cpu/mcheck/mce_64.c
 ===================================================================
 --- linux.orig/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-02-12 11:30:51.000000000 +0100
 +++ linux/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-02-12 12:10:22.000000000 +0100
-@@ -680,20 +680,6 @@
- 	&mce_chrdev_ops,
- };
- 
--static unsigned long old_cr4 __initdata;
--
--void __init stop_mce(void)
--{
--	old_cr4 = read_cr4();
--	clear_in_cr4(X86_CR4_MCE);
--}
--
--void __init restart_mce(void)
--{
--	if (old_cr4 & X86_CR4_MCE)
--		set_in_cr4(X86_CR4_MCE);
--}
--
- /*
-  * Old style boot options parsing. Only for compatibility.
-  */
-Index: linux/arch/x86/include/asm/mce.h
-===================================================================
---- linux.orig/arch/x86/include/asm/mce.h	2009-02-12 11:30:51.000000000 +0100
-+++ linux/arch/x86/include/asm/mce.h	2009-02-12 12:10:19.000000000 +0100
-@@ -120,8 +120,6 @@
- #else
- #define mcheck_init(c) do { } while (0)
- #endif
--extern void stop_mce(void);
--extern void restart_mce(void);
- 
- #endif /* __KERNEL__ */
- #endif /* _ASM_X86_MCE_H */
-Index: linux/arch/x86/kernel/cpu/mcheck/mce_32.c
-===================================================================
---- linux.orig/arch/x86/kernel/cpu/mcheck/mce_32.c	2009-02-12 11:30:51.000000000 +0100
-+++ linux/arch/x86/kernel/cpu/mcheck/mce_32.c	2009-02-12 11:30:51.000000000 +0100
-@@ -60,20 +60,6 @@
- 	}
+@@ -734,6 +734,7 @@
+ static int mce_resume(struct sys_device *dev)
+ {
+ 	mce_init(NULL);
++	mce_cpu_features(&current_cpu_data);
+ 	return 0;
  }
  
--static unsigned long old_cr4 __initdata;
--
--void __init stop_mce(void)
--{
--	old_cr4 = read_cr4();
--	clear_in_cr4(X86_CR4_MCE);
--}
--
--void __init restart_mce(void)
--{
--	if (old_cr4 & X86_CR4_MCE)
--		set_in_cr4(X86_CR4_MCE);
--}
--
- static int __init mcheck_disable(char *str)
- {
- 	mce_disabled = 1;
