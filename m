@@ -1,51 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761335AbZBLWRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761399AbZBLWSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761335AbZBLWRt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 17:17:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758674AbZBLWRi
+	id S1761399AbZBLWSU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 17:18:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759125AbZBLWSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 17:17:38 -0500
-Received: from mail.fieldses.org ([141.211.133.115]:52620 "EHLO
-	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758080AbZBLWRi (ORCPT
+	Thu, 12 Feb 2009 17:18:07 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37989
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758674AbZBLWSG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 17:17:38 -0500
-Date: Thu, 12 Feb 2009 17:17:37 -0500
-To: NeilBrown <neilb@suse.de>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] nfs: replace uses of __constant_{endian}
-Message-ID: <20090212221737.GO23593@fieldses.org>
-References: <1234401418.5566.19.camel@brick> <2540bee2375afb6f08eb92d19e7a1bf0.squirrel@neil.brown.name> <1234407151.5566.21.camel@brick> <6f6ef82b3d3f7eb8445e2e40ce3b534d.squirrel@neil.brown.name>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6f6ef82b3d3f7eb8445e2e40ce3b534d.squirrel@neil.brown.name>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Thu, 12 Feb 2009 17:18:06 -0500
+Date: Thu, 12 Feb 2009 14:17:59 -0800 (PST)
+Message-Id: <20090212.141759.261399324.davem@davemloft.net>
+To: airlied@gmail.com
+Cc: benh@kernel.crashing.org, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5]: drm: ati_pcigart: Do not access I/O MEM space
+ using pointer derefs.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <21d7e9970902120323y4f16693dk77955c7c646ac744@mail.gmail.com>
+References: <1234434959.29851.55.camel@pasglop>
+	<20090212.030926.74125778.davem@davemloft.net>
+	<21d7e9970902120323y4f16693dk77955c7c646ac744@mail.gmail.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 12, 2009 at 02:15:06PM +1100, NeilBrown wrote:
-> On Thu, February 12, 2009 1:52 pm, Harvey Harrison wrote:
-> > On Thu, 2009-02-12 at 13:50 +1100, NeilBrown wrote:
-> >> On Thu, February 12, 2009 12:16 pm, Harvey Harrison wrote:
-> >> > The base versions handle constant folding now, none of these headers
-> >> > are exported to userspace, so the __ prefixed versions are not
-> >> > necessary.
-> >>
-> >> I assume you compile tested this?
-> >>
-> >> I seem to recall that the reason we did it that way was that
-> >> some of the error codes are used in switch statements, and
-> >> the value for a 'case:' really has to look like a constant, not just
-> >> happen to evaluate to one.
-> >
-> > Yes, this requirement was explicitly built-in.  See how the various
-> > __swabXX bits are done in linux/swab.h.
-> 
-> Cool, thanks!
+From: Dave Airlie <airlied@gmail.com>
+Date: Thu, 12 Feb 2009 21:23:13 +1000
 
-Thanks, applied.--b.
+> are you on a PCI or PCIE card, I've no idea what buses you have on sparc64.
+> 
+> On the PCI cards the GART table will always be in main memory.
+> PCIE always in VRAM.
+
+PCI-E
