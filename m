@@ -1,70 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757374AbZBLAb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757105AbZBLAf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757374AbZBLAb0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Feb 2009 19:31:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755942AbZBLAbS
+	id S1757105AbZBLAf2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Feb 2009 19:35:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755899AbZBLAfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Feb 2009 19:31:18 -0500
-Received: from ns1.coraid.com ([12.51.113.4]:65125 "EHLO coraid.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750793AbZBLAbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Feb 2009 19:31:18 -0500
-X-Greylist: delayed 970 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Feb 2009 19:31:18 EST
-From: Ed Cashin <ecashin@coraid.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, karaluh@karaluh.pl,
-       Ed Cashin <ecashin@coraid.com>
-Subject: [PATCH 1/1] aoe: ignore vendor extension AoE responses
-Date: Wed, 11 Feb 2009 19:16:44 -0500
-Message-Id: <1234397804-9034-1-git-send-email-ecashin@coraid.com>
-X-Mailer: git-send-email 1.5.6.5
+	Wed, 11 Feb 2009 19:35:19 -0500
+Received: from sh-spam-4.gradwell.net ([193.84.87.110]:33224 "EHLO
+	sh-spam-4.gradwell.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755392AbZBLAfR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Feb 2009 19:35:17 -0500
+Date: Thu, 12 Feb 2009 00:35:05 +0000
+From: Alex Buell <alex.buell@munted.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>, Ed Cashin <ecashin@coraid.com>,
+       linux-kernel@vger.kernel.org, karaluh@karaluh.pl
+Subject: Re: [PATCH 1/1] aoe: ignore vendor extension AoE responses
+Message-ID: <20090212003505.727354e9@lithium.local.net>
+In-Reply-To: <20090211162944.c1cdf8fb.akpm@linux-foundation.org>
+References: <1234397804-9034-1-git-send-email-ecashin@coraid.com>
+	<20090211162944.c1cdf8fb.akpm@linux-foundation.org>
+Organization: One tortoiseshell cat, very high maintenance
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.11; i686-pc-linux-gnu)
+X-Face: "wUuhsy:X)M;>-dA\j"&y@*\$91]iX10Iv1WG_oNbGYpo,eqc06O?"VSeRTx]xM\LiITUh01z}<|GF/4Gzz(MAU~;p4AS,%TB69M:vB-9+i'#W7$UQCW&UP#zt{VdLlzEiw8k~jL<
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Welland ME-747K-SI AoE target generates unsolicited AoE
-responses that are marked as vendor extensions.  Instead of
-ignoring these packets, the aoe driver was generating kernel
-messages for each unrecognized response received.  This patch
-corrects the behavior.
+On Wed, 11 Feb 2009 16:29:44 -0800, I waved a wand and this message
+magically appears in front of Andrew Morton:
 
-Signed-off-by: Ed Cashin <ecashin@coraid.com>
-Reported-by: karaluh@karaluh.pl
-Tested-by: karaluh@karaluh.pl
----
+> Do you believe that this fix should be backported into earlier kernel
+> versions?  (2.6.28.x, 2.6.27.x, etc)
 
-I will place this patch in the new aoe quilt tree for
-linux-next when this patch has passed LKML review.
-
- drivers/block/aoe/aoe.h    |    1 +
- drivers/block/aoe/aoenet.c |    2 ++
- 2 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/block/aoe/aoe.h b/drivers/block/aoe/aoe.h
-index c237527..5e41e6d 100644
---- a/drivers/block/aoe/aoe.h
-+++ b/drivers/block/aoe/aoe.h
-@@ -18,6 +18,7 @@
- enum {
- 	AOECMD_ATA,
- 	AOECMD_CFG,
-+	AOECMD_VEND_MIN = 0xf0,
- 
- 	AOEFL_RSP = (1<<3),
- 	AOEFL_ERR = (1<<2),
-diff --git a/drivers/block/aoe/aoenet.c b/drivers/block/aoe/aoenet.c
-index 30de5b1..c6099ba 100644
---- a/drivers/block/aoe/aoenet.c
-+++ b/drivers/block/aoe/aoenet.c
-@@ -142,6 +142,8 @@ aoenet_rcv(struct sk_buff *skb, struct net_device *ifp, struct packet_type *pt,
- 		aoecmd_cfg_rsp(skb);
- 		break;
- 	default:
-+		if (h->cmd >= AOECMD_VEND_MIN)
-+			break;	/* don't complain about vendor commands */
- 		printk(KERN_INFO "aoe: unknown cmd %d\n", h->cmd);
- 	}
- exit:
+Yes, please - I'll be using AoE on these kernels. It might also be a
+good opportunity to update the AoE module, as I believe the latest out
+of the kernel tree module is currently at 70, whilst the version in
+2.6.27 is at 47.
 -- 
-1.5.6.5
+http://www.munted.org.uk
 
+Fearsome grindings.
+.
