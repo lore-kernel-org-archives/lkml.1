@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759712AbZBLTn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760157AbZBLTo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759712AbZBLTn2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 14:43:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbZBLTnR
+	id S1760157AbZBLTo7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 14:44:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755017AbZBLTou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 14:43:17 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36139 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750896AbZBLTnQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 14:43:16 -0500
-Date: Thu, 12 Feb 2009 11:42:07 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matt Mackall <mpm@selenic.com>
-Cc: dave@linux.vnet.ibm.com, mingo@elte.hu, orenl@cs.columbia.edu,
-       linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk, hpa@zytor.com,
-       tglx@linutronix.de
-Subject: Re: [RFC v13][PATCH 00/14] Kernel based checkpoint/restart
-Message-Id: <20090212114207.e1c2de82.akpm@linux-foundation.org>
-In-Reply-To: <1234467035.3243.538.camel@calx>
-References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu>
-	<1234285547.30155.6.camel@nimitz>
-	<20090211141434.dfa1d079.akpm@linux-foundation.org>
-	<1234462282.30155.171.camel@nimitz>
-	<1234467035.3243.538.camel@calx>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 12 Feb 2009 14:44:50 -0500
+Received: from mga11.intel.com ([192.55.52.93]:20469 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754719AbZBLTot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 14:44:49 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,198,1233561600"; 
+   d="scan'208";a="665149576"
+Subject: Re: [ipw3945-devel] X200: Resume and iwlwifi on
+	2.6.29-rc4-ikn-00001-gd5b5623
+From: reinette chatre <reinette.chatre@intel.com>
+To: Nico Schottelius <nico-linux-20090209@schottelius.org>
+Cc: Linux Next Mailing List <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "ipw3945-devel@lists.sourceforge.net" 
+	<ipw3945-devel@lists.sourceforge.net>
+In-Reply-To: <20090210070147.GA4684@denkbrett.schottelius.org>
+References: <20090209093507.GA27678@denkbrett.schottelius.org>
+	 <20090210070147.GA4684@denkbrett.schottelius.org>
+Content-Type: text/plain
+Date: Thu, 12 Feb 2009 11:48:40 -0800
+Message-Id: <1234468120.30608.30.camel@rc-desk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Feb 2009 13:30:35 -0600
-Matt Mackall <mpm@selenic.com> wrote:
-
-> On Thu, 2009-02-12 at 10:11 -0800, Dave Hansen wrote:
+On Mon, 2009-02-09 at 23:01 -0800, Nico Schottelius wrote:
+> Good morning!
 > 
-> > > - In bullet-point form, what features are missing, and should be added?
-> > 
-> >  * support for more architectures than i386
-> >  * file descriptors:
-> >   * sockets (network, AF_UNIX, etc...)
-> >   * devices files
-> >   * shmfs, hugetlbfs
-> >   * epoll
-> >   * unlinked files
-> 
-> >  * Filesystem state
-> >   * contents of files
-> >   * mount tree for individual processes
-> >  * flock
-> >  * threads and sessions
-> >  * CPU and NUMA affinity
-> >  * sys_remap_file_pages()
-> 
-> I think the real questions is: where are the dragons hiding? Some of
-> these are known to be hard. And some of them are critical checkpointing
-> typical applications. If you have plans or theories for implementing all
-> of the above, then great. But this list doesn't really give any sense of
-> whether we should be scared of what lurks behind those doors.
+> Summary on the X200:
+> - First resume after suspend takes 20 seconds
+> - Further resumes work fine
+> - wlan works *before* first suspend and wakeup
+> - after that the same happens as on 2.6.29-rc3-ikn-00697-gae1a25d:
+>   the device refuses to come up with the message
+>   "iwlagn: Could not load the INST uCode section" and
+>   "iwlagn: Unable to set up bootstrap uCode: -110"
 
-How close has OpenVZ come to implementing all of this?  I think the
-implementatation is fairly complete?
+Sorry that I missed responding to your email in all the messages
+regarding this problem. A patch was recently sent to address it - could
+you please try with
+http://marc.info/?l=linux-wireless&m=123429595818495&w=2 ?
 
-If so, perhaps that can be used as a guide.  Will the planned feature
-have a similar design?  If not, how will it differ?  To what extent can
-we use that implementation as a tool for understanding what this new
-implementation will look like?
+Thanks
+
+Reinette
+
 
