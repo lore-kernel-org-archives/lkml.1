@@ -1,114 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760266AbZBLSLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759724AbZBLSQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760266AbZBLSLy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 13:11:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758755AbZBLSLf
+	id S1759724AbZBLSQV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 13:16:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757850AbZBLSQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 13:11:35 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:48201 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758614AbZBLSLe (ORCPT
+	Thu, 12 Feb 2009 13:16:12 -0500
+Received: from byss.tchmachines.com ([208.76.80.75]:60107 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756954AbZBLSQL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 13:11:34 -0500
-Subject: Re: [RFC v13][PATCH 00/14] Kernel based checkpoint/restart
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, orenl@cs.columbia.edu,
-       linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk, hpa@zytor.com,
-       tglx@linutronix.de
-In-Reply-To: <20090212091721.GB1888@elte.hu>
-References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu>
-	 <1234285547.30155.6.camel@nimitz>
-	 <20090211141434.dfa1d079.akpm@linux-foundation.org>
-	 <20090212091721.GB1888@elte.hu>
-Content-Type: text/plain
-Date: Thu, 12 Feb 2009 10:11:23 -0800
-Message-Id: <1234462283.30155.173.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Feb 2009 13:16:11 -0500
+Date: Thu, 12 Feb 2009 10:16:05 -0800
+From: Josh Hunt <josh@scalex86.org>
+To: sam@ravnborg.org
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kiran@scalex86.org, mingo@elte.hu
+Subject: [PATCH] Fix 'make rpm' when CONFIG_LOCALVERSION_AUTO=y and using
+	SCM tree
+Message-ID: <20090212181605.GA7696@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-12 at 10:17 +0100, Ingo Molnar wrote:
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Tue, 10 Feb 2009 09:05:47 -0800
-> > Dave Hansen <dave@linux.vnet.ibm.com> wrote:
-> > 
-> > > On Tue, 2009-01-27 at 12:07 -0500, Oren Laadan wrote:
-> > > > Checkpoint-restart (c/r): a couple of fixes in preparation for 64bit
-> > > > architectures, and a couple of fixes for bugss (comments from Serge
-> > > > Hallyn, Sudakvev Bhattiprolu and Nathan Lynch). Updated and tested
-> > > > against v2.6.28.
-> > > > 
-> > > > Aiming for -mm.
-> > > 
-> > > Is there anything that we're waiting on before these can go into -mm?  I
-> > > think the discussion on the first few patches has died down to almost
-> > > nothing.  They're pretty reviewed-out.  Do they need a run in -mm?  I
-> > > don't think linux-next is quite appropriate since they're not _quite_
-> > > aimed at mainline yet.
-> > > 
-> > 
-> > I raised an issue a few months ago and got inconclusively waffled at. 
-> > Let us revisit.
-> > 
-> > I am concerned that this implementation is a bit of a toy, and that we
-> > don't know what a sufficiently complete implementation will look like. 
-> > There is a risk that if we merge the toy we either:
-> > 
-> > a) end up having to merge unacceptably-expensive-to-maintain code to
-> >    make it a non-toy or
-> > 
-> > b) decide not to merge the unacceptably-expensive-to-maintain code,
-> >    leaving us with a toy or
-> > 
-> > c) simply cannot work out how to implement the missing functionality.
-> > 
-> > 
-> > So perhaps we can proceed by getting you guys to fill out the following
-> > paperwork:
-> > 
-> > - In bullet-point form, what features are present?
-> 
-> It would be nice to get an honest, critical-thinking answer on this.
-> 
-> What is it good for right now, and what are the known weaknesses and
-> quirks you can think of. Declaring them upfront is a bonus - not talking
-> about them and us discovering them later at the patch integration stage
-> is a sure receipe for upstream grumpiness.
+Running 'make rpm' fails when CONFIG_LOCALVERSION_AUTO=y and using a kernel source
+tree under SCM.  This is due to KERNELRELEASE being different when the initial make
+is run and when make is run from rpmbuild.
 
-That's a fair enough point, and I do agree with you on it.
+mkspec creates kernel.spec using KERNELRELEASE:
 
-Right now, it is good for very little.  An app has to basically be
-either specifically designed to work, or be pretty puny in its
-capabilities.  Any fds that are open can only be restored if a simple
-open();lseek(); would have been sufficient to get it back into a good
-state.  The process must be single-threaded.  Shared memory, hugetlbfs,
-VM_NONLINEAR are not supported.  
+<mkspec>
+echo "%files"
+echo '%defattr (-, root, root)'
+echo "%dir /lib/modules"
+echo "/lib/modules/$KERNELRELEASE"
+echo "/lib/firmware"
+echo "/boot/*"
+echo ""
+</mkspec>
 
-> For example, one of the critical corner points: can an app programmatically 
-> determine whether it can support checkpoint/restart safely? Are there 
-> warnings/signals/helpers in place that make it a well-defined space, and
-> make the implementation of missing features directly actionable?
-> 
-> ( instead of: 'silent breakage' and a wishy-washy boundary between the
->   working and non-working space. Without clear boundaries there's no
->   clear dynamics that extends the 'working' space beyond the demo stage. )
+When CONFIG_LOCALVERSION_AUTO=y scripts/setlocalversion is called and grabs any
+additional version info from SCM.  Next, the srctree is tarred up and SCM
+information is excluded.
 
-Patch 12/14 is supposed to address this *concept*.  But, it hasn't been
-carried through so that it currently works.  My expectation was that we
-would go through and add things over time.  I'll go make sure I push it
-to the point that it actually works for at least the simple test
-programs that we have.
+rpmbuild reruns make and in the process generates a new include/config/kernel.release
+and thus a new KERNELRELEASE.  However this time the SCM information is gone so
+KERNELRELEASE no longer has the additional version information.  When "make modules_install"
+runs, it uses the new KERNELRELEASE value to determine where to install the modules.
+This conflicts with where the spec file assumes they are going because of the
+mis-matching KERNELRELEASE versions.
 
-What I will probably do is something BKL-style.  Basically put a "this
-can't be checkpointed" marker over most everything I can think of and
-selectively remove it as we add features.  
+<snippet>
++ INSTALL_MOD_PATH=/var/tmp/kernel-2.6.29rc4tip01479g5d85422-root
++ make -j16 modules_install
+  INSTALL crypto/aead.ko
+  INSTALL crypto/cbc.ko
+  INSTALL crypto/chainiv.ko
+  INSTALL crypto/crc32c.ko
+  INSTALL crypto/crypto_algapi.ko
+  INSTALL crypto/crypto_blkcipher.ko
+  INSTALL crypto/crypto_hash.ko
+  INSTALL crypto/cryptomgr.ko
+  INSTALL crypto/ecb.ko
+  INSTALL crypto/eseqiv.ko
+  INSTALL crypto/krng.ko
+  INSTALL crypto/md5.ko
+  INSTALL crypto/pcbc.ko
+  INSTALL crypto/rng.ko
+  INSTALL drivers/block/cciss.ko
+  INSTALL drivers/hid/hid-dummy.ko
+  INSTALL drivers/scsi/iscsi_tcp.ko
+  INSTALL drivers/scsi/libiscsi.ko
+  INSTALL drivers/scsi/libiscsi_tcp.ko
+  INSTALL drivers/scsi/scsi_transport_iscsi.ko
+  INSTALL drivers/scsi/scsi_wait_scan.ko
+  INSTALL fs/lockd/lockd.ko
+  INSTALL fs/nfs/nfs.ko
+  INSTALL fs/nfsd/nfsd.ko
+  INSTALL lib/libcrc32c.ko
+  INSTALL net/sunrpc/sunrpc.ko
+  DEPMOD  2.6.29-rc4-tip
++ cp arch/x86/boot/bzImage
+/var/tmp/kernel-2.6.29rc4tip01479g5d85422-root/boot/vmlinuz-2.6.29-rc4-tip-01479-g5d85422
++ cp System.map
+/var/tmp/kernel-2.6.29rc4tip01479g5d85422-root/boot/System.map-2.6.29-rc4-tip-01479-g5d85422
++ cp .config
+/var/tmp/kernel-2.6.29rc4tip01479g5d85422-root/boot/config-2.6.29-rc4-tip-01479-g5d85422
++ cp vmlinux vmlinux.orig
++ bzip2 -9 vmlinux
++ mv vmlinux.bz2
+/var/tmp/kernel-2.6.29rc4tip01479g5d85422-root/boot/vmlinux-2.6.29-rc4-tip-01479-g5d85422.bz2
++ mv vmlinux.orig vmlinux
++ /usr/lib/rpm/brp-compress
+Processing files: kernel-2.6.29rc4tip01479g5d85422-2
+error: File not found:
+/var/tmp/kernel-2.6.29rc4tip01479g5d85422-root/lib/modules/2.6.29-rc4-tip-01479-g5d85422
 
--- Dave
+
+RPM build errors:
+    File not found:
+/var/tmp/kernel-2.6.29rc4tip01479g5d85422-root/lib/modules/2.6.29-rc4-tip-01479-g5d85422
+make[1]: *** [rpm] Error 1
+make: *** [rpm] Error 2
+</snippet>
+
+I have tested this patch on git -tip, Linus' git tree, and the kernel.org tar files, both
+with and without CONFIG_LOCALVERSION_AUTO=y.
+
+Signed-off-by: Josh Hunt <josh@scalex86.org>
+
+Index: linux-2.6/Makefile
+===================================================================
+--- linux-2.6.orig/Makefile     2009-02-10 12:09:16.000000000 -0800
++++ linux-2.6/Makefile  2009-02-11 15:01:33.000000000 -0800
+@@ -907,8 +907,17 @@
+ # Other SCMs can edit scripts/setlocalversion and add the appropriate
+ # checks as needed.
+ ifdef CONFIG_LOCALVERSION_AUTO
+-       _localver-auto = $(shell $(CONFIG_SHELL) \
++
++
++scmversion = $(shell cat .autoversion 2> /dev/null)
++
++ifeq ($(scmversion),)
++       _localver-auto = $(shell  $(CONFIG_SHELL) \
+                          $(srctree)/scripts/setlocalversion
+$(srctree))
++else
++       _localver-auto = $(shell cat .autoversion 2> /dev/null)
++endif
++
+        localver-auto  = $(LOCALVERSION)$(_localver-auto)
+ endif
+
+Index: linux-2.6/scripts/package/Makefile
+===================================================================
+--- linux-2.6.orig/scripts/package/Makefile     2009-02-10
+12:09:50.000000000 -0800
++++ linux-2.6/scripts/package/Makefile  2009-02-11 16:33:55.000000000
+-0800
+@@ -35,10 +35,17 @@
+ rpm-pkg rpm: $(objtree)/kernel.spec FORCE
+        $(MAKE) clean
+        $(PREV) ln -sf $(srctree) $(KERNELPATH)
++
++       set -e; \
++       $(CONFIG_SHELL) $(srctree)/scripts/setlocalversion >
+$(objtree)/.autoversion
++
+        $(PREV) tar -cz $(RCS_TAR_IGNORE) -f $(KERNELPATH).tar.gz
+$(KERNELPATH)/.
+        $(PREV) rm $(KERNELPATH)
+
+        set -e; \
++       rm $(objtree)/.autoversion
++
++       set -e; \
+        $(CONFIG_SHELL) $(srctree)/scripts/mkversion >
+$(objtree)/.tmp_version
+        set -e; \
+        mv -f $(objtree)/.tmp_version $(objtree)/.version
 
