@@ -1,78 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759341AbZBLP1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759515AbZBLPb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759341AbZBLP1Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 10:27:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbZBLP1Q
+	id S1759515AbZBLPb6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 10:31:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757951AbZBLPbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 10:27:16 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:58943 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750703AbZBLP1P (ORCPT
+	Thu, 12 Feb 2009 10:31:49 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:33347 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757742AbZBLPbs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 10:27:15 -0500
-Date: Thu, 12 Feb 2009 16:27:14 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: John Ogness <dazukocode@ogness.net>
-cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
+	Thu, 12 Feb 2009 10:31:48 -0500
+Date: Thu, 12 Feb 2009 15:31:46 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: John Ogness <dazukocode@ogness.net>, linux-kernel@vger.kernel.org,
        malware-list@lists.printk.net, eparis@redhat.com, hch@infradead.org,
        alan@lxorguk.ukuu.org.uk
 Subject: Re: [PATCHv2 1/5] VFS: DazukoFS, stackable-fs, file access control
-In-Reply-To: <861vufgwlt.fsf@johno.fn.ogness.net>
-Message-ID: <alpine.LSU.2.00.0902121618500.5658@fbirervta.pbzchgretzou.qr>
-References: <8663jrgwo4.fsf@johno.fn.ogness.net> <861vufgwlt.fsf@johno.fn.ogness.net>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+Message-ID: <20090212153146.GG28946@ZenIV.linux.org.uk>
+References: <8663jrgwo4.fsf@johno.fn.ogness.net> <861vufgwlt.fsf@johno.fn.ogness.net> <alpine.LSU.2.00.0902121618500.5658@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LSU.2.00.0902121618500.5658@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Feb 12, 2009 at 04:27:14PM +0100, Jan Engelhardt wrote:
 
-On Tuesday 2009-02-03 20:15, John Ogness wrote:
+> This ought to be done better in light of the problem that one
+> could issue `mount -t dazukofs /mnt /opt`
+> In kernel code, I'm thinking something like
+> 
+> static int foofs_dothis(...)
+> {
+> 	buf = call d_path on sb->s_root
 
->Patch 1: Introduces DazukoFS as a nullfs. This is the raw stackable
->         filesystem part of DazukoFS and does nothing except stack and
->         pass filesystem calls to the lower filesystem.
->
->Patched against 2.6.29-rc3.
->
->Index: linux-2.6.28/Documentation/filesystems/dazukofs.txt
->===================================================================
->--- /dev/null	1970-01-01 00:00:00.000000000 +0000
->+++ linux-2.6.28/Documentation/filesystems/dazukofs.txt	2009-02-03 18:07:44.000000000 +0100
->+
->+=====================
->+ MOUNTING/UNMOUNTING
->+=====================
->+
->+DazukoFS is typically mounted on top of an existing directory. For example,
->+to stack DazukoFS on top of the /opt directory, the following mount(8)
->+command can be given:
->+
->+# mount -t dazukofs /opt /opt
-[...]
->+# mount -t dazukofs /opt /mnt
->+
->+When accessing files within /mnt, you will be accessing files in /opt
->+(through DazukoFS). When accessing files directly in /opt, DazukoFS will not
->+be involved.
->+
->+THIS HAS POTENTIAL PROBLEMS!
-
-This ought to be done better in light of the problem that one
-could issue `mount -t dazukofs /mnt /opt`
-In kernel code, I'm thinking something like
-
-static int foofs_dothis(...)
-{
-	buf = call d_path on sb->s_root
-	call namei_lookup on buf
-	use lookup's resulting dentry as source directory
-}
-
-This assumes at least that namei_lookup will not return the new SB's
-dentry for the given path.
-Iff that works out somehow, the 'device' part in the mount command
-line is practically ignored like it is for like procfs.
-
-
+Call what on what?  There is no such thing as the mountpoint of superblock.
