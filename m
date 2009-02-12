@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758752AbZBLKjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758865AbZBLKkK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758752AbZBLKjV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 05:39:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756748AbZBLKjA
+	id S1758865AbZBLKkK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 05:40:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756481AbZBLKj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 05:39:00 -0500
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:45948 "EHLO
+	Thu, 12 Feb 2009 05:39:57 -0500
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:46089 "EHLO
 	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756739AbZBLKi7 (ORCPT
+	with ESMTP id S1752567AbZBLKj4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 05:38:59 -0500
-Subject: block: Add block_flush_device()
+	Thu, 12 Feb 2009 05:39:56 -0500
+Subject: ext3: call blkdev_issue_flush on fsync
 From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
 	<fernando@oss.ntt.co.jp>
 To: Jan Kara <jack@suse.cz>
@@ -34,8 +34,8 @@ References: <20090114165952.GH6222@mit.edu>
 	 <1234434811.15270.7.camel@sebastian.kern.oss.ntt.co.jp>
 Content-Type: text/plain
 Organization: NTT Open Source Software Center
-Date: Thu, 12 Feb 2009 19:38:57 +0900
-Message-Id: <1234435137.15433.13.camel@sebastian.kern.oss.ntt.co.jp>
+Date: Thu, 12 Feb 2009 19:39:55 +0900
+Message-Id: <1234435195.15433.16.camel@sebastian.kern.oss.ntt.co.jp>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -43,50 +43,63 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a helper function that should be used by filesystems that need
-to flush the underlying block device on fsync()/fdatasync().
+To ensure that bits are truly on-disk after an fsync or fdatasync, we
+should force a disk flush explicitly when there is dirty data/metadata
+and the journal didn't emit a write barrier (either because metadata is
+not being synched or barriers are disabled).
 
 Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
 ---
 
-diff -urNp linux-2.6.29-rc3-orig/fs/buffer.c linux-2.6.29-rc3/fs/buffer.c
---- linux-2.6.29-rc3-orig/fs/buffer.c	2009-01-29 09:47:51.000000000 +0900
-+++ linux-2.6.29-rc3/fs/buffer.c	2009-01-29 20:11:29.000000000 +0900
-@@ -165,6 +165,24 @@ void end_buffer_write_sync(struct buffer
- 	put_bh(bh);
+diff -urNp linux-2.6.29-rc4-orig/fs/ext3/fsync.c linux-2.6.29-rc4/fs/ext3/fsync.c
+--- linux-2.6.29-rc4-orig/fs/ext3/fsync.c	2008-12-25 08:26:37.000000000 +0900
++++ linux-2.6.29-rc4/fs/ext3/fsync.c	2009-02-12 19:20:23.000000000 +0900
+@@ -45,6 +45,8 @@
+ int ext3_sync_file(struct file * file, struct dentry *dentry, int datasync)
+ {
+ 	struct inode *inode = dentry->d_inode;
++	journal_t *journal = EXT3_SB(inode->i_sb)->s_journal;
++	unsigned long i_state = inode->i_state;
+ 	int ret = 0;
+ 
+ 	J_ASSERT(ext3_journal_current_handle() == NULL);
+@@ -69,23 +71,34 @@ int ext3_sync_file(struct file * file, s
+ 	 */
+ 	if (ext3_should_journal_data(inode)) {
+ 		ret = ext3_force_commit(inode->i_sb);
++		if (!(journal->j_flags & JFS_BARRIER))
++			goto no_journal_barrier;
+ 		goto out;
+ 	}
+ 
+-	if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
+-		goto out;
++	if (datasync && !(i_state & I_DIRTY_DATASYNC))
++		goto flush_blkdev;
+ 
+ 	/*
+ 	 * The VFS has written the file data.  If the inode is unaltered
+ 	 * then we need not start a commit.
+ 	 */
+-	if (inode->i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
++	if (i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
+ 		struct writeback_control wbc = {
+ 			.sync_mode = WB_SYNC_ALL,
+ 			.nr_to_write = 0, /* sys_fsync did this */
+ 		};
+ 		ret = sync_inode(inode, &wbc);
++		if (journal && !(journal->j_flags & JFS_BARRIER))
++			goto no_journal_barrier;
++		goto out;
+ 	}
++
++flush_blkdev:
++	if (!(i_state & I_DIRTY_PAGES))
++		goto out;
++no_journal_barrier:
++	block_flush_device(inode->i_sb);
+ out:
+ 	return ret;
  }
- 
-+/* Issue flush of write caches on the block device */
-+int block_flush_device(struct super_block *sb)
-+{
-+	int ret = 0;
-+
-+	if (!(sb->s_flags & MS_FLUSHONFSYNC))
-+		return ret;
-+
-+	ret = blkdev_issue_flush(sb->s_bdev, NULL);
-+
-+	if (ret == -EOPNOTSUPP)
-+		return 0;
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(block_flush_device);
-+
-+
- /*
-  * Write out and wait upon all the dirty data associated with a block
-  * device via its mapping.  Does not take the superblock lock.
-diff -urNp linux-2.6.29-rc3-orig/include/linux/buffer_head.h linux-2.6.29-rc3/include/linux/buffer_head.h
---- linux-2.6.29-rc3-orig/include/linux/buffer_head.h	2009-01-29 09:47:51.000000000 +0900
-+++ linux-2.6.29-rc3/include/linux/buffer_head.h	2009-01-29 19:26:33.000000000 +0900
-@@ -238,6 +238,7 @@ int nobh_write_end(struct file *, struct
- int nobh_truncate_page(struct address_space *, loff_t, get_block_t *);
- int nobh_writepage(struct page *page, get_block_t *get_block,
-                         struct writeback_control *wbc);
-+int block_flush_device(struct super_block *sb);
- 
- void buffer_init(void);
- 
 
 
