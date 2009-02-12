@@ -1,105 +1,452 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758865AbZBLKkK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758916AbZBLKkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758865AbZBLKkK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 05:40:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756481AbZBLKj5
+	id S1758916AbZBLKkm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 05:40:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756481AbZBLKkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 05:39:57 -0500
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:46089 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752567AbZBLKj4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 05:39:56 -0500
-Subject: ext3: call blkdev_issue_flush on fsync
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: Jan Kara <jack@suse.cz>
-Cc: Theodore Tso <tytso@MIT.EDU>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Pavel Machek <pavel@suse.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com,
-       fernando@kic.ac.jp
-In-Reply-To: <1234434811.15270.7.camel@sebastian.kern.oss.ntt.co.jp>
-References: <20090114165952.GH6222@mit.edu>
-	 <1232021211.14626.19.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20090115234544.GA7579@duck.suse.cz>
-	 <1232109069.13775.35.camel@sebastian.kern.oss.ntt.co.jp>
-	 <1232114101.13775.63.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20090116163039.GE10617@duck.suse.cz>
-	 <1232185639.4831.18.camel@sebastian.kern.oss.ntt.co.jp>
-	 <1232186449.4831.29.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20090119120349.GA10193@duck.suse.cz>
-	 <1233135913.5399.57.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20090128095518.GA16554@duck.suse.cz>
-	 <1234434811.15270.7.camel@sebastian.kern.oss.ntt.co.jp>
-Content-Type: text/plain
-Organization: NTT Open Source Software Center
-Date: Thu, 12 Feb 2009 19:39:55 +0900
-Message-Id: <1234435195.15433.16.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 12 Feb 2009 05:40:16 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:60196 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758870AbZBLKkM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 05:40:12 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 1/4] NOMMU: Present backing device capabilities for MTD
+	chardevs
+To: dwmw2@infradead.org, bernds_cb1@t-online.de
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
+Date: Thu, 12 Feb 2009 10:40:00 +0000
+Message-ID: <20090212104000.26766.11068.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To ensure that bits are truly on-disk after an fsync or fdatasync, we
-should force a disk flush explicitly when there is dirty data/metadata
-and the journal didn't emit a write barrier (either because metadata is
-not being synched or barriers are disabled).
+Present backing device capabilities for MTD character device files to allow
+NOMMU mmap to do direct mapping where possible.
 
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+Signed-off-by: David Howells <dhowells@redhat.com>
+Tested-by: Bernd Schmidt <bernd.schmidt@analog.com>
 ---
 
-diff -urNp linux-2.6.29-rc4-orig/fs/ext3/fsync.c linux-2.6.29-rc4/fs/ext3/fsync.c
---- linux-2.6.29-rc4-orig/fs/ext3/fsync.c	2008-12-25 08:26:37.000000000 +0900
-+++ linux-2.6.29-rc4/fs/ext3/fsync.c	2009-02-12 19:20:23.000000000 +0900
-@@ -45,6 +45,8 @@
- int ext3_sync_file(struct file * file, struct dentry *dentry, int datasync)
- {
- 	struct inode *inode = dentry->d_inode;
-+	journal_t *journal = EXT3_SB(inode->i_sb)->s_journal;
-+	unsigned long i_state = inode->i_state;
- 	int ret = 0;
+ drivers/mtd/Makefile         |    2 +
+ drivers/mtd/chips/map_ram.c  |   17 +++++++++++
+ drivers/mtd/chips/map_rom.c  |   17 +++++++++++
+ drivers/mtd/devices/mtdram.c |   14 +++++++++
+ drivers/mtd/internal.h       |   17 +++++++++++
+ drivers/mtd/mtdbdi.c         |   43 +++++++++++++++++++++++++++++
+ drivers/mtd/mtdchar.c        |   63 +++++++++++++++++++++++++++++++++++++++++-
+ drivers/mtd/mtdcore.c        |   15 ++++++++++
+ drivers/mtd/mtdpart.c        |   15 ++++++++++
+ include/linux/mtd/mtd.h      |   14 +++++++++
+ 10 files changed, 215 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/mtd/internal.h
+ create mode 100644 drivers/mtd/mtdbdi.c
+
+
+diff --git a/drivers/mtd/Makefile b/drivers/mtd/Makefile
+index 4521b1e..82d1e4d 100644
+--- a/drivers/mtd/Makefile
++++ b/drivers/mtd/Makefile
+@@ -4,7 +4,7 @@
  
- 	J_ASSERT(ext3_journal_current_handle() == NULL);
-@@ -69,23 +71,34 @@ int ext3_sync_file(struct file * file, s
- 	 */
- 	if (ext3_should_journal_data(inode)) {
- 		ret = ext3_force_commit(inode->i_sb);
-+		if (!(journal->j_flags & JFS_BARRIER))
-+			goto no_journal_barrier;
+ # Core functionality.
+ obj-$(CONFIG_MTD)		+= mtd.o
+-mtd-y				:= mtdcore.o mtdsuper.o
++mtd-y				:= mtdcore.o mtdsuper.o mtdbdi.o
+ mtd-$(CONFIG_MTD_PARTITIONS)	+= mtdpart.o
+ 
+ obj-$(CONFIG_MTD_CONCAT)	+= mtdconcat.o
+diff --git a/drivers/mtd/chips/map_ram.c b/drivers/mtd/chips/map_ram.c
+index 072dd8a..6bdc50c 100644
+--- a/drivers/mtd/chips/map_ram.c
++++ b/drivers/mtd/chips/map_ram.c
+@@ -21,6 +21,8 @@ static int mapram_write (struct mtd_info *, loff_t, size_t, size_t *, const u_ch
+ static int mapram_erase (struct mtd_info *, struct erase_info *);
+ static void mapram_nop (struct mtd_info *);
+ static struct mtd_info *map_ram_probe(struct map_info *map);
++static unsigned long mapram_unmapped_area(struct mtd_info *, unsigned long,
++					  unsigned long, unsigned long);
+ 
+ 
+ static struct mtd_chip_driver mapram_chipdrv = {
+@@ -64,6 +66,7 @@ static struct mtd_info *map_ram_probe(struct map_info *map)
+ 	mtd->type = MTD_RAM;
+ 	mtd->size = map->size;
+ 	mtd->erase = mapram_erase;
++	mtd->get_unmapped_area = mapram_unmapped_area;
+ 	mtd->read = mapram_read;
+ 	mtd->write = mapram_write;
+ 	mtd->sync = mapram_nop;
+@@ -79,6 +82,20 @@ static struct mtd_info *map_ram_probe(struct map_info *map)
+ }
+ 
+ 
++/*
++ * Allow NOMMU mmap() to directly map the device (if not NULL)
++ * - return the address to which the offset maps
++ * - return -ENOSYS to indicate refusal to do the mapping
++ */
++static unsigned long mapram_unmapped_area(struct mtd_info *mtd,
++					  unsigned long len,
++					  unsigned long offset,
++					  unsigned long flags)
++{
++	struct map_info *map = mtd->priv;
++	return (unsigned long) map->virt + offset;
++}
++
+ static int mapram_read (struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen, u_char *buf)
+ {
+ 	struct map_info *map = mtd->priv;
+diff --git a/drivers/mtd/chips/map_rom.c b/drivers/mtd/chips/map_rom.c
+index 821d0ed..53ce799 100644
+--- a/drivers/mtd/chips/map_rom.c
++++ b/drivers/mtd/chips/map_rom.c
+@@ -19,6 +19,8 @@ static int maprom_read (struct mtd_info *, loff_t, size_t, size_t *, u_char *);
+ static int maprom_write (struct mtd_info *, loff_t, size_t, size_t *, const u_char *);
+ static void maprom_nop (struct mtd_info *);
+ static struct mtd_info *map_rom_probe(struct map_info *map);
++static unsigned long maprom_unmapped_area(struct mtd_info *, unsigned long,
++					  unsigned long, unsigned long);
+ 
+ static struct mtd_chip_driver maprom_chipdrv = {
+ 	.probe	= map_rom_probe,
+@@ -39,6 +41,7 @@ static struct mtd_info *map_rom_probe(struct map_info *map)
+ 	mtd->name = map->name;
+ 	mtd->type = MTD_ROM;
+ 	mtd->size = map->size;
++	mtd->get_unmapped_area = maprom_unmapped_area;
+ 	mtd->read = maprom_read;
+ 	mtd->write = maprom_write;
+ 	mtd->sync = maprom_nop;
+@@ -51,6 +54,20 @@ static struct mtd_info *map_rom_probe(struct map_info *map)
+ }
+ 
+ 
++/*
++ * Allow NOMMU mmap() to directly map the device (if not NULL)
++ * - return the address to which the offset maps
++ * - return -ENOSYS to indicate refusal to do the mapping
++ */
++static unsigned long maprom_unmapped_area(struct mtd_info *mtd,
++					  unsigned long len,
++					  unsigned long offset,
++					  unsigned long flags)
++{
++	struct map_info *map = mtd->priv;
++	return (unsigned long) map->virt + offset;
++}
++
+ static int maprom_read (struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen, u_char *buf)
+ {
+ 	struct map_info *map = mtd->priv;
+diff --git a/drivers/mtd/devices/mtdram.c b/drivers/mtd/devices/mtdram.c
+index 3aaca88..fce5ff7 100644
+--- a/drivers/mtd/devices/mtdram.c
++++ b/drivers/mtd/devices/mtdram.c
+@@ -65,6 +65,19 @@ static void ram_unpoint(struct mtd_info *mtd, loff_t from, size_t len)
+ {
+ }
+ 
++/*
++ * Allow NOMMU mmap() to directly map the device (if not NULL)
++ * - return the address to which the offset maps
++ * - return -ENOSYS to indicate refusal to do the mapping
++ */
++static unsigned long ram_get_unmapped_area(struct mtd_info *mtd,
++					   unsigned long len,
++					   unsigned long offset,
++					   unsigned long flags)
++{
++	return (unsigned long) mtd->priv + offset;
++}
++
+ static int ram_read(struct mtd_info *mtd, loff_t from, size_t len,
+ 		size_t *retlen, u_char *buf)
+ {
+@@ -116,6 +129,7 @@ int mtdram_init_device(struct mtd_info *mtd, void *mapped_address,
+ 	mtd->erase = ram_erase;
+ 	mtd->point = ram_point;
+ 	mtd->unpoint = ram_unpoint;
++	mtd->get_unmapped_area = ram_get_unmapped_area;
+ 	mtd->read = ram_read;
+ 	mtd->write = ram_write;
+ 
+diff --git a/drivers/mtd/internal.h b/drivers/mtd/internal.h
+new file mode 100644
+index 0000000..b366c68
+--- /dev/null
++++ b/drivers/mtd/internal.h
+@@ -0,0 +1,17 @@
++/* Internal MTD definitions
++ *
++ * Copyright (C) 2006 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++/*
++ * mtdbdi.c
++ */
++extern struct backing_dev_info mtd_bdi_unmappable;
++extern struct backing_dev_info mtd_bdi_ro_mappable;
++extern struct backing_dev_info mtd_bdi_rw_mappable;
+diff --git a/drivers/mtd/mtdbdi.c b/drivers/mtd/mtdbdi.c
+new file mode 100644
+index 0000000..5312377
+--- /dev/null
++++ b/drivers/mtd/mtdbdi.c
+@@ -0,0 +1,43 @@
++/* MTD backing device capabilities
++ *
++ * Copyright (C) 2006 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include <linux/backing-dev.h>
++#include <linux/mtd/mtd.h>
++#include "internal.h"
++
++/*
++ * backing device capabilities for non-mappable devices (such as NAND flash)
++ * - permits private mappings, copies are taken of the data
++ */
++struct backing_dev_info mtd_bdi_unmappable = {
++	.capabilities	= BDI_CAP_MAP_COPY,
++};
++
++/*
++ * backing device capabilities for R/O mappable devices (such as ROM)
++ * - permits private mappings, copies are taken of the data
++ * - permits non-writable shared mappings
++ */
++struct backing_dev_info mtd_bdi_ro_mappable = {
++	.capabilities	= (BDI_CAP_MAP_COPY | BDI_CAP_MAP_DIRECT |
++			   BDI_CAP_EXEC_MAP | BDI_CAP_READ_MAP),
++};
++
++/*
++ * backing device capabilities for writable mappable devices (such as RAM)
++ * - permits private mappings, copies are taken of the data
++ * - permits non-writable shared mappings
++ */
++struct backing_dev_info mtd_bdi_rw_mappable = {
++	.capabilities	= (BDI_CAP_MAP_COPY | BDI_CAP_MAP_DIRECT |
++			   BDI_CAP_EXEC_MAP | BDI_CAP_READ_MAP |
++			   BDI_CAP_WRITE_MAP),
++};
+diff --git a/drivers/mtd/mtdchar.c b/drivers/mtd/mtdchar.c
+index e9ec59e..6ad83b5 100644
+--- a/drivers/mtd/mtdchar.c
++++ b/drivers/mtd/mtdchar.c
+@@ -13,6 +13,7 @@
+ #include <linux/slab.h>
+ #include <linux/sched.h>
+ #include <linux/smp_lock.h>
++#include <linux/backing-dev.h>
+ 
+ #include <linux/mtd/mtd.h>
+ #include <linux/mtd/compatmac.h>
+@@ -107,12 +108,15 @@ static int mtd_open(struct inode *inode, struct file *file)
  		goto out;
  	}
  
--	if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
--		goto out;
-+	if (datasync && !(i_state & I_DIRTY_DATASYNC))
-+		goto flush_blkdev;
- 
- 	/*
- 	 * The VFS has written the file data.  If the inode is unaltered
- 	 * then we need not start a commit.
- 	 */
--	if (inode->i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
-+	if (i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
- 		struct writeback_control wbc = {
- 			.sync_mode = WB_SYNC_ALL,
- 			.nr_to_write = 0, /* sys_fsync did this */
- 		};
- 		ret = sync_inode(inode, &wbc);
-+		if (journal && !(journal->j_flags & JFS_BARRIER))
-+			goto no_journal_barrier;
-+		goto out;
+-	if (MTD_ABSENT == mtd->type) {
++	if (mtd->type == MTD_ABSENT) {
+ 		put_mtd_device(mtd);
+ 		ret = -ENODEV;
+ 		goto out;
  	}
+ 
++	if (mtd->backing_dev_info)
++		file->f_mapping->backing_dev_info = mtd->backing_dev_info;
 +
-+flush_blkdev:
-+	if (!(i_state & I_DIRTY_PAGES))
-+		goto out;
-+no_journal_barrier:
-+	block_flush_device(inode->i_sb);
- out:
+ 	/* You can't open it RW if it's not a writeable device */
+ 	if ((file->f_mode & FMODE_WRITE) && !(mtd->flags & MTD_WRITEABLE)) {
+ 		put_mtd_device(mtd);
+@@ -781,6 +785,59 @@ static int mtd_ioctl(struct inode *inode, struct file *file,
  	return ret;
+ } /* memory_ioctl */
+ 
++/*
++ * try to determine where a shared mapping can be made
++ * - only supported for NOMMU at the moment (MMU can't doesn't copy private
++ *   mappings)
++ */
++#ifndef CONFIG_MMU
++static unsigned long mtd_get_unmapped_area(struct file *file,
++					   unsigned long addr,
++					   unsigned long len,
++					   unsigned long pgoff,
++					   unsigned long flags)
++{
++	struct mtd_file_info *mfi = file->private_data;
++	struct mtd_info *mtd = mfi->mtd;
++
++	if (mtd->get_unmapped_area) {
++		unsigned long offset;
++
++		if (addr != 0)
++			return (unsigned long) -EINVAL;
++
++		if (len > mtd->size || pgoff >= (mtd->size >> PAGE_SHIFT))
++			return (unsigned long) -EINVAL;
++
++		offset = pgoff << PAGE_SHIFT;
++		if (offset > mtd->size - len)
++			return (unsigned long) -EINVAL;
++
++		return mtd->get_unmapped_area(mtd, len, offset, flags);
++	}
++
++	/* can't map directly */
++	return (unsigned long) -ENOSYS;
++}
++#endif
++
++/*
++ * set up a mapping for shared memory segments
++ */
++static int mtd_mmap(struct file *file, struct vm_area_struct *vma)
++{
++#ifdef CONFIG_MMU
++	struct mtd_file_info *mfi = file->private_data;
++	struct mtd_info *mtd = mfi->mtd;
++
++	if (mtd->type == MTD_RAM || mtd->type == MTD_ROM)
++		return 0;
++	return -ENOSYS;
++#else
++	return vma->vm_flags & VM_SHARED ? 0 : -ENOSYS;
++#endif
++}
++
+ static const struct file_operations mtd_fops = {
+ 	.owner		= THIS_MODULE,
+ 	.llseek		= mtd_lseek,
+@@ -789,6 +846,10 @@ static const struct file_operations mtd_fops = {
+ 	.ioctl		= mtd_ioctl,
+ 	.open		= mtd_open,
+ 	.release	= mtd_close,
++	.mmap		= mtd_mmap,
++#ifndef CONFIG_MMU
++	.get_unmapped_area = mtd_get_unmapped_area,
++#endif
+ };
+ 
+ static int __init init_mtdchar(void)
+diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
+index 76fe0a1..65a7f37 100644
+--- a/drivers/mtd/mtdcore.c
++++ b/drivers/mtd/mtdcore.c
+@@ -19,6 +19,7 @@
+ #include <linux/proc_fs.h>
+ 
+ #include <linux/mtd/mtd.h>
++#include "internal.h"
+ 
+ #include "mtdcore.h"
+ 
+@@ -46,6 +47,20 @@ int add_mtd_device(struct mtd_info *mtd)
+ {
+ 	int i;
+ 
++	if (!mtd->backing_dev_info) {
++		switch (mtd->type) {
++		case MTD_RAM:
++			mtd->backing_dev_info = &mtd_bdi_rw_mappable;
++			break;
++		case MTD_ROM:
++			mtd->backing_dev_info = &mtd_bdi_ro_mappable;
++			break;
++		default:
++			mtd->backing_dev_info = &mtd_bdi_unmappable;
++			break;
++		}
++	}
++
+ 	BUG_ON(mtd->writesize == 0);
+ 	mutex_lock(&mtd_table_mutex);
+ 
+diff --git a/drivers/mtd/mtdpart.c b/drivers/mtd/mtdpart.c
+index 144e6b6..06d5b9d 100644
+--- a/drivers/mtd/mtdpart.c
++++ b/drivers/mtd/mtdpart.c
+@@ -84,6 +84,18 @@ static void part_unpoint(struct mtd_info *mtd, loff_t from, size_t len)
+ 	part->master->unpoint(part->master, from + part->offset, len);
  }
-
+ 
++static unsigned long part_get_unmapped_area(struct mtd_info *mtd,
++					    unsigned long len,
++					    unsigned long offset,
++					    unsigned long flags)
++{
++	struct mtd_part *part = PART(mtd);
++
++	offset += part->offset;
++	return part->master->get_unmapped_area(part->master, len, offset,
++					       flags);
++}
++
+ static int part_read_oob(struct mtd_info *mtd, loff_t from,
+ 		struct mtd_oob_ops *ops)
+ {
+@@ -342,6 +354,7 @@ static struct mtd_part *add_one_partition(struct mtd_info *master,
+ 
+ 	slave->mtd.name = part->name;
+ 	slave->mtd.owner = master->owner;
++	slave->mtd.backing_dev_info = master->backing_dev_info;
+ 
+ 	slave->mtd.read = part_read;
+ 	slave->mtd.write = part_write;
+@@ -354,6 +367,8 @@ static struct mtd_part *add_one_partition(struct mtd_info *master,
+ 		slave->mtd.unpoint = part_unpoint;
+ 	}
+ 
++	if (master->get_unmapped_area)
++		slave->mtd.get_unmapped_area = part_get_unmapped_area;
+ 	if (master->read_oob)
+ 		slave->mtd.read_oob = part_read_oob;
+ 	if (master->write_oob)
+diff --git a/include/linux/mtd/mtd.h b/include/linux/mtd/mtd.h
+index 3aa5d77..0c079fd 100644
+--- a/include/linux/mtd/mtd.h
++++ b/include/linux/mtd/mtd.h
+@@ -162,6 +162,20 @@ struct mtd_info {
+ 	/* We probably shouldn't allow XIP if the unpoint isn't a NULL */
+ 	void (*unpoint) (struct mtd_info *mtd, loff_t from, size_t len);
+ 
++	/* Allow NOMMU mmap() to directly map the device (if not NULL)
++	 * - return the address to which the offset maps
++	 * - return -ENOSYS to indicate refusal to do the mapping
++	 */
++	unsigned long (*get_unmapped_area) (struct mtd_info *mtd,
++					    unsigned long len,
++					    unsigned long offset,
++					    unsigned long flags);
++
++	/* Backing device capabilities for this device
++	 * - provides mmap capabilities
++	 */
++	struct backing_dev_info *backing_dev_info;
++
+ 
+ 	int (*read) (struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen, u_char *buf);
+ 	int (*write) (struct mtd_info *mtd, loff_t to, size_t len, size_t *retlen, const u_char *buf);
 
