@@ -1,130 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759536AbZBLR5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbZBLSC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759536AbZBLR5k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 12:57:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755690AbZBLR5b
+	id S1756705AbZBLSC1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 13:02:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756181AbZBLSCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 12:57:31 -0500
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:45508 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774AbZBLR5a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 12:57:30 -0500
-Date: Thu, 12 Feb 2009 10:56:59 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, arjan@linux.intel.com,
-       alex.williamson@hp.com, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sysfs: sysfs_add_one tells you _where_ the duplicate
-	file is
-Message-ID: <20090212175659.GC20654@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>, Greg KH <gregkh@suse.de>,
-	Kay Sievers <kay.sievers@vrfy.org>, arjan@linux.intel.com,
-	alex.williamson@hp.com, linux-kernel <linux-kernel@vger.kernel.org>
-References: <20090211202601.GC3402@ldl.fc.hp.com> <20090211223903.GA21100@suse.de> <20090212025655.GA6916@ldl.fc.hp.com> <20090212030227.GA4859@suse.de> <20090212070210.GB6916@ldl.fc.hp.com> <ac3eb2510902120105u17f5a0f9q13a228b9ff6ff3d4@mail.gmail.com> <20090212160257.GA18786@suse.de> <20090212173835.GB20654@ldl.fc.hp.com> <20090212174122.GA22301@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090212174122.GA22301@suse.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 12 Feb 2009 13:02:17 -0500
+Received: from mga01.intel.com ([192.55.52.88]:48408 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755690AbZBLSCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 13:02:16 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,198,1233561600"; 
+   d="scan'208";a="430513656"
+Subject: Re: [PATCH] [2/4] x86: MCE: Implement dynamic machine check banks
+ support v5
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090212124321.8A98B3E666D@basil.firstfloor.org>
+References: <20090212143.515129156@firstfloor.org>
+	 <20090212124321.8A98B3E666D@basil.firstfloor.org>
+Content-Type: text/plain
+Date: Thu, 12 Feb 2009 10:03:05 -0800
+Message-Id: <1234461785.4286.1918.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Greg KH <gregkh@suse.de>:
-> On Thu, Feb 12, 2009 at 10:38:35AM -0700, Alex Chiang wrote:
-> > +	if (ret == -EEXIST) {
-> > +		char *path = kzalloc(PATH_MAX, GFP_KERNEL);
+
+On Thu, 2009-02-12 at 04:43 -0800, Andi Kleen wrote:
+> Impact: cleanup; making code future proof; memory saving on small systems
 > 
-> You forgot to check the return value of kzalloc().
+> This patch replaces the hardcoded max number of machine check banks with 
+> dynamic allocation depending on what the CPU reports. The sysfs
+> data structures and the banks array are dynamically allocated.
 > 
-> Another try?
+> There is still a hard bank limit (128) because the mcelog protocol uses
+> banks >= 128 as pseudo banks to escape other events. But we expect
+> that 128 banks is beyond any reasonable CPU for now.
 > 
-> 8th time's a charm?  :)
+> This supersedes an earlier patch by Venki, but it solves the problem
+> more completely by making the limit fully dynamic (upto the 128 boundary)
+> 
+> This saves some memory on machines with less than 6 banks because
+> they won't need sysdevs for unused ones and also allows to 
+> use sysfs to control these banks on possible future CPUs with
+> more than 6 banks.
+> 
+> v2: Fix typo in initialization
+> v3: Fold fix banks message fix into this one.
+> v4: Fix cap init ordering
+> v5: Forward port to new patch order
+> 
+> Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+> 
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> 
+> ---
+>  arch/x86/kernel/cpu/mcheck/mce_64.c |  139 +++++++++++++++++++++++++++---------
+>  1 file changed, 107 insertions(+), 32 deletions(-)
+> 
+> Index: linux/arch/x86/kernel/cpu/mcheck/mce_64.c
+> ===================================================================
+> --- linux.orig/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-02-12 11:30:51.000000000 +0100
+> +++ linux/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-02-12 12:10:19.000000000 +0100
+> @@ -24,6 +24,8 @@
+>  #include <linux/ctype.h>
+>  #include <linux/kmod.h>
+>  #include <linux/kdebug.h>
+> +#include <linux/kobject.h>
+> +#include <linux/sysfs.h>
+>  #include <asm/processor.h>
+>  #include <asm/msr.h>
+>  #include <asm/mce.h>
+> @@ -32,7 +34,12 @@
+>  #include <asm/idle.h>
+>  
+>  #define MISC_MCELOG_MINOR 227
+> -#define NR_SYSFS_BANKS 6
+> +
+> +/*
+> + * To support more than 128 would need to escape the predefined
+> + * Linux defined extended banks first.
+> + */
+> +#define MAX_NR_BANKS (MCE_EXTENDED_BANK - 1)
+>  
+>  atomic_t mce_entry;
+>  
+> @@ -47,7 +54,7 @@
+>   */
+>  static int tolerant = 1;
+>  static int banks;
+> -static unsigned long bank[NR_SYSFS_BANKS] = { [0 ... NR_SYSFS_BANKS-1] = ~0UL };
+> +static u64 *bank;
+>  static unsigned long notify_user;
+>  static int rip_msr;
+>  static int mce_bootlog = -1;
+> @@ -212,7 +219,7 @@
+>  	barrier();
+>  
+>  	for (i = 0; i < banks; i++) {
+> -		if (i < NR_SYSFS_BANKS && !bank[i])
+> +		if (!bank[i])
+>  			continue;
+>  
+>  		m.misc = 0;
+> @@ -446,21 +453,36 @@
+>  /*
+>   * Initialize Machine Checks for a CPU.
+>   */
+> -static void mce_init(void *dummy)
+> +static void mce_cap_init(void)
+>  {
+>  	u64 cap;
+> -	int i;
+>  
+>  	rdmsrl(MSR_IA32_MCG_CAP, cap);
+> -	banks = cap & 0xff;
+> -	if (banks > MCE_EXTENDED_BANK) {
+> -		banks = MCE_EXTENDED_BANK;
+> -		printk(KERN_INFO "MCE: warning: using only %d banks\n",
+> -		       MCE_EXTENDED_BANK);
+> +	/* Handle the unlikely case of one CPU having less banks than others */
+> +	if (banks == 0 || banks > (cap & 0xff))
+> +		banks = cap & 0xff;
 
-Yeah, you're too fast for me. I thought about that just as I
-walked away from my desk. ;)
+Do we need a per cpu count of # of banks to handle one CPU having less
+banks than others case?
+Specifically, I am thinking of sequence:
+- CPU 0 has n banks
+- CPU 0 does below
+	for (i = 0; i < banks; i++) {
+		err = sysdev_create_file(&per_cpu(device_mce, cpu),
+					&bank_attrs[i]);
+- CPU 1, which comes online later, has say n-2 banks. So, banks now becomes n-2.
+- Now whenever CPU 0 does sysdev_remove_file loop below, it will do it only for n-2 banks.
 
-What are we on, v6?
 
-From: Alex Chiang <achiang@hp.com>
+Thanks,
+Venki
 
-sysfs: sysfs_add_one WARNs with full path to duplicate filename
-
-As a debugging aid, it can be useful to know the full path to a
-duplicate file being created in sysfs.
-
-We now will display warnings such as:
-
-	sysfs: cannot create duplicate filename '/foo'
-
-when attempting to create multiple files named 'foo' in the sysfs
-root, or:
-
-	sysfs: cannot create duplicate filename '/bus/pci/slots/5/foo'
-
-when attempting to create multiple files named 'foo' under a
-given directory in sysfs.
-
-The path displayed is always a relative path to sysfs_root. The
-leading '/' in the path name refers to the sysfs_root mount
-point, and should not be confused with the "real" '/'.
-
-Thanks to Alex Williamson for essentially writing sysfs_pathname.
-
-Cc: Alex Williamson <alex.williamson@hp.com>
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
- dir.c |   32 ++++++++++++++++++++++++++++++--
- 1 file changed, 30 insertions(+), 2 deletions(-)
----
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 82d3b79..f13d852 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -434,6 +434,26 @@ int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
- }
- 
- /**
-+ *	sysfs_pathname - return full path to sysfs dirent
-+ *	@sd: sysfs_dirent whose path we want
-+ *	@path: caller allocated buffer
-+ *
-+ *	Gives the name "/" to the sysfs_root entry; any path returned
-+ *	is relative to wherever sysfs is mounted.
-+ *
-+ *	XXX: does no error checking on @path size
-+ */
-+static char *sysfs_pathname(struct sysfs_dirent *sd, char *path)
-+{
-+	if (sd->s_parent) {
-+		sysfs_pathname(sd->s_parent, path);
-+		strcat(path, "/");
-+	}
-+	strcat(path, sd->s_name);
-+	return path;
-+}
-+
-+/**
-  *	sysfs_add_one - add sysfs_dirent to parent
-  *	@acxt: addrm context to use
-  *	@sd: sysfs_dirent to be added
-@@ -458,8 +478,16 @@ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
- 	int ret;
- 
- 	ret = __sysfs_add_one(acxt, sd);
--	WARN(ret == -EEXIST, KERN_WARNING "sysfs: duplicate filename '%s' "
--		       "can not be created\n", sd->s_name);
-+	if (ret == -EEXIST) {
-+		char *path = kzalloc(PATH_MAX, GFP_KERNEL);
-+		WARN(1, KERN_WARNING
-+		     "sysfs: cannot create duplicate filename '%s'\n",
-+		     (path == NULL) ? sd->s_name :
-+		     strcat(strcat(sysfs_pathname(acxt->parent_sd, path), "/"),
-+		            sd->s_name));
-+		kfree(path);
-+	}
-+
- 	return ret;
- }
- 
