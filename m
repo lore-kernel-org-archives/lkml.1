@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756201AbZBLGh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757604AbZBLGia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756201AbZBLGh6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 01:37:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbZBLGhu
+	id S1757604AbZBLGia (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 01:38:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbZBLGiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 01:37:50 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:37606 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751127AbZBLGht (ORCPT
+	Thu, 12 Feb 2009 01:38:19 -0500
+Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:32633 "HELO
+	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751293AbZBLGiS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 01:37:49 -0500
-Subject: Re: [PATCH 6/9] Ksplice: Add functions for walking kallsyms symbols
-From: Jon Masters <jonathan@jonmasters.org>
-To: Tim Abbott <tabbott@MIT.EDU>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       Jeff Arnold <jbarnold@MIT.EDU>, Anders Kaseorg <andersk@MIT.EDU>
-In-Reply-To: <alpine.DEB.2.00.0902111550520.27436@vinegar-pot.mit.edu>
-References: <20090207124645.467A2DDDDF@ozlabs.org>
-	 <1234383595.4324.42.camel@jcmlaptop>
-	 <alpine.DEB.2.00.0902111550520.27436@vinegar-pot.mit.edu>
+	Thu, 12 Feb 2009 01:38:18 -0500
+X-YMail-OSG: 5wjUfTQVM1kNIroNxPp0WFqK0EiGad5u7.nFkHBjtG3Id8MGHsBlXxULVexKxAkUsNK.kDw52iwgA3t30KEv7IY6SxKAFBj53D4V3Y.PriKwGRRbz9MfemzaPrO544im4L2jf_1F3b43IFx7lCjqQtaXH7jY595YCp1n_pLSlVb.GL9Sd2xoI06PG32zog7ngFlXUpqArp6sKBVImVy9PrE2yQx2KuU-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH] [Target_Core_Mod/ALUA]: Add group membership structure
+	logic
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Cc: Douglas Gilbert <dgilbert@interlog.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Hannes Reinecke <hare@suse.de>, Mike Christie <michaelc@cs.wisc.edu>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Christoph Hellwig <hch@lst.de>, Ming Zhang <blackmagic02881@gmail.com>,
+       "Ross S. W. Walker" <rswwalker@gmail.com>,
+       Arne Redlich <agr@powerkom-dd.de>
 Content-Type: text/plain
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Thu, 12 Feb 2009 01:37:47 -0500
-Message-Id: <1234420667.22036.26.camel@perihelion.bos.jonmasters.org>
+Date: Wed, 11 Feb 2009 22:33:36 -0800
+Message-Id: <1234420416.12375.512.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-12 at 01:09 -0500, Tim Abbott wrote:
+Greetings all,
 
-> There are two different versions of the Ksplice kernel module, a 
-> "standalone" version that works with an unmodified kernel, and the version 
-> that we've proposed for mainline merge.
+This patch series adds proper ALUA Logical Unit Group and Target Port Group membership
+association to Target_Core_Mod/ConfigFS in a manner that can handle concurrent shutdown from
+core/$HBA/$DEV/ <-> core/alua/lu_gps/$MY_LUN_GROUP and core/alua/tg_pt_gps/$MY_TG_PT_GROUP <->
+$FABRIC_MOD/target_port/lun/$LUN/alua_tg_pt_gp.
 
-Ah thanks, I didn't realize you were proposing for mainline merge -
-awesome. That would really be a useful merge...how close do you think
-that is?
+This infrastructure is used as explict and implict ALUA group operations continue to come
+online for Target_Core_Mod/ConfigFS v3.0.  This patch is made against lio-core-2.6.git/master
+and tested on v2.6.29-rc2 x86 32-bit HVM.  The lio-core-2.6.git tree can be found at:
 
-Jon.
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
 
+[PATCH 1/2] [Target_Core_Mod/ALUA]: Add t10_alua_lu_gp_member_t usage for Logical Unit Groups
+[PATCH 2/2] [Target_Core_Mod/ALUA]: Add t10_alua_tg_pt_gp_member_t usage for Target Port Groups
+
+>From /pub/scm/linux/kernel/git/nab/lio-core-2.6
+ * branch            master     -> FETCH_HEAD
+Updating 07c4589..b4a9bf6
+Fast forward
+ drivers/lio-core/target_core_alua.c      |  478 +++++++++++++++++++++---------
+ drivers/lio-core/target_core_alua.h      |   21 +-
+ drivers/lio-core/target_core_base.h      |   36 ++-
+ drivers/lio-core/target_core_configfs.c  |  106 +++++---
+ drivers/lio-core/target_core_device.c    |   19 +-
+ drivers/lio-core/target_core_transport.c |   57 +++-
+ 6 files changed, 497 insertions(+), 220 deletions(-)
+
+--nab
 
