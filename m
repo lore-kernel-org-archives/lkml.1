@@ -1,120 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759088AbZBLO2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758679AbZBLOdH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759088AbZBLO2u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 09:28:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756502AbZBLO2k
+	id S1758679AbZBLOdH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 09:33:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755867AbZBLOcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 09:28:40 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:37010 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755993AbZBLO2j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 09:28:39 -0500
-Message-ID: <49943212.3080701@petalogix.com>
-Date: Thu, 12 Feb 2009 15:28:34 +0100
-From: Michal Simek <michal.simek@petalogix.com>
-Reply-To: michal.simek@petalogix.com
-User-Agent: Thunderbird 2.0.0.17 (X11/20081001)
+	Thu, 12 Feb 2009 09:32:54 -0500
+Received: from mx2.suse.de ([195.135.220.15]:40498 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751231AbZBLOcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 09:32:53 -0500
+Date: Thu, 12 Feb 2009 15:32:49 +0100
+From: Jan Kara <jack@suse.cz>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Federico Cuello <fedux@lugmen.org.ar>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Subject: Re: [Bug #12604] Commit 31a12666d8f0c22235297e1c1575f82061480029
+	slows down Berkeley DB
+Message-ID: <20090212143249.GB3923@duck.suse.cz>
+References: <AIghyjFgMFP.A.uZD._10jJB@chimera> <sWhNs83kKPE.A.gUG.420jJB@chimera> <20090210162830.GD12146@placka.suse.cz> <20090212014718.GF30043@wotan.suse.de> <alpine.LFD.2.00.0902111757030.3189@localhost.localdomain> <20090212033423.GC23790@wotan.suse.de>
 MIME-Version: 1.0
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Network driver issue
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090212033423.GC23790@wotan.suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi guys,
+On Thu 12-02-09 04:34:23, Nick Piggin wrote:
+> On Wed, Feb 11, 2009 at 06:02:19PM -0800, Linus Torvalds wrote:
+> > 
+> > 
+> > On Thu, 12 Feb 2009, Nick Piggin wrote:
+> > 
+> > > On Tue, Feb 10, 2009 at 05:28:30PM +0100, Jan Kara wrote:
+> > > > On Sun 08-02-09 20:21:42, Rafael J. Wysocki wrote:
+> > > > > This message has been generated automatically as a part of a report
+> > > > > of recent regressions.
+> > > > > 
+> > > > > The following bug entry is on the current list of known regressions
+> > > > > from 2.6.28.  Please verify if it still should be listed and let me know
+> > > > > (either way).
+> > > >   Yes, I've verified with latest git and the regression is still there.
+> > > 
+> > > I'm working on this FWIW...
+> > 
+> > Shouldn't we just revert it? The code does look to be broken.
+> > 
+> > It also looks like the interaction with that ever-buggy "nr_to_write" 
+> > thing are totally wrong. I can see that whole
+> > 
+> > 	if (!cycled) {
+> > 		..
+> > 		index = 0;
+> > 		goto retry
+> > 	}
+> > 
+> > doing all the wrong things: if we ever hit the combination of 
+> > "!cycled + nr_to-write==0", we're always screwed. It simply _cannot_ do 
+> > the right thing.
+> 
+> Doh, I think you spotted the bug. I was going off on the wrong track.
+> 
+>  
+> > I dunno. That whole piece-of-sh*t function has been incredibly buggy this 
+> > release. The code is an unreadable mess, and I think that "cyclic" stuff 
+> > is part of the reason for it being messy and buggy. Please convince me 
+> > it's worth saving, or let me revert the whole stinking pile of crud?
+> 
+> Well... the cyclic stuff apparently gets used by some filesystems to do
+> data integrity stuff, so I think the problem addressed by my broken
+> commit maybe shouldn't be ignored.
+> 
+> Maybe you're being harsh on this function. It has been two thinko bugs
+> so far. Before this release cycle it seemed to have the record for the
+> most data integrity bugs in a single function...
+> 
+> How's this? Jan, can you test with the bdb workload please?
+  Yes, this patch returns write performance of BDB workload back to
+original numbers. Thanks for the fix.
 
-Could you give any hint what can be wrong? I use 2.6.29-rc4.
-Tcpdump and wireshark show me that board can send packet and get
-response but don't show
-timing ping info. For incomming packets (exclude ARP) isn't any response
-back. ARPs work well.
+								Honza
 
-Thanks,
-Michal
-
-
-~ # tcpdump &
-~ # device eth0 entered promiscuous mode
-tcpdump: listening on eth0
-
-~ #
-~ # ping 192.168.0.102
-PING 192.168.0.102 (192.168.0.102): 56 data bytes
-00:00:34.639430 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
-00:00:34.642714 192.168.0.102 > 192.168.0.20: icmp: echo reply
-00:00:35.662135 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
-00:00:35.667248 192.168.0.102 > 192.168.0.20: icmp: echo reply
-00:00:36.671424 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
-00:00:36.676416 192.168.0.102 > 192.168.0.20: icmp: echo reply
-00:00:37.681470 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
-00:00:37.686573 192.168.0.102 > 192.168.0.20: icmp: echo reply
-00:00:38.691440 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
-00:00:38.696452 192.168.0.102 > 192.168.0.20: icmp: echo reply
-00:00:39.701454 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
-00:00:39.706520 192.168.0.102 > 192.168.0.20: icmp: echo reply
-00:00:40.711422 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
-00:00:40.716429 192.168.0.102 > 192.168.0.20: icmp: echo reply
-00:00:41.721460 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
-00:00:41.726542 192.168.0.102 > 192.168.0.20: icmp: echo reply
-00:00:42.731478 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
-00:00:42.736476 192.168.0.102 > 192.168.0.20: icmp: echo reply
-00:00:43.741444 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
-00:00:43.746525 192.168.0.102 > 192.168.0.20: icmp: echo reply
-00:00:44.751429 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
-00:00:44.756441 192.168.0.102 > 192.168.0.20: icmp: echo reply
-00:00:45.761449 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
-00:00:45.766528 192.168.0.102 > 192.168.0.20: icmp: echo reply
-00:00:46.771434 192.168.0.20 > 192.168.0.102: icmp: echo request (DF)
-00:00:46.776438 192.168.0.102 > 192.168.0.20: icmp: echo reply
-
---- 192.168.0.102 ping statistics ---
-13 packets transmitted, 0 packets received, 100% packet loss
-~ # 00:01:06.468561 192.168.0.102 > 192.168.0.20: icmp: echo request (DF)
-00:01:07.477512 192.168.0.102 > 192.168.0.20: icmp: echo request (DF)
-00:01:08.477428 192.168.0.102 > 192.168.0.20: icmp: echo request (DF)
-00:01:09.477253 192.168.0.102 > 192.168.0.20: icmp: echo request (DF)
-00:01:10.477131 192.168.0.102 > 192.168.0.20: icmp: echo request (DF)
-00:01:11.466927 arp who-has 192.168.0.20 tell 192.168.0.102
-00:01:11.472649 arp reply 192.168.0.20 is-at 0:a:35:0:22:1
-00:01:11.477375 192.168.0.102 > 192.168.0.20: icmp: echo request (DF)
-00:01:12.476840 192.168.0.102 > 192.168.0.20: icmp: echo request (DF)
-
-~ # ifconfig
-eth0      Link encap:Ethernet  HWaddr 00:0A:35:00:22:01 
-          inet addr:192.168.0.20  Bcast:192.168.0.255  Mask:255.255.255.0
-          UP BROADCAST RUNNING  MTU:1500  Metric:1
-          RX packets:26 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:19 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:2434 (2.3 KiB)  TX bytes:1694 (1.6 KiB)
-          Interrupt:5
-
-lo        Link encap:Local Loopback 
-          inet addr:127.0.0.1  Mask:255.0.0.0
-          UP LOOPBACK RUNNING  MTU:16436  Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:0
-          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
-
-~ #
-~ # ping 127.0.0.1
-PING 127.0.0.1 (127.0.0.1): 56 data bytes
-64 bytes from 127.0.0.1: icmp_seq=0 ttl=64 time=7.4 ms
-64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=3.4 ms
-64 bytes from 127.0.0.1: icmp_seq=2 ttl=64 time=3.4 ms
-
---- 127.0.0.1 ping statistics ---
-3 packets transmitted, 3 packets received, 0% packet loss
-round-trip min/avg/max = 3.4/4.7/7.4 ms
-~ #
-
-
+> --
+> 
+> A bug was introduced into write_cache_pages cyclic writeout by commit
+> 31a12666d8f0c22235297e1c1575f82061480029. The intention (and comments)
+> is that we should cycle back and look for more dirty pages at the
+> beginning of the file if there is no more work to be done.
+> 
+> But the !done condition was dropped from the test. This means that any
+> time the page writeout loop breaks (eg. due to nr_to_write == 0), we
+> will set index to 0, then goto again. This will set done_index to index,
+> then find done is set, so will proceed to the end of the function. When
+> updating mapping->writeback_index for cyclic writeout, we now use
+> done_index == 0, so we're always cycling back to 0.
+> 
+> This seemed to be causing random mmap writes (slapadd and iozone) to
+> start writing more pages from the LRU and writeout would slowdown.
+> 
+> With this patch, iozone random write performance is increased nearly
+> 5x on my system (iozone -B -r 4k -s 64k -s 512m -s 1200m on ext2). 
+> 
+> Signed-off-by: Nick Piggin <npiggin@suse.de>
+> ---
+> Index: linux-2.6/mm/page-writeback.c
+> ===================================================================
+> --- linux-2.6.orig/mm/page-writeback.c	2009-02-12 13:30:42.000000000 +1100
+> +++ linux-2.6/mm/page-writeback.c	2009-02-12 14:16:28.000000000 +1100
+> @@ -1079,7 +1079,7 @@ continue_unlock:
+>  		pagevec_release(&pvec);
+>  		cond_resched();
+>  	}
+> -	if (!cycled) {
+> +	if (!cycled && !done) {
+>  		/*
+>  		 * range_cyclic:
+>  		 * We hit the last page and there is more work to be done: wrap
 -- 
-Michal Simek, Ing. (M.Eng)
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
-
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
