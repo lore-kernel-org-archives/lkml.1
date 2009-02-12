@@ -1,85 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760555AbZBLTaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760305AbZBLT3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760555AbZBLTaL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 14:30:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758633AbZBLT3z
+	id S1760305AbZBLT3g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 14:29:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759112AbZBLT3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 14:29:55 -0500
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:35471 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758320AbZBLT3y (ORCPT
+	Thu, 12 Feb 2009 14:29:25 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:35088 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753178AbZBLT3Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 14:29:54 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArMEAP8HlElMQWt2/2dsb2JhbACBbtJKhBgG
-Date: Thu, 12 Feb 2009 14:29:41 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Bryan Wu <cooloney@kernel.org>, uclinux-dist-devel@blackfin.uclinux.org
-Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
-	(repost)
-Message-ID: <20090212192941.GC2047@Krystal>
-References: <20090211153246.GA6694@linux.vnet.ibm.com> <20090211185203.GA29852@Krystal> <20090211200903.GG6694@linux.vnet.ibm.com> <20090211214258.GA32407@Krystal> <20090212003549.GU6694@linux.vnet.ibm.com> <20090212023308.GA21157@linux.vnet.ibm.com> <20090212040824.GA12346@Krystal> <20090212050120.GA8317@linux.vnet.ibm.com> <20090212070539.GA15896@Krystal> <20090212164621.GC6759@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090212164621.GC6759@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:47:47 up 42 days, 18:45,  6 users,  load average: 0.22, 0.27,
-	0.35
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 12 Feb 2009 14:29:24 -0500
+Date: Thu, 12 Feb 2009 14:29:22 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, wli@holomorphy.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [git pull] sched: do not account for NMIs
+Message-ID: <alpine.DEB.1.10.0902121422000.15469@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-[...]
-> diff --git a/urcu.c b/urcu.c
-> index f2aae34..a696439 100644
-> --- a/urcu.c
-> +++ b/urcu.c
-> @@ -99,7 +99,8 @@ static void force_mb_single_thread(pthread_t tid)
->  	 * BUSY-LOOP.
->  	 */
->  	while (sig_done < 1)
-> -		smp_rmb();	/* ensure we re-read sig-done */
-> +		barrier();	/* ensure compiler re-reads sig-done */
-> +				/* cache coherence guarantees CPU re-read. */
+Ingo,
 
-OK, this is where I think our points of view differ. Please refer to
-http://lkml.org/lkml/2007/6/18/299.
+Please pull the latest tip/tracing/core tree, which can be found at:
 
-Basically, cpu_relax() used in the Linux kernel has an
-architecture-specific implementation which *could* include a smp_rmb()
-if the architecture doesn't notice writes done by other CPUs. I think
-Blackfin is the only architecture currently supported by the Linux
-kernel which defines cpu_relax() as a smp_mb(), because it does not have
-cache coherency.
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/core
 
-Therefore, I propose that we create a memory barrier macro which is
-defined as a 
-  barrier()   when the cpu has cache coherency
-  cache flush when the cpu does not have cache coherency and is
-              compiled with smp support.
 
-We could call that
+Steven Rostedt (1):
+      sched: do not account for NMIs
 
-  smp_wmc() (for memory-coherency or memory commit)
-  smp_rmc()
-  smp_mc()
+----
+ include/linux/hardirq.h |   32 ++++++++++++++++----------------
+ 1 files changed, 16 insertions(+), 16 deletions(-)
+---------------------------
+commit 2a7b8df04c11a70105c1abe67d006455d3bdc944
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Thu Feb 12 14:16:46 2009 -0500
 
-It would be a good way to identify the location where data exchange
-between memory and the local cache are is required in the algorithm.
-What do you think ?
+    sched: do not account for NMIs
+    
+    Impact: avoid corruption in system time accounting
+    
+    Martin Schwidefsky told me that there was an issue with NMIs and
+    system accounting. The problem is that the accounting code is
+    not reentrant, and if an NMI goes off after an interrupt it can
+    corrupt the accounting.
+    
+    For now, the best we can do is to treat NMIs like SMIs and they
+    are not accounted for.
+    
+    This patch changes nmi_enter to not call __irq_enter and to do
+    the preempt-count and tracing calls directly.
+    
+    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 
-Mathieu
+diff --git a/include/linux/hardirq.h b/include/linux/hardirq.h
+index 9841221..faa1cf8 100644
+--- a/include/linux/hardirq.h
++++ b/include/linux/hardirq.h
+@@ -175,24 +175,24 @@ extern void irq_enter(void);
+  */
+ extern void irq_exit(void);
+ 
+-#define nmi_enter()				\
+-	do {					\
+-		ftrace_nmi_enter();		\
+-		BUG_ON(in_nmi());		\
+-		add_preempt_count(NMI_OFFSET);	\
+-		lockdep_off();			\
+-		rcu_nmi_enter();		\
+-		__irq_enter();			\
++#define nmi_enter()						\
++	do {							\
++		ftrace_nmi_enter();				\
++		BUG_ON(in_nmi());				\
++		add_preempt_count(NMI_OFFSET + HARDIRQ_OFFSET);	\
++		lockdep_off();					\
++		rcu_nmi_enter();				\
++		trace_hardirq_enter();				\
+ 	} while (0)
+ 
+-#define nmi_exit()				\
+-	do {					\
+-		__irq_exit();			\
+-		rcu_nmi_exit();			\
+-		lockdep_on();			\
+-		BUG_ON(!in_nmi());		\
+-		sub_preempt_count(NMI_OFFSET);	\
+-		ftrace_nmi_exit();		\
++#define nmi_exit()						\
++	do {							\
++		trace_hardirq_exit();				\
++		rcu_nmi_exit();					\
++		lockdep_on();					\
++		BUG_ON(!in_nmi());				\
++		sub_preempt_count(NMI_OFFSET + HARDIRQ_OFFSET);	\
++		ftrace_nmi_exit();				\
+ 	} while (0)
+ 
+ #endif /* LINUX_HARDIRQ_H */
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
