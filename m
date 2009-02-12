@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759295AbZBLMjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759376AbZBLMju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759295AbZBLMjf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 07:39:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758772AbZBLMig
+	id S1759376AbZBLMju (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 07:39:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758786AbZBLMih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 07:38:36 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:49213 "EHLO
+	Thu, 12 Feb 2009 07:38:37 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:49210 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758758AbZBLMif (ORCPT
+	with ESMTP id S1758753AbZBLMif (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 12 Feb 2009 07:38:35 -0500
 From: Andi Kleen <andi@firstfloor.org>
@@ -15,58 +15,72 @@ References: <20090212137.750180365@firstfloor.org>
 In-Reply-To: <20090212137.750180365@firstfloor.org>
 To: akpm@linux-foundation.org, x86@firstfloor.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] [5/10] x86: MCE: Don't set up mce sysdev devices with mce=off
-Message-Id: <20090212123724.54A863E6674@basil.firstfloor.org>
-Date: Thu, 12 Feb 2009 13:37:24 +0100 (CET)
+Subject: [PATCH] [3/10] x86: MCE: Always use separate work queue to run trigger
+Message-Id: <20090212123722.4B00E3E6672@basil.firstfloor.org>
+Date: Thu, 12 Feb 2009 13:37:22 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Impact: bug fix, in this case the resume handler shouldn't run which
-	avoids incorrectly reenabling machine checks on resume
+Impact: Needed for bug fix in next patch
 
-When MCEs are completely disabled on the command line don't set 
-up the sysdev devices for them either.
+This relaxes the requirement that mce_notify_user has to run in process 
+context. Useful for future changes, but also leads to cleaner
+behaviour now. Now instead mce_notify_user can be called directly
+from interrupt (but not NMI) context.
 
-Includes a comment fix from Thomas Gleixner.
+The work queue only uses a single global work struct, which can be done safely
+because it is always free to reuse before the trigger function is executed.
+This way no events can be lost.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- arch/x86/kernel/cpu/mcheck/mce_64.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/x86/kernel/cpu/mcheck/mce_64.c |   25 ++++++++++++++++++-------
+ 1 file changed, 18 insertions(+), 7 deletions(-)
 
 Index: linux/arch/x86/kernel/cpu/mcheck/mce_64.c
 ===================================================================
 --- linux.orig/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-02-12 11:30:51.000000000 +0100
 +++ linux/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-02-12 12:10:21.000000000 +0100
-@@ -151,6 +151,8 @@
- 
- static int mce_available(struct cpuinfo_x86 *c)
- {
-+	if (mce_dont_init)
-+		return 0;
- 	return cpu_has(c, X86_FEATURE_MCE) && cpu_has(c, X86_FEATURE_MCA);
+@@ -380,11 +380,17 @@
+ 	schedule_delayed_work(&mcheck_work, next_interval);
  }
  
-@@ -532,8 +534,7 @@
++static void mce_do_trigger(struct work_struct *work)
++{
++	call_usermodehelper(trigger, trigger_argv, NULL, UMH_NO_WAIT);
++}
++
++static DECLARE_WORK(mce_trigger_work, mce_do_trigger);
++
+ /*
+- * This is only called from process context.  This is where we do
+- * anything we need to alert userspace about new MCEs.  This is called
+- * directly from the poller and also from entry.S and idle, thanks to
+- * TIF_MCE_NOTIFY.
++ * Notify the user(s) about new machine check events.
++ * Can be called from interrupt context, but not from machine check/NMI
++ * context.
+  */
+ int mce_notify_user(void)
  {
- 	mce_cpu_quirks(c);
+@@ -394,9 +400,14 @@
+ 		unsigned long now = jiffies;
  
--	if (mce_dont_init ||
--	    !mce_available(c))
-+	if (!mce_available(c))
- 		return;
+ 		wake_up_interruptible(&mce_wait);
+-		if (trigger[0])
+-			call_usermodehelper(trigger, trigger_argv, NULL,
+-						UMH_NO_WAIT);
++
++		/*
++		 * There is no risk of missing notifications because
++		 * work_pending is always cleared before the function is
++		 * executed.
++		 */
++		if (trigger[0] && !work_pending(&mce_trigger_work))
++			schedule_work(&mce_trigger_work);
  
- 	mce_init(NULL);
-@@ -710,8 +711,7 @@
- 	return 1;
- }
- 
--/* mce=off disables machine check. Note you can re-enable it later
--   using sysfs.
-+/* mce=off disables machine check.
-    mce=TOLERANCELEVEL (number, see above)
-    mce=bootlog Log MCEs from before booting. Disabled by default on AMD.
-    mce=nobootlog Don't log MCEs from before booting. */
+ 		if (time_after_eq(now, last_print + (check_interval*HZ))) {
+ 			last_print = now;
