@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756739AbZBLGKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757442AbZBLGLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756739AbZBLGKl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 01:10:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751001AbZBLGKW
+	id S1757442AbZBLGLU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 01:11:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbZBLGLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 01:10:22 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:45517 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750932AbZBLGKV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 01:10:21 -0500
-Date: Thu, 12 Feb 2009 01:09:55 -0500 (EST)
-From: Tim Abbott <tabbott@MIT.EDU>
-To: Jon Masters <jonathan@jonmasters.org>
-cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       Jeff Arnold <jbarnold@MIT.EDU>, Anders Kaseorg <andersk@MIT.EDU>
-Subject: Re: [PATCH 6/9] Ksplice: Add functions for walking kallsyms
- symbols
-In-Reply-To: <1234383595.4324.42.camel@jcmlaptop>
-Message-ID: <alpine.DEB.2.00.0902111550520.27436@vinegar-pot.mit.edu>
-References: <20090207124645.467A2DDDDF@ozlabs.org> <1234383595.4324.42.camel@jcmlaptop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 12 Feb 2009 01:11:07 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:63563 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751001AbZBLGLE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 01:11:04 -0500
+Message-ID: <4993BD5D.2020707@cn.fujitsu.com>
+Date: Thu, 12 Feb 2009 14:10:37 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+To: Al Viro <viro@ZenIV.linux.org.uk>
+CC: containers@lists.osdl.org, Paul Menage <menage@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [cgroup or VFS ?] WARNING: at	fs/namespace.c:636	mntput_no_expire+0xac/0xf2()
+References: <49617D35.4040805@cn.fujitsu.com>	<20090209004046.3ce1dde0.akpm@linux-foundation.org>	<20090209093414.GU28946@ZenIV.linux.org.uk> <499013CC.2060808@cn.fujitsu.com>
+In-Reply-To: <499013CC.2060808@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Feb 2009, Jon Masters wrote:
-
-> Folks,
+Li Zefan wrote:
+> Al Viro wrote:
+>> On Mon, Feb 09, 2009 at 12:40:46AM -0800, Andrew Morton wrote:
+>>>> Thread 1:
+>>>>   for ((; ;))
+>>>>   {
+>>>>       mount -t cgroup -o cpuset xxx /mnt > /dev/null 2>&1
+>>>>       mkdir /mnt/0 > /dev/null 2>&1
+>>>>       rmdir /mnt/0 > /dev/null 2>&1
+>>>>       umount /mnt > /dev/null 2>&1
+>>>>   }
+>>>>
+>>>> Thread 2:
+>>>>   {
+>>>>       mount -t cpuset xxx /mnt > /dev/null 2>&1
+>>>>       umount /mnt > /dev/null 2>&1
+>>>>   }
+>> How cute...  Same mountpoint in both, so these mount(2) will sometimes
+>> fail (cgroup picks the same sb on the same options, AFAICS) and fail
+>> silently due to these redirects...
+>>
+>> That's a lovely way to stress-test a large part of ro-bind stuff *and*
+>> umount()-related code.  Could you do C equivalent of the above (just
+>> the same syscalls in loop, nothing fancier) and do time-stamped strace?
+>>
 > 
-> Please forgive me not tracking ksplice closely enough - I didn't think
-> it required these changes - is there some refactoring going on currently
-> or am I mistaken and these patches are now a necessary pre-req.?
+> Sure, I'll write a C version and try to reproduce the warning.
+> 
 
-Hi Jon,
-
-There are two different versions of the Ksplice kernel module, a 
-"standalone" version that works with an unmodified kernel, and the version 
-that we've proposed for mainline merge.
-
-One difference between the two versions is that the standalone version has 
-implementations of functions such as kallsyms_on_each_symbol in the 
-Ksplice core module (i.e. the module containing ksplice.c).
-
-Normally, one would not be able to implement kallsyms_on_each_symbol in a 
-module, because it would not have access to necessary symbols such as 
-kallsyms_num_syms (an unexported global symbol).  The standalone version 
-of Ksplice resolves these symbols through a bootstrapping process.
-
-This bootstrapping technique doesn't make any sense for a Ksplice in 
-mainline; these prerequisite patches put functions such as 
-kallsyms_on_each_symbol where they belong.
-
-	-Tim Abbott
-
+Unfortunately, the C equivalent can't reproduce the warning, I've run the
+test for the whole night. :( While using the script, often I can trigger
+the warning in several mins.
 
