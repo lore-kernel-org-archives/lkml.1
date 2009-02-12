@@ -1,184 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759241AbZBLN26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758685AbZBLNnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759241AbZBLN26 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 08:28:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757153AbZBLN2s
+	id S1758685AbZBLNnU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 08:43:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756933AbZBLNnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 08:28:48 -0500
-Received: from balanced.mail.policyd.dreamhost.com ([208.97.132.119]:48988
-	"EHLO spunkymail-a5.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755942AbZBLN2r (ORCPT
+	Thu, 12 Feb 2009 08:43:07 -0500
+Received: from mga09.intel.com ([134.134.136.24]:58722 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753084AbZBLNnG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 08:28:47 -0500
-Message-ID: <49942409.4080506@hiramoto.org>
-Date: Thu, 12 Feb 2009 14:28:41 +0100
-From: Karl Hiramoto <karl@hiramoto.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090102)
+	Thu, 12 Feb 2009 08:43:06 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,197,1233561600"; 
+   d="scan'208";a="386235242"
+From: "Winkler, Tomas" <tomas.winkler@intel.com>
+To: David Woodhouse <dwmw2@infradead.org>
+CC: Johannes Berg <johannes@sipsolutions.net>,
+       "Yu, Fenghua" <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "Grumbach, Emmanuel" <emmanuel.grumbach@intel.com>,
+       "Zhu, Yi" <yi.zhu@intel.com>, Chris Wright <chrisw@sous-sol.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>
+Date: Thu, 12 Feb 2009 15:42:05 +0200
+Subject: RE: [PATCH]iwlan dma mapping read and write changes
+Thread-Topic: [PATCH]iwlan dma mapping read and write changes
+Thread-Index: AcmMlgQ00DLbrGHwSFGdeNwM49bG0QAgNZCA
+Message-ID: <6F5C1D715B2DA5498A628E6B9C124F04F639FADE@hasmsx504.ger.corp.intel.com>
+References: <20081001165606.GA21279@linux-os.sc.intel.com>
+	 <20090211182648.GA1661@linux-os.sc.intel.com>
+	 <6F5C1D715B2DA5498A628E6B9C124F04F633E2CD@hasmsx504.ger.corp.intel.com>
+	 <1234388027.16004.50.camel@johannes.local>
+	 <6F5C1D715B2DA5498A628E6B9C124F04F633E2D5@hasmsx504.ger.corp.intel.com>
+	 <1234388845.16004.53.camel@johannes.local>
+	 <1234389007.16004.55.camel@johannes.local>
+	 <6F5C1D715B2DA5498A628E6B9C124F04F633E2FA@hasmsx504.ger.corp.intel.com>
+ <1234390413.3586.85.camel@macbook.infradead.org>
+In-Reply-To: <1234390413.3586.85.camel@macbook.infradead.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: netdev@vger.kernel.org, netfilter@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: problem with IPoA (CLIP),  NAT, and VLANS
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-   
-Hi all,
-
-I have a scenario with  CLIP  IPoA(RFC1577) atm link over ADSL on the
-WAN, 801.1q  VLANs on the LAN, and  NAT/MASQUERADE   that does not work.
 
 
-Network config:
-Nat_host <-->  router <---> server
-
-a ping from the Nat_host  reaches the server on the WAN fine, and the
-ping comes back to the  router, but the ping response never reaches the
-Nat_Host.    Using TRACE rules it seems the ICMP ping response gets lost
-inside the router.   I see the same behavior with TCP and UDP.
-
-
-
-Other similar cases that everything works fine.
-
-1.    If i don't use VLAN's  on the LAN everything works fine with
-NAT/MASQUERADE on the WAN  with Ethernet, ATM IPoA (RFC1577), and  ATM
-IPoE (RFC2684).
-
-2.    If I use  VLAN's on the LAN everything works fine with
-NAT/MASQUERADE but only with  Ethernet and ATM IPoE(RFC2684) on the WAN.
-
-
-
-Script to configure  CLIP on the WAN and VLANs on the LAN where NAT does
-not work:
-
-cat atm.vlan.sh
-#!/bin/sh
-
-vconfig add eth0 1
-vconfig add eth0 2
-ip addr add 192.168.88.1/24 broadcast 192.168.88.255 dev eth0.1
-ip link set eth0.1 up
-
-echo "NOTE: config switch vlans at this point"
-
-
-ip addr
-ip link
-echo -------
-echo " remove old eth0"
-ip addr del 192.168.88.1/24 dev eth0
-ip link
-ip addr
-
-
-atmarpd -b
-atmarp -c atm0
-
-ip addr add 10.1.1.178/24 dev atm0
-ip link set atm0 up
-atmarp -s 10.1.1.1 0.8.32
-atmarp -a
+>-----Original Message-----
+>From: David Woodhouse [mailto:dwmw2@infradead.org]
+>Sent: Thursday, February 12, 2009 12:14 AM
+>To: Winkler, Tomas
+>Cc: Johannes Berg; Yu, Fenghua; Ingo Molnar; Stephen Rothwell; Grumbach,
+>Emmanuel; Zhu, Yi; Chris Wright; LKML; iommu@lists.linux-foundation.org
+>Subject: RE: [PATCH]iwlan dma mapping read and write changes
+>
+>On Thu, 2009-02-12 at 00:10 +0200, Winkler, Tomas wrote:
+>>
+>> >-----Original Message-----
+>> >From: Johannes Berg [mailto:johannes@sipsolutions.net]
+>> >Sent: Wednesday, February 11, 2009 11:50 PM
+>> >To: Winkler, Tomas
+>> >Cc: Yu, Fenghua; David Woodhouse; Ingo Molnar; Stephen Rothwell;
+>Grumbach,
+>> >Emmanuel; Zhu, Yi; Chris Wright; LKML; iommu@lists.linux-foundation.org
+>> >Subject: RE: [PATCH]iwlan dma mapping read and write changes
+>> >
+>> >On Wed, 2009-02-11 at 22:47 +0100, Johannes Berg wrote:
+>> >> > >> Indeed the firmware/ucode write back to host memory to update
+>retry
+>> >> > >> counter for APMDU packets. I'm not sure if this is needed for
+>legacy
+>> >> > >> traffic, though.
+>> >> > >
+>> >> > >I don't think they can be seeing AMPDU packets since that is, well,
+>> >> > >broken?
+>> >> >
+>> >> > Currently I'm not aware of any other cases where memory is accessed
+>> >> > back but I may have not complete info.  Will be back with the answer
+>> >> > tomorrow.
+>> >>
+>> >> I don't think it really matters, since AMPDU packets will be fixed
+>soon,
+>> >> and for those you know it's necessary (and the report says that under
+>> >> some other circumstances it's also necessary). Unless there'd be some
+>> >> benefit from using BIDI only when we know it'll be needed, and using
+>> >> TODEV in the other cases?
+>> >
+>> >Or if there's a firmware bug.
+>>
+>> That's why it's better to clear the picture.
+>> Fenghua
+>> What exact HW do you get this error?
+>
+>Lenovo T400.
+>
 
 
-#echo "delete route to LAN  ERROR ok here if no route exists"
-#ip route del default via 192.168.88.1 dev eth0.1
-echo "route via ATM"
-ip route add default via 10.1.1.1
+>03:00.0 0280: 8086:4236
+>
 
-#flush tables and make default policy accept.
-iptables -F; iptables -t nat -F; iptables -t mangle -F
-iptables -P INPUT ACCEPT
-iptables -P OUTPUT ACCEPT
-iptables -P FORWARD ACCEPT
+I can confirm that for 5000 series the patch is required also for regular frames. In this particular machine the NIC is 5300. For 4965 only for AMPDU frames are affected also the implementation is not the same but I'm not sure if it makes any sense to differentiate. 
 
-iptables -t nat -A POSTROUTING -o atm0 -j MASQUERADE
-echo 1 > /proc/sys/net/ipv4/ip_forward
+Does anybody know what performance implications of this change are? 
+
+Thanks Tomas  
 
 
+---------------------------------------------------------------------
+Intel Israel (74) Limited
 
-##########  Script to configure IPoA on the WAN without vlans  where
-everything works fine:
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
-cat atm.no.vlan.sh
-#!/bin/sh
-
-atmarpd -b
-atmarp -c atm0
-
-ip addr add 10.1.1.178/24 dev atm0
-ip link set atm0 up
-atmarp -s 10.1.1.1 0.8.32
-atmarp -a
-
-ip route del default via 192.168.88.1 dev eth0
-ip route add default via 10.1.1.1
-
-#flush tables and make default policy accept.
-iptables -F; iptables -t nat -F; iptables -t mangle -F
-iptables -P INPUT ACCEPT
-iptables -P OUTPUT ACCEPT
-iptables -P FORWARD ACCEPT
-
-iptables -t nat -A POSTROUTING -o atm0 -j MASQUERADE
-echo 1 > /proc/sys/net/ipv4/ip_forward
-
-
-############
-
-This WARN_ON() is occurring When using VLANs on IPoA and NAT
-
-------------[ cut here ]------------
-WARNING: at net/ipv4/netfilter/nf_nat_standalone.c:89 nf_nat_fn+0x44/0x194 [iptable_nat]()
-Modules linked in: xt_MARK crc_ccitt nf_conntrack_pptp nf_conntrack_proto_gre ixp4xx_crypto ipt_MASQUERADE ipt_REDIRECT nf_nat_sip nf_conntrack
-_sip nf_nat_h323 nf_conntrack_h323 nf_nat_tftp nf_conntrack_tftp nf_nat_ftp nf_conntrack_ftp nf_nat_irc nf_conntrack_irc ipt_addrtype iptable_n
-at nf_nat xt_TCPMSS xt_pkttype nf_conntrack_ipv4 nf_defrag_ipv4 xt_state nf_conntrack xt_mark iptable_mangle iptable_filter ip_tables ixp4xx_sa
-r ixp4xx_atm ixp_osal eagle utopia ipt_ULOG
-
-[<c0025798>] (dump_stack+0x0/0x14) from [<c0031878>] (warn_on_slowpath+0x4c/0x68)
-[<c003182c>] (warn_on_slowpath+0x0/0x68) from [<bf0d13a0>] (nf_nat_fn+0x44/0x194 [iptable_nat])
- r6:00000004 r5:c583d240 r4:bf0d24e8
-[<bf0d135c>] (nf_nat_fn+0x0/0x194 [iptable_nat]) from [<bf0d1764>] (nf_nat_out+0x44/0xc4 [iptable_nat])
-[<bf0d1720>] (nf_nat_out+0x0/0xc4 [iptable_nat]) from [<c01e5a9c>] (nf_iterate+0x64/0xd0)
- r5:c0313d70 r4:bf0d24e8
-[<c01e5a38>] (nf_iterate+0x0/0xd0) from [<c01e5b6c>] (nf_hook_slow+0x64/0xf0)
-[<c01e5b08>] (nf_hook_slow+0x0/0xf0) from [<c01f1c38>] (ip_output+0x84/0xa4)
-[<c01f1bb4>] (ip_output+0x0/0xa4) from [<c01eea10>] (ip_forward_finish+0x44/0x4c)
- r4:c583d240
-[<c01ee9cc>] (ip_forward_finish+0x0/0x4c) from [<c01eecdc>] (ip_forward+0x2c4/0x340)
- r4:c583d240
-[<c01eea18>] (ip_forward+0x0/0x340) from [<c01ed5d8>] (ip_rcv_finish+0x338/0x35c)
- r7:c7d78000 r6:c034ce64 r5:c588e018 r4:c034d0ac
-[<c01ed2a0>] (ip_rcv_finish+0x0/0x35c) from [<c01edb18>] (ip_rcv+0x23c/0x270)
-[<c01ed8dc>] (ip_rcv+0x0/0x270) from [<c01d0fe8>] (netif_receive_skb+0x380/0x3c0)
- r7:00000800 r6:c7d78000 r5:c583d240 r4:c034d0ac
-[<c01d0c68>] (netif_receive_skb+0x0/0x3c0) from [<c01d35fc>] (process_backlog+0x8c/0x128)
-[<c01d3570>] (process_backlog+0x0/0x128) from [<c01d2fec>] (net_rx_action+0x60/0x1b8)
-[<c01d2f8c>] (net_rx_action+0x0/0x1b8) from [<c0036458>] (__do_softirq+0x68/0x104)
-[<c00363f0>] (__do_softirq+0x0/0x104) from [<c00367c8>] (irq_exit+0x44/0x4c)
-[<c0036784>] (irq_exit+0x0/0x4c) from [<c0021068>] (__exception_text_start+0x68/0x84)
-[<c0021000>] (__exception_text_start+0x0/0x84) from [<c00219c4>] (__irq_svc+0x24/0x80)
-Exception stack(0xc0313f4c to 0xc0313f94)
-3f40:                            c0333ad4 c78e4600 a0000013 00000000 c0022dd8
-3f60: c0312000 c0022dd8 c0333148 0001d74c 69054041 0001d67c c0313fc0 c0313fa4
-3f80: c0313f94 c0022ca0 c0022de0 60000013 ffffffff
- r5:0000001f r4:ffffffff
-[<c0022c64>] (cpu_idle+0x0/0x58) from [<c025b078>] (rest_init+0x54/0x68)
- r7:c031636c r6:c001edb8 r5:c0332cc4 r4:c033f260
-[<c025b024>] (rest_init+0x0/0x68) from [<c00089d0>] (start_kernel+0x244/0x2a4)
-[<c000878c>] (start_kernel+0x0/0x2a4) from [<00008034>] (0x8034)
- r6:c001f1bc r5:c03331ac r4:000039fd
----[ end trace 223a280469e2bcdb ]---
-
-
-
-
-
-
-Thanks for any help or info you can give me.   Please CC me on responses.
-
-
-Karl.
