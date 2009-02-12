@@ -1,347 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760001AbZBLPBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760289AbZBLPCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760001AbZBLPBi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 10:01:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758805AbZBLPAa
+	id S1760289AbZBLPCj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 10:02:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758024AbZBLPAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 10:00:30 -0500
-Received: from mga09.intel.com ([134.134.136.24]:27439 "EHLO mga09.intel.com"
+	Thu, 12 Feb 2009 10:00:41 -0500
+Received: from mga09.intel.com ([134.134.136.24]:27453 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758487AbZBLPA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 10:00:26 -0500
+	id S1758946AbZBLPAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 10:00:33 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.38,197,1233561600"; 
-   d="scan'208";a="386251263"
+   d="scan'208";a="386251291"
 From: Patrick Ohly <patrick.ohly@intel.com>
 To: David Miller <davem@davemloft.net>
 Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
        John Stultz <johnstul@us.ibm.com>,
        John Ronciak <john.ronciak@intel.com>,
        Patrick Ohly <patrick.ohly@intel.com>
-Subject: [PATCH NET-NEXT 04/10] net: infrastructure for hardware time stamping
-Date: Thu, 12 Feb 2009 16:00:06 +0100
-Message-Id: <1234450812-6246-4-git-send-email-patrick.ohly@intel.com>
+Subject: [PATCH NET-NEXT 07/10] net: pass new SIOCSHWTSTAMP through to device drivers
+Date: Thu, 12 Feb 2009 16:00:09 +0100
+Message-Id: <1234450812-6246-7-git-send-email-patrick.ohly@intel.com>
 X-Mailer: git-send-email 1.6.1.2
-In-Reply-To: <1234450812-6246-3-git-send-email-patrick.ohly@intel.com>
+In-Reply-To: <1234450812-6246-6-git-send-email-patrick.ohly@intel.com>
 References: <1234450670.5914.9.camel@ecld0pohly>
  <1234450812-6246-1-git-send-email-patrick.ohly@intel.com>
  <1234450812-6246-2-git-send-email-patrick.ohly@intel.com>
  <1234450812-6246-3-git-send-email-patrick.ohly@intel.com>
+ <1234450812-6246-4-git-send-email-patrick.ohly@intel.com>
+ <1234450812-6246-5-git-send-email-patrick.ohly@intel.com>
+ <1234450812-6246-6-git-send-email-patrick.ohly@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The additional per-packet information (16 bytes for time stamps, 1
-byte for flags) is stored for all packets in the skb_shared_info
-struct. This implementation detail is hidden from users of that
-information via skb_* accessor functions. A separate struct resp.
-union is used for the additional information so that it can be
-stored/copied easily outside of skb_shared_info.
-
-Compared to previous implementations (reusing the tstamp field
-depending on the context, optional additional structures) this
-is the simplest solution. It does not extend sk_buff itself.
-
-TX time stamping is implemented in software if the device driver
-doesn't support hardware time stamping.
-
-The new semantic for hardware/software time stamping around
-ndo_start_xmit() is based on two assumptions about existing
-network device drivers which don't support hardware time
-stamping and know nothing about it:
- - they leave the new skb_shared_tx unmodified
- - the keep the connection to the originating socket in skb->sk
-   alive, i.e., don't call skb_orphan()
-
-Given that skb_shared_tx is new, the first assumption is safe.
-The second is only true for some drivers. As a result, software
-TX time stamping currently works with the bnx2 driver, but not
-with the unmodified igb driver (the two drivers this patch series
-was tested with).
 ---
- include/linux/skbuff.h |   91 +++++++++++++++++++++++++++++++++++++++++++++++-
- net/core/dev.c         |   32 ++++++++++++++++-
- net/core/skbuff.c      |   41 +++++++++++++++++++++
- 3 files changed, 161 insertions(+), 3 deletions(-)
+ fs/compat_ioctl.c |    6 ++++++
+ net/core/dev.c    |    2 ++
+ 2 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
-index 9247008..f96bc91 100644
---- a/include/linux/skbuff.h
-+++ b/include/linux/skbuff.h
-@@ -132,6 +132,57 @@ struct skb_frag_struct {
- 	__u32 size;
- };
+diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
+index c03c10d..ab7585a 100644
+--- a/fs/compat_ioctl.c
++++ b/fs/compat_ioctl.c
+@@ -522,6 +522,11 @@ static int dev_ifsioc(unsigned int fd, unsigned int cmd, unsigned long arg)
+ 		if (err)
+ 			return -EFAULT;
+ 		break;
++	case SIOCSHWTSTAMP:
++		if (copy_from_user(&ifr, uifr32, sizeof(*uifr32)))
++			return -EFAULT;
++		ifr.ifr_data = compat_ptr(uifr32->ifr_ifru.ifru_data);
++		break;
+ 	default:
+ 		if (copy_from_user(&ifr, uifr32, sizeof(*uifr32)))
+ 			return -EFAULT;
+@@ -2563,6 +2568,7 @@ HANDLE_IOCTL(SIOCSIFMAP, dev_ifsioc)
+ HANDLE_IOCTL(SIOCGIFADDR, dev_ifsioc)
+ HANDLE_IOCTL(SIOCSIFADDR, dev_ifsioc)
+ HANDLE_IOCTL(SIOCSIFHWBROADCAST, dev_ifsioc)
++HANDLE_IOCTL(SIOCSHWTSTAMP, dev_ifsioc)
  
-+#define HAVE_HW_TIME_STAMP
-+
-+/**
-+ * skb_shared_hwtstamps - hardware time stamps
-+ *
-+ * @hwtstamp:	hardware time stamp transformed into duration
-+ *		since arbitrary point in time
-+ * @syststamp:	hwtstamp transformed to system time base
-+ *
-+ * Software time stamps generated by ktime_get_real() are stored in
-+ * skb->tstamp. The relation between the different kinds of time
-+ * stamps is as follows:
-+ *
-+ * syststamp and tstamp can be compared against each other in
-+ * arbitrary combinations.  The accuracy of a
-+ * syststamp/tstamp/"syststamp from other device" comparison is
-+ * limited by the accuracy of the transformation into system time
-+ * base. This depends on the device driver and its underlying
-+ * hardware.
-+ *
-+ * hwtstamps can only be compared against other hwtstamps from
-+ * the same device.
-+ *
-+ * This structure is attached to packets as part of the
-+ * &skb_shared_info. Use skb_hwtstamps() to get a pointer.
-+ */
-+struct skb_shared_hwtstamps {
-+	ktime_t	hwtstamp;
-+	ktime_t	syststamp;
-+};
-+
-+/**
-+ * skb_shared_tx - instructions for time stamping of outgoing packets
-+ *
-+ * @hardware:		generate hardware time stamp
-+ * @software:		generate software time stamp
-+ * @in_progress:	device driver is going to provide
-+ *			hardware time stamp
-+ *
-+ * These flags are attached to packets as part of the
-+ * &skb_shared_info. Use skb_tx() to get a pointer.
-+ */
-+union skb_shared_tx {
-+	struct {
-+		__u8	hardware:1,
-+			software:1,
-+			in_progress:1;
-+	};
-+	__u8 flags;
-+};
-+
- /* This data is invariant across clones and lives at
-  * the end of the header data, ie. at skb->end.
-  */
-@@ -143,10 +194,12 @@ struct skb_shared_info {
- 	unsigned short	gso_segs;
- 	unsigned short  gso_type;
- 	__be32          ip6_frag_id;
-+	union skb_shared_tx tx_flags;
- #ifdef CONFIG_HAS_DMA
- 	unsigned int	num_dma_maps;
- #endif
- 	struct sk_buff	*frag_list;
-+	struct skb_shared_hwtstamps hwtstamps;
- 	skb_frag_t	frags[MAX_SKB_FRAGS];
- #ifdef CONFIG_HAS_DMA
- 	dma_addr_t	dma_maps[MAX_SKB_FRAGS + 1];
-@@ -465,6 +518,16 @@ static inline unsigned char *skb_end_pointer(const struct sk_buff *skb)
- /* Internal */
- #define skb_shinfo(SKB)	((struct skb_shared_info *)(skb_end_pointer(SKB)))
- 
-+static inline struct skb_shared_hwtstamps *skb_hwtstamps(struct sk_buff *skb)
-+{
-+	return &skb_shinfo(skb)->hwtstamps;
-+}
-+
-+static inline union skb_shared_tx *skb_tx(struct sk_buff *skb)
-+{
-+	return &skb_shinfo(skb)->tx_flags;
-+}
-+
- /**
-  *	skb_queue_empty - check if a queue is empty
-  *	@list: queue head
-@@ -1730,6 +1793,11 @@ static inline void skb_copy_to_linear_data_offset(struct sk_buff *skb,
- 
- extern void skb_init(void);
- 
-+static inline ktime_t skb_get_ktime(const struct sk_buff *skb)
-+{
-+	return skb->tstamp;
-+}
-+
- /**
-  *	skb_get_timestamp - get timestamp from a skb
-  *	@skb: skb to get stamp from
-@@ -1739,11 +1807,18 @@ extern void skb_init(void);
-  *	This function converts the offset back to a struct timeval and stores
-  *	it in stamp.
-  */
--static inline void skb_get_timestamp(const struct sk_buff *skb, struct timeval *stamp)
-+static inline void skb_get_timestamp(const struct sk_buff *skb,
-+				     struct timeval *stamp)
- {
- 	*stamp = ktime_to_timeval(skb->tstamp);
- }
- 
-+static inline void skb_get_timestampns(const struct sk_buff *skb,
-+				       struct timespec *stamp)
-+{
-+	*stamp = ktime_to_timespec(skb->tstamp);
-+}
-+
- static inline void __net_timestamp(struct sk_buff *skb)
- {
- 	skb->tstamp = ktime_get_real();
-@@ -1759,6 +1834,20 @@ static inline ktime_t net_invalid_timestamp(void)
- 	return ktime_set(0, 0);
- }
- 
-+/**
-+ * skb_tstamp_tx - queue clone of skb with send time stamps
-+ * @orig_skb:	the original outgoing packet
-+ * @hwtstamps:	hardware time stamps, may be NULL if not available
-+ *
-+ * If the skb has a socket associated, then this function clones the
-+ * skb (thus sharing the actual data and optional structures), stores
-+ * the optional hardware time stamping information (if non NULL) or
-+ * generates a software time stamp (otherwise), then queues the clone
-+ * to the error queue of the socket.  Errors are silently ignored.
-+ */
-+extern void skb_tstamp_tx(struct sk_buff *orig_skb,
-+			struct skb_shared_hwtstamps *hwtstamps);
-+
- extern __sum16 __skb_checksum_complete_head(struct sk_buff *skb, int len);
- extern __sum16 __skb_checksum_complete(struct sk_buff *skb);
- 
+ /* ioctls used by appletalk ddp.c */
+ HANDLE_IOCTL(SIOCATALKDIFADDR, dev_ifsioc)
 diff --git a/net/core/dev.c b/net/core/dev.c
-index 1e27a67..d20c28e 100644
+index d20c28e..d393fc9 100644
 --- a/net/core/dev.c
 +++ b/net/core/dev.c
-@@ -1672,10 +1672,21 @@ static int dev_gso_segment(struct sk_buff *skb)
- 	return 0;
- }
- 
-+static void tstamp_tx(struct sk_buff *skb)
-+{
-+	union skb_shared_tx *shtx =
-+		skb_tx(skb);
-+	if (unlikely(shtx->software &&
-+			!shtx->in_progress)) {
-+		skb_tstamp_tx(skb, NULL);
-+	}
-+}
-+
- int dev_hard_start_xmit(struct sk_buff *skb, struct net_device *dev,
- 			struct netdev_queue *txq)
- {
- 	const struct net_device_ops *ops = dev->netdev_ops;
-+	int rc;
- 
- 	prefetch(&dev->netdev_ops->ndo_start_xmit);
- 	if (likely(!skb->next)) {
-@@ -1689,13 +1700,29 @@ int dev_hard_start_xmit(struct sk_buff *skb, struct net_device *dev,
- 				goto gso;
- 		}
- 
--		return ops->ndo_start_xmit(skb, dev);
-+		rc = ops->ndo_start_xmit(skb, dev);
-+		/*
-+		 * TODO: if skb_orphan() was called by
-+		 * dev->hard_start_xmit() (for example, the unmodified
-+		 * igb driver does that; bnx2 doesn't), then
-+		 * skb_tx_software_timestamp() will be unable to send
-+		 * back the time stamp.
-+		 *
-+		 * How can this be prevented? Always create another
-+		 * reference to the socket before calling
-+		 * dev->hard_start_xmit()? Prevent that skb_orphan()
-+		 * does anything in dev->hard_start_xmit() by clearing
-+		 * the skb destructor before the call and restoring it
-+		 * afterwards, then doing the skb_orphan() ourselves?
-+		 */
-+		if (likely(!rc))
-+			tstamp_tx(skb);
-+		return rc;
- 	}
- 
- gso:
- 	do {
- 		struct sk_buff *nskb = skb->next;
--		int rc;
- 
- 		skb->next = nskb->next;
- 		nskb->next = NULL;
-@@ -1705,6 +1732,7 @@ gso:
- 			skb->next = nskb;
- 			return rc;
- 		}
-+		tstamp_tx(skb);
- 		if (unlikely(netif_tx_queue_stopped(txq) && skb->next))
- 			return NETDEV_TX_BUSY;
- 	} while (skb->next);
-diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index 7657cec..7b831a7 100644
---- a/net/core/skbuff.c
-+++ b/net/core/skbuff.c
-@@ -55,6 +55,7 @@
- #include <linux/rtnetlink.h>
- #include <linux/init.h>
- #include <linux/scatterlist.h>
-+#include <linux/errqueue.h>
- 
- #include <net/protocol.h>
- #include <net/dst.h>
-@@ -215,7 +216,9 @@ struct sk_buff *__alloc_skb(unsigned int size, gfp_t gfp_mask,
- 	shinfo->gso_segs = 0;
- 	shinfo->gso_type = 0;
- 	shinfo->ip6_frag_id = 0;
-+	shinfo->tx_flags.flags = 0;
- 	shinfo->frag_list = NULL;
-+	memset(&shinfo->hwtstamps, 0, sizeof(shinfo->hwtstamps));
- 
- 	if (fclone) {
- 		struct sk_buff *child = skb + 1;
-@@ -2940,6 +2943,44 @@ int skb_cow_data(struct sk_buff *skb, int tailbits, struct sk_buff **trailer)
- }
- EXPORT_SYMBOL_GPL(skb_cow_data);
- 
-+void skb_tstamp_tx(struct sk_buff *orig_skb,
-+		struct skb_shared_hwtstamps *hwtstamps)
-+{
-+	struct sock *sk = orig_skb->sk;
-+	struct sock_exterr_skb *serr;
-+	struct sk_buff *skb;
-+	int err;
-+
-+	if (!sk)
-+		return;
-+
-+	skb = skb_clone(orig_skb, GFP_ATOMIC);
-+	if (!skb)
-+		return;
-+
-+	if (hwtstamps) {
-+		*skb_hwtstamps(skb) =
-+			*hwtstamps;
-+	} else {
-+		/*
-+		 * no hardware time stamps available,
-+		 * so keep the skb_shared_tx and only
-+		 * store software time stamp
-+		 */
-+		skb->tstamp = ktime_get_real();
-+	}
-+
-+	serr = SKB_EXT_ERR(skb);
-+	memset(serr, 0, sizeof(*serr));
-+	serr->ee.ee_errno = ENOMSG;
-+	serr->ee.ee_origin = SO_EE_ORIGIN_TIMESTAMPING;
-+	err = sock_queue_err_skb(sk, skb);
-+	if (err)
-+		kfree_skb(skb);
-+}
-+EXPORT_SYMBOL_GPL(skb_tstamp_tx);
-+
-+
- /**
-  * skb_partial_csum_set - set up and verify partial csum values for packet
-  * @skb: the skb to set
+@@ -4019,6 +4019,7 @@ static int dev_ifsioc(struct net *net, struct ifreq *ifr, unsigned int cmd)
+ 			    cmd == SIOCSMIIREG ||
+ 			    cmd == SIOCBRADDIF ||
+ 			    cmd == SIOCBRDELIF ||
++			    cmd == SIOCSHWTSTAMP ||
+ 			    cmd == SIOCWANDEV) {
+ 				err = -EOPNOTSUPP;
+ 				if (ops->ndo_do_ioctl) {
+@@ -4173,6 +4174,7 @@ int dev_ioctl(struct net *net, unsigned int cmd, void __user *arg)
+ 		case SIOCBONDCHANGEACTIVE:
+ 		case SIOCBRADDIF:
+ 		case SIOCBRDELIF:
++		case SIOCSHWTSTAMP:
+ 			if (!capable(CAP_NET_ADMIN))
+ 				return -EPERM;
+ 			/* fall through */
 -- 
 1.6.1.2
 
