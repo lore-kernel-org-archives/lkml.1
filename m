@@ -1,47 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760658AbZBLUof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760866AbZBLUpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760658AbZBLUof (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 15:44:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759327AbZBLUo1
+	id S1760866AbZBLUpK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 15:45:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759560AbZBLUoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 15:44:27 -0500
-Received: from smtprelay05.ispgateway.de ([80.67.18.43]:35639 "EHLO
-	smtprelay05.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759113AbZBLUo0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 15:44:26 -0500
-X-Greylist: delayed 431 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Feb 2009 15:44:26 EST
-Message-ID: <cone.1234471033.988571.5384.1000@mentalhome>
-X-Mailer: http://www.courier-mta.org/cone/
-From: Peter Feuerer <peter@piie.net>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Acer Aspire One fan control
-Date: Thu, 12 Feb 2009 21:37:13 +0100
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="US-ASCII"
+	Thu, 12 Feb 2009 15:44:54 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:38185 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759537AbZBLUow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 15:44:52 -0500
+Date: Thu, 12 Feb 2009 12:44:50 -0800
+From: Mike Anderson <andmike@linux.vnet.ibm.com>
+To: Hannes Reinecke <hare@suse.de>, Jens Axboe <jens.axboe@oracle.com>
+Cc: Christof Schmitt <christof.schmitt@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: Deadlock during multipath failover
+Message-ID: <20090212204450.GA3556@linux.vnet.ibm.com>
+References: <20090212094022.GA4973@schmichrtp.de.ibm.com> <4994234D.1000404@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-X-Df-Sender: 404094
+In-Reply-To: <4994234D.1000404@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi list,
+Hannes Reinecke <hare@suse.de> wrote:
+> Hi Christof,
+>
+> Christof Schmitt wrote:
+>> During failover tests on a current distribution kernel, we found this
+>> problem. From reading the code, the upstream kernel has the same
+>> problem:
+>>
+>> During multipath failover tests with SCSI on System z, the kernel
+>> deadlocks in this situation:
+>>
+>>>  STACK:
+>>>  0 blk_add_timer+206 [0x2981ea]
+>>>  1 blk_rq_timed_out+132 [0x2982a8]
+>>>  2 blk_abort_request+114 [0x29833e]
+>>>  3 blk_abort_queue+92 [0x2983a8]
+>>>  4 deactivate_path+74 [0x3e00009625a]
+>>>  5 run_workqueue+236 [0x149e04]
+>>>  6 worker_thread+294 [0x149fce]
+>>>  7 kthread+110 [0x14f436]
+>>>  8 kernel_thread_starter+6 [0x10941a]
+>>
+>> blk_abort_queue takes the queue_lock with spinlock_irqsave and walks
+>> the timer_list with list_for_each_entry_safe. Since a path to a SCSI
+>> device just failed, the rport state is FC_PORTSTATE_BLOCKED. This
+>> rport state triggers blk_add_timer that calls list_add_tail to move
+>> the request to the end of timer_list. Thus, the
+>> list_for_each_entry_safe never reaches the end of the timer_list, it
+>> continously moves the requests to the end of the list.
+>>
+> Hmm. That would be fixes by using list_splice() here:
+>
+> diff --git a/block/blk-timeout.c b/block/blk-timeout.c
+> index a095353..67bcc3f 100644
+> --- a/block/blk-timeout.c
+> +++ b/block/blk-timeout.c
+> @@ -209,12 +209,15 @@ void blk_abort_queue(struct request_queue *q)
+> {
+>        unsigned long flags;
+>        struct request *rq, *tmp;
+> +       LIST_HEAD(list);
+>
+>        spin_lock_irqsave(q->queue_lock, flags);
+>
+>        elv_abort_queue(q);
+>
+> -       list_for_each_entry_safe(rq, tmp, &q->timeout_list, timeout_list)
+> +       list_splice_init(&q->timeout_list, &list);
+> +
+> +       list_for_each_entry_safe(rq, tmp, &list, timeout_list)
+>                blk_abort_request(rq);
+>
+>        spin_unlock_irqrestore(q->queue_lock, flags);
+>
+>> The rport state FC_PORTSTATE_BLOCKED would end, when the function
+>> fc_timeout_deleted_rport would run to remove the rport. But this
+>> function was schedules from queue_delayed_work. The timer already
+>> expired, but the timer function does not run, because the timer
+>> interrupt is disabled from the spinlock_irqsave call.
+>>
+> .. but this shouldn't happen anymore when using splice, as
+> the timer will be called _after_ the irqrestore above.
 
-I own such an Acer Aspire One netbook and the noisy fan annoyed me. (The 
-default hardware controlled fan is on all the time). So I wrote a small 
-kernel module which monitors the temperature of the cpu and turns the fan on 
-and off. After testing it a while on my and some of my friends netbooks, it 
-seems to be stable and I thought about submitting this functionality to 
-the mainline kernel. As this is my first time, I've got some questions and 
-would really appreciate any help.
+If this patch does not address the deadlock another option to look into
+would be to run some testing without blk_abort_request (just using
+elv_abort_queue) and not try to abort in flight IOs at this time. 
 
-Do you think it makes sense to add it as seperate kernelmodule or should I 
-patch another module, e.g. the drivers/misc/acer-wmi.c module?
-Should I try also to add the functionality of the 
-/proc/acpi/thermal_zone/THRM/* things in my first patch? Or just submit the 
-general functionality for controlling the fan and add additional things step 
-by step?
+We observed reduced IO delays during storage failover testing (target
+responsive but timing out IOs) with this code, but I do not have good
+breakdown data on the number of IOs handled by elv_abort_queue vs
+blk_abort_request vs IO delay (It is also config dependent).
 
-kind regards, and many thanks for your answers.
---peter
+-andmike
+--
+Michael Anderson
+andmike@linux.vnet.ibm.com
