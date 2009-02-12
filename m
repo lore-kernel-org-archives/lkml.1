@@ -1,159 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758789AbZBLTij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759712AbZBLTn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758789AbZBLTij (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 14:38:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758678AbZBLTi3
+	id S1759712AbZBLTn2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 14:43:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbZBLTnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 14:38:29 -0500
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:62853 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758656AbZBLTi3 (ORCPT
+	Thu, 12 Feb 2009 14:43:17 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36139 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750896AbZBLTnQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 14:38:29 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArMEAOQFlElMQWt2/2dsb2JhbACBbtJLhBgG
-Date: Thu, 12 Feb 2009 14:38:26 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
-	(repost)
-Message-ID: <20090212193826.GD2047@Krystal>
-References: <20090211153246.GA6694@linux.vnet.ibm.com> <20090211185203.GA29852@Krystal> <20090211200903.GG6694@linux.vnet.ibm.com> <20090211214258.GA32407@Krystal> <20090212003549.GU6694@linux.vnet.ibm.com> <20090212023308.GA21157@linux.vnet.ibm.com> <20090212040824.GA12346@Krystal> <20090212050120.GA8317@linux.vnet.ibm.com> <20090212070539.GA15896@Krystal> <20090212164621.GC6759@linux.vnet.ibm.com>
+	Thu, 12 Feb 2009 14:43:16 -0500
+Date: Thu, 12 Feb 2009 11:42:07 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matt Mackall <mpm@selenic.com>
+Cc: dave@linux.vnet.ibm.com, mingo@elte.hu, orenl@cs.columbia.edu,
+       linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk, hpa@zytor.com,
+       tglx@linutronix.de
+Subject: Re: [RFC v13][PATCH 00/14] Kernel based checkpoint/restart
+Message-Id: <20090212114207.e1c2de82.akpm@linux-foundation.org>
+In-Reply-To: <1234467035.3243.538.camel@calx>
+References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu>
+	<1234285547.30155.6.camel@nimitz>
+	<20090211141434.dfa1d079.akpm@linux-foundation.org>
+	<1234462282.30155.171.camel@nimitz>
+	<1234467035.3243.538.camel@calx>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090212164621.GC6759@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:29:48 up 42 days, 19:27,  6 users,  load average: 0.77, 0.40,
-	0.27
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replying to a separate portion of the mail with less CC :
+On Thu, 12 Feb 2009 13:30:35 -0600
+Matt Mackall <mpm@selenic.com> wrote:
 
-
-> On Thu, Feb 12, 2009 at 02:05:39AM -0500, Mathieu Desnoyers wrote:
-> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > On Wed, Feb 11, 2009 at 11:08:24PM -0500, Mathieu Desnoyers wrote:
-> > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > > On Wed, Feb 11, 2009 at 04:35:49PM -0800, Paul E. McKenney wrote:
-> > > > > > On Wed, Feb 11, 2009 at 04:42:58PM -0500, Mathieu Desnoyers wrote:
-> > > > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > 
-> > > [ . . . ]
-> > > 
-> > > > > And I had bugs in my model that allowed the rcu_read_lock() model
-> > > > > to nest indefinitely, which overflowed into the top bit, messing
-> > > > > things up.  :-/
-> > > > > 
-> > > > > Attached is a fixed model.  This model validates correctly (woo-hoo!).
-> > > > > Even better, gives the expected error if you comment out line 180 and
-> > > > > uncomment line 213, this latter corresponding to the error case I called
-> > > > > out a few days ago.
-> > > > > 
-> > > > 
-> > > > Great ! :) I added this version to the git repository, hopefully it's ok
-> > > > with you ?
-> > > 
-> > > Works for me!
-> > > 
-> > > > > I will play with removing models of mb...
-> > > > 
-> > > > OK, I see you already did..
-> > > 
-> > > I continued this, and surprisingly few are actually required, though
-> > > I don't fully trust the modeling of removed memory barriers.
-> > 
-> > On my side I cleaned up the code a lot, and actually added some barriers
-> > ;) Especially in the busy loops, where we expect the other thread's
-> > value to change eventually between iterations. A smp_rmb() seems more
-> > appropriate that barrier(). I also added a lot of comments about
-> > barriers in the code, and made the reader side much easier to review.
-> > 
-> > Please feel free to comment on my added code comments.
+> On Thu, 2009-02-12 at 10:11 -0800, Dave Hansen wrote:
 > 
-> The torture test now looks much more familiar.  ;-)
+> > > - In bullet-point form, what features are missing, and should be added?
+> > 
+> >  * support for more architectures than i386
+> >  * file descriptors:
+> >   * sockets (network, AF_UNIX, etc...)
+> >   * devices files
+> >   * shmfs, hugetlbfs
+> >   * epoll
+> >   * unlinked files
 > 
-> I fixed some compiler warnings (in my original, sad to say), added an
-> ACCESS_ONCE() to rcu_read_lock() (also in my original),
+> >  * Filesystem state
+> >   * contents of files
+> >   * mount tree for individual processes
+> >  * flock
+> >  * threads and sessions
+> >  * CPU and NUMA affinity
+> >  * sys_remap_file_pages()
+> 
+> I think the real questions is: where are the dragons hiding? Some of
+> these are known to be hard. And some of them are critical checkpointing
+> typical applications. If you have plans or theories for implementing all
+> of the above, then great. But this list doesn't really give any sense of
+> whether we should be scared of what lurks behind those doors.
 
-Yes, I thought about this ACCESS_ONCE during my sleep.. just did not
-have to to update the source yet. :)
+How close has OpenVZ come to implementing all of this?  I think the
+implementatation is fairly complete?
 
-Merged. Thanks !
+If so, perhaps that can be used as a guide.  Will the planned feature
+have a similar design?  If not, how will it differ?  To what extent can
+we use that implementation as a tool for understanding what this new
+implementation will look like?
 
-[...]
-
-> --- a/urcu.c
-> +++ b/urcu.c
-> @@ -99,7 +99,8 @@ static void force_mb_single_thread(pthread_t tid)
->  	 * BUSY-LOOP.
->  	 */
->  	while (sig_done < 1)
-> -		smp_rmb();	/* ensure we re-read sig-done */
-> +		barrier();	/* ensure compiler re-reads sig-done */
-> +				/* cache coherence guarantees CPU re-read. */
-
-That could be a smp_rmc() ? (see other mail)
-
->  	smp_mb();	/* read sig_done before ending the barrier */
->  }
->  
-> @@ -113,7 +114,8 @@ static void force_mb_all_threads(void)
->  	if (!reader_data)
->  		return;
->  	sig_done = 0;
-> -	smp_mb();	/* write sig_done before sending the signals */
-> +	/* smp_mb();	write sig_done before sending the signals */
-> +			/* redundant with barriers in pthread_kill(). */
-
-Absolutely not. pthread_kill does not send a signal to self in every
-case because the writer thread has not requirement to register itself.
-It *could* be registered as a reader too, but does not have to.
-
->  	for (index = reader_data; index < reader_data + num_readers; index++)
->  		pthread_kill(index->tid, SIGURCU);
->  	/*
-> @@ -121,7 +123,8 @@ static void force_mb_all_threads(void)
->  	 * BUSY-LOOP.
->  	 */
->  	while (sig_done < num_readers)
-> -		smp_rmb();	/* ensure we re-read sig-done */
-> +		barrier();	/* ensure compiler re-reads sig-done */
-> +				/* cache coherence guarantees CPU re-read. */
-
-That could be a smp_rmc() ?
-
->  	smp_mb();	/* read sig_done before ending the barrier */
->  }
->  #endif
-> @@ -181,7 +184,8 @@ void synchronize_rcu(void)
->  	 * the writer waiting forever while new readers are always accessing
->  	 * data (no progress).
->  	 */
-> -	smp_mb();
-> +	/* smp_mb(); Don't need this one for CPU, only compiler. */
-> +	barrier();
-
-smp_mc() ?
-
->  
->  	switch_next_urcu_qparity();	/* 1 -> 0 */
->  
-
-Side-note :
-on archs without cache coherency, all smp_[rw ]mb would turn into a
-cache flush.
-
-Mathieu
-
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
