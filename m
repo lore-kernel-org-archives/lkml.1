@@ -1,318 +1,301 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758915AbZBLMrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760254AbZBLMsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758915AbZBLMrr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 07:47:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759730AbZBLMo2
+	id S1760254AbZBLMsd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 07:48:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759773AbZBLMoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 07:44:28 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:34509 "EHLO
+	Thu, 12 Feb 2009 07:44:30 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:34518 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759816AbZBLMo0 (ORCPT
+	with ESMTP id S1759330AbZBLMo2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 07:44:26 -0500
+	Thu, 12 Feb 2009 07:44:28 -0500
 From: Andi Kleen <andi@firstfloor.org>
 References: <20090212143.515129156@firstfloor.org>
 In-Reply-To: <20090212143.515129156@firstfloor.org>
-To: venkatesh.pallipadi@intel.com, akpm@linux-foundation.org, mingo@elte.hu,
-       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] [2/4] x86: MCE: Implement dynamic machine check banks support v5
-Message-Id: <20090212124321.8A98B3E666D@basil.firstfloor.org>
-Date: Thu, 12 Feb 2009 13:43:21 +0100 (CET)
+To: akpm@linux-foundation.org, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] [4/4] x86: MCE: Separate correct machine check poller and fatal exception handler v2
+Message-Id: <20090212124323.945953E666D@basil.firstfloor.org>
+Date: Thu, 12 Feb 2009 13:43:23 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Impact: cleanup; making code future proof; memory saving on small systems
+Impact: cleanup
 
-This patch replaces the hardcoded max number of machine check banks with 
-dynamic allocation depending on what the CPU reports. The sysfs
-data structures and the banks array are dynamically allocated.
+The machine check poller is diverging more and more from the fatal
+exception handler. Instead of adding more special cases separate the code
+paths completely. The corrected poll path is actually quite simple,
+and this doesn't result in much code duplication.
 
-There is still a hard bank limit (128) because the mcelog protocol uses
-banks >= 128 as pseudo banks to escape other events. But we expect
-that 128 banks is beyond any reasonable CPU for now.
+This makes both handlers much easier to read and results in
+cleaner code flow.  The exception handler now only needs to care
+about uncorrected errors, which also simplifies the handling of multiple
+errors. The corrected poller also now always runs in standard interrupt
+context and does not need to do anything special to handle NMI context.
 
-This supersedes an earlier patch by Venki, but it solves the problem
-more completely by making the limit fully dynamic (upto the 128 boundary)
+Minor behaviour changes:
+- MCG status is now not cleared on polling.
+- Only the banks which had corrected errors get cleared on polling
+- The exception handler only clears banks with errors now
 
-This saves some memory on machines with less than 6 banks because
-they won't need sysdevs for unused ones and also allows to 
-use sysfs to control these banks on possible future CPUs with
-more than 6 banks.
-
-v2: Fix typo in initialization
-v3: Fold fix banks message fix into this one.
-v4: Fix cap init ordering
-v5: Forward port to new patch order
-
-Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+v2: Forward port to new patch order. Add "uc" argument.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- arch/x86/kernel/cpu/mcheck/mce_64.c |  139 +++++++++++++++++++++++++++---------
- 1 file changed, 107 insertions(+), 32 deletions(-)
+ arch/x86/include/asm/mce.h              |    7 +
+ arch/x86/kernel/cpu/mcheck/mce_64.c     |  129 ++++++++++++++++++++++++++------
+ arch/x86/kernel/cpu/mcheck/mce_amd_64.c |    2 
+ 3 files changed, 116 insertions(+), 22 deletions(-)
 
 Index: linux/arch/x86/kernel/cpu/mcheck/mce_64.c
 ===================================================================
 --- linux.orig/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-02-12 11:30:51.000000000 +0100
-+++ linux/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-02-12 12:10:19.000000000 +0100
-@@ -24,6 +24,8 @@
- #include <linux/ctype.h>
- #include <linux/kmod.h>
- #include <linux/kdebug.h>
-+#include <linux/kobject.h>
-+#include <linux/sysfs.h>
- #include <asm/processor.h>
- #include <asm/msr.h>
- #include <asm/mce.h>
-@@ -32,7 +34,12 @@
- #include <asm/idle.h>
++++ linux/arch/x86/kernel/cpu/mcheck/mce_64.c	2009-02-12 12:10:18.000000000 +0100
+@@ -3,6 +3,8 @@
+  * K8 parts Copyright 2002,2003 Andi Kleen, SuSE Labs.
+  * Rest from unknown author(s).
+  * 2004 Andi Kleen. Rewrote most of it.
++ * Copyright 2008 Intel Corporation
++ * Author: Andi Kleen
+  */
  
- #define MISC_MCELOG_MINOR 227
--#define NR_SYSFS_BANKS 6
+ #include <linux/init.h>
+@@ -189,7 +191,77 @@
+ }
+ 
+ /*
+- * The actual machine check handler
++ * Poll for corrected events or events that happened before reset.
++ * Those are just logged through /dev/mcelog.
++ *
++ * This is executed in standard interrupt context.
++ */
++void machine_check_poll(enum mcp_flags flags)
++{
++	struct mce m;
++	int i;
++
++	mce_setup(&m);
++
++	rdmsrl(MSR_IA32_MCG_STATUS, m.mcgstatus);
++	for (i = 0; i < banks; i++) {
++		if (!bank[i])
++			continue;
++
++		m.misc = 0;
++		m.addr = 0;
++		m.bank = i;
++		m.tsc = 0;
++
++		barrier();
++		rdmsrl(MSR_IA32_MC0_STATUS + i*4, m.status);
++		if (!(m.status & MCI_STATUS_VAL))
++			continue;
++
++		/*
++		 * Uncorrected events are handled by the exception handler
++		 * when it is enabled. But when the exception is disabled log
++		 * everything.
++		 *
++		 * TBD do the same check for MCI_STATUS_EN here?
++		 */
++		if ((m.status & MCI_STATUS_UC) && !(flags & MCP_UC))
++			continue;
++
++		if (m.status & MCI_STATUS_MISCV)
++			rdmsrl(MSR_IA32_MC0_MISC + i*4, m.misc);
++		if (m.status & MCI_STATUS_ADDRV)
++			rdmsrl(MSR_IA32_MC0_ADDR + i*4, m.addr);
++
++		if (!(flags & MCP_TIMESTAMP))
++			m.tsc = 0;
++		/*
++		 * Don't get the IP here because it's unlikely to
++		 * have anything to do with the actual error location.
++		 */
++
++		mce_log(&m);
++		add_taint(TAINT_MACHINE_CHECK);
++
++		/*
++		 * Clear state for this bank.
++		 */
++		wrmsrl(MSR_IA32_MC0_STATUS+4*i, 0);
++	}
++
++	/*
++	 * Don't clear MCG_STATUS here because it's only defined for
++	 * exceptions.
++	 */
++}
 +
 +/*
-+ * To support more than 128 would need to escape the predefined
-+ * Linux defined extended banks first.
-+ */
-+#define MAX_NR_BANKS (MCE_EXTENDED_BANK - 1)
- 
- atomic_t mce_entry;
- 
-@@ -47,7 +54,7 @@
++ * The actual machine check handler. This only handles real
++ * exceptions when something got corrupted coming in through int 18.
++ *
++ * This is executed in NMI context not subject to normal locking rules. This
++ * implies that most kernel services cannot be safely used. Don't even
++ * think about putting a printk in there!
   */
- static int tolerant = 1;
- static int banks;
--static unsigned long bank[NR_SYSFS_BANKS] = { [0 ... NR_SYSFS_BANKS-1] = ~0UL };
-+static u64 *bank;
- static unsigned long notify_user;
- static int rip_msr;
- static int mce_bootlog = -1;
-@@ -212,7 +219,7 @@
+ void do_machine_check(struct pt_regs * regs, long error_code)
+ {
+@@ -207,13 +279,14 @@
+ 	 * error.
+ 	 */
+ 	int kill_it = 0;
++	DECLARE_BITMAP(toclear, MAX_NR_BANKS);
+ 
+ 	atomic_inc(&mce_entry);
+ 
+-	if ((regs
+-	     && notify_die(DIE_NMI, "machine check", regs, error_code,
++	if (notify_die(DIE_NMI, "machine check", regs, error_code,
+ 			   18, SIGKILL) == NOTIFY_STOP)
+-	    || !banks)
++		goto out2;
++	if (!banks)
+ 		goto out2;
+ 
+ 	mce_setup(&m);
+@@ -227,6 +300,7 @@
  	barrier();
  
  	for (i = 0; i < banks; i++) {
--		if (i < NR_SYSFS_BANKS && !bank[i])
-+		if (!bank[i])
++		__clear_bit(i, toclear);
+ 		if (!bank[i])
  			continue;
  
- 		m.misc = 0;
-@@ -446,21 +453,36 @@
- /*
-  * Initialize Machine Checks for a CPU.
-  */
--static void mce_init(void *dummy)
-+static void mce_cap_init(void)
- {
- 	u64 cap;
--	int i;
+@@ -238,6 +312,20 @@
+ 		if ((m.status & MCI_STATUS_VAL) == 0)
+ 			continue;
  
- 	rdmsrl(MSR_IA32_MCG_CAP, cap);
--	banks = cap & 0xff;
--	if (banks > MCE_EXTENDED_BANK) {
--		banks = MCE_EXTENDED_BANK;
--		printk(KERN_INFO "MCE: warning: using only %d banks\n",
--		       MCE_EXTENDED_BANK);
-+	/* Handle the unlikely case of one CPU having less banks than others */
-+	if (banks == 0 || banks > (cap & 0xff))
-+		banks = cap & 0xff;
-+	if (banks > MAX_NR_BANKS) {
-+		banks = MAX_NR_BANKS;
-+		printk(KERN_WARNING
-+		       "MCE: Using only %d machine check banks out of %u\n",
-+			banks, (u32)cap & 0xff);
-+	}
-+	if (!bank) {
-+		bank = kmalloc(banks * sizeof(u64), GFP_KERNEL);
-+		if (!bank)
-+			return;
-+		memset(bank, 0xff, banks * sizeof(u64));
++		/*
++		 * Non uncorrected errors are handled by machine_check_poll
++		 * Leave them alone.
++		 */
++		if ((m.status & MCI_STATUS_UC) == 0)
++			continue;
++
++		/*
++		 * Set taint even when machine check was not enabled.
++		 */
++		add_taint(TAINT_MACHINE_CHECK);
++
++		__set_bit(i, toclear);
++
+ 		if (m.status & MCI_STATUS_EN) {
+ 			/* if PCC was set, there's no way out */
+ 			no_way_out |= !!(m.status & MCI_STATUS_PCC);
+@@ -251,6 +339,12 @@
+ 					no_way_out = 1;
+ 				kill_it = 1;
+ 			}
++		} else {
++			/*
++			 * Machine check event was not enabled. Clear, but
++			 * ignore.
++			 */
++			continue;
+ 		}
+ 
+ 		if (m.status & MCI_STATUS_MISCV)
+@@ -259,10 +353,7 @@
+ 			rdmsrl(MSR_IA32_MC0_ADDR + i*4, m.addr);
+ 
+ 		mce_get_rip(&m, regs);
+-		if (error_code < 0)
+-			m.tsc = 0;
+-		if (error_code != -2)
+-			mce_log(&m);
++		mce_log(&m);
+ 
+ 		/* Did this bank cause the exception? */
+ 		/* Assume that the bank with uncorrectable errors did it,
+@@ -271,14 +362,8 @@
+ 			panicm = m;
+ 			panicm_found = 1;
+ 		}
+-
+-		add_taint(TAINT_MACHINE_CHECK);
  	}
-+
- 	/* Use accurate RIP reporting if available. */
- 	if ((cap & (1<<9)) && ((cap >> 16) & 0xff) >= 9)
- 		rip_msr = MSR_IA32_MCG_EIP;
-+}
-+
-+static void mce_init(void *dummy)
-+{
-+	u64 cap;
-+	int i;
  
- 	/* Log the machine checks left over from the previous reset.
- 	   This also clears all registers */
-@@ -468,15 +490,12 @@
+-	/* Never do anything final in the polling timer */
+-	if (!regs)
+-		goto out;
+-
+ 	/* If we didn't find an uncorrectable error, pick
+ 	   the last one (shouldn't happen, just being safe). */
+ 	if (!panicm_found)
+@@ -325,10 +410,11 @@
+ 	/* notify userspace ASAP */
+ 	set_thread_flag(TIF_MCE_NOTIFY);
+ 
+- out:
+ 	/* the last thing we do is clear state */
+-	for (i = 0; i < banks; i++)
+-		wrmsrl(MSR_IA32_MC0_STATUS+4*i, 0);
++	for (i = 0; i < banks; i++) {
++		if (test_bit(i, toclear))
++			wrmsrl(MSR_IA32_MC0_STATUS+4*i, 0);
++	}
+ 	wrmsrl(MSR_IA32_MCG_STATUS, 0);
+  out2:
+ 	atomic_dec(&mce_entry);
+@@ -377,7 +463,7 @@
+ 	WARN_ON(smp_processor_id() != data);
+ 
+ 	if (mce_available(&current_cpu_data))
+-		do_machine_check(NULL, 0);
++		machine_check_poll(MCP_TIMESTAMP);
+ 
+ 	/*
+ 	 * Alert userspace if needed.  If we logged an MCE, reduce the
+@@ -489,9 +575,10 @@
+ 	u64 cap;
+ 	int i;
+ 
+-	/* Log the machine checks left over from the previous reset.
+-	   This also clears all registers */
+-	do_machine_check(NULL, mce_bootlog ? -1 : -2);
++	/*
++	 * Log the machine checks left over from the previous reset.
++	 */
++	machine_check_poll(MCP_UC);
  
  	set_in_cr4(X86_CR4_MCE);
  
-+	rdmsrl(MSR_IA32_MCG_CAP, cap);
- 	if (cap & MCG_CTL_P)
- 		wrmsr(MSR_IA32_MCG_CTL, 0xffffffff, 0xffffffff);
+Index: linux/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+===================================================================
+--- linux.orig/arch/x86/kernel/cpu/mcheck/mce_amd_64.c	2009-02-12 11:30:51.000000000 +0100
++++ linux/arch/x86/kernel/cpu/mcheck/mce_amd_64.c	2009-02-12 12:10:18.000000000 +0100
+@@ -231,7 +231,7 @@
  
- 	for (i = 0; i < banks; i++) {
--		if (i < NR_SYSFS_BANKS)
--			wrmsrl(MSR_IA32_MC0_CTL+4*i, bank[i]);
--		else
--			wrmsrl(MSR_IA32_MC0_CTL+4*i, ~0UL);
--
-+		wrmsrl(MSR_IA32_MC0_CTL+4*i, bank[i]);
- 		wrmsrl(MSR_IA32_MC0_STATUS+4*i, 0);
- 	}
- }
-@@ -486,10 +505,10 @@
- {
- 	/* This should be disabled by the BIOS, but isn't always */
- 	if (c->x86_vendor == X86_VENDOR_AMD) {
--		if(c->x86 == 15)
-+		if (c->x86 == 15 && banks > 4)
- 			/* disable GART TBL walk error reporting, which trips off
- 			   incorrectly with the IOMMU & 3ware & Cerberus. */
--			clear_bit(10, &bank[4]);
-+			clear_bit(10, (unsigned long *)&bank[4]);
- 		if(c->x86 <= 17 && mce_bootlog < 0)
- 			/* Lots of broken BIOS around that don't clear them
- 			   by default and leave crap in there. Don't log. */
-@@ -532,11 +551,12 @@
-  */
- void __cpuinit mcheck_init(struct cpuinfo_x86 *c)
- {
--	mce_cpu_quirks(c);
--
- 	if (!mce_available(c))
- 		return;
+ 			/* Log the machine check that caused the threshold
+ 			   event. */
+-			do_machine_check(NULL, 0);
++			machine_check_poll(MCP_TIMESTAMP);
  
-+	mce_cap_init();
-+	mce_cpu_quirks(c);
-+
- 	mce_init(NULL);
- 	mce_cpu_features(c);
- 	mce_init_timer();
-@@ -819,16 +839,26 @@
- 	}								\
- 	static SYSDEV_ATTR(name, 0644, show_ ## name, set_ ## name);
+ 			if (high & MASK_OVERFLOW_HI) {
+ 				rdmsrl(address, m.misc);
+Index: linux/arch/x86/include/asm/mce.h
+===================================================================
+--- linux.orig/arch/x86/include/asm/mce.h	2009-02-12 11:30:51.000000000 +0100
++++ linux/arch/x86/include/asm/mce.h	2009-02-12 12:10:18.000000000 +0100
+@@ -112,6 +112,13 @@
+ extern atomic_t mce_entry;
  
--/*
-- * TBD should generate these dynamically based on number of available banks.
-- * Have only 6 contol banks in /sysfs until then.
-- */
--ACCESSOR(bank0ctl,bank[0],mce_restart())
--ACCESSOR(bank1ctl,bank[1],mce_restart())
--ACCESSOR(bank2ctl,bank[2],mce_restart())
--ACCESSOR(bank3ctl,bank[3],mce_restart())
--ACCESSOR(bank4ctl,bank[4],mce_restart())
--ACCESSOR(bank5ctl,bank[5],mce_restart())
-+static struct sysdev_attribute *bank_attrs;
+ extern void do_machine_check(struct pt_regs *, long);
 +
-+static ssize_t show_bank(struct sys_device *s, struct sysdev_attribute *attr,
-+			 char *buf)
-+{
-+	u64 b = bank[attr - bank_attrs];
-+	return sprintf(buf, "%Lx\n", b);
-+}
++enum mcp_flags {
++	MCP_TIMESTAMP = (1 << 0),	/* log time stamp */
++	MCP_UC = (1 << 1),		/* log uncorrected errors */
++};
++extern void machine_check_poll(enum mcp_flags flags);
 +
-+static ssize_t set_bank(struct sys_device *s, struct sysdev_attribute *attr,
-+			const char *buf, size_t siz)
-+{
-+	char *end;
-+	u64 new = simple_strtoull(buf, &end, 0);
-+	if (end == buf)
-+		return -EINVAL;
-+	bank[attr - bank_attrs] = new;
-+	mce_restart();
-+	return end-buf;
-+}
+ extern int mce_notify_user(void);
  
- static ssize_t show_trigger(struct sys_device *s, struct sysdev_attribute *attr,
- 				char *buf)
-@@ -855,8 +885,6 @@
- static SYSDEV_INT_ATTR(tolerant, 0644, tolerant);
- ACCESSOR(check_interval,check_interval,mce_restart())
- static struct sysdev_attribute *mce_attributes[] = {
--	&attr_bank0ctl, &attr_bank1ctl, &attr_bank2ctl,
--	&attr_bank3ctl, &attr_bank4ctl, &attr_bank5ctl,
- 	&attr_tolerant.attr, &attr_check_interval, &attr_trigger,
- 	NULL
- };
-@@ -886,11 +914,22 @@
- 		if (err)
- 			goto error;
- 	}
-+	for (i = 0; i < banks; i++) {
-+		err = sysdev_create_file(&per_cpu(device_mce, cpu),
-+					&bank_attrs[i]);
-+		if (err)
-+			goto error2;
-+	}
- 	cpu_set(cpu, mce_device_initialized);
- 
- 	return 0;
-+error2:
-+	while (--i >= 0) {
-+		sysdev_remove_file(&per_cpu(device_mce, cpu),
-+					&bank_attrs[i]);
-+	}
- error:
--	while (i--) {
-+	while (--i >= 0) {
- 		sysdev_remove_file(&per_cpu(device_mce,cpu),
- 				   mce_attributes[i]);
- 	}
-@@ -909,6 +948,9 @@
- 	for (i = 0; mce_attributes[i]; i++)
- 		sysdev_remove_file(&per_cpu(device_mce,cpu),
- 			mce_attributes[i]);
-+	for (i = 0; i < banks; i++)
-+		sysdev_remove_file(&per_cpu(device_mce, cpu),
-+			&bank_attrs[i]);
- 	sysdev_unregister(&per_cpu(device_mce,cpu));
- 	cpu_clear(cpu, mce_device_initialized);
- }
-@@ -973,6 +1015,34 @@
- 	.notifier_call = mce_cpu_callback,
- };
- 
-+static __init int mce_init_banks(void)
-+{
-+	int i;
-+
-+	bank_attrs = kzalloc(sizeof(struct sysdev_attribute) * banks,
-+				GFP_KERNEL);
-+	if (!bank_attrs)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < banks; i++) {
-+		struct sysdev_attribute *a = &bank_attrs[i];
-+		a->attr.name = kasprintf(GFP_KERNEL, "bank%d", i);
-+		if (!a->attr.name)
-+			goto nomem;
-+		a->attr.mode = 0644;
-+		a->show = show_bank;
-+		a->store = set_bank;
-+	}
-+	return 0;
-+
-+nomem:
-+	while (--i >= 0)
-+		kfree(bank_attrs[i].attr.name);
-+	kfree(bank_attrs);
-+	bank_attrs = NULL;
-+	return -ENOMEM;
-+}
-+
- static __init int mce_init_device(void)
- {
- 	int err;
-@@ -980,6 +1050,11 @@
- 
- 	if (!mce_available(&boot_cpu_data))
- 		return -EIO;
-+
-+	err = mce_init_banks();
-+	if (err)
-+		return err;
-+
- 	err = sysdev_class_register(&mce_sysclass);
- 	if (err)
- 		return err;
+ #endif /* !CONFIG_X86_32 */
