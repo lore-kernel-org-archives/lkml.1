@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761633AbZBLXiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761081AbZBLXlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761633AbZBLXiA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 18:38:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757612AbZBLXht
+	id S1761081AbZBLXlg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 18:41:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750764AbZBLXl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 18:37:49 -0500
-Received: from waste.org ([66.93.16.53]:58357 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753113AbZBLXhs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 18:37:48 -0500
-Subject: Re: [PATCH] Export symbol ksize()
-From: Matt Mackall <mpm@selenic.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-crypto@vger.kernel.org, Geert.Uytterhoeven@sonycom.com
-In-Reply-To: <20090212230934.GA21609@gondor.apana.org.au>
-References: <1234272104-10211-1-git-send-email-kirill@shutemov.name>
-	 <1234435521.28812.165.camel@penberg-laptop>
-	 <20090212105034.GC13859@gondor.apana.org.au>
-	 <200902130010.46623.nickpiggin@yahoo.com.au>
-	 <20090212230934.GA21609@gondor.apana.org.au>
-Content-Type: text/plain
-Date: Thu, 12 Feb 2009 17:37:01 -0600
-Message-Id: <1234481821.3152.27.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Feb 2009 18:41:28 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:41561 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750742AbZBLXl2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 18:41:28 -0500
+Date: Thu, 12 Feb 2009 18:41:26 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/7][RFC] function graph tracer port to PowerPC
+In-Reply-To: <4994B1A3.8080502@am.sony.com>
+Message-ID: <alpine.DEB.1.10.0902121840590.15469@gandalf.stny.rr.com>
+References: <20090212011051.265346435@goodmis.org> <4994B1A3.8080502@am.sony.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-02-13 at 07:09 +0800, Herbert Xu wrote:
-> On Fri, Feb 13, 2009 at 12:10:45AM +1100, Nick Piggin wrote:
-> > 
-> > I would be interested to know how that goes. You always have this
-> > circular issue that if a little more space helps significantly, then
-> > maybe it is a good idea to explicitly ask for those bytes. Of course
-> > that larger allocation is also likely to have some slack bytes.
+
+On Thu, 12 Feb 2009, Geoff Levand wrote:
+
+> On 02/11/2009 05:10 PM, Steven Rostedt wrote:
+> > This is the port to PowerPC of the function graph tracer that was written
+> > by Frederic Weisbecker for the x86 architecture.  It is broken up
+> > into a series of logical steps.
 > 
-> Well, the thing is we don't know apriori whether we need the
-> extra space.  The idea is to use the extra space if available
-> to avoid reallocation when we hit things like IPsec.
+> I added these to my ps3-linux.git tree.  Very casual testing shows
+> they seem to work OK.
+> 
+> 
+> Tested-by: Geoff Levand <geoffrey.levand@am.sony.com>  Working OK on PS3.
 
-I'm not entirely convinced by this argument. If you're concerned about
-space rather than performance, then you want an allocator that doesn't
-waste space in the first place and you don't try to do "sub-allocations"
-by hand. If you're concerned about performance, you instead optimize
-your allocator to be as fast as possible and again avoid conditional
-branches for sub-allocations.
+Thanks!
 
--- 
-http://selenic.com : development and support for Mercurial and Linux
+Is the ps3 64 or 32 bit? I'll put your tested by on the appropriate 
+patches.
 
+-- Steve
 
