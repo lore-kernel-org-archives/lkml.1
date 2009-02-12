@@ -1,69 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760182AbZBLUIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760001AbZBLUJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760182AbZBLUIm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 15:08:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759080AbZBLUIa
+	id S1760001AbZBLUJu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 15:09:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751110AbZBLUJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 15:08:30 -0500
-Received: from gw.goop.org ([64.81.55.164]:57269 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751110AbZBLUI3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 15:08:29 -0500
-Message-ID: <499481B9.4090202@goop.org>
-Date: Thu, 12 Feb 2009 12:08:25 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Can request_irq be called under spinlock?
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 12 Feb 2009 15:09:41 -0500
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:53200 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752060AbZBLUJl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 15:09:41 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArMEAH8PlElMQWt2/2dsb2JhbACBbtI+hBgG
+Date: Thu, 12 Feb 2009 15:09:37 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bryan Wu <cooloney@kernel.org>, uclinux-dist-devel@blackfin.uclinux.org
+Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
+	(repost)
+Message-ID: <20090212200937.GE2047@Krystal>
+References: <20090211200903.GG6694@linux.vnet.ibm.com> <20090211214258.GA32407@Krystal> <20090212003549.GU6694@linux.vnet.ibm.com> <20090212023308.GA21157@linux.vnet.ibm.com> <20090212040824.GA12346@Krystal> <20090212050120.GA8317@linux.vnet.ibm.com> <20090212070539.GA15896@Krystal> <20090212164621.GC6759@linux.vnet.ibm.com> <20090212192941.GC2047@Krystal> <20090212200249.GG6759@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090212200249.GG6759@linux.vnet.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:04:38 up 42 days, 20:02,  6 users,  load average: 0.44, 0.50,
+	0.40
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Relatively recently, I've started seeing this report from my code:
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> On Thu, Feb 12, 2009 at 02:29:41PM -0500, Mathieu Desnoyers wrote:
+> > 
+> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > [...]
+> > > diff --git a/urcu.c b/urcu.c
+> > > index f2aae34..a696439 100644
+> > > --- a/urcu.c
+> > > +++ b/urcu.c
+> > > @@ -99,7 +99,8 @@ static void force_mb_single_thread(pthread_t tid)
+> > >  	 * BUSY-LOOP.
+> > >  	 */
+> > >  	while (sig_done < 1)
+> > > -		smp_rmb();	/* ensure we re-read sig-done */
+> > > +		barrier();	/* ensure compiler re-reads sig-done */
+> > > +				/* cache coherence guarantees CPU re-read. */
+> > 
+> > OK, this is where I think our points of view differ. Please refer to
+> > http://lkml.org/lkml/2007/6/18/299.
+> > 
+> > Basically, cpu_relax() used in the Linux kernel has an
+> > architecture-specific implementation which *could* include a smp_rmb()
+> > if the architecture doesn't notice writes done by other CPUs. I think
+> > Blackfin is the only architecture currently supported by the Linux
+> > kernel which defines cpu_relax() as a smp_mb(), because it does not have
+> > cache coherency.
+> > 
+> > Therefore, I propose that we create a memory barrier macro which is
+> > defined as a 
+> >   barrier()   when the cpu has cache coherency
+> >   cache flush when the cpu does not have cache coherency and is
+> >               compiled with smp support.
+> > 
+> > We could call that
+> > 
+> >   smp_wmc() (for memory-coherency or memory commit)
+> >   smp_rmc()
+> >   smp_mc()
+> > 
+> > It would be a good way to identify the location where data exchange
+> > between memory and the local cache are is required in the algorithm.
+> > What do you think ?
+> 
+> Actually the best way to do this would be:
+> 
+> 	while (ACCESS_ONCE(sig_done) < 1)
+> 		continue;
+> 
 
-BUG: sleeping function called from invalid context at /home/jeremy/git/linux-2.6/mm/slab.c:2982
-in_atomic(): 1, irqs_disabled(): 1, pid: 2249, name: xenstored
-Pid: 2249, comm: xenstored Not tainted 2.6.29-rc4-tip #22
-Call Trace:
- [<ffffffff80233e5d>] __might_sleep+0x113/0x115
- [<ffffffff802a6f8c>] __kmalloc+0x67/0xe2
- [<ffffffff802ebc85>] __proc_create+0x89/0x127
- [<ffffffff803f1c5f>] ? bind_evtchn_to_cpu+0x4f/0xa0
- [<ffffffff802ec0ad>] proc_mkdir_mode+0x2e/0x57
- [<ffffffff802ec0ec>] proc_mkdir+0x16/0x18
- [<ffffffff80270d99>] register_irq_proc+0x74/0xcf
- [<ffffffff8026f5ab>] __setup_irq+0x19b/0x200
- [<ffffffff8026f6e7>] request_irq+0xd7/0x100
- [<ffffffff803f7d8e>] ? evtchn_interrupt+0x0/0xc1
- [<ffffffff803f7d8e>] ? evtchn_interrupt+0x0/0xc1
- [<ffffffff803f2856>] bind_evtchn_to_irqhandler+0x3d/0x5f
- [<ffffffff803f7c8b>] evtchn_bind_to_user+0x54/0x72
- [<ffffffff803f81cc>] evtchn_ioctl+0x180/0x39c
- [<ffffffff802a8592>] ? __dentry_open+0x1a4/0x2a2
- [<ffffffff802a9513>] ? nameidata_to_filp+0x46/0x57
- [<ffffffff803f02ed>] ? pnpacpi_parse_allocated_resource+0x94/0x9b
- [<ffffffff8020e6d9>] ? xen_force_evtchn_callback+0xd/0xf
- [<ffffffff802b5f06>] vfs_ioctl+0x2f/0x7c
- [<ffffffff802b63fe>] do_vfs_ioctl+0x4ab/0x503
- [<ffffffff802aad0e>] ? __fput+0x1a1/0x1ae
- [<ffffffff802b649d>] sys_ioctl+0x47/0x6a
- [<ffffffff80212522>] system_call_fastpath+0x16/0x1b
+Interesting idea. Maybe we should define an accessor for the data write
+too ?
 
-because I'm calling request_irq() while holding a spinlock.
+But I suspect that in a lot of situations, what we will really want is
+to do a bunch of read/writes, and only at a particular point do the
+cache flush.
 
-request_irq() itself looks like its OK with that (it allocates with 
-GFP_ATOMIC, for example), but __setup_irq -> register_irq_proc -> 
-proc_mkdir ends up doing a GFP_KERNEL allocation, which leads to this 
-message.
+> If ACCESS_ONCE() needs to be made architecture-specific to make this
+> really work on Blackfin, we should make that change.  And, now that
+> you mention it, I have heard rumors that other CPU families can violate
+> cache coherence in some circumstances.
+> 
+> So perhaps ACCESS_ONCE() becomes:
+> 
+> #ifdef CONFIG_ARCH_CACHE_COHERENT
+> #define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
+> #else /* #ifdef CONFIG_ARCH_CACHE_COHERENT */
+> #define ACCESS_ONCE(x)     ({ \
+> 				typeof(x) _________x1; \
+> 				_________x1 = (*(volatile typeof(x) *)&(x)); \
+> 				cpu_relax(); \
 
-I can rearrange this code to not do the call under lock, but it seems 
-like there was an unintentional change in API here.
+I don't think cpu_relax would be the correct primitive to use here. We
+definitely don't want a "rep; nop;" or anything like this which _slows
+down_ the access. It's just a different goal we are pursuing. So using
+something like smp_rmc within the ACCESS_ONCE() macro in this case as I
+proposed in the other mail still seems to make sense.
 
-Thanks,
-    J
+Mathieu
+
+> 				(_________x1); \
+> 				})
+> #endif /* #else #ifdef CONFIG_ARCH_CACHE_COHERENT */
+> 
+> Seem reasonable?
+> 
+> 							Thanx, Paul
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
