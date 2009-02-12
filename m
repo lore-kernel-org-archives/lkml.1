@@ -1,75 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757022AbZBLI6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756768AbZBLJCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757022AbZBLI6l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 03:58:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbZBLI6c
+	id S1756768AbZBLJCa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 04:02:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbZBLJCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 03:58:32 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39739 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752896AbZBLI6b (ORCPT
+	Thu, 12 Feb 2009 04:02:12 -0500
+Received: from ip93.serspropt.com ([208.94.240.93]:37220 "HELO
+	ip93.serspropt.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751168AbZBLJCL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 03:58:31 -0500
-Date: Thu, 12 Feb 2009 09:58:14 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Corentin Chary <corentincj@iksaif.net>,
-       Len Brown <len.brown@intel.com>, Thomas Renninger <trenn@suse.de>
-Subject: Re: [patch 33/41] asus-laptop: Fix the led behavior with value > 1
-Message-ID: <20090212085814.GA1386@ucw.cz>
-References: <20090204184029.881610776@mini.kroah.org> <20090204184654.GH25246@kroah.com> <20090210202429.GC1382@ucw.cz> <20090210205752.GA3044@suse.de>
+	Thu, 12 Feb 2009 04:02:11 -0500
+Date: Thu, 12 Feb 2009 03:56:04 -0500
+From: "Michael  ..." <michaelgonzalez08@serspropt.com>
+To: linux-kernel@vger.kernel.org
+Subject: private money seminars 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090210205752.GA3044@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Mailer: jqx v8.3.4.1000.2302609
+Reply-To: r.11.2302609@serspropt.com
+Message-Id: <20090212023002.zywarkqczj@serspropt.com>
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+call me at 858.736.7788 to attend the largest and most marketed hard money seminar this year. I will also add you to our hard money lenders directory that comes out on the first page of google even if you cant make it.
 
-> > > From: Corentin Chary <corentincj@iksaif.net>
-> > > 
-> > > commit e3deda9c87ac5eef2b5d18cd0b5511370979ca26 upstream.
-> > > 
-> > > Fix http://bugzilla.kernel.org/show_bug.cgi?id=11613 .
-> > > 
-> > > Signed-off-by: Corentin Chary <corentincj@iksaif.net>
-> > > Signed-off-by: Len Brown <len.brown@intel.com>
-> > > Cc: Thomas Renninger <trenn@suse.de>
-> > > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > > 
-> > > ---
-> > >  drivers/misc/asus-laptop.c |    2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > 
-> > > --- a/drivers/misc/asus-laptop.c
-> > > +++ b/drivers/misc/asus-laptop.c
-> > > @@ -351,7 +351,7 @@ static void write_status(acpi_handle han
-> > >  	static void object##_led_set(struct led_classdev *led_cdev,	\
-> > >  				     enum led_brightness value)		\
-> > >  	{								\
-> > > -		object##_led_wk = value;				\
-> > > +		object##_led_wk = (value > 0) ? 1 : 0;			\
-> > 
-> > "= !!value" is standard  way to do that.... for unsigned value.
-> 
-> No dispute here, but that's what is upstream :)
+for event details go to hardmoney-seminar2009.com
 
-No dispute there, I just hope original author fixes it in the upstream
-on one sunny day :).
+you friend and advisor
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Michael 
+Pitbull Seminars
+858.736.7788
+5580 la Jolla blvd. CA
+
+P.S. We are for real, you will walk out of the event with a network of business that will last you months.
+
+
+If ypu are not in the business and want to be unsubscribed from our list please go to http://hardmoney-seminar2009.com/uns/ and fill out your email address or write Pit bull Hard Money Seminars and Events at 5580 la jolla blvd #153 La Jolla, Ca 92037.
+
+--------------------------------------------
+..
+
+
+
+
+
