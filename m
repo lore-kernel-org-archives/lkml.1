@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761081AbZBLXlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761570AbZBLXmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761081AbZBLXlg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 18:41:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750764AbZBLXl2
+	id S1761570AbZBLXmw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 18:42:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbZBLXmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 18:41:28 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:41561 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750742AbZBLXl2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 18:41:28 -0500
-Date: Thu, 12 Feb 2009 18:41:26 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/7][RFC] function graph tracer port to PowerPC
-In-Reply-To: <4994B1A3.8080502@am.sony.com>
-Message-ID: <alpine.DEB.1.10.0902121840590.15469@gandalf.stny.rr.com>
-References: <20090212011051.265346435@goodmis.org> <4994B1A3.8080502@am.sony.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 12 Feb 2009 18:42:40 -0500
+Received: from THUNK.ORG ([69.25.196.29]:41671 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750742AbZBLXmj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 18:42:39 -0500
+Date: Thu, 12 Feb 2009 17:00:37 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH] ext4: Initialize list properly
+Message-ID: <20090212220037.GG6922@mini-me.lan>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+	linux-next@vger.kernel.org
+References: <a4423d670902100906q36e7f36fo53ba2060f5644303@mail.gmail.com> <1234422331-32766-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1234422331-32766-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 12 Feb 2009, Geoff Levand wrote:
-
-> On 02/11/2009 05:10 PM, Steven Rostedt wrote:
-> > This is the port to PowerPC of the function graph tracer that was written
-> > by Frederic Weisbecker for the x86 architecture.  It is broken up
-> > into a series of logical steps.
+On Thu, Feb 12, 2009 at 12:35:31PM +0530, Aneesh Kumar K.V wrote:
+> We need to initialize the list_head properly before we add
+> them to the any list. Otherwise with list debug on we get
+> list corruption warnings.
 > 
-> I added these to my ps3-linux.git tree.  Very casual testing shows
-> they seem to work OK.
-> 
-> 
-> Tested-by: Geoff Levand <geoffrey.levand@am.sony.com>  Working OK on PS3.
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Thanks!
+Added to the ext4 patch queue with a slight adjustment in the patch
+commit for readability issues:
 
-Is the ps3 64 or 32 bit? I'll put your tested by on the appropriate 
-patches.
+   When creating a new ext4_prealloc_space structure, we have to
+   initialize its list_head pointers before we add them to any prealloc
+   lists.  Otherwise, with list debug enabled, we will get list
+   corruption warnings.
 
--- Steve
+   Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+   Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 
+						- Ted
