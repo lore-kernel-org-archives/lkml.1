@@ -1,127 +1,230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758679AbZBLOdH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758760AbZBLOes@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758679AbZBLOdH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 09:33:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755867AbZBLOcy
+	id S1758760AbZBLOes (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 09:34:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbZBLOej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 09:32:54 -0500
-Received: from mx2.suse.de ([195.135.220.15]:40498 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751231AbZBLOcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 09:32:53 -0500
-Date: Thu, 12 Feb 2009 15:32:49 +0100
-From: Jan Kara <jack@suse.cz>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Federico Cuello <fedux@lugmen.org.ar>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: Re: [Bug #12604] Commit 31a12666d8f0c22235297e1c1575f82061480029
-	slows down Berkeley DB
-Message-ID: <20090212143249.GB3923@duck.suse.cz>
-References: <AIghyjFgMFP.A.uZD._10jJB@chimera> <sWhNs83kKPE.A.gUG.420jJB@chimera> <20090210162830.GD12146@placka.suse.cz> <20090212014718.GF30043@wotan.suse.de> <alpine.LFD.2.00.0902111757030.3189@localhost.localdomain> <20090212033423.GC23790@wotan.suse.de>
+	Thu, 12 Feb 2009 09:34:39 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:53754 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751231AbZBLOeh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 09:34:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=pu1tytXF0bws8n+dOLkQ30kDqmo6TgnEsQA2Zxz0DET4UP1/Byq5ibw8ibqKcifNT5
+         KtG3Xu+8pjqKvISCvPP2IbHVs0OcMm7+xfHa9w3QdDX3k0/c+au+Gw5ybJw1eVnkZFE5
+         aclsjkSqRqW9pByYNCxJN/xKECozF3fV3iV5E=
+Date: Thu, 12 Feb 2009 15:34:33 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@tglx.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>
+Subject: Re: [patch] generic-ipi: remove kmalloc, cleanup
+Message-ID: <20090212143432.GA6056@nowhere>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <20090212005032.GA4788@nowhere> <20090212021257.GB4697@nowhere> <20090212081801.GA22979@elte.hu> <20090212081923.GA26838@elte.hu> <1234430564.23438.205.camel@twins> <20090212100756.GA12790@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090212033423.GC23790@wotan.suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090212100756.GA12790@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 12-02-09 04:34:23, Nick Piggin wrote:
-> On Wed, Feb 11, 2009 at 06:02:19PM -0800, Linus Torvalds wrote:
-> > 
-> > 
-> > On Thu, 12 Feb 2009, Nick Piggin wrote:
-> > 
-> > > On Tue, Feb 10, 2009 at 05:28:30PM +0100, Jan Kara wrote:
-> > > > On Sun 08-02-09 20:21:42, Rafael J. Wysocki wrote:
-> > > > > This message has been generated automatically as a part of a report
-> > > > > of recent regressions.
-> > > > > 
-> > > > > The following bug entry is on the current list of known regressions
-> > > > > from 2.6.28.  Please verify if it still should be listed and let me know
-> > > > > (either way).
-> > > >   Yes, I've verified with latest git and the regression is still there.
+On Thu, Feb 12, 2009 at 11:07:56AM +0100, Ingo Molnar wrote:
+> 
+> * Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> > On Thu, 2009-02-12 at 09:19 +0100, Ingo Molnar wrote:
+> > > * Ingo Molnar <mingo@elte.hu> wrote:
 > > > 
-> > > I'm working on this FWIW...
+> > > > hm, that's a complex one - we do kfree() from IPI context, [...]
+> > > 
+> > > The patch below might do the trick - it offloads this to a softirq.
+> > > Not tested yet.
 > > 
-> > Shouldn't we just revert it? The code does look to be broken.
+> > The simple fix is something like:
 > > 
-> > It also looks like the interaction with that ever-buggy "nr_to_write" 
-> > thing are totally wrong. I can see that whole
-> > 
-> > 	if (!cycled) {
-> > 		..
-> > 		index = 0;
-> > 		goto retry
-> > 	}
-> > 
-> > doing all the wrong things: if we ever hit the combination of 
-> > "!cycled + nr_to-write==0", we're always screwed. It simply _cannot_ do 
-> > the right thing.
+> > ---
+> >  kernel/smp.c |    8 ++++++++
+> >  1 files changed, 8 insertions(+), 0 deletions(-)
 > 
-> Doh, I think you spotted the bug. I was going off on the wrong track.
+> ok, i made it unconditional (not just a PREEMPT_RT hac) and did the
+> cleanup below on top of it.
 > 
->  
-> > I dunno. That whole piece-of-sh*t function has been incredibly buggy this 
-> > release. The code is an unreadable mess, and I think that "cyclic" stuff 
-> > is part of the reason for it being messy and buggy. Please convince me 
-> > it's worth saving, or let me revert the whole stinking pile of crud?
+> I dont think repeat, queued IPIs are all that interesting from a
+> performance point of view. If they are, it will all be clearly
+> bisectable.
 > 
-> Well... the cyclic stuff apparently gets used by some filesystems to do
-> data integrity stuff, so I think the problem addressed by my broken
-> commit maybe shouldn't be ignored.
-> 
-> Maybe you're being harsh on this function. It has been two thinko bugs
-> so far. Before this release cycle it seemed to have the record for the
-> most data integrity bugs in a single function...
-> 
-> How's this? Jan, can you test with the bdb workload please?
-  Yes, this patch returns write performance of BDB workload back to
-original numbers. Thanks for the fix.
+> 	Ingo
 
-								Honza
 
-> --
+Would you prefer I test this one or wait for everybody agree a final version?
+
+ 
+> --------------->
+> Subject: generic-ipi: remove kmalloc, cleanup
+> From: Ingo Molnar <mingo@elte.hu>
 > 
-> A bug was introduced into write_cache_pages cyclic writeout by commit
-> 31a12666d8f0c22235297e1c1575f82061480029. The intention (and comments)
-> is that we should cycle back and look for more dirty pages at the
-> beginning of the file if there is no more work to be done.
+> Now that we dont use the kmalloc() sequence anymore, remove
+> CSD_FLAG_ALLOC and all its dependencies.
 > 
-> But the !done condition was dropped from the test. This means that any
-> time the page writeout loop breaks (eg. due to nr_to_write == 0), we
-> will set index to 0, then goto again. This will set done_index to index,
-> then find done is set, so will proceed to the end of the function. When
-> updating mapping->writeback_index for cyclic writeout, we now use
-> done_index == 0, so we're always cycling back to 0.
-> 
-> This seemed to be causing random mmap writes (slapadd and iozone) to
-> start writing more pages from the LRU and writeout would slowdown.
-> 
-> With this patch, iozone random write performance is increased nearly
-> 5x on my system (iozone -B -r 4k -s 64k -s 512m -s 1200m on ext2). 
-> 
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
 > ---
-> Index: linux-2.6/mm/page-writeback.c
+>  kernel/smp.c |   86 +++++++++++------------------------------------------------
+>  1 file changed, 17 insertions(+), 69 deletions(-)
+> 
+> Index: tip/kernel/smp.c
 > ===================================================================
-> --- linux-2.6.orig/mm/page-writeback.c	2009-02-12 13:30:42.000000000 +1100
-> +++ linux-2.6/mm/page-writeback.c	2009-02-12 14:16:28.000000000 +1100
-> @@ -1079,7 +1079,7 @@ continue_unlock:
->  		pagevec_release(&pvec);
->  		cond_resched();
+> --- tip.orig/kernel/smp.c
+> +++ tip/kernel/smp.c
+> @@ -17,8 +17,7 @@ __cacheline_aligned_in_smp DEFINE_RAW_SP
+>  
+>  enum {
+>  	CSD_FLAG_WAIT		= 0x01,
+> -	CSD_FLAG_ALLOC		= 0x02,
+> -	CSD_FLAG_LOCK		= 0x04,
+> +	CSD_FLAG_LOCK		= 0x02,
+>  };
+>  
+>  struct call_function_data {
+> @@ -85,15 +84,6 @@ static void generic_exec_single(int cpu,
+>  		csd_flag_wait(data);
+>  }
+>  
+> -static void rcu_free_call_data(struct rcu_head *head)
+> -{
+> -	struct call_function_data *data;
+> -
+> -	data = container_of(head, struct call_function_data, rcu_head);
+> -
+> -	kfree(data);
+> -}
+> -
+>  /*
+>   * Invoked by arch to handle an IPI for call function. Must be called with
+>   * interrupts disabled.
+> @@ -138,8 +128,6 @@ void generic_smp_call_function_interrupt
+>  			smp_wmb();
+>  			data->csd.flags &= ~CSD_FLAG_WAIT;
+>  		}
+> -		if (data->csd.flags & CSD_FLAG_ALLOC)
+> -			call_rcu(&data->rcu_head, rcu_free_call_data);
 >  	}
-> -	if (!cycled) {
-> +	if (!cycled && !done) {
+>  	rcu_read_unlock();
+>  
+> @@ -190,8 +178,7 @@ void generic_smp_call_function_single_in
+>  			} else if (data_flags & CSD_FLAG_LOCK) {
+>  				smp_wmb();
+>  				data->flags &= ~CSD_FLAG_LOCK;
+> -			} else if (data_flags & CSD_FLAG_ALLOC)
+> -				kfree(data);
+> +			}
+>  		}
 >  		/*
->  		 * range_cyclic:
->  		 * We hit the last page and there is more work to be done: wrap
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+>  		 * See comment on outer loop
+> @@ -236,13 +223,11 @@ int smp_call_function_single(int cpu, vo
+>  			/*
+>  			 * We are calling a function on a single CPU
+>  			 * and we are not going to wait for it to finish.
+> -			 * We first try to allocate the data, but if we
+> -			 * fail, we fall back to use a per cpu data to pass
+> -			 * the information to that CPU. Since all callers
+> -			 * of this code will use the same data, we must
+> -			 * synchronize the callers to prevent a new caller
+> -			 * from corrupting the data before the callee
+> -			 * can access it.
+> +			 * We use a per cpu data to pass the information to
+> +			 * that CPU. Since all callers of this code will use
+> +			 * the same data, we must synchronize the callers to
+> +			 * prevent a new caller from corrupting the data before
+> +			 * the callee can access it.
+>  			 *
+>  			 * The CSD_FLAG_LOCK is used to let us know when
+>  			 * the IPI handler is done with the data.
+> @@ -252,15 +237,10 @@ int smp_call_function_single(int cpu, vo
+>  			 * will make sure the callee is done with the
+>  			 * data before a new caller will use it.
+>  			 */
+> -			data = NULL;
+> -			if (data)
+> -				data->flags = CSD_FLAG_ALLOC;
+> -			else {
+> -				data = &per_cpu(csd_data, me);
+> -				while (data->flags & CSD_FLAG_LOCK)
+> -					cpu_relax();
+> -				data->flags = CSD_FLAG_LOCK;
+> -			}
+> +			data = &per_cpu(csd_data, me);
+> +			while (data->flags & CSD_FLAG_LOCK)
+> +				cpu_relax();
+> +			data->flags = CSD_FLAG_LOCK;
+>  		} else {
+>  			data = &d;
+>  			data->flags = CSD_FLAG_WAIT;
+> @@ -321,8 +301,6 @@ void smp_call_function_many(const struct
+>  			    void (*func)(void *), void *info,
+>  			    bool wait)
+>  {
+> -	struct call_function_data *data;
+> -	unsigned long flags;
+>  	int cpu, next_cpu;
+>  
+>  	/* Can deadlock when called with interrupts disabled */
+> @@ -347,43 +325,13 @@ void smp_call_function_many(const struct
+>  		return;
+>  	}
+>  
+> -	data = NULL;
+> -	if (unlikely(!data)) {
+> -		/* Slow path. */
+> -		for_each_online_cpu(cpu) {
+> -			if (cpu == smp_processor_id())
+> -				continue;
+> -			if (cpumask_test_cpu(cpu, mask))
+> -				smp_call_function_single(cpu, func, info, wait);
+> -		}
+> -		return;
+> +	/* Slow path. */
+> +	for_each_online_cpu(cpu) {
+> +		if (cpu == smp_processor_id())
+> +			continue;
+> +		if (cpumask_test_cpu(cpu, mask))
+> +			smp_call_function_single(cpu, func, info, wait);
+>  	}
+> -
+> -	spin_lock_init(&data->lock);
+> -	data->csd.flags = CSD_FLAG_ALLOC;
+> -	if (wait)
+> -		data->csd.flags |= CSD_FLAG_WAIT;
+> -	data->csd.func = func;
+> -	data->csd.info = info;
+> -	cpumask_and(to_cpumask(data->cpumask_bits), mask, cpu_online_mask);
+> -	cpumask_clear_cpu(smp_processor_id(), to_cpumask(data->cpumask_bits));
+> -	data->refs = cpumask_weight(to_cpumask(data->cpumask_bits));
+> -
+> -	spin_lock_irqsave(&call_function_lock, flags);
+> -	list_add_tail_rcu(&data->csd.list, &call_function_queue);
+> -	spin_unlock_irqrestore(&call_function_lock, flags);
+> -
+> -	/*
+> -	 * Make the list addition visible before sending the ipi.
+> -	 */
+> -	smp_mb();
+> -
+> -	/* Send a message to all CPUs in the map */
+> -	arch_send_call_function_ipi_mask(to_cpumask(data->cpumask_bits));
+> -
+> -	/* optionally wait for the CPUs to complete */
+> -	if (wait)
+> -		csd_flag_wait(&data->csd);
+>  }
+>  EXPORT_SYMBOL(smp_call_function_many);
+>  
+
