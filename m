@@ -1,81 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758895AbZBLOkN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758902AbZBLOki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758895AbZBLOkN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 09:40:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756806AbZBLOj7
+	id S1758902AbZBLOki (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 09:40:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757022AbZBLOk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 09:39:59 -0500
-Received: from ftp.linux-mips.org ([213.58.128.207]:51282 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756744AbZBLOj6 (ORCPT
+	Thu, 12 Feb 2009 09:40:28 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:32949 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756977AbZBLOk0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 09:39:58 -0500
-Date: Thu, 12 Feb 2009 14:39:56 +0000 (GMT)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Boaz Harrosh <bharrosh@panasas.com>
-cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org
-Subject: Re: get/put unaligned helpers
-In-Reply-To: <49941C4A.4050401@panasas.com>
-Message-ID: <alpine.LFD.1.10.0902121353060.7279@ftp.linux-mips.org>
-References: <20090211143521.GA18866@lst.de> <1234367339.5481.3.camel@brick> <4993E2CA.1070408@panasas.com> <alpine.LFD.1.10.0902121241570.7279@ftp.linux-mips.org> <49941C4A.4050401@panasas.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 12 Feb 2009 09:40:26 -0500
+Date: Thu, 12 Feb 2009 15:40:23 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+cc: Greg KH <gregkh@suse.de>, Shane Hathaway <shane@hathawaymix.org>,
+       Daolong Wang <ahlongxp@gmail.com>,
+       User-mode Linux Kernel Development 
+	<user-mode-linux-devel@lists.sourceforge.net>,
+       Jeff Dike <jdike@addtoit.com>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Rob Landley <rob@landley.net>, Am?rico Wang <xiyou.wangcong@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [uml-devel] [Patch] uml: fix a link error
+In-Reply-To: <20090207125956.110591c9@osiris.boeblingen.de.ibm.com>
+Message-ID: <alpine.LRH.2.00.0902121539340.29413@vixen.sonytel.be>
+References: <20090115194033.GA10926@hack.private> <20090116124158.4364e269.akpm@linux-foundation.org> <200901170328.15178.rob@landley.net> <dc84318c0901172223p57872a8cr227d940b1c0a908a@mail.gmail.com> <20090119152104.GC6432@c2.user-mode-linux.org>
+ <dc84318c0901191746g31d51c23g65da89190dc8bfd2@mail.gmail.com> <49753063.8040007@hathawaymix.org> <alpine.LRH.2.00.0902041803360.7690@vixen.sonytel.be> <Pine.LNX.4.64.0902042115530.25136@anakin> <20090204204009.GA10680@suse.de> <Pine.LNX.4.64.0902042150550.25136@anakin>
+ <20090207125956.110591c9@osiris.boeblingen.de.ibm.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Feb 2009, Boaz Harrosh wrote:
-
-> I was under the impression they need to be aligned because otherwise that means
-> something is done wrong. Because the aligned version on lots of CPUs is one instruction
-> where unaligned access is better, or must, be emulated (byte accessed).
+On Sat, 7 Feb 2009, Heiko Carstens wrote:
+> On Wed, 4 Feb 2009 21:54:12 +0100 (CET)
+> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > I verified that Shane's solution:
+> > 
+> > #define sys_sigprocmask sys_kernel_sigprocmask
+> > 
+> > works for me, but that's definitely not the cleanest way.
+> > 
+> > Al Viro also had a suggestion to rework the SYSCALL_DEFINE* macros, but I
+> > haven't tried it yet.
 > 
-> Assembly wise the two accesses are different and sometimes the compiler has no way to
-> know, where the programmer can know for sure.
 > 
-> But I like to be educated any day, please explain what to use when.
+> Patch below should fix it.
 
- The compiler is always told by the programmer what alignment to expect -- 
-the language defines the alignment of each data type it may use.  For 
-example for integer types the alignment is always equal to the size of the 
-type.  Casting a pointer and subsequently accessing data pointed at leads 
-to undefined behaviour if it increases the required alignment -- you'll 
-get a warning from GCC if you ask it for this class of warnings.  If you 
-want to access this data anyway you have to tell the compiler the data is 
-not correctly aligned.
+Thanks! I only managed to try it a few minutes ago...
 
- You can use packed structs (or unions) to ask GCC to emit code sequences 
-suitable for accessing unaligned data entities of various sizes.  For 
-example with the MIPS processor if a 32-bit-wide entity is read via a 
-member of a packed type, a sequence consisting of an LWL (load word left) 
-and an LWR (load word right) instruction will be generated to perform two 
-complementing bus read cycles with byte enables appropriately set to fetch 
-the two parts of the entity spanning a 32-bit alignment boundary.  
-Normally a single LW (load word) instruction would be used to fetch the 
-entity, but that instruction would trap if the address used to access it 
-was not aligned.  For platforms where hardware is capable of doing 
-unaligned accesses with no special treatment the use of packed types does 
-not imply a change in the emitted code.
+> Subject: [PATCH] syscall define: fix uml compile bug
+> 
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> 
+> With the new system call defines we get this on uml:
+> 
+> arch/um/sys-i386/built-in.o: In function `sys_call_table':
+> (.rodata+0x308): undefined reference to `sys_sigprocmask'
+> 
+> Reason for this is that uml passes the preprocessor option
+> -Dsigprocmask=kernel_sigprocmask to gcc when compiling the kernel.
+> This causes SYSCALL_DEFINE3(sigprocmask, ...) to be expanded to
+> SYSCALL_DEFINEx(3, kernel_sigprocmask, ...) and finally to a system call
+> named sys_kernel_sigprocmask. However sys_sigprocmask is missing because
+> of this.
+> To avoid macro expansion for the system call name just concatenate the
+> name at first define instead of carrying it through severel levels.
+> This was pointed out by Al Viro.
+> 
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 
- Of course letting GCC sort out unaligned accesses itself has a lot of 
-advantages, for example other instructions may get scheduled between the 
-LWL and LWR mentioned above as GCC sees fit; the two have no special 
-scheduling requirements with respect to each other (the reverse is 
-actually the case -- care has been taken since the beginning of the 
-architecture so that making them adjacent to each other is permitted and 
-incurs no performance penalty), but other instructions which surround them 
-may and making such a reorder may improve performance.  Such accesses may 
-get merged or killed too as any other ones.
+For the record:
 
- Linux seems to put a lot of infrastructure around it, but in reality it 
-is just a couple of lines of common code; I suppose it is there more to 
-make people aware of the issue (all the world is not x86) than to invent 
-something new.  And also Linux is a single program so it makes sense not 
-to scatter duplicates and have local copies of the same code for each 
-platform/subsystem/driver/etc.  You'd do the same with any other program, 
-but promoting the couple of lines to become a system header sounds like an 
-overkill to me.
+Acked-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-  Maciej
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
