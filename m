@@ -1,143 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760291AbZBMPxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760486AbZBMPz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760291AbZBMPxf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 10:53:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbZBMPx1
+	id S1760486AbZBMPz1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 10:55:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbZBMPzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 10:53:27 -0500
-Received: from styx.suse.cz ([82.119.242.94]:34417 "EHLO dhcp35"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751889AbZBMPx1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 10:53:27 -0500
-Date: Fri, 13 Feb 2009 16:53:22 +0100
-From: Michal Hocko <mhocko@suse.cz>
-To: Miles Lane <miles.lane@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Reinette Chatre <reinette.chatre@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.29-rc4-git1 -- iwl3945: Does not suspend/resume
-	successfully.
-Message-ID: <20090213155322.GA5852@dhcp35.suse.cz>
-References: <a44ae5cd0902091844m48a48e01i5c8d567279d70dff@mail.gmail.com>
-MIME-Version: 1.0
+	Fri, 13 Feb 2009 10:55:16 -0500
+Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:52917 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751845AbZBMPzP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 10:55:15 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah0FAPghlUlMQWt2/2dsb2JhbACBbtEahBgG
+Date: Fri, 13 Feb 2009 10:55:07 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Bryan Wu <cooloney@kernel.org>,
+       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
+	(repost)
+Message-ID: <20090213155507.GA2838@Krystal>
+References: <20090212023308.GA21157@linux.vnet.ibm.com> <alpine.LFD.2.00.0902121247040.3099@localhost.localdomain> <20090212215959.GN6759@linux.vnet.ibm.com> <200902140050.44550.nickpiggin@yahoo.com.au> <20090213145653.GA6854@linux.vnet.ibm.com> <20090213151045.GA1574@Krystal>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <a44ae5cd0902091844m48a48e01i5c8d567279d70dff@mail.gmail.com>
+In-Reply-To: <20090213151045.GA1574@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 10:47:19 up 43 days, 15:45,  5 users,  load average: 0.31, 0.22,
+	0.18
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 09-02-09 21:44:27, Miles Lane wrote:
-> Before suspend:
+* Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
+> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > On Sat, Feb 14, 2009 at 12:50:43AM +1100, Nick Piggin wrote:
+> > > On Friday 13 February 2009 08:59:59 Paul E. McKenney wrote:
+> > > > On Thu, Feb 12, 2009 at 01:15:08PM -0800, Linus Torvalds wrote:
+> > > > > On Thu, 12 Feb 2009, Paul E. McKenney wrote:
+> > > > > > In other words, you are arguing for using ACCESS_ONCE() in the loops,
+> > > > > > but keeping the old ACCESS_ONCE() definition, and declaring BF hardware
+> > > > > > broken?
+> > > > >
+> > > > > Well, I _also_ argue that if you have a busy loop, you'd better have a
+> > > > > cpu_relax() in there somewhere anyway. If you don't, you have a bug.
+> > > > >
+> > > > > So I think the BF approach is "borderline broken", but I think it should
+> > > > > work, if BF just has whatever appropriate cache flush in its cpu_relax.
+> > > >
+> > > > OK, got it.  Keep ACCESS_ONCE() as is, make sure any busy-wait
+> > > > loops contain a cpu_relax().  A given busy loop might or might not
+> > > > need ACCESS_ONCE(), but that decision is independent of hardware
+> > > > considerations.
+> > > >
+> > > > Ah, and blackfin's cpu_relax() does seem to have migrated from barrier()
+> > > > to smp_mb() recently, so sounds good to me!!!
+> > > 
+> > > 
+> > > Interesting. I don't know if you would say it is not cache coherent.
+> > > Does anything in cache coherency definition require timeliness? Only
+> > > causality I think.
+> > > 
+> > > However I think "infinite write buffering delay", or requiring "cache
+> > > barriers" is insane to teach any generic code about. BF would be free
+> > > to optimise arch functions, but for correctness surely it must also
+> > > have a periodic interrupt that will expose stores to other CPUs.
+> > 
+> > I have great sympathy for this point of view!!!  So why not have the
+> > blackfin folks get the appropriate instructions added in the gcc port
+> > to their architecture?  (Yeah, I know, gcc has no way of knowing which
+> > variables are shared and not...)
+> > 
+> > But perhaps we could decorate the affected variable declarations with
+> > a macro that expands to some sort of gcc attribute in the blackfin case?
+> > 
 > 
-> [   13.441374] cfg80211: Using static regulatory domain info
-> [   13.441378] cfg80211: Regulatory domain: US
-> [   13.441381] 	(start_freq - end_freq @ bandwidth),
-> (max_antenna_gain, max_eirp)
-> [   13.441385] 	(2402000 KHz - 2472000 KHz @ 40000 KHz), (600 mBi, 2700 mBm)
-> [   13.441388] 	(5170000 KHz - 5190000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
-> [   13.441392] 	(5190000 KHz - 5210000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
-> [   13.441395] 	(5210000 KHz - 5230000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
-> [   13.441398] 	(5230000 KHz - 5330000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
-> [   13.441401] 	(5735000 KHz - 5835000 KHz @ 40000 KHz), (600 mBi, 3000 mBm)
-> [   13.441406] cfg80211: Calling CRDA for country: US
-> [   13.453217] lib80211: common routines for IEEE802.11 drivers
-> [   13.453297] lib80211_crypt: registered algorithm 'NULL'
-> [   13.912922] iwl3945: Intel(R) PRO/Wireless 3945ABG/BG Network
-> Connection driver for Linux, 1.2.26kds
-> [   13.912927] iwl3945: Copyright(c) 2003-2008 Intel Corporation
-> [   13.913250] iwl3945 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-> [   13.913271] iwl3945 0000:03:00.0: setting latency timer to 64
-> [   13.959973] iwl3945: Tunable channels: 11 802.11bg, 13 802.11a channels
-> [   13.959977] iwl3945: Detected Intel Wireless WiFi Link 3945ABG
-> [   13.964994] iwl3945 0000:03:00.0: PCI INT A disabled
-> [   13.975378] wmaster0 (iwl3945): not using net_device_ops yet
-> [   13.978737] phy0: Selected rate control algorithm 'iwl-3945-rs'
-> [   14.060342] wlan0 (iwl3945): not using net_device_ops yet
-> [   49.848812] iwl3945 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-> [   49.849038] iwl3945 0000:03:00.0: restoring config space at offset
-> 0x1 (was 0x100102, writing 0x100106)
-> [   49.849310] iwl3945 0000:03:00.0: irq 28 for MSI/MSI-X
-> [   49.849651] iwl3945 0000:03:00.0: firmware: requesting iwlwifi-3945-2.ucode
-> [   49.938202] iwl3945 loaded firmware version 15.28.2.8
-> [   49.991919] Registered led device: iwl-phy0:radio
-> [   49.992175] Registered led device: iwl-phy0:assoc
-> [   49.992341] Registered led device: iwl-phy0:RX
-> [   49.992482] Registered led device: iwl-phy0:TX
-> [   50.017939] ADDRCONF(NETDEV_UP): wlan0: link is not ready
-> [  108.695643] wlan0: authenticate with AP 00:1b:2f:0e:ed:ba
-> [  108.697456] wlan0: authenticated
-> [  108.697463] wlan0: associate with AP 00:1b:2f:0e:ed:ba
-> [  108.700458] wlan0: RX AssocResp from 00:1b:2f:0e:ed:ba (capab=0x431
-> status=0 aid=1)
-> [  108.700506] wlan0: associated
-> [  108.711195] ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
-> [  113.639727] apport used greatest stack depth: 3680 bytes left
-> [  119.040046] wlan0: no IPv6 routers present
+> I think that just for the fact that it help identifying such variable
+> accesses which are :
 > 
-> At resume:
+> - performed atomically
+> - unprotected by any form of locking
 > 
-> [ 2619.951641] iwl3945 0000:03:00.0: PCI INT A disabled
-> [ 2619.954113] wlan0: disassociating by local choice (reason=3)
-> [ 2623.178462] iwl3945 0000:03:00.0: restoring config space at offset
-> 0xf (was 0x100, writing 0x10b)
-> [ 2623.178462] iwl3945 0000:03:00.0: restoring config space at offset
-> 0x4 (was 0x0, writing 0xd6000000)
-> [ 2623.178462] iwl3945 0000:03:00.0: restoring config space at offset
-> 0x3 (was 0x0, writing 0x10)
-> [ 2623.178462] iwl3945 0000:03:00.0: restoring config space at offset
-> 0x1 (was 0x100000, writing 0x100102)
-> [ 2627.612291] iwl3945 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-> [ 2627.612646] iwl3945 0000:03:00.0: irq 28 for MSI/MSI-X
-> [ 2629.644532] iwl3945: Wait for START_ALIVE timeout after 2000ms.
-> [ 2629.644669] iwl3945 0000:03:00.0: PCI INT A disabled
-> [ 2629.655349] iwl3945 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-> [ 2629.655752] iwl3945 0000:03:00.0: irq 28 for MSI/MSI-X
-> [ 2631.684143] iwl3945: Wait for START_ALIVE timeout after 2000ms.
-> [ 2631.684281] iwl3945 0000:03:00.0: PCI INT A disabled
-> [ 2701.336116] Hangcheck: hangcheck value past margin!
+> This seems like a good things to wrap such accesses into a macro which
+> permits easy identification of those sites. A bit like rcu_dereference()
+> does. Gradual use of this new macro could come incrementally too.
 > 
-> Result:  The device isn't responding to Network Manager (no APs listed).
-> 
-> When I "modprobe -r iwl3945" and "modprobe iwl3945", the log shows:
-> 
-> [ 2925.424158] lib80211_crypt: unregistered algorithm 'NULL'
-> [ 2928.900488] cfg80211: Using static regulatory domain info
-> [ 2928.900499] cfg80211: Regulatory domain: US
-> [ 2928.900504] 	(start_freq - end_freq @ bandwidth),
-> (max_antenna_gain, max_eirp)
-> [ 2928.900513] 	(2402000 KHz - 2472000 KHz @ 40000 KHz), (600 mBi, 2700 mBm)
-> [ 2928.900520] 	(5170000 KHz - 5190000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
-> [ 2928.900526] 	(5190000 KHz - 5210000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
-> [ 2928.900533] 	(5210000 KHz - 5230000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
-> [ 2928.900539] 	(5230000 KHz - 5330000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
-> [ 2928.900546] 	(5735000 KHz - 5835000 KHz @ 40000 KHz), (600 mBi, 3000 mBm)
-> [ 2928.900554] cfg80211: Calling CRDA for country: US
-> [ 2928.934992] lib80211: common routines for IEEE802.11 drivers
-> [ 2928.935005] lib80211_crypt: registered algorithm 'NULL'
-> [ 2929.006540] iwl3945: Intel(R) PRO/Wireless 3945ABG/BG Network
-> Connection driver for Linux, 1.2.26kds
-> [ 2929.006547] iwl3945: Copyright(c) 2003-2008 Intel Corporation
-> [ 2929.006672] iwl3945 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-> [ 2929.006695] iwl3945 0000:03:00.0: setting latency timer to 64
-> [ 2929.051497] iwl3945: Tunable channels: 11 802.11bg, 13 802.11a channels
-> [ 2929.051503] iwl3945: Detected Intel Wireless WiFi Link 3945ABG
-> [ 2929.054769] wmaster0 (iwl3945): not using net_device_ops yet
-> [ 2929.060185] phy0: Selected rate control algorithm 'iwl-3945-rs'
-> [ 2929.060283] wlan0 (iwl3945): not using net_device_ops yet
-> 
-> Device is working again.
 
-I had similar problem and tried the patch suggested in
-http://lkml.org/lkml/2009/2/12/239 and the patch seems to solve the
-issue on my end.
+I created also
+
+_STORE_SHARED()
+_LOAD_SHARED()
+
+which identify the variables which need to have cache flush done before
+(load) or after (store). So we get both speed and identification when
+needed (if we need to do batch updates linked with a single cache flush).
+e.g.
+
+
+/*
+ * Identify a shared load. A smp_rmc() or smp_mc() should come before the load.
+ */
+#define _LOAD_SHARED(p)	       ACCESS_ONCE(p)
+
+/*
+ * Load a data from shared memory, doing a cache flush if required.
+ */
+#define LOAD_SHARED(p) \
+	({ \
+		smp_rmc(); \
+		_LOAD_SHARED(p); \
+	})
+
+
+/*
+ * Identify a shared store. A smp_wmc() or smp_mc() should follow the store.
+ */
+#define _STORE_SHARED(x, v) \
+	do { \
+		(x) = (v); \
+	} while (0)
+
+/*
+ * Store v into x, where x is located in shared memory. Performs the required
+ * cache flush after writing.
+ */
+#define STORE_SHARED(x, v) \
+	do { \
+		_STORE_SHARED(x, v); \
+		smp_wmc(); \
+	} while (0)
+
+Mathieu
+
+> Mathieu
+> 
+> 
+> > 							Thanx, Paul
+> > 
+> > _______________________________________________
+> > ltt-dev mailing list
+> > ltt-dev@lists.casi.polymtl.ca
+> > http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
+> > 
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> 
+> _______________________________________________
+> ltt-dev mailing list
+> ltt-dev@lists.casi.polymtl.ca
+> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
+> 
 
 -- 
-Michal Hocko
-L3 team 
-SUSE LINUX s.r.o.
-Lihovarska 1060/12
-190 00 Praha 9    
-Czech Republic
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
