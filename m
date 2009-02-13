@@ -1,71 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758210AbZBMM1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758865AbZBMM2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758210AbZBMM1m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 07:27:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbZBMM1f
+	id S1758865AbZBMM2k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 07:28:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbZBMM2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 07:27:35 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33426 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750797AbZBMM1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 07:27:34 -0500
-Date: Fri, 13 Feb 2009 13:27:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86 headers: include linux/types.h
-Message-ID: <20090213122724.GA2172@elte.hu>
-References: <49935DD8.8010705@goop.org> <20090213120239.GL15679@elte.hu> <20090213121858.GB5483@elte.hu> <20090213122325.GA30061@elte.hu>
+	Fri, 13 Feb 2009 07:28:32 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59640 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750797AbZBMM2b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 07:28:31 -0500
+Date: Fri, 13 Feb 2009 13:28:29 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: ?ric Piel <eric.piel@tremplin-utc.net>
+Cc: akpm@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
+       trenn@suse.de, vbotka@suse.cz, jikos@suse.cz
+Subject: Re: hp accelerometer: add freefall detection
+Message-ID: <20090213122828.GA25941@atrey.karlin.mff.cuni.cz>
+References: <200901162234.n0GMYB8Z022317@imap1.linux-foundation.org> <4992C57E.9050109@tremplin-utc.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090213122325.GA30061@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4992C57E.9050109@tremplin-utc.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> From: Pavel Machek <pavel@suse.cz>
+> > 
+> > This adds freefall handling to hp_accel driver.  According to HP, it
+> > should just work, without us having to set the chip up by hand.
+> > 
+> > hpfall.c is example .c program that parks the disk when accelerometer
+> > detects free fall.  It should work; for now, it uses fixed 20seconds
+> > protection period.
+> > 
+> > Signed-off-by: Pavel Machek <pavel@suse.cz>
+> > Cc: Thomas Renninger <trenn@suse.de>
+> > Cc: ???ric Piel <eric.piel@tremplin-utc.net>
+> > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> Hi Pavel,
+> Sorry for being amazingly late, reading the latest patches from
+> Giuseppe, I noticed some parts in this patch which are strange.
+> Basically you scrap all the init and all the poweroff. Some of the
+> things there were put for some purpose, and I wonder if you've verified
+> everything keeps working correctly.
 
-Regarding the fixlet below - wouldnt PTE_FLAGS_MASK be better placed in
-pgtable_types.h ? It's specifically related to the pte format. OTOH we
-have a lot of PTE details in the page_*types.h files already.
+Yes; HP tells me I do not need to touch the hardware, and in my tests
+touching the hardware actually broke the stuff. Yes, position and
+freefall detection still worked without manually touching the hw.
 
-The boundary between page_types.h and pgtable_types.h does not seem to
-be clear to me - what is the principle you followed?
+Unfortunately, I don't have the hardware any more...
 
-	Ingo
+> > @@ -110,26 +114,13 @@ static void lis3lv02d_get_xyz(acpi_handl
+> >  void lis3lv02d_poweroff(acpi_handle handle)
+> >  {
+> >  	adev.is_on = 0;
+> > -	/* disable X,Y,Z axis and power down */
+> > -	adev.write(handle, CTRL_REG1, 0x00);
+> So we are not turning off the device on poweroff()?! Why? Did you notice
+> problems when we were doing it?
 
------------------------>
->From e43623b4ed1d0a1a86f0e05a2df8b9637b90ddd7 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri, 13 Feb 2009 13:24:19 +0100
-Subject: [PATCH] x86 headers: include page_types.h in pgtable_types.h
+Well, HP told me not to touch the hardware, so I'm not touching it.
 
-To properly pick up details like PTE_FLAGS_MASK.
+> Actually I've always wondered if it was worthy to turn it off because
+> I've never been able to measure a difference in power consumption. Have
+> you done the measurement and noticed there is no effect? I'd be glad we
+> can get rid of this power management thing, but then we can scratch much
+> more than just this line!
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/include/asm/pgtable_types.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Well,  if you can't measure the difference, it is probably not worth
+doing ... for HP notebooks anyway.
 
-diff --git a/arch/x86/include/asm/pgtable_types.h b/arch/x86/include/asm/pgtable_types.h
-index a7452f1..9dafe87 100644
---- a/arch/x86/include/asm/pgtable_types.h
-+++ b/arch/x86/include/asm/pgtable_types.h
-@@ -2,6 +2,7 @@
- #define _ASM_X86_PGTABLE_DEFS_H
- 
- #include <linux/const.h>
-+#include <asm/page_types.h>
- 
- #define FIRST_USER_ADDRESS	0
- 
+> > -	/*
+> > -	 * BDU: LSB and MSB values are not updated until both have been read.
+> > -	 *      So the value read will always be correct.
+> > -	 * IEN: Interrupt for free-fall and DD, not for data-ready.
+> > -	 */
+> > -	adev.read(handle, CTRL_REG2, &val);
+> > -	val |= CTRL2_BDU | CTRL2_IEN;
+> > -	adev.write(handle, CTRL_REG2, val);
+> This part is rather scary. Did you read the comment? If you don't
+> activate BDU you cannot be sure that the data you read is valid. I see
+> no reason why this would interfere with the free-fall detection so
+> unless you have a really good case, let's keep it. On the other hand, I
+> don't mind removing IEN if you've noticed that it's not useful or
+> interfering.
+
+Well, I just removed all the writes at once and notice it
+helped... And HP tells me I don't need to touch the hardware...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
