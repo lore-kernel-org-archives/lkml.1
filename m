@@ -1,181 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761799AbZBMFbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761926AbZBMFbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761799AbZBMFbi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 00:31:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbZBMFaN
+	id S1761926AbZBMFbz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 00:31:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbZBMFaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 00:30:13 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:49483 "EHLO
+	Fri, 13 Feb 2009 00:30:15 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:49490 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750778AbZBMFaH (ORCPT
+	with ESMTP id S1750861AbZBMFaH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 13 Feb 2009 00:30:07 -0500
-Message-Id: <20090213053005.348345164@goodmis.org>
+Message-Id: <20090213053006.314153453@goodmis.org>
 References: <20090213052358.524970112@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 13 Feb 2009 00:24:01 -0500
+Date: Fri, 13 Feb 2009 00:24:04 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 3/7] powerpc64, tracing: add function graph tracer with dynamic tracing
-Content-Disposition: inline; filename=0003-powerpc64-tracing-add-function-graph-tracer-with-d.patch
+       Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: [PATCH 6/7] powerpc32, ftrace: port function graph tracer to ppc32, static only
+Content-Disposition: inline; filename=0006-powerpc32-ftrace-port-function-graph-tracer-to-ppc.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+From: Steven Rostedt <rostedt@goodmis.org>
 
-This is the port of the function graph tracer to PowerPC with
-dynamic tracing.
+This patch ports the function graph tracer for PowerPC, but only
+for static function tracing.
 
-Geoff Lavand tested on PS3.
-
-Tested-by: Geoff Levand <geoffrey.levand@am.sony.com>
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
  arch/powerpc/Kconfig           |    2 +-
- arch/powerpc/kernel/entry_64.S |    8 ++++++-
- arch/powerpc/kernel/ftrace.c   |   47 ++++++++++++++++++++++++++++++++++-----
- 3 files changed, 49 insertions(+), 8 deletions(-)
+ arch/powerpc/kernel/entry_32.S |   43 +++++++++++++++++++++++++++++++++++++++-
+ arch/powerpc/kernel/ftrace.c   |    2 +-
+ 3 files changed, 44 insertions(+), 3 deletions(-)
 
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index ca4647e..6e1ee1b 100644
+index 6e1ee1b..9e4bd20 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
 @@ -111,7 +111,7 @@ config PPC
  	select HAVE_FTRACE_MCOUNT_RECORD
  	select HAVE_DYNAMIC_FTRACE
  	select HAVE_FUNCTION_TRACER
--	select HAVE_FUNCTION_GRAPH_TRACER if !DYNAMIC_FTRACE && PPC64
-+	select HAVE_FUNCTION_GRAPH_TRACER if PPC64
+-	select HAVE_FUNCTION_GRAPH_TRACER if PPC64
++	select HAVE_FUNCTION_GRAPH_TRACER if PPC64 || !DYNAMIC_FTRACE
  	select ARCH_WANT_OPTIONAL_GPIOLIB
  	select HAVE_IDE
  	select HAVE_IOREMAP_PROT
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index a32699e..9f61fd6 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -908,6 +908,12 @@ _GLOBAL(ftrace_caller)
- ftrace_call:
- 	bl	ftrace_stub
- 	nop
-+#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-+.globl ftrace_graph_call
-+ftrace_graph_call:
-+	b	ftrace_graph_stub
-+_GLOBAL(ftrace_graph_stub)
-+#endif
- 	ld	r0, 128(r1)
- 	mtlr	r0
- 	addi	r1, r1, 112
-@@ -946,7 +952,7 @@ _GLOBAL(ftrace_stub)
- #endif /* CONFIG_DYNAMIC_FTRACE */
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index eb0c13e..9cf7083 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -1199,9 +1199,11 @@ _GLOBAL(_mcount)
  
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
--ftrace_graph_caller:
+ 	mtctr	r5
+ 	bctrl
+-
+ 	nop
+ 
++#ifdef CONFIG_FUNCTION_GRAPH_TRACER
++	b	ftrace_graph_caller
++#endif
+ 	MCOUNT_RESTORE_FRAME
+ 	
+ 	bctr
+@@ -1210,4 +1212,43 @@ _GLOBAL(_mcount)
+ _GLOBAL(ftrace_stub)
+ 	blr
+ 
++#ifdef CONFIG_FUNCTION_GRAPH_TRACER
 +_GLOBAL(ftrace_graph_caller)
- 	/* load r4 with local address */
- 	ld	r4, 128(r1)
- 	subi	r4, r4, MCOUNT_INSN_SIZE
++	/* load r4 with local address */
++	lwz	r4, 44(r1)
++	subi	r4, r4, MCOUNT_INSN_SIZE
++
++	/* get the parent address */
++	addi	r3, r1, 52
++
++	bl	prepare_ftrace_return
++	nop
++
++	MCOUNT_RESTORE_FRAME
++	/* old link register ends up in ctr reg */
++	bctr
++
++_GLOBAL(return_to_handler)
++	/* need to save return values */
++	stwu	r1, -32(r1)
++	stw	r3, 20(r1)
++	stw	r4, 16(r1)
++	stw	r31, 12(r1)
++	mr	r31, r1
++
++	bl	ftrace_return_to_handler
++	nop
++
++	/* return value has real return address */
++	mtlr	r3
++
++	lwz	r3, 20(r1)
++	lwz	r4, 16(r1)
++	lwz	r31,12(r1)
++	lwz	r1, 0(r1)
++
++	/* Jump back to real return address */
++	blr
++#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
++
+ #endif /* CONFIG_MCOUNT */
 diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-index c9b1547..7538b94 100644
+index 5c6dfa9..dddd99b 100644
 --- a/arch/powerpc/kernel/ftrace.c
 +++ b/arch/powerpc/kernel/ftrace.c
-@@ -43,7 +43,8 @@ static unsigned char *ftrace_nop_replace(void)
- 	return (char *)&ftrace_nop;
- }
+@@ -603,7 +603,7 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+ 		"1: " PPC_LL "%[old], 0(%[parent])\n"
+ 		"2: " PPC_STL "%[return_hooker], 0(%[parent])\n"
+ 		"   li %[faulted], 0\n"
+-		"3:"
++		"3:\n"
  
--static unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
-+static unsigned char *
-+ftrace_call_replace(unsigned long ip, unsigned long addr, int link)
- {
- 	static unsigned int op;
- 
-@@ -55,8 +56,9 @@ static unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
- 	 */
- 	addr = GET_ADDR(addr);
- 
--	/* Set to "bl addr" */
--	op = 0x48000001 | (ftrace_calc_offset(ip, addr) & 0x03fffffc);
-+	/* if (link) set op to 'bl' else 'b' */
-+	op = 0x48000000 | (link ? 1 : 0);
-+	op |= (ftrace_calc_offset(ip, addr) & 0x03fffffc);
- 
- 	/*
- 	 * No locking needed, this must be called via kstop_machine
-@@ -344,7 +346,7 @@ int ftrace_make_nop(struct module *mod,
- 	 */
- 	if (test_24bit_addr(ip, addr)) {
- 		/* within range */
--		old = ftrace_call_replace(ip, addr);
-+		old = ftrace_call_replace(ip, addr, 1);
- 		new = ftrace_nop_replace();
- 		return ftrace_modify_code(ip, old, new);
- 	}
-@@ -484,7 +486,7 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- 	if (test_24bit_addr(ip, addr)) {
- 		/* within range */
- 		old = ftrace_nop_replace();
--		new = ftrace_call_replace(ip, addr);
-+		new = ftrace_call_replace(ip, addr, 1);
- 		return ftrace_modify_code(ip, old, new);
- 	}
- 
-@@ -513,7 +515,7 @@ int ftrace_update_ftrace_func(ftrace_func_t func)
- 	int ret;
- 
- 	memcpy(old, &ftrace_call, MCOUNT_INSN_SIZE);
--	new = ftrace_call_replace(ip, (unsigned long)func);
-+	new = ftrace_call_replace(ip, (unsigned long)func, 1);
- 	ret = ftrace_modify_code(ip, old, new);
- 
- 	return ret;
-@@ -532,6 +534,39 @@ int __init ftrace_dyn_arch_init(void *data)
- 
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
- 
-+#ifdef CONFIG_DYNAMIC_FTRACE
-+extern void ftrace_graph_call(void);
-+extern void ftrace_graph_stub(void);
-+
-+int ftrace_enable_ftrace_graph_caller(void)
-+{
-+	unsigned long ip = (unsigned long)(&ftrace_graph_call);
-+	unsigned long addr = (unsigned long)(&ftrace_graph_caller);
-+	unsigned long stub = (unsigned long)(&ftrace_graph_stub);
-+	unsigned char old[MCOUNT_INSN_SIZE], *new;
-+
-+	new = ftrace_call_replace(ip, stub, 0);
-+	memcpy(old, new, MCOUNT_INSN_SIZE);
-+	new = ftrace_call_replace(ip, addr, 0);
-+
-+	return ftrace_modify_code(ip, old, new);
-+}
-+
-+int ftrace_disable_ftrace_graph_caller(void)
-+{
-+	unsigned long ip = (unsigned long)(&ftrace_graph_call);
-+	unsigned long addr = (unsigned long)(&ftrace_graph_caller);
-+	unsigned long stub = (unsigned long)(&ftrace_graph_stub);
-+	unsigned char old[MCOUNT_INSN_SIZE], *new;
-+
-+	new = ftrace_call_replace(ip, addr, 0);
-+	memcpy(old, new, MCOUNT_INSN_SIZE);
-+	new = ftrace_call_replace(ip, stub, 0);
-+
-+	return ftrace_modify_code(ip, old, new);
-+}
-+#endif /* CONFIG_DYNAMIC_FTRACE */
-+
- /*
-  * Hook the return address and push it in the stack of return addrs
-  * in current thread info.
+ 		".section .fixup, \"ax\"\n"
+ 		"4: li %[faulted], 1\n"
 -- 
 1.5.6.5
 
