@@ -1,97 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760630AbZBMO1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759758AbZBMObQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760630AbZBMO1d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 09:27:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758495AbZBMO1Q
+	id S1759758AbZBMObQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 09:31:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZBMObG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 09:27:16 -0500
-Received: from bc.sympatico.ca ([209.226.175.184]:44888 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758094AbZBMO1P (ORCPT
+	Fri, 13 Feb 2009 09:31:06 -0500
+Received: from smtp111.mail.mud.yahoo.com ([209.191.84.64]:46950 "HELO
+	smtp111.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751509AbZBMObF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 09:27:15 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah0FAJ8MlUlMQWt2/2dsb2JhbACBbtEkhBgG
-Date: Fri, 13 Feb 2009 09:27:05 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+	Fri, 13 Feb 2009 09:31:05 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=4Gr7mPA3oFj2feLHLVe16LLtw5MDCbvkIqstwp+V67XU1J7l/iNixNXfNft3Y9TzUELrd8e1CL9q1CWgBfWDgag9Qc0Uvm4ZCKod4AdViy+BtRCvjjkAhyOzcDdercgTmcghsElvrn7mVVseOkKAoe4uMnpi0nn0eFvCsv82Tqs=  ;
+X-YMail-OSG: Pb_SmtMVM1kIhfElM6wCZ6cZA4T3I1VHwcb.383xFGCxq6JUuMfZ6c_71PXorOwZ04iB26hS_l0UkjAA6jskuVOxMZ3v.ytpBIs09MbN_xEqTJx3z0tZW29RQyiE0lhRWe6fVmeJvWsLeKhAscyBy_LL1xIFP5xJ35b2mX2KB.oZg4V6RohFi3p5ePFcjA--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
 To: Peter Zijlstra <peterz@infradead.org>
-Cc: Nick Piggin <npiggin@suse.de>, akpm <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] x86: text_poke might sleep
-Message-ID: <20090213142705.GC31922@Krystal>
-References: <1234529407.6519.28.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: [PATCH] mm: disable preemption in apply_to_pte_range
+Date: Sat, 14 Feb 2009 01:30:31 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>
+References: <4994BCF0.30005@goop.org> <200902140030.59027.nickpiggin@yahoo.com.au> <1234534611.6519.109.camel@twins>
+In-Reply-To: <1234534611.6519.109.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1234529407.6519.28.camel@twins>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:25:24 up 43 days, 14:23,  4 users,  load average: 0.28, 0.29,
-	0.26
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200902140130.31985.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra (peterz@infradead.org) wrote:
+On Saturday 14 February 2009 01:16:51 Peter Zijlstra wrote:
+> On Sat, 2009-02-14 at 00:30 +1100, Nick Piggin wrote:
+> > On Friday 13 February 2009 22:48:30 Peter Zijlstra wrote:
+> > > On Thu, 2009-02-12 at 17:39 -0800, Jeremy Fitzhardinge wrote:
+> > > > In general the model for lazy updates is that you're batching the
+> > > > updates in some queue somewhere, which is almost certainly a piece of
+> > > > percpu state being maintained by someone.  Its therefore broken
+> > > > and/or meaningless to have the code making the updates wandering
+> > > > between cpus for the duration of the lazy updates.
+> > > >
+> > > > > If so, should we do the preempt_disable/enable within those
+> > > > > functions? Probably not worth the cost, I guess.
+> > > >
+> > > > The specific rules are that
+> > > > arch_enter_lazy_mmu_mode()/arch_leave_lazy_mmu_mode() require you to
+> > > > be holding the appropriate pte locks for the ptes you're updating, so
+> > > > preemption is naturally disabled in that case.
+> > >
+> > > Right, except on -rt where the pte lock is a mutex.
+> > >
+> > > > This all goes a bit strange with init_mm's non-requirement for taking
+> > > > pte locks.  The caller has to arrange for some kind of serialization
+> > > > on updating the range in question, and that could be a mutex. 
+> > > > Explicitly disabling preemption in enter_lazy_mmu_mode would make
+> > > > sense for this case, but it would be redundant for the common case of
+> > > > batched updates to usermode ptes.
+> > >
+> > > I really utterly hate how you just plonk preempt_disable() in there
+> > > unconditionally and without very clear comments on how and why.
+> >
+> > And even on mainline kernels, builds without the lazy mmu mode stuff
+> > don't need preemption disabled here either, so it is technically a
+> > regression in those cases too.
+>
+> Well, normally we'd be holding the pte lock, which on regular kernels
+> already disable preemption, as Jeremy noted. So in that respect it
+> doesn't change things too much.
 
-> Now text_poke() uses local_irq_save/restore(), which conveys that it can
-> be called with IRQs disabled, which is exactly what happens in the trace
-> above, however we just established that vmap/vunmap() are not irq-safe.
-> 
-> Anybody got an idea on how to fix this?
+But not (necessarily) in the init_mm case.
 
-Add might_sleep(), comments and use local_irq_disable/enable in text_poke so
-people are really aware that it uses vmap, which sleeps.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <peterz@infradead.org>
-CC: Nick Piggin <npiggin@suse.de>
-CC: akpm <akpm@linux-foundation.org>
----
- arch/x86/kernel/alternative.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+> Its just that slapping preempt_disable()s around like there's not
+> tomorrow is horridly annoying, its like using the BKL -- there's no data
+> affinity what so ever, so trying to unravel the dependencies a year
+> later when you notice its a latency concern is a massive pain in the
+> backside.
 
-Index: linux-2.6-lttng/arch/x86/kernel/alternative.c
-===================================================================
---- linux-2.6-lttng.orig/arch/x86/kernel/alternative.c	2009-02-13 09:02:20.000000000 -0500
-+++ linux-2.6-lttng/arch/x86/kernel/alternative.c	2009-02-13 09:05:05.000000000 -0500
-@@ -494,16 +494,16 @@ void *text_poke_early(void *addr, const 
-  * Only atomic text poke/set should be allowed when not doing early patching.
-  * It means the size must be writable atomically and the address must be aligned
-  * in a way that permits an atomic write. It also makes sure we fit on a single
-- * page.
-+ * page. Should be called with preemption enabled.
-  */
- void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
- {
--	unsigned long flags;
- 	char *vaddr;
- 	int nr_pages = 2;
- 	struct page *pages[2];
- 	int i;
- 
-+	might_sleep();
- 	if (!core_kernel_text((unsigned long)addr)) {
- 		pages[0] = vmalloc_to_page(addr);
- 		pages[1] = vmalloc_to_page(addr + PAGE_SIZE);
-@@ -517,9 +517,9 @@ void *__kprobes text_poke(void *addr, co
- 		nr_pages = 1;
- 	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
- 	BUG_ON(!vaddr);
--	local_irq_save(flags);
-+	local_irq_disable();
- 	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
--	local_irq_restore(flags);
-+	local_irq_enable();
- 	vunmap(vaddr);
- 	sync_core();
- 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
+Or like using memory barriers. Any of them are OK if they're properly
+commented though, I guess.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
+> > > I'd rather we'd fix up the init_mm to also have a pte lock.
+> >
+> > Well that wouldn't fix -rt; there would need to be a preempt_disable
+> > within arch_enter_lazy_mmu_mode(), which I think is the cleanest
+> > solution.
+>
+> Hmm, so you're saying we need to be cpu-affine for the lazy mmu stuff?
+> Otherwise a -rt would just convert the init_mm pte lock to a mutex along
+> with all other pte locks and there'd be no issue.
+
+Well I don't see any other reason why it should have to use preempt_disable.
+Not necessarily just cpu-affine, but perhaps it is using per-cpu data in
+non-trivial way so cannot get switched out either.
+
