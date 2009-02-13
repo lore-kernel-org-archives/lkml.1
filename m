@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760340AbZBMOex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760913AbZBMOfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760340AbZBMOex (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 09:34:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbZBMOen
+	id S1760913AbZBMOfw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 09:35:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758576AbZBMOfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 09:34:43 -0500
-Received: from yw-out-2324.google.com ([74.125.46.28]:16915 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751546AbZBMOem (ORCPT
+	Fri, 13 Feb 2009 09:35:41 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:55394 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758053AbZBMOfk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 09:34:42 -0500
+	Fri, 13 Feb 2009 09:35:40 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
-         :subject:references:in-reply-to:content-type
-         :content-transfer-encoding;
-        b=TTDEoMl6CkM5bvYldHrDpHsj6R1+DYh/dV2RjeIcD7un+A1QI6aWSigmzyA1k3Lwnn
-         fBlnq3OybTA8ip9eOMMLI60Xnq4j+ytKKhQDx7DhM2N0WAWB1temSUpHHrYpUEPdapnl
-         L/Q0l99tDdc/tc0gLWfBFFFP+/R9yGzXAN4wU=
-Message-ID: <499584FC.2050104@gmail.com>
-Date: Fri, 13 Feb 2009 08:34:36 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=p4Pmz1NX8QQbBAVL6Pa2rBcTcyhf/4IH3KQV7G1fw3+pTxek2/FMhtmdk5IrZLFifX
+         zH9JxZfAM2Nkci8CUwUMT1p87euPUC3fqOxzRb9s6sE2OS9oM10oSNEML0lEmOEp2Urx
+         AGE5iN/qZojca7MEgY9alBTGVkmqx+gIdF0eA=
+Date: Fri, 13 Feb 2009 17:35:32 +0300
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: zbr@ioremap.net, gregkh@suse.de, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH next] Stagging: pohmelfs/net.c: include vmalloc.h
+Message-ID: <20090213143532.GA7266@orion>
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: =?UTF-8?B?SGFubm8gQsO2Y2s=?= <hanno@hboeck.de>
-CC: linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>
-Subject: Re: Very old IDE hard drive (240 MB) detected as 1.1 TB
-References: <200902131428.40212.hanno@hboeck.de>
-In-Reply-To: <200902131428.40212.hanno@hboeck.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(ccing linux-ide)
+on Sparc64:
+drivers/staging/pohmelfs/net.c:33: error: implicit declaration of function 'vmalloc'
+drivers/staging/pohmelfs/net.c:42: error: implicit declaration of function 'vfree'
 
-Hanno Böck wrote:
-> I was about to shred some old hard drives. On one Hard drive, identified as:
-> Conner Peripherals 240MB - CP30254
-> 
-> it was detected as 1.1 TB (!) and obviously throwing lots of errors after 
-> getting over 240 MB.
-> 
-> Is this issue worth investigating further? System is ubuntu 8.10. If anyone 
-> wants to have a deeper look, I can obviously donate that harddrive if you pay 
-> me shipping costs.
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
 
-That would be worth investigating, yes.. If you can provide the dmesg 
-output from bootup, as well as the output of hdparm --Istdout on the 
-disk device, that would be useful..
+ drivers/staging/pohmelfs/net.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/staging/pohmelfs/net.c b/drivers/staging/pohmelfs/net.c
+index d161237..c9b8540 100644
+--- a/drivers/staging/pohmelfs/net.c
++++ b/drivers/staging/pohmelfs/net.c
+@@ -22,6 +22,7 @@
+ #include <linux/poll.h>
+ #include <linux/swap.h>
+ #include <linux/syscalls.h>
++#include <linux/vmalloc.h>
+
+ #include "netfs.h"
+
