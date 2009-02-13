@@ -1,129 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761958AbZBMWWP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762062AbZBMWWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761958AbZBMWWP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 17:22:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbZBMWV4
+	id S1762062AbZBMWWc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 17:22:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761884AbZBMWWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 17:21:56 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:50887 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761813AbZBMWVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 17:21:55 -0500
-Message-ID: <4995F27E.3070401@redhat.com>
-Date: Fri, 13 Feb 2009 16:21:50 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 13 Feb 2009 17:22:07 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:54878 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755359AbZBMWWE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 17:22:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=PKJTKnw0LlBvA68u01A1hN1UuJlFve5NCSMIYh2B7DxRO1NWnv12E+Y8wmYSLsaObE
+         HBA0sjnrP8Zz76gcbFDtmG+asywsCXLDipL7F6FMBEmMzIJVcUSqGIZ6pu/cwRV5IaGQ
+         6M0Tq792yxwukEpMw/ViRtTkaikPrLit8tpKY=
+Date: Sat, 14 Feb 2009 01:28:18 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>, containers@lists.linux-foundation.org,
+       hpa@zytor.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       viro@zeniv.linux.org.uk, linux-api@vger.kernel.org,
+       torvalds@linux-foundation.org, tglx@linutronix.de,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: What can OpenVZ do?
+Message-ID: <20090213222818.GA17630@x200.localdomain>
+References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu> <1234285547.30155.6.camel@nimitz> <20090211141434.dfa1d079.akpm@linux-foundation.org> <1234462282.30155.171.camel@nimitz> <1234467035.3243.538.camel@calx> <20090212114207.e1c2de82.akpm@linux-foundation.org> <1234475483.30155.194.camel@nimitz> <20090213102732.GB4608@elte.hu> <20090213113248.GA15275@x200.localdomain> <20090213114503.GG15679@elte.hu>
 MIME-Version: 1.0
-To: Alexander Beregalov <a.beregalov@gmail.com>
-CC: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: next-20090206: deadlock on ext4
-References: <a4423d670902060935y59e540beta417144935416560@mail.gmail.com>	 <498C7671.1050309@redhat.com>	 <a4423d670902061004i424817e1vd699a61e335f010a@mail.gmail.com>	 <498C9876.3060208@redhat.com> <a4423d670902090401k716d054eo25640aa2207beca7@mail.gmail.com>
-In-Reply-To: <a4423d670902090401k716d054eo25640aa2207beca7@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090213114503.GG15679@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander Beregalov wrote:
+On Fri, Feb 13, 2009 at 12:45:03PM +0100, Ingo Molnar wrote:
+> 
+> * Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> 
+> > On Fri, Feb 13, 2009 at 11:27:32AM +0100, Ingo Molnar wrote:
+> > > Merging checkpoints instead might give them the incentive to get
+> > > their act together.
+> > 
+> > Knowing how much time it takes to beat CPT back into usable shape every time
+> > big kernel rebase is done, OpenVZ/Virtuozzo have every single damn incentive
+> > to have CPT mainlined.
+> 
+> So where is the bottleneck? I suspect the effort in having forward ported
+> it across 4 major kernel releases in a single year is already larger than
+> the technical effort it would  take to upstream it. Any unreasonable upstream 
+> resistence/passivity you are bumping into?
 
-> I have reproduced it with 2.6.29-rc4.
-> Loop file was on XFS.
-> I can not reproduce it on ext4 on raw device.
-> Let me know if I can do anything else to help resolving it.
->   
-Can you try this patch from Aneesh?  Works for me...
-
-Thanks,
--Eric
-
-From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] ext4: Don't use the range_cylic mode implemented by
-write_cache_pages
-
-With delayed allocation we lock the page in write_cache_pages and 
-try to build an in memory extent of contiguous blocks. This is 
-needed so that we can get a large contiguous blocks request. Now 
-with range_cyclic mode in write_cache_pages if we have not done an 
-I/O we loop back to 0 index and try to write the page.  That would 
-imply we will attempt to take page lock of lower index page holding
-the page lock of higher index page. This can cause a dead lock with
-other writeback thread.
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Reviewed-by: Eric Sandeen <sandeen@redhat.com>
-Tested-by: Eric Sandeen <sandeen@redhat.com>
----
- fs/ext4/inode.c |   20 ++++++++++++++++++--
- 1 files changed, 18 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.28.x86_64/fs/ext4/inode.c
-===================================================================
---- linux-2.6.28.x86_64.orig/fs/ext4/inode.c
-+++ linux-2.6.28.x86_64/fs/ext4/inode.c
-@@ -2437,6 +2437,7 @@ static int ext4_da_writepages(struct add
- 	int no_nrwrite_index_update;
- 	int pages_written = 0;
- 	long pages_skipped;
-+       int range_cyclic = 0, cycled = 1, io_done = 0;
- 	int needed_blocks, ret = 0, nr_to_writebump = 0;
- 	struct ext4_sb_info *sbi = EXT4_SB(mapping->host->i_sb);
- 
-@@ -2488,9 +2489,14 @@ static int ext4_da_writepages(struct add
- 	if (wbc->range_start == 0 && wbc->range_end == LLONG_MAX)
- 		range_whole = 1;
- 
--	if (wbc->range_cyclic)
-+       if (wbc->range_cyclic) {
- 		index = mapping->writeback_index;
--	else
-+	       wbc->range_start = index << PAGE_CACHE_SHIFT;
-+	       wbc->range_end  = LLONG_MAX;
-+	       wbc->range_cyclic = 0;
-+	       range_cyclic = 1;
-+	       cycled = 0;
-+       } else
- 		index = wbc->range_start >> PAGE_CACHE_SHIFT;
- 
- 	mpd.wbc = wbc;
-@@ -2504,6 +2510,7 @@ static int ext4_da_writepages(struct add
- 	wbc->no_nrwrite_index_update = 1;
- 	pages_skipped = wbc->pages_skipped;
- 
-+retry:
- 	while (!ret && wbc->nr_to_write > 0) {
- 
- 		/*
-@@ -2546,6 +2553,7 @@ static int ext4_da_writepages(struct add
- 			pages_written += mpd.pages_written;
- 			wbc->pages_skipped = pages_skipped;
- 			ret = 0;
-+		       io_done = 1;
- 		} else if (wbc->nr_to_write)
- 			/*
- 			 * There is no more writeout needed
-@@ -2554,6 +2562,13 @@ static int ext4_da_writepages(struct add
- 			 */
- 			break;
- 	}
-+       if (!io_done && !cycled) {
-+	       cycled = 1;
-+	       index = 0;
-+	       wbc->range_start = index << PAGE_CACHE_SHIFT;
-+	       wbc->range_end  = mapping->writeback_index - 1;
-+	       goto retry;
-+       }
- 	if (pages_skipped != wbc->pages_skipped)
- 		printk(KERN_EMERG "This should not happen leaving %s "
- 				"with nr_to_write = %ld ret = %d\n",
-@@ -2561,6 +2576,7 @@ static int ext4_da_writepages(struct add
- 
- 	/* Update index */
- 	index += pages_written;
-+       wbc->range_cyclic = range_cyclic;
- 	if (wbc->range_cyclic || (range_whole && wbc->nr_to_write > 0))
- 		/*
- 		 * set the writeback_index so that range_cyclic
-
-
+People were busy with netns/containers stuff and OpenVZ/Virtuozzo bugs.
