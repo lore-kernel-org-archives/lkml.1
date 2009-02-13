@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761246AbZBMUTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761567AbZBMUU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761246AbZBMUTv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 15:19:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760784AbZBMUTF
+	id S1761567AbZBMUU7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 15:20:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760112AbZBMUTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 15:19:05 -0500
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:20545 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760188AbZBMUTE (ORCPT
+	Fri, 13 Feb 2009 15:19:21 -0500
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:32812 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761246AbZBMUTT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 15:19:04 -0500
+	Fri, 13 Feb 2009 15:19:19 -0500
 From: Alex Chiang <achiang@hp.com>
-Subject: [RFC PATCH v2 02/12] PCI: pci_scan_slot() returns newly found devices
+Subject: [RFC PATCH v2 05/12] PCI: beef up pci_do_scan_bus()
 To: jbarnes@virtuousgeek.org
 Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Trent Piepho <xyzzy@speakeasy.org>, Alex Chiang <achiang@hp.com>
-Date: Fri, 13 Feb 2009 13:19:03 -0700
-Message-ID: <20090213201903.19262.63239.stgit@bob.kio>
+       Alex Chiang <achiang@hp.com>
+Date: Fri, 13 Feb 2009 13:19:18 -0700
+Message-ID: <20090213201918.19262.31746.stgit@bob.kio>
 In-Reply-To: <20090213201135.19262.67924.stgit@bob.kio>
 References: <20090213201135.19262.67924.stgit@bob.kio>
 User-Agent: StGIT/0.14.3.215.gff3d
@@ -27,80 +27,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Trent Piepho <xyzzy@speakeasy.org>
+We have a nice interface for re-scanning a PCI bus which will
+discover newly added devices, add them to the device tree, and
+enable them properly.
 
-pci_scan_slot() has been rewritten to be less complex and will now
-return the number of *new* devices found.
+Ensure that the bridge resources are properly sized and assigned
+during the rescan.
 
-Existing callers need not worry because they already assume that
-they can't call pci_scan_slot() on an already-scanned slot.
-
-Thus, there is no semantic change for existing callers: returning
-newly found devices (this patch) is exactly equal to returning all
-found devices (before this patch).
-
-This patch adds some more groundwork to allow us to rescan the
-PCI bus during runtime to discover newly added devices.
-
-Signed-off-by: Trent Piepho <xyzzy@speakeasy.org>
-Reviewed-by: Alex Chiang <achiang@hp.com>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/pci/probe.c |   35 +++++++++++++----------------------
- 1 files changed, 13 insertions(+), 22 deletions(-)
+ drivers/pci/hotplug-pci.c |   16 ++++++++++++----
+ 1 files changed, 12 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 66b5d1c..d392813 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -1030,35 +1030,26 @@ EXPORT_SYMBOL(pci_scan_single_device);
-  * Scan a PCI slot on the specified PCI bus for devices, adding
-  * discovered devices to the @bus->devices list.  New devices
-  * will not have is_added set.
-+ *
-+ * Returns the number of new devices found.
-  */
- int pci_scan_slot(struct pci_bus *bus, int devfn)
+diff --git a/drivers/pci/hotplug-pci.c b/drivers/pci/hotplug-pci.c
+index 4d4a644..33ab2d2 100644
+--- a/drivers/pci/hotplug-pci.c
++++ b/drivers/pci/hotplug-pci.c
+@@ -6,13 +6,21 @@
+ 
+ unsigned int __devinit pci_do_scan_bus(struct pci_bus *bus)
  {
--	int func, nr = 0;
--	int scan_all_fns;
--
--	scan_all_fns = pcibios_scan_all_fns(bus, devfn);
--
--	for (func = 0; func < 8; func++, devfn++) {
--		struct pci_dev *dev;
-+	int fn, nr = 0;
+-	unsigned int max;
++	unsigned int max, pass;
 +	struct pci_dev *dev;
  
--		dev = pci_scan_single_device(bus, devfn);
--		if (dev) {
-+	if ((dev = pci_scan_single_device(bus, devfn)))
-+		if (!dev->is_added)	/* new device? */
- 			nr++;
+ 	max = pci_scan_child_bus(bus);
  
--			/*
--		 	 * If this is a single function device,
--		 	 * don't scan past the first function.
--		 	 */
--			if (!dev->multifunction) {
--				if (func > 0) {
--					dev->multifunction = 1;
--				} else {
-- 					break;
--				}
-+	if ((dev && dev->multifunction) ||
-+	    (!dev && pcibios_scan_all_fns(bus, devfn))) {
-+		for (fn = 1; fn < 8; fn++) {
-+			if ((dev = pci_scan_single_device(bus, devfn + fn))) {
-+				if (!dev->is_added)
-+					nr++;
-+				dev->multifunction = 1;
- 			}
--		} else {
--			if (func == 0 && !scan_all_fns)
--				break;
- 		}
- 	}
+-	/*
+-	 * Make the discovered devices available.
+-	 */
++	for (pass=0; pass < 2; pass++)
++		list_for_each_entry(dev, &bus->devices, bus_list) {
++			if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE ||
++			    dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)
++				if (pass && dev->subordinate)
++					pci_bus_size_bridges(dev->subordinate);
++		}
++
++	pci_bus_assign_resources(bus);
++	pci_enable_bridges(bus);
+ 	pci_bus_add_devices(bus);
  
+ 	return max;
 
