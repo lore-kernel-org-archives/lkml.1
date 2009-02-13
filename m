@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759187AbZBMFqy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759493AbZBMFsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759187AbZBMFqy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 00:46:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751078AbZBMFqq
+	id S1759493AbZBMFsR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 00:48:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbZBMFsC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 00:46:46 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:53993 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750912AbZBMFqp (ORCPT
+	Fri, 13 Feb 2009 00:48:02 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:39676 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750843AbZBMFsA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 00:46:45 -0500
-Date: Fri, 13 Feb 2009 00:46:44 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] rt/threadirqs: put the irq thread handler in a
- callback
-In-Reply-To: <4994f034.02e2660a.3130.23df@mx.google.com>
-Message-ID: <alpine.DEB.1.10.0902130046250.15469@gandalf.stny.rr.com>
-References: <4994f034.02e2660a.3130.23df@mx.google.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 13 Feb 2009 00:48:00 -0500
+Date: Fri, 13 Feb 2009 05:47:51 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: containers@lists.osdl.org, Paul Menage <menage@google.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [cgroup or VFS ?] WARNING: at fs/namespace.c:636
+	mntput_no_expire+0xac/0xf2()
+Message-ID: <20090213054751.GI28946@ZenIV.linux.org.uk>
+References: <49617D35.4040805@cn.fujitsu.com> <20090209004046.3ce1dde0.akpm@linux-foundation.org> <20090209093414.GU28946@ZenIV.linux.org.uk> <499013CC.2060808@cn.fujitsu.com> <4993BD5D.2020707@cn.fujitsu.com> <20090212062442.GE28946@ZenIV.linux.org.uk> <4993C2A0.3050507@cn.fujitsu.com> <4993C7C2.4060100@cn.fujitsu.com> <20090212070729.GF28946@ZenIV.linux.org.uk> <4995007D.7040101@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4995007D.7040101@cn.fujitsu.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Feb 13, 2009 at 01:09:17PM +0800, Li Zefan wrote:
 
-On Fri, 13 Feb 2009, Frederic Weisbecker wrote:
+> I ran following testcase, and triggered the warning in 1 hour:
+> 
+> thread 1:
+> for ((; ;))
+> {
+>         mount --bind /cgroup /mnt > /dev/null 2>&1
+>         umount /mnt > /dev/null 2>&1
+> }
+> 
+> tread 2:
+> for ((; ;))
+> {
+>         mount -t cgroup -o cpu xxx /cgroup > /dev/null 2>&1
+>         mkdir /cgroup/0 > /dev/null 2>&1
+>         rmdir /cgroup/0 > /dev/null 2>&1
+>         umount -l /cgroup > /dev/null 2>&1
+> }
 
-> Currently, when a hardirq is threaded, it is processed by do_hardirq()
-> which guess the best low-level handler for this irq.
-> 
-> This makes several branch conditions to check for each irq triggered,
-> adding some (very small) latencies since we are in a fastpath (irq disabled)
-> of the irq processing.
-> 
-> So it's better to put these checks only once when the handler of the irq is set
-> and then only dereference one pointer to find the appropriate callback.
-> 
-> This patch makes the irq thread handler a field in struct irq_desc.
-> 
-> [Note, I'm not sure the check if (!desc->handle_irq_thread) is really
-> useful. I've put it to ensure that even an irq_desc which never gone to
-> __set_irq_handler() can be handled. But I'm not sure it is possible.]
-> 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-
-Thanks, I'll apply it to my local tree and test it out.
-
--- Steve
-
+Wow.  You know, at that point these redirects could probably be removed.
+If anything in there ends up producing an output, we very much want to
+see that.  Actually, I'd even make that
+	mount --bind /cgroup/mnt || (echo mount1: ; date)
+etc., so we'd see when do they fail and which one fails (if any)...
+ 
+Which umount has failed in the above, BTW?
