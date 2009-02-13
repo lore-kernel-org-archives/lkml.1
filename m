@@ -1,46 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753125AbZBMThZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760289AbZBMTkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753125AbZBMThZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 14:37:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752929AbZBMThJ
+	id S1760289AbZBMTkn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 14:40:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbZBMTkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 14:37:09 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:44752 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752996AbZBMThH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 14:37:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=MN2gOIM3oqtmuXMZm0v8jVXRA8nygYsw+vpcls+Ar41I2qZRz/kKbYjEvX4N7h6ac4
-         /zfgJFlXhILbAaydTGTwXyVtNoIINj1HJoG9qg8l/gABEI+CaTZEStzN5BacwUBvt7qo
-         a1iAhbbh4tYkmgQW44m6zKdHKJ3t3kdZ/J1XE=
-From: Diego Calleja <diegocg@gmail.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: "Can not ioremap virtual address" (was Re: [git pull] drm)
-Date: Fri, 13 Feb 2009 20:38:18 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc4-00178-g071a0bc-dirty; KDE/4.2.0; x86_64; ; )
-Cc: Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
-       dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
-       Eric Anholt <eric@anholt.net>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Nico Schottelius <nico-linux-20090213@schottelius.org>
-References: <alpine.DEB.2.00.0902090827390.32114@skynet.skynet.ie> <200902131828.22680.diegocg@gmail.com> <200902131104.04318.jbarnes@virtuousgeek.org>
-In-Reply-To: <200902131104.04318.jbarnes@virtuousgeek.org>
+	Fri, 13 Feb 2009 14:40:35 -0500
+Received: from gw.goop.org ([64.81.55.164]:54281 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750797AbZBMTkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 14:40:35 -0500
+Message-ID: <4995CCB1.9070404@goop.org>
+Date: Fri, 13 Feb 2009 11:40:33 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200902132038.18491.diegocg@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: more untangling
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Viernes 13 Febrero 2009 20:04:03 Jesse Barnes escribió:
-> Does this prevent the message?  We map it WC in GEM but not in 
-> i915_initialize...
+I've done the asm _types.h and page->pgtable moves.  One hiccup is 
+kernel/head_64.S uses pgd_index(), which is defined as an asm-compatible 
+macro in pgtable.h.  Its a bit warty because it also needs pud_index(), 
+which it defines locally (which is an inline in pgtable.h).  Need to 
+think about that one...
 
-Yes, the message has disappeared.
+    J
+
+The following changes since commit beb6943d8df7ce9278282101af4e0f6f7b648451:
+  Ingo Molnar (1):
+        x86 headers: protect page_32.h via __ASSEMBLY__
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git x86/untangle2
+
+Jeremy Fitzhardinge (2):
+      x86: use _types.h headers in asm where available
+      x86: move more pagetable-related definitions into pgtable*.h
+
+ arch/x86/boot/compressed/head_32.S          |    2 +-
+ arch/x86/boot/compressed/head_64.S          |    4 ++--
+ arch/x86/boot/header.S                      |    2 +-
+ arch/x86/include/asm/page_32_types.h        |    2 --
+ arch/x86/include/asm/page_64_types.h        |    2 --
+ arch/x86/include/asm/page_types.h           |    6 ------
+ arch/x86/include/asm/pgtable-2level_types.h |    2 ++
+ arch/x86/include/asm/pgtable-3level_types.h |    2 ++
+ arch/x86/include/asm/pgtable_64_types.h     |    1 +
+ arch/x86/include/asm/pgtable_types.h        |    6 ++++++
+ arch/x86/kernel/acpi/realmode/wakeup.S      |    4 ++--
+ arch/x86/kernel/acpi/wakeup_32.S            |    2 +-
+ arch/x86/kernel/acpi/wakeup_64.S            |    4 ++--
+ arch/x86/kernel/efi_stub_32.S               |    2 +-
+ arch/x86/kernel/entry_32.S                  |    2 +-
+ arch/x86/kernel/entry_64.S                  |    2 +-
+ arch/x86/kernel/head_32.S                   |    4 ++--
+ arch/x86/kernel/relocate_kernel_32.S        |    2 +-
+ arch/x86/kernel/relocate_kernel_64.S        |    4 ++--
+ arch/x86/kernel/trampoline_32.S             |    2 +-
+ arch/x86/kernel/trampoline_64.S             |    4 ++--
+ arch/x86/kernel/vmlinux_32.lds.S            |    2 +-
+ arch/x86/kernel/vmlinux_64.lds.S            |    2 +-
+ arch/x86/lib/getuser.S                      |    2 +-
+ arch/x86/power/hibernate_asm_32.S           |    2 +-
+ arch/x86/power/hibernate_asm_64.S           |    2 +-
+ arch/x86/xen/xen-head.S                     |    2 +-
+ 27 files changed, 37 insertions(+), 36 deletions(-)
+
+
