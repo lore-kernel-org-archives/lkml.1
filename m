@@ -1,98 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752085AbZBMF1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759451AbZBMF1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752085AbZBMF1U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 00:27:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750729AbZBMF1I
+	id S1759451AbZBMF1g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 00:27:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbZBMF1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 00:27:08 -0500
-Received: from mga02.intel.com ([134.134.136.20]:13499 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750714AbZBMF1H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 00:27:07 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,200,1233561600"; 
-   d="scan'208";a="386486108"
-Message-ID: <499504A6.3050107@intel.com>
-Date: Fri, 13 Feb 2009 13:27:02 +0800
-From: "Zhao, Yu" <yu.zhao@intel.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Fri, 13 Feb 2009 00:27:16 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:40208 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750978AbZBMF1N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 00:27:13 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=Ipa/uUNJ8TDkH1L58SpY0tfG8XtxC5Fvv/CGT7koQKdPzDj9CB9xaT+DZFdUUJwRU
+	OkUyx6/vxAM3DpTZZpUzg==
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "dwmw2@infradead.org" <dwmw2@infradead.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v3 0/6] ATS capability support for Intel IOMMU
-References: <1234443038-15437-1-git-send-email-yu.zhao@intel.com> <20090213034457.GM3624@parisc-linux.org>
-In-Reply-To: <20090213034457.GM3624@parisc-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20090212123723.4FED13E666F@basil.firstfloor.org>
+References: <20090212137.750180365@firstfloor.org>
+	 <20090212123723.4FED13E666F@basil.firstfloor.org>
+Date: Thu, 12 Feb 2009 21:27:08 -0800
+Message-ID: <cc96a5040902122127u14022488y99091fa38ed2ede@mail.gmail.com>
+Subject: Re: [PATCH] [4/10] x86: MCE: Switch machine check polling to per CPU 
+	timer v3
+From: Tim Hockin <thockin@google.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: akpm@linux-foundation.org, x86@firstfloor.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> On Thu, Feb 12, 2009 at 08:50:32PM +0800, Yu Zhao wrote:
->>   2, avoid using pci_find_ext_capability every time when reading ATS
->>      Invalidate Queue Depth (Matthew Wilcox)
-> 
-> er ... I didn't say it was a problem.  I said I couldn't tell if it was a
-> problem.  There's no point in taking up an extra 4 bytes per pci_dev if
-> it's not a performance problem.  How often do we query the queue depth?
-> Is this something a device driver will call once per device and then
-> remember for itself, or only use at setup?  Or is it something we call
-> every millisecond?
-> 
+On Thu, Feb 12, 2009 at 4:37 AM, Andi Kleen <andi@firstfloor.org> wrote:
+>
+> Impact: Higher priority bug fix
+>
+> The machine check poller runs a single timer and then broadcasted an
+> IPI to all CPUs to check them. This leads to unnecessary
+> synchronization between CPUs. The original CPU running the timer has
+> to wait potentially a long time for all other CPUs answering. This is
+> also real time unfriendly and in general inefficient.
+>
+> This was especially a problem on systems with a lot of events where
+> the poller run with a higher frequency after processing some events.
+> There could be more and more CPU time wasted with this, to
+> the point of significantly slowing down machines.
+>
+> The machine check polling is actually fully independent per CPU, so
+> there's no reason to not just do this all with per CPU timers.  This
+> patch implements that.
 
-The query function is called only once per device in v2 patch series. The
-queue depth is cached in a VT-d private data structure, and it's used when
-device driver calls pci_unmap_single or pci_unmap_sg. My concern was that
-packing everything into `pci_dev' would make it grows very fast. 
+Great!  W're going to patch this is an sanity check it here.  We'll
+send you info when we have some results.  It looks good to me.
 
-For v3, the queue depth is removed from the VT-d `device_domain_info'.
-Instead, it's cached in `pci_dev', and the query function is called every
-time when the queue depth is needed. It would be easier to write the
-IOMMU-specific ATS code for AMD, IBM and other vendors' IOMMUs, if they
-have same requirement as Intel's (needs to query the queue depth every
-time when invalidating the IOMMU TLB cache inside the device). So it looks
-having the queue depth in `pci_dev' is reasonable, but I'm not sure.
-
-Following is the logics I used in v2.
-
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index 261b6bd..a7ff7cb 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -240,6 +241,8 @@ struct device_domain_info {
- 	struct list_head global; /* link to global list */
- 	u8 bus;			/* PCI bus numer */
- 	u8 devfn;		/* PCI devfn number */
-+	int qdep;		/* invalidate queue depth */
-+	struct intel_iommu *iommu; /* IOMMU used by this device */
- 	struct pci_dev *dev; /* it's NULL for PCIE-to-PCI bridge */
- 	struct dmar_domain *domain; /* pointer to domain */
- };
-
-<snipped>
-
-+	info->iommu = iommu;
-+	info->qdep = pci_ats_qdep(info->dev);
-+	if (!info->qdep)
-+		return NULL;
-
-<snipped>
-
-+	list_for_each_entry(info, &domain->devices, link) {
-+		if (!info->dev || !pci_ats_enabled(info->dev))
-+			continue;
-+
-+		sid = info->bus << 8 | info->devfn;
-+		rc = qi_flush_dev_iotlb(info->iommu, sid,
-+					info->qdep, addr, mask);
-+		if (rc)
-+			printk(KERN_ERR "IOMMU: flush device IOTLB failed\n");
-+	}
-+	spin_unlock_irqrestore(&device_domain_lock, flags);
-+}
+> Also switch the poller also to use standard timers instead of work
+> queues. It was using work queues to be able to execute a user program
+> on a event, but mce_notify_user() handles this case now with a
+> separate callback. So instead always run the poll code in in a
+> standard per CPU timer, which means that in the common case of not
+> having to execute a trigger there will be less overhead.
+>
+> This allows to clean up the initialization significantly, because
+> standard timers are already up when machine checks get init'ed.  No
+> multiple initialization functions.
+>
+> Thanks to Thomas Gleixner for some help.
+>
+> Cc: thockin@google.com
+> v2: Use del_timer_sync() on cpu shutdown and don't try to handle
+> migrated timers.
+> v3: Add WARN_ON for timer running on unexpected CPU
+>
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+>
+> ---
+>  arch/x86/kernel/cpu/mcheck/mce_64.c |   68 +++++++++++++++++++++++-------------
+>  1 file changed, 45 insertions(+), 23 deletions(-)
+>
+> Index: linux/arch/x86/kernel/cpu/mcheck/mce_64.c
+> ===================================================================
+> --- linux.orig/arch/x86/kernel/cpu/mcheck/mce_64.c      2009-02-12 11:30:51.000000000 +0100
+> +++ linux/arch/x86/kernel/cpu/mcheck/mce_64.c   2009-02-12 12:10:21.000000000 +0100
+> @@ -353,18 +353,17 @@
+>
+>  static int check_interval = 5 * 60; /* 5 minutes */
+>  static int next_interval; /* in jiffies */
+> -static void mcheck_timer(struct work_struct *work);
+> -static DECLARE_DELAYED_WORK(mcheck_work, mcheck_timer);
+> +static void mcheck_timer(unsigned long);
+> +static DEFINE_PER_CPU(struct timer_list, mce_timer);
+>
+> -static void mcheck_check_cpu(void *info)
+> +static void mcheck_timer(unsigned long data)
+>  {
+> +       struct timer_list *t = &per_cpu(mce_timer, data);
+> +
+> +       WARN_ON(smp_processor_id() != data);
+> +
+>        if (mce_available(&current_cpu_data))
+>                do_machine_check(NULL, 0);
+> -}
+> -
+> -static void mcheck_timer(struct work_struct *work)
+> -{
+> -       on_each_cpu(mcheck_check_cpu, NULL, 1);
+>
+>        /*
+>         * Alert userspace if needed.  If we logged an MCE, reduce the
+> @@ -377,7 +376,8 @@
+>                                (int)round_jiffies_relative(check_interval*HZ));
+>        }
+>
+> -       schedule_delayed_work(&mcheck_work, next_interval);
+> +       t->expires = jiffies + next_interval;
+> +       add_timer(t);
+>  }
+>
+>  static void mce_do_trigger(struct work_struct *work)
+> @@ -436,16 +436,11 @@
+>
+>  static __init int periodic_mcheck_init(void)
+>  {
+> -       next_interval = check_interval * HZ;
+> -       if (next_interval)
+> -               schedule_delayed_work(&mcheck_work,
+> -                                     round_jiffies_relative(next_interval));
+> -       idle_notifier_register(&mce_idle_notifier);
+> -       return 0;
+> +       idle_notifier_register(&mce_idle_notifier);
+> +       return 0;
+>  }
+>  __initcall(periodic_mcheck_init);
+>
+> -
+>  /*
+>  * Initialize Machine Checks for a CPU.
+>  */
+> @@ -515,6 +510,20 @@
+>        }
+>  }
+>
+> +static void mce_init_timer(void)
+> +{
+> +       struct timer_list *t = &__get_cpu_var(mce_timer);
+> +
+> +       /* data race harmless because everyone sets to the same value */
+> +       if (!next_interval)
+> +               next_interval = check_interval * HZ;
+> +       if (!next_interval)
+> +               return;
+> +       setup_timer(t, mcheck_timer, smp_processor_id());
+> +       t->expires = round_jiffies_relative(jiffies + next_interval);
+> +       add_timer(t);
+> +}
+> +
+>  /*
+>  * Called for each booted CPU to set up machine checks.
+>  * Must be called with preempt off.
+> @@ -529,6 +538,7 @@
+>
+>        mce_init(NULL);
+>        mce_cpu_features(c);
+> +       mce_init_timer();
+>  }
+>
+>  /*
+> @@ -735,17 +745,19 @@
+>        return 0;
+>  }
+>
+> +static void mce_cpu_restart(void *data)
+> +{
+> +       del_timer_sync(&__get_cpu_var(mce_timer));
+> +       if (mce_available(&current_cpu_data))
+> +               mce_init(NULL);
+> +       mce_init_timer();
+> +}
+> +
+>  /* Reinit MCEs after user configuration changes */
+>  static void mce_restart(void)
+>  {
+> -       if (next_interval)
+> -               cancel_delayed_work(&mcheck_work);
+> -       /* Timer race is harmless here */
+> -       on_each_cpu(mce_init, NULL, 1);
+>        next_interval = check_interval * HZ;
+> -       if (next_interval)
+> -               schedule_delayed_work(&mcheck_work,
+> -                                     round_jiffies_relative(next_interval));
+> +       on_each_cpu(mce_cpu_restart, NULL, 1);
+>  }
+>
+>  static struct sysdev_class mce_sysclass = {
+> @@ -874,6 +886,7 @@
+>                                      unsigned long action, void *hcpu)
+>  {
+>        unsigned int cpu = (unsigned long)hcpu;
+> +       struct timer_list *t = &per_cpu(mce_timer, cpu);
+>
+>        switch (action) {
+>        case CPU_ONLINE:
+> @@ -888,6 +901,15 @@
+>                        threshold_cpu_callback(action, cpu);
+>                mce_remove_device(cpu);
+>                break;
+> +       case CPU_DOWN_PREPARE:
+> +       case CPU_DOWN_PREPARE_FROZEN:
+> +               del_timer_sync(t);
+> +               break;
+> +       case CPU_DOWN_FAILED:
+> +       case CPU_DOWN_FAILED_FROZEN:
+> +               t->expires = round_jiffies_relative(jiffies + next_interval);
+> +               add_timer_on(t, cpu);
+> +               break;
+>        }
+>        return NOTIFY_OK;
+>  }
+>
