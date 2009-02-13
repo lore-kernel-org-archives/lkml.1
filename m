@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761145AbZBMTez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761406AbZBMTfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761145AbZBMTez (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 14:34:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbZBMTej
+	id S1761406AbZBMTfV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 14:35:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761220AbZBMTfC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 14:34:39 -0500
-Received: from smtprelay01.ispgateway.de ([80.67.18.13]:43614 "EHLO
-	smtprelay01.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752724AbZBMTeh (ORCPT
+	Fri, 13 Feb 2009 14:35:02 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:45594 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761218AbZBMTfA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 14:34:37 -0500
-References: <cone.1234471033.988571.5384.1000@mentalhome> <loom.20090213T092444-966@post.gmane.org>
-Message-ID: <cone.1234553680.565932.4642.1000@onepiie>
-X-Mailer: http://www.courier-mta.org/cone/
-From: Peter Feuerer <peter@piie.net>
-To: Thomas Renninger <trenn@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Acer Aspire One fan control
-Date: Fri, 13 Feb 2009 20:34:40 +0100
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="US-ASCII"
+	Fri, 13 Feb 2009 14:35:00 -0500
+Date: Fri, 13 Feb 2009 19:34:44 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Joe Eykholt <jeykholt@cisco.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       "Sachin P. Sant" <sachinp@in.ibm.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: next Feb 13 drivers/scsi/aha1542.ko build break
+Message-ID: <20090213193444.GL28946@ZenIV.linux.org.uk>
+References: <20090213175526.d0590862.sfr@canb.auug.org.au> <49955D00.2020707@in.ibm.com> <4995BA4B.9050209@oracle.com> <4995C66E.1000800@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-X-Df-Sender: 404094
+In-Reply-To: <4995C66E.1000800@cisco.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Renninger writes:
+On Fri, Feb 13, 2009 at 11:13:50AM -0800, Joe Eykholt wrote:
 
+> > I'm seeing that also.  I think that it's this line in aha1542.c:
+> > 
+> > 495:		mbo = (scsi2int(mb[mbi].ccbptr) - (SCSI_BUF_PA(&ccb[0]))) / sizeof(struct ccb);
+> > 
+> > since I can comment out the "/ sizeof(struct ccb)" and the driver builds successfully.
+> > 
+> > This may need a patch to use one of the div() macros (?).
 > 
-> Does it help if you do:
-> echo 10 >/proc/acpi/thermal_zone/*/polling_frequency
+> In the above case, this problem might not occur if sizeof(struct ccb) happened to
+> be a power of 2, since the compiler generates a shift in that case.
+> Then later someone could increase the size of the struct and introduce this problem.
 
-Actually there is nothing in /proc/acpi/thermal_zone/. So it seems for me, 
-that there is no driver which handles the temperature and the fan of the 
-Acer Aspire One yet. A search on google didn't disprove it. That's why I 
-started to write my own kernel module. But I tested it only with 2.6.28.4. 
-Maybe there's already something in 2.6.29, not sure about it. 
-
-> If the fan is controlled via thermal ACPI trip points, maybe latest kernel
-> versions do help? There were several commits lately in this area, e.g.:
-> 676962dac6e267ce7c13f73962208f9124a084bb
-> f5adfaa372c76423b6e8e4727a9701330374f364
-
-Those patches have been applied to 2.6.28.
-
-> The latter adds a boot param you could give a try if you think it's worth it:
-> ACPI: Add "acpi.power_nocheck=1" to disable power state check in power
-> transition
-
-I will try the acpi.power_nocheck option, but google results on that don't 
-sound very promising.
-
---peter
+The real problem, of course, is that we should _not_ be doing 64bit-division
+here, be it by shifts or by __udiv...; if anything, we ought to store the
+bus version of HOSTDATA(...)->ccb at the time we'd checked that allocation
+got us a small enough address (i.e. after scsi_register()).  And store it
+in u32.
