@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758495AbZBMJYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758644AbZBMJ1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758495AbZBMJYg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 04:24:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbZBMJYV
+	id S1758644AbZBMJ1X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 04:27:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbZBMJ1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 04:24:21 -0500
-Received: from www.tglx.de ([62.245.132.106]:57149 "EHLO www.tglx.de"
+	Fri, 13 Feb 2009 04:27:14 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52824 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751301AbZBMJYU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 04:24:20 -0500
-Date: Fri, 13 Feb 2009 10:23:57 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Can request_irq be called under spinlock?
-In-Reply-To: <4994B23D.4040806@goop.org>
-Message-ID: <alpine.LFD.2.00.0902131022220.16972@localhost.localdomain>
-References: <499481B9.4090202@goop.org> <alpine.LFD.2.00.0902122326100.16972@localhost.localdomain> <4994B23D.4040806@goop.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1751231AbZBMJ1N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 04:27:13 -0500
+Date: Fri, 13 Feb 2009 10:27:01 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Subject: Re: [git pull] ring-buffer: rename label out_unlock to out_reset
+Message-ID: <20090213092701.GB17774@elte.hu>
+References: <alpine.DEB.1.10.0902121334330.15469@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0902121334330.15469@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Feb 2009, Jeremy Fitzhardinge wrote:
-> Thomas Gleixner wrote:
-> > I dont think that proc_mkdir conventions have changed
-> > recently. According to git blame fs/proc/generic.c:
-> > 
-> > ^1da177e (Linus Torvalds     2005-04-16 15:20:36 -0700 580)     ent =
-> > kmalloc(sizeof(struct proc_dir_entry) + len + 1, GFP_KERNEL);
-> > 
-> >   
+
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> Ingo,
 > 
-> I think its new that request_irq ends up calling proc_mkdir though.  But its
-> moot now anyway; I cleaned up that code, and don't call request_irq under
-> spinlock any more.
+> Please pull the latest tip/tracing/ftrace tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/ftrace
+> 
+> 
+> Steven Rostedt (1):
+>       ring-buffer: rename label out_unlock to out_reset
+> 
+> ----
+>  kernel/trace/ring_buffer.c |   10 +++++-----
+>  1 files changed, 5 insertions(+), 5 deletions(-)
 
-Just checked. The register_irq_proc() and register_handler_proc()
-calls in request/setup_irq() have the same time stamp in git :)
+Pulled into tip:tracing/ftrace, thanks Steve!
 
-Thanks,
-
-	tglx
+	Ingo
