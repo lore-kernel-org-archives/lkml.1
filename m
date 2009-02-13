@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759447AbZBMNd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755434AbZBMNeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759447AbZBMNd7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 08:33:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbZBMNdw
+	id S1755434AbZBMNeV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 08:34:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759493AbZBMNeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 08:33:52 -0500
-Received: from zucker.schokokeks.org ([78.46.69.5]:37365 "EHLO
-	zucker.schokokeks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751232AbZBMNdv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 08:33:51 -0500
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Feb 2009 08:33:51 EST
-From: Hanno =?utf-8?q?B=C3=B6ck?= <hanno@hboeck.de>
-To: linux-kernel@vger.kernel.org
-Subject: Very old IDE hard drive (240 MB) detected as 1.1 TB
-Date: Fri, 13 Feb 2009 14:28:40 +0100
-User-Agent: KMail/1.9.10
+	Fri, 13 Feb 2009 08:34:00 -0500
+Received: from cet.com.ru ([195.178.208.66]:43273 "EHLO tservice.net.ru"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1759399AbZBMNd7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 08:33:59 -0500
+Date: Fri, 13 Feb 2009 16:33:49 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: gregkh@suse.de, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH next 1/2] pohmelfs: fix build breakage
+Message-ID: <20090213133349.GH23879@ioremap.net>
+References: <20090213125357.GA7003@orion>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1493311.AFTPuxRrYN";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200902131428.40212.hanno@hboeck.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090213125357.GA7003@orion>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1493311.AFTPuxRrYN
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Fri, Feb 13, 2009 at 03:53:57PM +0300, Alexander Beregalov (a.beregalov@gmail.com) wrote:
+> drivers/staging/pohmelfs/inode.c:982: error: implicit declaration of
+> function 'DQUOT_TRANSFER'
+> 
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
 
-I was about to shred some old hard drives. On one Hard drive, identified as:
-Conner Peripherals 240MB - CP30254
+Looks good, thank you.
 
-it was detected as 1.1 TB (!) and obviously throwing lots of errors after=20
-getting over 240 MB.
+> ---
+> 
+>  drivers/staging/pohmelfs/inode.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/staging/pohmelfs/inode.c b/drivers/staging/pohmelfs/inode.c
+> index 0980c3c..908fc64 100644
+> --- a/drivers/staging/pohmelfs/inode.c
+> +++ b/drivers/staging/pohmelfs/inode.c
+> @@ -979,7 +979,7 @@ int pohmelfs_setattr_raw(struct inode *inode, struct iattr *attr)
+>  
+>  	if ((attr->ia_valid & ATTR_UID && attr->ia_uid != inode->i_uid) ||
+>  	    (attr->ia_valid & ATTR_GID && attr->ia_gid != inode->i_gid)) {
+> -		err = DQUOT_TRANSFER(inode, attr) ? -EDQUOT : 0;
+> +		err = vfs_dq_transfer(inode, attr) ? -EDQUOT : 0;
+>  		if (err)
+>  			goto err_out_exit;
+>  	}
 
-Is this issue worth investigating further? System is ubuntu 8.10. If anyone=
-=20
-wants to have a deeper look, I can obviously donate that harddrive if you p=
-ay=20
-me shipping costs.
-
-(Please reply to me personally, I'm not reading list-replies)
-
-cu, Hanno
-
-=2D-=20
-Hanno B=C3=B6ck		Blog:		http://www.hboeck.de/
-GPG: 3DBD3B20		Jabber/Mail:	hanno@hboeck.de
-
---nextPart1493311.AFTPuxRrYN
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEABECAAYFAkmVdYgACgkQr2QksT29OyBcZwCgmIY5kQLx9MWUXJDl/Qdkfu/G
-Vw0An18g8YiZkSj6Kz34qhnglNxe/JDF
-=WF4r
------END PGP SIGNATURE-----
-
---nextPart1493311.AFTPuxRrYN--
+-- 
+	Evgeniy Polyakov
