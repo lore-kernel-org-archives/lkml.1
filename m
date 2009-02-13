@@ -1,83 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757578AbZBML0r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbZBML2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757578AbZBML0r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 06:26:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbZBML0h
+	id S1756193AbZBML2Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 06:28:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694AbZBML2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 06:26:37 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:63387 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001AbZBML0g (ORCPT
+	Fri, 13 Feb 2009 06:28:14 -0500
+Received: from e23smtp06.au.ibm.com ([202.81.31.148]:55697 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751427AbZBML2N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 06:26:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=H0gxkNHD42V9+7u2drm+TQxYiWF+HSPS+rhqv+1ji351HrZp/YVb/FQaqP+PlfBr39
-         AcItDBOWesc0qbadJwIEkrADFVlKEX7PVCbLnEhPWOsef9fmXDkeTmNtuiUUSa8P22x5
-         ZtNQWv24CpKEw8SoD1/gPjLp4uIBfBUUyneOU=
-Date: Fri, 13 Feb 2009 14:32:48 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, containers@lists.linux-foundation.org,
-       hpa@zytor.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       viro@zeniv.linux.org.uk, linux-api@vger.kernel.org,
-       torvalds@linux-foundation.org, tglx@linutronix.de,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: What can OpenVZ do?
-Message-ID: <20090213113248.GA15275@x200.localdomain>
-References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu> <1234285547.30155.6.camel@nimitz> <20090211141434.dfa1d079.akpm@linux-foundation.org> <1234462282.30155.171.camel@nimitz> <1234467035.3243.538.camel@calx> <20090212114207.e1c2de82.akpm@linux-foundation.org> <1234475483.30155.194.camel@nimitz> <20090213102732.GB4608@elte.hu>
+	Fri, 13 Feb 2009 06:28:13 -0500
+Message-ID: <49955945.2080809@in.ibm.com>
+Date: Fri, 13 Feb 2009 16:58:05 +0530
+From: "Sachin P. Sant" <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090213102732.GB4608@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: schwidefsky@de.ibm.com
+CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-s390@vger.kernel.org,
+       heiko.carstens@de.ibm.com, Mel Gorman <mel@csn.ul.ie>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org
+Subject: [Patch] [S390]  Fix appldata build break with !NET
+References: <20090213175526.d0590862.sfr@canb.auug.org.au> <49954589.9060604@in.ibm.com>
+In-Reply-To: <49954589.9060604@in.ibm.com>
+Content-Type: multipart/mixed;
+ boundary="------------070501050605060506030606"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 13, 2009 at 11:27:32AM +0100, Ingo Molnar wrote:
-> 
-> * Dave Hansen <dave@linux.vnet.ibm.com> wrote:
-> 
-> > > If so, perhaps that can be used as a guide.  Will the planned feature
-> > > have a similar design?  If not, how will it differ?  To what extent can
-> > > we use that implementation as a tool for understanding what this new
-> > > implementation will look like?
-> > 
-> > Yes, we can certainly use it as a guide.  However, there are some
-> > barriers to being able to do that:
-> > 
-> > dave@nimitz:~/kernels/linux-2.6-openvz$ git diff v2.6.27.10... | diffstat | tail -1
-> >  628 files changed, 59597 insertions(+), 2927 deletions(-)
-> > dave@nimitz:~/kernels/linux-2.6-openvz$ git diff v2.6.27.10... | wc 
-> >   84887  290855 2308745
-> > 
-> > Unfortunately, the git tree doesn't have that great of a history.  It
-> > appears that the forward-ports are just applications of huge single
-> > patches which then get committed into git.  This tree has also
-> > historically contained a bunch of stuff not directly related to
-> > checkpoint/restart like resource management.
-> 
-> Really, OpenVZ/Virtuozzo does not seem to have enough incentive to merge
-> upstream, they only seem to forward-port, keep their tree messy, do minimal
-> work to reduce the cross section to the rest of the kernel (so that they can
-> manage the forward ports) but otherwise are happy with their carved-out
-> niche market. [which niche is also spiced with some proprietary add-ons,
-> last i checked, not exactly the contribution environment that breeds a
-> healthy flow of patches towards the upstream kernel.]
+This is a multi-part message in MIME format.
+--------------070501050605060506030606
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Oh, cut the crap!
+With CONFIG_NET not set appldata build breaks on s390.
 
-> Merging checkpoints instead might give them the incentive to get
-> their act together.
+arch/s390/appldata/built-in.o: In function appldata_get_net_sum_data:
+appldata_net_sum.c:(.text+0x2684): undefined reference to dev_get_stats
+appldata_net_sum.c:(.text+0x2688): undefined reference to init_net
+appldata_net_sum.c:(.text+0x268c): undefined reference to init_net
+appldata_net_sum.c:(.text+0x2694): undefined reference to dev_base_lock
 
-Knowing how much time it takes to beat CPT back into usable shape every time
-big kernel rebase is done, OpenVZ/Virtuozzo have every single damn incentive
-to have CPT mainlined.
+The following patch fixes the issue for me.
 
-If someone is afraid of long config options, there are always CONFIG_CPT and
-CONFIG_CR available.
+Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
+----
+
+
+
+
+--------------070501050605060506030606
+Content-Type: text/x-patch;
+ name="fix-appldata-net-build-break.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="fix-appldata-net-build-break.patch"
+
+* Add CONFIG_NET dependancy for APPLDATA_NET_SUM.
+
+Signed-off-by : Sachin Sant <sachinp@in.ibm.com>
+---
+
+diff -Naurp a/arch/s390/Kconfig b/arch/s390/Kconfig
+--- a/arch/s390/Kconfig	2009-02-09 02:07:27.000000000 +0530
++++ b/arch/s390/Kconfig	2009-02-13 19:01:18.000000000 +0530
+@@ -521,7 +521,7 @@ config APPLDATA_OS
+ 
+ config APPLDATA_NET_SUM
+ 	tristate "Monitor overall network statistics"
+-	depends on APPLDATA_BASE
++	depends on APPLDATA_BASE && NET
+ 	help
+ 	  This provides network related data to the Linux - VM Monitor Stream,
+ 	  currently there is only a total sum of network I/O statistics, no
+
+--------------070501050605060506030606--
