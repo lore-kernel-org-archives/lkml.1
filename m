@@ -1,90 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758869AbZBMLpw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758596AbZBMLqu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758869AbZBMLpw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 06:45:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbZBMLpa
+	id S1758596AbZBMLqu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 06:46:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbZBMLql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 06:45:30 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36448 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753138AbZBMLp3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 06:45:29 -0500
-Date: Fri, 13 Feb 2009 12:45:03 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, containers@lists.linux-foundation.org,
-       hpa@zytor.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       viro@zeniv.linux.org.uk, linux-api@vger.kernel.org,
-       torvalds@linux-foundation.org, tglx@linutronix.de,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: What can OpenVZ do?
-Message-ID: <20090213114503.GG15679@elte.hu>
-References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu> <1234285547.30155.6.camel@nimitz> <20090211141434.dfa1d079.akpm@linux-foundation.org> <1234462282.30155.171.camel@nimitz> <1234467035.3243.538.camel@calx> <20090212114207.e1c2de82.akpm@linux-foundation.org> <1234475483.30155.194.camel@nimitz> <20090213102732.GB4608@elte.hu> <20090213113248.GA15275@x200.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090213113248.GA15275@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 13 Feb 2009 06:46:41 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:41605 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751913AbZBMLqk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 06:46:40 -0500
+Subject: Re: [PATCH] mm: disable preemption in apply_to_pte_range
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <4994CF35.60507@goop.org>
+References: <4994BCF0.30005@goop.org>	<4994C052.9060907@goop.org>
+	 <20090212165539.5ce51468.akpm@linux-foundation.org>
+	 <4994CF35.60507@goop.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 13 Feb 2009 12:48:30 +0100
+Message-Id: <1234525710.6519.17.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2009-02-12 at 17:39 -0800, Jeremy Fitzhardinge wrote:
 
-* Alexey Dobriyan <adobriyan@gmail.com> wrote:
-
-> On Fri, Feb 13, 2009 at 11:27:32AM +0100, Ingo Molnar wrote:
-> > 
-> > * Dave Hansen <dave@linux.vnet.ibm.com> wrote:
-> > 
-> > > > If so, perhaps that can be used as a guide.  Will the planned feature
-> > > > have a similar design?  If not, how will it differ?  To what extent can
-> > > > we use that implementation as a tool for understanding what this new
-> > > > implementation will look like?
-> > > 
-> > > Yes, we can certainly use it as a guide.  However, there are some
-> > > barriers to being able to do that:
-> > > 
-> > > dave@nimitz:~/kernels/linux-2.6-openvz$ git diff v2.6.27.10... | diffstat | tail -1
-> > >  628 files changed, 59597 insertions(+), 2927 deletions(-)
-> > > dave@nimitz:~/kernels/linux-2.6-openvz$ git diff v2.6.27.10... | wc 
-> > >   84887  290855 2308745
-> > > 
-> > > Unfortunately, the git tree doesn't have that great of a history.  It
-> > > appears that the forward-ports are just applications of huge single
-> > > patches which then get committed into git.  This tree has also
-> > > historically contained a bunch of stuff not directly related to
-> > > checkpoint/restart like resource management.
-> > 
-> > Really, OpenVZ/Virtuozzo does not seem to have enough incentive to merge
-> > upstream, they only seem to forward-port, keep their tree messy, do minimal
-> > work to reduce the cross section to the rest of the kernel (so that they can
-> > manage the forward ports) but otherwise are happy with their carved-out
-> > niche market. [which niche is also spiced with some proprietary add-ons,
-> > last i checked, not exactly the contribution environment that breeds a
-> > healthy flow of patches towards the upstream kernel.]
+> In general the model for lazy updates is that you're batching the 
+> updates in some queue somewhere, which is almost certainly a piece of 
+> percpu state being maintained by someone.  Its therefore broken and/or 
+> meaningless to have the code making the updates wandering between cpus 
+> for the duration of the lazy updates.
 > 
-> Oh, cut the crap!
+> > If so, should we do the preempt_disable/enable within those functions? 
+> > Probably not worth the cost, I guess.
 > 
-> > Merging checkpoints instead might give them the incentive to get
-> > their act together.
-> 
-> Knowing how much time it takes to beat CPT back into usable shape every time
-> big kernel rebase is done, OpenVZ/Virtuozzo have every single damn incentive
-> to have CPT mainlined.
+> The specific rules are that 
+> arch_enter_lazy_mmu_mode()/arch_leave_lazy_mmu_mode() require you to be 
+> holding the appropriate pte locks for the ptes you're updating, so 
+> preemption is naturally disabled in that case.
 
-So where is the bottleneck? I suspect the effort in having forward ported
-it across 4 major kernel releases in a single year is already larger than
-the technical effort it would  take to upstream it. Any unreasonable upstream 
-resistence/passivity you are bumping into?
+Right, except on -rt where the pte lock is a mutex.
 
-	Ingo
+> This all goes a bit strange with init_mm's non-requirement for taking 
+> pte locks.  The caller has to arrange for some kind of serialization on 
+> updating the range in question, and that could be a mutex.  Explicitly 
+> disabling preemption in enter_lazy_mmu_mode would make sense for this 
+> case, but it would be redundant for the common case of batched updates 
+> to usermode ptes.
+
+I really utterly hate how you just plonk preempt_disable() in there
+unconditionally and without very clear comments on how and why.
+
+I'd rather we'd fix up the init_mm to also have a pte lock.
