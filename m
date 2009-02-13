@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbZBMJgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753084AbZBMJhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756806AbZBMJgl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 04:36:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750760AbZBMJgc
+	id S1753084AbZBMJhr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 04:37:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750760AbZBMJhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 04:36:32 -0500
-Received: from mx3.schottelius.org ([77.109.138.221]:50611 "EHLO
-	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750711AbZBMJgb (ORCPT
+	Fri, 13 Feb 2009 04:37:38 -0500
+Received: from smtprelay04.ispgateway.de ([80.67.18.16]:58598 "EHLO
+	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750711AbZBMJhi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 04:36:31 -0500
-Date: Fri, 13 Feb 2009 10:36:29 +0100
-From: Nico Schottelius <nico-linux-20090209@schottelius.org>
-To: reinette chatre <reinette.chatre@intel.com>
-Cc: Nico Schottelius <nico-linux-20090209@schottelius.org>,
-       Linux Next Mailing List <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>
-Subject: Re: [ipw3945-devel] X200: Resume and iwlwifi on
-	2.6.29-rc4-ikn-00001-gd5b5623
-Message-ID: <20090213093629.GB10175@denkbrett.schottelius.org>
-Mail-Followup-To: Nico Schottelius <nico-linux-20090209@schottelius.org>,
-	reinette chatre <reinette.chatre@intel.com>,
-	Linux Next Mailing List <linux-next@vger.kernel.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	"ipw3945-devel@lists.sourceforge.net" <ipw3945-devel@lists.sourceforge.net>
-References: <20090209093507.GA27678@denkbrett.schottelius.org> <20090210070147.GA4684@denkbrett.schottelius.org> <1234468120.30608.30.camel@rc-desk>
+	Fri, 13 Feb 2009 04:37:38 -0500
+X-Greylist: delayed 378 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Feb 2009 04:37:38 EST
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: git-send-email
+Date: Fri, 13 Feb 2009 10:34:05 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; x86_64; ; )
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Junio C Hamano <gitster@pobox.com>,
+       "L-K" <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <1234451714.10603.22.camel@laptop> <20090212192104.GD15809@csclub.uwaterloo.ca> <1234477025.10603.38.camel@laptop>
+In-Reply-To: <1234477025.10603.38.camel@laptop>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="rS8CxjVDS/+yyDmU"
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1234468120.30608.30.camel@rc-desk>
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: ikn (Linux 2.6.29-rc4-ikn-00211-g37bed90 x86_64)
+Message-Id: <200902131034.05814.ioe-lkml@rameria.de>
+X-Df-Sender: 849595
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 12 February 2009, Peter Zijlstra wrote:
+> > foobar patch 0 (usually a summary/overview)
+> > +-foobar patch 1
+> > +-foobar patch 2
+> > +-foobar patch 3
+> > +-foobar patch 4
+> > +-foobar patch 5
+> > 
+> > is much nicer than
+> > 
+> > foobar patch 0
+> > +-foobar patch 1
+> >   +-foobar patch 2
+> >     +-foobar patch 3
+> >       +-foobar patch 4
+> >         +-foobar patch 5
+> > 
+> > which seems to be what git does itself.
+> 
+> Which happens to be exactly what my suggestion would accomplish.
 
---rS8CxjVDS/+yyDmU
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Ok, then I take back my reservations and support this idea.
 
-reinette chatre [Thu, Feb 12, 2009 at 11:48:40AM -0800]:
-> Sorry that I missed responding to your email in all the messages
-> regarding this problem. A patch was recently sent to address it - could
-> you please try with
-> http://marc.info/?l=3Dlinux-wireless&m=3D123429595818495&w=3D2 ?
+Lennart: Thanks for visualizing what Peter meant :-)
 
-I just booted 2.6.29-rc4-ikn-00211-g37bed90, which contains
-that commit, but has broken brightness. I'll test it with
-the next version the brightness is working again, currently
-local usage of the notebook is not possible :-/
+Best Regards
 
-Sincerly,
-
-Nico
-
---=20
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---rS8CxjVDS/+yyDmU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmVPx0ACgkQuL75KpiFGIzhxACgxkG766FFWxAdk2CEqoqQCEgS
-xqwAnihVAzhvLGnJk36xZgmVNkRhfZ8e
-=JW7P
------END PGP SIGNATURE-----
-
---rS8CxjVDS/+yyDmU--
+Ingo Oeser
