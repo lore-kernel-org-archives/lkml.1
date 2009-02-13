@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760674AbZBMUs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbZBMU7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760674AbZBMUs6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 15:48:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbZBMUst
+	id S1753112AbZBMU7T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 15:59:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbZBMU7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 15:48:49 -0500
-Received: from Mycroft.westnet.com ([216.187.52.7]:54053 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752696AbZBMUss (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 15:48:48 -0500
+	Fri, 13 Feb 2009 15:59:04 -0500
+Received: from ozlabs.org ([203.10.76.45]:52102 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752600AbZBMU7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 15:59:01 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Tejun Heo <tj@kernel.org>
+Subject: Re: #tj-percpu has been rebased
+Date: Sat, 14 Feb 2009 07:28:54 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, cpw@sgi.com
+References: <49833350.1020809@kernel.org> <49939964.4070607@kernel.org> <49939B08.1050801@kernel.org>
+In-Reply-To: <49939B08.1050801@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18837.56478.10536.6978@stoffel.org>
-Date: Fri, 13 Feb 2009 15:48:30 -0500
-From: "John Stoffel" <john@stoffel.org>
-To: Philippe Grenard <philippe.grenard@laposte.net>
-Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>
-Subject: Re: PROBLEM: cannot get stable system since 2.6.28 kernel
-In-Reply-To: <200902132056.20097.philippe.grenard@laposte.net>
-References: <200902131944.56634.philippe.grenard@laposte.net>
-	<alpine.LFD.2.00.0902131356010.5440@localhost.localdomain>
-	<200902132056.20097.philippe.grenard@laposte.net>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+Message-Id: <200902140728.55954.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Philippe" == Philippe Grenard <philippe.grenard@laposte.net> writes:
+On Thursday 12 February 2009 14:14:08 Tejun Heo wrote:
+> Oops, those are the same ones.  I'll give a shot at cooking up
+> something which can be dynamically sized before going forward with
+> this one.
 
-Philippe> On Friday 13 February 2009 19:56:54 Len Brown wrote:
->> dmesg -- assuming you can boot far enough to capture it,
->> may be helpful.
->> 
->> also, disabling PREEMPT may be interesting to try.
->> 
->> cheers,
->> --
->> Len Brown, Intel Open Source Technology Center
+That's why I handed it to you! :)
 
-Philippe> I tried to disable all "PREEMPT" options in make config, re-compiled 2.6.29-rc4 
-Philippe> and managed to get these info before kernel stalls :
-Philippe> (Was that what you understood by "disabling PREEMPT" ?)
+Just remember we waited over 5 years for this to happen: the point of these
+is that Christoph showed it's still useful.
 
-Philippe> I'll also try to make some diff on the different files to
-Philippe> see what changes between working 2.6.27.10 and non-working
-Philippe> 2.6.29-rc4
+(And I really like the idea of allocing congruent areas rather than remapping
+ if someone can show that it's semi-reliable.  Good luck!)
 
-....
-Philippe> [   33.663143] input: btnx mouse as /class/input/input9
-Philippe> [   36.351195] nvidia: module license 'NVIDIA' taints kernel.
-Philippe> [   36.603727] nvidia 0000:01:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-Philippe> [   36.603733] nvidia 0000:01:00.0: setting latency timer to 64
-Philippe> [   36.603892] NVRM: loading NVIDIA UNIX x86_64 Kernel Module  180.22  Tue Jan  
-Philippe> 6 09:15:58 PST 2009
-Philippe> [   36.606686] IRQ 16/nvidia: IRQF_DISABLED is not guaranteed on shared IRQs
-
-Here's your problem most probably.  The nVidia graphics module.
-Remove that and re-try your system.  Basically, we can't help you when
-you use a vendor's binary module.
-
-John
+Thanks!
+Rusty. 
