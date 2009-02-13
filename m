@@ -1,84 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758365AbZBMFzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760873AbZBMF4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758365AbZBMFzn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 00:55:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750897AbZBMFzd
+	id S1760873AbZBMF4n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 00:56:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbZBMF4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 00:55:33 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45700 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750843AbZBMFzc (ORCPT
+	Fri, 13 Feb 2009 00:56:33 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:62054 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750962AbZBMF4d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 00:55:32 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>
-Subject: [PATCH] mm: adding comment why mark_page_accessed() would be better than pte_mkyoung() in follow_page()
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20090213145039.77C8.A69D9226@jp.fujitsu.com>
+	Fri, 13 Feb 2009 00:56:33 -0500
+Date: Fri, 13 Feb 2009 00:56:31 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Wenji Huang <wenji.huang@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] trace: use the more accurate parameter.
+In-Reply-To: <20090211120507.GD23873@elte.hu>
+Message-ID: <alpine.DEB.1.10.0902130053210.15469@gandalf.stny.rr.com>
+References: <1234225804-13314-1-git-send-email-wenji.huang@oracle.com> <20090210152624.GH5836@nowhere> <20090211120507.GD23873@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Fri, 13 Feb 2009 14:55:29 +0900 (JST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-I and hugh discussed about mark_page_accessed() in follow_page() should be
-change or not. and we agreed it isn't needed without adding comment.
+On Wed, 11 Feb 2009, Ingo Molnar wrote:
 
-==
-At first look, mark_page_accessed() in follow_page() seems a bit strange.
-it seems pte_mkyoung() would be better and to consist other kernel code.
+> 
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> 
+> > On Mon, Feb 09, 2009 at 07:30:04PM -0500, Wenji Huang wrote:
+> > > Pass tsk to __update_max_tr instead of current to avoid latent hazard.
+> > > 
+> > > Impact: clean up
+> > > 
+> > > Signed-off-by: Wenji Huang <wenji.huang@oracle.com>
+> > > ---
+> > >  kernel/trace/trace.c |    2 +-
+> > >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > > 
+> > > diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> > > index 5b1e9a9..c1592f1 100644
+> > > --- a/kernel/trace/trace.c
+> > > +++ b/kernel/trace/trace.c
+> > > @@ -335,7 +335,7 @@ __update_max_tr(struct trace_array *tr, struct task_struct *tsk, int cpu)
+> > >  	data->rt_priority = tsk->rt_priority;
+> > >  
+> > >  	/* record this tasks comm */
+> > > -	tracing_record_cmdline(current);
+> > > +	tracing_record_cmdline(tsk);
+> > >  }
+> > 
+> > 
+> > Indeed. At this stage, tsk is the next task in the middle of a context
+> > switch. So I guess current is right, but this is more proper to use tsk.
+> 
+> Rename it to 'next' then please.
 
-However, it is intentionally. past commitlog said, 
+I'm sorry, I missed this comment, and only notice it because of Wenji's 
+latest patches.
 
-    ------------------------------------------------
-    commit 9e45f61d69be9024a2e6bef3831fb04d90fac7a8
-    Author: akpm <akpm>
-    Date:   Fri Aug 15 07:24:59 2003 +0000
+For the __update_max_tr used by irqsoff, this is not the case. The 
+update_max_tr is just to make a snapshot of the latest max. The 
+irq/preempt latency tracers do not use the sched switch to record comms, 
+especially since it only cares when a new max happens. There is no concept 
+of a 'next' task.
 
-    [PATCH] Use mark_page_accessed() in follow_page()
+I think the proper name is 'task'.
 
-    Touching a page via follow_page() counts as a reference so we should be
-    either setting the referenced bit in the pte or running mark_page_accessed().
-
-    Altering the pte is tricky because we haven't implemented an atomic
-    pte_mkyoung().  And mark_page_accessed() is better anyway because it has more
-    aging state: it can move the page onto the active list.
-
-    BKrev: 3f3c8acbplT8FbwBVGtth7QmnqWkIw
-    ------------------------------------------------
-
-The atomic issue is still true nowadays. adding comment help to understand 
-code intention and it would be better.
-
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
-Cc: Nick Piggin <npiggin@suse.de>
----
- mm/memory.c |    5 +++++
- 1 file changed, 5 insertions(+)
-
-Index: b/mm/memory.c
-===================================================================
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -1151,6 +1151,11 @@ struct page *follow_page(struct vm_area_
- 		if ((flags & FOLL_WRITE) &&
- 		    !pte_dirty(pte) && !PageDirty(page))
- 			set_page_dirty(page);
-+		/*
-+		 * pte_mkyoung() would be more correct here, but atomic care
-+		 * is needed to avoid losing dirty bit: easier to
-+		 * mark_page_accessed().
-+		 */
- 		mark_page_accessed(page);
- 	}
- unlock:
-
+-- Steve
 
