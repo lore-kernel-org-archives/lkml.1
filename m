@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbZBMU7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759703AbZBMVDP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753112AbZBMU7T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 15:59:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbZBMU7E
+	id S1759703AbZBMVDP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 16:03:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbZBMVC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 15:59:04 -0500
-Received: from ozlabs.org ([203.10.76.45]:52102 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752600AbZBMU7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 15:59:01 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Tejun Heo <tj@kernel.org>
-Subject: Re: #tj-percpu has been rebased
-Date: Sat, 14 Feb 2009 07:28:54 +1030
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, cpw@sgi.com
-References: <49833350.1020809@kernel.org> <49939964.4070607@kernel.org> <49939B08.1050801@kernel.org>
-In-Reply-To: <49939B08.1050801@kernel.org>
+	Fri, 13 Feb 2009 16:02:59 -0500
+Received: from kroah.org ([198.145.64.141]:58120 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752826AbZBMVC6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 16:02:58 -0500
+Date: Fri, 13 Feb 2009 11:09:53 -0800
+From: Greg KH <greg@kroah.com>
+To: Colin Ian King <colin.king@canonical.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Bluetooth USB: fix kernel panic during suspend - 2.6.24
+Message-ID: <20090213190953.GA958@kroah.com>
+References: <1234518585.6647.26.camel@ubuntu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902140728.55954.rusty@rustcorp.com.au>
+In-Reply-To: <1234518585.6647.26.camel@ubuntu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 February 2009 14:14:08 Tejun Heo wrote:
-> Oops, those are the same ones.  I'll give a shot at cooking up
-> something which can be dynamically sized before going forward with
-> this one.
+On Fri, Feb 13, 2009 at 09:49:45AM +0000, Colin Ian King wrote:
+> 
+> The kernel panics when hci_usb_tx_complete() calls _urb_unlink()
+> on an _urb which has been previously been removed from a list.
+> This occurs during suspend while audio is being streamed to
+> a bluetooth headset.
+> 
+> The panic occurs because hci_usb_suspend() dequeues _urb
+> and then calls usb_kill_urb() - instead it should put _urb on
+> the killed list first before killing the urb.
+> 
+> Also added a spin_lock around the list_add operation.
+> 
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
 
-That's why I handed it to you! :)
+Is this still an issue on a supported-by-the-community kernel (.27, .28,
+.29)?
 
-Just remember we waited over 5 years for this to happen: the point of these
-is that Christoph showed it's still useful.
+thanks,
 
-(And I really like the idea of allocing congruent areas rather than remapping
- if someone can show that it's semi-reliable.  Good luck!)
-
-Thanks!
-Rusty. 
+greg k-h
