@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761417AbZBMUTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761901AbZBMUUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761417AbZBMUTc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 15:19:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759858AbZBMUTB
+	id S1761901AbZBMUUL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 15:20:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761114AbZBMUTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 15:19:01 -0500
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:19173 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755288AbZBMUS7 (ORCPT
+	Fri, 13 Feb 2009 15:19:11 -0500
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:32775 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760940AbZBMUTJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 15:18:59 -0500
+	Fri, 13 Feb 2009 15:19:09 -0500
 From: Alex Chiang <achiang@hp.com>
-Subject: [RFC PATCH v2 01/12] PCI: don't scan existing devices
+Subject: [RFC PATCH v2 03/12] PCI: always scan child buses
 To: jbarnes@virtuousgeek.org
 Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Trent Piepho <xyzzy@speakeasy.org>, Alex Chiang <achiang@hp.com>
-Date: Fri, 13 Feb 2009 13:18:58 -0700
-Message-ID: <20090213201858.19262.67639.stgit@bob.kio>
+       Alex Chiang <achiang@hp.com>
+Date: Fri, 13 Feb 2009 13:19:08 -0700
+Message-ID: <20090213201908.19262.29420.stgit@bob.kio>
 In-Reply-To: <20090213201135.19262.67924.stgit@bob.kio>
 References: <20090213201135.19262.67924.stgit@bob.kio>
 User-Agent: StGIT/0.14.3.215.gff3d
@@ -27,37 +27,80 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Trent Piepho <xyzzy@speakeasy.org>
+While scanning bridges, we stop our scan if we encounter a bus
+that we've seen before, to work around some buggy chipsets. This
+is a good idea, but prevents us from fully scanning the PCI bus
+at a future time (to find newly hot-added devices, for example).
 
-pci_scan_single_device is supposed to add newly discovered
-devices to pci_bus->devices, but doesn't check to see if the
-device has already been added. This can cause problems if we ever
-want to use this interface to rescan the PCI bus.
+Change the logic so that we skip _re-adding_ an existing bus
+that we've seen before, but also allow the scan to descend to
+all child buses.
 
-If the device is already added, just return it.
+Now that we're potentially scanning our child buses again, we
+also need to be sure not to attempt re-initializing their BARs
+so we avoid that.
 
-Signed-off-by: Trent Piepho <xyzzy@speakeasy.org>
+This patch lays the groundwork to allow the user to issue a
+rescan of the PCI bus at any time.
+
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/pci/probe.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ drivers/pci/probe.c |   33 +++++++++++++++++++--------------
+ 1 files changed, 19 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 55ec44a..66b5d1c 100644
+index d392813..d2bd1b0 100644
 --- a/drivers/pci/probe.c
 +++ b/drivers/pci/probe.c
-@@ -1006,6 +1006,12 @@ struct pci_dev *__ref pci_scan_single_device(struct pci_bus *bus, int devfn)
- {
- 	struct pci_dev *dev;
+@@ -511,21 +511,21 @@ int __devinit pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max,
  
-+	dev = pci_get_slot(bus, devfn);
-+	if (dev) {
-+		pci_dev_put(dev);
-+		return dev;
+ 		/*
+ 		 * If we already got to this bus through a different bridge,
+-		 * ignore it.  This can happen with the i450NX chipset.
++		 * don't re-add it. This can happen with the i450NX chipset.
++		 *
++		 * However, we continue to descend down the hierarchy and
++		 * scan remaining child buses.
+ 		 */
+-		if (pci_find_bus(pci_domain_nr(bus), busnr)) {
+-			dev_info(&dev->dev, "bus %04x:%02x already known\n",
+-				 pci_domain_nr(bus), busnr);
+-			goto out;
++		child = pci_find_bus(pci_domain_nr(bus), busnr);
++		if (!child) {
++			child = pci_add_new_bus(bus, dev, busnr);
++			if (!child)
++				goto out;
++			child->primary = buses & 0xFF;
++			child->subordinate = (buses >> 16) & 0xFF;
++			child->bridge_ctl = bctl;
+ 		}
+ 
+-		child = pci_add_new_bus(bus, dev, busnr);
+-		if (!child)
+-			goto out;
+-		child->primary = buses & 0xFF;
+-		child->subordinate = (buses >> 16) & 0xFF;
+-		child->bridge_ctl = bctl;
+-
+ 		cmax = pci_scan_child_bus(child);
+ 		if (cmax > max)
+ 			max = cmax;
+@@ -1075,8 +1075,13 @@ unsigned int __devinit pci_scan_child_bus(struct pci_bus *bus)
+ 	 * After performing arch-dependent fixup of the bus, look behind
+ 	 * all PCI-to-PCI bridges on this bus.
+ 	 */
+-	pr_debug("PCI: Fixups for bus %04x:%02x\n", pci_domain_nr(bus), bus->number);
+-	pcibios_fixup_bus(bus);
++	if (!bus->is_added) {
++		pr_debug("PCI: Fixups for bus %04x:%02x\n", pci_domain_nr(bus), bus->number);
++		pcibios_fixup_bus(bus);
++		if (bus->parent == NULL)
++			bus->is_added = 1;
 +	}
 +
- 	dev = pci_scan_device(bus, devfn);
- 	if (!dev)
- 		return NULL;
+ 	for (pass=0; pass < 2; pass++)
+ 		list_for_each_entry(dev, &bus->devices, bus_list) {
+ 			if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE ||
 
