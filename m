@@ -1,45 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760679AbZBMVRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760115AbZBMVVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760679AbZBMVRv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 16:17:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbZBMVRn
+	id S1760115AbZBMVVk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 16:21:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbZBMVVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 16:17:43 -0500
-Received: from gw.goop.org ([64.81.55.164]:34951 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750901AbZBMVRm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 16:17:42 -0500
-Message-ID: <4995E373.9030309@goop.org>
-Date: Fri, 13 Feb 2009 13:17:39 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 13 Feb 2009 16:21:32 -0500
+Received: from outbound-mail-30.bluehost.com ([69.89.17.212]:54240 "HELO
+	outbound-mail-30.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752727AbZBMVVb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 16:21:31 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=U2PUy2GBjrrggPf6UQgA8q19nFzsaRa9DuwaVh0Wp+4GONWcVwL8k12/fRzR9EoONhsCY6xDVqjISLsYzx4vF0kxQaPY2cnNhO9OIHQwJJ6FzMRsgTD47YjWDT73Jt6C;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [PATCH 1/2] PCI: quirks, don't mark one netmos as class other
+Date: Fri, 13 Feb 2009 13:21:28 -0800
+User-Agent: KMail/1.9.10
+Cc: akpm@linux-foundation.org, linux-serial@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1228749555-21363-1-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <1228749555-21363-1-git-send-email-jirislaby@gmail.com>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, cpw@sgi.com
-Subject: Re: #tj-percpu has been rebased
-References: <49833350.1020809@kernel.org> <49939964.4070607@kernel.org> <49939B08.1050801@kernel.org> <200902140728.55954.rusty@rustcorp.com.au>
-In-Reply-To: <200902140728.55954.rusty@rustcorp.com.au>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902131321.29530.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> That's why I handed it to you! :)
+On Monday, December 8, 2008 7:19 am Jiri Slaby wrote:
+> Let it as serial, since it doesn't have subdevice in the form of 0x00PS.
 >
-> Just remember we waited over 5 years for this to happen: the point of these
-> is that Christoph showed it's still useful.
->
-> (And I really like the idea of allocing congruent areas rather than remapping
->  if someone can show that it's semi-reliable.  Good luck!)
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
 
-I really don't like the idea of making percpu memory (physically) move 
-around.  It would break Xen's usage of it for a start...  Virtual 
-remapping would be OK.
+Ok, applied this one for real now, to my linux-next branch. :)
 
-    J
+-- 
+Jesse Barnes, Intel Open Source Technology Center
