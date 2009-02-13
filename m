@@ -1,85 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759856AbZBMBrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757835AbZBMBre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759856AbZBMBrT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 20:47:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbZBMBrG
+	id S1757835AbZBMBre (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 20:47:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760131AbZBMBrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 20:47:06 -0500
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:47070 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752010AbZBMBrD (ORCPT
+	Thu, 12 Feb 2009 20:47:20 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:41033 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759605AbZBMBrT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 20:47:03 -0500
-Subject: Re: vfs: Add MS_FLUSHONFSYNC mount flag
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Jan Kara <jack@suse.cz>, Theodore Tso <tytso@MIT.EDU>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, fernando@kic.ac.jp,
-       Ric Wheeler <rwheeler@redhat.com>
-In-Reply-To: <499494E2.3060006@redhat.com>
-References: <1232114101.13775.63.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20090116163039.GE10617@duck.suse.cz>
-	 <1232185639.4831.18.camel@sebastian.kern.oss.ntt.co.jp>
-	 <1232186449.4831.29.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20090119120349.GA10193@duck.suse.cz>
-	 <1233135913.5399.57.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20090128095518.GA16554@duck.suse.cz>
-	 <1234434811.15270.7.camel@sebastian.kern.oss.ntt.co.jp>
-	 <1234434970.15433.4.camel@sebastian.kern.oss.ntt.co.jp>
-	 <499458C1.90105@redhat.com> <20090212212304.GA7935@duck.suse.cz>
-	 <499494E2.3060006@redhat.com>
-Content-Type: text/plain
-Organization: NTT Open Source Software Center
-Date: Fri, 13 Feb 2009 10:47:02 +0900
-Message-Id: <1234489622.3795.49.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Feb 2009 20:47:19 -0500
+Date: Thu, 12 Feb 2009 20:46:40 -0500 (EST)
+From: Tim Abbott <tabbott@MIT.EDU>
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Jeff Arnold <jbarnold@MIT.EDU>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Denys Vlasenko <vda.linux@googlemail.com>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Nikanth Karthikesan <knikanth@suse.de>
+Subject: Re: [PATCH 6/7] Ksplice: Export symbols needed for Ksplice
+In-Reply-To: <200902042205.09651.rusty@rustcorp.com.au>
+Message-ID: <alpine.DEB.2.00.0902080129020.11936@vinegar-pot.mit.edu>
+References: <1228521840-3886-1-git-send-email-jbarnold@mit.edu> <1228521840-3886-6-git-send-email-jbarnold@mit.edu> <1228521840-3886-7-git-send-email-jbarnold@mit.edu> <200902042205.09651.rusty@rustcorp.com.au>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-12 at 15:30 -0600, Eric Sandeen wrote:
-> Jan Kara wrote:
-> > On Thu 12-02-09 11:13:37, Eric Sandeen wrote:
-> 
-> ...
-> 
-> >> Also that way if you have 8 partitions on a battery-backed blockdev, you
-> >> can tune it once, instead of needing to mount all 8 filesystems with the
-> >> new option.
-> >   Yes, but OTOH we should give sysadmin a possibility to enable / disable
-> > it on just some partitions. I don't see a reasonable use for that but people
-> > tend to do strange things ;) and here isn't probably a strong reason to not
-> > allow them.
+On Wed, 4 Feb 2009, Rusty Russell wrote:
+
+> On Saturday 06 December 2008 10:33:59 Jeff Arnold wrote:
+> > From: Tim Abbott <tabbott@mit.edu>
 > > 
-> > 								Honza
+> > Ksplice uses several functions from module.c in order to resolve
+> > symbols and implement dependency handling.  Calling these functions
+> > requires holding module_mutex, so it is exported.
 > 
-> But nobody has asked for that, have they?  So why offer it up a this point?
+> I have fought every attempt to export that.  It was long a cause of misery
+> and pain; people saw the lock and so started grabbing it.
 > 
-> They could use LD_PRELOAD to make fsync a no-op if they really don't
-> care for it, I guess... though that's not easily per-fs either.
-> 
-> But do we really want to go out of our way to enable people to
-> short-circuit data integrity paths and then file bugs when their files
-> go missing? :)
+> Any chance we can find another way?
 
-Well, it is just a matter of using safe defaults. IMHO, a scenario where
-the administrator wants to optimize writes to a certain partition and
-_explicitly_ clears MS_FLUSHONFSYNC on that superblock is not completely
-unreasonable.
+It is definitely possible, but it wouldn't be pretty.  There are a few 
+things that we use module_mutex for:
 
-> (I guess the blockdev tunable is similarly dangerous, but it more
-> clearly meets the explicit need (writecache-safe devices))
+(1) Preventing races involving modules being unloaded during run-pre 
+matching.  Functions such as kallsyms_on_each_symbol, find_symbol, 
+__module_text_address, __module_address, and find_module that are used to 
+obtain a module or a symbol can only be used within preempt_disable or 
+while holding module_mutex.  Further, the values that they return can only 
+be used in the same such context, unless one module_gets the relevant 
+module in that context.
 
-If distributions use sane defaults and we document the mount option or
-bdev tunable properly I guess it might make sense to allow system
-administrators to shoot themselves in the foot.
+So, we'd change/add wrappers to a bunch of these functions to do their own 
+preempt_disable or grabbing of module_mutex, and to module_get the 
+relevant module before they return.  We'd also need to change the Ksplice 
+code to module_put whenever we stop referencing a symbol.  Since a lot of 
+the Ksplice kernel code is related to resolving symbols, I suspect this 
+latter part would be somewhat messy.
 
-(By the way, in this patch-set a patch for mount(8) is included.)
+(2) Calling use_module.  use_module needs to be called while holding 
+module_mutex because it changes the modules_which_use_me lists.
 
-- Fernando
+We could change this by creating a modified version of use_module that 
+grabs module_mutex itself; perhaps renaming the current use_module to 
+__use_module.
 
+(3) Preventing races involving two different Ksplice updates being applied 
+at the same time.
+
+This one is easy; we could just create a new ksplice_mutex.
+
+	-Tim Abbott
