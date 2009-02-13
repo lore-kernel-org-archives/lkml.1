@@ -1,222 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759451AbZBMF1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbZBMFaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759451AbZBMF1g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 00:27:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbZBMF1Q
+	id S1754429AbZBMFaY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 00:30:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750897AbZBMFaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 00:27:16 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:40208 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750978AbZBMF1N (ORCPT
+	Fri, 13 Feb 2009 00:30:07 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:60557 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750729AbZBMFaF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 00:27:13 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=Ipa/uUNJ8TDkH1L58SpY0tfG8XtxC5Fvv/CGT7koQKdPzDj9CB9xaT+DZFdUUJwRU
-	OkUyx6/vxAM3DpTZZpUzg==
-MIME-Version: 1.0
-In-Reply-To: <20090212123723.4FED13E666F@basil.firstfloor.org>
-References: <20090212137.750180365@firstfloor.org>
-	 <20090212123723.4FED13E666F@basil.firstfloor.org>
-Date: Thu, 12 Feb 2009 21:27:08 -0800
-Message-ID: <cc96a5040902122127u14022488y99091fa38ed2ede@mail.gmail.com>
-Subject: Re: [PATCH] [4/10] x86: MCE: Switch machine check polling to per CPU 
-	timer v3
-From: Tim Hockin <thockin@google.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: akpm@linux-foundation.org, x86@firstfloor.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+	Fri, 13 Feb 2009 00:30:05 -0500
+Message-Id: <20090213052358.524970112@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 13 Feb 2009 00:23:58 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: [PATCH 0/7] [git pull] powerpc function graph tracer
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 12, 2009 at 4:37 AM, Andi Kleen <andi@firstfloor.org> wrote:
->
-> Impact: Higher priority bug fix
->
-> The machine check poller runs a single timer and then broadcasted an
-> IPI to all CPUs to check them. This leads to unnecessary
-> synchronization between CPUs. The original CPU running the timer has
-> to wait potentially a long time for all other CPUs answering. This is
-> also real time unfriendly and in general inefficient.
->
-> This was especially a problem on systems with a lot of events where
-> the poller run with a higher frequency after processing some events.
-> There could be more and more CPU time wasted with this, to
-> the point of significantly slowing down machines.
->
-> The machine check polling is actually fully independent per CPU, so
-> there's no reason to not just do this all with per CPU timers.  This
-> patch implements that.
 
-Great!  W're going to patch this is an sanity check it here.  We'll
-send you info when we have some results.  It looks good to me.
+Benjamin,
 
-> Also switch the poller also to use standard timers instead of work
-> queues. It was using work queues to be able to execute a user program
-> on a event, but mce_notify_user() handles this case now with a
-> separate callback. So instead always run the poll code in in a
-> standard per CPU timer, which means that in the common case of not
-> having to execute a trigger there will be less overhead.
->
-> This allows to clean up the initialization significantly, because
-> standard timers are already up when machine checks get init'ed.  No
-> multiple initialization functions.
->
-> Thanks to Thomas Gleixner for some help.
->
-> Cc: thockin@google.com
-> v2: Use del_timer_sync() on cpu shutdown and don't try to handle
-> migrated timers.
-> v3: Add WARN_ON for timer running on unexpected CPU
->
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
->
-> ---
->  arch/x86/kernel/cpu/mcheck/mce_64.c |   68 +++++++++++++++++++++++-------------
->  1 file changed, 45 insertions(+), 23 deletions(-)
->
-> Index: linux/arch/x86/kernel/cpu/mcheck/mce_64.c
-> ===================================================================
-> --- linux.orig/arch/x86/kernel/cpu/mcheck/mce_64.c      2009-02-12 11:30:51.000000000 +0100
-> +++ linux/arch/x86/kernel/cpu/mcheck/mce_64.c   2009-02-12 12:10:21.000000000 +0100
-> @@ -353,18 +353,17 @@
->
->  static int check_interval = 5 * 60; /* 5 minutes */
->  static int next_interval; /* in jiffies */
-> -static void mcheck_timer(struct work_struct *work);
-> -static DECLARE_DELAYED_WORK(mcheck_work, mcheck_timer);
-> +static void mcheck_timer(unsigned long);
-> +static DEFINE_PER_CPU(struct timer_list, mce_timer);
->
-> -static void mcheck_check_cpu(void *info)
-> +static void mcheck_timer(unsigned long data)
->  {
-> +       struct timer_list *t = &per_cpu(mce_timer, data);
-> +
-> +       WARN_ON(smp_processor_id() != data);
-> +
->        if (mce_available(&current_cpu_data))
->                do_machine_check(NULL, 0);
-> -}
-> -
-> -static void mcheck_timer(struct work_struct *work)
-> -{
-> -       on_each_cpu(mcheck_check_cpu, NULL, 1);
->
->        /*
->         * Alert userspace if needed.  If we logged an MCE, reduce the
-> @@ -377,7 +376,8 @@
->                                (int)round_jiffies_relative(check_interval*HZ));
->        }
->
-> -       schedule_delayed_work(&mcheck_work, next_interval);
-> +       t->expires = jiffies + next_interval;
-> +       add_timer(t);
->  }
->
->  static void mce_do_trigger(struct work_struct *work)
-> @@ -436,16 +436,11 @@
->
->  static __init int periodic_mcheck_init(void)
->  {
-> -       next_interval = check_interval * HZ;
-> -       if (next_interval)
-> -               schedule_delayed_work(&mcheck_work,
-> -                                     round_jiffies_relative(next_interval));
-> -       idle_notifier_register(&mce_idle_notifier);
-> -       return 0;
-> +       idle_notifier_register(&mce_idle_notifier);
-> +       return 0;
->  }
->  __initcall(periodic_mcheck_init);
->
-> -
->  /*
->  * Initialize Machine Checks for a CPU.
->  */
-> @@ -515,6 +510,20 @@
->        }
->  }
->
-> +static void mce_init_timer(void)
-> +{
-> +       struct timer_list *t = &__get_cpu_var(mce_timer);
-> +
-> +       /* data race harmless because everyone sets to the same value */
-> +       if (!next_interval)
-> +               next_interval = check_interval * HZ;
-> +       if (!next_interval)
-> +               return;
-> +       setup_timer(t, mcheck_timer, smp_processor_id());
-> +       t->expires = round_jiffies_relative(jiffies + next_interval);
-> +       add_timer(t);
-> +}
-> +
->  /*
->  * Called for each booted CPU to set up machine checks.
->  * Must be called with preempt off.
-> @@ -529,6 +538,7 @@
->
->        mce_init(NULL);
->        mce_cpu_features(c);
-> +       mce_init_timer();
->  }
->
->  /*
-> @@ -735,17 +745,19 @@
->        return 0;
->  }
->
-> +static void mce_cpu_restart(void *data)
-> +{
-> +       del_timer_sync(&__get_cpu_var(mce_timer));
-> +       if (mce_available(&current_cpu_data))
-> +               mce_init(NULL);
-> +       mce_init_timer();
-> +}
-> +
->  /* Reinit MCEs after user configuration changes */
->  static void mce_restart(void)
->  {
-> -       if (next_interval)
-> -               cancel_delayed_work(&mcheck_work);
-> -       /* Timer race is harmless here */
-> -       on_each_cpu(mce_init, NULL, 1);
->        next_interval = check_interval * HZ;
-> -       if (next_interval)
-> -               schedule_delayed_work(&mcheck_work,
-> -                                     round_jiffies_relative(next_interval));
-> +       on_each_cpu(mce_cpu_restart, NULL, 1);
->  }
->
->  static struct sysdev_class mce_sysclass = {
-> @@ -874,6 +886,7 @@
->                                      unsigned long action, void *hcpu)
->  {
->        unsigned int cpu = (unsigned long)hcpu;
-> +       struct timer_list *t = &per_cpu(mce_timer, cpu);
->
->        switch (action) {
->        case CPU_ONLINE:
-> @@ -888,6 +901,15 @@
->                        threshold_cpu_callback(action, cpu);
->                mce_remove_device(cpu);
->                break;
-> +       case CPU_DOWN_PREPARE:
-> +       case CPU_DOWN_PREPARE_FROZEN:
-> +               del_timer_sync(t);
-> +               break;
-> +       case CPU_DOWN_FAILED:
-> +       case CPU_DOWN_FAILED_FROZEN:
-> +               t->expires = round_jiffies_relative(jiffies + next_interval);
-> +               add_timer_on(t, cpu);
-> +               break;
->        }
->        return NOTIFY_OK;
->  }
->
+I figured you can run it through your test boxes.
+
+Please pull the latest ppc/ftrace tree, which can be found at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+ppc/ftrace
+
+
+Steven Rostedt (7):
+      tracing/function-graph-tracer: make arch generic push pop functions
+      powerpc64: port of the function graph tracer
+      powerpc64, tracing: add function graph tracer with dynamic tracing
+      powerpc64, ftrace: save toc only on modules for function graph
+      powerpc32, ftrace: save and restore mcount regs with macro
+      powerpc32, ftrace: port function graph tracer to ppc32, static only
+      powerpc32, ftrace: dynamic function graph tracer
+
+----
+ arch/powerpc/Kconfig                 |    1 +
+ arch/powerpc/include/asm/ftrace.h    |   39 ++++++++++-
+ arch/powerpc/kernel/Makefile         |    9 +-
+ arch/powerpc/kernel/entry_32.S       |  115 ++++++++++++++---------------
+ arch/powerpc/kernel/entry_64.S       |   89 +++++++++++++++++++++-
+ arch/powerpc/kernel/ftrace.c         |  135 ++++++++++++++++++++++++++++++++--
+ arch/powerpc/kernel/process.c        |   16 ++++
+ arch/powerpc/kernel/vmlinux.lds.S    |    1 +
+ arch/x86/include/asm/ftrace.h        |   25 ------
+ arch/x86/kernel/ftrace.c             |   75 +------------------
+ include/linux/ftrace.h               |   24 ++++++
+ kernel/trace/trace_functions_graph.c |   75 +++++++++++++++++++
+ 12 files changed, 428 insertions(+), 176 deletions(-)
+-- 
