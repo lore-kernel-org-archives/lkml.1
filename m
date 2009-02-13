@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757368AbZBMK5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758620AbZBMK5r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757368AbZBMK5c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 05:57:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbZBMK5X
+	id S1758620AbZBMK5r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 05:57:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751566AbZBMK5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 13 Feb 2009 05:57:23 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:51380 "EHLO mx2.redhat.com"
+Received: from mx2.redhat.com ([66.187.237.31]:51379 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751303AbZBMK5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751473AbZBMK5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 13 Feb 2009 05:57:22 -0500
-Date: Fri, 13 Feb 2009 11:54:37 +0100
+Date: Fri, 13 Feb 2009 11:54:42 +0100
 From: Oleg Nesterov <oleg@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Jerome Marchand <jmarchan@redhat.com>, Roland McGrath <roland@redhat.com>,
        Denys Vlasenko <dvlasenk@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH -mm 1/2] ptrace_detach: the wrong wakeup breaks the
-	ERESTARTxxx logic
-Message-ID: <20090213105437.GA24320@redhat.com>
+Subject: [PATCH -mm 2/2] ptrace_untrace: fix the SIGNAL_STOP_STOPPED check
+Message-ID: <20090213105442.GA24328@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,57 +24,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Another ancient bug. Consider this trivial test-case,
+This bug is ancient too. ptrace_untrace() must not resume the task
+if the group stop in progress, we should set TASK_STOPPED instead.
 
-	int main(void)
-	{
-		int pid = fork();
+Unfortunately, we still have problems here:
 
-		if (pid) {
-			ptrace(PTRACE_ATTACH, pid, NULL, NULL);
-			wait(NULL);
-			ptrace(PTRACE_DETACH, pid, NULL, NULL);
-		} else {
-			pause();
-			printf("WE HAVE A KERNEL BUG!!!\n");
-		}
+	- if the process/thread was traced, SIGNAL_STOP_STOPPED
+	  does not necessary means this thread group is stopped.
 
-		return 0;
-	}
-
-the child must not "escape" for sys_pause(), but it can and this was seen
-in practice.
-
-This is because ptrace_detach does:
-
-	if (!child->exit_state)
-		wake_up_process(child);
-
-this wakeup can happen after this child has already restarted sys_pause(),
-because it gets another wakeup from ptrace_untrace().
-
-With or without this patch, perhaps sys_pause() needs a fix. But this
-wakeup also breaks the SIGNAL_STOP_STOPPED logic in ptrace_untrace().
-
-Remove this wakeup. The caller saw this task in TASK_TRACED state, and
-unless it was SIGKILL'ed in between __ptrace_unlink()->ptrace_untrace()
-should handle this case correctly. If it was SIGKILL'ed, we don't need
-to wakup the dying tracee too.
+	- ptrace breaks the bookkeeping of ->group_stop_count.
 
 Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
---- 6.29-rc3/kernel/ptrace.c~1_KILL_WAKE	2009-02-13 11:06:04.000000000 +0100
-+++ 6.29-rc3/kernel/ptrace.c	2009-02-13 11:06:56.000000000 +0100
-@@ -301,11 +301,7 @@ int ptrace_detach(struct task_struct *ch
- 	 */
- 	if (child->ptrace) {
- 		child->exit_code = data;
--
- 		dead = __ptrace_detach(current, child);
--
--		if (!child->exit_state)
--			wake_up_process(child);
+--- 6.29-rc3/kernel/ptrace.c~2_FIX_STOPPED	2009-02-13 11:06:56.000000000 +0100
++++ 6.29-rc3/kernel/ptrace.c	2009-02-13 11:38:50.000000000 +0100
+@@ -60,11 +60,15 @@ static void ptrace_untrace(struct task_s
+ {
+ 	spin_lock(&child->sighand->siglock);
+ 	if (task_is_traced(child)) {
+-		if (child->signal->flags & SIGNAL_STOP_STOPPED) {
++		/*
++		 * If the group stop is completed or in progress,
++		 * this thread was already counted as stopped.
++		 */
++		if (child->signal->flags & SIGNAL_STOP_STOPPED ||
++		    child->signal->group_stop_count)
+ 			__set_task_state(child, TASK_STOPPED);
+-		} else {
++		else
+ 			signal_wake_up(child, 1);
+-		}
  	}
- 	write_unlock_irq(&tasklist_lock);
- 
+ 	spin_unlock(&child->sighand->siglock);
+ }
 
