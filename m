@@ -1,137 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761205AbZBMQdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760581AbZBMQgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761205AbZBMQdV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 11:33:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbZBMQdL
+	id S1760581AbZBMQgV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 11:36:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbZBMQgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 11:33:11 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:47690 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752226AbZBMQdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 11:33:10 -0500
-Message-ID: <4995A0B7.1030705@redhat.com>
-Date: Fri, 13 Feb 2009 11:32:55 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Peter Zijlstra <peterz@infradead.org>, Nick Piggin <npiggin@suse.de>,
-       akpm <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: irq-disabled vs vmap vs text_poke
-References: <1234529407.6519.28.camel@twins> <20090213141839.GA31922@Krystal>
-In-Reply-To: <20090213141839.GA31922@Krystal>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 13 Feb 2009 11:36:13 -0500
+Received: from soda1.next-web.ne.jp ([211.10.8.3]:61702 "HELO
+	soda1.next-web.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752872AbZBMQgM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 11:36:12 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Feb 2009 11:36:11 EST
+Subject: Re: vfs: Add MS_FLUSHONFSYNC mount flag
+From: Fernando Luis Vazquez Cao <fernando@kic.ac.jp>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Eric Sandeen <sandeen@redhat.com>,
+       Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>,
+       Jan Kara <jack@suse.cz>, Theodore Tso <tytso@MIT.EDU>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Ric Wheeler <rwheeler@redhat.com>
+In-Reply-To: <20090213122051.GX8830@disturbed>
+References: <1232185639.4831.18.camel@sebastian.kern.oss.ntt.co.jp>
+	 <1232186449.4831.29.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090119120349.GA10193@duck.suse.cz>
+	 <1233135913.5399.57.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090128095518.GA16554@duck.suse.cz>
+	 <1234434811.15270.7.camel@sebastian.kern.oss.ntt.co.jp>
+	 <1234434970.15433.4.camel@sebastian.kern.oss.ntt.co.jp>
+	 <499458C1.90105@redhat.com>
+	 <1234487679.3795.15.camel@sebastian.kern.oss.ntt.co.jp>
+	 <49951121.80807@redhat.com>  <20090213122051.GX8830@disturbed>
+Content-Type: text/plain
+Organization: =?UTF-8?Q?=E7=A5=9E=E6=88=B8=E6=83=85=E5=A0=B1=E5=A4=A7=E5=AD=A6?=
+ =?UTF-8?Q?=E9=99=A2=E5=A4=A7=E5=AD=A6?=
+Date: Sat, 14 Feb 2009 01:29:28 +0900
+Message-Id: <1234542568.9916.183.camel@bladerunner>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * Peter Zijlstra (peterz@infradead.org) wrote:
->> Hi,
->>
->> Ingo got the following splat:
->>
->> [    5.101748] ------------[ cut here ]------------
->> [    5.104305] WARNING: at kernel/smp.c:329 smp_call_function_many+0x34/0x1ea()
->> [    5.104305] Hardware name: P4DC6
->> [    5.104305] Modules linked in:
->> [    5.104305] Pid: 1, comm: swapper Not tainted 2.6.29-rc4-tip-01766-g1757c19-dirty #2
->> [    5.104305] Call Trace:
->> [    5.104305]  [<c012b5d6>] warn_slowpath+0x79/0x8f
->> [    5.104305]  [<c0104d24>] ? dump_trace+0x7d/0xac
->> [    5.104305]  [<c014805a>] ? __lock_acquire+0x319/0x382
->> [    5.104305]  [<c014d6a1>] smp_call_function_many+0x34/0x1ea
->> [    5.104305]  [<c011b59e>] ? do_flush_tlb_all+0x0/0x48
->> [    5.104305]  [<c011b59e>] ? do_flush_tlb_all+0x0/0x48
->> [    5.104305]  [<c014d878>] smp_call_function+0x21/0x28
->> [    5.104305]  [<c012fa56>] on_each_cpu+0x14/0x23
->> [    5.104305]  [<c011b56d>] flush_tlb_all+0x19/0x1b
->> [    5.104305]  [<c018dcbe>] flush_tlb_kernel_range+0xd/0xf
->> [    5.104305]  [<c018dd00>] vmap_debug_free_range+0x1c/0x20
->> [    5.104305]  [<c018e386>] remove_vm_area+0x28/0x67
->> [    5.104305]  [<c018e468>] __vunmap+0x30/0xab
->> [    5.104305]  [<c018e50a>] vunmap+0x27/0x29
->> [    5.104305]  [<c06421b6>] text_poke+0xd6/0x104
->> [    5.104305]  [<c015687c>] ? kprobe_target+0x0/0x15
->> [    5.104305]  [<c0642a82>] arch_disarm_kprobe+0x13/0x15
->> [    5.104305]  [<c06434f9>] __unregister_kprobe_top+0x68/0xe8
->> [    5.104305]  [<c06436d2>] unregister_kretprobes+0x2c/0xb9
->> [    5.104305]  [<c0643775>] unregister_kretprobe+0x16/0x18
->> [    5.104305]  [<c0156d0b>] init_test_probes+0x2ed/0x40c
->> [    5.104305]  [<c09d451c>] init_kprobes+0x127/0x131
->> [    5.104305]  [<c01476bf>] ? lock_release_holdtime+0x43/0x48
->> [    5.104305]  [<c0192e48>] ? __slab_alloc+0x5d/0x27a
->> [    5.104305]  [<c0147a2a>] ? lockdep_init_map+0x80/0xe7
->> [    5.104305]  [<c0141c0d>] ? clocksource_read+0xd/0xf
->> [    5.104305]  [<c0142542>] ? getnstimeofday+0x5e/0xe9
->> [    5.104305]  [<c013e01e>] ? timespec_to_ktime+0xe/0x11
->> [    5.104305]  [<c09d43f5>] ? init_kprobes+0x0/0x131
->> [    5.104305]  [<c010115c>] do_one_initcall+0x6a/0x169
->> [    5.104305]  [<c029ad2f>] ? number+0x10d/0x1cf
->> [    5.104305]  [<c0147799>] ? register_lock_class+0x17/0x228
->> [    5.104305]  [<c014805a>] ? __lock_acquire+0x319/0x382
->> [    5.104305]  [<c029fa91>] ? debug_check_no_obj_freed+0xda/0x126
->> [    5.104305]  [<c014805a>] ? __lock_acquire+0x319/0x382
->> [    5.104305]  [<c01476bf>] ? lock_release_holdtime+0x43/0x48
->> [    5.104305]  [<c0640ec0>] ? _spin_unlock+0x22/0x25
->> [    5.104305]  [<c01cc0f0>] ? proc_register+0x14b/0x15c
->> [    5.104305]  [<c01cc20f>] ? create_proc_entry+0x76/0x8c
->> [    5.104305]  [<c0162900>] ? default_affinity_write+0x3f/0x8a
->> [    5.104305]  [<c0162a6a>] ? init_irq_proc+0x58/0x65
->> [    5.104305]  [<c09bf52d>] kernel_init+0x118/0x169
->> [    5.104305]  [<c09bf415>] ? kernel_init+0x0/0x169
->> [    5.104305]  [<c0103adf>] kernel_thread_helper+0x7/0x10
->> [    5.104305] ---[ end trace e93713a9d40cd06c ]---
->>
->> Which points to vunmap() being called with interrupts disabled.
->>
->> Which made me look at the vmap/vunmap calls, and they appear to not be
->> irq-safe, therefore this would be a bug in text_poke().
->>
->> [ that is, vmap() can end up calling get_vm_area_caller() which in turn
->>   calls __get_vm_area_node() with GFP_KERNEL, ergo, don't do this from
->>   an atomic context. ]
->>
->> Now text_poke() uses local_irq_save/restore(), which conveys that it can
->> be called with IRQs disabled, which is exactly what happens in the trace
->> above, however we just established that vmap/vunmap() are not irq-safe.
->>
+On Fri, 2009-02-13 at 23:20 +1100, Dave Chinner wrote:
+> On Fri, Feb 13, 2009 at 12:20:17AM -0600, Eric Sandeen wrote:
+> > I'm just a little leery of the "dangerous" mount option proliferation, I
+> > guess.
 > 
-> text_poke should actually use local_irq_disable/enable rather than
-> local_irq_save/restore because it _must_ be called with interrupts on.
+> You're not the only one, Eric. It's bad enough having to explain to
+> users what barriers do once they have lost data after a power loss,
+> let alone confusing them further by adding more mount options they
+> will get wrong by accident....
 
-Could you tell me why it must be called with irq on?
+That is precisely the reason why we should use sensible defaults, which
+in this case means enabling barriers and flushing disk caches on
+fsync()/fdatasync() by default.
 
-> 
->> Anybody got an idea on how to fix this?
-> 
-> There is probably something wrong with the caller, kprobes, which calls
-> text_poke with interrupts off.
+Adding either a new mount option (as you yourself suggest below) or a
+sysfs tunable is desirable for those cases when we really do not need to
+flush the disk write cache to guarantee integrity (battery-backed block
+devices come to mind), or we want to be fast at the cost of potentially
+losing some data.
 
-Hmm, kprobe's smoke test caused this problem. Since (un)register_kprobe()
-may sleep for waiting a mutex, it should not be called with interrupts off.
-So, it's not text_poke()'s issue nor vmap().
+> Quite frankly, the VFS should do stuff that is slow and safe
+> and filesystems can choose to ignore the VFS (via filesystem
+> specific mount options) if they want to be fast and potentially
+> unsafe.
 
-BTW, what about using map_vm_area() in text_poke() instead of vmap()?
-Since text_poke() just maps text pages to alias pages temporarily,
-I think we don't need to use delayed vunmap().
+To avoid unnecessary flushes and allow for filesystem-specific
+optimizations I was considering the following approach:
 
-Thanks
+1- Add flushonfsync mount option (as an aside, I am of the opinion that
+it should be set by default).
+2- Modify file_fsync() so that it checks whether FLUSHONFSYNC is set and
+flushes the underlying device accordingly. With this we would cover all
+filesystems that use the vfs-provided file_fsync() as their fsync method
+(commonly used filesystems such as fat fall in this group).
+3- Advanced filesystems (ext3/4, XFS, btrfs, etc) which provide their
+own fsync implementations are allowed to perform filesystem-specific
+optimizations there to minimize the number of flushes and maximize
+throughput.
 
-> 
-> Mathieu
-> 
+In this patch set I implemented (1) and (3) for ext3/4 to have some code
+to comment on.
 
--- 
-Masami Hiramatsu
+Does this approach make sense? Thoughts?
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+- Fernando
 
