@@ -1,69 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758753AbZBMMhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758053AbZBMMnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758753AbZBMMhp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 07:37:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbZBMMhg
+	id S1758053AbZBMMnc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 07:43:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbZBMMnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 07:37:36 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38662 "EHLO mx2.mail.elte.hu"
+	Fri, 13 Feb 2009 07:43:24 -0500
+Received: from mx1.suse.de ([195.135.220.2]:35413 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751599AbZBMMhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 07:37:35 -0500
-Date: Fri, 13 Feb 2009 13:37:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86 headers: protect page_32.h via __ASSEMBLY__
-Message-ID: <20090213123721.GA1879@elte.hu>
-References: <49935DD8.8010705@goop.org> <20090213120239.GL15679@elte.hu> <20090213121858.GB5483@elte.hu> <20090213122325.GA30061@elte.hu> <20090213122724.GA2172@elte.hu>
+	id S1752138AbZBMMnX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 07:43:23 -0500
+Message-ID: <499569A9.5030202@suse.de>
+Date: Fri, 13 Feb 2009 13:38:01 +0100
+From: Frank Seidel <fseidel@suse.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090213122724.GA2172@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: linux kernel <linux-kernel@vger.kernel.org>
+Cc: akpm@linux-foundation.org, rlove@rlove.org,
+       Jean Delvare <khali@linux-fr.org>, protasnb@gmail.com,
+       Michael Ruoss <miruoss@student.ethz.ch>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Tim Gardner <tim.gardner@canonical.com>, Frank Seidel <fseidel@suse.de>,
+       Frank Seidel <frank@f-seidel.de>
+Subject: [PATCH] hwmon/hdaps: Fix bug 7154 inversion of separate axis
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From beb6943d8df7ce9278282101af4e0f6f7b648451 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Fri, 13 Feb 2009 13:36:47 +0100
-Subject: [PATCH] x86 headers: protect page_32.h via __ASSEMBLY__
+From: Frank Seidel <frank@f-seidel.de>
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Fix for kernel.org bug #7154:hdaps inversion of
+each axis. This version is based on the work
+from Michael Ruoss <miruoss@student.ethz.ch>.
+
+Signed-off-by: Frank Seidel <frank@f-seidel.de>
 ---
- arch/x86/include/asm/page_32.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/hwmon/hdaps.c |   49 ++++++++++++++++++++++++++++---------------------
+ 1 file changed, 28 insertions(+), 21 deletions(-)
 
-diff --git a/arch/x86/include/asm/page_32.h b/arch/x86/include/asm/page_32.h
-index b3f0bf7..da4e762 100644
---- a/arch/x86/include/asm/page_32.h
-+++ b/arch/x86/include/asm/page_32.h
-@@ -3,6 +3,8 @@
+--- a/drivers/hwmon/hdaps.c
++++ b/drivers/hwmon/hdaps.c
+@@ -65,6 +65,10 @@
+ #define HDAPS_INPUT_FUZZ	4	/* input event threshold */
+ #define HDAPS_INPUT_FLAT	4
  
- #include <asm/page_32_types.h>
- 
-+#ifndef __ASSEMBLY__
++#define HDAPS_X_AXIS		1UL
++#define HDAPS_Y_AXIS		2UL
++#define HDAPS_BOTH_AXES		3UL
 +
- #ifdef CONFIG_HUGETLB_PAGE
- #define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
- #endif
-@@ -19,8 +21,6 @@ extern unsigned long __phys_addr(unsigned long);
- #define pfn_valid(pfn)		((pfn) < max_mapnr)
- #endif /* CONFIG_FLATMEM */
+ static struct platform_device *pdev;
+ static struct input_polled_dev *hdaps_idev;
+ static unsigned int hdaps_invert;
+@@ -182,11 +186,11 @@ static int __hdaps_read_pair(unsigned in
+ 	km_activity = inb(HDAPS_PORT_KMACT);
+ 	__device_complete();
  
--#ifndef __ASSEMBLY__
--
- #ifdef CONFIG_X86_USE_3DNOW
- #include <asm/mmx.h>
+-	/* if hdaps_invert is set, negate the two values */
+-	if (hdaps_invert) {
++	/* hdaps_invert is a bitvector to negate the axes */
++	if (hdaps_invert & 1)
+ 		*x = -*x;
++	if (hdaps_invert & 2)
+ 		*y = -*y;
+-	}
  
-
+ 	return 0;
+ }
+@@ -436,7 +440,7 @@ static ssize_t hdaps_invert_store(struct
+ {
+ 	int invert;
+ 
+-	if (sscanf(buf, "%d", &invert) != 1 || (invert != 1 && invert != 0))
++	if (sscanf(buf, "%d", &invert) != 1 || invert < 0 || invert > 3)
+ 		return -EINVAL;
+ 
+ 	hdaps_invert = invert;
+@@ -483,7 +487,7 @@ static int __init hdaps_dmi_match(const
+ /* hdaps_dmi_match_invert - found an inverted match. */
+ static int __init hdaps_dmi_match_invert(const struct dmi_system_id *id)
+ {
+-	hdaps_invert = 1;
++	hdaps_invert = (int)id->driver_data;
+ 	printk(KERN_INFO "hdaps: inverting axis readings.\n");
+ 	return hdaps_dmi_match(id);
+ }
+@@ -491,15 +495,17 @@ static int __init hdaps_dmi_match_invert
+ #define HDAPS_DMI_MATCH_NORMAL(vendor, model) {		\
+ 	.ident = vendor " " model,			\
+ 	.callback = hdaps_dmi_match,			\
++	.driver_data = (void *)0UL,			\
+ 	.matches = {					\
+ 		DMI_MATCH(DMI_BOARD_VENDOR, vendor),	\
+ 		DMI_MATCH(DMI_PRODUCT_VERSION, model)	\
+ 	}						\
+ }
+ 
+-#define HDAPS_DMI_MATCH_INVERT(vendor, model) {		\
++#define HDAPS_DMI_MATCH_INVERT(vendor, model, axes) {	\
+ 	.ident = vendor " " model,			\
+ 	.callback = hdaps_dmi_match_invert,		\
++	.driver_data = (void *)axes,			\
+ 	.matches = {					\
+ 		DMI_MATCH(DMI_BOARD_VENDOR, vendor),	\
+ 		DMI_MATCH(DMI_PRODUCT_VERSION, model)	\
+@@ -511,28 +517,28 @@ static int __init hdaps_dmi_match_invert
+    If your ThinkPad is not recognized, please update to latest
+    BIOS. This is especially the case for some R52 ThinkPads. */
+ static struct dmi_system_id __initdata hdaps_whitelist[] = {
+-	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad R50p"),
++	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad R50p", HDAPS_BOTH_AXES),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad R50"),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad R51"),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad R52"),
+-	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad R61i"),
+-	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad R61"),
+-	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad T41p"),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad R61i", HDAPS_BOTH_AXES),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad R61", HDAPS_BOTH_AXES),
++	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad T41p", HDAPS_BOTH_AXES),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad T41"),
+-	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad T42p"),
++	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad T42p", HDAPS_BOTH_AXES),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad T42"),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad T43"),
+-	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T60"),
+-	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T61p"),
+-	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T61"),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T60", HDAPS_BOTH_AXES),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T61p", HDAPS_BOTH_AXES),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T61", HDAPS_BOTH_AXES),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad X40"),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad X41"),
+-	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X60"),
+-	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X61s"),
+-	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X61"),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X60", HDAPS_BOTH_AXES),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X61s", HDAPS_BOTH_AXES),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X61", HDAPS_BOTH_AXES),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad Z60m"),
+-	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad Z61m"),
+-	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad Z61p"),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad Z61m", HDAPS_BOTH_AXES),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad Z61p", HDAPS_BOTH_AXES),
+ 	{ .ident = NULL }
+ };
+ 
+@@ -627,8 +633,9 @@ static void __exit hdaps_exit(void)
+ module_init(hdaps_init);
+ module_exit(hdaps_exit);
+ 
+-module_param_named(invert, hdaps_invert, bool, 0);
+-MODULE_PARM_DESC(invert, "invert data along each axis");
++module_param_named(invert, hdaps_invert, int, 0);
++MODULE_PARM_DESC(invert, "invert data along each axis. 1 invert x-axis, "
++		 "2 invert y-axis, 3 invert both axes.");
+ 
+ MODULE_AUTHOR("Robert Love");
+ MODULE_DESCRIPTION("IBM Hard Drive Active Protection System (HDAPS) driver");
