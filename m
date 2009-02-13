@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762137AbZBMOtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762225AbZBMOtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762137AbZBMOtY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 09:49:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760314AbZBMOr0
+	id S1762225AbZBMOtk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 09:49:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761426AbZBMOrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 09:47:26 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:16738 "EHLO
+	Fri, 13 Feb 2009 09:47:33 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:16754 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1760165AbZBMOrZ (ORCPT
+	by vger.kernel.org with ESMTP id S1752691AbZBMOrc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 09:47:25 -0500
-Date: Fri, 13 Feb 2009 17:47:22 +0300
+	Fri, 13 Feb 2009 09:47:32 -0500
+Date: Fri, 13 Feb 2009 17:47:28 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
 Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
        Kumar Gala <galak@kernel.crashing.org>,
        Liu Dave <DaveLiu@freescale.com>, sdhci-devel@list.drzeus.cx,
        linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 07/13] sdhci: Add support for hosts with strict 32 bit
-	addressing
-Message-ID: <20090213144722.GG23889@oksana.dev.rtsoft.ru>
+Subject: [PATCH 08/13] sdhci: Add get_{max,timeout}_clock callbacks
+Message-ID: <20090213144728.GH23889@oksana.dev.rtsoft.ru>
 References: <20090213144630.GA13436@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -30,110 +29,76 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SDHCI driver must take special care when working with "triggering"
-registers on hosts with strict 32 bit addressing.
+From: Ben Dooks <ben-linux@fluff.org>
 
-In FSL eSDHC hosts all registers are 32 bit width, writing to the
-first half of any register will cause [undefined?] write the second
-half of the register. That is, 16 bit write to the TRANSFER_MODE
-register, makes hardware see a bogus write to the COMMAND register
-(these two registers are adjacent).
+Some controllers do not provide clock information in their capabilities
+(in the Samsung case, it is because there are multiple clock sources
+available to the controller). Add hooks to allow the system to supply
+clock information.
 
-This patch adds SDHCI_QUIRK_32BIT_REGISTERS quirk. When specified,
-the sdhci driver will try to "pack" all dangerous writes into single
-32 bit write transaction.
+p.s.
+In the original Ben's patch there was a bug that makes sdhci_add_host()
+return -ENODEV even if callbacks were specified. This is fixed now.
 
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci.c |   19 ++++++++++++++-----
- drivers/mmc/host/sdhci.h |    4 ++++
- 2 files changed, 18 insertions(+), 5 deletions(-)
+ drivers/mmc/host/sdhci.c |   22 +++++++++++++++-------
+ drivers/mmc/host/sdhci.h |    2 ++
+ 2 files changed, 17 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index d668625..1c36a25 100644
+index 1c36a25..96a0482 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -825,13 +825,13 @@ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
- 	sdhci_writew(host, data->blocks, SDHCI_BLOCK_COUNT);
- }
+@@ -1736,19 +1736,27 @@ int sdhci_add_host(struct sdhci_host *host)
  
--static void sdhci_set_transfer_mode(struct sdhci_host *host,
-+static u16 sdhci_get_transfer_mode(struct sdhci_host *host,
- 	struct mmc_data *data)
- {
- 	u16 mode;
+ 	host->max_clk =
+ 		(caps & SDHCI_CLOCK_BASE_MASK) >> SDHCI_CLOCK_BASE_SHIFT;
++	host->max_clk *= 1000000;
+ 	if (host->max_clk == 0) {
+-		printk(KERN_ERR "%s: Hardware doesn't specify base clock "
+-			"frequency.\n", mmc_hostname(mmc));
+-		return -ENODEV;
++		if (!host->ops->get_max_clock) {
++			printk(KERN_ERR
++			       "%s: Hardware doesn't specify base clock "
++			       "frequency.\n", mmc_hostname(mmc));
++			return -ENODEV;
++		}
++		host->max_clk = host->ops->get_max_clock(host);
+ 	}
+-	host->max_clk *= 1000000;
  
- 	if (data == NULL)
--		return;
-+		return 0;
- 
- 	WARN_ON(!host->data);
- 
-@@ -843,7 +843,7 @@ static void sdhci_set_transfer_mode(struct sdhci_host *host,
- 	if (host->flags & SDHCI_REQ_USE_DMA)
- 		mode |= SDHCI_TRNS_DMA;
- 
--	sdhci_writew(host, mode, SDHCI_TRANSFER_MODE);
-+	return mode;
- }
- 
- static void sdhci_finish_data(struct sdhci_host *host)
-@@ -895,6 +895,7 @@ static void sdhci_finish_data(struct sdhci_host *host)
- static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
- {
- 	int flags;
-+	u16 xfer_mode;
- 	u32 mask;
- 	unsigned long timeout;
- 
-@@ -933,7 +934,7 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
- 
- 	sdhci_writel(host, cmd->arg, SDHCI_ARGUMENT);
- 
--	sdhci_set_transfer_mode(host, cmd->data);
-+	xfer_mode = sdhci_get_transfer_mode(host, cmd->data);
- 
- 	if ((cmd->flags & MMC_RSP_136) && (cmd->flags & MMC_RSP_BUSY)) {
- 		printk(KERN_ERR "%s: Unsupported response type!\n",
-@@ -959,7 +960,15 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
- 	if (cmd->data)
- 		flags |= SDHCI_CMD_DATA;
- 
--	sdhci_writew(host, SDHCI_MAKE_CMD(cmd->opcode, flags), SDHCI_COMMAND);
-+	if (host->quirks & SDHCI_QUIRK_32BIT_REGISTERS) {
-+		sdhci_writel(host,
-+			SDHCI_MAKE_CMD_32BIT(cmd->opcode, flags, xfer_mode),
-+			SDHCI_TRANSFER_MODE);
-+	} else {
-+		sdhci_writew(host, xfer_mode, SDHCI_TRANSFER_MODE);
-+		sdhci_writew(host, SDHCI_MAKE_CMD(cmd->opcode, flags),
-+			SDHCI_COMMAND);
-+	}
- }
- 
- static void sdhci_finish_command(struct sdhci_host *host)
+ 	host->timeout_clk =
+ 		(caps & SDHCI_TIMEOUT_CLK_MASK) >> SDHCI_TIMEOUT_CLK_SHIFT;
+ 	if (host->timeout_clk == 0) {
+-		printk(KERN_ERR "%s: Hardware doesn't specify timeout clock "
+-			"frequency.\n", mmc_hostname(mmc));
+-		return -ENODEV;
++		if (!host->ops->get_timeout_clock) {
++			printk(KERN_ERR
++			       "%s: Hardware doesn't specify timeout clock "
++			       "frequency.\n", mmc_hostname(mmc));
++			return -ENODEV;
++		}
++		host->timeout_clk = host->ops->get_timeout_clock(host);
+ 	}
+ 	if (caps & SDHCI_TIMEOUT_CLK_UNIT)
+ 		host->timeout_clk *= 1000;
 diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index 051fef5..7b115d8 100644
+index 7b115d8..ef70900 100644
 --- a/drivers/mmc/host/sdhci.h
 +++ b/drivers/mmc/host/sdhci.h
-@@ -44,6 +44,8 @@
- #define  SDHCI_CMD_RESP_SHORT_BUSY 0x03
+@@ -289,6 +289,8 @@ struct sdhci_ops {
+ 	void		(*writeb)(struct sdhci_host *host, u8 val, int reg);
  
- #define SDHCI_MAKE_CMD(c, f) (((c & 0xff) << 8) | (f & 0xff))
-+#define SDHCI_MAKE_CMD_32BIT(c, f, m) \
-+	((((c) & 0xff) << 24) | (((f) & 0xff) << 16) | ((m) & 0x37))
+ 	int		(*enable_dma)(struct sdhci_host *host);
++	unsigned int	(*get_max_clock)(struct sdhci_host *host);
++	unsigned int	(*get_timeout_clock)(struct sdhci_host *host);
+ };
  
- #define SDHCI_RESPONSE		0x10
- 
-@@ -221,6 +223,8 @@ struct sdhci_host {
- #define SDHCI_QUIRK_BROKEN_CARD_DETECTION		(1<<16)
- /* Controller reports inverted write-protect state */
- #define SDHCI_QUIRK_INVERTED_WRITE_PROTECT		(1<<17)
-+/* Controller has all registers of 32 bit width */
-+#define SDHCI_QUIRK_32BIT_REGISTERS			(1<<18)
- 
- 	int			irq;		/* Device IRQ */
- 	void __iomem *		ioaddr;		/* Mapped address */
+ extern void sdhci_writel(struct sdhci_host *host, u32 val, int reg);
 -- 
 1.5.6.5
 
