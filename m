@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757908AbZBMNbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759447AbZBMNd7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757908AbZBMNbk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 08:31:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbZBMNbb
+	id S1759447AbZBMNd7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 08:33:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbZBMNdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 08:31:31 -0500
-Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:22098 "HELO
-	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751594AbZBMNba (ORCPT
+	Fri, 13 Feb 2009 08:33:52 -0500
+Received: from zucker.schokokeks.org ([78.46.69.5]:37365 "EHLO
+	zucker.schokokeks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751232AbZBMNdv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 08:31:30 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=oCtJZMHBD7tI3u3EN/iuy9t4BVgzBS9RM1jWDgl9Ugy2pXDpZQbn6QORGDC1ji928zHaKOjaptjHQN1VCJTA7MQl2LnIUeHFPnQKBaOC1QSyJ2ut3f7AVlpogwLhji7xWBRtHvC6uivsc/xiilU6PidrYC05Bl6512uw4iVRVm4=  ;
-X-YMail-OSG: 6OYLbYEVM1kIYLmTBOKPbCAu37DHFsjseyTd7o08LBwPWxYh3zItNMUz6a9hTLr1FoBOJvtdGhV6UTB_adCLD50E.6.fh_3SBQhWOuGxZg6deWWj3Wq2REBzBCjbOsVOZULraMIDVWORiShrWd9e1ns9Lnp1VilraA5vI1nfI8YZ.2xouZxC3YgSzp62Rw--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] mm: disable preemption in apply_to_pte_range
-Date: Sat, 14 Feb 2009 00:30:58 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>
-References: <4994BCF0.30005@goop.org> <4994CF35.60507@goop.org> <1234525710.6519.17.camel@twins>
-In-Reply-To: <1234525710.6519.17.camel@twins>
+	Fri, 13 Feb 2009 08:33:51 -0500
+X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Feb 2009 08:33:51 EST
+From: Hanno =?utf-8?q?B=C3=B6ck?= <hanno@hboeck.de>
+To: linux-kernel@vger.kernel.org
+Subject: Very old IDE hard drive (240 MB) detected as 1.1 TB
+Date: Fri, 13 Feb 2009 14:28:40 +0100
+User-Agent: KMail/1.9.10
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: multipart/signed;
+  boundary="nextPart1493311.AFTPuxRrYN";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902140030.59027.nickpiggin@yahoo.com.au>
+Message-Id: <200902131428.40212.hanno@hboeck.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 13 February 2009 22:48:30 Peter Zijlstra wrote:
-> On Thu, 2009-02-12 at 17:39 -0800, Jeremy Fitzhardinge wrote:
-> > In general the model for lazy updates is that you're batching the
-> > updates in some queue somewhere, which is almost certainly a piece of
-> > percpu state being maintained by someone.  Its therefore broken and/or
-> > meaningless to have the code making the updates wandering between cpus
-> > for the duration of the lazy updates.
-> >
-> > > If so, should we do the preempt_disable/enable within those functions?
-> > > Probably not worth the cost, I guess.
-> >
-> > The specific rules are that
-> > arch_enter_lazy_mmu_mode()/arch_leave_lazy_mmu_mode() require you to be
-> > holding the appropriate pte locks for the ptes you're updating, so
-> > preemption is naturally disabled in that case.
->
-> Right, except on -rt where the pte lock is a mutex.
->
-> > This all goes a bit strange with init_mm's non-requirement for taking
-> > pte locks.  The caller has to arrange for some kind of serialization on
-> > updating the range in question, and that could be a mutex.  Explicitly
-> > disabling preemption in enter_lazy_mmu_mode would make sense for this
-> > case, but it would be redundant for the common case of batched updates
-> > to usermode ptes.
->
-> I really utterly hate how you just plonk preempt_disable() in there
-> unconditionally and without very clear comments on how and why.
+--nextPart1493311.AFTPuxRrYN
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-And even on mainline kernels, builds without the lazy mmu mode stuff
-don't need preemption disabled here either, so it is technically a
-regression in those cases too.
+I was about to shred some old hard drives. On one Hard drive, identified as:
+Conner Peripherals 240MB - CP30254
 
-> I'd rather we'd fix up the init_mm to also have a pte lock.
+it was detected as 1.1 TB (!) and obviously throwing lots of errors after=20
+getting over 240 MB.
 
-Well that wouldn't fix -rt; there would need to be a preempt_disable
-within arch_enter_lazy_mmu_mode(), which I think is the cleanest
-solution.
+Is this issue worth investigating further? System is ubuntu 8.10. If anyone=
+=20
+wants to have a deeper look, I can obviously donate that harddrive if you p=
+ay=20
+me shipping costs.
 
-And, hmm... this makes me wonder what is being applied to what? Are
-the callers of apply_to_pte_range on init_mm doing the correct
-locking? I'd not be surprised if not. Jeremy did you notice any
-particular backtraces?
+(Please reply to me personally, I'm not reading list-replies)
 
+cu, Hanno
+
+=2D-=20
+Hanno B=C3=B6ck		Blog:		http://www.hboeck.de/
+GPG: 3DBD3B20		Jabber/Mail:	hanno@hboeck.de
+
+--nextPart1493311.AFTPuxRrYN
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAkmVdYgACgkQr2QksT29OyBcZwCgmIY5kQLx9MWUXJDl/Qdkfu/G
+Vw0An18g8YiZkSj6Kz34qhnglNxe/JDF
+=WF4r
+-----END PGP SIGNATURE-----
+
+--nextPart1493311.AFTPuxRrYN--
