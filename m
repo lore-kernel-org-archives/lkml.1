@@ -1,60 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757368AbZBMKpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbZBMKwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757368AbZBMKpU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 05:45:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751231AbZBMKpG
+	id S1755973AbZBMKwX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 05:52:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751231AbZBMKwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 05:45:06 -0500
-Received: from main.gmane.org ([80.91.229.2]:49771 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751001AbZBMKpF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 05:45:05 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: Acer Aspire One fan control
-Date: Fri, 13 Feb 2009 10:35:11 +0000 (UTC)
-Message-ID: <loom.20090213T092444-966@post.gmane.org>
-References: <cone.1234471033.988571.5384.1000@mentalhome>
-Mime-Version: 1.0
+	Fri, 13 Feb 2009 05:52:10 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:56705 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751089AbZBMKwI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 05:52:08 -0500
+Date: Fri, 13 Feb 2009 11:50:43 +0100
+From: Christof Schmitt <christof.schmitt@de.ibm.com>
+To: Mike Anderson <andmike@linux.vnet.ibm.com>
+Cc: Hannes Reinecke <hare@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: Deadlock during multipath failover
+Message-ID: <20090213105043.GA9888@schmichrtp.de.ibm.com>
+References: <20090212094022.GA4973@schmichrtp.de.ibm.com> <4994234D.1000404@suse.de> <20090212204450.GA3556@linux.vnet.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 195.135.221.2 (Mozilla/5.0 (compatible; Konqueror/4.1; Linux) KHTML/4.1.3 (like Gecko) SUSE)
+Content-Disposition: inline
+In-Reply-To: <20090212204450.GA3556@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Feuerer <peter <at> piie.net> writes:
-
+On Thu, Feb 12, 2009 at 12:44:50PM -0800, Mike Anderson wrote:
+> Hannes Reinecke <hare@suse.de> wrote:
+> > Hi Christof,
+> >
+> > Christof Schmitt wrote:
+> >> During failover tests on a current distribution kernel, we found this
+> >> problem. From reading the code, the upstream kernel has the same
+> >> problem:
+> >>
+> >> During multipath failover tests with SCSI on System z, the kernel
+> >> deadlocks in this situation:
+> >>
+> >>>  STACK:
+> >>>  0 blk_add_timer+206 [0x2981ea]
+> >>>  1 blk_rq_timed_out+132 [0x2982a8]
+> >>>  2 blk_abort_request+114 [0x29833e]
+> >>>  3 blk_abort_queue+92 [0x2983a8]
+> >>>  4 deactivate_path+74 [0x3e00009625a]
+> >>>  5 run_workqueue+236 [0x149e04]
+> >>>  6 worker_thread+294 [0x149fce]
+> >>>  7 kthread+110 [0x14f436]
+> >>>  8 kernel_thread_starter+6 [0x10941a]
+> >>
+> >> blk_abort_queue takes the queue_lock with spinlock_irqsave and walks
+> >> the timer_list with list_for_each_entry_safe. Since a path to a SCSI
+> >> device just failed, the rport state is FC_PORTSTATE_BLOCKED. This
+> >> rport state triggers blk_add_timer that calls list_add_tail to move
+> >> the request to the end of timer_list. Thus, the
+> >> list_for_each_entry_safe never reaches the end of the timer_list, it
+> >> continously moves the requests to the end of the list.
+> >>
+> > Hmm. That would be fixes by using list_splice() here:
+> >
+> > diff --git a/block/blk-timeout.c b/block/blk-timeout.c
+> > index a095353..67bcc3f 100644
+> > --- a/block/blk-timeout.c
+> > +++ b/block/blk-timeout.c
+> > @@ -209,12 +209,15 @@ void blk_abort_queue(struct request_queue *q)
+> > {
+> >        unsigned long flags;
+> >        struct request *rq, *tmp;
+> > +       LIST_HEAD(list);
+> >
+> >        spin_lock_irqsave(q->queue_lock, flags);
+> >
+> >        elv_abort_queue(q);
+> >
+> > -       list_for_each_entry_safe(rq, tmp, &q->timeout_list, timeout_list)
+> > +       list_splice_init(&q->timeout_list, &list);
+> > +
+> > +       list_for_each_entry_safe(rq, tmp, &list, timeout_list)
+> >                blk_abort_request(rq);
+> >
+> >        spin_unlock_irqrestore(q->queue_lock, flags);
+> >
+> >> The rport state FC_PORTSTATE_BLOCKED would end, when the function
+> >> fc_timeout_deleted_rport would run to remove the rport. But this
+> >> function was schedules from queue_delayed_work. The timer already
+> >> expired, but the timer function does not run, because the timer
+> >> interrupt is disabled from the spinlock_irqsave call.
+> >>
+> > .. but this shouldn't happen anymore when using splice, as
+> > the timer will be called _after_ the irqrestore above.
 > 
-> Hi list,
+> If this patch does not address the deadlock another option to look into
+> would be to run some testing without blk_abort_request (just using
+> elv_abort_queue) and not try to abort in flight IOs at this time. 
 > 
-> I own such an Acer Aspire One netbook and the noisy fan annoyed me. (The 
-> default hardware controlled fan is on all the time). So I wrote a small 
-> kernel module which monitors the temperature of the cpu and turns the fan on 
-> and off. After testing it a while on my and some of my friends netbooks, it 
-> seems to be stable and I thought about submitting this functionality to 
-> the mainline kernel. As this is my first time, I've got some questions and 
-> would really appreciate any help.
-> 
-> Do you think it makes sense to add it as seperate kernelmodule or should I 
-> patch another module, e.g. the drivers/misc/acer-wmi.c module?
-> Should I try also to add the functionality of the 
-> /proc/acpi/thermal_zone/THRM/* things in my first patch? Or just submit the 
-> general functionality for controlling the fan and add additional things step 
-> by step?
+> We observed reduced IO delays during storage failover testing (target
+> responsive but timing out IOs) with this code, but I do not have good
+> breakdown data on the number of IOs handled by elv_abort_queue vs
+> blk_abort_request vs IO delay (It is also config dependent).
 
-Does it help if you do:
-echo 10 >/proc/acpi/thermal_zone/*/polling_frequency
+The patch fixes the observed deadlock. While the rport is BLOCKED,
+blk_abort_request only resets the timer for each request, so i would
+guess there is no big difference in calling blk_abort_request or not,
+at least in this scenario.
 
-If the fan is controlled via thermal ACPI trip points, maybe latest kernel
-versions do help? There were several commits lately in this area, e.g.:
-676962dac6e267ce7c13f73962208f9124a084bb
-f5adfaa372c76423b6e8e4727a9701330374f364
-The latter adds a boot param you could give a try if you think it's worth it:
-ACPI: Add "acpi.power_nocheck=1" to disable power state check in power
-transition
-
+Christof Schmitt
