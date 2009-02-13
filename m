@@ -1,60 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760656AbZBMUDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760803AbZBMUEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760656AbZBMUDX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 15:03:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750713AbZBMUDP
+	id S1760803AbZBMUEZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 15:04:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbZBMUEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 15:03:15 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:48038 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752760AbZBMUDN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 15:03:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=oj3z4OSyKKnHcm77gM5fbQfuopfZYQn7IA3npWpU49cam03lQ79sjwk39c/eVKDYHU
-         5a69SPamYG2mwgLZYr9sqevjwG+oEeS5cfOFah4QAXP0vRE6A52IqnDbVgj9AeITDSie
-         h/cDS3h+PNe/ullQDF8GpNs23TvTQ1MSS68EM=
-Date: Fri, 13 Feb 2009 21:03:08 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Thomas Gleixner <tglx@tglx.de>,
+	Fri, 13 Feb 2009 15:04:15 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58469 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750713AbZBMUEO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 15:04:14 -0500
+Date: Fri, 13 Feb 2009 21:03:47 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       "Sachin P. Sant" <sachinp@in.ibm.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
        LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: [patch] rt: sysprof hrtimer fix
-Message-ID: <20090213200305.GA5833@nowhere>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain> <20090213004812.GA5824@nowhere> <20090213021626.GA5807@nowhere> <20090213030919.GA5826@nowhere> <20090213072601.GA26946@elte.hu> <20090213120451.GA5782@nowhere> <20090213124928.GC5483@elte.hu>
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: next Feb 13 drivers/scsi/aha1542.ko build break
+Message-ID: <20090213200347.GA27367@elte.hu>
+References: <20090213175526.d0590862.sfr@canb.auug.org.au> <49955D00.2020707@in.ibm.com> <4995BA4B.9050209@oracle.com> <1234551164.3252.20.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090213124928.GC5483@elte.hu>
+In-Reply-To: <1234551164.3252.20.camel@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 13, 2009 at 01:49:28PM +0100, Ingo Molnar wrote:
-> 
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> 
-> > So, just a thing.
-> > -rt make the hrtimer's timers running on softirq context because the hrtimer_interrupt
-> > doesn't run as a threaded interrupt, and then it is not preemptible right?
+
+* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+
+> On Fri, 2009-02-13 at 10:22 -0800, Randy Dunlap wrote:
+> > Sachin P. Sant wrote:
+> > > Feb 13 next x86 allmodconfig build breaks with
+> > > 
+> > > ERROR: "__udivdi3" [drivers/scsi/aha1542.ko] undefined!
+> > > 
+> > > .config attached.
 > > 
-> > In that case, sysprof will continue to run in hardirq context, as before, and
-> > it will considerably increase the latency. And that matters here.
-> > So I think it is important to put it on the reminder:
+> > 
+> > I'm seeing that also.  I think that it's this line in aha1542.c:
+> > 
+> > 495:		mbo = (scsi2int(mb[mbi].ccbptr) - (SCSI_BUF_PA(&ccb[0]))) / sizeof(struct ccb);
+> > 
+> > since I can comment out the "/ sizeof(struct ccb)" and the driver builds successfully.
+> > 
+> > This may need a patch to use one of the div() macros (?).
 > 
-> hm, not sure. Do you know it numerically how much worst-case overhead it
-> induces?
+> It shouldn't ... the two inputs should be longs and the sizeof should be
+> dividing by a constant size_t.  __udivdi3 is used for 64 bit division on
+> a 32 bit platform, so where's it getting the idea that something in the
+> division is 64 bit?
 > 
-> 	Ingo
+> The culprit looks to be
+> 
+> commit 976e8f677e42757e5586ea04a9ac8bb8ddaa037e
+> Author: Jeremy Fitzhardinge <jeremy@goop.org>
+> Date:   Fri Feb 6 13:29:44 2009 -0800
+> 
+>     x86: asm/io.h: unify virt_to_phys/phys_to_virt
+> 
+> Because it changed the return of virt_to_phys from long to phys_addr_t
+> which is unsigned long long on a PAE platform, which this is.
+> 
+> So, I could suggest a fix below since isa addresses may never be above
+> 32 bits, but I think this issue has more ramifications for the other
+> legacy users of virt_to_phys.
 
-Not at all.
-But when I find some time, I will compare some rt average tests with and without sysprof.
+Applied your fix to tip:x86/headers, thanks!
 
+If something non-deep-legacy uses an ugly construct like this:
+
+> > 495:		mbo = (scsi2int(mb[mbi].ccbptr) - (SCSI_BUF_PA(&ccb[0]))) / sizeof(struct ccb);
+
+The right fix will be to remove that division from that code ...
+
+I wouldnt dare to touch the aha1542 driver though. OTOH, build testing
+only came up with the aha1542 case so we should be good.
+
+	Ingo
