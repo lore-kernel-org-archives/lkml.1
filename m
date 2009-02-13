@@ -1,47 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbZBMWwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760098AbZBMXAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757567AbZBMWwV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 17:52:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbZBMWwM
+	id S1760098AbZBMXAA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 18:00:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755367AbZBMW7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 17:52:12 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:43978 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753407AbZBMWwL (ORCPT
+	Fri, 13 Feb 2009 17:59:49 -0500
+Received: from casper.infradead.org ([85.118.1.10]:55197 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755360AbZBMW7t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 17:52:11 -0500
-Message-ID: <4995F979.9040304@zytor.com>
-Date: Fri, 13 Feb 2009 14:51:37 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/headers] x86: fix "__udivdi3"	[drivers/scsi/aha1542.ko]
- undefined
-References: <tip-bf33a70a73876b163d62612e9567cbac6604ba7e@kernel.org>	 <4995D4A9.5060400@zytor.com> <1234560979.3252.22.camel@localhost.localdomain>
-In-Reply-To: <1234560979.3252.22.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 13 Feb 2009 17:59:49 -0500
+Subject: Re: [PATCH] net: replace commatas with semicolons
+From: Peter Zijlstra <peterz@infradead.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.2.00.0902132243480.3616@localhost.localdomain>
+References: <alpine.LFD.2.00.0902132243480.3616@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 13 Feb 2009 23:59:43 +0100
+Message-Id: <1234565983.4831.9.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.90 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Fri, 2009-02-13 at 12:14 -0800, H. Peter Anvin wrote:
->> James Bottomley wrote:
->>
->> #define isa_virt_to_bus(x) ((unsigned int)virt_to_phys(x))
->>
->> ... if we're going to do that.
+On Fri, 2009-02-13 at 22:46 +0100, Thomas Gleixner wrote:
+> Impact: syntax fix
 > 
-> Actually, it probably wants to become a static inline ... that way the
-> compiler can always verify the promotion and truncation is legal
-> regardless of whether an actual user is compiled or not.
+> Interestingly enough this compiles w/o any complaints:
 > 
+> 	orphans = percpu_counter_sum_positive(&tcp_orphan_count),
+> 	sockets = percpu_counter_sum_positive(&tcp_sockets_allocated),
 
-Yes, that's the right thing to do.  I'll fix it up and commit a patch.
-
-	-hpa
+Yep, the wonders of the , operator. Look her up the next time you're
+reading the C specs and marvel :-)
 
