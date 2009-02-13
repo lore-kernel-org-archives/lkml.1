@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760048AbZBMI5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759373AbZBMJAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760048AbZBMI5X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 03:57:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbZBMI5K
+	id S1759373AbZBMJAg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 04:00:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751566AbZBMJA2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 03:57:10 -0500
-Received: from fallback.us4.outblaze.com ([205.158.62.120]:42824 "EHLO
-	fallback.us4.outblaze.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753222AbZBMI5K convert rfc822-to-8bit (ORCPT
+	Fri, 13 Feb 2009 04:00:28 -0500
+Received: from eu1sys200aog120.obsmtp.com ([207.126.144.149]:37746 "EHLO
+	eu1sys200aog120.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750774AbZBMJA0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 03:57:10 -0500
-X-Greylist: delayed 1391 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Feb 2009 03:57:09 EST
-X-OB-Received: from unknown (205.158.62.131)
-  by wfilter3.us4.outblaze.com; 13 Feb 2009 08:33:57 -0000
-Content-Disposition: inline
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 13 Feb 2009 04:00:26 -0500
+Message-ID: <499544AD.3030804@st.com>
+Date: Fri, 13 Feb 2009 11:00:13 +0100
+From: Giuseppe CAVALLARO <peppe.cavallaro@st.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-From: "Erin Teran" <erin_teran@linuxmail.org>
-To: linux-kernel@vger.kernel.org
-Cc: postme1@gmx.net, "USB list" <linux-usb@vger.kernel.org>,
-       "Alan Stern" <stern@rowland.harvard.edu>
-Date: Fri, 13 Feb 2009 16:33:57 +0800
-Subject: Re: USB gadget problem with close of a gadgetfs device
-X-Originating-Ip: 217.89.99.70
-X-Originating-Server: ws5-1.us4.outblaze.com
-X-Ob-Auth: erin_teran:linuxmail.org@linuxmail.org
-Message-Id: <20090213083357.7F3B9446D8@ws5-1.us4.outblaze.com>
+To: Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       linux-sh@vger.kernel.org, linux-mm@vger.kernel.org
+Subject: Re: [PATCH] slab: fix slab flags for archs use alignment larger 64-bit
+References: <1234461073-23281-1-git-send-email-peppe.cavallaro@st.com> <20090212185640.GA6111@linux-sh.org>
+In-Reply-To: <20090212185640.GA6111@linux-sh.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Paul Mundt wrote:
+> No, this change in itself is not sufficient. The redzone marker placement
+> as well as that of the user store need to know about the minalign as well
+> before slab debug can work correctly.
+>
+> I last looked at this when introducing ARCH_SLAB_MINALIGN:
+>
+> http://article.gmane.org/gmane.linux.kernel/262528
+>
+> But it would need some rework for the current slab code.
+>
+> Note that the ARCH_KMALLOC_MINALIGN value has no meaning here, as this
+> relates to slab caches in general, of which kmalloc just happens to have
+> a few. This is also why the rest of the kmem_cache_create() code
+> references ARCH_SLAB_MINALIGN in the first place. But that in itself is
+> irrelevant since for the kmalloc slab caches, ARCH_KMALLOC_MINALIGN is
+> already passed in as the align value for kmem_cache_create(), so ralign
+> is already set to L1_CACHE_BYTES immediately before that check.
+>
+> What exactly are you having problems with that made you come up with this
+> patch? It would be helpful to know precisely what your issues are, as
+> this change in itself is only related to slab debug, and not general
+> operation
+Thanks for your feedback.
 
-I couldnt find an answer to my question in the archive or the kernel documentation.
-I'm new to Linux and the LKML so please point me in the right direction if the question is misplaced here.
+This patch is only to fix the debug information reported in
+/proc/slab_allocators .
 
-I have a problem while using driver/usb/gadget/gadgetfs
-Sometimes I cant reopen the device propperly. I get an -EBUSY.
-Using atom_read(&fd->f_count) and printk() in inode.c dev_open I found out that the count is 1 when the failure occurs.
-I checked several times if all fd I opened where closed, and they are.
+On SH, I've noticed that /proc/slab_allocators has no size-X entries.
+I guess, we should find these fields, shouldn't we?
 
-Therefore I'm kinda lost here:
-Q: Is f_count only increased after the dev_open returned success?
-Q: Does poll() - which I use in my app - duplicate a fd and increase f_count?
-Q: Is there a known issue with poll() and the pthread lib?
-Q: What happens when I terminate a thread - pthread_cancel() - which is currently in a poll() call?
+IIUC, and as you explained above, ralign is already set to the cache
+line size by the following code:
+...
+/* 3) caller mandated alignment */
+if (ralign < align)
+ralign = align;
 
-Thank you,
-Erin
+Then, there is following check:
+...
+/* disable debug if necessary */
+if (ralign > _alignof__(unsigned long long))
+flags &= ~(SLAB_RED_ZONE | SLAB_STORE_USER);
+
+In my point of view, just this check appears "incoherent" (please, note
+I'm not familiar with the slab internals).
+It always makes sense in case of x86 where ARCH_KMALLOC_MINALIGN is
+defined as: __alignof__(unsigned long long) as well.
+In case of sh, we always disable debug for 32 aligned objects. As side
+effect, within the leaks_show function we immediately exit for them.
+Indeed, after applying the patch, I attached, I was able to find size-X
+fields within the slab_allocators proc entry.
 
 
-
-=
-Listen & Play Mp3 Songs Completely Free
-Listen & Play Online Mp3 Song Completely Free MUSIC ARTICLES AND MORE.
-http://a8-asy.a8ww.net/a8-ads/adftrclick?redirectid=f51d2a53b77b9b8d7c5fcbd5e19676ba
-
-
--- 
-Powered by Outblaze
