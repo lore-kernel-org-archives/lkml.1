@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758439AbZBMLMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757414AbZBMLTH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758439AbZBMLMs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 06:12:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbZBMLMj
+	id S1757414AbZBMLTH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 06:19:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbZBMLSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 06:12:39 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35148 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752760AbZBMLMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 06:12:39 -0500
-Date: Fri, 13 Feb 2009 12:12:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: David Woodhouse <dwmw2@infradead.org>, x86 maintainers <x86@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Don't override CONFIG_64BIT for ARCH={i386,x86_64}
-	builds
-Message-ID: <20090213111222.GA15679@elte.hu>
-References: <1234372298.3586.23.camel@macbook.infradead.org> <20090211172258.GE13239@elte.hu> <20090212072644.GA10253@elte.hu> <1234427819.3586.142.camel@macbook.infradead.org> <499481F2.3040107@zytor.com>
+	Fri, 13 Feb 2009 06:18:54 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:60703 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751231AbZBMLSw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 06:18:52 -0500
+Message-ID: <49955716.3070208@in.ibm.com>
+Date: Fri, 13 Feb 2009 16:48:46 +0530
+From: Chandru <chandru@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <499481F2.3040107@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Johannes Weiner <hannes@cmpxchg.org>
+CC: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
+       benh@kernel.crashing.org, chandru@linux.vnet.ibm.com, paulus@samba.org,
+       akpm@linux-foundation.org
+Subject: Re: + powerpc-fix-code-for-reserved-memory-spanning-across-nodes.patch
+ added to -mm tree
+References: <200812250806.mBP86LPQ018399@imap1.linux-foundation.org> <20090208204725.GA5514@cmpxchg.org> <49916691.9080807@in.ibm.com> <20090210175915.GA2541@cmpxchg.org>
+In-Reply-To: <20090210175915.GA2541@cmpxchg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* H. Peter Anvin <hpa@zytor.com> wrote:
-
-> David Woodhouse wrote:
->>
->> Ew, that's a nasty thing to be prioritising over day-to-day usability,
->> and the fact that I can't just do 'make bzImage' without it screwing up
->> and asking me to reconfigure.
-
-That argument is flawed because it could be used against just about any
-regression that happens in the kernel: if only the new behavior is
-deemed more important than the regression that it introduces.
-
-As i said, there's no real problem here, i dont mind the change you are
-proposing, but it needs to be done without introducing clearly
-nonsensical regressions.
-
->> Isn't there a CONFIG_RANDCONFIG option? We could make it
->>    bool "64-bit kernel" if !CONFIG_RANDCONFIG
->>
->> Alternatively, we could just the top-level Makefile set ARCH=x86 when
->> it's inferred from the environment, and let people override it to i386
->> or x86_64 if they want to.
->>
+Johannes Weiner wrote:
 >
-> I think the fundamental problem here is that "make randconfig" is  
-> allowed to retain *any* information from the previous .config; the same  
-> is true for "make all*config", "make defconfig", etc.  These by  
-> definition should blast the current configuration away.
+> This is fine, too.  Subtracting physbase yields a smaller reserve_size
+> if not page aligned (bootmem will round it up again, no problem there)
+> and at the end of the loop, size is not zero.  This has no practical
+> impacts, though, as far as I can see.
 >
-> Now, "make randconfig" should ideally be able to generate either a 32-  
-> or a 64-bit configuration (which would have to be done correctly), but  
-> if ARCH is set we need to honor it.
+> The interesting question, however, is whether this patch actually
+> fixes the problem you encountered?  If so, I would be glad if we could
+> drop the workaround we currently have in -mm.
+>
+> 	Hannes
+>   
+Hello Hannes,
 
-Yep, as long as an explicit ARCH override is honored i dont mind some
-side-effects on randconfig. (although people do have scripting around
-randconfig so we need to make sure it's all sane.)
+Yes, the patch fixes the problem of hitting the BUG_ON()
+in bootmem.  Andrew removed the workaround from the
+-mm tree.  Thanks to you for running your eyes on this
+issue and arriving at an almost workable patch.
 
-	Ingo
+thanks,
+Chandru
