@@ -1,112 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755532AbZBMMzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759382AbZBMNAK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755532AbZBMMzc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 07:55:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759578AbZBMMzL
+	id S1759382AbZBMNAK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 08:00:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbZBMM74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 07:55:11 -0500
-Received: from ns.suse.de ([195.135.220.2]:35888 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755189AbZBMMzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 07:55:09 -0500
-Date: Fri, 13 Feb 2009 13:55:05 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: akpm <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: irq-disabled vs vmap vs text_poke
-Message-ID: <20090213125505.GE18462@wotan.suse.de>
-References: <1234529407.6519.28.camel@twins>
-Mime-Version: 1.0
+	Fri, 13 Feb 2009 07:59:56 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:47542 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753254AbZBMM7z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 07:59:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=xNLYudmCKQwfi33W3iD6isf2Hko4Yvo4CG0dsiJPFFl6RV3HLWR1FqVMGmR0FrOE+j
+         g2rHKFVSaW/oPE6rC7jedVX5EeCVhsCMjBi4PGMMSUeNw0p9wPiWAOQfzNBWArOZU2Kn
+         rP0PLZccWlWj+dJqAD/GgQe9eb2sARQnNlMr0=
+Date: Fri, 13 Feb 2009 15:59:44 +0300
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: zbr@ioremap.net, gregkh@suse.de, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH next 2/2] pohmelfs: fix printk format warnings
+Message-ID: <20090213125944.GB7003@orion>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1234529407.6519.28.camel@twins>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 13, 2009 at 01:50:07PM +0100, Peter Zijlstra wrote:
-> Hi,
-> 
-> Ingo got the following splat:
-> 
-> [    5.101748] ------------[ cut here ]------------
-> [    5.104305] WARNING: at kernel/smp.c:329 smp_call_function_many+0x34/0x1ea()
-> [    5.104305] Hardware name: P4DC6
-> [    5.104305] Modules linked in:
-> [    5.104305] Pid: 1, comm: swapper Not tainted 2.6.29-rc4-tip-01766-g1757c19-dirty #2
-> [    5.104305] Call Trace:
-> [    5.104305]  [<c012b5d6>] warn_slowpath+0x79/0x8f
-> [    5.104305]  [<c0104d24>] ? dump_trace+0x7d/0xac
-> [    5.104305]  [<c014805a>] ? __lock_acquire+0x319/0x382
-> [    5.104305]  [<c014d6a1>] smp_call_function_many+0x34/0x1ea
-> [    5.104305]  [<c011b59e>] ? do_flush_tlb_all+0x0/0x48
-> [    5.104305]  [<c011b59e>] ? do_flush_tlb_all+0x0/0x48
-> [    5.104305]  [<c014d878>] smp_call_function+0x21/0x28
-> [    5.104305]  [<c012fa56>] on_each_cpu+0x14/0x23
-> [    5.104305]  [<c011b56d>] flush_tlb_all+0x19/0x1b
-> [    5.104305]  [<c018dcbe>] flush_tlb_kernel_range+0xd/0xf
-> [    5.104305]  [<c018dd00>] vmap_debug_free_range+0x1c/0x20
-> [    5.104305]  [<c018e386>] remove_vm_area+0x28/0x67
-> [    5.104305]  [<c018e468>] __vunmap+0x30/0xab
-> [    5.104305]  [<c018e50a>] vunmap+0x27/0x29
-> [    5.104305]  [<c06421b6>] text_poke+0xd6/0x104
-> [    5.104305]  [<c015687c>] ? kprobe_target+0x0/0x15
-> [    5.104305]  [<c0642a82>] arch_disarm_kprobe+0x13/0x15
-> [    5.104305]  [<c06434f9>] __unregister_kprobe_top+0x68/0xe8
-> [    5.104305]  [<c06436d2>] unregister_kretprobes+0x2c/0xb9
-> [    5.104305]  [<c0643775>] unregister_kretprobe+0x16/0x18
-> [    5.104305]  [<c0156d0b>] init_test_probes+0x2ed/0x40c
-> [    5.104305]  [<c09d451c>] init_kprobes+0x127/0x131
-> [    5.104305]  [<c01476bf>] ? lock_release_holdtime+0x43/0x48
-> [    5.104305]  [<c0192e48>] ? __slab_alloc+0x5d/0x27a
-> [    5.104305]  [<c0147a2a>] ? lockdep_init_map+0x80/0xe7
-> [    5.104305]  [<c0141c0d>] ? clocksource_read+0xd/0xf
-> [    5.104305]  [<c0142542>] ? getnstimeofday+0x5e/0xe9
-> [    5.104305]  [<c013e01e>] ? timespec_to_ktime+0xe/0x11
-> [    5.104305]  [<c09d43f5>] ? init_kprobes+0x0/0x131
-> [    5.104305]  [<c010115c>] do_one_initcall+0x6a/0x169
-> [    5.104305]  [<c029ad2f>] ? number+0x10d/0x1cf
-> [    5.104305]  [<c0147799>] ? register_lock_class+0x17/0x228
-> [    5.104305]  [<c014805a>] ? __lock_acquire+0x319/0x382
-> [    5.104305]  [<c029fa91>] ? debug_check_no_obj_freed+0xda/0x126
-> [    5.104305]  [<c014805a>] ? __lock_acquire+0x319/0x382
-> [    5.104305]  [<c01476bf>] ? lock_release_holdtime+0x43/0x48
-> [    5.104305]  [<c0640ec0>] ? _spin_unlock+0x22/0x25
-> [    5.104305]  [<c01cc0f0>] ? proc_register+0x14b/0x15c
-> [    5.104305]  [<c01cc20f>] ? create_proc_entry+0x76/0x8c
-> [    5.104305]  [<c0162900>] ? default_affinity_write+0x3f/0x8a
-> [    5.104305]  [<c0162a6a>] ? init_irq_proc+0x58/0x65
-> [    5.104305]  [<c09bf52d>] kernel_init+0x118/0x169
-> [    5.104305]  [<c09bf415>] ? kernel_init+0x0/0x169
-> [    5.104305]  [<c0103adf>] kernel_thread_helper+0x7/0x10
-> [    5.104305] ---[ end trace e93713a9d40cd06c ]---
-> 
-> Which points to vunmap() being called with interrupts disabled.
-> 
-> Which made me look at the vmap/vunmap calls, and they appear to not be
-> irq-safe, therefore this would be a bug in text_poke().
-> 
-> [ that is, vmap() can end up calling get_vm_area_caller() which in turn
->   calls __get_vm_area_node() with GFP_KERNEL, ergo, don't do this from
->   an atomic context. ]
-> 
-> Now text_poke() uses local_irq_save/restore(), which conveys that it can
-> be called with IRQs disabled, which is exactly what happens in the trace
-> above, however we just established that vmap/vunmap() are not irq-safe.
-> 
-> Anybody got an idea on how to fix this?
+drivers/staging/pohmelfs/inode.c:917: warning: format '%u' expects type 'unsigned int', but argument 4 has type 'size_t'
+drivers/staging/pohmelfs/inode.c:1036: warning: format '%u' expects type 'unsigned int', but argument 7 has type 'size_t'
+drivers/staging/pohmelfs/trans.c:164: warning: format '%u' expects type 'unsigned int', but argument 5 has type '__kernel_size_t'
+drivers/staging/pohmelfs/trans.c:170: warning: format '%u' expects type 'unsigned int', but argument 7 has type '__kernel_size_t'
+drivers/staging/pohmelfs/trans.c:517: warning: format '%u' expects type 'unsigned int', but argument 6 has type '__kernel_size_t'
+drivers/staging/pohmelfs/trans.c:600: warning: format '%u' expects type 'unsigned int', but argument 6 has type '__kernel_size_t'
+drivers/staging/pohmelfs/trans.c:610: warning: format '%u' expects type 'unsigned int', but argument 7 has type '__kernel_size_t'
 
-Oh, I thought the consensus was not to use vmap for this?
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
 
-With a bit of work, we can make vunmap irq-safe with the lazy vunmapping
-infrastructure (vmap could also be irq-safe, but would be subject to
-spurious failures due to being unable to flush lazy vunmaps.
+ drivers/staging/pohmelfs/inode.c |    4 ++--
+ drivers/staging/pohmelfs/trans.c |   10 +++++-----
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-I think I got a mostly working patch cobbled together sitting here
-somewhere. I was waiting for some _really_ good use case before spending
-more time on it. I would prefer if at all possible to do vmap operations
-in sleepable, process context.
+diff --git a/drivers/staging/pohmelfs/inode.c b/drivers/staging/pohmelfs/inode.c
+index 0980c3c..d4ba96c 100644
+--- a/drivers/staging/pohmelfs/inode.c
++++ b/drivers/staging/pohmelfs/inode.c
+@@ -914,7 +914,7 @@ ssize_t pohmelfs_write(struct file *file, const char __user *buf,
+ 	kiocb.ki_pos = pos;
+ 	kiocb.ki_left = len;
+ 
+-	dprintk("%s: len: %u, pos: %llu.\n", __func__, len, pos);
++	dprintk("%s: len: %u, pos: %llu.\n", __func__, (unsigned)len, pos);
+ 
+ 	mutex_lock(&inode->i_mutex);
+ 	ret = pohmelfs_data_lock(pi, pos, len, POHMELFS_WRITE_LOCK);
+@@ -1034,7 +1034,7 @@ static int pohmelfs_send_xattr_req(struct pohmelfs_inode *pi, u64 id, u64 start,
+ 	void *data;
+ 
+ 	dprintk("%s: id: %llu, start: %llu, name: '%s', attrsize: %u, cmd: %d.\n",
+-			__func__, id, start, name, attrsize, command);
++			__func__, id, start, name, (unsigned)attrsize, command);
+ 
+ 	path_len = pohmelfs_path_length(pi);
+ 	if (path_len < 0) {
+diff --git a/drivers/staging/pohmelfs/trans.c b/drivers/staging/pohmelfs/trans.c
+index 92054bd..efc9afe 100644
+--- a/drivers/staging/pohmelfs/trans.c
++++ b/drivers/staging/pohmelfs/trans.c
+@@ -161,7 +161,7 @@ int netfs_trans_send(struct netfs_trans *t, struct netfs_state *st)
+ 	err = kernel_sendmsg(st->socket, &msg, (struct kvec *)msg.msg_iov, 1, t->iovec.iov_len);
+ 	if (err <= 0) {
+ 		printk("%s: failed to send contig transaction: t: %p, gen: %u, size: %u, err: %d.\n",
+-				__func__, t, t->gen, t->iovec.iov_len, err);
++				__func__, t, t->gen, (unsigned)t->iovec.iov_len, err);
+ 		if (err == 0)
+ 			err = -ECONNRESET;
+ 		goto err_out_unlock_return;
+@@ -169,7 +169,7 @@ int netfs_trans_send(struct netfs_trans *t, struct netfs_state *st)
+ 
+ 	dprintk("%s: sent %s transaction: t: %p, gen: %u, size: %u, page_num: %u.\n",
+ 			__func__, (t->page_num)?"partial":"full",
+-			t, t->gen, t->iovec.iov_len, t->page_num);
++			t, t->gen, (unsigned)t->iovec.iov_len, t->page_num);
+ 
+ 	err = 0;
+ 	if (t->attached_pages)
+@@ -515,7 +515,7 @@ int netfs_trans_finish(struct netfs_trans *t, struct pohmelfs_sb *psb)
+ 	}
+ 
+ 	dprintk("%s: t: %u, size: %u, iov_len: %u, attached_size: %u, attached_pages: %u.\n",
+-			__func__, t->gen, cmd->size, t->iovec.iov_len, t->attached_size, t->attached_pages);
++			__func__, t->gen, cmd->size, (unsigned)t->iovec.iov_len, t->attached_size, t->attached_pages);
+ 	err = pohmelfs_trans_crypt(t, psb);
+ 	if (err) {
+ 		t->result = err;
+@@ -598,7 +598,7 @@ void *netfs_trans_add(struct netfs_trans *t, unsigned int size)
+ 
+ 	if (io->iov_len + size > t->total_size) {
+ 		dprintk("%s: too big size t: %p, gen: %u, iov_len: %u, size: %u, total: %u.\n",
+-				__func__, t, t->gen, io->iov_len, size, t->total_size);
++				__func__, t, t->gen, (unsigned)io->iov_len, size, t->total_size);
+ 		ptr = ERR_PTR(-E2BIG);
+ 		goto out;
+ 	}
+@@ -608,7 +608,7 @@ void *netfs_trans_add(struct netfs_trans *t, unsigned int size)
+ 
+ out:
+ 	dprintk("%s: t: %p, gen: %u, size: %u, total: %u.\n",
+-		__func__, t, t->gen, size, io->iov_len);
++		__func__, t, t->gen, size, (unsigned)io->iov_len);
+ 	return ptr;
+ }
+ 
