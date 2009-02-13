@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbZBMKVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbZBMK2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755955AbZBMKVT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 05:21:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbZBMKVF
+	id S1756100AbZBMK2U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 05:28:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbZBMK2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 05:21:05 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51606 "EHLO mx2.mail.elte.hu"
+	Fri, 13 Feb 2009 05:28:04 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37648 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750760AbZBMKVC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 05:21:02 -0500
-Date: Fri, 13 Feb 2009 11:20:36 +0100
+	id S1750797AbZBMK2B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 05:28:01 -0500
+Date: Fri, 13 Feb 2009 11:27:32 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, orenl@cs.columbia.edu,
-       linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
+Cc: Andrew Morton <akpm@linux-foundation.org>, Matt Mackall <mpm@selenic.com>,
+       containers@lists.linux-foundation.org, hpa@zytor.com,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk, hpa@zytor.com,
-       tglx@linutronix.de
-Subject: Re: [RFC v13][PATCH 00/14] Kernel based checkpoint/restart
-Message-ID: <20090213102036.GA4608@elte.hu>
-References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu> <1234285547.30155.6.camel@nimitz> <20090211141434.dfa1d079.akpm@linux-foundation.org> <20090212091721.GB1888@elte.hu> <1234462283.30155.173.camel@nimitz>
+       viro@zeniv.linux.org.uk, linux-api@vger.kernel.org,
+       torvalds@linux-foundation.org, tglx@linutronix.de,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: What can OpenVZ do?
+Message-ID: <20090213102732.GB4608@elte.hu>
+References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu> <1234285547.30155.6.camel@nimitz> <20090211141434.dfa1d079.akpm@linux-foundation.org> <1234462282.30155.171.camel@nimitz> <1234467035.3243.538.camel@calx> <20090212114207.e1c2de82.akpm@linux-foundation.org> <1234475483.30155.194.camel@nimitz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1234462283.30155.173.camel@nimitz>
+In-Reply-To: <1234475483.30155.194.camel@nimitz>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,65 +41,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Dave Hansen <dave@linux.vnet.ibm.com> wrote:
 
-> > What is it good for right now, and what are the known weaknesses and
-> > quirks you can think of. Declaring them upfront is a bonus - not talking
-> > about them and us discovering them later at the patch integration stage
-> > is a sure receipe for upstream grumpiness.
+> > If so, perhaps that can be used as a guide.  Will the planned feature
+> > have a similar design?  If not, how will it differ?  To what extent can
+> > we use that implementation as a tool for understanding what this new
+> > implementation will look like?
 > 
-> That's a fair enough point, and I do agree with you on it.
+> Yes, we can certainly use it as a guide.  However, there are some
+> barriers to being able to do that:
 > 
-> Right now, it is good for very little.  An app has to basically be
-> either specifically designed to work, or be pretty puny in its
-> capabilities.  Any fds that are open can only be restored if a simple
-> open();lseek(); would have been sufficient to get it back into a good
-> state.  The process must be single-threaded.  Shared memory, hugetlbfs,
-> VM_NONLINEAR are not supported.  
-
-That is OK as a starting point, as long as:
-
-> > For example, one of the critical corner points: can an app programmatically 
-> > determine whether it can support checkpoint/restart safely? Are there 
-> > warnings/signals/helpers in place that make it a well-defined space, and
-> > make the implementation of missing features directly actionable?
-> > 
-> > ( instead of: 'silent breakage' and a wishy-washy boundary between the
-> >   working and non-working space. Without clear boundaries there's no
-> >   clear dynamics that extends the 'working' space beyond the demo stage. )
+> dave@nimitz:~/kernels/linux-2.6-openvz$ git diff v2.6.27.10... | diffstat | tail -1
+>  628 files changed, 59597 insertions(+), 2927 deletions(-)
+> dave@nimitz:~/kernels/linux-2.6-openvz$ git diff v2.6.27.10... | wc 
+>   84887  290855 2308745
 > 
-> Patch 12/14 is supposed to address this *concept*.  But, it hasn't been
-> carried through so that it currently works.  My expectation was that we
-> would go through and add things over time.  I'll go make sure I push it
-> to the point that it actually works for at least the simple test
-> programs that we have.
-> 
-> What I will probably do is something BKL-style.  Basically put a "this
-> can't be checkpointed" marker over most everything I can think of and
-> selectively remove it as we add features.  
+> Unfortunately, the git tree doesn't have that great of a history.  It
+> appears that the forward-ports are just applications of huge single
+> patches which then get committed into git.  This tree has also
+> historically contained a bunch of stuff not directly related to
+> checkpoint/restart like resource management.
 
-An app really has to know whether it can reliably checkpoint+restart.
+Really, OpenVZ/Virtuozzo does not seem to have enough incentive to merge
+upstream, they only seem to forward-port, keep their tree messy, do minimal
+work to reduce the cross section to the rest of the kernel (so that they can
+manage the forward ports) but otherwise are happy with their carved-out
+niche market. [which niche is also spiced with some proprietary add-ons,
+last i checked, not exactly the contribution environment that breeds a
+healthy flow of patches towards the upstream kernel.]
 
-Otherwise it wont ever get past the toy stage and people will waste a
-lot of time if their designed-for-checkpoints app accidentally runs
-into some kernel feature or other side-effect that is not supported.
-
-I personally wouldnt mind to sprinkle the kernel with markers, as long
-as you can make it really cheap even with CONFIG_CHECKPOINT_RESTART=y.
-
-Btw., i dont think it's all that much work, nor is it really intrusive:
-have you thought of reusing all the existing security callbacks? You'd
-have instant coverage of basically every system call and kernel
-functionality that matters, and you could have a finegrained set of
-policies.
-
-The only drawback is that you have to enable CONFIG_SECURITY for it,
-but in practice most distros enable that, so the callback overhead is
-already there - you just have to enable it. (Also, some care has to
-be taken to properly stack it to existing LSM modules, but that is
-solvable too.)
-
-Sidenote: CONFIG_CHECKPOINT_RESTART is IMO an uncomfortably long name,
-i'd suggest to rename it to CONFIG_CHECKPOINTS or so. [the concept of a
-checkpoint is good enough to mention - if there's a checkpoint then a
-restart is logically implied.]
+Merging checkpoints instead might give them the incentive to get
+their act together.
 
 	Ingo
