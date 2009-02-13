@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760816AbZBMDcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760241AbZBMDjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760816AbZBMDcv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 22:32:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756983AbZBMDcl
+	id S1760241AbZBMDjS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 22:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756545AbZBMDjB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 22:32:41 -0500
-Received: from mx2.suse.de ([195.135.220.15]:60371 "EHLO mx2.suse.de"
+	Thu, 12 Feb 2009 22:39:01 -0500
+Received: from cmpxchg.org ([85.214.51.133]:58635 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756545AbZBMDcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 22:32:41 -0500
-Date: Thu, 12 Feb 2009 19:29:58 -0800
-From: Greg KH <gregkh@suse.de>
-To: David Engel <david@istwok.net>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.27.16
-Message-ID: <20090213032958.GA4474@suse.de>
-References: <20090212180448.GC15341@kroah.com> <20090212180505.GD15341@kroah.com> <20090212180448.GC15341@kroah.com> <20090212230100.GA31159@opus.istwok.net> <20090213010827.GA8562@suse.de> <20090213011404.GB8562@suse.de> <20090213012955.GA14366@suse.de> <20090213032550.GB3721@opus.istwok.net>
-MIME-Version: 1.0
+	id S1756176AbZBMDjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 22:39:01 -0500
+Date: Fri, 13 Feb 2009 04:38:04 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Can request_irq be called under spinlock?
+Message-ID: <20090213033803.GA13631@cmpxchg.org>
+References: <499481B9.4090202@goop.org> <alpine.LFD.2.00.0902122326100.16972@localhost.localdomain> <4994B23D.4040806@goop.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090213032550.GB3721@opus.istwok.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <4994B23D.4040806@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 12, 2009 at 09:25:50PM -0600, David Engel wrote:
-> On Thu, Feb 12, 2009 at 05:29:55PM -0800, Greg KH wrote:
-> > On Thu, Feb 12, 2009 at 05:14:04PM -0800, Greg KH wrote:
-> > > On Thu, Feb 12, 2009 at 05:08:27PM -0800, Greg KH wrote:
-> > > > > It seems that dev->platform_data is NULL on my system.
-> > > > 
-> > > > Not good, let me dig to see if I missed a patch...
-> > > 
-> > > Ok, I did.
-> > > 
-> > > If you apply the patch below, does the oops go away?
+On Thu, Feb 12, 2009 at 03:35:25PM -0800, Jeremy Fitzhardinge wrote:
+> Thomas Gleixner wrote:
+> >I dont think that proc_mkdir conventions have changed
+> >recently. According to git blame fs/proc/generic.c:
+> >
+> >^1da177e (Linus Torvalds     2005-04-16 15:20:36 -0700 580)     ent = 
+> >kmalloc(sizeof(struct proc_dir_entry) + len + 1, GFP_KERNEL);
+> >
+> >  
 > 
-> 3 or 4 chunks failed to apply and the ones that did apply were offset
-> by several lines.  If you'd like, I can try to apply it by hand and
-> test it tomorrow.
+> I think its new that request_irq ends up calling proc_mkdir though.  But 
+> its moot now anyway; I cleaned up that code, and don't call request_irq 
+> under spinlock any more.
 
-No, I thought better of it after looking at the code :)
+Still, the attached could be of use, no?
 
-> > > But that's not really a "stable" fix, so I guess I'll just go revert the
-> > > problem patch.  Let me go make that fix...
-> > 
-> > Ok, I reverted the problem patch and released 2.6.27.17.  Please let me
-> > know if you still have a problem with that kernel release.
-> 
-> I'm building 2.6.27.17 now, but I expect it to work since reverting
-> that one patch is all I did to get 2.6.27.16 working for me.
+	Hannes
 
-Yeah, that's what I'm more concerned about.
+---
+From: Johannes Weiner <hannes@cmpxchg.org>
+Subject: irq: use GFP_KERNEL for action allocation in request_irq()
 
-thanks,
+request_irq() calls into proc code via __setup_irq() which is not safe
+in an atomic context, so request_irq() can itself use the more
+reliable GFP_KERNEL allocation for the action descriptor.
 
-greg k-h
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+---
+
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 291f036..0f2b3b6 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -709,7 +709,7 @@ int request_irq(unsigned int irq, irq_handler_t handler,
+ 	if (!handler)
+ 		return -EINVAL;
+ 
+-	action = kmalloc(sizeof(struct irqaction), GFP_ATOMIC);
++	action = kmalloc(sizeof(struct irqaction), GFP_KERNEL);
+ 	if (!action)
+ 		return -ENOMEM;
+ 
