@@ -1,265 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760187AbZBMBD1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760187AbZBMBKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760187AbZBMBD1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 20:03:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750764AbZBMBDS
+	id S1760187AbZBMBKe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 20:10:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599AbZBMBKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 20:03:18 -0500
-Received: from mail-fx0-f25.google.com ([209.85.220.25]:64087 "EHLO
-	mail-fx0-f25.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750742AbZBMBDQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 20:03:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=F9x2KEHpK4cS8E5H6NueCRQxcHN8zSshpv66xk5pbYK6V14/yYL+q1xdxcHcjsViB1
-         +GlP3DssdhIk+8n2ZTtRIcMhW0fp6HIVivEH+SlNS41+s520OL4+0Zai7x4xbnPKy1k4
-         7nIAXExosyCb7BM8sO7nVH+VwUFhEDZzAPFng=
+	Thu, 12 Feb 2009 20:10:24 -0500
+Received: from ns2.suse.de ([195.135.220.15]:58343 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751518AbZBMBKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 20:10:24 -0500
+Date: Thu, 12 Feb 2009 17:08:27 -0800
+From: Greg KH <gregkh@suse.de>
+To: David Engel <david@istwok.net>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Re: Linux 2.6.27.16
+Message-ID: <20090213010827.GA8562@suse.de>
+References: <20090212180448.GC15341@kroah.com> <20090212180505.GD15341@kroah.com> <20090212180448.GC15341@kroah.com> <20090212230100.GA31159@opus.istwok.net>
 MIME-Version: 1.0
-In-Reply-To: <4984ec6a.0637560a.3217.4534@mx.google.com>
-References: <4984ec6a.0637560a.3217.4534@mx.google.com>
-Date: Fri, 13 Feb 2009 02:03:13 +0100
-Message-ID: <c62985530902121703t281e0caane3ce5d575ca26848@mail.gmail.com>
-Subject: Re: [PATCH v2] psmouse: run kpsmoused only while needed
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: dmitry.torokhov@gmail.com, dtor@mail.ru,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       fweisbec@gmail.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090212230100.GA31159@opus.istwok.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/2/1 Frederic Weisbecker <fweisbec@gmail.com>:
-> While looking at the workqueue tracer, I noticed that kpsmoused receives
-> rarely (if not never) events.
->
-> Currently, when a mouse has to resync, it uses the kpsmoused singlethreaded
-> workqueue. But resync are rare. While reading an old discussion, it seems
-> that usual workqueue events can't be used for that purpose because resync
-> can take too much time and could delay the other works in queue.
->
-> But if you have built psmouse driver, this workqueue will always be present
-> whether you have a ps/2 port or not. And its events are rare.
->
-> To avoid this pointless task, this patch makes the kpsmoused a kernel
-> thread only created on the fly when a resync is needed. Once the resync is done,
-> this thread will die. So you will almost never see it, and it will not be
-> an inactive task anymore.
->
-> This thread is created through a usual workqueue event (because we can't create
-> it from interrupt).
->
-> Changes in V2:
->
-> _ fix the "resync" mispelled in the patch and the changelog
-> _ don't schedule more than one resync in case of concurrent interrupts
-> _ if resync_pending is not cleared after a few time before disconnect, print a warning.
->
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
->  drivers/input/mouse/psmouse-base.c |   86 ++++++++++++++++++++++++------------
->  drivers/input/mouse/psmouse.h      |    5 ++-
->  2 files changed, 61 insertions(+), 30 deletions(-)
->
-> diff --git a/drivers/input/mouse/psmouse-base.c b/drivers/input/mouse/psmouse-base.c
-> index f8f86de..fc4490e 100644
-> --- a/drivers/input/mouse/psmouse-base.c
-> +++ b/drivers/input/mouse/psmouse-base.c
-> @@ -20,6 +20,7 @@
->  #include <linux/init.h>
->  #include <linux/libps2.h>
->  #include <linux/mutex.h>
-> +#include <linux/kthread.h>
->
->  #include "psmouse.h"
->  #include "synaptics.h"
-> @@ -104,8 +105,6 @@ static struct attribute_group psmouse_attribute_group = {
->  */
->  static DEFINE_MUTEX(psmouse_mutex);
->
-> -static struct workqueue_struct *kpsmoused_wq;
-> -
->  struct psmouse_protocol {
->        enum psmouse_type type;
->        const char *name;
-> @@ -203,11 +202,6 @@ static psmouse_ret_t psmouse_process_byte(struct psmouse *psmouse)
->        return PSMOUSE_FULL_PACKET;
->  }
->
-> -void psmouse_queue_work(struct psmouse *psmouse, struct delayed_work *work,
-> -               unsigned long delay)
-> -{
-> -       queue_delayed_work(kpsmoused_wq, work, delay);
-> -}
->
->  /*
->  * __psmouse_set_state() sets new psmouse state and resets all flags.
-> @@ -313,7 +307,10 @@ static irqreturn_t psmouse_interrupt(struct serio *serio,
->                       psmouse->name, psmouse->phys, psmouse->pktcnt);
->                psmouse->badbyte = psmouse->packet[0];
->                __psmouse_set_state(psmouse, PSMOUSE_RESYNCING);
-> -               psmouse_queue_work(psmouse, &psmouse->resync_work, 0);
-> +               if (atomic_inc_return(&psmouse->resync_pending) == 1)
-> +                       schedule_work(&psmouse->resync_work);
-> +               else
-> +                       atomic_dec(&psmouse->resync_pending);
->                goto out;
->        }
->
-> @@ -350,7 +347,11 @@ static irqreturn_t psmouse_interrupt(struct serio *serio,
->            time_after(jiffies, psmouse->last + psmouse->resync_time * HZ)) {
->                psmouse->badbyte = psmouse->packet[0];
->                __psmouse_set_state(psmouse, PSMOUSE_RESYNCING);
-> -               psmouse_queue_work(psmouse, &psmouse->resync_work, 0);
-> +
-> +               if (atomic_inc_return(&psmouse->resync_pending) == 1)
-> +                       schedule_work(&psmouse->resync_work);
-> +               else
-> +                       atomic_dec(&psmouse->resync_pending);
->                goto out;
->        }
->
-> @@ -979,13 +980,16 @@ static int psmouse_poll(struct psmouse *psmouse)
->
->
->  /*
-> - * psmouse_resync() attempts to re-validate current protocol.
-> + * psmouse_resync_thread() attempts to re-validate current protocol.
-> + * This thread is created on the fly when needed because its job can take too
-> + * much time on events workqueues, and the resync is rare enough to avoid
-> + * the need of a private workqueue.
->  */
->
-> -static void psmouse_resync(struct work_struct *work)
-> +static int psmouse_resync_thread(void *v)
->  {
-> -       struct psmouse *parent = NULL, *psmouse =
-> -               container_of(work, struct psmouse, resync_work.work);
-> +       struct psmouse *psmouse = v;
-> +       struct psmouse *parent = NULL;
->        struct serio *serio = psmouse->ps2dev.serio;
->        psmouse_ret_t rc = PSMOUSE_GOOD_DATA;
->        int failed = 0, enabled = 0;
-> @@ -1072,6 +1076,30 @@ static void psmouse_resync(struct work_struct *work)
->                psmouse_activate(parent);
->  out:
->        mutex_unlock(&psmouse_mutex);
-> +
-> +       /*
-> +        * While disconnecting, the driver wants to be sure all resync are done
-> +        */
-> +       atomic_dec(&psmouse->resync_pending);
-> +       wake_up(&psmouse->resync_pending_queue);
-> +       return 0;
-> +}
-> +
-> +/* Launch the resync thread */
-> +static void psmouse_resync_thread_helper(struct work_struct *work)
-> +{
-> +       struct task_struct *t;
-> +       struct psmouse *psmouse;
-> +
-> +       psmouse = container_of(work, struct psmouse, resync_work);
-> +
-> +       t = kthread_run(psmouse_resync_thread, psmouse, "kpsmoused");
-> +       if (t == ERR_PTR(-ENOMEM)) {
-> +               printk(KERN_WARNING "psmouse.c: failed to create kpsmoused"
-> +                                   " thread\n");
-> +               atomic_dec(&psmouse->resync_pending);
-> +               wake_up(&psmouse->resync_pending_queue);
-> +       }
->  }
->
->  /*
-> @@ -1120,6 +1148,8 @@ static void psmouse_cleanup(struct serio *serio)
->  static void psmouse_disconnect(struct serio *serio)
->  {
->        struct psmouse *psmouse, *parent = NULL;
-> +       long timeout;
-> +       DEFINE_WAIT(wait);
->
->        psmouse = serio_get_drvdata(serio);
->
-> @@ -1131,7 +1161,17 @@ static void psmouse_disconnect(struct serio *serio)
->
->        /* make sure we don't have a resync in progress */
->        mutex_unlock(&psmouse_mutex);
-> -       flush_workqueue(kpsmoused_wq);
-> +
-> +       prepare_to_wait(&psmouse->resync_pending_queue, &wait,
-> +                               TASK_UNINTERRUPTIBLE);
-> +       /* 4 seconds are more than enough to ensure a resync is completed */
-> +       if (atomic_read(&psmouse->resync_pending)) {
-> +               timeout = schedule_timeout(HZ * 4);
-> +               if (!timeout)
-> +                       WARN_ON(1);
-> +       }
-> +       finish_wait(&psmouse->resync_pending_queue, &wait);
-> +
->        mutex_lock(&psmouse_mutex);
->
->        if (serio->parent && serio->id.type == SERIO_PS_PSTHRU) {
-> @@ -1244,7 +1284,8 @@ static int psmouse_connect(struct serio *serio, struct serio_driver *drv)
->                goto err_free;
->
->        ps2_init(&psmouse->ps2dev, serio);
-> -       INIT_DELAYED_WORK(&psmouse->resync_work, psmouse_resync);
-> +       INIT_WORK(&psmouse->resync_work, psmouse_resync_thread_helper);
-> +       init_waitqueue_head(&psmouse->resync_pending_queue);
->        psmouse->dev = input_dev;
->        snprintf(psmouse->phys, sizeof(psmouse->phys), "%s/input0", serio->phys);
->
-> @@ -1647,25 +1688,12 @@ static int psmouse_get_maxproto(char *buffer, struct kernel_param *kp)
->
->  static int __init psmouse_init(void)
->  {
-> -       int err;
-> -
-> -       kpsmoused_wq = create_singlethread_workqueue("kpsmoused");
-> -       if (!kpsmoused_wq) {
-> -               printk(KERN_ERR "psmouse: failed to create kpsmoused workqueue\n");
-> -               return -ENOMEM;
-> -       }
-> -
-> -       err = serio_register_driver(&psmouse_drv);
-> -       if (err)
-> -               destroy_workqueue(kpsmoused_wq);
-> -
-> -       return err;
-> +       return serio_register_driver(&psmouse_drv);
->  }
->
->  static void __exit psmouse_exit(void)
->  {
->        serio_unregister_driver(&psmouse_drv);
-> -       destroy_workqueue(kpsmoused_wq);
->  }
->
->  module_init(psmouse_init);
-> diff --git a/drivers/input/mouse/psmouse.h b/drivers/input/mouse/psmouse.h
-> index 54ed267..dfb9b8c 100644
-> --- a/drivers/input/mouse/psmouse.h
-> +++ b/drivers/input/mouse/psmouse.h
-> @@ -39,7 +39,10 @@ struct psmouse {
->        void *private;
->        struct input_dev *dev;
->        struct ps2dev ps2dev;
-> -       struct delayed_work resync_work;
-> +       struct work_struct resync_work;
-> +       /* help to wait for mouse resync jobs before disconnect */
-> +       atomic_t resync_pending;
-> +       wait_queue_head_t resync_pending_queue;
->        char *vendor;
->        char *name;
->        unsigned char packet[8];
+On Thu, Feb 12, 2009 at 05:01:00PM -0600, David Engel wrote:
+> On Thu, Feb 12, 2009 at 10:04:48AM -0800, Greg KH wrote:
+> > We (the -stable team) are announcing the release of the 2.6.27.16
+> > kernel.
+> > 
+> > It contains a wide range of bugfixes, and all users of the 2.6.27 kernel
+> > series are strongly encouraged to upgrade.
+> 
+> I get the following oops when starting hald on my Sony VAIO SZ360.
+> 
+> Starting Hardware abstraction layer: haldBUG: unable to handle kernel NULL pointer dereference at 00000000
+> IP: [<c0220048>] show_docked+0xe/0x37
+> *pde = 00000000
+> Oops: 0000 [#2] SMP
+> Modules linked in: autofs4 acpi_cpufreq cpufreq_conservative cpufreq_userspace cpufreq_powersave cpufreq_ondemand cpufreq_stats freq_table btusb bluetooth usbhid pcmcia arc4 ecb crypto_blkcipher cryptomgr crypto_algapi snd_hda_intel snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_dummy snd_seq_oss snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq snd_timer snd_seq_device joydev i2c_i801 iwl3945 pcspkr rtc_cmos tifm_7xx1 mac80211 thermal yenta_socket snd sky2 ide_cd_mod rsrc_nonstatic i2c_core rtc_core ehci_hcd pcmcia_core tifm_core bitrev soundcore uhci_hcd
+> sony_laptop cdrom psmouse ohci1394 rng_core rtc_lib snd_page_alloc crc32 ieee1394 usbcore evdev cfg80211 backlight battery ac processor button intel_agp agpgart unix
+> 
+> Pid: 2404, comm: hald Tainted: G      D   (2.6.27.16 #1)
 
+"D"?  TAINT_DIE?  Odd...
 
-It looks like Dmitry is busy these times.
-Perhaps someone else can carry this patch?
+> EIP: 0060:[<c0220048>] EFLAGS: 00010282 CPU: 0
+> EIP is at show_docked+0xe/0x37
+> EAX: 00000000 EBX: f6d93000 ECX: f6d93000 EDX: f6d99f38
+> ESI: c03af2fc EDI: c022003a EBP: f6cdb254 ESP: f6d99f38
+>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> Process hald (pid: 2404, ti=f6d98000 task=f72c78d0 task.ti=f6d98000)
+> Stack: fffffff4 fffffffb c0246cc1 c03b5600 f6cdb240 f781e7c8 c01b6507 40038000
+>        00000003 00001000 40038000 c03b5600 f7854480 f7016940 40038000 c01b6480
+>        00001000 c017836d f6d99fa0 f7bf2774 f7016940 fffffff7 00000000 f6d98000
+> Call Trace:
+>  [<c0246cc1>] dev_attr_show+0x21/0x50
+>  [<c01b6507>] sysfs_read_file+0x87/0x120
+>  [<c01b6480>] sysfs_read_file+0x0/0x120
+>  [<c017836d>] vfs_read+0x9d/0x140
+>  [<c01784e1>] sys_read+0x41/0x80
+>  [<c01032ca>] syscall_call+0x7/0xb
+>  =======================
+> Code: fd ff 58 5a ba 02 00 00 00 8d 83 80 00 00 00 8d 4c 24 10 e8 bb f7 fc ff 83 c4 18 5b c3 53 89 cb 83 ec 04 8b 80 d8 00 00 00 89 e2 <8b> 00 8b 00 e8 77 d2 ff ff 85 c0 75 07 68 60 b1 37 c0 eb 05 68
+> EIP: [<c0220048>] show_docked+0xe/0x37 SS:ESP 0068:f6d99f38
+> ---[ end trace abcf04f7c3ef131b ]---
+> 
+> The following change is the part which causes it.
+> 
+> > diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
+> > index e28469e..eab790f 100644
+> > --- a/drivers/acpi/dock.c
+> > +++ b/drivers/acpi/dock.c
+> > @@ -691,8 +691,14 @@ fdd_out:
+> >  static ssize_t show_docked(struct device *dev,
+> >  			   struct device_attribute *attr, char *buf)
+> >  {
+> > -	return snprintf(buf, PAGE_SIZE, "%d\n", dock_present(dock_station));
+> > +	struct acpi_device *tmp;
+> > +
+> > +	struct dock_station *dock_station = *((struct dock_station **)
+> > +		dev->platform_data);
+> >  
+> > +	if (ACPI_SUCCESS(acpi_bus_get_device(dock_station->handle, &tmp)))
+> > +		return snprintf(buf, PAGE_SIZE, "1\n");
+> > +	return snprintf(buf, PAGE_SIZE, "0\n");
+> >  }
+> >  static DEVICE_ATTR(docked, S_IRUGO, show_docked, NULL);
+> 
+> It seems that dev->platform_data is NULL on my system.
 
-Thanks.
+Not good, let me dig to see if I missed a patch...
+
+thanks,
+
+greg k-h
