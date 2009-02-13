@@ -1,78 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759176AbZBMOC5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759893AbZBMOF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759176AbZBMOC5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 09:02:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756727AbZBMOCh
+	id S1759893AbZBMOF1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 09:05:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754457AbZBMOFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 09:02:37 -0500
-Received: from perninha.conectiva.com.br ([200.140.247.100]:54949 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753935AbZBMOCg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 09:02:36 -0500
-From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-To: linux-kernel@vger.kernel.org
-Cc: gregkh@suse.de, Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-Subject: [PATCH 2/2] Staging: rtl8187se: fix build warnings
-Date: Fri, 13 Feb 2009 08:35:13 -0500
-Message-Id: <1234532113-14081-2-git-send-email-herton@mandriva.com.br>
-X-Mailer: git-send-email 1.6.1.3
+	Fri, 13 Feb 2009 09:05:14 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:46934 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754788AbZBMOFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 09:05:13 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] User namespaces: Only put the userns when we unhash the uid
+To: torvalds@osdl.org, jmorris@namei.sys
+Cc: akpm@linux-foundation.org, dhowells@redhat.com, serue@us.ibm.com,
+       mingo@elte.hu, kosaki.motohiro@jp.fujitsu.com,
+       linux-kernel@vger.kernel.org, vegard.nossum@gmail.com,
+       containers@lists.osdl.org, snakebyte@gmx.de
+Date: Fri, 13 Feb 2009 14:04:21 +0000
+Message-ID: <20090213140421.5698.86876.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-drivers/staging/rtl8187se/r8180_wx.c:1386: warning: initialization from incompatible pointer type
-drivers/staging/rtl8187se/r8180_wx.c:1388: warning: initialization from incompatible pointer type
+From: Serge E. Hallyn <serue@us.ibm.com>
 
-Signed-off-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+uids in namespaces other than init don't get a sysfs entry.
+
+For those in the init namespace, while we're waiting to remove
+the sysfs entry for the uid the uid is still hashed, and
+alloc_uid() may re-grab that uid without getting a new
+reference to the user_ns, which we've already put in free_user
+before scheduling remove_user_sysfs_dir().
+
+Reported-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Acked-by: David Howells <dhowells@redhat.com>
+Tested-by: Ingo Molnar <mingo@elte.hu>
 ---
- drivers/staging/rtl8187se/r8180_wx.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/staging/rtl8187se/r8180_wx.c b/drivers/staging/rtl8187se/r8180_wx.c
-index 8b3901d..979ba0b 100644
---- a/drivers/staging/rtl8187se/r8180_wx.c
-+++ b/drivers/staging/rtl8187se/r8180_wx.c
-@@ -1274,8 +1274,8 @@ static int r8180_wx_set_enc_ext(struct net_device *dev,
- 
- }
- static int r8180_wx_set_auth(struct net_device *dev,
--                                        struct iw_request_info *info,
--                                        struct iw_param *data, char *extra)
-+			     struct iw_request_info *info,
-+			     union iwreq_data *wrqu, char *extra)
+ kernel/user.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+
+diff --git a/kernel/user.c b/kernel/user.c
+index 477b666..3551ac7 100644
+--- a/kernel/user.c
++++ b/kernel/user.c
+@@ -72,6 +72,7 @@ static void uid_hash_insert(struct user_struct *up, struct hlist_head *hashent)
+ static void uid_hash_remove(struct user_struct *up)
  {
- 	//printk("====>%s()\n", __func__);
- 	struct r8180_priv *priv = ieee80211_priv(dev);
-@@ -1285,7 +1285,7 @@ static int r8180_wx_set_auth(struct net_device *dev,
- 		return 0;
- 
- 	down(&priv->wx_sem);
--	ret = ieee80211_wx_set_auth(priv->ieee80211, info, data, extra);
-+	ret = ieee80211_wx_set_auth(priv->ieee80211, info, &wrqu->param, extra);
- 	up(&priv->wx_sem);
- 	return ret;
+ 	hlist_del_init(&up->uidhash_node);
++	put_user_ns(up->user_ns);
  }
-@@ -1312,8 +1312,8 @@ static int r8180_wx_set_mlme(struct net_device *dev,
- 	return ret;
- }
- static int r8180_wx_set_gen_ie(struct net_device *dev,
--                                        struct iw_request_info *info,
--                                        struct iw_point *data, char *extra)
-+			       struct iw_request_info *info,
-+			       union iwreq_data *wrqu, char *extra)
- {
- //	printk("====>%s(), len:%d\n", __func__, data->length);
- 	int ret=0;
-@@ -1325,7 +1325,7 @@ static int r8180_wx_set_gen_ie(struct net_device *dev,
  
-         down(&priv->wx_sem);
- #if 1
--        ret = ieee80211_wx_set_gen_ie(priv->ieee80211, extra, data->length);
-+        ret = ieee80211_wx_set_gen_ie(priv->ieee80211, extra, wrqu->data.length);
- #endif
-         up(&priv->wx_sem);
- 	//printk("<======%s(), ret:%d\n", __func__, ret);
--- 
-1.6.1.3
+ static struct user_struct *uid_hash_find(uid_t uid, struct hlist_head *hashent)
+@@ -334,7 +335,6 @@ static void free_user(struct user_struct *up, unsigned long flags)
+ 	atomic_inc(&up->__count);
+ 	spin_unlock_irqrestore(&uidhash_lock, flags);
+ 
+-	put_user_ns(up->user_ns);
+ 	INIT_WORK(&up->work, remove_user_sysfs_dir);
+ 	schedule_work(&up->work);
+ }
+@@ -357,7 +357,6 @@ static void free_user(struct user_struct *up, unsigned long flags)
+ 	sched_destroy_user(up);
+ 	key_put(up->uid_keyring);
+ 	key_put(up->session_keyring);
+-	put_user_ns(up->user_ns);
+ 	kmem_cache_free(uid_cachep, up);
+ }
+ 
 
