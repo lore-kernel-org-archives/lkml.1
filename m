@@ -1,53 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757876AbZBMJSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757965AbZBMJU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757876AbZBMJSW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 04:18:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbZBMJSJ
+	id S1757965AbZBMJU7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 04:20:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbZBMJUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 04:18:09 -0500
-Received: from mga11.intel.com ([192.55.52.93]:18885 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750800AbZBMJSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 04:18:08 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,201,1233561600"; 
-   d="scan'208";a="665328997"
-Subject: Re: [PATCH 0/2] fix the itimer regression (BZ 12618)
-From: Lin Ming <ming.m.lin@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "oleg@redhat.com" <oleg@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "seto.hidetoshi@jp.fujitsu.com" <seto.hidetoshi@jp.fujitsu.com>
-In-Reply-To: <20090212110500.GB23665@elte.hu>
-References: <20090205112414.104100700@chello.nl>
-	 <20090205120608.GB8799@elte.hu> <1233895919.2604.323.camel@ymzhang>
-	 <20090206151832.GL18368@elte.hu>
-	 <1234161961.5991.41.camel@minggr.sh.intel.com>
-	 <20090209214723.GA2664@elte.hu> <1234270044.23438.7.camel@twins>
-	 <1234318148.2604.370.camel@ymzhang>  <20090212110500.GB23665@elte.hu>
+	Fri, 13 Feb 2009 04:20:43 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:40554 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750800AbZBMJUl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 04:20:41 -0500
+Subject: Re: git-send-email
+From: Peter Zijlstra <peterz@infradead.org>
+To: Junio C Hamano <junio@pobox.com>
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Ingo Oeser <ioe-lkml@rameria.de>, L-K <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <7vmycrf5dv.fsf@gitster.siamese.dyndns.org>
+References: <1234451714.10603.22.camel@laptop>
+	 <200902121825.35021.ioe-lkml@rameria.de>
+	 <20090212192104.GD15809@csclub.uwaterloo.ca>
+	 <7vmycrf5dv.fsf@gitster.siamese.dyndns.org>
 Content-Type: text/plain
-Date: Fri, 13 Feb 2009 17:15:17 +0800
-Message-Id: <1234516517.32144.11.camel@minggr.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
 Content-Transfer-Encoding: 7bit
+Date: Fri, 13 Feb 2009 10:22:38 +0100
+Message-Id: <1234516958.6519.6.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> FYI, in Linus's latest tree (v2.6.29-rc4-175-gb578f3f or later), all
-> the scheduler related performance regressions should be addressed.
+On Thu, 2009-02-12 at 18:16 -0800, Junio C Hamano wrote:
+> lsorense@csclub.uwaterloo.ca (Lennart Sorensen) writes:
 > 
-> Could you please double-check that there's no performance regression
-> remaining?
+> > On Thu, Feb 12, 2009 at 06:25:34PM +0100, Ingo Oeser wrote:
+> >> No, they are great, if you like to skip over a topic, you are not
+> >> interested in at all!
+> >> 
+> >> If you don't like it, just switch off thread in your mailer and
+> >> don't force this on everybody else!
+> >
+> > Actually if (as apparently many people seem to manage to do) you have a
+> > single starting email, with all the patches as replies to that first
+> > email, it looks a lot better, and is much easier to follow.
+> >
+> > Seperate threads would be bad.
+> >
+> > foobar patch 0 (usually a summary/overview)
+> > +-foobar patch 1
+> > +-foobar patch 2
+> > +-foobar patch 3
+> > +-foobar patch 4
+> > +-foobar patch 5
+> >
+> > is much nicer than
+> >
+> > foobar patch 0
+> > +-foobar patch 1
+> >   +-foobar patch 2
+> >     +-foobar patch 3
+> >       +-foobar patch 4
+> >         +-foobar patch 5
+> >
+> > which seems to be what git does itself.
+> 
+> I personally prefer the former, but as you hopefully all found out by now,
+> the choice between these two is just the matter of personal taste, and
+> there is no clear majority.
+> 
+> The default will not going to change.
 
-I have tested the latest git tree(071a0bc2).
-hackbench, volanoMark, oltp, specjbb2005 regressions are all fixed.
+Its a matter of usability, the inf deep chain git does by default
+renders the result unusable. Fact is I usually skip over patch series
+posted that way, simply because its too much of a bother.
 
-Thanks,
-Lin Ming
-
+If you can't be bothered with usability of your project, then so be it.
+Maybe all those rants on how unusable git is have a point after all.
