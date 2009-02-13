@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760873AbZBMF4n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758912AbZBMGET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760873AbZBMF4n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 00:56:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbZBMF4d
+	id S1758912AbZBMGET (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 01:04:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751098AbZBMGEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 00:56:33 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:62054 "EHLO
+	Fri, 13 Feb 2009 01:04:05 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:57996 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750962AbZBMF4d (ORCPT
+	with ESMTP id S1751073AbZBMGEE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 00:56:33 -0500
-Date: Fri, 13 Feb 2009 00:56:31 -0500 (EST)
+	Fri, 13 Feb 2009 01:04:04 -0500
+Date: Fri, 13 Feb 2009 01:04:02 -0500 (EST)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Wenji Huang <wenji.huang@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] trace: use the more accurate parameter.
-In-Reply-To: <20090211120507.GD23873@elte.hu>
-Message-ID: <alpine.DEB.1.10.0902130053210.15469@gandalf.stny.rr.com>
-References: <1234225804-13314-1-git-send-email-wenji.huang@oracle.com> <20090210152624.GH5836@nowhere> <20090211120507.GD23873@elte.hu>
+To: Wenji Huang <wenji.huang@oracle.com>
+cc: linux-kernel@vger.kernel.org, pq@iki.fi, mingo@elte.hu
+Subject: Re: [PATCH 2/2] tracing: add checks for printing pci devices in
+ mmiotrace.
+In-Reply-To: <1234489341-18630-1-git-send-email-wenji.huang@oracle.com>
+Message-ID: <alpine.DEB.1.10.0902130059570.15469@gandalf.stny.rr.com>
+References: <1234489192-18594-1-git-send-email-wenji.huang@oracle.com> <1234489341-18630-1-git-send-email-wenji.huang@oracle.com>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -28,49 +28,121 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 11 Feb 2009, Ingo Molnar wrote:
+On Thu, 12 Feb 2009, Wenji Huang wrote:
 
+> This patch is to provide checking return value of trace_seq_printf
+> so as to keep completeness of mmio_print_pcidev.
 > 
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> Signed-off-by: Wenji Huang <wenji.huang@oracle.com>
+> ---
+>  kernel/trace/trace_mmiotrace.c |   26 ++++++++++++++++----------
+>  1 files changed, 16 insertions(+), 10 deletions(-)
 > 
-> > On Mon, Feb 09, 2009 at 07:30:04PM -0500, Wenji Huang wrote:
-> > > Pass tsk to __update_max_tr instead of current to avoid latent hazard.
-> > > 
-> > > Impact: clean up
-> > > 
-> > > Signed-off-by: Wenji Huang <wenji.huang@oracle.com>
-> > > ---
-> > >  kernel/trace/trace.c |    2 +-
-> > >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > > 
-> > > diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> > > index 5b1e9a9..c1592f1 100644
-> > > --- a/kernel/trace/trace.c
-> > > +++ b/kernel/trace/trace.c
-> > > @@ -335,7 +335,7 @@ __update_max_tr(struct trace_array *tr, struct task_struct *tsk, int cpu)
-> > >  	data->rt_priority = tsk->rt_priority;
-> > >  
-> > >  	/* record this tasks comm */
-> > > -	tracing_record_cmdline(current);
-> > > +	tracing_record_cmdline(tsk);
-> > >  }
-> > 
-> > 
-> > Indeed. At this stage, tsk is the next task in the middle of a context
-> > switch. So I guess current is right, but this is more proper to use tsk.
-> 
-> Rename it to 'next' then please.
+> diff --git a/kernel/trace/trace_mmiotrace.c b/kernel/trace/trace_mmiotrace.c
+> index c401b90..ebb0b61 100644
+> --- a/kernel/trace/trace_mmiotrace.c
+> +++ b/kernel/trace/trace_mmiotrace.c
+> @@ -56,17 +56,19 @@ static void mmio_trace_start(struct trace_array *tr)
+>  	mmio_reset_data(tr);
+>  }
+>  
+> -static int mmio_print_pcidev(struct trace_seq *s, const struct pci_dev *dev)
+> +static enum print_line_t mmio_print_pcidev(struct trace_seq *s,
+> +					   const struct pci_dev *dev)
+>  {
+>  	int ret = 0;
+>  	int i;
+>  	resource_size_t start, end;
+>  	const struct pci_driver *drv = pci_dev_driver(dev);
+>  
+> -	/* XXX: incomplete checks for trace_seq_printf() return value */
+> -	ret += trace_seq_printf(s, "PCIDEV %02x%02x %04x%04x %x",
+> +	ret = trace_seq_printf(s, "PCIDEV %02x%02x %04x%04x %x",
+>  				dev->bus->number, dev->devfn,
+>  				dev->vendor, dev->device, dev->irq);
+> +	if (!ret)
+> +		return TRACE_TYPE_PARTIAL_LINE;
+>  	/*
+>  	 * XXX: is pci_resource_to_user() appropriate, since we are
+>  	 * supposed to interpret the __ioremap() phys_addr argument based on
+> @@ -74,21 +76,25 @@ static int mmio_print_pcidev(struct trace_seq *s, const struct pci_dev *dev)
+>  	 */
+>  	for (i = 0; i < 7; i++) {
+>  		pci_resource_to_user(dev, i, &dev->resource[i], &start, &end);
+> -		ret += trace_seq_printf(s, " %llx",
+> +		ret = trace_seq_printf(s, " %llx",
+>  			(unsigned long long)(start |
+>  			(dev->resource[i].flags & PCI_REGION_FLAG_MASK)));
+> -	}
+> -	for (i = 0; i < 7; i++) {
+> +		if (!ret)
+> +			return TRACE_TYPE_PARTIAL_LINE;
 
-I'm sorry, I missed this comment, and only notice it because of Wenji's 
-latest patches.
+The above looks like a change of logic to me. I'm a bit tired so I can be 
+wrong. But it looks like the original was:
 
-For the __update_max_tr used by irqsoff, this is not the case. The 
-update_max_tr is just to make a snapshot of the latest max. The 
-irq/preempt latency tracers do not use the sched switch to record comms, 
-especially since it only cares when a new max happens. There is no concept 
-of a 'next' task.
+     for (i = 0; i < 7; i++) {
+             pci_resource_to_user(dev, i, &dev->resource[i], &start, &end);
+             ret += trace_seq_printf(s, " %llx",
+                     (unsigned long long)(start |
+                     (dev->resource[i].flags & PCI_REGION_FLAG_MASK)));
+     }
+     for (i = 0; i < 7; i++) {
+             pci_resource_to_user(dev, i, &dev->resource[i], &start, &end);
+             ret += trace_seq_printf(s, " %llx",
+                     dev->resource[i].start < dev->resource[i].end ?
+                     (unsigned long long)(end - start) + 1 : 0);
+     }
 
-I think the proper name is 'task'.
+And the new is:
+
+     for (i = 0; i < 7; i++) {
+             pci_resource_to_user(dev, i, &dev->resource[i], &start, &end);
+             ret = trace_seq_printf(s, " %llx",   
+                     (unsigned long long)(start |
+                     (dev->resource[i].flags & PCI_REGION_FLAG_MASK)));
+             if (!ret)
+                     return TRACE_TYPE_PARTIAL_LINE;
+             pci_resource_to_user(dev, i, &dev->resource[i], &start, &end);
+             ret = trace_seq_printf(s, " %llx",
+                     dev->resource[i].start < dev->resource[i].end ?
+                     (unsigned long long)(end - start) + 1 : 0);
+             if (!ret)
+                     return TRACE_TYPE_PARTIAL_LINE;
+     }
+
+This changes the output format.
+
+Pekka,
+
+Is this OK?
 
 -- Steve
 
+
+>  		pci_resource_to_user(dev, i, &dev->resource[i], &start, &end);
+> -		ret += trace_seq_printf(s, " %llx",
+> +		ret = trace_seq_printf(s, " %llx",
+>  			dev->resource[i].start < dev->resource[i].end ?
+>  			(unsigned long long)(end - start) + 1 : 0);
+> +		if (!ret)
+> +			return TRACE_TYPE_PARTIAL_LINE;
+>  	}
+>  	if (drv)
+> -		ret += trace_seq_printf(s, " %s\n", drv->name);
+> +		ret = trace_seq_printf(s, " %s\n", drv->name);
+>  	else
+> -		ret += trace_seq_printf(s, " \n");
+> -	return ret;
+> +		ret = trace_seq_printf(s, " \n");
+> +	if (!ret)
+> +		return TRACE_TYPE_PARTIAL_LINE;
+> +	return TRACE_TYPE_HANDLED;
+>  }
+>  
+>  static void destroy_header_iter(struct header_iter *hiter)
+> -- 
+> 1.5.6
+> 
+> 
+> 
