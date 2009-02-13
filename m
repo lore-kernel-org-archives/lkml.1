@@ -1,68 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759715AbZBMVgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759703AbZBMVmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759715AbZBMVgc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 16:36:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbZBMVgY
+	id S1759703AbZBMVmn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 16:42:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbZBMVme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 16:36:24 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:40794 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752546AbZBMVgX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 16:36:23 -0500
-Subject: Re: [tip:x86/headers] x86: fix "__udivdi3"
-	[drivers/scsi/aha1542.ko] undefined
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, linux-tip-commits@vger.kernel.org
-In-Reply-To: <4995D4A9.5060400@zytor.com>
-References: <tip-bf33a70a73876b163d62612e9567cbac6604ba7e@kernel.org>
-	 <4995D4A9.5060400@zytor.com>
-Content-Type: text/plain
-Date: Fri, 13 Feb 2009 15:36:19 -0600
-Message-Id: <1234560979.3252.22.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Fri, 13 Feb 2009 16:42:34 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:54484 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753073AbZBMVme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 16:42:34 -0500
+Message-ID: <4995E925.3080506@redhat.com>
+Date: Fri, 13 Feb 2009 16:41:57 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Peter Zijlstra <peterz@infradead.org>, Nick Piggin <npiggin@suse.de>,
+       akpm <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>
+Subject: Re: irq-disabled vs vmap vs text_poke
+References: <1234529407.6519.28.camel@twins> <20090213141839.GA31922@Krystal> <4995A0B7.1030705@redhat.com> <20090213165555.GA4684@Krystal> <4995B88C.2090900@redhat.com> <20090213185725.GC7124@Krystal>
+In-Reply-To: <20090213185725.GC7124@Krystal>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-02-13 at 12:14 -0800, H. Peter Anvin wrote:
-> James Bottomley wrote:
-> >  arch/x86/include/asm/io.h |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
-> > index e5a2ab4..4f8e820 100644
-> > --- a/arch/x86/include/asm/io.h
-> > +++ b/arch/x86/include/asm/io.h
-> > @@ -125,7 +125,7 @@ static inline void *phys_to_virt(phys_addr_t address)
-> >  /*
-> >   * ISA I/O bus memory addresses are 1:1 with the physical address.
-> >   */
-> > -#define isa_virt_to_bus virt_to_phys
-> > +#define isa_virt_to_bus (unsigned long)virt_to_phys
-> >  #define isa_page_to_bus page_to_phys
-> >  #define isa_bus_to_virt phys_to_virt
-> >  
+Mathieu Desnoyers wrote:
+> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
+>> Mathieu Desnoyers wrote:
+>>>>> text_poke should actually use local_irq_disable/enable rather than
+>>>>> local_irq_save/restore because it _must_ be called with interrupts on.
+>>>> Could you tell me why it must be called with irq on?
+>>>>
+>>> Because it uses vmap, but see below..
+>>>
+>>>>>> Anybody got an idea on how to fix this?
+>>>>> There is probably something wrong with the caller, kprobes, which calls
+>>>>> text_poke with interrupts off.
+>>>> Hmm, kprobe's smoke test caused this problem. Since (un)register_kprobe()
+>>>> may sleep for waiting a mutex, it should not be called with interrupts off.
+>>>> So, it's not text_poke()'s issue nor vmap().
+>>>>
+>>>> BTW, what about using map_vm_area() in text_poke() instead of vmap()?
+>>>> Since text_poke() just maps text pages to alias pages temporarily,
+>>>> I think we don't need to use delayed vunmap().
+>>>>
+>>> As with this patch from you ? Sorry, when it has been initially
+>>> submitted, the discussion turned in a different direction. Please see
+>>> comments inline.
+>> No, sorry for confusing, vm_unmap_ram() is basically same as vunmap().
+>> (The root cause of that bug which I had been reported was not in text_poke())
+>>
+>> Here I said is (maybe) improving text_poke() by using map_vm_area() which
+>> simply maps pages to pre-allocated vm_area. And when unmapping, we just
+>> cleanup pte by unmap_kernel_range().
+>> For pre-allocating vm_area, we can use get_vm_area().
+>>
+>> If we can use kmap for this purpose, it will be better solution.
+>> However, kmap can not be used for making alias pages.
+>>
+>> Thanks,
+>>
 > 
-> This changes one token to multiple, and not even with the highest
-> precedence.
-
-Yes, well, it was just a verifying patch, really.
-
-> It needs to be something like:
+> That sounds clean, and would improve the current way we (mis)use vmap
+> for this tiny mapping. I always felt like I was using a sledgehammer
+> when only a hammer was necessary. :)
 > 
-> #define isa_virt_to_bus(x) ((unsigned int)virt_to_phys(x))
-> 
-> ... if we're going to do that.
+> Do you have a patch that implements this ?
 
-Actually, it probably wants to become a static inline ... that way the
-compiler can always verify the promotion and truncation is legal
-regardless of whether an actual user is compiled or not.
+Sure, however, the patch was not well tested (nor designed :-)),
+because it has been made as a by-product when I tried to solve
+another issue.
 
-James
+Anyway, I'll send it after testing.
 
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
