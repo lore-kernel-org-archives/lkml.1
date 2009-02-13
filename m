@@ -1,77 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757835AbZBMBre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759949AbZBMB5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757835AbZBMBre (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 20:47:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760131AbZBMBrU
+	id S1759949AbZBMB5g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 20:57:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbZBMB50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 20:47:20 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:41033 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759605AbZBMBrT (ORCPT
+	Thu, 12 Feb 2009 20:57:26 -0500
+Received: from mga06.intel.com ([134.134.136.21]:40515 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752010AbZBMB5Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 20:47:19 -0500
-Date: Thu, 12 Feb 2009 20:46:40 -0500 (EST)
-From: Tim Abbott <tabbott@MIT.EDU>
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Jeff Arnold <jbarnold@MIT.EDU>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Denys Vlasenko <vda.linux@googlemail.com>,
-       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Nikanth Karthikesan <knikanth@suse.de>
-Subject: Re: [PATCH 6/7] Ksplice: Export symbols needed for Ksplice
-In-Reply-To: <200902042205.09651.rusty@rustcorp.com.au>
-Message-ID: <alpine.DEB.2.00.0902080129020.11936@vinegar-pot.mit.edu>
-References: <1228521840-3886-1-git-send-email-jbarnold@mit.edu> <1228521840-3886-6-git-send-email-jbarnold@mit.edu> <1228521840-3886-7-git-send-email-jbarnold@mit.edu> <200902042205.09651.rusty@rustcorp.com.au>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 12 Feb 2009 20:57:25 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,199,1233561600"; 
+   d="scan'208";a="489629845"
+Date: Fri, 13 Feb 2009 09:57:21 +0800
+From: Wu Fengguang <wfg@linux.intel.com>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
+       "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>,
+       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
+Message-ID: <20090213015721.GA5565@localhost>
+References: <492BDAA9.4090405@vlnb.net> <20081125113048.GB16422@localhost> <492BE47B.3010802@vlnb.net> <20081125114908.GA16545@localhost> <492BE97A.3050606@vlnb.net> <492BEAE8.9050809@vlnb.net> <20081125121534.GA16778@localhost> <492EDCFB.7080302@vlnb.net> <20081128004830.GA8874@localhost> <49946BE6.1040005@vlnb.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49946BE6.1040005@vlnb.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Feb 2009, Rusty Russell wrote:
+On Thu, Feb 12, 2009 at 09:35:18PM +0300, Vladislav Bolkhovitin wrote:
+> Sorry for such a huge delay. There were many other activities I had to  
+> do before + I had to be sure I didn't miss anything.
+>
+> We didn't use NFS, we used SCST (http://scst.sourceforge.net) with  
+> iSCSI-SCST target driver. It has similar to NFS architecture, where N  
+> threads (N=5 in this case) handle IO from remote initiators (clients)  
+> coming from wire using iSCSI protocol. In addition, SCST has patch  
+> called export_alloc_io_context (see  
+> http://lkml.org/lkml/2008/12/10/282), which allows for the IO threads  
+> queue IO using single IO context, so we can see if context RA can  
+> replace grouping IO threads in single IO context.
+>
+> Unfortunately, the results are negative. We find neither any advantages  
+> of context RA over current RA implementation, nor possibility for  
+> context RA to replace grouping IO threads in single IO context.
+>
+> Setup on the target (server) was the following. 2 SATA drives grouped in  
+> md RAID-0 with average local read throughput ~120MB/s ("dd if=/dev/zero  
+> of=/dev/md0 bs=1M count=20000" outputs "20971520000 bytes (21 GB)  
+> copied, 177,742 s, 118 MB/s"). The md device was partitioned on 3  
+> partitions. The first partition was 10% of space in the beginning of the  
+> device, the last partition was 10% of space in the end of the device,  
+> the middle one was the rest in the middle of the space them. Then the  
+> first and the last partitions were exported to the initiator (client).  
+> They were /dev/sdb and /dev/sdc on it correspondingly.
 
-> On Saturday 06 December 2008 10:33:59 Jeff Arnold wrote:
-> > From: Tim Abbott <tabbott@mit.edu>
-> > 
-> > Ksplice uses several functions from module.c in order to resolve
-> > symbols and implement dependency handling.  Calling these functions
-> > requires holding module_mutex, so it is exported.
-> 
-> I have fought every attempt to export that.  It was long a cause of misery
-> and pain; people saw the lock and so started grabbing it.
-> 
-> Any chance we can find another way?
+Vladislav, Thank you for the benchmarks! I'm very interested in
+optimizing your workload and figuring out what happens underneath.
 
-It is definitely possible, but it wouldn't be pretty.  There are a few 
-things that we use module_mutex for:
+Are the client and server two standalone boxes connected by GBE?
 
-(1) Preventing races involving modules being unloaded during run-pre 
-matching.  Functions such as kallsyms_on_each_symbol, find_symbol, 
-__module_text_address, __module_address, and find_module that are used to 
-obtain a module or a symbol can only be used within preempt_disable or 
-while holding module_mutex.  Further, the values that they return can only 
-be used in the same such context, unless one module_gets the relevant 
-module in that context.
+When you set readahead sizes in the benchmarks, you are setting them
+in the server side? I.e. "linux-4dtq" is the SCST server? What's the
+client side readahead size?
 
-So, we'd change/add wrappers to a bunch of these functions to do their own 
-preempt_disable or grabbing of module_mutex, and to module_get the 
-relevant module before they return.  We'd also need to change the Ksplice 
-code to module_put whenever we stop referencing a symbol.  Since a lot of 
-the Ksplice kernel code is related to resolving symbols, I suspect this 
-latter part would be somewhat messy.
+It would help a lot to debug readahead if you can provide the
+server side readahead stats and trace log for the worst case.
+This will automatically answer the above questions as well as disclose
+the micro-behavior of readahead:
 
-(2) Calling use_module.  use_module needs to be called while holding 
-module_mutex because it changes the modules_which_use_me lists.
+        mount -t debugfs none /sys/kernel/debug
 
-We could change this by creating a modified version of use_module that 
-grabs module_mutex itself; perhaps renaming the current use_module to 
-__use_module.
+        echo > /sys/kernel/debug/readahead/stats # reset counters
+        # do benchmark
+        cat /sys/kernel/debug/readahead/stats
 
-(3) Preventing races involving two different Ksplice updates being applied 
-at the same time.
+        echo 1 > /sys/kernel/debug/readahead/trace_enable
+        # do micro-benchmark, i.e. run the same benchmark for a short time
+        echo 0 > /sys/kernel/debug/readahead/trace_enable
+        dmesg
 
-This one is easy; we could just create a new ksplice_mutex.
+The above readahead trace should help find out how the client side
+sequential reads convert into server side random reads, and how we can
+prevent that.
 
-	-Tim Abbott
+Thanks,
+Fengguang
