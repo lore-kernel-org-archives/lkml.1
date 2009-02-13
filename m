@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762003AbZBMOsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762137AbZBMOtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762003AbZBMOsq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 09:48:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759910AbZBMOrX
+	id S1762137AbZBMOtY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 09:49:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760314AbZBMOr0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 09:47:23 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:16726 "EHLO
+	Fri, 13 Feb 2009 09:47:26 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:16738 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759650AbZBMOrW (ORCPT
+	by vger.kernel.org with ESMTP id S1760165AbZBMOrZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 09:47:22 -0500
-Date: Fri, 13 Feb 2009 17:47:18 +0300
+	Fri, 13 Feb 2009 09:47:25 -0500
+Date: Fri, 13 Feb 2009 17:47:22 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
 Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
        Kumar Gala <galak@kernel.crashing.org>,
        Liu Dave <DaveLiu@freescale.com>, sdhci-devel@list.drzeus.cx,
        linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 05/13] sdhci: Add support for card-detection polling
-Message-ID: <20090213144718.GE23889@oksana.dev.rtsoft.ru>
+Subject: [PATCH 07/13] sdhci: Add support for hosts with strict 32 bit
+	addressing
+Message-ID: <20090213144722.GG23889@oksana.dev.rtsoft.ru>
 References: <20090213144630.GA13436@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -29,78 +30,107 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds SDHCI_QUIRK_BROKEN_CARD_DETECTION quirk. When specified,
-sdhci driver will set MMC_CAP_NEEDS_POLL MMC host capability, and won't
-enable card insert/remove interrupts.
+SDHCI driver must take special care when working with "triggering"
+registers on hosts with strict 32 bit addressing.
 
-This is needed for hosts with unreliable card detection, such as FSL
-eSDHC. The original eSDHC driver was tring to "debounce" card-detection
-IRQs by reading present state and disabling particular interrupts. But
-with this debouncing scheme I noticed that sometimes we miss card
-insertion/removal events.
+In FSL eSDHC hosts all registers are 32 bit width, writing to the
+first half of any register will cause [undefined?] write the second
+half of the register. That is, 16 bit write to the TRANSFER_MODE
+register, makes hardware see a bogus write to the COMMAND register
+(these two registers are adjacent).
+
+This patch adds SDHCI_QUIRK_32BIT_REGISTERS quirk. When specified,
+the sdhci driver will try to "pack" all dangerous writes into single
+32 bit write transaction.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci.c |   17 ++++++++++++++---
- drivers/mmc/host/sdhci.h |    2 ++
- 2 files changed, 16 insertions(+), 3 deletions(-)
+ drivers/mmc/host/sdhci.c |   19 ++++++++++++++-----
+ drivers/mmc/host/sdhci.h |    4 ++++
+ 2 files changed, 18 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 2728e90..782fb58 100644
+index d668625..1c36a25 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -167,6 +167,9 @@ static void sdhci_set_card_detection(struct sdhci_host *host, bool enable)
- {
- 	u32 irqs = SDHCI_INT_CARD_REMOVE | SDHCI_INT_CARD_INSERT;
- 
-+	if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
-+		return;
-+
- 	if (enable)
- 		sdhci_unmask_irqs(host, irqs);
- 	else
-@@ -1110,13 +1113,18 @@ static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
- 
- 	host->mrq = mrq;
- 
-+	if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
-+		goto send;
-+
- 	if (!(sdhci_readl(host, SDHCI_PRESENT_STATE) & SDHCI_CARD_PRESENT)
- 		|| (host->flags & SDHCI_DEVICE_DEAD)) {
- 		host->mrq->cmd->error = -ENOMEDIUM;
- 		tasklet_schedule(&host->finish_tasklet);
--	} else
--		sdhci_send_command(host, mrq->cmd);
--
-+		goto out;
-+	}
-+send:
-+	sdhci_send_command(host, mrq->cmd);
-+out:
- 	mmiowb();
- 	spin_unlock_irqrestore(&host->lock, flags);
+@@ -825,13 +825,13 @@ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
+ 	sdhci_writew(host, data->blocks, SDHCI_BLOCK_COUNT);
  }
-@@ -1742,6 +1750,9 @@ int sdhci_add_host(struct sdhci_host *host)
- 	mmc->f_max = host->max_clk;
- 	mmc->caps = MMC_CAP_4_BIT_DATA | MMC_CAP_SDIO_IRQ;
  
-+	if (host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION)
-+		mmc->caps |= MMC_CAP_NEEDS_POLL;
-+
- 	if ((caps & SDHCI_CAN_DO_HISPD) ||
- 		(host->quirks & SDHCI_QUIRK_FORCE_HIGHSPEED))
- 		mmc->caps |= MMC_CAP_SD_HIGHSPEED;
+-static void sdhci_set_transfer_mode(struct sdhci_host *host,
++static u16 sdhci_get_transfer_mode(struct sdhci_host *host,
+ 	struct mmc_data *data)
+ {
+ 	u16 mode;
+ 
+ 	if (data == NULL)
+-		return;
++		return 0;
+ 
+ 	WARN_ON(!host->data);
+ 
+@@ -843,7 +843,7 @@ static void sdhci_set_transfer_mode(struct sdhci_host *host,
+ 	if (host->flags & SDHCI_REQ_USE_DMA)
+ 		mode |= SDHCI_TRNS_DMA;
+ 
+-	sdhci_writew(host, mode, SDHCI_TRANSFER_MODE);
++	return mode;
+ }
+ 
+ static void sdhci_finish_data(struct sdhci_host *host)
+@@ -895,6 +895,7 @@ static void sdhci_finish_data(struct sdhci_host *host)
+ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
+ {
+ 	int flags;
++	u16 xfer_mode;
+ 	u32 mask;
+ 	unsigned long timeout;
+ 
+@@ -933,7 +934,7 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
+ 
+ 	sdhci_writel(host, cmd->arg, SDHCI_ARGUMENT);
+ 
+-	sdhci_set_transfer_mode(host, cmd->data);
++	xfer_mode = sdhci_get_transfer_mode(host, cmd->data);
+ 
+ 	if ((cmd->flags & MMC_RSP_136) && (cmd->flags & MMC_RSP_BUSY)) {
+ 		printk(KERN_ERR "%s: Unsupported response type!\n",
+@@ -959,7 +960,15 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
+ 	if (cmd->data)
+ 		flags |= SDHCI_CMD_DATA;
+ 
+-	sdhci_writew(host, SDHCI_MAKE_CMD(cmd->opcode, flags), SDHCI_COMMAND);
++	if (host->quirks & SDHCI_QUIRK_32BIT_REGISTERS) {
++		sdhci_writel(host,
++			SDHCI_MAKE_CMD_32BIT(cmd->opcode, flags, xfer_mode),
++			SDHCI_TRANSFER_MODE);
++	} else {
++		sdhci_writew(host, xfer_mode, SDHCI_TRANSFER_MODE);
++		sdhci_writew(host, SDHCI_MAKE_CMD(cmd->opcode, flags),
++			SDHCI_COMMAND);
++	}
+ }
+ 
+ static void sdhci_finish_command(struct sdhci_host *host)
 diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index 45c8309..b10920d 100644
+index 051fef5..7b115d8 100644
 --- a/drivers/mmc/host/sdhci.h
 +++ b/drivers/mmc/host/sdhci.h
-@@ -217,6 +217,8 @@ struct sdhci_host {
- #define SDHCI_QUIRK_FORCE_HIGHSPEED			(1<<14)
- /* Controller does not provide transfer-complete interrupt when not busy */
- #define SDHCI_QUIRK_NO_BUSY_IRQ				(1<<15)
-+/* Controller has unreliable card detection */
-+#define SDHCI_QUIRK_BROKEN_CARD_DETECTION		(1<<16)
+@@ -44,6 +44,8 @@
+ #define  SDHCI_CMD_RESP_SHORT_BUSY 0x03
+ 
+ #define SDHCI_MAKE_CMD(c, f) (((c & 0xff) << 8) | (f & 0xff))
++#define SDHCI_MAKE_CMD_32BIT(c, f, m) \
++	((((c) & 0xff) << 24) | (((f) & 0xff) << 16) | ((m) & 0x37))
+ 
+ #define SDHCI_RESPONSE		0x10
+ 
+@@ -221,6 +223,8 @@ struct sdhci_host {
+ #define SDHCI_QUIRK_BROKEN_CARD_DETECTION		(1<<16)
+ /* Controller reports inverted write-protect state */
+ #define SDHCI_QUIRK_INVERTED_WRITE_PROTECT		(1<<17)
++/* Controller has all registers of 32 bit width */
++#define SDHCI_QUIRK_32BIT_REGISTERS			(1<<18)
  
  	int			irq;		/* Device IRQ */
  	void __iomem *		ioaddr;		/* Mapped address */
