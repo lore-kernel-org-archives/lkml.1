@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760922AbZBMUTJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761417AbZBMUTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760922AbZBMUTJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 15:19:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbZBMUSz
+	id S1761417AbZBMUTc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 15:19:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759858AbZBMUTB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 15:18:55 -0500
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:20501 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752600AbZBMUSy (ORCPT
+	Fri, 13 Feb 2009 15:19:01 -0500
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:19173 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755288AbZBMUS7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 15:18:54 -0500
+	Fri, 13 Feb 2009 15:18:59 -0500
 From: Alex Chiang <achiang@hp.com>
-Subject: [RFC PATCH v2 00/12] PCI core learns hotplug
+Subject: [RFC PATCH v2 01/12] PCI: don't scan existing devices
 To: jbarnes@virtuousgeek.org
-Cc: xyzzy@speakeasy.org, djwong@us.ibm.com, shimada-yxb@necst.nec.co.jp,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Fri, 13 Feb 2009 13:18:53 -0700
-Message-ID: <20090213201135.19262.67924.stgit@bob.kio>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Trent Piepho <xyzzy@speakeasy.org>, Alex Chiang <achiang@hp.com>
+Date: Fri, 13 Feb 2009 13:18:58 -0700
+Message-ID: <20090213201858.19262.67639.stgit@bob.kio>
+In-Reply-To: <20090213201135.19262.67924.stgit@bob.kio>
+References: <20090213201135.19262.67924.stgit@bob.kio>
 User-Agent: StGIT/0.14.3.215.gff3d
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -26,71 +27,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+From: Trent Piepho <xyzzy@speakeasy.org>
 
-Jesse asked me to send out some updated bits on this series to get
-more early review. He notes that there is at least one patch out there
-(Yuji Shimada's memory resource alignment) that would really like this.
+pci_scan_single_device is supposed to add newly discovered
+devices to pci_bus->devices, but doesn't check to see if the
+device has already been added. This can cause problems if we ever
+want to use this interface to rescan the PCI bus.
 
-Original discussion here:
+If the device is already added, just return it.
 
-	http://thread.gmane.org/gmane.linux.kernel.pci/2914
-
-This is still a work-in-progress.
-
-Known to work:
-	- remove any device in PCI tree once, rescan to get it back
-	- device seems to be functional. :)
-	- can repeat above multiple times on non PCIe machines
-
-Known to not work:
-	- can't remove/rescan multiple times when PCIe port driver is loaded
-	- hotplug drivers using pci_do_scan_bus may blow up
-
-TODO:
-	- fix known PCIe port driver bug
-	- clean up hotplug drivers using pci_do_scan_bus
-	- incorporate one more of Trent's patches, will probably replace
-	  "Introduce /sys/bus/pci/rescan" since his implementation was nicer
-	- remove ASPM patch once jbarnes's linux-next tree gets rebased ;)
-
-Comments welcom.
-
-Thanks.
-
-/ac
-
-v1 -> v2:	
-	- incorporated lots of Trent Piepho's work
-	- beefed up pci_do_scan_bus as heavy lifter for rescanning
-	- small bugfixes folded into earlier patches to get everything working
+Signed-off-by: Trent Piepho <xyzzy@speakeasy.org>
+Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
-Alex Chiang (8):
-      PCI: more whitespace cleanups
-      PCI Hotplug: schedule fakephp for feature removal
-      PCI Hotplug: rename legacy_fakephp to fakephp
-      PCI: Introduce /sys/bus/pci/devices/.../rescan
-      PCI: Introduce /sys/bus/pci/rescan
-      PCI: beef up pci_do_scan_bus()
-      PCI: properly clean up ASPM link state on device remove
-      PCI: always scan child buses
+ drivers/pci/probe.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-Trent Piepho (4):
-      PCI Hotplug: restore fakephp interface with complete reimplementation
-      PCI: Introduce /sys/bus/pci/devices/.../remove
-      PCI: pci_scan_slot() returns newly found devices
-      PCI: don't scan existing devices
-
-
- Documentation/ABI/testing/sysfs-bus-pci    |   27 ++
- Documentation/feature-removal-schedule.txt |   32 ++
- Documentation/filesystems/sysfs-pci.txt    |    9 +
- drivers/pci/hotplug-pci.c                  |   16 +
- drivers/pci/hotplug/fakephp.c              |  443 +++++++---------------------
- drivers/pci/pci-sysfs.c                    |   96 +++++-
- drivers/pci/pcie/aspm.c                    |    4 
- drivers/pci/probe.c                        |   90 +++---
- drivers/pci/remove.c                       |    4 
- 9 files changed, 323 insertions(+), 398 deletions(-)
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 55ec44a..66b5d1c 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -1006,6 +1006,12 @@ struct pci_dev *__ref pci_scan_single_device(struct pci_bus *bus, int devfn)
+ {
+ 	struct pci_dev *dev;
+ 
++	dev = pci_get_slot(bus, devfn);
++	if (dev) {
++		pci_dev_put(dev);
++		return dev;
++	}
++
+ 	dev = pci_scan_device(bus, devfn);
+ 	if (!dev)
+ 		return NULL;
 
