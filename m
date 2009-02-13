@@ -1,62 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbZBMTgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761591AbZBMTgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752500AbZBMTgU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 14:36:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbZBMTgA
+	id S1761591AbZBMTgg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 14:36:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbZBMTgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 14:36:00 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:53007 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752696AbZBMTf6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 14:35:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=qjxDzV9o2HBEfuPKV5m7ADPcQv8EAI3ForKamADhiZpH+DOtFobltP1Cm4eiGDiW28
-         ffGeIpTdmQ3mvcK08HN7BtodU6vY7hagdj5LFlmu9IyoXq8BD7J7u9TIlIS/lbyfXt8w
-         6PinMKlD2/u5CeJrmkjiF/J66e7IeloWpZT48=
+	Fri, 13 Feb 2009 14:36:23 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:33048 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761245AbZBMTgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 14:36:22 -0500
+Date: Fri, 13 Feb 2009 11:36:19 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Bryan Wu <cooloney@kernel.org>,
+       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
+       uclinux-dist-devel@blackfin.uclinux.org
+Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
+	(repost)
+Message-ID: <20090213193619.GH6854@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090212215959.GN6759@linux.vnet.ibm.com> <200902140050.44550.nickpiggin@yahoo.com.au> <20090213145653.GA6854@linux.vnet.ibm.com> <20090213151045.GA1574@Krystal> <20090213155507.GA2838@Krystal> <alpine.LFD.2.00.0902130808050.3099@localhost.localdomain> <20090213173352.GB4684@Krystal> <alpine.LFD.2.00.0902130945350.3179@localhost.localdomain> <alpine.LFD.2.00.0902130956400.3179@localhost.localdomain> <20090213185411.GB7124@Krystal>
 MIME-Version: 1.0
-In-Reply-To: <4995C66E.1000800@cisco.com>
-References: <20090213175526.d0590862.sfr@canb.auug.org.au>
-	 <49955D00.2020707@in.ibm.com> <4995BA4B.9050209@oracle.com>
-	 <4995C66E.1000800@cisco.com>
-Date: Fri, 13 Feb 2009 20:35:55 +0100
-Message-ID: <e2e108260902131135g515d219cpacecdc2ae0e10bb7@mail.gmail.com>
-Subject: Re: next Feb 13 drivers/scsi/aha1542.ko build break
-From: Bart Van Assche <bart.vanassche@gmail.com>
-To: Joe Eykholt <jeykholt@cisco.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       "Sachin P. Sant" <sachinp@in.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090213185411.GB7124@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(resending as plain text)
+On Fri, Feb 13, 2009 at 01:54:11PM -0500, Mathieu Desnoyers wrote:
+> * Linus Torvalds (torvalds@linux-foundation.org) wrote:
+> > 
+> > 
+> > Btw, for user space, if you want to do this all right for something like 
+> > BF. I think the only _correct_ thing to do (in the sense that the end 
+> > result will actually be debuggable) is to essentially give full SMP 
+> > coherency in user space.
+> > 
+> > It's doable, but rather complicated, and I'm not 100% sure it really ends 
+> > up making sense. The way to do it is to just simply say:
+> > 
+> >  - never map the same page writably on two different cores, and always 
+> >    flush the cache (on the receiving side) when you switch a page from one 
+> >    core to another.
+> > 
+> > Now, the kernel can't really do that reasonably, but user space possibly could.
+> > 
+> > Now, I realize that blackfin doesn't actually even have a MMU or a TLB, so 
+> > by "mapping the same page" in that case we end up really meaning "having a 
+> > shared mapping or thread". I think that _should_ be doable. The most 
+> > trivial approach might be to simply limit all processes with shared 
+> > mappings or CLONE_VM to core 0, and letting core 1 run everything else 
+> > (but you could do it differently: mapping something with MAP_SHARED would 
+> > force you to core 0, but threads would just force the thread group to 
+> > stay on _one_ core, rather than necessarily a fixed one).
+> > 
+> > Yeah, because of the lack of real memory protection, the kernel can't 
+> > _know_ that processes don't behave badly and access things that they 
+> > didn't explicitly map, but I'm hoping that that is rare.
+> > 
+> > And yes, if you really want to use threads as a way to do something 
+> > across cores, you'd be screwed - the kenrel would only schedule the 
+> > threads on one CPU. But considering the undefined nature of threading on 
+> > such a cpu, wouldn't that still be preferable? Wouldn't it be nice to have 
+> > the knowledge that user space _looks_ cache-coherent by virtue of the 
+> > kernel just limiting cores appropriately?
+> > 
+> > And then user space would simply not need to worry as much. Code written 
+> > for another architecture will "just work" on BF SMP too. With the normal 
+> > uclinux limitations, of course.
+> > 
+> > 			Linus
+> > 
+> 
+> I don't know enough about BF to tell for sure, but the other way around
+> I see that would still permit running threads with shared memory space
+> on different CPUs is to call a cache flush each time a userspace lock is
+> taken/released (at the synchronization points where the "magic
+> test-and-set instruction" is used) _from_ userspace.
+> 
+> If some more elaborate userspace MT code uses something else than those
+> basic locks provided by core libraries to synchronize data exchange,
+> then it would be on its own and have to ensure cache flushing itself.
 
-On Fri, Feb 13, 2009 at 8:13 PM, Joe Eykholt <jeykholt@cisco.com> wrote:
-> The kernel infrastructure should fix that without requiring the driver to change.
-> Drivers ought to be allowed to divide.
->
-> I've also seen this in another driver that divided a u64 by a constant.
-> I noticed that linux/math64.h provides div_u64(), but it seems awkward to call
-> that when the compiler generates a call to __udivdi3 (apparently).
->
-> Can't we just provide __udivdi3, since gcc generates that call?
-> Otherwise, problems like this will continue to crop up.
+How about just doing a sched_setaffinity() in the BF case?  Sounds
+like an easy way to implement Linus's suggestion of restricting the
+multithreaded processes to a single core.  I have a hard time losing
+sleep over the lack of parallelism in the case where the SMP support is
+at best rudimentary...
 
-A complete list of integer functions to which gcc generates calls can
-be found here:
-http://gcc.gnu.org/onlinedocs/gcc-4.3.3/gccint/Integer-library-routines.html
+> And yes, that would be incredibly costly/slow. This is why RCU-style
+> reader-sides are good : they have much more relaxed synchronization
+> constraints.
+> 
+> I am just thinking that the single-process to a single core solution you
+> propose above will be somewhat limiting if we end up with a 64-cores
+> non-cache-coherent architecture. They tend to be especially used for
+> stuff like video decoding, which is very easy to parallelize when shared
+> memory is available. But I guess we are not there yet.
 
-Some links to past discussions about this subject:
-* http://lkml.org/lkml/2003/7/2/5
-* http://lkml.org/lkml/2004/9/23/376
+If someone invests the silicon for 64 cores, but doesn't provide some
+semblance of cache coherence, I have to question their sanity.  As a
+kludgey quick fix to get to a dual-proc solution I can understand it,
+but there is a limit!  ;-)
 
-Bart.
+						Thanx, Paul
