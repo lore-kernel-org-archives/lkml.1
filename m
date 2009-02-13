@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758944AbZBMNki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759888AbZBMNln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758944AbZBMNki (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 08:40:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbZBMNka
+	id S1759888AbZBMNln (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 08:41:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbZBMNlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 08:40:30 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:60137 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752156AbZBMNk3 (ORCPT
+	Fri, 13 Feb 2009 08:41:35 -0500
+Received: from mu-out-0910.google.com ([209.85.134.189]:54528 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752156AbZBMNle convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 08:40:29 -0500
-Date: Fri, 13 Feb 2009 13:40:24 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Peter Feuerer <peter@piie.net>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Acer Aspire One fan control
-Message-ID: <20090213134024.GA26549@srcf.ucam.org>
-References: <cone.1234471033.988571.5384.1000@mentalhome>
+	Fri, 13 Feb 2009 08:41:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=hYsHTuotOTBDNtMpn/VEmoV22itLqQvWUb6mxd4wq9PXnwJFVe8Ok4OFxIrM8cEGuM
+         XS3/tzO+Lrv3ArG/qrMeXGLgo3hP8nGEmn2BfFfEFn2MDJRdJDXMbOyBiLhLeX87aFtI
+         8AunFsoKTO7O2qkFs0dVLiRQf4Yh9xQWBuzjY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cone.1234471033.988571.5384.1000@mentalhome>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <49957F98.50708@st.com>
+References: <1234461073-23281-1-git-send-email-peppe.cavallaro@st.com>
+	 <20090212185640.GA6111@linux-sh.org> <499544AD.3030804@st.com>
+	 <84144f020902130122y471dd92em4a72de43a0cfc681@mail.gmail.com>
+	 <49954F9A.5020801@st.com>
+	 <84144f020902130205x4dc5886l70fe6a695ef050a4@mail.gmail.com>
+	 <4995565D.5010105@st.com> <49957F98.50708@st.com>
+Date: Fri, 13 Feb 2009 15:41:29 +0200
+X-Google-Sender-Auth: 1df4703310730403
+Message-ID: <84144f020902130541n6de09d7brb455d0879b62af71@mail.gmail.com>
+Subject: Re: [PATCH] slab: fix slab flags for archs use alignment larger 
+	64-bit
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Giuseppe CAVALLARO <peppe.cavallaro@st.com>
+Cc: Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       linux-sh@vger.kernel.org, linux-mm@vger.kernel.org,
+       Christoph Lameter <cl@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 12, 2009 at 09:37:13PM +0100, Peter Feuerer wrote:
+Hi Giuseppe,
 
-> Do you think it makes sense to add it as seperate kernelmodule or should I 
-> patch another module, e.g. the drivers/misc/acer-wmi.c module?
-> Should I try also to add the functionality of the 
-> /proc/acpi/thermal_zone/THRM/* things in my first patch? Or just submit the 
-> general functionality for controlling the fan and add additional things 
-> step by step?
+On Fri, Feb 13, 2009 at 4:11 PM, Giuseppe CAVALLARO
+<peppe.cavallaro@st.com> wrote:
+> @@ -2262,7 +2266,7 @@ kmem_cache_create (const char *name, size_t size, size_t align,
+>                ralign = align;
+>        }
+>        /* disable debug if necessary */
+> -       if (ralign > __alignof__(unsigned long long))
+> +       if (ralign > ARCH_SLAB_MAX_DEBUG_ALIGN)
+>                flags &= ~(SLAB_RED_ZONE | SLAB_STORE_USER);
+>        /*
+>         * 4) Store it.
 
-That depends on how you're doing it. Is the code available somewhere? If 
-these io ports are also used by the firmware then you'll need to find 
-ACPI methods to call to perform the fan control. If there aren't any 
-then it's not safe to have a driver to do this.
+This doesn't address the issues raised by Paul at all.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+                                Pekka
