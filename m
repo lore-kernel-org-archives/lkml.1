@@ -1,168 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760964AbZBMOwI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761843AbZBMOxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760964AbZBMOwI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 09:52:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758143AbZBMOvy
+	id S1761843AbZBMOxv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 09:53:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZBMOxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 09:51:54 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:30951 "EHLO
-	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758094AbZBMOvx (ORCPT
+	Fri, 13 Feb 2009 09:53:43 -0500
+Received: from fk-out-0910.google.com ([209.85.128.190]:22637 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751438AbZBMOxm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 09:51:53 -0500
-X-BigFish: VPS1(zzzzzzz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KF0ELU-02-IZU-01
-Date: Fri, 13 Feb 2009 15:51:24 +0100
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/7] x86: memtest: introduce array to store memtest patterns
-Message-ID: <20090213145124.GB13000@alberich.amd.com>
-References: <20090213144600.GA6298@alberich.amd.com>
+	Fri, 13 Feb 2009 09:53:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=kYTwYLA2zZkyUNoxVU9paAncPGXvRuUPPScA5Qy5LSU1Ur8omzz6Bc7LoxB1qNHKKw
+         MAKreAmKu7nVc50TeMzwyNuuAmMyaUXGSelRgWm5o18pgiRZIBQmZceh9y+xp6ZwQRJW
+         Iu3AZtmVE9pR0CV2KNRayUBbkGTVZK74O7pLI=
+Date: Fri, 13 Feb 2009 17:53:30 +0300
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: zbr@ioremap.net, gregkh@suse.de, frank@f-seidel.de,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH next] Staging: pohmelfs: fix printk format warnings v2
+Message-ID: <20090213145330.GA7321@orion>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090213144600.GA6298@alberich.amd.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 13 Feb 2009 14:51:34.0753 (UTC) FILETIME=[90C60510:01C98DEA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: code cleanup
+drivers/staging/pohmelfs/inode.c:917: warning: format '%u' expects type 'unsigned int', but argument 4 has type 'size_t'
+drivers/staging/pohmelfs/inode.c:1036: warning: format '%u' expects type 'unsigned int', but argument 7 has type 'size_t'
+drivers/staging/pohmelfs/trans.c:164: warning: format '%u' expects type 'unsigned int', but argument 5 has type '__kernel_size_t'
+drivers/staging/pohmelfs/trans.c:170: warning: format '%u' expects type 'unsigned int', but argument 7 has type '__kernel_size_t'
+drivers/staging/pohmelfs/trans.c:517: warning: format '%u' expects type 'unsigned int', but argument 6 has type '__kernel_size_t'
+drivers/staging/pohmelfs/trans.c:600: warning: format '%u' expects type 'unsigned int', but argument 6 has type '__kernel_size_t'
+drivers/staging/pohmelfs/trans.c:610: warning: format '%u' expects type 'unsigned int', but argument 7 has type '__kernel_size_t'
 
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
 ---
- arch/x86/mm/memtest.c |   61 ++++++++++++++++++------------------------------
- 1 files changed, 23 insertions(+), 38 deletions(-)
 
-diff --git a/arch/x86/mm/memtest.c b/arch/x86/mm/memtest.c
-index 00b8bdc..a8a6c51 100644
---- a/arch/x86/mm/memtest.c
-+++ b/arch/x86/mm/memtest.c
-@@ -9,47 +9,29 @@
+ drivers/staging/pohmelfs/inode.c |    4 ++--
+ drivers/staging/pohmelfs/trans.c |   10 +++++-----
+ 2 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/staging/pohmelfs/inode.c b/drivers/staging/pohmelfs/inode.c
+index 0980c3c..fdce752 100644
+--- a/drivers/staging/pohmelfs/inode.c
++++ b/drivers/staging/pohmelfs/inode.c
+@@ -914,7 +914,7 @@ ssize_t pohmelfs_write(struct file *file, const char __user *buf,
+ 	kiocb.ki_pos = pos;
+ 	kiocb.ki_left = len;
  
- #include <asm/e820.h>
+-	dprintk("%s: len: %u, pos: %llu.\n", __func__, len, pos);
++	dprintk("%s: len: %zu, pos: %llu.\n", __func__, len, pos);
  
--#define _MAX_MEM_PATTERNS 4
-+static unsigned long patterns[] = {
-+	0UL,
-+	-1UL,
-+#ifdef CONFIG_X86_64
-+	0x5555555555555555UL,
-+	0xaaaaaaaaaaaaaaaaUL,
-+#else
-+	0x55555555UL,
-+	0xaaaaaaaaUL,
-+#endif
-+};
+ 	mutex_lock(&inode->i_mutex);
+ 	ret = pohmelfs_data_lock(pi, pos, len, POHMELFS_WRITE_LOCK);
+@@ -1033,7 +1033,7 @@ static int pohmelfs_send_xattr_req(struct pohmelfs_inode *pi, u64 id, u64 start,
+ 	struct netfs_cmd *cmd;
+ 	void *data;
  
- static void __init memtest(unsigned long start_phys, unsigned long size,
--				 unsigned pattern)
-+			   unsigned long pattern)
- {
- 	unsigned long i;
- 	unsigned long *start;
- 	unsigned long start_bad;
- 	unsigned long last_bad;
--	unsigned long val;
- 	unsigned long start_phys_aligned;
- 	unsigned long count;
- 	unsigned long incr;
+-	dprintk("%s: id: %llu, start: %llu, name: '%s', attrsize: %u, cmd: %d.\n",
++	dprintk("%s: id: %llu, start: %llu, name: '%s', attrsize: %zu, cmd: %d.\n",
+ 			__func__, id, start, name, attrsize, command);
  
--	pattern = pattern % _MAX_MEM_PATTERNS;
--
--	switch (pattern) {
--	case 0:
--		val = 0UL;
--		break;
--	case 1:
--		val = -1UL;
--		break;
--	case 2:
--#ifdef CONFIG_X86_64
--		val = 0x5555555555555555UL;
--#else
--		val = 0x55555555UL;
--#endif
--		break;
--	case 3:
--#ifdef CONFIG_X86_64
--		val = 0xaaaaaaaaaaaaaaaaUL;
--#else
--		val = 0xaaaaaaaaUL;
--#endif
--		break;
--	default:
--		return;
--	}
--
- 	incr = sizeof(unsigned long);
- 	start_phys_aligned = ALIGN(start_phys, incr);
- 	count = (size - (start_phys_aligned - start_phys))/incr;
-@@ -58,15 +40,16 @@ static void __init memtest(unsigned long start_phys, unsigned long size,
- 	last_bad = 0;
+ 	path_len = pohmelfs_path_length(pi);
+diff --git a/drivers/staging/pohmelfs/trans.c b/drivers/staging/pohmelfs/trans.c
+index 92054bd..bcb5942 100644
+--- a/drivers/staging/pohmelfs/trans.c
++++ b/drivers/staging/pohmelfs/trans.c
+@@ -160,14 +160,14 @@ int netfs_trans_send(struct netfs_trans *t, struct netfs_state *st)
  
- 	for (i = 0; i < count; i++)
--		start[i] = val;
-+		start[i] = pattern;
- 	for (i = 0; i < count; i++, start++, start_phys_aligned += incr) {
--		if (*start != val) {
-+		if (*start != pattern) {
- 			if (start_phys_aligned == last_bad + incr) {
- 				last_bad += incr;
- 			} else {
- 				if (start_bad) {
- 					printk(KERN_CONT "\n  %016lx bad mem addr %010lx - %010lx reserved",
--						val, start_bad, last_bad + incr);
-+					       pattern, start_bad,
-+					       last_bad + incr);
- 					reserve_early(start_bad, last_bad + incr, "BAD RAM");
- 				}
- 				start_bad = last_bad = start_phys_aligned;
-@@ -75,7 +58,7 @@ static void __init memtest(unsigned long start_phys, unsigned long size,
+ 	err = kernel_sendmsg(st->socket, &msg, (struct kvec *)msg.msg_iov, 1, t->iovec.iov_len);
+ 	if (err <= 0) {
+-		printk("%s: failed to send contig transaction: t: %p, gen: %u, size: %u, err: %d.\n",
++		printk("%s: failed to send contig transaction: t: %p, gen: %u, size: %zu, err: %d.\n",
+ 				__func__, t, t->gen, t->iovec.iov_len, err);
+ 		if (err == 0)
+ 			err = -ECONNRESET;
+ 		goto err_out_unlock_return;
  	}
- 	if (start_bad) {
- 		printk(KERN_CONT "\n  %016lx bad mem addr %010lx - %010lx reserved",
--			val, start_bad, last_bad + incr);
-+		       pattern, start_bad, last_bad + incr);
- 		reserve_early(start_bad, last_bad + incr, "BAD RAM");
+ 
+-	dprintk("%s: sent %s transaction: t: %p, gen: %u, size: %u, page_num: %u.\n",
++	dprintk("%s: sent %s transaction: t: %p, gen: %u, size: %zu, page_num: %u.\n",
+ 			__func__, (t->page_num)?"partial":"full",
+ 			t, t->gen, t->iovec.iov_len, t->page_num);
+ 
+@@ -514,7 +514,7 @@ int netfs_trans_finish(struct netfs_trans *t, struct pohmelfs_sb *psb)
+ 		cmd->csize = psb->crypto_attached_size;
  	}
+ 
+-	dprintk("%s: t: %u, size: %u, iov_len: %u, attached_size: %u, attached_pages: %u.\n",
++	dprintk("%s: t: %u, size: %u, iov_len: %zu, attached_size: %u, attached_pages: %u.\n",
+ 			__func__, t->gen, cmd->size, t->iovec.iov_len, t->attached_size, t->attached_pages);
+ 	err = pohmelfs_trans_crypt(t, psb);
+ 	if (err) {
+@@ -597,7 +597,7 @@ void *netfs_trans_add(struct netfs_trans *t, unsigned int size)
+ 	}
+ 
+ 	if (io->iov_len + size > t->total_size) {
+-		dprintk("%s: too big size t: %p, gen: %u, iov_len: %u, size: %u, total: %u.\n",
++		dprintk("%s: too big size t: %p, gen: %u, iov_len: %zu, size: %u, total: %u.\n",
+ 				__func__, t, t->gen, io->iov_len, size, t->total_size);
+ 		ptr = ERR_PTR(-E2BIG);
+ 		goto out;
+@@ -607,7 +607,7 @@ void *netfs_trans_add(struct netfs_trans *t, unsigned int size)
+ 	io->iov_len += size;
+ 
+ out:
+-	dprintk("%s: t: %p, gen: %u, size: %u, total: %u.\n",
++	dprintk("%s: t: %p, gen: %u, size: %u, total: %zu.\n",
+ 		__func__, t, t->gen, size, io->iov_len);
+ 	return ptr;
  }
-@@ -95,13 +78,16 @@ early_param("memtest", parse_memtest);
- void __init early_memtest(unsigned long start, unsigned long end)
- {
- 	u64 t_start, t_size;
--	unsigned pattern;
-+	unsigned int i;
-+	unsigned long pattern;
- 
- 	if (!memtest_pattern)
- 		return;
- 
- 	printk(KERN_INFO "early_memtest: pattern num %d", memtest_pattern);
--	for (pattern = 0; pattern < memtest_pattern; pattern++) {
-+	for (i = 0; i < memtest_pattern; i++) {
-+		unsigned int idx = i % ARRAY_SIZE(patterns);
-+		pattern = patterns[idx];
- 		t_start = start;
- 		t_size = 0;
- 		while (t_start < end) {
-@@ -115,8 +101,7 @@ void __init early_memtest(unsigned long start, unsigned long end)
- 
- 			printk(KERN_CONT "\n  %010llx - %010llx pattern %d",
- 			       (unsigned long long)t_start,
--			       (unsigned long long)t_start + t_size,
--			       pattern % _MAX_MEM_PATTERNS);
-+			       (unsigned long long)t_start + t_size, idx);
- 
- 			memtest(t_start, t_size, pattern);
- 
--- 
-1.6.1.2
-
-
-
