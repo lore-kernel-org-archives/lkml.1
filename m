@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762131AbZBMV4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761811AbZBMV4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762131AbZBMV4Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 16:56:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbZBMVyR
+	id S1761811AbZBMV4l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 16:56:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbZBMVzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 16:54:17 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:55389 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753085AbZBMVyO (ORCPT
+	Fri, 13 Feb 2009 16:55:46 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:52122 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761959AbZBMVzp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 16:54:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:user-agent:date:from:to:cc:subject:references
-         :content-disposition;
-        b=eWnyafith6/zuPdVtVOpm3I7Y+Ntc01J2aVBjEIIAAHrWjwmIlAu40UzCdsozWoMqr
-         gFCz0/fLi/ykCx/lnnGRtNUJsRncQpTCpQtz8o0nDabAf+Qp/lSVg0zsdcHttZ8UwKFF
-         /YCeC/MPcuIgdIuf6dHqeum0KEdpY/wtmNBPw=
-Message-Id: <20090213215404.146776098@gmail.com>
-User-Agent: quilt/0.47-1
-Date: Sat, 14 Feb 2009 00:50:18 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: mingo@elte.hu, hpa@zytor.com, heukelum@fastmail.fm
-Cc: linux-kernel@vger.kernel.org, Cyrill Gorcunov <gorcunov@openvz.org>
-Subject: [RFC 1/6] x86: asm linkage - introduce GLOBAL macro
-References: <20090213215017.959278111@gmail.com>
-Content-Disposition: inline; filename=x86-linkage-global
+	Fri, 13 Feb 2009 16:55:45 -0500
+Message-ID: <4995EC75.8090800@oracle.com>
+Date: Fri, 13 Feb 2009 13:56:05 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: mmotm 2009-02-13-12-20 uploaded (i386 mm/filemap.c argh)
+References: <200902132020.n1DKKd2F031056@imap1.linux-foundation.org>
+In-Reply-To: <200902132020.n1DKKd2F031056@imap1.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010202.4995EC54.0057:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the code is time critical and this entry is called
-from other places we use ENTRY to have it globally defined
-and especially aligned.
+akpm@linux-foundation.org wrote:
+> The mm-of-the-moment snapshot 2009-02-13-12-20 has been uploaded to
+> 
+>    http://userweb.kernel.org/~akpm/mmotm/
+> 
+> and will soon be available at
+> 
+>    git://git.zen-sources.org/zen/mmotm.git
 
-Contrary we have some snippets which are size
-critical. So we use plane ".globl name; name:"
-directive. Introduce GLOBAL macro for this.
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
- arch/x86/include/asm/linkage.h |    4 ++++
- 1 file changed, 4 insertions(+)
+9 of 10 i386 builds failed with:
 
-Index: linux-2.6.git/arch/x86/include/asm/linkage.h
-===================================================================
---- linux-2.6.git.orig/arch/x86/include/asm/linkage.h
-+++ linux-2.6.git/arch/x86/include/asm/linkage.h
-@@ -52,6 +52,10 @@
- 
- #endif
- 
-+#define GLOBAL(name)	\
-+	.globl name;	\
-+	name:
-+
- #ifdef CONFIG_X86_ALIGNMENT_16
- #define __ALIGN .align 16,0x90
- #define __ALIGN_STR ".align 16,0x90"
+mm/filemap.c:517: error: redefinition of '__kcrctab_add_to_page_cache_lru'
+mm/filemap.c:308: error: previous definition of '__kcrctab_add_to_page_cache_lru' was here
+mm/filemap.c:517: error: redefinition of '__kstrtab_add_to_page_cache_lru'
+mm/filemap.c:308: error: previous definition of '__kstrtab_add_to_page_cache_lru' was here
+mm/filemap.c:517: error: redefinition of '__ksymtab_add_to_page_cache_lru'
+mm/filemap.c:308: error: previous definition of '__ksymtab_add_to_page_cache_lru' was here
 
+-- 
+~Randy
