@@ -1,52 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760314AbZBMSTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761094AbZBMSTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760314AbZBMSTW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 13:19:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZBMSTL
+	id S1761094AbZBMSTy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 13:19:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbZBMSTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 13:19:11 -0500
-Received: from mx2.suse.de ([195.135.220.15]:56157 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751186AbZBMSTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 13:19:10 -0500
-Date: Fri, 13 Feb 2009 19:19:03 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
-       mm-commits@vger.kernel.org, Greg KH <gregkh@suse.de>,
-       USB list <linux-usb@vger.kernel.org>, linux-input@vger.kernel.org,
-       Oliver Neukum <oliver@neukum.org>
-Subject: Re: dead USB devices after resume [mmotm 2009-02-10-16-35]
-In-Reply-To: <49954E04.6090008@gmail.com>
-Message-ID: <alpine.LRH.1.10.0902131917090.7361@twin.jikos.cz>
-References: <Pine.LNX.4.44L0.0902111009260.3056-100000@iolanthe.rowland.org> <49954E04.6090008@gmail.com>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 13 Feb 2009 13:19:45 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:36112 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752125AbZBMSTo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 13:19:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:in-reply-to:references
+         :x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=LeQCCa8e/F0exILfsEmG87xbTpT8Uzo33caPMiP2AcrvzsjmLsh6gMwIkd279e1aEI
+         CV5canWeoSZLYJGDBAGsYTpCvTWeGIT3DNMMhqqqeMYM3pkHFNvhx2/fEVtJMOlq77qz
+         prp5upILObtbYJKBEkxhzZ51x6bqZgfw4Rvh0=
+Date: Fri, 13 Feb 2009 20:19:32 +0200
+From: Pekka Paalanen <pq@iki.fi>
+To: wenji.huang@oracle.com
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Subject: Re: [PATCH 2/2] tracing: add checks for printing pci devices in
+ mmiotrace.
+Message-ID: <20090213201932.2dd07f93@daedalus.pq.iki.fi>
+In-Reply-To: <49950EB0.907@oracle.com>
+References: <1234489192-18594-1-git-send-email-wenji.huang@oracle.com>
+	<1234489341-18630-1-git-send-email-wenji.huang@oracle.com>
+	<alpine.DEB.1.10.0902130059570.15469@gandalf.stny.rr.com>
+	<49950EB0.907@oracle.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Feb 2009, Jiri Slaby wrote:
+On Fri, 13 Feb 2009 14:09:52 +0800
+Wenji Huang <wenji.huang@oracle.com> wrote:
 
-> Here comes the resume part (including unplug, replug). I suspect 
-> auto-suspend?
+> Steven Rostedt wrote:
+> > On Thu, 12 Feb 2009, Wenji Huang wrote:
+> > 
+> >> This patch is to provide checking return value of trace_seq_printf
+> >> so as to keep completeness of mmio_print_pcidev.
+> >>
+> >> Signed-off-by: Wenji Huang <wenji.huang@oracle.com>
+> >> ---
+> >>  kernel/trace/trace_mmiotrace.c |   26 ++++++++++++++++----------
+> >>  1 files changed, 16 insertions(+), 10 deletions(-)
+> >>
+> >> diff --git a/kernel/trace/trace_mmiotrace.c b/kernel/trace/trace_mmiotrace.c
+> >> index c401b90..ebb0b61 100644
+> >> --- a/kernel/trace/trace_mmiotrace.c
+> >> +++ b/kernel/trace/trace_mmiotrace.c
+> >> @@ -56,17 +56,19 @@ static void mmio_trace_start(struct trace_array *tr)
+> >>  	mmio_reset_data(tr);
+> >>  }
+> >>  
+> >> -static int mmio_print_pcidev(struct trace_seq *s, const struct pci_dev *dev)
+> >> +static enum print_line_t mmio_print_pcidev(struct trace_seq *s,
+> >> +					   const struct pci_dev *dev)
+> >>  {
+> >>  	int ret = 0;
+> >>  	int i;
+> >>  	resource_size_t start, end;
+> >>  	const struct pci_driver *drv = pci_dev_driver(dev);
+> >>  
+> >> -	/* XXX: incomplete checks for trace_seq_printf() return value */
+> >> -	ret += trace_seq_printf(s, "PCIDEV %02x%02x %04x%04x %x",
+> >> +	ret = trace_seq_printf(s, "PCIDEV %02x%02x %04x%04x %x",
+> >>  				dev->bus->number, dev->devfn,
+> >>  				dev->vendor, dev->device, dev->irq);
+> >> +	if (!ret)
+> >> +		return TRACE_TYPE_PARTIAL_LINE;
+> >>  	/*
+> >>  	 * XXX: is pci_resource_to_user() appropriate, since we are
+> >>  	 * supposed to interpret the __ioremap() phys_addr argument based on
+> >> @@ -74,21 +76,25 @@ static int mmio_print_pcidev(struct trace_seq *s, const struct pci_dev *dev)
+> >>  	 */
+> >>  	for (i = 0; i < 7; i++) {
+> >>  		pci_resource_to_user(dev, i, &dev->resource[i], &start, &end);
+> >> -		ret += trace_seq_printf(s, " %llx",
+> >> +		ret = trace_seq_printf(s, " %llx",
+> >>  			(unsigned long long)(start |
+> >>  			(dev->resource[i].flags & PCI_REGION_FLAG_MASK)));
+> >> -	}
+> >> -	for (i = 0; i < 7; i++) {
+> >> +		if (!ret)
+> >> +			return TRACE_TYPE_PARTIAL_LINE;
+> > 
+> > The above looks like a change of logic to me. I'm a bit tired so I can be 
+> > wrong. But it looks like the original was:
+> > 
+> >      for (i = 0; i < 7; i++) {
+> >              pci_resource_to_user(dev, i, &dev->resource[i], &start, &end);
+> >              ret += trace_seq_printf(s, " %llx",
+> >                      (unsigned long long)(start |
+> >                      (dev->resource[i].flags & PCI_REGION_FLAG_MASK)));
+> >      }
+> >      for (i = 0; i < 7; i++) {
+> >              pci_resource_to_user(dev, i, &dev->resource[i], &start, &end);
+> >              ret += trace_seq_printf(s, " %llx",
+> >                      dev->resource[i].start < dev->resource[i].end ?
+> >                      (unsigned long long)(end - start) + 1 : 0);
+> >      }
+> > 
+> > And the new is:
+> > 
+> >      for (i = 0; i < 7; i++) {
+> >              pci_resource_to_user(dev, i, &dev->resource[i], &start, &end);
+> >              ret = trace_seq_printf(s, " %llx",   
+> >                      (unsigned long long)(start |
+> >                      (dev->resource[i].flags & PCI_REGION_FLAG_MASK)));
+> >              if (!ret)
+> >                      return TRACE_TYPE_PARTIAL_LINE;
+> >              pci_resource_to_user(dev, i, &dev->resource[i], &start, &end);
+> >              ret = trace_seq_printf(s, " %llx",
+> >                      dev->resource[i].start < dev->resource[i].end ?
+> >                      (unsigned long long)(end - start) + 1 : 0);
+> >              if (!ret)
+> >                      return TRACE_TYPE_PARTIAL_LINE;
+> >      }
+> > 
+> > This changes the output format.
+> > 
+> > Pekka,
+> > 
+> > Is this OK?
+> > 
+> > -- Steve
+> 
+> oops, output format is changed. Need to update it.
 
-The log looks fine IMHO.
+Indeed, don't change the output format, please.
 
-The autosuspend shouldn't be the culprit, as it should definitely be 
-turned off by default for mice and keyboards (could you please verify that 
-it really is)?
+These checks are not enough to actually handle the case, mmio_read()
+needs to be updated, too, to do the right thing (I'm looking at Ingo's
+tip/master). I.e. it should skip to print_out to flush out old data.
+Shouldn't also *ppos be updated in mmio_read()?
 
-I any way, the autosuspend for HID has been implemented by Oliver and is 
-currently sitting as 8390887fae ("HID: autosuspend support for USB HID") 
-through which it gets to -next. Could you please verify that this patch 
-really isn't the culprit?
 
-Thanks,
-
+Thanks for looking into this.
 -- 
-Jiri Kosina
-SUSE Labs
-
+Pekka Paalanen
+http://www.iki.fi/pq/
