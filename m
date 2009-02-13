@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759907AbZBMUPX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761335AbZBMUPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759907AbZBMUPX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 15:15:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbZBMUPI
+	id S1761335AbZBMUPo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 15:15:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbZBMUPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 15:15:08 -0500
-Received: from mail49.e.nsc.no ([193.213.115.49]:65263 "EHLO mail49.e.nsc.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750713AbZBMUPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 15:15:07 -0500
-X-Greylist: delayed 1432 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Feb 2009 15:15:06 EST
-From: Henrik Austad <henrik@austad.us>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Henrik Austad <henrik@austad.us>
-Subject: [PATCH] idle_at_tick is only used when CONFIG_SMP is set
-Date: Fri, 13 Feb 2009 17:17:37 +0100
-Message-Id: <1234541857-8274-1-git-send-email-henrik@austad.us>
-X-Mailer: git-send-email 1.6.1.rc2
+	Fri, 13 Feb 2009 15:15:15 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:47472 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753882AbZBMUPN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 15:15:13 -0500
+Message-ID: <4995D4A9.5060400@zytor.com>
+Date: Fri, 13 Feb 2009 12:14:33 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: hpa@zytor.com, mingo@redhat.com, James.Bottomley@HansenPartnership.com,
+       tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
+CC: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/headers] x86: fix "__udivdi3" [drivers/scsi/aha1542.ko]
+ undefined
+References: <tip-bf33a70a73876b163d62612e9567cbac6604ba7e@kernel.org>
+In-Reply-To: <tip-bf33a70a73876b163d62612e9567cbac6604ba7e@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The idle_at_tick in struct rq is only used in SMP settings
-and it does not make sense to have this in the rq in an UP setup.
+James Bottomley wrote:
+>  arch/x86/include/asm/io.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
+> index e5a2ab4..4f8e820 100644
+> --- a/arch/x86/include/asm/io.h
+> +++ b/arch/x86/include/asm/io.h
+> @@ -125,7 +125,7 @@ static inline void *phys_to_virt(phys_addr_t address)
+>  /*
+>   * ISA I/O bus memory addresses are 1:1 with the physical address.
+>   */
+> -#define isa_virt_to_bus virt_to_phys
+> +#define isa_virt_to_bus (unsigned long)virt_to_phys
+>  #define isa_page_to_bus page_to_phys
+>  #define isa_bus_to_virt phys_to_virt
+>  
 
-This will also increase packing of rq.
+This changes one token to multiple, and not even with the highest
+precedence.
 
-Signed-off-by: Henrik Austad <henrik@austad.us>
----
- kernel/sched.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+It needs to be something like:
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index c1d0ed3..4404e47 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -549,7 +549,6 @@ struct rq {
- 	unsigned long nr_running;
- 	#define CPU_LOAD_IDX_MAX 5
- 	unsigned long cpu_load[CPU_LOAD_IDX_MAX];
--	unsigned char idle_at_tick;
- #ifdef CONFIG_NO_HZ
- 	unsigned long last_tick_seen;
- 	unsigned char in_nohz_recently;
-@@ -590,6 +589,7 @@ struct rq {
- 	struct root_domain *rd;
- 	struct sched_domain *sd;
- 
-+	unsigned char idle_at_tick;
- 	/* For active balancing */
- 	int active_balance;
- 	int push_cpu;
+#define isa_virt_to_bus(x) ((unsigned int)virt_to_phys(x))
+
+... if we're going to do that.
+
+	-hpa
+
 -- 
-1.6.1.rc2
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
