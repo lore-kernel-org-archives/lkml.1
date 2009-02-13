@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758747AbZBMUs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760674AbZBMUs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758747AbZBMUs2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 15:48:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbZBMUsT
+	id S1760674AbZBMUs6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 15:48:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbZBMUst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 15:48:19 -0500
-Received: from smtprelay10.ispgateway.de ([80.67.29.24]:36901 "EHLO
-	smtprelay10.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751222AbZBMUsT (ORCPT
+	Fri, 13 Feb 2009 15:48:49 -0500
+Received: from Mycroft.westnet.com ([216.187.52.7]:54053 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752696AbZBMUss (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 15:48:19 -0500
-X-Greylist: delayed 3762 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Feb 2009 15:48:19 EST
-References: <cone.1234471033.988571.5384.1000@mentalhome> <20090213134024.GA26549@srcf.ucam.org> <cone.1234551556.57236.4642.1000@onepiie> <20090213191815.GB1379@srcf.ucam.org>
-Message-ID: <cone.1234554340.344388.4642.1000@onepiie>
-X-Mailer: http://www.courier-mta.org/cone/
-From: Peter Feuerer <peter@piie.net>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Acer Aspire One fan control
-Date: Fri, 13 Feb 2009 20:45:40 +0100
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="US-ASCII"
-Content-Disposition: inline
+	Fri, 13 Feb 2009 15:48:48 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Df-Sender: 404094
+Message-ID: <18837.56478.10536.6978@stoffel.org>
+Date: Fri, 13 Feb 2009 15:48:30 -0500
+From: "John Stoffel" <john@stoffel.org>
+To: Philippe Grenard <philippe.grenard@laposte.net>
+Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>
+Subject: Re: PROBLEM: cannot get stable system since 2.6.28 kernel
+In-Reply-To: <200902132056.20097.philippe.grenard@laposte.net>
+References: <200902131944.56634.philippe.grenard@laposte.net>
+	<alpine.LFD.2.00.0902131356010.5440@localhost.localdomain>
+	<200902132056.20097.philippe.grenard@laposte.net>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett writes:
+>>>>> "Philippe" == Philippe Grenard <philippe.grenard@laposte.net> writes:
 
->> I get the temperature by calling ec_read(0x58) and can read/write the state 
->> of the fan by ec_write to / ec_read from 0x55. Actually I don't know if 
->> those embedded controller registers are used by the firmware. How can I 
->> find it out?
-> 
-> Ok, yup, that should be safe. It might be nice to implement this as an 
-> hwmon driver, potentially tying it into the thermal layer.
+Philippe> On Friday 13 February 2009 19:56:54 Len Brown wrote:
+>> dmesg -- assuming you can boot far enough to capture it,
+>> may be helpful.
+>> 
+>> also, disabling PREEMPT may be interesting to try.
+>> 
+>> cheers,
+>> --
+>> Len Brown, Intel Open Source Technology Center
 
-Thank you very much, I will have a deeper look into hwmon and the thermal 
-layer.
+Philippe> I tried to disable all "PREEMPT" options in make config, re-compiled 2.6.29-rc4 
+Philippe> and managed to get these info before kernel stalls :
+Philippe> (Was that what you understood by "disabling PREEMPT" ?)
 
---peter
+Philippe> I'll also try to make some diff on the different files to
+Philippe> see what changes between working 2.6.27.10 and non-working
+Philippe> 2.6.29-rc4
+
+....
+Philippe> [   33.663143] input: btnx mouse as /class/input/input9
+Philippe> [   36.351195] nvidia: module license 'NVIDIA' taints kernel.
+Philippe> [   36.603727] nvidia 0000:01:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+Philippe> [   36.603733] nvidia 0000:01:00.0: setting latency timer to 64
+Philippe> [   36.603892] NVRM: loading NVIDIA UNIX x86_64 Kernel Module  180.22  Tue Jan  
+Philippe> 6 09:15:58 PST 2009
+Philippe> [   36.606686] IRQ 16/nvidia: IRQF_DISABLED is not guaranteed on shared IRQs
+
+Here's your problem most probably.  The nVidia graphics module.
+Remove that and re-try your system.  Basically, we can't help you when
+you use a vendor's binary module.
+
+John
