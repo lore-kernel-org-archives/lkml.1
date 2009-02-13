@@ -1,37 +1,23 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759123AbZBMRZr (ORCPT <rfc822;ralf@linux-mips.org>);
-	Fri, 13 Feb 2009 12:25:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbZBMRZh
+	id S1759171AbZBMTWS (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 13 Feb 2009 14:22:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZBMTWC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 12:25:37 -0500
-Received: from simmts5.bellnexxia.net ([206.47.199.163]:62677 "EHLO
-	simmts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750827AbZBMRZh convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 12:25:37 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvsFADQ8lUnOL8cR/2dsb2JhbACBbos0xXuDaAY
-X-Mailer: Openwave WebEngine, version 2.8.10 (webedge20-101-191-20030113)
-X-Originating-IP: [217.195.48.32]
-From: ADERSON <jkcampbell@pei.sympatico.ca>
-Reply-To: agtuk_lted34@btinternet.com
-To: <info@winner.com>
-Subject: GOOD DAY
-Date: Fri, 13 Feb 2009 12:25:29 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-Id: <20090213172535.MBMP1658.simmts5-srv.bellnexxia.net@simip9-ac.srvr.bell.ca>
+	Fri, 13 Feb 2009 14:22:02 -0500
+Received: from xm12.infosec.fedex.com ([199.81.193.42]:40159 "EHLO
+	xm12.infosec.fedex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750901AbZBMTWB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 14:22:01 -0500
+X-Greylist: delayed 3911 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Feb 2009 14:22:00 EST
+X-AuditID: c751565f-a5e2abb000000bb2-a5-4995b9061876
+Message-Id: <20090213181628.E74BD4A0007@xm12.infosec.fedex.com>
+Date: Fri, 13 Feb 2009 12:16:28 -0600 (CST)
+From: edwdeuaccqyd@hotmail.com
+To: undisclosed-recipients:;
+X-Brightmail-Tracker: AAAABA2TY14NlDEKDZQxCw2UMjs=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1759123AbZBMRZr@vger.kernel.org>
-
-£500,000 pounds has been won by you in our UK Promo .get back to this office with your details:
-Full Names:------
-Tel Phone No:------------
-Contry:------------
-Occupation:------------
-
-Email agtuk_lted34@btinternet.com
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1759171AbZBMTWS@vger.kernel.org>
 
