@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757183AbZBMRYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760248AbZBMR0B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757183AbZBMRYu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 12:24:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbZBMRYl
+	id S1760248AbZBMR0B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 12:26:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbZBMRZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 12:24:41 -0500
-Received: from gw.goop.org ([64.81.55.164]:33980 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750827AbZBMRYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 12:24:40 -0500
-Message-ID: <4995ACD5.9000201@goop.org>
-Date: Fri, 13 Feb 2009 09:24:37 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 13 Feb 2009 12:25:50 -0500
+Received: from ti-out-0910.google.com ([209.85.142.188]:12130 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750980AbZBMRZt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 12:25:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=fx2mFOiBt7FIacccDsNX/bTcPiDalPToYW96G/2X3U6o1w+ytgSRvJ8ou/ziSk/1Mf
+         n37w3QSpGlg10LbX+IiIY+qbsVomiJy3wHeqT8SkfzX9r+Kd4VSRz6lAZhNBD1LhhJ31
+         M17s2skb2z3rxiYE1YMu0FNUBxkYl9BXkA5Vw=
+Date: Fri, 13 Feb 2009 22:55:26 +0530
+From: Rabin Vincent <rabin@rab.in>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] mmc_test: fix basic read test
+Message-ID: <20090213172526.GA1807@debian>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] mm: disable preemption in apply_to_pte_range
-References: <4994BCF0.30005@goop.org>	<4994C052.9060907@goop.org>	 <20090212165539.5ce51468.akpm@linux-foundation.org>	 <4994CF35.60507@goop.org> <1234525710.6519.17.camel@twins>
-In-Reply-To: <1234525710.6519.17.camel@twins>
-X-Enigmail-Version: 0.95.6
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
->> The specific rules are that 
->> arch_enter_lazy_mmu_mode()/arch_leave_lazy_mmu_mode() require you to be 
->> holding the appropriate pte locks for the ptes you're updating, so 
->> preemption is naturally disabled in that case.
->>     
->
-> Right, except on -rt where the pte lock is a mutex.
->   
+Due to a typo in the Basic Read test, it's currently identical to the
+Basic Write test.  Fix this.
 
-Hm, that's interesting.  The requirement isn't really "no preemption", 
-its "must not migrate to another cpu".  Is there a better way to express 
-that?
+Signed-off-by: Rabin Vincent <rabin@rab.in>
+---
+ drivers/mmc/card/mmc_test.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
->> This all goes a bit strange with init_mm's non-requirement for taking 
->> pte locks.  The caller has to arrange for some kind of serialization on 
->> updating the range in question, and that could be a mutex.  Explicitly 
->> disabling preemption in enter_lazy_mmu_mode would make sense for this 
->> case, but it would be redundant for the common case of batched updates 
->> to usermode ptes.
->>     
->
-> I really utterly hate how you just plonk preempt_disable() in there
-> unconditionally and without very clear comments on how and why.
->   
-
-Well, there's the commit comment.  They're important, right?  That's why 
-we spend time writing good commit comments?  So they get read?  ;)
-
-OK, I'll add a comment, particularly if there's a more precise way to 
-express "no migration".
-
-> I'd rather we'd fix up the init_mm to also have a pte lock.
->   
-Yes, I don't like the init_mm-exceptionalism either.
+diff --git a/drivers/mmc/card/mmc_test.c b/drivers/mmc/card/mmc_test.c
+index b92b172..b9f1e84 100644
+--- a/drivers/mmc/card/mmc_test.c
++++ b/drivers/mmc/card/mmc_test.c
+@@ -494,7 +494,7 @@ static int mmc_test_basic_read(struct mmc_test_card *test)
+ 
+ 	sg_init_one(&sg, test->buffer, 512);
+ 
+-	ret = mmc_test_simple_transfer(test, &sg, 1, 0, 1, 512, 1);
++	ret = mmc_test_simple_transfer(test, &sg, 1, 0, 1, 512, 0);
+ 	if (ret)
+ 		return ret;
+ 
+-- 
+1.5.6.5
 
