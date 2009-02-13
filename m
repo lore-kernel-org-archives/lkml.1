@@ -1,70 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759091AbZBMNvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759593AbZBMN5G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759091AbZBMNvZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 08:51:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbZBMNvP
+	id S1759593AbZBMN5G (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 08:57:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755329AbZBMN4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 08:51:15 -0500
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:28277 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752793AbZBMNvP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 08:51:15 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=jHPsgfSr46dzxgPl1QM6R+1/Fqh/PQJFsd9s00lnPY6qLJ1kngDE4SVcUCieyh6vmvypkX+wA5aFKcmNaosN+Py30M55CoTJ/ov0r3rkNJrLfPFokzogGRK1LQYvH6ULWNlLxE2rcBOVb1xgsuFw6Sdl1mJCHGoKAwt4/LdXoLk=  ;
-X-YMail-OSG: XHnxR1UVM1lu2mty34iAjmebvT4N9cBROtsQPVZR9aRlh8SEqT2hhb4GAH9fKmnECWT.pKmtb_s7uIgQ5bCu5pXO8YVrWZERoO9fvLajIJQdGw5dyppjaY7Wu5JLzsrtKMxJHj_7koih.e4QPK92_D5wTAmSfAqb38vNXzT.Q7SmTkjc88wpocLp4q4pxQ--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux (repost)
-Date: Sat, 14 Feb 2009 00:50:43 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
-       Bryan Wu <cooloney@kernel.org>, uclinux-dist-devel@blackfin.uclinux.org
-References: <20090212023308.GA21157@linux.vnet.ibm.com> <alpine.LFD.2.00.0902121247040.3099@localhost.localdomain> <20090212215959.GN6759@linux.vnet.ibm.com>
-In-Reply-To: <20090212215959.GN6759@linux.vnet.ibm.com>
+	Fri, 13 Feb 2009 08:56:54 -0500
+Received: from mail.zelnet.ru ([80.92.97.13]:43257 "EHLO mail.zelnet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755189AbZBMN4x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 08:56:53 -0500
+Message-ID: <49957C43.7050701@gmail.com>
+Date: Fri, 13 Feb 2009 16:57:23 +0300
+From: Edward Shishkin <edward.shishkin@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       Ryan Hope <rmh3093@gmail.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel@vger.kernel.org,
+       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>
+Subject: Re: [patch 2/4] vfs: add set_page_dirty_notag
+References: <18837.24581.181196.569183@edward.zelnet.ru> <1234530519.6519.46.camel@twins>
+In-Reply-To: <1234530519.6519.46.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902140050.44550.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 13 February 2009 08:59:59 Paul E. McKenney wrote:
-> On Thu, Feb 12, 2009 at 01:15:08PM -0800, Linus Torvalds wrote:
-> > On Thu, 12 Feb 2009, Paul E. McKenney wrote:
-> > > In other words, you are arguing for using ACCESS_ONCE() in the loops,
-> > > but keeping the old ACCESS_ONCE() definition, and declaring BF hardware
-> > > broken?
-> >
-> > Well, I _also_ argue that if you have a busy loop, you'd better have a
-> > cpu_relax() in there somewhere anyway. If you don't, you have a bug.
-> >
-> > So I think the BF approach is "borderline broken", but I think it should
-> > work, if BF just has whatever appropriate cache flush in its cpu_relax.
+Peter Zijlstra wrote:
+> On Fri, 2009-02-13 at 14:56 +0300, Edward Shishkin wrote:
 >
-> OK, got it.  Keep ACCESS_ONCE() as is, make sure any busy-wait
-> loops contain a cpu_relax().  A given busy loop might or might not
-> need ACCESS_ONCE(), but that decision is independent of hardware
-> considerations.
+>   
+>> ---
+>>  include/linux/mm.h  |    1 +
+>>  mm/page-writeback.c |   28 ++++++++++++++++++++++++++++
+>>  2 files changed, 29 insertions(+)
+>>
+>> --- mmotm.orig/include/linux/mm.h
+>> +++ mmotm/include/linux/mm.h
+>> @@ -841,6 +841,7 @@ int redirty_page_for_writepage(struct wr
+>>  				struct page *page);
+>>  int set_page_dirty(struct page *page);
+>>  int set_page_dirty_lock(struct page *page);
+>> +int set_page_dirty_notag(struct page *page);
+>>  int clear_page_dirty_for_io(struct page *page);
+>>  
+>>  extern unsigned long move_page_tables(struct vm_area_struct *vma,
+>> --- mmotm.orig/mm/page-writeback.c
+>> +++ mmotm/mm/page-writeback.c
+>> @@ -1248,6 +1248,34 @@ int __set_page_dirty_nobuffers(struct pa
+>>  EXPORT_SYMBOL(__set_page_dirty_nobuffers);
+>>  
+>>  /*
+>> + * The same as __set_page_dirty_nobuffers, but this function
+>> + * 1) doesn't tag the page in its radix tree;
+>> + * 2) makes an assumption that there is no races with truncate.
+>> + * 3) is not for anonymous or swap pages.
+>> + */
+>> +int set_page_dirty_notag(struct page *page)
+>> +{
+>> +	struct address_space *mapping = page->mapping;
+>> +
+>> +	if (!TestSetPageDirty(page)) {
+>> +		WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
+>> +		if (mapping_cap_account_dirty(mapping)) {
+>> +			preempt_disable();
+>> +			__inc_zone_page_state(page, NR_FILE_DIRTY);
+>> +			__inc_bdi_stat(mapping->backing_dev_info,
+>> +				       BDI_RECLAIMABLE);
+>> +			task_dirty_inc(current);
+>> +			task_io_account_write(PAGE_CACHE_SIZE);
+>> +			preempt_enable();
+>> +		}
+>> +		__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+>> +		return 1;
+>> +	}
+>> +	return 0;
+>> +}
+>> +EXPORT_SYMBOL(set_page_dirty_notag);
+>> +
+>>     
 >
-> Ah, and blackfin's cpu_relax() does seem to have migrated from barrier()
-> to smp_mb() recently, so sounds good to me!!!
+> Eew, so reiser4 will totally side-step the regular vm inode writeback
+> paths -- or is this fixed by a more elaborate than usual
+> a_ops->writepages() ?
+>   
+The second.
 
-
-Interesting. I don't know if you would say it is not cache coherent.
-Does anything in cache coherency definition require timeliness? Only
-causality I think.
-
-However I think "infinite write buffering delay", or requiring "cache
-barriers" is insane to teach any generic code about. BF would be free
-to optimise arch functions, but for correctness surely it must also
-have a periodic interrupt that will expose stores to other CPUs.
-
+reiser4_writepages() catches the anonymous  (tagged)
+pages, captures them mandatory, then commits all atoms
+of the file.
