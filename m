@@ -1,79 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758228AbZBMQ6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760653AbZBMQ63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758228AbZBMQ6P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 11:58:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750729AbZBMQ5z
+	id S1760653AbZBMQ63 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 11:58:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbZBMQ56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 11:57:55 -0500
-Received: from an-out-0708.google.com ([209.85.132.248]:24436 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750714AbZBMQ5y (ORCPT
+	Fri, 13 Feb 2009 11:57:58 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:55944 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750778AbZBMQ54 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 11:57:54 -0500
+	Fri, 13 Feb 2009 11:57:56 -0500
+To: Yu Zhao <yu.zhao@intel.com>
+Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v8 1/7] PCI: initialize and release SR-IOV capability
+From: Andi Kleen <andi@firstfloor.org>
+References: <1234256355-23153-1-git-send-email-yu.zhao@intel.com>
+	<1234256355-23153-2-git-send-email-yu.zhao@intel.com>
+Date: Fri, 13 Feb 2009 17:56:44 +0100
+In-Reply-To: <1234256355-23153-2-git-send-email-yu.zhao@intel.com> (Yu Zhao's message of "Tue, 10 Feb 2009 16:59:09 +0800")
+Message-ID: <877i3uwa0j.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <200902140020.45522.nickpiggin@yahoo.com.au>
-References: <1234272104-10211-1-git-send-email-kirill@shutemov.name>
-	 <20090212230934.GA21609@gondor.apana.org.au>
-	 <1234481821.3152.27.camel@calx>
-	 <200902140020.45522.nickpiggin@yahoo.com.au>
-Date: Fri, 13 Feb 2009 11:57:52 -0500
-Message-ID: <f73f7ab80902130857x2acd13afk3e704f4ad64333a7@mail.gmail.com>
-Subject: Re: [PATCH] Export symbol ksize()
-From: Kyle Moffett <kyle@moffetthome.net>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Matt Mackall <mpm@selenic.com>, Herbert Xu <herbert@gondor.apana.org.au>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-crypto@vger.kernel.org, Geert.Uytterhoeven@sonycom.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 13, 2009 at 8:20 AM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> On Friday 13 February 2009 10:37:01 Matt Mackall wrote:
->> On Fri, 2009-02-13 at 07:09 +0800, Herbert Xu wrote:
->> > On Fri, Feb 13, 2009 at 12:10:45AM +1100, Nick Piggin wrote:
->> > > I would be interested to know how that goes. You always have this
->> > > circular issue that if a little more space helps significantly, then
->> > > maybe it is a good idea to explicitly ask for those bytes. Of course
->> > > that larger allocation is also likely to have some slack bytes.
->> >
->> > Well, the thing is we don't know apriori whether we need the
->> > extra space.  The idea is to use the extra space if available
->> > to avoid reallocation when we hit things like IPsec.
->>
->> I'm not entirely convinced by this argument. If you're concerned about
->> space rather than performance, then you want an allocator that doesn't
->> waste space in the first place and you don't try to do "sub-allocations"
->> by hand. If you're concerned about performance, you instead optimize
->> your allocator to be as fast as possible and again avoid conditional
->> branches for sub-allocations.
->
-> Well, my earlier reasoning is no longer so clear cut if eg. there
-> are common cases where no extra space is required, but rare cases
-> where extra space might be a big win if it eg avoids extra
-> alloc, copy, free or something.
->
-> Because even with performance oriented allocators, there is a non-zero
-> cost to explicitly asking for more memory -- queues tend to get smaller
-> at larger object sizes, and page allocation orders can increase. So if
-> it is very uncommon to need extra space you don't want to burden the
-> common case with it.
+Yu Zhao <yu.zhao@intel.com> writes:
+> +
+> +
+> +static int sriov_init(struct pci_dev *dev, int pos)
+> +{
+> +	int i;
+> +	int rc;
+> +	int nres;
+> +	u32 pgsz;
+> +	u16 ctrl, total, offset, stride;
+> +	struct pci_sriov *iov;
+> +	struct resource *res;
+> +	struct pci_dev *pdev;
+> +
+> +	if (dev->pcie_type != PCI_EXP_TYPE_RC_END &&
+> +	    dev->pcie_type != PCI_EXP_TYPE_ENDPOINT)
+> +		return -ENODEV;
+> +
 
-My concern would be that such extra-space reuse would be a very
-non-obvious performance hit if allocation patterns changed slightly.
-If being able to use the extra space really is a noticeable "big win"
-for the rare case, then minor changes to the memory allocator could
-dramatically impact performance in a totally nondeterministic way.  If
-the change isn't performance-significant in the grand scheme of
-things, then the use of ksize() would just be code obfuscation.  On
-the other hand if it *is* performance-significant, it should be
-redesigned to be able to guarantee that the space is available when it
-is needed.
+It would be a good idea to put a might_sleep() here just in 
+case the msleep happens below and drivers call it incorrectly.
 
-Cheers,
-Kyle Moffett
+> +	pci_read_config_word(dev, pos + PCI_SRIOV_CTRL, &ctrl);
+> +	if (ctrl & PCI_SRIOV_CTRL_VFE) {
+> +		pci_write_config_word(dev, pos + PCI_SRIOV_CTRL, 0);
+> +		msleep(100);
+
+
+That's really long. Hopefully that's really needed.
+
+> +
+> +	pci_write_config_word(dev, pos + PCI_SRIOV_CTRL, ctrl);
+> +	pci_write_config_word(dev, pos + PCI_SRIOV_NUM_VF, total);
+> +	pci_read_config_word(dev, pos + PCI_SRIOV_VF_OFFSET, &offset);
+> +	pci_read_config_word(dev, pos + PCI_SRIOV_VF_STRIDE, &stride);
+> +	if (!offset || (total > 1 && !stride))
+> +		return -EIO;
+> +
+> +	pci_read_config_dword(dev, pos + PCI_SRIOV_SUP_PGSIZE, &pgsz);
+> +	i = PAGE_SHIFT > 12 ? PAGE_SHIFT - 12 : 0;
+> +	pgsz &= ~((1 << i) - 1);
+> +	if (!pgsz)
+> +		return -EIO;
+
+All the error paths don't seem to undo the config space writes.
+How will the devices behave with half initialized context?
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
