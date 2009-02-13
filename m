@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758655AbZBMSJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760731AbZBMSK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758655AbZBMSJn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 13:09:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750775AbZBMSJf
+	id S1760731AbZBMSK1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 13:10:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbZBMSKR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 13:09:35 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33280 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750738AbZBMSJf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 13:09:35 -0500
-Date: Fri, 13 Feb 2009 19:09:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86 headers: include linux/types.h
-Message-ID: <20090213180924.GD18581@elte.hu>
-References: <49935DD8.8010705@goop.org> <20090213120239.GL15679@elte.hu> <20090213121858.GB5483@elte.hu> <20090213122325.GA30061@elte.hu> <20090213122724.GA2172@elte.hu> <49959EFA.8040507@goop.org>
+	Fri, 13 Feb 2009 13:10:17 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51294 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750738AbZBMSKQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 13:10:16 -0500
+Date: Fri, 13 Feb 2009 10:09:14 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, Bryan Wu <cooloney@kernel.org>,
+       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
+ (repost)
+In-Reply-To: <alpine.LFD.2.00.0902130945350.3179@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0902130956400.3179@localhost.localdomain>
+References: <20090212023308.GA21157@linux.vnet.ibm.com> <alpine.LFD.2.00.0902121247040.3099@localhost.localdomain> <20090212215959.GN6759@linux.vnet.ibm.com> <200902140050.44550.nickpiggin@yahoo.com.au> <20090213145653.GA6854@linux.vnet.ibm.com>
+ <20090213151045.GA1574@Krystal> <20090213155507.GA2838@Krystal> <alpine.LFD.2.00.0902130808050.3099@localhost.localdomain> <20090213173352.GB4684@Krystal> <alpine.LFD.2.00.0902130945350.3179@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49959EFA.8040507@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> Ingo Molnar wrote:
->> Regarding the fixlet below - wouldnt PTE_FLAGS_MASK be better placed in
->> pgtable_types.h ? It's specifically related to the pte format. OTOH we
->> have a lot of PTE details in the page_*types.h files already.
->>   
->
-> No, you're right.
->
->> The boundary between page_types.h and pgtable_types.h does not seem to
->> be clear to me - what is the principle you followed?
->>   
->
-> Well, basically anything to do with the internals of a pte*_t go in  
-> pgtable.h.  PTE_*_MASK should go there too, and is an oversight (though  
-> its on the margin because of its dependency on the page size/mask  
-> definitions in page*.h).
+Btw, for user space, if you want to do this all right for something like 
+BF. I think the only _correct_ thing to do (in the sense that the end 
+result will actually be debuggable) is to essentially give full SMP 
+coherency in user space.
 
-likewise, PUD_PAGE_* and PAGETABLE_LEVELS should move to pgtable_types.h
-too i guess. Same goes for *MASK_SHIFT*.
+It's doable, but rather complicated, and I'm not 100% sure it really ends 
+up making sense. The way to do it is to just simply say:
 
-	Ingo
+ - never map the same page writably on two different cores, and always 
+   flush the cache (on the receiving side) when you switch a page from one 
+   core to another.
+
+Now, the kernel can't really do that reasonably, but user space possibly could.
+
+Now, I realize that blackfin doesn't actually even have a MMU or a TLB, so 
+by "mapping the same page" in that case we end up really meaning "having a 
+shared mapping or thread". I think that _should_ be doable. The most 
+trivial approach might be to simply limit all processes with shared 
+mappings or CLONE_VM to core 0, and letting core 1 run everything else 
+(but you could do it differently: mapping something with MAP_SHARED would 
+force you to core 0, but threads would just force the thread group to 
+stay on _one_ core, rather than necessarily a fixed one).
+
+Yeah, because of the lack of real memory protection, the kernel can't 
+_know_ that processes don't behave badly and access things that they 
+didn't explicitly map, but I'm hoping that that is rare.
+
+And yes, if you really want to use threads as a way to do something 
+across cores, you'd be screwed - the kenrel would only schedule the 
+threads on one CPU. But considering the undefined nature of threading on 
+such a cpu, wouldn't that still be preferable? Wouldn't it be nice to have 
+the knowledge that user space _looks_ cache-coherent by virtue of the 
+kernel just limiting cores appropriately?
+
+And then user space would simply not need to worry as much. Code written 
+for another architecture will "just work" on BF SMP too. With the normal 
+uclinux limitations, of course.
+
+			Linus
