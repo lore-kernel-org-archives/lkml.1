@@ -1,55 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759324AbZBMMuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759033AbZBMMwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759324AbZBMMuG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 07:50:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbZBMMtx
+	id S1759033AbZBMMwa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 07:52:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbZBMMwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 07:49:53 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45083 "EHLO mx2.mail.elte.hu"
+	Fri, 13 Feb 2009 07:52:17 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43232 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752824AbZBMMtw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 07:49:52 -0500
-Date: Fri, 13 Feb 2009 13:49:28 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Thomas Gleixner <tglx@tglx.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>
-Subject: Re: [patch] rt: sysprof hrtimer fix
-Message-ID: <20090213124928.GC5483@elte.hu>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain> <20090213004812.GA5824@nowhere> <20090213021626.GA5807@nowhere> <20090213030919.GA5826@nowhere> <20090213072601.GA26946@elte.hu> <20090213120451.GA5782@nowhere>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090213120451.GA5782@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752266AbZBMMwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 07:52:16 -0500
+Subject: Re: [git pull -tip V2] fix headers_check warnings
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "David S. Miller" <davem@davemloft.net>, x86 maintainers <x86@kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, reiserfs-devel@vger.kernel.org
+In-Reply-To: <20090203125844.GI19979@elte.hu>
+References: <1233598278.10133.4.camel@localhost.localdomain>
+	 <20090203125844.GI19979@elte.hu>
+Content-Type: text/plain
+Date: Fri, 13 Feb 2009 18:21:07 +0530
+Message-Id: <1234529467.23142.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> So, just a thing.
-> -rt make the hrtimer's timers running on softirq context because the hrtimer_interrupt
-> doesn't run as a threaded interrupt, and then it is not preemptible right?
+On Tue, 2009-02-03 at 13:58 +0100, Ingo Molnar wrote:
+> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 > 
-> In that case, sysprof will continue to run in hardirq context, as before, and
-> it will considerably increase the latency. And that matters here.
-> So I think it is important to put it on the reminder:
+> > 
+> > The following changes since commit 1ff8f739c7cc4eaa89b6ba986494f458ff7bdbef:
+> >   Jaswinder Singh Rajput (1):
+> >         headers_check fix: xtensa, swab.h
+> > 
+> > are available in the git repository at:
+> > 
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tipclean.git core/header-fixes
+> > 
+> > Jaswinder Singh Rajput (7):
+> >       headers_check fix: linux/coda_psdev.h
+> >       headers_check fix: linux/in6.h
+> >       headers_check fix: linux/nubus.h
+> >       headers_check fix: linux/socket.h
+> >       headers_check fix: linux/reinserfs_fs.h
+> >       headers_check fix: x86, prctl.h
+> >       headers_check fix: x86, setup.h
+> > 
+> >  arch/x86/include/asm/prctl.h    |    4 ---
+> >  arch/x86/include/asm/setup.h    |   45 +++++++++++++++++++--------------------
+> >  arch/x86/include/asm/syscalls.h |    1 +
+> >  include/linux/coda_psdev.h      |   15 ++++++-------
+> >  include/linux/in6.h             |    2 +-
+> >  include/linux/nubus.h           |    2 +
+> >  include/linux/reiserfs_fs.h     |    8 +++++++
+> >  include/linux/socket.h          |    6 +++-
+> >  8 files changed, 45 insertions(+), 38 deletions(-)
+> > 
+> > This patchset fixes 31 headers_check warnings as shown earlier.
+> 
+> Pulled into tip/core/header-fixes, thanks Jaswinder.
+> 
+> I'll put this through the -tip testing machinery as the x86 bits have the 
+> potential to have build breakage side-effects.
+> 
 
-hm, not sure. Do you know it numerically how much worst-case overhead it
-induces?
 
-	Ingo
+Regarding headers_check warnings whether anyone would like to see
+anything beyond what's currently in -tip?
+
+--
+JSR
+
