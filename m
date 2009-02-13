@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761913AbZBMOsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762084AbZBMOtD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761913AbZBMOsc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 09:48:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759759AbZBMOrX
+	id S1762084AbZBMOtD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 09:49:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760094AbZBMOrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 09:47:23 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:16717 "EHLO
+	Fri, 13 Feb 2009 09:47:24 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:16736 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759140AbZBMOrU (ORCPT
+	by vger.kernel.org with ESMTP id S1759888AbZBMOrX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 09:47:20 -0500
-Date: Fri, 13 Feb 2009 17:47:16 +0300
+	Fri, 13 Feb 2009 09:47:23 -0500
+Date: Fri, 13 Feb 2009 17:47:20 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
 Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
        Kumar Gala <galak@kernel.crashing.org>,
        Liu Dave <DaveLiu@freescale.com>, sdhci-devel@list.drzeus.cx,
        linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 04/13] sdhci: Enable only relevant (DMA/PIO) interrupts
-	during transfers
-Message-ID: <20090213144716.GD23889@oksana.dev.rtsoft.ru>
+Subject: [PATCH 06/13] sdhci: Add support for hosts reporting inverted
+	write-protect state
+Message-ID: <20090213144720.GF23889@oksana.dev.rtsoft.ru>
 References: <20090213144630.GA13436@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -30,60 +30,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some hosts (that is, FSL eSDHC) throw PIO interrupts during DMA
-transfers, this causes tons of unneeded interrupts, and thus highly
-degraded speed.
+This patch adds SDHCI_QUIRK_INVERTED_WRITE_PROTECT quirk. When
+specified, the sdhci driver will invert WP state.
 
-This patch modifies the driver so that now we only enable relevant
-(DMA or PIO) interrupts during transfers.
+p.s. Actually, the quirk is more board-specific than
+     controller-specific.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci.c |   17 ++++++++++++++---
- 1 files changed, 14 insertions(+), 3 deletions(-)
+ drivers/mmc/host/sdhci.c |    2 ++
+ drivers/mmc/host/sdhci.h |    2 ++
+ 2 files changed, 4 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index fadaeb8..2728e90 100644
+index 782fb58..d668625 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -222,9 +222,7 @@ static void sdhci_init(struct sdhci_host *host)
- 		SDHCI_INT_BUS_POWER | SDHCI_INT_DATA_END_BIT |
- 		SDHCI_INT_DATA_CRC | SDHCI_INT_DATA_TIMEOUT | SDHCI_INT_INDEX |
- 		SDHCI_INT_END_BIT | SDHCI_INT_CRC | SDHCI_INT_TIMEOUT |
--		SDHCI_INT_DATA_AVAIL | SDHCI_INT_SPACE_AVAIL |
--		SDHCI_INT_DMA_END | SDHCI_INT_DATA_END | SDHCI_INT_RESPONSE |
--		SDHCI_INT_ADMA_ERROR);
-+		SDHCI_INT_DATA_END | SDHCI_INT_RESPONSE);
+@@ -1202,6 +1202,8 @@ static int sdhci_get_ro(struct mmc_host *mmc)
+ 
+ 	spin_unlock_irqrestore(&host->lock, flags);
+ 
++	if (host->quirks & SDHCI_QUIRK_INVERTED_WRITE_PROTECT)
++		return !!(present & SDHCI_WRITE_PROTECT);
+ 	return !(present & SDHCI_WRITE_PROTECT);
  }
  
- static void sdhci_reinit(struct sdhci_host *host)
-@@ -658,6 +656,17 @@ static u8 sdhci_calc_timeout(struct sdhci_host *host, struct mmc_data *data)
- 	return count;
- }
+diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
+index b10920d..051fef5 100644
+--- a/drivers/mmc/host/sdhci.h
++++ b/drivers/mmc/host/sdhci.h
+@@ -219,6 +219,8 @@ struct sdhci_host {
+ #define SDHCI_QUIRK_NO_BUSY_IRQ				(1<<15)
+ /* Controller has unreliable card detection */
+ #define SDHCI_QUIRK_BROKEN_CARD_DETECTION		(1<<16)
++/* Controller reports inverted write-protect state */
++#define SDHCI_QUIRK_INVERTED_WRITE_PROTECT		(1<<17)
  
-+static void sdhci_set_transfer_irqs(struct sdhci_host *host)
-+{
-+	u32 pio_irqs = SDHCI_INT_DATA_AVAIL | SDHCI_INT_SPACE_AVAIL;
-+	u32 dma_irqs = SDHCI_INT_DMA_END | SDHCI_INT_ADMA_ERROR;
-+
-+	if (host->flags & SDHCI_REQ_USE_DMA)
-+		sdhci_clear_set_irqs(host, pio_irqs, dma_irqs);
-+	else
-+		sdhci_clear_set_irqs(host, dma_irqs, pio_irqs);
-+}
-+
- static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
- {
- 	u8 count;
-@@ -806,6 +815,8 @@ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
- 		host->blocks = data->blocks;
- 	}
- 
-+	sdhci_set_transfer_irqs(host);
-+
- 	/* We do not handle DMA boundaries, so set it to max (512 KiB) */
- 	sdhci_writew(host, SDHCI_MAKE_BLKSZ(7, data->blksz), SDHCI_BLOCK_SIZE);
- 	sdhci_writew(host, data->blocks, SDHCI_BLOCK_COUNT);
+ 	int			irq;		/* Device IRQ */
+ 	void __iomem *		ioaddr;		/* Mapped address */
 -- 
 1.5.6.5
 
