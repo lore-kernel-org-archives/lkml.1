@@ -1,34 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758489AbZBMARG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759451AbZBMAUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758489AbZBMARG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 19:17:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757876AbZBMAQw
+	id S1759451AbZBMAUA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 19:20:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753178AbZBMATs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 19:16:52 -0500
-Received: from ti-out-0910.google.com ([209.85.142.187]:52293 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753178AbZBMAQu (ORCPT
+	Thu, 12 Feb 2009 19:19:48 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36476 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752010AbZBMATr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 19:16:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=mwNbfbWJWZu5SSmV+KG0CA0X1pAb1w9nUt4pqmlch1i0tNg7Qf6oIrtXvyfu8khvnl
-         kdttx/Zozj2wx5r6A932M3qrm6X/1TJpJ/EVxRDN9rNTlqfTBDpYhN7ABw8crJz3w9Pl
-         UBFS8YNDYhhZcgn9s/Ami61OC7KQBza2zSc6g=
-Date: Fri, 13 Feb 2009 09:16:15 +0900
-From: MinChan Kim <minchan.kim@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Johannes Weiner <hannes@cmpxchg.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       MinChan Kim <minchan.kim@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Nigel Cunningham <ncunningham-lkml@crca.org.au>,
-       Rik van Riel <riel@redhat.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: [patch 2/2 v2] vmscan: clip swap_cluster_max in shrink_all_memory()
-Message-Id: <20090213091615.28e6a689.minchan.kim@barrios-desktop>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	Thu, 12 Feb 2009 19:19:47 -0500
+Date: Thu, 12 Feb 2009 16:19:08 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, linux-scsi@vger.kernel.org
+Subject: Re: 2.6.29-rc3: BUG: NMI Watchdog detected LOCKUP
+Message-Id: <20090212161908.2cc2045c.akpm@linux-foundation.org>
+In-Reply-To: <19f34abd0902080221w662635f0h51875a125b156535@mail.gmail.com>
+References: <19f34abd0902080221w662635f0h51875a125b156535@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -36,115 +27,103 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 8 Feb 2009 11:21:20 +0100
+Vegard Nossum <vegard.nossum@gmail.com> wrote:
 
-I just remaked this patch based on my first patch '[patch 1/2] shrink_all_memory(): use sc.nr_reclaimed' due to hunk.
-Notice that original patch is written by Hannes. 
-I just inserted reviewed-by of me and acked-by of Nigel and Rafael.
+> Hi,
+> 
+> Not sure exactly what happened here. Was running LTP, and it seems
+> that the USB flash disk (which held the root device, though I was
+> running LTP in a chroot on a fixed harddisk) disconnect, although I
+> didn't touch it.
+> 
+> [ 3344.890073] usb 1-6: unregistering interface 1-6:1.0
+> [ 3344.895744] sd 2:0:0:0: Device offlined - not ready after error recovery
+> [ 3344.902893] sd 2:0:0:0: [sdb] Unhandled error code
+> [ 3344.908051] sd 2:0:0:0: [sdb] Result: hostbyte=DID_ABORT driverbyte=DRIVER_OK
+> [ 3344.916810] end_request: I/O error, dev sdb, sector 1735619
+> [ 3344.922746] Write-error on swap-device (8:16:1735627)
+> [ 3344.928195] Write-error on swap-device (8:16:1735635)
+> [ 3344.933611] Write-error on swap-device (8:16:1735643)
+> [ 3344.939020] Write-error on swap-device (8:16:1735651)
+> [ 3344.944427] Write-error on swap-device (8:16:1735659)
+> [ 3344.949836] Write-error on swap-device (8:16:1735667)
+> [ 3344.955320] Write-error on swap-device (8:16:1735675)
+> [ 3344.960757] sd 2:0:0:0: rejecting I/O to offline device
+> [ 3344.961735] sd 2:0:0:0: rejecting I/O to offline device
 
----
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, MinChan Kim <minchan.kim@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Nigel Cunningham <ncunningham-lkml@crca.org.au>, Rik van Riel <riel@redhat.com>
-Subject: [patch 2/2] vmscan: clip swap_cluster_max in shrink_all_memory()
-Date: Thu, 12 Feb 2009 12:36:11 +0100
-User-Agent: quilt/0.47-1
-shrink_inactive_list() scans in sc->swap_cluster_max chunks until it
-hits the scan limit it was passed.
+Presumably the device layer (USB or scsi) shat itself.  Bad hardware or
+a kernel bug?
 
-shrink_inactive_list()
-{
-	do {
-		isolate_pages(swap_cluster_max)
-		shrink_page_list()
-	} while (nr_scanned < max_scan);
-}
+> [ 3344.972984] BUG: NMI Watchdog detected LOCKUP on CPU1, ip ffffffff81491f02, :
+> [ 3344.972984] CPU 1
+> [ 3344.972984] Modules linked in:
+> [ 3344.972984] Pid: 11127, comm: hackbench Not tainted 2.6.29-rc3 #219
+> [ 3344.972984] RIP: 0010:[<ffffffff81491f02>]  [<ffffffff81491f02>] _spin_lock_b
+> [ 3344.972984] RSP: 0018:ffff880006b01408  EFLAGS: 00000093
+> [ 3344.972984] RAX: 0000000000003b39 RBX: 0000000000000001 RCX: 6db6db6db6db6db7
+> [ 3344.972984] RDX: ffff88003ec688d8 RSI: ffff880006b01428 RDI: ffff88003ec68b40
+> [ 3344.972984] RBP: ffff880006b01408 R08: b000000000000000 R09: 0000000000000000
+> [ 3344.972984] R10: ffff880006b01918 R11: 0000000000000000 R12: ffff88003ec688d8
+> [ 3344.972984] R13: 0000000000001000 R14: 00000000001aeeb3 R15: ffff88003ec688d8
+> [ 3344.972984] FS:  0000000000000000(0000) GS:ffff88003f801a80(0063) knlGS:00000
+> [ 3344.972984] CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
+> [ 3344.972984] CR2: 0000000000b9dea0 CR3: 0000000006ae3000 CR4: 00000000000006a0
+> [ 3344.972984] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [ 3344.972984] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> [ 3344.972984] Process hackbench (pid: 11127, threadinfo ffff880006b00000, task)
+> [ 3344.972984] Stack:
+> [ 3344.972984]  ffff880006b01468 ffffffff8118d26a ffff88001f7e8000 0000000000001
+> [ 3344.972984]  ffff88001bc33500 0001121000000010 0000000000000047 ffff88001bc30
+> [ 3344.972984]  ffff88001bc33500 ffff88003ec688d8 00000000001aeeb3 ffff88003ec68
+> [ 3344.972984] Call Trace:
+> [ 3344.972984]  [<ffffffff8118d26a>] __make_request+0x3e/0x412
+> [ 3344.972984]  [<ffffffff8118bf77>] generic_make_request+0x279/0x2c3
+> [ 3344.972984]  [<ffffffff8119f189>] ? radix_tree_tag_set+0x6b/0xce
+> [ 3344.972984]  [<ffffffff8118c087>] submit_bio+0xc6/0xcf
+> [ 3344.972984]  [<ffffffff8107feb8>] ? unlock_page+0x22/0x26
+> [ 3344.972984]  [<ffffffff8109ebd4>] swap_writepage+0xa2/0xac
+> [ 3344.972984]  [<ffffffff8108a076>] shrink_page_list+0x3a7/0x67b
+> [ 3344.972984]  [<ffffffff810376f1>] ? finish_task_switch+0x68/0x88
+> [ 3344.972984]  [<ffffffff8101b822>] ? __cpus_empty+0x9/0xb
+> [ 3344.972984]  [<ffffffff8101ba27>] ? flush_tlb_page+0x66/0x83
+> [ 3344.972984]  [<ffffffff814908b3>] ? thread_return+0x3d/0xc6
+> [ 3344.972984]  [<ffffffff8108a98d>] shrink_list+0x29d/0x59f
+> [ 3344.972984]  [<ffffffff81086c4f>] ? get_dirty_limits+0x22/0x24a
+> [ 3344.972984]  [<ffffffff8108af10>] shrink_zone+0x281/0x32b
+> [ 3344.972984]  [<ffffffff8119ff8e>] ? __up_read+0x92/0x9c
+> [ 3344.972984]  [<ffffffff8108b100>] ? shrink_slab+0x146/0x158
+> [ 3344.972984]  [<ffffffff8108c022>] try_to_free_pages+0x23d/0x38f
+> [ 3344.972984]  [<ffffffff81089185>] ? isolate_pages_global+0x0/0x219
+> [ 3344.972984]  [<ffffffff81085cc9>] __alloc_pages_internal+0x292/0x43d
+> [ 3344.972984]  [<ffffffff810a6963>] alloc_pages_current+0xb9/0xc2
+> [ 3344.972984]  [<ffffffff810aa658>] alloc_slab_page+0x19/0x69
+> [ 3344.972984]  [<ffffffff810aa6f1>] new_slab+0x49/0x1cc
+> [ 3344.972984]  [<ffffffff8119f8b1>] ? rb_insert_color+0xbd/0xe6
+> [ 3344.972984]  [<ffffffff810aaad3>] __slab_alloc+0x1f3/0x36c
+> [ 3344.972984]  [<ffffffff81389fe8>] ? __alloc_skb+0x42/0x130
+> [ 3344.972984]  [<ffffffff81389fe8>] ? __alloc_skb+0x42/0x130
+> [ 3344.972984]  [<ffffffff810aaf7c>] kmem_cache_alloc_node+0x69/0xa2
+> [ 3344.972984]  [<ffffffff81389fe8>] __alloc_skb+0x42/0x130
+> [ 3344.972984]  [<ffffffff81385bd3>] sock_alloc_send_skb+0xa1/0x200
+> [ 3344.972984]  [<ffffffff8116700a>] ? security_socket_getpeersec_dgram+0x11/0x3
+> [ 3344.972984]  [<ffffffff81409250>] unix_stream_sendmsg+0x138/0x2b5
+> [ 3344.972984]  [<ffffffff8138276b>] __sock_sendmsg+0x59/0x62
+> [ 3344.972984]  [<ffffffff8138285c>] sock_aio_write+0xe8/0xf8
+> [ 3344.972984]  [<ffffffff810af9a2>] do_sync_write+0xe7/0x12d
+> [ 3344.972984]  [<ffffffff8104d980>] ? autoremove_wake_function+0x0/0x38
+> [ 3344.972984]  [<ffffffff8116d9da>] ? selinux_file_permission+0xbd/0xc6
+> [ 3344.972984]  [<ffffffff811669d0>] ? security_file_permission+0x11/0x13
+> [ 3344.972984]  [<ffffffff810b029a>] vfs_write+0xbe/0x105
+> [ 3344.972984]  [<ffffffff810b03a5>] sys_write+0x47/0x6f
+> [ 3344.972984]  [<ffffffff8102bba8>] sysenter_dispatch+0x7/0x27
+> [ 3344.972984] Code: 01 00 00 f0 66 0f c1 17 38 f2 74 06 f3 90 8a 17 eb f6 c9 c
+> [ 3344.972984] BUG: NMI Watchdog detected LOCKUP<4>---[ end trace 820f38a7b2441-
+> [ 3344.972984]  on CPU0, ip ffffffff81491f6c, registers:
 
-This assumes that swap_cluster_max is not bigger than the scan limit
-because the latter is checked only after at least one iteration.
+And then the block layer died.  Looks like it was trying to take the
+queue lock.  Probably against the recently-offlined device.
 
-In shrink_all_memory() sc->swap_cluster_max is initialized to the
-overall reclaim goal in the beginning but not decreased while reclaim
-is making progress which leads to subsequent calls to
-shrink_inactive_list() reclaiming way too much in the one iteration
-that is done unconditionally.
+I'd say that either someone forgot to release the lock on an error
+path.  Or the structure was freed, but the kernel still tries to use it.
 
-Set sc->swap_cluster_max always to the proper goal before doing
-  shrink_all_zones()
-    shrink_list()
-      shrink_inactive_list().
-
-While the current shrink_all_memory() happily reclaims more than
-actually requested, this patch fixes it to never exceed the goal:
-
-unpatched
-   wanted=10000 reclaimed=13356
-   wanted=10000 reclaimed=19711
-   wanted=10000 reclaimed=10289
-   wanted=10000 reclaimed=17306
-   wanted=10000 reclaimed=10700
-   wanted=10000 reclaimed=10004
-   wanted=10000 reclaimed=13301
-   wanted=10000 reclaimed=10976
-   wanted=10000 reclaimed=10605
-   wanted=10000 reclaimed=10088
-   wanted=10000 reclaimed=15000
-
-patched
-   wanted=10000 reclaimed=10000
-   wanted=10000 reclaimed=9599
-   wanted=10000 reclaimed=8476
-   wanted=10000 reclaimed=8326
-   wanted=10000 reclaimed=10000
-   wanted=10000 reclaimed=10000
-   wanted=10000 reclaimed=9919
-   wanted=10000 reclaimed=10000
-   wanted=10000 reclaimed=10000
-   wanted=10000 reclaimed=10000
-   wanted=10000 reclaimed=10000
-   wanted=10000 reclaimed=9624
-   wanted=10000 reclaimed=10000
-   wanted=10000 reclaimed=10000
-   wanted=8500 reclaimed=8092
-   wanted=316 reclaimed=316
-
-
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-Reviewed-by: MinChan Kim <minchan.kim@gmail.com>
-Acked-by: Nigel Cunningham <ncunningham@crca.org.au>
-Acked-by: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>
-
-
----
- mm/vmscan.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 172e394..ed329c4 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -2114,7 +2114,6 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
- 	struct scan_control sc = {
- 		.gfp_mask = GFP_KERNEL,
- 		.may_unmap = 0,
--		.swap_cluster_max = nr_pages,
- 		.may_writepage = 1,
- 		.isolate_pages = isolate_pages_global,
- 	};
-@@ -2156,6 +2155,7 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
- 			unsigned long nr_to_scan = nr_pages - sc.nr_reclaimed;
- 
- 			sc.nr_scanned = 0;
-+			sc.swap_cluster_max = nr_to_scan;
- 			shrink_all_zones(nr_to_scan, prio, pass, &sc);
- 			if (sc.nr_reclaimed >= nr_pages) 
- 				goto out;
--- 
-1.5.4.3
-
-
-
--- 
-Kinds Regards
-MinChan Kim
