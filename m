@@ -1,187 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759453AbZBMQ4P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758228AbZBMQ6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759453AbZBMQ4P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 11:56:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750734AbZBMQz7
+	id S1758228AbZBMQ6P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 11:58:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750729AbZBMQ5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 11:55:59 -0500
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:33363 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750713AbZBMQz6 (ORCPT
+	Fri, 13 Feb 2009 11:57:55 -0500
+Received: from an-out-0708.google.com ([209.85.132.248]:24436 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750714AbZBMQ5y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 11:55:58 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah0FAKcxlUlMQWt2/2dsb2JhbACBbtEPhBgG
-Date: Fri, 13 Feb 2009 11:55:55 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Nick Piggin <npiggin@suse.de>,
-       akpm <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: irq-disabled vs vmap vs text_poke
-Message-ID: <20090213165555.GA4684@Krystal>
-References: <1234529407.6519.28.camel@twins> <20090213141839.GA31922@Krystal> <4995A0B7.1030705@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 13 Feb 2009 11:57:54 -0500
+MIME-Version: 1.0
+In-Reply-To: <200902140020.45522.nickpiggin@yahoo.com.au>
+References: <1234272104-10211-1-git-send-email-kirill@shutemov.name>
+	 <20090212230934.GA21609@gondor.apana.org.au>
+	 <1234481821.3152.27.camel@calx>
+	 <200902140020.45522.nickpiggin@yahoo.com.au>
+Date: Fri, 13 Feb 2009 11:57:52 -0500
+Message-ID: <f73f7ab80902130857x2acd13afk3e704f4ad64333a7@mail.gmail.com>
+Subject: Re: [PATCH] Export symbol ksize()
+From: Kyle Moffett <kyle@moffetthome.net>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Matt Mackall <mpm@selenic.com>, Herbert Xu <herbert@gondor.apana.org.au>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-crypto@vger.kernel.org, Geert.Uytterhoeven@sonycom.com
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <4995A0B7.1030705@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:51:37 up 43 days, 16:49,  4 users,  load average: 0.41, 0.37,
-	0.41
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Masami Hiramatsu (mhiramat@redhat.com) wrote:
-> Mathieu Desnoyers wrote:
-> > * Peter Zijlstra (peterz@infradead.org) wrote:
-> >> Hi,
-> >>
-> >> Ingo got the following splat:
-> >>
-> >> [    5.101748] ------------[ cut here ]------------
-> >> [    5.104305] WARNING: at kernel/smp.c:329 smp_call_function_many+0x34/0x1ea()
-> >> [    5.104305] Hardware name: P4DC6
-> >> [    5.104305] Modules linked in:
-> >> [    5.104305] Pid: 1, comm: swapper Not tainted 2.6.29-rc4-tip-01766-g1757c19-dirty #2
-> >> [    5.104305] Call Trace:
-> >> [    5.104305]  [<c012b5d6>] warn_slowpath+0x79/0x8f
-> >> [    5.104305]  [<c0104d24>] ? dump_trace+0x7d/0xac
-> >> [    5.104305]  [<c014805a>] ? __lock_acquire+0x319/0x382
-> >> [    5.104305]  [<c014d6a1>] smp_call_function_many+0x34/0x1ea
-> >> [    5.104305]  [<c011b59e>] ? do_flush_tlb_all+0x0/0x48
-> >> [    5.104305]  [<c011b59e>] ? do_flush_tlb_all+0x0/0x48
-> >> [    5.104305]  [<c014d878>] smp_call_function+0x21/0x28
-> >> [    5.104305]  [<c012fa56>] on_each_cpu+0x14/0x23
-> >> [    5.104305]  [<c011b56d>] flush_tlb_all+0x19/0x1b
-> >> [    5.104305]  [<c018dcbe>] flush_tlb_kernel_range+0xd/0xf
-> >> [    5.104305]  [<c018dd00>] vmap_debug_free_range+0x1c/0x20
-> >> [    5.104305]  [<c018e386>] remove_vm_area+0x28/0x67
-> >> [    5.104305]  [<c018e468>] __vunmap+0x30/0xab
-> >> [    5.104305]  [<c018e50a>] vunmap+0x27/0x29
-> >> [    5.104305]  [<c06421b6>] text_poke+0xd6/0x104
-> >> [    5.104305]  [<c015687c>] ? kprobe_target+0x0/0x15
-> >> [    5.104305]  [<c0642a82>] arch_disarm_kprobe+0x13/0x15
-> >> [    5.104305]  [<c06434f9>] __unregister_kprobe_top+0x68/0xe8
-> >> [    5.104305]  [<c06436d2>] unregister_kretprobes+0x2c/0xb9
-> >> [    5.104305]  [<c0643775>] unregister_kretprobe+0x16/0x18
-> >> [    5.104305]  [<c0156d0b>] init_test_probes+0x2ed/0x40c
-> >> [    5.104305]  [<c09d451c>] init_kprobes+0x127/0x131
-> >> [    5.104305]  [<c01476bf>] ? lock_release_holdtime+0x43/0x48
-> >> [    5.104305]  [<c0192e48>] ? __slab_alloc+0x5d/0x27a
-> >> [    5.104305]  [<c0147a2a>] ? lockdep_init_map+0x80/0xe7
-> >> [    5.104305]  [<c0141c0d>] ? clocksource_read+0xd/0xf
-> >> [    5.104305]  [<c0142542>] ? getnstimeofday+0x5e/0xe9
-> >> [    5.104305]  [<c013e01e>] ? timespec_to_ktime+0xe/0x11
-> >> [    5.104305]  [<c09d43f5>] ? init_kprobes+0x0/0x131
-> >> [    5.104305]  [<c010115c>] do_one_initcall+0x6a/0x169
-> >> [    5.104305]  [<c029ad2f>] ? number+0x10d/0x1cf
-> >> [    5.104305]  [<c0147799>] ? register_lock_class+0x17/0x228
-> >> [    5.104305]  [<c014805a>] ? __lock_acquire+0x319/0x382
-> >> [    5.104305]  [<c029fa91>] ? debug_check_no_obj_freed+0xda/0x126
-> >> [    5.104305]  [<c014805a>] ? __lock_acquire+0x319/0x382
-> >> [    5.104305]  [<c01476bf>] ? lock_release_holdtime+0x43/0x48
-> >> [    5.104305]  [<c0640ec0>] ? _spin_unlock+0x22/0x25
-> >> [    5.104305]  [<c01cc0f0>] ? proc_register+0x14b/0x15c
-> >> [    5.104305]  [<c01cc20f>] ? create_proc_entry+0x76/0x8c
-> >> [    5.104305]  [<c0162900>] ? default_affinity_write+0x3f/0x8a
-> >> [    5.104305]  [<c0162a6a>] ? init_irq_proc+0x58/0x65
-> >> [    5.104305]  [<c09bf52d>] kernel_init+0x118/0x169
-> >> [    5.104305]  [<c09bf415>] ? kernel_init+0x0/0x169
-> >> [    5.104305]  [<c0103adf>] kernel_thread_helper+0x7/0x10
-> >> [    5.104305] ---[ end trace e93713a9d40cd06c ]---
-> >>
-> >> Which points to vunmap() being called with interrupts disabled.
-> >>
-> >> Which made me look at the vmap/vunmap calls, and they appear to not be
-> >> irq-safe, therefore this would be a bug in text_poke().
-> >>
-> >> [ that is, vmap() can end up calling get_vm_area_caller() which in turn
-> >>   calls __get_vm_area_node() with GFP_KERNEL, ergo, don't do this from
-> >>   an atomic context. ]
-> >>
-> >> Now text_poke() uses local_irq_save/restore(), which conveys that it can
-> >> be called with IRQs disabled, which is exactly what happens in the trace
-> >> above, however we just established that vmap/vunmap() are not irq-safe.
-> >>
-> > 
-> > text_poke should actually use local_irq_disable/enable rather than
-> > local_irq_save/restore because it _must_ be called with interrupts on.
-> 
-> Could you tell me why it must be called with irq on?
-> 
+On Fri, Feb 13, 2009 at 8:20 AM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> On Friday 13 February 2009 10:37:01 Matt Mackall wrote:
+>> On Fri, 2009-02-13 at 07:09 +0800, Herbert Xu wrote:
+>> > On Fri, Feb 13, 2009 at 12:10:45AM +1100, Nick Piggin wrote:
+>> > > I would be interested to know how that goes. You always have this
+>> > > circular issue that if a little more space helps significantly, then
+>> > > maybe it is a good idea to explicitly ask for those bytes. Of course
+>> > > that larger allocation is also likely to have some slack bytes.
+>> >
+>> > Well, the thing is we don't know apriori whether we need the
+>> > extra space.  The idea is to use the extra space if available
+>> > to avoid reallocation when we hit things like IPsec.
+>>
+>> I'm not entirely convinced by this argument. If you're concerned about
+>> space rather than performance, then you want an allocator that doesn't
+>> waste space in the first place and you don't try to do "sub-allocations"
+>> by hand. If you're concerned about performance, you instead optimize
+>> your allocator to be as fast as possible and again avoid conditional
+>> branches for sub-allocations.
+>
+> Well, my earlier reasoning is no longer so clear cut if eg. there
+> are common cases where no extra space is required, but rare cases
+> where extra space might be a big win if it eg avoids extra
+> alloc, copy, free or something.
+>
+> Because even with performance oriented allocators, there is a non-zero
+> cost to explicitly asking for more memory -- queues tend to get smaller
+> at larger object sizes, and page allocation orders can increase. So if
+> it is very uncommon to need extra space you don't want to burden the
+> common case with it.
 
-Because it uses vmap, but see below..
+My concern would be that such extra-space reuse would be a very
+non-obvious performance hit if allocation patterns changed slightly.
+If being able to use the extra space really is a noticeable "big win"
+for the rare case, then minor changes to the memory allocator could
+dramatically impact performance in a totally nondeterministic way.  If
+the change isn't performance-significant in the grand scheme of
+things, then the use of ksize() would just be code obfuscation.  On
+the other hand if it *is* performance-significant, it should be
+redesigned to be able to guarantee that the space is available when it
+is needed.
 
-> > 
-> >> Anybody got an idea on how to fix this?
-> > 
-> > There is probably something wrong with the caller, kprobes, which calls
-> > text_poke with interrupts off.
-> 
-> Hmm, kprobe's smoke test caused this problem. Since (un)register_kprobe()
-> may sleep for waiting a mutex, it should not be called with interrupts off.
-> So, it's not text_poke()'s issue nor vmap().
-> 
-> BTW, what about using map_vm_area() in text_poke() instead of vmap()?
-> Since text_poke() just maps text pages to alias pages temporarily,
-> I think we don't need to use delayed vunmap().
-> 
-
-As with this patch from you ? Sorry, when it has been initially
-submitted, the discussion turned in a different direction. Please see
-comments inline.
-
-> From: Masami Hiramatsu <mhiramat@redhat.com>
-> 
-> Use vm_map_ram() instead of vmap() in text_poke(), because text_poke()
-> just want to map pages temporarily.
-> 
-> ---
-> As far as I tested, this patch works fine for me.
-> However, there might be another hidden bug in the kernel...
-> We need to fix that too.
-> 
->  arch/x86/kernel/alternative.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: 2.6-rc/arch/x86/kernel/alternative.c
-> ===================================================================
-> --- 2.6-rc.orig/arch/x86/kernel/alternative.c
-> +++ 2.6-rc/arch/x86/kernel/alternative.c
-> @@ -515,12 +515,12 @@ void *__kprobes text_poke(void *addr, co
->  	BUG_ON(!pages[0]);
->  	if (!pages[1])
->  		nr_pages = 1;
-> -	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
-> +	vaddr = vm_map_ram(pages, nr_pages, -1, PAGE_KERNEL);
-
-Hrm, maybe we should do :
-
-  vaddr = vm_map_ram(pages, nr_pages, numa_node_id(), PAGE_KERNEL);
-
-instead ?
-
-Related question : can vm_map_ram sleep ?
-
-Mathieu
-
-
->  	BUG_ON(!vaddr);
->  	local_irq_save(flags);
->  	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
->  	local_irq_restore(flags);
-> -	vunmap(vaddr);
-> +	vm_unmap_ram(vaddr, nr_pages);
->  	sync_core();
->  	/* Could also do a CLFLUSH here to speed up CPU recovery; but
->  	   that causes hangs on some VIA CPUs. */
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Cheers,
+Kyle Moffett
