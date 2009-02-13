@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758910AbZBMQXJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759174AbZBMQZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758910AbZBMQXJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 11:23:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbZBMQW4
+	id S1759174AbZBMQZl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 11:25:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbZBMQZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 11:22:56 -0500
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.123]:59508 "EHLO
-	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752334AbZBMQWz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 11:22:55 -0500
-Date: Fri, 13 Feb 2009 10:22:52 -0600
-From: David Engel <david@istwok.net>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.27.17
-Message-ID: <20090213162252.GA17121@opus.istwok.net>
-References: <20090213013157.GA14377@kroah.com> <49952552.6040000@msgid.tls.msk.ru>
+	Fri, 13 Feb 2009 11:25:34 -0500
+Received: from gw.goop.org ([64.81.55.164]:36479 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752350AbZBMQZd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 11:25:33 -0500
+Message-ID: <49959EFA.8040507@goop.org>
+Date: Fri, 13 Feb 2009 08:25:30 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49952552.6040000@msgid.tls.msk.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86 headers: include linux/types.h
+References: <49935DD8.8010705@goop.org> <20090213120239.GL15679@elte.hu> <20090213121858.GB5483@elte.hu> <20090213122325.GA30061@elte.hu> <20090213122724.GA2172@elte.hu>
+In-Reply-To: <20090213122724.GA2172@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 13, 2009 at 10:46:26AM +0300, Michael Tokarev wrote:
-> Greg KH wrote:
-> > Here's the announcement of the 2.6.27.17 kernel.
-> > 
-> > It reverts one patch in the 2.6.27.16 kernel release, which caused an
-> > instant oops if you happened to have a laptop with a docking station.
-> > Many thanks to David Engel for pointing out the problem.
-> 
-> > Greg Kroah-Hartman (2):
-> >       Revert "ACPI: dock: Don't eval _STA on every show_docked sysfs read"
-> >       Linux 2.6.27.17
-> 
-> I wonder if the same should be done with 2.6.28.5...
+Ingo Molnar wrote:
+> Regarding the fixlet below - wouldnt PTE_FLAGS_MASK be better placed in
+> pgtable_types.h ? It's specifically related to the pte format. OTOH we
+> have a lot of PTE details in the page_*types.h files already.
+>   
 
-I haven't updated most of my systems to 2.6.28 yet.  I just gave
-2.6.28.5 a try on my laptop, though.  It does not have the show_docked
-oops I had with 2.6.27.16.
+No, you're right.
 
-David
--- 
-David Engel
-david@istwok.net
+> The boundary between page_types.h and pgtable_types.h does not seem to
+> be clear to me - what is the principle you followed?
+>   
+
+Well, basically anything to do with the internals of a pte*_t go in 
+pgtable.h.  PTE_*_MASK should go there too, and is an oversight (though 
+its on the margin because of its dependency on the page size/mask 
+definitions in page*.h).
+
+    J
