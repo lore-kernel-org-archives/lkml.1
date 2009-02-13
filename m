@@ -1,74 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761772AbZBMWVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761958AbZBMWWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761772AbZBMWVu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 17:21:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbZBMWV2
+	id S1761958AbZBMWWP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 17:22:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbZBMWV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 17:21:28 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47798 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754189AbZBMWV1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 17:21:27 -0500
-Date: Fri, 13 Feb 2009 14:20:32 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, kosaki.motohiro@jp.fujitsu.com,
-       davem@davemlloft.net, heiko.carstens@de.ibm.com, stable@kernel.org
-Subject: Re: [PATCH 1/2] clean up for early_pfn_to_nid
-Message-Id: <20090213142032.09b4a4da.akpm@linux-foundation.org>
-In-Reply-To: <20090212162203.db3f07cb.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090212161920.deedea35.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090212162203.db3f07cb.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 13 Feb 2009 17:21:56 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:50887 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761813AbZBMWVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 17:21:55 -0500
+Message-ID: <4995F27E.3070401@redhat.com>
+Date: Fri, 13 Feb 2009 16:21:50 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Alexander Beregalov <a.beregalov@gmail.com>
+CC: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: next-20090206: deadlock on ext4
+References: <a4423d670902060935y59e540beta417144935416560@mail.gmail.com>	 <498C7671.1050309@redhat.com>	 <a4423d670902061004i424817e1vd699a61e335f010a@mail.gmail.com>	 <498C9876.3060208@redhat.com> <a4423d670902090401k716d054eo25640aa2207beca7@mail.gmail.com>
+In-Reply-To: <a4423d670902090401k716d054eo25640aa2207beca7@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Feb 2009 16:22:03 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Alexander Beregalov wrote:
 
-> Declaration of early_pfn_to_nid() is scattered over per-arch include files,
-> and it seems it's complicated to know when the declaration is used.
-> I think it makes fix-for-memmap-init not easy.
-> 
-> This patch moves all declaration to include/linux/mm.h
-> 
-> After this,
->   if !CONFIG_NODES_POPULATES_NODE_MAP && !CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID
->      -> Use static definition in include/linux/mm.h
->   else if !CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID
->      -> Use generic definition in mm/page_alloc.c
->   else
->      -> per-arch back end function will be called.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> ---
->  arch/ia64/include/asm/mmzone.h   |    4 ----
->  arch/ia64/mm/numa.c              |    2 +-
->  arch/x86/include/asm/mmzone_32.h |    2 --
->  arch/x86/include/asm/mmzone_64.h |    2 --
->  arch/x86/mm/numa_64.c            |    2 +-
->  include/linux/mm.h               |   19 ++++++++++++++++---
->  mm/page_alloc.c                  |    8 +++++++-
->  7 files changed, 25 insertions(+), 14 deletions(-)
+> I have reproduced it with 2.6.29-rc4.
+> Loop file was on XFS.
+> I can not reproduce it on ext4 on raw device.
+> Let me know if I can do anything else to help resolving it.
+>   
+Can you try this patch from Aneesh?  Works for me...
 
-It's rather unfortunate that this bugfix includes a fair-sized cleanup
-patch, because we should backport it into 2.6.28.x.
+Thanks,
+-Eric
 
-Oh well.
+From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] ext4: Don't use the range_cylic mode implemented by
+write_cache_pages
 
-I queued these as
+With delayed allocation we lock the page in write_cache_pages and 
+try to build an in memory extent of contiguous blocks. This is 
+needed so that we can get a large contiguous blocks request. Now 
+with range_cyclic mode in write_cache_pages if we have not done an 
+I/O we loop back to 0 index and try to write the page.  That would 
+imply we will attempt to take page lock of lower index page holding
+the page lock of higher index page. This can cause a dead lock with
+other writeback thread.
 
-mm-clean-up-for-early_pfn_to_nid.patch
-mm-fix-memmap-init-for-handling-memory-hole.patch
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Reviewed-by: Eric Sandeen <sandeen@redhat.com>
+Tested-by: Eric Sandeen <sandeen@redhat.com>
+---
+ fs/ext4/inode.c |   20 ++++++++++++++++++--
+ 1 files changed, 18 insertions(+), 2 deletions(-)
 
-and tagged them as needed-in-2.6.28.x.  I don't recall whether they are
-needed in earlier -stable releases?
+Index: linux-2.6.28.x86_64/fs/ext4/inode.c
+===================================================================
+--- linux-2.6.28.x86_64.orig/fs/ext4/inode.c
++++ linux-2.6.28.x86_64/fs/ext4/inode.c
+@@ -2437,6 +2437,7 @@ static int ext4_da_writepages(struct add
+ 	int no_nrwrite_index_update;
+ 	int pages_written = 0;
+ 	long pages_skipped;
++       int range_cyclic = 0, cycled = 1, io_done = 0;
+ 	int needed_blocks, ret = 0, nr_to_writebump = 0;
+ 	struct ext4_sb_info *sbi = EXT4_SB(mapping->host->i_sb);
+ 
+@@ -2488,9 +2489,14 @@ static int ext4_da_writepages(struct add
+ 	if (wbc->range_start == 0 && wbc->range_end == LLONG_MAX)
+ 		range_whole = 1;
+ 
+-	if (wbc->range_cyclic)
++       if (wbc->range_cyclic) {
+ 		index = mapping->writeback_index;
+-	else
++	       wbc->range_start = index << PAGE_CACHE_SHIFT;
++	       wbc->range_end  = LLONG_MAX;
++	       wbc->range_cyclic = 0;
++	       range_cyclic = 1;
++	       cycled = 0;
++       } else
+ 		index = wbc->range_start >> PAGE_CACHE_SHIFT;
+ 
+ 	mpd.wbc = wbc;
+@@ -2504,6 +2510,7 @@ static int ext4_da_writepages(struct add
+ 	wbc->no_nrwrite_index_update = 1;
+ 	pages_skipped = wbc->pages_skipped;
+ 
++retry:
+ 	while (!ret && wbc->nr_to_write > 0) {
+ 
+ 		/*
+@@ -2546,6 +2553,7 @@ static int ext4_da_writepages(struct add
+ 			pages_written += mpd.pages_written;
+ 			wbc->pages_skipped = pages_skipped;
+ 			ret = 0;
++		       io_done = 1;
+ 		} else if (wbc->nr_to_write)
+ 			/*
+ 			 * There is no more writeout needed
+@@ -2554,6 +2562,13 @@ static int ext4_da_writepages(struct add
+ 			 */
+ 			break;
+ 	}
++       if (!io_done && !cycled) {
++	       cycled = 1;
++	       index = 0;
++	       wbc->range_start = index << PAGE_CACHE_SHIFT;
++	       wbc->range_end  = mapping->writeback_index - 1;
++	       goto retry;
++       }
+ 	if (pages_skipped != wbc->pages_skipped)
+ 		printk(KERN_EMERG "This should not happen leaving %s "
+ 				"with nr_to_write = %ld ret = %d\n",
+@@ -2561,6 +2576,7 @@ static int ext4_da_writepages(struct add
+ 
+ 	/* Update index */
+ 	index += pages_written;
++       wbc->range_cyclic = range_cyclic;
+ 	if (wbc->range_cyclic || (range_whole && wbc->nr_to_write > 0))
+ 		/*
+ 		 * set the writeback_index so that range_cyclic
 
-I don't have a record here of davem having tested these new patches, btw ;)
+
