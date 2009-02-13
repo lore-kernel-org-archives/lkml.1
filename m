@@ -1,115 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbZBMJ6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757789AbZBMKBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756605AbZBMJ6w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 04:58:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbZBMJ6n
+	id S1757789AbZBMKBs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 05:01:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbZBMKBj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 04:58:43 -0500
-Received: from mx3.schottelius.org ([77.109.138.221]:57692 "EHLO
-	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750855AbZBMJ6n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 04:58:43 -0500
-Date: Fri, 13 Feb 2009 10:58:40 +0100
-From: Nico Schottelius <nico-linux-20090213@schottelius.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC] Make printk() output better readable
-Message-ID: <20090213095840.GA17295@denkbrett.schottelius.org>
-Mail-Followup-To: Nico Schottelius <nico-linux-20090213@schottelius.org>,
-	LKML <linux-kernel@vger.kernel.org>
+	Fri, 13 Feb 2009 05:01:39 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:58807 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750855AbZBMKBi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 05:01:38 -0500
+Date: Fri, 13 Feb 2009 10:58:47 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "roland@redhat.com" <roland@redhat.com>,
+       "eranian@googlemail.com" <eranian@googlemail.com>,
+       "Villacis, Juan" <juan.villacis@intel.com>
+Subject: Re: [patch] x86, ptrace: fix double-free on race
+Message-ID: <20090213095847.GA20311@redhat.com>
+References: <20090211151027.A16643@sedona.ch.intel.com> <20090211220821.GA17637@redhat.com> <928CFBE8E7CB0040959E56B4EA41A77E4A3D5FC1@irsmsx504.ger.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="YiEDa0DAkWCtVeE4"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: ikn (Linux 2.6.29-rc4-ikn-00211-g37bed90 x86_64)
+In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E4A3D5FC1@irsmsx504.ger.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 02/12, Metzger, Markus T wrote:
+>
+> >-----Original Message-----
+> >From: Oleg Nesterov [mailto:oleg@redhat.com]
+> >
+> >	static inline void arch_bts_init(struct task_struct *p)
+> >	{
+> >	#ifdef CONFIG_X86_PTRACE_BTS
+> >		if (unlikely(p->bts)) {
+> >			p->bts = NULL;
+> >			p->bts_buffer = NULL;
+> >			p->bts_size = 0;
+> >			p->thread.bts_ovfl_signal = 0;
+> >		}
+> >	#endif /* CONFIG_X86_PTRACE_BTS */
+> >	}
+>
+> It looked cleaner and more consistent to me, that way.
+>
+> Ptrace passes things down to arch in other cases already,
+> e.g. ptrace_detach()->ptrace_disable(), ptrace()->arch_ptrace(),
+> ptrace_attach()->arch_ptrace_attach().
+>
+> I think the function should be in arch/x86/ptrace.c - if we call it from
+> ptrace or from arch_dup_task_struct() doesn't really matter.
+>
+> Do you want me to move the call to arch_dup_task_struct()?
 
---YiEDa0DAkWCtVeE4
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Please do what you like more. We can call this from dup_task_struct()
+or even from copy_process(). Actually, the initialization above is not
+arch dependent, it only depends on CONFIG_BTS.
 
-Hey devs,
+> >Btw, just curious, bts_ovfl_signal is not used, except the user can
+> >set/get it via PTRACE_BTS_CONFIG/PTRACE_BTS_STATUS ?
+>
+> It's not really necessary for debugging, but we wanted to get the interface
+> general enough to support other use cases.
+>
+> There's already a PMI interrupt handler in perfmon which handles the PEBS
+> buffer overflow. Stephane was planning to extract it so it can be used by
+> ds.c. Once that is done, we were planning to move the buffer overflow
+> handling for BTS and PEBS into ds.c and enable the feature in ptrace.
 
-When reading current dmesg, I notice that some messages have the
-structure
+OK, thanks. (of course I don't understand this magic, but hopefully
+can understand your answer ;)
 
- Introduction:
-   <location>: <text>
+Oleg.
 
-Example:
-
-[    0.000000] BIOS-provided physical RAM map:
-[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009ec00 (usable)
-[...]
-
-I also see
-
- <location>: <text>
-
-Example:
-
-[    0.000000] ACPI: RSDP 000F73A0, 0024 (r2 LENOVO)
-[    0.000000] ACPI: XSDT 7C97BD45, 009C (r1 LENOVO TP-6D        1050  LTP =
-       0)
-[...]
-
-Then, most of the stuff is simply
-
- <text>
-
-[    0.000000] DMI present.
-[    0.000000] last_pfn =3D 0x7ca00 max_arch_pfn =3D 0x100000000
-[    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x701060007=
-0106
-
-
-The first two blocks are somehow readable, the <text> only
-is a bit painful to read. I personally would prefer to have
-at least <location> (which may also be driver, hardware location, etc)
-before each line, if it's not of type 1 (introduction + indent).
-
-I think currently it is totally inconsistent, as seen, one
-of the worst cases with TCP, here:
-
-[    0.355604] NET: Registered protocol family 2
-[    0.402669] IP route cache hash table entries: 65536 (order: 7, 524288 b=
-ytes)
-[    0.403216] TCP established hash table entries: 262144 (order: 10, 41943=
-04 bytes)
-[    0.404925] TCP bind hash table entries: 65536 (order: 8, 1048576 bytes)
-[    0.405538] TCP: Hash tables configured (established 262144 bind 65536)
-[    0.405642] TCP reno registered
-
-What do you think about it?
-
-Sincerly,
-
-Nico
-
---=20
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---YiEDa0DAkWCtVeE4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmVRFAACgkQuL75KpiFGIyqYgCg4eK5peBOG7mE5w2u/4nujnNU
-XvEAoLbK28jQeQVEH1jQx+jl+LMp7siR
-=2kAA
------END PGP SIGNATURE-----
-
---YiEDa0DAkWCtVeE4--
