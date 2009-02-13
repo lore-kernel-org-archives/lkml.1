@@ -1,164 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762216AbZBMQbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761117AbZBMQbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762216AbZBMQbW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 11:31:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761805AbZBMQ3k
+	id S1761117AbZBMQbi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 11:31:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760409AbZBMQ3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 11:29:40 -0500
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:54001 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761777AbZBMQ3i (ORCPT
+	Fri, 13 Feb 2009 11:29:41 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:49424 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761776AbZBMQ3i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 13 Feb 2009 11:29:38 -0500
-Date: Fri, 13 Feb 2009 20:29:43 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Roland McGrath <roland@redhat.com>, richardj_moore@uk.ibm.com,
-       jason.wessel@windriver.com
-Subject: [Patch 10/10] Sample HW breakpoint over kernel data address
-Message-ID: <20090213145943.GJ32064@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090213145301.GA31546@in.ibm.com>
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=hsKoWyGOc7uB8/AKEXw5/IqesJxRwNltI9iu0oFySwDRcK94H/m6k4a6+WCwMlsRCD
+         IPKI4SkBCs7vNT8aj+8gGaD00pI8jzpNAIqHFTwF1JUd/eBX1if/oqmn4h3N8eCQVUar
+         szy1IZt2sdJmhJz6E5Qf+YHOhW1bTct7jDEhI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090213145301.GA31546@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Fri, 13 Feb 2009 17:29:36 +0100
+Message-ID: <6bd94bae0902130829r15e6eacag25220487457027ad@mail.gmail.com>
+Subject: contact problem? (was Re: Spurious Filesystem corruption with ext3 + 
+	large (<400GB) hw RAID ...)
+From: Manfred Wassmann <tux.wassmann@googlemail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Feb 6, 2009 at 7:50 PM, Ray Lee <ray-lk@madrabbit.org> wrote:
 
-Sample HW breakpoint over kernel data address
+> Huh. It may be related to whatever kernel version Ubuntu uses to boot
+> up the install media. Try a different version of Ubuntu (older, newer
+> if a newer one exists) to see if it has the same problem.
 
-This patch introduces a sample kernel module to demonstrate the use of Hardware
-Breakpoint feature. It places a breakpoint over the kernel variable 'pid_max'
-to monitor all write operations and emits a function-backtrace when done.
+Thank you for your notice but as I mentioned the problem occurred
+first with my custom built kernel and the Ubuntu installation disk was
+used only to reproduce the error -- Ubuntu is not what I use anyhow,
+I'm on Debian since I switched from Slackware in 1995 ;-)
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
----
- samples/Kconfig                         |    6 ++
- samples/Makefile                        |    3 -
- samples/hw_breakpoint/Makefile          |    1 
- samples/hw_breakpoint/data_breakpoint.c |   80 ++++++++++++++++++++++++++++++++
- 4 files changed, 89 insertions(+), 1 deletion(-)
+But now it looks like we had an exotic hardware problem here. Just
+before the weekend the RAID controller reported a degraded array and
+switched to the hotspare disk. On Monday the original array was
+recreated and everything worked fine until Tuesday morning when the
+array again was degraded. But then since the disk was checked and
+reinserted into the array all problems are gone :-\
 
-Index: linux-2.6-tip.hbkpt/samples/Kconfig
-===================================================================
---- linux-2.6-tip.hbkpt.orig/samples/Kconfig
-+++ linux-2.6-tip.hbkpt/samples/Kconfig
-@@ -39,5 +39,11 @@ config SAMPLE_KRETPROBES
- 	default m
- 	depends on SAMPLE_KPROBES && KRETPROBES
- 
-+config SAMPLE_HW_BREAKPOINT
-+	tristate "Build kernel hardware breakpoint examples -- loadable modules only"
-+	depends on m
-+	help
-+	  This builds kernel hardware breakpoint example modules.
-+
- endif # SAMPLES
- 
-Index: linux-2.6-tip.hbkpt/samples/Makefile
-===================================================================
---- linux-2.6-tip.hbkpt.orig/samples/Makefile
-+++ linux-2.6-tip.hbkpt/samples/Makefile
-@@ -1,3 +1,4 @@
- # Makefile for Linux samples code
- 
--obj-$(CONFIG_SAMPLES)	+= markers/ kobject/ kprobes/ tracepoints/
-+obj-$(CONFIG_SAMPLES)	+= markers/ kobject/ kprobes/ tracepoints/ \
-+			   hw_breakpoint/
-Index: linux-2.6-tip.hbkpt/samples/hw_breakpoint/Makefile
-===================================================================
---- /dev/null
-+++ linux-2.6-tip.hbkpt/samples/hw_breakpoint/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_SAMPLE_HW_BREAKPOINT) += data_breakpoint.o
-Index: linux-2.6-tip.hbkpt/samples/hw_breakpoint/data_breakpoint.c
-===================================================================
---- /dev/null
-+++ linux-2.6-tip.hbkpt/samples/hw_breakpoint/data_breakpoint.c
-@@ -0,0 +1,80 @@
-+/*
-+ * data_breakpoint.c - Sample HW Breakpoint file to watch kernel data address
-+ *
-+ * This file is a kernel module that places a breakpoint over 'pid_max' kernel
-+ * variable using Hardware Breakpoint register. The corresponding handler which
-+ * prints a backtrace is invoked everytime a write operation is performed on
-+ * that variable.
-+ *
-+ * After inserting this module, invoke a write operation using
-+ * 'echo <desired_value> > /proc/sys/kernel/pid_max'
-+ * to find the function-call backtrace.
-+ *
-+ * Copyright (C) IBM Corporation, 2009
-+ */
-+#include <linux/module.h>	/* Needed by all modules */
-+#include <linux/kernel.h>	/* Needed for KERN_INFO */
-+#include <linux/init.h>		/* Needed for the macros */
-+
-+#include <asm/hw_breakpoint.h>
-+
-+struct hw_breakpoint pid_max_hbkpt;
-+
-+void pid_max_hbkpt_installed(struct hw_breakpoint *temp, struct pt_regs
-+								*temp_regs)
-+{
-+	printk(KERN_INFO "pid_max_hbkpt ENABLED\n");
-+}
-+
-+void pid_max_hbkpt_uninstalled(struct hw_breakpoint *temp, struct
-+							pt_regs * temp_regs)
-+{
-+	printk(KERN_INFO "pid_max_hbkpt DISABLED\n");
-+}
-+
-+void pid_max_hbkpt_handler(struct hw_breakpoint *temp, struct pt_regs
-+								*temp_regs)
-+{
-+	printk(KERN_INFO "pid_max value is changed\n");
-+	dump_stack();
-+	printk(KERN_INFO "Dump stack from pid_max_hbkpt_handler\n");
-+}
-+
-+static int __init hw_break_module_init(void)
-+{
-+	int ret;
-+
-+#ifdef CONFIG_X86
-+	pid_max_hbkpt.info.name = "pid_max";
-+	pid_max_hbkpt.info.type = HW_BREAKPOINT_WRITE;
-+	pid_max_hbkpt.info.len = HW_BREAKPOINT_LEN_4;
-+	pid_max_hbkpt.priority = HW_BREAKPOINT_PRIO_NORMAL;
-+
-+	pid_max_hbkpt.installed = (void *)pid_max_hbkpt_installed;
-+	pid_max_hbkpt.uninstalled = (void *)pid_max_hbkpt_uninstalled;
-+	pid_max_hbkpt.triggered = (void *)pid_max_hbkpt_handler;
-+#endif /* CONFIG_X86 */
-+
-+	ret = register_kernel_hw_breakpoint(&pid_max_hbkpt);
-+
-+	if (ret < 0) {
-+		printk(KERN_INFO "Breakpoint registration failed\n");
-+		return ret;
-+	} else
-+		printk(KERN_INFO "HW Breakpoint for pid_max write installed\n");
-+
-+	return 0;
-+}
-+
-+static void __exit hw_break_module_exit(void)
-+{
-+	unregister_kernel_hw_breakpoint(&pid_max_hbkpt);
-+	printk(KERN_INFO "HW Breakpoint for pid_max write uninstalled\n");
-+}
-+
-+module_init(hw_break_module_init);
-+module_exit(hw_break_module_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("K.Prasad");
-+MODULE_DESCRIPTION("pid_max breakpoint");
+Is it possible that such a problem is caused by bad contact within the
+drive bay connector?
+
+The reason why it occurred with ext3 only might then be that ext3
+stores it's backup superblocks at addresses which are otherwise unused
+by a largely empty filesystem.
+
+regards Manfred
+-- 
+Unix "Birthday" on 2009-02-13 23:31:30 UTC
+...it's 1234567890 seconds since the epoch.
