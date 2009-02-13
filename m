@@ -1,50 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760289AbZBMUF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760526AbZBMUIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760289AbZBMUF7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 15:05:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbZBMUFv
+	id S1760526AbZBMUIV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 15:08:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbZBMUIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 15:05:51 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58714 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752704AbZBMUFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 15:05:51 -0500
-Date: Fri, 13 Feb 2009 21:05:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86 headers: include linux/types.h
-Message-ID: <20090213200537.GB27367@elte.hu>
-References: <49935DD8.8010705@goop.org> <20090213120239.GL15679@elte.hu> <20090213121858.GB5483@elte.hu> <20090213122325.GA30061@elte.hu> <4995C157.9020102@goop.org> <20090213185500.GA2186@elte.hu> <4995C312.70401@goop.org>
+	Fri, 13 Feb 2009 15:08:12 -0500
+Received: from moutng.kundenserver.de ([212.227.126.177]:59864 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752760AbZBMUIL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 15:08:11 -0500
+Message-ID: <4995D339.5050502@vlnb.net>
+Date: Fri, 13 Feb 2009 23:08:25 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4995C312.70401@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Wu Fengguang <wfg@linux.intel.com>
+CC: Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
+       "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>,
+       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
+References: <492BDAA9.4090405@vlnb.net> <20081125113048.GB16422@localhost> <492BE47B.3010802@vlnb.net> <20081125114908.GA16545@localhost> <492BE97A.3050606@vlnb.net> <492BEAE8.9050809@vlnb.net> <20081125121534.GA16778@localhost> <492EDCFB.7080302@vlnb.net> <20081128004830.GA8874@localhost> <49946BE6.1040005@vlnb.net> <20090213015721.GA5565@localhost>
+In-Reply-To: <20090213015721.GA5565@localhost>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/EF6j+v1IpdxRFtEK36ER+ZoCxDpJ7n/g+XYz
+ eq9FwL+p/c5STStJ2QNgBSO1sIwMW3Xq92S7fhk3WI5pVyClBe
+ 4XUfXH21F5hUJq/v/heUg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
-> Ingo Molnar wrote:
->> it is in tip:master, due to:
+Wu Fengguang, on 02/13/2009 04:57 AM wrote:
+> On Thu, Feb 12, 2009 at 09:35:18PM +0300, Vladislav Bolkhovitin wrote:
+>> Sorry for such a huge delay. There were many other activities I had to  
+>> do before + I had to be sure I didn't miss anything.
 >>
->>  0fb807c: unconditionally include asm/types.h from linux/types.h
->>  527bdfe: make linux/types.h as assembly safe
->>   
-> OK, but that change isn't in x86/headers, so it won't compile standalone.
+>> We didn't use NFS, we used SCST (http://scst.sourceforge.net) with  
+>> iSCSI-SCST target driver. It has similar to NFS architecture, where N  
+>> threads (N=5 in this case) handle IO from remote initiators (clients)  
+>> coming from wire using iSCSI protocol. In addition, SCST has patch  
+>> called export_alloc_io_context (see  
+>> http://lkml.org/lkml/2008/12/10/282), which allows for the IO threads  
+>> queue IO using single IO context, so we can see if context RA can  
+>> replace grouping IO threads in single IO context.
+>>
+>> Unfortunately, the results are negative. We find neither any advantages  
+>> of context RA over current RA implementation, nor possibility for  
+>> context RA to replace grouping IO threads in single IO context.
+>>
+>> Setup on the target (server) was the following. 2 SATA drives grouped in  
+>> md RAID-0 with average local read throughput ~120MB/s ("dd if=/dev/zero  
+>> of=/dev/md0 bs=1M count=20000" outputs "20971520000 bytes (21 GB)  
+>> copied, 177,742 s, 118 MB/s"). The md device was partitioned on 3  
+>> partitions. The first partition was 10% of space in the beginning of the  
+>> device, the last partition was 10% of space in the end of the device,  
+>> the middle one was the rest in the middle of the space them. Then the  
+>> first and the last partitions were exported to the initiator (client).  
+>> They were /dev/sdb and /dev/sdc on it correspondingly.
+> 
+> Vladislav, Thank you for the benchmarks! I'm very interested in
+> optimizing your workload and figuring out what happens underneath.
+> 
+> Are the client and server two standalone boxes connected by GBE?
 
-ok - i merged it into x86/headers.
+Yes, they directly connected using GbE.
 
-	Ingo
+> When you set readahead sizes in the benchmarks, you are setting them
+> in the server side? I.e. "linux-4dtq" is the SCST server?
+
+Yes, it's the server. On the client all the parameters were left default.
+
+> What's the
+> client side readahead size?
+
+Default, i.e. 128K
+
+> It would help a lot to debug readahead if you can provide the
+> server side readahead stats and trace log for the worst case.
+> This will automatically answer the above questions as well as disclose
+> the micro-behavior of readahead:
+> 
+>         mount -t debugfs none /sys/kernel/debug
+> 
+>         echo > /sys/kernel/debug/readahead/stats # reset counters
+>         # do benchmark
+>         cat /sys/kernel/debug/readahead/stats
+> 
+>         echo 1 > /sys/kernel/debug/readahead/trace_enable
+>         # do micro-benchmark, i.e. run the same benchmark for a short time
+>         echo 0 > /sys/kernel/debug/readahead/trace_enable
+>         dmesg
+> 
+> The above readahead trace should help find out how the client side
+> sequential reads convert into server side random reads, and how we can
+> prevent that.
+
+We will do it as soon as we have a free window on that system.
+
+Thanks,
+Vlad
