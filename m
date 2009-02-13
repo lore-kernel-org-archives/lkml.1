@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761623AbZBMFbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761799AbZBMFbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761623AbZBMFbX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 00:31:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbZBMFaM
+	id S1761799AbZBMFbi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 00:31:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbZBMFaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 00:30:12 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:41809 "EHLO
+	Fri, 13 Feb 2009 00:30:13 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:49483 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750828AbZBMFaH (ORCPT
+	with ESMTP id S1750778AbZBMFaH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 13 Feb 2009 00:30:07 -0500
-Message-Id: <20090213053005.627256029@goodmis.org>
+Message-Id: <20090213053005.348345164@goodmis.org>
 References: <20090213052358.524970112@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 13 Feb 2009 00:24:02 -0500
+Date: Fri, 13 Feb 2009 00:24:01 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -22,28 +22,16 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Geoff Levand <geoffrey.levand@am.sony.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 4/7] powerpc64, ftrace: save toc only on modules for function graph
-Content-Disposition: inline; filename=0004-powerpc64-ftrace-save-toc-only-on-modules-for-func.patch
+Subject: [PATCH 3/7] powerpc64, tracing: add function graph tracer with dynamic tracing
+Content-Disposition: inline; filename=0003-powerpc64-tracing-add-function-graph-tracer-with-d.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-The TOCS used by modules are different than the one used by
-the core kernel code. The function graph tracer must save and
-restore the TOC whenever it traces a module call. But this
-is an added overhead to burden the majority of core kernel
-code being traced.
-
-Benjamin Herrenschmidt suggested in testing the entry of
-the call to tell if it is a core kernel function or a module.
-He recommended using the REGION_ID() macro to perform this test.
-
-This patch implements Benjamin's idea, and uses a different
-return_to_handler routine dependent on if the entry is a core
-kernel function or not. The module version saves the TOC, where as
-the core kernel version does not.
+This is the port of the function graph tracer to PowerPC with
+dynamic tracing.
 
 Geoff Lavand tested on PS3.
 
@@ -51,90 +39,143 @@ Tested-by: Geoff Levand <geoffrey.levand@am.sony.com>
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/powerpc/kernel/entry_64.S |   27 ++++++++++++++++++++++++++-
- arch/powerpc/kernel/ftrace.c   |   13 +++++++++++--
- 2 files changed, 37 insertions(+), 3 deletions(-)
+ arch/powerpc/Kconfig           |    2 +-
+ arch/powerpc/kernel/entry_64.S |    8 ++++++-
+ arch/powerpc/kernel/ftrace.c   |   47 ++++++++++++++++++++++++++++++++++-----
+ 3 files changed, 49 insertions(+), 8 deletions(-)
 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index ca4647e..6e1ee1b 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -111,7 +111,7 @@ config PPC
+ 	select HAVE_FTRACE_MCOUNT_RECORD
+ 	select HAVE_DYNAMIC_FTRACE
+ 	select HAVE_FUNCTION_TRACER
+-	select HAVE_FUNCTION_GRAPH_TRACER if !DYNAMIC_FTRACE && PPC64
++	select HAVE_FUNCTION_GRAPH_TRACER if PPC64
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select HAVE_IDE
+ 	select HAVE_IOREMAP_PROT
 diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 9f61fd6..abfc323 100644
+index a32699e..9f61fd6 100644
 --- a/arch/powerpc/kernel/entry_64.S
 +++ b/arch/powerpc/kernel/entry_64.S
-@@ -971,6 +971,28 @@ _GLOBAL(ftrace_graph_caller)
- 
- _GLOBAL(return_to_handler)
- 	/* need to save return values */
-+	std	r4,  -24(r1)
-+	std	r3,  -16(r1)
-+	std	r31, -8(r1)
-+	mr	r31, r1
-+	stdu	r1, -112(r1)
-+
-+	bl	.ftrace_return_to_handler
-+	nop
-+
-+	/* return value has real return address */
-+	mtlr	r3
-+
-+	ld	r1, 0(r1)
-+	ld	r4,  -24(r1)
-+	ld	r3,  -16(r1)
-+	ld	r31, -8(r1)
-+
-+	/* Jump back to real return address */
-+	blr
-+
-+_GLOBAL(mod_return_to_handler)
-+	/* need to save return values */
- 	std	r4,  -32(r1)
- 	std	r3,  -24(r1)
- 	/* save TOC */
-@@ -979,7 +1001,10 @@ _GLOBAL(return_to_handler)
- 	mr	r31, r1
- 	stdu	r1, -112(r1)
- 
--	/* update the TOC */
-+	/*
-+	 * We are in a module using the module's TOC.
-+	 * Switch to our TOC to run inside the core kernel.
-+	 */
- 	LOAD_REG_IMMEDIATE(r4,ftrace_return_to_handler)
- 	ld	r2, 8(r4)
- 
-diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-index 7538b94..5c6dfa9 100644
---- a/arch/powerpc/kernel/ftrace.c
-+++ b/arch/powerpc/kernel/ftrace.c
-@@ -567,6 +567,10 @@ int ftrace_disable_ftrace_graph_caller(void)
- }
+@@ -908,6 +908,12 @@ _GLOBAL(ftrace_caller)
+ ftrace_call:
+ 	bl	ftrace_stub
+ 	nop
++#ifdef CONFIG_FUNCTION_GRAPH_TRACER
++.globl ftrace_graph_call
++ftrace_graph_call:
++	b	ftrace_graph_stub
++_GLOBAL(ftrace_graph_stub)
++#endif
+ 	ld	r0, 128(r1)
+ 	mtlr	r0
+ 	addi	r1, r1, 112
+@@ -946,7 +952,7 @@ _GLOBAL(ftrace_stub)
  #endif /* CONFIG_DYNAMIC_FTRACE */
  
-+#ifdef CONFIG_PPC64
-+extern void mod_return_to_handler(void);
-+#endif
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+-ftrace_graph_caller:
++_GLOBAL(ftrace_graph_caller)
+ 	/* load r4 with local address */
+ 	ld	r4, 128(r1)
+ 	subi	r4, r4, MCOUNT_INSN_SIZE
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index c9b1547..7538b94 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -43,7 +43,8 @@ static unsigned char *ftrace_nop_replace(void)
+ 	return (char *)&ftrace_nop;
+ }
+ 
+-static unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
++static unsigned char *
++ftrace_call_replace(unsigned long ip, unsigned long addr, int link)
+ {
+ 	static unsigned int op;
+ 
+@@ -55,8 +56,9 @@ static unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
+ 	 */
+ 	addr = GET_ADDR(addr);
+ 
+-	/* Set to "bl addr" */
+-	op = 0x48000001 | (ftrace_calc_offset(ip, addr) & 0x03fffffc);
++	/* if (link) set op to 'bl' else 'b' */
++	op = 0x48000000 | (link ? 1 : 0);
++	op |= (ftrace_calc_offset(ip, addr) & 0x03fffffc);
+ 
+ 	/*
+ 	 * No locking needed, this must be called via kstop_machine
+@@ -344,7 +346,7 @@ int ftrace_make_nop(struct module *mod,
+ 	 */
+ 	if (test_24bit_addr(ip, addr)) {
+ 		/* within range */
+-		old = ftrace_call_replace(ip, addr);
++		old = ftrace_call_replace(ip, addr, 1);
+ 		new = ftrace_nop_replace();
+ 		return ftrace_modify_code(ip, old, new);
+ 	}
+@@ -484,7 +486,7 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+ 	if (test_24bit_addr(ip, addr)) {
+ 		/* within range */
+ 		old = ftrace_nop_replace();
+-		new = ftrace_call_replace(ip, addr);
++		new = ftrace_call_replace(ip, addr, 1);
+ 		return ftrace_modify_code(ip, old, new);
+ 	}
+ 
+@@ -513,7 +515,7 @@ int ftrace_update_ftrace_func(ftrace_func_t func)
+ 	int ret;
+ 
+ 	memcpy(old, &ftrace_call, MCOUNT_INSN_SIZE);
+-	new = ftrace_call_replace(ip, (unsigned long)func);
++	new = ftrace_call_replace(ip, (unsigned long)func, 1);
+ 	ret = ftrace_modify_code(ip, old, new);
+ 
+ 	return ret;
+@@ -532,6 +534,39 @@ int __init ftrace_dyn_arch_init(void *data)
+ 
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+ 
++#ifdef CONFIG_DYNAMIC_FTRACE
++extern void ftrace_graph_call(void);
++extern void ftrace_graph_stub(void);
++
++int ftrace_enable_ftrace_graph_caller(void)
++{
++	unsigned long ip = (unsigned long)(&ftrace_graph_call);
++	unsigned long addr = (unsigned long)(&ftrace_graph_caller);
++	unsigned long stub = (unsigned long)(&ftrace_graph_stub);
++	unsigned char old[MCOUNT_INSN_SIZE], *new;
++
++	new = ftrace_call_replace(ip, stub, 0);
++	memcpy(old, new, MCOUNT_INSN_SIZE);
++	new = ftrace_call_replace(ip, addr, 0);
++
++	return ftrace_modify_code(ip, old, new);
++}
++
++int ftrace_disable_ftrace_graph_caller(void)
++{
++	unsigned long ip = (unsigned long)(&ftrace_graph_call);
++	unsigned long addr = (unsigned long)(&ftrace_graph_caller);
++	unsigned long stub = (unsigned long)(&ftrace_graph_stub);
++	unsigned char old[MCOUNT_INSN_SIZE], *new;
++
++	new = ftrace_call_replace(ip, addr, 0);
++	memcpy(old, new, MCOUNT_INSN_SIZE);
++	new = ftrace_call_replace(ip, stub, 0);
++
++	return ftrace_modify_code(ip, old, new);
++}
++#endif /* CONFIG_DYNAMIC_FTRACE */
 +
  /*
   * Hook the return address and push it in the stack of return addrs
   * in current thread info.
-@@ -577,12 +581,17 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
- 	unsigned long long calltime;
- 	int faulted;
- 	struct ftrace_graph_ent trace;
--	unsigned long return_hooker = (unsigned long)
--				&return_to_handler;
-+	unsigned long return_hooker = (unsigned long)&return_to_handler;
- 
- 	if (unlikely(atomic_read(&current->tracing_graph_pause)))
- 		return;
- 
-+#if CONFIG_PPC64
-+	/* non core kernel code needs to save and restore the TOC */
-+	if (REGION_ID(self_addr) != KERNEL_REGION_ID)
-+		return_hooker = (unsigned long)&mod_return_to_handler;
-+#endif
-+
- 	return_hooker = GET_ADDR(return_hooker);
- 
- 	/*
 -- 
 1.5.6.5
 
