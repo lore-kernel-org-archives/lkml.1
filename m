@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758053AbZBMJwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751465AbZBMJz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758053AbZBMJwy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 04:52:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbZBMJwp
+	id S1751465AbZBMJz1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 04:55:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbZBMJzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 04:52:45 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35906 "EHLO mx2.mail.elte.hu"
+	Fri, 13 Feb 2009 04:55:18 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36594 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751001AbZBMJwo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 04:52:44 -0500
-Date: Fri, 13 Feb 2009 10:52:31 +0100
+	id S1750760AbZBMJzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 04:55:17 -0500
+Date: Fri, 13 Feb 2009 10:55:06 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Can request_irq be called under spinlock?
-Message-ID: <20090213095231.GD17774@elte.hu>
-References: <499481B9.4090202@goop.org> <alpine.LFD.2.00.0902122326100.16972@localhost.localdomain> <4994B23D.4040806@goop.org> <20090213033803.GA13631@cmpxchg.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Michael Davidson <md@google.com>, mbligh@google.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] clockevents: avoid unnecessary reprograming of event
+	timer
+Message-ID: <20090213095506.GE17774@elte.hu>
+References: <20090212222326.394E121B187@localhost> <20090213082223.GA4606@elte.hu> <alpine.LFD.2.00.0902131029330.16972@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090213033803.GA13631@cmpxchg.org>
+In-Reply-To: <alpine.LFD.2.00.0902131029330.16972@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,31 +36,29 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Johannes Weiner <hannes@cmpxchg.org> wrote:
+* Thomas Gleixner <tglx@linutronix.de> wrote:
 
-> From: Johannes Weiner <hannes@cmpxchg.org>
-> Subject: irq: use GFP_KERNEL for action allocation in request_irq()
+> On Fri, 13 Feb 2009, Ingo Molnar wrote:
+> > > +	if (ktime_equal(dev->next_event, expires))
+> > > +		return 0;
+> > > +
+> > 
+> > Hm, given that a good high-res source has nanoseconds resolution,
+> > what's the chance of this optimization triggering in practice?
+> > Near zero i think - unless we trigger useless reprogramming without
+> > having added or removed any new timers - but then we should
+> > concentrate on analyzing the reason for that redundant reprogramming.
+> > 
+> > Does it trigger often for you?
 > 
-> request_irq() calls into proc code via __setup_irq() which is not safe
-> in an atomic context, so request_irq() can itself use the more
-> reliable GFP_KERNEL allocation for the action descriptor.
-> 
-> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> ---
-> 
-> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-> index 291f036..0f2b3b6 100644
-> --- a/kernel/irq/manage.c
-> +++ b/kernel/irq/manage.c
-> @@ -709,7 +709,7 @@ int request_irq(unsigned int irq, irq_handler_t handler,
->  	if (!handler)
->  		return -EINVAL;
->  
-> -	action = kmalloc(sizeof(struct irqaction), GFP_ATOMIC);
-> +	action = kmalloc(sizeof(struct irqaction), GFP_KERNEL);
->  	if (!action)
->  		return -ENOMEM;
+> The only point where this should trigger is when we come out of C2/C3
+> and switch the local APIC timer back on. There we reload the
+> next_event which was discarded in the hardware before we entered C2/C3
+> and switched to the broadcast timer. So this change would prevent the
+> rearming of the local APIC after coming out of C2/C3 and probably give
+> us some new C-State related headaches.
 
-Good catch - applied to tip:irq/genirq, thanks Johannes!
+yes, that was my other thought. Albeit arguably the CE code should
+set next_event to -1 or so when suspending, out of caution, right?
 
 	Ingo
