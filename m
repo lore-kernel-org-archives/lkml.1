@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760623AbZBMDPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760306AbZBMD0H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760623AbZBMDPP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 22:15:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756545AbZBMDPB
+	id S1760306AbZBMD0H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 22:26:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756983AbZBMDZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 22:15:01 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38412 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751127AbZBMDPA (ORCPT
+	Thu, 12 Feb 2009 22:25:54 -0500
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.123]:43629 "EHLO
+	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756545AbZBMDZx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 22:15:00 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: MinChan Kim <minchan.kim@gmail.com>
-Subject: Re: [patch 2/2 v2] vmscan: clip swap_cluster_max in shrink_all_memory()
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Nigel Cunningham <ncunningham-lkml@crca.org.au>,
-       Rik van Riel <riel@redhat.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090213091615.28e6a689.minchan.kim@barrios-desktop>
-References: <20090213091615.28e6a689.minchan.kim@barrios-desktop>
-Message-Id: <20090213121412.0A67.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 12 Feb 2009 22:25:53 -0500
+Date: Thu, 12 Feb 2009 21:25:50 -0600
+From: David Engel <david@istwok.net>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Re: Linux 2.6.27.16
+Message-ID: <20090213032550.GB3721@opus.istwok.net>
+References: <20090212180448.GC15341@kroah.com> <20090212180505.GD15341@kroah.com> <20090212180448.GC15341@kroah.com> <20090212230100.GA31159@opus.istwok.net> <20090213010827.GA8562@suse.de> <20090213011404.GB8562@suse.de> <20090213012955.GA14366@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Fri, 13 Feb 2009 12:14:57 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090213012955.GA14366@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> Reviewed-by: MinChan Kim <minchan.kim@gmail.com>
-> Acked-by: Nigel Cunningham <ncunningham@crca.org.au>
-> Acked-by: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Cc: Rik van Riel <riel@redhat.com>
+On Thu, Feb 12, 2009 at 05:29:55PM -0800, Greg KH wrote:
+> On Thu, Feb 12, 2009 at 05:14:04PM -0800, Greg KH wrote:
+> > On Thu, Feb 12, 2009 at 05:08:27PM -0800, Greg KH wrote:
+> > > > It seems that dev->platform_data is NULL on my system.
+> > > 
+> > > Not good, let me dig to see if I missed a patch...
+> > 
+> > Ok, I did.
+> > 
+> > If you apply the patch below, does the oops go away?
+
+3 or 4 chunks failed to apply and the ones that did apply were offset
+by several lines.  If you'd like, I can try to apply it by hand and
+test it tomorrow.
+
+> > But that's not really a "stable" fix, so I guess I'll just go revert the
+> > problem patch.  Let me go make that fix...
 > 
-> 
-> ---
->  mm/vmscan.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index 172e394..ed329c4 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -2114,7 +2114,6 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
->  	struct scan_control sc = {
->  		.gfp_mask = GFP_KERNEL,
->  		.may_unmap = 0,
-> -		.swap_cluster_max = nr_pages,
->  		.may_writepage = 1,
->  		.isolate_pages = isolate_pages_global,
->  	};
-> @@ -2156,6 +2155,7 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
->  			unsigned long nr_to_scan = nr_pages - sc.nr_reclaimed;
->  
->  			sc.nr_scanned = 0;
-> +			sc.swap_cluster_max = nr_to_scan;
->  			shrink_all_zones(nr_to_scan, prio, pass, &sc);
->  			if (sc.nr_reclaimed >= nr_pages) 
->  				goto out;
+> Ok, I reverted the problem patch and released 2.6.27.17.  Please let me
+> know if you still have a problem with that kernel release.
 
-good catch.
+I'm building 2.6.27.17 now, but I expect it to work since reverting
+that one patch is all I did to get 2.6.27.16 working for me.
 
-	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-
-
-
+David
+-- 
+David Engel
+david@istwok.net
