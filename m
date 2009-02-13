@@ -1,86 +1,38 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1756618AbZBJTIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1760012AbZBMAkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756618AbZBJTIE (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 10 Feb 2009 14:08:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755258AbZBJTDi
+	id S1760012AbZBMAkY (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Thu, 12 Feb 2009 19:40:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbZBMAkI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Feb 2009 14:03:38 -0500
-Received: from kroah.org ([198.145.64.141]:53710 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755208AbZBJTDh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Feb 2009 14:03:37 -0500
-Date: Tue, 10 Feb 2009 11:00:03 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-        Chris Wedgwood <reviews@ml.cw.f00f.org>,
-        Michael Krufky <mkrufky@linuxtv.org>,
-        Chuck Ebbert <cebbert@redhat.com>,
-        Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-        alan@lxorguk.ukuu.org.uk, Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [patch 12/53] ieee1394: ohci1394: increase AT req. retries, fix
-	ack_busy_X from Panasonic camcorders and others
-Message-ID: <20090210190003.GM14308@kroah.com>
-References: <20090210185337.000769713@mini.kroah.org>
+	Thu, 12 Feb 2009 19:40:08 -0500
+Received: from ti-out-0910.google.com ([209.85.142.187]:53899 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758098AbZBMAkH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Feb 2009 19:40:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:message-id:mime-version:content-type
+         :content-transfer-encoding:x-mailer:thread-index:x-mimeole;
+        b=TXTJvpKIQLkRIoVb/dMvpsMZCO/5i1/rSfunsy8ZjzywEL2i6O3ruwyx9krOOI1UXe
+         gCL9sndTxYs6o6A6euM9xI6QmiZTa3OX3uFPIuHm1kR7IsHfr5j+nbbzMy1Say5WZWJk
+         rJuV89LCHwYjoCwDVwMEbkZomyX9ssAqwqLDE=
+From: "Youngwhan Kim" <cs010101@gmail.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: 
+Date: Fri, 13 Feb 2009 09:39:55 +0900
+Message-ID: <FDDA005A418B4CC485DC0544C1A3F4F8@jamesnotebook>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ieee1394-ohci1394-increase-at-req.-retries-fix-ack_busy_x-from-panasonic-camcorders-and-others.patch"
-In-Reply-To: <20090210185924.GA14308@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+Thread-Index: AcmNc5ddQkT6hFTaTRuDVWzwlcLfhg==
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+unsubscribe
 
-2.6.28-stable review patch.  If anyone has any objections, please let us know.
-------------------
-
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-
-Commit 64c634ef83991b390ec0503e61f16efb0ba3c60b upstream.
-
-Camcorders have a tendency to fail read requests to their config ROM and
-write request to their FCP command register with ack_busy_X.  This has
-become a problem with newer kernels and especially Panasonic camcorders,
-causing AV/C in dvgrab and kino to fail.  Dvgrab for example frequently
-logs "send oops"; kino reports loss of AV/C control.  I suspect that
-lower CPU scheduling latencies in newer kernels made this issue more
-prominent now.
-
-According to
-https://sourceforge.net/tracker/?func=detail&atid=114103&aid=2492640&group_id=14103
-this can be fixed by configuring the FireWire controller for more
-hardware retries for request transmission; these retries are evidently
-more successful than libavc1394's own retry loop (typically 3 tries on
-top of hardware retries).
-
-Presumably the same issue has been reported at
-https://bugzilla.redhat.com/show_bug.cgi?id=449252 and
-https://bugzilla.redhat.com/show_bug.cgi?id=477279 .
-
-Tested-by: Mathias Beilstein
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/ieee1394/ohci1394.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/drivers/ieee1394/ohci1394.h
-+++ b/drivers/ieee1394/ohci1394.h
-@@ -26,7 +26,7 @@
- 
- #define OHCI1394_DRIVER_NAME      "ohci1394"
- 
--#define OHCI1394_MAX_AT_REQ_RETRIES	0x2
-+#define OHCI1394_MAX_AT_REQ_RETRIES	0xf
- #define OHCI1394_MAX_AT_RESP_RETRIES	0x2
- #define OHCI1394_MAX_PHYS_RESP_RETRIES	0x8
- #define OHCI1394_MAX_SELF_ID_ERRORS	16
 
