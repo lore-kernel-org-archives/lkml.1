@@ -1,124 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758284AbZBMKxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757368AbZBMK5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758284AbZBMKxh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 05:53:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbZBMKxZ
+	id S1757368AbZBMK5c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 05:57:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbZBMK5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 05:53:25 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45507 "EHLO mx3.mail.elte.hu"
+	Fri, 13 Feb 2009 05:57:23 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:51380 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751438AbZBMKxY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 05:53:24 -0500
-Date: Fri, 13 Feb 2009 11:53:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
+	id S1751303AbZBMK5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 05:57:22 -0500
+Date: Fri, 13 Feb 2009 11:54:37 +0100
+From: Oleg Nesterov <oleg@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>, mpm@selenic.com,
-       containers@lists.linux-foundation.org, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       viro@zeniv.linux.org.uk, linux-api@vger.kernel.org,
-       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org
-Subject: Re: What can OpenVZ do?
-Message-ID: <20090213105302.GC4608@elte.hu>
-References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu> <1234285547.30155.6.camel@nimitz> <20090211141434.dfa1d079.akpm@linux-foundation.org> <1234462282.30155.171.camel@nimitz> <1234467035.3243.538.camel@calx> <20090212114207.e1c2de82.akpm@linux-foundation.org> <1234475483.30155.194.camel@nimitz> <20090212141014.2cd3d54d.akpm@linux-foundation.org>
+Cc: Jerome Marchand <jmarchan@redhat.com>, Roland McGrath <roland@redhat.com>,
+       Denys Vlasenko <dvlasenk@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH -mm 1/2] ptrace_detach: the wrong wakeup breaks the
+	ERESTARTxxx logic
+Message-ID: <20090213105437.GA24320@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090212141014.2cd3d54d.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Another ancient bug. Consider this trivial test-case,
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+	int main(void)
+	{
+		int pid = fork();
 
-> Now, we've gone in blind before - most notably on the
-> containers/cgroups/namespaces stuff.  That hail mary pass worked out
-> acceptably, I think.  Maybe we got lucky.  I thought that
-> net-namespaces in particular would never get there, but it did.
-> 
-> That was a very large and quite long-term-important user-visible
-> feature.
-> 
-> checkpoint/restart/migration is also a long-term-...-feature.  But if
-> at all possible I do think that we should go into it with our eyes a
-> little less shut.
+		if (pid) {
+			ptrace(PTRACE_ATTACH, pid, NULL, NULL);
+			wait(NULL);
+			ptrace(PTRACE_DETACH, pid, NULL, NULL);
+		} else {
+			pause();
+			printf("WE HAVE A KERNEL BUG!!!\n");
+		}
 
-IMO, s/.../important/
+		return 0;
+	}
 
-More important than containers in fact. Being able to detach all
-software state from the hw state and being able to reattach it:
+the child must not "escape" for sys_pause(), but it can and this was seen
+in practice.
 
-   1) at a later point in time,                   or
-   2) in a different piece of hardware,           or
-   3) [future] in a different kernel
+This is because ptrace_detach does:
 
-... is powerful stuff on a very conceptual level IMO.
+	if (!child->exit_state)
+		wake_up_process(child);
 
-The only reason we dont have it in every OS is not because it's not
-desired and not wanted, but because it's very, very hard to do it on
-a wide scale. But people would love it even if it adds (some) overhead.
+this wakeup can happen after this child has already restarted sys_pause(),
+because it gets another wakeup from ptrace_untrace().
 
-This kind of featureset is actually the main motivator for virtualization.
+With or without this patch, perhaps sys_pause() needs a fix. But this
+wakeup also breaks the SIGNAL_STOP_STOPPED logic in ptrace_untrace().
 
-If the native kernel was able to do checkpointing we'd have not only
-near-zero-cost virtualization done at the right abstraction level
-(when combined with containers/control-groups), but we'd also have
-a few future feature items like:
+Remove this wakeup. The caller saw this task in TASK_TRACED state, and
+unless it was SIGKILL'ed in between __ptrace_unlink()->ptrace_untrace()
+should handle this case correctly. If it was SIGKILL'ed, we don't need
+to wakup the dying tracee too.
 
-  1) Kernel upgrades done intelligently: transparent reboot into an
-     upgraded kernel.
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-  2) Downgrade-on-regressions done sanely: transparent downgrade+reboot
-     to a known-working kernel. (as long as the regression is app
-     misbehavior or a performance problem - not a kernel crash. Most
-     regressions on kernel upgrades are not actual crashes or data
-     corruption but functional and performance regressions - i.e. it's
-     safely checkpointable and downgradeable.)
+--- 6.29-rc3/kernel/ptrace.c~1_KILL_WAKE	2009-02-13 11:06:04.000000000 +0100
++++ 6.29-rc3/kernel/ptrace.c	2009-02-13 11:06:56.000000000 +0100
+@@ -301,11 +301,7 @@ int ptrace_detach(struct task_struct *ch
+ 	 */
+ 	if (child->ptrace) {
+ 		child->exit_code = data;
+-
+ 		dead = __ptrace_detach(current, child);
+-
+-		if (!child->exit_state)
+-			wake_up_process(child);
+ 	}
+ 	write_unlock_irq(&tasklist_lock);
+ 
 
-  3) Hibernation done intelligently: checkpoint everything, turn off
-     system. Turn on system, restore everything from the checkpoint.
-
-  4) Backups done intelligently: full "backups" of long-running
-     computational jobs, maybe even of complex things like databases
-     or desktop sessions.
-
-  5) Remote debugging done intelligently: got a crashed session?
-     Checkpoint the whole app in its anomalous state and upload the
-     image (as long as you can trust the developer with that image
-     and with the filesystem state that goes with it).
-
-I dont see many long-term dragons here. The kernel is obviously always
-able to do near-zero-overhead checkpointing: it knows about all its
-own data structures, can enumerate them and knows how they map to
-user-space objects.
-
-The rest is performance considerations: do we want to embedd
-checkpointing helpers in certain runtime codepaths, to make
-checkpointing faster? But if that is undesirable (serialization,
-etc.), we can always fall back to the dumbest, zero-overhead methods.
-
-There is _one_ interim runtime cost: the "can we checkpoint or not"
-decision that the kernel has to make while the feature is not complete.
-
-That, if this feature takes off, is just a short-term worry - as
-basically everything will be checkpointable in the long run.
-
-In any case, by designing checkpointing to reuse the existing LSM
-callbacks, we'd hit multiple birds with the same stone. (One of
-which is the constant complaints about the runtime costs of the LSM
-callbacks - with checkpointing we get an independent, non-security
-user of the facility which is a nice touch.)
-
-So all things considered it does not look like a bad deal to me - but
-i might be missing something nasty.
-
-	Ingo
