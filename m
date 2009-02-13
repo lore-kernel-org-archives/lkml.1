@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761745AbZBMQ3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760796AbZBMQa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761745AbZBMQ3g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 11:29:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761084AbZBMQ2a
+	id S1760796AbZBMQa0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 11:30:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761336AbZBMQ2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 11:28:30 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:59280 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760492AbZBMQ22 (ORCPT
+	Fri, 13 Feb 2009 11:28:43 -0500
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:52279 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761307AbZBMQ2l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 11:28:28 -0500
-Date: Fri, 13 Feb 2009 20:26:57 +0530
+	Fri, 13 Feb 2009 11:28:41 -0500
+Date: Fri, 13 Feb 2009 20:28:00 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Alan Stern <stern@rowland.harvard.edu>,
        Roland McGrath <roland@redhat.com>, richardj_moore@uk.ibm.com,
        jason.wessel@windriver.com
-Subject: [Patch 5/10] Use wrapper routines around debug registers in
-	processor related functions
-Message-ID: <20090213145657.GE32064@in.ibm.com>
+Subject: [Patch 7/10] Modify signal handling code to refrain from
+	re-enabling HW Breakpoints
+Message-ID: <20090213145800.GG32064@in.ibm.com>
 Reply-To: prasad@linux.vnet.ibm.com
 References: <20090213145301.GA31546@in.ibm.com>
 MIME-Version: 1.0
@@ -32,128 +32,37 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Use wrapper routines around debug registers in processor related functions
+Modify signal handling code to refrain from re-enabling HW Breakpoints
 
 From: Alan Stern <stern@rowland.harvard.edu>
 
-This patch enables the use of wrapper routines to access the debug/breakpoint
-registers.
-
-[K.Prasad: Split-out from the bigger patch and minor changes following
-           re-basing]
+This patch disables re-enabling of Hardware Breakpoint registers through
+the  signal handling code. This is now done during
+hw_breakpoint_handler().
 
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 ---
- arch/x86/kernel/smpboot.c |    3 +++
- arch/x86/power/cpu_32.c   |   16 +++-------------
- arch/x86/power/cpu_64.c   |   15 +++------------
- 3 files changed, 9 insertions(+), 25 deletions(-)
+ arch/x86/kernel/signal.c |    9 ---------
+ 1 file changed, 9 deletions(-)
 
-Index: linux-2.6-tip.hbkpt/arch/x86/power/cpu_32.c
+Index: linux-2.6-tip.hbkpt/arch/x86/kernel/signal.c
 ===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/power/cpu_32.c
-+++ linux-2.6-tip.hbkpt/arch/x86/power/cpu_32.c
-@@ -12,6 +12,7 @@
- #include <asm/mtrr.h>
- #include <asm/mce.h>
- #include <asm/xcr.h>
-+#include <asm/debugreg.h>
+--- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/signal.c
++++ linux-2.6-tip.hbkpt/arch/x86/kernel/signal.c
+@@ -803,15 +803,6 @@ static void do_signal(struct pt_regs *re
  
- static struct saved_context saved_context;
- 
-@@ -47,6 +48,7 @@ static void __save_processor_state(struc
- 	ctxt->cr2 = read_cr2();
- 	ctxt->cr3 = read_cr3();
- 	ctxt->cr4 = read_cr4_safe();
-+	disable_debug_registers();
- }
- 
- /* Needed by apm.c */
-@@ -79,19 +81,7 @@ static void fix_processor_context(void)
- 	load_TR_desc();				/* This does ltr */
- 	load_LDT(&current->active_mm->context);	/* This does lldt */
- 
--	/*
--	 * Now maybe reload the debug registers
--	 */
--	if (current->thread.debugreg7) {
--		set_debugreg(current->thread.debugreg0, 0);
--		set_debugreg(current->thread.debugreg1, 1);
--		set_debugreg(current->thread.debugreg2, 2);
--		set_debugreg(current->thread.debugreg3, 3);
--		/* no 4 and 5 */
--		set_debugreg(current->thread.debugreg6, 6);
--		set_debugreg(current->thread.debugreg7, 7);
--	}
+ 	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
+ 	if (signr > 0) {
+-		/*
+-		 * Re-enable any watchpoints before delivering the
+-		 * signal to user space. The processor register will
+-		 * have been cleared if the watchpoint triggered
+-		 * inside the kernel.
+-		 */
+-		if (current->thread.debugreg7)
+-			set_debugreg(current->thread.debugreg7, 7);
 -
-+	load_debug_registers();
- }
- 
- static void __restore_processor_state(struct saved_context *ctxt)
-Index: linux-2.6-tip.hbkpt/arch/x86/power/cpu_64.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/power/cpu_64.c
-+++ linux-2.6-tip.hbkpt/arch/x86/power/cpu_64.c
-@@ -15,6 +15,7 @@
- #include <asm/pgtable.h>
- #include <asm/mtrr.h>
- #include <asm/xcr.h>
-+#include <asm/debugreg.h>
- 
- static void fix_processor_context(void);
- 
-@@ -70,6 +71,7 @@ static void __save_processor_state(struc
- 	ctxt->cr3 = read_cr3();
- 	ctxt->cr4 = read_cr4();
- 	ctxt->cr8 = read_cr8();
-+	disable_debug_registers();
- }
- 
- void save_processor_state(void)
-@@ -158,16 +160,5 @@ static void fix_processor_context(void)
- 	load_TR_desc();				/* This does ltr */
- 	load_LDT(&current->active_mm->context);	/* This does lldt */
- 
--	/*
--	 * Now maybe reload the debug registers
--	 */
--	if (current->thread.debugreg7){
--                loaddebug(&current->thread, 0);
--                loaddebug(&current->thread, 1);
--                loaddebug(&current->thread, 2);
--                loaddebug(&current->thread, 3);
--                /* no 4 and 5 */
--                loaddebug(&current->thread, 6);
--                loaddebug(&current->thread, 7);
--	}
-+	load_debug_registers();
- }
-Index: linux-2.6-tip.hbkpt/arch/x86/kernel/smpboot.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/smpboot.c
-+++ linux-2.6-tip.hbkpt/arch/x86/kernel/smpboot.c
-@@ -63,6 +63,7 @@
- #include <asm/genapic.h>
- #include <asm/setup.h>
- #include <asm/uv/uv.h>
-+#include <asm/debugreg.h>
- #include <linux/mc146818rtc.h>
- 
- #include <asm/genapic.h>
-@@ -338,6 +339,7 @@ notrace static void __cpuinit start_seco
- 	setup_secondary_clock();
- 
- 	wmb();
-+	load_debug_registers();
- 	cpu_idle();
- }
- 
-@@ -1318,6 +1320,7 @@ void cpu_disable_common(void)
- 	remove_cpu_from_maps(cpu);
- 	unlock_vector_lock();
- 	fixup_irqs();
-+	disable_debug_registers();
- }
- 
- int native_cpu_disable(void)
+ 		/* Whee! Actually deliver the signal.  */
+ 		if (handle_signal(signr, &info, &ka, oldset, regs) == 0) {
+ 			/*
