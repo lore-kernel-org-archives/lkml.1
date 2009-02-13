@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759033AbZBMMwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759364AbZBMMyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759033AbZBMMwa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 07:52:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbZBMMwR
+	id S1759364AbZBMMyU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 07:54:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbZBMMyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 07:52:17 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43232 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752266AbZBMMwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 07:52:16 -0500
-Subject: Re: [git pull -tip V2] fix headers_check warnings
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "David S. Miller" <davem@davemloft.net>, x86 maintainers <x86@kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, reiserfs-devel@vger.kernel.org
-In-Reply-To: <20090203125844.GI19979@elte.hu>
-References: <1233598278.10133.4.camel@localhost.localdomain>
-	 <20090203125844.GI19979@elte.hu>
-Content-Type: text/plain
-Date: Fri, 13 Feb 2009 18:21:07 +0530
-Message-Id: <1234529467.23142.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Feb 2009 07:54:10 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:33000 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753407AbZBMMyJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 07:54:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=xp3mPSdwfcZ60I7OsVe56fkULPPq2Ftr2TckEBu6NktRk84rtdSMBUE1migFpufhVw
+         FWOIsK4aQroo0tFU1uXXDe/obpjaG6OVwygwBRgNrPYO23sfsWHWU+tHitRBoHPjg9nG
+         dgn7tRgyQ9FL6MItAxFp2eyyGTPOrdC6o+b8w=
+Date: Fri, 13 Feb 2009 15:53:57 +0300
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: zbr@ioremap.net, gregkh@suse.de, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH next 1/2] pohmelfs: fix build breakage
+Message-ID: <20090213125357.GA7003@orion>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-03 at 13:58 +0100, Ingo Molnar wrote:
-> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> 
-> > 
-> > The following changes since commit 1ff8f739c7cc4eaa89b6ba986494f458ff7bdbef:
-> >   Jaswinder Singh Rajput (1):
-> >         headers_check fix: xtensa, swab.h
-> > 
-> > are available in the git repository at:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tipclean.git core/header-fixes
-> > 
-> > Jaswinder Singh Rajput (7):
-> >       headers_check fix: linux/coda_psdev.h
-> >       headers_check fix: linux/in6.h
-> >       headers_check fix: linux/nubus.h
-> >       headers_check fix: linux/socket.h
-> >       headers_check fix: linux/reinserfs_fs.h
-> >       headers_check fix: x86, prctl.h
-> >       headers_check fix: x86, setup.h
-> > 
-> >  arch/x86/include/asm/prctl.h    |    4 ---
-> >  arch/x86/include/asm/setup.h    |   45 +++++++++++++++++++--------------------
-> >  arch/x86/include/asm/syscalls.h |    1 +
-> >  include/linux/coda_psdev.h      |   15 ++++++-------
-> >  include/linux/in6.h             |    2 +-
-> >  include/linux/nubus.h           |    2 +
-> >  include/linux/reiserfs_fs.h     |    8 +++++++
-> >  include/linux/socket.h          |    6 +++-
-> >  8 files changed, 45 insertions(+), 38 deletions(-)
-> > 
-> > This patchset fixes 31 headers_check warnings as shown earlier.
-> 
-> Pulled into tip/core/header-fixes, thanks Jaswinder.
-> 
-> I'll put this through the -tip testing machinery as the x86 bits have the 
-> potential to have build breakage side-effects.
-> 
+drivers/staging/pohmelfs/inode.c:982: error: implicit declaration of
+function 'DQUOT_TRANSFER'
 
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
 
-Regarding headers_check warnings whether anyone would like to see
-anything beyond what's currently in -tip?
+ drivers/staging/pohmelfs/inode.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
---
-JSR
-
+diff --git a/drivers/staging/pohmelfs/inode.c b/drivers/staging/pohmelfs/inode.c
+index 0980c3c..908fc64 100644
+--- a/drivers/staging/pohmelfs/inode.c
++++ b/drivers/staging/pohmelfs/inode.c
+@@ -979,7 +979,7 @@ int pohmelfs_setattr_raw(struct inode *inode, struct iattr *attr)
+ 
+ 	if ((attr->ia_valid & ATTR_UID && attr->ia_uid != inode->i_uid) ||
+ 	    (attr->ia_valid & ATTR_GID && attr->ia_gid != inode->i_gid)) {
+-		err = DQUOT_TRANSFER(inode, attr) ? -EDQUOT : 0;
++		err = vfs_dq_transfer(inode, attr) ? -EDQUOT : 0;
+ 		if (err)
+ 			goto err_out_exit;
+ 	}
