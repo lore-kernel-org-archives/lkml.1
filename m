@@ -1,80 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757139AbZBMJQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757876AbZBMJSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757139AbZBMJQo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 04:16:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbZBMJQ2
+	id S1757876AbZBMJSW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 04:18:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbZBMJSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 04:16:28 -0500
-Received: from web15704.mail.cnb.yahoo.com ([202.165.102.71]:34402 "HELO
-	web15704.mail.cnb.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750889AbZBMJQ1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 04:16:27 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.cn;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=QgsErVyT2G7hqrLjwY5MXYMksMuEGTPW1jSGIO6zV1BNu7JgR+dVNoT4E6QCqw6vnLMwhaUlQX8wGiJ8iRCix09ibXgHT9PV+NQGmkE+eTJoWYfBJYuoajy7QWh26NPWzaoUFkd+aNjy88MvSfsAAme2Ek1qMhfo1GBkjrl2ADA=;
-X-YMail-OSG: rQYTOYoVM1mevSJf5l8lRDlTxidpJQ693_6yOjexvo4QWJJBWiyQJKwh4HDyeWKHjvmU6rM29A_M8U5IKt4KsqaQFCpHEF0j8LRlwL4TDVEHroKnpXZzB2fDVRNpvkX.bwrzuGI.DrWhsu_rRSezKgI0zNfKFa31u.Gsaq9qHdyPNXlapx2ydSPr7_MQCffR1Y5TqSMIijYgmpZ92IODqOCXKVs-
-X-Mailer: YahooMailWebService/0.7.260.1
-Date: Fri, 13 Feb 2009 17:16:24 +0800 (CST)
-From: peter meng <mengsanshui@yahoo.com.cn>
-Reply-To: mengsanshui@yahoo.com.cn
-Subject: Question about s3c24xx_dma_addr in kernel ?
-To: linux-arm-kernel@lists.arm.linux.org.uk
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <761645.35452.qm@web15704.mail.cnb.yahoo.com>
+	Fri, 13 Feb 2009 04:18:09 -0500
+Received: from mga11.intel.com ([192.55.52.93]:18885 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750800AbZBMJSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 04:18:08 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,201,1233561600"; 
+   d="scan'208";a="665328997"
+Subject: Re: [PATCH 0/2] fix the itimer regression (BZ 12618)
+From: Lin Ming <ming.m.lin@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "oleg@redhat.com" <oleg@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "seto.hidetoshi@jp.fujitsu.com" <seto.hidetoshi@jp.fujitsu.com>
+In-Reply-To: <20090212110500.GB23665@elte.hu>
+References: <20090205112414.104100700@chello.nl>
+	 <20090205120608.GB8799@elte.hu> <1233895919.2604.323.camel@ymzhang>
+	 <20090206151832.GL18368@elte.hu>
+	 <1234161961.5991.41.camel@minggr.sh.intel.com>
+	 <20090209214723.GA2664@elte.hu> <1234270044.23438.7.camel@twins>
+	 <1234318148.2604.370.camel@ymzhang>  <20090212110500.GB23665@elte.hu>
+Content-Type: text/plain
+Date: Fri, 13 Feb 2009 17:15:17 +0800
+Message-Id: <1234516517.32144.11.camel@minggr.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-HI
+> FYI, in Linus's latest tree (v2.6.29-rc4-175-gb578f3f or later), all
+> the scheduler related performance regressions should be addressed.
+> 
+> Could you please double-check that there's no performance regression
+> remaining?
 
-I found never used both the from and to field of s3c24xx_dma_addr in Linux except declare s3c24XX_dma_mappings .
+I have tested the latest git tree(071a0bc2).
+hackbench, volanoMark, oltp, specjbb2005 regressions are all fixed.
 
-So I want to know why still leave this struct in kernel ? 
+Thanks,
+Lin Ming
 
-
-Thanks a lot .
-Best Regards.
-Peter Meng 
-
-
-struct s3c24xx_dma_addr {
-	unsigned long		from;
-	unsigned long		to;
-};
-
-struct s3c24xx_dma_map {
-	const char		*name;
-	struct s3c24xx_dma_addr  hw_addr;
-
-	unsigned long		 channels[S3C2410_DMA_CHANNELS];
-	unsigned long		 channels_rx[S3C2410_DMA_CHANNELS];
-};
-
-static struct s3c24xx_dma_map __initdata s3c2412_dma_mappings[] = {
-	[DMACH_XD0] = {
-		.name		= "xdreq0",
-		.channels	= MAP(S3C2412_DMAREQSEL_XDREQ0),
-		.channels_rx	= MAP(S3C2412_DMAREQSEL_XDREQ0),
-	},
-	[DMACH_XD1] = {
-		.name		= "xdreq1",
-		.channels	= MAP(S3C2412_DMAREQSEL_XDREQ1),
-		.channels_rx	= MAP(S3C2412_DMAREQSEL_XDREQ1),
-	},
-	[DMACH_SDI] = {
-		.name		= "sdi",
-		.channels	= MAP(S3C2412_DMAREQSEL_SDI),
-		.channels_rx	= MAP(S3C2412_DMAREQSEL_SDI),
-		.hw_addr.to	= S3C2410_PA_SDI + S3C2410_SDIDATA,
-		.hw_addr.from	= S3C2410_PA_SDI + S3C2410_SDIDATA,
-        ..........
-
-
-
-
-      
