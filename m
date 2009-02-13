@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760750AbZBMTeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761145AbZBMTez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760750AbZBMTeg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 14:34:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbZBMTeL
+	id S1761145AbZBMTez (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 14:34:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbZBMTej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 14:34:11 -0500
-Received: from www.tglx.de ([62.245.132.106]:59961 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750989AbZBMTeK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 14:34:10 -0500
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       malware-list@lists.printk.net, eparis@redhat.com, hch@infradead.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCHv2 2/5] VFS: DazukoFS, stackable-fs, file access control
-From: John Ogness <dazukocode@ogness.net>
-References: <8663jrgwo4.fsf@johno.fn.ogness.net>
-	<861vufgwlt.fsf@johno.fn.ogness.net>
-	<86wsc7fhzc.fsf_-_@johno.fn.ogness.net>
-	<alpine.LSU.2.00.0902121659460.5658@fbirervta.pbzchgretzou.qr>
-Date: Fri, 13 Feb 2009 20:33:33 +0100
-In-Reply-To: <alpine.LSU.2.00.0902121659460.5658@fbirervta.pbzchgretzou.qr> (Jan Engelhardt's message of "Thu\, 12 Feb 2009 17\:00\:54 +0100 \(CET\)")
-Message-ID: <86tz6ygmia.fsf@johno.fn.ogness.net>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 13 Feb 2009 14:34:39 -0500
+Received: from smtprelay01.ispgateway.de ([80.67.18.13]:43614 "EHLO
+	smtprelay01.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752724AbZBMTeh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 14:34:37 -0500
+References: <cone.1234471033.988571.5384.1000@mentalhome> <loom.20090213T092444-966@post.gmane.org>
+Message-ID: <cone.1234553680.565932.4642.1000@onepiie>
+X-Mailer: http://www.courier-mta.org/cone/
+From: Peter Feuerer <peter@piie.net>
+To: Thomas Renninger <trenn@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Acer Aspire One fan control
+Date: Fri, 13 Feb 2009 20:34:40 +0100
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed; charset="US-ASCII"
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+X-Df-Sender: 404094
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009-02-12, Jan Engelhardt <jengelh@medozas.de> wrote:
->>+By opening the device /dev/dazukofs.0 an application has registered itself.
->>+A read on the device will block until a file access event on DazukoFS has
->>+taken place. When a file access event has occured, the read will return with
->>+information about the file access event. For example:
->
-> Given that there are more device files to come, I would
-> put this into a separate directory, /dev/dazukofs/0, much
-> like dm-crypt does for its devices.
+Thomas Renninger writes:
 
-I was not sure if I should leave it up to udev rules to organize
-things. I agree that putting everything under a directory is cleaner.
-I will make this change for the next patch series.
+> 
+> Does it help if you do:
+> echo 10 >/proc/acpi/thermal_zone/*/polling_frequency
 
-John Ogness
+Actually there is nothing in /proc/acpi/thermal_zone/. So it seems for me, 
+that there is no driver which handles the temperature and the fan of the 
+Acer Aspire One yet. A search on google didn't disprove it. That's why I 
+started to write my own kernel module. But I tested it only with 2.6.28.4. 
+Maybe there's already something in 2.6.29, not sure about it. 
+
+> If the fan is controlled via thermal ACPI trip points, maybe latest kernel
+> versions do help? There were several commits lately in this area, e.g.:
+> 676962dac6e267ce7c13f73962208f9124a084bb
+> f5adfaa372c76423b6e8e4727a9701330374f364
+
+Those patches have been applied to 2.6.28.
+
+> The latter adds a boot param you could give a try if you think it's worth it:
+> ACPI: Add "acpi.power_nocheck=1" to disable power state check in power
+> transition
+
+I will try the acpi.power_nocheck option, but google results on that don't 
+sound very promising.
+
+--peter
