@@ -1,91 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759949AbZBMB5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932096AbZBMCQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759949AbZBMB5g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Feb 2009 20:57:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbZBMB50
+	id S932096AbZBMCQp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Feb 2009 21:16:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbZBMCQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Feb 2009 20:57:26 -0500
-Received: from mga06.intel.com ([134.134.136.21]:40515 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752010AbZBMB5Z (ORCPT
+	Thu, 12 Feb 2009 21:16:34 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:21240 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751518AbZBMCQd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Feb 2009 20:57:25 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,199,1233561600"; 
-   d="scan'208";a="489629845"
-Date: Fri, 13 Feb 2009 09:57:21 +0800
-From: Wu Fengguang <wfg@linux.intel.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
-       "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>,
-       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
-Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
-Message-ID: <20090213015721.GA5565@localhost>
-References: <492BDAA9.4090405@vlnb.net> <20081125113048.GB16422@localhost> <492BE47B.3010802@vlnb.net> <20081125114908.GA16545@localhost> <492BE97A.3050606@vlnb.net> <492BEAE8.9050809@vlnb.net> <20081125121534.GA16778@localhost> <492EDCFB.7080302@vlnb.net> <20081128004830.GA8874@localhost> <49946BE6.1040005@vlnb.net>
+	Thu, 12 Feb 2009 21:16:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=eL40aADRvQFFNL44OP4epzDxIIFbiHdlva2Q9hDIvLjQwK327wa9XdzQEEf7gQN0y7
+         WZKOCMcQuEujvngaFvwnNbrKVHJuKTw0TPjfOosbwm+8gPho22NSaHD94C02/EkMDN4Z
+         SWeKbXijb4snbdpwZ4vuT6lS191/wXu55sF6U=
+Date: Fri, 13 Feb 2009 03:16:27 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Thomas Gleixner <tglx@tglx.de>, LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>
+Subject: Re: [Announce] 2.6.29-rc4-rt2
+Message-ID: <20090213021626.GA5807@nowhere>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain> <20090213004812.GA5824@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49946BE6.1040005@vlnb.net>
+In-Reply-To: <20090213004812.GA5824@nowhere>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 12, 2009 at 09:35:18PM +0300, Vladislav Bolkhovitin wrote:
-> Sorry for such a huge delay. There were many other activities I had to  
-> do before + I had to be sure I didn't miss anything.
->
-> We didn't use NFS, we used SCST (http://scst.sourceforge.net) with  
-> iSCSI-SCST target driver. It has similar to NFS architecture, where N  
-> threads (N=5 in this case) handle IO from remote initiators (clients)  
-> coming from wire using iSCSI protocol. In addition, SCST has patch  
-> called export_alloc_io_context (see  
-> http://lkml.org/lkml/2008/12/10/282), which allows for the IO threads  
-> queue IO using single IO context, so we can see if context RA can  
-> replace grouping IO threads in single IO context.
->
-> Unfortunately, the results are negative. We find neither any advantages  
-> of context RA over current RA implementation, nor possibility for  
-> context RA to replace grouping IO threads in single IO context.
->
-> Setup on the target (server) was the following. 2 SATA drives grouped in  
-> md RAID-0 with average local read throughput ~120MB/s ("dd if=/dev/zero  
-> of=/dev/md0 bs=1M count=20000" outputs "20971520000 bytes (21 GB)  
-> copied, 177,742 s, 118 MB/s"). The md device was partitioned on 3  
-> partitions. The first partition was 10% of space in the beginning of the  
-> device, the last partition was 10% of space in the end of the device,  
-> the middle one was the rest in the middle of the space them. Then the  
-> first and the last partitions were exported to the initiator (client).  
-> They were /dev/sdb and /dev/sdc on it correspondingly.
+On Fri, Feb 13, 2009 at 01:48:12AM +0100, Frederic Weisbecker wrote:
+> On Thu, Feb 12, 2009 at 11:56:38PM +0100, Thomas Gleixner wrote:
+> > We are pleased to announce the first update to our new preempt-rt
+> > series. It fixes the reported bugs and some more.
+> > 
+> > Download locations:
+> > 
+> >    http://rt.et.redhat.com/download/
+> >    http://www.kernel.org/pub/linux/kernel/projects/rt/
+> >  
+> > Information on the RT patch can be found at:
+> > 
+> >   http://rt.wiki.kernel.org/index.php/Main_Page
+> > 
+> > to build the 2.6.29-rc4-rt2 tree, the following patches should be
+> > applied:
+> > 
+> >   http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc4.tar.bz2
+> >   http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29-rc4-rt2.bz2
+> > 
+> > The broken out patches are also available at the same download
+> > locations.
+> > 
+> > Enjoy !
+> > 
+> >       Thomas, Ingo
+> 
+> 
+> Hi,
+> 
+> It fixes the rt-concerned warning I had.
+> Now, a new little lockdep info, tell me if you need my config, I changed
+> it a bit:
+> 
+> [    0.012874] INFO: trying to register non-static key.
+> [    0.012940] the code is fine but needs lockdep annotation.
+> [    0.013008] turning off the locking correctness validator.
+> [    0.013847] Pid: 0, comm: swapper Not tainted 2.6.29-rc4-rt2-tip #2
+> [    0.013917] Call Trace:
+> [    0.013981]  [<ffffffff80285985>] __lock_acquire+0x1825/0x1b20
+> [    0.014053]  [<ffffffff802846fb>] ? __lock_acquire+0x59b/0x1b20
+> [    0.014125]  [<ffffffff80283326>] ? mark_held_locks+0x56/0xa0
+> [    0.014197]  [<ffffffff80285d1f>] lock_acquire+0x9f/0xe0
+> [    0.014267]  [<ffffffff80780ea8>] ? rt_spin_lock_slowlock+0x38/0x310
+> [    0.014342]  [<ffffffff80783211>] __spin_lock_irqsave+0x51/0x70
+> [    0.014415]  [<ffffffff80780ea8>] ? rt_spin_lock_slowlock+0x38/0x310
+> [    0.014489]  [<ffffffff80780ea8>] rt_spin_lock_slowlock+0x38/0x310
+> [    0.014562]  [<ffffffff802836dc>] ? debug_check_no_locks_freed+0x9c/0x160
+> [    0.014636]  [<ffffffff80781edc>] rt_spin_lock+0x4c/0xa0
+> [    0.014706]  [<ffffffff80276f51>] compat_down_timeout+0x21/0x60
+> [    0.014780]  [<ffffffff804910ca>] acpi_os_wait_semaphore+0x4e/0x5d
+> [    0.014853]  [<ffffffff804aafa9>] acpi_ut_acquire_mutex+0x43/0x87
+> [    0.014926]  [<ffffffff804a06cd>] acpi_ns_root_initialize+0x28/0x2ab
+> [    0.014999]  [<ffffffff80449d88>] ? __raw_spin_lock_init+0x38/0x70
+> [    0.015073]  [<ffffffff80acbd6a>] acpi_initialize_subsystem+0x69/0x91
+> [    0.015147]  [<ffffffff80acc24a>] acpi_early_init+0x50/0xf5
+> [    0.015219]  [<ffffffff80aa1ea5>] start_kernel+0x3d2/0x4ca
+> [    0.015290]  [<ffffffff80aa12b9>] x86_64_start_reservations+0x99/0xb9
+> [    0.015362]  [<ffffffff80aa13d5>] x86_64_start_kernel+0xfc/0x10b
+> [    0.015436]  [<ffffffff80aa1140>] ? early_idt_handler+0x0/0x71
+> 
+> Oh and I just tested the tracers.
+> It seems to run fine for all of them except sysprof.
+> It passes the self-test but doesn't produce any trace when I manually try.
+> 
+> Not completely sure this is only in -rt so I'm pulling very latest -tip
+> and will see if I find the same problem there.
 
-Vladislav, Thank you for the benchmarks! I'm very interested in
-optimizing your workload and figuring out what happens underneath.
 
-Are the client and server two standalone boxes connected by GBE?
+About sysprof, it's an -rt problem, I don't see it on -tip.
+The sysprof hrtimer callback is never called.
 
-When you set readahead sizes in the benchmarks, you are setting them
-in the server side? I.e. "linux-4dtq" is the SCST server? What's the
-client side readahead size?
+I'm digging to see what is happening.
 
-It would help a lot to debug readahead if you can provide the
-server side readahead stats and trace log for the worst case.
-This will automatically answer the above questions as well as disclose
-the micro-behavior of readahead:
-
-        mount -t debugfs none /sys/kernel/debug
-
-        echo > /sys/kernel/debug/readahead/stats # reset counters
-        # do benchmark
-        cat /sys/kernel/debug/readahead/stats
-
-        echo 1 > /sys/kernel/debug/readahead/trace_enable
-        # do micro-benchmark, i.e. run the same benchmark for a short time
-        echo 0 > /sys/kernel/debug/readahead/trace_enable
-        dmesg
-
-The above readahead trace should help find out how the client side
-sequential reads convert into server side random reads, and how we can
-prevent that.
-
-Thanks,
-Fengguang
