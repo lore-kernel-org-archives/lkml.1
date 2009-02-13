@@ -1,233 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759706AbZBMIzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760048AbZBMI5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759706AbZBMIzy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 03:55:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbZBMIzp
+	id S1760048AbZBMI5X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 03:57:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbZBMI5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 03:55:45 -0500
-Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:47636 "EHLO
-	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753214AbZBMIzn (ORCPT
+	Fri, 13 Feb 2009 03:57:10 -0500
+Received: from fallback.us4.outblaze.com ([205.158.62.120]:42824 "EHLO
+	fallback.us4.outblaze.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753222AbZBMI5K convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 03:55:43 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArUEAMvClEnCTtAn/2dsb2JhbACBbtBuhBgG
-Date: Fri, 13 Feb 2009 09:55:37 +0100
-From: Philippe De Muyter <phdm@macqel.be>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Robert Hancock <hancockrwd@gmail.com>, Adam M Belay <abelay@mit.edu>,
-       Len Brown <lenb@kernel.org>
-Subject: [PATCH] floppy: request and release only the ports we actually use
-Message-ID: <20090213085537.GA21230@frolo.macqel>
-References: <20090205174859.18396.68512.stgit@bob.kio>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 13 Feb 2009 03:57:10 -0500
+X-Greylist: delayed 1391 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Feb 2009 03:57:09 EST
+X-OB-Received: from unknown (205.158.62.131)
+  by wfilter3.us4.outblaze.com; 13 Feb 2009 08:33:57 -0000
 Content-Disposition: inline
-In-Reply-To: <20090205174859.18396.68512.stgit@bob.kio>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
+MIME-Version: 1.0
+From: "Erin Teran" <erin_teran@linuxmail.org>
+To: linux-kernel@vger.kernel.org
+Cc: postme1@gmx.net, "USB list" <linux-usb@vger.kernel.org>,
+       "Alan Stern" <stern@rowland.harvard.edu>
+Date: Fri, 13 Feb 2009 16:33:57 +0800
+Subject: Re: USB gadget problem with close of a gadgetfs device
+X-Originating-Ip: 217.89.99.70
+X-Originating-Server: ws5-1.us4.outblaze.com
+X-Ob-Auth: erin_teran:linuxmail.org@linuxmail.org
+Message-Id: <20090213083357.7F3B9446D8@ws5-1.us4.outblaze.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
+Hello,
 
-this is a combined patch replacing the following ones currently in
-the -mm tree :
-	floppy-request-only-the-ports-we-actually-use.patch
-	floppy-request-only-the-ports-we-actually-use-fix.patch
+I couldnt find an answer to my question in the archive or the kernel documentation.
+I'm new to Linux and the LKML so please point me in the right direction if the question is misplaced here.
 
-Bjorn,
+I have a problem while using driver/usb/gadget/gadgetfs
+Sometimes I cant reopen the device propperly. I get an -EBUSY.
+Using atom_read(&fd->f_count) and printk() in inode.c dev_open I found out that the count is 1 when the failure occurs.
+I checked several times if all fd I opened where closed, and they are.
 
-Since you did the hard job of collecting the used io-ports and writing
-the changelog and part of this patch, I kept your Signed-off-by :
+Therefore I'm kinda lost here:
+Q: Is f_count only increased after the dev_open returned success?
+Q: Does poll() - which I use in my app - duplicate a fd and increase f_count?
+Q: Is there a known issue with poll() and the pthread lib?
+Q: What happens when I terminate a thread - pthread_cancel() - which is currently in a poll() call?
 
-Philippe
+Thank you,
+Erin
 
---
 
-The floppy driver requests an I/O port it doesn't need, and
-sometimes this causes a conflict with a motherboard device
-reported by PNPBIOS.
 
-This patch makes the floppy driver request and release
-only the ports it actually uses.  It also factors out
-the request/release stuff and the io-ports list so
-they're all in one place now.
+=
+Listen & Play Mp3 Songs Completely Free
+Listen & Play Online Mp3 Song Completely Free MUSIC ARTICLES AND MORE.
+http://a8-asy.a8ww.net/a8-ads/adftrclick?redirectid=f51d2a53b77b9b8d7c5fcbd5e19676ba
 
-The current floppy driver uses only these ports:
-    0x3f2 (FD_DOR)
-    0x3f4 (FD_STATUS)
-    0x3f5 (FD_DATA)
-    0x3f7 (FD_DCR/FD_DIR)
-but it requests 0x3f2-0x3f5 and 0x3f7, which includes the
-unused port 0x3f3.
 
-Some BIOSes report 0x3f3 as a motherboard resource.  The PNP system
-driver reserves that, which causes a conflict when the floppy driver
-requests 0x3f2-0x3f5 later.
-
-Philippe reported that this conflict broke the floppy driver between
-2.6.11 and 2.6.22.  His PNPBIOS reports these devices:
-
-    $ cat 00:07/id 00:07/resources	# motherboard device
-    PNP0c02
-    state = active
-    io 0x80-0x80
-    io 0x10-0x1f
-    io 0x22-0x3f
-    io 0x44-0x5f
-    io 0x90-0x9f
-    io 0xa2-0xbf
-    io 0x3f0-0x3f1
-    io 0x3f3-0x3f3
-
-    $ cat 00:03/id 00:03/resources	# floppy device
-    PNP0700
-    state = active
-    io 0x3f4-0x3f5
-    io 0x3f2-0x3f2
-
-Reference:
-    http://lkml.org/lkml/2009/1/31/162
-
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Signed-off-by: Philippe De Muyter <phdm@macqel.be>
-Reported-by: Philippe De Muyter <phdm@macqel.be>
-Tested-by: Philippe De Muyter <phdm@macqel.be>
-CC: Adam M Belay <abelay@mit.edu>
-CC: Robert Hancock <hancockrwd@gmail.com>
----
-diff -r 94166a3a38bd drivers/block/floppy.c
---- a/drivers/block/floppy.c	Sat Jan 31 15:56:23 2009 -0800
-+++ b/drivers/block/floppy.c	Fri Feb 13 09:24:51 2009 +0100
-@@ -558,6 +558,8 @@ static void recalibrate_floppy(void);
- static void recalibrate_floppy(void);
- static void floppy_shutdown(unsigned long);
- 
-+static int floppy_request_regions(int);
-+static void floppy_release_regions(int);
- static int floppy_grab_irq_and_dma(void);
- static void floppy_release_irq_and_dma(void);
- 
-@@ -4274,8 +4276,7 @@ static int __init floppy_init(void)
- 		FDCS->rawcmd = 2;
- 		if (user_reset_fdc(-1, FD_RESET_ALWAYS, 0)) {
- 			/* free ioports reserved by floppy_grab_irq_and_dma() */
--			release_region(FDCS->address + 2, 4);
--			release_region(FDCS->address + 7, 1);
-+			floppy_release_regions(fdc);
- 			FDCS->address = -1;
- 			FDCS->version = FDC_NONE;
- 			continue;
-@@ -4284,8 +4285,7 @@ static int __init floppy_init(void)
- 		FDCS->version = get_fdc_version();
- 		if (FDCS->version == FDC_NONE) {
- 			/* free ioports reserved by floppy_grab_irq_and_dma() */
--			release_region(FDCS->address + 2, 4);
--			release_region(FDCS->address + 7, 1);
-+			floppy_release_regions(fdc);
- 			FDCS->address = -1;
- 			continue;
- 		}
-@@ -4358,6 +4358,47 @@ out_put_disk:
- 
- static DEFINE_SPINLOCK(floppy_usage_lock);
- 
-+static const struct io_region {
-+	int offset;
-+	int size;
-+} io_regions[] = {
-+	{ 2, 1 },
-+	/* address + 3 is sometimes reserved by pnp bios for motherboard */
-+	{ 4, 2 },
-+	/* address + 6 is reserved, and may be taken by IDE.
-+	 * Unfortunately, Adaptec doesn't know this :-(, */
-+	{ 7, 1 },
-+};
-+
-+static void floppy_release_allocated_regions(int fdc, const struct io_region *p)
-+{
-+	while (p != io_regions) {
-+		p--;
-+		release_region(FDCS->address + p->offset, p->size);
-+	}
-+}
-+	
-+#define ARRAY_END(X) (&((X)[ARRAY_SIZE(X)]))
-+
-+static int floppy_request_regions(int fdc)
-+{
-+	const struct io_region *p;
-+
-+	for (p = io_regions; p < ARRAY_END(io_regions); p++) {
-+		if (!request_region(FDCS->address + p->offset, p->size, "floppy")) {
-+			DPRINT("Floppy io-port 0x%04lx in use\n", FDCS->address + p->offset);
-+			floppy_release_allocated_regions(fdc, p);
-+			return -EBUSY;
-+		}
-+	}
-+	return 0;
-+}
-+
-+static void floppy_release_regions(int fdc)
-+{
-+	floppy_release_allocated_regions(fdc, ARRAY_END(io_regions));
-+}
-+
- static int floppy_grab_irq_and_dma(void)
- {
- 	unsigned long flags;
-@@ -4399,18 +4440,8 @@ static int floppy_grab_irq_and_dma(void)
- 
- 	for (fdc = 0; fdc < N_FDC; fdc++) {
- 		if (FDCS->address != -1) {
--			if (!request_region(FDCS->address + 2, 4, "floppy")) {
--				DPRINT("Floppy io-port 0x%04lx in use\n",
--				       FDCS->address + 2);
--				goto cleanup1;
--			}
--			if (!request_region(FDCS->address + 7, 1, "floppy DIR")) {
--				DPRINT("Floppy io-port 0x%04lx in use\n",
--				       FDCS->address + 7);
--				goto cleanup2;
--			}
--			/* address + 6 is reserved, and may be taken by IDE.
--			 * Unfortunately, Adaptec doesn't know this :-(, */
-+			if (floppy_request_regions(fdc))
-+				goto cleanup;
- 		}
- 	}
- 	for (fdc = 0; fdc < N_FDC; fdc++) {
-@@ -4432,15 +4463,11 @@ static int floppy_grab_irq_and_dma(void)
- 	fdc = 0;
- 	irqdma_allocated = 1;
- 	return 0;
--cleanup2:
--	release_region(FDCS->address + 2, 4);
--cleanup1:
-+cleanup:
- 	fd_free_irq();
- 	fd_free_dma();
--	while (--fdc >= 0) {
--		release_region(FDCS->address + 2, 4);
--		release_region(FDCS->address + 7, 1);
--	}
-+	while (--fdc >= 0)
-+		floppy_release_regions(fdc);
- 	spin_lock_irqsave(&floppy_usage_lock, flags);
- 	usage_count--;
- 	spin_unlock_irqrestore(&floppy_usage_lock, flags);
-@@ -4501,10 +4528,8 @@ static void floppy_release_irq_and_dma(v
- #endif
- 	old_fdc = fdc;
- 	for (fdc = 0; fdc < N_FDC; fdc++)
--		if (FDCS->address != -1) {
--			release_region(FDCS->address + 2, 4);
--			release_region(FDCS->address + 7, 1);
--		}
-+		if (FDCS->address != -1)
-+			floppy_release_regions(fdc);
- 	fdc = old_fdc;
- }
- 
+-- 
+Powered by Outblaze
