@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764275AbZBNBSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764539AbZBNBTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764275AbZBNBSX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:18:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761659AbZBNBCR
+	id S1764539AbZBNBTu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:19:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755312AbZBNBCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:02:17 -0500
-Received: from kroah.org ([198.145.64.141]:39965 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:02:23 -0500
+Received: from kroah.org ([198.145.64.141]:39982 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761522AbZBNBCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:02:05 -0500
-Date: Fri, 13 Feb 2009 16:59:28 -0800
+	id S1753493AbZBNBCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:02:06 -0500
+Date: Fri, 13 Feb 2009 16:59:30 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Tejun Heo <tj@kernel.org>,
+       alan@lxorguk.ukuu.org.uk, Sergei Shtylyov <sshtylyov@ru.mvista.com>,
        Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 43/47] libata: fix EH device failure handling
-Message-ID: <20090214005928.GR11282@kroah.com>
+Subject: [patch 44/47] ide/libata: fix ata_id_is_cfa() (take 4)
+Message-ID: <20090214005930.GS11282@kroah.com>
 References: <20090214005130.617401075@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="libata-fix-eh-device-failure-handling.patch"
+Content-Disposition: inline; filename="ide-libata-fix-ata_id_is_cfa.patch"
 In-Reply-To: <20090214005726.GA11282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,47 +40,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Tejun Heo <tj@kernel.org>
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-commit d89293abd95bfd7dd9229087d6c30c1464c5ac83 upstream.
+commit 2999b58b795ad81f10e34bdbbfd2742172f247e4 upstream.
 
-The dev->pio_mode > XFER_PIO_0 test is there to avoid unnecessary
-speed down warning messages but it accidentally disabled SATA link spd
-down during configuration phase after reset where PIO mode is always
-zero.
+When checking for the CFA feature set support, ata_id_is_cfa() tests bit 2 in
+word 82 of the identify data instead the word 83;  it also checks the ATA/PI
+version support in the word 80 (which the CompactFlash specifications have as
+reserved), this having no slightest chance to work on the modern CF cards that
+don't have 0x848A in the word 0...
 
-This patch fixes the problem by moving the test where it belongs.
-This makes libata probing sequence behave better when the connection
-is flaky at higher link speeds which isn't too uncommon for eSATA
-devices.
-
-[cebbert@redhat.com: trivial backport to 2.6.27]
-
-Signed-off-by: Tejun Heo <tj@kernel.org>
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/libata-eh.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ include/linux/ata.h |   15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
 
---- a/drivers/ata/libata-eh.c
-+++ b/drivers/ata/libata-eh.c
-@@ -2694,12 +2694,13 @@ static int ata_eh_handle_dev_fail(struct
- 		/* give it just one more chance */
- 		ehc->tries[dev->devno] = min(ehc->tries[dev->devno], 1);
- 	case -EIO:
--		if (ehc->tries[dev->devno] == 1 && dev->pio_mode > XFER_PIO_0) {
-+		if (ehc->tries[dev->devno] == 1) {
- 			/* This is the last chance, better to slow
- 			 * down than lose it.
- 			 */
- 			sata_down_spd_limit(dev->link);
--			ata_down_xfermask_limit(dev, ATA_DNXFER_PIO);
-+			if (dev->pio_mode > XFER_PIO_0)
-+				ata_down_xfermask_limit(dev, ATA_DNXFER_PIO);
- 		}
- 	}
+--- a/include/linux/ata.h
++++ b/include/linux/ata.h
+@@ -681,12 +681,17 @@ static inline int ata_id_current_chs_val
  
+ static inline int ata_id_is_cfa(const u16 *id)
+ {
+-	if (id[ATA_ID_CONFIG] == 0x848A)	/* Standard CF */
++	if (id[ATA_ID_CONFIG] == 0x848A)	/* Traditional CF */
+ 		return 1;
+-	/* Could be CF hiding as standard ATA */
+-	if (ata_id_major_version(id) >= 3 &&
+-	    id[ATA_ID_COMMAND_SET_1] != 0xFFFF &&
+-	   (id[ATA_ID_COMMAND_SET_1] & (1 << 2)))
++	/*
++	 * CF specs don't require specific value in the word 0 anymore and yet
++	 * they forbid to report the ATA version in the word 80 and require the
++	 * CFA feature set support to be indicated in the word 83 in this case.
++	 * Unfortunately, some cards only follow either of this requirements,
++	 * and while those that don't indicate CFA feature support need some
++	 * sort of quirk list, it seems impractical for the ones that do...
++	 */
++	if ((id[ATA_ID_COMMAND_SET_2] & 0xC004) == 0x4004)
+ 		return 1;
+ 	return 0;
+ }
 
