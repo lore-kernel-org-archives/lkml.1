@@ -1,73 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbZBNW0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753810AbZBNW3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753584AbZBNW0W (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 17:26:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbZBNW0O
+	id S1753810AbZBNW3l (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 17:29:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbZBNW3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 17:26:14 -0500
-Received: from yx-out-2324.google.com ([74.125.44.28]:14861 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751357AbZBNW0N (ORCPT
+	Sat, 14 Feb 2009 17:29:34 -0500
+Received: from cpsmtpo-eml01.KPNXCHANGE.COM ([213.75.38.150]:4458 "EHLO
+	cpsmtpo-eml01.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752304AbZBNW3e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 17:26:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=mKvYhzzuu7LMgwx3KgFjQBiKY7a/32M1H81e03yc9kvv9+GET78KcLYGFXHxbtnPPj
-         F7xy+CVwKl+tR0Qvmie+Gy1feY43Wo+/a1N4Ssz3MpJi8eVhTnMvUq/kqHANEL62ikD2
-         gCEdRxkCsna8qGGZcVnG82MF5mdFtNGtm5pSE=
-Date: Sat, 14 Feb 2009 14:25:56 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Frank Seidel <fseidel@suse.de>
-Cc: linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       rlove@rlove.org, Jean Delvare <khali@linux-fr.org>, protasnb@gmail.com,
-       Michael Ruoss <miruoss@student.ethz.ch>,
-       Tim Gardner <tim.gardner@canonical.com>,
-       Frank Seidel <frank@f-seidel.de>
-Subject: Re: [PATCH] hwmon/hdaps: Fix bug 7154 inversion of separate axis
-Message-ID: <20090214142346.ZZRA012@mailhub.coreip.homeip.net>
-References: <499569A9.5030202@suse.de>
+	Sat, 14 Feb 2009 17:29:34 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Joerg Platte <jplatte@naasa.net>
+Subject: Re: cpuinfo shows wrong MHz value
+Date: Sat, 14 Feb 2009 23:29:30 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <200902142217.51655.jplatte@naasa.net>
+In-reply-To: <200902142217.51655.jplatte@naasa.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <499569A9.5030202@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200902142329.31428.elendil@planet.nl>
+X-OriginalArrivalTime: 14 Feb 2009 22:29:32.0239 (UTC) FILETIME=[B50B65F0:01C98EF3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Frank,
+Joerg Platte wrote:
+> I'm running kernel 2.6.28.4 and /proc/cpuinfo and powertop and vmware
+> are unable to detect the correct speed (1.6 GHz) of the processor:
 
-On Fri, Feb 13, 2009 at 01:38:01PM +0100, Frank Seidel wrote:
-> From: Frank Seidel <frank@f-seidel.de>
-> 
-> Fix for kernel.org bug #7154:hdaps inversion of
-> each axis. This version is based on the work
-> from Michael Ruoss <miruoss@student.ethz.ch>.
-> 
->  
-> -	/* if hdaps_invert is set, negate the two values */
-> -	if (hdaps_invert) {
-> +	/* hdaps_invert is a bitvector to negate the axes */
-> +	if (hdaps_invert & 1)
->  		*x = -*x;
-> +	if (hdaps_invert & 2)
->  		*y = -*y;
-> -	}
+Isn't this just the result of frequency scaling? Is the processor busy 
+when you check /proc/cpuinfo?
 
-You have defined HDAPS_{X|Y}_AXIS, why not use them?
+What are the values in:
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+?
 
->  
-> -module_param_named(invert, hdaps_invert, bool, 0);
-> -MODULE_PARM_DESC(invert, "invert data along each axis");
-> +module_param_named(invert, hdaps_invert, int, 0);
-> +MODULE_PARM_DESC(invert, "invert data along each axis. 1 invert x-axis, "
-> +		 "2 invert y-axis, 3 invert both axes.");
->  
-
-Why don't you make these 0644? I don't see why they can't be changed
-"on fly".
-
--- 
-Dmitry
+Cheers,
+FJP
