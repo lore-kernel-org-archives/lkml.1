@@ -1,66 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754352AbZBNWcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754182AbZBNWf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754352AbZBNWcv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 17:32:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbZBNWcn
+	id S1754182AbZBNWf3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 17:35:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbZBNWfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 17:32:43 -0500
-Received: from LUNGE.MIT.EDU ([18.54.1.69]:49327 "EHLO lunge.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752220AbZBNWcm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 17:32:42 -0500
-Date: Sat, 14 Feb 2009 17:32:37 -0500
-From: Andres Salomon <dilinger@queued.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Chris Ball <cjb@laptop.org>, Harvey Harrison <harvey.harrison@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] olpc: fix model detection without OFW
-Message-ID: <20090214173237.29407661@ephemeral>
-In-Reply-To: <20090214221429.GB5200@elte.hu>
-References: <1222208409.16003.25.camel@brick>
-	<m3mycpye65.fsf@pullcord.laptop.org>
-	<20090213231900.4f22008a@ephemeral>
-	<20090214214312.GB31928@elte.hu>
-	<20090214165311.5cf5b8bf@ephemeral>
-	<20090214221429.GB5200@elte.hu>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 14 Feb 2009 17:35:20 -0500
+Received: from ftp.linux-mips.org ([213.58.128.207]:36094 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751417AbZBNWfT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 17:35:19 -0500
+Date: Sat, 14 Feb 2009 22:35:18 +0000 (GMT)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+cc: Mark Lord <liml@rtr.ca>, =?ISO-8859-15?Q?Hanno_B=F6ck?= <hanno@hboeck.de>,
+       Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
+       ide <linux-ide@vger.kernel.org>
+Subject: Re: Very old IDE hard drive (240 MB) detected as 1.1 TB
+In-Reply-To: <4996E924.3060600@ru.mvista.com>
+Message-ID: <alpine.LFD.1.10.0902142228410.651@ftp.linux-mips.org>
+References: <200902131428.40212.hanno@hboeck.de> <499584FC.2050104@gmail.com> <200902141352.24277.hanno@hboeck.de> <4996C563.9090900@ru.mvista.com> <4996D443.4060103@rtr.ca> <alpine.LFD.1.10.0902141526310.651@ftp.linux-mips.org>
+ <4996E924.3060600@ru.mvista.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Feb 2009 23:14:29 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
-[...]
-> Where did my git grepping skills go wrong?
-> 
-> I git-grepped the code and this is the scope i found:
-> 
-> olpc_platform_info.boardrev is used for:
-> 
->  - a printk
->  - olpc_board_at_least() which is used in:
->     - drivers/input/mouse/hgpk.c:                mouse driver quirk
->     - sound/pci/cs5535audio/cs5535audio_olpc.c:  audio quirk
-> 
-> aha. I missed this roundabout impact:
-> 
->     - arch/x86/kernel/olpc.c:                    OLPC_F_DCON flag
->       - which is used in olpc_has_dcon(), which is used in:
->         - drivers/video/geode/gxfb_core.c:       GX modes db
->                                                  [ouch if this goes
-> wrong!]
->         - drivers/video/geode/lxfb_core.c:       ditto
-> 
-> So i guess the mouse and audio quirk point was correct too, but the
-> major impact is the graphics mode array mismatch and the resulting
-> nonsensical mode setting, right?
-> 
-> 	Ingo
+Hi Sergei,
 
+> > not explicit about how words 57 and 58 were meant to be ordered and some
+> > manufacturers interpreted it one and some the other way.
+> 
+>   However, the drive vendors should've really thought better before reporting
+> capacity in *middle-endian* format. :-)
 
-Yep.
+ Oh, come on!  Don't accuse everyone of thinking.  Besides, someone had to 
+try that reverse-pdp-endian mode, didn't they? ;)
+
+  Maciej
