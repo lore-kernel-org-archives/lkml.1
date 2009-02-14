@@ -1,77 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753746AbZBNDSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbZBNDmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753746AbZBNDSe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 22:18:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbZBNDSZ
+	id S1754207AbZBNDmt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 22:42:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750889AbZBNDmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 22:18:25 -0500
-Received: from mail-gx0-f222.google.com ([209.85.217.222]:52749 "EHLO
+	Fri, 13 Feb 2009 22:42:40 -0500
+Received: from mail-gx0-f222.google.com ([209.85.217.222]:40680 "EHLO
 	mail-gx0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750778AbZBNDSZ (ORCPT
+	with ESMTP id S1750797AbZBNDmk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 22:18:25 -0500
-X-Greylist: delayed 417 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Feb 2009 22:18:24 EST
+	Fri, 13 Feb 2009 22:42:40 -0500
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Feb 2009 22:42:39 EST
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=TXh8DNxbVACRP1Rm74uVTmouiRULUU0KM7JYP1I2WcNW/frGoxktHGykZTbmPvOkHj
-         eWeJTFLAe3/6+GULxOQ26PZhnZbldU0uD/RUvYuPSS/DNaS1CP9/jSHpyK1HUCwpP8uU
-         y7+8RvvMHiU9I2ceaSgW1D5WoMSXTvPPbSl0M=
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=XQRXGG/6m+DjMmO3/f6mP2PpkbAkOsOgu2ImJj9QOyyCF/mxqmhg8FLuNp6UakH8MG
+         vBLrWUZb890d90i2SZYpE1IYGHSE6qaWd0R+i3QaX9KbmksMblawKrGceIObhhL5eIfX
+         7IHNaj4D7btKRMJ9lhhCo6m0mPe071KexqBsA=
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0902130758010.3099@localhost.localdomain>
-References: <20090212023308.GA21157@linux.vnet.ibm.com>
-	 <alpine.LFD.2.00.0902121247040.3099@localhost.localdomain>
-	 <20090212215959.GN6759@linux.vnet.ibm.com>
-	 <200902140050.44550.nickpiggin@yahoo.com.au>
-	 <alpine.LFD.2.00.0902130758010.3099@localhost.localdomain>
-Date: Fri, 13 Feb 2009 22:11:26 -0500
-Message-ID: <8bd0f97a0902131911m7c06fbe8nb83f12f740bd7997@mail.gmail.com>
-Subject: Re: [Uclinux-dist-devel] [ltt-dev] [RFC git tree] Userspace RCU 
-	(urcu) for Linux (repost)
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
-       ltt-dev@lists.casi.polymtl.ca,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       uclinux-dist-devel@blackfin.uclinux.org, paulmck@linux.vnet.ibm.com
+Date: Sat, 14 Feb 2009 09:42:38 +0600
+Message-ID: <b9df5fa10902131942q4670aa16s6c190fd99384943e@mail.gmail.com>
+Subject: [PATCH -mm] kmemleak: Fix section mismatch in kmemleak.c
+From: Rakib Mullick <rakib.mullick@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Catalin Marinas <catalin.marinas@arm.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 13, 2009 at 11:05, Linus Torvalds wrote:
-> On Sat, 14 Feb 2009, Nick Piggin wrote:
->> Interesting. I don't know if you would say it is not cache coherent.
->> Does anything in cache coherency definition require timeliness? Only
->> causality I think.
->
-> Nick, afaik, BF _really_ isn't cache coherent.
->
-> It's not about timeliness. It's literally non-coherent.
->
-> Blackfin L1 caches are
->  (a) write-through
->  (b) per-cpu
->  (c) non-coherent
-> so the way that BF implements "cache coherency" is by literally
->
->  - use a magic test-and-set instruction that works on L2 memory (shared)
->  - keep track of which core has done that test-and-set last
->  - *flush* the L1 when it was the other core.
->
-> Note that because it's a write-through cache, _writes_ are basically
-> "coherent". But since the cache isn't actually _updated_ ont he other CPU,
-> you can have two CPU's doing writes, and they'll both continue to see
-> their own write, not necessarily the one that made it to memory. So I
-> would not call that a "timeliness" issue, I would just say that the caches
-> simply aren't coherent.
->
-> But because it's write-through, flushing the cache always makes things
-> coherent again (well, on _that_ CPU), of course.
+ Impact: Section mismatch
 
-it invalidates, not flushes, the cache when the lock changes hands.
-and since the caches are forced to write through mode, the new core
-should pick up all the correct data fresh from external memory.
--mike
+The function kmemleak_alloc() is called from kernel allocators.
+kmemleak_alloc() calls log_early() but being log_early() marked as
+__init it causes following section mismatches. Being called from
+kernel allocators, kmemleak_allock() will be called after freeing up
+the init memory and log_early() will also called. So, unmarking __init
+from log_early() fixes the warning. If anything else please notice.
+
+  LD      mm/built-in.o
+WARNING: mm/built-in.o(.text+0x4f371): Section mismatch in reference
+from the function kmemleak_alloc() to the function
+.init.text:log_early()
+The function kmemleak_alloc() references
+the function __init log_early().
+This is often because kmemleak_alloc lacks a __init
+annotation or the annotation of log_early is wrong.
+
+WARNING: mm/built-in.o(.text+0x4f470): Section mismatch in reference
+from the function kmemleak_free() to the function
+.init.text:log_early()
+The function kmemleak_free() references
+the function __init log_early().
+This is often because kmemleak_free lacks a __init
+annotation or the annotation of log_early is wrong.
+
+WARNING: mm/built-in.o(.text+0x4f56f): Section mismatch in reference
+from the function kmemleak_not_leak() to the function
+.init.text:log_early()
+The function kmemleak_not_leak() references
+the function __init log_early().
+This is often because kmemleak_not_leak lacks a __init
+annotation or the annotation of log_early is wrong.
+
+WARNING: mm/built-in.o(.text+0x4f66e): Section mismatch in reference
+from the function kmemleak_ignore() to the function
+.init.text:log_early()
+The function kmemleak_ignore() references
+the function __init log_early().
+This is often because kmemleak_ignore lacks a __init
+annotation or the annotation of log_early is wrong.
+
+WARNING: mm/built-in.o(.text+0x4f786): Section mismatch in reference
+from the function kmemleak_scan_area() to the function
+.init.text:log_early()
+The function kmemleak_scan_area() references
+the function __init log_early().
+This is often because kmemleak_scan_area lacks a __init
+annotation or the annotation of log_early is wrong.
+
+WARNING: mm/built-in.o(.text+0x4f885): Section mismatch in reference
+from the function kmemleak_no_scan() to the function
+.init.text:log_early()
+The function kmemleak_no_scan() references
+the function __init log_early().
+This is often because kmemleak_no_scan lacks a __init
+annotation or the annotation of log_early is wrong.
+
+Thanks.
+
+----
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+
+--- linus/mm/kmemleak.c	2009-02-13 11:23:55.000000000 +0600
++++ rakib/mm/kmemleak.c	2009-02-13 23:05:45.000000000 +0600
+@@ -230,8 +230,8 @@ struct early_log {
+ };
+
+ /* early logging buffer and current position */
+-static struct early_log __initdata early_log[200];
+-static int __initdata crt_early_log;
++static struct early_log early_log[200];
++static int crt_early_log;
+
+ static void kmemleak_disable(void);
+
+@@ -682,7 +682,7 @@ static void object_no_scan(unsigned long
+  * Log an early kmemleak_* call to the early_log buffer. These calls will be
+  * processed later once kmemleak is fully initialized.
+  */
+-static void __init log_early(int op_type, const void *ptr, size_t size,
++static void log_early(int op_type, const void *ptr, size_t size,
+ 			     int min_count,
+ 			     unsigned long offset, size_t length)
+ {
