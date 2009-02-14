@@ -1,80 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752960AbZBNWCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754805AbZBNWCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752960AbZBNWCT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 17:02:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbZBNWB5
+	id S1754805AbZBNWCx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 17:02:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbZBNWCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 17:01:57 -0500
-Received: from yw-out-2324.google.com ([74.125.46.29]:3732 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753981AbZBNWB4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 17:01:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
-         :subject:references:in-reply-to:content-type
-         :content-transfer-encoding;
-        b=ehMkoGcpoST+rHQJJzI3WSbLAoiTRxU4vyvuQZ4/yA8t/PNBJtxB1jMaNg+sE9YeZZ
-         Rq6w8coMK/iaqhNolXEbtxVEoDWUju9kLbh3RtOXVzU9bnWHyFYv54exrZKWzYp+l92z
-         lEhSN5W4x6WhPrrOY7eGSLwMjmnpCCZQNOtNs=
-Message-ID: <49973F4F.1010804@gmail.com>
-Date: Sat, 14 Feb 2009 16:01:51 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: Serguei Miridonov <mirsev@cicese.mx>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Intel ICH9M/M-E SATA error-handling/reset problems
-References: <200902141206.06419.mirsev@cicese.mx>
-In-Reply-To: <200902141206.06419.mirsev@cicese.mx>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sat, 14 Feb 2009 17:02:40 -0500
+Received: from mx0.towertech.it ([213.215.222.73]:41008 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753772AbZBNWCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 17:02:40 -0500
+Date: Sat, 14 Feb 2009 23:02:35 +0100
+From: Alessandro Zummo <azummo-lists@towertech.it>
+To: Andres Salomon <dilinger@queued.net>
+Cc: jordan@cosmicpenguin.net, "David Brownell" <david-b@pacbell.net>,
+       linux-geode@lists.infradead.org, dsaxena@laptop.org,
+       "=?ISO-8859-1?Q?Mart?= =?ISO-8859-1?Q?in-=C9ric?= Racine" 
+	<q-funk@iki.fi>,
+       lkml <linux-kernel@vger.kernel.org>, rpurdie@rpsys.net,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] AMD Geode CS5535/5536 GPIO driver
+Message-ID: <20090214230235.5a29487f@i1501.lan.towertech.it>
+In-Reply-To: <20090214152719.1baf52cc@ephemeral>
+References: <20090205161007.4d121cbf@i1501.lan.towertech.it>
+	<20090214152719.1baf52cc@ephemeral>
+Organization: Tower Technologies
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serguei Miridonov wrote:
-> I have some problems with SATA in a new notebook PC (HP Pavilion dv5t, 
-> Intel chipset). Seagate FreeAgent Pro 1TB external drive practically 
-> can not be used with eSATA in Linux (fresh install from DVD Fedora 10, 
-> now fully updated), and yesterday I also had problem with DVD 
-> recording using internal HL-DT-ST BDDVDRW drive.
-> 
-> More details in attachment.
-> 
-> Both devices work with Windows Vista. Seagate external drive even in 
-> Vista produces "parity error" messages in Windows event log but OS is 
-> somehow recovering from these errors and continues to use the drive 
-> with slight slowdown (average speed varies between 60 and 110 MB/s). 
-> Of course, it could be cable/Seagate issue, but again - Vista can 
-> handle this.
+On Sat, 14 Feb 2009 15:27:19 -0500
+Andres Salomon <dilinger@queued.net> wrote:
 
-There are a lot of issues with eSATA drives and cabling. As Jeff 
-mentioned, there are some changes in 2.6.29-rc that may improve the 
-behavior, but the root cause here is a hardware issue (you should not 
-expect very good behavior in Vista either with those errors).
+> Sorry, I'm just now getting around to looking at this.  Why did we move it
+> from cs553x-gpio.c to geode_32.c?  I have a lemote (longsoon-based) which
+> uses cs5536:
 
-As far as the DVD burning issue, it's hard to say for sure. It looks 
-like a write command was timing out. Could be due to your drive not 
-working well with that type of media.
+ I've been suggested to move it within geode_32. the driver is probably
+ pretty geode specific anyhow.
 
-> 
-> It appears that Linux kernel has problems with error-handling/reset of 
-> SATA hardware. I have found a lot of reports regarding SATA problems: 
-> data transfer failures, CD/DVD recording, waking up from suspend to 
-> RAM, etc. Aren't they all related? Can Linux SATA chipsets drivers 
+-- 
 
-Not related at all, mostly.. though a lot of people seem to think they 
-are. Often times people think problems are related because the error 
-messages seem similar, and even the same error can be triggered by 
-numerous different problems, often not the fault of the kernel.
+ Best regards,
 
-> properly reset hardware into predictable state? Sure, I could be wrong 
-> and my issue may have nothing to do with others... Any idea?
-> 
-> Please, CC any reply to my e-mail.
-> Thank you.
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
 
+  http://www.towertech.it
 
