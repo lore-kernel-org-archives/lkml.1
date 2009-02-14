@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751572AbZBNNWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753247AbZBNNXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751572AbZBNNWA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 08:22:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbZBNNVt
+	id S1753247AbZBNNXq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 08:23:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbZBNNXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 08:21:49 -0500
-Received: from h155.mvista.com ([63.81.120.155]:19956 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751596AbZBNNVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 08:21:49 -0500
-Message-ID: <4996C563.9090900@ru.mvista.com>
-Date: Sat, 14 Feb 2009 16:21:39 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Sat, 14 Feb 2009 08:23:37 -0500
+Received: from ti-out-0910.google.com ([209.85.142.186]:39092 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751628AbZBNNXg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 08:23:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=DlbxuNK9rfbV1Z2u2MWaUQtTwbu4SUf/WWPdeH5GwTl+UB/Bb/e7SYHJ8kRs12kSRk
+         63Jod9tcvEyfPAyf8vNCPEC1ibwds3nDWUVWo+YkFKyRNXXAGicWdmb9kXSYKMNmojCs
+         GTLXsqKCCnpEgeYfsnQZGvSHIdJS+D+7OrvYs=
+Message-ID: <4996C5CA.9010803@gmail.com>
+Date: Sat, 14 Feb 2009 21:23:22 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081010)
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Hanno_B=F6ck?= <hanno@hboeck.de>
-Cc: Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
-       ide <linux-ide@vger.kernel.org>
-Subject: Re: Very old IDE hard drive (240 MB) detected as 1.1 TB
-References: <200902131428.40212.hanno@hboeck.de> <499584FC.2050104@gmail.com> <200902141352.24277.hanno@hboeck.de>
-In-Reply-To: <200902141352.24277.hanno@hboeck.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+To: greg@kroah.com
+CC: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] driver-core: do not register a driver with bus_type not
+ registered
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
 
-Hanno Böck wrote:
+If the bus_type is not registerd, driver_register to that bus will cause oops.
 
->> That would be worth investigating, yes.. If you can provide the dmesg
->> output from bootup, as well as the output of hdparm --Istdout on the
->> disk device, that would be useful..
->>     
->
-> That (and a bit more, normal hdparm output, smartctl output) here:
-> http://files.hboeck.de/conner/
->   
+I found this bug when test built-in usb serial drivers (ie. aircable driver)
+with 'nousb' cmdline params. 
 
-   It has the current capacity in words 57-58 swapped:
+In this patch:
+1. set the bus->p=NULL when bus_register failed and unregisterd.
+2. if bus->p is NULL, driver_register BUG_ON will be triggered.
 
-/dev/sdb:
-0c5a 037f 0000 000a 8723 0275 0037 0030
-000a 0000 2020 2020 2020 2020 2020 424d
-3948 4d31 5020 2020 0003 0040 0004 302e
-3336 2020 2020 436f 6e6e 6572 2050 6572
-6970 6865 7261 6c73 2032 3430 4d42 202d
-2043 5033 3032 3534 2020 2020 2020 8010
-0000 0001 0000 0200 0202 0001 037f 000a
-0037 0007 82da 0000 0000 0000 0000 0000
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+---
+drivers/base/bus.c    |    2 ++
+drivers/base/driver.c |    2 ++
+2 files changed, 4 insertions(+)
 
-
-   It must be 82da 0007, not 0007 82da.
-   IIRC, the IDE core doesn't trust the value reported in these words 
-(and I have knowledge of some other old disks reporting a bogus value 
-there), but liabata does (naively :-).
-
-MBR, Sergei
-
-
+diff -uprN a/drivers/base/bus.c b/drivers/base/bus.c
+--- a/drivers/base/bus.c	2009-02-14 20:47:24.441149465 +0800
++++ b/drivers/base/bus.c	2009-02-14 20:49:42.350149362 +0800
+@@ -932,6 +932,7 @@ bus_uevent_fail:
+ 	kset_unregister(&bus->p->subsys);
+ 	kfree(bus->p);
+ out:
++	bus->p = NULL;
+ 	return retval;
+ }
+ EXPORT_SYMBOL_GPL(bus_register);
+@@ -953,6 +954,7 @@ void bus_unregister(struct bus_type *bus
+ 	bus_remove_file(bus, &bus_attr_uevent);
+ 	kset_unregister(&bus->p->subsys);
+ 	kfree(bus->p);
++	bus->p = NULL;
+ }
+ EXPORT_SYMBOL_GPL(bus_unregister);
+ 
+diff -uprN a/drivers/base/driver.c b/drivers/base/driver.c
+--- a/drivers/base/driver.c	2009-02-14 20:47:38.048149854 +0800
++++ b/drivers/base/driver.c	2009-02-14 20:47:50.692141034 +0800
+@@ -216,6 +216,8 @@ int driver_register(struct device_driver
+ 	int ret;
+ 	struct device_driver *other;
+ 
++	BUG_ON(!drv->bus->p);
++
+ 	if ((drv->bus->probe && drv->probe) ||
+ 	    (drv->bus->remove && drv->remove) ||
+ 	    (drv->bus->shutdown && drv->shutdown))
