@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755870AbZBNVxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754517AbZBNV5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755870AbZBNVxn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 16:53:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbZBNVxU
+	id S1754517AbZBNV5j (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 16:57:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbZBNV52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 16:53:20 -0500
-Received: from mail-gx0-f222.google.com ([209.85.217.222]:34330 "EHLO
-	mail-gx0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752259AbZBNVxT (ORCPT
+	Sat, 14 Feb 2009 16:57:28 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:60822 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751647AbZBNV51 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 16:53:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
-         :subject:references:in-reply-to:content-type
-         :content-transfer-encoding;
-        b=TmBkQ0MuDozEJuo19HZ1+vGvLLmjTWLyFJnGv8oTS9zSx1RoIVwIdCO6H4Aq0o0qXA
-         zBKesyEtzcCvUxnUdNe7fsas2KXqDsh9QunjBPo9dgjfbhSrd2zXM5eRhqjkJuFY8/Va
-         H87y5yXdnOqHBpoPwDFxKOGi3IH9BnlwUvYs8=
-Message-ID: <49973D4B.30802@gmail.com>
-Date: Sat, 14 Feb 2009 15:53:15 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Sat, 14 Feb 2009 16:57:27 -0500
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: Richard Jonsson <richard_jonsson@hotmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Unable to write dvd+r on 3 systems
-References: <BAY108-W34B897781EDB26A588B4B29DB90@phx.gbl>
-In-Reply-To: <BAY108-W34B897781EDB26A588B4B29DB90@phx.gbl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20090214213848.GF7648@localhost>
+References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
+	 <20090214211346.23489.96321.stgit@vmbox.hanneseder.net>
+	 <20090214212948.GE7648@localhost> <20090214213848.GF7648@localhost>
+Date: Sat, 14 Feb 2009 22:57:24 +0100
+Message-ID: <154e089b0902141357x3af8b2adk223749ce11e976ef@mail.gmail.com>
+Subject: Re: [PATCH 08/43] drivers/net/ppp*.c: fix sparse warnings: fix 
+	signedness
+From: Hannes Eder <hannes@hanneseder.net>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Richard Jonsson wrote:
-> 
-> It seems I am the last person on earth burning dvd's. I have tried on three different systems, using a mix of growisofs, xfburn, brasero and k3b. They all give the same result for their respective system.
-> 
-> On system 1 it takes forever to complete the process. The system is completely useless while burning. IO wait is 50% and hardIRQ is 10-20%. If audio is playing at the same time it stutters in a way that it sounds as it's playing slow. Mouse cursor jerks and it takes eons to even open a new terminal.
-> 
-> On system 2 growisofs will try for half a minute and then fail with a message in dmesg. The disc isn't even touched. Tried homebuilt kernel.org kernels from 2.6.25 to current git with no difference. See attachment "growisofs_system2.txt". I have been able to burn exactly 1 disc in total, which magically started recording immediately.
-> 
-> System 3 burns at decent speed and always reports success, but about half the time only part of the disc is actually burned. It is visible to the eye, and it will not work. Tried at 4x too.
+On Sat, Feb 14, 2009 at 10:38 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> [Cyrill Gorcunov - Sun, Feb 15, 2009 at 12:29:48AM +0300]
+> | [Hannes Eder - Sat, Feb 14, 2009 at 10:13:52PM +0100]
+> | | Fix this sparse warnings:
+> | |   drivers/net/ppp_generic.c:919:43: warning: incorrect type in argument 1 (different signedness)
+> | |   drivers/net/pppoe.c:1195:43: warning: incorrect type in argument 1 (different signedness)
+> | |   drivers/net/pppol2tp.c:2666:43: warning: incorrect type in argument 1 (different signedness)
+> | |
+> | | Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+> | ...
+> |
+> | Thanks Hannes,
+> |
+> | Acked-by: Cyrill Gorcunov <gorcunov@openvz.org>
+> |
+> |       - Cyrill -
+>
+> Btw I think the same fix could be applied on
+> drivers/net/tun.c (if you have time for :)
 
-It sounds like you may have multiple problems. System 1 sounds like 
-maybe DMA is not being used for some reason, the dmesg output would be 
-useful. On System 2 it looks like a write timed out, and system 3 is 
-having burn quality problems. System 1 may have a kernel issue that 
-should be looked into, but as for the other two, I would tend to suspect 
-the quality of the discs you are using. There is a lot of crap media out 
-there, and also some burners don't like discs with media codes that they 
-don't have preprogrammed burn strategies for.
+This was fixed by this commit:
+commit 745417e20684e4951afcabfe74583a3884e54980
+Author: Gerrit Renker <gerrit@erg.abdn.ac.uk>
+Date:   Sun Jan 4 17:14:46 2009 -0800
+
+which is in the linux-next tree.
+
+BTW, how can I check from which tree this commit came into the linux-next tree?
+
+-Hannes
