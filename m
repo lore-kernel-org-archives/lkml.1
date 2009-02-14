@@ -1,163 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753471AbZBNFqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753223AbZBNGJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753471AbZBNFqS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 00:46:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbZBNFqF
+	id S1753223AbZBNGJu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 01:09:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750880AbZBNGJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 00:46:05 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:32089 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751273AbZBNFqE (ORCPT
+	Sat, 14 Feb 2009 01:09:41 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49608
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750727AbZBNGJk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 00:46:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=wRcZDotkmcnBINhmtWqlT5a82UdqlspZVFNMTOSD+YebhbHP2PPXhYn+M8S9TAxQ78
-         zP6vWnCcgpcgY34wnDqKU+Lrtb+UUA88GfBdFIroNEYchg1XNCAqtAPneITPK5MxPlNf
-         waJaa47OnNrPTnmsp0U5oJ3m3/YA9XBcv29cs=
-MIME-Version: 1.0
-In-Reply-To: <20090214052030.GB7194@linux.vnet.ibm.com>
-References: <20090213145653.GA6854@linux.vnet.ibm.com>
-	 <20090213155507.GA2838@Krystal>
-	 <alpine.LFD.2.00.0902130808050.3099@localhost.localdomain>
-	 <20090213173352.GB4684@Krystal>
-	 <alpine.LFD.2.00.0902130945350.3179@localhost.localdomain>
-	 <alpine.LFD.2.00.0902130956400.3179@localhost.localdomain>
-	 <20090213185411.GB7124@Krystal>
-	 <20090213193619.GH6854@linux.vnet.ibm.com>
-	 <8bd0f97a0902132107r3651ce4rc5bc4e027268e2aa@mail.gmail.com>
-	 <20090214052030.GB7194@linux.vnet.ibm.com>
-Date: Sat, 14 Feb 2009 00:46:02 -0500
-Message-ID: <8bd0f97a0902132146t2badab79ue76e0a43d74c95ca@mail.gmail.com>
-Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux (repost)
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Bryan Wu <cooloney@kernel.org>,
-       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
-       uclinux-dist-devel@blackfin.uclinux.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 14 Feb 2009 01:09:40 -0500
+Date: Fri, 13 Feb 2009 22:09:34 -0800 (PST)
+Message-Id: <20090213.220934.236067646.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Cc: airlied@linux.ie, dri-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5]: drm: ati_pcigart: Do not access I/O MEM space
+ using pointer derefs.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1234434959.29851.55.camel@pasglop>
+References: <20090212.021527.12463602.davem@davemloft.net>
+	<1234434959.29851.55.camel@pasglop>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 14, 2009 at 00:20, Paul E. McKenney wrote:
-> On Sat, Feb 14, 2009 at 12:07:46AM -0500, Mike Frysinger wrote:
->> On Fri, Feb 13, 2009 at 14:36, Paul E. McKenney wrote:
->> > On Fri, Feb 13, 2009 at 01:54:11PM -0500, Mathieu Desnoyers wrote:
->> >> * Linus Torvalds (torvalds@linux-foundation.org) wrote:
->> >> > Btw, for user space, if you want to do this all right for something like
->> >> > BF. I think the only _correct_ thing to do (in the sense that the end
->> >> > result will actually be debuggable) is to essentially give full SMP
->> >> > coherency in user space.
->> >> >
->> >> > It's doable, but rather complicated, and I'm not 100% sure it really ends
->> >> > up making sense. The way to do it is to just simply say:
->> >> >
->> >> >  - never map the same page writably on two different cores, and always
->> >> >    flush the cache (on the receiving side) when you switch a page from one
->> >> >    core to another.
->> >> >
->> >> > Now, the kernel can't really do that reasonably, but user space possibly could.
->> >> >
->> >> > Now, I realize that blackfin doesn't actually even have a MMU or a TLB, so
->> >> > by "mapping the same page" in that case we end up really meaning "having a
->> >> > shared mapping or thread". I think that _should_ be doable. The most
->> >> > trivial approach might be to simply limit all processes with shared
->> >> > mappings or CLONE_VM to core 0, and letting core 1 run everything else
->> >> > (but you could do it differently: mapping something with MAP_SHARED would
->> >> > force you to core 0, but threads would just force the thread group to
->> >> > stay on _one_ core, rather than necessarily a fixed one).
->> >> >
->> >> > Yeah, because of the lack of real memory protection, the kernel can't
->> >> > _know_ that processes don't behave badly and access things that they
->> >> > didn't explicitly map, but I'm hoping that that is rare.
->> >> >
->> >> > And yes, if you really want to use threads as a way to do something
->> >> > across cores, you'd be screwed - the kenrel would only schedule the
->> >> > threads on one CPU. But considering the undefined nature of threading on
->> >> > such a cpu, wouldn't that still be preferable? Wouldn't it be nice to have
->> >> > the knowledge that user space _looks_ cache-coherent by virtue of the
->> >> > kernel just limiting cores appropriately?
->> >> >
->> >> > And then user space would simply not need to worry as much. Code written
->> >> > for another architecture will "just work" on BF SMP too. With the normal
->> >> > uclinux limitations, of course.
->> >>
->> >> I don't know enough about BF to tell for sure, but the other way around
->> >> I see that would still permit running threads with shared memory space
->> >> on different CPUs is to call a cache flush each time a userspace lock is
->> >> taken/released (at the synchronization points where the "magic
->> >> test-and-set instruction" is used) _from_ userspace.
->> >>
->> >> If some more elaborate userspace MT code uses something else than those
->> >> basic locks provided by core libraries to synchronize data exchange,
->> >> then it would be on its own and have to ensure cache flushing itself.
->> >
->> > How about just doing a sched_setaffinity() in the BF case?  Sounds
->> > like an easy way to implement Linus's suggestion of restricting the
->> > multithreaded processes to a single core.  I have a hard time losing
->> > sleep over the lack of parallelism in the case where the SMP support is
->> > at best rudimentary...
->>
->> the quick way is to tell people to run their program through `taskset`
->> (which is what we're doing now).
->
-> Not sure what environment Mathieu is looking to run his program from,
-> but he would need to run it on multiple architectures.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 12 Feb 2009 21:35:59 +1100
 
-right, that is exactly the kind of thing we strive to avoid on our
-(the Blackfin) side of things
+> Oh BTW something else to be careful with, though I suppose it's working
+> some what by accident right now... when the GART is in the frame buffer
+> it gets applied the current fb swapper setting... ouch !
+> 
+> So it might be a good idea, if we're going to use DRM_READ/WRITE32 which
+> afaik are readl/writel (ie, swapping) to make sure we at least
+> temporarily disable that swapper while whacking the GART.
 
->> the next step up (or down depending on how you look at it) would be to
->> hook the clone function to do this automatically.  i havent gotten
->> around to testing this yet which is why there isnt anything in there
->> yet though.
->>
->> asmlinkage int bfin_clone(struct pt_regs....
->>        unsigned long clone_flags;
->>        unsigned long newsp;
->>
->> +#ifdef CONFIG_SMP
->> +       if (current->rt.nr_cpus_allowed == NR_CPUS) {
->> +               current->cpus_allowed = cpumask_of_cpu(smp_processor_id());
->> +               current->rt.nr_cpus_allowed = 1;
->> +       }
->> +#endif
->> +
->>        /* syscall2 puts clone_flags in r0 and usp in r1 */
->>        clone_flags = regs->r0;
->>        newsp = regs->r1;
->
-> Wouldn't you also have to make sched_setaffinity() cut back to only one
-> CPU if more are specified?
+So I've narrowed down the final problems I'm having.  It's the surface
+swapping settings indeed.
 
-mmm, yes and no.  if we wanted to keep the transparency thing going,
-then adding a check to the affinity functions to make sure threaded
-apps dont span cpus would be needed.  but i would think we'd want to
-have it return an error rather (EINVAL prob) than attempting to make
-any automatic selections.  the only real blocker here would be
-figuring out how to detect the application in question is threaded
-with 100% accuracy.  the Blackfin port does not yet have TLS support
-which means we're using linuxthreads rather than NPTL ...
+Running Xorg at depth 8, the CP can execute indirect buffers just
+fine, no code changes necessary.
 
-hooking clone gives us the biggest bang for the buck: majority of
-stuff today are threaded applications that dont look at affinity.
+However, the CP hangs on indirect execution for depth 16 and 24.  But
+these depths work if I hard disable the surface byte swapping settings
+in the radeon Xorg driver.
 
-> If Blackfin handles hotplug CPU, that may
-> need attention as well, since tasks affinitied to the CPU being removed
-> can end up with their affinity set to all CPUs.  And there are probably
-> other issues.
+I did some research, and it does appear that the GART does read the
+PTEs from the VRAM using the Host Data Path.  This means the surface
+control byte swapping settings are applied.
 
-no, we dont support hotplugging of CPUs.  there is no hardware support
-for it, so i think the only thing you'd gain is perhaps power savings
-?  not sure it would even work in our case though as the hardware does
-not support restarting or shutdown of one core ... they both have to
-restart/shutdown.  putting one core into a constant idle loop would
-save power, but that can already be accomplished by reducing the apps
-that go onto a specific core.
--mike
+So for depths of 16 and 24, the GART is reading garbage PTEs.  And
+that's why the CP hangs.
+
+I have no idea how to handle this properly.  Not only does the Xorg
+ATI driver set the swapping settings at an arbitray point, it also
+mucks with them dynamically f.e. in the render helper functions.
+
+The only way this can work properly is to choose one surface swapping
+setting, set the VRAM GART table so that the GART sees the PTEs in the
+correct format, and retain those settings throughout.
+
+It seems like, in at least R5xx, they tried to add a control bit in
+the PCI-E GART registers to handle this.  Bit 6 in PCI-E indirect
+register 0x10 is named 'GART_RDREQPATH_SEL' and has description:
+
+	Read request path
+	 0=HDP
+	 1=Direct Rd Req to MC
+
+This seems to be intended to be a way to have the GART PTE reads
+bypass the full Host Data Path (and thus potential surface byte
+swaps), by setting this bit to 1.
+
+I tried doing that, but it doesn't help my RV370 so perhaps older
+chips don't support this bit.  It's hard to tell as this is the area
+where all of AMD's published GPU documents are severely lacking.
+
+I tested whether reading back the PCIE_TX_GART_CNTL register shows
+bit 6 after I try to write it, and it always reads back zero.
+
+There are even more complications, the VT enter/exit code in the Xorg
+ATI driver tries to save and restore the VRAM GART table for PCI-E
+cards.  But this:
+
+1) Mis-sizes the GART table save buffer, it uses PAGE_SIZE instead
+   of the constant 4096 to determine how many GART entries there
+   are.  The PCI GART entries map 4096 bytes, always.  So using
+   getpagesize() is wrong.  (see RADEONDRIGetPciAperTableSize)
+
+   I have this fixed in my local tree.
+
+2) It doesn't check the surface byte swapping settings, so it
+   could be saving in one byte order and restoing in another.
+
+   I guess we could force RADEON_SURFACE_CNTL to zero around
+   the two memcpy()'s done in radeon_driver.c
+
+But really this whole area is a mess, and I know KMS is coming to fix
+this, but even in the traditional XORG/DRM layout XORG has no business
+keeping the GART table uptodate across VT switches.  It should be
+calling into the DRM with an ioctl to write the GART table out to VRAM
+again.
+
+Finally there is a huge issue with how the Xorg ATI driver resets the
+chip using the RBBM.  It soft resets the CP, but this resets the ring
+read pointer.  However, nothing is done to make sure the DRM resync's
+the ring write pointer (which remains unchanged by a soft CP reset) as
+well as it's internal software ring state.
+
+The result is that on the very next CP command submission, the CP
+re-executes everything from ring entry zero until wherever the DRM
+things the write pointer was at the time of the CP soft reset.
+
+Any time the Xorg ATI driver does a CP soft reset, it should do
+CP stop and resume calls to the DRM to resync the ring pointers.
+And this does not appear to be happening where it needs to be
+happening.
