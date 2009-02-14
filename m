@@ -1,90 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933055AbZBNBsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933085AbZBNBsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933055AbZBNBsZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:48:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763455AbZBNBRA
+	id S933085AbZBNBsw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:48:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932123AbZBNBez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:17:00 -0500
-Received: from kroah.org ([198.145.64.141]:50770 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763383AbZBNBQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:16:49 -0500
-Date: Fri, 13 Feb 2009 17:13:58 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Borislav Petkov <petkovbb@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [patch 48/48] ide-cd: fix DMA for non bio-backed requests
-Message-ID: <20090214011358.GW17706@kroah.com>
-References: <20090214010805.419403436@mini.kroah.org>
+	Fri, 13 Feb 2009 20:34:55 -0500
+Received: from tundra.namei.org ([65.99.196.166]:2803 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932104AbZBNBey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:34:54 -0500
+Date: Sat, 14 Feb 2009 12:33:58 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, haradats@nttdata.co.jp,
+       takedakn@nttdata.co.jp
+Subject: Re: [TOMOYO #15 0/8] TOMOYO Linux
+In-Reply-To: <200902130700.n1D70wFI085999@www262.sakura.ne.jp>
+Message-ID: <alpine.LRH.1.10.0902141233520.862@tundra.namei.org>
+References: <20090205081810.331987920@nttdata.co.jp> <alpine.LRH.1.10.0902121632160.18265@tundra.namei.org> <200902120653.n1C6rc9u027772@www262.sakura.ne.jp> <alpine.LRH.1.10.0902122024130.18751@tundra.namei.org>
+ <200902130700.n1D70wFI085999@www262.sakura.ne.jp>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ide-cd-fix-dma-for-non-bio-backed-requests.patch"
-In-Reply-To: <20090214011208.GA17706@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.28-stable review patch.  If anyone has any objections, please let us know.
+On Fri, 13 Feb 2009, Tetsuo Handa wrote:
 
-------------------
+> Hello.
+> 
+> I made a mistake when converting to use standard doubly linked list.
+> Please apply this patch.
+> ----------
+> Subject: TOMOYO: Fix exception policy read failure.
+> 
+> Due to wrong initialization, "cat /sys/kernel/security/tomoyo/exception_policy"
+> returned nothing.
+> 
+> Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+> Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+> Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 
-From: Borislav Petkov <petkovbb@googlemail.com>
+Applied.
 
-commit 9e772d0135a5b5f8355320be429efa339700d52d upstream.
+> ---
+>  security/tomoyo/domain.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- security-testing-2.6.git.orig/security/tomoyo/domain.c
+> +++ security-testing-2.6.git/security/tomoyo/domain.c
+> @@ -376,7 +376,7 @@ int tomoyo_write_domain_keeper_policy(ch
+>  bool tomoyo_read_domain_keeper_policy(struct tomoyo_io_buffer *head)
+>  {
+>  	struct list_head *pos;
+> -	bool done = false;
+> +	bool done = true;
+>  
+>  	down_read(&tomoyo_domain_keeper_list_lock);
+>  	list_for_each_cookie(pos, head->read_var2,
+> 
 
-This one fixes http://bugzilla.kernel.org/show_bug.cgi?id=12320.
-
-Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/ide/ide-cd.c |    3 +++
- drivers/ide/ide-io.c |    9 ++++++---
- 2 files changed, 9 insertions(+), 3 deletions(-)
-
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -984,6 +984,9 @@ static ide_startstop_t cdrom_newpc_intr(
- 		if (blk_fs_request(rq)) {
- 			ide_end_request(drive, 1, rq->nr_sectors);
- 			return ide_stopped;
-+		} else if (rq->cmd_type == REQ_TYPE_ATA_PC && !rq->bio) {
-+			ide_end_request(drive, 1, 1);
-+			return ide_stopped;
- 		}
- 		goto end_request;
- 	}
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -577,11 +577,14 @@ void ide_map_sg(ide_drive_t *drive, stru
- 	if (hwif->sg_mapped)	/* needed by ide-scsi */
- 		return;
- 
--	if (rq->cmd_type != REQ_TYPE_ATA_TASKFILE) {
--		hwif->sg_nents = blk_rq_map_sg(drive->queue, rq, sg);
--	} else {
-+	if (rq->cmd_type == REQ_TYPE_ATA_TASKFILE) {
- 		sg_init_one(sg, rq->buffer, rq->nr_sectors * SECTOR_SIZE);
- 		hwif->sg_nents = 1;
-+	} else if (!rq->bio) {
-+		sg_init_one(sg, rq->data, rq->data_len);
-+		hwif->sg_nents = 1;
-+	} else {
-+		hwif->sg_nents = blk_rq_map_sg(drive->queue, rq, sg);
- 	}
- }
- 
-
+-- 
+James Morris
+<jmorris@namei.org>
