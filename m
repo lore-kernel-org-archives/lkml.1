@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752683AbZBNBDF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762543AbZBNBEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752683AbZBNBDF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:03:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbZBNBB1
+	id S1762543AbZBNBEq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:04:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbZBNBBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:01:27 -0500
-Received: from kroah.org ([198.145.64.141]:39417 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:01:32 -0500
+Received: from kroah.org ([198.145.64.141]:39479 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753548AbZBNBB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:01:26 -0500
-Date: Fri, 13 Feb 2009 16:58:11 -0800
+	id S1754422AbZBNBBb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:01:31 -0500
+Date: Fri, 13 Feb 2009 16:58:22 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>
-Subject: [patch 04/47] lockd: fix regression in lockds handling of blocked
-	locks
-Message-ID: <20090214005811.GE11282@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: [patch 09/47] syscall define: fix uml compile bug
+Message-ID: <20090214005822.GJ11282@kroah.com>
 References: <20090214005130.617401075@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="lockd-fix-regression-in-lockd-s-handling-of-blocked-locks.patch"
+Content-Disposition: inline; filename="syscall-define-fix-uml-compile-bug.patch"
 In-Reply-To: <20090214005726.GA11282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,58 +41,88 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: J. Bruce Fields <bfields@citi.umich.edu>
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 9d9b87c1218be78ddecbc85ec3bb91c79c1d56ab upstream.
+commit 6c5979631b4b03c9288776562c18036765e398c1 upstream.
 
-If a client requests a blocking lock, is denied, then requests it again,
-then here in nlmsvc_lock() we will call vfs_lock_file() without FL_SLEEP
-set, because we've already queued a block and don't need the locks code
-to do it again.
+With the new system call defines we get this on uml:
 
-But that means vfs_lock_file() will return -EAGAIN instead of
-FILE_LOCK_DENIED.  So we still need to translate that -EAGAIN return
-into a nlm_lck_blocked error in this case, and put ourselves back on
-lockd's block list.
+arch/um/sys-i386/built-in.o: In function `sys_call_table':
+(.rodata+0x308): undefined reference to `sys_sigprocmask'
 
-The bug was introduced by bde74e4bc64415b1 "locks: add special return
-value for asynchronous locks".
+Reason for this is that uml passes the preprocessor option
+-Dsigprocmask=kernel_sigprocmask to gcc when compiling the kernel.
+This causes SYSCALL_DEFINE3(sigprocmask, ...) to be expanded to
+SYSCALL_DEFINEx(3, kernel_sigprocmask, ...) and finally to a system
+call named sys_kernel_sigprocmask.  However sys_sigprocmask is missing
+because of this.
 
-Thanks to Frank van Maarseveen for the report; his original test
-case was essentially
+To avoid macro expansion for the system call name just concatenate the
+name at first define instead of carrying it through severel levels.
+This was pointed out by Al Viro.
 
-	for i in `seq 30`; do flock /nfsmount/foo sleep 10 & done
-
-Tested-by: Frank van Maarseveen <frankvm@frankvm.com>
-Reported-by: Frank van Maarseveen <frankvm@frankvm.com>
-Cc: Miklos Szeredi <mszeredi@suse.cz>
-Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Reviewed-by: WANG Cong <wangcong@zeuux.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/lockd/svclock.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ include/linux/syscalls.h |   28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
 
---- a/fs/lockd/svclock.c
-+++ b/fs/lockd/svclock.c
-@@ -418,7 +418,7 @@ nlmsvc_lock(struct svc_rqst *rqstp, stru
- 			goto out;
- 		case -EAGAIN:
- 			ret = nlm_lck_denied;
--			goto out;
-+			break;
- 		case FILE_LOCK_DEFERRED:
- 			if (wait)
- 				break;
-@@ -434,6 +434,10 @@ nlmsvc_lock(struct svc_rqst *rqstp, stru
- 			goto out;
- 	}
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -95,13 +95,13 @@ struct old_linux_dirent;
+ #define __SC_TEST5(t5, a5, ...)	__SC_TEST(t5); __SC_TEST4(__VA_ARGS__)
+ #define __SC_TEST6(t6, a6, ...)	__SC_TEST(t6); __SC_TEST5(__VA_ARGS__)
  
-+	ret = nlm_lck_denied;
-+	if (!wait)
-+		goto out;
-+
- 	ret = nlm_lck_blocked;
+-#define SYSCALL_DEFINE0(name)   asmlinkage long sys_##name(void)
+-#define SYSCALL_DEFINE1(...)    SYSCALL_DEFINEx(1, __VA_ARGS__)
+-#define SYSCALL_DEFINE2(...)    SYSCALL_DEFINEx(2, __VA_ARGS__)
+-#define SYSCALL_DEFINE3(...)    SYSCALL_DEFINEx(3, __VA_ARGS__)
+-#define SYSCALL_DEFINE4(...)    SYSCALL_DEFINEx(4, __VA_ARGS__)
+-#define SYSCALL_DEFINE5(...)    SYSCALL_DEFINEx(5, __VA_ARGS__)
+-#define SYSCALL_DEFINE6(...)    SYSCALL_DEFINEx(6, __VA_ARGS__)
++#define SYSCALL_DEFINE0(name)	   asmlinkage long sys_##name(void)
++#define SYSCALL_DEFINE1(name, ...) SYSCALL_DEFINEx(1, _##name, __VA_ARGS__)
++#define SYSCALL_DEFINE2(name, ...) SYSCALL_DEFINEx(2, _##name, __VA_ARGS__)
++#define SYSCALL_DEFINE3(name, ...) SYSCALL_DEFINEx(3, _##name, __VA_ARGS__)
++#define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
++#define SYSCALL_DEFINE5(name, ...) SYSCALL_DEFINEx(5, _##name, __VA_ARGS__)
++#define SYSCALL_DEFINE6(name, ...) SYSCALL_DEFINEx(6, _##name, __VA_ARGS__)
  
- 	/* Append to list of blocked */
+ #ifdef CONFIG_PPC64
+ #define SYSCALL_ALIAS(alias, name)					\
+@@ -116,21 +116,21 @@ struct old_linux_dirent;
+ 
+ #define SYSCALL_DEFINE(name) static inline long SYSC_##name
+ #define SYSCALL_DEFINEx(x, name, ...)					\
+-	asmlinkage long sys_##name(__SC_DECL##x(__VA_ARGS__));		\
+-	static inline long SYSC_##name(__SC_DECL##x(__VA_ARGS__));	\
+-	asmlinkage long SyS_##name(__SC_LONG##x(__VA_ARGS__))		\
++	asmlinkage long sys##name(__SC_DECL##x(__VA_ARGS__));		\
++	static inline long SYSC##name(__SC_DECL##x(__VA_ARGS__));	\
++	asmlinkage long SyS##name(__SC_LONG##x(__VA_ARGS__))		\
+ 	{								\
+ 		__SC_TEST##x(__VA_ARGS__);				\
+-		return (long) SYSC_##name(__SC_CAST##x(__VA_ARGS__));	\
++		return (long) SYSC##name(__SC_CAST##x(__VA_ARGS__));	\
+ 	}								\
+-	SYSCALL_ALIAS(sys_##name, SyS_##name);				\
+-	static inline long SYSC_##name(__SC_DECL##x(__VA_ARGS__))
++	SYSCALL_ALIAS(sys##name, SyS##name);				\
++	static inline long SYSC##name(__SC_DECL##x(__VA_ARGS__))
+ 
+ #else /* CONFIG_HAVE_SYSCALL_WRAPPERS */
+ 
+ #define SYSCALL_DEFINE(name) asmlinkage long sys_##name
+ #define SYSCALL_DEFINEx(x, name, ...)					\
+-	asmlinkage long sys_##name(__SC_DECL##x(__VA_ARGS__))
++	asmlinkage long sys##name(__SC_DECL##x(__VA_ARGS__))
+ 
+ #endif /* CONFIG_HAVE_SYSCALL_WRAPPERS */
+ 
 
