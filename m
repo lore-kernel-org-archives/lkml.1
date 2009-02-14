@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752642AbZBNMee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752706AbZBNMwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752642AbZBNMee (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 07:34:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbZBNMeZ
+	id S1752706AbZBNMwp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 07:52:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751431AbZBNMwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 07:34:25 -0500
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:41041 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751389AbZBNMeZ (ORCPT
+	Sat, 14 Feb 2009 07:52:38 -0500
+Received: from zucker.schokokeks.org ([78.46.69.5]:37334 "EHLO
+	zucker.schokokeks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751389AbZBNMwi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 07:34:25 -0500
-Date: Sat, 14 Feb 2009 13:34:14 +0100
-To: reinette chatre <reinette.chatre@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>
-Subject: Re: [ipw3945-devel] iwl breaking on suspend/resume,	regression from 2.6.29-rc3
-Message-ID: <20090214123414.GA28933@gamma.logic.tuwien.ac.at>
-References: <20090212130520.GA19991@gamma.logic.tuwien.ac.at> <1234456879.23593.131.camel@rc-desk>
+	Sat, 14 Feb 2009 07:52:38 -0500
+From: Hanno =?utf-8?q?B=C3=B6ck?= <hanno@hboeck.de>
+To: Robert Hancock <hancockrwd@gmail.com>
+Subject: Re: Very old IDE hard drive (240 MB) detected as 1.1 TB
+Date: Sat, 14 Feb 2009 13:52:24 +0100
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>
+References: <200902131428.40212.hanno@hboeck.de> <499584FC.2050104@gmail.com>
+In-Reply-To: <499584FC.2050104@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1234456879.23593.131.camel@rc-desk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Norbert Preining <preining@logic.at>
+Content-Type: multipart/signed;
+  boundary="nextPart1624019.8K85oox94r";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200902141352.24277.hanno@hboeck.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Do, 12 Feb 2009, reinette chatre wrote:
-> > [ 6921.233094] iwlagn: Could not load the INST uCode section
-> > [ 6921.233097] iwlagn: Unable to set up bootstrap uCode: -110
+--nextPart1624019.8K85oox94r
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Could you please try
-> http://marc.info/?l=linux-wireless&m=123429595818495&w=2 ?
+Am Freitag 13 Februar 2009 schrieb Robert Hancock:
+> That would be worth investigating, yes.. If you can provide the dmesg
+> output from bootup, as well as the output of hdparm --Istdout on the
+> disk device, that would be useful..
 
-That fixed the problem. Thanks.
+That (and a bit more, normal hdparm output, smartctl output) here:
+http://files.hboeck.de/conner/
 
-Best wishes
+(please forward to potentially interested lists)
 
-Norbert
+=2D-=20
+Hanno B=C3=B6ck		Blog:		http://www.hboeck.de/
+GPG: 3DBD3B20		Jabber/Mail:	hanno@hboeck.de
 
--------------------------------------------------------------------------------
-Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-Debian Developer <preining@debian.org>                         Debian TeX Group
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-Windows NT crashed.
-I am the Blue Screen of Death.
-No one hears your screams.
-                       --- Windows Error Haiku
+--nextPart1624019.8K85oox94r
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAkmWvogACgkQr2QksT29OyClfQCfdZEhB7Kc7d9KXgkAwuFNiVFV
+QWwAn2b7TdGV4pAU9ngrTZaVlGAnlgpz
+=mgm4
+-----END PGP SIGNATURE-----
+
+--nextPart1624019.8K85oox94r--
