@@ -1,126 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753042AbZBNFH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753743AbZBNFSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753042AbZBNFH6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 00:07:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751062AbZBNFHt
+	id S1753743AbZBNFSV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 00:18:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbZBNFSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 00:07:49 -0500
-Received: from mail-gx0-f222.google.com ([209.85.217.222]:57366 "EHLO
-	mail-gx0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750727AbZBNFHs (ORCPT
+	Sat, 14 Feb 2009 00:18:11 -0500
+Received: from satoko.is.fushizen.net ([207.192.69.114]:46251 "EHLO
+	satoko.is.fushizen.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751093AbZBNFSK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 00:07:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=T4JZgN00qv6GiUimKZFnAv9lUyW2vMgExQzoukByH0L86jpph0uEfifkj5YsQgr7co
-         rxSewQQmGG1QLBE9kORDQcQ8w2+B4h/8sFacwcfI3JAmf547DQ8UCZDOUBcQV8/Ad1wk
-         QrJfxP7uMcMUkE2I8yoVoZ0nfSa+zfVqxIktE=
-MIME-Version: 1.0
-In-Reply-To: <20090213193619.GH6854@linux.vnet.ibm.com>
-References: <20090212215959.GN6759@linux.vnet.ibm.com>
-	 <20090213145653.GA6854@linux.vnet.ibm.com>
-	 <20090213151045.GA1574@Krystal> <20090213155507.GA2838@Krystal>
-	 <alpine.LFD.2.00.0902130808050.3099@localhost.localdomain>
-	 <20090213173352.GB4684@Krystal>
-	 <alpine.LFD.2.00.0902130945350.3179@localhost.localdomain>
-	 <alpine.LFD.2.00.0902130956400.3179@localhost.localdomain>
-	 <20090213185411.GB7124@Krystal>
-	 <20090213193619.GH6854@linux.vnet.ibm.com>
-Date: Sat, 14 Feb 2009 00:07:46 -0500
-Message-ID: <8bd0f97a0902132107r3651ce4rc5bc4e027268e2aa@mail.gmail.com>
-Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux (repost)
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Bryan Wu <cooloney@kernel.org>,
-       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
-       uclinux-dist-devel@blackfin.uclinux.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 14 Feb 2009 00:18:10 -0500
+From: Bryan Donlan <bdonlan@gmail.com>
+To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: sct@redhat.com, akpm@linux-foundation.org, adilger@sun.com, tytso@mit.edu,
+       Bryan Donlan <bdonlan@gmail.com>
+Subject: [RESEND/PATCH] ext[234]: Return -EIO not -ESTALE on directory traversal missing inode
+Date: Sat, 14 Feb 2009 00:18:08 -0500
+Message-Id: <1234588688-9497-1-git-send-email-bdonlan@gmail.com>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <1234588099-8445-1-git-send-email-bdonlan@fushizen.net>
+References: <1234588099-8445-1-git-send-email-bdonlan@fushizen.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 13, 2009 at 14:36, Paul E. McKenney wrote:
-> On Fri, Feb 13, 2009 at 01:54:11PM -0500, Mathieu Desnoyers wrote:
->> * Linus Torvalds (torvalds@linux-foundation.org) wrote:
->> > Btw, for user space, if you want to do this all right for something like
->> > BF. I think the only _correct_ thing to do (in the sense that the end
->> > result will actually be debuggable) is to essentially give full SMP
->> > coherency in user space.
->> >
->> > It's doable, but rather complicated, and I'm not 100% sure it really ends
->> > up making sense. The way to do it is to just simply say:
->> >
->> >  - never map the same page writably on two different cores, and always
->> >    flush the cache (on the receiving side) when you switch a page from one
->> >    core to another.
->> >
->> > Now, the kernel can't really do that reasonably, but user space possibly could.
->> >
->> > Now, I realize that blackfin doesn't actually even have a MMU or a TLB, so
->> > by "mapping the same page" in that case we end up really meaning "having a
->> > shared mapping or thread". I think that _should_ be doable. The most
->> > trivial approach might be to simply limit all processes with shared
->> > mappings or CLONE_VM to core 0, and letting core 1 run everything else
->> > (but you could do it differently: mapping something with MAP_SHARED would
->> > force you to core 0, but threads would just force the thread group to
->> > stay on _one_ core, rather than necessarily a fixed one).
->> >
->> > Yeah, because of the lack of real memory protection, the kernel can't
->> > _know_ that processes don't behave badly and access things that they
->> > didn't explicitly map, but I'm hoping that that is rare.
->> >
->> > And yes, if you really want to use threads as a way to do something
->> > across cores, you'd be screwed - the kenrel would only schedule the
->> > threads on one CPU. But considering the undefined nature of threading on
->> > such a cpu, wouldn't that still be preferable? Wouldn't it be nice to have
->> > the knowledge that user space _looks_ cache-coherent by virtue of the
->> > kernel just limiting cores appropriately?
->> >
->> > And then user space would simply not need to worry as much. Code written
->> > for another architecture will "just work" on BF SMP too. With the normal
->> > uclinux limitations, of course.
->>
->> I don't know enough about BF to tell for sure, but the other way around
->> I see that would still permit running threads with shared memory space
->> on different CPUs is to call a cache flush each time a userspace lock is
->> taken/released (at the synchronization points where the "magic
->> test-and-set instruction" is used) _from_ userspace.
->>
->> If some more elaborate userspace MT code uses something else than those
->> basic locks provided by core libraries to synchronize data exchange,
->> then it would be on its own and have to ensure cache flushing itself.
->
-> How about just doing a sched_setaffinity() in the BF case?  Sounds
-> like an easy way to implement Linus's suggestion of restricting the
-> multithreaded processes to a single core.  I have a hard time losing
-> sleep over the lack of parallelism in the case where the SMP support is
-> at best rudimentary...
+The ext[234]_iget() functions in the ext[234] family of filesystems returns
+-ESTALE if invoked on a deleted inode, in order to report errors to NFS
+properly. However, in ext[234]_lookup(), this -ESTALE can be propagated to
+userspace if the filesystem is corrupted, and a inode is linked even
+though it is marked as deleted. This leads to a misleading error message -
+"Stale NFS file handle" - and confusion on the part of the admin.
 
-the quick way is to tell people to run their program through `taskset`
-(which is what we're doing now).
+The bug can be easily reproduced by creating a new filesystem, making a link
+to an unused inode using debugfs, then mounting and attempting to ls -l
+said link.
 
-the next step up (or down depending on how you look at it) would be to
-hook the clone function to do this automatically.  i havent gotten
-around to testing this yet which is why there isnt anything in there
-yet though.
+This patch thus changes ext[234]_lookup to return -EIO if it receives -ESTALE
+from ext[234]_iget(), as ext[234] does for other filesystem metadata
+corruption.
 
-asmlinkage int bfin_clone(struct pt_regs....
-       unsigned long clone_flags;
-       unsigned long newsp;
+Signed-off-by: Bryan Donlan <bdonlan@gmail.com>
+---
 
-+#ifdef CONFIG_SMP
-+       if (current->rt.nr_cpus_allowed == NR_CPUS) {
-+               current->cpus_allowed = cpumask_of_cpu(smp_processor_id());
-+               current->rt.nr_cpus_allowed = 1;
-+       }
-+#endif
-+
-       /* syscall2 puts clone_flags in r0 and usp in r1 */
-       clone_flags = regs->r0;
-       newsp = regs->r1;
--mike
+Apologies for the resend so quickly for those on the CC list - my mailer was
+misconfigured and the mail rejected by vger.
+
+ fs/ext2/namei.c |    8 ++++++--
+ fs/ext3/namei.c |    8 ++++++--
+ fs/ext4/namei.c |    8 ++++++--
+ 3 files changed, 18 insertions(+), 6 deletions(-)
+
+diff --git a/fs/ext2/namei.c b/fs/ext2/namei.c
+index 90ea179..7dab3e8 100644
+--- a/fs/ext2/namei.c
++++ b/fs/ext2/namei.c
+@@ -66,8 +66,12 @@ static struct dentry *ext2_lookup(struct inode * dir, struct dentry *dentry, str
+ 	inode = NULL;
+ 	if (ino) {
+ 		inode = ext2_iget(dir->i_sb, ino);
+-		if (IS_ERR(inode))
+-			return ERR_CAST(inode);
++		if (unlikely(IS_ERR(inode))) {
++			if (PTR_ERR(inode) == -ESTALE)
++				return ERR_PTR(-EIO);
++			else
++				return ERR_CAST(inode);
++		}
+ 	}
+ 	return d_splice_alias(inode, dentry);
+ }
+diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
+index 4db4ffa..625f5dc 100644
+--- a/fs/ext3/namei.c
++++ b/fs/ext3/namei.c
+@@ -1047,8 +1047,12 @@ static struct dentry *ext3_lookup(struct inode * dir, struct dentry *dentry, str
+ 			return ERR_PTR(-EIO);
+ 		}
+ 		inode = ext3_iget(dir->i_sb, ino);
+-		if (IS_ERR(inode))
+-			return ERR_CAST(inode);
++		if (unlikely(IS_ERR(inode))) {
++			if (PTR_ERR(inode) == -ESTALE)
++				return ERR_PTR(-EIO);
++			else
++				return ERR_CAST(inode);
++		}
+ 	}
+ 	return d_splice_alias(inode, dentry);
+ }
+diff --git a/fs/ext4/namei.c b/fs/ext4/namei.c
+index ba702bd..4b054b3 100644
+--- a/fs/ext4/namei.c
++++ b/fs/ext4/namei.c
+@@ -1052,8 +1052,12 @@ static struct dentry *ext4_lookup(struct inode *dir, struct dentry *dentry, stru
+ 			return ERR_PTR(-EIO);
+ 		}
+ 		inode = ext4_iget(dir->i_sb, ino);
+-		if (IS_ERR(inode))
+-			return ERR_CAST(inode);
++		if (unlikely(IS_ERR(inode))) {
++			if (PTR_ERR(inode) == -ESTALE)
++				return ERR_PTR(-EIO);
++			else
++				return ERR_CAST(inode);
++		}
+ 	}
+ 	return d_splice_alias(inode, dentry);
+ }
+-- 
+1.5.6.3
+
