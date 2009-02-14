@@ -1,98 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759241AbZBNE77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753042AbZBNFH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759241AbZBNE77 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 23:59:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbZBNE7v
+	id S1753042AbZBNFH6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 00:07:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751062AbZBNFHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 23:59:51 -0500
-Received: from casper.infradead.org ([85.118.1.10]:35245 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752082AbZBNE7v (ORCPT
+	Sat, 14 Feb 2009 00:07:49 -0500
+Received: from mail-gx0-f222.google.com ([209.85.217.222]:57366 "EHLO
+	mail-gx0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750727AbZBNFHs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 23:59:51 -0500
-Date: Fri, 13 Feb 2009 20:59:49 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH 1/7] async: Asynchronous function calls to speed up
- kernel boot
-Message-ID: <20090213205949.1ebb441d@infradead.org>
-In-Reply-To: <20090213162200.8fea7e0c.akpm@linux-foundation.org>
-References: <20090107151151.458333c1@infradead.org>
-	<20090107151226.58264d07@infradead.org>
-	<20090213162200.8fea7e0c.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 14 Feb 2009 00:07:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=T4JZgN00qv6GiUimKZFnAv9lUyW2vMgExQzoukByH0L86jpph0uEfifkj5YsQgr7co
+         rxSewQQmGG1QLBE9kORDQcQ8w2+B4h/8sFacwcfI3JAmf547DQ8UCZDOUBcQV8/Ad1wk
+         QrJfxP7uMcMUkE2I8yoVoZ0nfSa+zfVqxIktE=
+MIME-Version: 1.0
+In-Reply-To: <20090213193619.GH6854@linux.vnet.ibm.com>
+References: <20090212215959.GN6759@linux.vnet.ibm.com>
+	 <20090213145653.GA6854@linux.vnet.ibm.com>
+	 <20090213151045.GA1574@Krystal> <20090213155507.GA2838@Krystal>
+	 <alpine.LFD.2.00.0902130808050.3099@localhost.localdomain>
+	 <20090213173352.GB4684@Krystal>
+	 <alpine.LFD.2.00.0902130945350.3179@localhost.localdomain>
+	 <alpine.LFD.2.00.0902130956400.3179@localhost.localdomain>
+	 <20090213185411.GB7124@Krystal>
+	 <20090213193619.GH6854@linux.vnet.ibm.com>
+Date: Sat, 14 Feb 2009 00:07:46 -0500
+Message-ID: <8bd0f97a0902132107r3651ce4rc5bc4e027268e2aa@mail.gmail.com>
+Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux (repost)
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Bryan Wu <cooloney@kernel.org>,
+       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
+       uclinux-dist-devel@blackfin.uclinux.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Feb 2009 16:22:00 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Fri, Feb 13, 2009 at 14:36, Paul E. McKenney wrote:
+> On Fri, Feb 13, 2009 at 01:54:11PM -0500, Mathieu Desnoyers wrote:
+>> * Linus Torvalds (torvalds@linux-foundation.org) wrote:
+>> > Btw, for user space, if you want to do this all right for something like
+>> > BF. I think the only _correct_ thing to do (in the sense that the end
+>> > result will actually be debuggable) is to essentially give full SMP
+>> > coherency in user space.
+>> >
+>> > It's doable, but rather complicated, and I'm not 100% sure it really ends
+>> > up making sense. The way to do it is to just simply say:
+>> >
+>> >  - never map the same page writably on two different cores, and always
+>> >    flush the cache (on the receiving side) when you switch a page from one
+>> >    core to another.
+>> >
+>> > Now, the kernel can't really do that reasonably, but user space possibly could.
+>> >
+>> > Now, I realize that blackfin doesn't actually even have a MMU or a TLB, so
+>> > by "mapping the same page" in that case we end up really meaning "having a
+>> > shared mapping or thread". I think that _should_ be doable. The most
+>> > trivial approach might be to simply limit all processes with shared
+>> > mappings or CLONE_VM to core 0, and letting core 1 run everything else
+>> > (but you could do it differently: mapping something with MAP_SHARED would
+>> > force you to core 0, but threads would just force the thread group to
+>> > stay on _one_ core, rather than necessarily a fixed one).
+>> >
+>> > Yeah, because of the lack of real memory protection, the kernel can't
+>> > _know_ that processes don't behave badly and access things that they
+>> > didn't explicitly map, but I'm hoping that that is rare.
+>> >
+>> > And yes, if you really want to use threads as a way to do something
+>> > across cores, you'd be screwed - the kenrel would only schedule the
+>> > threads on one CPU. But considering the undefined nature of threading on
+>> > such a cpu, wouldn't that still be preferable? Wouldn't it be nice to have
+>> > the knowledge that user space _looks_ cache-coherent by virtue of the
+>> > kernel just limiting cores appropriately?
+>> >
+>> > And then user space would simply not need to worry as much. Code written
+>> > for another architecture will "just work" on BF SMP too. With the normal
+>> > uclinux limitations, of course.
+>>
+>> I don't know enough about BF to tell for sure, but the other way around
+>> I see that would still permit running threads with shared memory space
+>> on different CPUs is to call a cache flush each time a userspace lock is
+>> taken/released (at the synchronization points where the "magic
+>> test-and-set instruction" is used) _from_ userspace.
+>>
+>> If some more elaborate userspace MT code uses something else than those
+>> basic locks provided by core libraries to synchronize data exchange,
+>> then it would be on its own and have to ensure cache flushing itself.
+>
+> How about just doing a sched_setaffinity() in the BF case?  Sounds
+> like an easy way to implement Linus's suggestion of restricting the
+> multithreaded processes to a single core.  I have a hard time losing
+> sleep over the lack of parallelism in the case where the SMP support is
+> at best rudimentary...
 
-> It means that sometimes, very rarely, the callback function will be
-> called within the caller's context.
+the quick way is to tell people to run their program through `taskset`
+(which is what we're doing now).
 
-for the cases that use it right now it is ok.
+the next step up (or down depending on how you look at it) would be to
+hook the clone function to do this automatically.  i havent gotten
+around to testing this yet which is why there isnt anything in there
+yet though.
 
-> 
-> Hence this interface cannot be used to call might-sleep functions from
-> within atomic contexts.  Which should be a major application of this
-> code!
+asmlinkage int bfin_clone(struct pt_regs....
+       unsigned long clone_flags;
+       unsigned long newsp;
 
-That is not what this was originally designed for. The original design
-goal was to offload existing function calls out of the synchronous
-execution path.
-
-Now I understand that it would be nice to do what you propose, but it
-needs a little different interface for that; specifically, the caller
-will need to pass in the memory for the administration.
-
-> 
-
-> 
-> Furthermore:
-> 
-> - If the callback function can sleep then the caller must be able to
->   sleep, so the GFP_ATOMIC is unneeded and undesirable, and the
-> comment is wrong.
-
-And if the callback function does not sleep it can be used in atomic
-context just fine. Hence the GFP_ATOMIC.
-.
-
-> 
-> I can't immediately think of a fix, apart from overhauling the
-> implementation and doing it in the proper way: caller-provided storage
-> rather than callee-provided (which always goes wrong).
-> schedule_work() got this right.
-
-schedule_work() got it part right. Pushing the administration to the
-caller means the caller needs to allocate the memory or use static
-memory and then make sure it doesn't get reused for a 2nd piece of work.
-(schedule_work doesn't care, it will just execute it once in that case.
-Here we do absolutely care).
-
-The caller only rarely can deal better with the memory allocation and
-lifetime rules than the implementation can. In fact, for the scenario of
-"I want to take this bit of code out of the synchronous path
-normally".. it is just fine and most easy this way; moving this to the
-caller just makes things more fragile.
-
-So yes based on the discussions on lkml in the last week I was going to
-add an interface where you can pass in your own memory, but I want to
-get the interface right such that it is low complexity for the caller,
-and really hard to get wrong.. and that does involve dealing with the
-"how to do static allocation while doing multiple parallel calls"
-problem.
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
++#ifdef CONFIG_SMP
++       if (current->rt.nr_cpus_allowed == NR_CPUS) {
++               current->cpus_allowed = cpumask_of_cpu(smp_processor_id());
++               current->rt.nr_cpus_allowed = 1;
++       }
++#endif
++
+       /* syscall2 puts clone_flags in r0 and usp in r1 */
+       clone_flags = regs->r0;
+       newsp = regs->r1;
+-mike
