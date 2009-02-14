@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761932AbZBNBCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761813AbZBNBD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761932AbZBNBCr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:02:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753558AbZBNBB0
+	id S1761813AbZBNBD0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:03:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753744AbZBNBB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:01:26 -0500
-Received: from kroah.org ([198.145.64.141]:39402 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:01:28 -0500
+Received: from kroah.org ([198.145.64.141]:39421 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753513AbZBNBBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:01:25 -0500
-Date: Fri, 13 Feb 2009 16:58:09 -0800
+	id S1753639AbZBNBB1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:01:27 -0500
+Date: Fri, 13 Feb 2009 16:58:13 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [patch 03/47] kernel-doc: fix syscall wrapper processing
-Message-ID: <20090214005809.GD11282@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Paul Clements <paul.clements@steeleye.com>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: [patch 05/47] nbd: fix I/O hang on disconnected nbds
+Message-ID: <20090214005813.GF11282@kroah.com>
 References: <20090214005130.617401075@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="kernel-doc-fix-syscall-wrapper-processing.patch"
+Content-Disposition: inline; filename="nbd-fix-i-o-hang-on-disconnected-nbds.patch"
 In-Reply-To: <20090214005726.GA11282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,103 +40,65 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+From: Paul Clements <paul.clements@steeleye.com>
 
-commit b4870bc5ee8c7a37541a3eb1208b5c76c13a078a upstream.
+commit 4d48a542b42747c36a5937447d9c3de7c897ea50 upstream.
 
-Fix kernel-doc processing of SYSCALL wrappers.
+Fix a problem that causes I/O to a disconnected (or partially initialized)
+nbd device to hang indefinitely.  To reproduce:
 
-The SYSCALL wrapper patches played havoc with kernel-doc for
-syscalls.  Syscalls that were scanned for DocBook processing
-reported warnings like this one, for sys_tgkill:
+# ioctl NBD_SET_SIZE_BLOCKS /dev/nbd23 514048
+# dd if=/dev/nbd23 of=/dev/null bs=4096 count=1
 
-Warning(kernel/signal.c:2285): No description found for parameter 'tgkill'
-Warning(kernel/signal.c:2285): No description found for parameter 'pid_t'
-Warning(kernel/signal.c:2285): No description found for parameter 'int'
+...hangs...
 
-because the macro parameters all "look like" function parameters,
-although they are not:
+This can also occur when an nbd device loses its nbd-client/server
+connection.  Although we clear the queue of any outstanding I/Os after the
+client/server connection fails, any additional I/Os that get queued later
+will hang.
 
-/**
- *  sys_tgkill - send signal to one specific thread
- *  @tgid: the thread group ID of the thread
- *  @pid: the PID of the thread
- *  @sig: signal to be sent
- *
- *  This syscall also checks the @tgid and returns -ESRCH even if the PID
- *  exists but it's not belonging to the target process anymore. This
- *  method solves the problem of threads exiting and PIDs getting reused.
- */
-SYSCALL_DEFINE3(tgkill, pid_t, tgid, pid_t, pid, int, sig)
-{
-...
+This bug may also be the problem reported in this bug report:
+http://bugzilla.kernel.org/show_bug.cgi?id=12277
 
-This patch special-cases the handling SYSCALL_DEFINE* function
-prototypes by expanding them to
-	long sys_foobar(type1 arg1, type1 arg2, ...)
+Testing would need to be performed to determine if the two issues are the
+same.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+This problem was introduced by the new request handling thread code ("NBD:
+allow nbd to be used locally", 3/2008), which entered into mainline around
+2.6.25.
+
+The fix, which is fairly simple, is to restore the check for lo->sock
+being NULL in do_nbd_request.  This causes I/O to an uninitialized nbd to
+immediately fail with an I/O error, as it did prior to the introduction of
+this bug.
+
+Signed-off-by: Paul Clements <paul.clements@steeleye.com>
+Reported-by: Jon Nelson <jnelson-kernel-bugzilla@jamponi.net>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- scripts/kernel-doc |   39 ++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 38 insertions(+), 1 deletion(-)
+ drivers/block/nbd.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
---- a/scripts/kernel-doc
-+++ b/scripts/kernel-doc
-@@ -1758,6 +1758,40 @@ sub reset_state {
-     $state = 0;
- }
+--- a/drivers/block/nbd.c
++++ b/drivers/block/nbd.c
+@@ -547,6 +547,15 @@ static void do_nbd_request(struct reques
  
-+sub syscall_munge() {
-+	my $void = 0;
-+
-+	$prototype =~ s@[\r\n\t]+@ @gos; # strip newlines/CR's/tabs
-+##	if ($prototype =~ m/SYSCALL_DEFINE0\s*\(\s*(a-zA-Z0-9_)*\s*\)/) {
-+	if ($prototype =~ m/SYSCALL_DEFINE0/) {
-+		$void = 1;
-+##		$prototype = "long sys_$1(void)";
-+	}
-+
-+	$prototype =~ s/SYSCALL_DEFINE.*\(/long sys_/; # fix return type & func name
-+	if ($prototype =~ m/long (sys_.*?),/) {
-+		$prototype =~ s/,/\(/;
-+	} elsif ($void) {
-+		$prototype =~ s/\)/\(void\)/;
-+	}
-+
-+	# now delete all of the odd-number commas in $prototype
-+	# so that arg types & arg names don't have a comma between them
-+	my $count = 0;
-+	my $len = length($prototype);
-+	if ($void) {
-+		$len = 0;	# skip the for-loop
-+	}
-+	for (my $ix = 0; $ix < $len; $ix++) {
-+		if (substr($prototype, $ix, 1) eq ',') {
-+			$count++;
-+			if ($count % 2 == 1) {
-+				substr($prototype, $ix, 1) = ' ';
-+			}
+ 		BUG_ON(lo->magic != LO_MAGIC);
+ 
++		if (unlikely(!lo->sock)) {
++			printk(KERN_ERR "%s: Attempted send on closed socket\n",
++				lo->disk->disk_name);
++			req->errors++;
++			nbd_end_request(req);
++			spin_lock_irq(q->queue_lock);
++			continue;
 +		}
-+	}
-+}
 +
- sub process_state3_function($$) {
-     my $x = shift;
-     my $file = shift;
-@@ -1774,7 +1808,10 @@ sub process_state3_function($$) {
- 	$prototype =~ s@/\*.*?\*/@@gos;	# strip comments.
- 	$prototype =~ s@[\r\n]+@ @gos; # strip newlines/cr's.
- 	$prototype =~ s@^\s+@@gos; # strip leading spaces
--	dump_function($prototype,$file);
-+	if ($prototype =~ /SYSCALL_DEFINE/) {
-+		syscall_munge();
-+	}
-+	dump_function($prototype, $file);
- 	reset_state();
-     }
- }
+ 		spin_lock_irq(&lo->queue_lock);
+ 		list_add_tail(&req->queuelist, &lo->waiting_queue);
+ 		spin_unlock_irq(&lo->queue_lock);
 
