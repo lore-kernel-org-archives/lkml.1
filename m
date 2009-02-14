@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752140AbZBNJ4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752093AbZBNKEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752140AbZBNJ4a (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 04:56:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbZBNJ4W
+	id S1752093AbZBNKEq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 05:04:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbZBNKEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 04:56:22 -0500
-Received: from casper.infradead.org ([85.118.1.10]:51001 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751209AbZBNJ4V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 04:56:21 -0500
-Subject: Re: [PATCH] mm: disable preemption in apply_to_pte_range
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-mm@kvack.org,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <4995ACD5.9000201@goop.org>
-References: <4994BCF0.30005@goop.org>	<4994C052.9060907@goop.org>
-	 <20090212165539.5ce51468.akpm@linux-foundation.org>
-	 <4994CF35.60507@goop.org> <1234525710.6519.17.camel@twins>
-	 <4995ACD5.9000201@goop.org>
-Content-Type: text/plain
-Date: Sat, 14 Feb 2009 10:56:01 +0100
-Message-Id: <1234605361.4698.23.camel@laptop>
+	Sat, 14 Feb 2009 05:04:37 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37712
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750834AbZBNKEg convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 05:04:36 -0500
+Date: Sat, 14 Feb 2009 02:04:31 -0800 (PST)
+Message-Id: <20090214.020431.193689843.davem@davemloft.net>
+To: michel@daenzer.net
+Cc: benh@kernel.crashing.org, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]: drm: radeon: Use surface for PCI GART table.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1234605599.4823.177.camel@thor>
+References: <20090214.015107.127190039.davem@davemloft.net>
+	<1234605599.4823.177.camel@thor>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.25.90 
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-02-13 at 09:24 -0800, Jeremy Fitzhardinge wrote:
-> Peter Zijlstra wrote:
-> >> The specific rules are that 
-> >> arch_enter_lazy_mmu_mode()/arch_leave_lazy_mmu_mode() require you to be 
-> >> holding the appropriate pte locks for the ptes you're updating, so 
-> >> preemption is naturally disabled in that case.
-> >>     
-> >
-> > Right, except on -rt where the pte lock is a mutex.
-> >   
+From: Michel Dänzer <michel@daenzer.net>
+Date: Sat, 14 Feb 2009 10:59:59 +0100
+
+> On Sat, 2009-02-14 at 01:51 -0800, David Miller wrote:
+> > This allocates a physical surface for the PCI GART table, this way no
+> > matter what other surface configurations exist the GART table will
+> > always be seen by the hardware properly.
 > 
-> Hm, that's interesting.  The requirement isn't really "no preemption", 
-> its "must not migrate to another cpu".  Is there a better way to express 
-> that?
+> BTW, I don't think the swapping settings affect GPU access to the table,
+> only CPU access, but this is a good solution anyway.
 
-Not really, in the past something like migrate_disable() has been
-proposed, however that's problematic in that it can generate latencies
-that are _very_ hard to track down, so we've always resisted that and
-found other ways.
+They absolutely and positively do effect GPU access to the table.
+I've proven it with many conclusive tests over the past 3 days.
 
-> >> This all goes a bit strange with init_mm's non-requirement for taking 
-> >> pte locks.  The caller has to arrange for some kind of serialization on 
-> >> updating the range in question, and that could be a mutex.  Explicitly 
-> >> disabling preemption in enter_lazy_mmu_mode would make sense for this 
-> >> case, but it would be redundant for the common case of batched updates 
-> >> to usermode ptes.
-> >>     
-> >
-> > I really utterly hate how you just plonk preempt_disable() in there
-> > unconditionally and without very clear comments on how and why.
-> >   
+> This is only really necessary on big endian, but other than that:
 > 
-> Well, there's the commit comment.  They're important, right?  That's why 
-> we spend time writing good commit comments?  So they get read?  ;)
+> Acked-By: Michel Dänzer <daenzer@vmware.com>
 
-Andrew taught me that indeed, but still when looking at the code its
-good to have some text there explaining things too.
-
+Thanks.
