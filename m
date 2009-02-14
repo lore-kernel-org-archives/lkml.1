@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764377AbZBNBry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933055AbZBNBsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764377AbZBNBry (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:47:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762554AbZBNBQ7
+	id S933055AbZBNBsZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:48:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763455AbZBNBRA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:16:59 -0500
-Received: from kroah.org ([198.145.64.141]:50709 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:17:00 -0500
+Received: from kroah.org ([198.145.64.141]:50770 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762741AbZBNBQr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:16:47 -0500
-Date: Fri, 13 Feb 2009 17:13:56 -0800
+	id S1763383AbZBNBQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:16:49 -0500
+Date: Fri, 13 Feb 2009 17:13:58 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 47/48] x86: microcode_amd: fix wrong handling of equivalent
-	CPU id
-Message-ID: <20090214011356.GV17706@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Borislav Petkov <petkovbb@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [patch 48/48] ide-cd: fix DMA for non bio-backed requests
+Message-ID: <20090214011358.GW17706@kroah.com>
 References: <20090214010805.419403436@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-microcode_amd-fix-wrong-handling-of-equivalent-cpu-id.patch"
+Content-Disposition: inline; filename="ide-cd-fix-dma-for-non-bio-backed-requests.patch"
 In-Reply-To: <20090214011208.GA17706@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,67 +40,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
+From: Borislav Petkov <petkovbb@googlemail.com>
 
-commit 3c763fd77e66e55d029052da31df0abd9920cb1e upstream.
+commit 9e772d0135a5b5f8355320be429efa339700d52d upstream.
 
-Impact: fix bug resulting in non-loaded AMD microcode
+This one fixes http://bugzilla.kernel.org/show_bug.cgi?id=12320.
 
-mc_header->processor_rev_id is a 2 byte value. Similar is true for
-equiv_cpu in an equiv_cpu_entry -- only 2 bytes are of interest.
-
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/microcode_amd.c |   23 ++++++-----------------
- 1 file changed, 6 insertions(+), 17 deletions(-)
+ drivers/ide/ide-cd.c |    3 +++
+ drivers/ide/ide-io.c |    9 ++++++---
+ 2 files changed, 9 insertions(+), 3 deletions(-)
 
---- a/arch/x86/kernel/microcode_amd.c
-+++ b/arch/x86/kernel/microcode_amd.c
-@@ -62,7 +62,7 @@ struct microcode_header_amd {
- 	unsigned int  mc_patch_data_checksum;
- 	unsigned int  nb_dev_id;
- 	unsigned int  sb_dev_id;
--	unsigned char processor_rev_id[2];
-+	u16 processor_rev_id;
- 	unsigned char nb_rev_id;
- 	unsigned char sb_rev_id;
- 	unsigned char bios_api_rev;
-@@ -125,7 +125,7 @@ static int get_matching_microcode(int cp
- 
- 	while (equiv_cpu_table[i].installed_cpu != 0) {
- 		if (current_cpu_id == equiv_cpu_table[i].installed_cpu) {
--			equiv_cpu_id = equiv_cpu_table[i].equiv_cpu;
-+			equiv_cpu_id = equiv_cpu_table[i].equiv_cpu & 0xffff;
- 			break;
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -984,6 +984,9 @@ static ide_startstop_t cdrom_newpc_intr(
+ 		if (blk_fs_request(rq)) {
+ 			ide_end_request(drive, 1, rq->nr_sectors);
+ 			return ide_stopped;
++		} else if (rq->cmd_type == REQ_TYPE_ATA_PC && !rq->bio) {
++			ide_end_request(drive, 1, 1);
++			return ide_stopped;
  		}
- 		i++;
-@@ -137,21 +137,10 @@ static int get_matching_microcode(int cp
- 		return 0;
+ 		goto end_request;
  	}
+--- a/drivers/ide/ide-io.c
++++ b/drivers/ide/ide-io.c
+@@ -577,11 +577,14 @@ void ide_map_sg(ide_drive_t *drive, stru
+ 	if (hwif->sg_mapped)	/* needed by ide-scsi */
+ 		return;
  
--	if ((mc_header->processor_rev_id[0]) != (equiv_cpu_id & 0xff)) {
--		printk(KERN_ERR
--			"microcode: CPU%d patch does not match "
--			"(patch is %x, cpu extended is %x) \n",
--			cpu, mc_header->processor_rev_id[0],
--			(equiv_cpu_id & 0xff));
--		return 0;
--	}
--
--	if ((mc_header->processor_rev_id[1]) != ((equiv_cpu_id >> 16) & 0xff)) {
--		printk(KERN_ERR "microcode: CPU%d patch does not match "
--			"(patch is %x, cpu base id is %x) \n",
--			cpu, mc_header->processor_rev_id[1],
--			((equiv_cpu_id >> 16) & 0xff));
--
-+	if (mc_header->processor_rev_id != equiv_cpu_id) {
-+		printk(KERN_ERR	"microcode: CPU%d patch does not match "
-+		       "(processor_rev_id: %x, eqiv_cpu_id: %x)\n",
-+		       cpu, mc_header->processor_rev_id, equiv_cpu_id);
- 		return 0;
+-	if (rq->cmd_type != REQ_TYPE_ATA_TASKFILE) {
+-		hwif->sg_nents = blk_rq_map_sg(drive->queue, rq, sg);
+-	} else {
++	if (rq->cmd_type == REQ_TYPE_ATA_TASKFILE) {
+ 		sg_init_one(sg, rq->buffer, rq->nr_sectors * SECTOR_SIZE);
+ 		hwif->sg_nents = 1;
++	} else if (!rq->bio) {
++		sg_init_one(sg, rq->data, rq->data_len);
++		hwif->sg_nents = 1;
++	} else {
++		hwif->sg_nents = blk_rq_map_sg(drive->queue, rq, sg);
  	}
+ }
  
 
