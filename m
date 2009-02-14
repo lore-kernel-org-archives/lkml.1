@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754517AbZBNV5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754034AbZBNWB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754517AbZBNV5j (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 16:57:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbZBNV52
+	id S1754034AbZBNWB5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 17:01:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbZBNWBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 16:57:28 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:60822 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751647AbZBNV51 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 16:57:27 -0500
+	Sat, 14 Feb 2009 17:01:48 -0500
+Received: from kroah.org ([198.145.64.141]:45417 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752046AbZBNWBr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 17:01:47 -0500
+Date: Sat, 14 Feb 2009 13:59:19 -0800
+From: Greg KH <greg@kroah.com>
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Cc: Paul Mundt <lethal@users.sourceforge.net>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input <linux-input@vger.kernel.org>,
+       linux-sh <linux-sh@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sh: maple: Update the maple bus driver to support
+	block reads and writes
+Message-ID: <20090214215919.GA24052@kroah.com>
+References: <1234641948.6609.13.camel@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <20090214213848.GF7648@localhost>
-References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
-	 <20090214211346.23489.96321.stgit@vmbox.hanneseder.net>
-	 <20090214212948.GE7648@localhost> <20090214213848.GF7648@localhost>
-Date: Sat, 14 Feb 2009 22:57:24 +0100
-Message-ID: <154e089b0902141357x3af8b2adk223749ce11e976ef@mail.gmail.com>
-Subject: Re: [PATCH 08/43] drivers/net/ppp*.c: fix sparse warnings: fix 
-	signedness
-From: Hannes Eder <hannes@hanneseder.net>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1234641948.6609.13.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 14, 2009 at 10:38 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> [Cyrill Gorcunov - Sun, Feb 15, 2009 at 12:29:48AM +0300]
-> | [Hannes Eder - Sat, Feb 14, 2009 at 10:13:52PM +0100]
-> | | Fix this sparse warnings:
-> | |   drivers/net/ppp_generic.c:919:43: warning: incorrect type in argument 1 (different signedness)
-> | |   drivers/net/pppoe.c:1195:43: warning: incorrect type in argument 1 (different signedness)
-> | |   drivers/net/pppol2tp.c:2666:43: warning: incorrect type in argument 1 (different signedness)
-> | |
-> | | Signed-off-by: Hannes Eder <hannes@hanneseder.net>
-> | ...
-> |
-> | Thanks Hannes,
-> |
-> | Acked-by: Cyrill Gorcunov <gorcunov@openvz.org>
-> |
-> |       - Cyrill -
->
-> Btw I think the same fix could be applied on
-> drivers/net/tun.c (if you have time for :)
+On Sat, Feb 14, 2009 at 08:05:48PM +0000, Adrian McMenamin wrote:
+> Greg,
+> 
+> This patch updates the maple bus to support asynchronous block reads and
+> writes as well as generally improving the quality of the code and
+> supporting concurrency (all needed to support the Dreamcast visual
+> memory unit - a driver will also be posted for that).
+> 
+> I have posted versions of this before but am here following the patch
+> grouping suggested and have also tested this code and unlike earlier
+> versions it shows no signs of suffering from race conditions - so I hope
+> you will be happy to queue it for inclusion.
 
-This was fixed by this commit:
-commit 745417e20684e4951afcabfe74583a3884e54980
-Author: Gerrit Renker <gerrit@erg.abdn.ac.uk>
-Date:   Sun Jan 4 17:14:46 2009 -0800
+Looks good to me, but shouldn't this go through the sh maintainers
+instead?  This is their area, right?
 
-which is in the linux-next tree.
+thanks,
 
-BTW, how can I check from which tree this commit came into the linux-next tree?
-
--Hannes
+greg k-h
