@@ -1,81 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753182AbZBNUa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbZBNUur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753182AbZBNUa7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 15:30:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbZBNUav
+	id S1752756AbZBNUur (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 15:50:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbZBNUui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 15:30:51 -0500
-Received: from bu3sch.de ([62.75.166.246]:60034 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751357AbZBNUav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 15:30:51 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] bcm47xx: Fix GPIO API return codes
-Date: Sat, 14 Feb 2009 21:27:19 +0100
-User-Agent: KMail/1.9.9
-Cc: OpenWrt Development List <openwrt-devel@lists.openwrt.org>,
+	Sat, 14 Feb 2009 15:50:38 -0500
+Received: from casper.infradead.org ([85.118.1.10]:42279 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751943AbZBNUui (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 15:50:38 -0500
+Subject: Re: RFC: install firmware in a kernel-dependent directory
+From: David Woodhouse <dwmw2@infradead.org>
+To: Michael Riepe <michael.riepe@googlemail.com>
+Cc: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
        linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+In-Reply-To: <499722DF.3020208@googlemail.com>
+References: <4996B838.2070205@googlemail.com>
+	 <3f9a31f40902141115w27f20ecfk81213a21dbe1adbd@mail.gmail.com>
+	 <499722DF.3020208@googlemail.com>
+Content-Type: text/plain
+Date: Sat, 14 Feb 2009 21:50:16 +0100
+Message-Id: <1234644617.11641.4.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902142127.19521.mb@bu3sch.de>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The GPIO API is supposed to return 0 or a negative error code,
-but the SSB GPIO functions return the bitmask of the GPIO register.
-Fix this by ignoring the bitmask and always returning 0. The SSB GPIO functions can't fail.
+On Sat, 2009-02-14 at 21:00 +0100, Michael Riepe wrote:
+>  
+> That means that it shouldn't be delivered with the kernel in the first
+> place, right? Neither built in nor as a separate file. Maybe that's an
+> even better solution: distribute it separately.
 
-Signed-off-by: Michael Buesch <mb@bu3sch.de>
+We do. See the linux-firmware.git repository, which contains a bunch of
+extra firmware too; not just the bits we've stripped out of legacy
+drivers.
 
----
-
-Index: linux-2.6/arch/mips/include/asm/mach-bcm47xx/gpio.h
-===================================================================
---- linux-2.6.orig/arch/mips/include/asm/mach-bcm47xx/gpio.h	2009-01-01 19:27:06.000000000 +0100
-+++ linux-2.6/arch/mips/include/asm/mach-bcm47xx/gpio.h	2009-02-14 21:26:14.000000000 +0100
-@@ -31,24 +31,28 @@ static inline void gpio_set_value(unsign
- 
- static inline int gpio_direction_input(unsigned gpio)
- {
--	return ssb_gpio_outen(&ssb_bcm47xx, 1 << gpio, 0);
-+	ssb_gpio_outen(&ssb_bcm47xx, 1 << gpio, 0);
-+	return 0;
- }
- 
- static inline int gpio_direction_output(unsigned gpio, int value)
- {
--	return ssb_gpio_outen(&ssb_bcm47xx, 1 << gpio, 1 << gpio);
-+	ssb_gpio_outen(&ssb_bcm47xx, 1 << gpio, 1 << gpio);
-+	return 0;
- }
- 
--static int gpio_intmask(unsigned gpio, int value)
-+static inline int gpio_intmask(unsigned gpio, int value)
- {
--	return ssb_gpio_intmask(&ssb_bcm47xx, 1 << gpio,
--				value ? 1 << gpio : 0);
-+	ssb_gpio_intmask(&ssb_bcm47xx, 1 << gpio,
-+			 value ? 1 << gpio : 0);
-+	return 0;
- }
- 
--static int gpio_polarity(unsigned gpio, int value)
-+static inline int gpio_polarity(unsigned gpio, int value)
- {
--	return ssb_gpio_polarity(&ssb_bcm47xx, 1 << gpio,
--				 value ? 1 << gpio : 0);
-+	ssb_gpio_polarity(&ssb_bcm47xx, 1 << gpio,
-+			  value ? 1 << gpio : 0);
-+	return 0;
- }
- 
- 
-
+You can completely ignore the firmware that's shipped with the kernel,
+and you're right -- it should go away. In time I hope it will.
 
 -- 
-Greetings, Michael.
+dwmw2
+
