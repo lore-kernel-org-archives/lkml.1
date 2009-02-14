@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757048AbZBNAqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760459AbZBNAso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757048AbZBNAqG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 19:46:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbZBNApx
+	id S1760459AbZBNAso (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 19:48:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453AbZBNAsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 19:45:53 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56639 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753369AbZBNApx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 19:45:53 -0500
-Message-ID: <4996141A.1050506@kernel.org>
-Date: Sat, 14 Feb 2009 09:45:14 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Fri, 13 Feb 2009 19:48:36 -0500
+Received: from hpsmtp-eml17.KPNXCHANGE.COM ([213.75.38.117]:44702 "EHLO
+	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753449AbZBNAsf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 19:48:35 -0500
+From: Frans Pop <elendil@planet.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [BUG] Suspend tries to suspend devices already in D3
+Date: Sat, 14 Feb 2009 01:48:32 +0100
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200902030949.42342.elendil@planet.nl> <200902041258.53669.elendil@planet.nl> <200902041317.08408.rjw@sisk.pl>
+In-Reply-To: <200902041317.08408.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, cpw@sgi.com
-Subject: Re: #tj-percpu has been rebased
-References: <49833350.1020809@kernel.org> <49939964.4070607@kernel.org> <49939B08.1050801@kernel.org> <200902140728.55954.rusty@rustcorp.com.au>
-In-Reply-To: <200902140728.55954.rusty@rustcorp.com.au>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 14 Feb 2009 00:45:28 +0000 (UTC)
+Content-Disposition: inline
+Message-Id: <200902140148.32740.elendil@planet.nl>
+X-OriginalArrivalTime: 14 Feb 2009 00:48:33.0913 (UTC) FILETIME=[F6A81690:01C98E3D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Thursday 12 February 2009 14:14:08 Tejun Heo wrote:
->> Oops, those are the same ones.  I'll give a shot at cooking up
->> something which can be dynamically sized before going forward with
->> this one.
-> 
-> That's why I handed it to you! :)
-> 
-> Just remember we waited over 5 years for this to happen: the point of these
-> is that Christoph showed it's still useful.
-> 
-> (And I really like the idea of allocing congruent areas rather than remapping
->  if someone can show that it's semi-reliable.  Good luck!)
+On Wednesday 04 February 2009, Rafael J. Wysocki wrote:
+> On Wednesday 04 February 2009, Frans Pop wrote:
+> > On Wednesday 04 February 2009, Rafael J. Wysocki wrote:
+> > > On Tuesday 03 February 2009, Frans Pop wrote:
+> > > > On Tuesday 03 February 2009, Frans Pop wrote:
+> > > > > Looking at iwl-agn.c the cause could be that iwl_pci_suspend()
+> > > > > depends on iwl_mac_stop() to call pci_save_state(). I added
+> > > > > some debug statements in iwl_pci_suspend() that showed
+> > > > > priv->is_open is false, so iwl_mac_stop does indeed *not* get
+> > > > > called when the interface is down.
+> > > >
+> > > > However, iwl_mac_stop() had been called when I ran ifdown just
+> > > > before suspending the system:
+> > >
+> > > The problem that the warning can be triggered by a device being in
+> > > a low power state already before suspend should be fixed by the PCI
+> > > PM fixes I've just posted.
+> >
+> > I'm afraid I still get the warning with your latest patches on top of
+> > v2.6.29-rc3-495-gdcf6a79.
+>
+> If you're still getting the warning with these patches, then yes, the
+> problem appears to be in iwl-agn.c .
 
-I finished writing up the first draft last night.  Somehow I can feel
-long grueling debugging hours ahead of me but it generally goes like
-the following.
+FYI, this looks to be fixed in -rc5 by c4e061ace755 + 89c581b3fb29.
 
-Percpu areas are allocated in chunks in vmalloc area.  Each chunk is
-consisted of num_possible_cpus() units and the first chunk is used for
-static percpu variables in the kernel image (special boot time
-alloc/init handling necessary as these areas need to be brought up
-before allocation services are running).  Unit grows as necessary and
-all units grow or shrink in unison.  When a chunk is filled up,
-another chunk is allocated.  ie. in vmalloc area
-
-  c0                           c1                         c2           
-   -------------------          -------------------        ------------
-  | u0 | u1 | u2 | u3 |        | u0 | u1 | u2 | u3 |      | u0 | u1 | u
-   -------------------  ......  -------------------  ....  ------------
-
-Allocation is done in offset-size areas of single unit space.  Ie,
-when UNIT_SIZE is 128k, an area at 134k of 512bytes occupy 512bytes at
-6k of c1:u0, c1:u1, c1:u2 and c1u3.  Percpu access can be done by
-configuring percpu base registers UNIT_SIZE apart.
-
-Currently it uses pte mappings but byn using larger UNIT_SIZE, it can
-be modified to use pmd mappings.  I'm a bit skeptical about this tho.
-Percpu pages are allocated with HIGHMEM | COLD, so they won't
-interfere with the physical mapping and on !NUMA it lifts load from
-pgd tlb by not having stuff for different cpus occupying the same pgd
-page.  What we can also do is to use large page sized UNIT_SIZE but
-default to pte mappings and convert to pmd mapping if a chunk becomes
-full occupied.  Anyways, we can think about this later.
-
-I'm going back to get this thing working.
-
-Happy Valentine's everyone. :-)
-
--- 
-tejun
+Thanks,
+FJP
