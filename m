@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932821AbZBNBpD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764206AbZBNBpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932821AbZBNBpD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:45:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762305AbZBNBQx
+	id S1764206AbZBNBpu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:45:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763387AbZBNBQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:16:53 -0500
+	Fri, 13 Feb 2009 20:16:54 -0500
 Received: from kroah.org ([198.145.64.141]:50709 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762612AbZBNBQl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:16:41 -0500
-Date: Fri, 13 Feb 2009 17:13:45 -0800
+	id S1761894AbZBNBQm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:16:42 -0500
+Date: Fri, 13 Feb 2009 17:13:47 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jiri Kosina <jkosina@suse.cz>
-Subject: [patch 42/48] HID: adjust report descriptor fixup for MS 1028
-	receiver
-Message-ID: <20090214011345.GQ17706@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Jeff Garzik <jgarzik@redhat.com>
+Subject: [patch 43/48] ide/libata: fix ata_id_is_cfa() (take 4)
+Message-ID: <20090214011347.GR17706@kroah.com>
 References: <20090214010805.419403436@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="hid-adjust-report-descriptor-fixup-for-ms-1028-receiver.patch"
+Content-Disposition: inline; filename="ide-libata-fix-ata_id_is_cfa.patch"
 In-Reply-To: <20090214011208.GA17706@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,55 +40,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jiri Kosina <jkosina@suse.cz>
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-commit 0fb21de0799a985d2da3da14ae5625d724256638 upstream.
+commit 2999b58b795ad81f10e34bdbbfd2742172f247e4 upstream.
 
-Report descriptor fixup for MS 1028 receiver changes also values for
-Keyboard and Consumer, which incorrectly trims the range, causing correct
-events being thrown away before passing to userspace.
+When checking for the CFA feature set support, ata_id_is_cfa() tests bit 2 in
+word 82 of the identify data instead the word 83;  it also checks the ATA/PI
+version support in the word 80 (which the CompactFlash specifications have as
+reserved), this having no slightest chance to work on the modern CF cards that
+don't have 0x848A in the word 0...
 
-We need to keep the GenDesk usage fixup though, as it reports totally bogus
-values about axis.
-
-Reported-by: Lucas Gadani <lgadani@gmail.com>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/hid/hid-microsoft.c |   13 ++++---------
- 1 file changed, 4 insertions(+), 9 deletions(-)
+ include/linux/ata.h |   15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
 
---- a/drivers/hid/hid-microsoft.c
-+++ b/drivers/hid/hid-microsoft.c
-@@ -30,7 +30,7 @@
- #define MS_NOGET	0x10
+--- a/include/linux/ata.h
++++ b/include/linux/ata.h
+@@ -731,12 +731,17 @@ static inline int ata_id_current_chs_val
  
- /*
-- * Microsoft Wireless Desktop Receiver (Model 1028) has several
-+ * Microsoft Wireless Desktop Receiver (Model 1028) has
-  * 'Usage Min/Max' where it ought to have 'Physical Min/Max'
-  */
- static void ms_report_fixup(struct hid_device *hdev, __u8 *rdesc,
-@@ -38,17 +38,12 @@ static void ms_report_fixup(struct hid_d
+ static inline int ata_id_is_cfa(const u16 *id)
  {
- 	unsigned long quirks = (unsigned long)hid_get_drvdata(hdev);
- 
--	if ((quirks & MS_RDESC) && rsize == 571 && rdesc[284] == 0x19 &&
--			rdesc[286] == 0x2a && rdesc[304] == 0x19 &&
--			rdesc[306] == 0x29 && rdesc[352] == 0x1a &&
--			rdesc[355] == 0x2a && rdesc[557] == 0x19 &&
-+	if ((quirks & MS_RDESC) && rsize == 571 && rdesc[557] == 0x19 &&
- 			rdesc[559] == 0x29) {
- 		dev_info(&hdev->dev, "fixing up Microsoft Wireless Receiver "
- 				"Model 1028 report descriptor\n");
--		rdesc[284] = rdesc[304] = rdesc[557] = 0x35;
--		rdesc[352] = 0x36;
--		rdesc[286] = rdesc[355] = 0x46;
--		rdesc[306] = rdesc[559] = 0x45;
-+		rdesc[557] = 0x35;
-+		rdesc[559] = 0x45;
- 	}
+-	if (id[ATA_ID_CONFIG] == 0x848A)	/* Standard CF */
++	if (id[ATA_ID_CONFIG] == 0x848A)	/* Traditional CF */
+ 		return 1;
+-	/* Could be CF hiding as standard ATA */
+-	if (ata_id_major_version(id) >= 3 &&
+-	    id[ATA_ID_COMMAND_SET_1] != 0xFFFF &&
+-	   (id[ATA_ID_COMMAND_SET_1] & (1 << 2)))
++	/*
++	 * CF specs don't require specific value in the word 0 anymore and yet
++	 * they forbid to report the ATA version in the word 80 and require the
++	 * CFA feature set support to be indicated in the word 83 in this case.
++	 * Unfortunately, some cards only follow either of this requirements,
++	 * and while those that don't indicate CFA feature support need some
++	 * sort of quirk list, it seems impractical for the ones that do...
++	 */
++	if ((id[ATA_ID_COMMAND_SET_2] & 0xC004) == 0x4004)
+ 		return 1;
+ 	return 0;
  }
- 
 
