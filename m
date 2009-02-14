@@ -1,66 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758490AbZBNE6D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759241AbZBNE77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758490AbZBNE6D (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 23:58:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbZBNE5w
+	id S1759241AbZBNE77 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 23:59:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbZBNE7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 23:57:52 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:22860 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751581AbZBNE5v (ORCPT
+	Fri, 13 Feb 2009 23:59:51 -0500
+Received: from casper.infradead.org ([85.118.1.10]:35245 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752082AbZBNE7v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 23:57:51 -0500
-X-IronPort-AV: E=Sophos;i="4.38,205,1233550800"; 
-   d="scan'208";a="82856166"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [Uclinux-dist-devel] [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux (repost)
-Date: Fri, 13 Feb 2009 23:58:35 -0500
-User-Agent: KMail/1.9.5
-Cc: uclinux-dist-devel@blackfin.uclinux.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "Mathieu Desnoyers" <compudj@krystal.dyndns.org>,
-       ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-References: <20090211185203.GA29852@Krystal> <20090212200249.GG6759@linux.vnet.ibm.com> <alpine.LFD.2.00.0902121210120.3099@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0902121210120.3099@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Fri, 13 Feb 2009 23:59:51 -0500
+Date: Fri, 13 Feb 2009 20:59:49 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH 1/7] async: Asynchronous function calls to speed up
+ kernel boot
+Message-ID: <20090213205949.1ebb441d@infradead.org>
+In-Reply-To: <20090213162200.8fea7e0c.akpm@linux-foundation.org>
+References: <20090107151151.458333c1@infradead.org>
+	<20090107151226.58264d07@infradead.org>
+	<20090213162200.8fea7e0c.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902132358.36112.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 14 Feb 2009 04:57:49.0941 (UTC) FILETIME=[C924DA50:01C98E60]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 12 Feb 2009 15:13, Linus Torvalds pondered:
-> On Thu, 12 Feb 2009, Paul E. McKenney wrote:
-> > And, now that you mention it, I have heard rumors that other CPU 
-> > families can violate cache coherence in some circumstances.
+On Fri, 13 Feb 2009 16:22:00 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> It means that sometimes, very rarely, the callback function will be
+> called within the caller's context.
+
+for the cases that use it right now it is ok.
+
 > 
-> I personally suspect that the BF pseudo-SMP code is just broken, and
-> that it likely has tons of subtle bugs and races - because we _do_ depend
-> on cache coherency at least for accessing objects next to each other.
+> Hence this interface cannot be used to call might-sleep functions from
+> within atomic contexts.  Which should be a major application of this
+> code!
 
-I felt similarly, however after using it, testing it, beating the crap out of 
-it for while, and only finding a few niggly bugs which were corrected - it 
-appears to be as stable as any other Linux kernel I have used on embedded 
-hardware (which means rock solid).
+That is not what this was originally designed for. The original design
+goal was to offload existing function calls out of the synchronous
+execution path.
 
-There are a few people shipping it in their products today - so at least the 
-stablily was also good enough for them.
+Now I understand that it would be nice to do what you propose, but it
+needs a little different interface for that; specifically, the caller
+will need to pass in the memory for the administration.
 
-If you have any other test suggestions which might expose the corner cases 
-that normal use / LTP /  would not - I'm happy to try it out. The problem 
-is - as Mike stated - since we do limit applications to one core at a time - 
-multi-threading userspace isn't really interesting a problem.
+> 
 
-As for the claim of "broken" hardware - I don't think that is true -- the 
-hardware works as designed, as advertised. It was just never architected to 
-run a SMP operating system. While you could claim that we are trying to force 
-fit (SMP) something where it doesn't belong (non-cache coherence system), it 
-is us that are "broken" - not the hardware :)
+> 
+> Furthermore:
+> 
+> - If the callback function can sleep then the caller must be able to
+>   sleep, so the GFP_ATOMIC is unneeded and undesirable, and the
+> comment is wrong.
 
--Robin
+And if the callback function does not sleep it can be used in atomic
+context just fine. Hence the GFP_ATOMIC.
+.
+
+> 
+> I can't immediately think of a fix, apart from overhauling the
+> implementation and doing it in the proper way: caller-provided storage
+> rather than callee-provided (which always goes wrong).
+> schedule_work() got this right.
+
+schedule_work() got it part right. Pushing the administration to the
+caller means the caller needs to allocate the memory or use static
+memory and then make sure it doesn't get reused for a 2nd piece of work.
+(schedule_work doesn't care, it will just execute it once in that case.
+Here we do absolutely care).
+
+The caller only rarely can deal better with the memory allocation and
+lifetime rules than the implementation can. In fact, for the scenario of
+"I want to take this bit of code out of the synchronous path
+normally".. it is just fine and most easy this way; moving this to the
+caller just makes things more fragile.
+
+So yes based on the discussions on lkml in the last week I was going to
+add an interface where you can pass in your own memory, but I want to
+get the interface right such that it is low complexity for the caller,
+and really hard to get wrong.. and that does involve dealing with the
+"how to do static allocation while doing multiple parallel calls"
+problem.
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
