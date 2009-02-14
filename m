@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752753AbZBNLnM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868AbZBNLo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752753AbZBNLnM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 06:43:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbZBNLm6
+	id S1752868AbZBNLo1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 06:44:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbZBNLoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 06:42:58 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:54429 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751227AbZBNLm5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 06:42:57 -0500
-Message-Id: <1234611775.19975.1300340003@webmail.messagingengine.com>
-X-Sasl-Enc: cRTHkq2TD/48D8qw0CMOi6xB5AblEwA/1l5g8/Nb45nB 1234611775
-From: "Alexander van Heukelum" <heukelum@fastmail.fm>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Cyrill Gorcunov" <gorcunov@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Jan Beulich" <jbeulich@novell.com>, linux-kernel@vger.kernel.org
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+	Sat, 14 Feb 2009 06:44:19 -0500
+Received: from nox.protox.org ([88.191.38.29]:54498 "EHLO nox.protox.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751227AbZBNLoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 06:44:19 -0500
+X-Greylist: delayed 534 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Feb 2009 06:44:18 EST
+Subject: Re: [PATCH]: drm: radeon: Use surface for PCI GART table.
+From: Jerome Glisse <glisse@freedesktop.org>
+Reply-To: glisse@freedesktop.org
+To: David Miller <davem@davemloft.net>
+Cc: michel@daenzer.net, benh@kernel.crashing.org, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <20090214.020431.193689843.davem@davemloft.net>
+References: <20090214.015107.127190039.davem@davemloft.net>
+	 <1234605599.4823.177.camel@thor>
+	 <20090214.020431.193689843.davem@davemloft.net>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <20090213215017.959278111@gmail.com>
- <1234567411.13034.1300286953@webmail.messagingengine.com>
- <49961178.6040101@zytor.com>
-Subject: Re: [RFC 0/6] x86 tip asm ENTRY,ENDPROC cleanup
-In-Reply-To: <49961178.6040101@zytor.com>
-Date: Sat, 14 Feb 2009 12:42:55 +0100
+Date: Sat, 14 Feb 2009 12:35:11 +0100
+Message-Id: <1234611311.2860.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Feb 2009 16:34:00 -0800, "H. Peter Anvin" <hpa@zytor.com>
-said:
-> Alexander van Heukelum wrote:
-> > 
-> > Hi Cyrill,
-> > 
-> > I like this direction. If I understand correctly:
-> > 
-> > ENTRY/END or GLOBAL/END for data.
-> > ENTRY/ENDPROC or GLOBAL/ENDPROC for functions.
-> > 
+On Sat, 2009-02-14 at 02:04 -0800, David Miller wrote:
+> From: Michel Dänzer <michel@daenzer.net>
+> Date: Sat, 14 Feb 2009 10:59:59 +0100
 > 
-> Fine for functions, but it's really not okay to use the same macros for 
-> data.  Furthermore, we need to consider special entry points that don't 
-> behave like normal functions -- like system call or interrupt entry.
+> > On Sat, 2009-02-14 at 01:51 -0800, David Miller wrote:
+> > > This allocates a physical surface for the PCI GART table, this way no
+> > > matter what other surface configurations exist the GART table will
+> > > always be seen by the hardware properly.
+> > 
+> > BTW, I don't think the swapping settings affect GPU access to the table,
+> > only CPU access, but this is a good solution anyway.
 > 
-> Why?  Because if we're compiling with frame pointers, we would like the 
-> wrapper macros for functions to handle setting up and tearing down the 
-> frame pointer, at least in the common case.
+> They absolutely and positively do effect GPU access to the table.
+> I've proven it with many conclusive tests over the past 3 days.
+> 
+> > This is only really necessary on big endian, but other than that:
+> > 
+> > Acked-By: Michel Dänzer <daenzer@vmware.com>
+> 
+> Thanks.
 
-Hi Peter,
+This will need to be revisited with KMS as i think we should not allow
+userspace to play with surface. Maybe we could setup surface on BO
+mapping and disable them on bo unmapping (we would to register some
+callback on vmclose).
 
-I see. But that would be new behaviour. I would propose to use
-completely separate macro's to handle frame-setup code generation,
-and keep ENTRY/GLOBAL/END/ENDPROC only for setting metadata and
-alignment. I think it's worth it to spell out code-generating
-macro's explicitly: there are not that many asm functions, and
-quite a few of them would need special handling. I think noone
-wants to see an ENDPROC_NOFRAMETEARDOWN ;).
-
-The common-case example would look like this.
-
-GLOBAL(c_callable_function)
-        ENTER
-        [asm-code]
-        LEAVE
-        ret
-ENDPROC(c_callable_function)
-
-Greetings,
-    Alexander
-
-> 	-hpa
--- 
-  Alexander van Heukelum
-  heukelum@fastmail.fm
-
--- 
-http://www.fastmail.fm - I mean, what is it about a decent email service?
+Cheers,
+Jerome Glisse
 
