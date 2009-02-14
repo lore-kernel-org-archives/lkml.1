@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753561AbZBNVsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbZBNVux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753561AbZBNVsx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 16:48:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755255AbZBNVsN
+	id S1756056AbZBNVux (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 16:50:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbZBNVt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 16:48:13 -0500
-Received: from mail-bw0-f167.google.com ([209.85.218.167]:33361 "EHLO
-	mail-bw0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754355AbZBNVsL (ORCPT
+	Sat, 14 Feb 2009 16:49:57 -0500
+Received: from mail-fx0-f25.google.com ([209.85.220.25]:51560 "EHLO
+	mail-fx0-f25.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755889AbZBNVtz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 16:48:11 -0500
+	Sat, 14 Feb 2009 16:49:55 -0500
 From: Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH 35/43] drivers/net/wan: fix warning: format not a string
-	literal and no ...
+Subject: [PATCH 40/43] drivers/net/wireless/ath9k: fix sparse warnings: Should
+	it be static?
 To: netdev@vger.kernel.org
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Sat, 14 Feb 2009 22:48:07 +0100
-Message-ID: <20090214214755.24377.57742.stgit@vmbox.hanneseder.net>
+Date: Sat, 14 Feb 2009 22:49:48 +0100
+Message-ID: <20090214214935.24377.69824.stgit@vmbox.hanneseder.net>
 In-Reply-To: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
 References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
 User-Agent: StGit/0.14.3.348.gcb02
@@ -27,46 +27,57 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Use 'static const char[]' instead of 'static char[]'.
+Impact: Make symbols static.
 
-Fix this compilation warnings:
-  drivers/net/wan/lapbether.c: In function 'lapbeth_init_driver':
-  drivers/net/wan/lapbether.c:441: warning: format not a string literal and no format arguments
-  drivers/net/wan/z85230.c: In function 'z85230_init_driver':
-  drivers/net/wan/z85230.c:1782: warning: format not a string literal and no format arguments
+Fix this sparse warnings:
+  drivers/net/wireless/ath9k/eeprom.c:1343:5: warning: symbol 'ath9k_hw_4k_get_spur_channel' was not declared. Should it be static?
+  drivers/net/wireless/ath9k/eeprom.c:1372:19: warning: symbol 'eep_4k_ops' was not declared. Should it be static?
+  drivers/net/wireless/ath9k/eeprom.c:2649:5: warning: symbol 'ath9k_hw_def_get_spur_channel' was not declared. Should it be static?
+  drivers/net/wireless/ath9k/eeprom.c:2678:19: warning: symbol 'eep_def_ops' was not declared. Should it be static?
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- drivers/net/wan/lapbether.c |    3 ++-
- drivers/net/wan/z85230.c    |    3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/net/wireless/ath9k/eeprom.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/wan/lapbether.c b/drivers/net/wan/lapbether.c
-index da9dcf5..06beba4 100644
---- a/drivers/net/wan/lapbether.c
-+++ b/drivers/net/wan/lapbether.c
-@@ -430,7 +430,8 @@ static struct notifier_block lapbeth_dev_notifier = {
- 	.notifier_call = lapbeth_device_event,
- };
+diff --git a/drivers/net/wireless/ath9k/eeprom.c b/drivers/net/wireless/ath9k/eeprom.c
+index c0359ad..b55e992 100644
+--- a/drivers/net/wireless/ath9k/eeprom.c
++++ b/drivers/net/wireless/ath9k/eeprom.c
+@@ -1340,7 +1340,7 @@ static u8 ath9k_hw_4k_get_num_ant_config(struct ath_hw *ah,
+ 	return 1;
+ }
  
--static char banner[] __initdata = KERN_INFO "LAPB Ethernet driver version 0.02\n";
-+static const char banner[] __initdata =
-+	KERN_INFO "LAPB Ethernet driver version 0.02\n";
- 
- static int __init lapbeth_init_driver(void)
+-u16 ath9k_hw_4k_get_spur_channel(struct ath_hw *ah, u16 i, bool is2GHz)
++static u16 ath9k_hw_4k_get_spur_channel(struct ath_hw *ah, u16 i, bool is2GHz)
  {
-diff --git a/drivers/net/wan/z85230.c b/drivers/net/wan/z85230.c
-index 3d00971..ad4e79c 100644
---- a/drivers/net/wan/z85230.c
-+++ b/drivers/net/wan/z85230.c
-@@ -1775,7 +1775,8 @@ EXPORT_SYMBOL(z8530_queue_xmit);
- /*
-  *	Module support
-  */
--static char banner[] __initdata = KERN_INFO "Generic Z85C30/Z85230 interface driver v0.02\n";
-+static const char banner[] __initdata =
-+	KERN_INFO "Generic Z85C30/Z85230 interface driver v0.02\n";
+ #define EEP_MAP4K_SPURCHAN \
+ 	(ah->eeprom.map4k.modalHeader.spurChans[i].spurChan)
+@@ -1369,7 +1369,7 @@ u16 ath9k_hw_4k_get_spur_channel(struct ath_hw *ah, u16 i, bool is2GHz)
+ #undef EEP_MAP4K_SPURCHAN
+ }
  
- static int __init z85230_init_driver(void)
+-struct eeprom_ops eep_4k_ops = {
++static struct eeprom_ops eep_4k_ops = {
+ 	.check_eeprom		= ath9k_hw_4k_check_eeprom,
+ 	.get_eeprom		= ath9k_hw_4k_get_eeprom,
+ 	.fill_eeprom		= ath9k_hw_4k_fill_eeprom,
+@@ -2646,7 +2646,7 @@ static u16 ath9k_hw_def_get_eeprom_antenna_cfg(struct ath_hw *ah,
+ 	return pModal->antCtrlCommon & 0xFFFF;
+ }
+ 
+-u16 ath9k_hw_def_get_spur_channel(struct ath_hw *ah, u16 i, bool is2GHz)
++static u16 ath9k_hw_def_get_spur_channel(struct ath_hw *ah, u16 i, bool is2GHz)
  {
+ #define EEP_DEF_SPURCHAN \
+ 	(ah->eeprom.def.modalHeader[is2GHz].spurChans[i].spurChan)
+@@ -2675,7 +2675,7 @@ u16 ath9k_hw_def_get_spur_channel(struct ath_hw *ah, u16 i, bool is2GHz)
+ #undef EEP_DEF_SPURCHAN
+ }
+ 
+-struct eeprom_ops eep_def_ops = {
++static struct eeprom_ops eep_def_ops = {
+ 	.check_eeprom		= ath9k_hw_def_check_eeprom,
+ 	.get_eeprom		= ath9k_hw_def_get_eeprom,
+ 	.fill_eeprom		= ath9k_hw_def_fill_eeprom,
 
