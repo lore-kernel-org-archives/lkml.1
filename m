@@ -1,78 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764785AbZBNBVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762268AbZBNBTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764785AbZBNBVw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:21:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762914AbZBNBIr
+	id S1762268AbZBNBTa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:19:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757284AbZBNBCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:08:47 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40914 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762919AbZBNBIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:08:43 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>
-Subject: [PATCH 5/9] swsusp: dont fiddle with swappiness
-Date: Sat, 14 Feb 2009 02:03:08 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Andrey Borzenkov <arvidjaar@mail.ru>
-References: <200902140157.40869.rjw@sisk.pl>
-In-Reply-To: <200902140157.40869.rjw@sisk.pl>
+	Fri, 13 Feb 2009 20:02:22 -0500
+Received: from kroah.org ([198.145.64.141]:40001 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761566AbZBNBCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:02:08 -0500
+Date: Fri, 13 Feb 2009 16:59:31 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 45/47] x86: fixup config space size of CPU functions for
+	AMD family 11h
+Message-ID: <20090214005931.GT11282@kroah.com>
+References: <20090214005130.617401075@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902140203.10125.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="x86-fixup-config-space-size-of-cpu-functions-for-amd-family-11h.patch"
+In-Reply-To: <20090214005726.GA11282@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Johannes Weiner <hannes@cmpxchg.org>
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-sc.swappiness is not used in the swsusp memory shrinking path, do not
-set it.
+------------------
 
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+
+commit ffd565a8b817d1eb4b25184e8418e8d96c3f56f6 upstream.
+
+Impact: extend allowed configuration space access on 11h CPUs from 256 to 4K
+
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+
 ---
+ arch/x86/pci/fixup.c |   25 ++++++++++++++-----------
+ 1 file changed, 14 insertions(+), 11 deletions(-)
 
- mm/vmscan.c |    5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+--- a/arch/x86/pci/fixup.c
++++ b/arch/x86/pci/fixup.c
+@@ -496,18 +496,21 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_S
+ 			  pci_siemens_interrupt_controller);
+ 
+ /*
+- * Regular PCI devices have 256 bytes, but AMD Family 10h Opteron ext config
+- * have 4096 bytes.  Even if the device is capable, that doesn't mean we can
+- * access it.  Maybe we don't have a way to generate extended config space
+- * accesses.   So check it
++ * Regular PCI devices have 256 bytes, but AMD Family 10h/11h CPUs have
++ * 4096 bytes configuration space for each function of their processor
++ * configuration space.
+  */
+-static void fam10h_pci_cfg_space_size(struct pci_dev *dev)
++static void amd_cpu_pci_cfg_space_size(struct pci_dev *dev)
+ {
+ 	dev->cfg_size = pci_cfg_space_size_ext(dev);
+ }
+-
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1200, fam10h_pci_cfg_space_size);
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1201, fam10h_pci_cfg_space_size);
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1202, fam10h_pci_cfg_space_size);
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1203, fam10h_pci_cfg_space_size);
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1204, fam10h_pci_cfg_space_size);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1200, amd_cpu_pci_cfg_space_size);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1201, amd_cpu_pci_cfg_space_size);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1202, amd_cpu_pci_cfg_space_size);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1203, amd_cpu_pci_cfg_space_size);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1204, amd_cpu_pci_cfg_space_size);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1300, amd_cpu_pci_cfg_space_size);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1301, amd_cpu_pci_cfg_space_size);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1302, amd_cpu_pci_cfg_space_size);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1303, amd_cpu_pci_cfg_space_size);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1304, amd_cpu_pci_cfg_space_size);
 
-Index: linux-2.6/mm/vmscan.c
-===================================================================
---- linux-2.6.orig/mm/vmscan.c
-+++ linux-2.6/mm/vmscan.c
-@@ -2112,7 +2112,6 @@ unsigned long shrink_all_memory(unsigned
- 		.may_swap = 0,
- 		.swap_cluster_max = nr_pages,
- 		.may_writepage = 1,
--		.swappiness = vm_swappiness,
- 		.isolate_pages = isolate_pages_global,
- 	};
- 
-@@ -2146,10 +2145,8 @@ unsigned long shrink_all_memory(unsigned
- 		int prio;
- 
- 		/* Force reclaiming mapped pages in the passes #3 and #4 */
--		if (pass > 2) {
-+		if (pass > 2)
- 			sc.may_swap = 1;
--			sc.swappiness = 100;
--		}
- 
- 		for (prio = DEF_PRIORITY; prio >= 0; prio--) {
- 			unsigned long nr_to_scan = nr_pages - ret;
