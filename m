@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754182AbZBNWf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbZBNWgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754182AbZBNWf3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 17:35:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbZBNWfU
+	id S1754538AbZBNWgc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 17:36:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZBNWgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 17:35:20 -0500
-Received: from ftp.linux-mips.org ([213.58.128.207]:36094 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751417AbZBNWfT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 17:35:19 -0500
-Date: Sat, 14 Feb 2009 22:35:18 +0000 (GMT)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-cc: Mark Lord <liml@rtr.ca>, =?ISO-8859-15?Q?Hanno_B=F6ck?= <hanno@hboeck.de>,
-       Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
-       ide <linux-ide@vger.kernel.org>
-Subject: Re: Very old IDE hard drive (240 MB) detected as 1.1 TB
-In-Reply-To: <4996E924.3060600@ru.mvista.com>
-Message-ID: <alpine.LFD.1.10.0902142228410.651@ftp.linux-mips.org>
-References: <200902131428.40212.hanno@hboeck.de> <499584FC.2050104@gmail.com> <200902141352.24277.hanno@hboeck.de> <4996C563.9090900@ru.mvista.com> <4996D443.4060103@rtr.ca> <alpine.LFD.1.10.0902141526310.651@ftp.linux-mips.org>
- <4996E924.3060600@ru.mvista.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 14 Feb 2009 17:36:24 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44342 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751357AbZBNWgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 17:36:23 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [Bug #12661] commit 64ff3b938ec6782e6585a83d5459b98b0c3f6eb8 breaks rlogin
+Date: Sat, 14 Feb 2009 23:35:55 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Jeff Chua <jeff.chua.linux@gmail.com>
+References: <AIghyjFgMFP.A.uZD._10jJB@chimera> <sWhNs83kKPE.A.ueE.U20jJB@chimera> <20090209042307.GA3268@gondor.apana.org.au>
+In-Reply-To: <20090209042307.GA3268@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902142335.55904.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sergei,
-
-> > not explicit about how words 57 and 58 were meant to be ordered and some
-> > manufacturers interpreted it one and some the other way.
+On Monday 09 February 2009, Herbert Xu wrote:
+> On Sun, Feb 08, 2009 at 08:21:46PM +0100, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.28.  Please verify if it still should be listed and let me know
+> > (either way).
 > 
->   However, the drive vendors should've really thought better before reporting
-> capacity in *middle-endian* format. :-)
+> The patch in question has already been reverted.  So while we
+> still need to track down the underlying problem with rlogin, it's
+> no longer a kernel regression.
 
- Oh, come on!  Don't accuse everyone of thinking.  Besides, someone had to 
-try that reverse-pdp-endian mode, didn't they? ;)
+I've closed the bug, sorry for the slow response.
 
-  Maciej
+Thanks,
+Rafael
