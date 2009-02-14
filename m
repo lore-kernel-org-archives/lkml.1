@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932185AbZBNBGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762423AbZBNBGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932185AbZBNBGf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:06:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757781AbZBNBBh
+	id S1762423AbZBNBGy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:06:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757990AbZBNBBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:01:37 -0500
-Received: from kroah.org ([198.145.64.141]:39544 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:01:38 -0500
+Received: from kroah.org ([198.145.64.141]:39556 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756940AbZBNBBg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:01:36 -0500
-Date: Fri, 13 Feb 2009 16:58:31 -0800
+	id S1756089AbZBNBBh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:01:37 -0500
+Date: Fri, 13 Feb 2009 16:58:33 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,12 +24,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Hin-Tak Leung <htl10@users.sourceforge.net>,
        "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 14/47] zd1211rw: adding 0ace:0xa211 as a ZD1211 device
-Message-ID: <20090214005831.GO11282@kroah.com>
+Subject: [patch 15/47] zd1211rw: treat MAXIM_NEW_RF(0x08) as
+	UW2453_RF(0x09) for TP-Link WN322/422G
+Message-ID: <20090214005833.GP11282@kroah.com>
 References: <20090214005130.617401075@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="zd1211rw-adding-0ace-0xa211-as-a-zd1211-device.patch"
+Content-Disposition: inline; filename="zd1211rw-treat-maxim_new_rf-as-uw2453_rf-for-tp-link-wn322-422g.patch"
 In-Reply-To: <20090214005726.GA11282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,30 +43,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Hin-Tak Leung <hintak.leung@gmail.com>
 
-commit 14990c69b5f51dd57b4e0e2373de50239ac861e2 upstream.
+commit efb43f4b2ccf8066abc3920a0e6858e4350a65c7 upstream.
 
-Christoph Biedl <sourceforge.bnwi@manchmal.in-ulm.de> reported success
-in the sourceforge zd1211 mailing list on this addition. This product ID
-was supported by the vendor driver ZD1211LnxDrv 2.22.0.0 (and possibly
-earlier) and it probably should have been added earlier.
+Three people (Petr Mensik <pihhan@cipis.net>
+["si" should be U+0161 U+00ED], Stephen Ho <stephenhoinhk@gmail.com>
+on zd1211-devs and Ismael Ojeda Perez <iojedaperez@gmail.com>
+on linux-wireless) reported success in getting TP-Link WN322G/WN422G
+working by treating MAXIM_NEW_RF(0x08) as UW2453_RF(0x09) for rf
+chip hardware initialization.
 
 Signed-off-by: Hin-Tak Leung <htl10@users.sourceforge.net>
-Tested-by: Christoph Biedl <sourceforge.bnwi@manchmal.in-ulm.de>
+Tested-by: Petr Mensik <pihhan@cipis.net>
+Tested-by: Stephen Ho <stephenhoinhk@gmail.com>
+Tested-by: Ismael Ojeda Perez <iojedaperez@gmail.com>
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/zd1211rw/zd_usb.c |    1 +
+ drivers/net/wireless/zd1211rw/zd_rf.c |    1 +
  1 file changed, 1 insertion(+)
 
---- a/drivers/net/wireless/zd1211rw/zd_usb.c
-+++ b/drivers/net/wireless/zd1211rw/zd_usb.c
-@@ -37,6 +37,7 @@
- static struct usb_device_id usb_ids[] = {
- 	/* ZD1211 */
- 	{ USB_DEVICE(0x0ace, 0x1211), .driver_info = DEVICE_ZD1211 },
-+	{ USB_DEVICE(0x0ace, 0xa211), .driver_info = DEVICE_ZD1211 },
- 	{ USB_DEVICE(0x07b8, 0x6001), .driver_info = DEVICE_ZD1211 },
- 	{ USB_DEVICE(0x126f, 0xa006), .driver_info = DEVICE_ZD1211 },
- 	{ USB_DEVICE(0x6891, 0xa727), .driver_info = DEVICE_ZD1211 },
+--- a/drivers/net/wireless/zd1211rw/zd_rf.c
++++ b/drivers/net/wireless/zd1211rw/zd_rf.c
+@@ -86,6 +86,7 @@ int zd_rf_init_hw(struct zd_rf *rf, u8 t
+ 	case AL7230B_RF:
+ 		r = zd_rf_init_al7230b(rf);
+ 		break;
++	case MAXIM_NEW_RF:
+ 	case UW2453_RF:
+ 		r = zd_rf_init_uw2453(rf);
+ 		break;
 
