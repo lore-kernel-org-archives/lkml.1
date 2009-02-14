@@ -1,116 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758290AbZBNXd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756569AbZBNXfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758290AbZBNXd2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 18:33:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbZBNXdR
+	id S1756569AbZBNXfi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 18:35:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497AbZBNXf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 18:33:17 -0500
-Received: from fias.uni-frankfurt.de ([141.2.248.1]:54432 "EHLO
-	fias.uni-frankfurt.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754398AbZBNXdQ (ORCPT
+	Sat, 14 Feb 2009 18:35:28 -0500
+Received: from web53303.mail.re2.yahoo.com ([206.190.49.93]:35025 "HELO
+	web53303.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752510AbZBNXf1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 18:33:16 -0500
-X-Greylist: delayed 2447 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Feb 2009 18:33:15 EST
-From: Jan Scholz <scholz@fias.uni-frankfurt.de>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jiri Kosina <jkosina@suse.cz>,
-       Jan Scholz <Scholz@fias.uni-frankfurt.de>,
-       Torsten Rausche <torsten@rausche.net>,
-       Paul Collins <paul@burly.ondioline.org>
-Subject: Re: [patch 41/47] bluetooth hid: enable quirk handling for Apple Wireless Keyboards in 2.6.27
-References: <20090214005130.617401075@mini.kroah.org>
-	<20090214005924.GP11282@kroah.com>
-Date: Sat, 14 Feb 2009 23:50:39 +0100
-In-Reply-To: <20090214005924.GP11282@kroah.com> (Greg KH's message of "Fri, 13
-	Feb 2009 16:59:24 -0800")
-Message-ID: <873aegws3k.fsf@scholz.fias.uni-frankfurt.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.90 (gnu/linux)
+	Sat, 14 Feb 2009 18:35:27 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
+  b=XSvxic5mh0QNqU+KaNRZW6XFYhXDdXYKC8slaDewKetuQAxU3Gc9Echk2YHEYlnG6vXuRKuZAgm/RqdwHfvZGEqA8FSv3CdZustqxNFOj9nQjZKcI96GCMYuIVkoi2iGc//C3ih+/Hn/un0jTyRXyPZw8fhsQ9MMT7LRUlI2Tu8=;
+X-YMail-OSG: lytyOgUVM1mKtn0.cCc9KHub1_Yfadz2ilJjJzmjHuCl1cxll20GmNyvIsuJGm.5nSiNPJqbLBXSFMYMYDVb2gn9R4mxcGE9NNsPFQGya5TitLsVbLSEt_ftWmUAn01ficJrRwbBtkMAN01X6qsBWE6.46NRLRjFuYxUxoOvv2E4_RwqmeZWoYx9N.PdH2wNnZQaID6AOU7I
+X-Mailer: YahooMailWebService/0.7.260.1
+Date: Sat, 14 Feb 2009 15:35:23 -0800 (PST)
+From: Alberto Gonzalez <luis6674@yahoo.com>
+Reply-To: luis6674@yahoo.com
+Subject: Re: [Bug #12337] ~100 extra wakeups reported by powertop
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <ROx6X68CGJG.A.NVB.U50lJB@chimera>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <535841.27007.qm@web53303.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <gregkh@suse.de> writes:
+--- On Sat, 2/14/09, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-> 2.6.27-stable review patch.  If anyone has any objections, please let us know.
->
-> ------------------
->
-> From: Torsten Rausche <torsten@rausche.net>
->
-> This patch is basically a backport of
-> commit ee8a1a0a1a5817accd03ced7e7ffde3a4430f485 upstream
-> which was made after the big HID overhaul in 2.6.28.
->
-> Kernel 2.6.27 fails to handle quirks for the aluminum Apple Wireless
-> Keyboard because it is handled as USB device and not as Bluetooth
-> device. This patch expands 'hidp_blacklist' to make the kernel handle
-> the keyboard in the same way as the Apple wireless Mighty Mouse (also a
-> Bluetooth device).
->
-> Signed-off-by: Torsten Rausche <torsten@rausche.net>
-> Cc: Jan Scholz <Scholz@fias.uni-frankfurt.de>
-> Cc: Jiri Kosina <jkosina@suse.cz>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
->
-> ---
-> ---
->  net/bluetooth/hidp/core.c |    4 ++++
->  1 file changed, 4 insertions(+)
->
-> --- a/net/bluetooth/hidp/core.c
-> +++ b/net/bluetooth/hidp/core.c
-> @@ -684,6 +684,10 @@ static const struct {
->  } hidp_blacklist[] = {
->  	/* Apple wireless Mighty Mouse */
->  	{ 0x05ac, 0x030c, HID_QUIRK_MIGHTYMOUSE | HID_QUIRK_INVERT_HWHEEL },
-> +	/* Apple Wireless Keyboard */
-> +	{ 0x05ac, 0x022c, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
-> +	{ 0x05ac, 0x022d, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_APPLE_ISO_KEYBOARD },
-> +	{ 0x05ac, 0x022e, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
->  
->  	{ }	/* Terminating entry */
->  };
->
->
+> The following bug entry is on the current list of known
+> regressions
+> introduced between 2.6.27 and 2.6.28.  Please verify if it
+> still should
+> be listed and let me know (either way).
+> 
+> 
+> Bug-Entry	:
+> http://bugzilla.kernel.org/show_bug.cgi?id=12337
+> Subject		: ~100 extra wakeups reported by powertop
+> Submitter	: Alberto Gonzalez <luis6674@yahoo.com>
+> Date		: 2008-12-31 12:25 (46 days old)
 
-A very similar fix has been proposed by Paul Collins (see
-http://lkml.org/lkml/2008/6/14/26 ) a while ago.
+Yes, still present in latest stable 2.6.28.5
 
-Here on my ppc32 G4 it works only if I apply the following as well.
-I can't test it on x86, though.
+I updated the report to say that this happened on my 5 year old Pentium 4, but now I got a new Dell desktop (Intel G45 based) and the exact same problem happens, so I can't be the only one seeing it. In the bugzilla Eric Anholt said that it could be related to vblank and that jbarnes had look into a similar issue before, so maybe he has some clue.
 
-Jan Scholz
+Thanks.
 
---
-    removed 2 calls to le16_to_cpu from the bluetooth hid quirks
-    
-    seems we're doing some endianness conversion one time to much
 
-diff --git a/net/bluetooth/hidp/core.c b/net/bluetooth/hidp/core.c
-index 28dc035..6b95a6d 100644
---- a/net/bluetooth/hidp/core.c
-+++ b/net/bluetooth/hidp/core.c
-@@ -699,8 +699,8 @@ static void hidp_setup_quirks(struct hid_device *hid)
-        unsigned int n;
- 
-        for (n = 0; hidp_blacklist[n].idVendor; n++)
--               if (hidp_blacklist[n].idVendor == le16_to_cpu(hid->vendor) &&
--                               hidp_blacklist[n].idProduct == le16_to_cpu(hid->product))
-+               if (hidp_blacklist[n].idVendor == hid->vendor &&
-+                               hidp_blacklist[n].idProduct == hid->product)
-                        hid->quirks = hidp_blacklist[n].quirks;
- }
-
+      
