@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762423AbZBNBqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932840AbZBNBql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762423AbZBNBqX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:46:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762778AbZBNBQ4
+	id S932840AbZBNBql (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:46:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764149AbZBNBQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:16:56 -0500
+	Fri, 13 Feb 2009 20:16:57 -0500
 Received: from kroah.org ([198.145.64.141]:50709 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762147AbZBNBQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:16:43 -0500
-Date: Fri, 13 Feb 2009 17:13:49 -0800
+	id S1762720AbZBNBQo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:16:44 -0500
+Date: Fri, 13 Feb 2009 17:13:51 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Tejun Heo <tj@kernel.org>,
-       Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 44/48] libata: fix EH device failure handling
-Message-ID: <20090214011349.GS17706@kroah.com>
+       alan@lxorguk.ukuu.org.uk, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, Patrick McHardy <kaber@trash.net>,
+       davem@davemloft.net, Eric Leblond <eric@inl.fr>
+Subject: [patch 45/48] netfilter: fix tuple inversion for Node information
+	request
+Message-ID: <20090214011351.GT17706@kroah.com>
 References: <20090214010805.419403436@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="libata-fix-eh-device-failure-handling.patch"
+Content-Disposition: inline; filename="netfilter-fix-tuple-inversion-for-node-information-request.patch"
 In-Reply-To: <20090214011208.GA17706@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,45 +42,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Tejun Heo <tj@kernel.org>
+From: Eric Leblond <eric@inl.fr>
 
-commit d89293abd95bfd7dd9229087d6c30c1464c5ac83 upstream.
+netfilter: fix tuple inversion for Node information request
 
-The dev->pio_mode > XFER_PIO_0 test is there to avoid unnecessary
-speed down warning messages but it accidentally disabled SATA link spd
-down during configuration phase after reset where PIO mode is always
-zero.
+Upstream commit: a51f42f3c
 
-This patch fixes the problem by moving the test where it belongs.
-This makes libata probing sequence behave better when the connection
-is flaky at higher link speeds which isn't too uncommon for eSATA
-devices.
+The patch fixes a typo in the inverse mapping of Node Information
+request. Following draft-ietf-ipngwg-icmp-name-lookups-09, "Querier"
+sends a type 139 (ICMPV6_NI_QUERY) packet to "Responder" which answer
+with a type 140 (ICMPV6_NI_REPLY) packet.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Eric Leblond <eric@inl.fr>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/libata-eh.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/ata/libata-eh.c
-+++ b/drivers/ata/libata-eh.c
-@@ -2959,12 +2959,13 @@ static int ata_eh_handle_dev_fail(struct
- 		/* give it just one more chance */
- 		ehc->tries[dev->devno] = min(ehc->tries[dev->devno], 1);
- 	case -EIO:
--		if (ehc->tries[dev->devno] == 1 && dev->pio_mode > XFER_PIO_0) {
-+		if (ehc->tries[dev->devno] == 1) {
- 			/* This is the last chance, better to slow
- 			 * down than lose it.
- 			 */
- 			sata_down_spd_limit(ata_dev_phys_link(dev));
--			ata_down_xfermask_limit(dev, ATA_DNXFER_PIO);
-+			if (dev->pio_mode > XFER_PIO_0)
-+				ata_down_xfermask_limit(dev, ATA_DNXFER_PIO);
- 		}
- 	}
+--- a/net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c
++++ b/net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c
+@@ -49,8 +49,8 @@ static bool icmpv6_pkt_to_tuple(const st
+ static const u_int8_t invmap[] = {
+ 	[ICMPV6_ECHO_REQUEST - 128]	= ICMPV6_ECHO_REPLY + 1,
+ 	[ICMPV6_ECHO_REPLY - 128]	= ICMPV6_ECHO_REQUEST + 1,
+-	[ICMPV6_NI_QUERY - 128]		= ICMPV6_NI_QUERY + 1,
+-	[ICMPV6_NI_REPLY - 128]		= ICMPV6_NI_REPLY +1
++	[ICMPV6_NI_QUERY - 128]		= ICMPV6_NI_REPLY + 1,
++	[ICMPV6_NI_REPLY - 128]		= ICMPV6_NI_QUERY +1
+ };
  
+ static bool icmpv6_invert_tuple(struct nf_conntrack_tuple *tuple,
 
