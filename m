@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762233AbZBNBDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752683AbZBNBDF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762233AbZBNBDl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:03:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbZBNBB3
+	id S1752683AbZBNBDF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:03:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbZBNBB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:01:29 -0500
-Received: from kroah.org ([198.145.64.141]:39436 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:01:27 -0500
+Received: from kroah.org ([198.145.64.141]:39417 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753752AbZBNBB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:01:28 -0500
-Date: Fri, 13 Feb 2009 16:58:15 -0800
+	id S1753548AbZBNBB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:01:26 -0500
+Date: Fri, 13 Feb 2009 16:58:11 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jiri Slaby <jirislaby@gmail.com>
-Subject: [patch 06/47] parport: parport_serial, dont bind netmos ibm 0299
-Message-ID: <20090214005815.GG11282@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>
+Subject: [patch 04/47] lockd: fix regression in lockds handling of blocked
+	locks
+Message-ID: <20090214005811.GE11282@kroah.com>
 References: <20090214005130.617401075@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="parport-parport_serial-don-t-bind-netmos-ibm-0299.patch"
+Content-Disposition: inline; filename="lockd-fix-regression-in-lockd-s-handling-of-blocked-locks.patch"
 In-Reply-To: <20090214005726.GA11282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,37 +41,58 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jiri Slaby <jirislaby@gmail.com>
+From: J. Bruce Fields <bfields@citi.umich.edu>
 
-commit 3abdbf90a3ffb006108c831c56b092e35483b6ec upstream.
+commit 9d9b87c1218be78ddecbc85ec3bb91c79c1d56ab upstream.
 
-Since netmos 9835 with subids 0x1014(IBM):0x0299 is now bound with
-serial/8250_pci, because it has no parallel ports and subdevice id isn't
-in the expected form, return -ENODEV from probe function.
+If a client requests a blocking lock, is denied, then requests it again,
+then here in nlmsvc_lock() we will call vfs_lock_file() without FL_SLEEP
+set, because we've already queued a block and don't need the locks code
+to do it again.
 
-This is performed in netmos preinit_hook.
+But that means vfs_lock_file() will return -EAGAIN instead of
+FILE_LOCK_DENIED.  So we still need to translate that -EAGAIN return
+into a nlm_lck_blocked error in this case, and put ourselves back on
+lockd's block list.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+The bug was introduced by bde74e4bc64415b1 "locks: add special return
+value for asynchronous locks".
+
+Thanks to Frank van Maarseveen for the report; his original test
+case was essentially
+
+	for i in `seq 30`; do flock /nfsmount/foo sleep 10 & done
+
+Tested-by: Frank van Maarseveen <frankvm@frankvm.com>
+Reported-by: Frank van Maarseveen <frankvm@frankvm.com>
+Cc: Miklos Szeredi <mszeredi@suse.cz>
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/parport/parport_serial.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ fs/lockd/svclock.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
---- a/drivers/parport/parport_serial.c
-+++ b/drivers/parport/parport_serial.c
-@@ -64,6 +64,11 @@ struct parport_pc_pci {
+--- a/fs/lockd/svclock.c
++++ b/fs/lockd/svclock.c
+@@ -418,7 +418,7 @@ nlmsvc_lock(struct svc_rqst *rqstp, stru
+ 			goto out;
+ 		case -EAGAIN:
+ 			ret = nlm_lck_denied;
+-			goto out;
++			break;
+ 		case FILE_LOCK_DEFERRED:
+ 			if (wait)
+ 				break;
+@@ -434,6 +434,10 @@ nlmsvc_lock(struct svc_rqst *rqstp, stru
+ 			goto out;
+ 	}
  
- static int __devinit netmos_parallel_init(struct pci_dev *dev, struct parport_pc_pci *card, int autoirq, int autodma)
- {
-+	/* the rule described below doesn't hold for this device */
-+	if (dev->device == PCI_DEVICE_ID_NETMOS_9835 &&
-+			dev->subsystem_vendor == PCI_VENDOR_ID_IBM &&
-+			dev->subsystem_device == 0x0299)
-+		return -ENODEV;
- 	/*
- 	 * Netmos uses the subdevice ID to indicate the number of parallel
- 	 * and serial ports.  The form is 0x00PS, where <P> is the number of
++	ret = nlm_lck_denied;
++	if (!wait)
++		goto out;
++
+ 	ret = nlm_lck_blocked;
+ 
+ 	/* Append to list of blocked */
 
