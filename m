@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932690AbZBNBmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761528AbZBNBnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932690AbZBNBmu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:42:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762738AbZBNBQm
+	id S1761528AbZBNBnZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:43:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761984AbZBNBQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:16:42 -0500
-Received: from kroah.org ([198.145.64.141]:50625 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:16:44 -0500
+Received: from kroah.org ([198.145.64.141]:50639 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762147AbZBNBQe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:16:34 -0500
-Date: Fri, 13 Feb 2009 17:13:32 -0800
+	id S1763651AbZBNBQf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:16:35 -0500
+Date: Fri, 13 Feb 2009 17:13:34 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dimitris Michailidis <dm@chelsio.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
+       alan@lxorguk.ukuu.org.uk, Clement Lecigne <clement.lecigne@netasq.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 37/48] tcp: Fix length tcp_splice_data_recv passes to
-	skb_splice_bits.
-Message-ID: <20090214011332.GK17706@kroah.com>
+Subject: [patch 31/48] net: 4 bytes kernel memory disclosure in
+	SO_BSDCOMPAT gsopt try #2
+Message-ID: <20090214011334.GL17706@kroah.com>
 References: <20090214010805.419403436@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="tcp-fix-length-tcp_splice_data_recv-passes-to-skb_splice_bits.patch"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline; filename="net-4-bytes-kernel-memory-disclosure-in-so_bsdcompat-gsopt-try-2.patch"
+Content-Transfer-Encoding: 8bit
 In-Reply-To: <20090214011208.GA17706@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,46 +42,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Dimitris Michailidis <dm@chelsio.com>
+From: Clément Lecigne <clement.lecigne@netasq.com>
 
-[ Upstream commit 9fa5fdf291c9b58b1cb8b4bb2a0ee57efa21d635 ]
+[ Upstream commit df0bca049d01c0ee94afb7cd5dfd959541e6c8da ]
 
-tcp_splice_data_recv has two lengths to consider: the len parameter it
-gets from tcp_read_sock, which specifies the amount of data in the skb,
-and rd_desc->count, which is the amount of data the splice caller still
-wants.  Currently it passes just the latter to skb_splice_bits, which then
-splices min(rd_desc->count, skb->len - offset) bytes.
+In function sock_getsockopt() located in net/core/sock.c, optval v.val
+is not correctly initialized and directly returned in userland in case
+we have SO_BSDCOMPAT option set.
 
-Most of the time this is fine, except when the skb contains urgent data.
-In that case len goes only up to the urgent byte and is less than
-skb->len - offset.  By ignoring len tcp_splice_data_recv may a) splice
-data tcp_read_sock told it not to, b) return to tcp_read_sock a value > len.
+This dummy code should trigger the bug:
 
-Now, tcp_read_sock doesn't handle used > len and leaves the socket in a
-bad state (both sk_receive_queue and copied_seq are bad at that point)
-resulting in duplicated data and corruption.
+int main(void)
+{
+	unsigned char buf[4] = { 0, 0, 0, 0 };
+	int len;
+	int sock;
+	sock = socket(33, 2, 2);
+	getsockopt(sock, 1, SO_BSDCOMPAT, &buf, &len);
+	printf("%x%x%x%x\n", buf[0], buf[1], buf[2], buf[3]);
+	close(sock);
+}
 
-Fix by passing min(rd_desc->count, len) to skb_splice_bits.
+Here is a patch that fix this bug by initalizing v.val just after its
+declaration.
 
-Signed-off-by: Dimitris Michailidis <dm@chelsio.com>
-Acked-by: Eric Dumazet <dada1@cosmosbay.com>
+Signed-off-by: Clément Lecigne <clement.lecigne@netasq.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/tcp.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ net/core/sock.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -522,7 +522,8 @@ static int tcp_splice_data_recv(read_des
- 	struct tcp_splice_state *tss = rd_desc->arg.data;
- 	int ret;
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -696,6 +696,8 @@ int sock_getsockopt(struct socket *sock,
+ 	if (len < 0)
+ 		return -EINVAL;
  
--	ret = skb_splice_bits(skb, offset, tss->pipe, rd_desc->count, tss->flags);
-+	ret = skb_splice_bits(skb, offset, tss->pipe, min(rd_desc->count, len),
-+			      tss->flags);
- 	if (ret > 0)
- 		rd_desc->count -= ret;
- 	return ret;
++	v.val = 0;
++
+ 	switch(optname) {
+ 	case SO_DEBUG:
+ 		v.val = sock_flag(sk, SOCK_DBG);
 
