@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752536AbZBNPbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752584AbZBNPhD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752536AbZBNPbk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 10:31:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbZBNPba
+	id S1752584AbZBNPhD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 10:37:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbZBNPgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 10:31:30 -0500
-Received: from ftp.linux-mips.org ([213.58.128.207]:35261 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750761AbZBNPba (ORCPT
+	Sat, 14 Feb 2009 10:36:52 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:37501 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750752AbZBNPgw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 10:31:30 -0500
-Date: Sat, 14 Feb 2009 15:31:17 +0000 (GMT)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Mark Lord <liml@rtr.ca>
-cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       =?ISO-8859-15?Q?Hanno_B=F6ck?= <hanno@hboeck.de>,
-       Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
-       ide <linux-ide@vger.kernel.org>
-Subject: Re: Very old IDE hard drive (240 MB) detected as 1.1 TB
-In-Reply-To: <4996D443.4060103@rtr.ca>
-Message-ID: <alpine.LFD.1.10.0902141526310.651@ftp.linux-mips.org>
-References: <200902131428.40212.hanno@hboeck.de> <499584FC.2050104@gmail.com> <200902141352.24277.hanno@hboeck.de> <4996C563.9090900@ru.mvista.com> <4996D443.4060103@rtr.ca>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 14 Feb 2009 10:36:52 -0500
+Date: Sat, 14 Feb 2009 10:36:26 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Eric Sandeen <sandeen@redhat.com>,
+       Fernando Luis V?zquez Cao <fernando@oss.ntt.co.jp>,
+       Jan Kara <jack@suse.cz>, Theodore Tso <tytso@MIT.EDU>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, fernando@kic.ac.jp,
+       Ric Wheeler <rwheeler@redhat.com>
+Subject: Re: vfs: Add MS_FLUSHONFSYNC mount flag
+Message-ID: <20090214153626.GA3973@infradead.org>
+References: <20090116163039.GE10617@duck.suse.cz> <1232185639.4831.18.camel@sebastian.kern.oss.ntt.co.jp> <1232186449.4831.29.camel@sebastian.kern.oss.ntt.co.jp> <20090119120349.GA10193@duck.suse.cz> <1233135913.5399.57.camel@sebastian.kern.oss.ntt.co.jp> <20090128095518.GA16554@duck.suse.cz> <1234434811.15270.7.camel@sebastian.kern.oss.ntt.co.jp> <1234434970.15433.4.camel@sebastian.kern.oss.ntt.co.jp> <499458C1.90105@redhat.com> <49945C90.3010104@garzik.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49945C90.3010104@garzik.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Feb 2009, Mark Lord wrote:
+On Thu, Feb 12, 2009 at 12:29:52PM -0500, Jeff Garzik wrote:
+>> The block device *could* choose to ignore this in hardware if it knows
+>> it's built with a nonvolatile write cache or if it has no write cache.
+>
+> That would certainly be my preference -- turn this ON by default, and  
+> them if a layer NEEDS to ignore it, it can.
 
-> >   It has the current capacity in words 57-58 swapped:
-> > 
-> > /dev/sdb:
-> > 0c5a 037f 0000 000a 8723 0275 0037 0030
-> > 000a 0000 2020 2020 2020 2020 2020 424d
-> > 3948 4d31 5020 2020 0003 0040 0004 302e
-> > 3336 2020 2020 436f 6e6e 6572 2050 6572
-> > 6970 6865 7261 6c73 2032 3430 4d42 202d
-> > 2043 5033 3032 3534 2020 2020 2020 8010
-> > 0000 0001 0000 0200 0202 0001 037f 000a
-> > 0037 0007 82da 0000 0000 0000 0000 0000
-> > 
-> > 
-> >   It must be 82da 0007, not 0007 82da.
-> >   IIRC, the IDE core doesn't trust the value reported in these words 
-> ..
-> 
-> That's right.  I wrote the IDE code that way
-> *specifically* due to a (different) Conner drive
-> I had here at the time.
+Yeah, and we should integrate this with the barriers settings.
 
- It happened for some Maxtor drives too.  The reason is the ATA-1 spec was 
-not explicit about how words 57 and 58 were meant to be ordered and some 
-manufacturers interpreted it one and some the other way.  It looks like 
-libata needs to be fixed.
+I think the right setup is:
 
-  Maciej
+ - each gendisk has a variable to indicate if we have a write-back
+   cache, which is filled from scsi inquiry data (or whatever the
+   equivalent in the storage protocol is), but we allow an override
+   from userspace if the admin knows better (if he really does or
+   wants to play fast and lose is the admin's business)
+ - filesystems do the right things by using barriers and cache flushes
+   if they see the underlying device needs it.
+
