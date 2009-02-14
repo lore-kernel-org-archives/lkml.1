@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761974AbZBNBE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762233AbZBNBDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761974AbZBNBE2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:04:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbZBNBBb
+	id S1762233AbZBNBDl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:03:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbZBNBB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:01:31 -0500
-Received: from kroah.org ([198.145.64.141]:39470 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:01:29 -0500
+Received: from kroah.org ([198.145.64.141]:39436 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754197AbZBNBBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:01:30 -0500
-Date: Fri, 13 Feb 2009 16:58:19 -0800
+	id S1753752AbZBNBB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:01:28 -0500
+Date: Fri, 13 Feb 2009 16:58:15 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Kumar Gala <galak@kernel.crashing.org>
-Subject: [patch 08/47] powerpc/fsl-booke: Fix mapping functions to use
-	phys_addr_t
-Message-ID: <20090214005819.GI11282@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Jiri Slaby <jirislaby@gmail.com>
+Subject: [patch 06/47] parport: parport_serial, dont bind netmos ibm 0299
+Message-ID: <20090214005815.GG11282@kroah.com>
 References: <20090214005130.617401075@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="powerpc-fsl-booke-fix-mapping-functions-to-use-phys_addr_t.patch"
+Content-Disposition: inline; filename="parport-parport_serial-don-t-bind-netmos-ibm-0299.patch"
 In-Reply-To: <20090214005726.GA11282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,54 +39,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Kumar Gala <galak@kernel.crashing.org>
+From: Jiri Slaby <jirislaby@gmail.com>
 
-commit 6c24b17453c8dc444a746e45b8a404498fc9fcf7 upstream.
+commit 3abdbf90a3ffb006108c831c56b092e35483b6ec upstream.
 
-Fixed v_mapped_by_tlbcam() and p_mapped_by_tlbcam() to use phys_addr_t
-instead of unsigned long.  In 36-bit physical mode we really need these
-functions to deal with phys_addr_t when trying to match a physical
-address or when returning one.
+Since netmos 9835 with subids 0x1014(IBM):0x0299 is now bound with
+serial/8250_pci, because it has no parallel ports and subdevice id isn't
+in the expected form, return -ENODEV from probe function.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+This is performed in netmos preinit_hook.
+
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/powerpc/mm/fsl_booke_mmu.c |    4 ++--
- arch/powerpc/mm/pgtable_32.c    |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/parport/parport_serial.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- a/arch/powerpc/mm/fsl_booke_mmu.c
-+++ b/arch/powerpc/mm/fsl_booke_mmu.c
-@@ -80,7 +80,7 @@ extern unsigned int tlbcam_index;
- /*
-  * Return PA for this VA if it is mapped by a CAM, or 0
-  */
--unsigned long v_mapped_by_tlbcam(unsigned long va)
-+phys_addr_t v_mapped_by_tlbcam(unsigned long va)
- {
- 	int b;
- 	for (b = 0; b < tlbcam_index; ++b)
-@@ -92,7 +92,7 @@ unsigned long v_mapped_by_tlbcam(unsigne
- /*
-  * Return VA for a given PA or 0 if not mapped
-  */
--unsigned long p_mapped_by_tlbcam(unsigned long pa)
-+unsigned long p_mapped_by_tlbcam(phys_addr_t pa)
- {
- 	int b;
- 	for (b = 0; b < tlbcam_index; ++b)
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -65,8 +65,8 @@ void setbat(int index, unsigned long vir
+--- a/drivers/parport/parport_serial.c
++++ b/drivers/parport/parport_serial.c
+@@ -64,6 +64,11 @@ struct parport_pc_pci {
  
- #ifdef HAVE_TLBCAM
- extern unsigned int tlbcam_index;
--extern unsigned long v_mapped_by_tlbcam(unsigned long va);
--extern unsigned long p_mapped_by_tlbcam(unsigned long pa);
-+extern phys_addr_t v_mapped_by_tlbcam(unsigned long va);
-+extern unsigned long p_mapped_by_tlbcam(phys_addr_t pa);
- #else /* !HAVE_TLBCAM */
- #define v_mapped_by_tlbcam(x)	(0UL)
- #define p_mapped_by_tlbcam(x)	(0UL)
+ static int __devinit netmos_parallel_init(struct pci_dev *dev, struct parport_pc_pci *card, int autoirq, int autodma)
+ {
++	/* the rule described below doesn't hold for this device */
++	if (dev->device == PCI_DEVICE_ID_NETMOS_9835 &&
++			dev->subsystem_vendor == PCI_VENDOR_ID_IBM &&
++			dev->subsystem_device == 0x0299)
++		return -ENODEV;
+ 	/*
+ 	 * Netmos uses the subdevice ID to indicate the number of parallel
+ 	 * and serial ports.  The form is 0x00PS, where <P> is the number of
 
