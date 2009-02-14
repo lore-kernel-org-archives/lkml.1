@@ -1,91 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752556AbZBNKXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616AbZBNK0O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752556AbZBNKXU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 05:23:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbZBNKXK
+	id S1752616AbZBNK0O (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 05:26:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbZBNKZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 05:23:10 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:58673 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750972AbZBNKXI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 05:23:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=kmbOhsDeoO/JW3hj3yJ+SgamFuCQcaCKtXqeKn6d2QH/2xJX2ZkRgMeyK8CLxjWmsH
-         ujI8TkjLZIIRGNj028w5jW4lEW63vcpFQ1anOJvjoirAS01o294aBd/7gUJ9/Is1xZ04
-         4EkA/uugwa7ZtVQn7Cfx1es0C+xRpCQWzVB+g=
-Date: Sat, 14 Feb 2009 05:22:55 -0500
-From: Alexandre Rostovtsev <tetromino@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-laptop@vger.kernel.org
-Subject: [3/3] lenovo-sl-laptop : kconfig etc.
-Message-ID: <20090214052255.3a82718d@leftboat.lan>
-In-Reply-To: <20090214051902.3927f5e1@leftboat.lan>
-References: <20090214051214.359d4fd4@leftboat.lan>
-	<20090214051624.0cbc8999@leftboat.lan>
-	<20090214051902.3927f5e1@leftboat.lan>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 14 Feb 2009 05:25:58 -0500
+Received: from genesysrack.ru ([195.178.208.66]:49347 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750898AbZBNKZ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 05:25:57 -0500
+Date: Sat, 14 Feb 2009 13:25:46 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: gregkh@suse.de, frank@f-seidel.de, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH next] Staging: pohmelfs: fix printk format warnings v2
+Message-ID: <20090214102546.GA29771@ioremap.net>
+References: <20090213145330.GA7321@orion>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090213145330.GA7321@orion>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Makefiles and kconfigs for the lenovo-sl-laptop driver.
+On Fri, Feb 13, 2009 at 05:53:30PM +0300, Alexander Beregalov (a.beregalov@gmail.com) wrote:
+> drivers/staging/pohmelfs/inode.c:917: warning: format '%u' expects type 'unsigned int', but argument 4 has type 'size_t'
+> drivers/staging/pohmelfs/inode.c:1036: warning: format '%u' expects type 'unsigned int', but argument 7 has type 'size_t'
+> drivers/staging/pohmelfs/trans.c:164: warning: format '%u' expects type 'unsigned int', but argument 5 has type '__kernel_size_t'
+> drivers/staging/pohmelfs/trans.c:170: warning: format '%u' expects type 'unsigned int', but argument 7 has type '__kernel_size_t'
+> drivers/staging/pohmelfs/trans.c:517: warning: format '%u' expects type 'unsigned int', but argument 6 has type '__kernel_size_t'
+> drivers/staging/pohmelfs/trans.c:600: warning: format '%u' expects type 'unsigned int', but argument 6 has type '__kernel_size_t'
+> drivers/staging/pohmelfs/trans.c:610: warning: format '%u' expects type 'unsigned int', but argument 7 has type '__kernel_size_t'
+> 
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
 
-Signed-off-by: Alexandre Rostovtsev <tetromino@gmail.com>
+Looks good, thanks a lot Alexander.
 
-diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
-index ce6badd..a34f9c8 100644
---- a/drivers/staging/Kconfig
-+++ b/drivers/staging/Kconfig
-@@ -95,5 +95,7 @@ source "drivers/staging/epl/Kconfig"
- 
- source "drivers/staging/android/Kconfig"
- 
-+source "drivers/staging/lenovo-sl-laptop/Kconfig"
-+
- endif # !STAGING_EXCLUDE_BUILD
- endif # STAGING
-diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
-index 9ddcc2b..14ce47f 100644
---- a/drivers/staging/Makefile
-+++ b/drivers/staging/Makefile
-@@ -30,3 +30,4 @@ obj-$(CONFIG_INPUT_MIMIO)	+= mimio/
- obj-$(CONFIG_TRANZPORT)		+= frontier/
- obj-$(CONFIG_EPL)		+= epl/
- obj-$(CONFIG_ANDROID)		+= android/
-+obj-$(CONFIG_LENOVO_SL_LAPTOP)  += lenovo-sl-laptop/
-diff --git a/drivers/staging/lenovo-sl-laptop/Kconfig b/drivers/staging/lenovo-sl-laptop/Kconfig
-new file mode 100644
-index 0000000..88bdeb6
---- /dev/null
-+++ b/drivers/staging/lenovo-sl-laptop/Kconfig
-@@ -0,0 +1,16 @@
-+config LENOVO_SL_LAPTOP
-+	tristate "Lenovo SL Series Laptop Extras"
-+	depends on X86
-+	depends on ACPI
-+	depends on INPUT
-+	depends on BACKLIGHT_CLASS_DEVICE
-+	depends on RFKILL
-+	depends on NEW_LEDS
-+	---help---
-+	  This is a driver for the Lenovo ThinkPad SL series laptops
-+	  (SL300/400/500), which are not supported by the thinkpad_acpi
-+	  driver. The driver adds support for hotkeys, bluetooth control,
-+	  the Lenovo Care LED, and (as an experimental feature) for screen
-+	  backlight brightness control. For more information, see
-+	  <file:Documentation/laptops/lenovo-sl-laptop.txt>
-+
-diff --git a/drivers/staging/lenovo-sl-laptop/Makefile b/drivers/staging/lenovo-sl-laptop/Makefile
-new file mode 100644
-index 0000000..f91b5ab
---- /dev/null
-+++ b/drivers/staging/lenovo-sl-laptop/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_LENOVO_SL_LAPTOP)	:= lenovo-sl-laptop.o
+> ---
+> 
+>  drivers/staging/pohmelfs/inode.c |    4 ++--
+>  drivers/staging/pohmelfs/trans.c |   10 +++++-----
+>  2 files changed, 7 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/staging/pohmelfs/inode.c b/drivers/staging/pohmelfs/inode.c
+> index 0980c3c..fdce752 100644
+> --- a/drivers/staging/pohmelfs/inode.c
+> +++ b/drivers/staging/pohmelfs/inode.c
+> @@ -914,7 +914,7 @@ ssize_t pohmelfs_write(struct file *file, const char __user *buf,
+>  	kiocb.ki_pos = pos;
+>  	kiocb.ki_left = len;
+>  
+> -	dprintk("%s: len: %u, pos: %llu.\n", __func__, len, pos);
+> +	dprintk("%s: len: %zu, pos: %llu.\n", __func__, len, pos);
+>  
+>  	mutex_lock(&inode->i_mutex);
+>  	ret = pohmelfs_data_lock(pi, pos, len, POHMELFS_WRITE_LOCK);
+> @@ -1033,7 +1033,7 @@ static int pohmelfs_send_xattr_req(struct pohmelfs_inode *pi, u64 id, u64 start,
+>  	struct netfs_cmd *cmd;
+>  	void *data;
+>  
+> -	dprintk("%s: id: %llu, start: %llu, name: '%s', attrsize: %u, cmd: %d.\n",
+> +	dprintk("%s: id: %llu, start: %llu, name: '%s', attrsize: %zu, cmd: %d.\n",
+>  			__func__, id, start, name, attrsize, command);
+>  
+>  	path_len = pohmelfs_path_length(pi);
+> diff --git a/drivers/staging/pohmelfs/trans.c b/drivers/staging/pohmelfs/trans.c
+> index 92054bd..bcb5942 100644
+> --- a/drivers/staging/pohmelfs/trans.c
+> +++ b/drivers/staging/pohmelfs/trans.c
+> @@ -160,14 +160,14 @@ int netfs_trans_send(struct netfs_trans *t, struct netfs_state *st)
+>  
+>  	err = kernel_sendmsg(st->socket, &msg, (struct kvec *)msg.msg_iov, 1, t->iovec.iov_len);
+>  	if (err <= 0) {
+> -		printk("%s: failed to send contig transaction: t: %p, gen: %u, size: %u, err: %d.\n",
+> +		printk("%s: failed to send contig transaction: t: %p, gen: %u, size: %zu, err: %d.\n",
+>  				__func__, t, t->gen, t->iovec.iov_len, err);
+>  		if (err == 0)
+>  			err = -ECONNRESET;
+>  		goto err_out_unlock_return;
+>  	}
+>  
+> -	dprintk("%s: sent %s transaction: t: %p, gen: %u, size: %u, page_num: %u.\n",
+> +	dprintk("%s: sent %s transaction: t: %p, gen: %u, size: %zu, page_num: %u.\n",
+>  			__func__, (t->page_num)?"partial":"full",
+>  			t, t->gen, t->iovec.iov_len, t->page_num);
+>  
+> @@ -514,7 +514,7 @@ int netfs_trans_finish(struct netfs_trans *t, struct pohmelfs_sb *psb)
+>  		cmd->csize = psb->crypto_attached_size;
+>  	}
+>  
+> -	dprintk("%s: t: %u, size: %u, iov_len: %u, attached_size: %u, attached_pages: %u.\n",
+> +	dprintk("%s: t: %u, size: %u, iov_len: %zu, attached_size: %u, attached_pages: %u.\n",
+>  			__func__, t->gen, cmd->size, t->iovec.iov_len, t->attached_size, t->attached_pages);
+>  	err = pohmelfs_trans_crypt(t, psb);
+>  	if (err) {
+> @@ -597,7 +597,7 @@ void *netfs_trans_add(struct netfs_trans *t, unsigned int size)
+>  	}
+>  
+>  	if (io->iov_len + size > t->total_size) {
+> -		dprintk("%s: too big size t: %p, gen: %u, iov_len: %u, size: %u, total: %u.\n",
+> +		dprintk("%s: too big size t: %p, gen: %u, iov_len: %zu, size: %u, total: %u.\n",
+>  				__func__, t, t->gen, io->iov_len, size, t->total_size);
+>  		ptr = ERR_PTR(-E2BIG);
+>  		goto out;
+> @@ -607,7 +607,7 @@ void *netfs_trans_add(struct netfs_trans *t, unsigned int size)
+>  	io->iov_len += size;
+>  
+>  out:
+> -	dprintk("%s: t: %p, gen: %u, size: %u, total: %u.\n",
+> +	dprintk("%s: t: %p, gen: %u, size: %u, total: %zu.\n",
+>  		__func__, t, t->gen, size, io->iov_len);
+>  	return ptr;
+>  }
+
+-- 
+	Evgeniy Polyakov
