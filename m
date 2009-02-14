@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761710AbZBNBCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761932AbZBNBCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761710AbZBNBCa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:02:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbZBNBBZ
+	id S1761932AbZBNBCr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:02:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753558AbZBNBB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:01:25 -0500
-Received: from kroah.org ([198.145.64.141]:39382 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:01:26 -0500
+Received: from kroah.org ([198.145.64.141]:39402 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753459AbZBNBBY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:01:24 -0500
-Date: Fri, 13 Feb 2009 16:58:07 -0800
+	id S1753513AbZBNBBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:01:25 -0500
+Date: Fri, 13 Feb 2009 16:58:09 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Tomas Winkler <tomas.winkler@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 02/47] iwlwifi: scan correct setting of valid rx_chains
-Message-ID: <20090214005807.GC11282@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [patch 03/47] kernel-doc: fix syscall wrapper processing
+Message-ID: <20090214005809.GD11282@kroah.com>
 References: <20090214005130.617401075@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="iwlwifi-scan-correct-setting-of-valid-rx_chains.patch"
+Content-Disposition: inline; filename="kernel-doc-fix-syscall-wrapper-processing.patch"
 In-Reply-To: <20090214005726.GA11282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,29 +39,103 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Tomas Winkler <tomas.winkler@intel.com>
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-commit d588be6bae40f7965f1b681a4dbc3254411787b9 upstream.
+commit b4870bc5ee8c7a37541a3eb1208b5c76c13a078a upstream.
 
-This patch sets rx_chain bitmap correctly according hw configuration.
+Fix kernel-doc processing of SYSCALL wrappers.
 
-Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+The SYSCALL wrapper patches played havoc with kernel-doc for
+syscalls.  Syscalls that were scanned for DocBook processing
+reported warnings like this one, for sys_tgkill:
+
+Warning(kernel/signal.c:2285): No description found for parameter 'tgkill'
+Warning(kernel/signal.c:2285): No description found for parameter 'pid_t'
+Warning(kernel/signal.c:2285): No description found for parameter 'int'
+
+because the macro parameters all "look like" function parameters,
+although they are not:
+
+/**
+ *  sys_tgkill - send signal to one specific thread
+ *  @tgid: the thread group ID of the thread
+ *  @pid: the PID of the thread
+ *  @sig: signal to be sent
+ *
+ *  This syscall also checks the @tgid and returns -ESRCH even if the PID
+ *  exists but it's not belonging to the target process anymore. This
+ *  method solves the problem of threads exiting and PIDs getting reused.
+ */
+SYSCALL_DEFINE3(tgkill, pid_t, tgid, pid_t, pid, int, sig)
+{
+...
+
+This patch special-cases the handling SYSCALL_DEFINE* function
+prototypes by expanding them to
+	long sys_foobar(type1 arg1, type1 arg2, ...)
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/iwlwifi/iwl-scan.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ scripts/kernel-doc |   39 ++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 38 insertions(+), 1 deletion(-)
 
---- a/drivers/net/wireless/iwlwifi/iwl-scan.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-scan.c
-@@ -704,7 +704,7 @@ static void iwl_bg_request_scan(struct w
- 	u16 cmd_len;
- 	enum ieee80211_band band;
- 	u8 n_probes = 2;
--	u8 rx_chain = 0x7; /* bitmap: ABC chains */
-+	u8 rx_chain = priv->hw_params.valid_rx_ant;
+--- a/scripts/kernel-doc
++++ b/scripts/kernel-doc
+@@ -1758,6 +1758,40 @@ sub reset_state {
+     $state = 0;
+ }
  
- 	conf = ieee80211_get_hw_conf(priv->hw);
- 
++sub syscall_munge() {
++	my $void = 0;
++
++	$prototype =~ s@[\r\n\t]+@ @gos; # strip newlines/CR's/tabs
++##	if ($prototype =~ m/SYSCALL_DEFINE0\s*\(\s*(a-zA-Z0-9_)*\s*\)/) {
++	if ($prototype =~ m/SYSCALL_DEFINE0/) {
++		$void = 1;
++##		$prototype = "long sys_$1(void)";
++	}
++
++	$prototype =~ s/SYSCALL_DEFINE.*\(/long sys_/; # fix return type & func name
++	if ($prototype =~ m/long (sys_.*?),/) {
++		$prototype =~ s/,/\(/;
++	} elsif ($void) {
++		$prototype =~ s/\)/\(void\)/;
++	}
++
++	# now delete all of the odd-number commas in $prototype
++	# so that arg types & arg names don't have a comma between them
++	my $count = 0;
++	my $len = length($prototype);
++	if ($void) {
++		$len = 0;	# skip the for-loop
++	}
++	for (my $ix = 0; $ix < $len; $ix++) {
++		if (substr($prototype, $ix, 1) eq ',') {
++			$count++;
++			if ($count % 2 == 1) {
++				substr($prototype, $ix, 1) = ' ';
++			}
++		}
++	}
++}
++
+ sub process_state3_function($$) {
+     my $x = shift;
+     my $file = shift;
+@@ -1774,7 +1808,10 @@ sub process_state3_function($$) {
+ 	$prototype =~ s@/\*.*?\*/@@gos;	# strip comments.
+ 	$prototype =~ s@[\r\n]+@ @gos; # strip newlines/cr's.
+ 	$prototype =~ s@^\s+@@gos; # strip leading spaces
+-	dump_function($prototype,$file);
++	if ($prototype =~ /SYSCALL_DEFINE/) {
++		syscall_munge();
++	}
++	dump_function($prototype, $file);
+ 	reset_state();
+     }
+ }
 
