@@ -1,122 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753233AbZBNFcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709AbZBNFlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753233AbZBNFcg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 00:32:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750727AbZBNFc1
+	id S1753709AbZBNFlY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 00:41:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbZBNFlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 00:32:27 -0500
-Received: from gw.goop.org ([64.81.55.164]:35723 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750714AbZBNFc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 00:32:26 -0500
-Message-ID: <49965768.7040102@goop.org>
-Date: Fri, 13 Feb 2009 21:32:24 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ian Campbell <Ian.Campbell@citrix.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH 2/9] xen: hook io_apic read/write operations
-References: <cover.1234573847.git.jeremy.fitzhardinge@citrix.com> <cover.1234573847.git.jeremy.fitzhardinge@citrix.com> <3c7db30686056c9b86cc61ef50dd5572de868512.1234573847.git.jeremy.fitzhardinge@citrix.com> <3e46dae897fd5620f50b4cca9272969f5546aa88.1234573847.git.jeremy.fitzhardinge@citrix.com> <4996280B.6000104@kernel.org>
-In-Reply-To: <4996280B.6000104@kernel.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 14 Feb 2009 00:41:13 -0500
+Received: from satoko.is.fushizen.net ([207.192.69.114]:58944 "EHLO
+	satoko.is.fushizen.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750828AbZBNFlN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 00:41:13 -0500
+X-Greylist: delayed 1440 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Feb 2009 00:41:12 EST
+From: d-email-bdonlan@fushizen.net
+To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: sct@redhat.com, akpm@linux-foundation.org, adilger@sun.com, tytso@mit.edu,
+       Bryan Donlan <bdonlan@gmail.com>
+Subject: [RESEND/PATCH] ext[234]: Return -EIO not -ESTALE on directory traversal missing inode
+Date: Sat, 14 Feb 2009 00:17:10 -0500
+Message-Id: <1234588630-9380-1-git-send-email-d-email-bdonlan@fushizen.net>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <1234588099-8445-1-git-sen--dry-run>
+References: <1234588099-8445-1-git-sen--dry-run>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> Jeremy Fitzhardinge wrote:
->   
->> In Xen, writes to the IO APIC are paravirtualized via hypercalls, so
->> implement the appropriate operations.
->>
->> This version of the patch just hooks the io_apic read/write functions
->> directly, rather than introducing another layer of indirection.  The
->> xen_initial_domain() tests compile to 0 if CONFIG_XEN_DOM0 isn't set,
->> and are cheap if it is.
->>
->> (An alternative would be to add io_apic_ops, and point them to the Xen
->> implementation as needed.  HPA deemed this extra level of indirection to
->> be excessive.)
->>     
->
-> that will be more clean.
->   
+From: Bryan Donlan <bdonlan@gmail.com>
 
-That was my thought too.
+The ext[234]_iget() functions in the ext[234] family of filesystems returns
+-ESTALE if invoked on a deleted inode, in order to report errors to NFS
+properly. However, in ext[234]_lookup(), this -ESTALE can be propagated to
+userspace if the filesystem is corrupted, and a inode is linked even
+though it is marked as deleted. This leads to a misleading error message -
+"Stale NFS file handle" - and confusion on the part of the admin.
 
+The bug can be easily reproduced by creating a new filesystem, making a link
+to an unused inode using debugfs, then mounting and attempting to ls -l
+said link.
 
->> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
->> ---
->>  arch/x86/include/asm/io_apic.h |    6 ++++
->>  arch/x86/kernel/io_apic.c      |   32 ++++++++++++++++++++--
->>  arch/x86/xen/Makefile          |    3 +-
->>  arch/x86/xen/apic.c            |   57 ++++++++++++++++++++++++++++++++++++++++
->>  arch/x86/xen/enlighten.c       |    2 +
->>  arch/x86/xen/xen-ops.h         |    6 ++++
->>  6 files changed, 102 insertions(+), 4 deletions(-)
->>  create mode 100644 arch/x86/xen/apic.c
->>
->> diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
->> index 59cb4a1..20b543a 100644
->> --- a/arch/x86/include/asm/io_apic.h
->> +++ b/arch/x86/include/asm/io_apic.h
->> @@ -183,4 +183,10 @@ static inline void ioapic_init_mappings(void)	{ }
->>  static inline void probe_nr_irqs_gsi(void)	{ }
->>  #endif
->>  
->> +void xen_io_apic_init(void);
->> +unsigned int xen_io_apic_read(unsigned apic, unsigned reg);
->> +void xen_io_apic_write(unsigned int apic,
->> +		       unsigned int reg, unsigned int value);
->> +
->> +
->>  #endif /* _ASM_X86_IO_APIC_H */
->> diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
->> index 7248ca1..de0368a 100644
->> --- a/arch/x86/kernel/io_apic.c
->> +++ b/arch/x86/kernel/io_apic.c
->> @@ -62,6 +62,8 @@
->>  #include <asm/uv/uv_hub.h>
->>  #include <asm/uv/uv_irq.h>
->>  
->> +#include <asm/xen/hypervisor.h>
->> +
->>  #include <asm/genapic.h>
->>  
->>  #define __apicdebuginit(type) static type __init
->> @@ -399,14 +401,26 @@ static __attribute_const__ struct io_apic __iomem *io_apic_base(int idx)
->>  
->>  static inline unsigned int io_apic_read(unsigned int apic, unsigned int reg)
->>  {
->> -	struct io_apic __iomem *io_apic = io_apic_base(apic);
->> +	struct io_apic __iomem *io_apic;
->> +
->> +	if (xen_initial_domain())
->> +		return xen_io_apic_read(apic, reg);
->>     
->
-> you may have _xen_io_apic_read(apic, reg);
-> and xen_io_apic_read(apic, reg) will call xen_initial_domain internally.
->   
+This patch thus changes ext[234]_lookup to return -EIO if it receives -ESTALE
+from ext[234]_iget(), as ext[234] does for other filesystem metadata
+corruption.
 
-How would that work?  What would it return in the xen/non-xen states to 
-indicate that the normal read operation should be performed?  I don't 
-think it would be any clearer.
+Signed-off-by: Bryan Donlan <bdonlan@gmail.com>
+---
 
-> or sth like
-> extra if (io_apic_ops)
-> 	io_apic->read()...
->   
+Apologies for the resend so quickly for those on the CC list - my mailer was
+misconfigured and the mail rejected by vger.
 
-I think if there were an _ops structure, it should just go though it 
-unconditionally.
+ fs/ext2/namei.c |    8 ++++++--
+ fs/ext3/namei.c |    8 ++++++--
+ fs/ext4/namei.c |    8 ++++++--
+ 3 files changed, 18 insertions(+), 6 deletions(-)
 
-    J
+diff --git a/fs/ext2/namei.c b/fs/ext2/namei.c
+index 90ea179..7dab3e8 100644
+--- a/fs/ext2/namei.c
++++ b/fs/ext2/namei.c
+@@ -66,8 +66,12 @@ static struct dentry *ext2_lookup(struct inode * dir, struct dentry *dentry, str
+ 	inode = NULL;
+ 	if (ino) {
+ 		inode = ext2_iget(dir->i_sb, ino);
+-		if (IS_ERR(inode))
+-			return ERR_CAST(inode);
++		if (unlikely(IS_ERR(inode))) {
++			if (PTR_ERR(inode) == -ESTALE)
++				return ERR_PTR(-EIO);
++			else
++				return ERR_CAST(inode);
++		}
+ 	}
+ 	return d_splice_alias(inode, dentry);
+ }
+diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
+index 4db4ffa..625f5dc 100644
+--- a/fs/ext3/namei.c
++++ b/fs/ext3/namei.c
+@@ -1047,8 +1047,12 @@ static struct dentry *ext3_lookup(struct inode * dir, struct dentry *dentry, str
+ 			return ERR_PTR(-EIO);
+ 		}
+ 		inode = ext3_iget(dir->i_sb, ino);
+-		if (IS_ERR(inode))
+-			return ERR_CAST(inode);
++		if (unlikely(IS_ERR(inode))) {
++			if (PTR_ERR(inode) == -ESTALE)
++				return ERR_PTR(-EIO);
++			else
++				return ERR_CAST(inode);
++		}
+ 	}
+ 	return d_splice_alias(inode, dentry);
+ }
+diff --git a/fs/ext4/namei.c b/fs/ext4/namei.c
+index ba702bd..4b054b3 100644
+--- a/fs/ext4/namei.c
++++ b/fs/ext4/namei.c
+@@ -1052,8 +1052,12 @@ static struct dentry *ext4_lookup(struct inode *dir, struct dentry *dentry, stru
+ 			return ERR_PTR(-EIO);
+ 		}
+ 		inode = ext4_iget(dir->i_sb, ino);
+-		if (IS_ERR(inode))
+-			return ERR_CAST(inode);
++		if (unlikely(IS_ERR(inode))) {
++			if (PTR_ERR(inode) == -ESTALE)
++				return ERR_PTR(-EIO);
++			else
++				return ERR_CAST(inode);
++		}
+ 	}
+ 	return d_splice_alias(inode, dentry);
+ }
+-- 
+1.5.6.3
 
