@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763547AbZBNBR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764317AbZBNBSl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763547AbZBNBR5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:17:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754377AbZBNBCO
+	id S1764317AbZBNBSl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:18:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZBNBCS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:02:14 -0500
-Received: from kroah.org ([198.145.64.141]:39947 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:02:18 -0500
+Received: from kroah.org ([198.145.64.141]:40020 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761492AbZBNBCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:02:04 -0500
-Date: Fri, 13 Feb 2009 16:59:26 -0800
+	id S1761591AbZBNBCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:02:09 -0500
+Date: Fri, 13 Feb 2009 16:59:33 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jiri Kosina <jkosina@suse.cz>
-Subject: [patch 42/47] HID: adjust report descriptor fixup for MS 1028
-	receiver
-Message-ID: <20090214005926.GQ11282@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Jianjun Kong <jianjun@zeuux.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 46/47] mac80211: fix a buffer overrun in station debug code
+Message-ID: <20090214005933.GU11282@kroah.com>
 References: <20090214005130.617401075@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="hid-adjust-report-descriptor-fixup-for-ms-1028-receiver.patch"
+Content-Disposition: inline; filename="mac80211-fix-a-buffer-overrun-in-station-debug-code.patch"
 In-Reply-To: <20090214005726.GA11282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,58 +40,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jiri Kosina <jkosina@suse.cz>
+From: Jianjun Kong <jianjun@zeuux.org>
 
-commit 0fb21de0799a985d2da3da14ae5625d724256638 upstream
+commit 013cd397532e5803a1625954a884d021653da720 upstream.
 
-HID: adjust report descriptor fixup for MS 1028 receiver
-[Backport to 2.6.27: cebbert@redhat.com]
+net/mac80211/debugfs_sta.c
+The trailing zero was written to state[4], it's out of bounds.
 
-Report descriptor fixup for MS 1028 receiver changes also values for
-Keyboard and Consumer, which incorrectly trims the range, causing correct
-events being thrown away before passing to userspace.
-
-We need to keep the GenDesk usage fixup though, as it reports totally bogus
-values about axis.
-
-Reported-by: Lucas Gadani <lgadani@gmail.com>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/hid/usbhid/hid-quirks.c |   16 ++++------------
- 1 file changed, 4 insertions(+), 12 deletions(-)
+ net/mac80211/debugfs_sta.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/hid/usbhid/hid-quirks.c
-+++ b/drivers/hid/usbhid/hid-quirks.c
-@@ -1130,24 +1130,16 @@ static void usbhid_fixup_button_consumer
- }
- 
- /*
-- * Microsoft Wireless Desktop Receiver (Model 1028) has several
-+ * Microsoft Wireless Desktop Receiver (Model 1028) has
-  * 'Usage Min/Max' where it ought to have 'Physical Min/Max'
-  */
- static void usbhid_fixup_microsoft_descriptor(unsigned char *rdesc, int rsize)
- {
--	if (rsize == 571 && rdesc[284] == 0x19
--	                 && rdesc[286] == 0x2a
--	                 && rdesc[304] == 0x19
--	                 && rdesc[306] == 0x29
--	                 && rdesc[352] == 0x1a
--	                 && rdesc[355] == 0x2a
--			 && rdesc[557] == 0x19
-+	if (rsize == 571 && rdesc[557] == 0x19
- 			 && rdesc[559] == 0x29) {
- 		printk(KERN_INFO "Fixing up Microsoft Wireless Receiver Model 1028 report descriptor\n");
--		rdesc[284] = rdesc[304] = rdesc[557] = 0x35;
--		rdesc[352] = 0x36;
--		rdesc[286] = rdesc[355] = 0x46;
--		rdesc[306] = rdesc[559] = 0x45;
-+		rdesc[557] = 0x35;
-+		rdesc[559] = 0x45;
- 	}
- }
- 
+--- a/net/mac80211/debugfs_sta.c
++++ b/net/mac80211/debugfs_sta.c
+@@ -200,7 +200,7 @@ static ssize_t sta_agg_status_write(stru
+ 		/* toggle Rx aggregation command */
+ 		tid_num = tid_num - 100;
+ 		if (tid_static_rx[tid_num] == 1) {
+-			strcpy(state, "off ");
++			strcpy(state, "off");
+ 			ieee80211_sta_stop_rx_ba_session(dev, da, tid_num, 0,
+ 					WLAN_REASON_QSTA_REQUIRE_SETUP);
+ 			sta->ampdu_mlme.tid_state_rx[tid_num] |=
 
