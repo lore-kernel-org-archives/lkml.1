@@ -1,98 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbZBNVx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755870AbZBNVxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755321AbZBNVx2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 16:53:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbZBNVxT
+	id S1755870AbZBNVxn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 16:53:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbZBNVxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sat, 14 Feb 2009 16:53:20 -0500
+Received: from mail-gx0-f222.google.com ([209.85.217.222]:34330 "EHLO
+	mail-gx0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752259AbZBNVxT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 14 Feb 2009 16:53:19 -0500
-Received: from LUNGE.MIT.EDU ([18.54.1.69]:55626 "EHLO lunge.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752206AbZBNVxS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 16:53:18 -0500
-Date: Sat, 14 Feb 2009 16:53:11 -0500
-From: Andres Salomon <dilinger@queued.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Chris Ball <cjb@laptop.org>, Harvey Harrison <harvey.harrison@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] olpc: fix model detection without OFW
-Message-ID: <20090214165311.5cf5b8bf@ephemeral>
-In-Reply-To: <20090214214312.GB31928@elte.hu>
-References: <1222208409.16003.25.camel@brick>
-	<m3mycpye65.fsf@pullcord.laptop.org>
-	<20090213231900.4f22008a@ephemeral>
-	<20090214214312.GB31928@elte.hu>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
+         :subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        b=TmBkQ0MuDozEJuo19HZ1+vGvLLmjTWLyFJnGv8oTS9zSx1RoIVwIdCO6H4Aq0o0qXA
+         zBKesyEtzcCvUxnUdNe7fsas2KXqDsh9QunjBPo9dgjfbhSrd2zXM5eRhqjkJuFY8/Va
+         H87y5yXdnOqHBpoPwDFxKOGi3IH9BnlwUvYs8=
+Message-ID: <49973D4B.30802@gmail.com>
+Date: Sat, 14 Feb 2009 15:53:15 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+Newsgroups: gmane.linux.kernel
+To: Richard Jonsson <richard_jonsson@hotmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Unable to write dvd+r on 3 systems
+References: <BAY108-W34B897781EDB26A588B4B29DB90@phx.gbl>
+In-Reply-To: <BAY108-W34B897781EDB26A588B4B29DB90@phx.gbl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Feb 2009 22:43:12 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
-[...]
+Richard Jonsson wrote:
 > 
-> Applied to tip:x86/urgent [for v2.6.29], thanks guys!
+> It seems I am the last person on earth burning dvd's. I have tried on three different systems, using a mix of growisofs, xfburn, brasero and k3b. They all give the same result for their respective system.
 > 
-> Did i get the impact-line below right?
+> On system 1 it takes forever to complete the process. The system is completely useless while burning. IO wait is 50% and hardIRQ is 10-20%. If audio is playing at the same time it stutters in a way that it sounds as it's playing slow. Mouse cursor jerks and it takes eons to even open a new terminal.
 > 
-> 	Ingo
+> On system 2 growisofs will try for half a minute and then fail with a message in dmesg. The disc isn't even touched. Tried homebuilt kernel.org kernels from 2.6.25 to current git with no difference. See attachment "growisofs_system2.txt". I have been able to burn exactly 1 disc in total, which magically started recording immediately.
 > 
+> System 3 burns at decent speed and always reports success, but about half the time only part of the disc is actually burned. It is visible to the eye, and it will not work. Tried at 4x too.
 
-More like -
-
-Impact: garbled display, laptop is unusable
-
-;)
-
-The DCON detection code determines whether there's a DCON attached
-based upon the model (any XO model >= B2 is assumed to have a DCON).
-The LXFB driver determines which mode to use based upon whether or not
-it thinks there's a DCON attached, and the DCON/LXFB can't deal w/
-standard modes.
-
-So, the result is that LXFB attempts to use some random standard mode
-rather than the DCON-required 1200x900, and the display is unusable.
-
-
-
-> ---------------->
-> From 307250cda516547c0b0fe70dc3a3626bd82820cc Mon Sep 17 00:00:00 2001
-> From: Chris Ball <cjb@laptop.org>
-> Date: Fri, 13 Feb 2009 20:56:18 -0500
-> Subject: [PATCH] x86, olpc: fix model detection without OFW
-> 
-> Impact: make certain OLPC-board revision based quirks [mouse, sound]
-> work properly
-> 
-> Harvey's endianness patch (e51a1ac2dfca9ad869471e88f828281db7e810c0)
-> breaks model comparison on OLPC; the value 0xc2 needs to be scaled
-> up by olpc_board().  The pre-patch version was wrong, but accidentally
-> worked anyway (big-endian 0xc2 is big enough to satisfy all other
-> board revisions, but little endian 0xc2 is not).
-> 
-> Signed-off-by: Chris Ball <cjb@laptop.org>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Acked-by: Andres Salomon <dilinger@queued.net>
-> Cc: Harvey Harrison <harvey.harrison@gmail.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  arch/x86/kernel/olpc.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/olpc.c b/arch/x86/kernel/olpc.c
-> index 7a13fac..4006c52 100644
-> --- a/arch/x86/kernel/olpc.c
-> +++ b/arch/x86/kernel/olpc.c
-> @@ -203,7 +203,7 @@ static void __init platform_detect(void)
->  static void __init platform_detect(void)
->  {
->  	/* stopgap until OFW support is added to the kernel */
-> -	olpc_platform_info.boardrev = 0xc2;
-> +	olpc_platform_info.boardrev = olpc_board(0xc2);
->  }
->  #endif
->  
+It sounds like you may have multiple problems. System 1 sounds like 
+maybe DMA is not being used for some reason, the dmesg output would be 
+useful. On System 2 it looks like a write timed out, and system 3 is 
+having burn quality problems. System 1 may have a kernel issue that 
+should be looked into, but as for the other two, I would tend to suspect 
+the quality of the discs you are using. There is a lot of crap media out 
+there, and also some burners don't like discs with media codes that they 
+don't have preprogrammed burn strategies for.
