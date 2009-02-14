@@ -1,30 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752158AbZBNKQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752619AbZBNKTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752158AbZBNKQy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 05:16:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbZBNKQo
+	id S1752619AbZBNKTe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 05:19:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbZBNKTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 05:16:44 -0500
-Received: from an-out-0708.google.com ([209.85.132.246]:32463 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750898AbZBNKQk (ORCPT
+	Sat, 14 Feb 2009 05:19:23 -0500
+Received: from yx-out-2324.google.com ([74.125.44.28]:6631 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750832AbZBNKTW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 05:16:40 -0500
+	Sat, 14 Feb 2009 05:19:22 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
          :mime-version:content-type:content-transfer-encoding;
-        b=oYCrEEVqT7BHeXMqmf4r12h55KgXfMOUklS7mzDHgv4tMq57bXKcXUTvsZv1tDS/9m
-         4aC463YQuFMLxW4cgio/Re2M/B/b4aa4QKU0Pe3YMRESCA/HWdeGssE/HVXIvC5W7tbc
-         9qvBgw4WHYDJFy7At26Kl/15ObC2b3C3PD5pk=
-Date: Sat, 14 Feb 2009 05:16:24 -0500
+        b=mHsBmIKjcxRSvy4c6CI//xIQqmqqvTA2MuZf26B5NC5Yk3SiNqf/s/o51tZPlBEwFd
+         N4IAB4X+TWZQX8AiVyeq6XzIxUvQTx3nbrEQwu1wNSBQ3m/owBmrEQkCHs+e0TGG1e9d
+         1rFOuh3RoP02M3KPoxLWJs2lE1Uofjm058ZYU=
+Date: Sat, 14 Feb 2009 05:19:02 -0500
 From: Alexandre Rostovtsev <tetromino@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-laptop@vger.kernel.org
-Subject: [1/3] lenovo-sl-laptop : driver source
-Message-ID: <20090214051624.0cbc8999@leftboat.lan>
-In-Reply-To: <20090214051214.359d4fd4@leftboat.lan>
+Subject: [2/3] lenovo-sl-laptop : documentation
+Message-ID: <20090214051902.3927f5e1@leftboat.lan>
+In-Reply-To: <20090214051624.0cbc8999@leftboat.lan>
 References: <20090214051214.359d4fd4@leftboat.lan>
+	<20090214051624.0cbc8999@leftboat.lan>
 X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -33,1120 +34,143 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the actual source of the lenovo-sl-laptop driver.
+This patch contains the documentation for the lenovo-sl-laptop driver.
 
 Signed-off-by: Alexandre Rostovtsev <tetromino@gmail.com>
 
-diff --git a/drivers/staging/lenovo-sl-laptop/lenovo-sl-laptop.c b/drivers/staging/lenovo-sl-laptop/lenovo-sl-laptop.c
+diff --git a/Documentation/laptops/lenovo-sl-laptop.txt b/Documentation/laptops/lenovo-sl-laptop.txt
 new file mode 100644
-index 0000000..4ea8166
+index 0000000..d7bd728
 --- /dev/null
-+++ b/drivers/staging/lenovo-sl-laptop/lenovo-sl-laptop.c
-@@ -0,0 +1,1107 @@
-+/*
-+ *  lenovo-sl-laptop.c - Lenovo ThinkPad SL Series Extras Driver
-+ *
-+ *
-+ *  Copyright (C) 2008-2009 Alexandre Rostovtsev <tetromino@gmail.com>
-+ *
-+ *  Largely based on thinkpad_acpi.c, eeepc-laptop.c, and video.c which
-+ *  are copyright their respective authors.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-+ *  02110-1301, USA.
-+ *
-+ */
++++ b/Documentation/laptops/lenovo-sl-laptop.txt
+@@ -0,0 +1,130 @@
++Lenovo ThinkPad SL Series Laptop Extras driver
++http://github.com/tetromino/lenovo-sl-laptop
++Version 0.02
++13 February 2009
++
++Copyright (C) 2008-2009 Alexandre Rostovtsev <tetromino@gmail.com>
++
++lenovo-sl-laptop is a driver for controlling various parts of the Lenovo
++ThinkPad SL series (SL300/400/500) laptops. The SL series is not supported
++by the standard thinkpad_acpi driver.
++
++Reporting bugs
++--------------
++
++You can report bugs to me by email, or use the Linux ThinkPad mailing list:
++http://mailman.linux-thinkpad.org/mailman/listinfo/linux-thinkpad
++You will need to subscribe to the mailing list to post.
++
++Disclaimer
++---------
++
++This driver was written with no help from Lenovo engineers, and is based on
++my experiments with my SL300. It's possible that it could break your hardware
++- of course, that is quite unlikely, but still, be aware of the possibility.
++
++Supported hardware
++------------------
++
++I have reports of the driver working on a number of SL300, 400, and 500
++laptops with Intel video. I do not know how well it works with Nvidia
++video cards.
++
++There are rumors that with some modification, the driver can be used on
++some IdeaPads. I know that it certainly does *not* work, and probably will
++never work, on the IdeaPad S10e.
++
++If the driver does not work on your ThinkPad SL, please send me a copy of
++your DSDT. In other words,
++cat /proc/acpi/dsdt > dsdt
++and send me the resulting dsdt file.
++
++Keymap
++-----
++
++Lenovo Care :			KEY_VENDOR (360)
++Volume up :			KEY_VOLUMEUP (115)
++Volume down :			KEY_VOLUMEDOWN (114)
++Volume mute : 			KEY_MUTE (113)
++Fn F2 (screensaver):		KEY_COFFEE (152)
++Fn F2 (battery):		KEY_BATTERY (236)
++Fn F4 (sleep):			no input event; dispatches an ACPI event
++Fn F5 (radio):			KEY_WLAN (238)
++Fn F7 (switch screen):		no input event; dispatches an ACPI event
++Fn F8 (Ultranav):		KEY_PROG1 (148)
++Fn F9 (eject):			KEY_EJECTCD (161)
++Fn F12 (hibernate):		KEY_SUSPEND (205)
++Fn Space (zoom):		KEY_ZOOM (372)
++Fn Home (brightness up):	by default, only dispatches an ACPI event;
++				will dispatch an input event if control_backlight
++				parameter is on.
++Fn End (brightness down):	see above.
++
++
++Sysfs interface
++---------------
++
++You may find the following sysfs files useful. NOTE: depending on your
++hardware and module parameters, some of these will not be available.
++
++/sys/class/leds/lensl::lenovocare/
++ The Lenovo Care LED. brightness can be 0 (off) or 255 (on). To make the LED
++ blink, make sure you have LED timer trigger support and
++ echo "timer" > /sys/class/leds/lensl::lenovocare/triggers
++ Afterwards, you will be able to adjust the blink frequency using delay_off
++ and delay_on (in milliseconds).
++
++/sys/devices/platform/lenovo-sl-laptop/rfkill/rfkill*/
++ The bluetooth rfkill. state is the switch state (0 for bluetooth off,
++ 1 for bluetooth on).
++ Note that in case future versions of the driver add other rfkill switches,
++ userspace programs should check that the rfkill name is lensl_bluetooth_sw
++
++/sys/class/backlight/thinkpad_screen/
++ The backlight brightness interface. Only available if the control_backlight
++ parameter is on. This interface will very likely disappear in a future
++ driver version, after the ACPI video driver properly supports the SL series.
++ I am using the same backlight device name as the thinkpad_acpi driver in
++ order to ensure support on existing versions of the xorg intel video driver.
++
++Module parameters
++-----------------
++
++debug:
++ Controls the verbosity of messages printed to the kernel log. Values
++ range from 0 (print nothing) to 7 (print everything).
++ Default is 6.
++
++bluetooth_auto_enable:
++ If this parameter is set to 1 and your laptop supports bluetooth, then
++ bluetooth will be activated immediately when you load this driver. If
++ the parameter is set to 0, bluetooth will not be automatically activated,
++ and you will need to enable it manually:
++ cat 1 > /sys/devices/platform/lenovo-sl-laptop/rfkill/rfkill*/state
++ Default is 1.
++
++control_backlight:
++ If this parameter is set to 1, this driver will intercept brightness keys
++ (Fn+Home and Fn+End) and control the backlight brightness. This feature is
++ useful because the default ACPI video driver currently has poor support
++ for the Lenovo SL series. If you enable this feature, you should add 
++ acpi_backlight=vendor
++ to the kernel boot parameters. Otherwise, lenovo-sl-laptop and the ACPI
++ video driver will both try to change screen brightness simultaneously,
++ causing interesting effects.
++ It's likely that this option will disappear in the next driver version 
++ (I will remove it once the SL series are well supported by the ACPI video
++ driver).
++ Default is 0.
++
++debug_ec:
++ For debugging purposes, enables access to the ACPI embedded controller via
++ /proc/acpi/lenovo-sl-laptop/ec0
++ Reading from this file will dump the contents of all EC registers. Doing
++ so could theoretically crash your computer. Writing to this file will
++ write data to the EC registers.
++ **WARNING** : WRITING THE WRONG VALUES TO THE EMBEDDED CONTROLLER
++ CAN *DESTROY* YOUR VALUABLE HARDWARE! Do not even think of doing it unless
++ you are quite certain about your actions.
++ Default is, of course, 0.
 +
-+#define LENSL_LAPTOP_VERSION "0.02"
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/version.h>
-+#include <linux/init.h>
-+#include <linux/acpi.h>
-+#include <linux/pci_ids.h>
-+#include <linux/rfkill.h>
-+#include <linux/backlight.h>
-+#include <linux/platform_device.h>
-+
-+#include <linux/input.h>
-+#include <linux/kthread.h>
-+#include <linux/freezer.h>
-+
-+#include <linux/proc_fs.h>
-+#include <linux/uaccess.h>
-+
-+#define LENSL_MODULE_DESC "Lenovo ThinkPad SL Series Extras driver"
-+#define LENSL_MODULE_NAME "lenovo-sl-laptop"
-+
-+MODULE_AUTHOR("Alexandre Rostovtsev");
-+MODULE_DESCRIPTION(LENSL_MODULE_DESC);
-+MODULE_LICENSE("GPL");
-+
-+#define LENSL_EMERG      0
-+#define LENSL_ALERT      1
-+#define LENSL_CRIT       2
-+#define LENSL_ERR        3
-+#define LENSL_WARNING    4
-+#define LENSL_NOTICE     5
-+#define LENSL_INFO       6
-+#define LENSL_DEBUG      7
-+
-+#define vdbg_printk_(a_dbg_level, format, arg...) \
-+	do { if (dbg_level >= a_dbg_level) \
-+		printk("<" #a_dbg_level ">" LENSL_MODULE_NAME ": " \
-+			format, ## arg); \
-+	} while (0)
-+#define vdbg_printk(a_dbg_level, format, arg...) \
-+	vdbg_printk_(a_dbg_level, format, ## arg)
-+
-+#define LENSL_HKEY_FILE LENSL_MODULE_NAME
-+#define LENSL_DRVR_NAME LENSL_MODULE_NAME
-+
-+/* FIXME : we use "thinkpad_screen" for now to ensure compatibility with
-+   the xf86-video-intel driver (it checks the name against a fixed list
-+   of strings, see i830_lvds.c) but this is obviously suboptimal since
-+   this string is usually used by thinkpad_acpi.c */
-+#define LENSL_BACKLIGHT_NAME "thinkpad_screen"
-+
-+#define LENSL_HKEY_POLL_KTHREAD_NAME "klensl_hkeyd"
-+#define LENSL_WORKQUEUE_NAME "klensl_wq"
-+
-+#define LENSL_EC0 "\\_SB.PCI0.SBRG.EC0"
-+#define LENSL_HKEY LENSL_EC0 ".HKEY"
-+#define LENSL_LCDD "\\_SB.PCI0.VGA.LCDD"
-+
-+/* parameters */
-+
-+static unsigned int dbg_level = LENSL_INFO;
-+static int debug_ec = 0;
-+static int control_backlight = 0;
-+static int bluetooth_auto_enable = 1;
-+module_param(debug_ec, bool, S_IRUGO);
-+MODULE_PARM_DESC(debug_ec,
-+	"Present EC debugging interface in procfs. WARNING: writing to the "
-+	"EC can hang your system and possibly damage your hardware.");
-+module_param(control_backlight, bool, S_IRUGO);
-+MODULE_PARM_DESC(control_backlight,
-+	"Control backlight brightness; can conflict with ACPI video driver");
-+module_param_named(debug, dbg_level, uint, S_IRUGO);
-+MODULE_PARM_DESC(debug,
-+	"Set debug verbosity level (0 = nothing, 7 = everything)");
-+module_param(bluetooth_auto_enable, bool, S_IRUGO);
-+MODULE_PARM_DESC(bluetooth_auto_enable,
-+	"Automatically enable bluetooth (if supported by hardware) when the "
-+	"module is loaded");
-+
-+/* general */
-+
-+enum {
-+	LENSL_RFK_BLUETOOTH_SW_ID = 0,
-+	LENSL_RFK_WWAN_SW_ID,
-+};
-+
-+static acpi_handle hkey_handle;
-+static struct platform_device *lensl_pdev;
-+
-+static int parse_strtoul(const char *buf,
-+		unsigned long max, unsigned long *value)
-+{
-+	char *endp;
-+
-+	while (*buf && isspace(*buf))
-+		buf++;
-+	*value = simple_strtoul(buf, &endp, 0);
-+	while (*endp && isspace(*endp))
-+		endp++;
-+	if (*endp || *value > max)
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+static struct input_dev *hkey_inputdev;
-+static struct workqueue_struct *lensl_wq;
-+
-+/*************************************************************************
-+    bluetooth - copied nearly verbatim from thinkpad_acpi.c
-+ *************************************************************************/
-+
-+enum {
-+	/* ACPI GBDC/SBDC bits */
-+	TP_ACPI_BLUETOOTH_HWPRESENT	= 0x01,	/* Bluetooth hw available */
-+	TP_ACPI_BLUETOOTH_RADIOSSW	= 0x02,	/* Bluetooth radio enabled */
-+	TP_ACPI_BLUETOOTH_UNK		= 0x04,	/* unknown function */
-+};
-+
-+static struct rfkill *bluetooth_rfkill;
-+static int bluetooth_present;
-+static int bluetooth_pretend_blocked;
-+
-+static int lensl_get_acpi_int(acpi_handle handle, char *pathname, int *value)
-+{
-+	acpi_status status;
-+	unsigned long long ullval;
-+
-+	if (!handle)
-+		return -EINVAL;
-+	status = acpi_evaluate_integer(handle, pathname, NULL, &ullval);
-+	if (ACPI_FAILURE(status))
-+		return -EIO;
-+	*value = (int)ullval;
-+	vdbg_printk(LENSL_DEBUG, "ACPI : %s == %d\n", pathname, *value);
-+	return 0;
-+}
-+
-+static int lensl_set_acpi_int(acpi_handle handle, char *pathname, int value)
-+{
-+	acpi_status status;
-+	struct acpi_object_list params;
-+	union acpi_object in_obj;
-+
-+	if (!handle)
-+		return -EINVAL;
-+	in_obj.integer.value = value;
-+	in_obj.type = ACPI_TYPE_INTEGER;
-+	params.count = 1;
-+	params.pointer = &in_obj;
-+	status = acpi_evaluate_object(handle, pathname, &params, NULL);
-+	if (ACPI_FAILURE(status))
-+		return -EIO;
-+	vdbg_printk(LENSL_DEBUG, "ACPI : %s := %d\n", pathname, value);
-+	return 0;
-+}
-+
-+static inline int get_wlsw(int *value)
-+{
-+	return lensl_get_acpi_int(hkey_handle, "WLSW", value);
-+}
-+
-+static inline int get_gbdc(int *value)
-+{
-+	return lensl_get_acpi_int(hkey_handle, "GBDC", value);
-+}
-+
-+static inline int set_sbdc(int value)
-+{
-+	return lensl_set_acpi_int(hkey_handle, "SBDC", value);
-+}
-+
-+static int bluetooth_get_radiosw(void)
-+{
-+	int value = 0;
-+
-+	if (!bluetooth_present)
-+		return -ENODEV;
-+
-+	/* WLSW overrides bluetooth in firmware/hardware, reflect that */
-+	if (bluetooth_pretend_blocked || (!get_wlsw(&value) && !value))
-+		return RFKILL_STATE_HARD_BLOCKED;
-+
-+	if (get_gbdc(&value))
-+		return -EIO;
-+
-+	return ((value & TP_ACPI_BLUETOOTH_RADIOSSW) != 0) ?
-+		RFKILL_STATE_UNBLOCKED : RFKILL_STATE_SOFT_BLOCKED;
-+}
-+
-+static void bluetooth_update_rfk(void)
-+{
-+	int result;
-+
-+	if (!bluetooth_rfkill)
-+		return;
-+
-+	result = bluetooth_get_radiosw();
-+	if (result < 0)
-+		return;
-+	rfkill_force_state(bluetooth_rfkill, result);
-+}
-+
-+static int bluetooth_set_radiosw(int radio_on, int update_rfk)
-+{
-+	int value;
-+
-+	if (!bluetooth_present)
-+		return -ENODEV;
-+
-+	/* WLSW overrides bluetooth in firmware/hardware, but there is no
-+	 * reason to risk weird behaviour. */
-+	if (get_wlsw(&value) && !value && radio_on)
-+		return -EPERM;
-+
-+	if (get_gbdc(&value))
-+		return -EIO;
-+	if (radio_on)
-+		value |= TP_ACPI_BLUETOOTH_RADIOSSW;
-+	else
-+		value &= ~TP_ACPI_BLUETOOTH_RADIOSSW;
-+	if (set_sbdc(value))
-+		return -EIO;
-+
-+	if (update_rfk)
-+		bluetooth_update_rfk();
-+
-+	return 0;
-+}
-+
-+/*************************************************************************
-+    bluetooth sysfs - copied nearly verbatim from thinkpad_acpi.c
-+ *************************************************************************/
-+
-+static ssize_t bluetooth_enable_show(struct device *dev,
-+			   struct device_attribute *attr,
-+			   char *buf)
-+{
-+	int status;
-+
-+	status = bluetooth_get_radiosw();
-+	if (status < 0)
-+		return status;
-+
-+	return snprintf(buf, PAGE_SIZE, "%d\n",
-+			(status == RFKILL_STATE_UNBLOCKED) ? 1 : 0);
-+}
-+
-+static ssize_t bluetooth_enable_store(struct device *dev,
-+			    struct device_attribute *attr,
-+			    const char *buf, size_t count)
-+{
-+	unsigned long t;
-+	int res;
-+
-+	if (parse_strtoul(buf, 1, &t))
-+		return -EINVAL;
-+
-+	res = bluetooth_set_radiosw(t, 1);
-+
-+	return (res) ? res : count;
-+}
-+
-+static struct device_attribute dev_attr_bluetooth_enable =
-+	__ATTR(bluetooth_enable, S_IWUSR | S_IRUGO,
-+		bluetooth_enable_show, bluetooth_enable_store);
-+
-+static struct attribute *bluetooth_attributes[] = {
-+	&dev_attr_bluetooth_enable.attr,
-+	NULL
-+};
-+
-+static const struct attribute_group bluetooth_attr_group = {
-+	.attrs = bluetooth_attributes,
-+};
-+
-+static int bluetooth_rfk_get(void *data, enum rfkill_state *state)
-+{
-+	int bts = bluetooth_get_radiosw();
-+
-+	if (bts < 0)
-+		return bts;
-+
-+	*state = bts;
-+	return 0;
-+}
-+
-+static int bluetooth_rfk_set(void *data, enum rfkill_state state)
-+{
-+	return bluetooth_set_radiosw((state == RFKILL_STATE_UNBLOCKED), 0);
-+}
-+
-+static int lensl_new_rfkill(const unsigned int id,
-+			struct rfkill **rfk,
-+			const enum rfkill_type rfktype,
-+			const char *name,
-+			int (*toggle_radio)(void *, enum rfkill_state),
-+			int (*get_state)(void *, enum rfkill_state *))
-+{
-+	int res;
-+	enum rfkill_state initial_state;
-+
-+	*rfk = rfkill_allocate(&lensl_pdev->dev, rfktype);
-+	if (!*rfk) {
-+		vdbg_printk(LENSL_ERR,
-+			"Failed to allocate memory for rfkill class\n");
-+		return -ENOMEM;
-+	}
-+
-+	(*rfk)->name = name;
-+	(*rfk)->get_state = get_state;
-+	(*rfk)->toggle_radio = toggle_radio;
-+
-+	if (!get_state(NULL, &initial_state))
-+		(*rfk)->state = initial_state;
-+
-+	res = rfkill_register(*rfk);
-+	if (res < 0) {
-+		vdbg_printk(LENSL_ERR,
-+			"Failed to register %s rfkill switch: %d\n",
-+			name, res);
-+		rfkill_free(*rfk);
-+		*rfk = NULL;
-+		return res;
-+	}
-+
-+	return 0;
-+}
-+
-+static void bluetooth_exit(void)
-+{
-+	if (bluetooth_rfkill)
-+		rfkill_unregister(bluetooth_rfkill);
-+
-+	sysfs_remove_group(&lensl_pdev->dev.kobj,
-+			&bluetooth_attr_group);
-+}
-+
-+static int bluetooth_init(void)
-+{
-+	int value, res;
-+	bluetooth_present = 0;
-+	if (!hkey_handle)
-+		return -ENODEV;
-+	if (get_gbdc(&value))
-+		return -EIO;
-+	if (!(value & TP_ACPI_BLUETOOTH_HWPRESENT))
-+		return -ENODEV;
-+	bluetooth_present = 1;
-+
-+	res = sysfs_create_group(&lensl_pdev->dev.kobj,
-+				&bluetooth_attr_group);
-+	if (res)
-+		return res;
-+
-+	bluetooth_pretend_blocked = !bluetooth_auto_enable;
-+	res = lensl_new_rfkill(LENSL_RFK_BLUETOOTH_SW_ID,
-+				&bluetooth_rfkill,
-+				RFKILL_TYPE_BLUETOOTH,
-+				"lensl_bluetooth_sw",
-+				bluetooth_rfk_set,
-+				bluetooth_rfk_get);
-+	bluetooth_pretend_blocked = 0;
-+	if (res) {
-+		bluetooth_exit();
-+		return res;
-+	}
-+
-+	return 0;
-+}
-+
-+/*************************************************************************
-+    backlight control - based on video.c
-+ *************************************************************************/
-+
-+/* NB: the reason why this needs to be implemented here is that the SL series
-+   uses the ACPI interface for controlling the backlight in a non-standard
-+   manner. See http://bugzilla.kernel.org/show_bug.cgi?id=12249  */
-+
-+static acpi_handle lcdd_handle;
-+static struct backlight_device *backlight;
-+static struct lensl_vector {
-+	int count;
-+	int *values;
-+} backlight_levels;
-+
-+static int get_bcl(struct lensl_vector *levels)
-+{
-+	int i, status;
-+	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
-+	union acpi_object *o, *obj;
-+
-+	if (!levels)
-+		return -EINVAL;
-+	if (levels->count) {
-+		levels->count = 0;
-+		kfree(levels->values);
-+	}
-+
-+	/* _BCL returns an array sorted from high to low; the first two values
-+	   are *not* special (non-standard behavior) */
-+	status = acpi_evaluate_object(lcdd_handle, "_BCL", NULL, &buffer);
-+	if (!ACPI_SUCCESS(status))
-+		return status;
-+	obj = (union acpi_object *)buffer.pointer;
-+	if (!obj || (obj->type != ACPI_TYPE_PACKAGE)) {
-+		vdbg_printk(LENSL_ERR, "Invalid _BCL data\n");
-+		status = -EFAULT;
-+		goto out;
-+	}
-+
-+	levels->count = obj->package.count;
-+	if (!levels->count)
-+		goto out;
-+	levels->values = kmalloc(levels->count * sizeof(int), GFP_KERNEL);
-+	if (!levels->values) {
-+		vdbg_printk(LENSL_ERR,
-+			"Failed to allocate memory for brightness levels\n");
-+		status = -ENOMEM;
-+		goto out;
-+	}
-+
-+	for (i = 0; i < obj->package.count; i++) {
-+		o = (union acpi_object *)&obj->package.elements[i];
-+		if (o->type != ACPI_TYPE_INTEGER) {
-+			vdbg_printk(LENSL_ERR, "Invalid brightness data\n");
-+			goto err;
-+		}
-+		levels->values[i] = (int) o->integer.value;
-+	}
-+	goto out;
-+
-+err:
-+	levels->count = 0;
-+	kfree(levels->values);
-+
-+out:
-+	kfree(buffer.pointer);
-+
-+	return status;
-+}
-+
-+static inline int set_bcm(int level)
-+{
-+	/* standard behavior */
-+	return lensl_set_acpi_int(lcdd_handle, "_BCM", level);
-+}
-+
-+static inline int get_bqc(int *level)
-+{
-+	/* returns an index from the bottom into the _BCL package
-+	   (non-standard behavior) */
-+	return lensl_get_acpi_int(lcdd_handle, "_BQC", level);
-+}
-+
-+/* backlight device sysfs support */
-+static int lensl_bd_get_brightness(struct backlight_device *bd)
-+{
-+	int level = 0;
-+
-+	if (get_bqc(&level))
-+		return 0;
-+
-+	return level;
-+}
-+
-+static int lensl_bd_set_brightness_int(int request_level)
-+{
-+	int n;
-+	n = backlight_levels.count - request_level - 1;
-+	if (n >= 0 && n < backlight_levels.count)
-+		return set_bcm(backlight_levels.values[n]);
-+
-+	return -EINVAL;
-+}
-+
-+static int lensl_bd_set_brightness(struct backlight_device *bd)
-+{
-+	if (!bd)
-+		return -EINVAL;
-+
-+	return lensl_bd_set_brightness_int(bd->props.brightness);
-+}
-+
-+static struct backlight_ops lensl_backlight_ops = {
-+	.get_brightness = lensl_bd_get_brightness,
-+	.update_status  = lensl_bd_set_brightness,
-+};
-+
-+static void backlight_exit(void)
-+{
-+	backlight_device_unregister(backlight);
-+	backlight = NULL;
-+	if (backlight_levels.count) {
-+		kfree(backlight_levels.values);
-+		backlight_levels.count = 0;
-+	}
-+}
-+
-+static int backlight_init(void)
-+{
-+	int status = 0;
-+
-+	lcdd_handle = NULL;
-+	backlight = NULL;
-+	backlight_levels.count = 0;
-+	backlight_levels.values = NULL;
-+
-+	status = acpi_get_handle(NULL, LENSL_LCDD, &lcdd_handle);
-+	if (ACPI_FAILURE(status)) {
-+		vdbg_printk(LENSL_ERR,
-+			"Failed to get ACPI handle for %s\n", LENSL_LCDD);
-+		return -EIO;
-+	}
-+
-+	status = get_bcl(&backlight_levels);
-+	if (status || !backlight_levels.count)
-+		goto err;
-+
-+	backlight = backlight_device_register(LENSL_BACKLIGHT_NAME,
-+			NULL, NULL, &lensl_backlight_ops);
-+	backlight->props.max_brightness = backlight_levels.count - 1;
-+	backlight->props.brightness = lensl_bd_get_brightness(backlight);
-+	vdbg_printk(LENSL_INFO, "Started backlight brightness control\n");
-+	goto out;
-+err:
-+	if (backlight_levels.count) {
-+		kfree(backlight_levels.values);
-+		backlight_levels.count = 0;
-+	}
-+out:
-+	return status;
-+}
-+
-+/*************************************************************************
-+    LEDs
-+ *************************************************************************/
-+
-+#ifdef CONFIG_NEW_LEDS
-+
-+#define LENSL_LED_TV_OFF   0
-+#define LENSL_LED_TV_ON    0x02
-+#define LENSL_LED_TV_BLINK 0x01
-+#define LENSL_LED_TV_DIM   0x100
-+
-+/* equivalent to the ThinkVantage LED on other ThinkPads */
-+#define LENSL_LED_TV_NAME "lensl::lenovocare"
-+
-+struct {
-+	struct led_classdev cdev;
-+	enum led_brightness brightness;
-+	int supported, new_code;
-+	struct work_struct work;
-+} led_tv;
-+
-+static inline int set_tvls(int code)
-+{
-+	return lensl_set_acpi_int(hkey_handle, "TVLS", code);
-+}
-+
-+static void led_tv_worker(struct work_struct *work)
-+{
-+	if (!led_tv.supported)
-+		return;
-+	set_tvls(led_tv.new_code);
-+	if (led_tv.new_code)
-+		led_tv.brightness = LED_FULL;
-+	else
-+		led_tv.brightness = LED_OFF;
-+}
-+
-+static void led_tv_brightness_set_sysfs(struct led_classdev *led_cdev,
-+				enum led_brightness brightness)
-+{
-+	switch (brightness) {
-+	case LED_OFF:
-+		led_tv.new_code = LENSL_LED_TV_OFF;
-+		break;
-+	case LED_FULL:
-+		led_tv.new_code = LENSL_LED_TV_ON;
-+		break;
-+	default:
-+		return;
-+	}
-+	queue_work(lensl_wq, &led_tv.work);
-+}
-+
-+static enum led_brightness led_tv_brightness_get_sysfs(
-+					struct led_classdev *led_cdev)
-+{
-+	return led_tv.brightness;
-+}
-+
-+static int led_tv_blink_set_sysfs(struct led_classdev *led_cdev,
-+			unsigned long *delay_on, unsigned long *delay_off)
-+{
-+	if (*delay_on == 0 && *delay_off == 0) {
-+		/* If we can choose the flash rate, use dimmed blinking --
-+		   it looks better */
-+		led_tv.new_code = LENSL_LED_TV_ON |
-+			LENSL_LED_TV_BLINK | LENSL_LED_TV_DIM;
-+		*delay_on = 2000;
-+		*delay_off = 2000;
-+	} else if (*delay_on + *delay_off == 4000) {
-+		/* User wants dimmed blinking */
-+		led_tv.new_code = LENSL_LED_TV_ON |
-+			LENSL_LED_TV_BLINK | LENSL_LED_TV_DIM;
-+	} else if (*delay_on == 7250 && *delay_off == 500) {
-+		/* User wants standard blinking mode */
-+		led_tv.new_code = LENSL_LED_TV_ON | LENSL_LED_TV_BLINK;
-+	} else
-+		return -EINVAL;
-+	queue_work(lensl_wq, &led_tv.work);
-+	return 0;
-+}
-+
-+static void led_exit(void)
-+{
-+	if (led_tv.supported) {
-+		led_classdev_unregister(&led_tv.cdev);
-+		led_tv.supported = 0;
-+		set_tvls(LENSL_LED_TV_OFF);
-+	}
-+}
-+
-+static int led_init(void)
-+{
-+	int res;
-+
-+	memset(&led_tv, 0, sizeof(led_tv));
-+	led_tv.cdev.brightness_get = led_tv_brightness_get_sysfs;
-+	led_tv.cdev.brightness_set = led_tv_brightness_set_sysfs;
-+	led_tv.cdev.blink_set = led_tv_blink_set_sysfs;
-+	led_tv.cdev.name = LENSL_LED_TV_NAME;
-+	INIT_WORK(&led_tv.work, led_tv_worker);
-+	set_tvls(LENSL_LED_TV_OFF);
-+	res = led_classdev_register(&lensl_pdev->dev, &led_tv.cdev);
-+	if (res) {
-+		vdbg_printk(LENSL_WARNING, "Failed to register LED device\n");
-+		return res;
-+	}
-+	led_tv.supported = 1;
-+	return 0;
-+}
-+
-+#else /* CONFIG_NEW_LEDS */
-+
-+static void led_exit(void)
-+{
-+}
-+
-+static int led_init(void)
-+{
-+	return -ENODEV;
-+}
-+
-+#endif /* CONFIG_NEW_LEDS */
-+
-+/*************************************************************************
-+    hotkeys
-+ *************************************************************************/
-+
-+static int hkey_poll_hz = 5;
-+static u8 hkey_ec_prev_offset;
-+static struct mutex hkey_poll_mutex;
-+static struct task_struct *hkey_poll_task;
-+
-+struct key_entry {
-+	char type;
-+	u8 scancode;
-+	int keycode;
-+};
-+
-+enum { KE_KEY, KE_END };
-+
-+static struct key_entry ec_keymap[] = {
-+	/* Fn F2 */
-+	{KE_KEY, 0x0B, KEY_COFFEE },
-+	/* Fn F3 */
-+	{KE_KEY, 0x0C, KEY_BATTERY },
-+	/* Fn F4; dispatches an ACPI event */
-+	{KE_KEY, 0x0D, /* KEY_SLEEP */ KEY_RESERVED },
-+	/* Fn F5; FIXME: should this be KEY_BLUETOOTH? */
-+	{KE_KEY, 0x0E, KEY_WLAN },
-+	/* Fn F7; dispatches an ACPI event */
-+	{KE_KEY, 0x10, /* KEY_SWITCHVIDEOMODE */ KEY_RESERVED },
-+	/* Fn F8 - ultranav; FIXME: find some keycode that fits this properly */
-+	{KE_KEY, 0x11, KEY_PROG1 },
-+	/* Fn F9 */
-+	{KE_KEY, 0x12, KEY_EJECTCD },
-+	/* Fn F12 */
-+	{KE_KEY, 0x15, KEY_SUSPEND },
-+	{KE_KEY, 0x69, KEY_VOLUMEUP },
-+	{KE_KEY, 0x6A, KEY_VOLUMEDOWN },
-+	{KE_KEY, 0x6B, KEY_MUTE },
-+	/* Fn Home; dispatches an ACPI event */
-+	{KE_KEY, 0x6C, KEY_BRIGHTNESSDOWN /*KEY_RESERVED*/ },
-+	/* Fn End; dispatches an ACPI event */
-+	{KE_KEY, 0x6D, KEY_BRIGHTNESSUP /*KEY_RESERVED*/ },
-+	/* Fn spacebar - zoom */
-+	{KE_KEY, 0x71, KEY_ZOOM },
-+	/* Lenovo Care key */
-+	{KE_KEY, 0x80, KEY_VENDOR },
-+	{KE_END, 0},
-+};
-+
-+static int ec_scancode_to_keycode(u8 scancode)
-+{
-+	struct key_entry *key;
-+
-+	for (key = ec_keymap; key->type != KE_END; key++)
-+		if (scancode == key->scancode)
-+			return key->keycode;
-+
-+	return -EINVAL;
-+}
-+
-+static int hkey_inputdev_getkeycode(struct input_dev *dev, int scancode,
-+					int *keycode)
-+{
-+	int result;
-+
-+	if (!dev)
-+		return -EINVAL;
-+
-+	result = ec_scancode_to_keycode(scancode);
-+	if (result >= 0) {
-+		*keycode = result;
-+		return 0;
-+	}
-+	return result;
-+}
-+
-+static int hkey_inputdev_setkeycode(struct input_dev *dev, int scancode,
-+					int keycode)
-+{
-+	struct key_entry *key;
-+
-+	if (!dev)
-+		return -EINVAL;
-+
-+	for (key = ec_keymap; key->type != KE_END; key++)
-+		if (scancode == key->scancode) {
-+			clear_bit(key->keycode, dev->keybit);
-+			key->keycode = keycode;
-+			set_bit(key->keycode, dev->keybit);
-+			return 0;
-+		}
-+
-+	return -EINVAL;
-+}
-+
-+static int hkey_ec_get_offset(void)
-+{
-+	/* Hotkey events are stored in EC registers 0x0A .. 0x11
-+	 * Address of last event is stored in EC registers 0x12 and
-+	 * 0x14; if address is 0x01, last event is in register 0x0A;
-+	 * if address is 0x07, last event is in register 0x10;
-+	 * if address is 0x00, last event is in register 0x11 */
-+
-+	u8 offset;
-+
-+	if (ec_read(0x12, &offset))
-+		return -EINVAL;
-+	if (!offset)
-+		offset = 8;
-+	offset -= 1;
-+	if (offset > 7)
-+		return -EINVAL;
-+	return offset;
-+}
-+
-+static int hkey_poll_kthread(void *data)
-+{
-+	unsigned long t = 0;
-+	int offset, level;
-+	unsigned int keycode;
-+	u8 scancode;
-+
-+	mutex_lock(&hkey_poll_mutex);
-+
-+	offset = hkey_ec_get_offset();
-+	if (offset < 0) {
-+		vdbg_printk(LENSL_WARNING,
-+			"Failed to read hotkey register offset from EC\n");
-+		hkey_ec_prev_offset = 0;
-+	} else
-+		hkey_ec_prev_offset = offset;
-+
-+	while (!kthread_should_stop() && hkey_poll_hz) {
-+		if (t == 0)
-+			t = 1000/hkey_poll_hz;
-+		t = msleep_interruptible(t);
-+		if (unlikely(kthread_should_stop()))
-+			break;
-+		try_to_freeze();
-+		if (t > 0)
-+			continue;
-+		offset = hkey_ec_get_offset();
-+		if (offset < 0) {
-+			vdbg_printk(LENSL_WARNING,
-+			   "Failed to read hotkey register offset from EC\n");
-+			continue;
-+		}
-+		if (offset == hkey_ec_prev_offset)
-+			continue;
-+
-+		if (ec_read(0x0A + offset, &scancode)) {
-+			vdbg_printk(LENSL_WARNING,
-+				"Failed to read hotkey code from EC\n");
-+			continue;
-+		}
-+		keycode = ec_scancode_to_keycode(scancode);
-+		vdbg_printk(LENSL_DEBUG,
-+		   "Got hotkey keycode %d (scancode %d)\n", keycode, scancode);
-+
-+		/* Special handling for brightness keys. We do it here and not
-+		   via an ACPI notifier in order to prevent possible conflicts
-+		   with video.c */
-+		if (keycode == KEY_BRIGHTNESSDOWN) {
-+			if (control_backlight && backlight) {
-+				level = lensl_bd_get_brightness(backlight);
-+				if (0 <= --level)
-+					lensl_bd_set_brightness_int(level);
-+			} else
-+				keycode = KEY_RESERVED;
-+		} else if (keycode == KEY_BRIGHTNESSUP) {
-+			if (control_backlight && backlight) {
-+				level = lensl_bd_get_brightness(backlight);
-+				if (backlight_levels.count > ++level)
-+					lensl_bd_set_brightness_int(level);
-+			} else
-+				keycode = KEY_RESERVED;
-+		}
-+
-+		if (keycode != KEY_RESERVED) {
-+			input_report_key(hkey_inputdev, keycode, 1);
-+			input_sync(hkey_inputdev);
-+			input_report_key(hkey_inputdev, keycode, 0);
-+			input_sync(hkey_inputdev);
-+		}
-+		hkey_ec_prev_offset = offset;
-+	}
-+
-+	mutex_unlock(&hkey_poll_mutex);
-+	return 0;
-+}
-+
-+static void hkey_poll_start(void)
-+{
-+	hkey_ec_prev_offset = 0;
-+	mutex_lock(&hkey_poll_mutex);
-+	hkey_poll_task = kthread_run(hkey_poll_kthread,
-+		NULL, LENSL_HKEY_POLL_KTHREAD_NAME);
-+	if (IS_ERR(hkey_poll_task)) {
-+		hkey_poll_task = NULL;
-+		vdbg_printk(LENSL_ERR,
-+			"Could not create kernel thread for hotkey polling\n");
-+	}
-+	mutex_unlock(&hkey_poll_mutex);
-+}
-+
-+static void hkey_poll_stop(void)
-+{
-+	if (hkey_poll_task) {
-+		if (frozen(hkey_poll_task) || freezing(hkey_poll_task))
-+			thaw_process(hkey_poll_task);
-+
-+		kthread_stop(hkey_poll_task);
-+		hkey_poll_task = NULL;
-+		mutex_lock(&hkey_poll_mutex);
-+		/* at this point, the thread did exit */
-+		mutex_unlock(&hkey_poll_mutex);
-+	}
-+}
-+
-+static void hkey_inputdev_exit(void)
-+{
-+	if (hkey_inputdev)
-+		input_unregister_device(hkey_inputdev);
-+	hkey_inputdev = NULL;
-+}
-+
-+static int hkey_inputdev_init(void)
-+{
-+	int result;
-+	struct key_entry *key;
-+
-+	hkey_inputdev = input_allocate_device();
-+	if (!hkey_inputdev) {
-+		vdbg_printk(LENSL_ERR,
-+			"Failed to allocate hotkey input device\n");
-+		return -ENODEV;
-+	}
-+	hkey_inputdev->name = "Lenovo ThinkPad SL Series extra buttons";
-+	hkey_inputdev->phys = LENSL_HKEY_FILE "/input0";
-+	hkey_inputdev->uniq = LENSL_HKEY_FILE;
-+	hkey_inputdev->id.bustype = BUS_HOST;
-+	hkey_inputdev->id.vendor = PCI_VENDOR_ID_LENOVO;
-+	hkey_inputdev->getkeycode = hkey_inputdev_getkeycode;
-+	hkey_inputdev->setkeycode = hkey_inputdev_setkeycode;
-+	set_bit(EV_KEY, hkey_inputdev->evbit);
-+
-+	for (key = ec_keymap; key->type != KE_END; key++)
-+		set_bit(key->keycode, hkey_inputdev->keybit);
-+
-+	result = input_register_device(hkey_inputdev);
-+	if (result) {
-+		vdbg_printk(LENSL_ERR,
-+			"Failed to register hotkey input device\n");
-+		input_free_device(hkey_inputdev);
-+		hkey_inputdev = NULL;
-+		return -ENODEV;
-+	}
-+	return 0;
-+}
-+
-+
-+/*************************************************************************
-+    procfs debugging interface
-+ *************************************************************************/
-+
-+#define LENSL_PROC_EC "ec0"
-+#define LENSL_PROC_DIRNAME LENSL_MODULE_NAME
-+
-+static struct proc_dir_entry *proc_dir;
-+
-+int lensl_ec_read_procmem(char *buf, char **start, off_t offset,
-+		int count, int *eof, void *data)
-+{
-+	int err, len = 0;
-+	u8 i, result;
-+	/* note: ec_read at i = 255 locks up my SL300 hard. -AR */
-+	for (i = 0; i < 255; i++) {
-+		if (!(i % 16)) {
-+			if (i)
-+				len += sprintf(buf+len, "\n");
-+			len += sprintf(buf+len, "%02X:", i);
-+		}
-+		err = ec_read(i, &result);
-+		if (!err)
-+			len += sprintf(buf+len, " %02X", result);
-+		else
-+			len += sprintf(buf+len, " **");
-+	}
-+	len += sprintf(buf+len, "\n");
-+	*eof = 1;
-+	return len;
-+}
-+
-+/* we expect input in the format "%02X %02X", where the first number is
-+   the EC register and the second is the value to be written */
-+int lensl_ec_write_procmem(struct file *file, const char *buffer,
-+				unsigned long count, void *data)
-+{
-+	char s[7];
-+	unsigned int reg, val;
-+
-+	if (count > 6)
-+		return -EINVAL;
-+	memset(s, 0, 7);
-+	if (copy_from_user(s, buffer, count))
-+		return -EFAULT;
-+	if (sscanf(s, "%02X %02X", &reg, &val) < 2)
-+		return -EINVAL;
-+	if (reg > 255 || val > 255)
-+		return -EINVAL;
-+	if (ec_write(reg, val))
-+		return -EFAULT;
-+	return count;
-+}
-+
-+static void lenovo_sl_procfs_exit(void)
-+{
-+	if (proc_dir) {
-+		remove_proc_entry(LENSL_PROC_EC, proc_dir);
-+		remove_proc_entry(LENSL_PROC_DIRNAME, acpi_root_dir);
-+	}
-+}
-+
-+static int lenovo_sl_procfs_init(void)
-+{
-+	struct proc_dir_entry *proc_ec;
-+
-+	proc_dir = proc_mkdir(LENSL_PROC_DIRNAME, acpi_root_dir);
-+	if (!proc_dir) {
-+		vdbg_printk(LENSL_ERR,
-+		   "Failed to create proc dir acpi/%s/\n", LENSL_PROC_DIRNAME);
-+		return -ENODEV;
-+	}
-+	proc_dir->owner = THIS_MODULE;
-+	proc_ec = create_proc_entry(LENSL_PROC_EC, 0600, proc_dir);
-+	if (!proc_ec) {
-+		vdbg_printk(LENSL_ERR,
-+			"Failed to create proc entry acpi/%s/%s\n",
-+			LENSL_PROC_DIRNAME, LENSL_PROC_EC);
-+		return -ENODEV;
-+	}
-+	proc_ec->read_proc = lensl_ec_read_procmem;
-+	proc_ec->write_proc = lensl_ec_write_procmem;
-+
-+	return 0;
-+}
-+
-+/*************************************************************************
-+    init/exit
-+ *************************************************************************/
-+
-+static int __init lenovo_sl_laptop_init(void)
-+{
-+	int ret;
-+	acpi_status status;
-+
-+	if (!acpi_video_backlight_support())
-+		control_backlight = 1;
-+
-+	hkey_handle = NULL;
-+
-+	if (acpi_disabled)
-+		return -ENODEV;
-+
-+	lensl_wq = create_singlethread_workqueue(LENSL_WORKQUEUE_NAME);
-+	if (!lensl_wq) {
-+		vdbg_printk(LENSL_ERR, "Failed to create a workqueue\n");
-+		return -EFAULT;
-+	}
-+
-+	status = acpi_get_handle(NULL, LENSL_HKEY, &hkey_handle);
-+	if (ACPI_FAILURE(status)) {
-+		vdbg_printk(LENSL_ERR,
-+			"Failed to get ACPI handle for %s\n", LENSL_HKEY);
-+		return -EIO;
-+	}
-+
-+	lensl_pdev = platform_device_register_simple(LENSL_DRVR_NAME, -1,
-+							NULL, 0);
-+	if (IS_ERR(lensl_pdev)) {
-+		ret = PTR_ERR(lensl_pdev);
-+		lensl_pdev = NULL;
-+		vdbg_printk(LENSL_ERR, "Failed to register platform device\n");
-+		return ret;
-+	}
-+
-+	ret = hkey_inputdev_init();
-+	if (ret)
-+		return -EIO;
-+
-+	bluetooth_init();
-+	if (control_backlight)
-+		backlight_init();
-+
-+	led_init();
-+	mutex_init(&hkey_poll_mutex);
-+	hkey_poll_start();
-+
-+	if (debug_ec)
-+		lenovo_sl_procfs_init();
-+
-+	vdbg_printk(LENSL_INFO, "Loaded Lenovo ThinkPad SL Series driver\n");
-+	return 0;
-+}
-+
-+static void __exit lenovo_sl_laptop_exit(void)
-+{
-+	lenovo_sl_procfs_exit();
-+	hkey_poll_stop();
-+	led_exit();
-+	backlight_exit();
-+	bluetooth_exit();
-+	hkey_inputdev_exit();
-+	if (lensl_pdev)
-+		platform_device_unregister(lensl_pdev);
-+	destroy_workqueue(lensl_wq);
-+	vdbg_printk(LENSL_INFO, "Unloaded Lenovo ThinkPad SL Series driver\n");
-+}
-+
-+MODULE_ALIAS("dmi:bvnLENOVO:*:svnLENOVO:*:pvrThinkPad SL*:rvnLENOVO:*");
-+
-+module_init(lenovo_sl_laptop_init);
-+module_exit(lenovo_sl_laptop_exit);
