@@ -1,78 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762985AbZBNBTH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932299AbZBNBXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762985AbZBNBTH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:19:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761591AbZBNBCU
+	id S932299AbZBNBXh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:23:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762940AbZBNBIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:02:20 -0500
-Received: from kroah.org ([198.145.64.141]:40041 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761621AbZBNBCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:02:09 -0500
-Date: Fri, 13 Feb 2009 16:59:35 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
-Subject: [patch 47/47] ALSA: mtpav - Fix initial value for input hwport
-Message-ID: <20090214005935.GV11282@kroah.com>
-References: <20090214005130.617401075@mini.kroah.org>
+	Fri, 13 Feb 2009 20:08:50 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:40919 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762630AbZBNBIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:08:44 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Len Brown <lenb@kernel.org>
+Subject: [PATCH 7/9] PM: Fix pm_notifiers during user mode hibernation
+Date: Sat, 14 Feb 2009 02:05:14 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
+       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Andrey Borzenkov <arvidjaar@mail.ru>
+References: <200902140157.40869.rjw@sisk.pl>
+In-Reply-To: <200902140157.40869.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-mtpav-fix-initial-value-for-input-hwport.patch"
-In-Reply-To: <20090214005726.GA11282@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902140205.16278.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
+From: Andrey Borzenkov <arvidjaar@mail.ru>
 
-------------------
+Snapshot device is opened with O_RDONLY during suspend and O_WRONLY durig
+resume.  Make sure we also call notifiers with correct parameter telling
+them what we are really doing.
 
-From: Takashi Iwai <tiwai@suse.de>
-
-commit 32cf9a16f4af01573ddec1eb073111fc20a9d7d4 upstream.
-
-Fix the initial value for input hwport.  The old value (-1) may cause
-Oops when an realtime MIDI byte is received before the input port is
-explicitly given.
-Instead, now it's set to the broadcasting as default.
-
-Tested-by: Holger Dehnhardt <dehnhardt@ahdehnhardt.de>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
+Signed-off-by: Andrey Borzenkov <arvidjaar@mail.ru>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- sound/drivers/mtpav.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/sound/drivers/mtpav.c
-+++ b/sound/drivers/mtpav.c
-@@ -706,7 +706,6 @@ static int __devinit snd_mtpav_probe(str
- 	mtp_card->card = card;
- 	mtp_card->irq = -1;
- 	mtp_card->share_irq = 0;
--	mtp_card->inmidiport = 0xffffffff;
- 	mtp_card->inmidistate = 0;
- 	mtp_card->outmidihwport = 0xffffffff;
- 	init_timer(&mtp_card->timer);
-@@ -715,6 +714,8 @@ static int __devinit snd_mtpav_probe(str
- 
- 	card->private_free = snd_mtpav_free;
- 
-+	mtp_card->inmidiport = mtp_card->num_ports + MTPAV_PIDX_BROADCAST;
-+
- 	err = snd_mtpav_get_ISA(mtp_card);
- 	if (err < 0)
- 		goto __error;
+ kernel/power/user.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
+Index: linux-2.6/kernel/power/user.c
+===================================================================
+--- linux-2.6.orig/kernel/power/user.c
++++ linux-2.6/kernel/power/user.c
+@@ -95,15 +95,15 @@ static int snapshot_open(struct inode *i
+ 		data->swap = swsusp_resume_device ?
+ 			swap_type_of(swsusp_resume_device, 0, NULL) : -1;
+ 		data->mode = O_RDONLY;
+-		error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
++		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
+ 		if (error)
+-			pm_notifier_call_chain(PM_POST_RESTORE);
++			pm_notifier_call_chain(PM_POST_HIBERNATION);
+ 	} else {
+ 		data->swap = -1;
+ 		data->mode = O_WRONLY;
+-		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
++		error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
+ 		if (error)
+-			pm_notifier_call_chain(PM_POST_HIBERNATION);
++			pm_notifier_call_chain(PM_POST_RESTORE);
+ 	}
+ 	if (error)
+ 		atomic_inc(&snapshot_device_available);
