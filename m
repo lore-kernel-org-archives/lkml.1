@@ -1,87 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764539AbZBNBTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763806AbZBNBUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764539AbZBNBTu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:19:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755312AbZBNBCX
+	id S1763806AbZBNBUS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:20:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762913AbZBNBIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:02:23 -0500
-Received: from kroah.org ([198.145.64.141]:39982 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753493AbZBNBCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:02:06 -0500
-Date: Fri, 13 Feb 2009 16:59:30 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 44/47] ide/libata: fix ata_id_is_cfa() (take 4)
-Message-ID: <20090214005930.GS11282@kroah.com>
-References: <20090214005130.617401075@mini.kroah.org>
+	Fri, 13 Feb 2009 20:08:43 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:40901 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762908AbZBNBIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:08:41 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Len Brown <lenb@kernel.org>
+Subject: [PATCH 0/9] PM: Fixes related to suspend and hibernation for 2.6.29
+Date: Sat, 14 Feb 2009 01:57:39 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
+       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Andrey Borzenkov <arvidjaar@mail.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ide-libata-fix-ata_id_is_cfa.patch"
-In-Reply-To: <20090214005726.GA11282@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902140157.40869.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
+Hi Len,
 
-------------------
+The following are fixes related to suspend and hibernation I have collected
+over the last couple of weeks.  Some of them are in -mm.  I think they all are
+2.6.29 material.
 
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+1/9 and 2/9 fix hibernation regression caused by the async boot changes,
+I hope Greg will not object if they go through your tree.
 
-commit 2999b58b795ad81f10e34bdbbfd2742172f247e4 upstream.
+3/9 fixes a long-standing hibernation issue that cause the resume partition
+to become unuseable after two consecutive failing attempts to hibernate.
 
-When checking for the CFA feature set support, ata_id_is_cfa() tests bit 2 in
-word 82 of the identify data instead the word 83;  it also checks the ATA/PI
-version support in the word 80 (which the CompactFlash specifications have as
-reserved), this having no slightest chance to work on the modern CF cards that
-don't have 0x848A in the word 0...
+4/9 fixes build of kprobes.c with CONFIG_PM unset.
 
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+5/9 and 6/9 clean up memory freeing code used during hibernation.
 
----
- include/linux/ata.h |   15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+7/9 fixes a bug related to the use of PM notifiers during hibernation with
+the help of the user land interface.
 
---- a/include/linux/ata.h
-+++ b/include/linux/ata.h
-@@ -681,12 +681,17 @@ static inline int ata_id_current_chs_val
- 
- static inline int ata_id_is_cfa(const u16 *id)
- {
--	if (id[ATA_ID_CONFIG] == 0x848A)	/* Standard CF */
-+	if (id[ATA_ID_CONFIG] == 0x848A)	/* Traditional CF */
- 		return 1;
--	/* Could be CF hiding as standard ATA */
--	if (ata_id_major_version(id) >= 3 &&
--	    id[ATA_ID_COMMAND_SET_1] != 0xFFFF &&
--	   (id[ATA_ID_COMMAND_SET_1] & (1 << 2)))
-+	/*
-+	 * CF specs don't require specific value in the word 0 anymore and yet
-+	 * they forbid to report the ATA version in the word 80 and require the
-+	 * CFA feature set support to be indicated in the word 83 in this case.
-+	 * Unfortunately, some cards only follow either of this requirements,
-+	 * and while those that don't indicate CFA feature support need some
-+	 * sort of quirk list, it seems impractical for the ones that do...
-+	 */
-+	if ((id[ATA_ID_COMMAND_SET_2] & 0xC004) == 0x4004)
- 		return 1;
- 	return 0;
- }
+8/9 and 9/9 fix the handling of consoles during suspend/hibernation.
+
+Please add these patches to the suspend branch and push to Linus for 2.6.29.
+
+Thanks,
+Rafael
+
+
+-- 
+Everyone knows that debugging is twice as hard as writing a program
+in the first place.  So if you're as clever as you can be when you write it,
+how will you ever debug it? --- Brian Kernighan
 
