@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbZBNWtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbZBNWy7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754638AbZBNWtV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 17:49:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbZBNWtF
+	id S1754036AbZBNWy7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 17:54:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbZBNWyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 17:49:05 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:35229 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752148AbZBNWtE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 17:49:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=GoLd2KKrTXEAFifhjx4mri/Bi1XgGRyTJDn42c9Jb2xbVOeh6bhN4HyW23/m+xXhxf
-         5gDd1jASV9/Z7kdv81rtOIY/qfakY3mtBDe82COslVSdyt/SPhpjcXm3dMb12iZ/Jgit
-         ghiUtOYEPSUBKchNR1Mz7q1RgvMk+efM61L3A=
-Message-ID: <49974A5A.9030109@gmail.com>
-Date: Sat, 14 Feb 2009 23:48:58 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Hannes Eder <hannes@hanneseder.net>
-CC: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/isdn/hardware/mISDN: change type of hfc_jiffies
- to ulong
-References: <20090214224049.28194.38982.stgit@vmbox.hanneseder.net>
-In-Reply-To: <20090214224049.28194.38982.stgit@vmbox.hanneseder.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
+	Sat, 14 Feb 2009 17:54:50 -0500
+Received: from mx0.towertech.it ([213.215.222.73]:51438 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752231AbZBNWyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 17:54:49 -0500
+Date: Sat, 14 Feb 2009 23:54:46 +0100
+From: Alessandro Zummo <azummo-lists@towertech.it>
+To: Andres Salomon <dilinger@queued.net>
+Cc: jordan@cosmicpenguin.net, "David Brownell" <david-b@pacbell.net>,
+       linux-geode@lists.infradead.org, dsaxena@laptop.org,
+       "=?ISO-8859-1?Q?Mart?= =?ISO-8859-1?Q?in-=C9ric?= Racine" 
+	<q-funk@iki.fi>,
+       lkml <linux-kernel@vger.kernel.org>, rpurdie@rpsys.net,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] AMD Geode CS5535/5536 GPIO driver
+Message-ID: <20090214235446.2d46bc4a@i1501.lan.towertech.it>
+In-Reply-To: <20090214173811.4d9a0957@ephemeral>
+References: <20090205161007.4d121cbf@i1501.lan.towertech.it>
+	<20090214152719.1baf52cc@ephemeral>
+	<20090214230235.5a29487f@i1501.lan.towertech.it>
+	<20090214173811.4d9a0957@ephemeral>
+Organization: Tower Technologies
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hannes Eder wrote:
-> Patch suggested by Jiri Slaby.
+On Sat, 14 Feb 2009 17:38:11 -0500
+Andres Salomon <dilinger@queued.net> wrote:
 
-Well, at least some log needed.
-
-jiffies are ulong, make sure we fit in jiffies store variable on archs with
-bits per long > 32.
-
-> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
-> ---
+> >  I've been suggested to move it within geode_32. the driver is
+> > probably pretty geode specific anyhow.
+> > 
 > 
-> This patch is based on:
->     drivers/isdn/hardware/mISDN: fix sparse warnings: make symbols static
 > 
->  drivers/isdn/hardware/mISDN/hfcpci.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> If the whole point is to make the cs553x GPIO stuff portable (and to use
+> the portable API), then what's the point if we know that it can/will
+> be used by non-x86 platforms?
 > 
-> diff --git a/drivers/isdn/hardware/mISDN/hfcpci.c b/drivers/isdn/hardware/mISDN/hfcpci.c
-> index 2bb85c4..c7a855c 100644
-> --- a/drivers/isdn/hardware/mISDN/hfcpci.c
-> +++ b/drivers/isdn/hardware/mISDN/hfcpci.c
-> @@ -57,7 +57,7 @@ static int HFC_cnt;
->  static uint debug;
->  static uint poll, tics;
->  static struct timer_list hfc_tl;
-> -static u32 hfc_jiffies;
-> +static ulong hfc_jiffies;
+> We already have a cs553x GPIO char device, a geode GPIO lib that
+> works (but has flaws).. I'm all for creating The One True CS553x GPIO
+> API, but I'd consider something that's geode (and x86)-specific to be
+> a waste of time.
 
-Ok, unsigned long would be nicer. I though it would be implicit when writing
-about ulong, but I see not in this uint-et-al context...
+ GPIO lib is generic enough for most archs to use it and my driver uses it
+ Anyway I did my homework.. I will submit a revision with the latest suggested
+ changes... if accepted I will be happy to maintain it.
+ 
+
+
+-- 
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
+
