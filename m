@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932463AbZBNBjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763326AbZBNBkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932463AbZBNBjq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:39:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762179AbZBNBQg
+	id S1763326AbZBNBkW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:40:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762217AbZBNBQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:16:36 -0500
-Received: from kroah.org ([198.145.64.141]:50505 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:16:37 -0500
+Received: from kroah.org ([198.145.64.141]:50538 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763336AbZBNBQ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:16:27 -0500
-Date: Fri, 13 Feb 2009 17:13:17 -0800
+	id S1763344AbZBNBQ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:16:29 -0500
+Date: Fri, 13 Feb 2009 17:13:22 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
-Subject: [patch 29/48] ipv6: Disallow rediculious flowlabel option sizes.
-Message-ID: <20090214011317.GD17706@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Alexey Dobriyan <adobriyan@gmail.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 32/48] sky2: fix hard hang with netconsoling and iface
+	going up
+Message-ID: <20090214011322.GF17706@kroah.com>
 References: <20090214010805.419403436@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ipv6-disallow-rediculious-flowlabel-option-sizes.patch"
+Content-Disposition: inline; filename="sky2-fix-hard-hang-with-netconsoling-and-iface-going-up.patch"
 In-Reply-To: <20090214011208.GA17706@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,46 +42,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David S. Miller <davem@davemloft.net>
+From: Alexey Dobriyan <adobriyan@gmail.com>
 
-[ Upstream commit 684de409acff8b1fe8bf188d75ff2f99c624387d ]
+[ Upstream commit a11da890e4c9850411303efcf6514f048ca880ee ]
 
-Just like PKTINFO, limit the options area to 64K.
+Printing anything over netconsole before hw is up and running is,
+of course, not going to work.
 
-Based upon report by Eric Sesterhenn and analysis by
-Roland Dreier.
-
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Acked-by: Stephen Hemminger <shemminger@vyatta.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv6/ip6_flowlabel.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/net/sky2.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/net/ipv6/ip6_flowlabel.c
-+++ b/net/ipv6/ip6_flowlabel.c
-@@ -323,17 +323,21 @@ static struct ip6_flowlabel *
- fl_create(struct net *net, struct in6_flowlabel_req *freq, char __user *optval,
- 	  int optlen, int *err_p)
- {
--	struct ip6_flowlabel *fl;
-+	struct ip6_flowlabel *fl = NULL;
- 	int olen;
- 	int addr_type;
- 	int err;
+--- a/drivers/net/sky2.c
++++ b/drivers/net/sky2.c
+@@ -1403,9 +1403,6 @@ static int sky2_up(struct net_device *de
  
-+	olen = optlen - CMSG_ALIGN(sizeof(*freq));
-+	err = -EINVAL;
-+	if (olen > 64 * 1024)
-+		goto done;
+  	}
+ 
+-	if (netif_msg_ifup(sky2))
+-		printk(KERN_INFO PFX "%s: enabling interface\n", dev->name);
+-
+ 	netif_carrier_off(dev);
+ 
+ 	/* must be power of 2 */
+@@ -1484,6 +1481,9 @@ static int sky2_up(struct net_device *de
+ 	sky2_write32(hw, B0_IMSK, imask);
+ 
+ 	sky2_set_multicast(dev);
 +
- 	err = -ENOMEM;
- 	fl = kzalloc(sizeof(*fl), GFP_KERNEL);
- 	if (fl == NULL)
- 		goto done;
++	if (netif_msg_ifup(sky2))
++		printk(KERN_INFO PFX "%s: enabling interface\n", dev->name);
+ 	return 0;
  
--	olen = optlen - CMSG_ALIGN(sizeof(*freq));
- 	if (olen > 0) {
- 		struct msghdr msg;
- 		struct flowi flowi;
+ err_out:
 
