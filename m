@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761530AbZBNXbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758077AbZBNXcD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761530AbZBNXbp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 18:31:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754949AbZBNXYw
+	id S1758077AbZBNXcD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 18:32:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758941AbZBNX3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 18:24:52 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51632 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759997AbZBNXYu (ORCPT
+	Sat, 14 Feb 2009 18:29:17 -0500
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:35368 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757844AbZBNX3Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 18:24:50 -0500
-Date: Sat, 14 Feb 2009 23:24:48 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Hannes Eder <hannes@hanneseder.net>
-Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 31/43] drivers/net/tokenring: fix sparse warning: cast
-	truncates bits from const value
-Message-ID: <20090214232448.GR28946@ZenIV.linux.org.uk>
-References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net> <20090214214452.24377.31953.stgit@vmbox.hanneseder.net>
-MIME-Version: 1.0
+	Sat, 14 Feb 2009 18:29:16 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AnYHAF/hlklMQWt2/2dsb2JhbACBbIEwzheEHAY
+Date: Sat, 14 Feb 2009 18:29:12 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bug #12660] Linux 2.6.28.3 freezing on a 32-bits x86 Thinkpad
+	T43p
+Message-ID: <20090214232911.GA19127@Krystal>
+References: <juADNmcceYF.A.mdD.Mr0lJB@chimera> <rjPbZ5GRJPO.A.6SE.or0lJB@chimera>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090214214452.24377.31953.stgit@vmbox.hanneseder.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <rjPbZ5GRJPO.A.6SE.or0lJB@chimera>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 18:28:33 up 44 days, 23:26,  4 users,  load average: 1.04, 0.59,
+	0.49
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 14, 2009 at 10:46:24PM +0100, Hannes Eder wrote:
-> Impact: Use '__u16' instead of '__u8', this possibly fixes a bug.
+* Rafael J. Wysocki (rjw@sisk.pl) wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> Fix this sparse warnings:
->   drivers/net/tokenring/smctr.c:4410:52: warning: cast truncates bits from constant value (100 becomes 0)
->   drivers/net/tokenring/smctr.c:4415:52: warning: cast truncates bits from constant value (400 becomes 0)
->   drivers/net/tokenring/smctr.c:4420:52: warning: cast truncates bits from constant value (800 becomes 0)
->   drivers/net/tokenring/smctr.c:4425:52: warning: cast truncates bits from constant value (1000 becomes 0)
->   drivers/net/tokenring/smctr.c:4430:52: warning: cast truncates bits from constant value (2000 becomes 0)
->   drivers/net/tokenring/smctr.c:4435:52: warning: cast truncates bits from constant value (4000 becomes 0)
->   drivers/net/tokenring/smctr.c:4440:52: warning: cast truncates bits from constant value (8000 becomes 0)
+> The following bug entry is on the current list of known regressions
+> from 2.6.28.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12660
+> Subject		: Linux 2.6.28.3 freezing on a 32-bits x86 Thinkpad T43p
+> Submitter	: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Date		: 2009-02-04 21:11 (11 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123378196022258&w=4
+> Handled-By	: Ingo Molnar <mingo@elte.hu>
+> 
 
-Um, no.  Here's a better question: does *anything* use ->current_ring_status
-at all?  Answer: no.  Next question: did anything use it in the past?
-git log -p drivers/net/tokenging/smctr.c in historical trees shows that
-it had always been defined that way and that it had never been used at
-all.
+Yes, still applies to 2.6.28.4 and 2.6.28.5.
 
-So how about removing the damn field completely?  Or asking the driver's
-author what the hell had it been about?
+Mathieu
+
+> 
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
