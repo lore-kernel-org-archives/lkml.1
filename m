@@ -1,71 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763806AbZBNBUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763547AbZBNBR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763806AbZBNBUS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:20:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762913AbZBNBIn
+	id S1763547AbZBNBR5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:17:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754377AbZBNBCO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:08:43 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40901 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762908AbZBNBIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:08:41 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>
-Subject: [PATCH 0/9] PM: Fixes related to suspend and hibernation for 2.6.29
-Date: Sat, 14 Feb 2009 01:57:39 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Andrey Borzenkov <arvidjaar@mail.ru>
+	Fri, 13 Feb 2009 20:02:14 -0500
+Received: from kroah.org ([198.145.64.141]:39947 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761492AbZBNBCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:02:04 -0500
+Date: Fri, 13 Feb 2009 16:59:26 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Jiri Kosina <jkosina@suse.cz>
+Subject: [patch 42/47] HID: adjust report descriptor fixup for MS 1028
+	receiver
+Message-ID: <20090214005926.GQ11282@kroah.com>
+References: <20090214005130.617401075@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902140157.40869.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="hid-adjust-report-descriptor-fixup-for-ms-1028-receiver.patch"
+In-Reply-To: <20090214005726.GA11282@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Len,
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-The following are fixes related to suspend and hibernation I have collected
-over the last couple of weeks.  Some of them are in -mm.  I think they all are
-2.6.29 material.
+------------------
 
-1/9 and 2/9 fix hibernation regression caused by the async boot changes,
-I hope Greg will not object if they go through your tree.
+From: Jiri Kosina <jkosina@suse.cz>
 
-3/9 fixes a long-standing hibernation issue that cause the resume partition
-to become unuseable after two consecutive failing attempts to hibernate.
+commit 0fb21de0799a985d2da3da14ae5625d724256638 upstream
 
-4/9 fixes build of kprobes.c with CONFIG_PM unset.
+HID: adjust report descriptor fixup for MS 1028 receiver
+[Backport to 2.6.27: cebbert@redhat.com]
 
-5/9 and 6/9 clean up memory freeing code used during hibernation.
+Report descriptor fixup for MS 1028 receiver changes also values for
+Keyboard and Consumer, which incorrectly trims the range, causing correct
+events being thrown away before passing to userspace.
 
-7/9 fixes a bug related to the use of PM notifiers during hibernation with
-the help of the user land interface.
+We need to keep the GenDesk usage fixup though, as it reports totally bogus
+values about axis.
 
-8/9 and 9/9 fix the handling of consoles during suspend/hibernation.
+Reported-by: Lucas Gadani <lgadani@gmail.com>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-Please add these patches to the suspend branch and push to Linus for 2.6.29.
+---
+ drivers/hid/usbhid/hid-quirks.c |   16 ++++------------
+ 1 file changed, 4 insertions(+), 12 deletions(-)
 
-Thanks,
-Rafael
-
-
--- 
-Everyone knows that debugging is twice as hard as writing a program
-in the first place.  So if you're as clever as you can be when you write it,
-how will you ever debug it? --- Brian Kernighan
+--- a/drivers/hid/usbhid/hid-quirks.c
++++ b/drivers/hid/usbhid/hid-quirks.c
+@@ -1130,24 +1130,16 @@ static void usbhid_fixup_button_consumer
+ }
+ 
+ /*
+- * Microsoft Wireless Desktop Receiver (Model 1028) has several
++ * Microsoft Wireless Desktop Receiver (Model 1028) has
+  * 'Usage Min/Max' where it ought to have 'Physical Min/Max'
+  */
+ static void usbhid_fixup_microsoft_descriptor(unsigned char *rdesc, int rsize)
+ {
+-	if (rsize == 571 && rdesc[284] == 0x19
+-	                 && rdesc[286] == 0x2a
+-	                 && rdesc[304] == 0x19
+-	                 && rdesc[306] == 0x29
+-	                 && rdesc[352] == 0x1a
+-	                 && rdesc[355] == 0x2a
+-			 && rdesc[557] == 0x19
++	if (rsize == 571 && rdesc[557] == 0x19
+ 			 && rdesc[559] == 0x29) {
+ 		printk(KERN_INFO "Fixing up Microsoft Wireless Receiver Model 1028 report descriptor\n");
+-		rdesc[284] = rdesc[304] = rdesc[557] = 0x35;
+-		rdesc[352] = 0x36;
+-		rdesc[286] = rdesc[355] = 0x46;
+-		rdesc[306] = rdesc[559] = 0x45;
++		rdesc[557] = 0x35;
++		rdesc[559] = 0x45;
+ 	}
+ }
+ 
 
