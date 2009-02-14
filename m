@@ -1,154 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763989AbZBNBV3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762985AbZBNBTH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763989AbZBNBV3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:21:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762692AbZBNBIq
+	id S1762985AbZBNBTH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:19:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761591AbZBNBCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:08:46 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40909 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762914AbZBNBIm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:08:42 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>
-Subject: [PATCH 1/9] Consolidate driver_probe_done() loops into one place
-Date: Sat, 14 Feb 2009 01:59:06 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Andrey Borzenkov <arvidjaar@mail.ru>
-References: <200902140157.40869.rjw@sisk.pl>
-In-Reply-To: <200902140157.40869.rjw@sisk.pl>
+	Fri, 13 Feb 2009 20:02:20 -0500
+Received: from kroah.org ([198.145.64.141]:40041 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761621AbZBNBCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:02:09 -0500
+Date: Fri, 13 Feb 2009 16:59:35 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
+Subject: [patch 47/47] ALSA: mtpav - Fix initial value for input hwport
+Message-ID: <20090214005935.GV11282@kroah.com>
+References: <20090214005130.617401075@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902140159.08252.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="alsa-mtpav-fix-initial-value-for-input-hwport.patch"
+In-Reply-To: <20090214005726.GA11282@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arjan van de Ven <arjan@linux.intel.com>
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-there's a few places that currently loop over driver_probe_done(), and
-I'm about to add another one. This patch abstracts it into a helper
-to reduce duplication.
+------------------
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+From: Takashi Iwai <tiwai@suse.de>
+
+commit 32cf9a16f4af01573ddec1eb073111fc20a9d7d4 upstream.
+
+Fix the initial value for input hwport.  The old value (-1) may cause
+Oops when an realtime MIDI byte is received before the input port is
+explicitly given.
+Instead, now it's set to the broadcasting as default.
+
+Tested-by: Holger Dehnhardt <dehnhardt@ahdehnhardt.de>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
- drivers/base/dd.c      |   17 +++++++++++++++++
- include/linux/device.h |    2 ++
- init/do_mounts.c       |   13 +++++++++----
- init/do_mounts_md.c    |    5 +++--
- 4 files changed, 31 insertions(+), 6 deletions(-)
+ sound/drivers/mtpav.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/drivers/base/dd.c
-===================================================================
---- linux-2.6.orig/drivers/base/dd.c
-+++ linux-2.6/drivers/base/dd.c
-@@ -18,9 +18,11 @@
-  */
+--- a/sound/drivers/mtpav.c
++++ b/sound/drivers/mtpav.c
+@@ -706,7 +706,6 @@ static int __devinit snd_mtpav_probe(str
+ 	mtp_card->card = card;
+ 	mtp_card->irq = -1;
+ 	mtp_card->share_irq = 0;
+-	mtp_card->inmidiport = 0xffffffff;
+ 	mtp_card->inmidistate = 0;
+ 	mtp_card->outmidihwport = 0xffffffff;
+ 	init_timer(&mtp_card->timer);
+@@ -715,6 +714,8 @@ static int __devinit snd_mtpav_probe(str
  
- #include <linux/device.h>
-+#include <linux/delay.h>
- #include <linux/module.h>
- #include <linux/kthread.h>
- #include <linux/wait.h>
-+#include <linux/async.h>
+ 	card->private_free = snd_mtpav_free;
  
- #include "base.h"
- #include "power/power.h"
-@@ -168,6 +170,21 @@ int driver_probe_done(void)
- }
- 
- /**
-+ * wait_for_device_probe
-+ * Wait for device probing to be completed.
-+ *
-+ * Note: this function polls at 100 msec intervals.
-+ */
-+int wait_for_device_probe(void)
-+{
-+	/* wait for the known devices to complete their probing */
-+	while (driver_probe_done() != 0)
-+		msleep(100);
-+	async_synchronize_full();
-+	return 0;
-+}
++	mtp_card->inmidiport = mtp_card->num_ports + MTPAV_PIDX_BROADCAST;
 +
-+/**
-  * driver_probe_device - attempt to bind device & driver together
-  * @drv: driver to bind a device to
-  * @dev: device to try to bind to the driver
-Index: linux-2.6/include/linux/device.h
-===================================================================
---- linux-2.6.orig/include/linux/device.h
-+++ linux-2.6/include/linux/device.h
-@@ -147,6 +147,8 @@ extern void put_driver(struct device_dri
- extern struct device_driver *driver_find(const char *name,
- 					 struct bus_type *bus);
- extern int driver_probe_done(void);
-+extern int wait_for_device_probe(void);
-+
- 
- /* sysfs interface for exporting driver attributes */
- 
-Index: linux-2.6/init/do_mounts.c
-===================================================================
---- linux-2.6.orig/init/do_mounts.c
-+++ linux-2.6/init/do_mounts.c
-@@ -370,10 +370,14 @@ void __init prepare_namespace(void)
- 		ssleep(root_delay);
- 	}
- 
--	/* wait for the known devices to complete their probing */
--	while (driver_probe_done() != 0)
--		msleep(100);
--	async_synchronize_full();
-+	/*
-+	 * wait for the known devices to complete their probing
-+	 *
-+	 * Note: this is a potential source of long boot delays.
-+	 * For example, it is not atypical to wait 5 seconds here
-+	 * for the touchpad of a laptop to initialize.
-+	 */
-+	wait_for_device_probe();
- 
- 	md_run_setup();
- 
-@@ -399,6 +403,7 @@ void __init prepare_namespace(void)
- 		while (driver_probe_done() != 0 ||
- 			(ROOT_DEV = name_to_dev_t(saved_root_name)) == 0)
- 			msleep(100);
-+		async_synchronize_full();
- 	}
- 
- 	is_floppy = MAJOR(ROOT_DEV) == FLOPPY_MAJOR;
-Index: linux-2.6/init/do_mounts_md.c
-===================================================================
---- linux-2.6.orig/init/do_mounts_md.c
-+++ linux-2.6/init/do_mounts_md.c
-@@ -281,8 +281,9 @@ static void __init autodetect_raid(void)
- 	 */
- 	printk(KERN_INFO "md: Waiting for all devices to be available before autodetect\n");
- 	printk(KERN_INFO "md: If you don't use raid, use raid=noautodetect\n");
--	while (driver_probe_done() < 0)
--		msleep(100);
-+
-+	wait_for_device_probe();
-+
- 	fd = sys_open("/dev/md0", 0, 0);
- 	if (fd >= 0) {
- 		sys_ioctl(fd, RAID_AUTORUN, raid_autopart);
+ 	err = snd_mtpav_get_ISA(mtp_card);
+ 	if (err < 0)
+ 		goto __error;
+
