@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932324AbZBNBiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932341AbZBNBid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932324AbZBNBiA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:38:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761629AbZBNBQd
+	id S932341AbZBNBid (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:38:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762726AbZBNBQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:16:33 -0500
-Received: from kroah.org ([198.145.64.141]:50441 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:16:34 -0500
+Received: from kroah.org ([198.145.64.141]:50430 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763342AbZBNBQY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1762592AbZBNBQY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 13 Feb 2009 20:16:24 -0500
-Date: Fri, 13 Feb 2009 17:13:09 -0800
+Date: Fri, 13 Feb 2009 17:13:11 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 25/48] packet: Avoid lock_sock in mmap handler
-Message-ID: <20090214011309.GZ17706@kroah.com>
+       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 26/48] sungem: Soft lockup in sungem on Netra AC200 when
+	switching interface up
+Message-ID: <20090214011311.GA17706@kroah.com>
 References: <20090214010805.419403436@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline; filename="packet-avoid-lock_sock-in-mmap-handler.patch"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="sungem-soft-lockup-in-sungem-on-netra-ac200-when-switching-interface-up.patch"
 In-Reply-To: <20090214011208.GA17706@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,85 +40,70 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
+From: Ilkka Virta <itvirta@iki.fi>
 
-[ Upstream commit 905db44087855e3c1709f538ecdc22fd149cadd8 ]
+[ Upstream commit 71822faa3bc0af5dbf5e333a2d085f1ed7cd809f ]
 
-As the mmap handler gets called under mmap_sem, and we may grab
-mmap_sem elsewhere under the socket lock to access user data, we
-should avoid grabbing the socket lock in the mmap handler.
+From: Ilkka Virta <itvirta@iki.fi>
 
-Since the only thing we care about in the mmap handler is for
-pg_vec* to be invariant, i.e., to exclude packet_set_ring, we
-can achieve this by simply using a new mutex.
+In the lockup situation the driver seems to go off in an eternal storm
+of interrupts right after calling request_irq(). It doesn't actually
+do anything interesting in the interrupt handler. Since connecting the link
+afterwards works, something later in initialization must fix this.
 
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-Tested-by: Martin MOKREJŠ <mmokrejs@ribosome.natur.cuni.cz>
+Looking at gem_do_start() and gem_open(), it seems that the only thing
+done while opening the device after the request_irq(), is a call to
+napi_enable().
+
+I don't know what the ordering requirements are for the
+initialization, but I boldly tried to move the napi_enable() call
+inside gem_do_start() before the link state is checked and interrupts
+subsequently enabled, and it seems to work for me. Doesn't even break
+anything too obvious...
+
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/packet/af_packet.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ drivers/net/sungem.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- a/net/packet/af_packet.c
-+++ b/net/packet/af_packet.c
-@@ -77,6 +77,7 @@
- #include <linux/poll.h>
- #include <linux/module.h>
- #include <linux/init.h>
-+#include <linux/mutex.h>
+--- a/drivers/net/sungem.c
++++ b/drivers/net/sungem.c
+@@ -2222,6 +2222,8 @@ static int gem_do_start(struct net_devic
  
- #ifdef CONFIG_INET
- #include <net/inet_common.h>
-@@ -175,6 +176,7 @@ struct packet_sock {
- #endif
- 	struct packet_type	prot_hook;
- 	spinlock_t		bind_lock;
-+	struct mutex		pg_vec_lock;
- 	unsigned int		running:1,	/* prot_hook is attached*/
- 				auxdata:1,
- 				origdev:1;
-@@ -1068,6 +1070,7 @@ static int packet_create(struct net *net
- 	 */
+ 	gp->running = 1;
  
- 	spin_lock_init(&po->bind_lock);
-+	mutex_init(&po->pg_vec_lock);
- 	po->prot_hook.func = packet_rcv;
++	napi_enable(&gp->napi);
++
+ 	if (gp->lstate == link_up) {
+ 		netif_carrier_on(gp->dev);
+ 		gem_set_link_modes(gp);
+@@ -2239,6 +2241,8 @@ static int gem_do_start(struct net_devic
+ 		spin_lock_irqsave(&gp->lock, flags);
+ 		spin_lock(&gp->tx_lock);
  
- 	if (sock->type == SOCK_PACKET)
-@@ -1863,6 +1866,7 @@ static int packet_set_ring(struct sock *
- 	synchronize_net();
++		napi_disable(&gp->napi);
++
+ 		gp->running =  0;
+ 		gem_reset(gp);
+ 		gem_clean_rings(gp);
+@@ -2339,8 +2343,6 @@ static int gem_open(struct net_device *d
+ 	if (!gp->asleep)
+ 		rc = gem_do_start(dev);
+ 	gp->opened = (rc == 0);
+-	if (gp->opened)
+-		napi_enable(&gp->napi);
  
- 	err = -EBUSY;
-+	mutex_lock(&po->pg_vec_lock);
- 	if (closing || atomic_read(&po->mapped) == 0) {
- 		err = 0;
- #define XC(a, b) ({ __typeof__ ((a)) __t; __t = (a); (a) = (b); __t; })
-@@ -1884,6 +1888,7 @@ static int packet_set_ring(struct sock *
- 		if (atomic_read(&po->mapped))
- 			printk(KERN_DEBUG "packet_mmap: vma is busy: %d\n", atomic_read(&po->mapped));
+ 	mutex_unlock(&gp->pm_mutex);
+ 
+@@ -2477,8 +2479,6 @@ static int gem_resume(struct pci_dev *pd
+ 
+ 		/* Re-attach net device */
+ 		netif_device_attach(dev);
+-
+-		napi_enable(&gp->napi);
  	}
-+	mutex_unlock(&po->pg_vec_lock);
  
- 	spin_lock(&po->bind_lock);
- 	if (was_running && !po->running) {
-@@ -1916,7 +1921,7 @@ static int packet_mmap(struct file *file
- 
- 	size = vma->vm_end - vma->vm_start;
- 
--	lock_sock(sk);
-+	mutex_lock(&po->pg_vec_lock);
- 	if (po->pg_vec == NULL)
- 		goto out;
- 	if (size != po->pg_vec_len*po->pg_vec_pages*PAGE_SIZE)
-@@ -1939,7 +1944,7 @@ static int packet_mmap(struct file *file
- 	err = 0;
- 
- out:
--	release_sock(sk);
-+	mutex_unlock(&po->pg_vec_lock);
- 	return err;
- }
- #endif
+ 	spin_lock_irqsave(&gp->lock, flags);
 
