@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761864AbZBNBPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764027AbZBNBPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761864AbZBNBPP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:15:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761486AbZBNBCA
+	id S1764027AbZBNBPn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:15:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121AbZBNBCC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:02:00 -0500
-Received: from kroah.org ([198.145.64.141]:39856 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:02:02 -0500
+Received: from kroah.org ([198.145.64.141]:39870 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753599AbZBNBB6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:01:58 -0500
-Date: Fri, 13 Feb 2009 16:59:15 -0800
+	id S1761458AbZBNBB7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:01:59 -0500
+Date: Fri, 13 Feb 2009 16:59:17 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dimitris Michailidis <dm@chelsio.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
+       alan@lxorguk.ukuu.org.uk,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 36/47] tcp: Fix length tcp_splice_data_recv passes to
-	skb_splice_bits.
-Message-ID: <20090214005915.GK11282@kroah.com>
+Subject: [patch 37/47] sparc: Enable syscall wrappers for 64-bit
+	(CVE-2009-0029)
+Message-ID: <20090214005917.GL11282@kroah.com>
 References: <20090214005130.617401075@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="tcp-fix-length-tcp_splice_data_recv-passes-to-skb_splice_bits.patch"
+Content-Disposition: inline; filename="sparc-enable-syscall-wrappers-for-64-bit.patch"
 In-Reply-To: <20090214005726.GA11282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,46 +42,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Dimitris Michailidis <dm@chelsio.com>
+From: Christian Borntraeger <borntraeger@de.ibm.com>
 
-[ Upstream commit 9fa5fdf291c9b58b1cb8b4bb2a0ee57efa21d635 ]
+[ Upstream commit 67605d6812691bbd2158d2f60259e0407611bc1b ]
 
-tcp_splice_data_recv has two lengths to consider: the len parameter it
-gets from tcp_read_sock, which specifies the amount of data in the skb,
-and rd_desc->count, which is the amount of data the splice caller still
-wants.  Currently it passes just the latter to skb_splice_bits, which then
-splices min(rd_desc->count, skb->len - offset) bytes.
+sparc64 needs sign-extended function parameters. We have to enable
+the system call wrappers.
 
-Most of the time this is fine, except when the skb contains urgent data.
-In that case len goes only up to the urgent byte and is less than
-skb->len - offset.  By ignoring len tcp_splice_data_recv may a) splice
-data tcp_read_sock told it not to, b) return to tcp_read_sock a value > len.
-
-Now, tcp_read_sock doesn't handle used > len and leaves the socket in a
-bad state (both sk_receive_queue and copied_seq are bad at that point)
-resulting in duplicated data and corruption.
-
-Fix by passing min(rd_desc->count, len) to skb_splice_bits.
-
-Signed-off-by: Dimitris Michailidis <dm@chelsio.com>
-Acked-by: Eric Dumazet <dada1@cosmosbay.com>
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/tcp.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/sparc64/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -520,7 +520,8 @@ static int tcp_splice_data_recv(read_des
- 	struct tcp_splice_state *tss = rd_desc->arg.data;
- 	int ret;
- 
--	ret = skb_splice_bits(skb, offset, tss->pipe, rd_desc->count, tss->flags);
-+	ret = skb_splice_bits(skb, offset, tss->pipe, min(rd_desc->count, len),
-+			      tss->flags);
- 	if (ret > 0)
- 		rd_desc->count -= ret;
- 	return ret;
+--- a/arch/sparc64/Kconfig
++++ b/arch/sparc64/Kconfig
+@@ -15,6 +15,7 @@ config SPARC64
+ 	select HAVE_FTRACE
+ 	select HAVE_IDE
+ 	select HAVE_LMB
++	select HAVE_SYSCALL_WRAPPERS
+ 	select HAVE_ARCH_KGDB
+ 	select USE_GENERIC_SMP_HELPERS if SMP
+ 	select HAVE_ARCH_TRACEHOOK
 
