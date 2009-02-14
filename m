@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762720AbZBNBcf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765511AbZBNBc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762720AbZBNBcf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:32:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764112AbZBNBQQ
+	id S1765511AbZBNBc6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:32:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762587AbZBNBQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:16:16 -0500
-Received: from kroah.org ([198.145.64.141]:50249 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:16:18 -0500
+Received: from kroah.org ([198.145.64.141]:50283 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764107AbZBNBQK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:16:10 -0500
-Date: Fri, 13 Feb 2009 17:12:42 -0800
+	id S1763011AbZBNBQL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:16:11 -0500
+Date: Fri, 13 Feb 2009 17:12:44 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,19 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       Nick Piggin <npiggin@suse.de>
-Subject: [patch 12/48] writeback: fix break condition
-Message-ID: <20090214011242.GM17706@kroah.com>
+       alan@lxorguk.ukuu.org.uk,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Christophe Saout <christophe@saout.de>,
+       Keir Fraser <keir.fraser@eu.citrix.com>,
+       Alex Williamson <alex.williamson@hp.com>
+Subject: [patch 13/48] mm: rearrange exit_mmap() to unlock before
+	arch_exit_mmap
+Message-ID: <20090214011244.GN17706@kroah.com>
 References: <20090214010805.419403436@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="writeback-fix-break-condition.patch"
+Content-Disposition: inline; filename="mm-rearrange-exit_mmap-to-unlock-before-arch_exit_mmap.patch"
 In-Reply-To: <20090214011208.GA17706@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,65 +45,79 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Federico Cuello <fedux@lugmen.org.ar>
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 
-commit 89e1219004b3657cc014521663eeef0744f1c99d upstream.
+commit 9480c53e9b2aa13a06283ffb96bb8f1873ac4e9a upstream.
 
-Commit dcf6a79dda5cc2a2bec183e50d829030c0972aaa ("write-back: fix
-nr_to_write counter") fixed nr_to_write counter, but didn't set the break
-condition properly.
+Christophe Saout reported [in precursor to:
+http://marc.info/?l=linux-kernel&m=123209902707347&w=4]:
 
-If nr_to_write == 0 after being decremented it will loop one more time
-before setting done = 1 and breaking the loop.
+> Note that I also some a different issue with CONFIG_UNEVICTABLE_LRU.
+> Seems like Xen tears down current->mm early on process termination, so
+> that __get_user_pages in exit_mmap causes nasty messages when the
+> process had any mlocked pages.  (in fact, it somehow manages to get into
+> the swapping code and produces a null pointer dereference trying to get
+> a swap token)
 
-[akpm@linux-foundation.org: coding-style fixes]
-Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Acked-by: Nick Piggin <npiggin@suse.de>
+Jeremy explained:
+
+Yes.  In the normal case under Xen, an in-use pagetable is "pinned",
+meaning that it is RO to the kernel, and all updates must go via hypercall
+(or writes are trapped and emulated, which is much the same thing).  An
+unpinned pagetable is not currently in use by any process, and can be
+directly accessed as normal RW pages.
+
+As an optimisation at process exit time, we unpin the pagetable as early
+as possible (switching the process to init_mm), so that all the normal
+pagetable teardown can happen with direct memory accesses.
+
+This happens in exit_mmap() -> arch_exit_mmap().  The munlocking happens
+a few lines below.  The obvious thing to do would be to move
+arch_exit_mmap() to below the munlock code, but I think we'd want to
+call it even if mm->mmap is NULL, just to be on the safe side.
+
+Thus, this patch:
+
+exit_mmap() needs to unlock any locked vmas before calling arch_exit_mmap,
+as the latter may switch the current mm to init_mm, which would cause the
+former to fail.
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
+Cc: Christophe Saout <christophe@saout.de>
+Cc: Keir Fraser <keir.fraser@eu.citrix.com>
+Cc: Christophe Saout <christophe@saout.de>
+Cc: Alex Williamson <alex.williamson@hp.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/page-writeback.c |   29 ++++++++++++++++-------------
- 1 file changed, 16 insertions(+), 13 deletions(-)
+ mm/mmap.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -981,20 +981,23 @@ continue_unlock:
- 				}
-  			}
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -2093,7 +2093,6 @@ void exit_mmap(struct mm_struct *mm)
+ 	unsigned long end;
  
--			if (nr_to_write > 0)
-+			if (nr_to_write > 0) {
- 				nr_to_write--;
--			else if (wbc->sync_mode == WB_SYNC_NONE) {
--				/*
--				 * We stop writing back only if we are not
--				 * doing integrity sync. In case of integrity
--				 * sync we have to keep going because someone
--				 * may be concurrently dirtying pages, and we
--				 * might have synced a lot of newly appeared
--				 * dirty pages, but have not synced all of the
--				 * old dirty pages.
--				 */
--				done = 1;
--				break;
-+				if (nr_to_write == 0 &&
-+				    wbc->sync_mode == WB_SYNC_NONE) {
-+					/*
-+					 * We stop writing back only if we are
-+					 * not doing integrity sync. In case of
-+					 * integrity sync we have to keep going
-+					 * because someone may be concurrently
-+					 * dirtying pages, and we might have
-+					 * synced a lot of newly appeared dirty
-+					 * pages, but have not synced all of the
-+					 * old dirty pages.
-+					 */
-+					done = 1;
-+					break;
-+				}
- 			}
+ 	/* mm's last user has gone, and its about to be pulled down */
+-	arch_exit_mmap(mm);
+ 	mmu_notifier_release(mm);
  
- 			if (wbc->nonblocking && bdi_write_congested(bdi)) {
+ 	if (mm->locked_vm) {
+@@ -2104,7 +2103,13 @@ void exit_mmap(struct mm_struct *mm)
+ 			vma = vma->vm_next;
+ 		}
+ 	}
++
++	arch_exit_mmap(mm);
++
+ 	vma = mm->mmap;
++	if (!vma)	/* Can happen if dup_mmap() received an OOM */
++		return;
++
+ 	lru_add_drain();
+ 	flush_cache_mm(mm);
+ 	tlb = tlb_gather_mmu(mm, 1);
 
