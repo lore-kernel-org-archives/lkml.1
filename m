@@ -1,78 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763289AbZBNBwN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765035AbZBNBwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763289AbZBNBwN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:52:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933140AbZBNBtN
+	id S1765035AbZBNBwh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:52:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933349AbZBNBu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:49:13 -0500
-Received: from hpsmtp-eml18.KPNXCHANGE.COM ([213.75.38.118]:37751 "EHLO
-	hpsmtp-eml18.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933137AbZBNBtL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:49:11 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [patch] x86, pat: fix warn_on_once() while mapping 0-1MB range with /dev/mem
-Date: Sat, 14 Feb 2009 02:49:05 +0100
-User-Agent: KMail/1.9.9
-Cc: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com,
-       jeffm@suse.com
-References: <1234380023.16238.52.camel@vayu>
-In-reply-To: <1234380023.16238.52.camel@vayu>
+	Fri, 13 Feb 2009 20:50:56 -0500
+Received: from ns.suse.de ([195.135.220.2]:58904 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933342AbZBNBuz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:50:55 -0500
+Date: Fri, 13 Feb 2009 17:47:55 -0800
+From: Greg KH <gregkh@suse.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>,
+       Ingo Molnar <mingo@elte.hu>, Johannes Weiner <hannes@cmpxchg.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: [PATCH 1/9] Consolidate driver_probe_done() loops into one
+	place
+Message-ID: <20090214014755.GA17975@suse.de>
+References: <200902140157.40869.rjw@sisk.pl> <200902140159.08252.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902140249.07772.elendil@planet.nl>
-X-OriginalArrivalTime: 14 Feb 2009 01:49:08.0620 (UTC) FILETIME=[6D1C5CC0:01C98E46]
+In-Reply-To: <200902140159.08252.rjw@sisk.pl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suresh Siddha wrote:
-> From: Suresh Siddha <suresh.b.siddha@intel.com>
-> Subject: x86, pat: fix warn_on_once() while mapping 0-1MB range
-> with /dev/mem
+On Sat, Feb 14, 2009 at 01:59:06AM +0100, Rafael J. Wysocki wrote:
+> From: Arjan van de Ven <arjan@linux.intel.com>
 > 
-> Jeff Mahoney reported:
->> With Suse's hwinfo tool, on -tip:
->> WARNING: at arch/x86/mm/pat.c:637 reserve_pfn_range+0x5b/0x26d()
+> there's a few places that currently loop over driver_probe_done(), and
+> I'm about to add another one. This patch abstracts it into a helper
+> to reduce duplication.
 > 
-> reserve_pfn_range() is not tracking the memory range below 1MB
-> as non-RAM and as such is inconsistent with similar checks in
-> reserve_memtype() and free_memtype()
-> 
-> Rename the pagerange_is_ram() to pat_pagerange_is_ram() and add the
-> "track legacy 1MB region as non RAM" condition.
-> 
-> And also, fix reserve_pfn_range() to return -EINVAL, when the pfn
-> range is RAM. This is to be consistent with this API design.
-> 
-> Reported-and-tested-by: Jeff Mahoney <jeffm@suse.com>
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-I've given this patch a try because I've been getting the same warning 
-when starting VirtualBox guest machines (VM) and it looked as if this 
-might fix that.
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-With this patch on top of 2.6.29-rc5 the VirtualBox kernel modules build 
-and load without errors, but when I try to start a VM I get an error that 
-a symbol cannot be found. The VM does start correctly if I boot the 
-kernel on the host with "nopat".
+Fine with me if this goes through Len's tree.
 
-I suspect the problem is with VirtualBox, but thought I'd mention it here 
-just in case it's an indication of a regression.
+thanks,
 
-Details on the issue can be found here:
-http://www.virtualbox.org/ticket/3090
-
-The suddenly missing symbol gets defined here for VBox (lines 217-237):
-http://www.virtualbox.org/browser/trunk/include/VBox/sup.h
-
-Host system is debian/lenny/amd64 running x86_64.
-
-Cheers,
-FJP
+greg k-h
