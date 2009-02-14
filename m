@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbZBNVRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbZBNVR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755209AbZBNVRX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 16:17:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754627AbZBNVOo
+	id S1755390AbZBNVR6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 16:17:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754728AbZBNVPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 16:14:44 -0500
-Received: from casper.infradead.org ([85.118.1.10]:46193 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754606AbZBNVOl (ORCPT
+	Sat, 14 Feb 2009 16:15:09 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:54906 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753732AbZBNVPH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 16:14:41 -0500
-Subject: Re: [PATCH 1.5/2] generic-smp: fix initial quiesent count.
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>
-In-Reply-To: <1234622792.4698.31.camel@laptop>
-References: <20090212223200.979433820@chello.nl>
-	 <20090212223750.295581470@chello.nl>  <1234622474.4698.25.camel@laptop>
-	 <1234622792.4698.31.camel@laptop>
-Content-Type: text/plain
-Date: Sat, 14 Feb 2009 22:14:16 +0100
-Message-Id: <1234646056.4695.10.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.90 
+	Sat, 14 Feb 2009 16:15:07 -0500
+From: Hannes Eder <hannes@hanneseder.net>
+Subject: [PATCH 12/43] drivers/net/atl1e: fix sparse warnings: fix signedness
+To: netdev@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Sat, 14 Feb 2009 22:14:58 +0100
+Message-ID: <20090214211452.23489.8257.stgit@vmbox.hanneseder.net>
+In-Reply-To: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
+References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
+User-Agent: StGit/0.14.3.348.gcb02
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-02-14 at 15:46 +0100, Peter Zijlstra wrote:
-> first compile, then send out...
-> 
-> ---
-> Subject: generic-smp: fix initial quiesent count.
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Sat Feb 14 15:36:07 CET 2009
-> 
-> If we start with a quiesent sequence count of 0, we'll match the initial stamp
-> values of the cfd_data, and never make any progress.
-> 
-> To avoid getting stuck in this situation, start out with an increased quiesent
-> sequence count.
+Fix this sparse warnings:
+  drivers/net/atl1e/atl1e_main.c:716:39: warning: incorrect type in argument 2 (different signedness)
+  drivers/net/atl1e/atl1e_param.c:57:1: warning: incorrect type in initializer (different signedness)
+  drivers/net/atl1e/atl1e_param.c:68:1: warning: incorrect type in initializer (different signedness)
+  drivers/net/atl1e/atl1e_param.c:81:1: warning: incorrect type in initializer (different signedness)
+  drivers/net/atl1e/atl1e_param.c:92:1: warning: incorrect type in initializer (different signedness)
 
-OK, so this is not going to fix the problem in generic. Its still
-possible to end up with the original issue.
+Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+---
+ drivers/net/atl1e/atl1e.h       |    2 +-
+ drivers/net/atl1e/atl1e_param.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-We'd need a callback list to free used entries, much like regular RCU,
-this quiesent sequence count's wrapping just seems too brittle.
-
+diff --git a/drivers/net/atl1e/atl1e.h b/drivers/net/atl1e/atl1e.h
+index c49550d..2bf63b4 100644
+--- a/drivers/net/atl1e/atl1e.h
++++ b/drivers/net/atl1e/atl1e.h
+@@ -448,7 +448,7 @@ struct atl1e_adapter {
+ 	/* All Descriptor memory */
+ 	dma_addr_t  	ring_dma;
+ 	void     	*ring_vir_addr;
+-	int             ring_size;
++	u32             ring_size;
+ 
+ 	struct atl1e_tx_ring tx_ring;
+ 	struct atl1e_rx_ring rx_ring;
+diff --git a/drivers/net/atl1e/atl1e_param.c b/drivers/net/atl1e/atl1e_param.c
+index f72abb3..b3be59f 100644
+--- a/drivers/net/atl1e/atl1e_param.c
++++ b/drivers/net/atl1e/atl1e_param.c
+@@ -41,7 +41,7 @@
+ 
+ #define ATL1E_PARAM(x, desc) \
+ 	static int __devinitdata x[ATL1E_MAX_NIC + 1] = ATL1E_PARAM_INIT; \
+-	static int num_##x; \
++	static unsigned int num_##x; \
+ 	module_param_array_named(x, x, int, &num_##x, 0); \
+ 	MODULE_PARM_DESC(x, desc);
+ 
 
