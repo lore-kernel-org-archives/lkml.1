@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765035AbZBNBwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933453AbZBNBxB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765035AbZBNBwh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:52:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933349AbZBNBu4
+	id S933453AbZBNBxB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:53:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933370AbZBNBvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:50:56 -0500
-Received: from ns.suse.de ([195.135.220.2]:58904 "EHLO mx1.suse.de"
+	Fri, 13 Feb 2009 20:51:05 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:38671 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933342AbZBNBuz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:50:55 -0500
-Date: Fri, 13 Feb 2009 17:47:55 -0800
+	id S933366AbZBNBvD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:51:03 -0500
+Date: Fri, 13 Feb 2009 17:48:13 -0800
 From: Greg KH <gregkh@suse.de>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
@@ -24,25 +24,27 @@ Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
        Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
        Masami Hiramatsu <mhiramat@redhat.com>,
        Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: [PATCH 1/9] Consolidate driver_probe_done() loops into one
-	place
-Message-ID: <20090214014755.GA17975@suse.de>
-References: <200902140157.40869.rjw@sisk.pl> <200902140159.08252.rjw@sisk.pl>
+Subject: Re: [PATCH 2/9] PM/resume: wait for device probing to finish
+Message-ID: <20090214014813.GB17975@suse.de>
+References: <200902140157.40869.rjw@sisk.pl> <200902140200.21022.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902140159.08252.rjw@sisk.pl>
+In-Reply-To: <200902140200.21022.rjw@sisk.pl>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 14, 2009 at 01:59:06AM +0100, Rafael J. Wysocki wrote:
+On Sat, Feb 14, 2009 at 02:00:19AM +0100, Rafael J. Wysocki wrote:
 > From: Arjan van de Ven <arjan@linux.intel.com>
 > 
-> there's a few places that currently loop over driver_probe_done(), and
-> I'm about to add another one. This patch abstracts it into a helper
-> to reduce duplication.
+> the resume code does not currently wait for device probing to finish.
+> Even without async function calls this is dicey and not correct,
+> but with async function calls during the boot sequence this is going
+> to get hit more...
+> 
+> This patch adds the synchronization using the newly introduced helper.
 > 
 > Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
