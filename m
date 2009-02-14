@@ -1,128 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752581AbZBNIDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751784AbZBNIR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752581AbZBNIDt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 03:03:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750761AbZBNIDj
+	id S1751784AbZBNIR1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 03:17:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750795AbZBNIRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 03:03:39 -0500
-Received: from mx40.mail.ru ([94.100.176.54]:55621 "EHLO mx40.mail.ru"
+	Sat, 14 Feb 2009 03:17:17 -0500
+Received: from smtp5-g21.free.fr ([212.27.42.5]:39823 "EHLO smtp5-g21.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750717AbZBNIDi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 03:03:38 -0500
-X-Greylist: delayed 153354 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Feb 2009 03:03:38 EST
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: linux-kbuild@vger.kernel.org
-Subject: Unable to make xconfig with Qt 4.5
-Date: Sat, 14 Feb 2009 11:03:23 +0300
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc4-1avb; KDE/4.2.0; i686; ; )
-Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       cooker@mandrivalinux.org
+	id S1750781AbZBNIRR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 03:17:17 -0500
+From: Philippe Grenard <philippe.grenard@laposte.net>
+To: linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: cannot get stable system since 2.6.28 kernel
+Date: Sat, 14 Feb 2009 09:17:38 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.27.10-phiphi; KDE/4.2.0; x86_64; ; )
+Cc: "John Stoffel" <john@stoffel.org>, Len Brown <lenb@kernel.org>
+References: <200902131944.56634.philippe.grenard@laposte.net> <200902132056.20097.philippe.grenard@laposte.net> <18837.56478.10536.6978@stoffel.org>
+In-Reply-To: <18837.56478.10536.6978@stoffel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3752896.iQ7sLfzbjd";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200902141103.32358.arvidjaar@mail.ru>
-X-Spam: Not detected
-X-Mras: Ok
+Content-Disposition: inline
+Message-Id: <200902140917.38313.philippe.grenard@laposte.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3752896.iQ7sLfzbjd
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Friday 13 February 2009 21:48:30 John Stoffel wrote:
+> >>>>> "Philippe" == Philippe Grenard <philippe.grenard@laposte.net> writes:
+>
+> Philippe> On Friday 13 February 2009 19:56:54 Len Brown wrote:
+> >> dmesg -- assuming you can boot far enough to capture it,
+> >> may be helpful.
+> >>
+> >> also, disabling PREEMPT may be interesting to try.
+> >>
+> >> cheers,
+> >> --
+> >> Len Brown, Intel Open Source Technology Center
+>
+> Philippe> I tried to disable all "PREEMPT" options in make config,
+> re-compiled 2.6.29-rc4 Philippe> and managed to get these info before
+> kernel stalls :
+> Philippe> (Was that what you understood by "disabling PREEMPT" ?)
+>
+> Philippe> I'll also try to make some diff on the different files to
+> Philippe> see what changes between working 2.6.27.10 and non-working
+> Philippe> 2.6.29-rc4
+>
+> ....
+> Philippe> [   33.663143] input: btnx mouse as /class/input/input9
+> Philippe> [   36.351195] nvidia: module license 'NVIDIA' taints kernel.
+> Philippe> [   36.603727] nvidia 0000:01:00.0: PCI INT A -> GSI 16 (level,
+> low) -> IRQ 16 Philippe> [   36.603733] nvidia 0000:01:00.0: setting
+> latency timer to 64 Philippe> [   36.603892] NVRM: loading NVIDIA UNIX
+> x86_64 Kernel Module  180.22  Tue Jan Philippe> 6 09:15:58 PST 2009
+> Philippe> [   36.606686] IRQ 16/nvidia: IRQF_DISABLED is not guaranteed on
+> shared IRQs
+>
+> Here's your problem most probably.  The nVidia graphics module.
+> Remove that and re-try your system.  Basically, we can't help you when
+> you use a vendor's binary module.
+>
+> John
 
-It seems that distribution started to ship Qt 4.5 with KDE4. I am lucky=20
-one running Mandriva cooker:
+Well, it does not change anything to my problem...
+Moreover, I don't understand why this would work with 2.6.27.10 but not with 
+2.6.29-rc4 ....
 
-{pts/2}% LC_ALL=3DC make -C ~/src/linux-git O=3D$HOME/build/linux-2.6.29=20
-xconfig
-make: Entering directory `/home/bor/src/linux-git'                         =
-=20
-  GEN     /home/bor/build/linux-2.6.29/Makefile                            =
-=20
-Package qt-mt was not found in the pkg-config search path.                 =
-=20
-Perhaps you should add the directory containing `qt-mt.pc'                 =
-=20
-to the PKG_CONFIG_PATH environment variable                                =
-=20
-No package 'qt-mt' found                                                   =
-=20
-Package qt-mt was not found in the pkg-config search path.                 =
-=20
-Perhaps you should add the directory containing `qt-mt.pc'                 =
-=20
-to the PKG_CONFIG_PATH environment variable                                =
-=20
-No package 'qt-mt' found                                                   =
-=20
-Package qt-mt was not found in the pkg-config search path.                 =
-=20
-Perhaps you should add the directory containing `qt-mt.pc'                 =
-=20
-to the PKG_CONFIG_PATH environment variable                                =
-=20
-No package 'qt-mt' found                                                   =
-=20
-Package qt-mt was not found in the pkg-config search path.                 =
-=20
-Perhaps you should add the directory containing `qt-mt.pc'                 =
-=20
-to the PKG_CONFIG_PATH environment variable                                =
-=20
-No package 'qt-mt' found                                                   =
-=20
-  HOSTCXX scripts/kconfig/qconf.o                                          =
-=20
-/home/bor/src/linux-git/scripts/kconfig/qconf.cc:6:26: error:=20
-qapplication.h: No such file or directory                                  =
-                      =20
-/home/bor/src/linux-git/scripts/kconfig/qconf.cc:7:25: error:=20
-qmainwindow.h: No such file or directory                                   =
-                      =20
+Thanks anyway, I didn't even thought about it... 
 
-List of packages available in qt4 devel:
-
-{pts/3}% rpm -ql libqt4-devel-4.5.0-0.rc1.4mdv2009.1 | grep pkgc
-/usr/lib/pkgconfig/Qt3Support.pc
-/usr/lib/pkgconfig/QtAssistantClient.pc
-/usr/lib/pkgconfig/QtCLucene.pc
-/usr/lib/pkgconfig/QtCore.pc
-/usr/lib/pkgconfig/QtDBus.pc
-/usr/lib/pkgconfig/QtDesigner.pc
-/usr/lib/pkgconfig/QtDesignerComponents.pc
-/usr/lib/pkgconfig/QtGui.pc
-/usr/lib/pkgconfig/QtHelp.pc
-/usr/lib/pkgconfig/QtNetwork.pc
-/usr/lib/pkgconfig/QtOpenGL.pc
-/usr/lib/pkgconfig/QtScript.pc
-/usr/lib/pkgconfig/QtScriptTools.pc
-/usr/lib/pkgconfig/QtSql.pc
-/usr/lib/pkgconfig/QtSvg.pc
-/usr/lib/pkgconfig/QtTest.pc
-/usr/lib/pkgconfig/QtUiTools.pc
-/usr/lib/pkgconfig/QtWebKit.pc
-/usr/lib/pkgconfig/QtXml.pc
-/usr/lib/pkgconfig/QtXmlPatterns.pc
-
-this was straight update so either this is local packaging issue or Qt=20
-4.5 change package structure.
-
---nextPart3752896.iQ7sLfzbjd
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkmWes0ACgkQR6LMutpd94wvcQCgioCk4rrs8MWj8JcS91FL7OfB
-0UIAoIk+CrZ6ozU7thJf7eFQ/ZEJoPE/
-=/2dd
------END PGP SIGNATURE-----
-
---nextPart3752896.iQ7sLfzbjd--
+Philippe
