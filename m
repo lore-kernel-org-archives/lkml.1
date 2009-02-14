@@ -1,61 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752242AbZBNJZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751904AbZBNJrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752242AbZBNJZN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 04:25:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750931AbZBNJYx
+	id S1751904AbZBNJrT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 04:47:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbZBNJrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 04:24:53 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:20571 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750792AbZBNJYw (ORCPT
+	Sat, 14 Feb 2009 04:47:03 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:57104 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750834AbZBNJrB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 04:24:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=cw1eVDIPEBq/kF5FFHuuuZR5I16EDalcAt/Kzdo19nP3ZhyLSfeJ3vM4dK8EQSuo87
-         STpBSkQy9Zh/IU07U6Tn327py0zj1Dz3R5p8a6gcxI4lIDMx0t+aJJJ4mpvKHaOymqvM
-         dKZTcUpjwaVIqKhYO9/kTp1wCVTRYaa6Pqgfw=
-MIME-Version: 1.0
-In-Reply-To: <200902140917.38313.philippe.grenard@laposte.net>
-References: <200902131944.56634.philippe.grenard@laposte.net>
-	 <200902132056.20097.philippe.grenard@laposte.net>
-	 <18837.56478.10536.6978@stoffel.org>
-	 <200902140917.38313.philippe.grenard@laposte.net>
-Date: Sat, 14 Feb 2009 14:54:51 +0530
-Message-ID: <3f9a31f40902140124j4bb07aeej8af3dff89e347318@mail.gmail.com>
-Subject: Re: PROBLEM: cannot get stable system since 2.6.28 kernel
-From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-To: Philippe Grenard <philippe.grenard@laposte.net>
-Cc: linux-kernel@vger.kernel.org, John Stoffel <john@stoffel.org>,
-       Len Brown <lenb@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 14 Feb 2009 04:47:01 -0500
+Subject: Re: [PATCH] mm: disable preemption in apply_to_pte_range
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <4995B0E3.3050201@goop.org>
+References: <4994BCF0.30005@goop.org>
+	 <200902140030.59027.nickpiggin@yahoo.com.au>
+	 <1234534611.6519.109.camel@twins>
+	 <200902140130.31985.nickpiggin@yahoo.com.au>
+	 <1234535938.6519.118.camel@twins>  <4995B0E3.3050201@goop.org>
+Content-Type: text/plain
+Date: Sat, 14 Feb 2009 10:46:16 +0100
+Message-Id: <1234604776.4698.18.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.90 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 14, 2009 at 1:47 PM, Philippe Grenard
-<philippe.grenard@laposte.net> wrote:
-> On Friday 13 February 2009 21:48:30 John Stoffel wrote:
->>
->> Here's your problem most probably.  The nVidia graphics module.
->> Remove that and re-try your system.  Basically, we can't help you when
->> you use a vendor's binary module.
->>
->> John
->
-> Well, it does not change anything to my problem...
-> Moreover, I don't understand why this would work with 2.6.27.10 but not with
-> 2.6.29-rc4 ....
+On Fri, 2009-02-13 at 09:41 -0800, Jeremy Fitzhardinge wrote:
+> Peter Zijlstra wrote:
+> > If the lazy mmu code relies on per-cpu data, then it should be the lazy
+> > mmu's responsibility to ensure stuff is properly serialized. Eg. it
+> > should do get_cpu_var() and put_cpu_var().
+> >
+> > Those constructs can usually be converted to preemptable variants quite
+> > easily, as it clearly shows what data needs to be protected.
+> >   
+> 
+> At the moment the lazy update stuff is inherently cpu-affine.  The basic 
+> model is that you can amortize the cost of individual update operations 
+> (via hypercall, for example) by batching them up.  That batch is almost 
+> certainly a piece of percpu state (in Xen's case its maintained on the 
+> kernel side as per-cpu data,
 
-May be nvidia graphics module was written based on some kernel which
-is more closer to 2.6.27.10 as compare to 2.6.29-rc4.
+What we often do for -rt is put a lock in such per-cpu data, and take
+the data that is cpu-local when we start and aquire the lock, thereafter
+we keep operating on that data no matter where we get migrated to.
 
-Another thing which John is pointing configure your bios to use
-standard inbuild garphics card OR remove nvidia module and check
-whether it solves your problem or not.
+That way you're optimistically per-cpu but still freely schedulable.
 
---
-JSR
+>  but in VMI it happens somewhere under their 
+> ABI), and so we can't allow switching to another cpu while lazy update 
+> mode is active.
+
+Sounds like VMI is a bit of a problem there, luckily no sane person uses
+that since its all closed source cruft ;-)
+
+It might just end up meaning you cannot run a RT kernel on a VMI host --
+something that's daft anyway.
+
+> Preemption is also problematic because if we're doing lazy updates and 
+> we switch to another task, it will likely get very confused if its 
+> pagetable updates get deferred until some arbitrary point in the future...
+
+Who will get confused? The preempted task doesn't care, as its not
+running, and once it gets back to running we'll happily continue poking
+at the page-tables and complete the operation like normal.
+
+> So at the moment, we just disable preemption, and take advantage of the 
+> existing work to make sure pagetable updates are not non-preemptible for 
+> too long.  This has been fine so far, because almost all the work on 
+> using lazy mmu updates has focused on usermode mappings.
+> 
+> But I can see how this is problematic from your perspective.  One thing 
+> we could consider is making the lazy mmu mode a per-task property, so if 
+> we get preempted we can flush any pending changes and safely switch to 
+> another task, and then reenable it when we get scheduled in again.  
+> (This may be already possible with the existing paravirt-ops hooks in 
+> switch_to.)
+
+That sounds like a fine option, we have these preempt notifiers for
+exactly such cases I think.
+
+> In this specific case, if the lazy mmu updates / non-preemptable section 
+> is really causing heartburn, we can just back it out for now.
+
+I'm not sure, I haven't ran an -rt kernel with your patch applied, so
+I'm not sure it will explode. However I do dislike simply requiring
+preemption disabled there, when its clearly something that's specific to
+the lazy mmu stuff.
+
+So I think that no matter how we're going to do it, it should be done in
+the lazy mmu hooks. If that requires changing the
+arch_{enter_,leave}lazy_mmu_mode() calls to change signature to take a
+mm_struct pointer, then so be it.
+
