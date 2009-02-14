@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764188AbZBNBdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762651AbZBNBdx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764188AbZBNBdd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:33:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764107AbZBNBQS
+	id S1762651AbZBNBdx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:33:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763274AbZBNBQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:16:18 -0500
-Received: from kroah.org ([198.145.64.141]:50297 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:16:20 -0500
+Received: from kroah.org ([198.145.64.141]:50326 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762598AbZBNBQM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:16:12 -0500
-Date: Fri, 13 Feb 2009 17:12:49 -0800
+	id S1764109AbZBNBQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:16:14 -0500
+Date: Fri, 13 Feb 2009 17:12:53 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Kumar Gala <galak@kernel.crashing.org>
-Subject: [patch 14/48] powerpc/fsl-booke: Fix mapping functions to use
-	phys_addr_t
-Message-ID: <20090214011249.GO17706@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Vlad Yasevich <vladislav.yasevich@hp.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 16/48] sctp: Fix crc32c calculations on big-endian arhes.
+Message-ID: <20090214011253.GQ17706@kroah.com>
 References: <20090214010805.419403436@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="powerpc-fsl-booke-fix-mapping-functions-to-use-phys_addr_t.patch"
+Content-Disposition: inline; filename="sctp-fix-crc32c-calculations-on-big-endian-arhes.patch"
 In-Reply-To: <20090214011208.GA17706@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,54 +40,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Kumar Gala <galak@kernel.crashing.org>
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
 
-commit 6c24b17453c8dc444a746e45b8a404498fc9fcf7 upstream.
+[ Upstream commit 9c5ff5f75d0d0a1c7928ecfae3f38418b51a88e3 ]
 
-Fixed v_mapped_by_tlbcam() and p_mapped_by_tlbcam() to use phys_addr_t
-instead of unsigned long.  In 36-bit physical mode we really need these
-functions to deal with phys_addr_t when trying to match a physical
-address or when returning one.
+crc32c algorithm provides a byteswaped result.  On little-endian
+arches, the result ends up in big-endian/network byte order.
+On big-endinan arches, the result ends up in little-endian
+order and needs to be byte swapped again.  Thus calling cpu_to_le32
+gives the right output.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Tested-by: Jukka Taimisto <jukka.taimisto@mail.suomi.net>
+Signed-off-by: Vlad Yasevich <vladislav.yasevich@hp.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/powerpc/mm/fsl_booke_mmu.c |    4 ++--
- arch/powerpc/mm/pgtable_32.c    |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ include/net/sctp/checksum.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/powerpc/mm/fsl_booke_mmu.c
-+++ b/arch/powerpc/mm/fsl_booke_mmu.c
-@@ -80,7 +80,7 @@ extern unsigned int tlbcam_index;
- /*
-  * Return PA for this VA if it is mapped by a CAM, or 0
-  */
--unsigned long v_mapped_by_tlbcam(unsigned long va)
-+phys_addr_t v_mapped_by_tlbcam(unsigned long va)
- {
- 	int b;
- 	for (b = 0; b < tlbcam_index; ++b)
-@@ -92,7 +92,7 @@ unsigned long v_mapped_by_tlbcam(unsigne
- /*
-  * Return VA for a given PA or 0 if not mapped
-  */
--unsigned long p_mapped_by_tlbcam(unsigned long pa)
-+unsigned long p_mapped_by_tlbcam(phys_addr_t pa)
- {
- 	int b;
- 	for (b = 0; b < tlbcam_index; ++b)
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -65,8 +65,8 @@ void setbat(int index, unsigned long vir
+--- a/include/net/sctp/checksum.h
++++ b/include/net/sctp/checksum.h
+@@ -79,5 +79,5 @@ static inline __be32 sctp_update_cksum(_
  
- #ifdef HAVE_TLBCAM
- extern unsigned int tlbcam_index;
--extern unsigned long v_mapped_by_tlbcam(unsigned long va);
--extern unsigned long p_mapped_by_tlbcam(unsigned long pa);
-+extern phys_addr_t v_mapped_by_tlbcam(unsigned long va);
-+extern unsigned long p_mapped_by_tlbcam(phys_addr_t pa);
- #else /* !HAVE_TLBCAM */
- #define v_mapped_by_tlbcam(x)	(0UL)
- #define p_mapped_by_tlbcam(x)	(0UL)
+ static inline __be32 sctp_end_cksum(__be32 crc32)
+ {
+-	return ~crc32;
++	return (__force __be32)~cpu_to_le32((__force u32)crc32);
+ }
 
