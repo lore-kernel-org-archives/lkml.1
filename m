@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764331AbZBNB02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757936AbZBNBZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764331AbZBNB02 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:26:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763652AbZBNBNI
+	id S1757936AbZBNBZX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:25:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762956AbZBNBNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:13:08 -0500
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:49176
-	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762896AbZBNBNF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 13 Feb 2009 20:13:05 -0500
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:49173
+	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763639AbZBNBNA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:13:00 -0500
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
@@ -18,231 +18,370 @@ Cc: the arch/x86 maintainers <x86@kernel.org>,
        Yinghai Lu <yinghai@kernel.org>, Ian Campbell <Ian.Campbell@citrix.com>,
        Jeremy Fitzhardinge <jeremy@goop.org>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 7/9] xen: direct irq registration to pirq event channels
-Date: Fri, 13 Feb 2009 17:12:05 -0800
-Message-Id: <0e852da646969a2296f66cbc485f278fe1fa9929.1234573847.git.jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 4/9] xen: implement pirq type event channels
+Date: Fri, 13 Feb 2009 17:12:02 -0800
+Message-Id: <cbcff9ab54a2189156077c81c706fc30ba84344c.1234573847.git.jeremy.fitzhardinge@citrix.com>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <4e896f722e4175f96f3846896c3a7b627e634e7e.1234573847.git.jeremy.fitzhardinge@citrix.com>
+In-Reply-To: <79724b71f4b8ef1fb65ea246dde2e3e1344b2a43.1234573847.git.jeremy.fitzhardinge@citrix.com>
 References: <cover.1234573847.git.jeremy.fitzhardinge@citrix.com>
  <cover.1234573847.git.jeremy.fitzhardinge@citrix.com>
  <3c7db30686056c9b86cc61ef50dd5572de868512.1234573847.git.jeremy.fitzhardinge@citrix.com>
  <3e46dae897fd5620f50b4cca9272969f5546aa88.1234573847.git.jeremy.fitzhardinge@citrix.com>
  <79724b71f4b8ef1fb65ea246dde2e3e1344b2a43.1234573847.git.jeremy.fitzhardinge@citrix.com>
- <cbcff9ab54a2189156077c81c706fc30ba84344c.1234573847.git.jeremy.fitzhardinge@citrix.com>
- <5b0148b366eaa87072ab261f71c4c545be8e607f.1234573847.git.jeremy.fitzhardinge@citrix.com>
- <4e896f722e4175f96f3846896c3a7b627e634e7e.1234573847.git.jeremy.fitzhardinge@citrix.com>
 In-Reply-To: <cover.1234573847.git.jeremy.fitzhardinge@citrix.com>
 References: <cover.1234573847.git.jeremy.fitzhardinge@citrix.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch puts the hooks into place so that when the interrupt
-subsystem registers an irq, it gets routed via Xen (if we're running
-under Xen).
+A privileged PV Xen domain can get direct access to hardware.  In
+order for this to be useful, it must be able to get hardware
+interrupts.
 
-The first step is to get a gsi for a particular device+pin.  We use
-the normal acpi interrupt routing to do the mapping.
+Being a PV Xen domain, all interrupts are delivered as event channels.
+PIRQ event channels are bound to a pirq number and an interrupt
+vector.  When a IO APIC raises a hardware interrupt on that vector, it
+is delivered as an event channel, which we can deliver to the
+appropriate device driver(s).
 
-We reserve enough irq space to fit the hardware interrupt sources in,
-so we can allocate the irq == gsi, as we do in the native case;
-software events will get allocated irqs above that.
-
-Having allocated an irq, we ask Xen to allocate a vector, and then
-bind that pirq/vector to an event channel.  When the hardware raises
-an interrupt on a vector, Xen signals us on the corresponding event
-channel, which gets routed to the irq and delivered to the appropriate
-device driver.
-
-This patch does everything except set up the IO APIC pin routing to
-the vector.
+This patch simply implements the infrastructure for dealing with pirq
+event channels.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/xen/pci.h |   13 +++++++++++
- arch/x86/kernel/acpi/boot.c    |    8 ++++++-
- arch/x86/xen/Kconfig           |   11 +++++++++
- arch/x86/xen/Makefile          |    1 +
- arch/x86/xen/pci.c             |   47 ++++++++++++++++++++++++++++++++++++++++
- drivers/xen/events.c           |    6 ++++-
- include/xen/events.h           |    8 ++++++
- 7 files changed, 92 insertions(+), 2 deletions(-)
- create mode 100644 arch/x86/include/asm/xen/pci.h
- create mode 100644 arch/x86/xen/pci.c
+ drivers/xen/events.c |  245 +++++++++++++++++++++++++++++++++++++++++++++++++-
+ include/xen/events.h |   14 +++
+ 2 files changed, 256 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/include/asm/xen/pci.h b/arch/x86/include/asm/xen/pci.h
-new file mode 100644
-index 0000000..0563fc6
---- /dev/null
-+++ b/arch/x86/include/asm/xen/pci.h
-@@ -0,0 +1,13 @@
-+#ifndef _ASM_X86_XEN_PCI_H
-+#define _ASM_X86_XEN_PCI_H
+diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+index f46e880..81726e8 100644
+--- a/drivers/xen/events.c
++++ b/drivers/xen/events.c
+@@ -16,7 +16,7 @@
+  *    (typically dom0).
+  * 2. VIRQs, typically used for timers.  These are per-cpu events.
+  * 3. IPIs.
+- * 4. Hardware interrupts. Not supported at present.
++ * 4. PIRQs - Hardware interrupts.
+  *
+  * Jeremy Fitzhardinge <jeremy@xensource.com>, XenSource Inc, 2007
+  */
+@@ -40,6 +40,9 @@
+ #include <xen/interface/xen.h>
+ #include <xen/interface/event_channel.h>
+ 
++/* Leave low irqs free for identity mapping */
++#define LEGACY_IRQS	16
 +
-+#ifdef CONFIG_XEN_DOM0_PCI
-+int xen_register_gsi(u32 gsi, int triggering, int polarity);
-+#else
-+static inline int xen_register_gsi(u32 gsi, int triggering, int polarity)
+ /*
+  * This lock protects updates to the following mapping and reference-count
+  * arrays. The lock does not need to be acquired to read the mapping tables.
+@@ -83,10 +86,12 @@ struct irq_info
+ 		enum ipi_vector ipi;
+ 		struct {
+ 			unsigned short gsi;
+-			unsigned short vector;
++			unsigned char vector;
++			unsigned char flags;
+ 		} pirq;
+ 	} u;
+ };
++#define PIRQ_NEEDS_EOI	(1 << 0)
+ 
+ static struct irq_info irq_info[NR_IRQS];
+ 
+@@ -106,6 +111,7 @@ static inline unsigned long *cpu_evtchn_mask(int cpu)
+ #define VALID_EVTCHN(chn)	((chn) != 0)
+ 
+ static struct irq_chip xen_dynamic_chip;
++static struct irq_chip xen_pirq_chip;
+ 
+ /* Constructor for packed IRQ information. */
+ static struct irq_info mk_unbound_info(void)
+@@ -212,6 +218,15 @@ static unsigned int cpu_from_evtchn(unsigned int evtchn)
+ 	return ret;
+ }
+ 
++static bool pirq_needs_eoi(unsigned irq)
 +{
++	struct irq_info *info = info_for_irq(irq);
++
++	BUG_ON(info->type != IRQT_PIRQ);
++
++	return info->u.pirq.flags & PIRQ_NEEDS_EOI;
++}
++
+ static inline unsigned long active_evtchns(unsigned int cpu,
+ 					   struct shared_info *sh,
+ 					   unsigned int idx)
+@@ -328,7 +343,7 @@ static int find_unbound_irq(void)
+ 	int irq;
+ 	struct irq_desc *desc;
+ 
+-	for (irq = 0; irq < nr_irqs; irq++)
++	for (irq = LEGACY_IRQS; irq < nr_irqs; irq++)
+ 		if (irq_info[irq].type == IRQT_UNBOUND)
+ 			break;
+ 
+@@ -344,6 +359,210 @@ static int find_unbound_irq(void)
+ 	return irq;
+ }
+ 
++static bool identity_mapped_irq(unsigned irq)
++{
++	/* only identity map legacy irqs */
++	return irq < LEGACY_IRQS;
++}
++
++static void pirq_unmask_notify(int irq)
++{
++	struct physdev_eoi eoi = { .irq = irq };
++
++	if (unlikely(pirq_needs_eoi(irq))) {
++		int rc = HYPERVISOR_physdev_op(PHYSDEVOP_eoi, &eoi);
++		WARN_ON(rc);
++	}
++}
++
++static void pirq_query_unmask(int irq)
++{
++	struct physdev_irq_status_query irq_status;
++	struct irq_info *info = info_for_irq(irq);
++
++	BUG_ON(info->type != IRQT_PIRQ);
++
++	irq_status.irq = irq;
++	if (HYPERVISOR_physdev_op(PHYSDEVOP_irq_status_query, &irq_status))
++		irq_status.flags = 0;
++
++	info->u.pirq.flags &= ~PIRQ_NEEDS_EOI;
++	if (irq_status.flags & XENIRQSTAT_needs_eoi)
++		info->u.pirq.flags |= PIRQ_NEEDS_EOI;
++}
++
++static bool probing_irq(int irq)
++{
++	struct irq_desc *desc = irq_to_desc(irq);
++
++	return desc && desc->action == NULL;
++}
++
++static unsigned int startup_pirq(unsigned int irq)
++{
++	struct evtchn_bind_pirq bind_pirq;
++	struct irq_info *info = info_for_irq(irq);
++	int evtchn = evtchn_from_irq(irq);
++
++	BUG_ON(info->type != IRQT_PIRQ);
++
++	if (VALID_EVTCHN(evtchn))
++		goto out;
++
++	bind_pirq.pirq = irq;
++	/* NB. We are happy to share unless we are probing. */
++	bind_pirq.flags = probing_irq(irq) ? 0 : BIND_PIRQ__WILL_SHARE;
++	if (HYPERVISOR_event_channel_op(EVTCHNOP_bind_pirq, &bind_pirq) != 0) {
++		if (!probing_irq(irq))
++			printk(KERN_INFO "Failed to obtain physical IRQ %d\n",
++			       irq);
++		return 0;
++	}
++	evtchn = bind_pirq.port;
++
++	pirq_query_unmask(irq);
++
++	evtchn_to_irq[evtchn] = irq;
++	bind_evtchn_to_cpu(evtchn, 0);
++	info->evtchn = evtchn;
++
++ out:
++	unmask_evtchn(evtchn);
++	pirq_unmask_notify(irq);
++
++	return 0;
++}
++
++static void shutdown_pirq(unsigned int irq)
++{
++	struct evtchn_close close;
++	struct irq_info *info = info_for_irq(irq);
++	int evtchn = evtchn_from_irq(irq);
++
++	BUG_ON(info->type != IRQT_PIRQ);
++
++	if (!VALID_EVTCHN(evtchn))
++		return;
++
++	mask_evtchn(evtchn);
++
++	close.port = evtchn;
++	if (HYPERVISOR_event_channel_op(EVTCHNOP_close, &close) != 0)
++		BUG();
++
++	bind_evtchn_to_cpu(evtchn, 0);
++	evtchn_to_irq[evtchn] = -1;
++	info->evtchn = 0;
++}
++
++static void enable_pirq(unsigned int irq)
++{
++	startup_pirq(irq);
++}
++
++static void disable_pirq(unsigned int irq)
++{
++}
++
++static void ack_pirq(unsigned int irq)
++{
++	int evtchn = evtchn_from_irq(irq);
++
++	move_native_irq(irq);
++
++	if (VALID_EVTCHN(evtchn)) {
++		mask_evtchn(evtchn);
++		clear_evtchn(evtchn);
++	}
++}
++
++static void end_pirq(unsigned int irq)
++{
++	int evtchn = evtchn_from_irq(irq);
++	struct irq_desc *desc = irq_to_desc(irq);
++
++	if (WARN_ON(!desc))
++		return;
++
++	if ((desc->status & (IRQ_DISABLED|IRQ_PENDING)) ==
++	    (IRQ_DISABLED|IRQ_PENDING)) {
++		shutdown_pirq(irq);
++	} else if (VALID_EVTCHN(evtchn)) {
++		unmask_evtchn(evtchn);
++		pirq_unmask_notify(irq);
++	}
++}
++
++static int find_irq_by_gsi(unsigned gsi)
++{
++	int irq;
++
++	for(irq = 0; irq < NR_IRQS; irq++) {
++		struct irq_info *info = info_for_irq(irq);
++
++		if (info == NULL || info->type != IRQT_PIRQ)
++			continue;
++
++		if (gsi_from_irq(irq) == gsi)
++			return irq;
++	}
++
 +	return -1;
 +}
-+#endif
 +
-+#endif	/* _ASM_X86_XEN_PCI_H */
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 32bacfe..89afbbe 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -42,6 +42,8 @@
- #include <asm/mpspec.h>
- #include <asm/smp.h>
- 
-+#include <asm/xen/pci.h>
-+
- #include <asm/xen/hypervisor.h>
- 
- static int __initdata acpi_force = 0;
-@@ -483,9 +485,13 @@ int acpi_gsi_to_irq(u32 gsi, unsigned int *irq)
-  */
- int acpi_register_gsi(u32 gsi, int triggering, int polarity)
- {
--	unsigned int irq;
-+	int irq;
- 	unsigned int plat_gsi = gsi;
- 
-+	irq = xen_register_gsi(gsi, triggering, polarity);
-+	if (irq >= 0)
-+		return irq;
-+
- #ifdef CONFIG_PCI
- 	/*
- 	 * Make sure all (legacy) PCI IRQs are set as level-triggered.
-diff --git a/arch/x86/xen/Kconfig b/arch/x86/xen/Kconfig
-index 87b9ab1..ee429df 100644
---- a/arch/x86/xen/Kconfig
-+++ b/arch/x86/xen/Kconfig
-@@ -36,3 +36,14 @@ config XEN_DEBUG_FS
- 	help
- 	  Enable statistics output and various tuning options in debugfs.
- 	  Enabling this option may incur a significant performance overhead.
-+
-+config XEN_PCI_PASSTHROUGH
-+       bool #"Enable support for Xen PCI passthrough devices"
-+       depends on XEN && PCI
-+       help
-+         Enable support for passing PCI devices through to
-+	 unprivileged domains. (COMPLETELY UNTESTED)
-+
-+config XEN_DOM0_PCI
-+       def_bool y
-+       depends on XEN_DOM0 && PCI
-diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
-index 853d05e..a5fb286 100644
---- a/arch/x86/xen/Makefile
-+++ b/arch/x86/xen/Makefile
-@@ -12,3 +12,4 @@ obj-y		:= enlighten.o setup.o multicalls.o mmu.o irq.o \
- obj-$(CONFIG_SMP)		+= smp.o spinlock.o
- obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
- obj-$(CONFIG_XEN_DOM0)		+= apic.o
-+obj-$(CONFIG_XEN_DOM0_PCI)	+= pci.o
-\ No newline at end of file
-diff --git a/arch/x86/xen/pci.c b/arch/x86/xen/pci.c
-new file mode 100644
-index 0000000..f450007
---- /dev/null
-+++ b/arch/x86/xen/pci.c
-@@ -0,0 +1,47 @@
-+#include <linux/kernel.h>
-+#include <linux/acpi.h>
-+#include <linux/pci.h>
-+
-+#include <asm/pci_x86.h>
-+
-+#include <asm/xen/hypervisor.h>
-+
-+#include <xen/interface/xen.h>
-+#include <xen/events.h>
-+
-+#include "xen-ops.h"
-+
-+int xen_register_gsi(u32 gsi, int triggering, int polarity)
++/*
++ * Allocate a physical irq, along with a vector.  We don't assign an
++ * event channel until the irq actually started up.  Return an
++ * existing irq if we've already got one for the gsi.
++ */
++int xen_allocate_pirq(unsigned gsi)
 +{
 +	int irq;
++	struct physdev_irq irq_op;
 +
-+	if (!xen_domain())
-+		return -1;
++	spin_lock(&irq_mapping_update_lock);
 +
-+	printk(KERN_DEBUG "xen: registering gsi %u triggering %d polarity %d\n",
-+	       gsi, triggering, polarity);
++	irq = find_irq_by_gsi(gsi);
++	if (irq != -1) {
++		printk(KERN_INFO "xen_allocate_pirq: returning irq %d for gsi %u\n",
++		       irq, gsi);
++		goto out;	/* XXX need refcount? */
++	}
 +
-+	irq = xen_allocate_pirq(gsi);
++	if (identity_mapped_irq(gsi)) {
++		irq = gsi;
++		dynamic_irq_init(irq);
++	} else
++		irq = find_unbound_irq();
 +
-+	printk(KERN_DEBUG "xen: --> irq=%d\n", irq);
++	set_irq_chip_and_handler_name(irq, &xen_pirq_chip,
++				      handle_level_irq, "pirq");
++
++	irq_op.irq = irq;
++	if (HYPERVISOR_physdev_op(PHYSDEVOP_alloc_irq_vector, &irq_op)) {
++		dynamic_irq_cleanup(irq);
++		irq = -ENOSPC;
++		goto out;
++	}
++
++	irq_info[irq] = mk_pirq_info(0, gsi, irq_op.vector);
++
++out:
++	spin_unlock(&irq_mapping_update_lock);
 +
 +	return irq;
 +}
 +
-+void __init xen_setup_pirqs(void)
++int xen_vector_from_irq(unsigned irq)
 +{
-+#ifdef CONFIG_ACPI
-+	int irq;
-+
-+	/*
-+	 * Set up acpi interrupt in acpi_gbl_FADT.sci_interrupt.
-+	 */
-+	irq = xen_allocate_pirq(acpi_gbl_FADT.sci_interrupt);
-+
-+	printk(KERN_INFO "xen: allocated irq %d for acpi %d\n",
-+	       irq, acpi_gbl_FADT.sci_interrupt);
-+
-+	/* Blerk. */
-+	acpi_gbl_FADT.sci_interrupt = irq;
-+#endif
++	return vector_from_irq(irq);
 +}
-diff --git a/drivers/xen/events.c b/drivers/xen/events.c
-index 3477998..3cf0a1b 100644
---- a/drivers/xen/events.c
-+++ b/drivers/xen/events.c
-@@ -413,6 +413,7 @@ static unsigned int startup_pirq(unsigned int irq)
- 	struct evtchn_bind_pirq bind_pirq;
- 	struct irq_info *info = info_for_irq(irq);
- 	int evtchn = evtchn_from_irq(irq);
-+	int rc;
- 
- 	BUG_ON(info->type != IRQT_PIRQ);
- 
-@@ -422,7 +423,8 @@ static unsigned int startup_pirq(unsigned int irq)
- 	bind_pirq.pirq = irq;
- 	/* NB. We are happy to share unless we are probing. */
- 	bind_pirq.flags = probing_irq(irq) ? 0 : BIND_PIRQ__WILL_SHARE;
--	if (HYPERVISOR_event_channel_op(EVTCHNOP_bind_pirq, &bind_pirq) != 0) {
-+	rc = HYPERVISOR_event_channel_op(EVTCHNOP_bind_pirq, &bind_pirq);
-+	if (rc != 0) {
- 		if (!probing_irq(irq))
- 			printk(KERN_INFO "Failed to obtain physical IRQ %d\n",
- 			       irq);
-@@ -1181,4 +1183,6 @@ void __init xen_init_IRQ(void)
- 		mask_evtchn(i);
- 
- 	irq_ctx_init(smp_processor_id());
 +
-+	xen_setup_pirqs();
- }
++int xen_gsi_from_irq(unsigned irq)
++{
++	return gsi_from_irq(irq);
++}
++
+ int bind_evtchn_to_irq(unsigned int evtchn)
+ {
+ 	int irq;
+@@ -916,6 +1135,26 @@ static struct irq_chip xen_dynamic_chip __read_mostly = {
+ 	.retrigger	= retrigger_dynirq,
+ };
+ 
++static struct irq_chip xen_pirq_chip __read_mostly = {
++	.name		= "xen-pirq",
++
++	.startup	= startup_pirq,
++	.shutdown	= shutdown_pirq,
++
++	.enable		= enable_pirq,
++	.unmask		= enable_pirq,
++
++	.disable	= disable_pirq,
++	.mask		= disable_pirq,
++
++	.ack		= ack_pirq,
++	.end		= end_pirq,
++
++	.set_affinity	= set_affinity_irq,
++
++	.retrigger	= retrigger_dynirq,
++};
++
+ void __init xen_init_IRQ(void)
+ {
+ 	int i;
 diff --git a/include/xen/events.h b/include/xen/events.h
-index e5b541d..6fe4863 100644
+index 0397ba1..e5b541d 100644
 --- a/include/xen/events.h
 +++ b/include/xen/events.h
-@@ -69,4 +69,12 @@ int xen_vector_from_irq(unsigned pirq);
- /* Return gsi allocated to pirq */
- int xen_gsi_from_irq(unsigned pirq);
+@@ -55,4 +55,18 @@ bool xen_test_irq_pending(int irq);
+    irq will be disabled so it won't deliver an interrupt. */
+ void xen_poll_irq(int irq);
  
-+#ifdef CONFIG_XEN_DOM0_PCI
-+void xen_setup_pirqs(void);
-+#else
-+static inline void xen_setup_pirqs(void)
-+{
-+}
-+#endif
++/* Determine the IRQ which is bound to an event channel */
++unsigned irq_from_evtchn(unsigned int evtchn);
++
++/* Allocate an irq for a physical interrupt, given a gsi.  "Legacy"
++   GSIs are identity mapped; others are dynamically allocated as
++   usual. */
++int xen_allocate_pirq(unsigned gsi);
++
++/* Return vector allocated to pirq */
++int xen_vector_from_irq(unsigned pirq);
++
++/* Return gsi allocated to pirq */
++int xen_gsi_from_irq(unsigned pirq);
 +
  #endif	/* _XEN_EVENTS_H */
 -- 
