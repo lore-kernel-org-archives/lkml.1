@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753115AbZBNRhT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753116AbZBNRke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753115AbZBNRhT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 12:37:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbZBNRhF
+	id S1753116AbZBNRke (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 12:40:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbZBNRk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 12:37:05 -0500
-Received: from mail-gx0-f222.google.com ([209.85.217.222]:62795 "EHLO
-	mail-gx0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751339AbZBNRhE (ORCPT
+	Sat, 14 Feb 2009 12:40:26 -0500
+Received: from rv-out-0506.google.com ([209.85.198.229]:51733 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751410AbZBNRkZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 12:37:04 -0500
+	Sat, 14 Feb 2009 12:40:25 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=HWcfipIsQ2wkX1+KXD+p96IDVTTJUymDXcx5UWs9CmMfh48Mon6HfsGiQ3cIPuN5aS
-         Ooui3MlKjrxd0NgAVSJJKUaFfg3t5cGeHOaCNlBT/3MW5rO/wlfqNt2ZSiwxdVmT9vAO
-         Sw08U3KVR0oqyYPoWLrGavZCQYNdFk4gDkqd0=
+        b=jhcH0nDfT9qGlHFQbkfWFZr/aY2Idrioyi6zA6O9Q3m7Pocdaj7/RLBUX0cVCRZ+ii
+         g1TkOPPpp0NDQnFlalEhCV9+YvsWbhqGpus1v+f5zMPKeFaavcdofehdeg8e+7jAstib
+         1YEfgy/rQIAjz8Bo8XrganzRHRCMPSmf/n/3w=
 MIME-Version: 1.0
-In-Reply-To: <20090214150622.GF7194@linux.vnet.ibm.com>
-References: <20090213155507.GA2838@Krystal> <20090213173352.GB4684@Krystal>
-	 <alpine.LFD.2.00.0902130945350.3179@localhost.localdomain>
-	 <alpine.LFD.2.00.0902130956400.3179@localhost.localdomain>
-	 <20090213185411.GB7124@Krystal>
-	 <20090213193619.GH6854@linux.vnet.ibm.com>
-	 <8bd0f97a0902132107r3651ce4rc5bc4e027268e2aa@mail.gmail.com>
-	 <20090214052030.GB7194@linux.vnet.ibm.com>
-	 <8bd0f97a0902132146t2badab79ue76e0a43d74c95ca@mail.gmail.com>
-	 <20090214150622.GF7194@linux.vnet.ibm.com>
-Date: Sat, 14 Feb 2009 12:37:01 -0500
-Message-ID: <8bd0f97a0902140937v22917306m44e062d5b0dfacf6@mail.gmail.com>
-Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux (repost)
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Bryan Wu <cooloney@kernel.org>,
-       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
-       uclinux-dist-devel@blackfin.uclinux.org
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <6bd94bae0902130829r15e6eacag25220487457027ad@mail.gmail.com>
+References: <6bd94bae0902130829r15e6eacag25220487457027ad@mail.gmail.com>
+Date: Sat, 14 Feb 2009 09:40:23 -0800
+Message-ID: <2c0942db0902140940v4b16c517mcbcd4874466e5158@mail.gmail.com>
+Subject: Re: contact problem? (was Re: Spurious Filesystem corruption with 
+	ext3 + large (<400GB) hw RAID ...)
+From: Ray Lee <madrabbit@gmail.com>
+To: Manfred Wassmann <tux.wassmann@googlemail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 14, 2009 at 10:06, Paul E. McKenney wrote:
-> Other potential issues include unrelated processes that share memory via
-> shmget() or mmap() -- presumably groups of such processes would need to
-> be bound to a single CPU?
+On Fri, Feb 13, 2009 at 8:29 AM, Manfred Wassmann
+<tux.wassmann@googlemail.com> wrote:
+> On Fri, Feb 6, 2009 at 7:50 PM, Ray Lee <ray-lk@madrabbit.org> wrote:
+>
+>> Huh. It may be related to whatever kernel version Ubuntu uses to boot
+>> up the install media. Try a different version of Ubuntu (older, newer
+>> if a newer one exists) to see if it has the same problem.
+>
+> Thank you for your notice but as I mentioned the problem occurred
+> first with my custom built kernel and the Ubuntu installation disk was
+> used only to reproduce the error -- Ubuntu is not what I use anyhow,
+> I'm on Debian since I switched from Slackware in 1995 ;-)
+>
+> But now it looks like we had an exotic hardware problem here. Just
+> before the weekend the RAID controller reported a degraded array and
+> switched to the hotspare disk. On Monday the original array was
+> recreated and everything worked fine until Tuesday morning when the
+> array again was degraded. But then since the disk was checked and
+> reinserted into the array all problems are gone :-\
+>
+> Is it possible that such a problem is caused by bad contact within the
+> drive bay connector?
+>
+> The reason why it occurred with ext3 only might then be that ext3
+> stores it's backup superblocks at addresses which are otherwise unused
+> by a largely empty filesystem.
 
-using PROT_WRITE with MAP_SHARED is a mess with no-mmu already ... in
-other words, it isnt in use in practice as most of the time, the
-kernel wont even grant it
+(Ah, I missed this message first time around. Please always do a
+reply-to-all for lkml.)
 
-i dont believe we've looked at shm/ipc ... i'll open a tracker item on
-our side to review it
--mike
+Bad contacts, sure, or (more likely) a marginal power supply? Can you
+try a different enclosure, or a different power supply for the
+enclosure?
