@@ -1,72 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759629AbZBNXcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758290AbZBNXd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759629AbZBNXcp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 18:32:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759519AbZBNXbv
+	id S1758290AbZBNXd2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 18:33:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbZBNXdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 18:31:51 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49470 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761545AbZBNXbt (ORCPT
+	Sat, 14 Feb 2009 18:33:17 -0500
+Received: from fias.uni-frankfurt.de ([141.2.248.1]:54432 "EHLO
+	fias.uni-frankfurt.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754398AbZBNXdQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 18:31:49 -0500
-Date: Sat, 14 Feb 2009 15:31:24 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>, orenl@cs.columbia.edu,
-       linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk, hpa@zytor.com,
-       tglx@linutronix.de
-Subject: Re: [RFC v13][PATCH 00/14] Kernel based checkpoint/restart
-Message-Id: <20090214153124.73132bf9.akpm@linux-foundation.org>
-In-Reply-To: <20090214230802.GE20477@elte.hu>
-References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu>
-	<1234285547.30155.6.camel@nimitz>
-	<20090211141434.dfa1d079.akpm@linux-foundation.org>
-	<1234462282.30155.171.camel@nimitz>
-	<20090213152836.0fbbfa7d.akpm@linux-foundation.org>
-	<20090214230802.GE20477@elte.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 14 Feb 2009 18:33:16 -0500
+X-Greylist: delayed 2447 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Feb 2009 18:33:15 EST
+From: Jan Scholz <scholz@fias.uni-frankfurt.de>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Jiri Kosina <jkosina@suse.cz>,
+       Jan Scholz <Scholz@fias.uni-frankfurt.de>,
+       Torsten Rausche <torsten@rausche.net>,
+       Paul Collins <paul@burly.ondioline.org>
+Subject: Re: [patch 41/47] bluetooth hid: enable quirk handling for Apple Wireless Keyboards in 2.6.27
+References: <20090214005130.617401075@mini.kroah.org>
+	<20090214005924.GP11282@kroah.com>
+Date: Sat, 14 Feb 2009 23:50:39 +0100
+In-Reply-To: <20090214005924.GP11282@kroah.com> (Greg KH's message of "Fri, 13
+	Feb 2009 16:59:24 -0800")
+Message-ID: <873aegws3k.fsf@scholz.fias.uni-frankfurt.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.90 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 15 Feb 2009 00:08:02 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+Greg KH <gregkh@suse.de> writes:
 
-> 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > Similar to the way in which perfectly correct and normal kernel
-> > sometimes has to be changed because it unexpectedly upsets the -rt
-> > patch.
-> 
-> Actually, regarding -rt, we try to keep that in two buckets:
-> 
->  1) Normal kernel code works but is unclean or structured less
->     than ideal. In this case we restructure the mainline code,
->     but that change stands on its own four legs, without any
->     -rt considerations.
-> 
->  2) Normal kernel code that is clean - i.e. a change that only
->     matters to -rt. In this case we dont touch the mainline code,
->     nor do we bother mainline.
-> 
-> Do you know any specific example that falls outside of those categories?
-> 
+> 2.6.27-stable review patch.  If anyone has any objections, please let us know.
+>
+> ------------------
+>
+> From: Torsten Rausche <torsten@rausche.net>
+>
+> This patch is basically a backport of
+> commit ee8a1a0a1a5817accd03ced7e7ffde3a4430f485 upstream
+> which was made after the big HID overhaul in 2.6.28.
+>
+> Kernel 2.6.27 fails to handle quirks for the aluminum Apple Wireless
+> Keyboard because it is handled as USB device and not as Bluetooth
+> device. This patch expands 'hidp_blacklist' to make the kernel handle
+> the keyboard in the same way as the Apple wireless Mighty Mouse (also a
+> Bluetooth device).
+>
+> Signed-off-by: Torsten Rausche <torsten@rausche.net>
+> Cc: Jan Scholz <Scholz@fias.uni-frankfurt.de>
+> Cc: Jiri Kosina <jkosina@suse.cz>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+>
+> ---
+> ---
+>  net/bluetooth/hidp/core.c |    4 ++++
+>  1 file changed, 4 insertions(+)
+>
+> --- a/net/bluetooth/hidp/core.c
+> +++ b/net/bluetooth/hidp/core.c
+> @@ -684,6 +684,10 @@ static const struct {
+>  } hidp_blacklist[] = {
+>  	/* Apple wireless Mighty Mouse */
+>  	{ 0x05ac, 0x030c, HID_QUIRK_MIGHTYMOUSE | HID_QUIRK_INVERT_HWHEEL },
+> +	/* Apple Wireless Keyboard */
+> +	{ 0x05ac, 0x022c, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
+> +	{ 0x05ac, 0x022d, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN | HID_QUIRK_APPLE_ISO_KEYBOARD },
+> +	{ 0x05ac, 0x022e, HID_QUIRK_APPLE_NUMLOCK_EMULATION | HID_QUIRK_APPLE_HAS_FN },
+>  
+>  	{ }	/* Terminating entry */
+>  };
+>
+>
 
-It happens fairly regularly.  Problems with irqs-off regions, problems
-with preempt_disable() regions (came up just yesterday with a patch from
-Jeremy).
+A very similar fix has been proposed by Paul Collins (see
+http://lkml.org/lkml/2008/6/14/26 ) a while ago.
 
-Plus some convert-to-sleeping-lock conversions over the years which
-weren't obviously needed in mainline.  Or which at least had -rt
-motivations.  But that's different.
+Here on my ppc32 G4 it works only if I apply the following as well.
+I can't test it on x86, though.
 
+Jan Scholz
 
+--
+    removed 2 calls to le16_to_cpu from the bluetooth hid quirks
+    
+    seems we're doing some endianness conversion one time to much
 
-
+diff --git a/net/bluetooth/hidp/core.c b/net/bluetooth/hidp/core.c
+index 28dc035..6b95a6d 100644
+--- a/net/bluetooth/hidp/core.c
++++ b/net/bluetooth/hidp/core.c
+@@ -699,8 +699,8 @@ static void hidp_setup_quirks(struct hid_device *hid)
+        unsigned int n;
+ 
+        for (n = 0; hidp_blacklist[n].idVendor; n++)
+-               if (hidp_blacklist[n].idVendor == le16_to_cpu(hid->vendor) &&
+-                               hidp_blacklist[n].idProduct == le16_to_cpu(hid->product))
++               if (hidp_blacklist[n].idVendor == hid->vendor &&
++                               hidp_blacklist[n].idProduct == hid->product)
+                        hid->quirks = hidp_blacklist[n].quirks;
+ }
 
