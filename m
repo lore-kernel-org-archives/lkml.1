@@ -1,127 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932188AbZBNBXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932485AbZBNB1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932188AbZBNBXO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:23:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762937AbZBNBIu
+	id S932485AbZBNB1i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:27:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763337AbZBNBP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:08:50 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40920 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762924AbZBNBIo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:08:44 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>
-Subject: [PATCH 9/9] PM: Fix suspend_console and resume_console to use only one semaphore
-Date: Sat, 14 Feb 2009 02:07:24 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Andrey Borzenkov <arvidjaar@mail.ru>
-References: <200902140157.40869.rjw@sisk.pl>
-In-Reply-To: <200902140157.40869.rjw@sisk.pl>
+	Fri, 13 Feb 2009 20:15:59 -0500
+Received: from kroah.org ([198.145.64.141]:50096 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1764088AbZBNBP6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:15:58 -0500
+Date: Fri, 13 Feb 2009 17:12:08 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/48] 2.6.28.6-stable review
+Message-ID: <20090214011208.GA17706@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902140207.25476.rjw@sisk.pl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arve Hjønnevåg <arve@android.com>
+This is the start of the stable review cycle for the 2.6.28.6 release.
+There are 48 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-This fixes a race where a thread acquires the console while the
-console is suspended, and the console is resumed before this
-thread releases it. In this case, the secondary console
-semaphore would be left locked, and the primary semaphore would
-be released twice. This in turn would cause the console switch
-on suspend or resume to hang forever.
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-Note that suspend_console does not actually lock the console
-for clients that use acquire_console_sem, it only locks it for
-clients that use try_acquire_console_sem. If we change
-suspend_console to fully lock the console, then the kernel
-may deadlock on suspend. One client of try_acquire_console_sem
-is acquire_console_semaphore_for_printk, which uses it to
-prevent printk from using the console while it is suspended.
+Responses should be made by Tuesday Feb 17, 00:00:00@ UTC.
+Anything received after that time might be too late.
 
-Signed-off-by: Arve Hjønnevåg <arve@android.com>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
+The whole patch series can be found in one patch at:
+        kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.28.6-rc1.gz
+and the diffstat can be found below.
 
- kernel/printk.c |   15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
 
-Index: linux-2.6/kernel/printk.c
-===================================================================
---- linux-2.6.orig/kernel/printk.c
-+++ linux-2.6/kernel/printk.c
-@@ -73,7 +73,6 @@ EXPORT_SYMBOL(oops_in_progress);
-  * driver system.
-  */
- static DECLARE_MUTEX(console_sem);
--static DECLARE_MUTEX(secondary_console_sem);
- struct console *console_drivers;
- EXPORT_SYMBOL_GPL(console_drivers);
- 
-@@ -891,12 +890,14 @@ void suspend_console(void)
- 	printk("Suspending console(s) (use no_console_suspend to debug)\n");
- 	acquire_console_sem();
- 	console_suspended = 1;
-+	up(&console_sem);
- }
- 
- void resume_console(void)
- {
- 	if (!console_suspend_enabled)
- 		return;
-+	down(&console_sem);
- 	console_suspended = 0;
- 	release_console_sem();
- }
-@@ -912,11 +913,9 @@ void resume_console(void)
- void acquire_console_sem(void)
- {
- 	BUG_ON(in_interrupt());
--	if (console_suspended) {
--		down(&secondary_console_sem);
--		return;
--	}
- 	down(&console_sem);
-+	if (console_suspended)
-+		return;
- 	console_locked = 1;
- 	console_may_schedule = 1;
- }
-@@ -926,6 +925,10 @@ int try_acquire_console_sem(void)
- {
- 	if (down_trylock(&console_sem))
- 		return -1;
-+	if (console_suspended) {
-+		up(&console_sem);
-+		return -1;
-+	}
- 	console_locked = 1;
- 	console_may_schedule = 0;
- 	return 0;
-@@ -979,7 +982,7 @@ void release_console_sem(void)
- 	unsigned wake_klogd = 0;
- 
- 	if (console_suspended) {
--		up(&secondary_console_sem);
-+		up(&console_sem);
- 		return;
- 	}
- 
+thanks,
+
+greg k-h
+
+ Makefile                                       |    2 +-
+ arch/powerpc/mm/fsl_booke_mmu.c                |    4 +-
+ arch/powerpc/mm/pgtable_32.c                   |    4 +-
+ arch/sparc64/Kconfig                           |    1 +
+ arch/sparc64/kernel/sys_sparc.c                |   48 ++++++++---------
+ arch/sparc64/kernel/syscalls.S                 |    2 +-
+ arch/sparc64/kernel/systbls.S                  |   16 +++---
+ arch/sparc64/kernel/systbls.h                  |    3 -
+ arch/x86/kernel/microcode_amd.c                |   23 ++------
+ arch/x86/kernel/vmi_32.c                       |   11 ++++
+ drivers/ata/libata-eh.c                        |    5 +-
+ drivers/block/nbd.c                            |    9 +++
+ drivers/hid/hid-microsoft.c                    |   13 ++---
+ drivers/ide/ide-cd.c                           |    3 +
+ drivers/ide/ide-io.c                           |    9 ++-
+ drivers/net/skfp/skfddi.c                      |    4 +-
+ drivers/net/sky2.c                             |    6 +-
+ drivers/net/sungem.c                           |    8 ++--
+ drivers/net/tun.c                              |   10 +++-
+ drivers/net/virtio_net.c                       |    3 +-
+ drivers/net/wireless/zd1211rw/zd_rf.c          |    1 +
+ drivers/net/wireless/zd1211rw/zd_usb.c         |    1 +
+ drivers/parport/parport_serial.c               |    5 ++
+ drivers/w1/slaves/w1_therm.c                   |    2 +-
+ fs/compat_ioctl.c                              |    7 +++
+ fs/lockd/svclock.c                             |    6 ++-
+ include/linux/Kbuild                           |    2 +-
+ include/linux/ata.h                            |   15 ++++--
+ include/linux/if_tunnel.h                      |    3 +
+ include/linux/syscalls.h                       |   28 +++++-----
+ include/net/sctp/checksum.h                    |    2 +-
+ mm/mmap.c                                      |    7 ++-
+ mm/page-writeback.c                            |   20 ++++++--
+ net/core/skbuff.c                              |   15 +++---
+ net/core/sock.c                                |    2 +
+ net/ipv4/ipconfig.c                            |    6 +-
+ net/ipv4/tcp.c                                 |   12 ++++-
+ net/ipv4/udp.c                                 |    7 ++-
+ net/ipv6/ip6_flowlabel.c                       |    8 ++-
+ net/ipv6/ip6_output.c                          |   67 ++++++++++++++++++-----
+ net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c |    4 +-
+ net/mac80211/tx.c                              |    2 +
+ net/netfilter/xt_sctp.c                        |    2 +-
+ net/packet/af_packet.c                         |   17 ++++--
+ net/sctp/output.c                              |    7 ++-
+ net/sctp/outqueue.c                            |    3 +-
+ scripts/kernel-doc                             |   40 ++++++++++++++-
+ sound/drivers/mtpav.c                          |    3 +-
+ sound/pci/hda/patch_analog.c                   |    4 +-
+ 49 files changed, 320 insertions(+), 162 deletions(-)
