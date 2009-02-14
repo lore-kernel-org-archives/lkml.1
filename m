@@ -1,124 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756000AbZBNFUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753233AbZBNFcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756000AbZBNFUm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 00:20:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbZBNFUe
+	id S1753233AbZBNFcg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 00:32:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750727AbZBNFc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 00:20:34 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:58166 "EHLO e1.ny.us.ibm.com"
+	Sat, 14 Feb 2009 00:32:27 -0500
+Received: from gw.goop.org ([64.81.55.164]:35723 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751152AbZBNFUd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 00:20:33 -0500
-Date: Fri, 13 Feb 2009 21:20:30 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Bryan Wu <cooloney@kernel.org>,
-       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
-       uclinux-dist-devel@blackfin.uclinux.org
-Subject: Re: [ltt-dev] [RFC git tree] Userspace RCU (urcu) for Linux
-	(repost)
-Message-ID: <20090214052030.GB7194@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090213145653.GA6854@linux.vnet.ibm.com> <20090213151045.GA1574@Krystal> <20090213155507.GA2838@Krystal> <alpine.LFD.2.00.0902130808050.3099@localhost.localdomain> <20090213173352.GB4684@Krystal> <alpine.LFD.2.00.0902130945350.3179@localhost.localdomain> <alpine.LFD.2.00.0902130956400.3179@localhost.localdomain> <20090213185411.GB7124@Krystal> <20090213193619.GH6854@linux.vnet.ibm.com> <8bd0f97a0902132107r3651ce4rc5bc4e027268e2aa@mail.gmail.com>
+	id S1750714AbZBNFc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 00:32:26 -0500
+Message-ID: <49965768.7040102@goop.org>
+Date: Fri, 13 Feb 2009 21:32:24 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8bd0f97a0902132107r3651ce4rc5bc4e027268e2aa@mail.gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ian Campbell <Ian.Campbell@citrix.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 2/9] xen: hook io_apic read/write operations
+References: <cover.1234573847.git.jeremy.fitzhardinge@citrix.com> <cover.1234573847.git.jeremy.fitzhardinge@citrix.com> <3c7db30686056c9b86cc61ef50dd5572de868512.1234573847.git.jeremy.fitzhardinge@citrix.com> <3e46dae897fd5620f50b4cca9272969f5546aa88.1234573847.git.jeremy.fitzhardinge@citrix.com> <4996280B.6000104@kernel.org>
+In-Reply-To: <4996280B.6000104@kernel.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 14, 2009 at 12:07:46AM -0500, Mike Frysinger wrote:
-> On Fri, Feb 13, 2009 at 14:36, Paul E. McKenney wrote:
-> > On Fri, Feb 13, 2009 at 01:54:11PM -0500, Mathieu Desnoyers wrote:
-> >> * Linus Torvalds (torvalds@linux-foundation.org) wrote:
-> >> > Btw, for user space, if you want to do this all right for something like
-> >> > BF. I think the only _correct_ thing to do (in the sense that the end
-> >> > result will actually be debuggable) is to essentially give full SMP
-> >> > coherency in user space.
-> >> >
-> >> > It's doable, but rather complicated, and I'm not 100% sure it really ends
-> >> > up making sense. The way to do it is to just simply say:
-> >> >
-> >> >  - never map the same page writably on two different cores, and always
-> >> >    flush the cache (on the receiving side) when you switch a page from one
-> >> >    core to another.
-> >> >
-> >> > Now, the kernel can't really do that reasonably, but user space possibly could.
-> >> >
-> >> > Now, I realize that blackfin doesn't actually even have a MMU or a TLB, so
-> >> > by "mapping the same page" in that case we end up really meaning "having a
-> >> > shared mapping or thread". I think that _should_ be doable. The most
-> >> > trivial approach might be to simply limit all processes with shared
-> >> > mappings or CLONE_VM to core 0, and letting core 1 run everything else
-> >> > (but you could do it differently: mapping something with MAP_SHARED would
-> >> > force you to core 0, but threads would just force the thread group to
-> >> > stay on _one_ core, rather than necessarily a fixed one).
-> >> >
-> >> > Yeah, because of the lack of real memory protection, the kernel can't
-> >> > _know_ that processes don't behave badly and access things that they
-> >> > didn't explicitly map, but I'm hoping that that is rare.
-> >> >
-> >> > And yes, if you really want to use threads as a way to do something
-> >> > across cores, you'd be screwed - the kenrel would only schedule the
-> >> > threads on one CPU. But considering the undefined nature of threading on
-> >> > such a cpu, wouldn't that still be preferable? Wouldn't it be nice to have
-> >> > the knowledge that user space _looks_ cache-coherent by virtue of the
-> >> > kernel just limiting cores appropriately?
-> >> >
-> >> > And then user space would simply not need to worry as much. Code written
-> >> > for another architecture will "just work" on BF SMP too. With the normal
-> >> > uclinux limitations, of course.
-> >>
-> >> I don't know enough about BF to tell for sure, but the other way around
-> >> I see that would still permit running threads with shared memory space
-> >> on different CPUs is to call a cache flush each time a userspace lock is
-> >> taken/released (at the synchronization points where the "magic
-> >> test-and-set instruction" is used) _from_ userspace.
-> >>
-> >> If some more elaborate userspace MT code uses something else than those
-> >> basic locks provided by core libraries to synchronize data exchange,
-> >> then it would be on its own and have to ensure cache flushing itself.
-> >
-> > How about just doing a sched_setaffinity() in the BF case?  Sounds
-> > like an easy way to implement Linus's suggestion of restricting the
-> > multithreaded processes to a single core.  I have a hard time losing
-> > sleep over the lack of parallelism in the case where the SMP support is
-> > at best rudimentary...
-> 
-> the quick way is to tell people to run their program through `taskset`
-> (which is what we're doing now).
+Yinghai Lu wrote:
+> Jeremy Fitzhardinge wrote:
+>   
+>> In Xen, writes to the IO APIC are paravirtualized via hypercalls, so
+>> implement the appropriate operations.
+>>
+>> This version of the patch just hooks the io_apic read/write functions
+>> directly, rather than introducing another layer of indirection.  The
+>> xen_initial_domain() tests compile to 0 if CONFIG_XEN_DOM0 isn't set,
+>> and are cheap if it is.
+>>
+>> (An alternative would be to add io_apic_ops, and point them to the Xen
+>> implementation as needed.  HPA deemed this extra level of indirection to
+>> be excessive.)
+>>     
+>
+> that will be more clean.
+>   
 
-Not sure what environment Mathieu is looking to run his program from,
-but he would need to run it on multiple architectures.
+That was my thought too.
 
-> the next step up (or down depending on how you look at it) would be to
-> hook the clone function to do this automatically.  i havent gotten
-> around to testing this yet which is why there isnt anything in there
-> yet though.
-> 
-> asmlinkage int bfin_clone(struct pt_regs....
->        unsigned long clone_flags;
->        unsigned long newsp;
-> 
-> +#ifdef CONFIG_SMP
-> +       if (current->rt.nr_cpus_allowed == NR_CPUS) {
-> +               current->cpus_allowed = cpumask_of_cpu(smp_processor_id());
-> +               current->rt.nr_cpus_allowed = 1;
-> +       }
-> +#endif
-> +
->        /* syscall2 puts clone_flags in r0 and usp in r1 */
->        clone_flags = regs->r0;
->        newsp = regs->r1;
 
-Wouldn't you also have to make sched_setaffinity() cut back to only one
-CPU if more are specified?  If Blackfin handles hotplug CPU, that may
-need attention as well, since tasks affinitied to the CPU being removed
-can end up with their affinity set to all CPUs.  And there are probably
-other issues.
+>> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+>> ---
+>>  arch/x86/include/asm/io_apic.h |    6 ++++
+>>  arch/x86/kernel/io_apic.c      |   32 ++++++++++++++++++++--
+>>  arch/x86/xen/Makefile          |    3 +-
+>>  arch/x86/xen/apic.c            |   57 ++++++++++++++++++++++++++++++++++++++++
+>>  arch/x86/xen/enlighten.c       |    2 +
+>>  arch/x86/xen/xen-ops.h         |    6 ++++
+>>  6 files changed, 102 insertions(+), 4 deletions(-)
+>>  create mode 100644 arch/x86/xen/apic.c
+>>
+>> diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
+>> index 59cb4a1..20b543a 100644
+>> --- a/arch/x86/include/asm/io_apic.h
+>> +++ b/arch/x86/include/asm/io_apic.h
+>> @@ -183,4 +183,10 @@ static inline void ioapic_init_mappings(void)	{ }
+>>  static inline void probe_nr_irqs_gsi(void)	{ }
+>>  #endif
+>>  
+>> +void xen_io_apic_init(void);
+>> +unsigned int xen_io_apic_read(unsigned apic, unsigned reg);
+>> +void xen_io_apic_write(unsigned int apic,
+>> +		       unsigned int reg, unsigned int value);
+>> +
+>> +
+>>  #endif /* _ASM_X86_IO_APIC_H */
+>> diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
+>> index 7248ca1..de0368a 100644
+>> --- a/arch/x86/kernel/io_apic.c
+>> +++ b/arch/x86/kernel/io_apic.c
+>> @@ -62,6 +62,8 @@
+>>  #include <asm/uv/uv_hub.h>
+>>  #include <asm/uv/uv_irq.h>
+>>  
+>> +#include <asm/xen/hypervisor.h>
+>> +
+>>  #include <asm/genapic.h>
+>>  
+>>  #define __apicdebuginit(type) static type __init
+>> @@ -399,14 +401,26 @@ static __attribute_const__ struct io_apic __iomem *io_apic_base(int idx)
+>>  
+>>  static inline unsigned int io_apic_read(unsigned int apic, unsigned int reg)
+>>  {
+>> -	struct io_apic __iomem *io_apic = io_apic_base(apic);
+>> +	struct io_apic __iomem *io_apic;
+>> +
+>> +	if (xen_initial_domain())
+>> +		return xen_io_apic_read(apic, reg);
+>>     
+>
+> you may have _xen_io_apic_read(apic, reg);
+> and xen_io_apic_read(apic, reg) will call xen_initial_domain internally.
+>   
 
-							Thanx, Paul
+How would that work?  What would it return in the xen/non-xen states to 
+indicate that the normal read operation should be performed?  I don't 
+think it would be any clearer.
+
+> or sth like
+> extra if (io_apic_ops)
+> 	io_apic->read()...
+>   
+
+I think if there were an _ops structure, it should just go though it 
+unconditionally.
+
+    J
+
