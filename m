@@ -1,57 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756569AbZBNXfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754408AbZBNXva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756569AbZBNXfi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 18:35:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497AbZBNXf2
+	id S1754408AbZBNXva (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 18:51:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbZBNXvV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 18:35:28 -0500
-Received: from web53303.mail.re2.yahoo.com ([206.190.49.93]:35025 "HELO
-	web53303.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752510AbZBNXf1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 18:35:27 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
-  b=XSvxic5mh0QNqU+KaNRZW6XFYhXDdXYKC8slaDewKetuQAxU3Gc9Echk2YHEYlnG6vXuRKuZAgm/RqdwHfvZGEqA8FSv3CdZustqxNFOj9nQjZKcI96GCMYuIVkoi2iGc//C3ih+/Hn/un0jTyRXyPZw8fhsQ9MMT7LRUlI2Tu8=;
-X-YMail-OSG: lytyOgUVM1mKtn0.cCc9KHub1_Yfadz2ilJjJzmjHuCl1cxll20GmNyvIsuJGm.5nSiNPJqbLBXSFMYMYDVb2gn9R4mxcGE9NNsPFQGya5TitLsVbLSEt_ftWmUAn01ficJrRwbBtkMAN01X6qsBWE6.46NRLRjFuYxUxoOvv2E4_RwqmeZWoYx9N.PdH2wNnZQaID6AOU7I
-X-Mailer: YahooMailWebService/0.7.260.1
-Date: Sat, 14 Feb 2009 15:35:23 -0800 (PST)
-From: Alberto Gonzalez <luis6674@yahoo.com>
-Reply-To: luis6674@yahoo.com
-Subject: Re: [Bug #12337] ~100 extra wakeups reported by powertop
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <ROx6X68CGJG.A.NVB.U50lJB@chimera>
+	Sat, 14 Feb 2009 18:51:21 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35991 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752061AbZBNXvU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 18:51:20 -0500
+Date: Sun, 15 Feb 2009 00:50:28 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>, orenl@cs.columbia.edu,
+       linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk, hpa@zytor.com,
+       tglx@linutronix.de
+Subject: Re: [RFC v13][PATCH 00/14] Kernel based checkpoint/restart
+Message-ID: <20090214235028.GE31861@elte.hu>
+References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu> <1234285547.30155.6.camel@nimitz> <20090211141434.dfa1d079.akpm@linux-foundation.org> <1234462282.30155.171.camel@nimitz> <20090213152836.0fbbfa7d.akpm@linux-foundation.org> <20090214230802.GE20477@elte.hu> <20090214153124.73132bf9.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <535841.27007.qm@web53303.mail.re2.yahoo.com>
+Content-Disposition: inline
+In-Reply-To: <20090214153124.73132bf9.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- On Sat, 2/14/09, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-> The following bug entry is on the current list of known
-> regressions
-> introduced between 2.6.27 and 2.6.28.  Please verify if it
-> still should
-> be listed and let me know (either way).
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Sun, 15 Feb 2009 00:08:02 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 > 
+> > 
+> > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > Similar to the way in which perfectly correct and normal kernel
+> > > sometimes has to be changed because it unexpectedly upsets the -rt
+> > > patch.
+> > 
+> > Actually, regarding -rt, we try to keep that in two buckets:
+> > 
+> >  1) Normal kernel code works but is unclean or structured less
+> >     than ideal. In this case we restructure the mainline code,
+> >     but that change stands on its own four legs, without any
+> >     -rt considerations.
+> > 
+> >  2) Normal kernel code that is clean - i.e. a change that only
+> >     matters to -rt. In this case we dont touch the mainline code,
+> >     nor do we bother mainline.
+> > 
+> > Do you know any specific example that falls outside of those categories?
+> > 
 > 
-> Bug-Entry	:
-> http://bugzilla.kernel.org/show_bug.cgi?id=12337
-> Subject		: ~100 extra wakeups reported by powertop
-> Submitter	: Alberto Gonzalez <luis6674@yahoo.com>
-> Date		: 2008-12-31 12:25 (46 days old)
+> It happens fairly regularly.  Problems with irqs-off regions, problems
+> with preempt_disable() regions (came up just yesterday with a patch from
+> Jeremy).
 
-Yes, still present in latest stable 2.6.28.5
+As Peter has stated it in that thread, throwing around preempt_disable()s
+is considered anti-social regardless of any -rt concerns. (it's a bit like
+how people were throwing around opaque lock_kernel()/unlock_kernel() pairs
+a decade ago. It results in poorly documented locking semantics.)
 
-I updated the report to say that this happened on my 5 year old Pentium 4, but now I got a new Dell desktop (Intel G45 based) and the exact same problem happens, so I can't be the only one seeing it. In the bugzilla Eric Anholt said that it could be related to vblank and that jbarnes had look into a similar issue before, so maybe he has some clue.
+> Plus some convert-to-sleeping-lock conversions over the years which
+> weren't obviously needed in mainline.  Or which at least had -rt
+> motivations.  But that's different.
 
-Thanks.
+Having -rt motivation is perfectly fine - many of the top features we
+added in the past 2-3 years originated in the -rt tree. The question 
+is, does a change improve the mainline code or not. If it does, the
+motivation does not really matter.
 
+I'll also note that recent VFS performance tests with spinning mutexes
+have shown that they out-perform both spinlocks, old-semaphores and
+old-mutexes. So conversion to sleeping locks might in fact grow a
+"because it's not only easier to hack but also faster" dimension as well.
 
-      
+( I'm wondering whether those ext2/ext3 spinlocks that were a performance
+  problem when converted to sleeping locks would perform better with
+  spinning mutexes. )
+
+	Ingo
