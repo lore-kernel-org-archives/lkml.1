@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761711AbZBNBGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932185AbZBNBGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761711AbZBNBGT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:06:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757349AbZBNBBg
+	id S932185AbZBNBGf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:06:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757781AbZBNBBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:01:36 -0500
-Received: from kroah.org ([198.145.64.141]:39536 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:01:37 -0500
+Received: from kroah.org ([198.145.64.141]:39544 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756089AbZBNBBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:01:35 -0500
-Date: Fri, 13 Feb 2009 16:58:29 -0800
+	id S1756940AbZBNBBg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:01:36 -0500
+Date: Fri, 13 Feb 2009 16:58:31 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alok N Kataria <akataria@vmware.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 13/47] x86, vmi: put a missing paravirt_release_pmd in
-	pgd_dtor
-Message-ID: <20090214005829.GN11282@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Hin-Tak Leung <htl10@users.sourceforge.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 14/47] zd1211rw: adding 0ace:0xa211 as a ZD1211 device
+Message-ID: <20090214005831.GO11282@kroah.com>
 References: <20090214005130.617401075@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-vmi-put-a-missing-paravirt_release_pmd-in-pgd_dtor.patch"
+Content-Disposition: inline; filename="zd1211rw-adding-0ace-0xa211-as-a-zd1211-device.patch"
 In-Reply-To: <20090214005726.GA11282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,60 +40,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alok Kataria <akataria@vmware.com>
+From: Hin-Tak Leung <hintak.leung@gmail.com>
 
-commit 55a8ba4b7f76bebd7e8ce3f74c04b140627a1bad upstream.
+commit 14990c69b5f51dd57b4e0e2373de50239ac861e2 upstream.
 
-Commit 6194ba6ff6ccf8d5c54c857600843c67aa82c407 ("x86: don't special-case
-pmd allocations as much") made changes to the way we handle pmd allocations,
-and while doing that it dropped a call to  paravirt_release_pd on the
-pgd page from the pgd_dtor code path.
+Christoph Biedl <sourceforge.bnwi@manchmal.in-ulm.de> reported success
+in the sourceforge zd1211 mailing list on this addition. This product ID
+was supported by the vendor driver ZD1211LnxDrv 2.22.0.0 (and possibly
+earlier) and it probably should have been added earlier.
 
-As a result of this missing release, the hypervisor is now unaware of the
-pgd page being freed, and as a result it ends up tracking this page as a
-page table page.
-
-After this the guest may start using the same page for other purposes, and
-depending on what use the page is put to, it may result in various performance
-and/or functional issues ( hangs, reboots).
-
-Since this release is only required for VMI, I now release the pgd page from
-the (vmi)_pgd_free hook.
-
-Signed-off-by: Alok N Kataria <akataria@vmware.com>
-Acked-by: Jeremy Fitzhardinge <jeremy@goop.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Hin-Tak Leung <htl10@users.sourceforge.net>
+Tested-by: Christoph Biedl <sourceforge.bnwi@manchmal.in-ulm.de>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/vmi_32.c |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/net/wireless/zd1211rw/zd_usb.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/arch/x86/kernel/vmi_32.c
-+++ b/arch/x86/kernel/vmi_32.c
-@@ -430,6 +430,16 @@ static void vmi_release_pmd(u32 pfn)
- }
- 
- /*
-+ * We use the pgd_free hook for releasing the pgd page:
-+ */
-+static void vmi_pgd_free(struct mm_struct *mm, pgd_t *pgd)
-+{
-+	unsigned long pfn = __pa(pgd) >> PAGE_SHIFT;
-+
-+	vmi_ops.release_page(pfn, VMI_PAGE_L2);
-+}
-+
-+/*
-  * Helper macros for MMU update flags.  We can defer updates until a flush
-  * or page invalidation only if the update is to the current address space
-  * (otherwise, there is no flush).  We must check against init_mm, since
-@@ -881,6 +891,7 @@ static inline int __init activate_vmi(vo
- 	if (vmi_ops.release_page) {
- 		pv_mmu_ops.release_pte = vmi_release_pte;
- 		pv_mmu_ops.release_pmd = vmi_release_pmd;
-+		pv_mmu_ops.pgd_free = vmi_pgd_free;
- 	}
- 
- 	/* Set linear is needed in all cases */
+--- a/drivers/net/wireless/zd1211rw/zd_usb.c
++++ b/drivers/net/wireless/zd1211rw/zd_usb.c
+@@ -37,6 +37,7 @@
+ static struct usb_device_id usb_ids[] = {
+ 	/* ZD1211 */
+ 	{ USB_DEVICE(0x0ace, 0x1211), .driver_info = DEVICE_ZD1211 },
++	{ USB_DEVICE(0x0ace, 0xa211), .driver_info = DEVICE_ZD1211 },
+ 	{ USB_DEVICE(0x07b8, 0x6001), .driver_info = DEVICE_ZD1211 },
+ 	{ USB_DEVICE(0x126f, 0xa006), .driver_info = DEVICE_ZD1211 },
+ 	{ USB_DEVICE(0x6891, 0xa727), .driver_info = DEVICE_ZD1211 },
 
