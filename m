@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762815AbZBNBII@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762870AbZBNBI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762815AbZBNBII (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:08:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760326AbZBNBBn
+	id S1762870AbZBNBI3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:08:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760539AbZBNBBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:01:43 -0500
-Received: from kroah.org ([198.145.64.141]:39600 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:01:44 -0500
+Received: from kroah.org ([198.145.64.141]:39617 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758882AbZBNBBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:01:40 -0500
-Date: Fri, 13 Feb 2009 16:58:39 -0800
+	id S1759929AbZBNBBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:01:41 -0500
+Date: Fri, 13 Feb 2009 16:58:42 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Vlad Yasevich <vladislav.yasevich@hp.com>,
+       alan@lxorguk.ukuu.org.uk, Roel Kluin <roel.kluin@gmail.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 18/47] sctp: Properly timestamp outgoing data chunks for
-	rtx purposes
-Message-ID: <20090214005839.GS11282@kroah.com>
+Subject: [patch 19/47] drivers/net/skfp: if !capable(CAP_NET_ADMIN):
+	inverted logic
+Message-ID: <20090214005842.GT11282@kroah.com>
 References: <20090214005130.617401075@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sctp-properly-timestamp-outgoing-data-chunks-for-rtx-purposes.patch"
+Content-Disposition: inline; filename="drivers-net-skfp-if-capable-inverted-logic.patch"
 In-Reply-To: <20090214005726.GA11282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,59 +41,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
+From: Roel Kluin <roel.kluin@gmail.com>
 
-[ Upstream commit 759af00ebef858015eb68876ac1f383bcb6a1774 ]
+[ Upstream commit c25b9abbc2c2c0da88e180c3933d6e773245815a ]
 
-Recent changes to the retransmit code exposed a long standing
-bug where it was possible for a chunk to be time stamped
-after the retransmit timer was reset.  This caused a rare
-situation where the retrnamist timer has expired, but
-nothing was marked for retrnasmission because all of
-timesamps on data were less then 1 rto ago.  As result,
-the timer was never restarted since nothing was retransmitted,
-and this resulted in a hung association that did couldn't
-complete the data transfer.  The solution is to timestamp
-the chunk when it's added to the packet for transmission
-purposes.  After the packet is trsnmitted the rtx timer
-is restarted.  This guarantees that when the timer expires,
-there will be data to retransmit.
+Fix inverted logic
 
-Signed-off-by: Vlad Yasevich <vladislav.yasevich@hp.com>
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/sctp/output.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ drivers/net/skfp/skfddi.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/net/sctp/output.c
-+++ b/net/sctp/output.c
-@@ -324,14 +324,16 @@ append:
- 	switch (chunk->chunk_hdr->type) {
- 	    case SCTP_CID_DATA:
- 		retval = sctp_packet_append_data(packet, chunk);
-+		if (SCTP_XMIT_OK != retval)
-+			goto finish;
- 		/* Disallow SACK bundling after DATA. */
- 		packet->has_sack = 1;
- 		/* Disallow AUTH bundling after DATA */
- 		packet->has_auth = 1;
- 		/* Let it be knows that packet has DATA in it */
- 		packet->has_data = 1;
--		if (SCTP_XMIT_OK != retval)
--			goto finish;
-+		/* timestamp the chunk for rtx purposes */
-+		chunk->sent_at = jiffies;
+--- a/drivers/net/skfp/skfddi.c
++++ b/drivers/net/skfp/skfddi.c
+@@ -998,9 +998,9 @@ static int skfp_ioctl(struct net_device 
  		break;
- 	    case SCTP_CID_COOKIE_ECHO:
- 		packet->has_cookie_echo = 1;
-@@ -470,7 +472,6 @@ int sctp_packet_transmit(struct sctp_pac
- 			} else
- 				chunk->resent = 1;
- 
--			chunk->sent_at = jiffies;
- 			has_data = 1;
+ 	case SKFP_CLR_STATS:	/* Zero out the driver statistics */
+ 		if (!capable(CAP_NET_ADMIN)) {
+-			memset(&lp->MacStat, 0, sizeof(lp->MacStat));
+-		} else {
+ 			status = -EPERM;
++		} else {
++			memset(&lp->MacStat, 0, sizeof(lp->MacStat));
  		}
- 
+ 		break;
+ 	default:
 
