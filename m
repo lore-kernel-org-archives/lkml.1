@@ -1,151 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752851AbZBNNK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752869AbZBNNUN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752851AbZBNNK6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 08:10:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbZBNNKs
+	id S1752869AbZBNNUN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 08:20:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbZBNNT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 08:10:48 -0500
-Received: from 36-99-st.zelcom.ru ([80.92.99.36]:60715 "EHLO edward.zelnet.ru"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751572AbZBNNKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 08:10:46 -0500
-From: Edward Shishkin <edward.shishkin@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18838.49922.215481.399653@edward.zelnet.ru>
-Date: Sat, 14 Feb 2009 16:11:30 +0300
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Edward Shishkin <edward.shishkin@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Ryan Hope <rmh3093@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>
-Subject: Re: [patch 2/4] vfs: add set_page_dirty_notag
-In-Reply-To: <1234534150.6519.101.camel@twins>
-References: <18837.24581.181196.569183@edward.zelnet.ru>
-	<1234530519.6519.46.camel@twins>
-	<49957C43.7050701@gmail.com>
-	<1234534150.6519.101.camel@twins>
-X-Mailer: VM 7.17 under 21.5  (beta28) "fuki" (+CVS-20070806) XEmacs Lucid
+	Sat, 14 Feb 2009 08:19:59 -0500
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:55092 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751505AbZBNNT7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 08:19:59 -0500
+Subject: Re: vfs: Add MS_FLUSHONFSYNC mount flag
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Fernando Luis Vazquez Cao <fernando@kic.ac.jp>,
+       Eric Sandeen <sandeen@redhat.com>, Jan Kara <jack@suse.cz>,
+       Theodore Tso <tytso@MIT.EDU>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Ric Wheeler <rwheeler@redhat.com>
+In-Reply-To: <1234616633.19783.91.camel@sebastian.kern.oss.ntt.co.jp>
+References: <20090119120349.GA10193@duck.suse.cz>
+	 <1233135913.5399.57.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090128095518.GA16554@duck.suse.cz>
+	 <1234434811.15270.7.camel@sebastian.kern.oss.ntt.co.jp>
+	 <1234434970.15433.4.camel@sebastian.kern.oss.ntt.co.jp>
+	 <499458C1.90105@redhat.com>
+	 <1234487679.3795.15.camel@sebastian.kern.oss.ntt.co.jp>
+	 <49951121.80807@redhat.com> <20090213122051.GX8830@disturbed>
+	 <1234542568.9916.183.camel@bladerunner>  <20090214112443.GY8830@disturbed>
+	 <1234616633.19783.91.camel@sebastian.kern.oss.ntt.co.jp>
+Content-Type: text/plain; charset=UTF-8
+Organization: NTT Open Source Software Center
+Date: Sat, 14 Feb 2009 22:19:57 +0900
+Message-Id: <1234617597.19783.110.camel@sebastian.kern.oss.ntt.co.jp>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra writes:
- > On Fri, 2009-02-13 at 16:57 +0300, Edward Shishkin wrote:
- > > >
- > > > Eew, so reiser4 will totally side-step the regular vm inode
- > > writeback
- > > > paths -- or is this fixed by a more elaborate than usual
- > > > a_ops->writepages() ?
- > > >   
- > > The second.
- > > 
- > > reiser4_writepages() catches the anonymous  (tagged)
- > > pages, captures them mandatory, then commits all atoms
- > > of the file.
- > 
- > OK, can you then make it painfully clear in the function comment, esp.
- > since you export this function?
+On Sat, 2009-02-14 at 22:03 +0900, Fernando Luis Vázquez Cao wrote:
+> > > 2- Modify file_fsync() so that it checks whether FLUSHONFSYNC is set and
+> > > flushes the underlying device accordingly. With this we would cover all
+> > > filesystems that use the vfs-provided file_fsync() as their fsync method
+> > > (commonly used filesystems such as fat fall in this group).
+> > 
+> > Just make it flush the block device.
+> 
+> I wrote a patch that does exactly that but, in addition, it checks
+> whether FLUSHONFSYNC is set to avoid sending unnecessary flushes down
+> the block layer (this patch is not included in this patch-set, but I
+> will add it in the next iteration).
 
-Hello.
-Does it look better?
+I probably should have mentioned in my proposal all filesystems would
+just call the helper function block_flush_device() to flush the
+underlying block device, unconditionally.
 
-Thanks,
-Edward.
+This helper function looks like this:
 
-This is a fixup for the following "todo":
-akpm wrote:
-> reiser4_set_page_dirty_internal() pokes around in VFS internals.
-> Use __set_page_dirty_no_buffers() or create a new library function
-> in mm/page-writeback.c.
-
-Problem:
-
-In accordance with reiser4 transactional model every dirty page
-should be "captured" by some atom. However, outside reiser4 context
-dirty page can not be captured in some cases, as it is accompanied
-with specific work (jnode creation, etc). Reiser4 recognizes such
-"anonymous" pages (i.e. pages that were dirtied outside of reiser4)
-by the tag PAGECACHE_TAG_DIRTY. Pages dirtied inside reiser4 context
-are not tagged at all: we don't need this. Indeed, once page is
-dirtied and captured, it is attached to a jnode (a special header
-to keep a track of transactions).
-
-reiser4_set_page_dirty_internal() was the internal reiser4 function
-that set dirty bit without tagging the page. Having such internal
-function led to real problems (incorrect task io accounting, etc.
-because of not updating this internal "friend").
-
-Solution:
-
-The following patch adds a core library function that sets a dirty
-bit without tagging the page. It should be modified simultaneously
-with its "friends": __set_page_dirty_nobuffers, __set_page_dirty.
-
-Signed-off-by: Edward Shishkin<edward.shishkin@gmail.com>
----
- include/linux/mm.h  |    1 +
- mm/page-writeback.c |   40 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 41 insertions(+)
-
---- mmotm.orig/include/linux/mm.h
-+++ mmotm/include/linux/mm.h
-@@ -841,6 +841,7 @@ int redirty_page_for_writepage(struct wr
- 				struct page *page);
- int set_page_dirty(struct page *page);
- int set_page_dirty_lock(struct page *page);
-+int set_page_dirty_notag(struct page *page);
- int clear_page_dirty_for_io(struct page *page);
- 
- extern unsigned long move_page_tables(struct vm_area_struct *vma,
---- mmotm.orig/mm/page-writeback.c
-+++ mmotm/mm/page-writeback.c
-@@ -1248,6 +1248,46 @@ int __set_page_dirty_nobuffers(struct pa
- EXPORT_SYMBOL(__set_page_dirty_nobuffers);
- 
- /*
-+ * Some filesystems, which don't use buffers, provide their own
-+ * writeback means. And it can happen, that even dirty tag, which
-+ * is used by generic methods is not needed. In this case it would
-+ * be reasonably to use the following lightweight version of
-+ * __set_page_dirty_nobuffers:
-+ *
-+ * Don't tag page as dirty in its radix tree, just set dirty bit
-+ * and update the accounting.
-+ * NOTE: This function also doesn't take care of races, i.e. the
-+ * caller should guarantee that page can not be truncated.
-+ */
-+int set_page_dirty_notag(struct page *page)
++/* Issue flush of write caches on the block device */
++int block_flush_device(struct super_block *sb)
 +{
-+	struct address_space *mapping = page->mapping;
++       int ret = 0;
 +
-+	if (!TestSetPageDirty(page)) {
-+		WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
-+		if (mapping_cap_account_dirty(mapping)) {
-+		        /*
-+			 * Since we don't tag the page as dirty,
-+			 * acquiring the tree_lock is replaced
-+			 * with disabling preemption to protect
-+			 * per-cpu data used for accounting.
-+			 */
-+			preempt_disable();
-+			__inc_zone_page_state(page, NR_FILE_DIRTY);
-+			__inc_bdi_stat(mapping->backing_dev_info,
-+				       BDI_RECLAIMABLE);
-+			task_dirty_inc(current);
-+			task_io_account_write(PAGE_CACHE_SIZE);
-+			preempt_enable();
-+		}
-+		__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
-+		return 1;
-+	}
-+	return 0;
++       if (!(sb->s_flags & MS_FLUSHONFSYNC))
++               return ret;
++
++       ret = blkdev_issue_flush(sb->s_bdev, NULL);
++
++       if (ret == -EOPNOTSUPP)
++               return 0;
++
++       return ret;
 +}
-+EXPORT_SYMBOL(set_page_dirty_notag);
-+
-+/*
-  * When a writepage implementation decides that it doesn't want to write this
-  * page for some reason, it should redirty the locked page via
-  * redirty_page_for_writepage() and it should then unlock the page and return 0
+
+As you can see the check for flushonfsync is done here, so changing my
+patches along the lines you suggest would be a trivial two lines patch.
+
+- Fernando
+
+> As I mentioned above, if everyone thinks this small optimization not
+> elegant or an undesirable layering violation I will remove it.
+
+
+
