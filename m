@@ -1,104 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763968AbZBNB23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764745AbZBNB0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763968AbZBNB23 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:28:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763335AbZBNBQB
+	id S1764745AbZBNB0q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:26:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762543AbZBNBNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:16:01 -0500
-Received: from kroah.org ([198.145.64.141]:50137 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763261AbZBNBQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:16:00 -0500
-Date: Fri, 13 Feb 2009 17:12:23 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Paul Clements <paul.clements@steeleye.com>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: [patch 02/48] nbd: fix I/O hang on disconnected nbds
-Message-ID: <20090214011223.GC17706@kroah.com>
-References: <20090214010805.419403436@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="nbd-fix-i-o-hang-on-disconnected-nbds.patch"
-In-Reply-To: <20090214011208.GA17706@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 13 Feb 2009 20:13:09 -0500
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:49178
+	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763639AbZBNBNG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:13:06 -0500
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yinghai@kernel.org>, Ian Campbell <Ian.Campbell@citrix.com>,
+       Ian Campbell <ian.campbell@citrix.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 9/9] xen: pre-initialize legacy irqs early
+Date: Fri, 13 Feb 2009 17:12:07 -0800
+Message-Id: <32e538eef4fe7581644814b3c96d6726456a5daa.1234573847.git.jeremy.fitzhardinge@citrix.com>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <69aeef6bc01fbe1fdc6ebd41910e6dc8767b103c.1234573847.git.jeremy.fitzhardinge@citrix.com>
+References: <cover.1234573847.git.jeremy.fitzhardinge@citrix.com>
+ <cover.1234573847.git.jeremy.fitzhardinge@citrix.com>
+ <3c7db30686056c9b86cc61ef50dd5572de868512.1234573847.git.jeremy.fitzhardinge@citrix.com>
+ <3e46dae897fd5620f50b4cca9272969f5546aa88.1234573847.git.jeremy.fitzhardinge@citrix.com>
+ <79724b71f4b8ef1fb65ea246dde2e3e1344b2a43.1234573847.git.jeremy.fitzhardinge@citrix.com>
+ <cbcff9ab54a2189156077c81c706fc30ba84344c.1234573847.git.jeremy.fitzhardinge@citrix.com>
+ <5b0148b366eaa87072ab261f71c4c545be8e607f.1234573847.git.jeremy.fitzhardinge@citrix.com>
+ <4e896f722e4175f96f3846896c3a7b627e634e7e.1234573847.git.jeremy.fitzhardinge@citrix.com>
+ <0e852da646969a2296f66cbc485f278fe1fa9929.1234573847.git.jeremy.fitzhardinge@citrix.com>
+ <69aeef6bc01fbe1fdc6ebd41910e6dc8767b103c.1234573847.git.jeremy.fitzhardinge@citrix.com>
+In-Reply-To: <cover.1234573847.git.jeremy.fitzhardinge@citrix.com>
+References: <cover.1234573847.git.jeremy.fitzhardinge@citrix.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.28-stable review patch.  If anyone has any objections, please let us know.
+From: Ian Campbell <ian.campbell@citrix.com>
 
-------------------
+Various legacy devices, such as IDE, assume their legacy interrupts are
+already initialized and are immediately usable.  Pre-initialize all the
+legacy interrupts.
 
-From: Paul Clements <paul.clements@steeleye.com>
-
-commit 4d48a542b42747c36a5937447d9c3de7c897ea50 upstream.
-
-Fix a problem that causes I/O to a disconnected (or partially initialized)
-nbd device to hang indefinitely.  To reproduce:
-
-# ioctl NBD_SET_SIZE_BLOCKS /dev/nbd23 514048
-# dd if=/dev/nbd23 of=/dev/null bs=4096 count=1
-
-...hangs...
-
-This can also occur when an nbd device loses its nbd-client/server
-connection.  Although we clear the queue of any outstanding I/Os after the
-client/server connection fails, any additional I/Os that get queued later
-will hang.
-
-This bug may also be the problem reported in this bug report:
-http://bugzilla.kernel.org/show_bug.cgi?id=12277
-
-Testing would need to be performed to determine if the two issues are the
-same.
-
-This problem was introduced by the new request handling thread code ("NBD:
-allow nbd to be used locally", 3/2008), which entered into mainline around
-2.6.25.
-
-The fix, which is fairly simple, is to restore the check for lo->sock
-being NULL in do_nbd_request.  This causes I/O to an uninitialized nbd to
-immediately fail with an I/O error, as it did prior to the introduction of
-this bug.
-
-Signed-off-by: Paul Clements <paul.clements@steeleye.com>
-Reported-by: Jon Nelson <jnelson-kernel-bugzilla@jamponi.net>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- drivers/block/nbd.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
+ arch/x86/xen/pci.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
---- a/drivers/block/nbd.c
-+++ b/drivers/block/nbd.c
-@@ -549,6 +549,15 @@ static void do_nbd_request(struct reques
+diff --git a/arch/x86/xen/pci.c b/arch/x86/xen/pci.c
+index 61f070c..d661c74 100644
+--- a/arch/x86/xen/pci.c
++++ b/arch/x86/xen/pci.c
+@@ -60,9 +60,9 @@ int xen_register_gsi(u32 gsi, int triggering, int polarity)
  
- 		BUG_ON(lo->magic != LO_MAGIC);
+ void __init xen_setup_pirqs(void)
+ {
+-#ifdef CONFIG_ACPI
+ 	int irq;
  
-+		if (unlikely(!lo->sock)) {
-+			printk(KERN_ERR "%s: Attempted send on closed socket\n",
-+				lo->disk->disk_name);
-+			req->errors++;
-+			nbd_end_request(req);
-+			spin_lock_irq(q->queue_lock);
-+			continue;
-+		}
++#ifdef CONFIG_ACPI
+ 	/*
+ 	 * Set up acpi interrupt in acpi_gbl_FADT.sci_interrupt.
+ 	 */
+@@ -74,4 +74,8 @@ void __init xen_setup_pirqs(void)
+ 	/* Blerk. */
+ 	acpi_gbl_FADT.sci_interrupt = irq;
+ #endif
 +
- 		spin_lock_irq(&lo->queue_lock);
- 		list_add_tail(&req->queuelist, &lo->waiting_queue);
- 		spin_unlock_irq(&lo->queue_lock);
++	/* Pre-allocate legacy irqs */
++	for (irq=0; irq < NR_IRQS_LEGACY; irq++)
++		xen_allocate_pirq(irq);
+ }
+-- 
+1.6.0.6
 
