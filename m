@@ -1,99 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106AbZBNSEB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752558AbZBNSq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753106AbZBNSEB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 13:04:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbZBNSDu
+	id S1752558AbZBNSq3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 13:46:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbZBNSqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 13:03:50 -0500
-Received: from mail-gx0-f222.google.com ([209.85.217.222]:64838 "EHLO
-	mail-gx0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751410AbZBNSDt (ORCPT
+	Sat, 14 Feb 2009 13:46:19 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:20835 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751079AbZBNSqS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 13:03:49 -0500
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Feb 2009 13:03:48 EST
+	Sat, 14 Feb 2009 13:46:18 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Z3VnobYx2UxOSMAe7VCyZHRnF0j9kbdzefL76MPK8BkUq0qPRkgKKiVBtgKGL7Nss8
-         NXeZTaGuUTCiGt3dFr9Q427o3wdyKCt25jQ/zfc/yUCEHSSMj7EK/EH9JN8yQv0acY75
-         VI9myr3jZ8tUNqjp9qf2inwduZFxZVq11Uf60=
-Message-ID: <49970652.7030101@gmail.com>
-Date: Sat, 14 Feb 2009 11:58:42 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Na2CtOYYvlVmudzpBOkwzuQFriSvfBlLw9U7lmPYqcrjvVPrSwcC/dp4MIh2pUJvfX
+         vzP4JJPtVKioOXygsWyyE2M0r/j71xwZTxylWOBFrGMuHWKHjfOpkD4C4nVyOekEfu6j
+         Gtpi2oXTnbiE+ZflIfI6zSjcFBwWgNk72DoKk=
 MIME-Version: 1.0
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-CC: Mark Lord <liml@rtr.ca>, Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       =?ISO-8859-1?Q?Hanno_B=F6ck?= <hanno@hboeck.de>,
-       linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>
-Subject: Re: Very old IDE hard drive (240 MB) detected as 1.1 TB
-References: <200902131428.40212.hanno@hboeck.de> <499584FC.2050104@gmail.com> <200902141352.24277.hanno@hboeck.de> <4996C563.9090900@ru.mvista.com> <4996D443.4060103@rtr.ca> <alpine.LFD.1.10.0902141526310.651@ftp.linux-mips.org>
-In-Reply-To: <alpine.LFD.1.10.0902141526310.651@ftp.linux-mips.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <b6a2187b0902140341y2a1da743o7b012e6386583a62@mail.gmail.com>
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
+	 <pWZw1SZjMCH.A.zq.WwYiJB@chimera>
+	 <b6a2187b0902140341y2a1da743o7b012e6386583a62@mail.gmail.com>
+Date: Sun, 15 Feb 2009 02:46:16 +0800
+Message-ID: <b6a2187b0902141046r76f80b9ar6df6a0e2472ef61b@mail.gmail.com>
+Subject: Re: [Bug #12414] iwl4965 cannot use "ap auto" on latest 2.6.28/29?
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       reinette.chatre@intel.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej W. Rozycki wrote:
-> On Sat, 14 Feb 2009, Mark Lord wrote:
-> 
->>>   It has the current capacity in words 57-58 swapped:
->>>
->>> /dev/sdb:
->>> 0c5a 037f 0000 000a 8723 0275 0037 0030
->>> 000a 0000 2020 2020 2020 2020 2020 424d
->>> 3948 4d31 5020 2020 0003 0040 0004 302e
->>> 3336 2020 2020 436f 6e6e 6572 2050 6572
->>> 6970 6865 7261 6c73 2032 3430 4d42 202d
->>> 2043 5033 3032 3534 2020 2020 2020 8010
->>> 0000 0001 0000 0200 0202 0001 037f 000a
->>> 0037 0007 82da 0000 0000 0000 0000 0000
->>>
->>>
->>>   It must be 82da 0007, not 0007 82da.
->>>   IIRC, the IDE core doesn't trust the value reported in these words 
->> ..
->>
->> That's right.  I wrote the IDE code that way
->> *specifically* due to a (different) Conner drive
->> I had here at the time.
-> 
->  It happened for some Maxtor drives too.  The reason is the ATA-1 spec was 
-> not explicit about how words 57 and 58 were meant to be ordered and some 
-> manufacturers interpreted it one and some the other way.  It looks like 
-> libata needs to be fixed.
+On Sat, Feb 14, 2009 at 7:41 PM, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
+> On Wed, Feb 4, 2009 at 6:23 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12414
+>> Subject         : iwl4965 cannot use "ap auto" on latest 2.6.28/29?
+>> Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
+>> Date            : 2009-01-05 4:13 (31 days old)
+>> References      : http://marc.info/?l=linux-kernel&m=123112882127823&w=4
+>
+> I applied the patch
+> http://marc.info/?l=linux-wireless&m=123320213115108&w=2 and it seems
+> better now. One instant of not association out of 20 tries, but
+> reloading the modules seems to make it work again. So, let's just
+> close the case?
 
-Here's the relevant code, it appears (drivers/ata/libata-core.c at line 
-1321):
+I tested on another AP (WAG200G ), and this one, it's failing to
+associate more often. And I noticed that when it does associate, I
+don't get these two lines ...
 
-static u64 ata_id_n_sectors(const u16 *id)
-{
-	if (ata_id_has_lba(id)) {
-		if (ata_id_has_lba48(id))
-			return ata_id_u64(id, 100);
-		else
-			return ata_id_u32(id, 60);
-	} else {
-		if (ata_id_current_chs_valid(id))
-			return ata_id_u32(id, 57);
-		else
-			return id[1] * id[3] * id[6];
-	}
-}
+iwlagn: TX Power requested while scanning!
+iwlagn: Error sending TX power (-11)
 
-It looks like it's getting into the ata_id_current_chs_valid(id) path, 
-since all the values that function checks are indeed valid, but the 
-values in words 57-58 are not. There seems to be no real reason to use 
-those values since the same can be calculated from the reported CHS, so 
-you could change that code to:
 
-		if (ata_id_current_chs_valid(id))
-			return id[54] * id[55] * id[56];
-		else
-			return id[1] * id[3] * id[6];
 
-Hanno, would you be able to try building a kernel with a modified 
-drivers/ata/libata-core.c as above (in current -git it would be changing 
-line 1330) and see if that resolves the problem?
+Here's a good run ...
+
+iwlagn: Intel(R) Wireless WiFi Link AGN driver for Linux, 1.3.27ks
+iwlagn: Copyright(c) 2003-2008 Intel Corporation
+iwlagn 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+iwlagn 0000:03:00.0: setting latency timer to 64
+iwlagn: Detected Intel Wireless WiFi Link 4965AGN REV=0x4
+iwlagn: Tunable channels: 11 802.11bg, 13 802.11a channels
+wmaster0 (iwlagn): not using net_device_ops yet
+phy0: Selected rate control algorithm 'iwl-agn-rs'
+wlan0 (iwlagn): not using net_device_ops yet
+iwlagn 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+iwlagn 0000:03:00.0: irq 28 for MSI/MSI-X
+iwlagn 0000:03:00.0: firmware: requesting iwlwifi-4965-2.ucode
+iwlagn loaded firmware version 228.57.2.23
+Registered led device: iwl-phy0:radio
+Registered led device: iwl-phy0:assoc
+Registered led device: iwl-phy0:RX
+Registered led device: iwl-phy0:TX
+wlan0: authenticate with AP xxxxxxxxxxxxx
+wlan0: authenticate with AP xxxxxxxxxxxxx
+wlan0: authenticate with AP xxxxxxxxxxxxx
+wlan0: authenticated
+wlan0: associate with AP xxxxxxxxxxxx
+wlan0: RX AssocResp from xxxxxxxxxxxx (capab=0x471 status=0 aid=1)
+wlan0: associated
+
+
+
+Thanks,
+Jeff.
