@@ -1,81 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753247AbZBNNXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752947AbZBNNtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753247AbZBNNXq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 08:23:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbZBNNXh
+	id S1752947AbZBNNtk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 08:49:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbZBNNta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 08:23:37 -0500
-Received: from ti-out-0910.google.com ([209.85.142.186]:39092 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751628AbZBNNXg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 08:23:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=DlbxuNK9rfbV1Z2u2MWaUQtTwbu4SUf/WWPdeH5GwTl+UB/Bb/e7SYHJ8kRs12kSRk
-         63Jod9tcvEyfPAyf8vNCPEC1ibwds3nDWUVWo+YkFKyRNXXAGicWdmb9kXSYKMNmojCs
-         GTLXsqKCCnpEgeYfsnQZGvSHIdJS+D+7OrvYs=
-Message-ID: <4996C5CA.9010803@gmail.com>
-Date: Sat, 14 Feb 2009 21:23:22 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081010)
-MIME-Version: 1.0
-To: greg@kroah.com
-CC: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] driver-core: do not register a driver with bus_type not
- registered
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 14 Feb 2009 08:49:30 -0500
+Received: from ozlabs.org ([203.10.76.45]:54624 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751810AbZBNNt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 08:49:29 -0500
+Subject: Re: [PATCH 2/2] powerpc, ftrace: use create_branch lib function
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Geoff Levand <geoffrey.levand@am.sony.com>,
+       Steven Rostedt <srostedt@redhat.com>
+In-Reply-To: <20090213150147.180922180@goodmis.org>
+References: <20090213150055.947823726@goodmis.org>
+	 <20090213150147.180922180@goodmis.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-G1nWbe2ySdfv7FZxWp6Y"
+Date: Sun, 15 Feb 2009 00:49:26 +1100
+Message-Id: <1234619366.10265.3.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-If the bus_type is not registerd, driver_register to that bus will cause oops.
+--=-G1nWbe2ySdfv7FZxWp6Y
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I found this bug when test built-in usb serial drivers (ie. aircable driver)
-with 'nousb' cmdline params. 
+On Fri, 2009-02-13 at 10:00 -0500, Steven Rostedt wrote:
+> plain text document attachment
+> (0002-powerpc-ftrace-use-create_branch-lib-function.patch)
+> From: Steven Rostedt <srostedt@redhat.com>
+>=20
+> Impact: clean up, remove duplicate code
+>=20
+> When ftrace was first ported to PowerPC, there existed a
+> create_function_call that would create the instruction to make a call
+> to a given address. Unfortunately, this call expected to write to
+> the address it was given, and since it used the address to calculate
+> the offset, it could not be faked.
+>=20
+> ftrace needed a way to create the instruction without actually writing
+> that instruction to the text section. So ftrace had to implement its
+> own code.
+>=20
+> Now we have create_branch in the code patching library, which does
+> exactly what ftrace needs. This patch replaces ftrace's implementation
+> with the library function.
 
-In this patch:
-1. set the bus->p=NULL when bus_register failed and unregisterd.
-2. if bus->p is NULL, driver_register BUG_ON will be triggered.
+Thanks for doing this, I was going to once the ftrace code had settled a
+little but you beat me to it.
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
----
-drivers/base/bus.c    |    2 ++
-drivers/base/driver.c |    2 ++
-2 files changed, 4 insertions(+)
+> @@ -46,17 +41,10 @@ ftrace_call_replace(unsigned long ip, unsigned long a=
+ddr, int link)
+>  {
+>  	unsigned int op;
+> =20
+> -	/*
+> -	 * It would be nice to just use create_function_call, but that will
+> -	 * update the code itself. Here we need to just return the
+> -	 * instruction that is going to be modified, without modifying the
+> -	 * code.
+> -	 */
+>  	addr =3D GET_ADDR(addr);
+> =20
+>  	/* if (link) set op to 'bl' else 'b' */
+> -	op =3D 0x48000000 | (link ? 1 : 0);
+> -	op |=3D (ftrace_calc_offset(ip, addr) & 0x03fffffc);
+> +	op =3D create_branch((unsigned int *)ip, addr, link ? 1 : 0);
 
-diff -uprN a/drivers/base/bus.c b/drivers/base/bus.c
---- a/drivers/base/bus.c	2009-02-14 20:47:24.441149465 +0800
-+++ b/drivers/base/bus.c	2009-02-14 20:49:42.350149362 +0800
-@@ -932,6 +932,7 @@ bus_uevent_fail:
- 	kset_unregister(&bus->p->subsys);
- 	kfree(bus->p);
- out:
-+	bus->p = NULL;
- 	return retval;
- }
- EXPORT_SYMBOL_GPL(bus_register);
-@@ -953,6 +954,7 @@ void bus_unregister(struct bus_type *bus
- 	bus_remove_file(bus, &bus_attr_uevent);
- 	kset_unregister(&bus->p->subsys);
- 	kfree(bus->p);
-+	bus->p = NULL;
- }
- EXPORT_SYMBOL_GPL(bus_unregister);
- 
-diff -uprN a/drivers/base/driver.c b/drivers/base/driver.c
---- a/drivers/base/driver.c	2009-02-14 20:47:38.048149854 +0800
-+++ b/drivers/base/driver.c	2009-02-14 20:47:50.692141034 +0800
-@@ -216,6 +216,8 @@ int driver_register(struct device_driver
- 	int ret;
- 	struct device_driver *other;
- 
-+	BUG_ON(!drv->bus->p);
-+
- 	if ((drv->bus->probe && drv->probe) ||
- 	    (drv->bus->remove && drv->remove) ||
- 	    (drv->bus->shutdown && drv->shutdown))
+If I was feeling nit-picky I'd say you should use:
+
+op =3D create_branch((unsigned int *)ip, addr, link ? BRANCH_SET_LINK : 0);
+
+
+But admittedly we're unlikely to ever change the flag handling, so it's
+probably not worth the effort of a respin (or this email :).
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-G1nWbe2ySdfv7FZxWp6Y
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmWy+YACgkQdSjSd0sB4dKl5QCgmwvZqmSNwYmn6qFsDorpWDjS
+W+8An373Cjdrg+qIPXFloGs/M1qr6SBJ
+=ocCK
+-----END PGP SIGNATURE-----
+
+--=-G1nWbe2ySdfv7FZxWp6Y--
+
