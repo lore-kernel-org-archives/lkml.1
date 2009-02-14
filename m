@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764708AbZBNB3O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765052AbZBNB3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764708AbZBNB3O (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:29:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763512AbZBNBQE
+	id S1765052AbZBNB3h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:29:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764085AbZBNBQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:16:04 -0500
-Received: from kroah.org ([198.145.64.141]:50174 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:16:06 -0500
+Received: from kroah.org ([198.145.64.141]:50184 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763310AbZBNBQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1763317AbZBNBQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 13 Feb 2009 20:16:03 -0500
-Date: Fri, 13 Feb 2009 17:12:27 -0800
+Date: Fri, 13 Feb 2009 17:12:29 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Ian Dall <ian@beware.dropbear.id.au>,
-       Evgeniy Polyakov <zbr@ioremap.net>
-Subject: [patch 04/48] w1: w1 temp calculation overflow fix
-Message-ID: <20090214011227.GE17706@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Hin-Tak Leung <htl10@users.sourceforge.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 05/48] zd1211rw: adding 0ace:0xa211 as a ZD1211 device
+Message-ID: <20090214011229.GF17706@kroah.com>
 References: <20090214010805.419403436@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="w1-w1-temp-calculation-overflow-fix.patch"
+Content-Disposition: inline; filename="zd1211rw-adding-0ace-0xa211-as-a-zd1211-device.patch"
 In-Reply-To: <20090214011208.GA17706@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,37 +40,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ian Dall <ian@beware.dropbear.id.au>
+From: Hin-Tak Leung <hintak.leung@gmail.com>
 
-commit 507e2fbaaacb6f164b4125b87c5002f95143174b upstream.
+commit 14990c69b5f51dd57b4e0e2373de50239ac861e2 upstream.
 
-Addresses http://bugzilla.kernel.org/show_bug.cgi?id=12646
+Christoph Biedl <sourceforge.bnwi@manchmal.in-ulm.de> reported success
+in the sourceforge zd1211 mailing list on this addition. This product ID
+was supported by the vendor driver ZD1211LnxDrv 2.22.0.0 (and possibly
+earlier) and it probably should have been added earlier.
 
-When the temperature exceeds 32767 milli-degrees the temperature overflows
-to -32768 millidegrees.  These are bothe well within the -55 - +125 degree
-range for the sensor.
-
-Fix overflow in left-shift of a u8.
-
-Signed-off-by: Ian Dall <ian@beware.dropbear.id.au>
-Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Hin-Tak Leung <htl10@users.sourceforge.net>
+Tested-by: Christoph Biedl <sourceforge.bnwi@manchmal.in-ulm.de>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/w1/slaves/w1_therm.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/wireless/zd1211rw/zd_usb.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/w1/slaves/w1_therm.c
-+++ b/drivers/w1/slaves/w1_therm.c
-@@ -115,7 +115,7 @@ static struct w1_therm_family_converter 
- 
- static inline int w1_DS18B20_convert_temp(u8 rom[9])
- {
--	s16 t = (rom[1] << 8) | rom[0];
-+	int t = ((s16)rom[1] << 8) | rom[0];
- 	t = t*1000/16;
- 	return t;
- }
+--- a/drivers/net/wireless/zd1211rw/zd_usb.c
++++ b/drivers/net/wireless/zd1211rw/zd_usb.c
+@@ -37,6 +37,7 @@
+ static struct usb_device_id usb_ids[] = {
+ 	/* ZD1211 */
+ 	{ USB_DEVICE(0x0ace, 0x1211), .driver_info = DEVICE_ZD1211 },
++	{ USB_DEVICE(0x0ace, 0xa211), .driver_info = DEVICE_ZD1211 },
+ 	{ USB_DEVICE(0x07b8, 0x6001), .driver_info = DEVICE_ZD1211 },
+ 	{ USB_DEVICE(0x126f, 0xa006), .driver_info = DEVICE_ZD1211 },
+ 	{ USB_DEVICE(0x6891, 0xa727), .driver_info = DEVICE_ZD1211 },
 
