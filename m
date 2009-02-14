@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762543AbZBNBEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761858AbZBNBD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762543AbZBNBEq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:04:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbZBNBBc
+	id S1761858AbZBNBD4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:03:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbZBNBBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:01:32 -0500
-Received: from kroah.org ([198.145.64.141]:39479 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:01:30 -0500
+Received: from kroah.org ([198.145.64.141]:39446 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754422AbZBNBBb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:01:31 -0500
-Date: Fri, 13 Feb 2009 16:58:22 -0800
+	id S1754053AbZBNBB3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:01:29 -0500
+Date: Fri, 13 Feb 2009 16:58:17 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: [patch 09/47] syscall define: fix uml compile bug
-Message-ID: <20090214005822.GJ11282@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Michael Neuling <mikey@neuling.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [patch 07/47] powerpc: Fix swapcontext system for VSX + old
+	ucontext size
+Message-ID: <20090214005817.GH11282@kroah.com>
 References: <20090214005130.617401075@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="syscall-define-fix-uml-compile-bug.patch"
+Content-Disposition: inline; filename="powerpc-fix-swapcontext-system-for-vsx-old-ucontext-size.patch"
 In-Reply-To: <20090214005726.GA11282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,88 +42,224 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+From: Michael Neuling <mikey@neuling.org>
 
-commit 6c5979631b4b03c9288776562c18036765e398c1 upstream.
+commit 16c29d180becc5bdf92fd0fc7314a44a671b5f4e upstream.
 
-With the new system call defines we get this on uml:
+Since VSX support was added, we now have two sizes of ucontext_t;
+the older, smaller size without the extra VSX state, and the new
+larger size with the extra VSX state.  A program using the
+sys_swapcontext system call and supplying smaller ucontext_t
+structures will currently get an EINVAL error if the task has
+used VSX (e.g. because of calling library code that uses VSX) and
+the old_ctx argument is non-NULL (i.e. the program is asking for
+its current context to be saved).  Thus the program will start
+getting EINVAL errors on calls that previously worked.
 
-arch/um/sys-i386/built-in.o: In function `sys_call_table':
-(.rodata+0x308): undefined reference to `sys_sigprocmask'
+This commit changes this behaviour so that we don't send an EINVAL in
+this case.  It will now return the smaller context but the VSX MSR bit
+will always be cleared to indicate that the ucontext_t doesn't include
+the extra VSX state, even if the task has executed VSX instructions.
 
-Reason for this is that uml passes the preprocessor option
--Dsigprocmask=kernel_sigprocmask to gcc when compiling the kernel.
-This causes SYSCALL_DEFINE3(sigprocmask, ...) to be expanded to
-SYSCALL_DEFINEx(3, kernel_sigprocmask, ...) and finally to a system
-call named sys_kernel_sigprocmask.  However sys_sigprocmask is missing
-because of this.
+Both 32 and 64 bit cases are updated.
 
-To avoid macro expansion for the system call name just concatenate the
-name at first define instead of carrying it through severel levels.
-This was pointed out by Al Viro.
+[paulus@samba.org - also fix some access_ok() and get_user() calls]
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Reviewed-by: WANG Cong <wangcong@zeuux.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Thanks to Ben Herrenschmidt for noticing this problem.
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/syscalls.h |   28 ++++++++++++++--------------
- 1 file changed, 14 insertions(+), 14 deletions(-)
+ arch/powerpc/kernel/signal_32.c |   36 +++++++++++++++---------------------
+ arch/powerpc/kernel/signal_64.c |   33 +++++++++++++++------------------
+ 2 files changed, 30 insertions(+), 39 deletions(-)
 
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -95,13 +95,13 @@ struct old_linux_dirent;
- #define __SC_TEST5(t5, a5, ...)	__SC_TEST(t5); __SC_TEST4(__VA_ARGS__)
- #define __SC_TEST6(t6, a6, ...)	__SC_TEST(t6); __SC_TEST5(__VA_ARGS__)
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -410,7 +410,7 @@ inline unsigned long copy_fpr_from_user(
+  * altivec/spe instructions at some point.
+  */
+ static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
+-		int sigret)
++		int sigret, int ctx_has_vsx_region)
+ {
+ 	unsigned long msr = regs->msr;
  
--#define SYSCALL_DEFINE0(name)   asmlinkage long sys_##name(void)
--#define SYSCALL_DEFINE1(...)    SYSCALL_DEFINEx(1, __VA_ARGS__)
--#define SYSCALL_DEFINE2(...)    SYSCALL_DEFINEx(2, __VA_ARGS__)
--#define SYSCALL_DEFINE3(...)    SYSCALL_DEFINEx(3, __VA_ARGS__)
--#define SYSCALL_DEFINE4(...)    SYSCALL_DEFINEx(4, __VA_ARGS__)
--#define SYSCALL_DEFINE5(...)    SYSCALL_DEFINEx(5, __VA_ARGS__)
--#define SYSCALL_DEFINE6(...)    SYSCALL_DEFINEx(6, __VA_ARGS__)
-+#define SYSCALL_DEFINE0(name)	   asmlinkage long sys_##name(void)
-+#define SYSCALL_DEFINE1(name, ...) SYSCALL_DEFINEx(1, _##name, __VA_ARGS__)
-+#define SYSCALL_DEFINE2(name, ...) SYSCALL_DEFINEx(2, _##name, __VA_ARGS__)
-+#define SYSCALL_DEFINE3(name, ...) SYSCALL_DEFINEx(3, _##name, __VA_ARGS__)
-+#define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
-+#define SYSCALL_DEFINE5(name, ...) SYSCALL_DEFINEx(5, _##name, __VA_ARGS__)
-+#define SYSCALL_DEFINE6(name, ...) SYSCALL_DEFINEx(6, _##name, __VA_ARGS__)
+@@ -451,7 +451,7 @@ static int save_user_regs(struct pt_regs
+ 	 * the saved MSR value to indicate that frame->mc_vregs
+ 	 * contains valid data
+ 	 */
+-	if (current->thread.used_vsr) {
++	if (current->thread.used_vsr && ctx_has_vsx_region) {
+ 		__giveup_vsx(current);
+ 		if (copy_vsx_to_user(&frame->mc_vsregs, current))
+ 			return 1;
+@@ -858,11 +858,11 @@ int handle_rt_signal32(unsigned long sig
+ 	frame = &rt_sf->uc.uc_mcontext;
+ 	addr = frame;
+ 	if (vdso32_rt_sigtramp && current->mm->context.vdso_base) {
+-		if (save_user_regs(regs, frame, 0))
++		if (save_user_regs(regs, frame, 0, 1))
+ 			goto badframe;
+ 		regs->link = current->mm->context.vdso_base + vdso32_rt_sigtramp;
+ 	} else {
+-		if (save_user_regs(regs, frame, __NR_rt_sigreturn))
++		if (save_user_regs(regs, frame, __NR_rt_sigreturn, 1))
+ 			goto badframe;
+ 		regs->link = (unsigned long) frame->tramp;
+ 	}
+@@ -936,12 +936,13 @@ long sys_swapcontext(struct ucontext __u
+ 		     int ctx_size, int r6, int r7, int r8, struct pt_regs *regs)
+ {
+ 	unsigned char tmp;
++	int ctx_has_vsx_region = 0;
  
  #ifdef CONFIG_PPC64
- #define SYSCALL_ALIAS(alias, name)					\
-@@ -116,21 +116,21 @@ struct old_linux_dirent;
+ 	unsigned long new_msr = 0;
  
- #define SYSCALL_DEFINE(name) static inline long SYSC_##name
- #define SYSCALL_DEFINEx(x, name, ...)					\
--	asmlinkage long sys_##name(__SC_DECL##x(__VA_ARGS__));		\
--	static inline long SYSC_##name(__SC_DECL##x(__VA_ARGS__));	\
--	asmlinkage long SyS_##name(__SC_LONG##x(__VA_ARGS__))		\
-+	asmlinkage long sys##name(__SC_DECL##x(__VA_ARGS__));		\
-+	static inline long SYSC##name(__SC_DECL##x(__VA_ARGS__));	\
-+	asmlinkage long SyS##name(__SC_LONG##x(__VA_ARGS__))		\
- 	{								\
- 		__SC_TEST##x(__VA_ARGS__);				\
--		return (long) SYSC_##name(__SC_CAST##x(__VA_ARGS__));	\
-+		return (long) SYSC##name(__SC_CAST##x(__VA_ARGS__));	\
- 	}								\
--	SYSCALL_ALIAS(sys_##name, SyS_##name);				\
--	static inline long SYSC_##name(__SC_DECL##x(__VA_ARGS__))
-+	SYSCALL_ALIAS(sys##name, SyS##name);				\
-+	static inline long SYSC##name(__SC_DECL##x(__VA_ARGS__))
+ 	if (new_ctx &&
+-	    __get_user(new_msr, &new_ctx->uc_mcontext.mc_gregs[PT_MSR]))
++	    get_user(new_msr, &new_ctx->uc_mcontext.mc_gregs[PT_MSR]))
+ 		return -EFAULT;
+ 	/*
+ 	 * Check that the context is not smaller than the original
+@@ -956,16 +957,9 @@ long sys_swapcontext(struct ucontext __u
+ 	if ((ctx_size < sizeof(struct ucontext)) &&
+ 	    (new_msr & MSR_VSX))
+ 		return -EINVAL;
+-#ifdef CONFIG_VSX
+-	/*
+-	 * If userspace doesn't provide enough room for VSX data,
+-	 * but current thread has used VSX, we don't have anywhere
+-	 * to store the full context back into.
+-	 */
+-	if ((ctx_size < sizeof(struct ucontext)) &&
+-	    (current->thread.used_vsr && old_ctx))
+-		return -EINVAL;
+-#endif
++	/* Does the context have enough room to store VSX data? */
++	if (ctx_size >= sizeof(struct ucontext))
++		ctx_has_vsx_region = 1;
+ #else
+ 	/* Context size is for future use. Right now, we only make sure
+ 	 * we are passed something we understand
+@@ -985,17 +979,17 @@ long sys_swapcontext(struct ucontext __u
+ 		 */
+ 		mctx = (struct mcontext __user *)
+ 			((unsigned long) &old_ctx->uc_mcontext & ~0xfUL);
+-		if (!access_ok(VERIFY_WRITE, old_ctx, sizeof(*old_ctx))
+-		    || save_user_regs(regs, mctx, 0)
++		if (!access_ok(VERIFY_WRITE, old_ctx, ctx_size)
++		    || save_user_regs(regs, mctx, 0, ctx_has_vsx_region)
+ 		    || put_sigset_t(&old_ctx->uc_sigmask, &current->blocked)
+ 		    || __put_user(to_user_ptr(mctx), &old_ctx->uc_regs))
+ 			return -EFAULT;
+ 	}
+ 	if (new_ctx == NULL)
+ 		return 0;
+-	if (!access_ok(VERIFY_READ, new_ctx, sizeof(*new_ctx))
++	if (!access_ok(VERIFY_READ, new_ctx, ctx_size)
+ 	    || __get_user(tmp, (u8 __user *) new_ctx)
+-	    || __get_user(tmp, (u8 __user *) (new_ctx + 1) - 1))
++	    || __get_user(tmp, (u8 __user *) new_ctx + ctx_size - 1))
+ 		return -EFAULT;
  
- #else /* CONFIG_HAVE_SYSCALL_WRAPPERS */
+ 	/*
+@@ -1196,11 +1190,11 @@ int handle_signal32(unsigned long sig, s
+ 		goto badframe;
  
- #define SYSCALL_DEFINE(name) asmlinkage long sys_##name
- #define SYSCALL_DEFINEx(x, name, ...)					\
--	asmlinkage long sys_##name(__SC_DECL##x(__VA_ARGS__))
-+	asmlinkage long sys##name(__SC_DECL##x(__VA_ARGS__))
+ 	if (vdso32_sigtramp && current->mm->context.vdso_base) {
+-		if (save_user_regs(regs, &frame->mctx, 0))
++		if (save_user_regs(regs, &frame->mctx, 0, 1))
+ 			goto badframe;
+ 		regs->link = current->mm->context.vdso_base + vdso32_sigtramp;
+ 	} else {
+-		if (save_user_regs(regs, &frame->mctx, __NR_sigreturn))
++		if (save_user_regs(regs, &frame->mctx, __NR_sigreturn, 1))
+ 			goto badframe;
+ 		regs->link = (unsigned long) frame->mctx.tramp;
+ 	}
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -74,7 +74,8 @@ static const char fmt64[] = KERN_INFO \
+  */
  
- #endif /* CONFIG_HAVE_SYSCALL_WRAPPERS */
+ static long setup_sigcontext(struct sigcontext __user *sc, struct pt_regs *regs,
+-		 int signr, sigset_t *set, unsigned long handler)
++		 int signr, sigset_t *set, unsigned long handler,
++		 int ctx_has_vsx_region)
+ {
+ 	/* When CONFIG_ALTIVEC is set, we _always_ setup v_regs even if the
+ 	 * process never used altivec yet (MSR_VEC is zero in pt_regs of
+@@ -121,7 +122,7 @@ static long setup_sigcontext(struct sigc
+ 	 * then out to userspace.  Update v_regs to point after the
+ 	 * VMX data.
+ 	 */
+-	if (current->thread.used_vsr) {
++	if (current->thread.used_vsr && ctx_has_vsx_region) {
+ 		__giveup_vsx(current);
+ 		v_regs += ELF_NVRREG;
+ 		err |= copy_vsx_to_user(v_regs, current);
+@@ -284,9 +285,10 @@ int sys_swapcontext(struct ucontext __us
+ 	unsigned char tmp;
+ 	sigset_t set;
+ 	unsigned long new_msr = 0;
++	int ctx_has_vsx_region = 0;
  
+ 	if (new_ctx &&
+-	    __get_user(new_msr, &new_ctx->uc_mcontext.gp_regs[PT_MSR]))
++	    get_user(new_msr, &new_ctx->uc_mcontext.gp_regs[PT_MSR]))
+ 		return -EFAULT;
+ 	/*
+ 	 * Check that the context is not smaller than the original
+@@ -301,28 +303,23 @@ int sys_swapcontext(struct ucontext __us
+ 	if ((ctx_size < sizeof(struct ucontext)) &&
+ 	    (new_msr & MSR_VSX))
+ 		return -EINVAL;
+-#ifdef CONFIG_VSX
+-	/*
+-	 * If userspace doesn't provide enough room for VSX data,
+-	 * but current thread has used VSX, we don't have anywhere
+-	 * to store the full context back into.
+-	 */
+-	if ((ctx_size < sizeof(struct ucontext)) &&
+-	    (current->thread.used_vsr && old_ctx))
+-		return -EINVAL;
+-#endif
++	/* Does the context have enough room to store VSX data? */
++	if (ctx_size >= sizeof(struct ucontext))
++		ctx_has_vsx_region = 1;
++
+ 	if (old_ctx != NULL) {
+-		if (!access_ok(VERIFY_WRITE, old_ctx, sizeof(*old_ctx))
+-		    || setup_sigcontext(&old_ctx->uc_mcontext, regs, 0, NULL, 0)
++		if (!access_ok(VERIFY_WRITE, old_ctx, ctx_size)
++		    || setup_sigcontext(&old_ctx->uc_mcontext, regs, 0, NULL, 0,
++					ctx_has_vsx_region)
+ 		    || __copy_to_user(&old_ctx->uc_sigmask,
+ 				      &current->blocked, sizeof(sigset_t)))
+ 			return -EFAULT;
+ 	}
+ 	if (new_ctx == NULL)
+ 		return 0;
+-	if (!access_ok(VERIFY_READ, new_ctx, sizeof(*new_ctx))
++	if (!access_ok(VERIFY_READ, new_ctx, ctx_size)
+ 	    || __get_user(tmp, (u8 __user *) new_ctx)
+-	    || __get_user(tmp, (u8 __user *) (new_ctx + 1) - 1))
++	    || __get_user(tmp, (u8 __user *) new_ctx + ctx_size - 1))
+ 		return -EFAULT;
+ 
+ 	/*
+@@ -425,7 +422,7 @@ int handle_rt_signal64(int signr, struct
+ 			  &frame->uc.uc_stack.ss_flags);
+ 	err |= __put_user(current->sas_ss_size, &frame->uc.uc_stack.ss_size);
+ 	err |= setup_sigcontext(&frame->uc.uc_mcontext, regs, signr, NULL,
+-				(unsigned long)ka->sa.sa_handler);
++				(unsigned long)ka->sa.sa_handler, 1);
+ 	err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
+ 	if (err)
+ 		goto badframe;
 
