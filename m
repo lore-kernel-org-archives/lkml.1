@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815AbZBNVsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755817AbZBNVtl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754815AbZBNVsL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 16:48:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755151AbZBNVrq
+	id S1755817AbZBNVtl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 16:49:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755107AbZBNVsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 16:47:46 -0500
-Received: from rosi.naasa.net ([212.8.0.13]:50781 "EHLO rosi.naasa.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753924AbZBNVro (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 16:47:44 -0500
-X-Greylist: delayed 1788 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Feb 2009 16:47:44 EST
-From: Joerg Platte <jplatte@naasa.net>
-Reply-To: jplatte@naasa.net
-To: linux-kernel@vger.kernel.org
-Subject: cpuinfo shows wrong MHz value
-Date: Sat, 14 Feb 2009 22:17:48 +0100
-User-Agent: KMail/1.9.9
+	Sat, 14 Feb 2009 16:48:50 -0500
+Received: from mail-bw0-f167.google.com ([209.85.218.167]:33361 "EHLO
+	mail-bw0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755465AbZBNVst (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 16:48:49 -0500
+From: Hannes Eder <hannes@hanneseder.net>
+Subject: [PATCH 37/43] drivers/net/wireless: fix sparse warning: context
+	imbalance
+To: netdev@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Sat, 14 Feb 2009 22:48:44 +0100
+Message-ID: <20090214214833.24377.6182.stgit@vmbox.hanneseder.net>
+In-Reply-To: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
+References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
+User-Agent: StGit/0.14.3.348.gcb02
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200902142217.51655.jplatte@naasa.net>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm running kernel 2.6.28.4 and /proc/cpuinfo and powertop and vmware are 
-unable to detect the correct speed (1.6 GHz) of the processor:
+Impact: Attribute function with __acquires(...) resp. __releases(...).
 
-cat /proc/cpuinfo
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 1
-model name      : Intel(R) Pentium(R) 4 CPU 1.60GHz
-stepping        : 2
-cpu MHz         : 13000.000
-cache size      : 256 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pebs bts
-bogomips        : 3197.21
-clflush size    : 64
-power management:
+Fix this sparse warnings:
+  drivers/net/wireless/strip.c:955:21: warning: context imbalance in 'strip_seq_start' - wrong count at exit
+  drivers/net/wireless/strip.c:975:13: warning: context imbalance in 'strip_seq_stop' - unexpected unlock
 
-According to dmesg the kernel detects the CPU correctly during bootup:
+Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+---
+ drivers/net/wireless/strip.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Enabling fast FPU save and restore... done.
-Enabling unmasked SIMD FPU exception support... done.
-Initializing CPU#0
-PID hash table entries: 4096 (order: 12, 16384 bytes)
-TSC: PIT calibration matches PMTIMER. 1 loops
-Detected 1598.609 MHz processor.
+diff --git a/drivers/net/wireless/strip.c b/drivers/net/wireless/strip.c
+index d6bf8d2..39f525e 100644
+--- a/drivers/net/wireless/strip.c
++++ b/drivers/net/wireless/strip.c
+@@ -950,6 +950,7 @@ static struct strip *strip_get_idx(loff_t pos)
+ }
+ 
+ static void *strip_seq_start(struct seq_file *seq, loff_t *pos)
++	__acquires(RCU)
+ {
+ 	rcu_read_lock();
+ 	return *pos ? strip_get_idx(*pos - 1) : SEQ_START_TOKEN;
+@@ -973,6 +974,7 @@ static void *strip_seq_next(struct seq_file *seq, void *v, loff_t *pos)
+ }
+ 
+ static void strip_seq_stop(struct seq_file *seq, void *v)
++	__releases(RCU)
+ {
+ 	rcu_read_unlock();
+ }
 
-IIRC this behavior started some kernels ago, I can't remember which kernel it 
-was. Is it possible that the ACPI information is wrong?
-
-regards,
-Jörg
