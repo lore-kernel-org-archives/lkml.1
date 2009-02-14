@@ -1,85 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764854AbZBNBWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764155AbZBNBYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764854AbZBNBWo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:22:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762936AbZBNBIt
+	id S1764155AbZBNBYp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:24:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762686AbZBNBNB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:08:49 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40917 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762633AbZBNBIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:08:43 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/9] PM/resume: wait for device probing to finish
-Date: Sat, 14 Feb 2009 02:00:19 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Andrey Borzenkov <arvidjaar@mail.ru>
-References: <200902140157.40869.rjw@sisk.pl>
-In-Reply-To: <200902140157.40869.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902140200.21022.rjw@sisk.pl>
+	Fri, 13 Feb 2009 20:13:01 -0500
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:49174
+	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763638AbZBNBNA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:13:00 -0500
+X-Greylist: delayed 314 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Feb 2009 20:12:59 EST
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yinghai@kernel.org>, Ian Campbell <Ian.Campbell@citrix.com>,
+       Jeremy Fitzhardinge <jeremy@f9-builder (none)>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 5/9] x86/io_apic: add get_nr_irqs_gsi()
+Date: Fri, 13 Feb 2009 17:12:03 -0800
+Message-Id: <5b0148b366eaa87072ab261f71c4c545be8e607f.1234573847.git.jeremy.fitzhardinge@citrix.com>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <cbcff9ab54a2189156077c81c706fc30ba84344c.1234573847.git.jeremy.fitzhardinge@citrix.com>
+References: <cover.1234573847.git.jeremy.fitzhardinge@citrix.com>
+ <cover.1234573847.git.jeremy.fitzhardinge@citrix.com>
+ <3c7db30686056c9b86cc61ef50dd5572de868512.1234573847.git.jeremy.fitzhardinge@citrix.com>
+ <3e46dae897fd5620f50b4cca9272969f5546aa88.1234573847.git.jeremy.fitzhardinge@citrix.com>
+ <79724b71f4b8ef1fb65ea246dde2e3e1344b2a43.1234573847.git.jeremy.fitzhardinge@citrix.com>
+ <cbcff9ab54a2189156077c81c706fc30ba84344c.1234573847.git.jeremy.fitzhardinge@citrix.com>
+In-Reply-To: <cover.1234573847.git.jeremy.fitzhardinge@citrix.com>
+References: <cover.1234573847.git.jeremy.fitzhardinge@citrix.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arjan van de Ven <arjan@linux.intel.com>
+From: Jeremy Fitzhardinge <jeremy@f9-builder.(none)>
 
-the resume code does not currently wait for device probing to finish.
-Even without async function calls this is dicey and not correct,
-but with async function calls during the boot sequence this is going
-to get hit more...
+Add get_nr_irqs_gsi() to return nr_irqs_gsi.  Xen will use this to
+determine how many irqs it needs to reserve for hardware irqs.
 
-This patch adds the synchronization using the newly introduced helper.
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- kernel/power/disk.c |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+ arch/x86/include/asm/io_apic.h |    1 +
+ arch/x86/kernel/io_apic.c      |    5 +++++
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
-Index: linux-2.6/kernel/power/disk.c
-===================================================================
---- linux-2.6.orig/kernel/power/disk.c
-+++ linux-2.6/kernel/power/disk.c
-@@ -595,6 +595,12 @@ static int software_resume(void)
- 	unsigned int flags;
+diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
+index 20b543a..10a7a43 100644
+--- a/arch/x86/include/asm/io_apic.h
++++ b/arch/x86/include/asm/io_apic.h
+@@ -168,6 +168,7 @@ extern void reinit_intr_remapped_IO_APIC(int);
+ #endif
  
- 	/*
-+	 * If the user said "noresume".. bail out early.
-+	 */
-+	if (noresume)
-+		return 0;
+ extern void probe_nr_irqs_gsi(void);
++extern int get_nr_irqs_gsi(void);
+ 
+ extern int setup_ioapic_entry(int apic, int irq,
+ 			      struct IO_APIC_route_entry *entry,
+diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
+index de0368a..f66c093 100644
+--- a/arch/x86/kernel/io_apic.c
++++ b/arch/x86/kernel/io_apic.c
+@@ -3865,6 +3865,11 @@ void __init probe_nr_irqs_gsi(void)
+ 	printk(KERN_DEBUG "nr_irqs_gsi: %d\n", nr_irqs_gsi);
+ }
+ 
++int get_nr_irqs_gsi(void)
++{
++	return nr_irqs_gsi;
++}
 +
-+	/*
- 	 * name_to_dev_t() below takes a sysfs buffer mutex when sysfs
- 	 * is configured into the kernel. Since the regular hibernate
- 	 * trigger path is via sysfs which takes a buffer mutex before
-@@ -610,6 +616,11 @@ static int software_resume(void)
- 			mutex_unlock(&pm_mutex);
- 			return -ENOENT;
- 		}
-+		/*
-+		 * Some device discovery might still be in progress; we need
-+		 * to wait for this to finish.
-+		 */
-+		wait_for_device_probe();
- 		swsusp_resume_device = name_to_dev_t(resume_file);
- 		pr_debug("PM: Resume from partition %s\n", resume_file);
- 	} else {
+ #ifdef CONFIG_SPARSE_IRQ
+ int __init arch_probe_nr_irqs(void)
+ {
+-- 
+1.6.0.6
+
