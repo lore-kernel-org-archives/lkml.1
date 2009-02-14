@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762143AbZBNBOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763939AbZBNBOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762143AbZBNBOS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:14:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761432AbZBNBB6
+	id S1763939AbZBNBOp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:14:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761480AbZBNBB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:01:58 -0500
-Received: from kroah.org ([198.145.64.141]:39835 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:01:59 -0500
+Received: from kroah.org ([198.145.64.141]:39846 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753944AbZBNBB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:01:56 -0500
-Date: Fri, 13 Feb 2009 16:59:11 -0800
+	id S1761411AbZBNBB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:01:57 -0500
+Date: Fri, 13 Feb 2009 16:59:13 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Herbert Xu <herbert@gondor.apana.org.au>,
+       alan@lxorguk.ukuu.org.uk, Eric Dumazet <dada1@cosmosbay.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 34/47] packet: Avoid lock_sock in mmap handler
-Message-ID: <20090214005911.GI11282@kroah.com>
+Subject: [patch 35/47] tcp: splice as many packets as possible at once
+Message-ID: <20090214005913.GJ11282@kroah.com>
 References: <20090214005130.617401075@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline; filename="packet-avoid-lock_sock-in-mmap-handler.patch"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="tcp-splice-as-many-packets-as-possible-at-once.patch"
 In-Reply-To: <20090214005726.GA11282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,85 +40,71 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
+From: Willy Tarreau <w@1wt.eu>
 
-[ Upstream commit 905db44087855e3c1709f538ecdc22fd149cadd8 ]
+[ Upstream commit 33966dd0e2f68f26943cd9ee93ec6abbc6547a8e ]
 
-As the mmap handler gets called under mmap_sem, and we may grab
-mmap_sem elsewhere under the socket lock to access user data, we
-should avoid grabbing the socket lock in the mmap handler.
+As spotted by Willy Tarreau, current splice() from tcp socket to pipe is not
+optimal. It processes at most one segment per call.
+This results in low performance and very high overhead due to syscall rate
+when splicing from interfaces which do not support LRO.
 
-Since the only thing we care about in the mmap handler is for
-pg_vec* to be invariant, i.e., to exclude packet_set_ring, we
-can achieve this by simply using a new mutex.
+Willy provided a patch inside tcp_splice_read(), but a better fix
+is to let tcp_read_sock() process as many segments as possible, so
+that tcp_rcv_space_adjust() and tcp_cleanup_rbuf() are called less
+often.
 
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-Tested-by: Martin MOKREJŠ <mmokrejs@ribosome.natur.cuni.cz>
+With this change, splice() behaves like tcp_recvmsg(), being able
+to consume many skbs in one system call. With typical 1460 bytes
+of payload per frame, that means splice(SPLICE_F_NONBLOCK) can return
+16*1460 = 23360 bytes.
+
+Signed-off-by: Willy Tarreau <w@1wt.eu>
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/packet/af_packet.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ net/ipv4/tcp.c |   11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
---- a/net/packet/af_packet.c
-+++ b/net/packet/af_packet.c
-@@ -77,6 +77,7 @@
- #include <linux/poll.h>
- #include <linux/module.h>
- #include <linux/init.h>
-+#include <linux/mutex.h>
+--- a/net/ipv4/tcp.c
++++ b/net/ipv4/tcp.c
+@@ -518,8 +518,12 @@ static int tcp_splice_data_recv(read_des
+ 				unsigned int offset, size_t len)
+ {
+ 	struct tcp_splice_state *tss = rd_desc->arg.data;
++	int ret;
  
- #ifdef CONFIG_INET
- #include <net/inet_common.h>
-@@ -175,6 +176,7 @@ struct packet_sock {
- #endif
- 	struct packet_type	prot_hook;
- 	spinlock_t		bind_lock;
-+	struct mutex		pg_vec_lock;
- 	unsigned int		running:1,	/* prot_hook is attached*/
- 				auxdata:1,
- 				origdev:1;
-@@ -1068,6 +1070,7 @@ static int packet_create(struct net *net
- 	 */
- 
- 	spin_lock_init(&po->bind_lock);
-+	mutex_init(&po->pg_vec_lock);
- 	po->prot_hook.func = packet_rcv;
- 
- 	if (sock->type == SOCK_PACKET)
-@@ -1863,6 +1866,7 @@ static int packet_set_ring(struct sock *
- 	synchronize_net();
- 
- 	err = -EBUSY;
-+	mutex_lock(&po->pg_vec_lock);
- 	if (closing || atomic_read(&po->mapped) == 0) {
- 		err = 0;
- #define XC(a, b) ({ __typeof__ ((a)) __t; __t = (a); (a) = (b); __t; })
-@@ -1884,6 +1888,7 @@ static int packet_set_ring(struct sock *
- 		if (atomic_read(&po->mapped))
- 			printk(KERN_DEBUG "packet_mmap: vma is busy: %d\n", atomic_read(&po->mapped));
- 	}
-+	mutex_unlock(&po->pg_vec_lock);
- 
- 	spin_lock(&po->bind_lock);
- 	if (was_running && !po->running) {
-@@ -1916,7 +1921,7 @@ static int packet_mmap(struct file *file
- 
- 	size = vma->vm_end - vma->vm_start;
- 
--	lock_sock(sk);
-+	mutex_lock(&po->pg_vec_lock);
- 	if (po->pg_vec == NULL)
- 		goto out;
- 	if (size != po->pg_vec_len*po->pg_vec_pages*PAGE_SIZE)
-@@ -1939,7 +1944,7 @@ static int packet_mmap(struct file *file
- 	err = 0;
- 
- out:
--	release_sock(sk);
-+	mutex_unlock(&po->pg_vec_lock);
- 	return err;
+-	return skb_splice_bits(skb, offset, tss->pipe, tss->len, tss->flags);
++	ret = skb_splice_bits(skb, offset, tss->pipe, rd_desc->count, tss->flags);
++	if (ret > 0)
++		rd_desc->count -= ret;
++	return ret;
  }
- #endif
+ 
+ static int __tcp_splice_read(struct sock *sk, struct tcp_splice_state *tss)
+@@ -527,6 +531,7 @@ static int __tcp_splice_read(struct sock
+ 	/* Store TCP splice context information in read_descriptor_t. */
+ 	read_descriptor_t rd_desc = {
+ 		.arg.data = tss,
++		.count	  = tss->len,
+ 	};
+ 
+ 	return tcp_read_sock(sk, &rd_desc, tcp_splice_data_recv);
+@@ -611,11 +616,13 @@ ssize_t tcp_splice_read(struct socket *s
+ 		tss.len -= ret;
+ 		spliced += ret;
+ 
++		if (!timeo)
++			break;
+ 		release_sock(sk);
+ 		lock_sock(sk);
+ 
+ 		if (sk->sk_err || sk->sk_state == TCP_CLOSE ||
+-		    (sk->sk_shutdown & RCV_SHUTDOWN) || !timeo ||
++		    (sk->sk_shutdown & RCV_SHUTDOWN) ||
+ 		    signal_pending(current))
+ 			break;
+ 	}
 
