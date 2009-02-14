@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932485AbZBNB1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763968AbZBNB23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932485AbZBNB1i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:27:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763337AbZBNBP7
+	id S1763968AbZBNB23 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:28:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763335AbZBNBQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:15:59 -0500
-Received: from kroah.org ([198.145.64.141]:50096 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:16:01 -0500
+Received: from kroah.org ([198.145.64.141]:50137 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764088AbZBNBP6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:15:58 -0500
-Date: Fri, 13 Feb 2009 17:12:08 -0800
+	id S1763261AbZBNBQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:16:00 -0500
+Date: Fri, 13 Feb 2009 17:12:23 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,87 +22,83 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/48] 2.6.28.6-stable review
-Message-ID: <20090214011208.GA17706@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Paul Clements <paul.clements@steeleye.com>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: [patch 02/48] nbd: fix I/O hang on disconnected nbds
+Message-ID: <20090214011223.GC17706@kroah.com>
+References: <20090214010805.419403436@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Disposition: inline; filename="nbd-fix-i-o-hang-on-disconnected-nbds.patch"
+In-Reply-To: <20090214011208.GA17706@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.28.6 release.
-There are 48 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+2.6.28-stable review patch.  If anyone has any objections, please let us know.
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+------------------
 
-Responses should be made by Tuesday Feb 17, 00:00:00@ UTC.
-Anything received after that time might be too late.
+From: Paul Clements <paul.clements@steeleye.com>
 
-The whole patch series can be found in one patch at:
-        kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.28.6-rc1.gz
-and the diffstat can be found below.
+commit 4d48a542b42747c36a5937447d9c3de7c897ea50 upstream.
 
+Fix a problem that causes I/O to a disconnected (or partially initialized)
+nbd device to hang indefinitely.  To reproduce:
 
-thanks,
+# ioctl NBD_SET_SIZE_BLOCKS /dev/nbd23 514048
+# dd if=/dev/nbd23 of=/dev/null bs=4096 count=1
 
-greg k-h
+...hangs...
 
- Makefile                                       |    2 +-
- arch/powerpc/mm/fsl_booke_mmu.c                |    4 +-
- arch/powerpc/mm/pgtable_32.c                   |    4 +-
- arch/sparc64/Kconfig                           |    1 +
- arch/sparc64/kernel/sys_sparc.c                |   48 ++++++++---------
- arch/sparc64/kernel/syscalls.S                 |    2 +-
- arch/sparc64/kernel/systbls.S                  |   16 +++---
- arch/sparc64/kernel/systbls.h                  |    3 -
- arch/x86/kernel/microcode_amd.c                |   23 ++------
- arch/x86/kernel/vmi_32.c                       |   11 ++++
- drivers/ata/libata-eh.c                        |    5 +-
- drivers/block/nbd.c                            |    9 +++
- drivers/hid/hid-microsoft.c                    |   13 ++---
- drivers/ide/ide-cd.c                           |    3 +
- drivers/ide/ide-io.c                           |    9 ++-
- drivers/net/skfp/skfddi.c                      |    4 +-
- drivers/net/sky2.c                             |    6 +-
- drivers/net/sungem.c                           |    8 ++--
- drivers/net/tun.c                              |   10 +++-
- drivers/net/virtio_net.c                       |    3 +-
- drivers/net/wireless/zd1211rw/zd_rf.c          |    1 +
- drivers/net/wireless/zd1211rw/zd_usb.c         |    1 +
- drivers/parport/parport_serial.c               |    5 ++
- drivers/w1/slaves/w1_therm.c                   |    2 +-
- fs/compat_ioctl.c                              |    7 +++
- fs/lockd/svclock.c                             |    6 ++-
- include/linux/Kbuild                           |    2 +-
- include/linux/ata.h                            |   15 ++++--
- include/linux/if_tunnel.h                      |    3 +
- include/linux/syscalls.h                       |   28 +++++-----
- include/net/sctp/checksum.h                    |    2 +-
- mm/mmap.c                                      |    7 ++-
- mm/page-writeback.c                            |   20 ++++++--
- net/core/skbuff.c                              |   15 +++---
- net/core/sock.c                                |    2 +
- net/ipv4/ipconfig.c                            |    6 +-
- net/ipv4/tcp.c                                 |   12 ++++-
- net/ipv4/udp.c                                 |    7 ++-
- net/ipv6/ip6_flowlabel.c                       |    8 ++-
- net/ipv6/ip6_output.c                          |   67 ++++++++++++++++++-----
- net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c |    4 +-
- net/mac80211/tx.c                              |    2 +
- net/netfilter/xt_sctp.c                        |    2 +-
- net/packet/af_packet.c                         |   17 ++++--
- net/sctp/output.c                              |    7 ++-
- net/sctp/outqueue.c                            |    3 +-
- scripts/kernel-doc                             |   40 ++++++++++++++-
- sound/drivers/mtpav.c                          |    3 +-
- sound/pci/hda/patch_analog.c                   |    4 +-
- 49 files changed, 320 insertions(+), 162 deletions(-)
+This can also occur when an nbd device loses its nbd-client/server
+connection.  Although we clear the queue of any outstanding I/Os after the
+client/server connection fails, any additional I/Os that get queued later
+will hang.
+
+This bug may also be the problem reported in this bug report:
+http://bugzilla.kernel.org/show_bug.cgi?id=12277
+
+Testing would need to be performed to determine if the two issues are the
+same.
+
+This problem was introduced by the new request handling thread code ("NBD:
+allow nbd to be used locally", 3/2008), which entered into mainline around
+2.6.25.
+
+The fix, which is fairly simple, is to restore the check for lo->sock
+being NULL in do_nbd_request.  This causes I/O to an uninitialized nbd to
+immediately fail with an I/O error, as it did prior to the introduction of
+this bug.
+
+Signed-off-by: Paul Clements <paul.clements@steeleye.com>
+Reported-by: Jon Nelson <jnelson-kernel-bugzilla@jamponi.net>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/block/nbd.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+--- a/drivers/block/nbd.c
++++ b/drivers/block/nbd.c
+@@ -549,6 +549,15 @@ static void do_nbd_request(struct reques
+ 
+ 		BUG_ON(lo->magic != LO_MAGIC);
+ 
++		if (unlikely(!lo->sock)) {
++			printk(KERN_ERR "%s: Attempted send on closed socket\n",
++				lo->disk->disk_name);
++			req->errors++;
++			nbd_end_request(req);
++			spin_lock_irq(q->queue_lock);
++			continue;
++		}
++
+ 		spin_lock_irq(&lo->queue_lock);
+ 		list_add_tail(&req->queuelist, &lo->waiting_queue);
+ 		spin_unlock_irq(&lo->queue_lock);
+
