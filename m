@@ -1,63 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752010AbZBNOrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbZBNOxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752010AbZBNOrV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 09:47:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbZBNOrI
+	id S1753276AbZBNOxQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 09:53:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbZBNOw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 09:47:08 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:45953 "EHLO
+	Sat, 14 Feb 2009 09:52:58 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:42713 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752966AbZBNOrF (ORCPT
+	with ESMTP id S1751898AbZBNOw5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 09:47:05 -0500
-Subject: [PATCH 2.5/2] generic-smp: remove cfd rcu_head
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>
-In-Reply-To: <20090212223750.384627915@chello.nl>
-References: <20090212223200.979433820@chello.nl>
-	 <20090212223750.384627915@chello.nl>
-Content-Type: text/plain
-Date: Sat, 14 Feb 2009 15:46:47 +0100
-Message-Id: <1234622807.4698.32.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.90 
-Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+	Sat, 14 Feb 2009 09:52:57 -0500
+Date: Sat, 14 Feb 2009 09:52:56 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Alexandre Rostovtsev <tetromino@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-laptop@vger.kernel.org
+Subject: Re: [0/3] lenovo-sl-laptop : new driver for drivers/staging
+Message-ID: <20090214145256.GA7071@infradead.org>
+References: <20090214051214.359d4fd4@leftboat.lan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090214051214.359d4fd4@leftboat.lan>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: generic-smp: remove cfd rcu_head
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Sat Feb 14 15:41:24 CET 2009
+On Sat, Feb 14, 2009 at 05:12:14AM -0500, Alexandre Rostovtsev wrote:
+> Patches against 2.6.29-rc5 will be in following emails.
 
-Since we no longer use call_rcu() on call_function_data, we can remove the
-rcu_head structure from it.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/smp.c |    5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
-
-Index: linux-2.6/kernel/smp.c
-===================================================================
---- linux-2.6.orig/kernel/smp.c
-+++ linux-2.6/kernel/smp.c
-@@ -39,10 +39,7 @@ struct call_function_data {
- 	struct call_single_data csd;
- 	spinlock_t lock;
- 	unsigned int refs;
--	union {
--		struct rcu_head rcu_head;
--		unsigned int stamp;
--	};
-+	unsigned int stamp;
- 	struct cpumask cpumask;
- };
- 
-
+Please submit it to the kernel proper, not the staging tree.  Also
+please just submit it in one patch instead of the split.
 
