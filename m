@@ -1,77 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932464AbZBNB5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758825AbZBNCLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932464AbZBNB5T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:57:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbZBNB5G
+	id S1758825AbZBNCLc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 21:11:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbZBNCLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:57:06 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:44224 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753010AbZBNB5F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:57:05 -0500
-Message-ID: <49962413.9020101@zytor.com>
-Date: Fri, 13 Feb 2009 17:53:23 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 13 Feb 2009 21:11:23 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57211 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753126AbZBNCLX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 21:11:23 -0500
+Message-ID: <4996280B.6000104@kernel.org>
+Date: Fri, 13 Feb 2009 18:10:19 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org,
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, cpw@sgi.com
-Subject: Re: #tj-percpu has been rebased
-References: <49833350.1020809@kernel.org> <49939964.4070607@kernel.org> <49939B08.1050801@kernel.org> <200902140728.55954.rusty@rustcorp.com.au> <4996141A.1050506@kernel.org>
-In-Reply-To: <4996141A.1050506@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+       Ian Campbell <Ian.Campbell@citrix.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 2/9] xen: hook io_apic read/write operations
+References: <cover.1234573847.git.jeremy.fitzhardinge@citrix.com> <cover.1234573847.git.jeremy.fitzhardinge@citrix.com> <3c7db30686056c9b86cc61ef50dd5572de868512.1234573847.git.jeremy.fitzhardinge@citrix.com> <3e46dae897fd5620f50b4cca9272969f5546aa88.1234573847.git.jeremy.fitzhardinge@citrix.com>
+In-Reply-To: <3e46dae897fd5620f50b4cca9272969f5546aa88.1234573847.git.jeremy.fitzhardinge@citrix.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
+Jeremy Fitzhardinge wrote:
+> In Xen, writes to the IO APIC are paravirtualized via hypercalls, so
+> implement the appropriate operations.
 > 
-> Percpu areas are allocated in chunks in vmalloc area.  Each chunk is
-> consisted of num_possible_cpus() units and the first chunk is used for
-> static percpu variables in the kernel image (special boot time
-> alloc/init handling necessary as these areas need to be brought up
-> before allocation services are running).  Unit grows as necessary and
-> all units grow or shrink in unison.  When a chunk is filled up,
-> another chunk is allocated.  ie. in vmalloc area
+> This version of the patch just hooks the io_apic read/write functions
+> directly, rather than introducing another layer of indirection.  The
+> xen_initial_domain() tests compile to 0 if CONFIG_XEN_DOM0 isn't set,
+> and are cheap if it is.
 > 
->   c0                           c1                         c2           
->    -------------------          -------------------        ------------
->   | u0 | u1 | u2 | u3 |        | u0 | u1 | u2 | u3 |      | u0 | u1 | u
->    -------------------  ......  -------------------  ....  ------------
+> (An alternative would be to add io_apic_ops, and point them to the Xen
+> implementation as needed.  HPA deemed this extra level of indirection to
+> be excessive.)
+
+that will be more clean.
+
 > 
-> Allocation is done in offset-size areas of single unit space.  Ie,
-> when UNIT_SIZE is 128k, an area at 134k of 512bytes occupy 512bytes at
-> 6k of c1:u0, c1:u1, c1:u2 and c1u3.  Percpu access can be done by
-> configuring percpu base registers UNIT_SIZE apart.
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> ---
+>  arch/x86/include/asm/io_apic.h |    6 ++++
+>  arch/x86/kernel/io_apic.c      |   32 ++++++++++++++++++++--
+>  arch/x86/xen/Makefile          |    3 +-
+>  arch/x86/xen/apic.c            |   57 ++++++++++++++++++++++++++++++++++++++++
+>  arch/x86/xen/enlighten.c       |    2 +
+>  arch/x86/xen/xen-ops.h         |    6 ++++
+>  6 files changed, 102 insertions(+), 4 deletions(-)
+>  create mode 100644 arch/x86/xen/apic.c
 > 
+> diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
+> index 59cb4a1..20b543a 100644
+> --- a/arch/x86/include/asm/io_apic.h
+> +++ b/arch/x86/include/asm/io_apic.h
+> @@ -183,4 +183,10 @@ static inline void ioapic_init_mappings(void)	{ }
+>  static inline void probe_nr_irqs_gsi(void)	{ }
+>  #endif
+>  
+> +void xen_io_apic_init(void);
+> +unsigned int xen_io_apic_read(unsigned apic, unsigned reg);
+> +void xen_io_apic_write(unsigned int apic,
+> +		       unsigned int reg, unsigned int value);
+> +
+> +
+>  #endif /* _ASM_X86_IO_APIC_H */
+> diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
+> index 7248ca1..de0368a 100644
+> --- a/arch/x86/kernel/io_apic.c
+> +++ b/arch/x86/kernel/io_apic.c
+> @@ -62,6 +62,8 @@
+>  #include <asm/uv/uv_hub.h>
+>  #include <asm/uv/uv_irq.h>
+>  
+> +#include <asm/xen/hypervisor.h>
+> +
+>  #include <asm/genapic.h>
+>  
+>  #define __apicdebuginit(type) static type __init
+> @@ -399,14 +401,26 @@ static __attribute_const__ struct io_apic __iomem *io_apic_base(int idx)
+>  
+>  static inline unsigned int io_apic_read(unsigned int apic, unsigned int reg)
+>  {
+> -	struct io_apic __iomem *io_apic = io_apic_base(apic);
+> +	struct io_apic __iomem *io_apic;
+> +
+> +	if (xen_initial_domain())
+> +		return xen_io_apic_read(apic, reg);
 
-Okay, let's think about this a bit.
+you may have _xen_io_apic_read(apic, reg);
+and xen_io_apic_read(apic, reg) will call xen_initial_domain internally.
+or sth like
+extra if (io_apic_ops)
+	io_apic->read()...
 
-At least for x86, there are two cases:
-
-- 32 bits.  The vmalloc area is *extremely* constrained, and has the 
-same class of fragmentation issues as main memory.  In fact, it might 
-have *more* just by virtue of being larger.
-
-- 64 bits.  At this point, we have with current memory sizes(*) an 
-astronomically large virtual space.  Here we have no real problem 
-allocating linearly in virtual space, either by giving each CPU some 
-very large hunk of virtual address space (which means each percpu area 
-is contiguous in virtual space) or by doing large contiguous allocations 
-out of another range.
-
-It doesn't seem to make sense to me at first glance to be any advantage 
-to interlacing the CPUs.  Quite on the contrary, it seems to utterly 
-preclude ever doing PMDs with a win, since (a) you'd be allocating real 
-memory for CPUs which aren't actually there and (b) you'd have the wrong 
-NUMA associativity.
-
-	-hpa
-
-
-(*) In about 20 years we better get the remaining virtual address bits...
+YH
