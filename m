@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932379AbZBNBiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932431AbZBNBjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932379AbZBNBiy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:38:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762116AbZBNBQf
+	id S932431AbZBNBjU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:39:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764124AbZBNBQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:16:35 -0500
-Received: from kroah.org ([198.145.64.141]:50441 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:16:36 -0500
+Received: from kroah.org ([198.145.64.141]:50494 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762771AbZBNBQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:16:25 -0500
-Date: Fri, 13 Feb 2009 17:13:13 -0800
+	id S1763372AbZBNBQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:16:26 -0500
+Date: Fri, 13 Feb 2009 17:13:15 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jesper Dangaard Brouer <hawk@comx.dk>,
+       alan@lxorguk.ukuu.org.uk, Eric Dumazet <dada1@cosmosbay.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 27/48] udp: Fix UDP short packet false positive
-Message-ID: <20090214011313.GB17706@kroah.com>
+Subject: [patch 28/48] udp: increments sk_drops in __udp_queue_rcv_skb()
+Message-ID: <20090214011315.GC17706@kroah.com>
 References: <20090214010805.419403436@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="udp-fix-udp-short-packet-false-positive.patch"
+Content-Disposition: inline; filename="udp-increments-sk_drops-in-__udp_queue_rcv_skb.patch"
 In-Reply-To: <20090214011208.GA17706@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,43 +40,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jesper Dangaard Brouer <hawk@comx.dk>
+From: Eric Dumazet <dada1@cosmosbay.com>
 
-[ Upstream commit 7b5e56f9d635643ad54f2f42e69ad16b80a2cff1 ]
+[ Upstream commit e408b8dcb5ce42243a902205005208e590f28454 ]
 
-The UDP header pointer assignment must happen after calling
-pskb_may_pull().  As pskb_may_pull() can potentially alter the SKB
-buffer.
+Commit 93821778def10ec1e69aa3ac10adee975dad4ff3 (udp: Fix rcv socket
+locking) accidentally removed sk_drops increments for UDP IPV4
+sockets.
 
-This was exposted by running multicast traffic through the NIU driver,
-as it won't prepull the protocol headers into the linear area on
-receive.
+This field can be used to detect incorrect sizing of socket receive
+buffers.
 
-Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/udp.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ net/ipv4/udp.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
 --- a/net/ipv4/udp.c
 +++ b/net/ipv4/udp.c
-@@ -1155,7 +1155,7 @@ int __udp4_lib_rcv(struct sk_buff *skb, 
- 		   int proto)
- {
- 	struct sock *sk;
--	struct udphdr *uh = udp_hdr(skb);
-+	struct udphdr *uh;
- 	unsigned short ulen;
- 	struct rtable *rt = (struct rtable*)skb->dst;
- 	__be32 saddr = ip_hdr(skb)->saddr;
-@@ -1168,6 +1168,7 @@ int __udp4_lib_rcv(struct sk_buff *skb, 
- 	if (!pskb_may_pull(skb, sizeof(struct udphdr)))
- 		goto drop;		/* No space for header. */
+@@ -942,9 +942,11 @@ static int __udp_queue_rcv_skb(struct so
  
-+	uh   = udp_hdr(skb);
- 	ulen = ntohs(uh->len);
- 	if (ulen > skb->len)
- 		goto short_packet;
+ 	if ((rc = sock_queue_rcv_skb(sk, skb)) < 0) {
+ 		/* Note that an ENOMEM error is charged twice */
+-		if (rc == -ENOMEM)
++		if (rc == -ENOMEM) {
+ 			UDP_INC_STATS_BH(sock_net(sk), UDP_MIB_RCVBUFERRORS,
+ 					 is_udplite);
++			atomic_inc(&sk->sk_drops);
++		}
+ 		goto drop;
+ 	}
+ 
 
