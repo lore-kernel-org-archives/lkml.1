@@ -1,172 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752148AbZBNLXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751881AbZBNLY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752148AbZBNLXs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 06:23:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbZBNLXi
+	id S1751881AbZBNLY7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 06:24:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbZBNLYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 06:23:38 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:48217 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750978AbZBNLXh (ORCPT
+	Sat, 14 Feb 2009 06:24:51 -0500
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:12425 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750978AbZBNLYu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 06:23:37 -0500
-Date: Sat, 14 Feb 2009 11:23:25 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Paul Walmsley <paul@pwsan.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, r-woodruff2@ti.com,
-       Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH E 11/14] OMAP clock: track child clocks
-Message-ID: <20090214112325.GA17965@n2100.arm.linux.org.uk>
-References: <20090128192551.29333.82943.stgit@localhost.localdomain> <20090128192756.29333.41541.stgit@localhost.localdomain> <20090129151401.GC18233@n2100.arm.linux.org.uk> <20090129220608.GJ18233@n2100.arm.linux.org.uk> <20090209141156.GB16626@n2100.arm.linux.org.uk> <alpine.DEB.2.00.0902122345160.14667@utopia.booyaka.com>
-Mime-Version: 1.0
+	Sat, 14 Feb 2009 06:24:50 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtUCABc5lkl5LClxgWdsb2JhbACUUwEBFiK9MIQcBoYM
+X-IronPort-AV: E=Sophos;i="4.38,206,1233495000"; 
+   d="scan'208";a="290700748"
+Date: Sat, 14 Feb 2009 22:24:43 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Fernando Luis Vazquez Cao <fernando@kic.ac.jp>
+Cc: Eric Sandeen <sandeen@redhat.com>,
+       Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>,
+       Jan Kara <jack@suse.cz>, Theodore Tso <tytso@MIT.EDU>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Ric Wheeler <rwheeler@redhat.com>
+Subject: Re: vfs: Add MS_FLUSHONFSYNC mount flag
+Message-ID: <20090214112443.GY8830@disturbed>
+Mail-Followup-To: Fernando Luis Vazquez Cao <fernando@kic.ac.jp>,
+	Eric Sandeen <sandeen@redhat.com>,
+	Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao <fernando@oss.ntt.co.jp>,
+	Jan Kara <jack@suse.cz>, Theodore Tso <tytso@MIT.EDU>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
+	kernel list <linux-kernel@vger.kernel.org>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	Ric Wheeler <rwheeler@redhat.com>
+References: <20090119120349.GA10193@duck.suse.cz> <1233135913.5399.57.camel@sebastian.kern.oss.ntt.co.jp> <20090128095518.GA16554@duck.suse.cz> <1234434811.15270.7.camel@sebastian.kern.oss.ntt.co.jp> <1234434970.15433.4.camel@sebastian.kern.oss.ntt.co.jp> <499458C1.90105@redhat.com> <1234487679.3795.15.camel@sebastian.kern.oss.ntt.co.jp> <49951121.80807@redhat.com> <20090213122051.GX8830@disturbed> <1234542568.9916.183.camel@bladerunner>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0902122345160.14667@utopia.booyaka.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1234542568.9916.183.camel@bladerunner>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 13, 2009 at 12:01:37AM -0700, Paul Walmsley wrote:
-> (cc'ing Richard Woodruff)
+On Sat, Feb 14, 2009 at 01:29:28AM +0900, Fernando Luis Vazquez Cao wrote:
+> On Fri, 2009-02-13 at 23:20 +1100, Dave Chinner wrote:
+> > On Fri, Feb 13, 2009 at 12:20:17AM -0600, Eric Sandeen wrote:
+> > > I'm just a little leery of the "dangerous" mount option proliferation, I
+> > > guess.
+> > 
+> > You're not the only one, Eric. It's bad enough having to explain to
+> > users what barriers do once they have lost data after a power loss,
+> > let alone confusing them further by adding more mount options they
+> > will get wrong by accident....
 > 
-> Hello Russell,
+> That is precisely the reason why we should use sensible defaults, which
+> in this case means enabling barriers and flushing disk caches on
+> fsync()/fdatasync() by default.
 > 
-> On Mon, 9 Feb 2009, Russell King - ARM Linux wrote:
+> Adding either a new mount option (as you yourself suggest below) or a
+> sysfs tunable is desirable for those cases when we really do not need to
+> flush the disk write cache to guarantee integrity (battery-backed block
+> devices come to mind), or we want to be fast at the cost of potentially
+> losing some data.
+
+Mount options are the wrong place for this. if you want to change
+the behaviour of the block device, then it should be at that level.
+
+> > Quite frankly, the VFS should do stuff that is slow and safe
+> > and filesystems can choose to ignore the VFS (via filesystem
+> > specific mount options) if they want to be fast and potentially
+> > unsafe.
 > 
-> > On Thu, Jan 29, 2009 at 10:06:08PM +0000, Russell King - ARM Linux wrote:
-> > > @@ -780,7 +780,7 @@ int omap2_clk_set_parent(struct clk *clk, struct clk *new_parent)
-> > >  	if (clk->usecount > 0)
-> > >  		_omap2_clk_enable(clk);
-> > >  
-> > > -	clk->parent = new_parent;
-> > > +	clk_reparent(clk, new_parent);
-> > 
-> > While looking at the DPLL patches, I've realised that omap2_clk_set_parent()
-> > is buggy, as are any other places which reparent the clock (thankfully
-> > the only other place is in the initialisation code where it doesn't
-> > matter.)
-> > 
-> > Consider what happens when a clock is enabled - we walk up the tree
-> > enabling all parents.  If we then change the clock's parent, and
-> > then disable the child, we will again walk up the tree, but since
-> > we've reparented it, it will be a different clock tree.  The result
-> > is that the ancestors clock usage counts, and therefore their enable
-> > status, will end up getting screwed up.
+> To avoid unnecessary flushes and allow for filesystem-specific
+> optimizations I was considering the following approach:
 > 
-> Agreed.
-> 
-> > This brings up a question: what we currently do here is:
-> > 
-> > - disable the child
-> > - program clksel
-> > - enable the child
-> > - change child->parent
-> > 
-> > If we add in the parent handling, there are two possibilities:
-> > 
-> > - disable the child
-> > - enable the new parent tree
-> > - program clksel
-> > - change child->parent
-> > - disable the old parent tree
-> > - enable the child
-> > 
-> > OR
-> > 
-> > - disable the child and the old parent tree
-> > - program clksel
-> > - change child->parent
-> > - enable the new parent tree and the child
-> > 
-> > (note those 'and's have implied ordering).
-> > 
-> > Is there anything which dictates one approach over the other?
-> > Obviously the latter approach results in something smaller and
-> > cleaner, but might not be technically correct.
-> 
-> I don't know of any hardware reason to prefer one approach over the other, 
-> but Richard might know better.
+> 1- Add flushonfsync mount option (as an aside, I am of the opinion that
+> it should be set by default).
 
-I'll need an answer on this before I can commit the updated bypass clock
-support patch.
+No mount option - too confusing for someone to work out what
+combination of barriers and flushing for things to work correctly.
+Just make filesystems issue the necessary flush calls or barrier
+IOs and allow the block devices to ignore flushes.
 
-However, looking a little deeper, there's more issues in the reparenting
-area.  I don't think this code has been tested at all...  In
-_omap2_clksel_get_src_field, there is this:
+> 2- Modify file_fsync() so that it checks whether FLUSHONFSYNC is set and
+> flushes the underlying device accordingly. With this we would cover all
+> filesystems that use the vfs-provided file_fsync() as their fsync method
+> (commonly used filesystems such as fat fall in this group).
 
-	for (clkr = clks->rates; clkr->div; clkr++) {
-		if (clkr->flags & (cpu_mask | DEFAULT_RATE))
-			break; /* Found the default rate for this platform */
-	}
+Just make it flush the block device.
 
-which is bogus - it will find the first entry which is _either_ marked
-as a default rate _or_ is supported by the SoC.  This means (for
-instance) that:
+> 3- Advanced filesystems (ext3/4, XFS, btrfs, etc) which provide their
+> own fsync implementations are allowed to perform filesystem-specific
+> optimizations there to minimize the number of flushes and maximize
+> throughput.
 
-static const struct clksel_rate core_l3_core_rates[] = {
-        { .div = 1, .val = 1, .flags = RATE_IN_24XX },
-        { .div = 2, .val = 2, .flags = RATE_IN_242X },
-        { .div = 4, .val = 4, .flags = RATE_IN_24XX | DEFAULT_RATE },
+Um, you are describing what we already have in place.  Almost every
+filesystem provides it's own ->fsync method, not just the "advanced"
+ones. It is those methods that need to be fixed to issue flushes, not just
+file_fsync().
 
-will give us divisor 1 rather than presumably the one we want, that being
-divisor 4.  I think the test above should be:
+> In this patch set I implemented (1) and (3) for ext3/4 to have some code
+> to comment on.
 
-	for (clkr = clks->rates; clkr->div; clkr++) {
-		if (clkr->flags & cpu_mask &&
-		    clkr->flags & DEFAULT_RATE)
-			break; /* Found the default rate for this platform */
-	}
+I don't think we want (1) at all, and I thought that if ext3/4 are using
+barriers then the barrier I/O issued by the journal does the flush
+already. Hence (3) is redundant, right?
 
-so we find an entry which is supported _and_ is the default for the SoC.
+FWIW, block device flushes are implemented by barrier IOs, so if
+the underlying block device doesn't support barriers then you can't
+flush the cache, either...
 
-There's also a second issue - the comments before omap2_divisor_to_clksel()
-indicate that this function returns 0xffffffff on error.  Unfortunately,
-this is not so, it actually returns zero on error.  Moreover, we test
-the result of the function against ~0, so we'll never deal with the error
-case.  This really should be fixed so that we return the right value for
-the error case.  (Further comments on this in a follow up.)
+Cheers,
 
-So, below is a patch which fixes both of these issues.
-
-diff --git a/arch/arm/mach-omap2/clock.c b/arch/arm/mach-omap2/clock.c
-index 5020cb1..f87501b 100644
---- a/arch/arm/mach-omap2/clock.c
-+++ b/arch/arm/mach-omap2/clock.c
-@@ -636,7 +636,7 @@ u32 omap2_clksel_to_divisor(struct clk *clk, u32 field_val)
-  *
-  * Given a struct clk of a rate-selectable clksel clock, and a clock divisor,
-  * find the corresponding register field value.  The return register value is
-- * the value before left-shifting.  Returns 0xffffffff on error
-+ * the value before left-shifting.  Returns ~0 on error
-  */
- u32 omap2_divisor_to_clksel(struct clk *clk, u32 div)
- {
-@@ -648,7 +648,7 @@ u32 omap2_divisor_to_clksel(struct clk *clk, u32 div)
- 
- 	clks = omap2_get_clksel_by_parent(clk, clk->parent);
- 	if (!clks)
--		return 0;
-+		return ~0;
- 
- 	for (clkr = clks->rates; clkr->div; clkr++) {
- 		if ((clkr->flags & cpu_mask) && (clkr->div == div))
-@@ -659,7 +659,7 @@ u32 omap2_divisor_to_clksel(struct clk *clk, u32 div)
- 		printk(KERN_ERR "clock: Could not find divisor %d for "
- 		       "clock %s parent %s\n", div, clk->name,
- 		       clk->parent->name);
--		return 0;
-+		return ~0;
- 	}
- 
- 	return clkr->val;
-@@ -747,7 +747,7 @@ static u32 _omap2_clksel_get_src_field(struct clk *src_clk, struct clk *clk,
- 		return 0;
- 
- 	for (clkr = clks->rates; clkr->div; clkr++) {
--		if (clkr->flags & (cpu_mask | DEFAULT_RATE))
-+		if (clkr->flags & cpu_mask && clkr->flags & DEFAULT_RATE)
- 			break; /* Found the default rate for this platform */
- 	}
- 
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
