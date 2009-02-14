@@ -1,95 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751881AbZBNIVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751878AbZBNI0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751881AbZBNIVz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 03:21:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750792AbZBNIVr
+	id S1751878AbZBNI0h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 03:26:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750795AbZBNI03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 03:21:47 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:43234 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750717AbZBNIVq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 03:21:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=eeqkONu6MZpND7VIALW8H0RdbW/h4kB8PKrZ0GE8JLnTGFHagLXL/4s9yBfelPKzhP
-         tCaIARIru0duyYibFHHHVIy332q6WKhkEd8TNz2Mmc79tPelhOOlxlJgrBGwQ00jrXc/
-         qXZGdeeCW+XX8I2LSsfCUVuG4m3//qlslRBXc=
-Date: Sat, 14 Feb 2009 11:21:42 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
-       Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC 0/6] x86 tip asm ENTRY,ENDPROC cleanup
-Message-ID: <20090214082142.GA7648@localhost>
-References: <20090213215017.959278111@gmail.com> <1234567411.13034.1300286953@webmail.messagingengine.com> <49961178.6040101@zytor.com>
+	Sat, 14 Feb 2009 03:26:29 -0500
+Received: from gw.goop.org ([64.81.55.164]:46924 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750717AbZBNI03 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 03:26:29 -0500
+Message-ID: <49968032.3060107@goop.org>
+Date: Sat, 14 Feb 2009 00:26:26 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49961178.6040101@zytor.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Ingo Molnar <mingo@elte.hu>
+CC: the arch/x86 maintainers <x86@kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] some core Xen updates
+References: <49908591.5020406@goop.org>
+In-Reply-To: <49908591.5020406@goop.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[H. Peter Anvin - Fri, Feb 13, 2009 at 04:34:00PM -0800]
-> Alexander van Heukelum wrote:
->>
->> Hi Cyrill,
->>
->> I like this direction. If I understand correctly:
->>
->> ENTRY/END or GLOBAL/END for data.
->> ENTRY/ENDPROC or GLOBAL/ENDPROC for functions.
->>
+Jeremy Fitzhardinge wrote:
+> Hi Ingo,
 >
-> Fine for functions, but it's really not okay to use the same macros for  
-> data.  Furthermore, we need to consider special entry points that don't  
-> behave like normal functions -- like system call or interrupt entry.
+> Here's some core Xen changes: bug fixes, debuggability improvements 
+> and cleanups.
+> These are based on tip/x86/xen, but I've merged in tip/master to bring 
+> it up to date
+> before adding my changes.
+
+Ping?
+
+    J
+
 >
-> Why?  Because if we're compiling with frame pointers, we would like the  
-> wrapper macros for functions to handle setting up and tearing down the  
-> frame pointer, at least in the common case.
+> BTW, I killed off all the jsgf/* branches in xen.git, but I think 
+> you've either
+> already picked up all the push requests, or I'll resend anything missing.
 >
-> 	-hpa
+> Thanks,
+>     J
+>
+> The following changes since commit 
+> a1c51abb06bf03bef6ff973e43cf20a0fa48384f:
+>  Ingo Molnar (1):
+>        Merge branch 'x86/urgent'
+>
+> are available in the git repository at:
+>
+>  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git xen/core
+>
+> Ian Campbell (2):
+>      Fix xen_flush_tlb_others
+>      xen: record and display initiator of each multicall when debugging
+>
+> Jeremy Fitzhardinge (5):
+>      Merge remote branch 'tip/master' into tip/fixups
+>      xen: short-circuit tests for dom0
+>      xen: degrade BUG to WARN when multicall fails
+>      xen: do multicall callbacks with interrupts disabled
+>      Merge branch 'tip/fixups' into xen/core
+>
+> arch/x86/include/asm/xen/hypervisor.h |   28 ++++++++++++++++++----------
+> arch/x86/xen/mmu.c                    |    3 ---
+> arch/x86/xen/multicalls.c             |   15 ++++++++++-----
+> 3 files changed, 28 insertions(+), 18 deletions(-)
+>
+>
 >
 
-Peter, Alexander -- thanks for review!
-
->> ENTRY/END or GLOBAL/END for data.
->> ENTRY/ENDPROC or GLOBAL/ENDPROC for functions.
-
-Well, there are nuances I believe. Plain .size without .cfi_...
-for functions would not help in frame unwinding I think (in *.S
-under debugger).
-
-I wish we have strict rules for functions and data but it's not
-that simple :)
-
-For example, trampoline_64.S:
-...
-	.org 0x1000
-trampoline_stack_end:
-ENTRY(trampoline_level4_pgt)
-...
-
-we could use plain .globl (or new GLOBAL) here since we
-have .org and ALIGN in ENTRY just not needed.
-
-Same file:
-...
-ENTRY(trampoline_end)
-...
-
-I think we could have plain .globl here as well
-(and we do that for 32bit version). Moreover TRAMPOLINE_SIZE
-is page rounded anyway.
-
-But in general I think you're right -- which means:
-start with END for data and ENDPROC for functions and
-then checkout the details as Peter mentioned. At least
-I do ratiocinate like this. But I could be wrong :)
-
-	- Cyrill -
