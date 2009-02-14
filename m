@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752039AbZBNJUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752242AbZBNJZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752039AbZBNJUw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 04:20:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbZBNJUg
+	id S1752242AbZBNJZN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 04:25:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750931AbZBNJYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 04:20:36 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:20042 "EHLO
+	Sat, 14 Feb 2009 04:24:53 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:20571 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750792AbZBNJUe (ORCPT
+	with ESMTP id S1750792AbZBNJYw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 04:20:34 -0500
+	Sat, 14 Feb 2009 04:24:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=Tq7NF3puW0cGCdscaP09kwKzLfpE4bMrjzde888VA4f7xw+uOS0XQpbO2lq37xYXrW
-         NunxYcAJzlKRS8U/lB0ZCboKm4LZddVEcgGL+Mi93PuBwXREH1Ub8+06aFFQAdFZ5jht
-         FFjQJOGJW5/BOojmdTJgQl0zpGmMcoUQvgduI=
+        b=cw1eVDIPEBq/kF5FFHuuuZR5I16EDalcAt/Kzdo19nP3ZhyLSfeJ3vM4dK8EQSuo87
+         STpBSkQy9Zh/IU07U6Tn327py0zj1Dz3R5p8a6gcxI4lIDMx0t+aJJJ4mpvKHaOymqvM
+         dKZTcUpjwaVIqKhYO9/kTp1wCVTRYaa6Pqgfw=
 MIME-Version: 1.0
 In-Reply-To: <200902140917.38313.philippe.grenard@laposte.net>
 References: <200902131944.56634.philippe.grenard@laposte.net>
 	 <200902132056.20097.philippe.grenard@laposte.net>
 	 <18837.56478.10536.6978@stoffel.org>
 	 <200902140917.38313.philippe.grenard@laposte.net>
-Date: Sat, 14 Feb 2009 14:50:33 +0530
-Message-ID: <3f9a31f40902140120v6e8db503m6bf5c2bad39c2544@mail.gmail.com>
+Date: Sat, 14 Feb 2009 14:54:51 +0530
+Message-ID: <3f9a31f40902140124j4bb07aeej8af3dff89e347318@mail.gmail.com>
 Subject: Re: PROBLEM: cannot get stable system since 2.6.28 kernel
 From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
 To: Philippe Grenard <philippe.grenard@laposte.net>
