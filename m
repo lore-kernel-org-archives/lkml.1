@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753021AbZBNOly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753207AbZBNOq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753021AbZBNOly (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 09:41:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZBNOlp
+	id S1753207AbZBNOq4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 09:46:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZBNOqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 09:41:45 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:53206 "EHLO
+	Sat, 14 Feb 2009 09:46:47 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:40193 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751581AbZBNOlo (ORCPT
+	with ESMTP id S1751581AbZBNOqr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 09:41:44 -0500
+	Sat, 14 Feb 2009 09:46:47 -0500
 Subject: [PATCH 1.5/2] generic-smp: fix initial quiesent count.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+From: Peter Zijlstra <peterz@infradead.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
        linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>
-In-Reply-To: <20090212223750.295581470@chello.nl>
+In-Reply-To: <1234622474.4698.25.camel@laptop>
 References: <20090212223200.979433820@chello.nl>
-	 <20090212223750.295581470@chello.nl>
+	 <20090212223750.295581470@chello.nl>  <1234622474.4698.25.camel@laptop>
 Content-Type: text/plain
-Date: Sat, 14 Feb 2009 15:41:14 +0100
-Message-Id: <1234622474.4698.25.camel@laptop>
+Date: Sat, 14 Feb 2009 15:46:32 +0100
+Message-Id: <1234622792.4698.31.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.25.90 
 Content-Transfer-Encoding: 7bit
@@ -31,6 +31,9 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+first compile, then send out...
+
+---
 Subject: generic-smp: fix initial quiesent count.
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Date: Sat Feb 14 15:36:07 CET 2009
@@ -54,7 +57,7 @@ Index: linux-2.6/kernel/smp.c
  } call_function __cacheline_aligned_in_smp = {
  	.queue = LIST_HEAD_INIT(call_function.queue),
  	.lock  = __SPIN_LOCK_UNLOCKED(call_function.lock),
-+	.quiesent = 1;
++	.quiesent = 1,
  };
  
  enum {
