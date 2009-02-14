@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761528AbZBNBnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763953AbZBNBnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761528AbZBNBnZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:43:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761984AbZBNBQo
+	id S1763953AbZBNBnr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:43:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763369AbZBNBQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:16:44 -0500
-Received: from kroah.org ([198.145.64.141]:50639 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:16:45 -0500
+Received: from kroah.org ([198.145.64.141]:50648 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763651AbZBNBQf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:16:35 -0500
-Date: Fri, 13 Feb 2009 17:13:34 -0800
+	id S1764125AbZBNBQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:16:36 -0500
+Date: Fri, 13 Feb 2009 17:13:36 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Clement Lecigne <clement.lecigne@netasq.com>,
+       alan@lxorguk.ukuu.org.uk,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 31/48] net: 4 bytes kernel memory disclosure in
-	SO_BSDCOMPAT gsopt try #2
-Message-ID: <20090214011334.GL17706@kroah.com>
+Subject: [patch 38/48] sparc: Enable syscall wrappers for 64-bit
+	(CVE-2009-0029)
+Message-ID: <20090214011336.GM17706@kroah.com>
 References: <20090214010805.419403436@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline; filename="net-4-bytes-kernel-memory-disclosure-in-so_bsdcompat-gsopt-try-2.patch"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="sparc-enable-syscall-wrappers-for-64-bit.patch"
 In-Reply-To: <20090214011208.GA17706@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,47 +42,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Clément Lecigne <clement.lecigne@netasq.com>
+From: Christian Borntraeger <borntraeger@de.ibm.com>
 
-[ Upstream commit df0bca049d01c0ee94afb7cd5dfd959541e6c8da ]
+[ Upstream commit 67605d6812691bbd2158d2f60259e0407611bc1b ]
 
-In function sock_getsockopt() located in net/core/sock.c, optval v.val
-is not correctly initialized and directly returned in userland in case
-we have SO_BSDCOMPAT option set.
+sparc64 needs sign-extended function parameters. We have to enable
+the system call wrappers.
 
-This dummy code should trigger the bug:
-
-int main(void)
-{
-	unsigned char buf[4] = { 0, 0, 0, 0 };
-	int len;
-	int sock;
-	sock = socket(33, 2, 2);
-	getsockopt(sock, 1, SO_BSDCOMPAT, &buf, &len);
-	printf("%x%x%x%x\n", buf[0], buf[1], buf[2], buf[3]);
-	close(sock);
-}
-
-Here is a patch that fix this bug by initalizing v.val just after its
-declaration.
-
-Signed-off-by: Clément Lecigne <clement.lecigne@netasq.com>
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/core/sock.c |    2 ++
- 1 file changed, 2 insertions(+)
+ arch/sparc64/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -696,6 +696,8 @@ int sock_getsockopt(struct socket *sock,
- 	if (len < 0)
- 		return -EINVAL;
- 
-+	v.val = 0;
-+
- 	switch(optname) {
- 	case SO_DEBUG:
- 		v.val = sock_flag(sk, SOCK_DBG);
+--- a/arch/sparc64/Kconfig
++++ b/arch/sparc64/Kconfig
+@@ -14,6 +14,7 @@ config SPARC64
+ 	select HAVE_FUNCTION_TRACER
+ 	select HAVE_IDE
+ 	select HAVE_LMB
++	select HAVE_SYSCALL_WRAPPERS
+ 	select HAVE_ARCH_KGDB
+ 	select USE_GENERIC_SMP_HELPERS if SMP
+ 	select HAVE_ARCH_TRACEHOOK
 
