@@ -1,69 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbZBNWy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbZBNW7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbZBNWy7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 17:54:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbZBNWyu
+	id S1754079AbZBNW7f (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 17:59:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbZBNW7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 17:54:50 -0500
-Received: from mx0.towertech.it ([213.215.222.73]:51438 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752231AbZBNWyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 17:54:49 -0500
-Date: Sat, 14 Feb 2009 23:54:46 +0100
-From: Alessandro Zummo <azummo-lists@towertech.it>
-To: Andres Salomon <dilinger@queued.net>
-Cc: jordan@cosmicpenguin.net, "David Brownell" <david-b@pacbell.net>,
-       linux-geode@lists.infradead.org, dsaxena@laptop.org,
-       "=?ISO-8859-1?Q?Mart?= =?ISO-8859-1?Q?in-=C9ric?= Racine" 
-	<q-funk@iki.fi>,
-       lkml <linux-kernel@vger.kernel.org>, rpurdie@rpsys.net,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] AMD Geode CS5535/5536 GPIO driver
-Message-ID: <20090214235446.2d46bc4a@i1501.lan.towertech.it>
-In-Reply-To: <20090214173811.4d9a0957@ephemeral>
-References: <20090205161007.4d121cbf@i1501.lan.towertech.it>
-	<20090214152719.1baf52cc@ephemeral>
-	<20090214230235.5a29487f@i1501.lan.towertech.it>
-	<20090214173811.4d9a0957@ephemeral>
-Organization: Tower Technologies
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 14 Feb 2009 17:59:24 -0500
+Received: from colo.lackof.org ([198.49.126.79]:44341 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752231AbZBNW7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 17:59:23 -0500
+Date: Sat, 14 Feb 2009 15:59:10 -0700
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Yu Zhao <yu.zhao@intel.com>
+Cc: jbarnes@virtuousgeek.org, dwmw2@infradead.org, linux-pci@vger.kernel.org,
+       iommu@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 0/6] ATS capability support for Intel IOMMU
+Message-ID: <20090214225910.GA1515@colo.lackof.org>
+References: <1234443038-15437-1-git-send-email-yu.zhao@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1234443038-15437-1-git-send-email-yu.zhao@intel.com>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Feb 2009 17:38:11 -0500
-Andres Salomon <dilinger@queued.net> wrote:
-
-> >  I've been suggested to move it within geode_32. the driver is
-> > probably pretty geode specific anyhow.
-> > 
+On Thu, Feb 12, 2009 at 08:50:32PM +0800, Yu Zhao wrote:
+> This patch series implements Address Translation Service support for
+> the Intel IOMMU. ATS makes the PCI Endpoint be able to request the
+> DMA address translation from the IOMMU and cache the translation in
+> the Endpoint, thus alleviate IOMMU pressure and improve the hardware
+> performance in the I/O virtualization environment.
 > 
 > 
-> If the whole point is to make the cs553x GPIO stuff portable (and to use
-> the portable API), then what's the point if we know that it can/will
-> be used by non-x86 platforms?
+> Changelog: v2 -> v3
+>   1, throw error message if VT-d hardware detects invalid descriptor
+>      on Queued Invalidation interface (David Woodhouse)
+>   2, avoid using pci_find_ext_capability every time when reading ATS
+>      Invalidate Queue Depth (Matthew Wilcox)
+> Changelog: v1 -> v2
+>   added 'static' prefix to a local LIST_HEAD (Andrew Morton)
 > 
-> We already have a cs553x GPIO char device, a geode GPIO lib that
-> works (but has flaws).. I'm all for creating The One True CS553x GPIO
-> API, but I'd consider something that's geode (and x86)-specific to be
-> a waste of time.
+> 
+> Yu Zhao (6):
+>   PCI: support the ATS capability
+>   VT-d: parse ATSR in DMA Remapping Reporting Structure
+>   VT-d: add queue invalidation fault status support
+>   VT-d: add device IOTLB invalidation support
+>   VT-d: cleanup iommu_flush_iotlb_psi and flush_unmaps
+>   VT-d: support the device IOTLB
+> 
+>  drivers/pci/dmar.c           |  230 ++++++++++++++++++++++++++++++++++++++----
 
- GPIO lib is generic enough for most archs to use it and my driver uses it
- Anyway I did my homework.. I will submit a revision with the latest suggested
- changes... if accepted I will be happy to maintain it.
- 
+Yu,
+Can you please add something to Documentation/PCI/pci.txt?
+New API I'm seeing are:
++extern int pci_enable_ats(struct pci_dev *dev, int ps);
++extern void pci_disable_ats(struct pci_dev *dev);
++extern int pci_ats_queue_depth(struct pci_dev *dev);
 
+Do these also need to be EXPORT_SYMBOL_GPL() as well?
+Or are drivers never expected to call the above?
 
--- 
+thanks,
+grant
 
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+>  drivers/pci/intel-iommu.c    |  135 ++++++++++++++++++++-----
+>  drivers/pci/intr_remapping.c |   21 ++--
+>  drivers/pci/pci.c            |   72 +++++++++++++
+>  include/linux/dmar.h         |    9 ++
+>  include/linux/intel-iommu.h  |   19 +++-
+>  include/linux/pci.h          |   16 +++
+>  include/linux/pci_regs.h     |   10 ++
+>  8 files changed, 457 insertions(+), 55 deletions(-)
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
