@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092AbZBNVi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbZBNVjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754092AbZBNVi1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 16:38:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbZBNViU
+	id S1754527AbZBNVjB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 16:39:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbZBNViq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 16:38:20 -0500
+	Sat, 14 Feb 2009 16:38:46 -0500
 Received: from mail-bw0-f161.google.com ([209.85.218.161]:44740 "EHLO
 	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751357AbZBNViT (ORCPT
+	with ESMTP id S1752478AbZBNVip (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 16:38:19 -0500
+	Sat, 14 Feb 2009 16:38:45 -0500
 From: Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH 23/43] drivers/net/igb: fix sparse warning: symbol shadows an
-	earlier one
+Subject: [PATCH 24/43] drivers/net/ixgbe: fix sparse warning: Should it be
+	static?
 To: netdev@vger.kernel.org
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Sat, 14 Feb 2009 22:38:08 +0100
-Message-ID: <20090214213628.24377.69119.stgit@vmbox.hanneseder.net>
+Date: Sat, 14 Feb 2009 22:38:36 +0100
+Message-ID: <20090214213822.24377.64757.stgit@vmbox.hanneseder.net>
 In-Reply-To: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
 References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
 User-Agent: StGit/0.14.3.348.gcb02
@@ -27,37 +27,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Move variable declaration as far inner as possible.
+Impact: Make symbol static.
 
 Fix this sparse warning:
-  drivers/net/igb/igb_main.c:1895:21: warning: symbol 'j' shadows an earlier one
-  drivers/net/igb/igb_main.c:1855:16: originally declared here
+  drivers/net/ixgbe/ixgbe_82598.c:59:5: warning: symbol 'ixgbe_get_pcie_msix_count_82598' was not declared. Should it be static?
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- drivers/net/igb/igb_main.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ixgbe/ixgbe_82598.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/igb/igb_main.c b/drivers/net/igb/igb_main.c
-index f8c2919..1885e20 100644
---- a/drivers/net/igb/igb_main.c
-+++ b/drivers/net/igb/igb_main.c
-@@ -1852,7 +1852,7 @@ static void igb_configure_rx(struct igb_adapter *adapter)
- 	struct e1000_hw *hw = &adapter->hw;
- 	u32 rctl, rxcsum;
- 	u32 rxdctl;
--	int i, j;
-+	int i;
- 
- 	/* disable receives while setting up the descriptors */
- 	rctl = rd32(E1000_RCTL);
-@@ -1867,7 +1867,7 @@ static void igb_configure_rx(struct igb_adapter *adapter)
- 	 * the Base and Length of the Rx Descriptor Ring */
- 	for (i = 0; i < adapter->num_rx_queues; i++) {
- 		struct igb_ring *ring = &(adapter->rx_ring[i]);
--		j = ring->reg_idx;
-+		int j = ring->reg_idx;
- 		rdba = ring->dma;
- 		wr32(E1000_RDBAL(j),
- 				rdba & 0x00000000ffffffffULL);
+diff --git a/drivers/net/ixgbe/ixgbe_82598.c b/drivers/net/ixgbe/ixgbe_82598.c
+index 525bd87..51dba1c 100644
+--- a/drivers/net/ixgbe/ixgbe_82598.c
++++ b/drivers/net/ixgbe/ixgbe_82598.c
+@@ -56,7 +56,7 @@ static s32 ixgbe_read_i2c_eeprom_82598(struct ixgbe_hw *hw, u8 byte_offset,
+  *  Read PCIe configuration space, and get the MSI-X vector count from
+  *  the capabilities table.
+  **/
+-u16 ixgbe_get_pcie_msix_count_82598(struct ixgbe_hw *hw)
++static u16 ixgbe_get_pcie_msix_count_82598(struct ixgbe_hw *hw)
+ {
+ 	struct ixgbe_adapter *adapter = hw->back;
+ 	u16 msix_count;
 
