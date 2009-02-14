@@ -1,98 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758181AbZBNCsr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbZBNDP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758181AbZBNCsr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 21:48:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbZBNCse
+	id S1753222AbZBNDP3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 22:15:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbZBNDPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 21:48:34 -0500
-Received: from mga09.intel.com ([134.134.136.24]:10870 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753666AbZBNCsb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 21:48:31 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,204,1233561600"; 
-   d="scan'208";a="489944578"
-Date: Fri, 13 Feb 2009 20:47:50 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v8 1/7] PCI: initialize and release SR-IOV capability
-Message-ID: <20090213124750.GB16067@yzhao-otc.sh.intel.com>
-References: <1234256355-23153-1-git-send-email-yu.zhao@intel.com> <1234256355-23153-2-git-send-email-yu.zhao@intel.com> <877i3uwa0j.fsf@basil.nowhere.org> <20090213174958.GD16841@parisc-linux.org>
+	Fri, 13 Feb 2009 22:15:15 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:4707 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750714AbZBNDPN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 22:15:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=xQIX8fyDFo0BOQEiN3T6oVJ+iUzNLXPRxcYH/8cfOjuykwF79MS/7CZ6Szxz9PSANr
+         U1R5F5C30utZb4sFeH7h/3D7ZmFn1XXwIPBzVj8MHSKZcgSbaamEvzaG4I9W69WF8U4o
+         NUYoCD437FpEak2NpmYZfCQmZqlRGea3QFfq4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090213174958.GD16841@parisc-linux.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.LFD.2.00.0902130956400.3179@localhost.localdomain>
+References: <20090212023308.GA21157@linux.vnet.ibm.com>
+	 <20090212215959.GN6759@linux.vnet.ibm.com>
+	 <200902140050.44550.nickpiggin@yahoo.com.au>
+	 <20090213145653.GA6854@linux.vnet.ibm.com>
+	 <20090213151045.GA1574@Krystal> <20090213155507.GA2838@Krystal>
+	 <alpine.LFD.2.00.0902130808050.3099@localhost.localdomain>
+	 <20090213173352.GB4684@Krystal>
+	 <alpine.LFD.2.00.0902130945350.3179@localhost.localdomain>
+	 <alpine.LFD.2.00.0902130956400.3179@localhost.localdomain>
+Date: Fri, 13 Feb 2009 22:15:03 -0500
+Message-ID: <8bd0f97a0902131915w37431976j873107d9876aca3d@mail.gmail.com>
+Subject: Re: [Uclinux-dist-devel] [ltt-dev] [RFC git tree] Userspace RCU 
+	(urcu) for Linux (repost)
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
+       ltt-dev@lists.casi.polymtl.ca, uclinux-dist-devel@blackfin.uclinux.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 14, 2009 at 01:49:59AM +0800, Matthew Wilcox wrote:
-> On Fri, Feb 13, 2009 at 05:56:44PM +0100, Andi Kleen wrote:
-> > > +	pci_read_config_word(dev, pos + PCI_SRIOV_CTRL, &ctrl);
-> > > +	if (ctrl & PCI_SRIOV_CTRL_VFE) {
-> > > +		pci_write_config_word(dev, pos + PCI_SRIOV_CTRL, 0);
-> > > +		msleep(100);
-> > 
-> > That's really long. Hopefully that's really needed.
-> 
-> Yes and no.  The spec says:
-> 
->   To allow components to perform internal initialization, system software
->   must wait for at least 100 ms after changing the VF Enable bit from
->   a 0 to a 1, before it is permitted to issue Configuration Requests to
->   the VFs which are enabled by that VF Enable bit.
-> 
-> So we don't have to wait here, but we do have to wait before exposing
-> all these virtual functions to the rest of the system.  Should we add
-> more complexity, perhaps spawn a thread to do it asynchronously, or add
-> 0.1 seconds to device initialisation?  A question without an easy
-> answer, iMO.
+On Fri, Feb 13, 2009 at 13:09, Linus Torvalds wrote:
+> Btw, for user space, if you want to do this all right for something like
+> BF. I think the only _correct_ thing to do (in the sense that the end
+> result will actually be debuggable) is to essentially give full SMP
+> coherency in user space.
+>
+> It's doable, but rather complicated, and I'm not 100% sure it really ends
+> up making sense. The way to do it is to just simply say:
+>
+>  - never map the same page writably on two different cores, and always
+>   flush the cache (on the receiving side) when you switch a page from one
+>   core to another.
+>
+> Now, the kernel can't really do that reasonably, but user space possibly could.
+>
+> Now, I realize that blackfin doesn't actually even have a MMU or a TLB, so
+> by "mapping the same page" in that case we end up really meaning "having a
+> shared mapping or thread". I think that _should_ be doable. The most
+> trivial approach might be to simply limit all processes with shared
+> mappings or CLONE_VM to core 0, and letting core 1 run everything else
+> (but you could do it differently: mapping something with MAP_SHARED would
+> force you to core 0, but threads would just force the thread group to
+> stay on _one_ core, rather than necessarily a fixed one).
+>
+> Yeah, because of the lack of real memory protection, the kernel can't
+> _know_ that processes don't behave badly and access things that they
+> didn't explicitly map, but I'm hoping that that is rare.
+>
+> And yes, if you really want to use threads as a way to do something
+> across cores, you'd be screwed - the kenrel would only schedule the
+> threads on one CPU. But considering the undefined nature of threading on
+> such a cpu, wouldn't that still be preferable? Wouldn't it be nice to have
+> the knowledge that user space _looks_ cache-coherent by virtue of the
+> kernel just limiting cores appropriately?
 
-This clears the VF Enable bit only if the BIOS has set it, so it doesn't
-always happen. Actually the `msleep(100)' should be `ssleep(1)' here,
-according to the spec you showed us below. I remembered the waiting time
-incorrectly as 100ms which is the requirment for setting the VF Enable
-bit rather than clearing it.
+the BF pseudo SMP does not allow threaded processes to run on multiple
+cores simultaneously because of this desync crap.
 
-> > > +
-> > > +	pci_write_config_word(dev, pos + PCI_SRIOV_CTRL, ctrl);
-> > > +	pci_write_config_word(dev, pos + PCI_SRIOV_NUM_VF, total);
-> > > +	pci_read_config_word(dev, pos + PCI_SRIOV_VF_OFFSET, &offset);
-> > > +	pci_read_config_word(dev, pos + PCI_SRIOV_VF_STRIDE, &stride);
-> > > +	if (!offset || (total > 1 && !stride))
-> > > +		return -EIO;
-> > > +
-> > > +	pci_read_config_dword(dev, pos + PCI_SRIOV_SUP_PGSIZE, &pgsz);
-> > > +	i = PAGE_SHIFT > 12 ? PAGE_SHIFT - 12 : 0;
-> > > +	pgsz &= ~((1 << i) - 1);
-> > > +	if (!pgsz)
-> > > +		return -EIO;
-> > 
-> > All the error paths don't seem to undo the config space writes.
-> > How will the devices behave with half initialized context?
-> 
-> I think we should clear the VF_ENABLE bit.  That action is also fraught
-> with danger:
-
-The VF Eanble bit hasn't been set yet :-) Actually the spec forbids the
-s/w to write those registers (NumVFs, Supported Page Size, etc.) when the
-enabling bit is set.
-
-> 
->   If software Clears VF Enable, software must allow 1 second after VF
->   Enable is Cleared before reading any field in the SR-IOV Extended
->   Capability or the VF Migration State Array (see Section 3.3.15.1).
-> 
-> Another msleep(1000) here?  Not pretty, but what else can we do?
-> 
-> Not to mention the danger of something else innocently using lspci -xxxx
-> to read a field in the extended capability -- I suspect we also need to
-> block user config accesses before clearing this bit.
-
-Yes, we should block user config access.
+well, the BF hardware does have optional memory protection, but the
+overhead is often too great for most people.  it performs well enough
+to do debugging, but not for people trying to multimedia and other fun
+stuff.
+-mike
