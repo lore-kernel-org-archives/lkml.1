@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762651AbZBNBdx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765599AbZBNBeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762651AbZBNBdx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:33:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763274AbZBNBQU
+	id S1765599AbZBNBeU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:34:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764109AbZBNBQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:16:20 -0500
-Received: from kroah.org ([198.145.64.141]:50326 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:16:21 -0500
+Received: from kroah.org ([198.145.64.141]:50311 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764109AbZBNBQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1763351AbZBNBQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 13 Feb 2009 20:16:14 -0500
-Date: Fri, 13 Feb 2009 17:12:53 -0800
+Date: Fri, 13 Feb 2009 17:12:51 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Vlad Yasevich <vladislav.yasevich@hp.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 16/48] sctp: Fix crc32c calculations on big-endian arhes.
-Message-ID: <20090214011253.GQ17706@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>
+Subject: [patch 15/48] lockd: fix regression in lockds handling of blocked
+	locks
+Message-ID: <20090214011251.GP17706@kroah.com>
 References: <20090214010805.419403436@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sctp-fix-crc32c-calculations-on-big-endian-arhes.patch"
+Content-Disposition: inline; filename="lockd-fix-regression-in-lockd-s-handling-of-blocked-locks.patch"
 In-Reply-To: <20090214011208.GA17706@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,32 +41,58 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
+From: J. Bruce Fields <bfields@citi.umich.edu>
 
-[ Upstream commit 9c5ff5f75d0d0a1c7928ecfae3f38418b51a88e3 ]
+commit 9d9b87c1218be78ddecbc85ec3bb91c79c1d56ab upstream.
 
-crc32c algorithm provides a byteswaped result.  On little-endian
-arches, the result ends up in big-endian/network byte order.
-On big-endinan arches, the result ends up in little-endian
-order and needs to be byte swapped again.  Thus calling cpu_to_le32
-gives the right output.
+If a client requests a blocking lock, is denied, then requests it again,
+then here in nlmsvc_lock() we will call vfs_lock_file() without FL_SLEEP
+set, because we've already queued a block and don't need the locks code
+to do it again.
 
-Tested-by: Jukka Taimisto <jukka.taimisto@mail.suomi.net>
-Signed-off-by: Vlad Yasevich <vladislav.yasevich@hp.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+But that means vfs_lock_file() will return -EAGAIN instead of
+FILE_LOCK_DENIED.  So we still need to translate that -EAGAIN return
+into a nlm_lck_blocked error in this case, and put ourselves back on
+lockd's block list.
+
+The bug was introduced by bde74e4bc64415b1 "locks: add special return
+value for asynchronous locks".
+
+Thanks to Frank van Maarseveen for the report; his original test
+case was essentially
+
+	for i in `seq 30`; do flock /nfsmount/foo sleep 10 & done
+
+Tested-by: Frank van Maarseveen <frankvm@frankvm.com>
+Reported-by: Frank van Maarseveen <frankvm@frankvm.com>
+Cc: Miklos Szeredi <mszeredi@suse.cz>
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/net/sctp/checksum.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/lockd/svclock.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
---- a/include/net/sctp/checksum.h
-+++ b/include/net/sctp/checksum.h
-@@ -79,5 +79,5 @@ static inline __be32 sctp_update_cksum(_
+--- a/fs/lockd/svclock.c
++++ b/fs/lockd/svclock.c
+@@ -427,7 +427,7 @@ nlmsvc_lock(struct svc_rqst *rqstp, stru
+ 			goto out;
+ 		case -EAGAIN:
+ 			ret = nlm_lck_denied;
+-			goto out;
++			break;
+ 		case FILE_LOCK_DEFERRED:
+ 			if (wait)
+ 				break;
+@@ -443,6 +443,10 @@ nlmsvc_lock(struct svc_rqst *rqstp, stru
+ 			goto out;
+ 	}
  
- static inline __be32 sctp_end_cksum(__be32 crc32)
- {
--	return ~crc32;
-+	return (__force __be32)~cpu_to_le32((__force u32)crc32);
- }
++	ret = nlm_lck_denied;
++	if (!wait)
++		goto out;
++
+ 	ret = nlm_lck_blocked;
+ 
+ 	/* Append to list of blocked */
 
