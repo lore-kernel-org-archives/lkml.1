@@ -1,389 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757936AbZBNBZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764680AbZBNBVJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757936AbZBNBZX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:25:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762956AbZBNBNF
+	id S1764680AbZBNBVJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:21:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761246AbZBNBIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:13:05 -0500
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:49173
-	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763639AbZBNBNA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:13:00 -0500
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yinghai@kernel.org>, Ian Campbell <Ian.Campbell@citrix.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 4/9] xen: implement pirq type event channels
-Date: Fri, 13 Feb 2009 17:12:02 -0800
-Message-Id: <cbcff9ab54a2189156077c81c706fc30ba84344c.1234573847.git.jeremy.fitzhardinge@citrix.com>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <79724b71f4b8ef1fb65ea246dde2e3e1344b2a43.1234573847.git.jeremy.fitzhardinge@citrix.com>
-References: <cover.1234573847.git.jeremy.fitzhardinge@citrix.com>
- <cover.1234573847.git.jeremy.fitzhardinge@citrix.com>
- <3c7db30686056c9b86cc61ef50dd5572de868512.1234573847.git.jeremy.fitzhardinge@citrix.com>
- <3e46dae897fd5620f50b4cca9272969f5546aa88.1234573847.git.jeremy.fitzhardinge@citrix.com>
- <79724b71f4b8ef1fb65ea246dde2e3e1344b2a43.1234573847.git.jeremy.fitzhardinge@citrix.com>
-In-Reply-To: <cover.1234573847.git.jeremy.fitzhardinge@citrix.com>
-References: <cover.1234573847.git.jeremy.fitzhardinge@citrix.com>
+	Fri, 13 Feb 2009 20:08:45 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:40903 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762906AbZBNBIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:08:41 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Len Brown <lenb@kernel.org>
+Subject: [PATCH 4/9] PM: fix build for CONFIG_PM unset
+Date: Sat, 14 Feb 2009 02:02:16 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
+       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Andrey Borzenkov <arvidjaar@mail.ru>
+References: <200902140157.40869.rjw@sisk.pl>
+In-Reply-To: <200902140157.40869.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902140202.17576.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A privileged PV Xen domain can get direct access to hardware.  In
-order for this to be useful, it must be able to get hardware
-interrupts.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Being a PV Xen domain, all interrupts are delivered as event channels.
-PIRQ event channels are bound to a pirq number and an interrupt
-vector.  When a IO APIC raises a hardware interrupt on that vector, it
-is delivered as an event channel, which we can deliver to the
-appropriate device driver(s).
+Compilation of kprobes.c with CONFIG_PM unset is broken due to some broken
+config dependncies.  Fix that.
 
-This patch simply implements the infrastructure for dealing with pirq
-event channels.
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Tested-by: Masami Hiramatsu <mhiramat@redhat.com>
 ---
- drivers/xen/events.c |  245 +++++++++++++++++++++++++++++++++++++++++++++++++-
- include/xen/events.h |   14 +++
- 2 files changed, 256 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/xen/events.c b/drivers/xen/events.c
-index f46e880..81726e8 100644
---- a/drivers/xen/events.c
-+++ b/drivers/xen/events.c
-@@ -16,7 +16,7 @@
-  *    (typically dom0).
-  * 2. VIRQs, typically used for timers.  These are per-cpu events.
-  * 3. IPIs.
-- * 4. Hardware interrupts. Not supported at present.
-+ * 4. PIRQs - Hardware interrupts.
-  *
-  * Jeremy Fitzhardinge <jeremy@xensource.com>, XenSource Inc, 2007
-  */
-@@ -40,6 +40,9 @@
- #include <xen/interface/xen.h>
- #include <xen/interface/event_channel.h>
- 
-+/* Leave low irqs free for identity mapping */
-+#define LEGACY_IRQS	16
-+
- /*
-  * This lock protects updates to the following mapping and reference-count
-  * arrays. The lock does not need to be acquired to read the mapping tables.
-@@ -83,10 +86,12 @@ struct irq_info
- 		enum ipi_vector ipi;
- 		struct {
- 			unsigned short gsi;
--			unsigned short vector;
-+			unsigned char vector;
-+			unsigned char flags;
- 		} pirq;
- 	} u;
- };
-+#define PIRQ_NEEDS_EOI	(1 << 0)
- 
- static struct irq_info irq_info[NR_IRQS];
- 
-@@ -106,6 +111,7 @@ static inline unsigned long *cpu_evtchn_mask(int cpu)
- #define VALID_EVTCHN(chn)	((chn) != 0)
- 
- static struct irq_chip xen_dynamic_chip;
-+static struct irq_chip xen_pirq_chip;
- 
- /* Constructor for packed IRQ information. */
- static struct irq_info mk_unbound_info(void)
-@@ -212,6 +218,15 @@ static unsigned int cpu_from_evtchn(unsigned int evtchn)
- 	return ret;
- }
- 
-+static bool pirq_needs_eoi(unsigned irq)
-+{
-+	struct irq_info *info = info_for_irq(irq);
-+
-+	BUG_ON(info->type != IRQT_PIRQ);
-+
-+	return info->u.pirq.flags & PIRQ_NEEDS_EOI;
-+}
-+
- static inline unsigned long active_evtchns(unsigned int cpu,
- 					   struct shared_info *sh,
- 					   unsigned int idx)
-@@ -328,7 +343,7 @@ static int find_unbound_irq(void)
- 	int irq;
- 	struct irq_desc *desc;
- 
--	for (irq = 0; irq < nr_irqs; irq++)
-+	for (irq = LEGACY_IRQS; irq < nr_irqs; irq++)
- 		if (irq_info[irq].type == IRQT_UNBOUND)
- 			break;
- 
-@@ -344,6 +359,210 @@ static int find_unbound_irq(void)
- 	return irq;
- }
- 
-+static bool identity_mapped_irq(unsigned irq)
-+{
-+	/* only identity map legacy irqs */
-+	return irq < LEGACY_IRQS;
-+}
-+
-+static void pirq_unmask_notify(int irq)
-+{
-+	struct physdev_eoi eoi = { .irq = irq };
-+
-+	if (unlikely(pirq_needs_eoi(irq))) {
-+		int rc = HYPERVISOR_physdev_op(PHYSDEVOP_eoi, &eoi);
-+		WARN_ON(rc);
-+	}
-+}
-+
-+static void pirq_query_unmask(int irq)
-+{
-+	struct physdev_irq_status_query irq_status;
-+	struct irq_info *info = info_for_irq(irq);
-+
-+	BUG_ON(info->type != IRQT_PIRQ);
-+
-+	irq_status.irq = irq;
-+	if (HYPERVISOR_physdev_op(PHYSDEVOP_irq_status_query, &irq_status))
-+		irq_status.flags = 0;
-+
-+	info->u.pirq.flags &= ~PIRQ_NEEDS_EOI;
-+	if (irq_status.flags & XENIRQSTAT_needs_eoi)
-+		info->u.pirq.flags |= PIRQ_NEEDS_EOI;
-+}
-+
-+static bool probing_irq(int irq)
-+{
-+	struct irq_desc *desc = irq_to_desc(irq);
-+
-+	return desc && desc->action == NULL;
-+}
-+
-+static unsigned int startup_pirq(unsigned int irq)
-+{
-+	struct evtchn_bind_pirq bind_pirq;
-+	struct irq_info *info = info_for_irq(irq);
-+	int evtchn = evtchn_from_irq(irq);
-+
-+	BUG_ON(info->type != IRQT_PIRQ);
-+
-+	if (VALID_EVTCHN(evtchn))
-+		goto out;
-+
-+	bind_pirq.pirq = irq;
-+	/* NB. We are happy to share unless we are probing. */
-+	bind_pirq.flags = probing_irq(irq) ? 0 : BIND_PIRQ__WILL_SHARE;
-+	if (HYPERVISOR_event_channel_op(EVTCHNOP_bind_pirq, &bind_pirq) != 0) {
-+		if (!probing_irq(irq))
-+			printk(KERN_INFO "Failed to obtain physical IRQ %d\n",
-+			       irq);
-+		return 0;
-+	}
-+	evtchn = bind_pirq.port;
-+
-+	pirq_query_unmask(irq);
-+
-+	evtchn_to_irq[evtchn] = irq;
-+	bind_evtchn_to_cpu(evtchn, 0);
-+	info->evtchn = evtchn;
-+
-+ out:
-+	unmask_evtchn(evtchn);
-+	pirq_unmask_notify(irq);
-+
-+	return 0;
-+}
-+
-+static void shutdown_pirq(unsigned int irq)
-+{
-+	struct evtchn_close close;
-+	struct irq_info *info = info_for_irq(irq);
-+	int evtchn = evtchn_from_irq(irq);
-+
-+	BUG_ON(info->type != IRQT_PIRQ);
-+
-+	if (!VALID_EVTCHN(evtchn))
-+		return;
-+
-+	mask_evtchn(evtchn);
-+
-+	close.port = evtchn;
-+	if (HYPERVISOR_event_channel_op(EVTCHNOP_close, &close) != 0)
-+		BUG();
-+
-+	bind_evtchn_to_cpu(evtchn, 0);
-+	evtchn_to_irq[evtchn] = -1;
-+	info->evtchn = 0;
-+}
-+
-+static void enable_pirq(unsigned int irq)
-+{
-+	startup_pirq(irq);
-+}
-+
-+static void disable_pirq(unsigned int irq)
-+{
-+}
-+
-+static void ack_pirq(unsigned int irq)
-+{
-+	int evtchn = evtchn_from_irq(irq);
-+
-+	move_native_irq(irq);
-+
-+	if (VALID_EVTCHN(evtchn)) {
-+		mask_evtchn(evtchn);
-+		clear_evtchn(evtchn);
-+	}
-+}
-+
-+static void end_pirq(unsigned int irq)
-+{
-+	int evtchn = evtchn_from_irq(irq);
-+	struct irq_desc *desc = irq_to_desc(irq);
-+
-+	if (WARN_ON(!desc))
-+		return;
-+
-+	if ((desc->status & (IRQ_DISABLED|IRQ_PENDING)) ==
-+	    (IRQ_DISABLED|IRQ_PENDING)) {
-+		shutdown_pirq(irq);
-+	} else if (VALID_EVTCHN(evtchn)) {
-+		unmask_evtchn(evtchn);
-+		pirq_unmask_notify(irq);
-+	}
-+}
-+
-+static int find_irq_by_gsi(unsigned gsi)
-+{
-+	int irq;
-+
-+	for(irq = 0; irq < NR_IRQS; irq++) {
-+		struct irq_info *info = info_for_irq(irq);
-+
-+		if (info == NULL || info->type != IRQT_PIRQ)
-+			continue;
-+
-+		if (gsi_from_irq(irq) == gsi)
-+			return irq;
-+	}
-+
-+	return -1;
-+}
-+
-+/*
-+ * Allocate a physical irq, along with a vector.  We don't assign an
-+ * event channel until the irq actually started up.  Return an
-+ * existing irq if we've already got one for the gsi.
-+ */
-+int xen_allocate_pirq(unsigned gsi)
-+{
-+	int irq;
-+	struct physdev_irq irq_op;
-+
-+	spin_lock(&irq_mapping_update_lock);
-+
-+	irq = find_irq_by_gsi(gsi);
-+	if (irq != -1) {
-+		printk(KERN_INFO "xen_allocate_pirq: returning irq %d for gsi %u\n",
-+		       irq, gsi);
-+		goto out;	/* XXX need refcount? */
-+	}
-+
-+	if (identity_mapped_irq(gsi)) {
-+		irq = gsi;
-+		dynamic_irq_init(irq);
-+	} else
-+		irq = find_unbound_irq();
-+
-+	set_irq_chip_and_handler_name(irq, &xen_pirq_chip,
-+				      handle_level_irq, "pirq");
-+
-+	irq_op.irq = irq;
-+	if (HYPERVISOR_physdev_op(PHYSDEVOP_alloc_irq_vector, &irq_op)) {
-+		dynamic_irq_cleanup(irq);
-+		irq = -ENOSPC;
-+		goto out;
-+	}
-+
-+	irq_info[irq] = mk_pirq_info(0, gsi, irq_op.vector);
-+
-+out:
-+	spin_unlock(&irq_mapping_update_lock);
-+
-+	return irq;
-+}
-+
-+int xen_vector_from_irq(unsigned irq)
-+{
-+	return vector_from_irq(irq);
-+}
-+
-+int xen_gsi_from_irq(unsigned irq)
-+{
-+	return gsi_from_irq(irq);
-+}
-+
- int bind_evtchn_to_irq(unsigned int evtchn)
- {
- 	int irq;
-@@ -916,6 +1135,26 @@ static struct irq_chip xen_dynamic_chip __read_mostly = {
- 	.retrigger	= retrigger_dynirq,
- };
- 
-+static struct irq_chip xen_pirq_chip __read_mostly = {
-+	.name		= "xen-pirq",
-+
-+	.startup	= startup_pirq,
-+	.shutdown	= shutdown_pirq,
-+
-+	.enable		= enable_pirq,
-+	.unmask		= enable_pirq,
-+
-+	.disable	= disable_pirq,
-+	.mask		= disable_pirq,
-+
-+	.ack		= ack_pirq,
-+	.end		= end_pirq,
-+
-+	.set_affinity	= set_affinity_irq,
-+
-+	.retrigger	= retrigger_dynirq,
-+};
-+
- void __init xen_init_IRQ(void)
- {
- 	int i;
-diff --git a/include/xen/events.h b/include/xen/events.h
-index 0397ba1..e5b541d 100644
---- a/include/xen/events.h
-+++ b/include/xen/events.h
-@@ -55,4 +55,18 @@ bool xen_test_irq_pending(int irq);
-    irq will be disabled so it won't deliver an interrupt. */
- void xen_poll_irq(int irq);
- 
-+/* Determine the IRQ which is bound to an event channel */
-+unsigned irq_from_evtchn(unsigned int evtchn);
-+
-+/* Allocate an irq for a physical interrupt, given a gsi.  "Legacy"
-+   GSIs are identity mapped; others are dynamically allocated as
-+   usual. */
-+int xen_allocate_pirq(unsigned gsi);
-+
-+/* Return vector allocated to pirq */
-+int xen_vector_from_irq(unsigned pirq);
-+
-+/* Return gsi allocated to pirq */
-+int xen_gsi_from_irq(unsigned pirq);
-+
- #endif	/* _XEN_EVENTS_H */
--- 
-1.6.0.6
+ kernel/Makefile       |    1 +
+ kernel/power/Makefile |    2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
+Index: linux-2.6/kernel/Makefile
+===================================================================
+--- linux-2.6.orig/kernel/Makefile
++++ linux-2.6/kernel/Makefile
+@@ -51,6 +51,7 @@ obj-$(CONFIG_UID16) += uid16.o
+ obj-$(CONFIG_MODULES) += module.o
+ obj-$(CONFIG_KALLSYMS) += kallsyms.o
+ obj-$(CONFIG_PM) += power/
++obj-$(CONFIG_FREEZER) += power/
+ obj-$(CONFIG_BSD_PROCESS_ACCT) += acct.o
+ obj-$(CONFIG_KEXEC) += kexec.o
+ obj-$(CONFIG_BACKTRACE_SELF_TEST) += backtracetest.o
+Index: linux-2.6/kernel/power/Makefile
+===================================================================
+--- linux-2.6.orig/kernel/power/Makefile
++++ linux-2.6/kernel/power/Makefile
+@@ -3,7 +3,7 @@ ifeq ($(CONFIG_PM_DEBUG),y)
+ EXTRA_CFLAGS	+=	-DDEBUG
+ endif
+ 
+-obj-y				:= main.o
++obj-$(CONFIG_PM)		+= main.o
+ obj-$(CONFIG_PM_SLEEP)		+= console.o
+ obj-$(CONFIG_FREEZER)		+= process.o
+ obj-$(CONFIG_HIBERNATION)	+= swsusp.o disk.o snapshot.o swap.o user.o
