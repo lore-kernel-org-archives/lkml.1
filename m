@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763502AbZBNBRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764275AbZBNBSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763502AbZBNBRg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:17:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761578AbZBNBCJ
+	id S1764275AbZBNBSX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:18:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761659AbZBNBCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:02:09 -0500
-Received: from kroah.org ([198.145.64.141]:39913 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:02:17 -0500
+Received: from kroah.org ([198.145.64.141]:39965 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753417AbZBNBCD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:02:03 -0500
-Date: Fri, 13 Feb 2009 16:59:22 -0800
+	id S1761522AbZBNBCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:02:05 -0500
+Date: Fri, 13 Feb 2009 16:59:28 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, Patrick McHardy <kaber@trash.net>,
-       davem@davemloft.net, Qu Haoran <haoran.qu@6wind.com>,
-       Nicolas Dichtel <nicolas.dichtel@6wind.com>
-Subject: [patch 40/47] netfilter: xt_sctp: sctp chunk mapping doesnt work
-Message-ID: <20090214005922.GO11282@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Tejun Heo <tj@kernel.org>,
+       Jeff Garzik <jgarzik@redhat.com>
+Subject: [patch 43/47] libata: fix EH device failure handling
+Message-ID: <20090214005928.GR11282@kroah.com>
 References: <20090214005130.617401075@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="netfilter-xt_sctp-sctp-chunk-mapping-doesn-t-work.patch"
+Content-Disposition: inline; filename="libata-fix-eh-device-failure-handling.patch"
 In-Reply-To: <20090214005726.GA11282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,34 +40,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Qu Haoran <haoran.qu@6wind.com>
+From: Tejun Heo <tj@kernel.org>
 
-netfilter: xt_sctp: sctp chunk mapping doesn't work
+commit d89293abd95bfd7dd9229087d6c30c1464c5ac83 upstream.
 
-Upstream commit: d4e2675a
+The dev->pio_mode > XFER_PIO_0 test is there to avoid unnecessary
+speed down warning messages but it accidentally disabled SATA link spd
+down during configuration phase after reset where PIO mode is always
+zero.
 
-When user tries to map all chunks given in argument, kernel
-works on a copy of the chunkmap, but at the end it doesn't
-check the copy, but the orginal one.
+This patch fixes the problem by moving the test where it belongs.
+This makes libata probing sequence behave better when the connection
+is flaky at higher link speeds which isn't too uncommon for eSATA
+devices.
 
-Signed-off-by: Qu Haoran <haoran.qu@6wind.com>
-Signed-off-by: Nicolas Dichtel <nicolas.dichtel@6wind.com>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+[cebbert@redhat.com: trivial backport to 2.6.27]
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/netfilter/xt_sctp.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/ata/libata-eh.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/net/netfilter/xt_sctp.c
-+++ b/net/netfilter/xt_sctp.c
-@@ -105,7 +105,7 @@ match_packet(const struct sk_buff *skb,
+--- a/drivers/ata/libata-eh.c
++++ b/drivers/ata/libata-eh.c
+@@ -2694,12 +2694,13 @@ static int ata_eh_handle_dev_fail(struct
+ 		/* give it just one more chance */
+ 		ehc->tries[dev->devno] = min(ehc->tries[dev->devno], 1);
+ 	case -EIO:
+-		if (ehc->tries[dev->devno] == 1 && dev->pio_mode > XFER_PIO_0) {
++		if (ehc->tries[dev->devno] == 1) {
+ 			/* This is the last chance, better to slow
+ 			 * down than lose it.
+ 			 */
+ 			sata_down_spd_limit(dev->link);
+-			ata_down_xfermask_limit(dev, ATA_DNXFER_PIO);
++			if (dev->pio_mode > XFER_PIO_0)
++				ata_down_xfermask_limit(dev, ATA_DNXFER_PIO);
+ 		}
+ 	}
  
- 	switch (chunk_match_type) {
- 	case SCTP_CHUNK_MATCH_ALL:
--		return SCTP_CHUNKMAP_IS_CLEAR(info->chunkmap);
-+		return SCTP_CHUNKMAP_IS_CLEAR(chunkmapcopy);
- 	case SCTP_CHUNK_MATCH_ANY:
- 		return false;
- 	case SCTP_CHUNK_MATCH_ONLY:
 
