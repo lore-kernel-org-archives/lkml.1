@@ -1,102 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751904AbZBNJrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752029AbZBNJvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751904AbZBNJrT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 04:47:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbZBNJrD
+	id S1752029AbZBNJvX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 04:51:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbZBNJvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 04:47:03 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:57104 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750834AbZBNJrB (ORCPT
+	Sat, 14 Feb 2009 04:51:15 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60493
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750832AbZBNJvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 04:47:01 -0500
-Subject: Re: [PATCH] mm: disable preemption in apply_to_pte_range
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <4995B0E3.3050201@goop.org>
-References: <4994BCF0.30005@goop.org>
-	 <200902140030.59027.nickpiggin@yahoo.com.au>
-	 <1234534611.6519.109.camel@twins>
-	 <200902140130.31985.nickpiggin@yahoo.com.au>
-	 <1234535938.6519.118.camel@twins>  <4995B0E3.3050201@goop.org>
-Content-Type: text/plain
-Date: Sat, 14 Feb 2009 10:46:16 +0100
-Message-Id: <1234604776.4698.18.camel@laptop>
+	Sat, 14 Feb 2009 04:51:14 -0500
+Date: Sat, 14 Feb 2009 01:51:07 -0800 (PST)
+Message-Id: <20090214.015107.127190039.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Cc: airlied@linux.ie, dri-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH]: drm: radeon: Use surface for PCI GART table.
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.25.90 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-02-13 at 09:41 -0800, Jeremy Fitzhardinge wrote:
-> Peter Zijlstra wrote:
-> > If the lazy mmu code relies on per-cpu data, then it should be the lazy
-> > mmu's responsibility to ensure stuff is properly serialized. Eg. it
-> > should do get_cpu_var() and put_cpu_var().
-> >
-> > Those constructs can usually be converted to preemptable variants quite
-> > easily, as it clearly shows what data needs to be protected.
-> >   
-> 
-> At the moment the lazy update stuff is inherently cpu-affine.  The basic 
-> model is that you can amortize the cost of individual update operations 
-> (via hypercall, for example) by batching them up.  That batch is almost 
-> certainly a piece of percpu state (in Xen's case its maintained on the 
-> kernel side as per-cpu data,
 
-What we often do for -rt is put a lock in such per-cpu data, and take
-the data that is cpu-local when we start and aquire the lock, thereafter
-we keep operating on that data no matter where we get migrated to.
+This allocates a physical surface for the PCI GART table, this way no
+matter what other surface configurations exist the GART table will
+always be seen by the hardware properly.
 
-That way you're optimistically per-cpu but still freely schedulable.
+We encode the file pointer of the virtual surface allocate using a
+special cookie value, called PCIGART_FILE_PRIV.  On the last close, we
+release that surface.
 
->  but in VMI it happens somewhere under their 
-> ABI), and so we can't allow switching to another cpu while lazy update 
-> mode is active.
+Just to be doubly safe, we run the pcigart table setup with the main
+surface control register clear.
 
-Sounds like VMI is a bit of a problem there, luckily no sane person uses
-that since its all closed source cruft ;-)
+Based upon ideas from David Airlie and Ben Benjamin Herrenschmidt.
 
-It might just end up meaning you cannot run a RT kernel on a VMI host --
-something that's daft anyway.
+Signed-off-by: David S. Miller <davem@davemloft.net>
 
-> Preemption is also problematic because if we're doing lazy updates and 
-> we switch to another task, it will likely get very confused if its 
-> pagetable updates get deferred until some arbitrary point in the future...
-
-Who will get confused? The preempted task doesn't care, as its not
-running, and once it gets back to running we'll happily continue poking
-at the page-tables and complete the operation like normal.
-
-> So at the moment, we just disable preemption, and take advantage of the 
-> existing work to make sure pagetable updates are not non-preemptible for 
-> too long.  This has been fine so far, because almost all the work on 
-> using lazy mmu updates has focused on usermode mappings.
-> 
-> But I can see how this is problematic from your perspective.  One thing 
-> we could consider is making the lazy mmu mode a per-task property, so if 
-> we get preempted we can flush any pending changes and safely switch to 
-> another task, and then reenable it when we get scheduled in again.  
-> (This may be already possible with the existing paravirt-ops hooks in 
-> switch_to.)
-
-That sounds like a fine option, we have these preempt notifiers for
-exactly such cases I think.
-
-> In this specific case, if the lazy mmu updates / non-preemptable section 
-> is really causing heartburn, we can just back it out for now.
-
-I'm not sure, I haven't ran an -rt kernel with your patch applied, so
-I'm not sure it will explode. However I do dislike simply requiring
-preemption disabled there, when its clearly something that's specific to
-the lazy mmu stuff.
-
-So I think that no matter how we're going to do it, it should be done in
-the lazy mmu hooks. If that requires changing the
-arch_{enter_,leave}lazy_mmu_mode() calls to change signature to take a
-mm_struct pointer, then so be it.
-
+diff --git a/drivers/gpu/drm/radeon/radeon_cp.c b/drivers/gpu/drm/radeon/radeon_cp.c
+index e235778..119e642 100644
+--- a/drivers/gpu/drm/radeon/radeon_cp.c
++++ b/drivers/gpu/drm/radeon/radeon_cp.c
+@@ -909,6 +909,46 @@ static void radeon_set_pcigart(drm_radeon_private_t * dev_priv, int on)
+ 	}
+ }
+ 
++static int radeon_setup_pcigart_surface(drm_radeon_private_t *dev_priv)
++{
++	struct drm_ati_pcigart_info *gart_info = &dev_priv->gart_info;
++	struct radeon_virt_surface *vp;
++	int i;
++
++	for (i = 0; i < RADEON_MAX_SURFACES * 2; i++) {
++		if (!dev_priv->virt_surfaces[i].file_priv ||
++		    dev_priv->virt_surfaces[i].file_priv == PCIGART_FILE_PRIV)
++			break;
++	}
++	if (i >= 2 * RADEON_MAX_SURFACES)
++		return -ENOMEM;
++	vp = &dev_priv->virt_surfaces[i];
++
++	for (i = 0; i < RADEON_MAX_SURFACES; i++) {
++		struct radeon_surface *sp = &dev_priv->surfaces[i];
++		if (sp->refcount)
++			continue;
++
++		vp->surface_index = i;
++		vp->lower = gart_info->bus_addr;
++		vp->upper = vp->lower + gart_info->table_size;
++		vp->flags = 0;
++		vp->file_priv = PCIGART_FILE_PRIV;
++
++		sp->refcount = 1;
++		sp->lower = vp->lower;
++		sp->upper = vp->upper;
++		sp->flags = 0;
++
++		RADEON_WRITE(RADEON_SURFACE0_INFO + 16 * i, sp->flags);
++		RADEON_WRITE(RADEON_SURFACE0_LOWER_BOUND + 16 * i, sp->lower);
++		RADEON_WRITE(RADEON_SURFACE0_UPPER_BOUND + 16 * i, sp->upper);
++		return 0;
++	}
++
++	return -ENOMEM;
++}
++
+ static int radeon_do_init_cp(struct drm_device *dev, drm_radeon_init_t *init,
+ 			     struct drm_file *file_priv)
+ {
+@@ -1202,6 +1242,9 @@ static int radeon_do_init_cp(struct drm_device *dev, drm_radeon_init_t *init,
+ 	} else
+ #endif
+ 	{
++		u32 sctrl;
++		int ret;
++
+ 		dev_priv->gart_info.table_mask = DMA_BIT_MASK(32);
+ 		/* if we have an offset set from userspace */
+ 		if (dev_priv->pcigart_offset_set) {
+@@ -1243,12 +1286,25 @@ static int radeon_do_init_cp(struct drm_device *dev, drm_radeon_init_t *init,
+ 			}
+ 		}
+ 
+-		if (!drm_ati_pcigart_init(dev, &dev_priv->gart_info)) {
++		sctrl = RADEON_READ(RADEON_SURFACE_CNTL);
++		RADEON_WRITE(RADEON_SURFACE_CNTL, 0);
++		ret = drm_ati_pcigart_init(dev, &dev_priv->gart_info);
++		RADEON_WRITE(RADEON_SURFACE_CNTL, sctrl);
++
++		if (!ret) {
+ 			DRM_ERROR("failed to init PCI GART!\n");
+ 			radeon_do_cleanup_cp(dev);
+ 			return -ENOMEM;
+ 		}
+ 
++		ret = radeon_setup_pcigart_surface(dev_priv);
++		if (ret) {
++			DRM_ERROR("failed to setup GART surface!\n");
++			drm_ati_pcigart_cleanup(dev, &dev_priv->gart_info);
++			radeon_do_cleanup_cp(dev);
++			return ret;
++		}
++
+ 		/* Turn on PCI GART */
+ 		radeon_set_pcigart(dev_priv, 1);
+ 	}
+diff --git a/drivers/gpu/drm/radeon/radeon_drv.h b/drivers/gpu/drm/radeon/radeon_drv.h
+index 9b60a26..ecfd414 100644
+--- a/drivers/gpu/drm/radeon/radeon_drv.h
++++ b/drivers/gpu/drm/radeon/radeon_drv.h
+@@ -217,6 +217,7 @@ struct radeon_virt_surface {
+ 	u32 upper;
+ 	u32 flags;
+ 	struct drm_file *file_priv;
++#define PCIGART_FILE_PRIV	((void *) -1L)
+ };
+ 
+ #define RADEON_FLUSH_EMITED	(1 << 0)
+diff --git a/drivers/gpu/drm/radeon/radeon_state.c b/drivers/gpu/drm/radeon/radeon_state.c
+index 03fea43..043293a 100644
+--- a/drivers/gpu/drm/radeon/radeon_state.c
++++ b/drivers/gpu/drm/radeon/radeon_state.c
+@@ -3155,6 +3155,7 @@ void radeon_driver_preclose(struct drm_device *dev, struct drm_file *file_priv)
+ 
+ void radeon_driver_lastclose(struct drm_device *dev)
+ {
++	radeon_surfaces_release(PCIGART_FILE_PRIV, dev->dev_private);
+ 	radeon_do_release(dev);
+ }
+ 
