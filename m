@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761858AbZBNBD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759929AbZBNBFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761858AbZBNBD4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:03:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbZBNBBa
+	id S1759929AbZBNBFi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:05:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755656AbZBNBBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:01:30 -0500
-Received: from kroah.org ([198.145.64.141]:39446 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:01:34 -0500
+Received: from kroah.org ([198.145.64.141]:39512 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754053AbZBNBB3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:01:29 -0500
-Date: Fri, 13 Feb 2009 16:58:17 -0800
+	id S1755367AbZBNBBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:01:33 -0500
+Date: Fri, 13 Feb 2009 16:58:25 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Michael Neuling <mikey@neuling.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch 07/47] powerpc: Fix swapcontext system for VSX + old
-	ucontext size
-Message-ID: <20090214005817.GH11282@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       Nick Piggin <npiggin@suse.de>
+Subject: [patch 11/47] write-back: fix nr_to_write counter
+Message-ID: <20090214005825.GL11282@kroah.com>
 References: <20090214005130.617401075@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="powerpc-fix-swapcontext-system-for-vsx-old-ucontext-size.patch"
+Content-Disposition: inline; filename="write-back-fix-nr_to_write-counter.patch"
 In-Reply-To: <20090214005726.GA11282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,224 +40,68 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Michael Neuling <mikey@neuling.org>
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 
-commit 16c29d180becc5bdf92fd0fc7314a44a671b5f4e upstream.
+commit dcf6a79dda5cc2a2bec183e50d829030c0972aaa upstream.
 
-Since VSX support was added, we now have two sizes of ucontext_t;
-the older, smaller size without the extra VSX state, and the new
-larger size with the extra VSX state.  A program using the
-sys_swapcontext system call and supplying smaller ucontext_t
-structures will currently get an EINVAL error if the task has
-used VSX (e.g. because of calling library code that uses VSX) and
-the old_ctx argument is non-NULL (i.e. the program is asking for
-its current context to be saved).  Thus the program will start
-getting EINVAL errors on calls that previously worked.
+Commit 05fe478dd04e02fa230c305ab9b5616669821dd3 introduced some
+@wbc->nr_to_write breakage.
 
-This commit changes this behaviour so that we don't send an EINVAL in
-this case.  It will now return the smaller context but the VSX MSR bit
-will always be cleared to indicate that the ucontext_t doesn't include
-the extra VSX state, even if the task has executed VSX instructions.
+It made the following changes:
+ 1. Decrement wbc->nr_to_write instead of nr_to_write
+ 2. Decrement wbc->nr_to_write _only_ if wbc->sync_mode == WB_SYNC_NONE
+ 3. If synced nr_to_write pages, stop only if if wbc->sync_mode ==
+    WB_SYNC_NONE, otherwise keep going.
 
-Both 32 and 64 bit cases are updated.
+However, according to the commit message, the intention was to only make
+change 3.  Change 1 is a bug.  Change 2 does not seem to be necessary,
+and it breaks UBIFS expectations, so if needed, it should be done
+separately later.  And change 2 does not seem to be documented in the
+commit message.
 
-[paulus@samba.org - also fix some access_ok() and get_user() calls]
+This patch does the following:
+ 1. Undo changes 1 and 2
+ 2. Add a comment explaining change 3 (it very useful to have comments
+    in _code_, not only in the commit).
 
-Thanks to Ben Herrenschmidt for noticing this problem.
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Acked-by: Nick Piggin <npiggin@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/powerpc/kernel/signal_32.c |   36 +++++++++++++++---------------------
- arch/powerpc/kernel/signal_64.c |   33 +++++++++++++++------------------
- 2 files changed, 30 insertions(+), 39 deletions(-)
+ mm/page-writeback.c |   19 ++++++++++++++-----
+ 1 file changed, 14 insertions(+), 5 deletions(-)
 
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -410,7 +410,7 @@ inline unsigned long copy_fpr_from_user(
-  * altivec/spe instructions at some point.
-  */
- static int save_user_regs(struct pt_regs *regs, struct mcontext __user *frame,
--		int sigret)
-+		int sigret, int ctx_has_vsx_region)
- {
- 	unsigned long msr = regs->msr;
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -985,13 +985,22 @@ continue_unlock:
+ 				}
+  			}
  
-@@ -451,7 +451,7 @@ static int save_user_regs(struct pt_regs
- 	 * the saved MSR value to indicate that frame->mc_vregs
- 	 * contains valid data
- 	 */
--	if (current->thread.used_vsr) {
-+	if (current->thread.used_vsr && ctx_has_vsx_region) {
- 		__giveup_vsx(current);
- 		if (copy_vsx_to_user(&frame->mc_vsregs, current))
- 			return 1;
-@@ -858,11 +858,11 @@ int handle_rt_signal32(unsigned long sig
- 	frame = &rt_sf->uc.uc_mcontext;
- 	addr = frame;
- 	if (vdso32_rt_sigtramp && current->mm->context.vdso_base) {
--		if (save_user_regs(regs, frame, 0))
-+		if (save_user_regs(regs, frame, 0, 1))
- 			goto badframe;
- 		regs->link = current->mm->context.vdso_base + vdso32_rt_sigtramp;
- 	} else {
--		if (save_user_regs(regs, frame, __NR_rt_sigreturn))
-+		if (save_user_regs(regs, frame, __NR_rt_sigreturn, 1))
- 			goto badframe;
- 		regs->link = (unsigned long) frame->tramp;
- 	}
-@@ -936,12 +936,13 @@ long sys_swapcontext(struct ucontext __u
- 		     int ctx_size, int r6, int r7, int r8, struct pt_regs *regs)
- {
- 	unsigned char tmp;
-+	int ctx_has_vsx_region = 0;
- 
- #ifdef CONFIG_PPC64
- 	unsigned long new_msr = 0;
- 
- 	if (new_ctx &&
--	    __get_user(new_msr, &new_ctx->uc_mcontext.mc_gregs[PT_MSR]))
-+	    get_user(new_msr, &new_ctx->uc_mcontext.mc_gregs[PT_MSR]))
- 		return -EFAULT;
- 	/*
- 	 * Check that the context is not smaller than the original
-@@ -956,16 +957,9 @@ long sys_swapcontext(struct ucontext __u
- 	if ((ctx_size < sizeof(struct ucontext)) &&
- 	    (new_msr & MSR_VSX))
- 		return -EINVAL;
--#ifdef CONFIG_VSX
--	/*
--	 * If userspace doesn't provide enough room for VSX data,
--	 * but current thread has used VSX, we don't have anywhere
--	 * to store the full context back into.
--	 */
--	if ((ctx_size < sizeof(struct ucontext)) &&
--	    (current->thread.used_vsr && old_ctx))
--		return -EINVAL;
--#endif
-+	/* Does the context have enough room to store VSX data? */
-+	if (ctx_size >= sizeof(struct ucontext))
-+		ctx_has_vsx_region = 1;
- #else
- 	/* Context size is for future use. Right now, we only make sure
- 	 * we are passed something we understand
-@@ -985,17 +979,17 @@ long sys_swapcontext(struct ucontext __u
- 		 */
- 		mctx = (struct mcontext __user *)
- 			((unsigned long) &old_ctx->uc_mcontext & ~0xfUL);
--		if (!access_ok(VERIFY_WRITE, old_ctx, sizeof(*old_ctx))
--		    || save_user_regs(regs, mctx, 0)
-+		if (!access_ok(VERIFY_WRITE, old_ctx, ctx_size)
-+		    || save_user_regs(regs, mctx, 0, ctx_has_vsx_region)
- 		    || put_sigset_t(&old_ctx->uc_sigmask, &current->blocked)
- 		    || __put_user(to_user_ptr(mctx), &old_ctx->uc_regs))
- 			return -EFAULT;
- 	}
- 	if (new_ctx == NULL)
- 		return 0;
--	if (!access_ok(VERIFY_READ, new_ctx, sizeof(*new_ctx))
-+	if (!access_ok(VERIFY_READ, new_ctx, ctx_size)
- 	    || __get_user(tmp, (u8 __user *) new_ctx)
--	    || __get_user(tmp, (u8 __user *) (new_ctx + 1) - 1))
-+	    || __get_user(tmp, (u8 __user *) new_ctx + ctx_size - 1))
- 		return -EFAULT;
- 
- 	/*
-@@ -1196,11 +1190,11 @@ int handle_signal32(unsigned long sig, s
- 		goto badframe;
- 
- 	if (vdso32_sigtramp && current->mm->context.vdso_base) {
--		if (save_user_regs(regs, &frame->mctx, 0))
-+		if (save_user_regs(regs, &frame->mctx, 0, 1))
- 			goto badframe;
- 		regs->link = current->mm->context.vdso_base + vdso32_sigtramp;
- 	} else {
--		if (save_user_regs(regs, &frame->mctx, __NR_sigreturn))
-+		if (save_user_regs(regs, &frame->mctx, __NR_sigreturn, 1))
- 			goto badframe;
- 		regs->link = (unsigned long) frame->mctx.tramp;
- 	}
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -74,7 +74,8 @@ static const char fmt64[] = KERN_INFO \
-  */
- 
- static long setup_sigcontext(struct sigcontext __user *sc, struct pt_regs *regs,
--		 int signr, sigset_t *set, unsigned long handler)
-+		 int signr, sigset_t *set, unsigned long handler,
-+		 int ctx_has_vsx_region)
- {
- 	/* When CONFIG_ALTIVEC is set, we _always_ setup v_regs even if the
- 	 * process never used altivec yet (MSR_VEC is zero in pt_regs of
-@@ -121,7 +122,7 @@ static long setup_sigcontext(struct sigc
- 	 * then out to userspace.  Update v_regs to point after the
- 	 * VMX data.
- 	 */
--	if (current->thread.used_vsr) {
-+	if (current->thread.used_vsr && ctx_has_vsx_region) {
- 		__giveup_vsx(current);
- 		v_regs += ELF_NVRREG;
- 		err |= copy_vsx_to_user(v_regs, current);
-@@ -284,9 +285,10 @@ int sys_swapcontext(struct ucontext __us
- 	unsigned char tmp;
- 	sigset_t set;
- 	unsigned long new_msr = 0;
-+	int ctx_has_vsx_region = 0;
- 
- 	if (new_ctx &&
--	    __get_user(new_msr, &new_ctx->uc_mcontext.gp_regs[PT_MSR]))
-+	    get_user(new_msr, &new_ctx->uc_mcontext.gp_regs[PT_MSR]))
- 		return -EFAULT;
- 	/*
- 	 * Check that the context is not smaller than the original
-@@ -301,28 +303,23 @@ int sys_swapcontext(struct ucontext __us
- 	if ((ctx_size < sizeof(struct ucontext)) &&
- 	    (new_msr & MSR_VSX))
- 		return -EINVAL;
--#ifdef CONFIG_VSX
--	/*
--	 * If userspace doesn't provide enough room for VSX data,
--	 * but current thread has used VSX, we don't have anywhere
--	 * to store the full context back into.
--	 */
--	if ((ctx_size < sizeof(struct ucontext)) &&
--	    (current->thread.used_vsr && old_ctx))
--		return -EINVAL;
--#endif
-+	/* Does the context have enough room to store VSX data? */
-+	if (ctx_size >= sizeof(struct ucontext))
-+		ctx_has_vsx_region = 1;
+-			if (wbc->sync_mode == WB_SYNC_NONE) {
++			if (wbc->nr_to_write > 0)
+ 				wbc->nr_to_write--;
+-				if (wbc->nr_to_write <= 0) {
+-					done = 1;
+-					break;
+-				}
++			else if (wbc->sync_mode == WB_SYNC_NONE) {
++				/*
++				 * We stop writing back only if we are not
++				 * doing integrity sync. In case of integrity
++				 * sync we have to keep going because someone
++				 * may be concurrently dirtying pages, and we
++				 * might have synced a lot of newly appeared
++				 * dirty pages, but have not synced all of the
++				 * old dirty pages.
++				 */
++				done = 1;
++				break;
+ 			}
 +
- 	if (old_ctx != NULL) {
--		if (!access_ok(VERIFY_WRITE, old_ctx, sizeof(*old_ctx))
--		    || setup_sigcontext(&old_ctx->uc_mcontext, regs, 0, NULL, 0)
-+		if (!access_ok(VERIFY_WRITE, old_ctx, ctx_size)
-+		    || setup_sigcontext(&old_ctx->uc_mcontext, regs, 0, NULL, 0,
-+					ctx_has_vsx_region)
- 		    || __copy_to_user(&old_ctx->uc_sigmask,
- 				      &current->blocked, sizeof(sigset_t)))
- 			return -EFAULT;
- 	}
- 	if (new_ctx == NULL)
- 		return 0;
--	if (!access_ok(VERIFY_READ, new_ctx, sizeof(*new_ctx))
-+	if (!access_ok(VERIFY_READ, new_ctx, ctx_size)
- 	    || __get_user(tmp, (u8 __user *) new_ctx)
--	    || __get_user(tmp, (u8 __user *) (new_ctx + 1) - 1))
-+	    || __get_user(tmp, (u8 __user *) new_ctx + ctx_size - 1))
- 		return -EFAULT;
- 
- 	/*
-@@ -425,7 +422,7 @@ int handle_rt_signal64(int signr, struct
- 			  &frame->uc.uc_stack.ss_flags);
- 	err |= __put_user(current->sas_ss_size, &frame->uc.uc_stack.ss_size);
- 	err |= setup_sigcontext(&frame->uc.uc_mcontext, regs, signr, NULL,
--				(unsigned long)ka->sa.sa_handler);
-+				(unsigned long)ka->sa.sa_handler, 1);
- 	err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
- 	if (err)
- 		goto badframe;
+ 			if (wbc->nonblocking && bdi_write_congested(bdi)) {
+ 				wbc->encountered_congestion = 1;
+ 				done = 1;
 
