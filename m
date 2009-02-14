@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751898AbZBNIny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751927AbZBNI6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751898AbZBNIny (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 03:43:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750926AbZBNInp
+	id S1751927AbZBNI6U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 03:58:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbZBNI6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 03:43:45 -0500
-Received: from www.tglx.de ([62.245.132.106]:48208 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750890AbZBNIno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 03:43:44 -0500
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Jan Engelhardt <jengelh@medozas.de>, linux-kernel@vger.kernel.org,
-       malware-list@lists.printk.net, eparis@redhat.com, hch@infradead.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCHv2 1/5] VFS: DazukoFS, stackable-fs, file access control
-From: John Ogness <dazukocode@ogness.net>
-References: <8663jrgwo4.fsf@johno.fn.ogness.net>
-	<861vufgwlt.fsf@johno.fn.ogness.net>
-	<alpine.LSU.2.00.0902121618500.5658@fbirervta.pbzchgretzou.qr>
-	<86y6wagmmg.fsf@johno.fn.ogness.net>
-	<alpine.LSU.2.00.0902132057300.15269@fbirervta.pbzchgretzou.qr>
-	<20090213202523.GN28946@ZenIV.linux.org.uk>
-Date: Sat, 14 Feb 2009 09:43:04 +0100
-In-Reply-To: <20090213202523.GN28946@ZenIV.linux.org.uk> (Al Viro's message of "Fri\, 13 Feb 2009 20\:25\:23 +0000")
-Message-ID: <86eiy1v27b.fsf@johno.fn.ogness.net>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 14 Feb 2009 03:58:10 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53794
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750976AbZBNI6J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 03:58:09 -0500
+Date: Sat, 14 Feb 2009 00:58:03 -0800 (PST)
+Message-Id: <20090214.005803.234317382.davem@davemloft.net>
+To: airlied@gmail.com
+Cc: benh@kernel.crashing.org, airlied@linux.ie,
+       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5]: drm: ati_pcigart: Do not access I/O MEM space
+ using pointer derefs.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <21d7e9970902132342k1a756475t91ede4baf571c563@mail.gmail.com>
+References: <1234434959.29851.55.camel@pasglop>
+	<20090213.220934.236067646.davem@davemloft.net>
+	<21d7e9970902132342k1a756475t91ede4baf571c563@mail.gmail.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009-02-13, Al Viro <viro@ZenIV.linux.org.uk> wrote:
->> You could write an additional mount helper (and putting that into
->> /sbin/mount.dazukofs) that does all the security checks:
->> 
->>  - that the device is the same as mountpoint
->>  - that the device belonging to the underlying '/mnt' is not
->>    mounted anywhere else (in this namespace, at least)
->>  - exit(1) otherwise
->> 
->> Sure, it may not protect against all the cases Al can come up with,
->> but it is better than having nothing.
->
-> It's still racy, at the very least.  Folks, seriously, you can not
-> rely on the underlying tree being inaccessible elsewhere.  Anything
-> that does stacking has to cope with that possibility; it's not
-> bypassable by userland helpers.
+From: Dave Airlie <airlied@gmail.com>
+Date: Sat, 14 Feb 2009 17:42:02 +1000
 
-Indeed. As long as the stackable filesystem is synchronizing with the
-lower layer before doing read actions and synchronizes after all
-actions, there should be no problem.
+> On Sat, Feb 14, 2009 at 4:09 PM, David Miller <davem@davemloft.net> wrote:
+> > 1) Mis-sizes the GART table save buffer, it uses PAGE_SIZE instead
+> >   of the constant 4096 to determine how many GART entries there
+> >   are.  The PCI GART entries map 4096 bytes, always.  So using
+> >   getpagesize() is wrong.  (see RADEONDRIGetPciAperTableSize)
+> >
+> >   I have this fixed in my local tree.
+> 
+> Oops.
+> 
+> > 2) It doesn't check the surface byte swapping settings, so it
+> >   could be saving in one byte order and restoing in another.
+> >
+> >   I guess we could force RADEON_SURFACE_CNTL to zero around
+> >   the two memcpy()'s done in radeon_driver.c
+> 
+> Might be a good plan.
 
-Currently I see a problem when a new directory is created directly on
-the lower mount (rather than through the stackable filesystem). A
-refcount for "." as seen from the stackable filesystem is then
-incorrect. I will investigate this.
+I have patches for both of these things written, will submit
+to the xorg-driver-ati list.
 
-And I will look to see why there is any danger at all. There should
-not be.
-
-John Ogness
+I also have a cunning plan to work around the surface swapping
+GART issue in the DRM, will try that out right now.
