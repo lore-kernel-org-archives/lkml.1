@@ -1,104 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752678AbZBNPMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752611AbZBNPRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752678AbZBNPMT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 10:12:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750752AbZBNPMK
+	id S1752611AbZBNPRP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 10:17:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbZBNPQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 10:12:10 -0500
-Received: from yumi.tdiedrich.de ([85.10.210.183]:56745 "EHLO mx.tdiedrich.de"
+	Sat, 14 Feb 2009 10:16:55 -0500
+Received: from thunk.org ([69.25.196.29]:34754 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750761AbZBNPMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 10:12:09 -0500
-Date: Sat, 14 Feb 2009 16:12:00 +0100
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ayaz Abdulla <aabdulla@nvidia.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Philipp Matthias Hahn <pmhahn@titan.lahn.de>
-Subject: [PATCH 1/1] net: forcedeth:
-	f55c21fd9a92a444e55ad1ca4e4732d56661bf2e caused wake-on-lan
-	regression
-Message-ID: <20090214151200.GA5496@yamamaya.is-a-geek.org>
-Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Ayaz Abdulla <aabdulla@nvidia.com>,
-	Yinghai Lu <yhlu.kernel@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-	Philipp Matthias Hahn <pmhahn@titan.lahn.de>
+	id S1751269AbZBNPQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 10:16:53 -0500
+Date: Sat, 14 Feb 2009 09:14:11 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Bryan Donlan <bdonlan@gmail.com>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org, sct@redhat.com,
+       akpm@linux-foundation.org, adilger@sun.com
+Subject: Re: [RESEND/PATCH] ext[234]: Return -EIO not -ESTALE on directory
+	traversal missing inode
+Message-ID: <20090214141411.GD26628@mini-me.lan>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Bryan Donlan <bdonlan@gmail.com>, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org, sct@redhat.com,
+	akpm@linux-foundation.org, adilger@sun.com
+References: <1234588099-8445-1-git-send-email-bdonlan@fushizen.net> <1234588688-9497-1-git-send-email-bdonlan@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <1234588688-9497-1-git-send-email-bdonlan@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit f55c21fd9a92a444e55ad1ca4e4732d56661bf2e, which was
-introduced to fix the regression tracked at
-http://bugzilla.kernel.org/show_bug.cgi?id=11358
-causes the wake-on-lan mac to be reversed in the shutdown path.
-Apparently the forcedeth situation is rather messy in that the mac
-we need to writeback for a subsequent modprobe to work is exactly
-the reverse of what is needed for proper wake-on-lan.
+On Sat, Feb 14, 2009 at 12:18:08AM -0500, Bryan Donlan wrote:
+> The ext[234]_iget() functions in the ext[234] family of filesystems returns
+> -ESTALE if invoked on a deleted inode, in order to report errors to NFS
+> properly. However, in ext[234]_lookup(), this -ESTALE can be propagated to
+> userspace if the filesystem is corrupted, and a inode is linked even
+> though it is marked as deleted. 
 
-The following patch explains the situation in the comments and
-makes the call to nv_restore_mac_addr() conditional (only called if
-we are not really going for poweroff).
+I'm not sure what you mean by "inode is linked" here.  All you are
+really proposing to do here is to remap the ESTALE error to EIO, yes?
 
-Tobias Diedrich wrote:
-> Hmm, I had not tried WOL for some time.
-> With 2.6.29-rc3 is see the following behaviour:
-> 
-> State            WOL Behaviour
-> ------------------------------
-> shutdown         reversed MAC
-> disk/shutdown    reversed MAC
-> disk/platform    OK
-> 
-> Apparently nv_restore_mac_addr() restores the MAC in the wrong order
-> for WOL (at least for my PCI_DEVICE_ID_NVIDIA_NVENET_15).  platform
-> works, because the MAC is not touched in the nv_suspend() path.
-> 
-> A possible fix might be to only call nv_restore_mac_addr() if
-> system_state != SYSTEM_POWER_OFF.
+> Apologies for the resend so quickly for those on the CC list - my mailer was
+> misconfigured and the mail rejected by vger.
 
-With the following patch:
-shutdown         OK
-disk/shutdown    OK
-disk/platform    OK
-kexec            OK
+RESEND is a code word meaning --- "I sent this a few days/weeks ago
+and no one responded; please look at it again?" I was confused when I
+saw this, because I didn't remember seeing this, either in my inbox or
+in the ext4 patchwork (which is really great and helping me make sure
+I don't miss patches), so I spent a few extra minutes googling to see
+what had gotten missed until I finally got to your apologies section....
 
-Signed-off-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-Tested-by: Philipp Matthias Hahn <pmhahn@titan.lahn.de>
+I received two copies with the RESEND keyword; so I guess that means
+you ended up sending it three times?  Anyway, apparently the first
+time you sent it your mailer was so badly misconfigured that it got
+dropped by mit.edu's mailer as well.  :-) In general if you end up
+resending, don't worry about flagging it as a resend; deleting
+duplicates is easy enough to do.
 
-Index: linux-2.6.29-rc3/drivers/net/forcedeth.c
-===================================================================
---- linux-2.6.29-rc3.orig/drivers/net/forcedeth.c	2009-02-08 16:31:29.000000000 +0100
-+++ linux-2.6.29-rc3/drivers/net/forcedeth.c	2009-02-08 16:39:58.000000000 +0100
-@@ -6011,9 +6011,20 @@
- 	if (netif_running(dev))
- 		nv_close(dev);
- 
--	nv_restore_mac_addr(pdev);
-+	/*
-+	 * Restore the MAC so a kernel started by kexec won't get confused.
-+	 * If we really go for poweroff, we must not restore the MAC,
-+	 * otherwise the MAC for WOL will be reversed at least on some boards.
-+	 */
-+	if (system_state != SYSTEM_POWER_OFF) {
-+		nv_restore_mac_addr(pdev);
-+	}
- 
- 	pci_disable_device(pdev);
-+	/*
-+	 * Apparently it is not possible to reinitialise from D3 hot,
-+	 * only put the device into D3 if we really go for poweroff.
-+	 */
- 	if (system_state == SYSTEM_POWER_OFF) {
- 		if (pci_enable_wake(pdev, PCI_D3cold, np->wolenabled))
- 			pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+> --- a/fs/ext2/namei.c
+> +++ b/fs/ext2/namei.c
+> @@ -66,8 +66,12 @@ static struct dentry *ext2_lookup(struct inode * dir, struct dentry *dentry, str
+>  	inode = NULL;
+>  	if (ino) {
+>  		inode = ext2_iget(dir->i_sb, ino);
+> -		if (IS_ERR(inode))
+> -			return ERR_CAST(inode);
+> +		if (unlikely(IS_ERR(inode))) {
 
--- 
-Tobias						PGP: http://9ac7e0bc.uguu.de
-このメールは十割再利用されたビットで作られています。
+I'm dubious about unlikely() here; OTOH, penalizing the error case
+seems reasonable.
+
+> +			if (PTR_ERR(inode) == -ESTALE)
+
+Please add a call to ext2_error() here, and in make a similar change
+for the ext3 and ext4 patches:
+
+       	     	     		ext2_error(dir->i_sb, "ext2_lockup",
+					   "deleted inode referenced: %u",
+					   ino);
+
+> +				return ERR_PTR(-EIO);
+> +			else
+> +				return ERR_CAST(inode);
+> +		}
+>  	}
+>  	return d_splice_alias(inode, dentry);
+>  }
+
+						- Ted
