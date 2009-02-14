@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761902AbZBNBLH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763284AbZBNBKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761902AbZBNBLH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Feb 2009 20:11:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761228AbZBNBBv
+	id S1763284AbZBNBKt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Feb 2009 20:10:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761169AbZBNBBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Feb 2009 20:01:51 -0500
-Received: from kroah.org ([198.145.64.141]:39708 "EHLO coco.kroah.org"
+	Fri, 13 Feb 2009 20:01:50 -0500
+Received: from kroah.org ([198.145.64.141]:39697 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760765AbZBNBBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Feb 2009 20:01:48 -0500
-Date: Fri, 13 Feb 2009 16:58:56 -0800
+	id S1758882AbZBNBBr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Feb 2009 20:01:47 -0500
+Date: Fri, 13 Feb 2009 16:58:54 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
-Subject: [patch 26/47] sungem: Soft lockup in sungem on Netra AC200 when
-	switching interface up
-Message-ID: <20090214005856.GA11282@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Alexey Dobriyan <adobriyan@gmail.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 25/47] sky2: fix hard hang with netconsoling and iface
+	going up
+Message-ID: <20090214005854.GZ11282@kroah.com>
 References: <20090214005130.617401075@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sungem-soft-lockup-in-sungem-on-netra-ac200-when-switching-interface-up.patch"
+Content-Disposition: inline; filename="sky2-fix-hard-hang-with-netconsoling-and-iface-going-up.patch"
 In-Reply-To: <20090214005726.GA11282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,70 +42,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ilkka Virta <itvirta@iki.fi>
+From: Alexey Dobriyan <adobriyan@gmail.com>
 
-[ Upstream commit 71822faa3bc0af5dbf5e333a2d085f1ed7cd809f ]
+[ Upstream commit a11da890e4c9850411303efcf6514f048ca880ee ]
 
-From: Ilkka Virta <itvirta@iki.fi>
+Printing anything over netconsole before hw is up and running is,
+of course, not going to work.
 
-In the lockup situation the driver seems to go off in an eternal storm
-of interrupts right after calling request_irq(). It doesn't actually
-do anything interesting in the interrupt handler. Since connecting the link
-afterwards works, something later in initialization must fix this.
-
-Looking at gem_do_start() and gem_open(), it seems that the only thing
-done while opening the device after the request_irq(), is a call to
-napi_enable().
-
-I don't know what the ordering requirements are for the
-initialization, but I boldly tried to move the napi_enable() call
-inside gem_do_start() before the link state is checked and interrupts
-subsequently enabled, and it seems to work for me. Doesn't even break
-anything too obvious...
-
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Acked-by: Stephen Hemminger <shemminger@vyatta.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/sungem.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/net/sky2.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/drivers/net/sungem.c
-+++ b/drivers/net/sungem.c
-@@ -2205,6 +2205,8 @@ static int gem_do_start(struct net_devic
+--- a/drivers/net/sky2.c
++++ b/drivers/net/sky2.c
+@@ -1403,9 +1403,6 @@ static int sky2_up(struct net_device *de
  
- 	gp->running = 1;
+  	}
  
-+	napi_enable(&gp->napi);
-+
- 	if (gp->lstate == link_up) {
- 		netif_carrier_on(gp->dev);
- 		gem_set_link_modes(gp);
-@@ -2222,6 +2224,8 @@ static int gem_do_start(struct net_devic
- 		spin_lock_irqsave(&gp->lock, flags);
- 		spin_lock(&gp->tx_lock);
- 
-+		napi_disable(&gp->napi);
-+
- 		gp->running =  0;
- 		gem_reset(gp);
- 		gem_clean_rings(gp);
-@@ -2322,8 +2326,6 @@ static int gem_open(struct net_device *d
- 	if (!gp->asleep)
- 		rc = gem_do_start(dev);
- 	gp->opened = (rc == 0);
--	if (gp->opened)
--		napi_enable(&gp->napi);
- 
- 	mutex_unlock(&gp->pm_mutex);
- 
-@@ -2460,8 +2462,6 @@ static int gem_resume(struct pci_dev *pd
- 
- 		/* Re-attach net device */
- 		netif_device_attach(dev);
+-	if (netif_msg_ifup(sky2))
+-		printk(KERN_INFO PFX "%s: enabling interface\n", dev->name);
 -
--		napi_enable(&gp->napi);
- 	}
+ 	netif_carrier_off(dev);
  
- 	spin_lock_irqsave(&gp->lock, flags);
+ 	/* must be power of 2 */
+@@ -1484,6 +1481,9 @@ static int sky2_up(struct net_device *de
+ 	sky2_write32(hw, B0_IMSK, imask);
+ 
+ 	sky2_set_multicast(dev);
++
++	if (netif_msg_ifup(sky2))
++		printk(KERN_INFO PFX "%s: enabling interface\n", dev->name);
+ 	return 0;
+ 
+ err_out:
 
