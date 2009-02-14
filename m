@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506AbZBNVOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbZBNVNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754506AbZBNVOT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 16:14:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbZBNVM4
+	id S1753904AbZBNVNy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 16:13:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbZBNVMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 16:12:56 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:48565 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754013AbZBNVMy (ORCPT
+	Sat, 14 Feb 2009 16:12:41 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:39192 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752566AbZBNVMk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 16:12:54 -0500
+	Sat, 14 Feb 2009 16:12:40 -0500
 From: Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH 05/43] drivers/net/niu.c: fix sparse warning: symbol shadows
-	an earlier one
+Subject: [PATCH 04/43] drivers/net/ns83820.c: fix sparse warnings: fix
+	signedness
 To: netdev@vger.kernel.org
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Sat, 14 Feb 2009 22:12:48 +0100
-Message-ID: <20090214211244.23489.31564.stgit@vmbox.hanneseder.net>
+Date: Sat, 14 Feb 2009 22:12:36 +0100
+Message-ID: <20090214211231.23489.52423.stgit@vmbox.hanneseder.net>
 In-Reply-To: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
 References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
 User-Agent: StGit/0.14.3.348.gcb02
@@ -27,35 +27,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Move variable declaration to a more inner scope.
-
-Fix this sparse warning:
-  drivers/net/niu.c:2399:21: warning: symbol 'err' shadows an earlier one
-  drivers/net/niu.c:2287:13: originally declared here
+Fix this sparse warnings:
+  drivers/net/ns83820.c:479:36: warning: incorrect type in argument 2 (different signedness)
+  drivers/net/ns83820.c:479:36: warning: incorrect type in argument 2 (different signedness)
+  drivers/net/ns83820.c:479:36: warning: incorrect type in argument 2 (different signedness)
+  drivers/net/ns83820.c:479:36: warning: incorrect type in argument 2 (different signedness)
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- drivers/net/niu.c |    2 +-
+ drivers/net/ns83820.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/niu.c b/drivers/net/niu.c
-index c26325d..32374a1 100644
---- a/drivers/net/niu.c
-+++ b/drivers/net/niu.c
-@@ -2284,7 +2284,6 @@ static int serdes_init_10g_serdes(struct niu *np)
- 	struct niu_link_config *lp = &np->link_config;
- 	unsigned long ctrl_reg, test_cfg_reg, pll_cfg, i;
- 	u64 ctrl_val, test_cfg_val, sig, mask, val;
--	int err;
- 	u64 reset_val;
+diff --git a/drivers/net/ns83820.c b/drivers/net/ns83820.c
+index e80294d..9266502 100644
+--- a/drivers/net/ns83820.c
++++ b/drivers/net/ns83820.c
+@@ -409,7 +409,7 @@ static int lnksts = 0;		/* CFG_LNKSTS bit polarity */
+ struct rx_info {
+ 	spinlock_t	lock;
+ 	int		up;
+-	long		idle;
++	unsigned long	idle;
  
- 	switch (np->port) {
-@@ -2337,6 +2336,7 @@ static int serdes_init_10g_serdes(struct niu *np)
- 	/* Initialize all 4 lanes of the SERDES.  */
- 	for (i = 0; i < 4; i++) {
- 		u32 rxtx_ctrl, glue0;
-+		int err;
+ 	struct sk_buff	*skbs[NR_RX_DESC];
  
- 		err = esr_read_rxtx_ctrl(np, i, &rxtx_ctrl);
- 		if (err)
 
