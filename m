@@ -1,77 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750967AbZBNJPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752039AbZBNJUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750967AbZBNJPW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 04:15:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbZBNJPE
+	id S1752039AbZBNJUw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 04:20:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbZBNJUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 04:15:04 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:43146 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750792AbZBNJPB (ORCPT
+	Sat, 14 Feb 2009 04:20:36 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:20042 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750792AbZBNJUe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 04:15:01 -0500
-Date: Sat, 14 Feb 2009 10:32:13 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Mat <jackdachef@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, agk@redhat.com,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Fwd: [PATCH] Implement barrier support for single device DM devices
-Message-ID: <20090214093213.GC26292@one.firstfloor.org>
-References: <e85b9d30809110712y700a9d8exb5828487984d6a59@mail.gmail.com> <e85b9d30809110713m542fc884sc17374f7fb2c7493@mail.gmail.com> <20080911174657.GN7714@one.firstfloor.org> <e85b9d30902131526v5f710583ub58d578339dd0a90@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e85b9d30902131526v5f710583ub58d578339dd0a90@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 14 Feb 2009 04:20:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Tq7NF3puW0cGCdscaP09kwKzLfpE4bMrjzde888VA4f7xw+uOS0XQpbO2lq37xYXrW
+         NunxYcAJzlKRS8U/lB0ZCboKm4LZddVEcgGL+Mi93PuBwXREH1Ub8+06aFFQAdFZ5jht
+         FFjQJOGJW5/BOojmdTJgQl0zpGmMcoUQvgduI=
+MIME-Version: 1.0
+In-Reply-To: <200902140917.38313.philippe.grenard@laposte.net>
+References: <200902131944.56634.philippe.grenard@laposte.net>
+	 <200902132056.20097.philippe.grenard@laposte.net>
+	 <18837.56478.10536.6978@stoffel.org>
+	 <200902140917.38313.philippe.grenard@laposte.net>
+Date: Sat, 14 Feb 2009 14:50:33 +0530
+Message-ID: <3f9a31f40902140120v6e8db503m6bf5c2bad39c2544@mail.gmail.com>
+Subject: Re: PROBLEM: cannot get stable system since 2.6.28 kernel
+From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+To: Philippe Grenard <philippe.grenard@laposte.net>
+Cc: linux-kernel@vger.kernel.org, John Stoffel <john@stoffel.org>,
+       Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 14, 2009 at 12:26:05AM +0100, Mat wrote:
-> Hi Andi,
-> 
-> any news on this patch ?
+On Sat, Feb 14, 2009 at 1:47 PM, Philippe Grenard
+<philippe.grenard@laposte.net> wrote:
+> On Friday 13 February 2009 21:48:30 John Stoffel wrote:
+>>
+>> Here's your problem most probably.  The nVidia graphics module.
+>> Remove that and re-try your system.  Basically, we can't help you when
+>> you use a vendor's binary module.
+>>
+>> John
+>
+> Well, it does not change anything to my problem...
+> Moreover, I don't understand why this would work with 2.6.27.10 but not with
+> 2.6.29-rc4 ....
 
-It's in mainline as of 2.6.29-rc4.
+May be nvidia graphics module was written based on some kernel which
+is more closer to 2.6.27.10 as compare to 2.6.29-rc4.
 
-> from what I saw it isn't included in mainline yet, if it is already
-> please point to the kernel-config option where to enable it
+Another thing which John is pointing configure your bios to use
+standard inbuild garphics card OR remove nvidia module and check
+whether it solves your problem or not.
 
-It's always enabled for simple DM remapped devices given that its conditions
-(only single underlying device etc.) are true.
-
-> heavy flush, write operations; especially on amd64/X64:
-> http://forums.gentoo.org/viewtopic-t-482731.html
-> 
-> I'm not sure if it's possible but I believe it could also be related
-> to filesystems switching to synchronous writes (non-barrier
-> write-mode) when the underlying partition is a LUKS-partition and
-
-Note that my patch doesn't enable barriers for LUKS/dm_crypt, that would
-be another patch which is not currently submtted.
-
-> therefore
-> decreasing performance (I'm not a kernel-hacker so I don't know if
-> there's a possible correlation here)
-
-You can find out by testing it without LUKS, but enabling/disabling
-barriers on a file system and see how much difference it makes.
-That would be better than speculating.
-
-> 
-> some factors I noticed having an impact on that are:
-
-How did you determine that? Did you run some repeatable benchmark
-that gave different numbers? 
-
-> - the i/o scheduler hardly makes a change
-> - elder boxes with PCI (non-PCIe) can be "fixed" with some latency-tweaks:
->   setpci -v -d *:* latency_timer=b0
-
-You realize that the PCI latency has nothing to do with IO scheduler
-delays? It's very unlikely that there is a correlation there.
-Please double check these results.
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+--
+JSR
