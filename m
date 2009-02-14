@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754089AbZBNVNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbZBNVNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754089AbZBNVNG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 16:13:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZBNVMQ
+	id S1754167AbZBNVNd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 16:13:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbZBNVMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 16:12:16 -0500
+	Sat, 14 Feb 2009 16:12:30 -0500
 Received: from mail-fx0-f20.google.com ([209.85.220.20]:39192 "EHLO
 	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752209AbZBNVMO (ORCPT
+	with ESMTP id S1753854AbZBNVM2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 16:12:14 -0500
+	Sat, 14 Feb 2009 16:12:28 -0500
 From: Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH 02/43] drivers/net/e2100.c: fix sparse warning: symbol shadows
+Subject: [PATCH 03/43] drivers/net/ni65.c: fix sparse warnings: symbol shadows
 	an earlier one
 To: netdev@vger.kernel.org
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Sat, 14 Feb 2009 22:12:10 +0100
-Message-ID: <20090214211203.23489.80420.stgit@vmbox.hanneseder.net>
+Date: Sat, 14 Feb 2009 22:12:23 +0100
+Message-ID: <20090214211218.23489.71130.stgit@vmbox.hanneseder.net>
 In-Reply-To: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
 References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
 User-Agent: StGit/0.14.3.348.gcb02
@@ -27,37 +27,58 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Remove redundant inner scope variable and while being at it
-make use of ARRAY_SIZE instead of a hardcoded number.
+Impact: Remove redundant variable declaration or move them to a more
+inner scope.
 
-Fix this sparse warning:
-  drivers/net/e2100.c:219:56: warning: symbol 'i' shadows an earlier one
-  drivers/net/e2100.c:181:13: originally declared here
+Fix this sparse warnings:
+  drivers/net/ni65.c:900:37: warning: symbol 'p' shadows an earlier one
+  drivers/net/ni65.c:874:21: originally declared here
+  drivers/net/ni65.c:925:21: warning: symbol 'p' shadows an earlier one
+  drivers/net/ni65.c:874:21: originally declared here
+  drivers/net/ni65.c:945:29: warning: symbol 'k' shadows an earlier one
+  drivers/net/ni65.c:926:15: originally declared here
 
 Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- drivers/net/e2100.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ni65.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/e2100.c b/drivers/net/e2100.c
-index b07ba19..d2f6ee1 100644
---- a/drivers/net/e2100.c
-+++ b/drivers/net/e2100.c
-@@ -216,13 +216,13 @@ static int __init e21_probe1(struct net_device *dev, int ioaddr)
- 		printk(" %02X", station_addr[i]);
+diff --git a/drivers/net/ni65.c b/drivers/net/ni65.c
+index 2540572..d769a88 100644
+--- a/drivers/net/ni65.c
++++ b/drivers/net/ni65.c
+@@ -897,7 +897,6 @@ static irqreturn_t ni65_interrupt(int irq, void * dev_id)
  
- 	if (dev->irq < 2) {
--		int irqlist[] = {15,11,10,12,5,9,3,4}, i;
--		for (i = 0; i < 8; i++)
-+		int irqlist[] = {15, 11, 10, 12, 5, 9, 3, 4};
-+		for (i = 0; i < ARRAY_SIZE(irqlist); i++)
- 			if (request_irq (irqlist[i], NULL, 0, "bogus", NULL) != -EBUSY) {
- 				dev->irq = irqlist[i];
- 				break;
- 			}
--		if (i >= 8) {
-+		if (i >= ARRAY_SIZE(irqlist)) {
- 			printk(" unable to get IRQ %d.\n", dev->irq);
- 			retval = -EAGAIN;
- 			goto out;
+ 		if(csr0 & CSR0_ERR)
+ 		{
+-			struct priv *p = dev->ml_priv;
+ 			if(debuglevel > 1)
+ 				printk(KERN_ERR "%s: general error: %04x.\n",dev->name,csr0);
+ 			if(csr0 & CSR0_BABL)
+@@ -922,8 +921,7 @@ static irqreturn_t ni65_interrupt(int irq, void * dev_id)
+  int j;
+  for(j=0;j<RMDNUM;j++)
+  {
+-	struct priv *p = dev->ml_priv;
+-	int i,k,num1,num2;
++	int i, num2;
+ 	for(i=RMDNUM-1;i>0;i--) {
+ 		 num2 = (p->rmdnum + i) & (RMDNUM-1);
+ 		 if(!(p->rmdhead[num2].u.s.status & RCV_OWN))
+@@ -931,6 +929,7 @@ static irqreturn_t ni65_interrupt(int irq, void * dev_id)
+ 	}
+ 
+ 	if(i) {
++		int k, num1;
+ 		for(k=0;k<RMDNUM;k++) {
+ 			num1 = (p->rmdnum + k) & (RMDNUM-1);
+ 			if(!(p->rmdhead[num1].u.s.status & RCV_OWN))
+@@ -942,7 +941,6 @@ static irqreturn_t ni65_interrupt(int irq, void * dev_id)
+ 		if(debuglevel > 0)
+ 		{
+ 			char buf[256],*buf1;
+-			int k;
+ 			buf1 = buf;
+ 			for(k=0;k<RMDNUM;k++) {
+ 				sprintf(buf1,"%02x ",(p->rmdhead[k].u.s.status)); /* & RCV_OWN) ); */
 
