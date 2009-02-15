@@ -1,57 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbZBOPr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753928AbZBOQKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754098AbZBOPr7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 10:47:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbZBOPru
+	id S1753928AbZBOQKX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 11:10:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbZBOQKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 10:47:50 -0500
-Received: from bu3sch.de ([62.75.166.246]:58405 "EHLO vs166246.vserver.de"
+	Sun, 15 Feb 2009 11:10:10 -0500
+Received: from main.gmane.org ([80.91.229.2]:43681 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751187AbZBOPrt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 10:47:49 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: David Brownell <dbrownell@users.sourceforge.net>
-Subject: [PATCH] spi-gpio: Sanitize MISO bitvalue
-Date: Sun, 15 Feb 2009 16:30:41 +0100
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       openwrt-devel@lists.openwrt.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902151630.41426.mb@bu3sch.de>
+	id S1751212AbZBOQKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 11:10:09 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: Poking ieee80211_default_rc_algo causes kernel lockups
+Date: Sun, 15 Feb 2009 16:09:57 +0000 (UTC)
+Message-ID: <slrngpgfil.5gc.sitsofe@sitsofe.eeepc.localdomain>
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 79-68-117-143.dynamic.dsl.as9105.com
+User-Agent: slrn/0.9.8.1pl1 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-gpio_get_value() returns 0 or nonzero, but getmiso() expects 0 or 1.
-Sanitize the value to a 0/1 boolean.
+Hi,
 
-Signed-off-by: Michael Buesch <mb@bu3sch.de>
+As mentioned on
+http://groups.google.com/group/fa.linux.kernel/browse_frm/thread/d4a6ce26360613fa/b362792a2debced6?#b362792a2debced6
+, poking /sys/module/mac80211/parameters/ieee80211_default_rc_algo and
+then trying to read values back is currently causing the kernel to go
+funny. E.g.
+echo blah > /sys/module/mac80211/parameters/ieee80211_default_rc_algo
+cat /sys/module/mac80211/parameters/ieee80211_default_rc_algo
 
----
-
-Well, we could also change the bitbang helpers in linux/spi/spi_bitbang.h
-or change the way the gpio_get_value API is defined, but I personally think
-this patch is pretty good as is.
-In any case, it fixes a real bug on platforms like the bcm47xx which
-return 0 or nonzero for gpio_get_value.
-
-Index: linux-2.6/drivers/spi/spi_gpio.c
-===================================================================
---- linux-2.6.orig/drivers/spi/spi_gpio.c	2009-02-14 21:37:14.000000000 +0100
-+++ linux-2.6/drivers/spi/spi_gpio.c	2009-02-15 16:27:16.000000000 +0100
-@@ -114,7 +114,7 @@ static inline void setmosi(const struct 
- 
- static inline int getmiso(const struct spi_device *spi)
- {
--	return gpio_get_value(SPI_MISO_GPIO);
-+	return !!gpio_get_value(SPI_MISO_GPIO);
- }
- 
- #undef pdata
+Causes 2.6.29rc5 on my EeePC 900 to lock up.
 
 -- 
-Greetings, Michael.
+Sitsofe
+
