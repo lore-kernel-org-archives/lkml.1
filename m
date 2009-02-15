@@ -1,111 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755179AbZBOSAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbZBOSBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755179AbZBOSAj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 13:00:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753452AbZBOSAb
+	id S1755301AbZBOSBw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 13:01:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbZBOSBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 13:00:31 -0500
-Received: from hermes.cicese.mx ([158.97.1.34]:47412 "EHLO hermes.cicese.mx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753186AbZBOSAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 13:00:30 -0500
-From: Serguei Miridonov <mirsev@cicese.mx>
-To: Robert Hancock <hancockrwd@gmail.com>
-Subject: Re: Intel ICH9M/M-E SATA error-handling/reset problems
-Date: Sun, 15 Feb 2009 10:00:16 -0800
-User-Agent: KMail/1.11.0 (Linux/2.6.27.12-170.2.5.fc10.i686; KDE/4.2.0; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
-References: <200902141206.06419.mirsev@cicese.mx> <49973F4F.1010804@gmail.com>
-In-Reply-To: <49973F4F.1010804@gmail.com>
+	Sun, 15 Feb 2009 13:01:43 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:61274 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753186AbZBOSBm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 13:01:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
+         :references:mime-version:content-type:content-disposition
+         :in-reply-to:user-agent;
+        b=A2vLDYxJdIy40PqIYnSuX2+/tiETDe5+6z5Iw6Ar4NNKZn9Ht/LfyigVHVJStQTPEU
+         EVgkDZaFgUjQB9O3F8ac2ydRcKAGaTH+KJ7D7IyP66tWhn/KVvBbz1Jww9qf7b0wBpua
+         rPoAKKw4yDgVEI54UB2uZp8GlCbxpwXxeNM8M=
+Date: Sun, 15 Feb 2009 19:01:41 +0100
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/10] ide: add flags query macros
+Message-ID: <20090215180141.GB5156@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com, Sam Ravnborg <sam@ravnborg.org>,
+	bzolnier@gmail.com, linux-ide@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <1234699692-9452-1-git-send-email-petkovbb@gmail.com> <1234699692-9452-2-git-send-email-petkovbb@gmail.com> <20090215133512.GA32621@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200902151000.16688.mirsev@cicese.mx>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (hermes.cicese.mx [158.97.1.34]); Sun, 15 Feb 2009 10:00:18 -0800 (PST)
+In-Reply-To: <20090215133512.GA32621@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Robert and Jeff,
+Hi,
 
-Thank you for your replies. 
+On Sun, Feb 15, 2009 at 02:35:12PM +0100, Sam Ravnborg wrote:
+> On Sun, Feb 15, 2009 at 01:08:03PM +0100, Borislav Petkov wrote:
+> > There should be no functionality change resulting from this patch.
+> > 
+> > Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+> > ---
+> >  include/linux/ide.h |  166 +++++++++++++++++++++++++++++++++++++++++++++++++++
+> >  1 files changed, 166 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/include/linux/ide.h b/include/linux/ide.h
+> > index c75631c..f133062 100644
+> > --- a/include/linux/ide.h
+> > +++ b/include/linux/ide.h
+> > @@ -497,6 +497,82 @@ enum {
+> >  	IDE_AFLAG_NO_AUTOCLOSE		= (1 << 24),
+> >  };
+> >  
+> > +#define ide_drv_drq_int(drive) \
+> > +	((drive)->atapi_flags & IDE_AFLAG_DRQ_INTERRUPT)
+> 
+> Why not use a static inline here so we get proper typecheck.
+> And then convert the return result to a bool (0/1) so you
+> do not have to do this at the call site.
+> 
+> I counted at least three places in ide-cd that does a local
+> transformation to a bool and I saw nowhere the actual bit value
+> was used.
 
-On Saturday 14 February 2009, Jeff Garzik wrote:
-> Serguei Miridonov wrote:
-> > I have some problems with SATA in a new notebook PC (HP Pavilion
-> > dv5t, Intel chipset). Seagate FreeAgent Pro 1TB external drive
-> > practically can not be used with eSATA in Linux (fresh install
-> > from DVD Fedora 10, now fully updated), and yesterday I also had
-> > problem with DVD recording using internal HL-DT-ST BDDVDRW drive.
->
-> Some eSata fixes went into the more-recent kernels...  Can you try
-> 2.6.29-rc5?
+I'm assuming you're talking about those places (and similar):
 
-Unfortunately, right now I can not provide a good testing bed for a 
-new kernel. I was also thinking about bad cable and returned it to the 
-store. Recording DVDs, as you understand, can not be considered for 
-testing: I don't do it on regular basis... I will be looking for a new 
-eSATA cable in a week or two, so when I have it I'll try to download 
-and build the kernel for these experiments.
+drive->dma = !!(drive->dev_flags & IDE_DFLAG_USING_DMA);
 
-On Saturday 14 February 2009, Robert Hancock wrote:
-> Serguei Miridonov wrote:
-> > Both devices work with Windows Vista. Seagate external drive even
-> > in Vista produces "parity error" messages in Windows event log
-> > but OS is somehow recovering from these errors and continues to
-> > use the drive with slight slowdown (average speed varies between
-> > 60 and 110 MB/s). Of course, it could be cable/Seagate issue, but
-> > again - Vista can handle this.
->
-> There are a lot of issues with eSATA drives and cabling. As Jeff
-> mentioned, there are some changes in 2.6.29-rc that may improve the
-> behavior, but the root cause here is a hardware issue (you should
-> not expect very good behavior in Vista either with those errors).
+Well, actually we almost never use the 0/1 bool value and this one
+case is more of an exception. If you take a closer look, we don't have
+setters/getters ..., well let's call them methods as it is in the
+OO-world, and we simply access the bare flags. So the macros as such are
+simply to save some stack and improve readability and since the whole
+thing keeps changing we might just as well turn them into static inlines
+one fine day :).
 
-I agree with you completely. Nevertheless, something like 10 errors 
-per 2GB transfer can not be the reason to give up. Vista, at least, 
-recovers and continues the data transfer. Linux simply can not return 
-the interface or connected device into operating mode. Do you think it 
-is normal?
+Bart, what do you think?
 
-> As far as the DVD burning issue, it's hard to say for sure. It
-> looks like a write command was timing out. Could be due to your
-> drive not working well with that type of media.
-
-Well, it could be, though I did not consider Sony DVD+R as bad media. 
-My fault may be... Anyway, even if it true, why k3b (or whatever 
-backend used for recording) just can not establish connection with a 
-drive because of kernel which must keep hardware working even is there 
-were some intermittent interface errors.
-
-> > It appears that Linux kernel has problems with
-> > error-handling/reset of SATA hardware. I have found a lot of
-> > reports regarding SATA problems: data transfer failures, CD/DVD
-> > recording, waking up from suspend to RAM, etc. Aren't they all
-> > related? Can Linux SATA chipsets drivers
->
-> Not related at all, mostly.. though a lot of people seem to think
-> they are. Often times people think problems are related because the
-> error messages seem similar, and even the same error can be
-> triggered by numerous different problems, often not the fault of
-> the kernel.
-
-I'm not talking now about errors triggered by the kernel due to some 
-bugs. What I see in the logs, this is the kernel fault to recover from 
-errors, not causing it. I hope that this is fixed already in newer 
-kernels, though I could not find such information in changelogs.
-
-I could be wrong, of course, but it seems to me that if kernel can 
-really reset the interface and return it and connected devices to 
-operating mode, then most of issues mentioned above may become not so 
-critical and people could live with them until root cause is fixed 
-properly.
-
-May be resetting the interface will not help is all cases if a device 
-is left in some screwed up state due to earlier poor error handling... 
-Well, this is another issue which can be device-vendor-dependent... 
-However, regarding external Seagate drive, Vista does not have any 
-special driver to handle its errors, it just works...
-
+-- 
+Regards/Gruss,
+    Boris.
