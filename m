@@ -1,35 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753636AbZBOVhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbZBOVmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753636AbZBOVhv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 16:37:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbZBOVhk
+	id S1753902AbZBOVmh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 16:42:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbZBOVm3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 16:37:40 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36097 "EHLO
+	Sun, 15 Feb 2009 16:42:29 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49504 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750862AbZBOVhj (ORCPT
+	by vger.kernel.org with ESMTP id S1751834AbZBOVm2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 16:37:39 -0500
-Date: Sun, 15 Feb 2009 13:36:38 -0800
+	Sun, 15 Feb 2009 16:42:28 -0500
+Date: Sun, 15 Feb 2009 13:41:44 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-crypto@vger.kernel.org,
-       Geert.Uytterhoeven@sonycom.com
-Subject: Re: [PATCH] Export symbol ksize()
-Message-Id: <20090215133638.5ef517ac.akpm@linux-foundation.org>
-In-Reply-To: <1234454104.28812.175.camel@penberg-laptop>
-References: <1234272104-10211-1-git-send-email-kirill@shutemov.name>
-	<84144f020902100535i4d626a9fj8cbb305120cf332a@mail.gmail.com>
-	<20090210134651.GA5115@epbyminw8406h.minsk.epam.com>
-	<Pine.LNX.4.64.0902101605070.20991@melkki.cs.Helsinki.FI>
-	<20090212104349.GA13859@gondor.apana.org.au>
-	<1234435521.28812.165.camel@penberg-laptop>
-	<20090212105034.GC13859@gondor.apana.org.au>
-	<1234454104.28812.175.camel@penberg-laptop>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Bill Nottingham <notting@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org, trivial@kernel.org, stable@kernel.org
+Subject: Re: [PATCH] Declare PIO_CMAP/GIO_CMAP as compatbile ioctls.
+Message-Id: <20090215134144.c29913d9.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LNX.1.10.0902111438280.31014@jikos.suse.cz>
+References: <1234279525-25143-1-git-send-email-notting@redhat.com>
+	<alpine.LNX.1.10.0902111438280.31014@jikos.suse.cz>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -38,32 +28,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Feb 2009 17:55:04 +0200 Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+On Wed, 11 Feb 2009 14:41:25 +0100 (CET) Jiri Kosina <jkosina@suse.cz> wrote:
 
-> On Thu, Feb 12, 2009 at 12:45:21PM +0200, Pekka Enberg wrote:
-> > > 
-> > > Because the API was being widely abused in the nommu code, for example.
-> > > I'd rather not add it back for this special case which can be handled
-> > > otherwise.
+> On Tue, 10 Feb 2009, Bill Nottingham wrote:
 > 
-> On Thu, 2009-02-12 at 18:50 +0800, Herbert Xu wrote:
-> > I'm sorry but that's like banning the use of heaters just because
-> > they can abused and cause fires.
+> > Otherwise, these don't work when called from 32-bit userspace on 64-bit kernels.
+
+Bill, please remember to add signoffs?  This should all be scripted.
+
+> > ---
+> >  fs/compat_ioctl.c |    2 ++
+> >  1 files changed, 2 insertions(+), 0 deletions(-)
 > > 
-> > I think I've said this to you before but in networking we very much
-> > want to use ksize because the standard case of a 1500-byte packet
-> > has loads of extra room given by kmalloc which all goes to waste
-> > right now.
-> > 
-> > If we could use ksize then we can stuff loads of metadata in that
-> > space.
+> > diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
+> > index 5235c67..9ee71a0 100644
+> > --- a/fs/compat_ioctl.c
+> > +++ b/fs/compat_ioctl.c
+> > @@ -1937,6 +1937,8 @@ ULONG_IOCTL(SET_BITMAP_FILE)
+> >  /* Big K */
+> >  COMPATIBLE_IOCTL(PIO_FONT)
+> >  COMPATIBLE_IOCTL(GIO_FONT)
+> > +COMPATIBLE_IOCTL(PIO_CMAP)
+> > +COMPATIBLE_IOCTL(GIO_CMAP)
+> >  ULONG_IOCTL(KDSIGACCEPT)
+> >  COMPATIBLE_IOCTL(KDGETKEYCODE)
+> >  COMPATIBLE_IOCTL(KDSETKEYCODE)
+> > -- 
+> > 1.6.1.2
 > 
-> OK, fair enough, I applied Kirill's patch. Thanks.
-> 
+> Alan, I am hesitant to consider this material implicitly applicable for 
+> trivial tree.
 
-Could we please have more details regarding this:
+No, it isn't appropriate for the trivial tree.
 
-> The ksize() function is not exported to modules because it has non-standard
-> behavour across different slab allocators. 
+> Could you please give your Acked-by for it so that I can 
+> merge, or take it through your tree completely?
 
-How does the behaviour differ?  It this documented?  Can we fix it?
+afaict this fix is needed all the way back to 2.6.tiny.  I merged it
+with 2.6.29 intentions.  Also tagged as needed in 2.6.25.x and later.
+
