@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbZBOTs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbZBOT6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755367AbZBOTs1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 14:48:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751394AbZBOTsS
+	id S1754300AbZBOT6W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 14:58:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbZBOT6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 14:48:18 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:54229 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751345AbZBOTsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 14:48:17 -0500
-Message-ID: <4998717A.2090507@pobox.com>
-Date: Sun, 15 Feb 2009 14:48:10 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Sun, 15 Feb 2009 14:58:05 -0500
+Received: from mail-fx0-f25.google.com ([209.85.220.25]:59547 "EHLO
+	mail-fx0-f25.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751272AbZBOT6E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 14:58:04 -0500
 MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 2/2 resend] libata-sff: avoid byte swapping in ata_sff_data_xfer()
-References: <200902152230.38271.sshtylyov@ru.mvista.com>
-In-Reply-To: <200902152230.38271.sshtylyov@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <499820DF.5070508@bfs.de>
+References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
+	 <20090214211203.23489.80420.stgit@vmbox.hanneseder.net>
+	 <499820DF.5070508@bfs.de>
+Date: Sun, 15 Feb 2009 20:57:59 +0100
+Message-ID: <154e089b0902151157s6e185815jd86428518b58af6@mail.gmail.com>
+Subject: Re: [PATCH 02/43] drivers/net/e2100.c: fix sparse warning: symbol 
+	shadows an earlier one
+From: Hannes Eder <hannes@hanneseder.net>
+To: wharms@bfs.de
+Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergei Shtylyov wrote:
-> Handling of the trailing byte in ata_sff_data_xfer() is suboptimal bacause:
-> 
-> - it always initializes the padding buffer to 0 which is not really needed in
->   both the read and write cases;
-> 
-> - it has to use memcpy() to transfer a single byte from/to the padding buffer;
+On Sun, Feb 15, 2009 at 3:04 PM, walter harms <wharms@bfs.de> wrote:
+> Hi Hannes,
+> it is ok to replace a fixed boarder with ARRAY_SIZE()
+> in this special case i would success the following additional cleanup
+> (untestet !!)
+>
+>
+> static int set_free_irq(struct net_device *dev)
+> {
+>  int irqlist[] = {15,11,10,12,5,9,3,4}, i;
+>
+>        for (i = 0; i < ARRAY_SIZE(irqlist); i++)
+>           if (request_irq (irqlist[i], NULL, 0, "bogus", NULL) != -EBUSY) {
+>                        dev->irq = irqlist[i];
+>                        return 0;
+>            }
+>        return -1;
+> }
+>
+> ....
+>
+> if (dev->irq < 2) {
+>         if ( set_free_irq(dev) < 0) {
+>                printk(" unable to get IRQ %d.\n", dev->irq);
+>                retval = -EAGAIN;
+>                goto out;
+>        }
+>
+> for me this looks more readable.
+>
+> getting a free interrupt from a list mus be a common problem ? I am not in driver programming
+> perhaps such a code is already in place somewhere  ?
 
-Have you looked at the assembly, before deciding it is suboptiomal?
+I am a great fan of refactoring but in that case I would just leave it
+as is.  If extracting a method I would extract a little more here.
 
-gcc optimizes tiny arrays and structures quite well, and is well capable 
-of seeing one path where the initialization is clobbered without a 
-single read, and another code path where it is used.
-
-As for memcpy, for small and/or constant values that is quite often a 
-compiler builtin.  It is rarely useful, these days, to convert a 
-memcpy() to a hand-rolled version of same.
-
-	Jeff
-
-
-
+Best,
+Hannes
