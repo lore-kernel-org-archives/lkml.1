@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbZBOQoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754756AbZBOQt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754603AbZBOQoa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 11:44:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbZBOQoU
+	id S1754756AbZBOQt1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 11:49:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbZBOQtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 11:44:20 -0500
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:13884 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753182AbZBOQoT (ORCPT
+	Sun, 15 Feb 2009 11:49:18 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:40938 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753313AbZBOQtR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 11:44:19 -0500
-X-Trace: 146811577/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.44.176.250/None/adrian@newgolddream.dyndns.info
-X-SBRS: None
-X-RemoteIP: 80.44.176.250
-X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
-X-MUA: SquirrelMail/1.4.15
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsAEAKbUl0lQLLD6/2dsb2JhbACBbs05hBwG
-X-IronPort-AV: E=Sophos;i="4.38,211,1233532800"; 
-   d="scan'208";a="146811577"
-Message-ID: <936fa6a7e76b86c08b843b6531d27861.squirrel@newgolddream.dyndns.info>
-In-Reply-To: <20090215150335.GA15736@ioremap.net>
-References: <1234646219.6609.37.camel@localhost.localdomain>
-    <20090215150335.GA15736@ioremap.net>
-Date: Sun, 15 Feb 2009 16:43:52 -0000 (UTC)
-Subject: Re: [RFC][PATCH] filesystem: VMUFAT filesystem
-From: "Adrian McMenamin" <adrian@newgolddream.dyndns.info>
-To: "Evgeniy Polyakov" <zbr@ioremap.net>
-Cc: viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       "LKML" <linux-kernel@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.15
+	Sun, 15 Feb 2009 11:49:17 -0500
+Date: Sun, 15 Feb 2009 16:48:12 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Jeff Garzik <jeff@garzik.org>
+cc: Larry Finger <Larry.Finger@lwfinger.net>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Mikael Pettersson <mikpe@it.uu.se>
+Subject: Re: [Bug #12609] v2.6.29-rc2 libata sff 32bit PIO regression
+In-Reply-To: <4997CDDC.1020103@garzik.org>
+Message-ID: <Pine.LNX.4.64.0902151639550.23452@blonde.anvils>
+References: <juADNmcceYF.A.mdD.Mr0lJB@chimera> <rjPbZ5GRJPO.A.kkF.Ds0lJB@chimera>
+ <499797FD.5070701@lwfinger.net> <4997CDDC.1020103@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, February 15, 2009 3:03 pm, Evgeniy Polyakov wrote:
-> Hi Adrian.
+On Sun, 15 Feb 2009, Jeff Garzik wrote:
+> Larry Finger wrote:
+> > Rafael J. Wysocki wrote:
+> > >
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12609
+> > > Subject		: v2.6.29-rc2 libata sff 32bit PIO regression
+> > > Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
+> > > Date		: 2009-01-23 23:52 (23 days old)
+> > > References	: http://marc.info/?l=linux-kernel&m=123275478111406&w=4
+> > > 		  http://marc.info/?l=linux-kernel&m=123254501314058&w=4
+> > > Handled-By	: Mikael Pettersson <mikpe@it.uu.se>
+> > >     Hugh Dickins <hugh@veritas.com>
+> > >     Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> > > Patch		:
+> > > http://marc.info/?l=linux-kernel&m=123412278730735&w=4
+> > 
+> > This problem is not fixed as of 2.6.29-rc5.
+> 
+> Sergei, what is the latest version of your patch?   According to my notes, you
+> and Hugh were going back and forth trading patches, and I never saw a final
+> version...
 
+I was happy with the patch Sergei posted a week ago, and said so -
+except for the question of whether to say "unlikely(slop)": and
+that's a very silly little issue which should never have delayed
+fixing a significant regression, I'm sorry I ever raised it.
 
-Hi
->
-> That's all for now. Overall there is a fair numebr of leaks
-> because of the missed freeing in the error path and lots of duplicated
-> code because of the multiple error exit points. Also you frequently do
-> not check the return value of the functions which may fail.
->
-> --
-> 	Evgeniy Polyakov
->
+But I was expecting Alan to gather the fixes together and send them
+to you: on 26 Jan he posted two other patches, one perhaps just a
+cleanup, but the other he said required for correct behaviour on
+AMD devices: I thought all three patches would be in by now.
 
-Thanks for the comments. Very useful. I ported this over from some truly
-abysmal code I'd written years ago and clearly didn't do a good enough job
-:)
-
+Hugh
