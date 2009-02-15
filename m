@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753251AbZBOIBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbZBOIES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753251AbZBOIBi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 03:01:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbZBOIBa
+	id S1753252AbZBOIES (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 03:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751285AbZBOIEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 03:01:30 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34779 "EHLO mx3.mail.elte.hu"
+	Sun, 15 Feb 2009 03:04:08 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34892 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751355AbZBOIBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 03:01:30 -0500
-Date: Sun, 15 Feb 2009 09:01:14 +0100
+	id S1751260AbZBOIEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 03:04:07 -0500
+Date: Sun, 15 Feb 2009 09:03:52 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Yinghai Lu <yinghai@kernel.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: make 32bit to call enable_IO_APIC early like 64bit
-Message-ID: <20090215080114.GA21151@elte.hu>
-References: <4997CAE8.6090208@kernel.org>
+Subject: Re: [PATCH] x86: fix typo in filter_cpuid_features()
+Message-ID: <20090215080352.GB21151@elte.hu>
+References: <4997CB56.7000703@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4997CAE8.6090208@kernel.org>
+In-Reply-To: <4997CB56.7000703@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,18 +38,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Yinghai Lu <yinghai@kernel.org> wrote:
 
+> Impact: fix wrong diabling cpu features
 > 
-> Impact: cleanup
+> on amd system got strange:
+> CPU: CPU feature monitor disabled due to lack of CPUID level 0x5
+> but in /proc/cpuinfo do have
+> cpuid level	: 5
 > 
-> so remove some #ifdef
+> on intel system:
+> CPU: CPU feature monitor disabled due to lack of CPUID level 0x5
+> CPU: CPU feature dca disabled due to lack of CPUID level 0x9
+> but in /proc/cpuinfo do have
+> cpuid level     : 11
+> 
+> it turns out there is one typo, and should use level member in df
 > 
 > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 > 
 > ---
->  arch/x86/kernel/io_apic.c |    4 ----
->  arch/x86/kernel/smpboot.c |    3 +--
->  2 files changed, 1 insertion(+), 6 deletions(-)
+>  arch/x86/kernel/cpu/common.c |    8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 
-Applied to tip:x86/apic, thanks Yinghai!
+Applied to tip:x86/cpudetect, thanks Yinghai!
 
 	Ingo
