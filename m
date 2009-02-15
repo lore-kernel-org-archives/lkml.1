@@ -1,85 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755871AbZBOV4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756009AbZBOV56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755871AbZBOV4Q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 16:56:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZBOV4B
+	id S1756009AbZBOV56 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 16:57:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbZBOV5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 16:56:01 -0500
-Received: from hermes.cicese.mx ([158.97.1.34]:47857 "EHLO hermes.cicese.mx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751670AbZBOV4A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 16:56:00 -0500
-From: Serguei Miridonov <mirsev@cicese.mx>
-To: Robert Hancock <hancockrwd@gmail.com>
-Subject: Re: Intel ICH9M/M-E SATA error-handling/reset problems
-Date: Sun, 15 Feb 2009 13:55:32 -0800
-User-Agent: KMail/1.11.0 (Linux/2.6.27.12-170.2.5.fc10.i686; KDE/4.2.0; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Tejun Heo <tj@kernel.org>
-References: <200902141206.06419.mirsev@cicese.mx> <200902151141.44367.mirsev@cicese.mx> <499877C5.6090205@gmail.com>
-In-Reply-To: <499877C5.6090205@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Sun, 15 Feb 2009 16:57:48 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54567 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752843AbZBOV5q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 16:57:46 -0500
+Date: Sun, 15 Feb 2009 13:55:55 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-crypto@vger.kernel.org, Geert.Uytterhoeven@sonycom.com
+Subject: Re: [PATCH] Export symbol ksize()
+Message-Id: <20090215135555.688ae1a3.akpm@linux-foundation.org>
+In-Reply-To: <1234734194.5669.176.camel@calx>
+References: <1234272104-10211-1-git-send-email-kirill@shutemov.name>
+	<84144f020902100535i4d626a9fj8cbb305120cf332a@mail.gmail.com>
+	<20090210134651.GA5115@epbyminw8406h.minsk.epam.com>
+	<Pine.LNX.4.64.0902101605070.20991@melkki.cs.Helsinki.FI>
+	<20090212104349.GA13859@gondor.apana.org.au>
+	<1234435521.28812.165.camel@penberg-laptop>
+	<20090212105034.GC13859@gondor.apana.org.au>
+	<1234454104.28812.175.camel@penberg-laptop>
+	<20090215133638.5ef517ac.akpm@linux-foundation.org>
+	<1234734194.5669.176.camel@calx>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902151355.32596.mirsev@cicese.mx>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (hermes.cicese.mx [158.97.1.34]); Sun, 15 Feb 2009 13:55:37 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 15 February 2009, Robert Hancock wrote:
-> Right now interface CRC error is considered an ATA bus error which
-> always triggers a reset.
+On Sun, 15 Feb 2009 15:43:14 -0600 Matt Mackall <mpm@selenic.com> wrote:
 
-Well, my very strong opinion based just on general physics is that 
-error rate on SATA can be (and will be) much higher than that one on 
-PATA. PATA operates at lower frequencies and cables are much shorter. 
-eSATA cables are longer and work at up to 3Gb/s. Moreover, consider 
-all these consumer-grade connectors, cables, etc. So, CRC errors could 
-be quite common and software needs to handle them properly to keep 
-transfers fast and maintain the communication with a device.
+> On Sun, 2009-02-15 at 13:36 -0800, Andrew Morton wrote:
+> > On Thu, 12 Feb 2009 17:55:04 +0200 Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> > 
+> > > On Thu, Feb 12, 2009 at 12:45:21PM +0200, Pekka Enberg wrote:
+> > > > > 
+> > > > > Because the API was being widely abused in the nommu code, for example.
+> > > > > I'd rather not add it back for this special case which can be handled
+> > > > > otherwise.
+> > > 
+> > > On Thu, 2009-02-12 at 18:50 +0800, Herbert Xu wrote:
+> > > > I'm sorry but that's like banning the use of heaters just because
+> > > > they can abused and cause fires.
+> > > > 
+> > > > I think I've said this to you before but in networking we very much
+> > > > want to use ksize because the standard case of a 1500-byte packet
+> > > > has loads of extra room given by kmalloc which all goes to waste
+> > > > right now.
+> > > > 
+> > > > If we could use ksize then we can stuff loads of metadata in that
+> > > > space.
+> > > 
+> > > OK, fair enough, I applied Kirill's patch. Thanks.
+> > > 
+> > 
+> > Could we please have more details regarding this:
+> > 
+> > > The ksize() function is not exported to modules because it has non-standard
+> > > behavour across different slab allocators. 
+> > 
+> > How does the behaviour differ?  It this documented?  Can we fix it?
+> 
+> SLAB and SLUB support calling ksize() on objects returned by
+> kmem_cache_alloc.
+> 
+> SLOB only supports it on objects from kmalloc. This is because it does
+> not store any size or type information in kmem_cache_alloc'ed objects.
+> Instead, it infers them from the cache argument.
 
-> It's possible this could be relaxed in
-> some cases, but the issue is that if CRC errors are occurring the
-> link may be in an invalid state which simply retrying the command
-> will not clear.
+OK.  This is really bad, isn't it?  People will write code which
+happily works under slab and slub, only to have it crash for those small
+number of people who (very much later) test with slob?
 
-Let's think positively ;-). If CRC error occurs (in data or command 
-sequence), the device just doesn't accept what it receives with the 
-last transfer. So, it should wait what host says next. I think, before 
-doing hard reset or whatever is necessary to completely restart the 
-interface together with connected device - before doing that the 
-kernel should try to check if link is up and the device is listenning. 
-Why not to try a short request to let the device send something short 
-in response?
+> Ideally SLAB and SLUB would complain about using ksize inappropriately
+> when debugging was enabled.
+> 
 
-> Tejun, any thoughts?
->
-> > Another question is how the drive reacts to hard reset... My
-> > error log shows that both drives do not like it for some reason -
-> > they stop responding sometimes, so may be some additional
-> > programming of drives is necessary after hard reset... Something
-> > which is done in BIOS after power on... I don't know...
->
-> The same hard reset is done (and generally has to be done) on
-> driver initialization and when a drive is hot plugged, so it should
-> work.
+OK, thanks.
 
-It depends... If hard reset is like a reboot for the driver firmware, 
-it may take more that 30 seconds for Seagate external drive, though 
-I'm not sure... Trying to push the interaface before the device is 
-ready to receive commands may be considered by the drive as link 
-problem and it may refuse to communicate. Well, again, I'm not 
-familiar with this, just speculating...
+Ideally we would support ksize() for both kmalloc() and
+kmem_cache_alloc() memory across all implementations.
 
-> > ... Could you point me a link to the uncompressed
-> > kernel tree where I can see source files?
->
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git is
-> likely the easiest place to view..
+Could we change ksize()'s argument so that callers must provide the
+cache pointer?  Then for kmalloc() callers, provide a
+kmem_cache *get_cache_for_kmalloc(size_t) function?
 
-Thank you, I'll take a look.
+Or could we have separate interfaces:
 
+	size_t kmalloc_ksize(size_t kmalloced_size);
+	size_t kmem_cache_alloc_ksize(struct kmem_cache *cachep);
+
+?
+
+
+Gee this sucks.  Biggest mistake I ever made.  Are we working hard
+enough to remove some of these sl?b implementations?  Would it help if
+I randomly deleted a couple?
 
