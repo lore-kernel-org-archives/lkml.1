@@ -1,118 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbZBOUJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755599AbZBOUKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753177AbZBOUJh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 15:09:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbZBOUJK
+	id S1755599AbZBOUKg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 15:10:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbZBOUKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 15:09:10 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:36020 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751990AbZBOUJE (ORCPT
+	Sun, 15 Feb 2009 15:10:22 -0500
+Received: from mail-bw0-f167.google.com ([209.85.218.167]:34081 "EHLO
+	mail-bw0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752755AbZBOUKV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 15:09:04 -0500
-Message-ID: <49987672.2050102@ru.mvista.com>
-Date: Sun, 15 Feb 2009 23:09:22 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Sun, 15 Feb 2009 15:10:21 -0500
 MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 2/2 resend] libata-sff: avoid byte swapping in ata_sff_data_xfer()
-References: <200902152230.38271.sshtylyov@ru.mvista.com> <4998717A.2090507@pobox.com>
-In-Reply-To: <4998717A.2090507@pobox.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <49982331.4050001@bfs.de>
+References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
+	 <20090214211557.23489.75670.stgit@vmbox.hanneseder.net>
+	 <49982331.4050001@bfs.de>
+Date: Sun, 15 Feb 2009 21:10:18 +0100
+Message-ID: <154e089b0902151210t4eba8c96le0343b722f47b169@mail.gmail.com>
+Subject: Re: [PATCH 16/43] drivers/net/cxgb3: fix sparse warning: symbol 
+	shadows an earlier one
+From: Hannes Eder <hannes@hanneseder.net>
+To: wharms@bfs.de
+Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
+On Sun, Feb 15, 2009 at 3:14 PM, walter harms <wharms@bfs.de> wrote:
+> Hannes Eder schrieb:
+>> Impact: Move variable declaration as close to usage as possible.
+>>
+>> Fix this sparse warning:
+>>   drivers/net/cxgb3/cxgb3_main.c:1586:21: warning: symbol 'cap' shadows an earlier one
+>>
+>> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+>> ---
+>>  drivers/net/cxgb3/cxgb3_main.c |    3 +--
+>>  1 files changed, 1 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
+>> index f2c7cc3..0f6062a 100644
+>> --- a/drivers/net/cxgb3/cxgb3_main.c
+>> +++ b/drivers/net/cxgb3/cxgb3_main.c
+>> @@ -1565,7 +1565,6 @@ static int speed_duplex_to_caps(int speed, int duplex)
+>>
+>>  static int set_settings(struct net_device *dev, struct ethtool_cmd *cmd)
+>>  {
+>> -     int cap;
+>>       struct port_info *p = netdev_priv(dev);
+>>       struct link_config *lc = &p->link_config;
+>>
+>> @@ -1575,7 +1574,7 @@ static int set_settings(struct net_device *dev, struct ethtool_cmd *cmd)
+>>                * being requested.
+>>                */
+>>               if (cmd->autoneg == AUTONEG_DISABLE) {
+>> -                     cap = speed_duplex_to_caps(cmd->speed, cmd->duplex);
+>> +                     int cap = speed_duplex_to_caps(cmd->speed, cmd->duplex);
+>>                       if (lc->supported & cap)
+>>                               return 0;
+>>               }
+>>
+>
+> Hello Hannes,
+> it seems that "cap" can be dropped completely.
+>
+> if (lc->supported & speed_duplex_to_caps(cmd->speed, cmd->duplex) )
+>        return 0;
 
->> Handling of the trailing byte in ata_sff_data_xfer() is suboptimal 
->> bacause:
+Hi Walter,
 
->> - it always initializes the padding buffer to 0 which is not really 
->> needed in
->>   both the read and write cases;
+You are right, but we would hit the 80 characters per line limit,
+90 in this case, and a similar construct is used a few lines
+below so I suggest to leave it this way.
 
->> - it has to use memcpy() to transfer a single byte from/to the padding 
->> buffer;
-
-> Have you looked at the assembly, before deciding it is suboptiomal?
-
-    I'm estimating the code itself, not what the compiler can do to fix it. :-)
-
-> gcc optimizes tiny arrays and structures quite well, and is well capable 
-> of seeing one path where the initialization is clobbered without a 
-> single read, and another code path where it is used.
-
-    The initialier just shouldn't have been there in the first place, 
-clobbered or not. And let's looks at what gcc gave me:
-
-.L504:
-         .loc 1 727 0
-         testb   $1, %bl #, buflen
-         jne     .L511   #,
-[...]
-.L511:
-.LBB635:
-         .loc 1 731 0
-         movl    8(%ebp), %eax   # rw,
-         .loc 1 729 0
-         leal    (%esi,%ebx), %ebx       #, tmp72
-.LVL440:
-         .loc 1 728 0
-.LBB635:
-         .loc 1 731 0
-         movl    8(%ebp), %eax   # rw,
-         .loc 1 729 0
-         leal    (%esi,%ebx), %ebx       #, tmp72
-.LVL440:
-         .loc 1 728 0
-         movw    $0, -14(%ebp)   #, align_buf
-         .loc 1 731 0
-         testl   %eax, %eax      #
-         jne     .L507   #,
-         .loc 1 732 0
-         movl    -20(%ebp), %eax # data_addr, data_addr
-         call    ioread16        #
-         movw    %ax, -14(%ebp)  # D.29224, align_buf
-.LBB629:
-.LBB630:
-         .loc 4 60 0
-         movzbl  -14(%ebp), %eax #, tmp73
-         movb    %al, -1(%ebx)   # tmp73,
-.L509:
-.LBE630:
-.LBE629:
-         .loc 1 738 0
-         addl    $1, %edi        #, words
-         jmp     .L505   #
-.L507:
-.LBB631:
-.LBB632:
-         .loc 4 60 0
-         movzbl  -1(%ebx), %eax  #, tmp74
-.LBE632:
-.LBE631:
-         .loc 1 736 0
-         movzwl  -14(%ebp), %eax # align_buf, align_buf
-         call    iowrite16       #
-         jmp     .L509   #
-
-    As you can see, it happily assigned 0 to align_buf[0] at .LVL440, 
-regardless of the value of 'rw'.
-
-> As for memcpy, for small and/or constant values that is quite often a 
-> compiler builtin.  It is rarely useful, these days, to convert a memcpy() to a hand-rolled 
-version of same.
-
-    Here memcpy() just shouldn't have appeared in the first place. But indeed, 
-gcc did optimize it away.
-
->     Jeff
-
-MBR, Sergei
+-Hannes
