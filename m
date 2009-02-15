@@ -1,118 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216AbZBOWH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbZBOWMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754216AbZBOWH0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 17:07:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbZBOWHJ
+	id S1754741AbZBOWMT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 17:12:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbZBOWMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 17:07:09 -0500
-Received: from hera.kernel.org ([140.211.167.34]:55015 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751666AbZBOWHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 17:07:08 -0500
-Message-ID: <499891D5.1080804@kernel.org>
-Date: Sun, 15 Feb 2009 14:06:13 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sun, 15 Feb 2009 17:12:06 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:53330 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752697AbZBOWME (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 17:12:04 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sun, 15 Feb 2009 23:11:38 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] ieee1394: constify device ID tables
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.4edc17c763388731@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: state of some x86 acpi patches
-References: <20081216192534.GB843@elte.hu> <alpine.LFD.2.00.0812311821110.3854@localhost.localdomain> <495C677F.6080707@goop.org> <20090102153957.GA1180@elte.hu> <4980EE0C.4070308@goop.org> <49810211.9030808@kernel.org> <498CF8DA.30004@goop.org> <498CFD95.5070004@kernel.org> <498E229C.5030205@goop.org> <20090209123711.GK17782@elte.hu> <20090215193655.GA18674@elte.hu>
-In-Reply-To: <20090215193655.GA18674@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
->> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->>
->>> Yinghai Lu wrote:
->>>> Ingo is too busy...
->>>> It seems Len already agreed those patches can go through tip.
->>>>   
->>> OK, I have them prepared as a branch off tip/git pullable from:
->>>
->>> The following changes since commit 82eda818f26cbef2b0a6bf6580e52645af62e4fd:
->>>  Ingo Molnar (1):
->>>        Merge branch 'core/locking'
->>>
->>> are available in the git repository at:
->>>
->>>  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git acpi/map
->>>
->>> Jeremy Fitzhardinge (3):
->>>      x86: use early_ioremap in __acpi_map_table
->>>      x86: always explicitly map acpi memory
->>>      acpi: remove final __acpi_map_table mapping before setting acpi_gbl_permanent_mmap
->>>
->>> Yinghai Lu (2):
->>>      acpi/x86: introduce __apci_map_table, v4
->>>      revert_fix_es7000_compiling
->>>
->>> arch/ia64/kernel/acpi.c          |    4 ++++
->>> arch/x86/include/asm/acpi.h      |    3 ---
->>> arch/x86/include/asm/fixmap_32.h |    4 ----
->>> arch/x86/include/asm/fixmap_64.h |    4 ----
->>> arch/x86/kernel/acpi/boot.c      |   33 ++++++++-------------------------
->>> arch/x86/kernel/es7000_32.c      |    9 ++++++++-
->>> drivers/acpi/acpica/tbxface.c    |   17 ++++++++++++++---
->>> drivers/acpi/osl.c               |   11 +++++++++--
->>> drivers/acpi/tables.c            |   20 ++++++++++++++------
->>> include/acpi/acpiosxf.h          |    1 +
->>> include/acpi/acpixf.h            |    4 ++++
->>> include/linux/acpi.h             |    1 +
->>> 12 files changed, 63 insertions(+), 48 deletions(-)
->> Ok, pulled into tip:x86/acpi, thanks guys!
-> 
-> Note, there's a new ia64 build failure due to these patches:
-
-please check
-
-[PATCH] ia64: fix __apci_unmap_table
-
-Impact: fix wrong proto with compiling
-
-to fix:
-/home/mingo/tip/arch/ia64/kernel/acpi.c:203: error: conflicting types for '__acpi_unmap_table'
-/home/mingo/tip/include/linux/acpi.h:82: error: previous declaration of '__acpi_unmap_table' was here
-/home/mingo/tip/arch/ia64/kernel/acpi.c:203: error: conflicting types for '__acpi_unmap_table'
-/home/mingo/tip/include/linux/acpi.h:82: error: previous declaration of '__acpi_unmap_table' was here
-
-Signed-off-by: Yinghai Lu <yinghai@kenrel.org>
-
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
- arch/ia64/kernel/acpi.c |    2 +-
- include/linux/acpi.h    |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/ieee1394/dv1394.c    |    2 +-
+ drivers/ieee1394/eth1394.c   |    2 +-
+ drivers/ieee1394/nodemgr.c   |    4 ++--
+ drivers/ieee1394/nodemgr.h   |    2 +-
+ drivers/ieee1394/raw1394.c   |    2 +-
+ drivers/ieee1394/sbp2.c      |    2 +-
+ drivers/ieee1394/video1394.c |    2 +-
+ 7 files changed, 8 insertions(+), 8 deletions(-)
 
-Index: linux-2.6/arch/ia64/kernel/acpi.c
+Index: linux/drivers/ieee1394/dv1394.c
 ===================================================================
---- linux-2.6.orig/arch/ia64/kernel/acpi.c
-+++ linux-2.6/arch/ia64/kernel/acpi.c
-@@ -199,7 +199,7 @@ char *__init __acpi_map_table(unsigned l
- 	return __va(phys_addr);
+--- linux.orig/drivers/ieee1394/dv1394.c
++++ linux/drivers/ieee1394/dv1394.c
+@@ -2175,7 +2175,7 @@ static const struct file_operations dv13
+  * Export information about protocols/devices supported by this driver.
+  */
+ #ifdef MODULE
+-static struct ieee1394_device_id dv1394_id_table[] = {
++static const struct ieee1394_device_id dv1394_id_table[] = {
+ 	{
+ 		.match_flags	= IEEE1394_MATCH_SPECIFIER_ID | IEEE1394_MATCH_VERSION,
+ 		.specifier_id	= AVC_UNIT_SPEC_ID_ENTRY & 0xffffff,
+Index: linux/drivers/ieee1394/eth1394.c
+===================================================================
+--- linux.orig/drivers/ieee1394/eth1394.c
++++ linux/drivers/ieee1394/eth1394.c
+@@ -438,7 +438,7 @@ static int eth1394_update(struct unit_di
+ 	return eth1394_new_node(hi, ud);
  }
  
--char *__init __acpi_unmap_table(unsigned long virt_addr, unsigned long size)
-+void __init __acpi_unmap_table(unsigned long virt_addr, unsigned long size)
+-static struct ieee1394_device_id eth1394_id_table[] = {
++static const struct ieee1394_device_id eth1394_id_table[] = {
+ 	{
+ 		.match_flags = (IEEE1394_MATCH_SPECIFIER_ID |
+ 				IEEE1394_MATCH_VERSION),
+Index: linux/drivers/ieee1394/nodemgr.c
+===================================================================
+--- linux.orig/drivers/ieee1394/nodemgr.c
++++ linux/drivers/ieee1394/nodemgr.c
+@@ -484,7 +484,7 @@ static struct device_attribute *const fw
+ static ssize_t fw_show_drv_device_ids(struct device_driver *drv, char *buf)
  {
- }
+ 	struct hpsb_protocol_driver *driver;
+-	struct ieee1394_device_id *id;
++	const struct ieee1394_device_id *id;
+ 	int length = 0;
+ 	char *scratch = buf;
  
-Index: linux-2.6/include/linux/acpi.h
+@@ -658,7 +658,7 @@ static int nodemgr_bus_match(struct devi
+ {
+ 	struct hpsb_protocol_driver *driver;
+ 	struct unit_directory *ud;
+-	struct ieee1394_device_id *id;
++	const struct ieee1394_device_id *id;
+ 
+ 	/* We only match unit directories */
+ 	if (dev->platform_data != &nodemgr_ud_platform_data)
+Index: linux/drivers/ieee1394/nodemgr.h
 ===================================================================
---- linux-2.6.orig/include/linux/acpi.h
-+++ linux-2.6/include/linux/acpi.h
-@@ -79,7 +79,7 @@ typedef int (*acpi_table_handler) (struc
- typedef int (*acpi_table_entry_handler) (struct acpi_subtable_header *header, const unsigned long end);
+--- linux.orig/drivers/ieee1394/nodemgr.h
++++ linux/drivers/ieee1394/nodemgr.h
+@@ -125,7 +125,7 @@ struct hpsb_protocol_driver {
+ 	 * probe function below can implement further protocol
+ 	 * dependent or vendor dependent checking.
+ 	 */
+-	struct ieee1394_device_id *id_table;
++	const struct ieee1394_device_id *id_table;
  
- char * __acpi_map_table (unsigned long phys_addr, unsigned long size);
--void __init __acpi_unmap_table(char *map, unsigned long size);
-+void __acpi_unmap_table(char *map, unsigned long size);
- int early_acpi_boot_init(void);
- int acpi_boot_init (void);
- int acpi_boot_table_init (void);
+ 	/*
+ 	 * The update function is called when the node has just
+Index: linux/drivers/ieee1394/raw1394.c
+===================================================================
+--- linux.orig/drivers/ieee1394/raw1394.c
++++ linux/drivers/ieee1394/raw1394.c
+@@ -2982,7 +2982,7 @@ static int raw1394_release(struct inode 
+  * Export information about protocols/devices supported by this driver.
+  */
+ #ifdef MODULE
+-static struct ieee1394_device_id raw1394_id_table[] = {
++static const struct ieee1394_device_id raw1394_id_table[] = {
+ 	{
+ 	 .match_flags = IEEE1394_MATCH_SPECIFIER_ID | IEEE1394_MATCH_VERSION,
+ 	 .specifier_id = AVC_UNIT_SPEC_ID_ENTRY & 0xffffff,
+Index: linux/drivers/ieee1394/sbp2.c
+===================================================================
+--- linux.orig/drivers/ieee1394/sbp2.c
++++ linux/drivers/ieee1394/sbp2.c
+@@ -285,7 +285,7 @@ static const struct hpsb_address_ops sbp
+ /*
+  * Interface to driver core and IEEE 1394 core
+  */
+-static struct ieee1394_device_id sbp2_id_table[] = {
++static const struct ieee1394_device_id sbp2_id_table[] = {
+ 	{
+ 	 .match_flags	= IEEE1394_MATCH_SPECIFIER_ID | IEEE1394_MATCH_VERSION,
+ 	 .specifier_id	= SBP2_UNIT_SPEC_ID_ENTRY & 0xffffff,
+Index: linux/drivers/ieee1394/video1394.c
+===================================================================
+--- linux.orig/drivers/ieee1394/video1394.c
++++ linux/drivers/ieee1394/video1394.c
+@@ -1294,7 +1294,7 @@ static const struct file_operations vide
+  * Export information about protocols/devices supported by this driver.
+  */
+ #ifdef MODULE
+-static struct ieee1394_device_id video1394_id_table[] = {
++static const struct ieee1394_device_id video1394_id_table[] = {
+ 	{
+ 		.match_flags	= IEEE1394_MATCH_SPECIFIER_ID | IEEE1394_MATCH_VERSION,
+ 		.specifier_id	= CAMERA_UNIT_SPEC_ID_ENTRY & 0xffffff,
+
+-- 
+Stefan Richter
+-=====-==--= --=- -====
+http://arcgraph.de/sr/
+
