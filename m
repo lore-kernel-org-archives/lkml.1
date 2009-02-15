@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752577AbZBOFkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752697AbZBOGGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752577AbZBOFkP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 00:40:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbZBOFj7
+	id S1752697AbZBOGGT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 01:06:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750769AbZBOGGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 00:39:59 -0500
-Received: from thunk.org ([69.25.196.29]:34994 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750732AbZBOFj6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 00:39:58 -0500
-Date: Sun, 15 Feb 2009 00:39:12 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Bryan Donlan <bdonlan@gmail.com>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org, sct@redhat.com,
-       akpm@linux-foundation.org, adilger@sun.com
-Subject: Re: [RESEND/PATCH] ext[234]: Return -EIO not -ESTALE on directory
-	traversal missing inode
-Message-ID: <20090215053912.GD10706@mini-me.lan>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Bryan Donlan <bdonlan@gmail.com>, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org, sct@redhat.com,
-	akpm@linux-foundation.org, adilger@sun.com
-References: <1234588099-8445-1-git-send-email-bdonlan@fushizen.net> <1234588688-9497-1-git-send-email-bdonlan@gmail.com> <20090214141411.GD26628@mini-me.lan> <3e8340490902142053x18ae3c20q7018e0d8bc42636d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3e8340490902142053x18ae3c20q7018e0d8bc42636d@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Sun, 15 Feb 2009 01:06:05 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:49698 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750718AbZBOGGD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 01:06:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=kG1hctRJ5iIHs6KxKOBDhVeZyJvhrRWr2nkU3cYyR3Millw6pfPmueiXtwiSWqeJMV
+         eyBrVXxCnWu1i1TnBIc93rEziD10JCnPN5ph2HO+ak2rZmCDTPB2ICWBwIbbrtbUECPW
+         cSqka5E9R5BYDVO5QSY/JZd6coTJ4MHGctqeI=
+Date: Sun, 15 Feb 2009 11:14:46 +0500
+From: "Alexander E. Patrakov" <patrakov@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Arjan Opmeer" <arjan@opmeer.net>,
+       "Denys Vlasenko" <vda.linux@googlemail.com>,
+       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Subject: Re: [Bug #12406] 2.6.28 thinks that my PS/2 mouse is a touchpad
+Message-ID: <20090215111446.789c1f8a@home.aephome.ru>
+In-Reply-To: <ROx6X68CGJG.A.Ql.E50lJB@chimera>
+References: <sTyoMUwdm9B.A.QCH.U40lJB@chimera>
+	<ROx6X68CGJG.A.Ql.E50lJB@chimera>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.11; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 14, 2009 at 11:53:48PM -0500, Bryan Donlan wrote:
-> > I'm dubious about unlikely() here; OTOH, penalizing the error case
-> > seems reasonable.
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.27 and 2.6.28.
 > 
-> I can leave it without the unlikely(), as it was before, but as far as
-> I can tell, this should never happen under a non-corrupted, non-broken
-> hardware filesystem, so it seems like a reasonable annotation to me.
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.27 and 2.6.28.  Please verify if it still
+> should be listed and let me know (either way).
 
-You're right.  I was looking at the wrong place in the source, and
-thought this could happen if the lookup failed; but yes, you're right,
-this case can only happen if the filesystem is corrupted or there is
-an I/O error.
+Yes, it is still a regression with a patch that is not in -stable.
 
-						- Ted
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12406
+> Subject		: 2.6.28 thinks that my PS/2 mouse is a
+> touchpad Submitter	: Alexander E. Patrakov <patrakov@gmail.com>
+> Date		: 2008-12-27 9:06 (50 days old)
+> References	:
+> http://marc.info/?l=linux-kernel&m=123036893817280&w=4
+> Handled-By	: Arjan Opmeer <arjan@opmeer.net>
+> Patch		:
+> http://marc.info/?l=linux-kernel&m=123092147703236&w=4
+
+-- 
+Alexander E. Patrakov
