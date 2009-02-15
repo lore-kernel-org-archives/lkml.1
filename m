@@ -1,69 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbZBOT6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755418AbZBOT7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754300AbZBOT6W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 14:58:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbZBOT6F
+	id S1755418AbZBOT7U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 14:59:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbZBOT7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 14:58:05 -0500
-Received: from mail-fx0-f25.google.com ([209.85.220.25]:59547 "EHLO
-	mail-fx0-f25.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751272AbZBOT6E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 14:58:04 -0500
+	Sun, 15 Feb 2009 14:59:09 -0500
+Received: from mx5.mail.ru ([94.100.176.19]:7316 "EHLO mx5.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751272AbZBOT7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 14:59:09 -0500
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [Bug #12617] unable to compile e100 firmware into kernel
+Date: Sun, 15 Feb 2009 22:58:52 +0300
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-1avb; KDE/4.2.0; i686; ; )
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>
+References: <juADNmcceYF.A.mdD.Mr0lJB@chimera> <rjPbZ5GRJPO.A.05E.3r0lJB@chimera> <1234719496.4738.19.camel@macbook.infradead.org>
+In-Reply-To: <1234719496.4738.19.camel@macbook.infradead.org>
 MIME-Version: 1.0
-In-Reply-To: <499820DF.5070508@bfs.de>
-References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
-	 <20090214211203.23489.80420.stgit@vmbox.hanneseder.net>
-	 <499820DF.5070508@bfs.de>
-Date: Sun, 15 Feb 2009 20:57:59 +0100
-Message-ID: <154e089b0902151157s6e185815jd86428518b58af6@mail.gmail.com>
-Subject: Re: [PATCH 02/43] drivers/net/e2100.c: fix sparse warning: symbol 
-	shadows an earlier one
-From: Hannes Eder <hannes@hanneseder.net>
-To: wharms@bfs.de
-Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/signed;
+  boundary="nextPart3692789.pINsVtWJVG";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200902152259.00244.arvidjaar@mail.ru>
+X-Spam: Not detected
+X-Mras: Ok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 15, 2009 at 3:04 PM, walter harms <wharms@bfs.de> wrote:
-> Hi Hannes,
-> it is ok to replace a fixed boarder with ARRAY_SIZE()
-> in this special case i would success the following additional cleanup
-> (untestet !!)
->
->
-> static int set_free_irq(struct net_device *dev)
-> {
->  int irqlist[] = {15,11,10,12,5,9,3,4}, i;
->
->        for (i = 0; i < ARRAY_SIZE(irqlist); i++)
->           if (request_irq (irqlist[i], NULL, 0, "bogus", NULL) != -EBUSY) {
->                        dev->irq = irqlist[i];
->                        return 0;
->            }
->        return -1;
-> }
->
-> ....
->
-> if (dev->irq < 2) {
->         if ( set_free_irq(dev) < 0) {
->                printk(" unable to get IRQ %d.\n", dev->irq);
->                retval = -EAGAIN;
->                goto out;
->        }
->
-> for me this looks more readable.
->
-> getting a free interrupt from a list mus be a common problem ? I am not in driver programming
-> perhaps such a code is already in place somewhere  ?
+--nextPart3692789.pINsVtWJVG
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I am a great fan of refactoring but in that case I would just leave it
-as is.  If extracting a method I would extract a little more here.
+On 15 of February 2009 20:38:15 David Woodhouse wrote:
+> On Sat, 2009-02-14 at 21:38 +0100, Rafael J. Wysocki wrote:
+> >  This message has been generated automatically as a part of a
+> > report of recent regressions.
+> >
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.28.  Please verify if it still should be listed and let me
+> > know (either way).
+> >
+> >
+> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=3D12617
+> > Subject         : unable to compile e100 firmware into kernel
+> > Submitter       : Andrey Borzenkov <arvidjaar@mail.ru>
+> > Date            : 2009-01-31 15:59 (15 days old)
+> > References      :
+> > http://marc.info/?l=3Dlinux-kernel&m=3D123341764915181&w=3D4
+>
+> I thought this was resolved?
 
-Best,
-Hannes
+I guess it has to be closed. This was caused by config options mismatch=20
+and I do not see how we can programmatically express "this device could=20
+be required before any (even early) user space is available, so make=20
+sure everything that this device needs is built in".
+
+One possibility is following:
+
+=2D-- drivers/base/Kconfig.orig 2009-01-17 14:46:28.000000000 +0300
++++ drivers/base/Kconfig        2009-02-15 22:57:02.000000000 +0300
+@@ -37,7 +37,7 @@ config FW_LOADER
+
+ config FIRMWARE_IN_KERNEL
+        bool "Include in-kernel firmware blobs in kernel binary"
+=2D       depends on FW_LOADER
++       depends on FW_LOADER =3D y
+        default y
+        help
+          The kernel source tree includes a number of firmware 'blobs'
+
+On assumption that compiling firmware in kernel makes no sense as long=20
+as kernel does not even have facility to actually access it.
+
+Does it make sense?
+
+--nextPart3692789.pINsVtWJVG
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmYc/4ACgkQR6LMutpd94y4WQCeJgB3iNs1blBYnqs52qAhjZTe
+qdgAnjWJMdSbhA+QJqJHeVeWB50AY4e/
+=GOhH
+-----END PGP SIGNATURE-----
+
+--nextPart3692789.pINsVtWJVG--
