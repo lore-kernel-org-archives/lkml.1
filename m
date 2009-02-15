@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754756AbZBOQt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbZBORC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754756AbZBOQt1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 11:49:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbZBOQtS
+	id S1754542AbZBORC2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 12:02:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbZBORCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 11:49:18 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:40938 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753313AbZBOQtR (ORCPT
+	Sun, 15 Feb 2009 12:02:19 -0500
+Received: from mu-out-0910.google.com ([209.85.134.184]:63448 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753195AbZBORCT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 11:49:17 -0500
-Date: Sun, 15 Feb 2009 16:48:12 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Jeff Garzik <jeff@garzik.org>
-cc: Larry Finger <Larry.Finger@lwfinger.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Mikael Pettersson <mikpe@it.uu.se>
-Subject: Re: [Bug #12609] v2.6.29-rc2 libata sff 32bit PIO regression
-In-Reply-To: <4997CDDC.1020103@garzik.org>
-Message-ID: <Pine.LNX.4.64.0902151639550.23452@blonde.anvils>
-References: <juADNmcceYF.A.mdD.Mr0lJB@chimera> <rjPbZ5GRJPO.A.kkF.Ds0lJB@chimera>
- <499797FD.5070701@lwfinger.net> <4997CDDC.1020103@garzik.org>
+	Sun, 15 Feb 2009 12:02:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=OOj7pTwbfd8nTQlVw0Jj24IbyOf0wF1OL4920LzgrpFTdp4wWHMgpgj/KaAWtvHU7X
+         ABLC63hcG2deH8FV8WJCcim6wO4h8E9ASZBX81WY1udyB3JFlvPqQp7HaoQJCXMNWppC
+         SNkjvEtp4U8jwQ2xjhelxJl+DIBx0c2fmp1uU=
+Date: Sun, 15 Feb 2009 18:02:15 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Poking ieee80211_default_rc_algo causes kernel lockups
+Message-ID: <20090215170214.GK5835@nowhere>
+References: <slrngpgfil.5gc.sitsofe@sitsofe.eeepc.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <slrngpgfil.5gc.sitsofe@sitsofe.eeepc.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 15 Feb 2009, Jeff Garzik wrote:
-> Larry Finger wrote:
-> > Rafael J. Wysocki wrote:
-> > >
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12609
-> > > Subject		: v2.6.29-rc2 libata sff 32bit PIO regression
-> > > Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
-> > > Date		: 2009-01-23 23:52 (23 days old)
-> > > References	: http://marc.info/?l=linux-kernel&m=123275478111406&w=4
-> > > 		  http://marc.info/?l=linux-kernel&m=123254501314058&w=4
-> > > Handled-By	: Mikael Pettersson <mikpe@it.uu.se>
-> > >     Hugh Dickins <hugh@veritas.com>
-> > >     Sergei Shtylyov <sshtylyov@ru.mvista.com>
-> > > Patch		:
-> > > http://marc.info/?l=linux-kernel&m=123412278730735&w=4
-> > 
-> > This problem is not fixed as of 2.6.29-rc5.
+On Sun, Feb 15, 2009 at 04:09:57PM +0000, Sitsofe Wheeler wrote:
+> Hi,
 > 
-> Sergei, what is the latest version of your patch?   According to my notes, you
-> and Hugh were going back and forth trading patches, and I never saw a final
-> version...
+> As mentioned on
+> http://groups.google.com/group/fa.linux.kernel/browse_frm/thread/d4a6ce26360613fa/b362792a2debced6?#b362792a2debced6
+> , poking /sys/module/mac80211/parameters/ieee80211_default_rc_algo and
+> then trying to read values back is currently causing the kernel to go
+> funny. E.g.
+> echo blah > /sys/module/mac80211/parameters/ieee80211_default_rc_algo
+> cat /sys/module/mac80211/parameters/ieee80211_default_rc_algo
+> 
+> Causes 2.6.29rc5 on my EeePC 900 to lock up.
+> 
+> -- 
+> Sitsofe
 
-I was happy with the patch Sergei posted a week ago, and said so -
-except for the question of whether to say "unlikely(slop)": and
-that's a very silly little issue which should never have delayed
-fixing a significant regression, I'm sorry I ever raised it.
 
-But I was expecting Alan to gather the fixes together and send them
-to you: on 26 Jan he posted two other patches, one perhaps just a
-cleanup, but the other he said required for correct behaviour on
-AMD devices: I thought all three patches would be in by now.
+Hi,
 
-Hugh
+I'm currently building a 2.6.29-rc5 with CONFIG_MAC80211 enabled
+to test it.
+
+Could you please enable the CONFIG_DETECT_SOFTLOCKUP option in your kernel?
+It's on Kernel Hacking > Detect Soft Lockups.
+With some chances you will have a relevant stacktrace of the lockup, in case
+I couldn't reproduce it.
+
+ 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
