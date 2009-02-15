@@ -1,160 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbZBOTfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755557AbZBOTh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755371AbZBOTfg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 14:35:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbZBOTf2
+	id S1755557AbZBOTh1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 14:37:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbZBOThO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 14:35:28 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:1167 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752013AbZBOTf1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 14:35:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=cp2OvJ+IjuoB4zTqmNADvAQkFXjNk3ZVLFOk9yYXdzU0RqyBVBbex2fqi7nLucy+ZL
-         X5Np/t4Wr81IF4yLv8AKeoSMO1OLdq7Be0CtjDuBeq5bixL5p7zGYXup9+6TX/aQN83D
-         e1o4R4tQqEtBQWi43kqD5woDwZeA8K/qXA54I=
-Date: Sun, 15 Feb 2009 20:35:23 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: Poking ieee80211_default_rc_algo causes kernel lockups
-Message-ID: <20090215193522.GA5790@nowhere>
-References: <slrngpgfil.5gc.sitsofe@sitsofe.eeepc.localdomain>
+	Sun, 15 Feb 2009 14:37:14 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36896 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751345AbZBOThN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 14:37:13 -0500
+Date: Sun, 15 Feb 2009 20:36:55 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>, Yinghai Lu <yinghai@kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: state of some x86 acpi patches
+Message-ID: <20090215193655.GA18674@elte.hu>
+References: <20081216192534.GB843@elte.hu> <alpine.LFD.2.00.0812311821110.3854@localhost.localdomain> <495C677F.6080707@goop.org> <20090102153957.GA1180@elte.hu> <4980EE0C.4070308@goop.org> <49810211.9030808@kernel.org> <498CF8DA.30004@goop.org> <498CFD95.5070004@kernel.org> <498E229C.5030205@goop.org> <20090209123711.GK17782@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <slrngpgfil.5gc.sitsofe@sitsofe.eeepc.localdomain>
+In-Reply-To: <20090209123711.GK17782@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 15, 2009 at 04:09:57PM +0000, Sitsofe Wheeler wrote:
-> Hi,
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
-> As mentioned on
-> http://groups.google.com/group/fa.linux.kernel/browse_frm/thread/d4a6ce26360613fa/b362792a2debced6?#b362792a2debced6
-> , poking /sys/module/mac80211/parameters/ieee80211_default_rc_algo and
-> then trying to read values back is currently causing the kernel to go
-> funny. E.g.
-> echo blah > /sys/module/mac80211/parameters/ieee80211_default_rc_algo
-> cat /sys/module/mac80211/parameters/ieee80211_default_rc_algo
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 > 
-> Causes 2.6.29rc5 on my EeePC 900 to lock up.
+> > Yinghai Lu wrote:
+> >> Ingo is too busy...
+> >> It seems Len already agreed those patches can go through tip.
+> >>   
+> >
+> > OK, I have them prepared as a branch off tip/git pullable from:
+> >
+> > The following changes since commit 82eda818f26cbef2b0a6bf6580e52645af62e4fd:
+> >  Ingo Molnar (1):
+> >        Merge branch 'core/locking'
+> >
+> > are available in the git repository at:
+> >
+> >  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git acpi/map
+> >
+> > Jeremy Fitzhardinge (3):
+> >      x86: use early_ioremap in __acpi_map_table
+> >      x86: always explicitly map acpi memory
+> >      acpi: remove final __acpi_map_table mapping before setting acpi_gbl_permanent_mmap
+> >
+> > Yinghai Lu (2):
+> >      acpi/x86: introduce __apci_map_table, v4
+> >      revert_fix_es7000_compiling
+> >
+> > arch/ia64/kernel/acpi.c          |    4 ++++
+> > arch/x86/include/asm/acpi.h      |    3 ---
+> > arch/x86/include/asm/fixmap_32.h |    4 ----
+> > arch/x86/include/asm/fixmap_64.h |    4 ----
+> > arch/x86/kernel/acpi/boot.c      |   33 ++++++++-------------------------
+> > arch/x86/kernel/es7000_32.c      |    9 ++++++++-
+> > drivers/acpi/acpica/tbxface.c    |   17 ++++++++++++++---
+> > drivers/acpi/osl.c               |   11 +++++++++--
+> > drivers/acpi/tables.c            |   20 ++++++++++++++------
+> > include/acpi/acpiosxf.h          |    1 +
+> > include/acpi/acpixf.h            |    4 ++++
+> > include/linux/acpi.h             |    1 +
+> > 12 files changed, 63 insertions(+), 48 deletions(-)
 > 
-> -- 
-> Sitsofe
-> 
+> Ok, pulled into tip:x86/acpi, thanks guys!
 
+Note, there's a new ia64 build failure due to these patches:
 
-On Sun, Feb 15, 2009 at 04:09:57PM +0000, Sitsofe Wheeler wrote:
-> Hi,
-> 
-> As mentioned on
-> http://groups.google.com/group/fa.linux.kernel/browse_frm/thread/d4a6ce26360613fa/b362792a2debced6?#b362792a2debced6
-> , poking /sys/module/mac80211/parameters/ieee80211_default_rc_algo and
-> then trying to read values back is currently causing the kernel to go
-> funny. E.g.
-> echo blah > /sys/module/mac80211/parameters/ieee80211_default_rc_algo
-> cat /sys/module/mac80211/parameters/ieee80211_default_rc_algo
-> 
-> Causes 2.6.29rc5 on my EeePC 900 to lock up.
-> 
+/home/mingo/tip/arch/ia64/kernel/acpi.c:203: error: conflicting types for '__acpi_unmap_table'
+/home/mingo/tip/include/linux/acpi.h:82: error: previous declaration of '__acpi_unmap_table' was here
+/home/mingo/tip/arch/ia64/kernel/acpi.c:203: error: conflicting types for '__acpi_unmap_table'
+/home/mingo/tip/include/linux/acpi.h:82: error: previous declaration of '__acpi_unmap_table' was here
+make[2]: *** [arch/ia64/kernel/acpi.o] Error 1
+make[2]: *** Waiting for unfinished jobs....
+/home/mingo/tip/arch/ia64/kernel/ivt.S: Assembler messages:
 
-I think I've found something:
-
-When you set a new value to a module parameter through
-sysfs, here is what happens (traced with the function_graph_tracer,
-I've zapped a lot of entries to keep it clear)
-
-
- 1)               |  sys_open() {
- 1)               |            sysfs_open_file() {
- 1)               |              kmem_cache_alloc() {
- 1)   0.609 us    |                __might_sleep();
- 1)   2.046 us    |              }
- 1) + 58.976 us   |            }
- 1) ! 471.823 us  |  }
-
-
-The file is opened here, and sysfs will allocate a private buffer for this
-file...
-
-
- 1)               |  sys_write() {
- 1)               |    vfs_write() {
- 1)               |      sysfs_write_file() {
- 1) + 26.446 us   |        get_zeroed_page();
- 1)   0.789 us    |        sysfs_get_active_two();
- 1)               |        module_attr_store() {
- 1)               |          param_attr_store() {
- 1)   5.625 us    |            param_set_charp();
- 1)   7.279 us    |          }
- 1)   8.919 us    |        }
- 1)   4.113 us    |      }
- 1) + 62.502 us   |    }
- 1) + 64.961 us   |  }
-
-Then we go to write the file, the buffer we allocated is used to store what
-the user gave us as the new value of the module parameter.
-
-This filled buffer is relayed to the module parameter and the address of the buffer
-is directly assigned to the pointer of the module parameter:
-
-int param_set_charp(const char *val, struct kernel_param *kp)
-{
-	[...]
-	*(char **)kp->arg = (char *)val;
-	return 0;
-}
-
-At this stage, all is good.
-
-But just after we close the file:
-
-
- 1)               |            sysfs_release() {
- 1)               |              kfree() {
- 1)   1.105 us    |                __phys_addr();
- 1)   2.842 us    |              }
- 1)               |              free_pages() {
- 1)   0.609 us    |                __phys_addr();
- 1)               |                __free_pages() {
- 1)               |                  free_hot_page() {
- 1)               |                    free_hot_cold_page() {
- 1)   1.113 us    |                      get_pageblock_flags_group();
- 1)   3.061 us    |                    }
- 1)   4.466 us    |                  }
- 1)   5.744 us    |                }
- 1)   8.166 us    |              }
- 1)               |              kfree() {
- 1)   0.601 us    |                __phys_addr();
- 1)   2.052 us    |              }
- 1) + 18.686 us   |            }
-
-The buffer we just assigned to the module parameter is freed. So we can't reuse it later,
-but that's what is done later when we read it, since this bad address is dereferenced:
-
-int param_get_charp(char *buffer, struct kernel_param *kp)
-{
-	return sprintf(buffer, "%s", *((char **)kp->arg));
-}
-
-So the problem seems not related to mac80211 but actually to module parameter management.
-I'm not sure what is the right fix.
-
-I guess we should use the following field in struct kernel_param:
-struct kparam_string *str;
-
-But this implies that string module params must not be simply pointers but static arrays.
-Although I find it a bit insane to modify a string parameter at runtime.
-
-The string is parsed by a module on load but not after, so a callback given by the module
-seems to me more sane...
-
-
+	Ingo
