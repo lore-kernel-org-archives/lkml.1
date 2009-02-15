@@ -1,151 +1,298 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbZBOVU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbZBOVW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754573AbZBOVU7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 16:20:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752715AbZBOVUu
+	id S1755312AbZBOVW1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 16:22:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbZBOVWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 16:20:50 -0500
-Received: from yumi.tdiedrich.de ([85.10.210.183]:53021 "EHLO mx.tdiedrich.de"
+	Sun, 15 Feb 2009 16:22:17 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:48168 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752697AbZBOVUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 16:20:49 -0500
-Date: Sun, 15 Feb 2009 22:20:45 +0100
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-To: linux-kernel@vger.kernel.org
-Subject: unusual hw_sector_size 4096 and pagecache
-Message-ID: <20090215212045.GA13938@yamamaya.is-a-geek.org>
-Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-	linux-kernel@vger.kernel.org
+	id S1752625AbZBOVWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 16:22:15 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Justin Madru <jdm64@gawab.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bug #12263] Sata soft reset filling log
+Date: Sun, 15 Feb 2009 22:21:42 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linux IDE <linux-ide@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Hugh Dickins <hugh@veritas.com>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       Mikael Pettersson <mikpe@it.uu.se>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>
+References: <sTyoMUwdm9B.A.QCH.U40lJB@chimera> <ROx6X68CGJG.A.ahB.b50lJB@chimera> <49987F49.7050202@gawab.com>
+In-Reply-To: <49987F49.7050202@gawab.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200902152221.43834.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sunday 15 February 2009, Justin Madru wrote:
+> Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.27 and 2.6.28.
+> >
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.27 and 2.6.28.  Please verify if it still should
+> > be listed and let me know (either way).
+> >
+> >
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12263
+> > Subject		: Sata soft reset filling log
+> > Submitter	: Justin Madru <bevicm@dslextreme.com>
+> > Date		: 2008-12-13 2:07 (64 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=122913412608533&w=4
+> 
+> I'm still seeing this on .29-rc5, and I think that my bug #12263 is a 
+> duplicate of bug #12609,
+> or more correctly it's a duplicate of mine because I reported first.
+> 
+> It seems like the bug has been fixed in tip/master for some time now.
+> Below is the diff of origin and tip from when I tested.
 
-I'm fiddling with a custom nbd server and I wanted to use 4K (page
-sized) 'hw sectors', so I added a new ioctl to nbd, which
-calls blk_queue_hardsect_size() to change the hw_sector_size (see
-patch at end of this mail).
+Ingo, do you know whinch patch in -tip fixes this regression?
 
-I tested this with sector sizes 512, 1024, 2048 and 4096 and found
-that all expect 4096 work just fine.
-
-4096 mostly works except for one thing:
-
-| mke2fs /dev/nbd0
-| mount /dev/nbd0 /mnt/mnt
-| cd /mnt/mnt
-| tar xjf /root/linux-2.6.23.tar.bz2
-| cd
-| umount /mnt/mnt
-| e2fsck -n -f /dev/nbd0
-
-fails the e2fsck.
-However inserting either
- 'echo 3 > /proc/sys/vm/drop_caches'
-or
- 'blockdev --flushbufs /dev/nbd0'
-before the e2fsck makes it find a clean filesystem image.
-
-I assume no one ever tried 4096 bytes sized sectors before, but
-I'll still ask:
-
-Is this expected behaviour?
-
-Also, I eventually got a got a BUG(), which might be related.
-
-[12338.180010] nbd0: queue cleared
-[12525.860006] ------------[ cut here ]------------
-[12525.860006] kernel BUG at fs/buffer.c:2992!
-[12525.860006] invalid opcode: 0000 [#1] 
-[12525.860006] last sysfs file: /sys/block/nbd15/removable
-[12525.860006] Modules linked in: nbd radeon pcmcia snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm libipw psmouse yenta_socket rsrc_nonstatic pcmcia_core snd_timer snd_page_alloc ehci_hcd tg3 libphy uhci_hcd parport_pc parport thinkpad_acpi [last unloaded: ipw2200]
-[12525.860006] 
-[12525.860006] Pid: 3613, comm: tar Tainted: G        W  (2.6.29-rc3 #28) 1847W62
-[12525.860006] EIP: 0060:[<c017aa8e>] EFLAGS: 00010246 CPU: 0
-[12525.860006] EIP is at submit_bh+0x18/0xe6
-[12525.860006] EAX: 00000005 EBX: db144358 ECX: 00000015 EDX: db144358
-[12525.860006] ESI: e0e00800 EDI: 00000009 EBP: c84fbb88 ESP: c84fbb7c
-[12525.860006]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-[12525.860006] Process tar (pid: 3613, ti=c84fb000 task=f71d43c0 task.ti=c84fb000)
-[12525.860006] Stack:
-[12525.860006]  db144358 e0e00800 d0d60000 c84fbb98 c017be01 efc3a400 e0e00800 c84fbba8
-[12525.860006]  c01d6430 c3f420e0 e0e00800 c84fbbb8 c01d6b58 c3f420e0 0003807c c84fbbec
-[12525.860006]  c01d19f1 e0e00800 c04182f4 c04a33f2 00000007 0003807c 00000007 e0e00800
-[12525.860006] Call Trace:
-[12525.860006]  [<c017be01>] ? sync_dirty_buffer+0x5b/0xac
-[12525.860006]  [<c01d6430>] ? ext2_sync_super+0x3f/0x47
-[12525.860006]  [<c01d6b58>] ? ext2_error+0x33/0x91
-[12525.860006]  [<c01d19f1>] ? read_block_bitmap+0x113/0x121
-[12525.860006]  [<c01d229e>] ? ext2_new_blocks+0x1bd/0x47f
-[12525.860006]  [<c01d52ce>] ? ext2_get_block+0x294/0x5a2
-[12525.860006]  [<c014b75b>] ? get_page_from_freelist+0xa5/0x375
-[12525.860006]  [<c017ae5b>] ? alloc_page_buffers+0x67/0xb2
-[12525.860006]  [<c017c43d>] ? __block_prepare_write+0x14a/0x329
-[12525.860006]  [<c017c76b>] ? block_write_begin+0x75/0xcb
-[12525.860006]  [<c01d503a>] ? ext2_get_block+0x0/0x5a2
-[12525.860006]  [<c01d501d>] ? ext2_write_begin+0x26/0x28
-[12525.860006]  [<c01d503a>] ? ext2_get_block+0x0/0x5a2
-[12525.860006]  [<c014813e>] ? generic_file_buffered_write+0xc8/0x233
-[12525.860006]  [<c01487e1>] ? __generic_file_aio_write_nolock+0x3a0/0x3d7
-[12525.860006]  [<c0405dab>] ? mutex_lock+0xe/0x1d
-[12525.860006]  [<c01693cb>] ? pipe_read+0x2ee/0x2fb
-[12525.860006]  [<c0148faf>] ? generic_file_aio_write+0x57/0xb4
-[12525.860006]  [<c0163a32>] ? do_sync_write+0xaa/0xe8
-[12525.860006]  [<c0129fe5>] ? autoremove_wake_function+0x0/0x33
-[12525.860006]  [<c0173ccf>] ? mntput_no_expire+0x19/0x95
-[12525.860006]  [<c01698b3>] ? path_put+0x20/0x23
-[12525.860006]  [<c0163988>] ? do_sync_write+0x0/0xe8
-[12525.860006]  [<c01641d4>] ? vfs_write+0x86/0xf0
-[12525.860006]  [<c01642d7>] ? sys_write+0x3b/0x60
-[12525.860006]  [<c0102d2e>] ? syscall_call+0x7/0xb
-[12525.860006] Code: e8 c1 fc ff ff 3b 5d f4 89 d8 eb ef 5b 89 f0 5b 5e 5d c3 55 89 e5 57 89 c7 56 53 89 d3 8b 02 a8 04 75 04 0f 0b eb fe a8 20 75 04 <0f> 0b eb fe 83 7a 20 00 75 04 0f 0b eb fe f6 c4 10 74 0e 89 f8 
-[12525.860006] EIP: [<c017aa8e>] submit_bh+0x18/0xe6 SS:ESP 0068:c84fbb7c
-[12525.860006] ---[ end trace daa0a64c01361146 ]---
-
-
-
-
-Index: linux-2.6.29-rc3/drivers/block/nbd.c
-===================================================================
---- linux-2.6.29-rc3.orig/drivers/block/nbd.c	2009-02-15 15:44:00.000000000 +0100
-+++ linux-2.6.29-rc3/drivers/block/nbd.c	2009-02-15 15:47:44.000000000 +0100
-@@ -76,6 +76,7 @@
- 	switch (cmd) {
- 	case NBD_SET_SOCK: return "set-sock";
- 	case NBD_SET_BLKSIZE: return "set-blksize";
-+	case NBD_SET_SECTSIZE: return "set-sectsize";
- 	case NBD_SET_SIZE: return "set-size";
- 	case NBD_DO_IT: return "do-it";
- 	case NBD_CLEAR_SOCK: return "clear-sock";
-@@ -627,6 +628,9 @@
- 			}
- 		}
- 		return error;
-+	case NBD_SET_SECTSIZE:
-+		blk_queue_hardsect_size(lo->disk->queue, arg);
-+		return 0;
- 	case NBD_SET_BLKSIZE:
- 		lo->blksize = arg;
- 		lo->bytesize &= ~(lo->blksize-1);
-Index: linux-2.6.29-rc3/include/linux/nbd.h
-===================================================================
---- linux-2.6.29-rc3.orig/include/linux/nbd.h	2009-02-15 15:44:23.000000000 +0100
-+++ linux-2.6.29-rc3/include/linux/nbd.h	2009-02-15 15:45:11.000000000 +0100
-@@ -27,6 +27,7 @@
- #define NBD_SET_SIZE_BLOCKS	_IO( 0xab, 7 )
- #define NBD_DISCONNECT  _IO( 0xab, 8 )
- #define NBD_SET_TIMEOUT _IO( 0xab, 9 )
-+#define NBD_SET_SECTSIZE _IO( 0xab, 10 )
- 
- enum {
- 	NBD_CMD_READ = 0,
-
--- 
-Tobias						PGP: http://9ac7e0bc.uguu.de
-このメールは十割再利用されたビットで作られています。
+> $ git diff origin/master..tip/master drivers/ata/
+> 
+> diff --git a/drivers/ata/ata_piix.c b/drivers/ata/ata_piix.c
+> index 54961c0..e004c25 100644
+> --- a/drivers/ata/ata_piix.c
+> +++ b/drivers/ata/ata_piix.c
+> @@ -310,7 +310,7 @@ static struct scsi_host_template piix_sht = {
+>  };
+>  
+>  static struct ata_port_operations piix_pata_ops = {
+> -    .inherits        = &ata_bmdma32_port_ops,
+> +    .inherits        = &ata_bmdma_port_ops,
+>      .cable_detect        = ata_cable_40wire,
+>      .set_piomode        = piix_set_piomode,
+>      .set_dmamode        = piix_set_dmamode,
+> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+> index 9fbf059..1ed3966 100644
+> --- a/drivers/ata/libata-core.c
+> +++ b/drivers/ata/libata-core.c
+> @@ -1482,7 +1482,7 @@ static int ata_hpa_resize(struct ata_device *dev)
+>      struct ata_eh_context *ehc = &dev->link->eh_context;
+>      int print_info = ehc->i.flags & ATA_EHI_PRINTINFO;
+>      u64 sectors = ata_id_n_sectors(dev->id);
+> -    u64 native_sectors;
+> +    u64 uninitialized_var(native_sectors);
+>      int rc;
+>  
+>      /* do we need to do it? */
+> diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+> index b9747fa..d65b9b2 100644
+> --- a/drivers/ata/libata-scsi.c
+> +++ b/drivers/ata/libata-scsi.c
+> @@ -3247,7 +3247,7 @@ void ata_scsi_scan_host(struct ata_port *ap, int sync)
+>      int tries = 5;
+>      struct ata_device *last_failed_dev = NULL;
+>      struct ata_link *link;
+> -    struct ata_device *dev;
+> +    struct ata_device *uninitialized_var(dev);
+>  
+>      if (ap->flags & ATA_FLAG_DISABLED)
+>          return;
+> diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
+> index 0b299b0..416e3e2 100644
+> --- a/drivers/ata/libata-sff.c
+> +++ b/drivers/ata/libata-sff.c
+> @@ -80,13 +80,6 @@ const struct ata_port_operations ata_bmdma_port_ops = {
+>  };
+>  EXPORT_SYMBOL_GPL(ata_bmdma_port_ops);
+>  
+> -const struct ata_port_operations ata_bmdma32_port_ops = {
+> -    .inherits        = &ata_bmdma_port_ops,
+> -
+> -    .sff_data_xfer        = ata_sff_data_xfer32,
+> -};
+> -EXPORT_SYMBOL_GPL(ata_bmdma32_port_ops);
+> -
+>  /**
+>   *    ata_fill_sg - Fill PCI IDE PRD table
+>   *    @qc: Metadata associated with taskfile to be transferred
+> @@ -743,52 +736,6 @@ unsigned int ata_sff_data_xfer(struct ata_device 
+> *dev, unsigned char *buf,
+>  EXPORT_SYMBOL_GPL(ata_sff_data_xfer);
+>  
+>  /**
+> - *    ata_sff_data_xfer32 - Transfer data by PIO
+> - *    @dev: device to target
+> - *    @buf: data buffer
+> - *    @buflen: buffer length
+> - *    @rw: read/write
+> - *
+> - *    Transfer data from/to the device data register by PIO using 32bit
+> - *    I/O operations.
+> - *
+> - *    LOCKING:
+> - *    Inherited from caller.
+> - *
+> - *    RETURNS:
+> - *    Bytes consumed.
+> - */
+> -
+> -unsigned int ata_sff_data_xfer32(struct ata_device *dev, unsigned char 
+> *buf,
+> -                   unsigned int buflen, int rw)
+> -{
+> -    struct ata_port *ap = dev->link->ap;
+> -    void __iomem *data_addr = ap->ioaddr.data_addr;
+> -    unsigned int words = buflen >> 2;
+> -    int slop = buflen & 3;
+> -
+> -    /* Transfer multiple of 4 bytes */
+> -    if (rw == READ)
+> -        ioread32_rep(data_addr, buf, words);
+> -    else
+> -        iowrite32_rep(data_addr, buf, words);
+> -
+> -    if (unlikely(slop)) {
+> -        __le32 pad;
+> -        if (rw == READ) {
+> -            pad = cpu_to_le32(ioread32(ap->ioaddr.data_addr));
+> -            memcpy(buf + buflen - slop, &pad, slop);
+> -        } else {
+> -            memcpy(&pad, buf + buflen - slop, slop);
+> -            iowrite32(le32_to_cpu(pad), ap->ioaddr.data_addr);
+> -        }
+> -        words++;
+> -    }
+> -    return words << 2;
+> -}
+> -EXPORT_SYMBOL_GPL(ata_sff_data_xfer32);
+> -
+> -/**
+>   *    ata_sff_data_xfer_noirq - Transfer data by PIO
+>   *    @dev: device to target
+>   *    @buf: data buffer
+> diff --git a/drivers/ata/pata_ali.c b/drivers/ata/pata_ali.c
+> index eb99dbe..7cd48ea 100644
+> --- a/drivers/ata/pata_ali.c
+> +++ b/drivers/ata/pata_ali.c
+> @@ -151,7 +151,8 @@ static void ali_fifo_control(struct ata_port *ap, 
+> struct ata_device *adev, int o
+>  
+>      pci_read_config_byte(pdev, pio_fifo, &fifo);
+>      fifo &= ~(0x0F << shift);
+> -    fifo |= (on << shift);
+> +    if (on)
+> +        fifo |= (on << shift);
+>      pci_write_config_byte(pdev, pio_fifo, fifo);
+>  }
+>  
+> @@ -369,11 +370,10 @@ static struct ata_port_operations 
+> ali_early_port_ops = {
+>      .inherits    = &ata_sff_port_ops,
+>      .cable_detect    = ata_cable_40wire,
+>      .set_piomode    = ali_set_piomode,
+> -    .sff_data_xfer  = ata_sff_data_xfer32,
+>  };
+>  
+>  static const struct ata_port_operations ali_dma_base_ops = {
+> -    .inherits    = &ata_bmdma32_port_ops,
+> +    .inherits    = &ata_bmdma_port_ops,
+>      .set_piomode    = ali_set_piomode,
+>      .set_dmamode    = ali_set_dmamode,
+>  };
+> diff --git a/drivers/ata/pata_amd.c b/drivers/ata/pata_amd.c
+> index 63719ab..0ec9c7d 100644
+> --- a/drivers/ata/pata_amd.c
+> +++ b/drivers/ata/pata_amd.c
+> @@ -24,7 +24,7 @@
+>  #include <linux/libata.h>
+>  
+>  #define DRV_NAME "pata_amd"
+> -#define DRV_VERSION "0.3.11"
+> +#define DRV_VERSION "0.3.10"
+>  
+>  /**
+>   *    timing_setup        -    shared timing computation and load
+> @@ -345,7 +345,7 @@ static struct scsi_host_template amd_sht = {
+>  };
+>  
+>  static const struct ata_port_operations amd_base_port_ops = {
+> -    .inherits    = &ata_bmdma32_port_ops,
+> +    .inherits    = &ata_bmdma_port_ops,
+>      .prereset    = amd_pre_reset,
+>  };
+>  
+> diff --git a/drivers/ata/pata_atiixp.c b/drivers/ata/pata_atiixp.c
+> index 506adde..115eb00 100644
+> --- a/drivers/ata/pata_atiixp.c
+> +++ b/drivers/ata/pata_atiixp.c
+> @@ -140,7 +140,7 @@ static void atiixp_set_dmamode(struct ata_port *ap, 
+> struct ata_device *adev)
+>          wanted_pio = 3;
+>      else if (adev->dma_mode == XFER_MW_DMA_0)
+>          wanted_pio = 0;
+> -    else BUG();
+> +    else panic("atiixp_set_dmamode: unknown DMA mode!");
+>  
+>      if (adev->pio_mode != wanted_pio)
+>          atiixp_set_pio_timing(ap, adev, wanted_pio);
+> diff --git a/drivers/ata/pata_mpiix.c b/drivers/ata/pata_mpiix.c
+> index aa576ca..7c8faa4 100644
+> --- a/drivers/ata/pata_mpiix.c
+> +++ b/drivers/ata/pata_mpiix.c
+> @@ -35,7 +35,7 @@
+>  #include <linux/libata.h>
+>  
+>  #define DRV_NAME "pata_mpiix"
+> -#define DRV_VERSION "0.7.7"
+> +#define DRV_VERSION "0.7.6"
+>  
+>  enum {
+>      IDETIM = 0x6C,        /* IDE control register */
+> @@ -146,7 +146,6 @@ static struct ata_port_operations mpiix_port_ops = {
+>      .cable_detect    = ata_cable_40wire,
+>      .set_piomode    = mpiix_set_piomode,
+>      .prereset    = mpiix_pre_reset,
+> -    .sff_data_xfer    = ata_sff_data_xfer32,
+>  };
+>  
+>  static int mpiix_init_one(struct pci_dev *dev, const struct 
+> pci_device_id *id)
+> diff --git a/drivers/ata/pata_sil680.c b/drivers/ata/pata_sil680.c
+> index 9e764e5..83580a5 100644
+> --- a/drivers/ata/pata_sil680.c
+> +++ b/drivers/ata/pata_sil680.c
+> @@ -32,7 +32,7 @@
+>  #include <linux/libata.h>
+>  
+>  #define DRV_NAME "pata_sil680"
+> -#define DRV_VERSION "0.4.9"
+> +#define DRV_VERSION "0.4.8"
+>  
+>  #define SIL680_MMIO_BAR        5
+>  
+> @@ -195,7 +195,7 @@ static struct scsi_host_template sil680_sht = {
+>  };
+>  
+>  static struct ata_port_operations sil680_port_ops = {
+> -    .inherits    = &ata_bmdma32_port_ops,
+> +    .inherits    = &ata_bmdma_port_ops,
+>      .cable_detect    = sil680_cable_detect,
+>      .set_piomode    = sil680_set_piomode,
+>      .set_dmamode    = sil680_set_dmamode,
+> diff --git a/drivers/ata/sata_via.c b/drivers/ata/sata_via.c
+> index 5c62da9..f9803a2 100644
+> --- a/drivers/ata/sata_via.c
+> +++ b/drivers/ata/sata_via.c
+> @@ -566,7 +566,7 @@ static int svia_init_one(struct pci_dev *pdev, const 
+> struct pci_device_id *ent)
+>      static int printed_version;
+>      unsigned int i;
+>      int rc;
+> -    struct ata_host *host;
+> +    struct ata_host *uninitialized_var(host);
+>      int board_id = (int) ent->driver_data;
+>      const unsigned *bar_sizes;
+>  
+> Justin Madru
