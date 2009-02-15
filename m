@@ -1,64 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492AbZBOKfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbZBOKfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754492AbZBOKfY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 05:35:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbZBOKet
+	id S1754547AbZBOKfo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 05:35:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbZBOKfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 05:34:49 -0500
-Received: from smtp-114-sunday.nerim.net ([62.4.16.114]:59683 "EHLO
-	maiev.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753981AbZBOKer (ORCPT
+	Sun, 15 Feb 2009 05:35:09 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:44901 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754321AbZBOKfH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 05:34:47 -0500
-X-Greylist: delayed 8700 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Feb 2009 05:34:47 EST
-Date: Sun, 15 Feb 2009 11:34:45 +0100
-From: Damien Wyart <damien.wyart@free.fr>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12650] Strange load average and ksoftirqd behavior with
-	2.6.29-rc2-git1
-Message-ID: <20090215103445.GA2335@localhost.localdomain>
-References: <juADNmcceYF.A.mdD.Mr0lJB@chimera> <rjPbZ5GRJPO.A.1kE.ur0lJB@chimera> <20090215080941.GA2295@localhost.localdomain> <20090215090026.GA31147@elte.hu> <20090215095128.GA3234@localhost.localdomain> <20090215101351.GA23274@elte.hu>
-MIME-Version: 1.0
+	Sun, 15 Feb 2009 05:35:07 -0500
+Date: Sun, 15 Feb 2009 11:36:59 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] KBUILD: Create the source symlink earlier in the objdir
+Message-ID: <20090215103659.GC31088@uranus.ravnborg.org>
+References: <20090110035613.GA7225@basil.nowhere.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090215101351.GA23274@elte.hu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090110035613.GA7225@basil.nowhere.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar <mingo@elte.hu> [2009-02-15 11:13]:
-> Note that if the box you test this on is multi-core or HT, then interpreting
-> traces is easier if there's just a single CPU to look at. In that case i'd 
-> suggest to reproduce with just a single core, by turning the second one off:
+On Sat, Jan 10, 2009 at 04:56:13AM +0100, Andi Kleen wrote:
+> KBUILD: Create the source symlink earlier in the objdir
+> 
+> It's useful to already have the source symlink in a 
+> objdir when one just runs make *config. Then one
+> can do 
+> 
+> mkdir obj-allyes
+> cd obj-allyes
+> make -C ../sourcedir O=$(pwd) allyesconfig
+> ./source/scripts/config --disable debug_info
+> make CC=icecc -j18
+> 
+> without having to interrupt the make first just to
+> get the source symlink.
+> 
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> 
+> ---
+>  Makefile |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> 
+> Index: linux-2.6.28-kbuild/Makefile
+> ===================================================================
+> --- linux-2.6.28-kbuild.orig/Makefile	2009-01-07 22:16:49.000000000 +0100
+> +++ linux-2.6.28-kbuild/Makefile	2009-01-10 04:50:53.000000000 +0100
+> @@ -383,6 +383,7 @@
+>  # output directory.
+>  outputmakefile:
+>  ifneq ($(KBUILD_SRC),)
+> +	@ln -fsn $(srctree) $(objtree)/source
+>  	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/mkmakefile \
+>  	    $(srctree) $(objtree) $(VERSION) $(PATCHLEVEL)
+>  endif
 
->    echo 0 > /sys/devices/system/cpu/cpu1/online
+But we do not want to create this symlink in two places.
+So the following is better:
 
-> Or, if the problem only occurs with two cpus, restrict tracing to CPU#1:
+	Sam
 
->    echo 2 > /debug/tracing/tracing_cpumask 
-
-The box I test on is HT, so I tried the first suggestion and it made the
-problem much less visible (but not completely absent).
-
-So I used "echo 1 > /sys/devices/system/cpu/cpu1/online" to go back to
-HT mode and then it made the problem much more visible on CPU#1:
-ksoftirqd/1 is running a lot and ksoftirqd/0 is almost normal. The load
-average is about 0.80 and the total running time for ksoftirqd/1 is
-almost one minute (and I booted on rc5 ten minutes ago)!
-
-So I followed the tracing steps in the tutorial (with the 1 sec sleep),
-which gave me this:
-http://damien.wyart.free.fr/trace_2.6.29-rc5_ksoftirqd_prob.txt.gz
-
-As I will be away until tomorrow, I did this on vanilla rc5 to get
-something out today, and if tip is really needed, I will work on it
-tomorrow. But maybe this vanilla trace will be helpful to you...
-
-Do not hesitate to ask for further tests or info.
-
--- 
-Damien
+diff --git a/Makefile b/Makefile
+index 22d7584..76ee131 100644
+--- a/Makefile
++++ b/Makefile
+@@ -388,6 +388,7 @@ PHONY += outputmakefile
+ # separate output directory. This allows convenient use of make in the
+ # output directory.
+ outputmakefile:
++	$(Q)ln -fsn $(srctree) source
+ ifneq ($(KBUILD_SRC),)
+ 	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/mkmakefile \
+ 	    $(srctree) $(objtree) $(VERSION) $(PATCHLEVEL)
+@@ -946,7 +947,6 @@ ifneq ($(KBUILD_SRC),)
+ 	    mkdir -p include2;                                          \
+ 	    ln -fsn $(srctree)/include/asm-$(SRCARCH) include2/asm;     \
+ 	fi
+-	ln -fsn $(srctree) source
+ endif
+ 
+ # prepare2 creates a makefile if using a separate output directory
