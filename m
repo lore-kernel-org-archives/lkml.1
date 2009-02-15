@@ -1,174 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754519AbZBOMW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbZBOMYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754519AbZBOMW1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 07:22:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbZBOMWS
+	id S1754713AbZBOMYl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 07:24:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326AbZBOMYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 07:22:18 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:44196 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752974AbZBOMWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 07:22:18 -0500
-Message-ID: <499807B4.1050606@suse.de>
-Date: Sun, 15 Feb 2009 13:16:52 +0100
-From: Frank Seidel <fseidel@suse.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sun, 15 Feb 2009 07:24:32 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:31943 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753173AbZBOMYb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 07:24:31 -0500
+Message-ID: <49980979.6090305@ru.mvista.com>
+Date: Sun, 15 Feb 2009 15:24:25 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-To: linux kernel <linux-kernel@vger.kernel.org>
-Cc: akpm@linux-foundation.org, rlove@rlove.org,
-       Jean Delvare <khali@linux-fr.org>, protasnb@gmail.com,
-       Michael Ruoss <miruoss@student.ethz.ch>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Tim Gardner <tim.gardner@canonical.com>,
-       Frank Seidel <frank@f-seidel.de>, Frank Seidel <fseidel@suse.de>,
-       multinymous@gmail.com
-Subject: [PATCHv2] hwmon/hdaps: Fix bug 7154 inversion of separate axis
-References: <499569A9.5030202@suse.de>
-In-Reply-To: <499569A9.5030202@suse.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+To: petkovbb@gmail.com
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/6] ide: remove ide_execute_pkt_cmd()
+References: <20090209231945.32406.14874.sendpatchset@localhost.localdomain>	 <20090209232019.32406.98822.sendpatchset@localhost.localdomain>	 <20090211065535.GC937@gollum.tnic> <4992D108.2070709@ru.mvista.com>	 <9ea470500902110537g4d6c67a3o35d1d8a4dcca0927@mail.gmail.com>	 <4992D77F.3090802@ru.mvista.com> <9ea470500902110832p58cf6b6at38a20f9ea7557017@mail.gmail.com>
+In-Reply-To: <9ea470500902110832p58cf6b6at38a20f9ea7557017@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Frank Seidel <frank@f-seidel.de>
+Hello.
 
-Fix for kernel.org bug #7154:hdaps inversion of
-each axis. This version is based on the work
-from Michael Ruoss <miruoss@student.ethz.ch>.
+Borislav Petkov wrote:
 
-Signed-off-by: Frank Seidel <frank@f-seidel.de>
----
- drivers/hwmon/hdaps.c |   64 +++++++++++++++++++++++++-------------------------
- 1 file changed, 33 insertions(+), 31 deletions(-)
+>>>>> or similar instead of wasting stack space?
+>>>>>
+>>>>>           
+>>>>  It doesn't necessarily waste stack space. Haven't you heard about
+>>>> compiler
+>>>> putting local vairables into registers?
+>>>>
+>>>>         
+>>> Yes, have you heard of unnecessary register spilling?
+>>>
+>>>       
+>>  No -- only about stack spilling on CPUs "caching" the top of stack in their
+>> register file (like SPARC).
+>>  Linux runs not only on x86 and many RISCs can store several local variables
+>> in the dedicated registers -- it's the part of say MIPS ABIs...
+>>     
 
---- a/drivers/hwmon/hdaps.c
-+++ b/drivers/hwmon/hdaps.c
-@@ -65,6 +65,10 @@
- #define HDAPS_INPUT_FUZZ	4	/* input event threshold */
- #define HDAPS_INPUT_FLAT	4
- 
-+#define HDAPS_X_AXIS		(1 << 0)
-+#define HDAPS_Y_AXIS		(1 << 1)
-+#define HDAPS_BOTH_AXES		(HDAPS_X_AXIS | HDAPS_Y_AXIS)
-+
- static struct platform_device *pdev;
- static struct input_polled_dev *hdaps_idev;
- static unsigned int hdaps_invert;
-@@ -182,11 +186,11 @@ static int __hdaps_read_pair(unsigned in
- 	km_activity = inb(HDAPS_PORT_KMACT);
- 	__device_complete();
- 
--	/* if hdaps_invert is set, negate the two values */
--	if (hdaps_invert) {
-+	/* hdaps_invert is a bitvector to negate the axes */
-+	if (hdaps_invert & HDAPS_X_AXIS)
- 		*x = -*x;
-+	if (hdaps_invert & HDAPS_Y_AXIS)
- 		*y = -*y;
--	}
- 
- 	return 0;
- }
-@@ -436,7 +440,8 @@ static ssize_t hdaps_invert_store(struct
- {
- 	int invert;
- 
--	if (sscanf(buf, "%d", &invert) != 1 || (invert != 1 && invert != 0))
-+	if (sscanf(buf, "%d", &invert) != 1 ||
-+	    invert < 0 || invert > HDAPS_BOTH_AXES)
- 		return -EINVAL;
- 
- 	hdaps_invert = invert;
-@@ -483,56 +488,52 @@ static int __init hdaps_dmi_match(const
- /* hdaps_dmi_match_invert - found an inverted match. */
- static int __init hdaps_dmi_match_invert(const struct dmi_system_id *id)
- {
--	hdaps_invert = 1;
--	printk(KERN_INFO "hdaps: inverting axis readings.\n");
-+	hdaps_invert = (int)id->driver_data;
-+	printk(KERN_INFO "hdaps: inverting axis (%u) readings.\n",
-+	       hdaps_invert);
- 	return hdaps_dmi_match(id);
- }
- 
--#define HDAPS_DMI_MATCH_NORMAL(vendor, model) {		\
--	.ident = vendor " " model,			\
--	.callback = hdaps_dmi_match,			\
--	.matches = {					\
--		DMI_MATCH(DMI_BOARD_VENDOR, vendor),	\
--		DMI_MATCH(DMI_PRODUCT_VERSION, model)	\
--	}						\
--}
--
--#define HDAPS_DMI_MATCH_INVERT(vendor, model) {		\
-+#define HDAPS_DMI_MATCH_INVERT(vendor, model, axes) {	\
- 	.ident = vendor " " model,			\
- 	.callback = hdaps_dmi_match_invert,		\
-+	.driver_data = (void *)axes,			\
- 	.matches = {					\
- 		DMI_MATCH(DMI_BOARD_VENDOR, vendor),	\
- 		DMI_MATCH(DMI_PRODUCT_VERSION, model)	\
- 	}						\
- }
- 
-+#define HDAPS_DMI_MATCH_NORMAL(vendor, model)		\
-+	HDAPS_DMI_MATCH_INVERT(vendor, model, 0)
-+
- /* Note that HDAPS_DMI_MATCH_NORMAL("ThinkPad T42") would match
-    "ThinkPad T42p", so the order of the entries matters.
-    If your ThinkPad is not recognized, please update to latest
-    BIOS. This is especially the case for some R52 ThinkPads. */
- static struct dmi_system_id __initdata hdaps_whitelist[] = {
--	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad R50p"),
-+	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad R50p", HDAPS_BOTH_AXES),
- 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad R50"),
- 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad R51"),
- 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad R52"),
--	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad R61i"),
--	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad R61"),
--	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad T41p"),
-+	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad R61i", HDAPS_BOTH_AXES),
-+	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad R61", HDAPS_BOTH_AXES),
-+	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad T41p", HDAPS_BOTH_AXES),
- 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad T41"),
--	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad T42p"),
-+	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad T42p", HDAPS_BOTH_AXES),
- 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad T42"),
- 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad T43"),
--	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T60"),
--	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T61p"),
--	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T61"),
-+	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T60", HDAPS_BOTH_AXES),
-+	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T61p", HDAPS_BOTH_AXES),
-+	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T61", HDAPS_BOTH_AXES),
- 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad X40"),
- 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad X41"),
--	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X60"),
--	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X61s"),
--	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X61"),
-+	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X60", HDAPS_BOTH_AXES),
-+	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X61s", HDAPS_BOTH_AXES),
-+	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X61", HDAPS_BOTH_AXES),
- 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad Z60m"),
--	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad Z61m"),
--	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad Z61p"),
-+	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad Z61m", HDAPS_BOTH_AXES),
-+	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad Z61p", HDAPS_BOTH_AXES),
- 	{ .ident = NULL }
- };
- 
-@@ -627,8 +628,9 @@ static void __exit hdaps_exit(void)
- module_init(hdaps_init);
- module_exit(hdaps_exit);
- 
--module_param_named(invert, hdaps_invert, bool, 0);
--MODULE_PARM_DESC(invert, "invert data along each axis");
-+module_param_named(invert, hdaps_invert, int, 0644);
-+MODULE_PARM_DESC(invert, "invert data along each axis. 1 invert x-axis, "
-+		 "2 invert y-axis, 3 invert both axes.");
- 
- MODULE_AUTHOR("Robert Love");
- MODULE_DESCRIPTION("IBM Hard Drive Active Protection System (HDAPS) driver");
+   Oh, it's really the same on x86, only there are only 3 registers 
+dedicated to that. RISCs typically have more, however x86_64 wiuth 16 
+its registers is close to that already. However, you're right -- these 
+registers need saving at the function entry, so they effectively take 
+the stack space.
+
+>>>>> It'll also read better in the if() check:
+>>>>>
+>>>>> if (drv_can_irq_interrupt(drive)) { ...
+>>>>>
+>>>>>
+>>>>>           
+>>>>  It's faster to checj a local variable than to dereference drv several
+>>>> times
+>>>> -- unless gcc optimizes that away (by creating an implicit local variable
+>>>> :-).
+>>>>         
+>
+>
+> Let's look at an example:
+>
+> In ide-cd.c:cdrom_newpc_intr() you have the following code snippet:
+>
+> <ide-cd.c>
+>  799         thislen = blk_fs_request(rq) ? len : rq->data_len;
+>  800         if (thislen > len)
+>  801                 thislen = len;
+>  802
+>  803         ide_debug_log(IDE_DBG_PC, "%s: DRQ: stat: 0x%x, thislen: %d\n",
+>  804                       __func__, stat, thislen);
+>  805
+>  806         /* If DRQ is clear, the command has completed. */
+>  807         if ((stat & ATA_DRQ) == 0) {
+>  808                 if (blk_fs_request(rq)) {
+> </ide-cd.c>
+>
+> Now watch the blk_fs_request() thing.
+>
+> Here's what my gcc¹ spits out:
+>   
+
+   Thsi code is somewhat confused. Also, I was of a better opinion of gcc...
+
+> <ide-cd.s>
+> .LVL174:
+>         .loc 1 799 0
+>         movl    76(%r12), %ecx  # <variable>.cmd_type, prephitmp.1128
+>         cmpl    $1, %ecx        #, prephitmp.1128
+>         movl    %ecx, %r8d      # prephitmp.1128, prephitmp.1047
+>         je      .L225   #,
+>   
+
+  Now where is that label?
+
+> .LVL175:
+>         .loc 1 800 0
+>         movzwl  -44(%rbp), %r15d        # len, thislen
+>   
+
+   Oh, that AT&T syntax... it took me a while to realize that it's a 
+movzx insn. :-)
+
+> .LVL176:
+>         .loc 1 799 0
+>         movl    280(%r12), %edx # <variable>.data_len, thislen.1129
+> .LVL177:
+>         .loc 1 800 0
+>         cmpl    %r15d, %edx     # thislen, thislen.1129
+>         movl    %r15d, %ebx     # thislen, thislen.1163
+>         jg      .L145   #,
+> .LVL178:
+>         movl    %edx, %r15d     # thislen.1129, thislen
+>   
+
+   I wonder why it doesn't generate cmovng ISO jg and mov...
+
+> .LVL179:
+> .L145:
+>         .loc 1 807 0
+>         testb   $8, -64(%rbp)   #, stat
+>         jne     .L147   #,
+> .LVL180:
+>         .loc 1 808 0
+>         cmpl    $1, %ecx        #, prephitmp.1128
+>         je      .L226   #,
+>         .loc 1 825 0
+>         cmpl    $2, %ecx        #, prephitmp.1128
+>         .p2align 4,,3
+>         .p2align 3
+>         je      .L152   #,
+> .LBB408:
+> </ide-cd.s>
+>   
+> and at label .LVL174 you see the blk_fs_request() check from line
+> 799 above. Later, at label .LVL180 you see the next blk_fs_request() check from
+> line 808 and this is cached in %ecx so gcc is smart enough to do that. So,
+>   
+
+   Yes, CSE optimization does work...
+
+> actually you get the same thing/or even better with variables in registers
+> instead of on stack
+
+  I still don't undestand why you assume that such variable will be 
+alloceted on stack -- gcc has 3 registers available for local variables 
+(which doesn't have to save across function calls). However, the 
+register variables have to take stack space indeed as they need to be 
+saved on funciton entry... though I'm not sure that gcc will necessary 
+put such variable in one of those 3 registers if it figures out that 
+there are no function calls going to happen during its life time.
+
+> and the code is more readable. A win-win situation, I'd say :).
+>   
+
+  You haven't presented the code which gets generated when the local 
+variable is used, so it's impossible to compare.
+
+MBR, Sergei
+
 
