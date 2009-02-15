@@ -1,117 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755081AbZBOMNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbZBOMQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755081AbZBOMNY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 07:13:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869AbZBOMNM
+	id S1754542AbZBOMQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 07:16:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbZBOMQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 07:13:12 -0500
-Received: from mail-fx0-f25.google.com ([209.85.220.25]:51810 "EHLO
-	mail-fx0-f25.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752168AbZBOMNK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 07:13:10 -0500
-From: Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH 31/43 v2] drivers/net/tokenring: fix sparse warning: cast
-	truncates bits from const value
-To: netdev@vger.kernel.org
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jay Schulist <jjschlst@gmail.com>, Al Viro <viro@zeniv.linux.org.uk>
-Date: Sun, 15 Feb 2009 13:13:01 +0100
-Message-ID: <20090215121201.26072.42971.stgit@vmbox.hanneseder.net>
-In-Reply-To: <154e089b0902150347o4e06683dy1c9c02dc2564ea4f@mail.gmail.com>
-References: <154e089b0902150347o4e06683dy1c9c02dc2564ea4f@mail.gmail.com>
-User-Agent: StGit/0.14.3.348.gcb02
+	Sun, 15 Feb 2009 07:16:50 -0500
+Received: from smtp6-g21.free.fr ([212.27.42.6]:47578 "EHLO smtp6-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752573AbZBOMQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 07:16:49 -0500
+From: Philippe Grenard <philippe.grenard@laposte.net>
+To: linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: cannot get stable system since 2.6.28 kernel
+Date: Sun, 15 Feb 2009 13:17:11 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.27.10-phiphi; KDE/4.2.0; x86_64; ; )
+Cc: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
+       John Stoffel <john@stoffel.org>, Len Brown <lenb@kernel.org>
+References: <200902131944.56634.philippe.grenard@laposte.net> <200902140917.38313.philippe.grenard@laposte.net> <3f9a31f40902140124j4bb07aeej8af3dff89e347318@mail.gmail.com>
+In-Reply-To: <3f9a31f40902140124j4bb07aeej8af3dff89e347318@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902151317.11690.philippe.grenard@laposte.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Remove the write-only field 'current_ring_status' completely.
+On Saturday 14 February 2009 10:24:51 Jaswinder Singh Rajput wrote:
+> On Sat, Feb 14, 2009 at 1:47 PM, Philippe Grenard
+>
+> <philippe.grenard@laposte.net> wrote:
+> > On Friday 13 February 2009 21:48:30 John Stoffel wrote:
+> >> Here's your problem most probably.  The nVidia graphics module.
+> >> Remove that and re-try your system.  Basically, we can't help you when
+> >> you use a vendor's binary module.
+> >>
+> >> John
+> >
+> > Well, it does not change anything to my problem...
+> > Moreover, I don't understand why this would work with 2.6.27.10 but not
+> > with 2.6.29-rc4 ....
+>
+> May be nvidia graphics module was written based on some kernel which
+> is more closer to 2.6.27.10 as compare to 2.6.29-rc4.
+>
+> Another thing which John is pointing configure your bios to use
+> standard inbuild garphics card OR remove nvidia module and check
+> whether it solves your problem or not.
+>
+> --
+> JSR
+As I said just before, I tried it but it does not change my problem : the 
+system still stalls randomly, sometimes during boot, sometimes after...
 
-Fix this sparse warnings:
-  drivers/net/tokenring/smctr.c:4410:52: warning: cast truncates bits from constant value (100 becomes 0)
-  drivers/net/tokenring/smctr.c:4415:52: warning: cast truncates bits from constant value (400 becomes 0)
-  drivers/net/tokenring/smctr.c:4420:52: warning: cast truncates bits from constant value (800 becomes 0)
-  drivers/net/tokenring/smctr.c:4425:52: warning: cast truncates bits from constant value (1000 becomes 0)
-  drivers/net/tokenring/smctr.c:4430:52: warning: cast truncates bits from constant value (2000 becomes 0)
-  drivers/net/tokenring/smctr.c:4435:52: warning: cast truncates bits from constant value (4000 becomes 0)
-  drivers/net/tokenring/smctr.c:4440:52: warning: cast truncates bits from constant value (8000 becomes 0)
+Thanks for your help,
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
----
- drivers/net/tokenring/smctr.c |   10 ----------
- drivers/net/tokenring/smctr.h |    1 -
- 2 files changed, 0 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/net/tokenring/smctr.c b/drivers/net/tokenring/smctr.c
-index 5a3ff20..e66eb8a 100644
---- a/drivers/net/tokenring/smctr.c
-+++ b/drivers/net/tokenring/smctr.c
-@@ -4393,52 +4393,42 @@ static int smctr_ring_status_chg(struct net_device *dev)
-         {
-                 case RING_RECOVERY:
-                         printk(KERN_INFO "%s: Ring Recovery\n", dev->name);
--                        tp->current_ring_status |= RING_RECOVERY;
-                         break;
- 
-                 case SINGLE_STATION:
-                         printk(KERN_INFO "%s: Single Statinon\n", dev->name);
--                        tp->current_ring_status |= SINGLE_STATION;
-                         break;
- 
-                 case COUNTER_OVERFLOW:
-                         printk(KERN_INFO "%s: Counter Overflow\n", dev->name);
--                        tp->current_ring_status |= COUNTER_OVERFLOW;
-                         break;
- 
-                 case REMOVE_RECEIVED:
-                         printk(KERN_INFO "%s: Remove Received\n", dev->name);
--                        tp->current_ring_status |= REMOVE_RECEIVED;
-                         break;
- 
-                 case AUTO_REMOVAL_ERROR:
-                         printk(KERN_INFO "%s: Auto Remove Error\n", dev->name);
--                        tp->current_ring_status |= AUTO_REMOVAL_ERROR;
-                         break;
- 
-                 case LOBE_WIRE_FAULT:
-                         printk(KERN_INFO "%s: Lobe Wire Fault\n", dev->name);
--                        tp->current_ring_status |= LOBE_WIRE_FAULT;
-                         break;
- 
-                 case TRANSMIT_BEACON:
-                         printk(KERN_INFO "%s: Transmit Beacon\n", dev->name);
--                        tp->current_ring_status |= TRANSMIT_BEACON;
-                         break;
- 
-                 case SOFT_ERROR:
-                         printk(KERN_INFO "%s: Soft Error\n", dev->name);
--                        tp->current_ring_status |= SOFT_ERROR;
-                         break;
- 
-                 case HARD_ERROR:
-                         printk(KERN_INFO "%s: Hard Error\n", dev->name);
--                        tp->current_ring_status |= HARD_ERROR;
-                         break;
- 
-                 case SIGNAL_LOSS:
-                         printk(KERN_INFO "%s: Signal Loss\n", dev->name);
--                        tp->current_ring_status |= SIGNAL_LOSS;
-                         break;
- 
-                 default:
-diff --git a/drivers/net/tokenring/smctr.h b/drivers/net/tokenring/smctr.h
-index 52df7dd..6e5700a 100644
---- a/drivers/net/tokenring/smctr.h
-+++ b/drivers/net/tokenring/smctr.h
-@@ -977,7 +977,6 @@ typedef struct net_local {
- 	__u8		monitor_state_ready;
- 	__u16		ring_status;
- 	__u8		ring_status_flags;
--	__u8		current_ring_status;
- 	__u8		state;
- 
- 	__u8		join_state;
-
+Philippe
