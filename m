@@ -1,97 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbZBOS0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbZBOS3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755463AbZBOS0Z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 13:26:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbZBOS0Q
+	id S1755370AbZBOS3a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 13:29:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbZBOS3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 13:26:16 -0500
-Received: from bu3sch.de ([62.75.166.246]:59154 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753492AbZBOS0P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 13:26:15 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: David Brownell <dbrownell@users.sourceforge.net>
-Subject: [PATCH] spi-gpio: Implement spidelay() for busses that need it.
-Date: Sun, 15 Feb 2009 19:22:59 +0100
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       openwrt-devel@lists.openwrt.org
+	Sun, 15 Feb 2009 13:29:22 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:53123 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753857AbZBOS3V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 13:29:21 -0500
+Message-ID: <49985F19.3040508@oracle.com>
+Date: Sun, 15 Feb 2009 10:29:45 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH] docbook: split kernel-api, add device-drivers book
+References: <20090211162644.f3feb758.randy.dunlap@oracle.com> <20090215093014.GD29094@uranus.ravnborg.org>
+In-Reply-To: <20090215093014.GD29094@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902151923.00120.mb@bu3sch.de>
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A09020B.49985EF2.00C4:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement the SPI-GPIO delay function for busses that need speed limitation.
-If the special all-inline API is used, the delay is disabled at compiletime.
-Otherwise it's an unlikely condition that can be disabled via max_speed_hz.
-So it should have minimal or zero impact on the speed of implementations without delay.
+Sam Ravnborg wrote:
+> On Wed, Feb 11, 2009 at 04:26:44PM -0800, Randy Dunlap wrote:
+>> From: Randy Dunlap <randy.dunlap@oracle.com>
+>>
+>> The kernel-api docbook was much larger than any of the others,
+>> so processing it took longer and needed some docbook extras in
+>> some cases, so split it into kernel-api (infrastructure etc.)
+>> and device drivers/device subsystems.  This allows these docbooks
+>> to be generated in parallel.  (This reduced the docbook processing
+>> time on my 4-proc system with make -j4 from about 5min:16sec to
+>> about 2min:01sec.)
+>>
+>> The chapters that were moved from kernel-api to device-drivers are:
+>>
+>> Driver Basics
+>> Device drivers infrastructure
+>> Parallel Port Devices
+>> Message-based devices
+>> Sound Devices
+>> 16x50 UART Driver
+>> Frame Buffer Library
+>> Input Subsystem
+>> Serial Peripheral Interface (SPI)
+>> I2C and SMBus Subsystem
+>>
+>> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> I like the split, and I assume you will carry the patch in a Documentation tree?
+> 
+> Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
-Signed-off-by: Michael Buesch <mb@bu3sch.de>
+If I need to :)
 
----
-
-I need this delay when using a slow microcontroller attached via SPI-GPIO
-to a fast embedded router device.
-
-Index: linux-2.6/drivers/spi/spi_gpio.c
-===================================================================
---- linux-2.6.orig/drivers/spi/spi_gpio.c	2009-02-15 16:27:16.000000000 +0100
-+++ linux-2.6/drivers/spi/spi_gpio.c	2009-02-15 19:19:36.000000000 +0100
-@@ -21,6 +21,7 @@
- #include <linux/init.h>
- #include <linux/platform_device.h>
- #include <linux/gpio.h>
-+#include <linux/delay.h>
- 
- #include <linux/spi/spi.h>
- #include <linux/spi/spi_bitbang.h>
-@@ -69,6 +70,7 @@ struct spi_gpio {
-  *		#define	SPI_MOSI_GPIO	120
-  *		#define	SPI_SCK_GPIO	121
-  *		#define	SPI_N_CHIPSEL	4
-+ *		#undef NEED_SPIDELAY
-  *		#include "spi_gpio.c"
-  */
- 
-@@ -76,6 +78,7 @@ struct spi_gpio {
- #define DRIVER_NAME	"spi_gpio"
- 
- #define GENERIC_BITBANG	/* vs tight inlines */
-+#define NEED_SPIDELAY	1
- 
- /* all functions referencing these symbols must define pdata */
- #define SPI_MISO_GPIO	((pdata)->miso)
-@@ -120,12 +123,20 @@ static inline int getmiso(const struct s
- #undef pdata
- 
- /*
-- * NOTE:  this clocks "as fast as we can".  It "should" be a function of the
-- * requested device clock.  Software overhead means we usually have trouble
-- * reaching even one Mbit/sec (except when we can inline bitops), so for now
-- * we'll just assume we never need additional per-bit slowdowns.
-+ * NOTE:  to clock "as fast as we can", set spi_device.max_speed_hz
-+ * and spi_transfer.speed_hz to 0.
-+ * Otherwise this is a function of the requested device clock.
-+ * Software overhead means we usually have trouble
-+ * reaching even one Mbit/sec (except when we can inline bitops). So on small
-+ * embedded devices with fast SPI slaves you usually don't need a delay.
-  */
--#define spidelay(nsecs)	do {} while (0)
-+static inline void spidelay(unsigned nsecs)
-+{
-+#ifdef NEED_SPIDELAY
-+	if (unlikely(nsecs))
-+		ndelay(nsecs);
-+#endif /* NEED_SPIDELAY */
-+}
- 
- #define	EXPAND_BITBANG_TXRX
- #include <linux/spi/spi_bitbang.h>
+or Andrew can merge it.
 
 -- 
-Greetings, Michael.
+~Randy
