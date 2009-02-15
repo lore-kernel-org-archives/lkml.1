@@ -1,85 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754106AbZBOVoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754231AbZBOVq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754106AbZBOVoP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 16:44:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbZBOVn7
+	id S1754231AbZBOVq5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 16:46:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbZBOVqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 16:43:59 -0500
-Received: from waste.org ([66.93.16.53]:37818 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752106AbZBOVn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 16:43:58 -0500
-Subject: Re: [PATCH] Export symbol ksize()
-From: Matt Mackall <mpm@selenic.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-crypto@vger.kernel.org, Geert.Uytterhoeven@sonycom.com
-In-Reply-To: <20090215133638.5ef517ac.akpm@linux-foundation.org>
-References: <1234272104-10211-1-git-send-email-kirill@shutemov.name>
-	 <84144f020902100535i4d626a9fj8cbb305120cf332a@mail.gmail.com>
-	 <20090210134651.GA5115@epbyminw8406h.minsk.epam.com>
-	 <Pine.LNX.4.64.0902101605070.20991@melkki.cs.Helsinki.FI>
-	 <20090212104349.GA13859@gondor.apana.org.au>
-	 <1234435521.28812.165.camel@penberg-laptop>
-	 <20090212105034.GC13859@gondor.apana.org.au>
-	 <1234454104.28812.175.camel@penberg-laptop>
-	 <20090215133638.5ef517ac.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sun, 15 Feb 2009 15:43:14 -0600
-Message-Id: <1234734194.5669.176.camel@calx>
+	Sun, 15 Feb 2009 16:46:49 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38593 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751542AbZBOVqt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 16:46:49 -0500
+Date: Sun, 15 Feb 2009 13:46:32 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Adrian Hunter <ext-adrian.hunter@nokia.com>
+Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       Matt Fleming <matt@console-pimps.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] mmc_core: fix data timeout for SEND_EXT_CSD
+Message-Id: <20090215134632.18e06d13.akpm@linux-foundation.org>
+In-Reply-To: <4992E597.2030404@nokia.com>
+References: <4991A00B.8040002@nokia.com>
+	<20090211133004.GH478@console-pimps.org>
+	<4992D90E.10506@nokia.com>
+	<4992E597.2030404@nokia.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-02-15 at 13:36 -0800, Andrew Morton wrote:
-> On Thu, 12 Feb 2009 17:55:04 +0200 Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+On Wed, 11 Feb 2009 16:49:59 +0200 Adrian Hunter <ext-adrian.hunter@nokia.com> wrote:
+
+> Commit 0d3e0460f307e84904968aad6cff97bd688583d8
+> "MMC: CSD and CID timeout values" inadvertently broke
+> the timeout for the MMC command SEND_EXT_CSD.
 > 
-> > On Thu, Feb 12, 2009 at 12:45:21PM +0200, Pekka Enberg wrote:
-> > > > 
-> > > > Because the API was being widely abused in the nommu code, for example.
-> > > > I'd rather not add it back for this special case which can be handled
-> > > > otherwise.
-> > 
-> > On Thu, 2009-02-12 at 18:50 +0800, Herbert Xu wrote:
-> > > I'm sorry but that's like banning the use of heaters just because
-> > > they can abused and cause fires.
-> > > 
-> > > I think I've said this to you before but in networking we very much
-> > > want to use ksize because the standard case of a 1500-byte packet
-> > > has loads of extra room given by kmalloc which all goes to waste
-> > > right now.
-> > > 
-> > > If we could use ksize then we can stuff loads of metadata in that
-> > > space.
-> > 
-> > OK, fair enough, I applied Kirill's patch. Thanks.
-> > 
+> This patch puts it back again.
 > 
-> Could we please have more details regarding this:
+
+People will be interested in knowing whether this regression fix should
+be backported into 2.6.28.x.  But apart from the word "broke" we have
+no hint as to what the impact of the bug is.  Hence we are unable to
+make that decision.
+
+Please be more careful about changelogging.  It helps avoid mistakes.
+
+
+> ---
+>  drivers/mmc/core/mmc_ops.c |   16 ++++++++++------
+>  1 files changed, 10 insertions(+), 6 deletions(-)
 > 
-> > The ksize() function is not exported to modules because it has non-standard
-> > behavour across different slab allocators. 
-> 
-> How does the behaviour differ?  It this documented?  Can we fix it?
-
-SLAB and SLUB support calling ksize() on objects returned by
-kmem_cache_alloc.
-
-SLOB only supports it on objects from kmalloc. This is because it does
-not store any size or type information in kmem_cache_alloc'ed objects.
-Instead, it infers them from the cache argument.
-
-Ideally SLAB and SLUB would complain about using ksize inappropriately
-when debugging was enabled.
-
--- 
-http://selenic.com : development and support for Mercurial and Linux
-
+> diff --git a/drivers/mmc/core/mmc_ops.c b/drivers/mmc/core/mmc_ops.c
+> index 9c50e6f..418a270 100644
+> --- a/drivers/mmc/core/mmc_ops.c
+> +++ b/drivers/mmc/core/mmc_ops.c
+> @@ -248,12 +248,16 @@ mmc_send_cxd_data(struct mmc_card *card, struct mmc_host *host,
+>  
+>  	sg_init_one(&sg, data_buf, len);
+>  
+> -	/*
+> -	 * The spec states that CSR and CID accesses have a timeout
+> -	 * of 64 clock cycles.
+> -	 */
+> -	data.timeout_ns = 0;
+> -	data.timeout_clks = 64;
+> +	if (!mmc_host_is_spi(host) && opcode == MMC_SEND_EXT_CSD)
+> +		mmc_set_data_timeout(&data, card);
+> +	else {
+> +		/*
+> +		 * The spec states that CSR and CID accesses have a timeout
+> +		 * of 64 clock cycles (8 for SPI).
+> +		 */
+> +		data.timeout_ns = 0;
+> +		data.timeout_clks = 64;
+> +	}
+>  
+>  	mmc_wait_for_req(host, &mrq);
+>  
 
