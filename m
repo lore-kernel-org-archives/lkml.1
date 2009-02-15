@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248AbZBONrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbZBOOAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755248AbZBONrs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 08:47:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbZBONri
+	id S1754809AbZBOOAd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 09:00:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbZBOOAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 08:47:38 -0500
-Received: from mail.deathmatch.net ([70.167.247.36]:1490 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753827AbZBONrh (ORCPT
+	Sun, 15 Feb 2009 09:00:19 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:43545 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752275AbZBOOAQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 08:47:37 -0500
-Date: Sun, 15 Feb 2009 08:47:02 -0500
-From: Bob Copeland <me@bobcopeland.com>
-To: Dhaval Giani <dhaval.lists@thegianis.in>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       linville@tuxdriver.com, davem@davemloft.net,
-       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       Nick Kossifidis <mickflemm@gmail.com>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
+	Sun, 15 Feb 2009 09:00:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=UX3pseAJe4mwfvF/pi1adJMU69yEm36uIQaiYmDXSkE52Yy14r1dRsLdYmCUKvlgsM
+         JMJKSgIWoS7iFc3Fj70a4DVUxbWvxvQyIC0sqPo0oDjLuEw3TX7RLF13UvIbaHTGNjm6
+         1/EYQRj0E30jAzyiMJIm+L2uaWg3K9PWfmniQ=
+From: Florian Fainelli <florian@openwrt.org>
+To: Hannes Eder <hannes@hanneseder.net>
+Subject: Re: [PATCH 09/43] drivers/net/r6040.c: fix sparse warning: Using plain integer as NULL pointer
+Date: Sun, 15 Feb 2009 15:00:06 +0100
+User-Agent: KMail/1.9.9
+Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] ath5k: fix hw rate index condition
-Message-ID: <20090215134702.GA10180@hash.localnet>
-References: <1231336282-22283-1-git-send-email-jirislaby@gmail.com> <1231338965-796-1-git-send-email-jirislaby@gmail.com> <20090107152208.GB4207@linux.vnet.ibm.com> <4964CAAA.3040801@gmail.com> <25891f3e0902012357n21e7bc2fmc59fb2a842631651@mail.gmail.com>
+References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net> <20090214211400.23489.24726.stgit@vmbox.hanneseder.net>
+In-Reply-To: <20090214211400.23489.24726.stgit@vmbox.hanneseder.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <25891f3e0902012357n21e7bc2fmc59fb2a842631651@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200902151500.06516.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 02, 2009 at 01:27:39PM +0530, Dhaval Giani wrote:
-> So I finally managed to hit this on 2.6.29-rc3. It is hard to
-> reproduce, so I hope so much information is enough to give you a good
-> guess. This time it hit while trying to connect to an open network at
-> the airport.
+Hello Hannes,
 
-> WARNING: at net/mac80211/rx.c:2236 __ieee80211_rx+0x96/0x571 [mac80211]()
-> Hardware name: 2007CS3
-> RATE=255, BAND=8
+Le Saturday 14 February 2009 22:14:04 Hannes Eder, vous avez écrit :
+> Fix this sparse warnings:
+>   drivers/net/r6040.c:487:31: warning: Using plain integer as NULL pointer
+>   drivers/net/r6040.c:492:31: warning: Using plain integer as NULL pointer
 
-band is supposed to be sc->curband?  8 is way wrong.  rate could be 255
-if, for some reason, the hardware rate wasn't in the rate table.
+Good catch, thanks.
+>
+> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 
-> Pid: 2634, comm: X Not tainted 2.6.29-rc3 #18
-> Call Trace:
->  [<c0430636>] warn_slowpath+0x76/0xad
->  [<c04508d7>] ? __lock_acquire+0xb36/0xb45
->  [<f7dd0205>] __ieee80211_rx+0x96/0x571 [mac80211]
->  [<f7e37976>] ath5k_tasklet_rx+0x4fb/0x53d [ath5k]
->  [<c06fa5c3>] ? _spin_unlock_irq+0x27/0x34
->  [<c0434f91>] tasklet_action+0x85/0xf0
-
-Interestingly I hit this just the other day -- I was debugging something
-else and had a serial console hooked up, otherwise I wouldn't have
-noticed at all.  It happened at some point during a suspend-to-ram
-sequence, which makes at least my version sound like a race condition
-of some sort.
-
-
-
+Acked-by: Florian Fainelli <florian@openwrt.org>
+-- 
+Best regards, Florian Fainelli
+Email : florian@openwrt.org
+http://openwrt.org
+-------------------------------
