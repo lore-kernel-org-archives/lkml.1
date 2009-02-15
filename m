@@ -1,42 +1,34 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754525AbZBOQha (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sun, 15 Feb 2009 11:37:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbZBOQhR
+	id S1755729AbZBOUUa (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 15 Feb 2009 15:20:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbZBOUUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 11:37:17 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:20518 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752752AbZBOQhQ (ORCPT
+	Sun, 15 Feb 2009 15:20:19 -0500
+Received: from host77.dhms-domainmanagement.net ([91.199.51.77]:43997 "EHLO
+	host77.dhms-domainmanagement.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752471AbZBOUUR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 11:37:16 -0500
+	Sun, 15 Feb 2009 15:20:17 -0500
+X-Greylist: delayed 1635 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Feb 2009 15:20:17 EST
 MIME-Version: 1.0
-Reply-To: undpverificationdep1001@live.com
-Date: Sun, 15 Feb 2009 08:37:07 -0800
-Message-ID: <2f7906ae0902150837i385eab94o9e2a2c4e0fdc0d10@mail.gmail.com>
-Subject: CONGRATULATIONS!!!
-From: UNITED NATION DEVELOPMENT PROGRAM <clok.one@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
+From: Andi <Andi@Fahr-Los.net>
+User-Agent: Microsoft-Entourage/10.1.4.3763372.0
+X-BounceID: a133f366d2c64c079e3ed971a4621401
+Subject: Vorladung zur=?UTF-8?Q?=20Fahrpr=C3=BCfung?=
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Message-ID: <kf4hus.s4b2o2@localhost>
+To: linux-kernel@vger.kernel.org
+Date: Sun, 15 Feb 2009 20:52:04 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754525AbZBOQha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755729AbZBOUUa@vger.kernel.org>
 
-The UNITED NATION DEVELOPMENT PROGRAM would like to notify you that your
-email address just won the sum of $400,000 (Four hundred thousand USD).
-The email address was selected randomly from over 100,000 internet websites
-around the World. contact Mr. Thompson Powell via Email with the
-below information for claim:
+Sie sind hiermit zur Fahrprüfung eingeladen.
 
-1.FULL NAME,2.ADDRESS,3.COUNTRY,4.SEX,5.AGE,6.OCCUPATION,8.TELEPHONE.
+Führen Sie die Prüfung sofort durch:
 
-NAME:  Mr. Thompson Powell
-Email: undpverificationdep1001@live.com
-Claims Processing Agent,
-Verifications/Logistic Department.
+http://www.Fahr-Los.net/
 
-Warm Regards.
-Weylin Morton
-(Online Announcer UNDP)
-http://www.undp.org
+
