@@ -1,165 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbZBOKgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754231AbZBOKle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754868AbZBOKgz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 05:36:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755295AbZBOKgd
+	id S1754231AbZBOKle (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 05:41:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752157AbZBOKlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 05:36:33 -0500
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:35425 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755283AbZBOKgb (ORCPT
+	Sun, 15 Feb 2009 05:41:25 -0500
+Received: from smtp-114-sunday.nerim.net ([62.4.16.114]:61838 "EHLO
+	maiev.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751933AbZBOKlY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 05:36:31 -0500
-Date: Sun, 15 Feb 2009 16:06:19 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+	Sun, 15 Feb 2009 05:41:24 -0500
+Date: Sun, 15 Feb 2009 11:41:22 +0100
+From: Damien Wyart <damien.wyart@free.fr>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Roland McGrath <roland@redhat.com>, richardj_moore@uk.ibm.com,
-       jason.wessel@windriver.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [Patch 10/10] Sample HW breakpoint over kernel data address
-Message-ID: <20090215103619.GK6855@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090215103008.GA6855@in.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #12650] Strange load average and ksoftirqd behavior with
+	2.6.29-rc2-git1
+Message-ID: <20090215104122.GA2248@localhost.localdomain>
+References: <juADNmcceYF.A.mdD.Mr0lJB@chimera> <rjPbZ5GRJPO.A.1kE.ur0lJB@chimera> <20090215080941.GA2295@localhost.localdomain> <20090215090026.GA31147@elte.hu> <20090215095128.GA3234@localhost.localdomain> <20090215101351.GA23274@elte.hu> <20090215103445.GA2335@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090215103008.GA6855@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090215103445.GA2335@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Do not hesitate to ask for further tests or info.
 
-Sample HW breakpoint over kernel data address
+I really must leave now, but please note the dmesg and config were
+attached to my very first report. Will send new ones this evening (with
+rc5) if you need them).
 
-This patch introduces a sample kernel module to demonstrate the use of Hardware
-Breakpoint feature. It places a breakpoint over the kernel variable 'pid_max'
-to monitor all write operations and emits a function-backtrace when done.
-
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
----
- samples/Kconfig                         |    6 ++
- samples/Makefile                        |    3 -
- samples/hw_breakpoint/Makefile          |    1 
- samples/hw_breakpoint/data_breakpoint.c |   80 ++++++++++++++++++++++++++++++++
- 4 files changed, 89 insertions(+), 1 deletion(-)
-
-Index: linux-2.6-tip.hbkpt/samples/Kconfig
-===================================================================
---- linux-2.6-tip.hbkpt.orig/samples/Kconfig
-+++ linux-2.6-tip.hbkpt/samples/Kconfig
-@@ -39,5 +39,11 @@ config SAMPLE_KRETPROBES
- 	default m
- 	depends on SAMPLE_KPROBES && KRETPROBES
- 
-+config SAMPLE_HW_BREAKPOINT
-+	tristate "Build kernel hardware breakpoint examples -- loadable modules only"
-+	depends on m
-+	help
-+	  This builds kernel hardware breakpoint example modules.
-+
- endif # SAMPLES
- 
-Index: linux-2.6-tip.hbkpt/samples/Makefile
-===================================================================
---- linux-2.6-tip.hbkpt.orig/samples/Makefile
-+++ linux-2.6-tip.hbkpt/samples/Makefile
-@@ -1,3 +1,4 @@
- # Makefile for Linux samples code
- 
--obj-$(CONFIG_SAMPLES)	+= markers/ kobject/ kprobes/ tracepoints/
-+obj-$(CONFIG_SAMPLES)	+= markers/ kobject/ kprobes/ tracepoints/ \
-+			   hw_breakpoint/
-Index: linux-2.6-tip.hbkpt/samples/hw_breakpoint/Makefile
-===================================================================
---- /dev/null
-+++ linux-2.6-tip.hbkpt/samples/hw_breakpoint/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_SAMPLE_HW_BREAKPOINT) += data_breakpoint.o
-Index: linux-2.6-tip.hbkpt/samples/hw_breakpoint/data_breakpoint.c
-===================================================================
---- /dev/null
-+++ linux-2.6-tip.hbkpt/samples/hw_breakpoint/data_breakpoint.c
-@@ -0,0 +1,80 @@
-+/*
-+ * data_breakpoint.c - Sample HW Breakpoint file to watch kernel data address
-+ *
-+ * This file is a kernel module that places a breakpoint over 'pid_max' kernel
-+ * variable using Hardware Breakpoint register. The corresponding handler which
-+ * prints a backtrace is invoked everytime a write operation is performed on
-+ * that variable.
-+ *
-+ * After inserting this module, invoke a write operation using
-+ * 'echo <desired_value> > /proc/sys/kernel/pid_max'
-+ * to find the function-call backtrace.
-+ *
-+ * Copyright (C) IBM Corporation, 2009
-+ */
-+#include <linux/module.h>	/* Needed by all modules */
-+#include <linux/kernel.h>	/* Needed for KERN_INFO */
-+#include <linux/init.h>		/* Needed for the macros */
-+
-+#include <asm/hw_breakpoint.h>
-+
-+struct hw_breakpoint pid_max_hbkpt;
-+
-+void pid_max_hbkpt_installed(struct hw_breakpoint *temp, struct pt_regs
-+								*temp_regs)
-+{
-+	printk(KERN_INFO "pid_max_hbkpt ENABLED\n");
-+}
-+
-+void pid_max_hbkpt_uninstalled(struct hw_breakpoint *temp, struct
-+							pt_regs * temp_regs)
-+{
-+	printk(KERN_INFO "pid_max_hbkpt DISABLED\n");
-+}
-+
-+void pid_max_hbkpt_handler(struct hw_breakpoint *temp, struct pt_regs
-+								*temp_regs)
-+{
-+	printk(KERN_INFO "pid_max value is changed\n");
-+	dump_stack();
-+	printk(KERN_INFO "Dump stack from pid_max_hbkpt_handler\n");
-+}
-+
-+static int __init hw_break_module_init(void)
-+{
-+	int ret;
-+
-+#ifdef CONFIG_X86
-+	pid_max_hbkpt.info.name = "pid_max";
-+	pid_max_hbkpt.info.type = HW_BREAKPOINT_WRITE;
-+	pid_max_hbkpt.info.len = HW_BREAKPOINT_LEN_4;
-+	pid_max_hbkpt.priority = HW_BREAKPOINT_PRIO_NORMAL;
-+
-+	pid_max_hbkpt.installed = (void *)pid_max_hbkpt_installed;
-+	pid_max_hbkpt.uninstalled = (void *)pid_max_hbkpt_uninstalled;
-+	pid_max_hbkpt.triggered = (void *)pid_max_hbkpt_handler;
-+#endif /* CONFIG_X86 */
-+
-+	ret = register_kernel_hw_breakpoint(&pid_max_hbkpt);
-+
-+	if (ret < 0) {
-+		printk(KERN_INFO "Breakpoint registration failed\n");
-+		return ret;
-+	} else
-+		printk(KERN_INFO "HW Breakpoint for pid_max write installed\n");
-+
-+	return 0;
-+}
-+
-+static void __exit hw_break_module_exit(void)
-+{
-+	unregister_kernel_hw_breakpoint(&pid_max_hbkpt);
-+	printk(KERN_INFO "HW Breakpoint for pid_max write uninstalled\n");
-+}
-+
-+module_init(hw_break_module_init);
-+module_exit(hw_break_module_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("K.Prasad");
-+MODULE_DESCRIPTION("pid_max breakpoint");
+-- 
+Damien Wyart
