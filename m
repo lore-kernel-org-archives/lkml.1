@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752694AbZBOH61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980AbZBOH7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752694AbZBOH61 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 02:58:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbZBOH6T
+	id S1752980AbZBOH7y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 02:59:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbZBOH7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 02:58:19 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34086 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751307AbZBOH6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 02:58:18 -0500
-Message-ID: <4997CAE8.6090208@kernel.org>
-Date: Sat, 14 Feb 2009 23:57:28 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: make 32bit to call enable_IO_APIC early like 64bit
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 15 Feb 2009 02:59:45 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:51479 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751260AbZBOH7p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 02:59:45 -0500
+Date: Sun, 15 Feb 2009 09:01:36 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Josh Hunt <josh@scalex86.org>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       kiran@scalex86.org, mingo@elte.hu
+Subject: Re: [PATCH] Add vmlinux to kernel rpm - updated description
+Message-ID: <20090215080136.GA26481@uranus.ravnborg.org>
+References: <20090212051057.GC12732@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090212051057.GC12732@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Feb 11, 2009 at 09:10:57PM -0800, Josh Hunt wrote:
+> Resending with updated description:
+> 
+> We are building an automated system to test kernels weekly and need to
+> provide an rpm to our QA dept.  We would like to use the ability to create
+> kernel rpms already in the kernel's Makefile, but need the vmlinux file
+> included in the rpm for later debugging.  This patch adds a compressed vmlinux to
+> the kernel rpm when doing a make rpm-pkg or binrpm-pkg and upon install
+> places the vmlinux file in /boot.
+> 
+> Signed-off-by: Josh Hunt <josh@scalex86.org>
 
-Impact: cleanup
+Applied, but...
 
-so remove some #ifdef
+> 
+> Index: linux-2.6.28/scripts/package/mkspec
+> ===================================================================
+> --- linux-2.6.28.orig/scripts/package/mkspec    2008-12-24
+> 15:26:37.000000000 -0800
+> +++ linux-2.6.28/scripts/package/mkspec    2009-01-21
+> 16:53:03.000000000 -0800
+> @@ -86,6 +86,14 @@ echo "%endif"
+>  echo 'cp System.map $RPM_BUILD_ROOT'"/boot/System.map-$KERNELRELEASE"
+> 
+>  echo 'cp .config $RPM_BUILD_ROOT'"/boot/config-$KERNELRELEASE"
+> +
+> +echo "%ifnarch ppc64"
+> +echo 'cp vmlinux vmlinux.orig'
+why is this relevant for all architectures except ppc64?
+This is not addressed neither in a comment nor in the changelog.
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- arch/x86/kernel/io_apic.c |    4 ----
- arch/x86/kernel/smpboot.c |    3 +--
- 2 files changed, 1 insertion(+), 6 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/io_apic.c
-+++ linux-2.6/arch/x86/kernel/io_apic.c
-@@ -3057,13 +3057,9 @@ out:
- void __init setup_IO_APIC(void)
- {
- 
--#ifdef CONFIG_X86_32
--	enable_IO_APIC();
--#else
- 	/*
- 	 * calling enable_IO_APIC() is moved to setup_local_APIC for BP
- 	 */
--#endif
- 
- 	io_apic_irqs = ~PIC_IRQS;
- 
-Index: linux-2.6/arch/x86/kernel/smpboot.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/smpboot.c
-+++ linux-2.6/arch/x86/kernel/smpboot.c
-@@ -1154,13 +1154,12 @@ void __init native_smp_prepare_cpus(unsi
- 	 */
- 	setup_local_APIC();
- 
--#ifdef CONFIG_X86_64
- 	/*
- 	 * Enable IO APIC before setting up error vector
- 	 */
- 	if (!skip_ioapic_setup && nr_ioapics)
- 		enable_IO_APIC();
--#endif
-+
- 	end_local_APIC_setup();
- 
- 	map_cpu_to_logical_apicid();
+	Sam
