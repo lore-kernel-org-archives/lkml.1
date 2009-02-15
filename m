@@ -1,81 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbZBOXLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbZBOXLh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754889AbZBOXLW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 18:11:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbZBOXLE
+	id S1754206AbZBOXLh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 18:11:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbZBOXLI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 18:11:04 -0500
-Received: from hera.kernel.org ([140.211.167.34]:41684 "EHLO hera.kernel.org"
+	Sun, 15 Feb 2009 18:11:08 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:48502 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754068AbZBOXLD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 18:11:03 -0500
-Message-ID: <4998A0D9.9090303@kernel.org>
-Date: Sun, 15 Feb 2009 15:10:17 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1754106AbZBOXLG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 18:11:06 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Subject: [RFD] Automatic suspend
+Date: Mon, 16 Feb 2009 00:10:15 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       mark gross <mgross@linux.intel.com>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: state of some x86 acpi patches
-References: <495C677F.6080707@goop.org> <20090102153957.GA1180@elte.hu> <4980EE0C.4070308@goop.org> <49810211.9030808@kernel.org> <498CF8DA.30004@goop.org> <498CFD95.5070004@kernel.org> <498E229C.5030205@goop.org> <20090209123711.GK17782@elte.hu> <20090215193655.GA18674@elte.hu> <499891D5.1080804@kernel.org> <20090215224607.GA2653@elte.hu>
-In-Reply-To: <20090215224607.GA2653@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902160010.16955.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> hm, i still get:
-> 
-> /home/mingo/tip/arch/ia64/kernel/acpi.c:203: error: conflicting types for '__acpi_unmap_table'
-> /home/mingo/tip/include/linux/acpi.h:82: error: previous declaration of '__acpi_unmap_table' was here
-> /home/mingo/tip/arch/ia64/kernel/acpi.c:203: error: conflicting types for '__acpi_unmap_table'
-> /home/mingo/tip/include/linux/acpi.h:82: error: previous declaration of '__acpi_unmap_table' was here
-> 
-sorry, please check this one
+Hi,
 
-[PATCH] ia64: fix __apci_unmap_table -v2
+The recent descussion about the Android PM patches sent by Arve shows that
+there is a need to introduce a mechanism allowing us to:
+(1) automatically put the system as a whole into a sleep state (eg. suspend to
+    RAM) when it is found to be "idle", where the meaning of "idle" has to be
+    defined too,
+(2) put given subset of devices into low power states whenever they are not
+    used, without putting the entire system into a sleep state.
+To allow these two things to happen, the Andriod patches introduced the
+wakelocks with the associated infrastructure and the "early suspend" mechanism.
+However, quite a number of reviewers did not like these patches, for various
+reasons, so they cannot be regarded as generally acceptable.  For this reason,
+I think, we should discuss the problem in detail from the beginning and try to
+find a solution that everyone interested will be comfortable with.
 
-Impact: fix wrong proto with compiling
+For this purpose, IMO, we should at least reach an agreement on what the
+kernel's and the userland's roles in (1) and (2) are going to be.  There also
+are quite a few questions that need to be answered.  For instance, what
+conditions are going to be used to decide whether or not the system is idle
+enough so that we can put it into a sleep state?  How are we going to check
+these conditions?  What is going to happen if one (or more) of them changes
+while a system-wide power transition (eg. suspend) is in progress?  Are we
+going to allow the user space to take part in this and if so, to what extent?
+What mechanisms are going be used to put devices into low power states at run
+time (ie. before starting any system-wide power transition) and how are they
+going to be related to the suspend-resume infrastructure used during
+system-wide power transitions?  The answers to these (and other related)
+questions will likely affect all of the future Linux PM developlent, so IMO
+this is a very important matter.
 
-to fix:
-/home/mingo/tip/arch/ia64/kernel/acpi.c:203: error: conflicting types for '__acpi_unmap_table'
-/home/mingo/tip/include/linux/acpi.h:82: error: previous declaration of '__acpi_unmap_table' was here
-/home/mingo/tip/arch/ia64/kernel/acpi.c:203: error: conflicting types for '__acpi_unmap_table'
-/home/mingo/tip/include/linux/acpi.h:82: error: previous declaration of '__acpi_unmap_table' was here
+Opinions and comments welcome.
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- arch/ia64/kernel/acpi.c |    2 +-
- include/linux/acpi.h    |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/arch/ia64/kernel/acpi.c
-===================================================================
---- linux-2.6.orig/arch/ia64/kernel/acpi.c
-+++ linux-2.6/arch/ia64/kernel/acpi.c
-@@ -199,7 +199,7 @@ char *__init __acpi_map_table(unsigned l
- 	return __va(phys_addr);
- }
- 
--char *__init __acpi_unmap_table(unsigned long virt_addr, unsigned long size)
-+void __init __acpi_unmap_table(char *map, unsigned long size)
- {
- }
- 
-Index: linux-2.6/include/linux/acpi.h
-===================================================================
---- linux-2.6.orig/include/linux/acpi.h
-+++ linux-2.6/include/linux/acpi.h
-@@ -79,7 +79,7 @@ typedef int (*acpi_table_handler) (struc
- typedef int (*acpi_table_entry_handler) (struct acpi_subtable_header *header, const unsigned long end);
- 
- char * __acpi_map_table (unsigned long phys_addr, unsigned long size);
--void __init __acpi_unmap_table(char *map, unsigned long size);
-+void __acpi_unmap_table(char *map, unsigned long size);
- int early_acpi_boot_init(void);
- int acpi_boot_init (void);
- int acpi_boot_table_init (void);
+Thanks,
+Rafael
