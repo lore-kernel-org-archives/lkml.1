@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbZBOOOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755179AbZBOOVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755162AbZBOOOk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 09:14:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbZBOOO1
+	id S1755179AbZBOOVe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 09:21:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbZBOOVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 09:14:27 -0500
-Received: from mx.sz.bfs.de ([194.94.69.70]:59315 "EHLO mx.sz.bfs.de"
+	Sun, 15 Feb 2009 09:21:25 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:46801 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753646AbZBOOO0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 09:14:26 -0500
-X-Greylist: delayed 577 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Feb 2009 09:14:25 EST
-Message-ID: <49982331.4050001@bfs.de>
-Date: Sun, 15 Feb 2009 15:14:09 +0100
-From: walter harms <wharms@bfs.de>
-Reply-To: wharms@bfs.de
-User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
+	id S1753646AbZBOOVZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 09:21:25 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: luis6674@yahoo.com
+Subject: Re: [Bug #12337] ~100 extra wakeups reported by powertop
+Date: Sun, 15 Feb 2009 15:20:51 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <535841.27007.qm@web53303.mail.re2.yahoo.com>
+In-Reply-To: <535841.27007.qm@web53303.mail.re2.yahoo.com>
 MIME-Version: 1.0
-To: Hannes Eder <hannes@hanneseder.net>
-Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 16/43] drivers/net/cxgb3: fix sparse warning: symbol shadows
- an earlier one
-References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net> <20090214211557.23489.75670.stgit@vmbox.hanneseder.net>
-In-Reply-To: <20090214211557.23489.75670.stgit@vmbox.hanneseder.net>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902151520.51874.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Hannes Eder schrieb:
-> Impact: Move variable declaration as close to usage as possible.
+On Sunday 15 February 2009, Alberto Gonzalez wrote:
+> --- On Sat, 2/14/09, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > 
-> Fix this sparse warning:
->   drivers/net/cxgb3/cxgb3_main.c:1586:21: warning: symbol 'cap' shadows an earlier one
+> > The following bug entry is on the current list of known
+> > regressions
+> > introduced between 2.6.27 and 2.6.28.  Please verify if it
+> > still should
+> > be listed and let me know (either way).
+> > 
+> > 
+> > Bug-Entry	:
+> > http://bugzilla.kernel.org/show_bug.cgi?id=12337
+> > Subject		: ~100 extra wakeups reported by powertop
+> > Submitter	: Alberto Gonzalez <luis6674@yahoo.com>
+> > Date		: 2008-12-31 12:25 (46 days old)
 > 
-> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
-> ---
->  drivers/net/cxgb3/cxgb3_main.c |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
+> Yes, still present in latest stable 2.6.28.5
 > 
-> diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
-> index f2c7cc3..0f6062a 100644
-> --- a/drivers/net/cxgb3/cxgb3_main.c
-> +++ b/drivers/net/cxgb3/cxgb3_main.c
-> @@ -1565,7 +1565,6 @@ static int speed_duplex_to_caps(int speed, int duplex)
->  
->  static int set_settings(struct net_device *dev, struct ethtool_cmd *cmd)
->  {
-> -	int cap;
->  	struct port_info *p = netdev_priv(dev);
->  	struct link_config *lc = &p->link_config;
->  
-> @@ -1575,7 +1574,7 @@ static int set_settings(struct net_device *dev, struct ethtool_cmd *cmd)
->  		 * being requested.
->  		 */
->  		if (cmd->autoneg == AUTONEG_DISABLE) {
-> -			cap = speed_duplex_to_caps(cmd->speed, cmd->duplex);
-> +			int cap = speed_duplex_to_caps(cmd->speed, cmd->duplex);
->  			if (lc->supported & cap)
->  				return 0;
->  		}
-> 
+> I updated the report to say that this happened on my 5 year old Pentium 4, but now I got a new Dell desktop (Intel G45 based) and the exact same problem happens, so I can't be the only one seeing it. In the bugzilla Eric Anholt said that it could be related to vblank and that jbarnes had look into a similar issue before, so maybe he has some clue.
 
-Hello Hannes,
-it seems that "cap" can be dropped completely.
+Thanks a lot for the update.
 
-if (lc->supported & speed_duplex_to_caps(cmd->speed, cmd->duplex) )
-	return 0;
-
-
-re,
- wh
+Rafael
