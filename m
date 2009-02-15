@@ -1,38 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbZBPC5M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbZBPC5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755980AbZBPC5M (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 21:57:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755941AbZBPC4l
+	id S1756869AbZBPC5a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 21:57:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756284AbZBPC4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 21:56:41 -0500
-Received: from thunk.org ([69.25.196.29]:37210 "EHLO thunker.thunk.org"
+	Sun, 15 Feb 2009 21:56:48 -0500
+Received: from thunk.org ([69.25.196.29]:37216 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755871AbZBPC4k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 21:56:40 -0500
-Date: Sun, 15 Feb 2009 17:46:59 -0500
+	id S1756210AbZBPC4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 21:56:47 -0500
+Date: Sun, 15 Feb 2009 17:54:27 -0500
 From: Theodore Tso <tytso@mit.edu>
 To: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
 	<fernando@oss.ntt.co.jp>
-Cc: Jan Kara <jack@suse.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Pavel Machek <pavel@suse.cz>,
+Cc: Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
+       Eric Sandeen <sandeen@redhat.com>, Jan Kara <jack@suse.cz>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
        kernel list <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com,
-       fernando@kic.ac.jp
-Subject: Re: ext4: call blkdev_issue_flush on fsync
-Message-ID: <20090215224659.GG10706@mini-me.lan>
+       Jens Axboe <jens.axboe@oracle.com>, fernando@kic.ac.jp,
+       Ric Wheeler <rwheeler@redhat.com>
+Subject: Re: vfs: Add MS_FLUSHONFSYNC mount flag
+Message-ID: <20090215225427.GH10706@mini-me.lan>
 Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
 	Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao <fernando@oss.ntt.co.jp>,
+	Christoph Hellwig <hch@infradead.org>,
+	Jeff Garzik <jeff@garzik.org>, Eric Sandeen <sandeen@redhat.com>,
 	Jan Kara <jack@suse.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
 	Pavel Machek <pavel@suse.cz>,
 	kernel list <linux-kernel@vger.kernel.org>,
-	Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com,
-	fernando@kic.ac.jp
-References: <1232109069.13775.35.camel@sebastian.kern.oss.ntt.co.jp> <1232114101.13775.63.camel@sebastian.kern.oss.ntt.co.jp> <20090116163039.GE10617@duck.suse.cz> <1232185639.4831.18.camel@sebastian.kern.oss.ntt.co.jp> <1232186449.4831.29.camel@sebastian.kern.oss.ntt.co.jp> <20090119120349.GA10193@duck.suse.cz> <1233135913.5399.57.camel@sebastian.kern.oss.ntt.co.jp> <20090128095518.GA16554@duck.suse.cz> <1234434811.15270.7.camel@sebastian.kern.oss.ntt.co.jp> <1234435245.15433.19.camel@sebastian.kern.oss.ntt.co.jp>
+	Jens Axboe <jens.axboe@oracle.com>, fernando@kic.ac.jp,
+	Ric Wheeler <rwheeler@redhat.com>
+References: <1232186449.4831.29.camel@sebastian.kern.oss.ntt.co.jp> <20090119120349.GA10193@duck.suse.cz> <1233135913.5399.57.camel@sebastian.kern.oss.ntt.co.jp> <20090128095518.GA16554@duck.suse.cz> <1234434811.15270.7.camel@sebastian.kern.oss.ntt.co.jp> <1234434970.15433.4.camel@sebastian.kern.oss.ntt.co.jp> <499458C1.90105@redhat.com> <49945C90.3010104@garzik.org> <20090214153626.GA3973@infradead.org> <1234682606.19783.222.camel@sebastian.kern.oss.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <1234435245.15433.19.camel@sebastian.kern.oss.ntt.co.jp>
+In-Reply-To: <1234682606.19783.222.camel@sebastian.kern.oss.ntt.co.jp>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@thunk.org
@@ -41,51 +44,19 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 12, 2009 at 07:40:45PM +0900, Fernando Luis Vázquez Cao wrote:
-> @@ -76,25 +77,34 @@ int ext4_sync_file(struct file *file, st
->  	 */
->  	if (ext4_should_journal_data(inode)) {
->  		ret = ext4_force_commit(inode->i_sb);
-> +		if (!(journal->j_flags & JBD2_BARRIER))
-> +			goto no_journal_barrier;
->  		goto out;
->  	}
+On Sun, Feb 15, 2009 at 04:23:26PM +0900, Fernando Luis Vázquez Cao wrote:
+> You mentioned "we should integrate this with the barrier settings". Do
+> you imply we should make it a per-device tunable too? Should we keep the
+> barrier-related mount options some filesystems provide?
+> 
 
-All of these goto statements makes it one gigantic pile of spaghetti.
-The code will be much more understable if you do:
+Making barriers to be a per-device tunable makes sense.  The only
+reason why we kept it as a mount option in ext4 is for benchmarking
+purposes, and in ext3, because the filesystem predated the barrier
+code, and there was a desire to be able to benchmark with and without
+the old behavior --- and because akpm is still worried about the
+performance hit of the barrier code, so he's been resistant about
+change the default for ext3.
 
-		if (!(journal->j_flags & JBD2_BARRIER))
-			block_flush_device(inode->i_sb);
-		return ret;	
+       	   				- Ted
 
->  
-> -	if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
-> -		goto out;
-> +	if (datasync && !(i_state & I_DIRTY_DATASYNC))
-> +		goto flush_blkdev;
->  
-
-Maybe instead:
-	if (datasync && !(i_state & I_DIRTY_DATASYNC)) {
-		if (i_state & I_DIRTY_PAGES)
-			block_flush_device(inode->i_sb);
-		return ret;
-	}
-
-
-> -		if (journal && (journal->j_flags & JBD2_BARRIER))
-> -			blkdev_issue_flush(inode->i_sb->s_bdev, NULL);
-> +		if (journal && !(journal->j_flags & JBD2_BARRIER))
-> +			goto no_journal_barrier;
-> +		goto out;
-
-Maybe instead:
-		if (journal && !(journal->j_flags & JBD2_BARRIER))
-			block_flush_device(inode->i_sb);
-		return ret;
-  	}
-
-I'm not a fanatic about eliminating all goto's, but "goto out" which
-could be replaced by "return ret;" is just silly.
-
-      	 	     	     	      - Ted
