@@ -1,174 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbZBOMMB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755081AbZBOMNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755992AbZBOMMB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 07:12:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbZBOMIq
+	id S1755081AbZBOMNY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 07:13:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869AbZBOMNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 07:08:46 -0500
-Received: from fk-out-0910.google.com ([209.85.128.187]:29313 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753118AbZBOMIU (ORCPT
+	Sun, 15 Feb 2009 07:13:12 -0500
+Received: from mail-fx0-f25.google.com ([209.85.220.25]:51810 "EHLO
+	mail-fx0-f25.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752168AbZBOMNK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 07:08:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=fPdA0fP9773dm9V/n9MIImZSLkyEzZm0zxk45o7U/5TMlSUh7yPC1hcLGl8iqNiGpt
-         oC/oDdaV6QNAMC5f11HGVGWvTObxnxv3mBQOZSMvZnKdx4k/Vwf3pBvx4X52BgZTUoRT
-         KZbMxQv3EXw5nDOgJWakMFjvGnqwqBFt7YQos=
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Borislav Petkov <petkovbb@gmail.com>
-Subject: [PATCH 06/10] ide-disk: use flags query macros
-Date: Sun, 15 Feb 2009 13:08:08 +0100
-Message-Id: <1234699692-9452-7-git-send-email-petkovbb@gmail.com>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1234699692-9452-1-git-send-email-petkovbb@gmail.com>
-References: <1234699692-9452-1-git-send-email-petkovbb@gmail.com>
+	Sun, 15 Feb 2009 07:13:10 -0500
+From: Hannes Eder <hannes@hanneseder.net>
+Subject: [PATCH 31/43 v2] drivers/net/tokenring: fix sparse warning: cast
+	truncates bits from const value
+To: netdev@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jay Schulist <jjschlst@gmail.com>, Al Viro <viro@zeniv.linux.org.uk>
+Date: Sun, 15 Feb 2009 13:13:01 +0100
+Message-ID: <20090215121201.26072.42971.stgit@vmbox.hanneseder.net>
+In-Reply-To: <154e089b0902150347o4e06683dy1c9c02dc2564ea4f@mail.gmail.com>
+References: <154e089b0902150347o4e06683dy1c9c02dc2564ea4f@mail.gmail.com>
+User-Agent: StGit/0.14.3.348.gcb02
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There should be no functionality change resulting from this patch.
+Impact: Remove the write-only field 'current_ring_status' completely.
 
-Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+Fix this sparse warnings:
+  drivers/net/tokenring/smctr.c:4410:52: warning: cast truncates bits from constant value (100 becomes 0)
+  drivers/net/tokenring/smctr.c:4415:52: warning: cast truncates bits from constant value (400 becomes 0)
+  drivers/net/tokenring/smctr.c:4420:52: warning: cast truncates bits from constant value (800 becomes 0)
+  drivers/net/tokenring/smctr.c:4425:52: warning: cast truncates bits from constant value (1000 becomes 0)
+  drivers/net/tokenring/smctr.c:4430:52: warning: cast truncates bits from constant value (2000 becomes 0)
+  drivers/net/tokenring/smctr.c:4435:52: warning: cast truncates bits from constant value (4000 becomes 0)
+  drivers/net/tokenring/smctr.c:4440:52: warning: cast truncates bits from constant value (8000 becomes 0)
+
+Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 ---
- drivers/ide/ide-disk.c      |   28 ++++++++++++++--------------
- drivers/ide/ide-disk_proc.c |    2 +-
- 2 files changed, 15 insertions(+), 15 deletions(-)
+ drivers/net/tokenring/smctr.c |   10 ----------
+ drivers/net/tokenring/smctr.h |    1 -
+ 2 files changed, 0 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/ide/ide-disk.c b/drivers/ide/ide-disk.c
-index ca934c8..011cdb3 100644
---- a/drivers/ide/ide-disk.c
-+++ b/drivers/ide/ide-disk.c
-@@ -99,7 +99,7 @@ static ide_startstop_t __ide_do_rw_disk(ide_drive_t *drive, struct request *rq,
- 	memset(&cmd, 0, sizeof(cmd));
- 	cmd.tf_flags = IDE_TFLAG_TF | IDE_TFLAG_DEVICE;
+diff --git a/drivers/net/tokenring/smctr.c b/drivers/net/tokenring/smctr.c
+index 5a3ff20..e66eb8a 100644
+--- a/drivers/net/tokenring/smctr.c
++++ b/drivers/net/tokenring/smctr.c
+@@ -4393,52 +4393,42 @@ static int smctr_ring_status_chg(struct net_device *dev)
+         {
+                 case RING_RECOVERY:
+                         printk(KERN_INFO "%s: Ring Recovery\n", dev->name);
+-                        tp->current_ring_status |= RING_RECOVERY;
+                         break;
  
--	if (drive->dev_flags & IDE_DFLAG_LBA) {
-+	if (ide_drv_does_lba(drive)) {
- 		if (lba48) {
- 			pr_debug("%s: LBA=0x%012llx\n", drive->name,
- 					(unsigned long long)block);
-@@ -180,7 +180,7 @@ static ide_startstop_t ide_do_rw_disk(ide_drive_t *drive, struct request *rq,
- {
- 	ide_hwif_t *hwif = drive->hwif;
+                 case SINGLE_STATION:
+                         printk(KERN_INFO "%s: Single Statinon\n", dev->name);
+-                        tp->current_ring_status |= SINGLE_STATION;
+                         break;
  
--	BUG_ON(drive->dev_flags & IDE_DFLAG_BLOCKED);
-+	BUG_ON(ide_drv_blocked(drive));
+                 case COUNTER_OVERFLOW:
+                         printk(KERN_INFO "%s: Counter Overflow\n", dev->name);
+-                        tp->current_ring_status |= COUNTER_OVERFLOW;
+                         break;
  
- 	if (!blk_fs_request(rq)) {
- 		blk_dump_rq_flags(rq, "ide_do_rw_disk - bad command");
-@@ -359,7 +359,7 @@ static int ide_disk_get_capacity(ide_drive_t *drive)
- 	}
+                 case REMOVE_RECEIVED:
+                         printk(KERN_INFO "%s: Remove Received\n", dev->name);
+-                        tp->current_ring_status |= REMOVE_RECEIVED;
+                         break;
  
- 	/* limit drive capacity to 137GB if LBA48 cannot be used */
--	if ((drive->dev_flags & IDE_DFLAG_LBA48) == 0 &&
-+	if (!ide_drv_lba48(drive) &&
- 	    drive->capacity64 > 1ULL << 28) {
- 		printk(KERN_WARNING "%s: cannot use LBA48 - full capacity "
- 		       "%llu sectors (%llu MB)\n",
-@@ -369,7 +369,7 @@ static int ide_disk_get_capacity(ide_drive_t *drive)
- 	}
+                 case AUTO_REMOVAL_ERROR:
+                         printk(KERN_INFO "%s: Auto Remove Error\n", dev->name);
+-                        tp->current_ring_status |= AUTO_REMOVAL_ERROR;
+                         break;
  
- 	if ((drive->hwif->host_flags & IDE_HFLAG_NO_LBA48_DMA) &&
--	    (drive->dev_flags & IDE_DFLAG_LBA48)) {
-+	    ide_drv_lba48(drive)) {
- 		if (drive->capacity64 > 1ULL << 28) {
- 			printk(KERN_INFO "%s: cannot use LBA48 DMA - PIO mode"
- 					 " will be used for accessing sectors "
-@@ -468,7 +468,7 @@ static void update_ordered(ide_drive_t *drive)
- 	unsigned ordered = QUEUE_ORDERED_NONE;
- 	prepare_flush_fn *prep_fn = NULL;
+                 case LOBE_WIRE_FAULT:
+                         printk(KERN_INFO "%s: Lobe Wire Fault\n", dev->name);
+-                        tp->current_ring_status |= LOBE_WIRE_FAULT;
+                         break;
  
--	if (drive->dev_flags & IDE_DFLAG_WCACHE) {
-+	if (ide_drv_wcache_enabled(drive)) {
- 		unsigned long long capacity;
- 		int barrier;
- 		/*
-@@ -481,8 +481,8 @@ static void update_ordered(ide_drive_t *drive)
- 		 */
- 		capacity = ide_gd_capacity(drive);
- 		barrier = ata_id_flush_enabled(id) &&
--			(drive->dev_flags & IDE_DFLAG_NOFLUSH) == 0 &&
--			((drive->dev_flags & IDE_DFLAG_LBA48) == 0 ||
-+			!ide_drv_noflush(drive) &&
-+			(!ide_drv_lba48(drive) ||
- 			 capacity <= (1ULL << 28) ||
- 			 ata_id_flush_ext_enabled(id));
+                 case TRANSMIT_BEACON:
+                         printk(KERN_INFO "%s: Transmit Beacon\n", dev->name);
+-                        tp->current_ring_status |= TRANSMIT_BEACON;
+                         break;
  
-@@ -604,10 +604,10 @@ static void ide_disk_setup(ide_drive_t *drive)
+                 case SOFT_ERROR:
+                         printk(KERN_INFO "%s: Soft Error\n", dev->name);
+-                        tp->current_ring_status |= SOFT_ERROR;
+                         break;
  
- 	ide_proc_register_driver(drive, idkp->driver);
+                 case HARD_ERROR:
+                         printk(KERN_INFO "%s: Hard Error\n", dev->name);
+-                        tp->current_ring_status |= HARD_ERROR;
+                         break;
  
--	if ((drive->dev_flags & IDE_DFLAG_ID_READ) == 0)
-+	if (!ide_drv_id_read(drive))
- 		return;
+                 case SIGNAL_LOSS:
+                         printk(KERN_INFO "%s: Signal Loss\n", dev->name);
+-                        tp->current_ring_status |= SIGNAL_LOSS;
+                         break;
  
--	if (drive->dev_flags & IDE_DFLAG_REMOVABLE) {
-+	if (ide_drv_removable(drive)) {
- 		/*
- 		 * Removable disks (eg. SYQUEST); ignore 'WD' drives
- 		 */
-@@ -617,7 +617,7 @@ static void ide_disk_setup(ide_drive_t *drive)
+                 default:
+diff --git a/drivers/net/tokenring/smctr.h b/drivers/net/tokenring/smctr.h
+index 52df7dd..6e5700a 100644
+--- a/drivers/net/tokenring/smctr.h
++++ b/drivers/net/tokenring/smctr.h
+@@ -977,7 +977,6 @@ typedef struct net_local {
+ 	__u8		monitor_state_ready;
+ 	__u16		ring_status;
+ 	__u8		ring_status_flags;
+-	__u8		current_ring_status;
+ 	__u8		state;
  
- 	(void)set_addressing(drive, 1);
- 
--	if (drive->dev_flags & IDE_DFLAG_LBA48) {
-+	if (ide_drv_lba48(drive)) {
- 		int max_s = 2048;
- 
- 		if (max_s > hwif->rqsize)
-@@ -641,7 +641,7 @@ static void ide_disk_setup(ide_drive_t *drive)
- 	 */
- 	capacity = ide_gd_capacity(drive);
- 
--	if ((drive->dev_flags & IDE_DFLAG_FORCED_GEOM) == 0) {
-+	if (!ide_drv_forced_geom(drive)) {
- 		if (ata_id_lba48_enabled(drive->id)) {
- 			/* compatibility */
- 			drive->bios_sect = 63;
-@@ -680,7 +680,7 @@ static void ide_disk_setup(ide_drive_t *drive)
- 
- 	set_wcache(drive, 1);
- 
--	if ((drive->dev_flags & IDE_DFLAG_LBA) == 0 &&
-+	if (!ide_drv_does_lba(drive) &&
- 	    (drive->head == 0 || drive->head > 16)) {
- 		printk(KERN_ERR "%s: invalid geometry: %d physical heads?\n",
- 			drive->name, drive->head);
-@@ -692,7 +692,7 @@ static void ide_disk_setup(ide_drive_t *drive)
- static void ide_disk_flush(ide_drive_t *drive)
- {
- 	if (ata_id_flush_enabled(drive->id) == 0 ||
--	    (drive->dev_flags & IDE_DFLAG_WCACHE) == 0)
-+	    !ide_drv_wcache_enabled(drive))
- 		return;
- 
- 	if (do_idedisk_flushcache(drive))
-@@ -710,7 +710,7 @@ static int ide_disk_set_doorlock(ide_drive_t *drive, struct gendisk *disk,
- 	struct ide_cmd cmd;
- 	int ret;
- 
--	if ((drive->dev_flags & IDE_DFLAG_DOORLOCKING) == 0)
-+	if (!ide_drv_doorlocking(drive))
- 		return 0;
- 
- 	memset(&cmd, 0, sizeof(cmd));
-diff --git a/drivers/ide/ide-disk_proc.c b/drivers/ide/ide-disk_proc.c
-index 3f2a078..bfe8cc1 100644
---- a/drivers/ide/ide-disk_proc.c
-+++ b/drivers/ide/ide-disk_proc.c
-@@ -42,7 +42,7 @@ static int proc_idedisk_read_cache
- 	char		*out = page;
- 	int		len;
- 
--	if (drive->dev_flags & IDE_DFLAG_ID_READ)
-+	if (ide_drv_id_read(drive))
- 		len = sprintf(out, "%i\n", drive->id[ATA_ID_BUF_SIZE] / 2);
- 	else
- 		len = sprintf(out, "(none)\n");
--- 
-1.6.0.4
+ 	__u8		join_state;
 
