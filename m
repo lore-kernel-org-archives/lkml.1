@@ -1,54 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755179AbZBOOVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518AbZBOOWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755179AbZBOOVe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 09:21:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbZBOOVZ
+	id S1754518AbZBOOWg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 09:22:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbZBOOWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 09:21:25 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:46801 "EHLO ogre.sisk.pl"
+	Sun, 15 Feb 2009 09:22:23 -0500
+Received: from mx.sz.bfs.de ([194.94.69.70]:60081 "EHLO mx.sz.bfs.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753646AbZBOOVZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 09:21:25 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: luis6674@yahoo.com
-Subject: Re: [Bug #12337] ~100 extra wakeups reported by powertop
-Date: Sun, 15 Feb 2009 15:20:51 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <535841.27007.qm@web53303.mail.re2.yahoo.com>
-In-Reply-To: <535841.27007.qm@web53303.mail.re2.yahoo.com>
+	id S1751592AbZBOOWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 09:22:22 -0500
+Message-ID: <499820DF.5070508@bfs.de>
+Date: Sun, 15 Feb 2009 15:04:15 +0100
+From: walter harms <wharms@bfs.de>
+Reply-To: wharms@bfs.de
+User-Agent: Thunderbird 2.0.0.18 (X11/20081112)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Hannes Eder <hannes@hanneseder.net>
+Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/43] drivers/net/e2100.c: fix sparse warning: symbol
+ shadows	an earlier one
+References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net> <20090214211203.23489.80420.stgit@vmbox.hanneseder.net>
+In-Reply-To: <20090214211203.23489.80420.stgit@vmbox.hanneseder.net>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902151520.51874.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 15 February 2009, Alberto Gonzalez wrote:
-> --- On Sat, 2/14/09, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > The following bug entry is on the current list of known
-> > regressions
-> > introduced between 2.6.27 and 2.6.28.  Please verify if it
-> > still should
-> > be listed and let me know (either way).
-> > 
-> > 
-> > Bug-Entry	:
-> > http://bugzilla.kernel.org/show_bug.cgi?id=12337
-> > Subject		: ~100 extra wakeups reported by powertop
-> > Submitter	: Alberto Gonzalez <luis6674@yahoo.com>
-> > Date		: 2008-12-31 12:25 (46 days old)
-> 
-> Yes, still present in latest stable 2.6.28.5
-> 
-> I updated the report to say that this happened on my 5 year old Pentium 4, but now I got a new Dell desktop (Intel G45 based) and the exact same problem happens, so I can't be the only one seeing it. In the bugzilla Eric Anholt said that it could be related to vblank and that jbarnes had look into a similar issue before, so maybe he has some clue.
+Hi Hannes,
+it is ok to replace a fixed boarder with ARRAY_SIZE()
+in this special case i would success the following additional cleanup
+(untestet !!)
 
-Thanks a lot for the update.
 
-Rafael
+static int set_free_irq(struct net_device *dev)
+{
+ int irqlist[] = {15,11,10,12,5,9,3,4}, i;
+
+        for (i = 0; i < ARRAY_SIZE(irqlist); i++)
+           if (request_irq (irqlist[i], NULL, 0, "bogus", NULL) != -EBUSY) {
+                        dev->irq = irqlist[i];
+                        return 0;
+            }
+        return -1;
+}
+
+....
+
+if (dev->irq < 2) {
+         if ( set_free_irq(dev) < 0) {
+                printk(" unable to get IRQ %d.\n", dev->irq);
+                retval = -EAGAIN;
+                goto out;
+        }
+
+for me this looks more readable.
+
+getting a free interrupt from a list mus be a common problem ? I am not in driver programming
+perhaps such a code is already in place somewhere  ?
+
+comments ?
+
+re,
+ wh
+
+
+Hannes Eder schrieb:
+> Impact: Remove redundant inner scope variable and while being at it
+> make use of ARRAY_SIZE instead of a hardcoded number.
+> 
+> Fix this sparse warning:
+>   drivers/net/e2100.c:219:56: warning: symbol 'i' shadows an earlier one
+>   drivers/net/e2100.c:181:13: originally declared here
+> 
+> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+> ---
+>  drivers/net/e2100.c |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/net/e2100.c b/drivers/net/e2100.c
+> index b07ba19..d2f6ee1 100644
+> --- a/drivers/net/e2100.c
+> +++ b/drivers/net/e2100.c
+> @@ -216,13 +216,13 @@ static int __init e21_probe1(struct net_device *dev, int ioaddr)
+>  		printk(" %02X", station_addr[i]);
+>  
+>  	if (dev->irq < 2) {
+> -		int irqlist[] = {15,11,10,12,5,9,3,4}, i;
+> -		for (i = 0; i < 8; i++)
+> +		int irqlist[] = {15, 11, 10, 12, 5, 9, 3, 4};
+> +		for (i = 0; i < ARRAY_SIZE(irqlist); i++)
+>  			if (request_irq (irqlist[i], NULL, 0, "bogus", NULL) != -EBUSY) {
+>  				dev->irq = irqlist[i];
+>  				break;
+>  			}
+> -		if (i >= 8) {
+> +		if (i >= ARRAY_SIZE(irqlist)) {
+>  			printk(" unable to get IRQ %d.\n", dev->irq);
+>  			retval = -EAGAIN;
+>  			goto out;
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
+> 
