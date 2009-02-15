@@ -1,68 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbZBOTla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbZBOTmF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754300AbZBOTla (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 14:41:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbZBOTlW
+	id S1755572AbZBOTmF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 14:42:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbZBOTlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 14:41:22 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40866 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751121AbZBOTlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 14:41:21 -0500
-Date: Sun, 15 Feb 2009 20:41:16 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rakib Mullick <rakib.mullick@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, markus.t.metzger@gmail.com
-Subject: Re: [PATCH -mm] tracing: Fix section mismatch in
-	trace_hw_branches.c
-Message-ID: <20090215194116.GA18517@elte.hu>
-References: <b9df5fa10902131936p5e0997c6p57f659457a9cc356@mail.gmail.com>
+	Sun, 15 Feb 2009 14:41:52 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:56491 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752221AbZBOTlw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 14:41:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=M4bOgZk0kQA5QX4TOb5Og4uMbHLxNGVgwxpxYoqOHKDVKuGC3o52isjb2U8MY69w2L
+         0vqHRavZcsKFQ36E/RiE5RY5leGIKb6zqkcB5ZsUHR4ANzYafB2q0r6wazPa56cmPvOD
+         6XlbPOLh0PPUxetNsvTqLiiOPPJyAa8/BRwrs=
+Date: Sun, 15 Feb 2009 20:41:48 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Poking ieee80211_default_rc_algo causes kernel lockups
+Message-ID: <20090215194147.GB5790@nowhere>
+References: <slrngpgfil.5gc.sitsofe@sitsofe.eeepc.localdomain> <20090215170214.GK5835@nowhere> <883216.75749.qm@web110607.mail.gq1.yahoo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b9df5fa10902131936p5e0997c6p57f659457a9cc356@mail.gmail.com>
+In-Reply-To: <883216.75749.qm@web110607.mail.gq1.yahoo.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Rakib Mullick <rakib.mullick@gmail.com> wrote:
-
->   Impact: Fix section mismatch
+On Sun, Feb 15, 2009 at 11:24:41AM -0800, Sitsofe Wheeler wrote:
+> > Could you please enable the CONFIG_DETECT_SOFTLOCKUP option in your kernel?
 > 
-> The function bts_trace_init() references a variable
-> bts_hotcpu_notifier which is marked
-> as __cpuinitdata. Thus causes section mismatch. This patch fixes it.
+> > It's on Kernel Hacking > Detect Soft Lockups.
+> > With some chances you will have a relevant stacktrace of the lockup, in case
+> > I couldn't reproduce it.
 > 
->   LD      kernel/trace/built-in.o
-> WARNING: kernel/trace/built-in.o(.text+0xc90c): Section mismatch in
-> reference from the function bts_trace_init() to the variable
-> .cpuinit.data:bts_hotcpu_notifier
-> The function bts_trace_init() references
-> the variable __cpuinitdata bts_hotcpu_notifier.
-> This is often because bts_trace_init lacks a __cpuinitdata
-> annotation or the annotation of bts_hotcpu_notifier is wrong.
-> 
-> WARNING: kernel/trace/built-in.o(.text+0xc92a): Section mismatch in
-> reference from the function bts_trace_reset() to the variable
-> .cpuinit.data:bts_hotcpu_notifier
-> The function bts_trace_reset() references
-> the variable __cpuinitdata bts_hotcpu_notifier.
-> This is often because bts_trace_reset lacks a __cpuinitdata
-> annotation or the annotation of bts_hotcpu_notifier is wrong.
-> 
-> Thanks.
+> I'll try (the kernel I'm currently using is jam packed with with debug options) but I'm unconvinced it will unfreeze enough for anything useful...
 
-Applied to tip:tracing/hw-branch-tracing, thanks Rakib!
+No need to actually, I guess we found it...
 
-	Ingo
