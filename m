@@ -1,58 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754346AbZBOOiB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754397AbZBOOiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754346AbZBOOiB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 09:38:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZBOOhu
+	id S1754397AbZBOOiv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 09:38:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbZBOOil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 09:37:50 -0500
-Received: from zone0.gcu-squad.org ([212.85.147.21]:20198 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753865AbZBOOhs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 09:37:48 -0500
-Date: Sun, 15 Feb 2009 15:37:35 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Frank Seidel <fseidel@suse.de>
-Cc: linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       rlove@rlove.org, protasnb@gmail.com,
-       Michael Ruoss <miruoss@student.ethz.ch>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Tim Gardner <tim.gardner@canonical.com>,
-       Frank Seidel <frank@f-seidel.de>, multinymous@gmail.com
-Subject: Re: [PATCHv3] hwmon/hdaps: Fix bug 7154 inversion of separate axis
-Message-ID: <20090215153735.25ee8b05@hyperion.delvare>
-In-Reply-To: <4998120C.3030808@suse.de>
-References: <499569A9.5030202@suse.de>
-	<499807B4.1050606@suse.de>
-	<4998120C.3030808@suse.de>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 15 Feb 2009 09:38:41 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:46877 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751372AbZBOOil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 09:38:41 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tino Keitel <tino.keitel@gmx.de>
+Subject: Re: [Bug #12401] 2.6.28 regression: xbacklight broken on ThinkPad X61s
+Date: Sun, 15 Feb 2009 15:38:28 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andi Kleen <ak@linux.intel.com>, Len Brown <len.brown@intel.com>,
+       Thomas Renninger <trenn@suse.de>, Zhang Rui <rui.zhang@intel.com>
+References: <sTyoMUwdm9B.A.QCH.U40lJB@chimera> <ROx6X68CGJG.A.FEB.M50lJB@chimera> <20090215134409.GC21670@srcf.ucam.org>
+In-Reply-To: <20090215134409.GC21670@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902151538.29766.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Frank,
+On Sunday 15 February 2009, Matthew Garrett wrote:
+> This one sounded like a configuration error.
 
-On Sun, 15 Feb 2009 14:01:00 +0100, Frank Seidel wrote:
-> From: Frank Seidel <frank@f-seidel.de>
-> 
-> Fix for kernel.org bug #7154:hdaps inversion of
-> each axis. This version is based on the work
-> from Michael Ruoss <miruoss@student.ethz.ch>.
-> 
-> Signed-off-by: Frank Seidel <frank@f-seidel.de>
-> ---
->  drivers/hwmon/hdaps.c |   64 +++++++++++++++++++++++++-------------------------
->  1 file changed, 33 insertions(+), 31 deletions(-)
-
-Patch applied, thanks. Suggestions for incremental patches:
-
-* Actually fix bug #7154 (apparently Thinkpad X41 needs to invert Y
-  axis)
-* Get rid of sysfs attribute "invert" (redundant with eponymous module
-  parameter)
-
--- 
-Jean Delvare
+Tino?
