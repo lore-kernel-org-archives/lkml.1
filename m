@@ -1,61 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980AbZBOH7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751663AbZBOIAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752980AbZBOH7y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 02:59:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbZBOH7p
+	id S1751663AbZBOIAZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 03:00:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZBOIAB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 02:59:45 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:51479 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751260AbZBOH7p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 02:59:45 -0500
-Date: Sun, 15 Feb 2009 09:01:36 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Josh Hunt <josh@scalex86.org>
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-       kiran@scalex86.org, mingo@elte.hu
-Subject: Re: [PATCH] Add vmlinux to kernel rpm - updated description
-Message-ID: <20090215080136.GA26481@uranus.ravnborg.org>
-References: <20090212051057.GC12732@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090212051057.GC12732@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 15 Feb 2009 03:00:01 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37212 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751318AbZBOIAA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 03:00:00 -0500
+Message-ID: <4997CB56.7000703@kernel.org>
+Date: Sat, 14 Feb 2009 23:59:18 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: fix typo in filter_cpuid_features()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 11, 2009 at 09:10:57PM -0800, Josh Hunt wrote:
-> Resending with updated description:
-> 
-> We are building an automated system to test kernels weekly and need to
-> provide an rpm to our QA dept.  We would like to use the ability to create
-> kernel rpms already in the kernel's Makefile, but need the vmlinux file
-> included in the rpm for later debugging.  This patch adds a compressed vmlinux to
-> the kernel rpm when doing a make rpm-pkg or binrpm-pkg and upon install
-> places the vmlinux file in /boot.
-> 
-> Signed-off-by: Josh Hunt <josh@scalex86.org>
 
-Applied, but...
+Impact: fix wrong diabling cpu features
 
-> 
-> Index: linux-2.6.28/scripts/package/mkspec
-> ===================================================================
-> --- linux-2.6.28.orig/scripts/package/mkspec    2008-12-24
-> 15:26:37.000000000 -0800
-> +++ linux-2.6.28/scripts/package/mkspec    2009-01-21
-> 16:53:03.000000000 -0800
-> @@ -86,6 +86,14 @@ echo "%endif"
->  echo 'cp System.map $RPM_BUILD_ROOT'"/boot/System.map-$KERNELRELEASE"
-> 
->  echo 'cp .config $RPM_BUILD_ROOT'"/boot/config-$KERNELRELEASE"
-> +
-> +echo "%ifnarch ppc64"
-> +echo 'cp vmlinux vmlinux.orig'
-why is this relevant for all architectures except ppc64?
-This is not addressed neither in a comment nor in the changelog.
+on amd system got strange:
+CPU: CPU feature monitor disabled due to lack of CPUID level 0x5
+but in /proc/cpuinfo do have
+cpuid level	: 5
 
-	Sam
+on intel system:
+CPU: CPU feature monitor disabled due to lack of CPUID level 0x5
+CPU: CPU feature dca disabled due to lack of CPUID level 0x9
+but in /proc/cpuinfo do have
+cpuid level     : 11
+
+it turns out there is one typo, and should use level member in df
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/kernel/cpu/common.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/cpu/common.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/common.c
++++ linux-2.6/arch/x86/kernel/cpu/common.c
+@@ -255,9 +255,9 @@ static void __cpuinit filter_cpuid_featu
+ 		 * signs here...
+ 		 */
+ 		if (cpu_has(c, df->feature) &&
+-		    ((s32)df->feature < 0 ?
+-		     (u32)df->feature > (u32)c->extended_cpuid_level :
+-		     (s32)df->feature > (s32)c->cpuid_level)) {
++		    ((s32)df->level < 0 ?
++		     (u32)df->level > (u32)c->extended_cpuid_level :
++		     (s32)df->level > (s32)c->cpuid_level)) {
+ 			clear_cpu_cap(c, df->feature);
+ 			if (warn)
+ 				printk(KERN_WARNING
+@@ -267,7 +267,7 @@ static void __cpuinit filter_cpuid_featu
+ 				       df->level);
+ 		}
+ 	}
+-}	
++}
+ 
+ /*
+  * Naming convention should be: <Name> [(<Codename>)]
