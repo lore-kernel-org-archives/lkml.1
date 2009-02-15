@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbZBOAVJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754211AbZBOAXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754508AbZBOAVJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Feb 2009 19:21:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbZBOAUy
+	id S1754211AbZBOAXa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Feb 2009 19:23:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbZBOAXW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Feb 2009 19:20:54 -0500
-Received: from gate.crashing.org ([63.228.1.57]:33654 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752717AbZBOAUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Feb 2009 19:20:54 -0500
-Subject: Re: [PATCH 1/3] Makefile: Include arch Makefiles as late as
- possible
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Steven Rostedt <srostedt@redhat.com>, Paul Mackerras <paulus@samba.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-In-Reply-To: <20090214220326.GA5200@elte.hu>
-References: <20090204150755.GA24163@oksana.dev.rtsoft.ru>
-	 <20090204150835.GA30027@oksana.dev.rtsoft.ru>
-	 <20090204212612.GN22608@elte.hu>
-	 <20090214195702.GB1241@uranus.ravnborg.org> <20090214220326.GA5200@elte.hu>
-Content-Type: text/plain
-Date: Sun, 15 Feb 2009 11:19:56 +1100
-Message-Id: <1234657196.26036.86.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Sat, 14 Feb 2009 19:23:22 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:40004 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752386AbZBOAXV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Feb 2009 19:23:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TAoNEGltneonn54GB26mfqV4Dnf1/m5r7kqJwhU/61TDcxEKtE5ARiM08Cun4xGnlF
+         uIWH4ktFpf0AN/b6FDUJ0vNH8SZxRT4OUiGCfvHyBg9HpNEcqttgZK/yytLO5rrkIM/5
+         jxaNin5Jvk2BIKhz++3ydEJTfY/mvCXK1OjGU=
+MIME-Version: 1.0
+In-Reply-To: <rjPbZ5GRJPO.A.E3F.xs0lJB@chimera>
+References: <juADNmcceYF.A.mdD.Mr0lJB@chimera>
+	 <rjPbZ5GRJPO.A.E3F.xs0lJB@chimera>
+Date: Sun, 15 Feb 2009 00:23:17 +0000
+Message-ID: <8b67d60902141623k449dc769n9fd6bf180d3267d3@mail.gmail.com>
+Subject: Re: [Bug #12502] pipe_read oops on sh
+From: Adrian McMenamin <lkmladrian@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-02-14 at 23:03 +0100, Ingo Molnar wrote:
-> 
-> So the question is: even with FRAME_POINTERS disabled on PPC, is 
-> __builtin_return_address(1)/(2) reliable, and is save_stack_trace() fast? (i.e.
-> can it walk down the stack frame efficiently, or does it have to scan the full
-> kernel stack) I.e. does PPC have all the material advantages of frame pointers?
+2009/2/14 Rafael J. Wysocki <rjw@sisk.pl>:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.28.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12502
+> Subject         : pipe_read oops on sh
+> Submitter       : Adrian McMenamin <lkmladrian@gmail.com>
+> Date            : 2009-01-15 9:48 (31 days old)
+> References      : http://marc.info/?l=linux-kernel&m=123201298005600&w=4
+>
+>
+>
 
-Yes, we do. We effectively have frame pointers in fact, they may only be
-omitted in leaf functions but then gcc __builtin_return_address() knows
-how to handle that afaik.
-
-Cheers,
-Ben.
-
+No, it was caused by a race condition that has now been fixed.
