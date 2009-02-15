@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754415AbZBOLBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbZBOLVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754415AbZBOLBp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 06:01:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbZBOLBg
+	id S1753995AbZBOLVN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 06:21:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbZBOLU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 06:01:36 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45702 "EHLO mx2.mail.elte.hu"
+	Sun, 15 Feb 2009 06:20:56 -0500
+Received: from olc-12.verat.net ([62.108.127.38]:54206 "EHLO olc-12.verat.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752587AbZBOLBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 06:01:35 -0500
-Date: Sun, 15 Feb 2009 12:01:04 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Damien Wyart <damien.wyart@free.fr>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12650] Strange load average and ksoftirqd behavior with
-	2.6.29-rc2-git1
-Message-ID: <20090215110104.GB31351@elte.hu>
-References: <juADNmcceYF.A.mdD.Mr0lJB@chimera> <rjPbZ5GRJPO.A.1kE.ur0lJB@chimera> <20090215080941.GA2295@localhost.localdomain> <20090215090026.GA31147@elte.hu> <20090215095128.GA3234@localhost.localdomain> <20090215101351.GA23274@elte.hu> <20090215103445.GA2335@localhost.localdomain>
+	id S1752168AbZBOLUz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 06:20:55 -0500
+X-Greylist: delayed 553 seconds by postgrey-1.27 at vger.kernel.org; Sun, 15 Feb 2009 06:20:54 EST
+Message-ID: <17235.41.220.75.3.1234696299.squirrel@webmail.verat.net>
+Date: Sun, 15 Feb 2009 12:11:39 +0100 (CET)
+Subject: =?iso-8859-1?Q?Kj=E6re_uio.no_konto_Bruker?=
+From: "Universitetet i Oslo Help Desk" <help-desk@uio.no>
+Reply-To: team-support@info.lt
+User-Agent: SquirrelMail/1.4.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090215103445.GA2335@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Kjære uio.no konto Bruker,
 
-* Damien Wyart <damien.wyart@free.fr> wrote:
+Det vil være en generell oppgradering i systemet mellom Februray 2 til 20
+2009.På grunn av anonym registrering av uio.no kontoer og antall
+av sovende kontoer, vil vi kjøre denne oppgraderingen for å fastslå
+nøyaktige antallet abonnenter vi har i dag.
 
-> So I followed the tracing steps in the tutorial (with the 1 sec sleep),
-> which gave me this:
-> http://damien.wyart.free.fr/trace_2.6.29-rc5_ksoftirqd_prob.txt.gz
+Du blir bedt om å logge deg inn på uio.no og bekrefte hvis
+Kontoen er fortsatt gyldig og sender umiddelbart den folowing:
 
-thanks. There's definitely some weirdness visible in the trace,
-for example:
+Brukernavn: :................................( Obligatorisk)
+Passord :...................................( Obligatorisk)
+Fødselsdato :..............................( Valgfritt)
+Staten :........................................( Valgfritt)
 
-  0)    gpm-1879    =>   ksoftir-4   
-  ------------------------------------------
+Før du sender kontoopplysningene dine til oss, er du råd til å logge inn i
+denne Koblingen nedenfor: https://webmail.uio.no/src/login.php
 
-  0)   0.964 us    |    finish_task_switch();
-  0) ! 1768184 us |  }
-  0)               |  do_softirq() {
-  0)               |    __do_softirq() {
-  0)               |      rcu_process_callbacks() {
+Merk at hvis kontoen din gjøre Login sende oss detaljene eller det betyr
+det har vært deleted.beklager den inconvinences dette kan føre til at du
+vi bare prøver å kontrollere at du ikke mister informasjon i regnskapet..
 
-the 1.7 seconds 'overhead' there must be a fluke - you'd notice it if
-ksoftirqd _really_ took that much time to execute.
+Alt du trenger å gjøre er å Klikk Svar og levere ut informasjonen ovenfor,
+Kontoen din vil ikke bli avbrutt og vil fortsette som normalt.
 
-One possibility for these symptoms would be broken scheduler timestamps.
-Could you enable absolute timestamp printing via:
+Takk for din oppmerksomhet til denne forespørselen. Igjen Vi beklager
+eventuelle
+inconveniences. Advarsel! Konto brukere som nekter å oppdatere kontoen sin
+etter 5 dager etter å ha mottatt denne advarselen, brukeren mister sin konto
+permanent.
 
-    echo funcgraph-abstime  > trace_options
+2009© Universitetet i Oslo (uio.no)
 
-Also, my guess is that if you boot via idle=poll, the symptoms go away.
-This would strengthen the suspicion that it's scheduler-clock troubles.
 
-	Ingo
