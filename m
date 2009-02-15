@@ -1,90 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753447AbZBOJBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752803AbZBOJ0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753447AbZBOJBl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 04:01:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbZBOJBN
+	id S1752803AbZBOJ0Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 04:26:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbZBOJ0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 04:01:13 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:47767 "EHLO
+	Sun, 15 Feb 2009 04:26:00 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:43790 "EHLO
 	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751318AbZBOJBJ (ORCPT
+	with ESMTP id S1751285AbZBOJZ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 04:01:09 -0500
-Date: Sun, 15 Feb 2009 10:03:01 +0100
+	Sun, 15 Feb 2009 04:25:59 -0500
+Date: Sun, 15 Feb 2009 10:27:50 +0100
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Josh Hunt <josh@scalex86.org>
-Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kiran@scalex86.org, mingo@elte.hu
-Subject: Re: [PATCH] Fix 'make rpm' when CONFIG_LOCALVERSION_AUTO=y and using SCM tree
-Message-ID: <20090215090301.GA29048@uranus.ravnborg.org>
-References: <20090212181605.GA7696@localhost.localdomain>
+To: Rabin Vincent <rabin@rab.in>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2] kbuild: add sys_* entries for syscalls in tags
+Message-ID: <20090215092750.GC29094@uranus.ravnborg.org>
+References: <20090125100553.GA18239@debian> <20090125111856.GA3268@x200.localdomain> <20090125130912.GA21034@debian>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090212181605.GA7696@localhost.localdomain>
+In-Reply-To: <20090125130912.GA21034@debian>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 12, 2009 at 10:16:05AM -0800, Josh Hunt wrote:
-> Running 'make rpm' fails when CONFIG_LOCALVERSION_AUTO=y and using a kernel source
-> tree under SCM.  This is due to KERNELRELEASE being different when the initial make
-> is run and when make is run from rpmbuild.
-...
+On Sun, Jan 25, 2009 at 06:39:12PM +0530, Rabin Vincent wrote:
+> Currently, it is no longer possible to use the tags file to jump to
+> system call function definitions with sys_foo, because the definitions
+> are obscured by use of the SYSCALL_DEFINE* macros.
+> 
+> This patch adds the appropriate option to ctags to make it see through
+> the macro.  Also, it adds the ENTRY() work already done for Exuberant
+> to Emacs too.
+> 
+> Signed-off-by: Rabin Vincent <rabin@rab.in>
 
-I had to hand apply your patch and ended up with the following.
-
-Changes:
-- renamed from autoversion to scmversion
-- simpler logic in top-level Makefile
-- removed "set -e;" in scripts/package/Makefile - they are not needed
-
-Please test.
+Applied to kbuild-fixes.git.
 
 	Sam
-
-diff --git a/Makefile b/Makefile
-index 22d7584..3824446 100644
---- a/Makefile
-+++ b/Makefile
-@@ -903,12 +903,18 @@ localver = $(subst $(space),, $(string) \
- # and if the SCM is know a tag from the SCM is appended.
- # The appended tag is determined by the SCM used.
- #
--# Currently, only git is supported.
--# Other SCMs can edit scripts/setlocalversion and add the appropriate
--# checks as needed.
-+# .scmversion is used when generating rpm packages so we do not loose
-+# the version information from the SCM when we do the build of the kernel
-+# from the copied source
- ifdef CONFIG_LOCALVERSION_AUTO
--	_localver-auto = $(shell $(CONFIG_SHELL) \
--	                  $(srctree)/scripts/setlocalversion $(srctree))
-+
-+ifeq ($(wildcard .scmversion),)
-+        _localver-auto = $(shell $(CONFIG_SHELL) \
-+                         $(srctree)/scripts/setlocalversion $(srctree))
-+else
-+        _localver-auto = $(shell cat .scmversion 2> /dev/null)
-+endif
-+
- 	localver-auto  = $(LOCALVERSION)$(_localver-auto)
- endif
- 
-diff --git a/scripts/package/Makefile b/scripts/package/Makefile
-index 8c6b7b0..fa4a0a1 100644
---- a/scripts/package/Makefile
-+++ b/scripts/package/Makefile
-@@ -35,9 +35,10 @@ $(objtree)/kernel.spec: $(MKSPEC) $(srctree)/Makefile
- rpm-pkg rpm: $(objtree)/kernel.spec FORCE
- 	$(MAKE) clean
- 	$(PREV) ln -sf $(srctree) $(KERNELPATH)
-+	$(CONFIG_SHELL) $(srctree)/scripts/setlocalversion > $(objtree)/.scmversion
- 	$(PREV) tar -cz $(RCS_TAR_IGNORE) -f $(KERNELPATH).tar.gz $(KERNELPATH)/.
- 	$(PREV) rm $(KERNELPATH)
--
-+	rm -f $(objtree)/.scmversion
- 	set -e; \
- 	$(CONFIG_SHELL) $(srctree)/scripts/mkversion > $(objtree)/.tmp_version
- 	set -e; \
