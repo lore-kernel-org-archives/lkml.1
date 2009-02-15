@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096AbZBONdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754960AbZBONev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755096AbZBONdb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 08:33:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbZBONdV
+	id S1754960AbZBONev (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 08:34:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753714AbZBONen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 08:33:21 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:51516 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753714AbZBONdV (ORCPT
+	Sun, 15 Feb 2009 08:34:43 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:35954 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753679AbZBONem (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 08:33:21 -0500
-Date: Sun, 15 Feb 2009 14:35:12 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Borislav Petkov <petkovbb@gmail.com>
-Subject: Re: [PATCH 01/10] ide: add flags query macros
-Message-ID: <20090215133512.GA32621@uranus.ravnborg.org>
-References: <1234699692-9452-1-git-send-email-petkovbb@gmail.com> <1234699692-9452-2-git-send-email-petkovbb@gmail.com>
+	Sun, 15 Feb 2009 08:34:42 -0500
+Date: Sun, 15 Feb 2009 14:34:33 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Frank Seidel <fseidel@suse.de>,
+       linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       rlove@rlove.org, protasnb@gmail.com,
+       Michael Ruoss <miruoss@student.ethz.ch>,
+       Tim Gardner <tim.gardner@canonical.com>,
+       Frank Seidel <frank@f-seidel.de>
+Subject: Re: [PATCH] hwmon/hdaps: Fix bug 7154 inversion of separate axis
+Message-ID: <20090215143433.68241a34@hyperion.delvare>
+In-Reply-To: <20090214142346.ZZRA012@mailhub.coreip.homeip.net>
+References: <499569A9.5030202@suse.de>
+	<20090214142346.ZZRA012@mailhub.coreip.homeip.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1234699692-9452-2-git-send-email-petkovbb@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 15, 2009 at 01:08:03PM +0100, Borislav Petkov wrote:
-> There should be no functionality change resulting from this patch.
+On Sat, 14 Feb 2009 14:25:56 -0800, Dmitry Torokhov wrote:
+> On Fri, Feb 13, 2009 at 01:38:01PM +0100, Frank Seidel wrote:
+> > -module_param_named(invert, hdaps_invert, bool, 0);
+> > -MODULE_PARM_DESC(invert, "invert data along each axis");
+> > +module_param_named(invert, hdaps_invert, int, 0);
+> > +MODULE_PARM_DESC(invert, "invert data along each axis. 1 invert x-axis, "
+> > +		 "2 invert y-axis, 3 invert both axes.");
+> >  
 > 
-> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-> ---
->  include/linux/ide.h |  166 +++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 166 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/ide.h b/include/linux/ide.h
-> index c75631c..f133062 100644
-> --- a/include/linux/ide.h
-> +++ b/include/linux/ide.h
-> @@ -497,6 +497,82 @@ enum {
->  	IDE_AFLAG_NO_AUTOCLOSE		= (1 << 24),
->  };
->  
-> +#define ide_drv_drq_int(drive) \
-> +	((drive)->atapi_flags & IDE_AFLAG_DRQ_INTERRUPT)
+> Why don't you make these 0644? I don't see why they can't be changed
+> "on fly".
 
-Why not use a static inline here so we get proper typecheck.
-And then convert the return result to a bool (0/1) so you
-do not have to do this at the call site.
+hdaps_invert can already be read and written via a sysfs attribute. We
+really don't need 2 ways to do it, so either the sysfs file or the
+module parameter should be dropped.
 
-I counted at least three places in ide-cd that does a local
-transformation to a bool and I saw nowhere the actual bit value
-was used.
-
-	Sam
+-- 
+Jean Delvare
