@@ -1,60 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbZBOMQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754519AbZBOMW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754542AbZBOMQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 07:16:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbZBOMQu
+	id S1754519AbZBOMW1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 07:22:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbZBOMWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 07:16:50 -0500
-Received: from smtp6-g21.free.fr ([212.27.42.6]:47578 "EHLO smtp6-g21.free.fr"
+	Sun, 15 Feb 2009 07:22:18 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:44196 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752573AbZBOMQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 07:16:49 -0500
-From: Philippe Grenard <philippe.grenard@laposte.net>
-To: linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: cannot get stable system since 2.6.28 kernel
-Date: Sun, 15 Feb 2009 13:17:11 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.27.10-phiphi; KDE/4.2.0; x86_64; ; )
-Cc: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
-       John Stoffel <john@stoffel.org>, Len Brown <lenb@kernel.org>
-References: <200902131944.56634.philippe.grenard@laposte.net> <200902140917.38313.philippe.grenard@laposte.net> <3f9a31f40902140124j4bb07aeej8af3dff89e347318@mail.gmail.com>
-In-Reply-To: <3f9a31f40902140124j4bb07aeej8af3dff89e347318@mail.gmail.com>
+	id S1752974AbZBOMWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 07:22:18 -0500
+Message-ID: <499807B4.1050606@suse.de>
+Date: Sun, 15 Feb 2009 13:16:52 +0100
+From: Frank Seidel <fseidel@suse.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: linux kernel <linux-kernel@vger.kernel.org>
+Cc: akpm@linux-foundation.org, rlove@rlove.org,
+       Jean Delvare <khali@linux-fr.org>, protasnb@gmail.com,
+       Michael Ruoss <miruoss@student.ethz.ch>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Tim Gardner <tim.gardner@canonical.com>,
+       Frank Seidel <frank@f-seidel.de>, Frank Seidel <fseidel@suse.de>,
+       multinymous@gmail.com
+Subject: [PATCHv2] hwmon/hdaps: Fix bug 7154 inversion of separate axis
+References: <499569A9.5030202@suse.de>
+In-Reply-To: <499569A9.5030202@suse.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902151317.11690.philippe.grenard@laposte.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 14 February 2009 10:24:51 Jaswinder Singh Rajput wrote:
-> On Sat, Feb 14, 2009 at 1:47 PM, Philippe Grenard
->
-> <philippe.grenard@laposte.net> wrote:
-> > On Friday 13 February 2009 21:48:30 John Stoffel wrote:
-> >> Here's your problem most probably.  The nVidia graphics module.
-> >> Remove that and re-try your system.  Basically, we can't help you when
-> >> you use a vendor's binary module.
-> >>
-> >> John
-> >
-> > Well, it does not change anything to my problem...
-> > Moreover, I don't understand why this would work with 2.6.27.10 but not
-> > with 2.6.29-rc4 ....
->
-> May be nvidia graphics module was written based on some kernel which
-> is more closer to 2.6.27.10 as compare to 2.6.29-rc4.
->
-> Another thing which John is pointing configure your bios to use
-> standard inbuild garphics card OR remove nvidia module and check
-> whether it solves your problem or not.
->
-> --
-> JSR
-As I said just before, I tried it but it does not change my problem : the 
-system still stalls randomly, sometimes during boot, sometimes after...
+From: Frank Seidel <frank@f-seidel.de>
 
-Thanks for your help,
+Fix for kernel.org bug #7154:hdaps inversion of
+each axis. This version is based on the work
+from Michael Ruoss <miruoss@student.ethz.ch>.
 
-Philippe
+Signed-off-by: Frank Seidel <frank@f-seidel.de>
+---
+ drivers/hwmon/hdaps.c |   64 +++++++++++++++++++++++++-------------------------
+ 1 file changed, 33 insertions(+), 31 deletions(-)
+
+--- a/drivers/hwmon/hdaps.c
++++ b/drivers/hwmon/hdaps.c
+@@ -65,6 +65,10 @@
+ #define HDAPS_INPUT_FUZZ	4	/* input event threshold */
+ #define HDAPS_INPUT_FLAT	4
+ 
++#define HDAPS_X_AXIS		(1 << 0)
++#define HDAPS_Y_AXIS		(1 << 1)
++#define HDAPS_BOTH_AXES		(HDAPS_X_AXIS | HDAPS_Y_AXIS)
++
+ static struct platform_device *pdev;
+ static struct input_polled_dev *hdaps_idev;
+ static unsigned int hdaps_invert;
+@@ -182,11 +186,11 @@ static int __hdaps_read_pair(unsigned in
+ 	km_activity = inb(HDAPS_PORT_KMACT);
+ 	__device_complete();
+ 
+-	/* if hdaps_invert is set, negate the two values */
+-	if (hdaps_invert) {
++	/* hdaps_invert is a bitvector to negate the axes */
++	if (hdaps_invert & HDAPS_X_AXIS)
+ 		*x = -*x;
++	if (hdaps_invert & HDAPS_Y_AXIS)
+ 		*y = -*y;
+-	}
+ 
+ 	return 0;
+ }
+@@ -436,7 +440,8 @@ static ssize_t hdaps_invert_store(struct
+ {
+ 	int invert;
+ 
+-	if (sscanf(buf, "%d", &invert) != 1 || (invert != 1 && invert != 0))
++	if (sscanf(buf, "%d", &invert) != 1 ||
++	    invert < 0 || invert > HDAPS_BOTH_AXES)
+ 		return -EINVAL;
+ 
+ 	hdaps_invert = invert;
+@@ -483,56 +488,52 @@ static int __init hdaps_dmi_match(const
+ /* hdaps_dmi_match_invert - found an inverted match. */
+ static int __init hdaps_dmi_match_invert(const struct dmi_system_id *id)
+ {
+-	hdaps_invert = 1;
+-	printk(KERN_INFO "hdaps: inverting axis readings.\n");
++	hdaps_invert = (int)id->driver_data;
++	printk(KERN_INFO "hdaps: inverting axis (%u) readings.\n",
++	       hdaps_invert);
+ 	return hdaps_dmi_match(id);
+ }
+ 
+-#define HDAPS_DMI_MATCH_NORMAL(vendor, model) {		\
+-	.ident = vendor " " model,			\
+-	.callback = hdaps_dmi_match,			\
+-	.matches = {					\
+-		DMI_MATCH(DMI_BOARD_VENDOR, vendor),	\
+-		DMI_MATCH(DMI_PRODUCT_VERSION, model)	\
+-	}						\
+-}
+-
+-#define HDAPS_DMI_MATCH_INVERT(vendor, model) {		\
++#define HDAPS_DMI_MATCH_INVERT(vendor, model, axes) {	\
+ 	.ident = vendor " " model,			\
+ 	.callback = hdaps_dmi_match_invert,		\
++	.driver_data = (void *)axes,			\
+ 	.matches = {					\
+ 		DMI_MATCH(DMI_BOARD_VENDOR, vendor),	\
+ 		DMI_MATCH(DMI_PRODUCT_VERSION, model)	\
+ 	}						\
+ }
+ 
++#define HDAPS_DMI_MATCH_NORMAL(vendor, model)		\
++	HDAPS_DMI_MATCH_INVERT(vendor, model, 0)
++
+ /* Note that HDAPS_DMI_MATCH_NORMAL("ThinkPad T42") would match
+    "ThinkPad T42p", so the order of the entries matters.
+    If your ThinkPad is not recognized, please update to latest
+    BIOS. This is especially the case for some R52 ThinkPads. */
+ static struct dmi_system_id __initdata hdaps_whitelist[] = {
+-	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad R50p"),
++	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad R50p", HDAPS_BOTH_AXES),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad R50"),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad R51"),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad R52"),
+-	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad R61i"),
+-	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad R61"),
+-	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad T41p"),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad R61i", HDAPS_BOTH_AXES),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad R61", HDAPS_BOTH_AXES),
++	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad T41p", HDAPS_BOTH_AXES),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad T41"),
+-	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad T42p"),
++	HDAPS_DMI_MATCH_INVERT("IBM", "ThinkPad T42p", HDAPS_BOTH_AXES),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad T42"),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad T43"),
+-	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T60"),
+-	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T61p"),
+-	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T61"),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T60", HDAPS_BOTH_AXES),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T61p", HDAPS_BOTH_AXES),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad T61", HDAPS_BOTH_AXES),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad X40"),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad X41"),
+-	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X60"),
+-	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X61s"),
+-	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X61"),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X60", HDAPS_BOTH_AXES),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X61s", HDAPS_BOTH_AXES),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad X61", HDAPS_BOTH_AXES),
+ 	HDAPS_DMI_MATCH_NORMAL("IBM", "ThinkPad Z60m"),
+-	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad Z61m"),
+-	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad Z61p"),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad Z61m", HDAPS_BOTH_AXES),
++	HDAPS_DMI_MATCH_INVERT("LENOVO", "ThinkPad Z61p", HDAPS_BOTH_AXES),
+ 	{ .ident = NULL }
+ };
+ 
+@@ -627,8 +628,9 @@ static void __exit hdaps_exit(void)
+ module_init(hdaps_init);
+ module_exit(hdaps_exit);
+ 
+-module_param_named(invert, hdaps_invert, bool, 0);
+-MODULE_PARM_DESC(invert, "invert data along each axis");
++module_param_named(invert, hdaps_invert, int, 0644);
++MODULE_PARM_DESC(invert, "invert data along each axis. 1 invert x-axis, "
++		 "2 invert y-axis, 3 invert both axes.");
+ 
+ MODULE_AUTHOR("Robert Love");
+ MODULE_DESCRIPTION("IBM Hard Drive Active Protection System (HDAPS) driver");
+
