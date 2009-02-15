@@ -1,111 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754949AbZBOTb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbZBOTfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754949AbZBOTb2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 14:31:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbZBOTbS
+	id S1755371AbZBOTfg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 14:35:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbZBOTf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 14:31:18 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52928 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751355AbZBOTbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 14:31:15 -0500
-Date: Sun, 15 Feb 2009 20:31:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Damien Wyart <damien.wyart@free.fr>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12650] Strange load average and ksoftirqd behavior with
-	2.6.29-rc2-git1
-Message-ID: <20090215193102.GA16873@elte.hu>
-References: <juADNmcceYF.A.mdD.Mr0lJB@chimera> <rjPbZ5GRJPO.A.1kE.ur0lJB@chimera> <20090215080941.GA2295@localhost.localdomain> <20090215090026.GA31147@elte.hu> <20090215095128.GA3234@localhost.localdomain> <20090215101351.GA23274@elte.hu> <20090215103445.GA2335@localhost.localdomain> <20090215110104.GB31351@elte.hu> <20090215180355.GA2273@localhost.localdomain>
+	Sun, 15 Feb 2009 14:35:28 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:1167 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752013AbZBOTf1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 14:35:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=cp2OvJ+IjuoB4zTqmNADvAQkFXjNk3ZVLFOk9yYXdzU0RqyBVBbex2fqi7nLucy+ZL
+         X5Np/t4Wr81IF4yLv8AKeoSMO1OLdq7Be0CtjDuBeq5bixL5p7zGYXup9+6TX/aQN83D
+         e1o4R4tQqEtBQWi43kqD5woDwZeA8K/qXA54I=
+Date: Sun, 15 Feb 2009 20:35:23 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: Poking ieee80211_default_rc_algo causes kernel lockups
+Message-ID: <20090215193522.GA5790@nowhere>
+References: <slrngpgfil.5gc.sitsofe@sitsofe.eeepc.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090215180355.GA2273@localhost.localdomain>
+In-Reply-To: <slrngpgfil.5gc.sitsofe@sitsofe.eeepc.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Damien Wyart <damien.wyart@free.fr> wrote:
-
-> > > So I followed the tracing steps in the tutorial (with the 1 sec sleep),
-> > > which gave me this:
-> > > http://damien.wyart.free.fr/trace_2.6.29-rc5_ksoftirqd_prob.txt.gz
+On Sun, Feb 15, 2009 at 04:09:57PM +0000, Sitsofe Wheeler wrote:
+> Hi,
 > 
-> > thanks. There's definitely some weirdness visible in the trace,
-> > for example:
+> As mentioned on
+> http://groups.google.com/group/fa.linux.kernel/browse_frm/thread/d4a6ce26360613fa/b362792a2debced6?#b362792a2debced6
+> , poking /sys/module/mac80211/parameters/ieee80211_default_rc_algo and
+> then trying to read values back is currently causing the kernel to go
+> funny. E.g.
+> echo blah > /sys/module/mac80211/parameters/ieee80211_default_rc_algo
+> cat /sys/module/mac80211/parameters/ieee80211_default_rc_algo
 > 
-> >   0)    gpm-1879    =>   ksoftir-4   
-> >   ------------------------------------------
+> Causes 2.6.29rc5 on my EeePC 900 to lock up.
 > 
-> >   0)   0.964 us    |    finish_task_switch();
-> >   0) ! 1768184 us |  }
-> >   0)               |  do_softirq() {
-> >   0)               |    __do_softirq() {
-> >   0)               |      rcu_process_callbacks() {
+> -- 
+> Sitsofe
 > 
-> > the 1.7 seconds 'overhead' there must be a fluke - you'd notice it if
-> > ksoftirqd _really_ took that much time to execute.
+
+
+On Sun, Feb 15, 2009 at 04:09:57PM +0000, Sitsofe Wheeler wrote:
+> Hi,
 > 
-> > One possibility for these symptoms would be broken scheduler timestamps.
-> > Could you enable absolute timestamp printing via:
+> As mentioned on
+> http://groups.google.com/group/fa.linux.kernel/browse_frm/thread/d4a6ce26360613fa/b362792a2debced6?#b362792a2debced6
+> , poking /sys/module/mac80211/parameters/ieee80211_default_rc_algo and
+> then trying to read values back is currently causing the kernel to go
+> funny. E.g.
+> echo blah > /sys/module/mac80211/parameters/ieee80211_default_rc_algo
+> cat /sys/module/mac80211/parameters/ieee80211_default_rc_algo
 > 
-> >     echo funcgraph-abstime  > trace_options
+> Causes 2.6.29rc5 on my EeePC 900 to lock up.
 > 
-> Mmm, seems I do not have this option recognized in rc5, so could not
-> test. Will retry all this with tip tomorrow...
 
-Yeah, it got renamed in -tip - in rc5 it's iter_ctrl.
+I think I've found something:
 
-> > Also, my guess is that if you boot via idle=poll, the symptoms go away.
-> > This would strengthen the suspicion that it's scheduler-clock troubles.
-> 
-> In fact, with idle=poll, the symptoms do not go away, they are much
-> stronger: without it, ksotirqd have a few % of CPU in top output; with
-> it, they have 20 or 30% and the global average is not far from 1.
-> 
-> On my laptop (I do not have it at hand today), with rc3-gitX (did not
-> retest with rc5), the load avg was ok, but I saw that after boot,
-> ksoftird threads had a quite higher running time in top than with
-> 2.6.28. I am surprised nobody reported this yet...
-> 
-> I attach to this mail config and dmesg if needed (this is rc5 without
-> idle=poll).
-> 
-> If a trace with funcgraph-abstime is interesting for you with tip,
-> I will do this tomorrow.
+When you set a new value to a module parameter through
+sysfs, here is what happens (traced with the function_graph_tracer,
+I've zapped a lot of entries to keep it clear)
 
-Yes, an abstime trace would be useful.
 
-> checking TSC synchronization [CPU#0 -> CPU#1]: passed.
-> Switched to high resolution mode on CPU 1
+ 1)               |  sys_open() {
+ 1)               |            sysfs_open_file() {
+ 1)               |              kmem_cache_alloc() {
+ 1)   0.609 us    |                __might_sleep();
+ 1)   2.046 us    |              }
+ 1) + 58.976 us   |            }
+ 1) ! 471.823 us  |  }
 
-Lets double-check your scheduler clock first. Without being able to
-trust the clock we cannot trust the task stats nor the trace output.
 
-What does this check display:
+The file is opened here, and sysfs will allocate a private buffer for this
+file...
 
-  http://people.redhat.com/mingo/time-warp-test/time-warp-test.c
 
-Does it find any TSC time warps?
+ 1)               |  sys_write() {
+ 1)               |    vfs_write() {
+ 1)               |      sysfs_write_file() {
+ 1) + 26.446 us   |        get_zeroed_page();
+ 1)   0.789 us    |        sysfs_get_active_two();
+ 1)               |        module_attr_store() {
+ 1)               |          param_attr_store() {
+ 1)   5.625 us    |            param_set_charp();
+ 1)   7.279 us    |          }
+ 1)   8.919 us    |        }
+ 1)   4.113 us    |      }
+ 1) + 62.502 us   |    }
+ 1) + 64.961 us   |  }
 
-Also, could you send the output of:
+Then we go to write the file, the buffer we allocated is used to store what
+the user gave us as the new value of the module parameter.
 
-  http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
+This filled buffer is relayed to the module parameter and the address of the buffer
+is directly assigned to the pointer of the module parameter:
 
-Run it while you can see the ksoftirqd anomaly.
+int param_set_charp(const char *val, struct kernel_param *kp)
+{
+	[...]
+	*(char **)kp->arg = (char *)val;
+	return 0;
+}
 
-	Ingo
+At this stage, all is good.
+
+But just after we close the file:
+
+
+ 1)               |            sysfs_release() {
+ 1)               |              kfree() {
+ 1)   1.105 us    |                __phys_addr();
+ 1)   2.842 us    |              }
+ 1)               |              free_pages() {
+ 1)   0.609 us    |                __phys_addr();
+ 1)               |                __free_pages() {
+ 1)               |                  free_hot_page() {
+ 1)               |                    free_hot_cold_page() {
+ 1)   1.113 us    |                      get_pageblock_flags_group();
+ 1)   3.061 us    |                    }
+ 1)   4.466 us    |                  }
+ 1)   5.744 us    |                }
+ 1)   8.166 us    |              }
+ 1)               |              kfree() {
+ 1)   0.601 us    |                __phys_addr();
+ 1)   2.052 us    |              }
+ 1) + 18.686 us   |            }
+
+The buffer we just assigned to the module parameter is freed. So we can't reuse it later,
+but that's what is done later when we read it, since this bad address is dereferenced:
+
+int param_get_charp(char *buffer, struct kernel_param *kp)
+{
+	return sprintf(buffer, "%s", *((char **)kp->arg));
+}
+
+So the problem seems not related to mac80211 but actually to module parameter management.
+I'm not sure what is the right fix.
+
+I guess we should use the following field in struct kernel_param:
+struct kparam_string *str;
+
+But this implies that string module params must not be simply pointers but static arrays.
+Although I find it a bit insane to modify a string parameter at runtime.
+
+The string is parsed by a module on load but not after, so a callback given by the module
+seems to me more sane...
+
+
