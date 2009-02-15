@@ -1,45 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754861AbZBOWqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755391AbZBOWsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754861AbZBOWqZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 17:46:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbZBOWqR
+	id S1755391AbZBOWsy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 17:48:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbZBOWsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 17:46:17 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51942 "EHLO mx2.mail.elte.hu"
+	Sun, 15 Feb 2009 17:48:45 -0500
+Received: from gw.goop.org ([64.81.55.164]:42225 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752443AbZBOWqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 17:46:17 -0500
-Date: Sun, 15 Feb 2009 23:46:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: state of some x86 acpi patches
-Message-ID: <20090215224607.GA2653@elte.hu>
-References: <495C677F.6080707@goop.org> <20090102153957.GA1180@elte.hu> <4980EE0C.4070308@goop.org> <49810211.9030808@kernel.org> <498CF8DA.30004@goop.org> <498CFD95.5070004@kernel.org> <498E229C.5030205@goop.org> <20090209123711.GK17782@elte.hu> <20090215193655.GA18674@elte.hu> <499891D5.1080804@kernel.org>
+	id S1752443AbZBOWsp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 17:48:45 -0500
+Message-ID: <49989BCA.9090606@goop.org>
+Date: Sun, 15 Feb 2009 14:48:42 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <499891D5.1080804@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       hpa <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: x86: unify genapic code, unify subarchitectures, remove	old	subarchitecture
+ code
+References: <1234102566.4244.7.camel@localhost.localdomain>	 <498F0ED9.1080906@goop.org> <1234719693.3299.7.camel@localhost.localdomain>
+In-Reply-To: <1234719693.3299.7.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+James Bottomley wrote:
+> Agree this is a nasty problem.   However, I can't see any reason why
+> smp_call_function_many() needs to allocate in the wait case ... and the
+> tlb flushing code would be using the wait case.  What about this fix to
+> the generic SMP code (cc'd Jens) that would allow us to take on stack
+> data and the fast path all the time?
+>   
 
-hm, i still get:
+That's how it used to be, but there's a subtle race.  When using 
+allocated list elements, the lifetime of the allocated blocks is managed 
+via rcu.  When an element is deleted with list_del_rcu(), another cpu 
+can still be using its ->next pointer, and so the memory for that list 
+entry can't be freed early.  If it is stack-allocated, then the memory 
+will get re-allocated when the calling function returns, which will 
+trash the ->next pointer that another cpu is still relying on.
 
-/home/mingo/tip/arch/ia64/kernel/acpi.c:203: error: conflicting types for '__acpi_unmap_table'
-/home/mingo/tip/include/linux/acpi.h:82: error: previous declaration of '__acpi_unmap_table' was here
-/home/mingo/tip/arch/ia64/kernel/acpi.c:203: error: conflicting types for '__acpi_unmap_table'
-/home/mingo/tip/include/linux/acpi.h:82: error: previous declaration of '__acpi_unmap_table' was here
+> By the way, I can see us building up stack runoff danger for the large
+> CPU machines, so the on stack piece could be limited to a maximal CPU
+> cap beyond which it has to kmalloc ... the large CPU machines would
+> still probably pick up scaling benefits in that case ... thoughts?
+>   
 
-	Ingo
+It looks like Peter Z just posted some patches to remove kmalloc from 
+this path ("generic smp helpers vs kmalloc").  Ah, he's addressed the 
+point above:
+
+    Also, since we cannot simply remove an item from the global queue
+    (another
+    cpu might be observing it), a quiesence of sorts needs to be
+    observed. The
+    current code uses regular RCU for that purpose.
+
+    However, since we'll be wanting to quickly reuse an item, we need
+    something
+    with a much faster turn-around. We do this by simply observing the
+    global
+    queue quiesence. Since there are a limited number of elements, it
+    will auto
+    force a quiecent state if we wait for it.
+
+(Haven't read the patches in detail yet.)
+
+> Yes ... will do.  If we can't make the unified non-IPI version work fast
+> enough, then both of us can share the call function version.
+>   
+
+Xen does cross-cpu tlb flush via hypercall, because Xen knows which real 
+CPUs (if any) have stale  vcpu tlb state (there's no point scheduling a 
+non-running vcpu just to flush its tlb).
+
+    J
+
+
+> -	data = kmalloc(sizeof(*data) + cpumask_size(), GFP_ATOMIC);
+> +	if (wait)
+> +		data = &stack_data.d;
+> +	else
+> +		data = kmalloc(sizeof(*data) + cpumask_size(), GFP_ATOMIC);
+>   
+You're still leaving CSD_FLAG_ALLOC set?
+
+>  	if (unlikely(!data)) {
+>  		/* Slow path. */
+>  		for_each_online_cpu(cpu) {
+>
+>   
+
