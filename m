@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbZBOQfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbZBOQll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754202AbZBOQfn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 11:35:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbZBOQfe
+	id S1754203AbZBOQll (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 11:41:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbZBOQld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 11:35:34 -0500
-Received: from yx-out-2324.google.com ([74.125.44.28]:12287 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752772AbZBOQfd (ORCPT
+	Sun, 15 Feb 2009 11:41:33 -0500
+Received: from hpsmtp-eml17.KPNXCHANGE.COM ([213.75.38.117]:20541 "EHLO
+	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752909AbZBOQlc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 11:35:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=kVRotHYum3f2O03+/Jvir94xEGfguTFOh3uwXfXMiAETgaOhFP3pRsvUXM9/oW7OuT
-         UoBAvYaEft4POzCnNas6ONLbxl2l+DdV9X3PmvX55mCn1dJ4iW5dedMdq52VZzlrrTnm
-         JzrjO2N++Fqjufqo7F94A9odZJHD3xKmdFkf0=
+	Sun, 15 Feb 2009 11:41:32 -0500
+From: Frans Pop <elendil@planet.nl>
+To: jplatte@naasa.net
+Subject: Re: cpuinfo shows wrong MHz value
+Date: Sun, 15 Feb 2009 17:41:29 +0100
+User-Agent: KMail/1.9.9
+Cc: Kasper Sandberg <lkml@metanurb.dk>, linux-kernel@vger.kernel.org
+References: <200902142217.51655.jplatte@naasa.net> <200902150800.59694.jplatte@naasa.net> <200902150811.36826.jplatte@naasa.net>
+In-Reply-To: <200902150811.36826.jplatte@naasa.net>
 MIME-Version: 1.0
-In-Reply-To: <20090215122956.GB7660@khazad-dum.debian.net>
-References: <20090214051214.359d4fd4@leftboat.lan>
-	 <20090214145256.GA7071@infradead.org>
-	 <1234627163.7293.196.camel@violet>
-	 <20090215122956.GB7660@khazad-dum.debian.net>
-Date: Sun, 15 Feb 2009 11:35:32 -0500
-Message-ID: <4ab4bbae0902150835h1158118wcb95be75d17ec37c@mail.gmail.com>
-Subject: Re: [0/3] lenovo-sl-laptop : new driver for drivers/staging
-From: Alexandre Rostovtsev <tetromino@gmail.com>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Marcel Holtmann <marcel@holtmann.org>,
-       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-laptop@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902151741.30303.elendil@planet.nl>
+X-OriginalArrivalTime: 15 Feb 2009 16:41:30.0870 (UTC) FILETIME=[41311960:01C98F8C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 15, 2009 at 7:29 AM, Henrique de Moraes Holschuh
-<hmh@hmh.eng.br> wrote:
-> We will be happy to review the driver in linux-acpi.  Submitting it as
-> a single patch against latest Linus is probably best.
+On Sunday 15 February 2009, Joerg Platte wrote:
+> Looks like p4_clockmod is responsible for these high values. After
+> removing it /proc/cpuinfo shows the correct values:
 
-I think I found the fan speed interface; I will resubmit to linux-acpi
-after I finish it.
+Can you check whether or not you were also using p4-clockmode with the 
+last kernel that did show correct values? The same grep command should 
+show this.
 
-> Oh, and it
-> should be checkpatch-clean if it isn't already.
+It would also help to know which kernel version was the last working one. 
+You mentioned 2.6.26, but with some uncertainty. Can you check for 2.6.26 
+and possibly for 2.6.27?
 
-Checkpatch complains about static variables initialized to 0. Since
-it's my first time writing kernel code, I have to ask what are
-probably obvious questions.
-1. Why is initializing a static variable to 0 bad? or worse than
-initializing that variable to 1, or -1?
-2. If I want to have a module parameter whose default value is 0, what
-should I do to stop checkpatch from complaining?
-
--Alexandre
+Note that p4-clockmode does not really help with power saving, but only 
+with thermal management (prevention of overheating). Possibly the 
+speedstep or acpi-cpufreq modules will work better for you, but it can 
+also be they don't support your processor.
+That does not mean this issue should not be looked into of course.
