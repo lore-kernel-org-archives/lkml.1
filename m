@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbZBOSWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755798AbZBOSWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756061AbZBOSWS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 13:22:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755101AbZBOSUn
+	id S1755798AbZBOSWf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 13:22:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755340AbZBOSUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 13:20:43 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:48305 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754693AbZBOSUm (ORCPT
+	Sun, 15 Feb 2009 13:20:47 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:3898 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755279AbZBOSUq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 13:20:42 -0500
+	Sun, 15 Feb 2009 13:20:46 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=fjUM3kJE2jj//FDNll/Z6FT76Ka9c9CZLnaC07ZSS1OeV0YIdiel0b7MrnTmv1aBTe
-         mlXecrx4sbT6+zhrhFUz5uLOfnQykBfaSa8Hx2gaZTr+uv8dgRcaHbo1SAxL5PQ2MMTj
-         XevIMC5jf9mMDzlCx//J0tR5iY5G2dv2+BYSM=
+        b=MeqBzA3O7im7S7NokjHjRkMLjRemqLhoEDdEr7WJbbPOUvt1K1pPPQsRwb4M5QJ0WX
+         ilU4++udULUzqvy9wTIpMn3kE6JCCrZKP8RYWXMAkKbeTaAn/gxrwZD5wx62tr+EkXSU
+         Pn/hEw4PnKpa5h9TxmS91VqwuUpseU3/vjThU=
 From: Andreas Robinson <andr345@gmail.com>
 To: sam@ravnborg.org, rusty@rustcorp.com.au
 Cc: linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 5/6] scripts: new module preprocessor for static linking
-Date: Sun, 15 Feb 2009 19:20:27 +0100
-Message-Id: <1234722028-8110-6-git-send-email-andr345@gmail.com>
+Subject: [RFC PATCH 6/6] kbuild: enable relinking of vmlinux without full kernel tree
+Date: Sun, 15 Feb 2009 19:20:28 +0100
+Message-Id: <1234722028-8110-7-git-send-email-andr345@gmail.com>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <1234722028-8110-1-git-send-email-andr345@gmail.com>
 References: <1234722028-8110-1-git-send-email-andr345@gmail.com>
@@ -29,172 +29,115 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This script strips unneeded sections, resolves duplicate
-symbols and concatenates multiple modules into a single
-object file suitable for linking with vmlinux.
-
-Problem: Debug symbols must be stripped or else objcopy
-won't remove any sections.
+A make parameter "L=1" enables relinking vmlinux from existing
+objects. Make will only look at toplevel built-in.o and lib.a.
+The source and lower-level objects are ignored.
 ---
- scripts/ld_extmodules.sh |  149 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 149 insertions(+), 0 deletions(-)
- create mode 100755 scripts/ld_extmodules.sh
+ Makefile |   29 ++++++++++++++++++++++++++++-
+ 1 files changed, 28 insertions(+), 1 deletions(-)
 
-diff --git a/scripts/ld_extmodules.sh b/scripts/ld_extmodules.sh
-new file mode 100755
-index 0000000..6049bfd
---- /dev/null
-+++ b/scripts/ld_extmodules.sh
-@@ -0,0 +1,149 @@
-+#!/bin/sh
-+# Copyright (C) 2009 Andreas Robinson <andr345@gmail.com>
-+#
-+# Released under the terms of the GNU GPL v2 or later.
+diff --git a/Makefile b/Makefile
+index 921d6b4..74a5e5f 100644
+--- a/Makefile
++++ b/Makefile
+@@ -75,6 +75,17 @@ ifdef M
+   endif
+ endif
+ 
++# Use 'make L=1' to skip compilation and relink the existing
++# objects. All objects must exist.
 +
-+# Usage ###############################
++ifdef L
++  ifeq ("$(origin L)", "command line")
++    KBUILD_RELINK := $(L)
++  endif
++endif
++ifndef KBUILD_RELINK
++  KBUILD_RELINK := 0
++endif
+ 
+ # kbuild supports saving output files in a separate directory.
+ # To locate output files in a separate directory two syntaxes are supported.
+@@ -257,7 +268,7 @@ ifeq ($(MAKECMDGOALS),)
+ endif
+ 
+ export KBUILD_MODULES KBUILD_BUILTIN
+-export KBUILD_CHECKSRC KBUILD_SRC KBUILD_EXTMOD
++export KBUILD_CHECKSRC KBUILD_SRC KBUILD_EXTMOD KBUILD_RELINK
+ 
+ # Beautify output
+ # ---------------------------------------------------------------------------
+@@ -459,12 +470,14 @@ else
+ # targets and others. In general all targets except *config targets.
+ 
+ ifeq ($(KBUILD_EXTMOD),)
++ifeq ($(KBUILD_RELINK),0)
+ # Additional helpers built in scripts/
+ # Carefully list dependencies so we do not try to build scripts twice
+ # in parallel
+ PHONY += scripts
+ scripts: scripts_basic include/config/auto.conf
+ 	$(Q)$(MAKE) $(build)=$(@)
++endif # KBUILD_RELINK
+ 
+ # Objects we will link into vmlinux / subdirs we need to visit
+ init-y		:= init/
+@@ -692,6 +705,7 @@ quiet_cmd_vmlinux__ ?= LD      $@
+       --start-group $(vmlinux-main) $(EXTOBJ) --end-group        \
+       $(filter-out $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) vmlinux.o FORCE ,$^)
+ 
++ifeq ($(KBUILD_RELINK),0)
+ # Generate new vmlinux version
+ quiet_cmd_vmlinux_version = GEN     .version
+       cmd_vmlinux_version = set -e;                     \
+@@ -703,6 +717,7 @@ quiet_cmd_vmlinux_version = GEN     .version
+ 	  expr 0$$(cat .old_version) + 1 >.version;	\
+ 	fi;						\
+ 	$(MAKE) $(build)=init
++endif
+ 
+ # Generate System.map
+ quiet_cmd_sysmap = SYSMAP
+@@ -851,6 +866,13 @@ modpost-init := $(filter-out init/built-in.o, $(vmlinux-init))
+ vmlinux.o: $(modpost-init) $(vmlinux-main) FORCE
+ 	$(call if_changed_rule,vmlinux-modpost)
+ 
++relinked-objs := $(vmlinux-init) $(vmlinux-main) $(vmlinux-lds)
 +
-+if [ "$#" -ne "2" ]
-+then
++ifeq ($(KBUILD_RELINK),1)
++$(relinked-objs): FORCE
++	$(call if_changed,touch)
++else # The endif is way down. Search for next KBUILD_RELINK.
 +
-+cat << EOF
+ # The actual objects are generated when descending, 
+ # make sure no implicit rule kicks in
+ $(sort $(vmlinux-init) $(vmlinux-main)) $(vmlinux-lds): $(vmlinux-dirs) ;
+@@ -1234,6 +1256,7 @@ distclean: mrproper
+ 		-o -name '*%' -o -name '.*.cmd' -o -name 'core' \) \
+ 		-type f -print | xargs rm -f
+ 
++endif # KBUILD_RELINK
+ 
+ # Packaging of the kernel to various formats
+ # ---------------------------------------------------------------------------
+@@ -1316,6 +1339,7 @@ help:
+ 	@echo  '  make O=dir [targets] Locate all output files in "dir", including .config'
+ 	@echo  '  make C=1   [targets] Check all c source with $$CHECK (sparse by default)'
+ 	@echo  '  make C=2   [targets] Force check of all c source with $$CHECK'
++	@echo  '  make L=1   [targets] Skip compilation and relink existing objects.'
+ 	@echo  ''
+ 	@echo  'Execute "make" or "make all" to build all targets marked with [*] '
+ 	@echo  'For further info see the ./README file'
+@@ -1556,6 +1580,9 @@ a_flags = -Wp,-MD,$(depfile) $(KBUILD_AFLAGS) $(AFLAGS_KERNEL) \
+ quiet_cmd_as_o_S = AS      $@
+ cmd_as_o_S       = $(CC) $(a_flags) -c -o $@ $<
+ 
++quiet_cmd_touch = TOUCH   $@
++cmd_touch = if [ -f $@ ]; then touch $@; else echo $@ missing.; exit 1; fi
 +
-+Prepare and link a set of modules for static linking with the kernel.
-+
-+Usage: `basename $0` <modules.lst> <output.o>
-+
-+<modules.lst> List of modules to link, in insertion order.
-+              This is a plain text file with one pathname per line.
-+<output.o>    Output object file.
-+              You can use modinfo or "readelf -p .modinfo" to read
-+              the table of contents.
-+
-+If the target architecture differs from your host, you must set the
-+CROSS_COMPILE environment variable. It is used as a prefix for the
-+binutil commands.
-+
-+EOF
-+
-+exit 1
-+fi
-+
-+#CROSS_COMPILE=
-+LD=${CROSS_COMPILE}ld
-+NM=${CROSS_COMPILE}nm
-+STRIP=${CROSS_COMPILE}strip
-+OBJCOPY=${CROSS_COMPILE}objcopy
-+OBJDUMP=${CROSS_COMPILE}objdump
-+READELF=${CROSS_COMPILE}readelf
-+
-+# Helper functions ####################
-+
-+# Simple "modinfo -F". No need to depend on module-init-tools.
-+# $1 = module
-+# $2 = field name.
-+my_modinfo()
-+{
-+	${READELF} $1 -p .modinfo | grep -o "$2=.*" | sed s/"$2="//g
-+}
-+
-+# Returns true if module $1 has a GPL compatible license.
-+# If a module has more than one license tag, (some do),
-+# this function will only look at the first one.
-+is_gpl_compatible()
-+{
-+	license=`my_modinfo $1 license | head -n 1`
-+	[ "$license" = "GPL" ] ||
-+		[ "$license" = "GPL v2" ] ||
-+		[ "$license" = "GPL and additional rights" ] ||
-+		[ "$license" = "Dual BSD/GPL" ] ||
-+		[ "$license" = "Dual MIT/GPL" ] ||
-+		[ "$license" = "Dual MPL/GPL" ]
-+}
-+
-+# Returns true if ELF-file $1 has a section named $2 .
-+have_section()
-+{
-+	[ "`${OBJDUMP} -h $1 | grep -o $2`" != "" ]
-+}
-+
-+# Main ################################
-+
-+rm -f .tmp_mod* $2
-+
-+cat $1 | while read module;
-+do
-+	# Cull unhandled files
-+
-+	if [ ! -f "$module" ]
-+	then
-+		echo Skipped: $module - file not found.
-+		continue
-+	fi
-+
-+	if ! have_section $module .gnu.linkonce.this_module
-+	then
-+		echo Skipped: $module - not a kernel module.
-+		continue
-+	fi
-+
-+	if ! is_gpl_compatible $module
-+	then
-+		echo Skipped: $module - not GPL compatible.
-+		continue
-+	fi
-+
-+	if ! have_section $module .mod_initcall.init
-+	then
-+		echo "Warning: `basename $module` has no " \
-+			".mod_initcall.init section."
-+		echo "         The kernel will not call this " \
-+			"module's init function."
-+	fi
-+
-+	# Add to table of contents. (module pathname and srcversion.)
-+	printf "module=$module `my_modinfo $module srcversion`\0" \
-+		>> .tmp_mod_toc.txt
-+
-+	# Prepare module for linking with the kernel
-+
-+	${NM} $module 2> /dev/null | \
-+		grep -o "__mod_.*_device_table" > .tmp_mod_devtbl
-+
-+	${LD} -r --defsym __this_module=0 $module -o .tmp_mod1.o
-+
-+	${OBJCOPY} --strip-debug                                \
-+		--remove-section .gnu.linkonce.this_module      \
-+		--remove-section .modinfo                       \
-+		--localize-symbol init_module                   \
-+		--localize-symbol cleanup_module                \
-+		--localize-symbol __this_module                 \
-+		.tmp_mod1.o
-+
-+	if [ ! -f .tmp_mod1.o ]
-+	then
-+		echo Skipped: $module - objcopy failed.
-+		continue
-+	fi
-+
-+	if [ -s .tmp_mod_devtbl ]
-+	then
-+		${OBJCOPY} --strip-symbols .tmp_mod_devtbl .tmp_mod1.o
-+	fi
-+
-+	# Merge modules into one file.
-+
-+	if [ ! -f $2 ]; then
-+		mv .tmp_mod1.o $2
-+	else
-+		${LD} -r $2 .tmp_mod1.o -o .tmp_mod2.o
-+		mv .tmp_mod2.o $2
-+	fi
-+
-+	echo Merged: $module
-+done
-+
-+# Insert table of contents
-+
-+${OBJCOPY} --add-section .modinfo=.tmp_mod_toc.txt $2
-+
+ # read all saved command lines
+ 
+ targets := $(wildcard $(sort $(targets)))
 -- 
 1.5.6.3
 
