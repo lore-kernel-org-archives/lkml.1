@@ -1,91 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756031AbZBPIaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756615AbZBPIak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756031AbZBPIaP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 03:30:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbZBPI35
+	id S1756615AbZBPIak (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 03:30:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755477AbZBPIaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 03:29:57 -0500
-Received: from welcomes-you.com ([85.214.50.128]:37102 "EHLO
-	smtp.welcomes-you.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753253AbZBPI35 (ORCPT
+	Mon, 16 Feb 2009 03:30:10 -0500
+Received: from smtp-out002.kontent.com ([81.88.40.216]:48360 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755284AbZBPIaI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 03:29:57 -0500
-X-Greylist: delayed 2054 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Feb 2009 03:29:56 EST
-Message-ID: <49991BE7.1090104@aei.mpg.de>
-Date: Mon, 16 Feb 2009 08:55:19 +0100
-From: Carsten Aulbert <carsten.aulbert@aei.mpg.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 16 Feb 2009 03:30:08 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Mike Murphy <mamurph@cs.clemson.edu>, linux-usb@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: Re: [PATCH] input: xpad.c - Xbox 360 wireless and sysfs support
+Date: Mon, 16 Feb 2009 09:31:33 +0100
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org
+References: <5aa163d00902142008g138826br80d3ea989e7af691@mail.gmail.com>
+In-Reply-To: <5aa163d00902142008g138826br80d3ea989e7af691@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-       beowulf@beowulf.org
-Subject: Tracing down 250ms open/chdir calls
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902160931.34771.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Am Sunday 15 February 2009 05:08:46 schrieb Mike Murphy:
+> Greetings,
+> 
+> The attached patch is a result of a few days of hacking to get better
+> Linux support for Xbox 360 wireless controllers. Major functional
+> improvements include support for the LEDs on the wireless controllers
+> (which are auto-set to the controller number as they are on the
+> official console), added support for rumble effects on wireless
+> controllers, added support for dead zones on all supported
+> controllers, and added support for a square axis mapping for the left
+> stick on all supported controllers. A large amount of the bulk in this
+> patch is from the addition of a sysfs interface to retrieve
+> information and adjust the dead zone/square axis settings.
+[..]
+> Patch generated against 2.6.28.2 (no changes in relevant in-kernel
+> driver from 2.6.28.2 to 2.6.28.5, so should apply against latest
+> stable).
+> 
+> Comments are appreciated. I am _NOT_ subscribed to the LKML, so please
+> CC me directly.
 
-sorry in advance for this vague subject and also the vague email, I'm
-trying my best to summarize the problem:
+1. You need to check the returns of sscanf
+2. This is very ugly:
 
-On our large cluster we sometimes encounter the problem that our main
-scheduling processes are often in state D and in the end not capable
-anymore of pushing work to the cluster.
++/* read-only attrs */
++static ssize_t xpad_show_int(struct xpad_data *xd, struct xpad_attribute *attr,
++	char *buf)
++{
++	int value;
++	if (!strcmp(attr->attr.name, "controller_number"))
++		value = xd->controller_number;
++	else if (!strcmp(attr->attr.name, "pad_present"))
++		value = xd->pad_present;
++	else if (!strcmp(attr->attr.name, "controller_type"))
++		value = xd->controller_type;
++	else
++		value = 0;
++	return sprintf(buf, "%d\n", value);
++}
 
-The head nodes are 8 core boxes with Xeon CPUs and equipped with 16 GB
-of memory, when certain types of jobs are running we see system loads of
-about 20-30 which might go up to 80-100 from time to time. Looking at
-the individual cores they are mostly busy with system tasks (e.g. htop
-shows 'red' bars).
+3. Possible memory leak in error case:
 
-stat -tt -c showed that several system calls of the scheduler take a
-long time to complete, most notably open and chdir which took between
-180 and 230ms to complete (during our testing). Since most of these open
-and chdir are via NFSv3 I'm including that list as well. The NFS servers
-are Sun Fire X4500 boxes running Solaris 10u5 right now.
++static struct xpad_data *xpad_create_data(const char *name, struct kobject *parent) {
++	struct xpad_data *data = NULL;
++	int check;
++	
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return NULL;
++	
++	check = kobject_init_and_add(&data->kobj, &xpad_ktype, parent, "%s", name);
++	if (check) {
++		kobject_put(&data->kobj);
++		return NULL;
++	}
 
-A standard output line looks like:
-93.37   38.997264     230753      169    78      open
+4. Why the cpup variety?
 
-i.e. 93.37% of the system-related time was spend in 169 successful open
-calls which took 230753us/call, thus 39 wall clock seconds were spend in
-a minute just doing open.
++	coords[0] = (__s16) le16_to_cpup((__le16 *)(data + x_offset));
 
-We tried several things to understand the problem, but apart from moving
-more files (mostly log files of currently running jobs) off NFS we did
-not move far ahead so far. On
-https://n0.aei.uni-hannover.de/twiki/bin/view/ATLAS/H2Problems
-we have summarized some things.
+5. What happens if this work is already scheduled?
 
-With the help of 'stress' and a tiny program just doing open/putc/close
-into a single file, I've tried to get a feeling how good or bad things
-are when compared to other head nodes with different tasks/loads:
+ 	if (data[0] & 0x08) {
++		padnum = xpad->controller_data->controller_number;
+ 		if (data[1] & 0x80) {
+-			xpad->pad_present = 1;
+-			usb_submit_urb(xpad->bulk_out, GFP_ATOMIC);
+-		} else
+-			xpad->pad_present = 0;
++			printk(KERN_INFO "Wireless Xbox 360 pad #%d present\n", padnum);
++			xpad->controller_data->pad_present = 1;
++			
++			INIT_WORK(&xpad->work, &xpad_work_controller);
++			schedule_work(&xpad->work);
 
-https://n0.aei.uni-hannover.de/twiki/bin/view/ATLAS/OpenCloseIotest
+6. No GFP_ATOMIC. If you can take a mutex you can sleep.
++		usb_submit_urb(xpad->irq_out, GFP_ATOMIC);
 
-(this test may or may not help in the long run, I'm just poking into the
-dark).
+	Regards
+		Oliver
 
-Now my questions:
-
-* Do you have any suggestions how to continue debugging this problem?
-* Does anyone know how to improve the situation? Next on my agenda would
-be to try different IO algorithms, any hints which ones should be good
-for such boxes?
-* I guess I missed vital information. please let me know if you need
-more information of the system
-
-Please Cc me from linux-kernel, I'm only on the other two addressed lists.
-
-Cheers and a lot of TIA
-
-Carsten
-
--- 
-Dr. Carsten Aulbert - Max Planck Institute for Gravitational Physics
-Callinstrasse 38, 30167 Hannover, Germany
-Phone/Fax: +49 511 762-17185 / -17193
-http://www.top500.org/system/9234 | http://www.top500.org/connfam/6/list/31
