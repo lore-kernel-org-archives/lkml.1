@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754698AbZBPV0J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbZBPV32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754698AbZBPV0J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 16:26:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbZBPVZy
+	id S1754098AbZBPV32 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 16:29:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbZBPV3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 16:25:54 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:42735 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750727AbZBPVZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 16:25:54 -0500
-Date: Mon, 16 Feb 2009 22:22:21 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] generic-smp: remove single ipi fallback for
-	smp_call_function_many()
-Message-ID: <20090216212221.GA8048@redhat.com>
-References: <20090216163847.431174825@chello.nl> <20090216164114.433430761@chello.nl> <20090216191008.GA1521@redhat.com> <1234813292.30178.327.camel@laptop> <20090216203055.GA5135@redhat.com> <1234817701.30178.380.camel@laptop>
+	Mon, 16 Feb 2009 16:29:20 -0500
+Received: from brigitte.telenet-ops.be ([195.130.137.66]:35478 "EHLO
+	brigitte.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750863AbZBPV3U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 16:29:20 -0500
+X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Feb 2009 16:29:19 EST
+Date: Mon, 16 Feb 2009 22:24:14 +0100
+From: Kristof Provost <Kristof@sigsegv.be>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: buytenh@wantstofly.org, sylver.bruneau@googlemail.com
+Subject: Compile error in drivers/watchdog/orion5x_wdt.c
+Message-ID: <20090216212413.GB27134@nereid>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii; x-action=pgp-signed
 Content-Disposition: inline
-In-Reply-To: <1234817701.30178.380.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-PGP-Fingerprint: 6B6E 5EED 8ECF FAE7 1F61  7458 5046 7D0E 11B0 0EE8
+User-Agent: Mutt/1.5.14 (2007-03-31)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/16, Peter Zijlstra wrote:
->
-> On Mon, 2009-02-16 at 21:30 +0100, Oleg Nesterov wrote:
-> >
-> > Yes I see. But if we change generic_smp_call_function_interrupt() to
-> > re-check cpumask_test_cpu(cpu, data->cpumask) under data->lock then
-> > we don't have to wait for quiescent state, afaics. And we have to
-> > take this lock anyway.
->
-> Suppose entries A,B,C,D are queued, and some cpu1 is traversing the list
-> to execute C and is currently at B waiting for data->lock. Concurrently
-> cpu2 has completed B and removes it from the list, when cpu3 takes B and
-> inserts it at the end.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Ah indeed, I see. Thanks Peter.
+drivers/watchdog/orion5x_wdt.c fails to compile with the following error:
 
-Oleg.
+  CC [M]  drivers/watchdog/orion5x_wdt.o
+drivers/watchdog/orion5x_wdt.c:37: error: 'ORION5X_TCLK' undeclared here
+(not in a function)
+make[2]: *** [drivers/watchdog/orion5x_wdt.o] Error 1
 
+
+I guess the problem is related to ebe35aff883496c07248df82c8576c3b6e84bbbe 
+as it removed ORION5X_TLCK from arch/arm/mach-orion5x/include/mach/timex.h.
+There are no other defines or uses of ORION5X_TLCK than in the watchdog.
+
+I don't think simply restoring the define is the appropriate solution 
+though. According to the commit log the value can be different for 
+different hardware variants.
+
+Regards,
+Kristof Provost
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmZ2X0ACgkQUEZ9DhGwDuhBOgCfUubO6evdRalap8WSfF7k99I2
+Bg8An1SPfFuueiU7Ndum9RNnIXLcdY7V
+=qubX
+-----END PGP SIGNATURE-----
