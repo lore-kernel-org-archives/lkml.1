@@ -1,63 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbZBPHRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923AbZBPHX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752832AbZBPHRh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 02:17:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbZBPHR0
+	id S1754923AbZBPHX0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 02:23:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118AbZBPHXS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 02:17:26 -0500
-Received: from jenny.ondioline.org ([66.220.1.122]:41744 "EHLO
-	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755513AbZBPHRZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 02:17:25 -0500
-From: Paul Collins <paul@burly.ondioline.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       benh@kernel.crashing.org
-Subject: Re: [Bug #12667] Badness at kernel/time/timekeeping.c:98 in pmud (timekeeping_suspended)
-References: <AIghyjFgMFP.A.uZD._10jJB@chimera>
-	<sWhNs83kKPE.A.p4D.L20jJB@chimera>
-	<878wognj00.fsf@burly.wgtn.ondioline.org>
-	<200902142342.59186.rjw@sisk.pl>
-Date: Mon, 16 Feb 2009 20:17:22 +1300
-In-Reply-To: <200902142342.59186.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Sat, 14 Feb 2009 23:42:58 +0100")
-Message-ID: <87hc2u26m5.fsf@burly.wgtn.ondioline.org>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.90 (gnu/linux)
+	Mon, 16 Feb 2009 02:23:18 -0500
+Received: from ozlabs.org ([203.10.76.45]:51679 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752058AbZBPHXR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 02:23:17 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Tejun Heo <tj@kernel.org>
+Subject: Re: #tj-percpu has been rebased
+Date: Mon, 16 Feb 2009 17:53:13 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, cpw@sgi.com
+References: <49833350.1020809@kernel.org> <200902140728.55954.rusty@rustcorp.com.au> <4996141A.1050506@kernel.org>
+In-Reply-To: <4996141A.1050506@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902161753.14141.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Saturday 14 February 2009 11:15:14 Tejun Heo wrote:
+> Rusty Russell wrote:
+> > On Thursday 12 February 2009 14:14:08 Tejun Heo wrote:
+> >> Oops, those are the same ones.  I'll give a shot at cooking up
+> >> something which can be dynamically sized before going forward with
+> >> this one.
+> > 
+> > That's why I handed it to you! :)
+> > 
+> > Just remember we waited over 5 years for this to happen: the point of these
+> > is that Christoph showed it's still useful.
+> > 
+> > (And I really like the idea of allocing congruent areas rather than remapping
+> >  if someone can show that it's semi-reliable.  Good luck!)
+> 
+> I finished writing up the first draft last night.  Somehow I can feel
+> long grueling debugging hours ahead of me but it generally goes like
+> the following.
+> 
+> Percpu areas are allocated in chunks in vmalloc area.  Each chunk is
+> consisted of num_possible_cpus() units and the first chunk is used for
+> static percpu variables in the kernel image (special boot time
+> alloc/init handling necessary as these areas need to be brought up
+> before allocation services are running).  Unit grows as necessary and
+> all units grow or shrink in unison.  When a chunk is filled up,
+> another chunk is allocated.  ie. in vmalloc area
+> 
+>   c0                           c1                         c2           
+>    -------------------          -------------------        ------------
+>   | u0 | u1 | u2 | u3 |        | u0 | u1 | u2 | u3 |      | u0 | u1 | u
+>    -------------------  ......  -------------------  ....  ------------
+> 
+> Allocation is done in offset-size areas of single unit space.  Ie,
+> when UNIT_SIZE is 128k, an area at 134k of 512bytes occupy 512bytes at
+> 6k of c1:u0, c1:u1, c1:u2 and c1u3.  Percpu access can be done by
+> configuring percpu base registers UNIT_SIZE apart.
+> 
+> Currently it uses pte mappings but byn using larger UNIT_SIZE, it can
+> be modified to use pmd mappings.  I'm a bit skeptical about this tho.
+> Percpu pages are allocated with HIGHMEM | COLD, so they won't
+> interfere with the physical mapping and on !NUMA it lifts load from
+> pgd tlb by not having stuff for different cpus occupying the same pgd
+> page.
 
-> On Monday 09 February 2009, Paul Collins wrote:
->> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->> 
->> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12667
->> > Subject		: Badness at kernel/time/timekeeping.c:98 in pmud (timekeeping_suspended)
->> > Submitter	: Paul Collins <paul@burly.ondioline.org>
->> > Date		: 2009-01-21 7:15 (19 days old)
->> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1c5745aa380efb6417b5681104b007c8612fb496
->> > References	: http://marc.info/?l=linux-kernel&m=123252215315106&w=4
->> 
->> I've just done ten suspend/resume cycles with 2.6.29-rc4 and this
->> message was not logged, so it's either gone away or else become much
->> more difficult to reproduce.
->
-> Thanks, I've closed the bug.
+Not sure I understand all of this, but it sounds like a straight virtual
+mapping with some chosen separation between the mappings.
 
-It turns out I didn't test this properly.  The warning is only triggered
-when I close and open the lid, not when I run 'snooze' to suspend and
-hit Return to resume, as I did for my so-called testing of 2.6.29-rc4.
+But note that for the non-NUMA case, you can just use kmalloc/__get_free_pages
+and no remapping tricks are necessary at all.
 
-Whatever is triggering the warning is still present in 2.6.29-rc5.
-
--- 
-Paul Collins
-Wellington, New Zealand
-
-Dag vijandelijk luchtschip de huismeester is dood
+Thanks,
+Rusty.
