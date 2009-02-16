@@ -1,93 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752843AbZBPSJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752666AbZBPSN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752843AbZBPSJW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 13:09:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbZBPSJD
+	id S1752666AbZBPSN1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 13:13:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750888AbZBPSNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 13:09:03 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:25625 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751301AbZBPSJC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 13:09:02 -0500
+	Mon, 16 Feb 2009 13:13:19 -0500
+Received: from mx2.suse.de ([195.135.220.15]:56484 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750732AbZBPSNS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 13:13:18 -0500
+From: Thomas Renninger <trenn@suse.de>
+Organization: SUSE Products GmbH
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: cpuinfo shows wrong MHz value
+Date: Mon, 16 Feb 2009 19:13:15 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.27.13-HEAD_20090130075504_71baee03-default; KDE/4.1.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <200902142217.51655.jplatte@naasa.net> <loom.20090216T141158-818@post.gmane.org> <20090216165008.GA8249@srcf.ucam.org>
+In-Reply-To: <20090216165008.GA8249@srcf.ucam.org>
 MIME-Version: 1.0
-In-Reply-To: <20090216161331.GB5008@kroah.com>
-References: <5aa163d00902142008g138826br80d3ea989e7af691@mail.gmail.com>
-	 <200902160931.34771.oliver@neukum.org>
-	 <5aa163d00902160522r3a22412je3f5202076f57a0a@mail.gmail.com>
-	 <20090216161331.GB5008@kroah.com>
-Date: Mon, 16 Feb 2009 13:09:00 -0500
-X-Google-Sender-Auth: 9e6c42858aac6601
-Message-ID: <5aa163d00902161009l15dae120le96436d40f998d33@mail.gmail.com>
-Subject: Re: [PATCH] input: xpad.c - Xbox 360 wireless and sysfs support
-From: Mike Murphy <mamurph@cs.clemson.edu>
-To: Greg KH <greg@kroah.com>
-Cc: Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902161913.16021.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 16, 2009 at 11:13 AM, Greg KH <greg@kroah.com> wrote:
-...
->
-> The bigger question is why are you using a struct kobject in the first
-> place?  As you are a device, just use a struct device.  What are you
-> trying to do in sysfs here to make you want to use a "raw" kobject in a
-> driver?
->
-> thanks,
->
-> greg k-h
->
+On Monday 16 February 2009 17:50:08 Matthew Garrett wrote:
+> On Mon, Feb 16, 2009 at 02:19:50PM +0000, Thomas Renninger wrote:
+> 
+> > There should be a message when this driver is loaded like:
+> > "This driver is broken. Don't use it, don't complain."
+> 
+> Please don't. It's perfectly valid (if dumb) for machines to depend on 
+> the CPU for passive cooling even if they don't expose any P or T states.
+No it's not valid. If the BIOS does not export these, it could be for
+a reason.
 
-The purpose of the struct xpad_data (which contains the struct
-kobject) is to expose parameters that can be read and/or tweaked at
-runtime. At the moment, the adjustable parameters are the size of the
-dead zone around the center of the stick, and the choice of whether to
-map to a square axis. Read-only data include a unique identifier for
-each pad (wireless) and an indication as to whether the wireless pad
-is actually connected.
+> In that case p4-clockmod is the only code that can manage it. The 
+> removal of the user-visible cpufreq interface should be a strong enough 
+> hint that it's not intended for speed control.
+AFAIK p4-clockmode is still not synchronized with ACPI throttling?
+Thus this driver will destroy a valid machine setup where the BIOS exports
+throttling states via ACPI.
+The driver is broken (and rather useless) and all the complaints about it
+get annoying.
 
-The idea behind this interface is to enable a future userspace
-application, likely using HAL and D-BUS, to receive events whenever a
-wireless pad connects, and to identify the particular pad in question
-(specifically, the unique ID of the pad). The user could then, for
-example, have a different dead zone size for each pad, based upon the
-actual manufacturing variations in the sticks on that pad (some appear
-more precise at centering than others). Ideally, this functionality
-could be designed in a "common" way so that the userspace code could
-eventually work with other, non-xpad gaming devices.
+I wonder how dangerous it even is. If thermal management on a P4 is 
+properly implemented via "BIOS throws high temperature MCE and throttles 
+the CPU itself", could the p4_clockmode driver override the BIOS/HW
+settings and still run unthrottled? Danger!
 
-So I really just wanted a way to get some parameters to userspace. The
-consensus opinion of everything I read was that /proc additions were
-frowned upon for cluttering up /proc with kernel stuff, ioctls were
-viewed negatively because of their inconsistent nature from device to
-device, and that sysfs was the best solution for this problem.
+Anyway, I better do not answer on p4_clockmode complaints anymore and
+simply delete them, it's just a waste of time.
 
-I didn't use a struct device because of the existing struct usb_xpad
-that was created on a per-gamepad basis (not necessarily per device,
-as the wireless 360 adapter is one physical device but exposes 4
-gamepads by exposing 4 logical devices [and then each gamepad, in
-turn, is technically a USB hub that can have other stuff
-attached...]). I tried not to break existing functionality.
-Additionally, struct usb_xpad contains two device pointers: one to the
-actual USB device, and one to an input device (see source of the
-in-tree xpad.c). So I followed your kobject.txt documentation and
-samples to create a new object whose sole purpose in life is to expose
-the sysfs interface, without interfering with the existing device
-entries in the driver. I'm not sure I see a clean way to use a single
-struct device here....
-
-Thanks,
-Mike
--- 
-Mike Murphy
-Ph.D. Candidate and NSF Graduate Research Fellow
-Clemson University School of Computing
-120 McAdams Hall
-Clemson, SC 29634-0974 USA
-Tel: +1 864.656.2838   Fax: +1 864.656.0145
-http://cirg.cs.clemson.edu/~mamurph
+     Thomas
