@@ -1,78 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754958AbZBPUo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754475AbZBPUqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754958AbZBPUo1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 15:44:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbZBPUoS
+	id S1754475AbZBPUqH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 15:46:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751104AbZBPUpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 15:44:18 -0500
-Received: from smtp-101-monday.nerim.net ([62.4.16.101]:51677 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751209AbZBPUoR (ORCPT
+	Mon, 16 Feb 2009 15:45:54 -0500
+Received: from casper.infradead.org ([85.118.1.10]:46551 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750732AbZBPUpy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 15:44:17 -0500
-Date: Mon, 16 Feb 2009 21:44:11 +0100
-From: Damien Wyart <damien.wyart@free.fr>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+	Mon, 16 Feb 2009 15:45:54 -0500
+Date: Mon, 16 Feb 2009 12:45:20 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12650] Strange load average and ksoftirqd behavior with
-	2.6.29-rc2-git1
-Message-ID: <20090216204411.GA2306@localhost.localdomain>
-References: <20090215180355.GA2273@localhost.localdomain> <20090215193102.GA16873@elte.hu> <20090216084223.GA2641@localhost.localdomain> <20090216095059.GL6182@elte.hu> <87hc2u61e9.fsf@free.fr> <20090216122632.GA3158@elte.hu> <87ljs6pmao.fsf@free.fr> <20090216132151.GA17996@elte.hu> <20090216160613.GA6785@linux.vnet.ibm.com> <20090216185616.GB6785@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="x+6KMIRAuhnl3hBn"
-Content-Disposition: inline
-In-Reply-To: <20090216185616.GB6785@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arve =?UTF-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>,
+       Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       mark gross <mgross@linux.intel.com>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFD] Automatic suspend
+Message-ID: <20090216124520.315320dc@infradead.org>
+In-Reply-To: <Pine.LNX.4.44L0.0902161537080.19732-100000@netrider.rowland.org>
+References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
+	<Pine.LNX.4.44L0.0902161537080.19732-100000@netrider.rowland.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 16 Feb 2009 15:39:15 -0500 (EST)
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
---x+6KMIRAuhnl3hBn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> On Mon, 16 Feb 2009, Kyle Moffett wrote:
+> 
+> > Userspace may not have a useful decision-making capability regarding
+> > functionality versus power-saving, but the user it's talking to
+> > might!
+> > 
+> > I think it would be very useful to have a mechanism for userspace to
+> > find out "Link detection on this NIC costs ~50mW" and "No link has
+> > been detected for the last 15 minutes", so that it can compile all
+> > that sort of information and prompt the user what devices they would
+> > like to disable.  Perhaps an "airline mode" sort of thing?
+> 
+> Even if drivers don't know how much power their devices consume (and
+> generally I wouldn't expect them to), it still makes sense to offer
+> userspace the discretionary power to force devices into a low-power
+> mode.  USB does this.
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> [2009-02-16 10:56]:
-> Would you be willing to enable CONFIG_RCU_TRACE and CONFIG_TREE_RCU,
-> reproduce this and send the output of the debugfs files rcu/rcudata
-> and rcu/rcuhier? The commands for this would be:
-
-> 	mkdir /debug || :
-> 	mount -t debugfs debugfs /debug
-> 	cat /debug/rcu/rcuhier
-> 	cat /debug/rcu/rcudata
-
-Here are the two files (stored while the ksoftirqd problem occurs)
-attached.
+"stop using it" isn't this discretionary power ?
+(for NICs this is "ifconfig .. down")
 
 -- 
-Damien
-
---x+6KMIRAuhnl3hBn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="rcuhier.txt"
-
-rcu:
-c=6148 g=6149 s=2 jfq=3 j=31ba nfqs=62392/nfqsng=3(62389) fqlh=7
-1/3 0:1 ^0    
-rcu_bh:
-c=-296 g=-296 s=2 jfq=-93079 j=31ba nfqs=6/nfqsng=0(6) fqlh=0
-0/3 0:1 ^0    
-
---x+6KMIRAuhnl3hBn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="rcudata.txt"
-
-rcu:
-  0 c=6163 g=6164 pq=0 pqc=6162 qp=1 rpfq=2 rp=a249 dt=729511/1 dn=0 df=10 of=0 ri=38915 ql=5 b=10
-  1 c=6163 g=6164 pq=1 pqc=6163 qp=0 rpfq=0 rp=d580 dt=34418019/1 dn=0 df=374 of=0 ri=19636 ql=0 b=10
-rcu_bh:
-  0 c=-296 g=-296 pq=1 pqc=-296 qp=0 rpfq=-19494 rp=e947 dt=729511/1 dn=0 df=0 of=0 ri=0 ql=0 b=10
-  1 c=-296 g=-296 pq=1 pqc=-296 qp=1 rpfq=-16839253 rp=2918 dt=34418019/1 dn=0 df=0 of=0 ri=2 ql=0 b=10
-
---x+6KMIRAuhnl3hBn--
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
