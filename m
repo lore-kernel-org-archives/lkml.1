@@ -1,96 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754565AbZBPVdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbZBPVf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754565AbZBPVdu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 16:33:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018AbZBPVdm
+	id S1754838AbZBPVf5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 16:35:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750941AbZBPVfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 16:33:42 -0500
-Received: from bear.ext.ti.com ([192.94.94.41]:54164 "EHLO bear.ext.ti.com"
+	Mon, 16 Feb 2009 16:35:48 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55942 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750718AbZBPVdl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 16:33:41 -0500
-From: "Woodruff, Richard" <r-woodruff2@ti.com>
-To: Arjan van de Ven <arjan@infradead.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-CC: Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       =?iso-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>,
-       Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-Date: Mon, 16 Feb 2009 15:32:06 -0600
-Subject: RE: [RFD] Automatic suspend
-Thread-Topic: [RFD] Automatic suspend
-Thread-Index: AcmQd51IcBbZvZveSL+Y0Jk8KnI/iQAABPkQ
-Message-ID: <13B9B4C6EF24D648824FF11BE896716203771DCF1E@dlee02.ent.ti.com>
-References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
-	<Pine.LNX.4.44L0.0902161537080.19732-100000@netrider.rowland.org>
- <20090216124520.315320dc@infradead.org>
-In-Reply-To: <20090216124520.315320dc@infradead.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	id S1750727AbZBPVfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 16:35:47 -0500
+Date: Mon, 16 Feb 2009 22:32:05 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
+Subject: Re: Q: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove
+	single ipi fallback for smp_call_function_many())
+Message-ID: <20090216213205.GA9098@redhat.com>
+References: <20090216163847.431174825@chello.nl> <20090216164114.433430761@chello.nl> <20090216204902.GA6924@redhat.com> <1234818201.30178.386.camel@laptop>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1234818201.30178.386.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> From: Arjan van de Ven [mailto:arjan@infradead.org]
-> Sent: Monday, February 16, 2009 2:45 PM
-
-> On Mon, 16 Feb 2009 15:39:15 -0500 (EST)
-> Alan Stern <stern@rowland.harvard.edu> wrote:
+On 02/16, Peter Zijlstra wrote:
 >
-> > On Mon, 16 Feb 2009, Kyle Moffett wrote:
+> On Mon, 2009-02-16 at 21:49 +0100, Oleg Nesterov wrote:
+> > I am trying to understand the barriers in smp.c, please help!
 > >
-> > > Userspace may not have a useful decision-making capability regarding
-> > > functionality versus power-saving, but the user it's talking to
-> > > might!
-> > >
-> > > I think it would be very useful to have a mechanism for userspace to
-> > > find out "Link detection on this NIC costs ~50mW" and "No link has
-> > > been detected for the last 15 minutes", so that it can compile all
-> > > that sort of information and prompt the user what devices they would
-> > > like to disable.  Perhaps an "airline mode" sort of thing?
+> > "generic-ipi: fix the smp_mb() placement" commit
+> > 561920a0d2bb6d63343e83acfd784c0a77bd28d1 added smp_read_barrier_depends()
+> > to generic_smp_call_function_single_interrupt().
 > >
-> > Even if drivers don't know how much power their devices consume (and
-> > generally I wouldn't expect them to), it still makes sense to offer
-> > userspace the discretionary power to force devices into a low-power
-> > mode.  USB does this.
+> > Why it is needed? The comment says:
+> >
+> > 	/*
+> > 	 * Need to see other stores to list head for checking whether
+> > 	 * list is empty without holding q->lock
+> > 	 */
+> > 	smp_read_barrier_depends();
+> > 	while (!list_empty(&q->list)) {
+> >
+> > But we can't miss the addition to the call_single_queue.list,
+> > if generic_exec_single() sees list_empty(&dst->list) it sends
+> > another IPI?
 >
-> "stop using it" isn't this discretionary power ?
-> (for NICs this is "ifconfig .. down")
+> I was about to write a response, but found it to be a justification for
+> the read_barrier_depends() at the end of the loop.
 
-Allowing a trusted user space process some hook in kernel PM has turned out useful for us.
+I forgot to mention I don't understand the read_barrier_depends() at the
+end of the loop as well ;)
 
-- It gives a way for frame works which load codecs into DSPs a way to specify needs before loading. The DSP has its own internal dynamic predictor but it is not always good enough. Feeding this info in from user space is easy as it knows everything about the DSP algorithm it is loading. There isn't a reason to re-export all of that back into the kernel and might hurt DSP performance if it ran on it natively.
+> > This commit also removed the barrier from csd_flag_wait(), is this OK?
+> > Without the barrier, csd_flag_wait() can return before we see the result
+> > of data->func() ?
+> >
+> > IOW,
+> > 	int VAR = 0;
+> >
+> > 	void func(coid *unused)
+> > 	{
+> > 		VAR = 1;
+> > 	}
+> >
+> > Now,
+> >
+> > 	smp_call_function_single(0, func, NULL, 1);
+> > 	BUG_ON(VAR == 0);
+> >
+> > afaics, the BUG_ON() above is possible. Is this OK ?
+>
+> Would it not be the caller's responsibility to provide the needed
+> serialization in this case?
 
-- It provides a way to handle overdrive/turbo operating points out of band from the generically tuned cpufreq governors like ondemand.  The way we characterize overdrive is stricter then what Intel has talked about for x86.
+Yes, yes, I don't claim this is necessary wrong. I am just asking,
+is the lack of "implicit" serialization is "by design" or this was
+an oversight.
 
-In TI-reference code we effectively export sysfs knobs which influence system p-state and c-state choices (we borrowed Intel terms here as they are useful). This was done before pmqos was available. We would have considered extending pmqos but a couple things stopped this. One being it wasn't in kernel at the time and two being any change picks up a year of disagreements. As such we put some front end wrappers on the calls which use it to some degree.
-
-There is a community-reference targeting kernel merging but I think it is only now reaching the point of the user space interface. People working there have expressed interest in a direct pmqos interface and removing our wrapping calls.
-
-What we have done more follows what happens when you have a complex driver/subsystem which has pieces in both users and kernel space.  It works ok for this.
-
-This is ok for making sure the complex driver works well. It doesn't address all the other user space things going on which also need some kind of management so they don't sink system power. This is where wakelocks start to do something more generically useful.
-
-Right now it seems no one is willing to own the whole system. It is easier to just say user space sucks and someone else should fix it...or my driver is fine it is someone else's problem. However, by not giving some kind of useful constraints interface to help control bad (or uncontrollable) elements the end result are non-competitive Linux systems or ugly out of tree vendor hacks. This is where wakelocks actually stand out.  They actually try and do something useful generically.
-
-It seems the perfect is often the enemy of the good when it comes to Linux PM discussions.
-
-Regards,
-Richard W.
+Oleg.
 
