@@ -1,220 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbZBPJZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756233AbZBPJZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755233AbZBPJZQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 04:25:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbZBPJZA
+	id S1756233AbZBPJZh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 04:25:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754343AbZBPJZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 04:25:00 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:65339 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751404AbZBPJY7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 04:24:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
-         :references:mime-version:content-type:content-disposition
-         :in-reply-to:user-agent;
-        b=CQW6gQrghlvbueoB2ZyLhJc9cTF+5OQ+ZeQn6agdNxex3knUEG7vGNp9K9qeyIwSbx
-         ykfVrluN6a2omK/qIjCF0w/VqfF7Axeiaa8LYTiUsS9j6yz3sPL8PwPvrepwswskkwK+
-         VcZTroBAiVw0yBT0NUwWZBvOB0vMpLKfrVqS0=
-Date: Mon, 16 Feb 2009 10:25:01 +0100
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 11/20] ide-cd: unify cdrom_newpc_intr() exit paths
-Message-ID: <20090216092501.GA24323@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090216001309.27491.59759.sendpatchset@localhost.localdomain> <20090216001422.27491.17281.sendpatchset@localhost.localdomain>
+	Mon, 16 Feb 2009 04:25:11 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46028 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754087AbZBPJZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 04:25:09 -0500
+Date: Mon, 16 Feb 2009 10:25:03 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Damien Wyart <damien.wyart@free.fr>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #12650] Strange load average and ksoftirqd behavior with
+	2.6.29-rc2-git1
+Message-ID: <20090216092503.GI6182@elte.hu>
+References: <rjPbZ5GRJPO.A.1kE.ur0lJB@chimera> <20090215080941.GA2295@localhost.localdomain> <20090215090026.GA31147@elte.hu> <20090215095128.GA3234@localhost.localdomain> <20090215101351.GA23274@elte.hu> <20090215103445.GA2335@localhost.localdomain> <20090215110104.GB31351@elte.hu> <20090215180355.GA2273@localhost.localdomain> <20090215193102.GA16873@elte.hu> <20090216084223.GA2641@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090216001422.27491.17281.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090216084223.GA2641@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 16, 2009 at 01:14:22AM +0100, Bartlomiej Zolnierkiewicz wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] ide-cd: unify cdrom_newpc_intr() exit paths
+
+* Damien Wyart <damien.wyart@free.fr> wrote:
+
+> > Also, could you send the output of:
 > 
-> * Move cdrom_end_request() calls from cdrom_decode_status()
->   and ide_cd_check_ireason() to cdrom_newpc_intr().
+> >   http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
 > 
-> * Unify cdrom_newpc_intr() exit paths.
+> > Run it while you can see the ksoftirqd anomaly.
 > 
-> There should be no functional changes caused by this patch.
-> 
-> Cc: Borislav Petkov <petkovbb@gmail.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
->  drivers/ide/ide-cd.c |   48 +++++++++++++++++++++++-------------------------
->  1 file changed, 23 insertions(+), 25 deletions(-)
-> 
-> Index: b/drivers/ide/ide-cd.c
-> ===================================================================
-> --- a/drivers/ide/ide-cd.c
-> +++ b/drivers/ide/ide-cd.c
-> @@ -291,7 +291,8 @@ static void cdrom_end_request(ide_drive_
->  /*
->   * Returns:
->   * 0: if the request should be continued.
-> - * 1: if the request was ended.
-> + * 1: if the request will be going through error recovery.
-> + * 2: if the request should be ended.
+> In fact I see it all the time when the machine is idle. When something 
+> runs (spamd for example), the running time of ksoftirqd stops 
+> increasing, and it goes back to increasing like crazy when idle state 
+> comes back.
 
-Yeah, we need defines for those. Especially if they're checked in other
-functions:
+here's the ksoftirqd stats from your data:
 
-if (rc == 2)
+top - 08:09:20 up 2 min,  1 user,  load average: 0.95, 0.35, 0.13
+Tasks: 100 total,   1 running,  99 sleeping,   0 stopped,   0 zombie
+Cpu(s):  0.4%us,  1.3%sy,  0.0%ni, 89.2%id,  0.0%wa,  0.0%hi,  9.0%si,  0.0%st
+Mem:   2074980k total,   236544k used,  1838436k free,     5032k buffers
+Swap:  1212896k total,        0k used,  1212896k free,    66016k cached
 
-is simply not ok :). Rather,
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND            
+ 2280 root      15  -5     0    0    0 S   22  0.0   0:06.39 [ksoftirqd/1]      
+ 2452 root      20   0  2400 1132  888 R    1  0.1   0:00.02 top -H -c -b -d 1 -
+    1 root      20   0  2100  688  588 S    0  0.0   0:00.48 init [2]           
+    2 root      15  -5     0    0    0 S    0  0.0   0:00.00 [kthreadd]         
 
-if (rc == DO_END_REQUEST)
+ksoftirqd really seems to be active (according to scheduler stats), and 
+has gathered more than 6 seconds of runtime after 2 minutes of uptime - 
+that is clearly anomalous.
 
-or something like that is much better, imho.
+The main method how softirqs get generated are hardirqs, but the hardirq 
+is low on your box (as expected):
 
->   */
->  static int cdrom_decode_status(ide_drive_t *drive, int good_stat, int *stat_ret)
->  {
-> @@ -324,10 +325,7 @@ static int cdrom_decode_status(ide_drive
->  		 * Just give up.
->  		 */
->  		rq->cmd_flags |= REQ_FAILED;
-> -		cdrom_end_request(drive, 0);
-> -		ide_error(drive, "request sense failure", stat);
-> -		return 1;
-> -
-> +		return 2;
->  	} else if (blk_pc_request(rq) || rq->cmd_type == REQ_TYPE_ATA_PC) {
->  		/* All other functions, except for READ. */
->  
-> @@ -467,14 +465,12 @@ static int cdrom_decode_status(ide_drive
->  		 */
->  		if (stat & ATA_ERR)
->  			cdrom_queue_request_sense(drive, NULL, NULL);
-> +		return 1;
->  	} else {
->  		blk_dump_rq_flags(rq, PFX "bad rq");
-> -		cdrom_end_request(drive, 0);
-> +		return 2;
->  	}
->  
-> -	/* retry, or handle the next request */
-> -	return 1;
-> -
->  end_request:
->  	if (stat & ATA_ERR) {
->  		struct request_queue *q = drive->queue;
-> @@ -487,10 +483,9 @@ end_request:
->  		hwif->rq = NULL;
->  
->  		cdrom_queue_request_sense(drive, rq->sense, rq);
-> +		return 1;
->  	} else
-> -		cdrom_end_request(drive, 0);
-> -
-> -	return 1;
-> +		return 2;
->  }
->  
->  /*
-> @@ -534,7 +529,6 @@ static int ide_cd_check_ireason(ide_driv
->  	if (rq->cmd_type == REQ_TYPE_ATA_PC)
->  		rq->cmd_flags |= REQ_FAILED;
->  
-> -	cdrom_end_request(drive, 0);
->  	return -1;
->  }
->  
-> @@ -736,7 +730,8 @@ static ide_startstop_t cdrom_newpc_intr(
->  	xfer_func_t *xferfunc;
->  	ide_expiry_t *expiry = NULL;
->  	int dma_error = 0, dma, stat, thislen, uptodate = 0;
-> -	int write = (rq_data_dir(rq) == WRITE) ? 1 : 0;
-> +	int write = (rq_data_dir(rq) == WRITE) ? 1 : 0, rc;
-> +	int sense = blk_sense_request(rq);
->  	unsigned int timeout;
->  	u16 len;
->  	u8 ireason;
-> @@ -756,8 +751,12 @@ static ide_startstop_t cdrom_newpc_intr(
->  		}
->  	}
->  
-> -	if (cdrom_decode_status(drive, 0, &stat))
-> +	rc = cdrom_decode_status(drive, 0, &stat);
-> +	if (rc) {
-> +		if (rc == 2)
-> +			goto out_end;
->  		return ide_stopped;
-> +	}
->  
->  	/* using dma, transfer is complete now */
->  	if (dma) {
-> @@ -802,8 +801,6 @@ static ide_startstop_t cdrom_newpc_intr(
->  					rq->cmd_flags |= REQ_FAILED;
->  				uptodate = 0;
->  			}
-> -			cdrom_end_request(drive, uptodate);
-> -			return ide_stopped;
->  		} else if (!blk_pc_request(rq)) {
->  			ide_cd_request_sense_fixup(drive, rq);
->  			/* complain if we still have data left to transfer */
-> @@ -815,17 +812,16 @@ static ide_startstop_t cdrom_newpc_intr(
->  	}
->  
->  	/* check which way to transfer data */
-> -	if (ide_cd_check_ireason(drive, rq, len, ireason, write))
-> -		return ide_stopped;
-> +	rc = ide_cd_check_ireason(drive, rq, len, ireason, write);
-> +	if (rc)
-> +		goto out_end;
->  
->  	if (blk_fs_request(rq)) {
->  		if (write == 0) {
->  			int nskip;
->  
-> -			if (ide_cd_check_transfer_size(drive, len)) {
-> -				cdrom_end_request(drive, 0);
-> -				return ide_stopped;
-> -			}
-> +			if (ide_cd_check_transfer_size(drive, len))
-> +				goto out_end;
->  
->  			/*
->  			 * First, figure out if we need to bit-bucket
-> @@ -918,7 +914,7 @@ static ide_startstop_t cdrom_newpc_intr(
->  			else
->  				rq->data += blen;
->  		}
-> -		if (!write && blk_sense_request(rq))
-> +		if (sense && write == 0)
->  			rq->sense_len += blen;
->  	}
->  
-> @@ -939,7 +935,7 @@ static ide_startstop_t cdrom_newpc_intr(
->  	return ide_started;
->  
->  out_end:
-> -	if (blk_pc_request(rq)) {
-> +	if (blk_pc_request(rq) && rc == 0) {
->  		unsigned int dlen = rq->data_len;
->  
->  		if (dma)
-> @@ -951,6 +947,8 @@ out_end:
->  		hwif->rq = NULL;
->  	} else {
->  		cdrom_end_request(drive, uptodate);
-> +		if (sense && rc == 2)
-> +			ide_error(drive, "request sense failure", stat);
->  	}
->  	return ide_stopped;
->  }
+-- interrupts: --
+           CPU0       CPU1       
+  0:        155          0   IO-APIC-edge      timer
+  1:          2          0   IO-APIC-edge      i8042
+  7:          0          0   IO-APIC-edge      parport0
+  8:          2          0   IO-APIC-edge      rtc
+  9:          0          0   IO-APIC-fasteoi   acpi
+ 12:          4          0   IO-APIC-edge      i8042
+ 14:          0          0   IO-APIC-edge      ata_piix
+ 15:        132          0   IO-APIC-edge      ata_piix
+ 16:        213          0   IO-APIC-fasteoi   uhci_hcd:usb2, uhci_hcd:usb5
+ 18:       6908          0   IO-APIC-fasteoi   ata_piix, uhci_hcd:usb4
+ 19:        221          0   IO-APIC-fasteoi   uhci_hcd:usb3
+ 20:       1072          0   IO-APIC-fasteoi   eth0
+ 21:          0          0   IO-APIC-fasteoi   EMU10K1
+ 23:          4          0   IO-APIC-fasteoi   ehci_hcd:usb1
+NMI:          0          0   Non-maskable interrupts
+LOC:      79306      74184   Local timer interrupts
+CNT:          0          0   Performance counter interrupts
+RES:      32672      13541   Rescheduling interrupts
+CAL:          8         40   Function call interrupts
+TLB:        235        591   TLB shootdowns
+TRM:          0          0   Thermal event interrupts
+SPU:          0          0   Spurious interrupts
+ERR:          0
+MIS:          0
 
--- 
-Regards/Gruss,
-    Boris.
+about 200K irqs - most of which are lapic timer irqs. Thus 6 seconds of 
+ksoftirqd runtime is way too much.
+
+	Ingo
