@@ -1,179 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbZBPKhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756391AbZBPKnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756925AbZBPKhU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 05:37:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbZBPKhH
+	id S1756391AbZBPKnn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 05:43:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbZBPKnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 05:37:07 -0500
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:54756 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753795AbZBPKhG (ORCPT
+	Mon, 16 Feb 2009 05:43:32 -0500
+Received: from stinky.trash.net ([213.144.137.162]:53135 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751271AbZBPKnb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 05:37:06 -0500
-Date: Mon, 16 Feb 2009 16:06:36 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Corey Hickey <bugfood-ml@fatooh.org>, linux-kernel@vger.kernel.org,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, mtk.manpages@gmail.com
-Subject: Re: RT scheduling and a way to make a process hang, unkillable
-Message-ID: <20090216103636.GC17355@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <4997672B.1000301@fatooh.org> <1234697096.4713.24.camel@laptop>
+	Mon, 16 Feb 2009 05:43:31 -0500
+Message-ID: <4999434F.1050101@trash.net>
+Date: Mon, 16 Feb 2009 11:43:27 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1234697096.4713.24.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: netdev@vger.kernel.org,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] SNAT sometimes allows packets to pass through unchanged
+References: <Pine.LNX.4.44L0.0902121008050.2388-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0902121008050.2388-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 15, 2009 at 12:24:56PM +0100, Peter Zijlstra wrote:
-> On Sat, 2009-02-14 at 16:51 -0800, Corey Hickey wrote:
-> > Hello,
-> > 
-> > I've encountered a bit of a problem in recent kernels that include
-> > "Group scheduling for SCHED_RR/FIFO": it is possible for a process run
-> > by root to hang itself and become unkillable--even by a 'kill -9'.
-> > 
-> > The following kernel options must be set:
-> > CONFIG_GROUP_SCHED=y
-> > CONFIG_RT_GROUP_SCHED=y
-> > CONFIG_USER_SCHED=y
-> > 
-> > The procedure is for a program to:
-> > 1. run as root
-> > 2. set SCHED_FIFO
-> > 3. change UID to a user with no realtime CPU share allocated
+Alan Stern wrote:
+> On Thu, 12 Feb 2009, Patrick McHardy wrote:
 > 
-> Hmm, setuid() should fail in that situation.
+>> If the connection has already timed out (from conntracks perspective),
+>> it has lost its state. Unless connection pickup is enabled, the packet 
+>> will be marked as INVALID because it doesn't belong to a connection.
+>> You can control dropping of these packets yourself by adding the
+>> appropriate "-m state --state INVALID" rules.
 > 
-> /me goes peek at code.
+> I tried adding a rule to log these unaccounted-for packets.  Nothing 
+> showed up, even when I could see the packets being sent.
+
+Where (table/chain/position) did you add this rule?
+
+>> That said, there were
+>> some bugs in the past few releases that caused some bad interaction
+>> between TCP and TCP conntrack (not sure anymore which one of both was
+>> to blame). Its possible that this is the root cause for this, so
+>> you might want to consider a kernel update.
 > 
-> Can't find any code to make that happen, Dhaval didn't we fix that at
-> one point?
+> It does sound like the result of a bug.  Do you have any pointers to 
+> patches or locations to check in the source?
 
-So after some searching around, I realized we did not. Does this help?
-It fixes it on my system,
-
---
-sched: Don't allow setuid to succeed if the user does not have rt bandwidth
-
-Corey Hickey reported that on using setuid to change the uid of a
-rt process, the process would be unkillable and not be running.
-This is because there was no rt runtime for that user group. Add
-in a check to see if a user can attach an rt task to its task group.
-
-Disclaimer: Not sure about the return values, and if setuid allows
-return values other than EPERM and EAGAIN.
-
-Not-Yet-Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-
-Index: linux-2.6/include/linux/sched.h
-===================================================================
---- linux-2.6.orig/include/linux/sched.h
-+++ linux-2.6/include/linux/sched.h
-@@ -2320,9 +2320,12 @@ extern long sched_group_rt_runtime(struc
- extern int sched_group_set_rt_period(struct task_group *tg,
- 				      long rt_period_us);
- extern long sched_group_rt_period(struct task_group *tg);
-+int sched_rt_can_attach(struct task_group *tg, struct task_struct *tsk);
- #endif
- #endif
- 
-+int rt_task_can_switch_user(uid_t uid, struct task_struct *tsk);
-+
- #ifdef CONFIG_TASK_XACCT
- static inline void add_rchar(struct task_struct *tsk, ssize_t amt)
- {
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -9466,6 +9466,16 @@ static int sched_rt_global_constraints(v
- 
- 	return ret;
- }
-+
-+int sched_rt_can_attach(struct task_group *tg, struct task_struct *tsk)
-+{
-+	/* Don't accept realtime tasks when there is no way for them to run */
-+	if (rt_task(tsk) && tg->rt_bandwidth.rt_runtime == 0)
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
- #else /* !CONFIG_RT_GROUP_SCHED */
- static int sched_rt_global_constraints(void)
- {
-@@ -9559,8 +9569,7 @@ cpu_cgroup_can_attach(struct cgroup_subs
- 		      struct task_struct *tsk)
- {
- #ifdef CONFIG_RT_GROUP_SCHED
--	/* Don't accept realtime tasks when there is no way for them to run */
--	if (rt_task(tsk) && cgroup_tg(cgrp)->rt_bandwidth.rt_runtime == 0)
-+	if (sched_rt_can_attach(cgroup_tg(cgrp), tsk))
- 		return -EINVAL;
- #else
- 	/* We don't support RT-tasks being in separate groups */
-Index: linux-2.6/kernel/user.c
-===================================================================
---- linux-2.6.orig/kernel/user.c
-+++ linux-2.6/kernel/user.c
-@@ -216,8 +216,28 @@ static ssize_t cpu_rt_period_store(struc
- 
- static struct kobj_attribute cpu_rt_period_attr =
- 	__ATTR(cpu_rt_period, 0644, cpu_rt_period_show, cpu_rt_period_store);
-+
- #endif
- 
-+#ifdef CONFIG_RT_GROUP_SCHED && CONFIG_USER_SCHED
-+/*
-+ * We need to check if a setuid can take place. This function should be called
-+ * before successfully completing the setuid.
-+ */
-+
-+int rt_task_can_switch_user(uid_t uid, struct task_struct *tsk)
-+{
-+	struct user_struct *up = find_user(uid);
-+
-+	return sched_rt_can_attach(up->tg, tsk);
-+}
-+#else
-+int rt_task_can_switch_user(uid_t uid, struct task_struct *tsk)
-+{
-+	return 0;
-+}
-+
-+#endif
- /* default attributes per uid directory */
- static struct attribute *uids_attributes[] = {
- #ifdef CONFIG_FAIR_GROUP_SCHED
-Index: linux-2.6/kernel/sys.c
-===================================================================
---- linux-2.6.orig/kernel/sys.c
-+++ linux-2.6/kernel/sys.c
-@@ -579,6 +579,15 @@ static int set_user(struct cred *new)
- 		return -EAGAIN;
- 	}
- 
-+	/*
-+	 * Though rt_task_can_switch_user returns EINVAL on failure, we
-+	 * return EAGAIN so as not to break semantics and because
-+	 * EAGAIN implies resource not available which is the case in
-+	 * this case.
-+	 */
-+	if (rt_task_can_switch_user(new->uid, current))
-+		return -EAGAIN;
-+
- 	free_uid(new->user);
- 	new->user = new_user;
- 	return 0;
-
--- 
-regards,
-Dhaval
+Sorry, there were quite a few patches and I don't remember which
+ones exactly are related.
