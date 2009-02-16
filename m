@@ -1,122 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757570AbZBPARu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756931AbZBPASP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757570AbZBPARu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 19:17:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756471AbZBPANc
+	id S1756931AbZBPASP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 19:18:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756164AbZBPANi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 19:13:32 -0500
-Received: from fk-out-0910.google.com ([209.85.128.191]:51735 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756130AbZBPANa (ORCPT
+	Sun, 15 Feb 2009 19:13:38 -0500
+Received: from mu-out-0910.google.com ([209.85.134.188]:28417 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756503AbZBPANg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 19:13:30 -0500
+	Sun, 15 Feb 2009 19:13:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=MRkDYIzhY9kUPVnLY+ZwpE8TKbPh8b+2p2AEEQZcUc2MMSEjDc1SGwzwHVb7NLni1T
-         syYVDzoQnzo4/a7Elbh0GkXSq+UriNtWDsNtoq6e3WTDcW6L4Kk0Pao8pekE3IfdhJu3
-         7wgOq94vLg47tzzZxe/h4Yedf5YPqe9TJmeSM=
+        b=okf4QaIeuvmVkKGbWPgQFQ/TuHsP2dPRqgujZog22WHpQPhns4+rG31ptOe2WHJxxD
+         WV5mE2GU1wljlN6o5u1Whz3DpbvxsHN3cs1M2xoEAaGMxgy8tK7O5YB7fDMQ7wzesBw4
+         5qTlpE/EQM4i/axkWIsQ7nH38SSnM2ma05gEA=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Borislav Petkov <petkovbb@gmail.com>,
        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Mon, 16 Feb 2009 01:14:55 +0100
-Message-Id: <20090216001455.27491.90708.sendpatchset@localhost.localdomain>
+Date: Mon, 16 Feb 2009 01:15:01 +0100
+Message-Id: <20090216001501.27491.50243.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090216001309.27491.59759.sendpatchset@localhost.localdomain>
 References: <20090216001309.27491.59759.sendpatchset@localhost.localdomain>
-Subject: [PATCH 16/20] ide-cd: fix non-SECTOR_SIZE-multiples PIO transfers for fs requests
+Subject: [PATCH 17/20] ide-cd: merge ide_cd_prepare_rw_request() into cdrom_start_rw()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide-cd: fix non-SECTOR_SIZE-multiples PIO transfers for fs requests
+Subject: [PATCH] ide-cd: merge ide_cd_prepare_rw_request() into cdrom_start_rw()
 
-We now support arbitrary number of bytes per-IRQ also for fs requests
-so remove ide_cd_check_transfer_size() and IDE_AFLAG_LIMIT_NFRAMES.
+There should be no functional changes caused by this patch.
 
 Cc: Borislav Petkov <petkovbb@gmail.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-cd.c |   36 +-----------------------------------
- include/linux/ide.h  |    5 -----
- 2 files changed, 1 insertion(+), 40 deletions(-)
+ drivers/ide/ide-cd.c |   21 +++++----------------
+ 1 file changed, 5 insertions(+), 16 deletions(-)
 
 Index: b/drivers/ide/ide-cd.c
 ===================================================================
 --- a/drivers/ide/ide-cd.c
 +++ b/drivers/ide/ide-cd.c
-@@ -501,31 +501,6 @@ static int ide_cd_check_ireason(ide_driv
+@@ -501,17 +501,6 @@ static int ide_cd_check_ireason(ide_driv
  	return -1;
  }
  
--/*
-- * Assume that the drive will always provide data in multiples of at least
-- * SECTOR_SIZE, as it gets hairy to keep track of the transfers otherwise.
-- */
--static int ide_cd_check_transfer_size(ide_drive_t *drive, int len)
+-static ide_startstop_t ide_cd_prepare_rw_request(ide_drive_t *drive,
+-						 struct request *rq)
 -{
--	ide_debug_log(IDE_DBG_FUNC, "len: %d", len);
+-	ide_debug_log(IDE_DBG_RQ, "rq->cmd_flags: 0x%x", rq->cmd_flags);
 -
--	if ((len % SECTOR_SIZE) == 0)
--		return 0;
+-	/* set up the command */
+-	rq->timeout = ATAPI_WAIT_PC;
 -
--	printk(KERN_ERR PFX "%s: %s: Bad transfer size %d\n", drive->name,
--			__func__, len);
--
--	if (drive->atapi_flags & IDE_AFLAG_LIMIT_NFRAMES)
--		printk(KERN_ERR PFX "This drive is not supported by this "
--				"version of the driver\n");
--	else {
--		printk(KERN_ERR PFX "Trying to limit transfer sizes\n");
--		drive->atapi_flags |= IDE_AFLAG_LIMIT_NFRAMES;
--	}
--
--	return 1;
+-	return ide_started;
 -}
 -
- static ide_startstop_t ide_cd_prepare_rw_request(ide_drive_t *drive,
- 						 struct request *rq)
+ static void ide_cd_request_sense_fixup(ide_drive_t *drive, struct request *rq)
  {
-@@ -744,13 +719,7 @@ static ide_startstop_t cdrom_newpc_intr(
- 	if (rc)
- 		goto out_end;
+ 	ide_debug_log(IDE_DBG_FUNC, "rq->cmd[0]: 0x%x", rq->cmd[0]);
+@@ -863,9 +852,9 @@ static ide_startstop_t cdrom_start_rw(id
+ 	unsigned short sectors_per_frame =
+ 		queue_hardsect_size(q) >> SECTOR_BITS;
  
--	if (blk_fs_request(rq)) {
--		if (write == 0) {
--			if (ide_cd_check_transfer_size(drive, len))
--				goto out_end;
+-	ide_debug_log(IDE_DBG_RQ, "rq->cmd[0]: 0x%x, write: 0x%x, "
++	ide_debug_log(IDE_DBG_RQ, "rq->cmd[0]: 0x%x, rq->cmd_flags: 0x%x, "
+ 				  "secs_per_frame: %u",
+-				  rq->cmd[0], write, sectors_per_frame);
++				  rq->cmd[0], rq->cmd_flags, sectors_per_frame);
+ 
+ 	if (write) {
+ 		/* disk has become write protected */
+@@ -890,6 +879,8 @@ static ide_startstop_t cdrom_start_rw(id
+ 	if (write)
+ 		cd->devinfo.media_written = 1;
+ 
++	rq->timeout = ATAPI_WAIT_PC;
++
+ 	return ide_started;
+ }
+ 
+@@ -946,10 +937,8 @@ static ide_startstop_t ide_cd_do_request
+ 		blk_dump_rq_flags(rq, "ide_cd_do_request");
+ 
+ 	if (blk_fs_request(rq)) {
+-		if (cdrom_start_rw(drive, rq) == ide_stopped ||
+-		    ide_cd_prepare_rw_request(drive, rq) == ide_stopped) {
++		if (cdrom_start_rw(drive, rq) == ide_stopped)
+ 			goto out_end;
 -		}
--		cmd->last_xfer_len = 0;
--	}
-+	cmd->last_xfer_len = 0;
- 
- 	if (ireason == 0) {
- 		write = 1;
-@@ -1611,9 +1580,6 @@ static const struct ide_proc_devset *ide
- #endif
- 
- static const struct cd_list_entry ide_cd_quirks_list[] = {
--	/* Limit transfer size per interrupt. */
--	{ "SAMSUNG CD-ROM SCR-2430", NULL,   IDE_AFLAG_LIMIT_NFRAMES	     },
--	{ "SAMSUNG CD-ROM SCR-2432", NULL,   IDE_AFLAG_LIMIT_NFRAMES	     },
- 	/* SCR-3231 doesn't support the SET_CD_SPEED command. */
- 	{ "SAMSUNG CD-ROM SCR-3231", NULL,   IDE_AFLAG_NO_SPEED_SELECT	     },
- 	/* Old NEC260 (not R) was released before ATAPI 1.2 spec. */
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -458,11 +458,6 @@ enum {
- 	IDE_AFLAG_TOCADDR_AS_BCD	= (1 << 3),
- 	/* TOC track numbers are in BCD. */
- 	IDE_AFLAG_TOCTRACKS_AS_BCD	= (1 << 4),
--	/*
--	 * Drive does not provide data in multiples of SECTOR_SIZE
--	 * when more than one interrupt is needed.
--	 */
--	IDE_AFLAG_LIMIT_NFRAMES		= (1 << 5),
- 	/* Saved TOC information is current. */
- 	IDE_AFLAG_TOC_VALID		= (1 << 6),
- 	/* We think that the drive door is locked. */
+ 	} else if (blk_sense_request(rq) || blk_pc_request(rq) ||
+ 		   rq->cmd_type == REQ_TYPE_ATA_PC) {
+ 		if (!rq->timeout)
