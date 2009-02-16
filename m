@@ -1,54 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753182AbZBPRcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752554AbZBPRh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753182AbZBPRcT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 12:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbZBPRcH
+	id S1752554AbZBPRh3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 12:37:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751251AbZBPRhT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 12:32:07 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:38280 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750814AbZBPRcG (ORCPT
+	Mon, 16 Feb 2009 12:37:19 -0500
+Received: from e37.co.us.ibm.com ([32.97.110.158]:37827 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751238AbZBPRhS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 12:32:06 -0500
-Message-ID: <4999A236.9040508@zytor.com>
-Date: Mon, 16 Feb 2009 09:28:22 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, cpw@sgi.com
-Subject: Re: #tj-percpu has been rebased
-References: <49833350.1020809@kernel.org> <200902140728.55954.rusty@rustcorp.com.au> <4996141A.1050506@kernel.org> <200902161753.14141.rusty@rustcorp.com.au>
-In-Reply-To: <200902161753.14141.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 16 Feb 2009 12:37:18 -0500
+Subject: Re: [RFC v13][PATCH 00/14] Kernel based checkpoint/restart
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: mingo@elte.hu, orenl@cs.columbia.edu, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, torvalds@linux-foundation.org,
+       viro@zeniv.linux.org.uk, hpa@zytor.com, tglx@linutronix.de
+In-Reply-To: <20090213152836.0fbbfa7d.akpm@linux-foundation.org>
+References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu>
+	 <1234285547.30155.6.camel@nimitz>
+	 <20090211141434.dfa1d079.akpm@linux-foundation.org>
+	 <1234462282.30155.171.camel@nimitz>
+	 <20090213152836.0fbbfa7d.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 16 Feb 2009 09:37:13 -0800
+Message-Id: <1234805833.30155.258.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
+On Fri, 2009-02-13 at 15:28 -0800, Andrew Morton wrote:
+> > > For extra marks:
+> > > 
+> > > - Will any of this involve non-trivial serialisation of kernel
+> > >   objects?  If so, that's getting into the
+> > >   unacceptably-expensive-to-maintain space, I suspect.
+> > 
+> > We have some structures that are certainly tied to the kernel-internal
+> > ones.  However, we are certainly *not* simply writing kernel structures
+> > to userspace.  We could do that with /dev/mem.  We are carefully pulling
+> > out the minimal bits of information from the kernel structures that we
+> > *need* to recreate the function of the structure at restart.  There is a
+> > maintenance burden here but, so far, that burden is almost entirely in
+> > checkpoint/*.c.  We intend to test this functionality thoroughly to
+> > ensure that we don't regress once we have integrated it.
 > 
-> But note that for the non-NUMA case, you can just use kmalloc/__get_free_pages
-> and no remapping tricks are necessary at all.
+> I guess my question can be approximately simplified to: "will it end up
+> looking like openvz"?  (I don't believe that we know of any other way
+> of implementing this?)
 > 
+> Because if it does then that's a concern, because my assessment when I
+> looked at that code (a number of years ago) was that having code of
+> that nature in mainline would be pretty costly to us, and rather
+> unwelcome.
 
-Only if your chunks are really small.  Keep in mind that
-num_possible_cpus() may be 4096, and so it is unlikely you'll be able to
-get enough contiguous pages unless you're using the largepage pool, and
-even then you only get 512 bytes per cpu.
+With the current path, my guess is that we will end up looking
+*something* like OpenVZ.  But, with all the input from the OpenVZ folks
+and at least three other projects, I bet we can come up with something
+better.  I do wish the OpenVZ folks were being more vocal and
+constructive about Oren's current code but I guess silence is the
+greatest complement...
 
-All in all I think a dedicated virtual zone per CPU as opposed to
-interleaving them seems to make more sense.  Even with 4096 CPUs and
-reserving, say, 256 MB per CPU it's not that much address space in the
-context of a 47-bit kernel space.  On 32 bits I don't think anything but
-the most trivial amount of percpu space is going to fly no matter what.
+> The broadest form of the question is "will we end up regretting having
+> done this".
+> If we can arrange for the implementation to sit quietly over in a
+> corner with a team of people maintaining it and not screwing up other
+> people's work then I guess we'd be OK - if it breaks then the breakage
+> is localised.
+> 
+> And it's not just a matter of "does the diffstat only affect a single
+> subdirectory".  We also should watch out for the imposition of new
+> rules which kernel code must follow.  "you can't do that, because we
+> can't serialise it", or something.
+> 
+> Similar to the way in which perfectly correct and normal kernel
+> sometimes has to be changed because it unexpectedly upsets the -rt
+> patch.
+> 
+> Do you expect that any restrictions of this type will be imposed?
 
-	-hpa
+Basically, yes.  But, practically, we haven't been thinking about
+serializing stuff in the kernel, ever.  That's produced a few
+difficult-to-serialize things like AF_UNIX sockets but absolutely
+nothing that simply can't be done.  
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Having this code in mainline and getting some of people's mindshare
+should at least enable us to speak up if we see another thing like
+AF_UNIX coming down the pipe.  We could hopefully catch it and at least
+tweak it a bit to enhance how easily we can serialize it. 
+
+Again, it isn't likely to be an all-or-nothing situation.  It is a
+matter of how many hoops the checkpoint code itself has to jump
+through. 
+
+-- Dave
 
