@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753990AbZBPUJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbZBPUOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753990AbZBPUJs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 15:09:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZBPUJk
+	id S1754059AbZBPUOJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 15:14:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbZBPUNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 15:09:40 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33458 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751559AbZBPUJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 15:09:39 -0500
-Date: Mon, 16 Feb 2009 21:09:23 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Damien Wyart <damien.wyart@free.fr>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12650] Strange load average and ksoftirqd behavior with
-	2.6.29-rc2-git1
-Message-ID: <20090216200923.GA28938@elte.hu>
-References: <20090215180355.GA2273@localhost.localdomain> <20090215193102.GA16873@elte.hu> <20090216084223.GA2641@localhost.localdomain> <20090216095059.GL6182@elte.hu> <87hc2u61e9.fsf@free.fr> <20090216122632.GA3158@elte.hu> <87ljs6pmao.fsf@free.fr> <20090216132151.GA17996@elte.hu> <20090216160613.GA6785@linux.vnet.ibm.com> <20090216185616.GB6785@linux.vnet.ibm.com>
+	Mon, 16 Feb 2009 15:13:55 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:58322 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751304AbZBPUNy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 15:13:54 -0500
+X-Greylist: delayed 429 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Feb 2009 15:13:54 EST
+Date: Mon, 16 Feb 2009 21:06:43 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-ide@vger.kernel.org, Tejun Heo <htejun@gmail.com>
+Subject: [BUG] 2.6.29-rc2-git1 to -rc5: libata lockup on boot, LED solid,
+	100% CPU
+Message-ID: <20090216200643.GA2393@rhlx01.hs-esslingen.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090216185616.GB6785@linux.vnet.ibm.com>
+X-Priority: none
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello all,
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+My Inspiron 8000 ICH2 (i810) P3/700 UP has a hard time booting 2.6.29 things:
 
-> Here the calls to rcu_process_callbacks() are only 75 
-> microseconds apart, so that this function is consuming more 
-> than 10% of a CPU.  The strange thing is that I don't see a 
-> raise_softirq() in between, though perhaps it gets inlined or 
-> something that makes it invisible to ftrace.
+[loaded init, shell stuff]
+...
+ata1.00: configured for UDMA/100
+ata1.01: configured for UDMA/33
+ata1: EH complete
+...
+Uniform CD-ROM driver Revision: 3.20
+[LAST LINE, FULL STOP]
+---> hangs with IDE LED solidly on! <---
 
-look at the latest trace please, that has even the most inline 
-raise-softirq method instrumented, so all the raising is 
-visible.
+NOTE: kernel did NOT hang when accidentally running rc2-git1 w/o any modules loaded!
+(IOW, probably a module-related hang)
+disabling sr_mod.ko will make a boot proceed a tiny bit, then hang anyway
 
-	Ingo
+Could be mutex deadlock (CPU hot, 100%?)
+no log errors whatsoever
+latest known working: .28-rc6 (admittedly somewhat old; DOES work currently)
+earliest known buggy: -rc2-git1, -rc4 also, -rc5 also
+no SysRq available (notebook keys: no workey, /proc/sysrq obviously
+not available either)
+
+Should I test 2.6.28.5? Every build will take two hours though...
+Not ATA-SFF 32bit bug problem, right? (already committed?)
+http://marc.info/?l=linux-kernel&m=123254501314058&w=2
+CONFIG_LOCK_STAT is NOT set/guilty here http://lkml.org/lkml/2009/2/16/5
+Will try disabling CD-ROM drives in BIOS or so.
+Any other promising ideas/patches available? libata logging? mutex
+logging?
+
+CC'd Tejun since he's been a miracle to work with recently concerning
+all things ATA ;)
+
+On a related note, -rc4 works nicely on my Aspire One, despite me
+betting that it would end up with at least two new major issues again...
+(note: plus full UDMA/66 after resume! - Tejun)
+-rc5 on a P4HT blue skies, too...
+Maybe kernel quality doesn't actually degrade after all...
+
+Thanks,
+
+Andreas Mohr
