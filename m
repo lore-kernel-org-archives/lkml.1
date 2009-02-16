@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753410AbZBPTZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbZBPTaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753410AbZBPTZr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 14:25:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477AbZBPTZi
+	id S1752541AbZBPTaT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 14:30:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbZBPTaE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 14:25:38 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:22759 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751301AbZBPTZi (ORCPT
+	Mon, 16 Feb 2009 14:30:04 -0500
+Received: from yx-out-2324.google.com ([74.125.44.29]:20755 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751018AbZBPTaD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 14:25:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=VykXJTc6ZEJZHcDi3cRKGFmPvWBPl3ieb0eLBvnuvSmmn86E7oD415oUAkYTAznOOS
-         6nM4dAkY4BzmgVmVhdf8l3frF6xTADYo+6HwZCWeQwZvkw8L6X5SpbWRLA+Ivvq2tAHU
-         aJ5aKfW1ak1vs5hujbBRHHHWAZmPQzjrQwLBg=
+	Mon, 16 Feb 2009 14:30:03 -0500
 MIME-Version: 1.0
-In-Reply-To: <20090216184200.GA31264@csn.ul.ie>
-References: <20090123154653.GA14517@wotan.suse.de>
-	 <200902041748.41801.nickpiggin@yahoo.com.au>
-	 <20090204152709.GA4799@csn.ul.ie>
-	 <200902051459.30064.nickpiggin@yahoo.com.au>
-	 <20090216184200.GA31264@csn.ul.ie>
-Date: Mon, 16 Feb 2009 21:25:35 +0200
-X-Google-Sender-Auth: c95a63eedf61ca20
-Message-ID: <84144f020902161125r59de8a53nfe01566d20ff1658@mail.gmail.com>
-Subject: Re: [patch] SLQB slab allocator (try 2)
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <20090216185914.GA6239@kroah.com>
+References: <5aa163d00902142008g138826br80d3ea989e7af691@mail.gmail.com>
+	 <200902160931.34771.oliver@neukum.org>
+	 <5aa163d00902160522r3a22412je3f5202076f57a0a@mail.gmail.com>
+	 <20090216161331.GB5008@kroah.com>
+	 <5aa163d00902161009l15dae120le96436d40f998d33@mail.gmail.com>
+	 <20090216185914.GA6239@kroah.com>
+Date: Mon, 16 Feb 2009 14:30:01 -0500
+X-Google-Sender-Auth: 95bd8ba9e5dea929
+Message-ID: <5aa163d00902161130r2030adb8h6eb1ec08bda92744@mail.gmail.com>
+Subject: Re: [PATCH] input: xpad.c - Xbox 360 wireless and sysfs support
+From: Mike Murphy <mamurph@cs.clemson.edu>
+To: Greg KH <greg@kroah.com>
+Cc: Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mel,
+On Mon, Feb 16, 2009 at 1:59 PM, Greg KH <greg@kroah.com> wrote:
+>
+> Put it on the logical device, as given to you.
+>
+>> I tried not to break existing functionality.  Additionally, struct
+>> usb_xpad contains two device pointers: one to the actual USB device,
+>> and one to an input device (see source of the in-tree xpad.c). So I
+>> followed your kobject.txt documentation and samples to create a new
+>> object whose sole purpose in life is to expose the sysfs interface,
+>> without interfering with the existing device entries in the driver.
+>> I'm not sure I see a clean way to use a single struct device here....
+>
+> Put it on the input device, which is what is the per-device thing.  It's
+> much simpler than creating a new struct kobject.  You can even create a
+> subdirectory for your attributes if you use an attribute group (which
+> you should be doing anyway, it's much simpler that way.)
+>
 
-On Mon, Feb 16, 2009 at 8:42 PM, Mel Gorman <mel@csn.ul.ie> wrote:
-> Slightly later than hoped for, but here are the results of the profile
-> run between the different slab allocators. It also includes information on
-> the performance on SLUB with the allocator pass-thru logic reverted by commit
-> http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commitdiff;h=97a4871761e735b6f1acd3bc7c3bac30dae3eab9
+OK, one thing I'm not clear on: is there a clean API for adding
+attributes to an existing struct device, or do I need to "subclass" it
+(the C containment and delegation approach)?
 
-Did you just cherry-pick the patch or did you run it with the
-topic/slub/perf branch? There's a follow-up patch from Yanmin which
-will make a difference for large allocations when page-allocator
-pass-through is reverted:
+This may take me a few days or a week or so, depending on how things
+go. It's dissertation proposal season....
 
-http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commitdiff;h=79b350ab63458ef1d11747b4f119baea96771a6e
+> And document the attributes please.
+>
 
-                            Pekka
+Will do... still need to nail down what the interface should look like.
+
+> thanks,
+>
+> greg k-h
+>
+
+Thanks,
+Mike
+-- 
+Mike Murphy
+Ph.D. Candidate and NSF Graduate Research Fellow
+Clemson University School of Computing
+120 McAdams Hall
+Clemson, SC 29634-0974 USA
+Tel: +1 864.656.2838   Fax: +1 864.656.0145
+http://cirg.cs.clemson.edu/~mamurph
