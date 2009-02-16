@@ -1,107 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757468AbZBPMxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757318AbZBPM4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757468AbZBPMxc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 07:53:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbZBPMxX
+	id S1757318AbZBPM4y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 07:56:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbZBPM4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 07:53:23 -0500
-Received: from mail.klingt.org ([86.59.21.178]:32965 "EHLO klingt.org"
+	Mon, 16 Feb 2009 07:56:45 -0500
+Received: from mail-out1.uio.no ([129.240.10.57]:34860 "EHLO mail-out1.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754635AbZBPMxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 07:53:22 -0500
-Message-ID: <499961AF.8030909@klingt.org>
-Date: Mon, 16 Feb 2009 13:53:03 +0100
-From: Tim Blechmann <tim@klingt.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Robert Richter <robert.richter@amd.com>
-CC: oprofile-list@lists.sf.net, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29-rc4 regression
-References: <1229869416.6911.1.camel@thinkpad> <49932C35.3020300@klingt.org> <20090213190740.GD25042@erda.amd.com> <20090216112313.359ef437@thinkpad> <20090216113349.GF25042@erda.amd.com>
-In-Reply-To: <20090216113349.GF25042@erda.amd.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig9273A80606A3B163A40B7A1C"
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (klingt.org [127.0.0.1]); Mon, 16 Feb 2009 13:53:06 +0100 (CET)
+	id S1754796AbZBPM4n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 07:56:43 -0500
+Subject: Re: Tracing down 250ms open/chdir calls
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Carsten Aulbert <carsten.aulbert@aei.mpg.de>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       beowulf@beowulf.org
+In-Reply-To: <49991BE7.1090104@aei.mpg.de>
+References: <49991BE7.1090104@aei.mpg.de>
+Content-Type: text/plain
+Date: Mon, 16 Feb 2009 07:56:38 -0500
+Message-Id: <1234788998.7708.40.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 72370BE1E19F01CCC9EFA229ED22AD8F93C01DF7
+X-UiO-SPAM-Test: remote_host: 68.40.183.129 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 3 total 486 max/h 9 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig9273A80606A3B163A40B7A1C
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2009-02-16 at 08:55 +0100, Carsten Aulbert wrote:
+> Hi all,
+> 
+> sorry in advance for this vague subject and also the vague email, I'm
+> trying my best to summarize the problem:
+> 
+> On our large cluster we sometimes encounter the problem that our main
+> scheduling processes are often in state D and in the end not capable
+> anymore of pushing work to the cluster.
+> 
+> The head nodes are 8 core boxes with Xeon CPUs and equipped with 16 GB
+> of memory, when certain types of jobs are running we see system loads of
+> about 20-30 which might go up to 80-100 from time to time. Looking at
+> the individual cores they are mostly busy with system tasks (e.g. htop
+> shows 'red' bars).
+> 
+> stat -tt -c showed that several system calls of the scheduler take a
+> long time to complete, most notably open and chdir which took between
+> 180 and 230ms to complete (during our testing). Since most of these open
+> and chdir are via NFSv3 I'm including that list as well. The NFS servers
+> are Sun Fire X4500 boxes running Solaris 10u5 right now.
+> 
+> A standard output line looks like:
+> 93.37   38.997264     230753      169    78      open
+> 
+> i.e. 93.37% of the system-related time was spend in 169 successful open
+> calls which took 230753us/call, thus 39 wall clock seconds were spend in
+> a minute just doing open.
+> 
+> We tried several things to understand the problem, but apart from moving
+> more files (mostly log files of currently running jobs) off NFS we did
+> not move far ahead so far. On
+> https://n0.aei.uni-hannover.de/twiki/bin/view/ATLAS/H2Problems
+> we have summarized some things.
+> 
+> With the help of 'stress' and a tiny program just doing open/putc/close
+> into a single file, I've tried to get a feeling how good or bad things
+> are when compared to other head nodes with different tasks/loads:
+> 
+> https://n0.aei.uni-hannover.de/twiki/bin/view/ATLAS/OpenCloseIotest
+> 
+> (this test may or may not help in the long run, I'm just poking into the
+> dark).
+> 
+> Now my questions:
+> 
+> * Do you have any suggestions how to continue debugging this problem?
+> * Does anyone know how to improve the situation? Next on my agenda would
+> be to try different IO algorithms, any hints which ones should be good
+> for such boxes?
+> * I guess I missed vital information. please let me know if you need
+> more information of the system
+> 
+> Please Cc me from linux-kernel, I'm only on the other two addressed lists.
+> 
+> Cheers and a lot of TIA
+> 
+> Carsten
 
->>> still, I can not reproduce this with my tests with v2.6.29-rc4. The
->>> regression on the systems I have runs fine on rc4. On the system you
->>> have, is commit b99170288421c79f0c2efa8b33e26e65f4bb7fb8 the first ba=
-d
->>> one? If so, I will split the patch into smaller pieces to find the
->>> change that introduces the bug.
->> i got revision df13b31c286b3e91c556167954eda088d90a4295 working, by no=
-t
->> resetting the counter width:
->>
->> diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_=
-model_ppro.c
->> index 12e207a..f0e019d 100644
->> --- a/arch/x86/oprofile/op_model_ppro.c
->> +++ b/arch/x86/oprofile/op_model_ppro.c
->> @@ -76,12 +76,14 @@ static void ppro_setup_ctrs(struct op_msrs const *=
- const msrs)
->>  			return;
->>  	}
->> =20
->> +#if 0
->>  	if (cpu_has_arch_perfmon) {
->>  		union cpuid10_eax eax;
->>  		eax.full =3D cpuid_eax(0xa);
->>  		if (counter_width < eax.split.bit_width)
->>  			counter_width =3D eax.split.bit_width;
->>  	}
->> +#endif
->>
->>
->> this tweak did not work on later kernels, that i tested, though, and i=
-=20
->> haven't had time to look into it in more detail.
+2.6.27.7 has a known NFS client performance bug due to a change in the
+authentication code. The fix was merged in 2.6.27.9: see the commit
+http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git&a=commitdiff&h=a0f04d0096bd7edb543576c55f7a0993628f924a
 
-hm, i just tried to compile 2.6.28 with this patch applied, and there
-the NMIs are delivered correctly.
+Cheers
+  Trond
 
-> Thanks Tim, on later kernels, is it the behaviour you mentioned that
-> no NMIs are delivered and you do not receive any NMI?
-
-on the current 2.6.29-rc5, no NMIs are delivered. however i have also
-applied the performance counter branch from tip, maybe that interferes
-with oprofile?
-will try to compile a clean linus/master with this patch later ...
-
-tim
-
---=20
-tim@klingt.org
-http://tim.klingt.org
-
-Nothing exists until or unless it is observed. An artist is making
-something exist by observing it. And his hope for other people is that
-they will also make it exist by observing it. I call it 'creative
-observation.' Creative viewing.
-  William S. Burroughs
-
-
---------------enig9273A80606A3B163A40B7A1C
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmZYbIACgkQdL+4qsZfVssM/ACfWBOmJQVIEHtDlTd8r/ko8sjd
-B/4AnRVL3NG8VGUoLiGLujb4lqmgKhAE
-=pOxr
------END PGP SIGNATURE-----
-
---------------enig9273A80606A3B163A40B7A1C--
