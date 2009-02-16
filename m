@@ -1,79 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755632AbZBPXDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbZBPXFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755632AbZBPXDb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 18:03:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbZBPXDU
+	id S1754026AbZBPXFx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 18:05:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750938AbZBPXFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 18:03:20 -0500
-Received: from rtr.ca ([76.10.145.34]:37769 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751102AbZBPXDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 18:03:19 -0500
-Message-ID: <4999F0B8.7020700@rtr.ca>
-Date: Mon, 16 Feb 2009 18:03:20 -0500
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 16 Feb 2009 18:05:45 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38517 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750718AbZBPXFo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 18:05:44 -0500
+Date: Tue, 17 Feb 2009 00:05:32 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Arve Hj?nnev?g <arve@android.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       mark gross <mgross@linux.intel.com>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFD] Automatic suspend
+Message-ID: <20090216230532.GI1370@ucw.cz>
+References: <200902160010.16955.rjw@sisk.pl> <20090215164456.34aef7e8@infradead.org> <1234750360.26036.115.camel@pasglop> <20090215182012.3bc6b292@infradead.org> <1234754621.26036.120.camel@pasglop>
 MIME-Version: 1.0
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       =?UTF-8?B?SGFubm8gQsO2Y2s=?= <hanno@hboeck.de>
-Subject: Re: [PATCH] libata: Don't trust current capacity values in identify
- words 57-58
-References: <4999CA54.1060306@gmail.com> <4999F032.6060107@rtr.ca>
-In-Reply-To: <4999F032.6060107@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1234754621.26036.120.camel@pasglop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Robert Hancock wrote:
->> Hanno Böck reported a problem where an old Conner CP30254 240MB hard 
->> drive
->> was reported as 1.1TB in capacity by libata:
->>
->> http://lkml.org/lkml/2009/2/13/134
->>
->> This was caused by libata trusting the drive's reported current 
->> capacity in sectors in identify words 57 and 58 if the drive does not 
->> support LBA and the
->> current CHS translation values appear valid. Unfortunately it seems older
->> ATA specs were vague about what this field should contain and a number 
->> of drives
->> used values with wrong byte order or that were totally bogus. There's no
->> unique information that it conveys and so we can just calculate the 
->> number
->> of sectors from the reported current CHS values.
->>
->> Signed-off-by: Robert Hancock <hancockrwd@gmail.com>
-> ..
->>      } else {
->>          if (ata_id_current_chs_valid(id))
->> -            return ata_id_u32(id, 57);
->> +            return id[54] * id[55] * id[56];
->>          else
->>              return id[1] * id[3] * id[6];
-> ..
+On Mon 2009-02-16 14:23:41, Benjamin Herrenschmidt wrote:
+> On Sun, 2009-02-15 at 18:20 -0800, Arjan van de Ven wrote:
+> > what this needs is a separation between "interface down, all off" and
+> > "interface down enough so that link detection works".
+> > Some NICs can go all the way down and still do link detection, others
+> > cannot. This is obviously something the driver will know, nothing else
+> > in the system should know.
 > 
-> NAK.  That's not quite correct, either.
-> 
-> The LBA capacity can be larger than the CHS capacity,
-> so we have to use the reported LBA values if at all possible.
-> 
-> That's why ata_id_is_lba_capacity_ok() exists,
-> and why it looks so peculiar.
-> 
-> Some of those early drives really did require that kind of logic.
-..
+> Sure, my point was just that the driver cannot make the decision to go
+> all-off (and thus not detect link) without some kind of user setting
+> allowing it to do so.
 
-Mind you, one can do better than that, too.
+Maybe we need ifconfig eth0 reallyreallydown ?
+								Pavel
 
-The "10% solution" in there right now is a bit of a (working) hack.
-It really probably just needs to check for a flipped-LBA
-that is within +/- one full cylinder of the CHS capacity.
-
-Cheers
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
