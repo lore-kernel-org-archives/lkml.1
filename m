@@ -1,56 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752797AbZBPRXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752033AbZBPR3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752797AbZBPRXn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 12:23:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750838AbZBPRXd
+	id S1752033AbZBPR3b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 12:29:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751104AbZBPR3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 12:23:33 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:53374 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750763AbZBPRXc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 12:23:32 -0500
-Date: Mon, 16 Feb 2009 12:23:18 -0500
-From: Bill Nottingham <notting@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jiri Kosina <jkosina@suse.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Declare PIO_CMAP/GIO_CMAP as compatbile ioctls.
-Message-ID: <20090216172318.GB26018@nostromo.devel.redhat.com>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	Jiri Kosina <jkosina@suse.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	linux-kernel@vger.kernel.org
-References: <1234279525-25143-1-git-send-email-notting@redhat.com> <alpine.LNX.1.10.0902111438280.31014@jikos.suse.cz> <20090215134144.c29913d9.akpm@linux-foundation.org>
+	Mon, 16 Feb 2009 12:29:18 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:5664 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751095AbZBPR3R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 12:29:17 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090215134144.c29913d9.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090215121201.26072.42971.stgit@vmbox.hanneseder.net>
+References: <154e089b0902150347o4e06683dy1c9c02dc2564ea4f@mail.gmail.com>
+	 <20090215121201.26072.42971.stgit@vmbox.hanneseder.net>
+Date: Mon, 16 Feb 2009 18:29:15 +0100
+Message-ID: <154e089b0902160929v617ed7d6o963da936b35ef7fb@mail.gmail.com>
+Subject: Re: [PATCH 31/43 v2] drivers/net/tokenring: fix sparse warning: cast 
+	truncates bits from const value
+From: Hannes Eder <hannes@hanneseder.net>
+To: netdev@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jay Schulist <jjschlst@gmail.com>, Al Viro <viro@zeniv.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(dropping trivial@ and stable@ cc's)
+On Sun, Feb 15, 2009 at 1:13 PM, Hannes Eder <hannes@hanneseder.net> wrote:
+> Impact: Remove the write-only field 'current_ring_status' completely.
+>
+> Fix this sparse warnings:
+>  drivers/net/tokenring/smctr.c:4410:52: warning: cast truncates bits from constant value (100 becomes 0)
+>  drivers/net/tokenring/smctr.c:4415:52: warning: cast truncates bits from constant value (400 becomes 0)
+>  drivers/net/tokenring/smctr.c:4420:52: warning: cast truncates bits from constant value (800 becomes 0)
+>  drivers/net/tokenring/smctr.c:4425:52: warning: cast truncates bits from constant value (1000 becomes 0)
+>  drivers/net/tokenring/smctr.c:4430:52: warning: cast truncates bits from constant value (2000 becomes 0)
+>  drivers/net/tokenring/smctr.c:4435:52: warning: cast truncates bits from constant value (4000 becomes 0)
+>  drivers/net/tokenring/smctr.c:4440:52: warning: cast truncates bits from constant value (8000 becomes 0)
+>
+> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+> ---
+>  drivers/net/tokenring/smctr.c |   10 ----------
+>  drivers/net/tokenring/smctr.h |    1 -
+>  2 files changed, 0 insertions(+), 11 deletions(-)
+>
+> diff --git a/drivers/net/tokenring/smctr.c b/drivers/net/tokenring/smctr.c
+> index 5a3ff20..e66eb8a 100644
+> --- a/drivers/net/tokenring/smctr.c
+> +++ b/drivers/net/tokenring/smctr.c
+> @@ -4393,52 +4393,42 @@ static int smctr_ring_status_chg(struct net_device *dev)
+>         {
+>                 case RING_RECOVERY:
+>                         printk(KERN_INFO "%s: Ring Recovery\n", dev->name);
+> -                        tp->current_ring_status |= RING_RECOVERY;
+>                         break;
+>
+>                 case SINGLE_STATION:
+>                         printk(KERN_INFO "%s: Single Statinon\n", dev->name);
+> -                        tp->current_ring_status |= SINGLE_STATION;
+>                         break;
+>
+>                 case COUNTER_OVERFLOW:
+>                         printk(KERN_INFO "%s: Counter Overflow\n", dev->name);
+> -                        tp->current_ring_status |= COUNTER_OVERFLOW;
+>                         break;
+>
+>                 case REMOVE_RECEIVED:
+>                         printk(KERN_INFO "%s: Remove Received\n", dev->name);
+> -                        tp->current_ring_status |= REMOVE_RECEIVED;
+>                         break;
+>
+>                 case AUTO_REMOVAL_ERROR:
+>                         printk(KERN_INFO "%s: Auto Remove Error\n", dev->name);
+> -                        tp->current_ring_status |= AUTO_REMOVAL_ERROR;
+>                         break;
+>
+>                 case LOBE_WIRE_FAULT:
+>                         printk(KERN_INFO "%s: Lobe Wire Fault\n", dev->name);
+> -                        tp->current_ring_status |= LOBE_WIRE_FAULT;
+>                         break;
+>
+>                 case TRANSMIT_BEACON:
+>                         printk(KERN_INFO "%s: Transmit Beacon\n", dev->name);
+> -                        tp->current_ring_status |= TRANSMIT_BEACON;
+>                         break;
+>
+>                 case SOFT_ERROR:
+>                         printk(KERN_INFO "%s: Soft Error\n", dev->name);
+> -                        tp->current_ring_status |= SOFT_ERROR;
+>                         break;
+>
+>                 case HARD_ERROR:
+>                         printk(KERN_INFO "%s: Hard Error\n", dev->name);
+> -                        tp->current_ring_status |= HARD_ERROR;
+>                         break;
+>
+>                 case SIGNAL_LOSS:
+>                         printk(KERN_INFO "%s: Signal Loss\n", dev->name);
+> -                        tp->current_ring_status |= SIGNAL_LOSS;
+>                         break;
+>
+>                 default:
+> diff --git a/drivers/net/tokenring/smctr.h b/drivers/net/tokenring/smctr.h
+> index 52df7dd..6e5700a 100644
+> --- a/drivers/net/tokenring/smctr.h
+> +++ b/drivers/net/tokenring/smctr.h
+> @@ -977,7 +977,6 @@ typedef struct net_local {
+>        __u8            monitor_state_ready;
+>        __u16           ring_status;
+>        __u8            ring_status_flags;
+> -       __u8            current_ring_status;
+>        __u8            state;
+>
+>        __u8            join_state;
+>
+>
 
-Andrew Morton (akpm@linux-foundation.org) said: 
-> On Wed, 11 Feb 2009 14:41:25 +0100 (CET) Jiri Kosina <jkosina@suse.cz> wrote:
-> 
-> > On Tue, 10 Feb 2009, Bill Nottingham wrote:
-> > 
-> > > Otherwise, these don't work when called from 32-bit userspace on 64-bit kernels.
-> 
-> Bill, please remember to add signoffs?  This should all be scripted.
+forwarding a mail from Jay Schulist:
 
-I would have expected that that would be the default in 'git format-patch'.
-Will keep note of that for the future.
-
-> > Could you please give your Acked-by for it so that I can 
-> > merge, or take it through your tree completely?
-> 
-> afaict this fix is needed all the way back to 2.6.tiny.  I merged it
-> with 2.6.29 intentions.  Also tagged as needed in 2.6.25.x and later.
-
-So, is there some way to do static analysis on the kernel source to
-find *all* ioctls that aren't marked as compatible, and don't have
-specific compat handlers?
-
-Bill
+On Mon, Feb 16, 2009 at 4:17 PM, Jay Schulist <jjschlst@gmail.com> wrote:
+> Hello,
+> I'm at this email these days. That field was likely a hold-over from
+> the original port of their windows driver to Linux, it has never been
+> used that I know of. Removing it looks like a fine solution to me.
+>
+> Jay
