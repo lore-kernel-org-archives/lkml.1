@@ -1,73 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756160AbZBPXoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbZBPXq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756160AbZBPXoQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 18:44:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbZBPXn7
+	id S1756229AbZBPXq3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 18:46:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbZBPXqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 18:43:59 -0500
-Received: from smtp8.mana.pf ([202.3.225.219]:48103 "EHLO smtp8.mana.pf"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751874AbZBPXn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 18:43:58 -0500
-X-Greylist: delayed 878 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Feb 2009 18:43:58 EST
-Message-ID: <4999F6C8.3050001@sysnux.pf>
-Date: Mon, 16 Feb 2009 13:29:12 -1000
-From: Jean-Denis Girard <jd.girard@sysnux.pf>
-Organization: SysNux
-User-Agent: Thunderbird 2.0.0.19 (X11/20090114)
-MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-CC: linux-usb@vger.kernel.org
-Subject: ttyUSB sendbreak problem
-X-Enigmail-Version: 0.95.7
-OpenPGP: url=http://www.sysnux.pf/jdg.asc
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Mon, 16 Feb 2009 18:46:16 -0500
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:50783
+	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751324AbZBPXqP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 18:46:15 -0500
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yinghai@kernel.org>, Ian Campbell <Ian.Campbell@citrix.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 00/19] *** SUBJECT HERE ***
+Date: Mon, 16 Feb 2009 15:45:53 -0800
+Message-Id: <cover.1234826723.git.jeremy.fitzhardinge@citrix.com>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <cover.1234826723.git.jeremy.fitzhardinge@citrix.com>
+References: <cover.1234826723.git.jeremy.fitzhardinge@citrix.com>
+ <cover.1234826723.git.jeremy.fitzhardinge@citrix.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Hi list,
+*** BLURB HERE ***
 
-I'm writing a program which communicates via modem with an embedded
-device (electrical network monitoring). The frames are terminated by a
-BREAK.
+Ian Campbell (4):
+  xen: disable PAT
+  xen/dom0: Use host E820 map
+  xen: implement XENMEM_machphys_mapping
+  xen: clear reserved bits in l3 entries given in the initial
+    pagetables
 
-My program works fine when I use a Cyclades 8Yo multiports card, but
-fails using USB to serial adapters (tried with pl2303 and FTDI
-converters). I suspect that the BREAK are not passed correctly, but I
-don't have equipment to check.
+Jeremy Fitzhardinge (6):
+  xen dom0: Make hvc_xen console work for dom0.
+  xen-dom0: only selectively disable cpu features
+  xen/dom0: use _PAGE_IOMAP in ioremap to do machine mappings
+  paravirt/xen: add pvop for page_is_ram
+  xen/dom0: add XEN_DOM0 config option
+  xen: allow enable use of VGA console on dom0
 
-I've tried with:
- tcsendbreak(modem,0);
- ioctl(modem, TCSBRK,0);
- ioctl(modem, TCSBRKP, 0);
+Juan Quintela (2):
+  xen dom0: Initialize xenbus for dom0.
+  xen dom0: Set up basic IO permissions for dom0.
 
-- From pl2303 debug mode, I see that pl2303_break_ctl is called:
- drivers/usb/serial/pl2303.c: pl2303_break_ctl - port 0
- drivers/usb/serial/pl2303.c: pl2303_break_ctl - turning break on
- drivers/usb/serial/pl2303.c: pl2303_write_bulk_callback - port 0
- drivers/usb/serial/pl2303.c: pl2303_send - port 0
- drivers/usb/serial/pl2303.c: pl2303_break_ctl - port 0
- drivers/usb/serial/pl2303.c: pl2303_break_ctl - turning break off
+Mark McLoughlin (5):
+  xen mtrr: Use specific cpu_has_foo macros instead of generic
+    cpu_has()
+  xen mtrr: Kill some unneccessary includes
+  xen mtrr: Use generic_validate_add_page()
+  xen mtrr: Implement xen_get_free_region()
+  xen mtrr: Add xen_{get,set}_mtrr() implementations
 
-I found a few references of similar problems in the past, but it was for
-older kernels (I'm using 2.6.28.4), so the question remains: should it
-work or is there a known problem sending BREAK using ttyUSB?
+Stephen Tweedie (2):
+  xen dom0: Add support for the platform_ops hypercall
+  xen mtrr: Add mtrr_ops support for Xen mtrr
 
+ arch/x86/include/asm/page.h             |    9 +-
+ arch/x86/include/asm/paravirt.h         |    7 +
+ arch/x86/include/asm/pat.h              |    5 +
+ arch/x86/include/asm/xen/hypercall.h    |    8 +
+ arch/x86/include/asm/xen/interface.h    |    6 +-
+ arch/x86/include/asm/xen/interface_32.h |    5 +
+ arch/x86/include/asm/xen/interface_64.h |   13 +--
+ arch/x86/include/asm/xen/page.h         |   15 +--
+ arch/x86/kernel/cpu/mtrr/Makefile       |    1 +
+ arch/x86/kernel/cpu/mtrr/amd.c          |    1 +
+ arch/x86/kernel/cpu/mtrr/centaur.c      |    1 +
+ arch/x86/kernel/cpu/mtrr/cyrix.c        |    1 +
+ arch/x86/kernel/cpu/mtrr/generic.c      |    1 +
+ arch/x86/kernel/cpu/mtrr/main.c         |   11 +-
+ arch/x86/kernel/cpu/mtrr/mtrr.h         |    7 +
+ arch/x86/kernel/cpu/mtrr/xen.c          |  120 ++++++++++++++++
+ arch/x86/kernel/paravirt.c              |    1 +
+ arch/x86/mm/ioremap.c                   |    2 +-
+ arch/x86/mm/pat.c                       |    5 -
+ arch/x86/xen/Kconfig                    |   26 ++++
+ arch/x86/xen/Makefile                   |    3 +-
+ arch/x86/xen/enlighten.c                |   58 ++++++--
+ arch/x86/xen/mmu.c                      |  135 ++++++++++++++++++-
+ arch/x86/xen/setup.c                    |   51 ++++++-
+ arch/x86/xen/vga.c                      |   65 +++++++++
+ arch/x86/xen/xen-ops.h                  |   12 ++
+ drivers/char/hvc_xen.c                  |  101 +++++++++-----
+ drivers/xen/events.c                    |    2 +-
+ drivers/xen/xenbus/xenbus_probe.c       |   30 ++++-
+ include/xen/events.h                    |    2 +
+ include/xen/interface/memory.h          |   42 ++++++
+ include/xen/interface/platform.h        |  232 +++++++++++++++++++++++++++++++
+ include/xen/interface/xen.h             |   41 ++++++
+ 33 files changed, 931 insertions(+), 88 deletions(-)
+ create mode 100644 arch/x86/kernel/cpu/mtrr/xen.c
+ create mode 100644 arch/x86/xen/vga.c
+ create mode 100644 include/xen/interface/platform.h
 
-Thanks,
-- --
-Jean-Denis Girard
-
-SysNux                  Systèmes  Linux  en Polynésie française
-http://www.sysnux.pf/   Tél: +689 50 10 40 / GSM: +689 79 75 27
------BEGIN PGP SIGNATURE-----
-
-iEYEARECAAYFAkmZ9sgACgkQuu7Rv+oOo/iFuQCeJSaxikghrQhjS68WKU0Hc//7
-wZQAn2XMnmunfW2avO/uPFQDrw+s9INO
-=AB0j
------END PGP SIGNATURE-----
