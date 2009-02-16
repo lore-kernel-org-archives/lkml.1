@@ -1,82 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246AbZBPImi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756244AbZBPIuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756246AbZBPImi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 03:42:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbZBPIma
+	id S1756244AbZBPIuB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 03:50:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbZBPIts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 03:42:30 -0500
-Received: from smtp-101-monday.noc.nerim.net ([62.4.17.101]:55461 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754531AbZBPIm3 (ORCPT
+	Mon, 16 Feb 2009 03:49:48 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:16200 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753756AbZBPItr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 03:42:29 -0500
-Date: Mon, 16 Feb 2009 09:42:23 +0100
-From: Damien Wyart <damien.wyart@free.fr>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12650] Strange load average and ksoftirqd behavior with
-	2.6.29-rc2-git1
-Message-ID: <20090216084223.GA2641@localhost.localdomain>
-References: <juADNmcceYF.A.mdD.Mr0lJB@chimera> <rjPbZ5GRJPO.A.1kE.ur0lJB@chimera> <20090215080941.GA2295@localhost.localdomain> <20090215090026.GA31147@elte.hu> <20090215095128.GA3234@localhost.localdomain> <20090215101351.GA23274@elte.hu> <20090215103445.GA2335@localhost.localdomain> <20090215110104.GB31351@elte.hu> <20090215180355.GA2273@localhost.localdomain> <20090215193102.GA16873@elte.hu>
+	Mon, 16 Feb 2009 03:49:47 -0500
+Message-ID: <499928A3.60507@panasas.com>
+Date: Mon, 16 Feb 2009 10:49:39 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090215193102.GA16873@elte.hu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: avishay@gmail.com, jeff@garzik.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, osd-dev@open-osd.org,
+       linux-kernel@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+       jens.axboe@oracle.com, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 1/8] exofs: Kbuild, Headers and osd utils
+References: <49902A9E.3070002@panasas.com>	<1234185129-31858-1-git-send-email-bharrosh@panasas.com> <20090216131806X.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090216131806X.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Feb 2009 08:49:42.0796 (UTC) FILETIME=[82AD8CC0:01C99013]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+FUJITA Tomonori wrote:
+> On Mon,  9 Feb 2009 15:12:09 +0200
+> Boaz Harrosh <bharrosh@panasas.com> wrote:
+> 
+>> This patch includes osd infrastructure that will be used later by
+>> the file system.
+>>
+>> Also the declarations of constants, on disk structures,
+>> and prototypes.
+>>
+>> And the Kbuild+Kconfig files needed to build the exofs module.
+>>
+>> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+>> ---
+>>  fs/exofs/Kbuild   |   30 +++++++
+>>  fs/exofs/Kconfig  |   13 +++
+>>  fs/exofs/common.h |  181 +++++++++++++++++++++++++++++++++++++++++
+>>  fs/exofs/exofs.h  |  139 ++++++++++++++++++++++++++++++++
+>>  fs/exofs/osd.c    |  230 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+>>  5 files changed, 593 insertions(+), 0 deletions(-)
+>>  create mode 100644 fs/exofs/Kbuild
+>>  create mode 100644 fs/exofs/Kconfig
+>>  create mode 100644 fs/exofs/common.h
+>>  create mode 100644 fs/exofs/exofs.h
+>>  create mode 100644 fs/exofs/osd.c
+> 
+>> +static void _osd_read(struct osd_request *or,
+>> +	const struct osd_obj_id *obj, uint64_t offset, struct bio *bio)
+>> +{
+>> +	osd_req_read(or, obj, bio, offset);
+>> +	EXOFS_DBGMSG("osd_req_read(p=%llX, ob=%llX, l=%llu, of=%llu)\n",
+>> +		_LLU(obj->partition), _LLU(obj->id), _LLU(bio->bi_size),
+>> +		_LLU(offset));
+>> +}
+>> +
+>> +#ifdef __KERNEL__
+> 
+> Hmm?
+> 
 
-Ok, I've redone the tests under tip from this morning (Paris time).
-Everything is in http://damien.wyart.free.fr/ksoftirqd_pb/
+Yep, this file also complies in user mode.
 
-* Ingo Molnar <mingo@elte.hu> [2009-02-15 20:31]:
-> Yes, an abstime trace would be useful.
+>> +static struct bio *_bio_map_pages(struct request_queue *req_q,
+>> +				  struct page **pages, unsigned page_count,
+>> +				  size_t length, gfp_t gfp_mask)
+>> +{
+>> +	struct bio *bio;
+>> +	int i;
+>> +
+>> +	bio = bio_alloc(gfp_mask, page_count);
+>> +	if (!bio) {
+>> +		EXOFS_DBGMSG("Failed to bio_alloc page_count=%d\n", page_count);
+>> +		return NULL;
+>> +	}
+>> +
+>> +	for (i = 0; i < page_count && length; i++) {
+>> +		size_t use_len = min(length, PAGE_SIZE);
+>> +
+>> +		if (use_len !=
+>> +		    bio_add_pc_page(req_q, bio, pages[i], use_len, 0)) {
+>> +			EXOFS_ERR("Failed bio_add_pc_page req_q=%p pages[i]=%p "
+>> +				  "use_len=%Zd page_count=%d length=%Zd\n",
+>> +				  req_q, pages[i], use_len, page_count, length);
+>> +			bio_put(bio);
+>> +			return NULL;
+>> +		}
+>> +
+>> +		length -= use_len;
+>> +	}
+>> +
+>> +	WARN_ON(length);
+>> +	return bio;
+>> +}
+> 
+> 1) exofs builds bios by hand.
+> 2) exofs passes bio to OSD SCSI ULD.
+> 
+> As a result, exofs and OSD SCSI ULD need to know the internal of bio,
+> that is, you reinvent the bio handling infrastructure, as pointed out
+> in another thread in scsi-ml.
+> 
+> _bio_map_pages is called where the VFS passes an array of a pointer to
+> a page frame.
+> 
+> Why can't you simply pass the array to OSD SCSI ULD? Then OSD SCSI ULD
+> can use the block layer helper functions to build a request out of
+> pages without knowing the internal of bio.
+> 
+> 
 
-The corresponding file is trace_tip_2009.02.16_ksoftirqd_pb_abstime.txt.gz
-and there is also a trace without abstime:
-trace_tip_2009.02.16_ksoftirqd_pb.txt.gz
+Because actually this code is wrong and temporary and will change soon.
+At vfs write_pages I do not get a linear array of page pointers but a
+link-list of pages. This will not fit any current model. Also looking
+ahead I will have RAID 0, 1, 5, and 6 on objects of different devices. bio
+is the perfect collector for memory information in this situation.
 
-> > checking TSC synchronization [CPU#0 -> CPU#1]: passed.
-> > Switched to high resolution mode on CPU 1
+exofs is not the first and only file system who is using bios. Proof of
+the matter is that block exports a bio submit routine.
 
-> Lets double-check your scheduler clock first. Without being able to
-> trust the clock we cannot trust the task stats nor the trace output.
+As I said on the other thread, I could live without it for now, for a short while,
+but I will regret it badly and it will hurt performance in the long run.
 
-> What does this check display:
+<snip>
 
->   http://people.redhat.com/mingo/time-warp-test/time-warp-test.c
-
-The file is time-warp-test_result.txt
-I've let it run for a few tens of minutes; the first number varies
-slightly sometimes. The second one stays at 0.
-
-> Does it find any TSC time warps?
-
-Seems not.
-
-> Also, could you send the output of:
-
->   http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
-
-> Run it while you can see the ksoftirqd anomaly.
-
-In fact I see it all the time when the machine is idle. When something
-runs (spamd for example), the running time of ksoftirqd stops
-increasing, and it goes back to increasing like crazy when idle state
-comes back.
-
-The corresponding file is cfs-debug-info-2009.02.16-08.09.17.gz
-
-
-Hope this will be useful; do not hesitate to ask for further info. Now
-that I have tip, I guess it will be easier.
-
--- 
-Damien
+Boaz
