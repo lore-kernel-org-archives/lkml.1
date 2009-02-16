@@ -1,84 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbZBPJip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754071AbZBPJi7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756061AbZBPJip (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 04:38:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbZBPJia
+	id S1754071AbZBPJi7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 04:38:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbZBPJig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 04:38:30 -0500
-Received: from mail-bw0-f167.google.com ([209.85.218.167]:48629 "EHLO
-	mail-bw0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753027AbZBPJi3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 04:38:29 -0500
-MIME-Version: 1.0
-In-Reply-To: <20090216003718.GN15266@solarflare.com>
-References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
-	 <20090214214111.24377.87888.stgit@vmbox.hanneseder.net>
-	 <20090216003718.GN15266@solarflare.com>
-Date: Mon, 16 Feb 2009 10:38:26 +0100
-Message-ID: <154e089b0902160138n255616a0xb963dfd990d912b@mail.gmail.com>
-Subject: Re: [PATCH 27/43] drivers/net/sfc: fix sparse warnings: Should it be 
-	static?
-From: Hannes Eder <hannes@hanneseder.net>
-To: Ben Hutchings <bhutchings@solarflare.com>
-Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 16 Feb 2009 04:38:36 -0500
+Received: from sh.osrg.net ([192.16.179.4]:53314 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754234AbZBPJif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 04:38:35 -0500
+Date: Mon, 16 Feb 2009 18:38:00 +0900
+To: bharrosh@panasas.com
+Cc: fujita.tomonori@lab.ntt.co.jp, avishay@gmail.com, jeff@garzik.org,
+       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       osd-dev@open-osd.org, linux-kernel@vger.kernel.org,
+       James.Bottomley@HansenPartnership.com, jens.axboe@oracle.com,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 1/8] exofs: Kbuild, Headers and osd utils
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <49992F99.1060404@panasas.com>
+References: <499928A3.60507@panasas.com>
+	<20090216180028C.fujita.tomonori@lab.ntt.co.jp>
+	<49992F99.1060404@panasas.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090216183750H.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 16 Feb 2009 18:38:01 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 16, 2009 at 1:37 AM, Ben Hutchings
-<bhutchings@solarflare.com> wrote:
-> Hannes Eder wrote:
->> Impact: Include header file and include the function under the same
->> condition as in the header file.  If CONFIG_SFS_MTD is not defined
->> than the functions 'efx_mtd_remove' and 'efx_mtd_rename' are defined
->> 'static inline' with an empty function body in the header file.
->>
->> Fix this sparse warnings:
->>   drivers/net/sfc/mtd.c:204:6: warning: symbol 'efx_mtd_remove' was not declared. Should it be static?
->>   drivers/net/sfc/mtd.c:221:6: warning: symbol 'efx_mtd_rename' was not declared. Should it be static?
->>   drivers/net/sfc/mtd.c:230:5: warning: symbol 'efx_mtd_probe' was not declared. Should it be static?
->>
->> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
->> ---
->>  drivers/net/sfc/mtd.c |    3 +++
->>  1 files changed, 3 insertions(+), 0 deletions(-)
->>
->> diff --git a/drivers/net/sfc/mtd.c b/drivers/net/sfc/mtd.c
->> index 665cafb..94c9ed8 100644
->> --- a/drivers/net/sfc/mtd.c
->> +++ b/drivers/net/sfc/mtd.c
->> @@ -15,6 +15,7 @@
->>  #define EFX_DRIVER_NAME "sfc_mtd"
->>  #include "net_driver.h"
->>  #include "spi.h"
->> +#include "efx.h"
->>
->>  #define EFX_SPI_VERIFY_BUF_LEN 16
->>
->
-> OK, but...
->
->> @@ -201,6 +202,7 @@ static void efx_mtd_sync(struct mtd_info *mtd)
->>       return;
->>  }
->>
->> +#ifdef CONFIG_SFC_MTD
->>  void efx_mtd_remove(struct efx_nic *efx)
->>  {
->>       if (efx->spi_flash && efx->spi_flash->mtd) {
->> @@ -266,3 +268,4 @@ int efx_mtd_probe(struct efx_nic *efx)
->>
->>       return 0;
->>  }
->> +#endif /* CONFIG_SFC_MTD */
->
-> This is wrong.  The entire file is conditional on CONFIG_SFC_MTD.
+On Mon, 16 Feb 2009 11:19:21 +0200
+Boaz Harrosh <bharrosh@panasas.com> wrote:
 
-Even better than. It's actually not wrong, just done twice, so we can
-omit it, thank you Ben. I'll send an update.
+> >> Also looking
+> >> ahead I will have RAID 0, 1, 5, and 6 on objects of different devices. bio
+> >> is the perfect collector for memory information in this situation.
+> > 
+> > You will add such features to exofs, handling multiple devices
+> > internally?
+> > 
+> 
+> Multiple objects on Multiple devices, Yes.
 
-Hannes
+I thought that exofs is kinda example (reference) file system.
+
+Nobody has seen your code. Let's discuss when we have the
+code. Over-designing for what we've not seen is not a good idea.
+
+
+> >> exofs is not the first and only file system who is using bios. Proof of
+> >> the matter is that block exports a bio submit routine.
+> > 
+> > Seems that exofs just passes pages and the ULD sends a SCSI command
+> > including these pages. I don't see how exofs needs to handle bio
+> > directly.
+> > 
+> 
+> How do you propose to collect these pages? and keep them without allocating
+> an extra list? without pre-allocating a struct request? and without re-inventing
+> the bio structure?
+
+I don't think that allocating an extra list (or something) to keep
+them hurts performance. We can talk about it when you have the real
+performance results.
