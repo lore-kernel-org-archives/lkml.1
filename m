@@ -1,97 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757318AbZBPM4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757678AbZBPM5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757318AbZBPM4y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 07:56:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbZBPM4p
+	id S1757678AbZBPM5j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 07:57:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351AbZBPM53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 07:56:45 -0500
-Received: from mail-out1.uio.no ([129.240.10.57]:34860 "EHLO mail-out1.uio.no"
+	Mon, 16 Feb 2009 07:57:29 -0500
+Received: from verein.lst.de ([213.95.11.210]:35410 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754796AbZBPM4n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 07:56:43 -0500
-Subject: Re: Tracing down 250ms open/chdir calls
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Carsten Aulbert <carsten.aulbert@aei.mpg.de>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-       beowulf@beowulf.org
-In-Reply-To: <49991BE7.1090104@aei.mpg.de>
-References: <49991BE7.1090104@aei.mpg.de>
-Content-Type: text/plain
-Date: Mon, 16 Feb 2009 07:56:38 -0500
-Message-Id: <1234788998.7708.40.camel@heimdal.trondhjem.org>
+	id S1755123AbZBPM52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 07:57:28 -0500
+Date: Mon, 16 Feb 2009 13:57:25 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Takashi Sato <t-sato@yk.jp.nec.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] fix FREEZE/THAW compat_ioctl regression
+Message-ID: <20090216125725.GA3420@lst.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 72370BE1E19F01CCC9EFA229ED22AD8F93C01DF7
-X-UiO-SPAM-Test: remote_host: 68.40.183.129 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 3 total 486 max/h 9 blacklist 0 greylist 0 ratelimit 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: -0.001 () BAYES_40,UPPERCASE_25_50
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-16 at 08:55 +0100, Carsten Aulbert wrote:
-> Hi all,
-> 
-> sorry in advance for this vague subject and also the vague email, I'm
-> trying my best to summarize the problem:
-> 
-> On our large cluster we sometimes encounter the problem that our main
-> scheduling processes are often in state D and in the end not capable
-> anymore of pushing work to the cluster.
-> 
-> The head nodes are 8 core boxes with Xeon CPUs and equipped with 16 GB
-> of memory, when certain types of jobs are running we see system loads of
-> about 20-30 which might go up to 80-100 from time to time. Looking at
-> the individual cores they are mostly busy with system tasks (e.g. htop
-> shows 'red' bars).
-> 
-> stat -tt -c showed that several system calls of the scheduler take a
-> long time to complete, most notably open and chdir which took between
-> 180 and 230ms to complete (during our testing). Since most of these open
-> and chdir are via NFSv3 I'm including that list as well. The NFS servers
-> are Sun Fire X4500 boxes running Solaris 10u5 right now.
-> 
-> A standard output line looks like:
-> 93.37   38.997264     230753      169    78      open
-> 
-> i.e. 93.37% of the system-related time was spend in 169 successful open
-> calls which took 230753us/call, thus 39 wall clock seconds were spend in
-> a minute just doing open.
-> 
-> We tried several things to understand the problem, but apart from moving
-> more files (mostly log files of currently running jobs) off NFS we did
-> not move far ahead so far. On
-> https://n0.aei.uni-hannover.de/twiki/bin/view/ATLAS/H2Problems
-> we have summarized some things.
-> 
-> With the help of 'stress' and a tiny program just doing open/putc/close
-> into a single file, I've tried to get a feeling how good or bad things
-> are when compared to other head nodes with different tasks/loads:
-> 
-> https://n0.aei.uni-hannover.de/twiki/bin/view/ATLAS/OpenCloseIotest
-> 
-> (this test may or may not help in the long run, I'm just poking into the
-> dark).
-> 
-> Now my questions:
-> 
-> * Do you have any suggestions how to continue debugging this problem?
-> * Does anyone know how to improve the situation? Next on my agenda would
-> be to try different IO algorithms, any hints which ones should be good
-> for such boxes?
-> * I guess I missed vital information. please let me know if you need
-> more information of the system
-> 
-> Please Cc me from linux-kernel, I'm only on the other two addressed lists.
-> 
-> Cheers and a lot of TIA
-> 
-> Carsten
+Commit 8e961870bb9804110d5c8211d5d9d500451c4518 removed the FREEZE/THAW
+handling in xfs_compat_ioctl but never added any compat handler back, so
+now any freeze/thaw request from a 32-bit binary ond 64-bit userspace
+will fail.
 
-2.6.27.7 has a known NFS client performance bug due to a change in the
-authentication code. The fix was merged in 2.6.27.9: see the commit
-http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git&a=commitdiff&h=a0f04d0096bd7edb543576c55f7a0993628f924a
+As these ioctls are 32/64-bit compatible two simple COMPATIBLE_IOCTL
+entries in fs/compat_ioctl.c will do the job.
 
-Cheers
-  Trond
 
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+
+Index: xfs/fs/compat_ioctl.c
+===================================================================
+--- xfs.orig/fs/compat_ioctl.c	2009-02-16 12:48:23.000000000 +0000
++++ xfs/fs/compat_ioctl.c	2009-02-16 12:49:34.000000000 +0000
+@@ -1913,6 +1913,9 @@
+ /* 0x00 */
+ COMPATIBLE_IOCTL(FIBMAP)
+ COMPATIBLE_IOCTL(FIGETBSZ)
++/* 'X' - originally XFS but some now in the VFS */
++COMPATIBLE_IOCTL(FIFREEZE)
++COMPATIBLE_IOCTL(FITHAW)
+ /* RAID */
+ COMPATIBLE_IOCTL(RAID_VERSION)
+ COMPATIBLE_IOCTL(GET_ARRAY_INFO)
