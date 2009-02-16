@@ -1,53 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757281AbZBPMca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757212AbZBPMcp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757281AbZBPMca (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 07:32:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754613AbZBPMcW
+	id S1757212AbZBPMcp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 07:32:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757309AbZBPMcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 07:32:22 -0500
-Received: from casper.infradead.org ([85.118.1.10]:41835 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754551AbZBPMcV (ORCPT
+	Mon, 16 Feb 2009 07:32:31 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:24886 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757258AbZBPMca (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 07:32:21 -0500
-Subject: Re: 2.6.29-rc5 hanging at boot when CONFIG_LOCK_STAT=y
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Adam J. Richter" <adam@yggdrasil.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai@kernel.org>, mingo@redhat.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090216122912.GA6302@elte.hu>
-References: <20090216065053.GA23037@yggdrasil.com>
-	 <20090216122912.GA6302@elte.hu>
-Content-Type: text/plain
-Date: Mon, 16 Feb 2009 13:32:10 +0100
-Message-Id: <1234787530.30178.6.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.90 
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Feb 2009 07:32:30 -0500
+Date: Mon, 16 Feb 2009 14:17:16 +0200
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Felipe Balbi <me@felipe.balbi.com>, Richard Purdie <rpurdie@rpsys.net>,
+       Felipe Balbi <me@felipebalbi.com>
+Subject: Re: [PATCH] leds: triggers: introduce gpio led trigger
+Message-ID: <20090216121716.GM21181@scadufax.research.nokia.com>
+Reply-To: felipe.balbi@nokia.com
+References: <1234786324-4271-1-git-send-email-felipe.balbi@nokia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1234786324-4271-1-git-send-email-felipe.balbi@nokia.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 16 Feb 2009 12:32:00.0005 (UTC) FILETIME=[90462350:01C99032]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-16 at 13:29 +0100, Ingo Molnar wrote:
-> * Adam J. Richter <adam@yggdrasil.com> wrote:
-> 
-> > Hello Peter and Ingo,
-> > 
-> > 	Under linux-2.6.29-rc5, and I believe all earlier 2.6.29-rc
-> > releases, CONFIG_LOCK_STAT=y causes my system to hang at boot when
-> > booting from lilo-22.8.  Linux-2.6.28 does not have this hang.
-> > Disabling LOCK_STAT or booting from grub avoids the hang.  These are
-> > sufficient workarounds for me, but I document it here in case anyone
-> > else is seeing something similar or wants to take a deeper look at it.
-> 
-> hm, so if booting from LILO you see a hang, while when booting with GRUB 
-> it works fine?
-> 
-> Could it be LILO messing up the kernel image loading somehow? LOCK_STAT 
-> might just be the thing that brings the kernel over a specific size.
+On Mon, Feb 16, 2009 at 01:12:04PM +0100, Balbi Felipe (Nokia-D/Helsinki) wrote:
+> From: Felipe Balbi <me@felipe.balbi.com>
 
-There used to be an issue long ago on s390 where the per-cpu section was
-stomping on the initrd or something similar. Lockstat generates a huge
-per-cpu BSS section.
+My mail is wrong, will resend
 
+-- 
+balbi
