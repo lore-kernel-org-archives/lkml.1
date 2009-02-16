@@ -1,75 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756486AbZBPLeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756534AbZBPLsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756486AbZBPLeW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 06:34:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbZBPLeL
+	id S1756534AbZBPLsA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 06:48:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679AbZBPLrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 06:34:11 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:17850 "EHLO
-	VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753085AbZBPLeK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 06:34:10 -0500
-X-BigFish: VPS-50(z21eWz1432R62a3L98dR936eQ1805Mzzzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KF5PGE-04-JLJ-01
-Date: Mon, 16 Feb 2009 12:33:50 +0100
-From: Robert Richter <robert.richter@amd.com>
-To: Tim Blechmann <tim@klingt.org>
-CC: oprofile-list@lists.sf.net, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29-rc4 regression (was: Re: 2.6.28-rc9: oprofile
-	regression)
-Message-ID: <20090216113349.GF25042@erda.amd.com>
-References: <1229869416.6911.1.camel@thinkpad> <49932C35.3020300@klingt.org> <20090213190740.GD25042@erda.amd.com> <20090216112313.359ef437@thinkpad>
+	Mon, 16 Feb 2009 06:47:51 -0500
+Received: from mail.anarazel.de ([217.115.131.40]:34717 "EHLO smtp.anarazel.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751170AbZBPLru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 06:47:50 -0500
+X-Greylist: delayed 626 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Feb 2009 06:47:49 EST
+Message-ID: <49994FEF.2020908@anarazel.de>
+Date: Mon, 16 Feb 2009 12:37:19 +0100
+From: Andres Freund <andres@anarazel.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20081210 Shredder/3.0b1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20090216112313.359ef437@thinkpad>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 16 Feb 2009 11:33:50.0170 (UTC) FILETIME=[702B93A0:01C9902A]
+To: Theodore Tso <tytso@mit.edu>
+CC: adilger@sun.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, Jonathan Bastien-Filiatrault <joe@x2a.org>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: EXT4 ENOSPC Bug
+References: <200811291418.24672.andres@anarazel.de> <200812100108.04163.andres@anarazel.de>
+In-Reply-To: <200812100108.04163.andres@anarazel.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16.02.09 11:23:13, Tim Blechmann wrote:
-> > still, I can not reproduce this with my tests with v2.6.29-rc4. The
-> > regression on the systems I have runs fine on rc4. On the system you
-> > have, is commit b99170288421c79f0c2efa8b33e26e65f4bb7fb8 the first bad
-> > one? If so, I will split the patch into smaller pieces to find the
-> > change that introduces the bug.
-> 
-> i got revision df13b31c286b3e91c556167954eda088d90a4295 working, by not
-> resetting the counter width:
-> 
-> diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
-> index 12e207a..f0e019d 100644
-> --- a/arch/x86/oprofile/op_model_ppro.c
-> +++ b/arch/x86/oprofile/op_model_ppro.c
-> @@ -76,12 +76,14 @@ static void ppro_setup_ctrs(struct op_msrs const * const msrs)
->  			return;
->  	}
->  
-> +#if 0
->  	if (cpu_has_arch_perfmon) {
->  		union cpuid10_eax eax;
->  		eax.full = cpuid_eax(0xa);
->  		if (counter_width < eax.split.bit_width)
->  			counter_width = eax.split.bit_width;
->  	}
-> +#endif
-> 
-> 
-> this tweak did not work on later kernels, that i tested, though, and i 
-> haven't had time to look into it in more detail.
+Hi All,
 
-Thanks Tim, on later kernels, is it the behaviour you mentioned that
-no NMIs are delivered and you do not receive any NMI?
+"Luckily", to prove that I am not completly mad I recently found this 
+problem again. On a more recent kernel:
+2.6.29-rc3-andres-00498-g68e80d5
+(upstream 2.6.29 + Theodore's ext4 debug patches)
 
--Robert
+Again I got:
+open("/home/andres/tt", O_WRONLY|O_CREAT|O_NOCTTY|O_NONBLOCK, 0666) = -1 
+ENOSPC (No space left on device)
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+When doing `touch /home/andres/tt`
 
+Again df does not show something suspicious:
+Filesystem            Inodes   IUsed   IFree IUse% Mounted on
+/dev/mapper/root_crypt
+                      19234816  826296 18408520    5% /
+tmpfs                 491025       3  491022    1% /lib/init/rw
+varrun                491025      96  490929    1% /var/run
+varlock               491025       3  491022    1% /var/lock
+udev                  491025    5517  485508    2% /dev
+tmpfs                 491025       1  491024    1% /dev/shm
+/dev/sda2              61312     110   61202    1% /boot
+
+Filesystem           1K-blocks      Used Available Use% Mounted on
+/dev/mapper/root_crypt
+                      302855628 202819548 100036080  67% /
+tmpfs                  1964100         0   1964100   0% /lib/init/rw
+varrun                 1964100       300   1963800   1% /var/run
+varlock                1964100         0   1964100   0% /var/lock
+udev                   1964100        92   1964008   1% /dev
+tmpfs                  1964100         0   1964100   0% /dev/shm
+/dev/sda2               964532    634052    281484  70% /boot
+
+Delayed allocations are not showing anything suspicious:
+[72586.050538] ext4 debug delalloc of dm-0
+[72586.050547] ext4: dirty blocks 22 free blocks 25008749
+[72586.050551] s_dirty list:
+[72586.050556] ino 534064: 2 2
+[72586.050559] ino 539981: 2 2
+[72586.050563] ino 524506: 5 2
+[72586.050566] ino 184479: 1 2
+[72586.050571] ino 167172: 2 2
+[72586.050574] ext4 debug delalloc done
+
+
+Any debugging ideas?
+
+I got this twice in the last two months, so its not really easy to 
+reproduce :-(
+
+Andres
+
+PS: All information is taken out of the running kernel while having the 
+problem
+
+meminfo:
+MemTotal:        3928200 kB
+MemFree:           23312 kB
+Buffers:          239564 kB
+Cached:          2383280 kB
+SwapCached:            0 kB
+Active:          1490948 kB
+Inactive:        2149360 kB
+Active(anon):     879880 kB
+Inactive(anon):   294356 kB
+Active(file):     611068 kB
+Inactive(file):  1855004 kB
+Unevictable:          52 kB
+Mlocked:              52 kB
+SwapTotal:             0 kB
+SwapFree:              0 kB
+Dirty:                52 kB
+Writeback:             4 kB
+AnonPages:       1017356 kB
+Mapped:           129440 kB
+Slab:             123316 kB
+SReclaimable:      94512 kB
+SUnreclaim:        28804 kB
+PageTables:        26936 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:     1964100 kB
+Committed_AS:    1169664 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:      341580 kB
+VmallocChunk:   34359392035 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+DirectMap4k:       86016 kB
+DirectMap2M:     4003840 kB
