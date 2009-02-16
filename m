@@ -1,91 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756597AbZBPCVJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756255AbZBPCeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756597AbZBPCVJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 21:21:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755614AbZBPCUx
+	id S1756255AbZBPCeT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 21:34:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbZBPCeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 21:20:53 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:2056 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755557AbZBPCUv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 21:20:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=t6DnAQ96iV8QbRJK0zv0EPkSFAdSp3ML1BEYl1sRnTsZ4UqSRbCFbYzz4FWLhHmG5F
-         Ad1m6d/uV2CLurRVFfKcGCfwANh2Ha0foLeV4grIqa87dNTelMuMZjNAtBt1CgDs/XLB
-         R6GBoGfwT5ijE++DBmIWIalH5dnjK720qgsZE=
-Date: Sun, 15 Feb 2009 20:20:47 -0600
-From: Jay Cliburn <jcliburn@gmail.com>
-To: Hannes Eder <hannes@hanneseder.net>
-Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 13/43] drivers/net/atlx: fix sparse warnings: fix
- signedness
-Message-ID: <20090215202047.4e19ebef@osprey.hogchain.net>
-In-Reply-To: <20090214211508.23489.57841.stgit@vmbox.hanneseder.net>
-References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
-	<20090214211508.23489.57841.stgit@vmbox.hanneseder.net>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 15 Feb 2009 21:34:07 -0500
+Received: from mga09.intel.com ([134.134.136.24]:50020 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752407AbZBPCeG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 21:34:06 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,214,1233561600"; 
+   d="scan'208";a="490253318"
+Date: Mon, 16 Feb 2009 10:34:02 +0800
+From: Wu Fengguang <wfg@linux.intel.com>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
+       "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>,
+       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
+Message-ID: <20090216023402.GA6199@localhost>
+References: <492BE47B.3010802@vlnb.net> <20081125114908.GA16545@localhost> <492BE97A.3050606@vlnb.net> <492BEAE8.9050809@vlnb.net> <20081125121534.GA16778@localhost> <492EDCFB.7080302@vlnb.net> <20081128004830.GA8874@localhost> <49946BE6.1040005@vlnb.net> <20090213015721.GA5565@localhost> <4995D339.5050502@vlnb.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4995D339.5050502@vlnb.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Feb 2009 22:15:17 +0100
-Hannes Eder <hannes@hanneseder.net> wrote:
+On Fri, Feb 13, 2009 at 11:08:25PM +0300, Vladislav Bolkhovitin wrote:
+> Wu Fengguang, on 02/13/2009 04:57 AM wrote:
+>> On Thu, Feb 12, 2009 at 09:35:18PM +0300, Vladislav Bolkhovitin wrote:
+>>> Sorry for such a huge delay. There were many other activities I had 
+>>> to  do before + I had to be sure I didn't miss anything.
+>>>
+>>> We didn't use NFS, we used SCST (http://scst.sourceforge.net) with   
+>>> iSCSI-SCST target driver. It has similar to NFS architecture, where N 
+>>>  threads (N=5 in this case) handle IO from remote initiators 
+>>> (clients)  coming from wire using iSCSI protocol. In addition, SCST 
+>>> has patch  called export_alloc_io_context (see   
+>>> http://lkml.org/lkml/2008/12/10/282), which allows for the IO threads 
+>>>  queue IO using single IO context, so we can see if context RA can   
+>>> replace grouping IO threads in single IO context.
+>>>
+>>> Unfortunately, the results are negative. We find neither any 
+>>> advantages  of context RA over current RA implementation, nor 
+>>> possibility for  context RA to replace grouping IO threads in single 
+>>> IO context.
+>>>
+>>> Setup on the target (server) was the following. 2 SATA drives grouped 
+>>> in  md RAID-0 with average local read throughput ~120MB/s ("dd 
+>>> if=/dev/zero  of=/dev/md0 bs=1M count=20000" outputs "20971520000 
+>>> bytes (21 GB)  copied, 177,742 s, 118 MB/s"). The md device was 
+>>> partitioned on 3  partitions. The first partition was 10% of space in 
+>>> the beginning of the  device, the last partition was 10% of space in 
+>>> the end of the device,  the middle one was the rest in the middle of 
+>>> the space them. Then the  first and the last partitions were exported 
+>>> to the initiator (client).  They were /dev/sdb and /dev/sdc on it 
+>>> correspondingly.
+>>
+>> Vladislav, Thank you for the benchmarks! I'm very interested in
+>> optimizing your workload and figuring out what happens underneath.
+>>
+>> Are the client and server two standalone boxes connected by GBE?
+>
+> Yes, they directly connected using GbE.
+>
+>> When you set readahead sizes in the benchmarks, you are setting them
+>> in the server side? I.e. "linux-4dtq" is the SCST server?
+>
+> Yes, it's the server. On the client all the parameters were left default.
+>
+>> What's the
+>> client side readahead size?
+>
+> Default, i.e. 128K
+>
+>> It would help a lot to debug readahead if you can provide the
+>> server side readahead stats and trace log for the worst case.
+>> This will automatically answer the above questions as well as disclose
+>> the micro-behavior of readahead:
+>>
+>>         mount -t debugfs none /sys/kernel/debug
+>>
+>>         echo > /sys/kernel/debug/readahead/stats # reset counters
+>>         # do benchmark
+>>         cat /sys/kernel/debug/readahead/stats
+>>
+>>         echo 1 > /sys/kernel/debug/readahead/trace_enable
+>>         # do micro-benchmark, i.e. run the same benchmark for a short time
+>>         echo 0 > /sys/kernel/debug/readahead/trace_enable
+>>         dmesg
+>>
+>> The above readahead trace should help find out how the client side
+>> sequential reads convert into server side random reads, and how we can
+>> prevent that.
+>
+> We will do it as soon as we have a free window on that system.
 
-> Impact: While being at it: statics do not need to be initialized with 0.
-> 
-> Fix this sparse warnings:
->   drivers/net/atlx/atl1.c:109:1: warning: incorrect type in initializer (different signedness)
->   drivers/net/atlx/atl2.c:2870:1: warning: incorrect type in initializer (different signedness)
->   drivers/net/atlx/atl2.c:2880:1: warning: incorrect type in initializer (different signedness)
->   drivers/net/atlx/atl2.c:2894:1: warning: incorrect type in initializer (different signedness)
->   drivers/net/atlx/atl2.c:2904:1: warning: incorrect type in initializer (different signedness)
->   drivers/net/atlx/atl2.c:2913:1: warning: incorrect type in initializer (different signedness)
-> 
-> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+Thank you. For NFS, the client side read/readahead requests will be
+split into units of rsize which will be served by a pool of nfsd
+concurrently and possibly out of order. Does SCST have the same
+process? If so, what's the rsize value for your SCST benchmarks?
 
-Acked-by: Jay Cliburn <jcliburn@gmail.com>
-
-> ---
->  drivers/net/atlx/atl1.c |    2 +-
->  drivers/net/atlx/atl2.c |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/atlx/atl1.c b/drivers/net/atlx/atl1.c
-> index c0ceee0..43fc1b2 100644
-> --- a/drivers/net/atlx/atl1.c
-> +++ b/drivers/net/atlx/atl1.c
-> @@ -105,7 +105,7 @@
->   * Default Value: 100 (200us)
->   */
->  static int __devinitdata int_mod_timer[ATL1_MAX_NIC+1] = ATL1_PARAM_INIT;
-> -static int num_int_mod_timer;
-> +static unsigned int num_int_mod_timer;
->  module_param_array_named(int_mod_timer, int_mod_timer, int,
->  	&num_int_mod_timer, 0);
->  MODULE_PARM_DESC(int_mod_timer, "Interrupt moderator timer");
-> diff --git a/drivers/net/atlx/atl2.c b/drivers/net/atlx/atl2.c
-> index bc39449..9fe06c3 100644
-> --- a/drivers/net/atlx/atl2.c
-> +++ b/drivers/net/atlx/atl2.c
-> @@ -2854,7 +2854,7 @@ static void atl2_force_ps(struct atl2_hw *hw)
->  #else
->  #define ATL2_PARAM(X, desc) \
->      static int __devinitdata X[ATL2_MAX_NIC+1] = ATL2_PARAM_INIT; \
-> -    static int num_##X = 0; \
-> +    static unsigned int num_##X; \
->      module_param_array_named(X, X, int, &num_##X, 0); \
->      MODULE_PARM_DESC(X, desc);
->  #endif
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Fengguang
