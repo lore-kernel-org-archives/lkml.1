@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757678AbZBPM5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbZBPNBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757678AbZBPM5j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 07:57:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351AbZBPM53
+	id S1757551AbZBPNBW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 08:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755860AbZBPNBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 07:57:29 -0500
-Received: from verein.lst.de ([213.95.11.210]:35410 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755123AbZBPM52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 07:57:28 -0500
-Date: Mon, 16 Feb 2009 13:57:25 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Takashi Sato <t-sato@yk.jp.nec.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] fix FREEZE/THAW compat_ioctl regression
-Message-ID: <20090216125725.GA3420@lst.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_40,UPPERCASE_25_50
+	Mon, 16 Feb 2009 08:01:13 -0500
+Received: from welcomes-you.com ([85.214.50.128]:33371 "EHLO
+	smtp.welcomes-you.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755667AbZBPNBM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 08:01:12 -0500
+Message-ID: <49996380.1090902@aei.mpg.de>
+Date: Mon, 16 Feb 2009 14:00:48 +0100
+From: Carsten Aulbert <carsten.aulbert@aei.mpg.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+CC: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       beowulf@beowulf.org
+Subject: Re: Tracing down 250ms open/chdir calls
+References: <49991BE7.1090104@aei.mpg.de> <1234788998.7708.40.camel@heimdal.trondhjem.org>
+In-Reply-To: <1234788998.7708.40.camel@heimdal.trondhjem.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 8e961870bb9804110d5c8211d5d9d500451c4518 removed the FREEZE/THAW
-handling in xfs_compat_ioctl but never added any compat handler back, so
-now any freeze/thaw request from a 32-bit binary ond 64-bit userspace
-will fail.
+Hi Trond,
 
-As these ioctls are 32/64-bit compatible two simple COMPATIBLE_IOCTL
-entries in fs/compat_ioctl.c will do the job.
+Trond Myklebust schrieb:
+> 2.6.27.7 has a known NFS client performance bug due to a change in the
+> authentication code. The fix was merged in 2.6.27.9: see the commit
+> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git&a=commitdiff&h=a0f04d0096bd7edb543576c55f7a0993628f924a
 
+Maybe that's also a reason why we don't see it that often anymore -
+although the user load has shifted a bit also. We are running 2.7.27.14
+(and .15 since Friday).
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+Thanks for letting me know, I'll probably re-run the tests again with a
+newer kernel.
 
-Index: xfs/fs/compat_ioctl.c
-===================================================================
---- xfs.orig/fs/compat_ioctl.c	2009-02-16 12:48:23.000000000 +0000
-+++ xfs/fs/compat_ioctl.c	2009-02-16 12:49:34.000000000 +0000
-@@ -1913,6 +1913,9 @@
- /* 0x00 */
- COMPATIBLE_IOCTL(FIBMAP)
- COMPATIBLE_IOCTL(FIGETBSZ)
-+/* 'X' - originally XFS but some now in the VFS */
-+COMPATIBLE_IOCTL(FIFREEZE)
-+COMPATIBLE_IOCTL(FITHAW)
- /* RAID */
- COMPATIBLE_IOCTL(RAID_VERSION)
- COMPATIBLE_IOCTL(GET_ARRAY_INFO)
+Cheers
+
+Carsten
