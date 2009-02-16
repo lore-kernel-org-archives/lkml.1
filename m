@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbZBPAI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755666AbZBPAMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755965AbZBPAI4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 19:08:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbZBPAIq
+	id S1755666AbZBPAMA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 19:12:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079AbZBPALp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 19:08:46 -0500
-Received: from h155.mvista.com ([63.81.120.155]:38149 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754253AbZBPAIp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 19:08:45 -0500
-Message-ID: <4998AE87.3020502@ru.mvista.com>
-Date: Mon, 16 Feb 2009 03:08:39 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 13/18] ide: use ->tf_load in SELECT_DRIVE()
-References: <20080620213323.13202.71450.sendpatchset@localhost.localdomain> <20080620213451.13202.12671.sendpatchset@localhost.localdomain> <49987A37.9000300@ru.mvista.com>
-In-Reply-To: <49987A37.9000300@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 15 Feb 2009 19:11:45 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:51372 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752869AbZBPALo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 19:11:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=ffoUfUf8TMIR20UzjibhPvfK3oHR9eUFoHvRkEXPlXxcrxfUVOobrANzXRto1NXbGw
+         maeD4Px9JjH8afT74X04WxRvq297qR160+o25rwvG1sq+12w758f8VEoghfV/qaqDnV7
+         7LvRymDqsDTzmXkU52scpPjCYNReIqDJHl2+E=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Borislav Petkov <petkovbb@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Mon, 16 Feb 2009 01:13:09 +0100
+Message-Id: <20090216001309.27491.59759.sendpatchset@localhost.localdomain>
+Subject: [PATCH 00/20] ide-cd: use scatterlists also for PIO transfers
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
+The recent struct ide_cmd work allows us to finally convert ide-cd to use
+scatterlists for PIO transfers which fixes a long-standing bug with potential
+data integrity issue on write errors for PIO transfers and fs/pc requests
+(DMA transfers were never affected so it is not as serious issue as it might
+sound, still great that it is gone), greatly simiplifies the code and prepares
+it for a lot more improvements once struct ide_{atapi_pc,cmd} merge is done.
 
->> Convert SELECT_DRIVE() to use ->tf_load instead of ->OUTB.
->> There should be no functional changes caused by this patch.
->> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->> Index: b/drivers/ide/ide-iops.c
->> ===================================================================
->> --- a/drivers/ide/ide-iops.c
->> +++ b/drivers/ide/ide-iops.c
->> @@ -88,11 +88,15 @@ void SELECT_DRIVE (ide_drive_t *drive)
->>  {
->>      ide_hwif_t *hwif = drive->hwif;
->>      const struct ide_port_ops *port_ops = hwif->port_ops;
->> +    ide_task_t task;
->>  
->>      if (port_ops && port_ops->selectproc)
->>          port_ops->selectproc(drive);
->>  
->> -    hwif->OUTB(drive->select.all, hwif->io_ports.device_addr);
->> +    memset(&task, 0, sizeof(task));
->> +    task.tf_flags = IDE_TFLAG_OUT_DEVICE;
->> +
->> +    drive->hwif->tf_load(drive, &task);
->
->    This actually doesn't seem like a bright idea to me, considering 
-> that this gets called when starting every request. How will you look 
-> at me adding the transport method for writing this register? :-)
+The patchset also contains fixes for some smaller issues uncovered by the
+main change and (as an added bonus) few unrelated minor cleanups.
 
-   OTOH, adding such a "backdoor" to the taskfile doesn't seem very 
-consistent... well, I'm not excited about the whole idea conversion to 
-tf_{load|read}() -- it's not clear what exactly this bought us.
+[ Borislav, I hope that these changes don't interfere too much with your
+  current work and sorry for the rush (OTOH it should make things so much
+  easier for us that the rush may be well justified)... ]
 
-MBR, Sergei
+I tested that CD/DVD reading, CD writing and CD audio extraction still work
+after these changes (in both PIO and DMA modes).  I also verified the behavior
+on the simulated media errors.
 
+[ on top of pata-2.6 tree ]
 
+diffstat:
+ drivers/ide/ide-cd.c       |  638 +++++++++++++++------------------------------
+ drivers/ide/ide-taskfile.c |   92 +++---
+ include/linux/ide.h        |    9 
+ 3 files changed, 273 insertions(+), 466 deletions(-)
