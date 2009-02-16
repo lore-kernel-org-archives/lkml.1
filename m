@@ -1,120 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757893AbZBPNyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757911AbZBPN6B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757893AbZBPNyu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 08:54:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756949AbZBPNym
+	id S1757911AbZBPN6B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 08:58:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755368AbZBPN5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 08:54:42 -0500
-Received: from cmpxchg.org ([85.214.51.133]:51197 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756920AbZBPNym (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 08:54:42 -0500
-Date: Mon, 16 Feb 2009 14:56:43 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-crypto@vger.kernel.org,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Geert.Uytterhoeven@sonycom.com
-Subject: Re: [PATCH] Export symbol ksize()
-Message-ID: <20090216135643.GA6927@cmpxchg.org>
-References: <1234272104-10211-1-git-send-email-kirill@shutemov.name> <84144f020902100535i4d626a9fj8cbb305120cf332a@mail.gmail.com> <20090210134651.GA5115@epbyminw8406h.minsk.epam.com> <Pine.LNX.4.64.0902101605070.20991@melkki.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 16 Feb 2009 08:57:52 -0500
+Received: from [212.110.162.22] ([212.110.162.22]:58639 "EHLO
+	waldorf.bytemark.co.uk" rhost-flags-FAIL-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753870AbZBPN5w convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 08:57:52 -0500
+X-Greylist: delayed 2035 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Feb 2009 08:57:51 EST
+Date: Mon, 16 Feb 2009 14:23:45 +0100
+From: Luca Bigliardi <shammash@artha.org>
+To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, trivial@kernel.org,
+       linux-kernel@vger.kernel.org, jdike@addtoit.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Fix vde network backend in user mode linux
+Message-ID: <20090216132344.GN24031@pintsize>
+References: <20090202172822.GA2801@pintsize> <alpine.LNX.1.10.0902161334250.18110@jikos.suse.cz> <20090216124939.GC23665@hack.private>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0902101605070.20991@melkki.cs.Helsinki.FI>
+In-Reply-To: <20090216124939.GC23665@hack.private>
+X-GPG-Keyserver: http://keyserver.linux.it
+X-GPG-Keynumber: 0x0AF24BF4
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 10, 2009 at 04:06:53PM +0200, Pekka J Enberg wrote:
-> On Tue, Feb 10, 2009 at 03:35:03PM +0200, Pekka Enberg wrote:
-> > > We unexported ksize() because it's a problematic interface and you
-> > > almost certainly want to use the alternatives (e.g. krealloc). I think
-> > > I need bit more convincing to apply this patch...
->  
-> On Tue, 10 Feb 2009, Kirill A. Shutemov wrote:
-> > It just a quick fix. If anybody knows better solution, I have no
-> > objections.
+On Mon, Feb 16, 2009 at 08:49 PM, Américo Wang wrote:
+
+> On Mon, Feb 16, 2009 at 01:38:46PM +0100, Jiri Kosina wrote:
+> >
+> >[ doesn't seem to be picked up by anyone into current -next nor -mmotm, 
+> >  but isn't appropriate for trivial; adding akpm to cc ]
+> >
+> >On Mon, 2 Feb 2009, Luca Bigliardi wrote:
+> >
+> >> * Replace kmalloc() with uml_kmalloc()
+> >>   (fix build failure)
 > 
-> Herbert, what do you think of this (untested) patch? Alternatively, we 
-> could do something like kfree_secure() but it seems overkill for this one 
-> call-site.
+> 
+> Weird... I sent a patch for this several months ago! I thought
+> Jeff had already taken it... No?
 
-There are more callsites which do memset() + kfree():
+I did as well (in June/July 08 IIRC) through usermodelinux-devel mailing
+list but the patch didn't hit, so this time I've tried this way.
 
-	arch/s390/crypto/prng.c
-	drivers/s390/crypto/zcrypt_pcixcc.c
-	drivers/md/dm-crypt.c
-	drivers/usb/host/hwa-hc.c
-	drivers/usb/wusbcore/cbaf.c
-	(drivers/w1/w1{,_int}.c)
-	fs/cifs/misc.c
-	fs/cifs/connect.c
-	fs/ecryptfs/keystore.c
-	fs/ecryptfs/messaging.c
-	net/atm/mpoa_caches.c
+> >> * Remove unnecessary UM_KERN_INFO in printk()
+> >>   (don't display '<6>' while printing info)
+> 
+> But why only this one, not other UM_KERN_INFO in the same file?
 
-How about the attached patch?  One problem is that zeroing ksize()
-bytes can have an overhead of nearly twice the actual allocation size.
+Other lines are preceded by a 'new_text_line' so vprintk 'eats' the token.
 
-So we would need an interface that lets the caller pass in either a
-number of bytes it wants to have zeroed out or say idontknow.
 
-Perhaps add a size parameter that is cut to ksize() if it's too big?
-Or (ssize_t)-1 for figureitoutyourself?
+Thank you,
 
-	Hannes
+luca
 
----
-Subject: slab: introduce kzfree()
+-- 
+Beware of programmers who carry screwdrivers.
+                        -- Leonard Brandwein
 
-kzfree() is a wrapper for kfree() that additionally zeroes the
-underlying memory before releasing it to the slab allocator.
-
----
- include/linux/slab.h |    1 +
- mm/util.c            |   20 ++++++++++++++++++++
- 2 files changed, 21 insertions(+)
-
---- a/include/linux/slab.h
-+++ b/include/linux/slab.h
-@@ -127,6 +127,7 @@ int kmem_ptr_validate(struct kmem_cache 
- void * __must_check __krealloc(const void *, size_t, gfp_t);
- void * __must_check krealloc(const void *, size_t, gfp_t);
- void kfree(const void *);
-+void kzfree(const void *);
- size_t ksize(const void *);
- 
- /*
---- a/mm/util.c
-+++ b/mm/util.c
-@@ -129,6 +129,26 @@ void *krealloc(const void *p, size_t new
- }
- EXPORT_SYMBOL(krealloc);
- 
-+/**
-+ * kzfree - like kfree but zero memory
-+ * @p: object to free memory of
-+ * @zsize: size of the memory region to zero
-+ *
-+ * The memory of the object @p points to is zeroed before freed.
-+ * If @p is %NULL, kzfree() does nothing.
-+ */
-+void kzfree(const void *p)
-+{
-+	size_t ks;
-+	void *mem = (void *)p;
-+
-+	if (unlikely(ZERO_OR_NULL_PTR(mem)))
-+		return;
-+	ks = ksize(mem);
-+	memset(mem, 0, ks);
-+	kfree(mem);
-+}
-+
- /*
-  * strndup_user - duplicate an existing string from user space
-  * @s: The string to duplicate
+http://shammash.homelinux.org/ - http://www.artha.org/ - http://www.yue.it/
