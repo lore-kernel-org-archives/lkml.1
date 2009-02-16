@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbZBPVpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755055AbZBPVrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754551AbZBPVpr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 16:45:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbZBPVpi
+	id S1755055AbZBPVrS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 16:47:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbZBPVrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 16:45:38 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:35419 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750727AbZBPVpi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 16:45:38 -0500
-Subject: Re: Q: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove
- single ipi fallback for smp_call_function_many())
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090216213205.GA9098@redhat.com>
-References: <20090216163847.431174825@chello.nl>
-	 <20090216164114.433430761@chello.nl> <20090216204902.GA6924@redhat.com>
-	 <1234818201.30178.386.camel@laptop>  <20090216213205.GA9098@redhat.com>
-Content-Type: text/plain
-Date: Mon, 16 Feb 2009 22:45:04 +0100
-Message-Id: <1234820704.30178.396.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.90 
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Feb 2009 16:47:01 -0500
+Received: from kroah.org ([198.145.64.141]:48549 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750727AbZBPVq7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 16:46:59 -0500
+Date: Mon, 16 Feb 2009 12:22:15 -0800
+From: Greg KH <greg@kroah.com>
+To: Mike Murphy <mamurph@cs.clemson.edu>
+Cc: Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] input: xpad.c - Xbox 360 wireless and sysfs support
+Message-ID: <20090216202215.GA6543@kroah.com>
+References: <5aa163d00902142008g138826br80d3ea989e7af691@mail.gmail.com> <200902160931.34771.oliver@neukum.org> <5aa163d00902160522r3a22412je3f5202076f57a0a@mail.gmail.com> <20090216161331.GB5008@kroah.com> <5aa163d00902161009l15dae120le96436d40f998d33@mail.gmail.com> <20090216185914.GA6239@kroah.com> <5aa163d00902161130r2030adb8h6eb1ec08bda92744@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5aa163d00902161130r2030adb8h6eb1ec08bda92744@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-16 at 22:32 +0100, Oleg Nesterov wrote:
-> > I was about to write a response, but found it to be a justification for
-> > the read_barrier_depends() at the end of the loop.
+On Mon, Feb 16, 2009 at 02:30:01PM -0500, Mike Murphy wrote:
+> On Mon, Feb 16, 2009 at 1:59 PM, Greg KH <greg@kroah.com> wrote:
+> >
+> > Put it on the logical device, as given to you.
+> >
+> >> I tried not to break existing functionality.  Additionally, struct
+> >> usb_xpad contains two device pointers: one to the actual USB device,
+> >> and one to an input device (see source of the in-tree xpad.c). So I
+> >> followed your kobject.txt documentation and samples to create a new
+> >> object whose sole purpose in life is to expose the sysfs interface,
+> >> without interfering with the existing device entries in the driver.
+> >> I'm not sure I see a clean way to use a single struct device here....
+> >
+> > Put it on the input device, which is what is the per-device thing.  It's
+> > much simpler than creating a new struct kobject.  You can even create a
+> > subdirectory for your attributes if you use an attribute group (which
+> > you should be doing anyway, it's much simpler that way.)
+> >
 > 
-> I forgot to mention I don't understand the read_barrier_depends() at the
-> end of the loop as well ;)
+> OK, one thing I'm not clear on: is there a clean API for adding
+> attributes to an existing struct device, or do I need to "subclass" it
+> (the C containment and delegation approach)?
 
-Suppose cpu0 adds to csd to cpu1:
-
-
- cpu0:                 cpu1:
-
-add entry1
-mb();
-send ipi
-                      run ipi handler
-                      read_barrier_depends()
-                      while (!list_empty())    [A]
-                        do foo
-
-add entry2
-mb();
-[no ipi -- we still observe entry1]
-
-                        remove foo
-                        read_barrier_depends()
-                      while (!list_empty())      [B]
-
-
-The read_barrier_depends() matches the mb() on the other cpu, without
-which the 'new' entry might not be observed.
-
-So it turns out the initial one is needed as well.
+device_create_file()
 
