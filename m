@@ -1,67 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751586AbZBPPSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751017AbZBPPSs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751586AbZBPPSY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 10:18:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbZBPPSO
+	id S1751017AbZBPPSs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 10:18:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbZBPPSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 10:18:14 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:42546 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750763AbZBPPSN (ORCPT
+	Mon, 16 Feb 2009 10:18:37 -0500
+Received: from homer.mvista.com ([63.81.120.155]:62403 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750861AbZBPPSg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 10:18:13 -0500
-Date: Mon, 16 Feb 2009 15:18:09 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alexandre Rostovtsev <tetromino@gmail.com>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] lenovo-sl-laptop : driver for review
-Message-ID: <20090216151809.GA4724@srcf.ucam.org>
-References: <20090216025918.66d7a466@leftboat.lan>
+	Mon, 16 Feb 2009 10:18:36 -0500
+Message-ID: <499983DF.5050503@ru.mvista.com>
+Date: Mon, 16 Feb 2009 18:18:55 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090216025918.66d7a466@leftboat.lan>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ingo Molnar <mingo@elte.hu>, Justin Madru <jdm64@gawab.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linux IDE <linux-ide@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Hugh Dickins <hugh@veritas.com>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       Mikael Pettersson <mikpe@it.uu.se>
+Subject: Re: [Bug #12263] Sata soft reset filling log
+References: <sTyoMUwdm9B.A.QCH.U40lJB@chimera> <200902152221.43834.rjw@sisk.pl> <20090215223045.GC29300@elte.hu> <200902160012.57584.rjw@sisk.pl>
+In-Reply-To: <200902160012.57584.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 16, 2009 at 02:59:18AM -0500, Alexandre Rostovtsev wrote:
+Hello.
 
-> +Fn F9 (eject):			KEY_EJECTCD (161)
+Rafael J. Wysocki wrote:
 
-No - this is a dock eject key, not a CD eject key.
+>>>>>This message has been generated automatically as a part of a report
+>>>>>of regressions introduced between 2.6.27 and 2.6.28.
 
-> +Fn F12 (hibernate):		KEY_SUSPEND (205)
+>>>>>The following bug entry is on the current list of known regressions
+>>>>>introduced between 2.6.27 and 2.6.28.  Please verify if it still should
+>>>>>be listed and let me know (either way).
 
-> +/sys/devices/platform/lenovo-sl-laptop/rfkill/rfkill*/
-> + The bluetooth rfkill. state is the switch state (0 for bluetooth off,
-> + 1 for bluetooth on).
-> + Note that in case future versions of the driver add other rfkill switches,
-> + userspace programs should check that the rfkill name is lensl_bluetooth_sw
+>>>>>Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12263
+>>>>>Subject		: Sata soft reset filling log
+>>>>>Submitter	: Justin Madru <bevicm@dslextreme.com>
+>>>>>Date		: 2008-12-13 2:07 (64 days old)
+>>>>>References	: http://marc.info/?l=linux-kernel&m=122913412608533&w=4
 
-Surely they should just be checking the rfkill type?
+>>>>I'm still seeing this on .29-rc5, and I think that my bug #12263 is a 
+>>>>duplicate of bug #12609,
+>>>>or more correctly it's a duplicate of mine because I reported first.
 
-> +control_backlight:
-> + If this parameter is set to 1, this driver will intercept brightness keys
-> + (Fn+Home and Fn+End) and control the backlight brightness. This feature is
-> + useful because the default ACPI video driver currently has poor support
-> + for the Lenovo SL series. If you enable this feature, you should add
-> + acpi_backlight=vendor
+>>>>It seems like the bug has been fixed in tip/master for some time now.
+>>>>Below is the diff of origin and tip from when I tested.
 
-Please don't do that - the kernel shouldn't be consuming the brightness 
-events itself, that should be left up to userspace. The ACPI video 
-driver is broken in this respect.
+>>>Ingo, do you know whinch patch in -tip fixes this regression?
 
-> +static struct device_attribute dev_attr_bluetooth_enable =
-> +	__ATTR(bluetooth_enable, S_IWUSR | S_IRUGO,
-> +		bluetooth_enable_show, bluetooth_enable_store);
+>>This one, done on Jan 10, more than a month ago:
 
-You support rfkill, so I'm not sure there's a benefit in exposing the 
-same functionality via a custom sysfs node.
+>>  f1d26da: Revert "libata: Add 32bit PIO support"
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+>>When a commit causes trouble in -tip qa i immediately revert it in 95% 
+>>of the cases, no questions asked. Especially if it's related to 
+>>persistent storage.
+
+> OK, thanks.
+
+> We seem to have a working fix patch for this issue in bug #12609.
+
+    Wait, if this is indeed post-2.6.27 regression, it couldn't possibly have 
+been caused by that patch which got merged during 2.6.29-rc1 timeframe. 
+Something's up with this bug...
+
+MBR, Sergei
