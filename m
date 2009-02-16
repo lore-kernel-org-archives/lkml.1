@@ -1,302 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757531AbZBPLKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756486AbZBPLeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757531AbZBPLKr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 06:10:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757191AbZBPLJY
+	id S1756486AbZBPLeW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 06:34:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbZBPLeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 06:09:24 -0500
-Received: from e23smtp02.au.ibm.com ([202.81.31.144]:44075 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757168AbZBPLJX (ORCPT
+	Mon, 16 Feb 2009 06:34:11 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:17850 "EHLO
+	VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753085AbZBPLeK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 06:09:23 -0500
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: linux-mm@kvack.org
-Cc: Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Bharata B Rao <bharata@in.ibm.com>, Paul Menage <menage@google.com>,
-       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Mon, 16 Feb 2009 16:39:16 +0530
-Message-Id: <20090216110916.29795.41945.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090216110844.29795.17804.sendpatchset@localhost.localdomain>
-References: <20090216110844.29795.17804.sendpatchset@localhost.localdomain>
-Subject: [RFC][PATCH 4/4] Memory controller soft limit reclaim on contention (v2)
+	Mon, 16 Feb 2009 06:34:10 -0500
+X-BigFish: VPS-50(z21eWz1432R62a3L98dR936eQ1805Mzzzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KF5PGE-04-JLJ-01
+Date: Mon, 16 Feb 2009 12:33:50 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Tim Blechmann <tim@klingt.org>
+CC: oprofile-list@lists.sf.net, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29-rc4 regression (was: Re: 2.6.28-rc9: oprofile
+	regression)
+Message-ID: <20090216113349.GF25042@erda.amd.com>
+References: <1229869416.6911.1.camel@thinkpad> <49932C35.3020300@klingt.org> <20090213190740.GD25042@erda.amd.com> <20090216112313.359ef437@thinkpad>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20090216112313.359ef437@thinkpad>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 16 Feb 2009 11:33:50.0170 (UTC) FILETIME=[702B93A0:01C9902A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 16.02.09 11:23:13, Tim Blechmann wrote:
+> > still, I can not reproduce this with my tests with v2.6.29-rc4. The
+> > regression on the systems I have runs fine on rc4. On the system you
+> > have, is commit b99170288421c79f0c2efa8b33e26e65f4bb7fb8 the first bad
+> > one? If so, I will split the patch into smaller pieces to find the
+> > change that introduces the bug.
+> 
+> i got revision df13b31c286b3e91c556167954eda088d90a4295 working, by not
+> resetting the counter width:
+> 
+> diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
+> index 12e207a..f0e019d 100644
+> --- a/arch/x86/oprofile/op_model_ppro.c
+> +++ b/arch/x86/oprofile/op_model_ppro.c
+> @@ -76,12 +76,14 @@ static void ppro_setup_ctrs(struct op_msrs const * const msrs)
+>  			return;
+>  	}
+>  
+> +#if 0
+>  	if (cpu_has_arch_perfmon) {
+>  		union cpuid10_eax eax;
+>  		eax.full = cpuid_eax(0xa);
+>  		if (counter_width < eax.split.bit_width)
+>  			counter_width = eax.split.bit_width;
+>  	}
+> +#endif
+> 
+> 
+> this tweak did not work on later kernels, that i tested, though, and i 
+> haven't had time to look into it in more detail.
 
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Thanks Tim, on later kernels, is it the behaviour you mentioned that
+no NMIs are delivered and you do not receive any NMI?
 
-Changelog v2...v1
-1. Added support for hierarchical soft limits
-
-This patch allows reclaim from memory cgroups on contention (via the
-__alloc_pages_internal() path). If a order greater than 0 is specified, we
-anyway fall back on try_to_free_pages().
-
-memory cgroup soft limit reclaim finds the group that exceeds its soft limit
-by the largest amount and reclaims pages from it and then reinserts the
-cgroup into its correct place in the rbtree.
-
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
-
- include/linux/memcontrol.h |    1 
- mm/memcontrol.c            |  105 +++++++++++++++++++++++++++++++++++++++-----
- mm/page_alloc.c            |   10 ++++
- 3 files changed, 104 insertions(+), 12 deletions(-)
-
-
-diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
-index 18146c9..a50f73e 100644
---- a/include/linux/memcontrol.h
-+++ b/include/linux/memcontrol.h
-@@ -116,6 +116,7 @@ static inline bool mem_cgroup_disabled(void)
- }
- 
- extern bool mem_cgroup_oom_called(struct task_struct *task);
-+extern unsigned long mem_cgroup_soft_limit_reclaim(gfp_t gfp_mask);
- 
- #else /* CONFIG_CGROUP_MEM_RES_CTLR */
- struct mem_cgroup;
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index a2617ac..dd835d3 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -188,6 +188,7 @@ struct mem_cgroup {
- 	struct rb_node mem_cgroup_node;
- 	unsigned long long usage_in_excess;
- 	unsigned long last_tree_update;
-+	bool on_tree;
- 
- 	/*
- 	 * statistics. This must be placed at the end of memcg.
-@@ -195,7 +196,7 @@ struct mem_cgroup {
- 	struct mem_cgroup_stat stat;
- };
- 
--#define	MEM_CGROUP_TREE_UPDATE_INTERVAL		(HZ)
-+#define	MEM_CGROUP_TREE_UPDATE_INTERVAL		(HZ/4)
- 
- enum charge_type {
- 	MEM_CGROUP_CHARGE_TYPE_CACHE = 0,
-@@ -229,14 +230,15 @@ static void mem_cgroup_get(struct mem_cgroup *mem);
- static void mem_cgroup_put(struct mem_cgroup *mem);
- static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem);
- 
--static void mem_cgroup_insert_exceeded(struct mem_cgroup *mem)
-+static void __mem_cgroup_insert_exceeded(struct mem_cgroup *mem)
- {
- 	struct rb_node **p = &mem_cgroup_soft_limit_exceeded_groups.rb_node;
- 	struct rb_node *parent = NULL;
- 	struct mem_cgroup *mem_node;
--	unsigned long flags;
- 
--	spin_lock_irqsave(&memcg_soft_limit_tree_lock, flags);
-+	if (mem->on_tree)
-+		return;
-+
- 	while (*p) {
- 		parent = *p;
- 		mem_node = rb_entry(parent, struct mem_cgroup, mem_cgroup_node);
-@@ -253,6 +255,23 @@ static void mem_cgroup_insert_exceeded(struct mem_cgroup *mem)
- 	rb_insert_color(&mem->mem_cgroup_node,
- 			&mem_cgroup_soft_limit_exceeded_groups);
- 	mem->last_tree_update = jiffies;
-+	mem->on_tree = true;
-+}
-+
-+static void __mem_cgroup_remove_exceeded(struct mem_cgroup *mem)
-+{
-+	if (!mem->on_tree)
-+		return;
-+	rb_erase(&mem->mem_cgroup_node, &mem_cgroup_soft_limit_exceeded_groups);
-+	mem->on_tree = false;
-+}
-+
-+static void mem_cgroup_insert_exceeded(struct mem_cgroup *mem)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&memcg_soft_limit_tree_lock, flags);
-+	__mem_cgroup_insert_exceeded(mem);
- 	spin_unlock_irqrestore(&memcg_soft_limit_tree_lock, flags);
- }
- 
-@@ -260,10 +279,34 @@ static void mem_cgroup_remove_exceeded(struct mem_cgroup *mem)
- {
- 	unsigned long flags;
- 	spin_lock_irqsave(&memcg_soft_limit_tree_lock, flags);
--	rb_erase(&mem->mem_cgroup_node, &mem_cgroup_soft_limit_exceeded_groups);
-+	__mem_cgroup_remove_exceeded(mem);
- 	spin_unlock_irqrestore(&memcg_soft_limit_tree_lock, flags);
- }
- 
-+static struct mem_cgroup *mem_cgroup_get_largest_soft_limit_exceeding_node(void)
-+{
-+	struct rb_node *rightmost = NULL;
-+	struct mem_cgroup *mem = NULL;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&memcg_soft_limit_tree_lock, flags);
-+	rightmost = rb_last(&mem_cgroup_soft_limit_exceeded_groups);
-+	if (!rightmost)
-+		goto done;		/* Nothing to reclaim from */
-+
-+	mem = rb_entry(rightmost, struct mem_cgroup, mem_cgroup_node);
-+	mem_cgroup_get(mem);
-+	/*
-+	 * Remove the node now but someone else can add it back,
-+	 * we will to add it back at the end of reclaim to its correct
-+	 * position in the tree.
-+	 */
-+	__mem_cgroup_remove_exceeded(mem);
-+done:
-+	spin_unlock_irqrestore(&memcg_soft_limit_tree_lock, flags);
-+	return mem;
-+}
-+
- static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
- 					 struct page_cgroup *pc,
- 					 bool charge)
-@@ -886,7 +929,8 @@ mem_cgroup_select_victim(struct mem_cgroup *root_mem)
-  * If shrink==true, for avoiding to free too much, this returns immedieately.
-  */
- static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
--				   gfp_t gfp_mask, bool noswap, bool shrink)
-+				   gfp_t gfp_mask, bool noswap, bool shrink,
-+				   bool check_soft)
- {
- 	struct mem_cgroup *victim;
- 	int ret, total = 0;
-@@ -913,7 +957,11 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
- 		if (shrink)
- 			return ret;
- 		total += ret;
--		if (mem_cgroup_check_under_limit(root_mem))
-+
-+		if (check_soft) {
-+			if (res_counter_soft_limit_excess(&root_mem->res))
-+				return 1 + total;
-+		} else if (mem_cgroup_check_under_limit(root_mem))
- 			return 1 + total;
- 	}
- 	return total;
-@@ -1044,7 +1092,7 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
- 			goto nomem;
- 
- 		ret = mem_cgroup_hierarchical_reclaim(mem_over_limit, gfp_mask,
--							noswap, false);
-+							noswap, false, false);
- 		if (ret)
- 			continue;
- 
-@@ -1686,7 +1734,7 @@ int mem_cgroup_shrink_usage(struct page *page,
- 
- 	do {
- 		progress = mem_cgroup_hierarchical_reclaim(mem,
--					gfp_mask, true, false);
-+					gfp_mask, true, false, false);
- 		progress += mem_cgroup_check_under_limit(mem);
- 	} while (!progress && --retry);
- 
-@@ -1741,7 +1789,7 @@ static int mem_cgroup_resize_limit(struct mem_cgroup *memcg,
- 			break;
- 
- 		progress = mem_cgroup_hierarchical_reclaim(memcg, GFP_KERNEL,
--						   false, true);
-+						   false, true, false);
- 		curusage = res_counter_read_u64(&memcg->res, RES_USAGE);
- 		/* Usage is reduced ? */
-   		if (curusage >= oldusage)
-@@ -1789,7 +1837,8 @@ int mem_cgroup_resize_memsw_limit(struct mem_cgroup *memcg,
- 		if (!ret)
- 			break;
- 
--		mem_cgroup_hierarchical_reclaim(memcg, GFP_KERNEL, true, true);
-+		mem_cgroup_hierarchical_reclaim(memcg, GFP_KERNEL, true, true,
-+						false);
- 		curusage = res_counter_read_u64(&memcg->memsw, RES_USAGE);
- 		/* Usage is reduced ? */
- 		if (curusage >= oldusage)
-@@ -1940,6 +1989,38 @@ try_to_free:
- 	goto out;
- }
- 
-+unsigned long mem_cgroup_soft_limit_reclaim(gfp_t gfp_mask)
-+{
-+	unsigned long nr_reclaimed = 0;
-+	struct mem_cgroup *mem;
-+	unsigned long flags;
-+
-+	do {
-+		mem = mem_cgroup_get_largest_soft_limit_exceeding_node();
-+		if (!mem)
-+			break;
-+		if (mem_cgroup_is_obsolete(mem)) {
-+			mem_cgroup_put(mem);
-+			continue;
-+		}
-+		nr_reclaimed +=
-+			mem_cgroup_hierarchical_reclaim(mem, gfp_mask, false,
-+							false, true);
-+		spin_lock_irqsave(&memcg_soft_limit_tree_lock, flags);
-+		mem->usage_in_excess = res_counter_soft_limit_excess(&mem->res);
-+		/*
-+		 * We need to remove and reinsert the node in its correct
-+		 * position
-+		 */
-+		__mem_cgroup_remove_exceeded(mem);
-+		if (mem->usage_in_excess)
-+			__mem_cgroup_insert_exceeded(mem);
-+		spin_unlock_irqrestore(&memcg_soft_limit_tree_lock, flags);
-+		mem_cgroup_put(mem);
-+	} while (!nr_reclaimed);
-+	return nr_reclaimed;
-+}
-+
- int mem_cgroup_force_empty_write(struct cgroup *cont, unsigned int event)
- {
- 	return mem_cgroup_force_empty(mem_cgroup_from_cont(cont), true);
-@@ -2528,6 +2609,8 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
- 	mem->last_scanned_child = 0;
- 	mem->usage_in_excess = 0;
- 	mem->last_tree_update = 0;	/* Yes, time begins at 0 here */
-+	mem->on_tree = false;
-+
- 	spin_lock_init(&mem->reclaim_param_lock);
- 
- 	if (parent)
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 7be9386..c50e29b 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1579,7 +1579,15 @@ nofail_alloc:
- 	reclaim_state.reclaimed_slab = 0;
- 	p->reclaim_state = &reclaim_state;
- 
--	did_some_progress = try_to_free_pages(zonelist, order, gfp_mask);
-+	did_some_progress = mem_cgroup_soft_limit_reclaim(gfp_mask);
-+	/*
-+	 * If we made no progress or need higher order allocations
-+	 * try_to_free_pages() is still our best bet, since mem_cgroup
-+	 * reclaim does not handle freeing pages greater than order 0
-+	 */
-+	if (!did_some_progress || order)
-+		did_some_progress = try_to_free_pages(zonelist, order,
-+							gfp_mask);
- 
- 	p->reclaim_state = NULL;
- 	p->flags &= ~PF_MEMALLOC;
+-Robert
 
 -- 
-	Balbir
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
