@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751830AbZBPRWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752490AbZBPRX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751830AbZBPRWQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 12:22:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751194AbZBPRV5
+	id S1752490AbZBPRX0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 12:23:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751104AbZBPRXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 12:21:57 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58987 "EHLO mx2.mail.elte.hu"
+	Mon, 16 Feb 2009 12:23:16 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41458 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751119AbZBPRV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 12:21:56 -0500
-Date: Mon, 16 Feb 2009 18:21:47 +0100
+	id S1750916AbZBPRXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 12:23:15 -0500
+Date: Mon, 16 Feb 2009 18:22:45 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Julia Lawall <julia@diku.dk>, Sam Ravnborg <sam@ravnborg.org>,
-       Manish Katiyar <mkatiyar@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] Remove errors caught by checkpatch.pl in
-	kernel/kallsyms.c
-Message-ID: <20090216172147.GB26995@elte.hu>
-References: <ea11fea30902151034s5444efabw455c1dac1b875086@mail.gmail.com> <20090215184752.GA4970@uranus.ravnborg.org> <4999650C.6030700@s5r6.in-berlin.de> <20090216132822.GC17996@elte.hu> <Pine.LNX.4.64.0902161711580.9565@pc-004.diku.dk> <499995C4.3070504@s5r6.in-berlin.de>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Steven Rostedt <srostedt@redhat.com>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+Subject: Re: [PATCH 1/3] Makefile: Include arch Makefiles as late as
+	possible
+Message-ID: <20090216172245.GC26995@elte.hu>
+References: <20090204150755.GA24163@oksana.dev.rtsoft.ru> <20090204150835.GA30027@oksana.dev.rtsoft.ru> <20090204212612.GN22608@elte.hu> <20090214195702.GB1241@uranus.ravnborg.org> <20090216142001.GA27869@oksana.dev.rtsoft.ru> <20090216160824.GA1616@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <499995C4.3070504@s5r6.in-berlin.de>
+In-Reply-To: <20090216160824.GA1616@oksana.dev.rtsoft.ru>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,42 +39,46 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+* Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-> Julia Lawall wrote:
-> > Is everything below the --- preserved in what is available via git log?  
+> On Mon, Feb 16, 2009 at 05:20:01PM +0300, Anton Vorontsov wrote:
+> [...]
+> > But then, this commit reverted things back (w/o your Ack):
+> > 
+> > commit bef5b54bd7bf8117c75cb943d64549134c6d9a1f
+> > Author: Ralf Baechle <ralf@linux-mips.org>
+> > Date:   Wed Jul 16 13:02:24 2008 +0100
+> > 
+> >     Fix MIPS cross-compile problem
+> >     [...]
+> >     Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+> >     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> > 
+> > [...]
+> > --- a/Makefile
+> > +++ b/Makefile
+> > @@ -508,6 +508,8 @@ else
+> >  KBUILD_CFLAGS  += -O2
+> >  endif
+> >  
+> > +include $(srctree)/arch/$(SRCARCH)/Makefile
+> > +
+> >  ifneq (CONFIG_FRAME_WARN,0)
+> >  KBUILD_CFLAGS += $(call cc-option,-Wframe-larger-than=${CONFIG_FRAME_WARN})
+> >  endif
+> > @@ -516,8 +518,6 @@ endif
+> >  # Arch Makefiles may override this setting
+> >  KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
+> >  
+> > -include $(srctree)/arch/$(SRCARCH)/Makefile
+> > -
+> >  ifdef CONFIG_FRAME_POINTER
+> >  KBUILD_CFLAGS  += -fno-omit-frame-pointer -fno-optimize-sibling-calls
+> >  else
 > 
-> No, none of it (if the patch is mechanically applied with e.g. git-am).
-> 
-> Sometimes, useful information does indeed get lost because an author
-> didn't consider it "above ---"-worthy.
-> 
-> ...
-> > I think the how information has some value, 
-> > both to make people aware of what tools are useful for what kinds of 
-> > tasks, and to help one understand what criteria were used in making the 
-> > patch.
-> 
-> That information is perfect for conservation mailing list archives.
+> Btw, I wonder if x86's CONFIG_CC_STACKPROTECTOR is a no-op since
+> v2.6.27-rc1? Seems like it is.
 
-Uhm, a mailing list archives have numerous well-known disadvantages: 
-they are not permanent or accessible in any acceptable fashion - URLs 
-can go stale, certain mails get lost, the commit itself has no backlink 
-to the lkml discussion [or whichever of the hundreds of maintainer lists 
-it was discussed on], etc. etc.
-
-Claiming that information is 'perfect' for the mailing list but not good 
-for the Git log is a double standard.
-
-The thing is, we need more information about how a given patch was 
-originated, not less. We need more information about how efficient our 
-tools are, not less.
-
-The main problems we have with commit logs today is not too much 
-information but too little information. A log message should be 
-well-structured, with the more important information near the top of it, 
-the less important information at the end - but arguing that something 
-as fundamental as the tools that motivated a change is silly on its 
-face.
+that's fixed and merged up for 2.6.30.
 
 	Ingo
