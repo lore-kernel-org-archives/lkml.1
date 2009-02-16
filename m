@@ -1,97 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752135AbZBPPu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751509AbZBPPuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752135AbZBPPu1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 10:50:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbZBPPuJ
+	id S1751509AbZBPPuo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 10:50:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbZBPPud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 10:50:09 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:51358 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750797AbZBPPuI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 10:50:08 -0500
-Subject: Re: pNFS rant (was Re: [PATCH 1/8] exofs: Kbuild, Headers and osd
-	utils)
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Boaz Harrosh <bharrosh@panasas.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, avishay@gmail.com,
-       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       osd-dev@open-osd.org, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, linux-scsi@vger.kernel.org
-In-Reply-To: <49994860.9060109@garzik.org>
-References: <1234185129-31858-1-git-send-email-bharrosh@panasas.com>
-	 <20090216131806X.fujita.tomonori@lab.ntt.co.jp>
-	 <499928A3.60507@panasas.com>
-	 <20090216180028C.fujita.tomonori@lab.ntt.co.jp>
-	 <49992F99.1060404@panasas.com> <49993182.3010707@garzik.org>
-	 <49993DAD.40407@panasas.com>  <49994860.9060109@garzik.org>
-Content-Type: text/plain
-Date: Mon, 16 Feb 2009 09:50:01 -0600
-Message-Id: <1234799401.3237.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Feb 2009 10:50:33 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52967 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752722AbZBPPub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 10:50:31 -0500
+Date: Mon, 16 Feb 2009 16:50:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Manish Katiyar <mkatiyar@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] Remove errors caught by checkpatch.pl in
+	kernel/kallsyms.c
+Message-ID: <20090216155023.GA4422@elte.hu>
+References: <ea11fea30902151034s5444efabw455c1dac1b875086@mail.gmail.com> <20090215184752.GA4970@uranus.ravnborg.org> <4999650C.6030700@s5r6.in-berlin.de> <20090216132822.GC17996@elte.hu> <4999717F.7090205@s5r6.in-berlin.de> <20090216141917.GA8981@elte.hu> <499984C1.6020004@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <499984C1.6020004@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-16 at 06:05 -0500, Jeff Garzik wrote:
-> Boaz Harrosh wrote:
-> > No can do. exofs is meant to be a reference implementation of a pNFS-objects
-> > file serving system. Have you read the spec of pNFS-objects layout? they define
-> > RAID 0, 1, 5, and 6. In pNFS the MDS is suppose to be able to write the data
-> > for its clients as NFS, so it needs to have all the infra structure and knowledge
-> > of an Client pNFS-object layout drive.
-> 
-> Yes, I have studied pNFS!  I plan to add v4.1 and pNFS support to my NFS 
-> server, once v4.0 support is working well.
-> 
-> 
-> pNFS The Theory:   is wise and necessary:  permit clients to directly 
-> connect to data storage, rather than copying through the metadata 
-> server(s).  This is what every distributed filesystem is doing these 
-> days -- direct to data server for bulk data read/write.
-> 
-> pNFS The Specification:   is an utter piece of shit.  I can only presume 
-> some shady backroom deal in a smoke-filled room was the reason this saw 
-> the light of day.
-> 
-> 
-> In a sane world, NFS clients would speak... NFS.
-> 
-> In the crazy world of pNFS, NFS clients are now forced to speak NFS, 
-> SCSI, RAID, and any number of proprietary layout types.  When will HTTP 
-> be added to the list?  :)
 
-Heh, it's one of the endearing faults of the storage industry that we
-never learn from our mistakes ... particularly in storage protocols.
+* Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-Actually, perhaps that's a mischaracterised: we never actually learn
-from our successes.  For example, most popular storage protocols solve
-about 80% of the problem (NFSv2) get something bolted on to take that to
-95% (locking) and rule for decades.  We end up obsessing about the 5%
-and produce something that's like 10x the overhead to solve it.
-Customers, for some unfathomable reason, hate complexity  (I suspect
-principally because it in some measure equals expense) so the 100%
-solution (which actually turns out to be a 95% one because the over
-engineered complexity adds another 5% of different problems that take
-years to find) tends to work its way into a niche and stay there ...
-eventually fading.
+> Ingo Molnar wrote:
+> > We routinely mention Sparse, lockdep, Coverity, Coccinelle, kmemleak, 
+> > ftrace, kmemcheck and other tools as well when it motives to fix a bug 
+> > or uncleanliness. [...] It is absolutely fine to
+> > mention checkpatch when it catches uncleanliness in code that already 
+> > got merged. I dont understand your point.
+> 
+> I wrote "don't mention checkpatch" but I really meant "think about what
+> the effect of the patch is and describe this".
 
-If you're really lucky, the niche evolves into something sustainable.
-For example iSCSI: blew its early promise, pulled a bunch of unnecessary
-networking into the protocol and ended up too big to fit in disk
-firmware (thus destroying the ability to have a simple network tap to
-replace storage fabric).  It's been slowly fading until Virtualisation
-came along.  Now all the other solutions to getting storage into virtual
-machines are so horrible and arcane that iSCSI looks like a winner (if
-the alternative is Frankenstein's monster, Grendel's mother suddenly
-looks more attractive as a partner).
+Are you arguing that in all those other cases the tools should not be 
+mentioned either? I dont think that position is tenable.
 
-So, trust the customer ... if it's so horrible it shouldn't have seen
-the light of day, the chances are that no-one will buy it anyway.
-
-James
-
-
+	Ingo
