@@ -1,76 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756386AbZBPKNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756424AbZBPKTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756386AbZBPKNf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 05:13:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbZBPKNZ
+	id S1756424AbZBPKTn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 05:19:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754405AbZBPKTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 05:13:25 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:50427 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752630AbZBPKNY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 05:13:24 -0500
-Date: Mon, 16 Feb 2009 21:13:10 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Sachin P. Sant" <sachinp@in.ibm.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-usb@vger.kernel.org, avorontsov@ru.mvista.com
-Subject: Re: next Feb 16 build break [usb/host/fhci-*]
-Message-Id: <20090216211310.5513de1a.sfr@canb.auug.org.au>
-In-Reply-To: <499929CB.2030004@in.ibm.com>
-References: <20090216172016.f1d159a7.sfr@canb.auug.org.au>
-	<499929CB.2030004@in.ibm.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__16_Feb_2009_21_13_10_+1100_TqEd_u.lQ=vsPHs1"
+	Mon, 16 Feb 2009 05:19:32 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:7718 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754359AbZBPKTb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 05:19:31 -0500
+Message-ID: <49993DAD.40407@panasas.com>
+Date: Mon, 16 Feb 2009 12:19:25 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, avishay@gmail.com,
+       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       osd-dev@open-osd.org, linux-kernel@vger.kernel.org,
+       James.Bottomley@HansenPartnership.com, jens.axboe@oracle.com,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 1/8] exofs: Kbuild, Headers and osd utils
+References: <1234185129-31858-1-git-send-email-bharrosh@panasas.com>	<20090216131806X.fujita.tomonori@lab.ntt.co.jp>	<499928A3.60507@panasas.com> <20090216180028C.fujita.tomonori@lab.ntt.co.jp> <49992F99.1060404@panasas.com> <49993182.3010707@garzik.org>
+In-Reply-To: <49993182.3010707@garzik.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Feb 2009 10:19:29.0378 (UTC) FILETIME=[0D54BC20:01C99020]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__16_Feb_2009_21_13_10_+1100_TqEd_u.lQ=vsPHs1
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Jeff Garzik wrote:
+> Boaz Harrosh wrote:
+>> FUJITA Tomonori wrote:
+>>> Boaz Harrosh <bharrosh@panasas.com> wrote:
+>>>> Also looking
+>>>> ahead I will have RAID 0, 1, 5, and 6 on objects of different devices. bio
+>>>> is the perfect collector for memory information in this situation.
+> 
+>>> You will add such features to exofs, handling multiple devices
+>>> internally?
+> 
+>> Multiple objects on Multiple devices, Yes.
+> 
+> That sort of feature does not belong in exofs, but somewhat separate. 
+> Ideally we should be able to share "MD for OSD" with other OSD 
+> filesystems, and the "osdblk" device that I will produce once libosd 
+> hits upstream.
+> 
 
-Hi Sachin,
+No can do. exofs is meant to be a reference implementation of a pNFS-objects
+file serving system. Have you read the spec of pNFS-objects layout? they define
+RAID 0, 1, 5, and 6. In pNFS the MDS is suppose to be able to write the data
+for its clients as NFS, so it needs to have all the infra structure and knowledge
+of an Client pNFS-object layout drive.
 
-On Mon, 16 Feb 2009 14:24:35 +0530 "Sachin P. Sant" <sachinp@in.ibm.com> wr=
-ote:
->
-> Feb 16 next tree randconfig build fails with
->=20
-> drivers/usb/host/fhci-hcd.c: In function =E2=80=98of_fhci_probe=E2=80=99:
-> drivers/usb/host/fhci-hcd.c:586: error: =E2=80=98struct device=E2=80=99 h=
-as no member named =E2=80=98bus_id=E2=80=99
-> drivers/usb/host/fhci-hcd.c:653: error: =E2=80=98struct device=E2=80=99 h=
-as no member named =E2=80=98bus_id=E2=80=99
->=20
-> drivers/usb/host/fhci-dbg.c: In function =E2=80=98fhci_dfs_create=E2=80=
-=99:
-> drivers/usb/host/fhci-dbg.c:111: error: =E2=80=98struct device=E2=80=99 h=
-as no member named =E2=80=98bus_id=E2=80=99
+But don't worry, the plans are that layout-drive and exofs will reuse all the
+same library code that does all that. There will not be a single line of duplicate
+code.
 
-That would be the driver-core removing bus_id from struct device.  cc's add=
-ed.
+In fact one of the things I wanted to talk about in LSF is a generic, BIO based
+(or some thing else), RAID engine, That could be used by all RAIDers in Kernel,
+DM, MD, btrfs, exofs pNFS-objects, TUX3, ZFS and so on. And I don't mean just the
+low level memory-pointers XOR functions, but the more higher level of memory
+splitters/collectors, abstract-device lists, and RAID description structures.
+(Because RAIDs can be stacked like 10, 50, and all kind of crazy things)
 
-fhci-hcd appeared between 2.6.29-rc2 and rc3.
+> 	Jeff
+> 
+> 
+> 
+> 
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__16_Feb_2009_21_13_10_+1100_TqEd_u.lQ=vsPHs1
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmZPDYACgkQjjKRsyhoI8xBIQCeNJrwIAuqISX0YJ/BoldOq4r1
-yVAAn1Qs2FK31zyGV6jsFYprIr7jNoB2
-=bsbL
------END PGP SIGNATURE-----
-
---Signature=_Mon__16_Feb_2009_21_13_10_+1100_TqEd_u.lQ=vsPHs1--
+Boaz
