@@ -1,103 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755395AbZBPH3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbZBPH34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755395AbZBPH3W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 02:29:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbZBPH3K
+	id S1754042AbZBPH34 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 02:29:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756107AbZBPH3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 02:29:10 -0500
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:43122 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752426AbZBPH3J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 02:29:09 -0500
-Subject: [2/3] ext3: call  block_flush_device() on fsync
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Jan Kara <jack@suse.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Pavel Machek <pavel@suse.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com,
-       fernando@kic.ac.jp, rwheeler@redhat.com, linux-fsdevel@vger.kernel.org
-In-Reply-To: <1234768181.32677.7.camel@sebastian.kern.oss.ntt.co.jp>
-References: <1232109069.13775.35.camel@sebastian.kern.oss.ntt.co.jp>
-	 <1232114101.13775.63.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20090116163039.GE10617@duck.suse.cz>
-	 <1232185639.4831.18.camel@sebastian.kern.oss.ntt.co.jp>
-	 <1232186449.4831.29.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20090119120349.GA10193@duck.suse.cz>
-	 <1233135913.5399.57.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20090128095518.GA16554@duck.suse.cz>
-	 <1234434811.15270.7.camel@sebastian.kern.oss.ntt.co.jp>
-	 <1234435245.15433.19.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20090215224659.GG10706@mini-me.lan>
-	 <1234768181.32677.7.camel@sebastian.kern.oss.ntt.co.jp>
-Content-Type: text/plain
-Organization: NTT Open Source Software Center
-Date: Mon, 16 Feb 2009 16:29:05 +0900
-Message-Id: <1234769345.32677.28.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Feb 2009 02:29:33 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:14930 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756077AbZBPH3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 02:29:32 -0500
+Date: Mon, 16 Feb 2009 08:27:11 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+Cc: pavel@suse.cz, rjw@sisk.pl, linux-pm@lists.linux-foundation.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [Bug 12713] Hang on resume from hibernation, apparently as result of 213d9417fec
+Message-ID: <20090216072711.GJ30821@kernel.dk>
+References: <8f53421d0902151605v56c92642ib8c2dcf34fd92ad1@mail.gmail.com> <8f53421d0902151607w2985dce6yc1bef7e717166fc@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8f53421d0902151607w2985dce6yc1bef7e717166fc@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To ensure that bits are truly on-disk after an fsync or fdatasync, we
-should force a disk flush explicitly when there is dirty data/metadata
-and the journal didn't emit a write barrier (either because metadata is
-not being synched or barriers are disabled).
+On Mon, Feb 16 2009, Michael S. Tsirkin wrote:
+> On Mon, Feb 16, 2009 at 2:05 AM, Michael S. Tsirkin
+> <m.s.tsirkin@gmail.com> wrote:
+> > Summary: seem to need to revert 213d9417fec62ef4c3675621b9364a667954d4dd
+> > to fix resume from hibernation. Bugzilla entry created:
+> > http://bugzilla.kernel.org/show_bug.cgi?id=12713
+> 
+> Looking over this, I see something strange in the commit in question:
+> 
+> diff --git a/include/linux/bio.h b/include/linux/bio.h
+> index 5175aa3..f53568c 100644
+> --- a/include/linux/bio.h
+> +++ b/include/linux/bio.h
+> @@ -163,12 +163,15 @@ struct bio {
+>  #define BIO_RW         0       /* Must match RW in req flags (blkdev.h) */
+>  #define BIO_RW_AHEAD   1       /* Must match FAILFAST in req flags */
+>  #define BIO_RW_BARRIER 2
+> -#define BIO_RW_SYNC    3
+> -#define BIO_RW_META    4
+> -#define BIO_RW_DISCARD 5
+> -#define BIO_RW_FAILFAST_DEV            6
+> -#define BIO_RW_FAILFAST_TRANSPORT      7
+> -#define BIO_RW_FAILFAST_DRIVER         8
+> +#define BIO_RW_SYNCIO  3
+> +#define BIO_RW_UNPLUG  4
+> +#define BIO_RW_META    5
+> +#define BIO_RW_DISCARD 6
+> +#define BIO_RW_FAILFAST_DEV            7
+> +#define BIO_RW_FAILFAST_TRANSPORT      8
+> +#define BIO_RW_FAILFAST_DRIVER         9
+> +
+> +#define BIO_RW_SYNC    (BIO_RW_SYNCIO | BIO_RW_UNPLUG)
+> 
+>  /*
+>   * upper 16 bits of bi_rw define the io priority of this bio
+> 
+> I haven't read the code in depth, but taking running numbers and doing
+> bitwise "or"
+> on them looks a bit strange to me.
+> So here BIO_RW_SYNC is (3 | 4) = 7, that is the same as BIO_RW_FAILFAST_DEV.
+> So for example bio_failfast_dev and bio_sync are the same.
+> 
+> Jens, could you comment on this please? Is this intentional?
 
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
----
+That's clearly a braino, you can't OR the shift values of course. I'll
+get it fixed up asap!
 
-diff -urNp linux-2.6.29-rc5-orig/fs/ext3/fsync.c linux-2.6.29-rc5/fs/ext3/fsync.c
---- linux-2.6.29-rc5-orig/fs/ext3/fsync.c	2008-12-25 08:26:37.000000000 +0900
-+++ linux-2.6.29-rc5/fs/ext3/fsync.c	2009-02-16 15:56:05.000000000 +0900
-@@ -45,6 +45,8 @@
- int ext3_sync_file(struct file * file, struct dentry *dentry, int datasync)
- {
- 	struct inode *inode = dentry->d_inode;
-+	journal_t *journal = EXT3_SB(inode->i_sb)->s_journal;
-+	unsigned long i_state = inode->i_state;
- 	int ret = 0;
- 
- 	J_ASSERT(ext3_journal_current_handle() == NULL);
-@@ -69,23 +71,30 @@ int ext3_sync_file(struct file * file, s
- 	 */
- 	if (ext3_should_journal_data(inode)) {
- 		ret = ext3_force_commit(inode->i_sb);
--		goto out;
-+		if (!(journal->j_flags & JFS_BARRIER))
-+			block_flush_device(inode->i_sb);
-+		return ret;
- 	}
- 
--	if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
--		goto out;
-+	if (datasync && !(i_state & I_DIRTY_DATASYNC)) {
-+		if (i_state & I_DIRTY_PAGES)
-+			block_flush_device(inode->i_sb);
-+		return ret;
-+	}
- 
- 	/*
- 	 * The VFS has written the file data.  If the inode is unaltered
- 	 * then we need not start a commit.
- 	 */
--	if (inode->i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
-+	if (i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
- 		struct writeback_control wbc = {
- 			.sync_mode = WB_SYNC_ALL,
- 			.nr_to_write = 0, /* sys_fsync did this */
- 		};
- 		ret = sync_inode(inode, &wbc);
-+		if (journal && !(journal->j_flags & JFS_BARRIER))
-+			block_flush_device(inode->i_sb);
- 	}
--out:
-+
- 	return ret;
- }
-
+-- 
+Jens Axboe
 
