@@ -1,63 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbZBPQrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755036AbZBPQuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756045AbZBPQrA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 11:47:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755475AbZBPQqt
+	id S1755036AbZBPQuZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 11:50:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZBPQuM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 11:46:49 -0500
-Received: from smtp-out002.kontent.com ([81.88.40.216]:39872 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752286AbZBPQqt (ORCPT
+	Mon, 16 Feb 2009 11:50:12 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:32910 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751377AbZBPQuL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 11:46:49 -0500
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [RFD] Automatic suspend
-Date: Mon, 16 Feb 2009 17:48:06 +0100
-User-Agent: KMail/1.9.10
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-References: <200902160010.16955.rjw@sisk.pl> <200902160806.17901.oliver@neukum.org> <20090216074048.6d70f17c@infradead.org>
-In-Reply-To: <20090216074048.6d70f17c@infradead.org>
+	Mon, 16 Feb 2009 11:50:11 -0500
+Date: Mon, 16 Feb 2009 16:50:08 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Thomas Renninger <trenn@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: cpuinfo shows wrong MHz value
+Message-ID: <20090216165008.GA8249@srcf.ucam.org>
+References: <200902142217.51655.jplatte@naasa.net> <200902150800.59694.jplatte@naasa.net> <200902150811.36826.jplatte@naasa.net> <200902151741.30303.elendil@planet.nl> <loom.20090216T141158-818@post.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902161748.09208.oliver@neukum.org>
+In-Reply-To: <loom.20090216T141158-818@post.gmane.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Monday 16 February 2009 16:40:48 schrieb Arjan van de Ven:
-> > Why shouldn't user space know the consequences of still requesting
-> > a service and be able to decide on that basis which services to
-> > request?
-> 
-> That's not what I said. Userspace should not be the part that goes "oh
-> this is a realtek not an intel nic, so ..."
-> That is the drivers job.
+On Mon, Feb 16, 2009 at 02:19:50PM +0000, Thomas Renninger wrote:
 
-True.
+> There should be a message when this driver is loaded like:
+> "This driver is broken. Don't use it, don't complain."
 
-> Userspace should just be the part that says "I'm interested in link
-> notifications". The driver then just goes to the lowest power state for
-> its device that still gives those notifications.
+Please don't. It's perfectly valid (if dumb) for machines to depend on 
+the CPU for passive cooling even if they don't expose any P or T states. 
+In that case p4-clockmod is the only code that can manage it. The 
+removal of the user-visible cpufreq interface should be a strong enough 
+hint that it's not intended for speed control.
 
-Should there be a channel through which drivers can tell user space
-what the consequences in terms of reaching a sleep state are if a service
-is requested?
-
-	Regards
-		Oliver
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
