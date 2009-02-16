@@ -1,176 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbZBPWBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752860AbZBPWGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753897AbZBPWBw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 17:01:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbZBPWBk
+	id S1752860AbZBPWGX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 17:06:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbZBPWGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 17:01:40 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48843 "EHLO mx2.redhat.com"
+	Mon, 16 Feb 2009 17:06:15 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:56835 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750909AbZBPWBj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 17:01:39 -0500
-Message-ID: <4999E229.3050507@redhat.com>
-Date: Mon, 16 Feb 2009 16:01:13 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1750740AbZBPWGO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 17:06:14 -0500
+Date: Mon, 16 Feb 2009 23:02:14 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
+Subject: Re: Q: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove
+	single ipi fallback for smp_call_function_many())
+Message-ID: <20090216220214.GA10093@redhat.com>
+References: <20090216163847.431174825@chello.nl> <20090216164114.433430761@chello.nl> <20090216204902.GA6924@redhat.com> <1234818201.30178.386.camel@laptop> <20090216213205.GA9098@redhat.com> <1234820704.30178.396.camel@laptop>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       t-sato@yk.jp.nec.com
-Subject: [PATCH V5] Allow SysRq emergency thaw to thaw frozen filesystems
-References: <496EB639.6090800@redhat.com>	<4970E087.8020308@redhat.com>	<4970E4FB.7040407@redhat.com>	<20090130134009.02d4a576.akpm@linux-foundation.org>	<498779D6.7010304@redhat.com> <20090203140135.fe8360f6.akpm@linux-foundation.org>
-In-Reply-To: <20090203140135.fe8360f6.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1234820704.30178.396.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that the filesystem freeze operation has been elevated
-to the VFS, and is just an ioctl away, some sort of safety net
-for unintentionally frozen root filesystems may be in order.
+On 02/16, Peter Zijlstra wrote:
+>
+> On Mon, 2009-02-16 at 22:32 +0100, Oleg Nesterov wrote:
+> > > I was about to write a response, but found it to be a justification for
+> > > the read_barrier_depends() at the end of the loop.
+> >
+> > I forgot to mention I don't understand the read_barrier_depends() at the
+> > end of the loop as well ;)
+>
+> Suppose cpu0 adds to csd to cpu1:
+>
+>
+>  cpu0:                 cpu1:
+>
+> add entry1
+> mb();
+> send ipi
+>                       run ipi handler
+>                       read_barrier_depends()
+>                       while (!list_empty())    [A]
+>                         do foo
+>
+> add entry2
+> mb();
+> [no ipi -- we still observe entry1]
+>
+>                         remove foo
+>                         read_barrier_depends()
+>                       while (!list_empty())      [B]
 
-The timeout thaw originally proposed did not get merged, but
-perhaps something like this would be useful in emergencies.
+Still can't understand.
 
-For example, freeze /path/to/mountpoint may freeze your
-root filesystem if you forgot that you had that unmounted.
+cpu1 (generic_smp_call_function_single_interrupt) does
+list_replace_init(q->lock), this lock is also taken by
+generic_exec_single().
 
-I chose 'j' as the last remaining character other than 'h'
-which is sort of reserved for help (because help is generated
-on any unknown character).
+Either cpu1 sees entry2 on list, or cpu0 sees list_empty()
+and sends ipi.
 
-I've tested this on a non-root fs with multiple (nested) freezers,
-as well as on a system rendered unresponsive due to a frozen
-root fs.
+> The read_barrier_depends() matches the mb() on the other cpu, without
+> which the 'new' entry might not be observed.
 
-(this version fixes a couple small issues raised by Randy Dunlap)
-(and adds sb_lock locking I forgot, as akpm pointed out)
-(and includes Randy's CONFIG_BLOCK fix)
-(and does proper locking, finally)
+And that mb() looks unneeded too. Again, because
+generic_smp_call_function_single_interrupt() takes call_single_queue.lock
+before it uses "data".
 
-Thanks,
--Eric
 
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
----
+Even if I missed something (very possible), then I can't understand
+why we need rmb() only on alpha.
 
-Index: linux-2.6.28.x86_64/drivers/char/sysrq.c
-===================================================================
---- linux-2.6.28.x86_64.orig/drivers/char/sysrq.c
-+++ linux-2.6.28.x86_64/drivers/char/sysrq.c
-@@ -348,6 +348,19 @@ static struct sysrq_key_op sysrq_moom_op
- 	.enable_mask	= SYSRQ_ENABLE_SIGNAL,
- };
- 
-+#ifdef CONFIG_BLOCK
-+static void sysrq_handle_thaw(int key, struct tty_struct *tty)
-+{
-+	emergency_thaw_all();
-+}
-+static struct sysrq_key_op sysrq_thaw_op = {
-+	.handler	= sysrq_handle_thaw,
-+	.help_msg	= "thaw-filesystems(J)",
-+	.action_msg	= "Emergency Thaw of all frozen filesystems",
-+	.enable_mask	= SYSRQ_ENABLE_SIGNAL,
-+};
-+#endif
-+
- static void sysrq_handle_kill(int key, struct tty_struct *tty)
- {
- 	send_sig_all(SIGKILL);
-@@ -398,9 +411,13 @@ static struct sysrq_key_op *sysrq_key_ta
- 	&sysrq_moom_op,			/* f */
- 	/* g: May be registered by ppc for kgdb */
- 	NULL,				/* g */
--	NULL,				/* h */
-+	NULL,				/* h - reserved for help */
- 	&sysrq_kill_op,			/* i */
-+#ifdef CONFIG_BLOCK
-+	&sysrq_thaw_op,			/* j */
-+#else
- 	NULL,				/* j */
-+#endif
- 	&sysrq_SAK_op,			/* k */
- #ifdef CONFIG_SMP
- 	&sysrq_showallcpus_op,		/* l */
-Index: linux-2.6.28.x86_64/fs/buffer.c
-===================================================================
---- linux-2.6.28.x86_64.orig/fs/buffer.c
-+++ linux-2.6.28.x86_64/fs/buffer.c
-@@ -258,6 +258,39 @@ struct super_block *freeze_bdev(struct b
- }
- EXPORT_SYMBOL(freeze_bdev);
- 
-+void do_thaw_all(unsigned long unused)
-+{
-+	struct super_block *sb;
-+	char b[BDEVNAME_SIZE];
-+
-+	spin_lock(&sb_lock);
-+restart:
-+	list_for_each_entry(sb, &super_blocks, s_list) {
-+		sb->s_count++;
-+		spin_unlock(&sb_lock);
-+		down_read(&sb->s_umount);
-+		while (sb->s_bdev && !thaw_bdev(sb->s_bdev, sb))
-+			printk(KERN_WARNING "Emergency Thaw on %s\n",
-+			       bdevname(sb->s_bdev, b));
-+		up_read(&sb->s_umount);
-+		spin_lock(&sb_lock);
-+		if (__put_super_and_need_restart(sb))
-+			goto restart;
-+	}
-+	spin_unlock(&sb_lock);
-+	printk(KERN_WARNING "Emergency Thaw complete\n");
-+}
-+
-+/**
-+ * emergency_thaw_all -- forcibly thaw every frozen filesystem
-+ *
-+ * Used for emergency unfreeze of all filesystems via SysRq
-+ */
-+void emergency_thaw_all(void)
-+{
-+	pdflush_operation(do_thaw_all, 0);
-+}
-+
- /**
-  * thaw_bdev  -- unlock filesystem
-  * @bdev:	blockdevice to unlock
-Index: linux-2.6.28.x86_64/include/linux/buffer_head.h
-===================================================================
---- linux-2.6.28.x86_64.orig/include/linux/buffer_head.h
-+++ linux-2.6.28.x86_64/include/linux/buffer_head.h
-@@ -171,6 +171,7 @@ void __wait_on_buffer(struct buffer_head
- wait_queue_head_t *bh_waitq_head(struct buffer_head *bh);
- int fsync_bdev(struct block_device *);
- struct super_block *freeze_bdev(struct block_device *);
-+void emergency_thaw_all(void);
- int thaw_bdev(struct block_device *, struct super_block *);
- int fsync_super(struct super_block *);
- int fsync_no_super(struct block_device *);
-Index: linux-2.6.28.x86_64/Documentation/sysrq.txt
-===================================================================
---- linux-2.6.28.x86_64.orig/Documentation/sysrq.txt
-+++ linux-2.6.28.x86_64/Documentation/sysrq.txt
-@@ -81,6 +81,8 @@ On all -  write a character to /proc/sys
- 
- 'i'     - Send a SIGKILL to all processes, except for init.
- 
-+'j'     - Forcibly "Just thaw it" - filesystems frozen by the FIFREEZE ioctl.
-+
- 'k'     - Secure Access Key (SAK) Kills all programs on the current virtual
-           console. NOTE: See important comments below in SAK section.
- 
-@@ -160,6 +162,9 @@ t'E'rm and k'I'll are useful if you have
- are unable to kill any other way, especially if it's spawning other
- processes.
- 
-+"'J'ust thaw it" is useful if your system becomes unresponsive due to a frozen
-+(probably root) filesystem via the FIFREEZE ioctl.
-+
- *  Sometimes SysRq seems to get 'stuck' after using it, what can I do?
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- That happens to me, also. I've found that tapping shift, alt, and control
+Oleg.
 
