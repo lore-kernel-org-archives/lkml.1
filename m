@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756252AbZBPJy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756394AbZBPJ6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756252AbZBPJy6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 04:54:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbZBPJyq
+	id S1756394AbZBPJ6A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 04:58:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbZBPJ5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 04:54:46 -0500
-Received: from mail-bw0-f167.google.com ([209.85.218.167]:40955 "EHLO
-	mail-bw0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752525AbZBPJyp (ORCPT
+	Mon, 16 Feb 2009 04:57:50 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:56854 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752755AbZBPJ5u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 04:54:45 -0500
-From: Hannes Eder <hannes@hanneseder.net>
-Subject: [PATCH] drivers/net/sfc: fix sparse warnings: Should it be static?
-To: netdev@vger.kernel.org
-Cc: Ben Hutchings <bhutchings@solarflare.com>, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Date: Mon, 16 Feb 2009 10:54:38 +0100
-Message-ID: <20090216095351.391.49056.stgit@vmbox.hanneseder.net>
-In-Reply-To: <154e089b0902160138n255616a0xb963dfd990d912b@mail.gmail.com>
-References: <154e089b0902160138n255616a0xb963dfd990d912b@mail.gmail.com>
-User-Agent: StGit/0.14.3.348.gcb02
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Mon, 16 Feb 2009 04:57:50 -0500
+Subject: Re: [patch] generic-ipi: remove kmalloc, cleanup
+From: Peter Zijlstra <peterz@infradead.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@tglx.de>, LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>
+In-Reply-To: <200902161746.55058.rusty@rustcorp.com.au>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
+	 <200902140746.45320.rusty@rustcorp.com.au>
+	 <1234568885.4831.14.camel@laptop>
+	 <200902161746.55058.rusty@rustcorp.com.au>
+Content-Type: text/plain
+Date: Mon, 16 Feb 2009 10:57:16 +0100
+Message-Id: <1234778236.4703.8.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.90 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Include the header file.  If CONFIG_SFC_MTD is not defined
-then the functions 'efx_mtd_remove' and 'efx_mtd_rename' are defined
-'static inline' with an empty function body in the header file, but
-the the whole file mtd.c is not built in this case.
+On Mon, 2009-02-16 at 17:46 +1030, Rusty Russell wrote:
+> On Saturday 14 February 2009 10:18:05 Peter Zijlstra wrote:
+> > On Sat, 2009-02-14 at 07:46 +1030, Rusty Russell wrote:
+> > > I'd be fascinated to see perf numbers once you kill the kmalloc.  Because
+> > > this patch will add num_possible_cpus * NR_CPUS/8 bytes to the kernel which
+> > > is something we're trying to avoid unless necessary.
+> > 
+> > You're free to make it a pointer and do node affine allocations from an
+> > init section of choice and add a hotplug handler.
+> > 
+> > But I'm not quite sure how perf is affected by size overhead on
+> > ridiculous configs.
+> 
+> No, I meant "can you actually measure the perf win of this patch?".  If you
+> did so, I missed it?
 
-Fix this sparse warnings:
-  drivers/net/sfc/mtd.c:204:6: warning: symbol 'efx_mtd_remove' was not declared. Should it be static?
-  drivers/net/sfc/mtd.c:221:6: warning: symbol 'efx_mtd_rename' was not declared. Should it be static?
-  drivers/net/sfc/mtd.c:230:5: warning: symbol 'efx_mtd_probe' was not declared. Should it be static?
+Over what, the always single-ipi case, or the kmalloc case?
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
----
- drivers/net/sfc/mtd.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+The thing is, we're removing that kmalloc because its somewhat of a wart
+on the whole thing.
 
-diff --git a/drivers/net/sfc/mtd.c b/drivers/net/sfc/mtd.c
-index 665cafb..820c233 100644
---- a/drivers/net/sfc/mtd.c
-+++ b/drivers/net/sfc/mtd.c
-@@ -15,6 +15,7 @@
- #define EFX_DRIVER_NAME "sfc_mtd"
- #include "net_driver.h"
- #include "spi.h"
-+#include "efx.h"
- 
- #define EFX_SPI_VERIFY_BUF_LEN 16
- 
+> But if this patch is worthwhile, the right way to do this is make it a
+> cpumask_var_t, and do the alloc_cpumask_var_node() in that init routine.
+
+Right, and installing a hotplug handler and ... *sigh*
 
