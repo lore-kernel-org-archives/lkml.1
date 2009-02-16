@@ -1,102 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbZBPPys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751980AbZBPQGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752814AbZBPPys (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 10:54:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbZBPPyi
+	id S1751980AbZBPQGZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 11:06:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbZBPQGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 10:54:38 -0500
-Received: from mx3.schottelius.org ([77.109.138.221]:51314 "EHLO
-	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751052AbZBPPyh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 10:54:37 -0500
-Date: Mon, 16 Feb 2009 16:54:34 +0100
-From: Nico Schottelius <nico-linux-20090213@schottelius.org>
-To: Len Brown <lenb@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Nico Schottelius <nico-linux-20090213@schottelius.org>,
-       LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg@redhat.com>,
+	Mon, 16 Feb 2009 11:06:16 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:54650 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750770AbZBPQGP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 11:06:15 -0500
+Date: Mon, 16 Feb 2009 08:06:13 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Damien Wyart <damien.wyart@free.fr>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
        "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org
-Subject: Re: X200: Brightness broken since 2.6.29-rc4-58-g4c098bc
-Message-ID: <20090216155434.GA5503@denkbrett.schottelius.org>
-Mail-Followup-To: Nico Schottelius <nico-linux-20090213@schottelius.org>,
-	Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Matthew Garrett <mjg@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-acpi@vger.kernel.org
-References: <20090213093354.GA10175@denkbrett.schottelius.org> <20090213094200.GC17774@elte.hu> <alpine.LFD.2.00.0902131302240.3671@localhost.localdomain>
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #12650] Strange load average and ksoftirqd behavior with
+	2.6.29-rc2-git1
+Message-ID: <20090216160613.GA6785@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090215103445.GA2335@localhost.localdomain> <20090215110104.GB31351@elte.hu> <20090215180355.GA2273@localhost.localdomain> <20090215193102.GA16873@elte.hu> <20090216084223.GA2641@localhost.localdomain> <20090216095059.GL6182@elte.hu> <87hc2u61e9.fsf@free.fr> <20090216122632.GA3158@elte.hu> <87ljs6pmao.fsf@free.fr> <20090216132151.GA17996@elte.hu>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="+HP7ph2BbKc20aGI"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0902131302240.3671@localhost.localdomain>
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: ikn (Linux 2.6.29-rc3-ikn-00432-g9b8d5a1 x86_64)
+In-Reply-To: <20090216132151.GA17996@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Feb 16, 2009 at 02:21:51PM +0100, Ingo Molnar wrote:
+> 
+> * Damien Wyart <damien.wyart@free.fr> wrote:
+> 
+> > * Ingo Molnar <mingo@elte.hu> [090216 13:26]:
+> > > We do get 0x100 which is 1 << RCU_SOFTIRQ, i.e. the RCU softirq. Paul, 
+> > > this indeed seems to be a CONFIG_TREE_RCU=y bug.
+> > 
+> > > What is weird is that RCU_SOFTIRQ gets set again and again - but there's 
+> > > no raise_softirq() calls. Could you please do a two-CPU trace too via:
+> > 
+> > >    echo 3 > /debug/tracing/tracing_cpumask
+> > 
+> > > So that we can see what's happening on the other CPU?
+> > 
+> > > Also, could you please apply the debug patch below (or update to the 
+> > > very latest -tip tree), so that we get trace entries of softirq triggers 
+> > > too?
+> > 
+> > Ok, the new trace with these additional modifications is here:
+> > http://damien.wyart.free.fr/ksoftirqd_pb/trace_tip_2009.02.16_1300_ksoftirqd_pb_abstime_proc_mask3.txt.gz
+> 
+> thanks.
+> 
+> This confirms that SOFTIRQ_RCU gets raised here in the timer IRQ:
+> 
+>   136.255963 |   0)   sleep-2345   |               |          update_process_times() {
+>   136.255964 |   0)   sleep-2345   |               |            account_process_tick() {
+>   136.255965 |   0)   sleep-2345   |   0.779 us    |              account_system_time();
+>   136.255966 |   0)   sleep-2345   |   2.262 us    |            }
+>   136.255967 |   0)   sleep-2345   |               |            run_local_timers() {
+>   136.255968 |   0)   sleep-2345   |   0.802 us    |              hrtimer_run_queues();
+>   136.255969 |   0)   sleep-2345   |               |              raise_softirq() {
+>   136.255970 |   0)   sleep-2345   |               |                raise_softirq_irqoff() {
+>   136.255971 |   0)   sleep-2345   |               |                  __raise_softirq_irqoff() {
+>   136.255972 |   0)   sleep-2345   |               |                    /* nr: 1 */
+>   136.255973 |   0)   sleep-2345   |   2.194 us    |                  }
+>   136.255974 |   0)   sleep-2345   |   3.832 us    |                }
+>   136.255975 |   0)   sleep-2345   |   5.491 us    |              }
+>   136.255976 |   0)   sleep-2345   |   8.667 us    |            }
+>   136.255976 |   0)   sleep-2345   |   0.792 us    |            rcu_pending();
+>   136.255978 |   0)   sleep-2345   |               |            rcu_check_callbacks() {
+>   136.255979 |   0)   sleep-2345   |   0.781 us    |              idle_cpu();
+>   136.255981 |   0)   sleep-2345   |               |              raise_softirq() {
+>   136.255981 |   0)   sleep-2345   |               |                raise_softirq_irqoff() {
+>   136.255982 |   0)   sleep-2345   |               |                  __raise_softirq_irqoff() {
+>   136.255983 |   0)   sleep-2345   |               |                    /* nr: 8 */
+>   136.255984 |   0)   sleep-2345   |   1.555 us    |                  }
+>   136.255984 |   0)   sleep-2345   |   3.059 us    |                }
+>   136.255985 |   0)   sleep-2345   |   4.594 us    |              }
+>   136.255986 |   0)   sleep-2345   |   7.800 us    |            }
+>   136.255987 |   0)   sleep-2345   |   0.737 us    |            printk_tick();
+> 
+> again and again.
 
---+HP7ph2BbKc20aGI
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Interesting...
 
-Len Brown [Fri, Feb 13, 2009 at 01:05:28PM -0500]:
-> Nico,
-> there are not a lot of changes between rc4 and the breakage,
-> (and none of them jump out at me) can you git-bisect?
+I will take a look!
 
-The result of git-bisecting and some reboots:
-
-ikn% git bisect start 4c098bc d5b5623
-[compile....reboot...]
-[16:50] ikn:linux-2.6% git describe=20
-v2.6.29-rc3-432-g9b8d5a1
-[16:50] ikn:linux-2.6% git bisect good
-e806b4957412bf472d826bd8cc571da041248799 is first bad commit
-commit e806b4957412bf472d826bd8cc571da041248799
-Author: Eric Anholt <eric@anholt.net>
-Date:   Thu Jan 22 09:56:58 2009 -0800
-
-    drm/i915: Suppress GEM teardown on X Server exit in KMS mode.
-   =20
-    Fixes hangs when starting X for the second time.
-   =20
-    Signed-off-by: Eric Anholt <eric@anholt.net>
-    Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-:040000 040000 5405babd9cab9d53791a0b58b5ad7f823f76ec9c 70f9a79c6b3072ea077=
-7d6ab307330da37af076c M
-        drivers
-
-I saved almost all dmesg outputs, if you need some ;-)
-
-Sincerly,
-
-Nico
-
---=20
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---+HP7ph2BbKc20aGI
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmZjDoACgkQuL75KpiFGIwFewCg0Sp+PqzXnzeFHiZCLLFnVhuQ
-TWcAn2hrokbUYTT236fArL/l9OQUWv1v
-=q+rY
------END PGP SIGNATURE-----
-
---+HP7ph2BbKc20aGI--
+							Thanx, Paul
