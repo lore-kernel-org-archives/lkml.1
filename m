@@ -1,158 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbZBPQXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbZBPQY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754479AbZBPQXj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 11:23:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbZBPQX2
+	id S1754081AbZBPQY4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 11:24:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbZBPQYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 11:23:28 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:10134 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751658AbZBPQX0 (ORCPT
+	Mon, 16 Feb 2009 11:24:46 -0500
+Received: from ti-out-0910.google.com ([209.85.142.186]:15942 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750956AbZBPQY1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 11:23:26 -0500
-Message-ID: <499992F3.10606@panasas.com>
-Date: Mon, 16 Feb 2009 18:23:15 +0200
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 3.0a1 (X11/2008050714)
+	Mon, 16 Feb 2009 11:24:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=fcDPYWAoOZGFWVmKV3iAIodDAuqfZWKUJ7LaF4J0T8kHmU9sHFVVwAzD0w81ny7WBC
+         kb+/TWR3LAwYngEuR3DWezKdnAfew4gHCjwzLP23vcLCYk6FiUIq5gZxNYKsRTuS6N3t
+         WdPBMFAM787HiLVsSMEmoDV2lSmzjERT7x9vs=
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Boaz Harrosh <bharrosh@panasas.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, avishay@gmail.com,
-       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       osd-dev@open-osd.org, linux-kernel@vger.kernel.org,
-       James.Bottomley@HansenPartnership.com, jens.axboe@oracle.com,
-       linux-scsi@vger.kernel.org
-Subject: Re: pNFS rant (was Re: [PATCH 1/8] exofs: Kbuild, Headers and osd
- utils)
-References: <1234185129-31858-1-git-send-email-bharrosh@panasas.com>	<20090216131806X.fujita.tomonori@lab.ntt.co.jp>	<499928A3.60507@panasas.com> <20090216180028C.fujita.tomonori@lab.ntt.co.jp> <49992F99.1060404@panasas.com> <49993182.3010707@garzik.org> <49993DAD.40407@panasas.com> <49994860.9060109@garzik.org>
-In-Reply-To: <49994860.9060109@garzik.org>
-Content-Type: text/plain; charset=UTF-8
+Date: Mon, 16 Feb 2009 21:54:25 +0530
+Message-ID: <ea11fea30902160824l22b10dcblc89c718015e156c8@mail.gmail.com>
+Subject: [PATCH] Replace deprecated __initcall with device_initcall and fix 
+	whitespaces in kernel/kallsyms.c
+From: Manish Katiyar <mkatiyar@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       kernel-janitors@vger.kernel.org
+Cc: mkatiyar@gmail.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Feb 2009 16:23:21.0763 (UTC) FILETIME=[E2724F30:01C99052]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb. 16, 2009, 13:05 +0200, Jeff Garzik <jeff@garzik.org> wrote:
-> Boaz Harrosh wrote:
->> No can do. exofs is meant to be a reference implementation of a pNFS-objects
->> file serving system. Have you read the spec of pNFS-objects layout? they define
->> RAID 0, 1, 5, and 6. In pNFS the MDS is suppose to be able to write the data
->> for its clients as NFS, so it needs to have all the infra structure and knowledge
->> of an Client pNFS-object layout drive.
-> 
-> Yes, I have studied pNFS!  I plan to add v4.1 and pNFS support to my NFS 
-> server, once v4.0 support is working well.
-> 
-> 
-> pNFS The Theory:   is wise and necessary:  permit clients to directly 
-> connect to data storage, rather than copying through the metadata 
-> server(s).  This is what every distributed filesystem is doing these 
-> days -- direct to data server for bulk data read/write.
-> 
-> pNFS The Specification:   is an utter piece of shit.  I can only presume 
-> some shady backroom deal in a smoke-filled room was the reason this saw 
-> the light of day.
-> 
-> 
-> In a sane world, NFS clients would speak... NFS.
-> 
-> In the crazy world of pNFS, NFS clients are now forced to speak NFS, 
-> SCSI, RAID, and any number of proprietary layout types.  When will HTTP 
-> be added to the list?  :)
-> 
-> But anything beyond the NFS protocol for talking client <-> data servers 
-> is code bloat complexity madness for an NFS client that wishes to be 
-> compatible with "most of the NFS 4.1 world".
-> 
-> An ideal NFS client for pNFS should be asked to do these two things, and 
-> nothing more:
-> 
-> 1) send metadata transactions to one or more metadata servers, using 
-> well-known NFS protocol
-> 
-> 2) send data to one or more data servers, using well-known NFS protocol 
-> subset designed for storage (v4.1, section 13.6)
-> 
-> But no.
-> 
-> pNFS has forced a huge complexity on the NFS client, by permitting an 
-> unbounded number of network protocols.  A "layout plugin" layer is 
-> required.  SCSI and OSD support are REQUIRED for any reasonably 
-> compatible setup going forward.
-> 
-> But even more than the technical complexity, this is the first time in 
-> NFS history that NFS has required a protocol besides... NFS.
-> 
-> pNFS means that a useful. compatible NFS client must know all these 
-> storage protocols, in addition to NFS.
-> 
-> Furthermore, enabling proprietary layout types means that it is easy for 
-> a "compatible" v4.1 client to be denied parallel access to data 
-> available to other "compatible" v4.1 clients:
-> 
-> 	Client A: Linux, fully open source
-> 
-> 	Client B: Linux, with closed source module for
-> 		  layout type SuperWhizBang storage
-> 
-> 	Both Client A and Client B can claim to be NFS v4.1 and pNFS
-> 	compatible,
-> 	yet Client A must read data through the metadata
-> 	server because it lacks the SuperWhizBang storage plugin.
+Patch to fix coding style whitespace issues and replace __initcall
+with device_initcall
 
-At least, for SuperWhizBang to comply with NFSv4.1 requirements it
-needs to follow the IETF process as an open protocol and address
-important semantic details (as listed by nfsv4.1) on-top of the
-wire data structures like security considerations and client fencing.
+Errors as reported by checkpatch.pl :-
+Before:
+total: 14 errors, 14 warnings, 487 lines checked
+After :
+total: 0 errors, 11 warnings, 486 lines checked
 
-Being open source or not is somewhat orthogonal to that since
-from the protocol specification one should be able to implement
-a fully comply client and/or server.
+Compile tested binary verified as :-
+Before:
+  text    data     bss     dec     hex filename
+   2405       4       0    2409     969 kernel/kallsyms.o
+After :
+  text	   data	    bss	    dec	    hex	filename
+   2405	      4	      0	   2409	    969	kernel/kallsyms.o
 
-> 
-> pNFS means a never-ending arms race for the best storage layout, where 
-> NFS clients are inevitably compatibly with a __random subset__ of total 
-> available layout types.  pNFS will be a continuing train wreck of 
-> fly-by-night storage companies, and their pet layout types & storage 
-> protocols.
-> 
-> It is a support nightmare, an admin nightmare, a firewall nightmare, a 
-> client implementor's nightmare, but a storage vendor's wet dream.
 
-What you're basically saying is similar to rejecting the filesystem export
-kABI since this will cause a never-ending arms race for the best file
-system.  (a.k.a. "640KB of RAM and FAT file system is likely anything
-that a sane user will ever need"... ;-)
+Signed-off-by: Manish Katiyar <mkatiyar@gmail.com>
+---
+ kernel/kallsyms.c |   29 ++++++++++++++---------------
+ 1 files changed, 14 insertions(+), 15 deletions(-)
 
-I believe that competition is good.  Good for customers, for which the pNFS
-protocol was designed for, and good for vendors as well.  The extra complexity
-is there since one-size does not fit all.  Different storage technologies
-fit certain applications better than others and exposing storage for
-direct client access can convey these strengths all the way up to the host
-running the application.
+diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
+index 7b8b0f2..0e4eae6 100644
+--- a/kernel/kallsyms.c
++++ b/kernel/kallsyms.c
+@@ -93,13 +93,13 @@ static unsigned int
+kallsyms_expand_symbol(unsigned int off, char *result)
 
-Besides, the pNFS specification was also driven by customers that use
-proprietary clustered filesystems today, that use block or object-based
-storage.  These customers want pNFS to be a standard to steam up
-competition for several reasons, like:
-- encourage open source implementations
-- second source availability
-- building best-of-breed systems by integrating
-  parts from different vendors
-- reuse of existing storage and networking infrastructure
+ 	/* for every byte on the compressed symbol data, copy the table
+ 	   entry for that byte */
+-	while(len) {
+-		tptr = &kallsyms_token_table[ kallsyms_token_index[*data] ];
++	while (len) {
++		tptr = &kallsyms_token_table[kallsyms_token_index[*data]];
+ 		data++;
+ 		len--;
 
-Benny
+ 		while (*tptr) {
+-			if(skipped_first) {
++			if (skipped_first) {
+ 				*result = *tptr;
+ 				result++;
+ 			} else
+@@ -120,7 +120,7 @@ static char kallsyms_get_symbol_type(unsigned int off)
+ {
+ 	/* get just the first code, look it up in the token table, and return the
+ 	 * first char from this token */
+-	return kallsyms_token_table[ kallsyms_token_index[ kallsyms_names[off+1] ] ];
++	return kallsyms_token_table[kallsyms_token_index[kallsyms_names[off + 1]]];
+ }
 
-> 
-> NFS was never beautiful, but at least until v4.0 it was well known and 
-> widely cross-compatible.  And only required one network protocol: NFS.
-> 
-> 	Jeff
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+@@ -133,13 +133,13 @@ static unsigned int get_symbol_offset(unsigned long pos)
+
+ 	/* use the closest marker we have. We have markers every 256 positions,
+ 	 * so that should be close enough */
+-	name = &kallsyms_names[ kallsyms_markers[pos>>8] ];
++	name = &kallsyms_names[kallsyms_markers[pos >> 8]];
+
+ 	/* sequentially scan all the symbols up to the point we're searching for.
+ 	 * Every symbol is stored in a [<len>][<len> bytes of data] format, so we
+ 	 * just need to add the len to the current pointer for every symbol we
+ 	 * wish to skip */
+-	for(i = 0; i < (pos&0xFF); i++)
++	for (i = 0; i < (pos&0xFF); i++)
+ 		name = name + (*name) + 1;
+
+ 	return name - kallsyms_names;
+@@ -323,6 +323,7 @@ int sprint_symbol(char *buffer, unsigned long address)
+
+ 	return len;
+ }
++EXPORT_SYMBOL_GPL(sprint_symbol);
+
+ /* Look up a kernel symbol and print it to the kernel messages. */
+ void __print_symbol(const char *fmt, unsigned long address)
+@@ -333,10 +334,10 @@ void __print_symbol(const char *fmt, unsigned
+long address)
+
+ 	printk(fmt, buffer);
+ }
++EXPORT_SYMBOL(__print_symbol);
+
+ /* To avoid using get_symbol_offset for every symbol, we carry prefix along. */
+-struct kallsym_iter
+-{
++struct kallsym_iter {
+ 	loff_t pos;
+ 	unsigned long value;
+ 	unsigned int nameoff; /* If iterating in core kernel symbols */
+@@ -385,7 +386,7 @@ static int update_iter(struct kallsym_iter *iter,
+loff_t pos)
+ 		iter->pos = pos;
+ 		return get_ksymbol_mod(iter);
+ 	}
+-	
++
+ 	/* If we're not on the desired position, reset to new position. */
+ 	if (pos != iter->pos)
+ 		reset_iter(iter, pos);
+@@ -420,7 +421,7 @@ static int s_show(struct seq_file *m, void *p)
+ {
+ 	struct kallsym_iter *iter = m->private;
+
+-	/* Some debugging symbols have no name.  Ignore them. */
++	/* Some debugging symbols have no name.  Ignore them. */
+ 	if (!iter->name[0])
+ 		return 0;
+
+@@ -432,11 +433,11 @@ static int s_show(struct seq_file *m, void *p)
+ 		type = iter->exported ? toupper(iter->type) :
+ 					tolower(iter->type);
+ 		seq_printf(m, "%0*lx %c %s\t[%s]\n",
+-			   (int)(2*sizeof(void*)),
++			   (int)(2*sizeof(void *)),
+ 			   iter->value, type, iter->name, iter->module_name);
+ 	} else
+ 		seq_printf(m, "%0*lx %c %s\n",
+-			   (int)(2*sizeof(void*)),
++			   (int)(2*sizeof(void *)),
+ 			   iter->value, iter->type, iter->name);
+ 	return 0;
+ }
+@@ -481,7 +482,5 @@ static int __init kallsyms_init(void)
+ 	proc_create("kallsyms", 0444, NULL, &kallsyms_operations);
+ 	return 0;
+ }
+-__initcall(kallsyms_init);
++device_initcall(kallsyms_init);
+
+-EXPORT_SYMBOL(__print_symbol);
+-EXPORT_SYMBOL_GPL(sprint_symbol);
+-- 
+1.5.4.3
+
+
+Thanks -
+Manish
