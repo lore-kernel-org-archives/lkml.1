@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756233AbZBPJZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbZBPJ1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756233AbZBPJZh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 04:25:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754343AbZBPJZL
+	id S1755994AbZBPJ1f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 04:27:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbZBPJ10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 04:25:11 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46028 "EHLO mx3.mail.elte.hu"
+	Mon, 16 Feb 2009 04:27:26 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57699 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754087AbZBPJZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 04:25:09 -0500
-Date: Mon, 16 Feb 2009 10:25:03 +0100
+	id S1752340AbZBPJ1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 04:27:25 -0500
+Date: Mon, 16 Feb 2009 10:27:12 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Damien Wyart <damien.wyart@free.fr>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
@@ -19,7 +19,7 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
        Kernel Testers List <kernel-testers@vger.kernel.org>
 Subject: Re: [Bug #12650] Strange load average and ksoftirqd behavior with
 	2.6.29-rc2-git1
-Message-ID: <20090216092503.GI6182@elte.hu>
+Message-ID: <20090216092712.GJ6182@elte.hu>
 References: <rjPbZ5GRJPO.A.1kE.ur0lJB@chimera> <20090215080941.GA2295@localhost.localdomain> <20090215090026.GA31147@elte.hu> <20090215095128.GA3234@localhost.localdomain> <20090215101351.GA23274@elte.hu> <20090215103445.GA2335@localhost.localdomain> <20090215110104.GB31351@elte.hu> <20090215180355.GA2273@localhost.localdomain> <20090215193102.GA16873@elte.hu> <20090216084223.GA2641@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -39,68 +39,108 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Damien Wyart <damien.wyart@free.fr> wrote:
+scheduler clock deltas look healthy at first sight:
 
-> > Also, could you send the output of:
-> 
-> >   http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
-> 
-> > Run it while you can see the ksoftirqd anomaly.
-> 
-> In fact I see it all the time when the machine is idle. When something 
-> runs (spamd for example), the running time of ksoftirqd stops 
-> increasing, and it goes back to increasing like crazy when idle state 
-> comes back.
+$ grep clock-delta cfs-debug-info-2009.02.16-08.09.17
 
-here's the ksoftirqd stats from your data:
-
-top - 08:09:20 up 2 min,  1 user,  load average: 0.95, 0.35, 0.13
-Tasks: 100 total,   1 running,  99 sleeping,   0 stopped,   0 zombie
-Cpu(s):  0.4%us,  1.3%sy,  0.0%ni, 89.2%id,  0.0%wa,  0.0%hi,  9.0%si,  0.0%st
-Mem:   2074980k total,   236544k used,  1838436k free,     5032k buffers
-Swap:  1212896k total,        0k used,  1212896k free,    66016k cached
-
-  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND            
- 2280 root      15  -5     0    0    0 S   22  0.0   0:06.39 [ksoftirqd/1]      
- 2452 root      20   0  2400 1132  888 R    1  0.1   0:00.02 top -H -c -b -d 1 -
-    1 root      20   0  2100  688  588 S    0  0.0   0:00.48 init [2]           
-    2 root      15  -5     0    0    0 S    0  0.0   0:00.00 [kthreadd]         
-
-ksoftirqd really seems to be active (according to scheduler stats), and 
-has gathered more than 6 seconds of runtime after 2 minutes of uptime - 
-that is clearly anomalous.
-
-The main method how softirqs get generated are hardirqs, but the hardirq 
-is low on your box (as expected):
-
--- interrupts: --
-           CPU0       CPU1       
-  0:        155          0   IO-APIC-edge      timer
-  1:          2          0   IO-APIC-edge      i8042
-  7:          0          0   IO-APIC-edge      parport0
-  8:          2          0   IO-APIC-edge      rtc
-  9:          0          0   IO-APIC-fasteoi   acpi
- 12:          4          0   IO-APIC-edge      i8042
- 14:          0          0   IO-APIC-edge      ata_piix
- 15:        132          0   IO-APIC-edge      ata_piix
- 16:        213          0   IO-APIC-fasteoi   uhci_hcd:usb2, uhci_hcd:usb5
- 18:       6908          0   IO-APIC-fasteoi   ata_piix, uhci_hcd:usb4
- 19:        221          0   IO-APIC-fasteoi   uhci_hcd:usb3
- 20:       1072          0   IO-APIC-fasteoi   eth0
- 21:          0          0   IO-APIC-fasteoi   EMU10K1
- 23:          4          0   IO-APIC-fasteoi   ehci_hcd:usb1
-NMI:          0          0   Non-maskable interrupts
-LOC:      79306      74184   Local timer interrupts
-CNT:          0          0   Performance counter interrupts
-RES:      32672      13541   Rescheduling interrupts
-CAL:          8         40   Function call interrupts
-TLB:        235        591   TLB shootdowns
-TRM:          0          0   Thermal event interrupts
-SPU:          0          0   Spurious interrupts
-ERR:          0
-MIS:          0
-
-about 200K irqs - most of which are lapic timer irqs. Thus 6 seconds of 
-ksoftirqd runtime is way too much.
+clock-delta                        :                  285
+clock-delta                        :                  313
+clock-delta                        :                  286
+clock-delta                        :                  311
+clock-delta                        :                  348
+clock-delta                        :                  301
+clock-delta                        :                  386
+clock-delta                        :                  318
+clock-delta                        :                  275
+clock-delta                        :                  283
+clock-delta                        :                  343
+clock-delta                        :                  341
+clock-delta                        :                  318
+clock-delta                        :                  295
+clock-delta                        :                  330
+clock-delta                        :                  311
+clock-delta                        :                  286
+clock-delta                        :                  333
+clock-delta                        :                  309
+clock-delta                        :                  369
+clock-delta                        :                 1102
+clock-delta                        :                  323
+clock-delta                        :                  283
+clock-delta                        :                  333
+clock-delta                        :                  316
+clock-delta                        :                  300
+clock-delta                        :                  278
+clock-delta                        :                  286
+clock-delta                        :                  364
+clock-delta                        :                  298
+clock-delta                        :                  326
+clock-delta                        :                  353
+clock-delta                        :                  323
+clock-delta                        :                  286
+clock-delta                        :                  286
+clock-delta                        :                  256
+clock-delta                        :                  343
+clock-delta                        :                  305
+clock-delta                        :                  363
+clock-delta                        :                  283
+clock-delta                        :                  280
+clock-delta                        :                  301
+clock-delta                        :                  283
+clock-delta                        :                  308
+clock-delta                        :                  316
+clock-delta                        :                  315
+clock-delta                        :                  318
+clock-delta                        :                  311
+clock-delta                        :                  298
+clock-delta                        :                  343
+clock-delta                        :                  276
+clock-delta                        :                  324
+clock-delta                        :                  285
+clock-delta                        :                  268
+clock-delta                        :                  281
+clock-delta                        :                  280
+clock-delta                        :                  338
+clock-delta                        :                 1060
+clock-delta                        :                  315
+clock-delta                        :                  315
+clock-delta                        :                  298
+clock-delta                        :                  308
+clock-delta                        :                  281
+clock-delta                        :                  323
+clock-delta                        :                  321
+clock-delta                        :                  389
+clock-delta                        :                  288
+clock-delta                        :                  355
+clock-delta                        :                  295
+clock-delta                        :                  284
+clock-delta                        :                 1037
+clock-delta                        :                  298
+clock-delta                        :                  348
+clock-delta                        :                  328
+clock-delta                        :                  305
+clock-delta                        :                  358
+clock-delta                        :                  340
+clock-delta                        :                  406
+clock-delta                        :                  323
+clock-delta                        :                  306
+clock-delta                        :                  295
+clock-delta                        :                  294
+clock-delta                        :                  288
+clock-delta                        :                  363
+clock-delta                        :                  296
+clock-delta                        :                  321
+clock-delta                        :                  278
+clock-delta                        :                  338
+clock-delta                        :                  291
+clock-delta                        :                  318
+clock-delta                        :                  331
+clock-delta                        :                  305
+clock-delta                        :                  353
+clock-delta                        :                  319
+clock-delta                        :                  338
+clock-delta                        :                  286
+clock-delta                        :                  309
+clock-delta                        :                  298
+clock-delta                        :                  316
 
 	Ingo
