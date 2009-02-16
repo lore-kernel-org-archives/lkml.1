@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492AbZBQD0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754169AbZBQD3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754492AbZBQD0q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 22:26:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751031AbZBQD0g
+	id S1754169AbZBQD3k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 22:29:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbZBQD3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 22:26:36 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:1899 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750960AbZBQD0g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 22:26:36 -0500
-Date: Mon, 16 Feb 2009 22:26:35 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Arjan van de Ven <arjan@infradead.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arve =?UTF-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFD] Automatic suspend
-In-Reply-To: <20090216185758.1a4d041d@infradead.org>
-Message-ID: <Pine.LNX.4.44L0.0902162220420.24097-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 16 Feb 2009 22:29:20 -0500
+Received: from mga03.intel.com ([143.182.124.21]:14318 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750859AbZBQD3T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 22:29:19 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,220,1233561600"; 
+   d="scan'208";a="111302107"
+From: Yu Zhao <yu.zhao@intel.com>
+To: jbarnes@virtuousgeek.org
+Cc: linux-pci@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Yu Zhao <yu.zhao@intel.com>
+Subject: [PATCH v9 0/7] PCI: Linux kernel SR-IOV support
+Date: Mon, 16 Feb 2009 21:28:33 +0800
+Message-Id: <1234790920-1810-1-git-send-email-yu.zhao@intel.com>
+X-Mailer: git-send-email 1.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Feb 2009, Arjan van de Ven wrote:
+Greetings,
 
-> > > shouldn't idle timeout etc be internal to the driver?
-> > > Yes policy preferences / constraints makes sense to communicate,
-> > > actual settings do not. For one they keep changing fast all the time
-> > > anyway.
-> > 
-> > Sorry, I don't agree.  A single driver may control many different
-> > kinds of device -- it may not even be aware of the distinction!
-> > Consider the SCSI disk driver: It has to handle both traditional
-> > rotating media and solid-state disks.  Clearly they should have
-> > different runtime PM parameters.  But the driver isn't in a good
-> > position to know what those parameters should be.
-> 
-> ... and userspace is ?
+Following patches are intended to support SR-IOV capability in the
+Linux kernel. With these patches, people can turn a PCI device with
+the capability into multiple ones from software perspective, which
+will benefit KVM and achieve other purposes such as QoS, security,
+and etc.
 
-Certainly it is.  Programs like hal can maintain databases of device 
-IDs and appropriate timeout values, and allow the user to change the 
-values as needed.  Such databases don't belong in the kernel.
+SR-IOV specification can be found at:
+http://www.pcisig.com/members/downloads/specifications/iov/sr-iov1.0_11Sep07.pdf
+(it requires membership.)
 
-Furthermore, the user may have a better idea of the kind of workload he
-wants to impose and his latency requirements than the kernel does.
+Devices that support SR-IOV are available from following vendors:
+http://download.intel.com/design/network/ProdBrf/320025.pdf
+http://www.myri.com/vlsi/Lanai_Z8ES_Datasheet.pdf
+http://www.neterion.com/products/pdfs/X3100ProductBrief.pdf
 
-> Sorry I don't buy that. Kernel is supposed to abstract the hardware...
-> That's its fundamental task. Now if the driver doesn't know it can get
-> help from the subsystem, that's perfectly fine.
+Physical Function driver for Intel 82576 NIC (based on drivers/net/igb/)
+will come soon.
 
-There are various levels of abstraction.  If the kernel really 
-abstracted _everything_ then we wouldn't need ioctl.  :-)
+Major changes from v8 to v9:
+  1, put a might_sleep() into SR-IOV API which sleeps (Andi Kleen)
+  2, block user config accesses before clearing VF Enable bit (Matthew Wilcox)
 
-> (and quiet often the kernel gets updated more often as the userspace)
+Yu Zhao (7):
+  PCI: initialize and release SR-IOV capability
+  PCI: restore saved SR-IOV state
+  PCI: reserve bus range for SR-IOV device
+  PCI: add SR-IOV API for Physical Function driver
+  PCI: handle SR-IOV Virtual Function Migration
+  PCI: document SR-IOV sysfs entries
+  PCI: manual for SR-IOV user and driver developer
 
-(That's hardly a valid argument for putting something into the kernel
-when it belongs in userspace.)
-
-Alan Stern
+ Documentation/ABI/testing/sysfs-bus-pci |   27 ++
+ Documentation/DocBook/kernel-api.tmpl   |    1 +
+ Documentation/PCI/pci-iov-howto.txt     |   99 +++++
+ drivers/pci/Kconfig                     |   13 +
+ drivers/pci/Makefile                    |    3 +
+ drivers/pci/iov.c                       |  707 +++++++++++++++++++++++++++++++
+ drivers/pci/pci.c                       |    8 +
+ drivers/pci/pci.h                       |   53 +++
+ drivers/pci/probe.c                     |    7 +
+ include/linux/pci.h                     |   28 ++
+ include/linux/pci_regs.h                |   33 ++
+ 11 files changed, 979 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/PCI/pci-iov-howto.txt
+ create mode 100644 drivers/pci/iov.c
 
