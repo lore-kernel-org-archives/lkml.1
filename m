@@ -1,806 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752950AbZBPOvE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753274AbZBPOxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752950AbZBPOvE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 09:51:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750838AbZBPOux
+	id S1753274AbZBPOxa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 09:53:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751041AbZBPOxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 09:50:53 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:58083 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750793AbZBPOuv (ORCPT
+	Mon, 16 Feb 2009 09:53:20 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:30149 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751034AbZBPOxU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 09:50:51 -0500
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: linux-kernel@vger.kernel.org
-Cc: Felipe Balbi <felipe.balbi@nokia.com>, Richard Purdie <rpurdie@rpsys.net>
-Subject: [PATCH] leds: introduce lp5521 led driver
-Date: Mon, 16 Feb 2009 16:35:51 +0200
-Message-Id: <1234794951-17171-1-git-send-email-felipe.balbi@nokia.com>
-X-Mailer: git-send-email 1.6.1.265.g9a013
-X-OriginalArrivalTime: 16 Feb 2009 14:50:37.0496 (UTC) FILETIME=[EDE28B80:01C99045]
-X-Nokia-AV: Clean
+	Mon, 16 Feb 2009 09:53:20 -0500
+Date: Mon, 16 Feb 2009 17:53:17 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [PATCH 1/3] Makefile: Include arch Makefiles as late as
+	possible
+Message-ID: <20090216145317.GA3616@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20090204150755.GA24163@oksana.dev.rtsoft.ru> <20090204150835.GA30027@oksana.dev.rtsoft.ru> <20090204212612.GN22608@elte.hu> <20090214195702.GB1241@uranus.ravnborg.org> <20090216142001.GA27869@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <20090216142001.GA27869@oksana.dev.rtsoft.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-LP5521 is a three channel led driver with support
-for hardware accelerated patterns (currently used
-via lp5521-only sysfs interface).
+On Mon, Feb 16, 2009 at 05:20:01PM +0300, Anton Vorontsov wrote:
+> On Sat, Feb 14, 2009 at 08:57:02PM +0100, Sam Ravnborg wrote:
+> [...]
+> > > > --- a/Makefile
+> > > > +++ b/Makefile
+> > > > @@ -525,8 +525,6 @@ else
+> > > >  KBUILD_CFLAGS	+= -O2
+> > > >  endif
+> > > >  
+> > > > -include $(srctree)/arch/$(SRCARCH)/Makefile
+> > > > -
+> > > >  ifneq (CONFIG_FRAME_WARN,0)
+> > > >  KBUILD_CFLAGS += $(call cc-option,-Wframe-larger-than=${CONFIG_FRAME_WARN})
+> > > >  endif
+> > > > @@ -555,6 +553,8 @@ ifdef CONFIG_DEBUG_SECTION_MISMATCH
+> > > >  KBUILD_CFLAGS += $(call cc-option, -fno-inline-functions-called-once)
+> > > >  endif
+> > > >  
+> > > > +include $(srctree)/arch/$(SRCARCH)/Makefile
+> > > > +
+> > > >  # arch Makefile may override CC so keep this after arch Makefile is included
+> > > >  NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
+> > > >  CHECKFLAGS     += $(NOSTDINC_FLAGS)
+> > > > -- 
+> > > 
+> > > this patch is really for Sam to judge - Cc:-ed him.
+> > 
+> > If we move the include further down then the following:
+> > 
+> >     # Force gcc to behave correct even for buggy distributions
+> >     # Arch Makefiles may override this setting
+> >     KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
+> > 
+> > will most likely fail.
+> 
+> Hm... I don't get it, the comment says that the arch "may override
+> this setting", but currently it may not, since arch makefile is
+> included before this line. So my patch also fixes this "bug", no?
+> 
+> Or arches supposed to overwrite "cc-option" behaviour? Hm..
+> 
+> There is an interesting commit:
+> 
+> commit e06b8b98da071f7dd78fb7822991694288047df0
+> Author: Sam Ravnborg <sam@ravnborg.org>
+> Date:   Wed Feb 13 22:43:28 2008 +0100
+> 
+>     kbuild: allow -fstack-protector to take effect
+> [...]
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -507,6 +507,10 @@ else
+>  KBUILD_CFLAGS  += -O2
+>  endif
+> 
+> +# Force gcc to behave correct even for buggy distributions
+> +# Arch Makefiles may override this setting
+> +KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
+> +
+>  include $(srctree)/arch/$(SRCARCH)/Makefile
+>  
+>  ifdef CONFIG_FRAME_POINTER
+> @@ -525,9 +529,6 @@ ifdef CONFIG_DEBUG_SECTION_MISMATCH
+>  KBUILD_CFLAGS += $(call cc-option, -fno-inline-functions-called-once)
+>  endif
+>  
+> -# Force gcc to behave correct even for buggy distributions
+> -KBUILD_CFLAGS         += $(call cc-option, -fno-stack-protector)
+> -
+>  # arch Makefile may override CC so keep this after arch Makefile is included
+>  NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
+>  CHECKFLAGS     += $(NOSTDINC_FLAGS)
+> 
+> 
+> ^^ Which does the same (wrt fno-stack-protector) as the patch I
+> sent, i.e. includes arch Makefile later.
+> 
+> But then, this commit reverted things back (w/o your Ack):
+> 
+> commit bef5b54bd7bf8117c75cb943d64549134c6d9a1f
+> Author: Ralf Baechle <ralf@linux-mips.org>
+> Date:   Wed Jul 16 13:02:24 2008 +0100
+> 
+>     Fix MIPS cross-compile problem
+>     [...]
+>     Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+>     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
-Currently, it's used on n810 device.
+Ok, I think I got it. It seems that Ralf was using this feature
+of arch/mips/Makefile:
 
-Cc: Richard Purdie <rpurdie@rpsys.net>
-Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
----
- drivers/leds/Kconfig       |   10 +
- drivers/leds/Makefile      |    1 +
- drivers/leds/leds-lp5521.c |  724 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 735 insertions(+), 0 deletions(-)
- create mode 100644 drivers/leds/leds-lp5521.c
+ifneq ($(SUBARCH),$(ARCH))
+  ifeq ($(CROSS_COMPILE),)
+    CROSS_COMPILE := $(call cc-cross-prefix, $(tool-archpref)-linux-  $(tool-archpref)-linux-gnu-  $(tool-archpref)-unknown-linux-gnu-)
+  endif
+endif
 
-diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index 2bd77d5..a6e5b6b 100644
---- a/drivers/leds/Kconfig
-+++ b/drivers/leds/Kconfig
-@@ -119,6 +119,16 @@ config LEDS_GPIO
- 	  outputs. To be useful the particular board must have LEDs
- 	  and they must be connected to the GPIO lines.
- 
-+config LEDS_LP5521
-+	tristate "LED Support for the LP5521 LEDs"
-+	depends on LEDS_CLASS && I2C
-+	help
-+	  If you say 'Y' here you get support for the National Semiconductor
-+	  LP5521 LED driver used in n8x0 boards.
-+
-+	  This driver can be built as a module by choosing 'M'. The module
-+	  will be called leds-lp5521.
-+
- config LEDS_CLEVO_MAIL
- 	tristate "Mail LED on Clevo notebook (EXPERIMENTAL)"
- 	depends on LEDS_CLASS && X86 && SERIO_I8042 && DMI && EXPERIMENTAL
-diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-index c9e5d31..e39656c 100644
---- a/drivers/leds/Makefile
-+++ b/drivers/leds/Makefile
-@@ -18,6 +18,7 @@ obj-$(CONFIG_LEDS_COBALT_RAQ)		+= leds-cobalt-raq.o
- obj-$(CONFIG_LEDS_SUNFIRE)		+= leds-sunfire.o
- obj-$(CONFIG_LEDS_PCA9532)		+= leds-pca9532.o
- obj-$(CONFIG_LEDS_GPIO)			+= leds-gpio.o
-+obj-$(CONFIG_LEDS_LP5521)		+= leds-lp5521.o
- obj-$(CONFIG_LEDS_CLEVO_MAIL)		+= leds-clevo-mail.o
- obj-$(CONFIG_LEDS_HP6XX)		+= leds-hp6xx.o
- obj-$(CONFIG_LEDS_FSG)			+= leds-fsg.o
-diff --git a/drivers/leds/leds-lp5521.c b/drivers/leds/leds-lp5521.c
-new file mode 100644
-index 0000000..455da20
---- /dev/null
-+++ b/drivers/leds/leds-lp5521.c
-@@ -0,0 +1,724 @@
-+/*
-+ * lp5521.c - LP5521 LED Driver
-+ *
-+ * Copyright (C) 2007 Nokia Corporation
-+ *
-+ * Written by Mathias Nyman <mathias.nyman@nokia.com>
-+ * Updated by Felipe Balbi <felipe.balbi@nokia.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/i2c.h>
-+#include <linux/leds.h>
-+#include <linux/mutex.h>
-+#include <linux/workqueue.h>
-+#include <linux/i2c/lp5521.h>
-+
-+#define LP5521_DRIVER_NAME		"lp5521"
-+
-+#define LP5521_REG_R_PWM		0x02
-+#define LP5521_REG_B_PWM		0x04
-+#define LP5521_REG_ENABLE		0x00
-+#define LP5521_REG_OP_MODE		0x01
-+#define LP5521_REG_G_PWM		0x03
-+#define LP5521_REG_R_CNTRL		0x05
-+#define LP5521_REG_G_CNTRL		0x06
-+#define LP5521_REG_B_CNTRL		0x07
-+#define LP5521_REG_MISC			0x08
-+#define LP5521_REG_R_CHANNEL_PC		0x09
-+#define LP5521_REG_G_CHANNEL_PC		0x0a
-+#define LP5521_REG_B_CHANNEL_PC		0x0b
-+#define LP5521_REG_STATUS		0x0c
-+#define LP5521_REG_RESET		0x0d
-+#define LP5521_REG_GPO			0x0e
-+#define LP5521_REG_R_PROG_MEM		0x10
-+#define LP5521_REG_G_PROG_MEM		0x30
-+#define LP5521_REG_B_PROG_MEM		0x50
-+
-+#define LP5521_CURRENT_1m5		0x0f
-+#define LP5521_CURRENT_3m1		0x1f
-+#define LP5521_CURRENT_4m7		0x2f
-+#define LP5521_CURRENT_6m3		0x3f
-+#define LP5521_CURRENT_7m9		0x4f
-+#define LP5521_CURRENT_9m5		0x5f
-+#define LP5521_CURRENT_11m1		0x6f
-+#define LP5521_CURRENT_12m7		0x7f
-+#define LP5521_CURRENT_14m3		0x8f
-+#define LP5521_CURRENT_15m9		0x9f
-+#define LP5521_CURRENT_17m5		0xaf
-+#define LP5521_CURRENT_19m1		0xbf
-+#define LP5521_CURRENT_20m7		0xcf
-+#define LP5521_CURRENT_22m3		0xdf
-+#define LP5521_CURRENT_23m9		0xef
-+#define LP5521_CURRENT_25m5		0xff
-+
-+#define LP5521_PROGRAM_LENGTH		32	/* in bytes */
-+
-+struct lp5521_chip {
-+	/* device lock */
-+	struct mutex		lock;
-+	struct i2c_client	*client;
-+
-+	struct work_struct	red_work;
-+	struct work_struct	green_work;
-+	struct work_struct	blue_work;
-+
-+	struct led_classdev	ledr;
-+	struct led_classdev	ledg;
-+	struct led_classdev	ledb;
-+
-+	enum lp5521_mode	mode;
-+
-+	int			red;
-+	int			green;
-+	int			blue;
-+};
-+
-+static int lp5521_set_mode(struct lp5521_chip *chip, enum lp5521_mode mode);
-+
-+static inline int lp5521_write(struct i2c_client *client, u8 reg, u8 value)
-+{
-+	return i2c_smbus_write_byte_data(client, reg, value);
-+}
-+
-+static inline int lp5521_read(struct i2c_client *client, u8 reg)
-+{
-+	return i2c_smbus_read_byte_data(client, reg);
-+}
-+
-+static int lp5521_configure(struct i2c_client *client)
-+{
-+	int ret = 0;
-+
-+	/* Enable chip and set light to logarithmic mode*/
-+	ret |= lp5521_write(client, LP5521_REG_ENABLE, 0xc0);
-+
-+	/* setting all color pwms to direct control mode */
-+	ret |= lp5521_write(client, LP5521_REG_OP_MODE, 0x3f);
-+
-+	/* setting current to 4.7 mA for all channels */
-+	ret |= lp5521_write(client, LP5521_REG_R_CNTRL, LP5521_CURRENT_4m7);
-+	ret |= lp5521_write(client, LP5521_REG_G_CNTRL, LP5521_CURRENT_4m7);
-+	ret |= lp5521_write(client, LP5521_REG_B_CNTRL, LP5521_CURRENT_4m7);
-+
-+	/* Enable auto-powersave, set charge pump to auto, red to battery */
-+	ret |= lp5521_write(client, LP5521_REG_MISC, 0x3c);
-+
-+	/* initialize all channels pwm to zero */
-+	ret |= lp5521_write(client, LP5521_REG_R_PWM, 0);
-+	ret |= lp5521_write(client, LP5521_REG_G_PWM, 0);
-+	ret |= lp5521_write(client, LP5521_REG_B_PWM, 0);
-+
-+	/* Not much can be done about errors at this point */
-+	return ret;
-+}
-+
-+static int lp5521_load_program(struct lp5521_chip *chip, u8 *pattern)
-+{
-+	struct i2c_client *client = chip->client;
-+	int ret = 0;
-+
-+	/* Enter load program mode for all led channels */
-+	ret |= lp5521_write(client, LP5521_REG_OP_MODE, 0x15); /* 0001 0101 */
-+	if (ret)
-+		return ret;
-+
-+	if (chip->red)
-+		ret |= i2c_smbus_write_i2c_block_data(client,
-+				LP5521_REG_R_PROG_MEM,
-+				LP5521_PROGRAM_LENGTH,
-+				pattern);
-+	if (chip->green)
-+		ret |= i2c_smbus_write_i2c_block_data(client,
-+				LP5521_REG_G_PROG_MEM,
-+				LP5521_PROGRAM_LENGTH,
-+				pattern);
-+	if (chip->blue)
-+		ret |= i2c_smbus_write_i2c_block_data(client,
-+				LP5521_REG_B_PROG_MEM,
-+				LP5521_PROGRAM_LENGTH,
-+				pattern);
-+
-+	return ret;
-+}
-+
-+static int lp5521_run_program(struct lp5521_chip *chip)
-+{
-+	struct i2c_client *client = chip->client;
-+	int reg;
-+	u8 mask = 0xc0;
-+	u8 exec_state = 0;
-+
-+	reg = lp5521_read(client, LP5521_REG_ENABLE);
-+	if (reg < 0)
-+		return reg;
-+
-+	reg &= mask;
-+
-+	/* set all active channels exec state to countinous run*/
-+	exec_state |= (chip->red << 5);
-+	exec_state |= (chip->green << 3);
-+	exec_state |= (chip->blue << 1);
-+
-+	reg |= exec_state;
-+
-+	if (lp5521_write(client, LP5521_REG_ENABLE, reg))
-+		dev_dbg(&client->dev, "failed writing to register %02x\n",
-+				LP5521_REG_ENABLE);
-+
-+	/* set op-mode to run for active channels, disabled for others */
-+	if (lp5521_write(client, LP5521_REG_OP_MODE, exec_state))
-+		dev_dbg(&client->dev, "failed writing to register %02x\n",
-+				LP5521_REG_OP_MODE);
-+
-+	return 0;
-+}
-+
-+/*--------------------------------------------------------------*/
-+/*			Sysfs interface				*/
-+/*--------------------------------------------------------------*/
-+
-+static ssize_t show_active_channels(struct device *dev,
-+		struct device_attribute *attr,
-+		char *buf)
-+{
-+	struct lp5521_chip *chip = dev_get_drvdata(dev);
-+	char channels[4];
-+	int pos = 0;
-+
-+	if (chip->red)
-+		pos += sprintf(channels + pos, "r");
-+	if (chip->green)
-+		pos += sprintf(channels + pos, "g");
-+	if (chip->blue)
-+		pos += sprintf(channels + pos, "b");
-+
-+	channels[pos] = '\0';
-+
-+	return sprintf(buf, "%s\n", channels);
-+}
-+
-+static ssize_t store_active_channels(struct device *dev,
-+		struct device_attribute *attr,
-+		const char *buf, size_t len)
-+{
-+	struct lp5521_chip *chip = dev_get_drvdata(dev);
-+
-+	chip->red = 0;
-+	chip->green = 0;
-+	chip->blue = 0;
-+
-+	if (strchr(buf, 'r') != NULL)
-+		chip->red = 1;
-+	if (strchr(buf, 'b') != NULL)
-+		chip->blue = 1;
-+	if (strchr(buf, 'g') != NULL)
-+		chip->green = 1;
-+
-+	return len;
-+}
-+
-+static ssize_t show_color(struct device *dev,
-+		struct device_attribute *attr,
-+		char *buf)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+	int r, g, b;
-+
-+	r = lp5521_read(client, LP5521_REG_R_PWM);
-+	g = lp5521_read(client, LP5521_REG_G_PWM);
-+	b = lp5521_read(client, LP5521_REG_B_PWM);
-+
-+	if (r < 0 || g < 0 || b < 0)
-+		return -EINVAL;
-+
-+	return sprintf(buf, "%.2x:%.2x:%.2x\n", r, g, b);
-+}
-+
-+static ssize_t store_color(struct device *dev,
-+		struct device_attribute *attr,
-+		const char *buf, size_t len)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+	struct lp5521_chip *chip = i2c_get_clientdata(client);
-+	int ret;
-+	unsigned r, g, b;
-+
-+
-+	ret = sscanf(buf, "%2x:%2x:%2x", &r, &g, &b);
-+	if (ret != 3)
-+		return  -EINVAL;
-+
-+	mutex_lock(&chip->lock);
-+
-+	ret = lp5521_write(client, LP5521_REG_R_PWM, (u8)r);
-+	ret = lp5521_write(client, LP5521_REG_G_PWM, (u8)g);
-+	ret = lp5521_write(client, LP5521_REG_B_PWM, (u8)b);
-+
-+	mutex_unlock(&chip->lock);
-+
-+	return len;
-+}
-+
-+static ssize_t store_load(struct device *dev,
-+		struct device_attribute *attr,
-+		const char *buf, size_t len)
-+{
-+	struct lp5521_chip *chip = dev_get_drvdata(dev);
-+	int  ret, nrchars, offset = 0, i = 0;
-+	char c[3];
-+	unsigned cmd;
-+	u8 pattern[LP5521_PROGRAM_LENGTH] = {0};
-+
-+	while ((offset < len - 1) && (i < LP5521_PROGRAM_LENGTH)) {
-+
-+		/* separate sscanfs because length is working only for %s */
-+		ret = sscanf(buf + offset, "%2s%n ", c, &nrchars);
-+		ret = sscanf(c, "%2x", &cmd);
-+		if (ret != 1)
-+			goto fail;
-+		pattern[i] = (u8)cmd;
-+
-+		offset += nrchars;
-+		i++;
-+	}
-+
-+	/* pattern commands are always two bytes long */
-+	if (i % 2)
-+		goto fail;
-+
-+	mutex_lock(&chip->lock);
-+
-+	ret = lp5521_load_program(chip, pattern);
-+	mutex_unlock(&chip->lock);
-+
-+	if (ret) {
-+		dev_err(dev, "lp5521 failed loading pattern\n");
-+		return ret;
-+	}
-+
-+	return len;
-+fail:
-+	dev_err(dev, "lp5521 wrong pattern format\n");
-+	return -EINVAL;
-+}
-+
-+static ssize_t show_mode(struct device *dev,
-+		struct device_attribute *attr,
-+		char *buf)
-+{
-+	struct lp5521_chip *chip = dev_get_drvdata(dev);
-+	char *mode;
-+
-+	mutex_lock(&chip->lock);
-+	switch (chip->mode) {
-+	case LP5521_MODE_RUN:
-+		mode = "run";
-+		break;
-+	case LP5521_MODE_LOAD:
-+		mode = "load";
-+		break;
-+	case LP5521_MODE_DIRECT_CONTROL:
-+		mode = "direct";
-+		break;
-+	default:
-+		mode = "undefined";
-+	}
-+	mutex_unlock(&chip->lock);
-+
-+	return sprintf(buf, "%s\n", mode);
-+}
-+
-+static ssize_t store_mode(struct device *dev,
-+		struct device_attribute *attr,
-+		const char *buf, size_t len)
-+{
-+	struct lp5521_chip *chip = dev_get_drvdata(dev);
-+
-+	mutex_lock(&chip->lock);
-+
-+       if (sysfs_streq(buf, "run"))
-+		lp5521_set_mode(chip, LP5521_MODE_RUN);
-+	else if (sysfs_streq(buf, "load"))
-+		lp5521_set_mode(chip, LP5521_MODE_LOAD);
-+	else if (sysfs_streq(buf, "direct"))
-+		lp5521_set_mode(chip, LP5521_MODE_DIRECT_CONTROL);
-+	else
-+		len = -EINVAL;
-+
-+	mutex_unlock(&chip->lock);
-+
-+	return len;
-+}
-+
-+static ssize_t show_current(struct device *dev,
-+		struct device_attribute *attr,
-+		char *buf)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+	int r, g, b;
-+
-+	r = lp5521_read(client, LP5521_REG_R_CNTRL);
-+	g = lp5521_read(client, LP5521_REG_G_CNTRL);
-+	b = lp5521_read(client, LP5521_REG_B_CNTRL);
-+
-+	if (r < 0 || g < 0 || b < 0)
-+		return -EINVAL;
-+
-+	r >>= 4;
-+	g >>= 4;
-+	b >>= 4;
-+
-+	return sprintf(buf, "%x %x %x\n", r, g, b);
-+}
-+
-+static ssize_t store_current(struct device *dev,
-+		struct device_attribute *attr,
-+		const char *buf, size_t len)
-+{
-+	struct lp5521_chip *chip = dev_get_drvdata(dev);
-+	struct i2c_client *client = chip->client;
-+	int ret;
-+	unsigned curr;
-+
-+	ret = sscanf(buf, "%1x", &curr);
-+	if (ret != 1)
-+		return  -EINVAL;
-+
-+	/* current level is determined by the 4 upper bits, rest is ones */
-+	curr = (curr << 4) | 0x0f;
-+
-+	mutex_lock(&chip->lock);
-+
-+	ret |= lp5521_write(client, LP5521_REG_R_CNTRL, (u8)curr);
-+	ret |= lp5521_write(client, LP5521_REG_G_CNTRL, (u8)curr);
-+	ret |= lp5521_write(client, LP5521_REG_B_CNTRL, (u8)curr);
-+
-+	mutex_unlock(&chip->lock);
-+
-+	return len;
-+}
-+
-+static DEVICE_ATTR(color, S_IRUGO | S_IWUGO, show_color, store_color);
-+static DEVICE_ATTR(load, S_IWUGO, NULL, store_load);
-+static DEVICE_ATTR(mode, S_IRUGO | S_IWUGO, show_mode, store_mode);
-+static DEVICE_ATTR(active_channels, S_IRUGO | S_IWUGO,
-+		show_active_channels, store_active_channels);
-+static DEVICE_ATTR(led_current, S_IRUGO | S_IWUGO, show_current, store_current);
-+
-+static int lp5521_register_sysfs(struct i2c_client *client)
-+{
-+	struct device *dev = &client->dev;
-+	int ret;
-+
-+	ret = device_create_file(dev, &dev_attr_color);
-+	if (ret)
-+		goto fail1;
-+	ret = device_create_file(dev, &dev_attr_load);
-+	if (ret)
-+		goto fail2;
-+	ret = device_create_file(dev, &dev_attr_active_channels);
-+	if (ret)
-+		goto fail3;
-+	ret = device_create_file(dev, &dev_attr_mode);
-+	if (ret)
-+		goto fail4;
-+	ret = device_create_file(dev, &dev_attr_led_current);
-+	if (ret)
-+		goto fail5;
-+
-+	return 0;
-+
-+fail5:
-+	device_remove_file(dev, &dev_attr_mode);
-+fail4:
-+	device_remove_file(dev, &dev_attr_active_channels);
-+fail3:
-+	device_remove_file(dev, &dev_attr_load);
-+fail2:
-+	device_remove_file(dev, &dev_attr_color);
-+fail1:
-+	return ret;
-+}
-+
-+static void lp5521_unregister_sysfs(struct i2c_client *client)
-+{
-+	struct device *dev = &client->dev;
-+
-+	device_remove_file(dev, &dev_attr_led_current);
-+	device_remove_file(dev, &dev_attr_mode);
-+	device_remove_file(dev, &dev_attr_active_channels);
-+	device_remove_file(dev, &dev_attr_color);
-+	device_remove_file(dev, &dev_attr_load);
-+}
-+
-+/*--------------------------------------------------------------*/
-+/*			Set chip operating mode			*/
-+/*--------------------------------------------------------------*/
-+
-+static int lp5521_set_mode(struct lp5521_chip *chip, enum lp5521_mode mode)
-+{
-+	struct i2c_client *client = chip->client ;
-+	int ret = 0;
-+
-+	/* if in that mode already do nothing, except for run */
-+	if (chip->mode == mode && mode != LP5521_MODE_RUN)
-+		return 0;
-+
-+	switch (mode) {
-+	case LP5521_MODE_RUN:
-+		ret = lp5521_run_program(chip);
-+		break;
-+	case LP5521_MODE_LOAD:
-+		ret |= lp5521_write(client, LP5521_REG_OP_MODE, 0x15);
-+		break;
-+	case LP5521_MODE_DIRECT_CONTROL:
-+		ret |= lp5521_write(client, LP5521_REG_OP_MODE, 0x3F);
-+		break;
-+	default:
-+		dev_dbg(&client->dev, "unsupported mode %d\n", mode);
-+	}
-+
-+	chip->mode = mode;
-+
-+	return ret;
-+}
-+
-+static void lp5521_red_work(struct work_struct *work)
-+{
-+	struct lp5521_chip *chip = container_of(work, struct lp5521_chip, red_work);
-+	int ret;
-+
-+	ret = lp5521_configure(chip->client);
-+	if (ret) {
-+		dev_dbg(&chip->client->dev, "could not configure lp5521, %d\n",
-+				ret);
-+		return;
-+	}
-+
-+	ret = lp5521_write(chip->client, LP5521_REG_R_PWM, chip->red);
-+	if (ret)
-+		dev_dbg(&chip->client->dev, "could not set brightness, %d\n",
-+				ret);
-+}
-+
-+static void lp5521_red_set(struct led_classdev *led,
-+		enum led_brightness value)
-+{
-+	struct lp5521_chip *chip = container_of(led, struct lp5521_chip, ledr);
-+
-+	chip->red = value;
-+	schedule_work(&chip->red_work);
-+}
-+
-+static void lp5521_green_work(struct work_struct *work)
-+{
-+	struct lp5521_chip *chip = container_of(work, struct lp5521_chip, green_work);
-+	int ret;
-+
-+	ret = lp5521_configure(chip->client);
-+	if (ret) {
-+		dev_dbg(&chip->client->dev, "could not configure lp5521, %d\n",
-+				ret);
-+		return;
-+	}
-+
-+	ret = lp5521_write(chip->client, LP5521_REG_G_PWM, chip->green);
-+	if (ret)
-+		dev_dbg(&chip->client->dev, "could not set brightness, %d\n",
-+				ret);
-+}
-+
-+static void lp5521_green_set(struct led_classdev *led,
-+		enum led_brightness value)
-+{
-+	struct lp5521_chip *chip = container_of(led, struct lp5521_chip, ledg);
-+
-+	chip->green = value;
-+	schedule_work(&chip->green_work);
-+}
-+
-+static void lp5521_blue_work(struct work_struct *work)
-+{
-+	struct lp5521_chip *chip = container_of(work, struct lp5521_chip, blue_work);
-+	int ret;
-+
-+	ret = lp5521_configure(chip->client);
-+	if (ret) {
-+		dev_dbg(&chip->client->dev, "could not configure lp5521, %d\n",
-+				ret);
-+		return;
-+	}
-+
-+	ret = lp5521_write(chip->client, LP5521_REG_B_PWM, chip->blue);
-+	if (ret)
-+		dev_dbg(&chip->client->dev, "could not set brightness, %d\n",
-+				ret);
-+}
-+
-+static void lp5521_blue_set(struct led_classdev *led,
-+		enum led_brightness value)
-+{
-+	struct lp5521_chip *chip = container_of(led, struct lp5521_chip, ledb);
-+
-+	chip->blue = value;
-+	schedule_work(&chip->blue_work);
-+}
-+
-+/*--------------------------------------------------------------*/
-+/*			Probe, Attach, Remove			*/
-+/*--------------------------------------------------------------*/
-+
-+static int __init lp5521_probe(struct i2c_client *client,
-+		const struct i2c_device_id *id)
-+{
-+	struct lp5521_platform_data *pdata = client->dev.platform_data;
-+	struct lp5521_chip *chip;
-+	char name[16];
-+	int ret = 0;
-+
-+	if (!pdata) {
-+		dev_err(&client->dev, "platform_data is missing\n");
-+		return -EINVAL;
-+	}
-+
-+	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
-+	if (!chip)
-+		return -ENOMEM;
-+
-+	chip->client = client;
-+	strncpy(client->name, LP5521_DRIVER_NAME, I2C_NAME_SIZE);
-+	i2c_set_clientdata(client, chip);
-+
-+	mutex_init(&chip->lock);
-+
-+	INIT_WORK(&chip->red_work, lp5521_red_work);
-+	INIT_WORK(&chip->green_work, lp5521_green_work);
-+	INIT_WORK(&chip->blue_work, lp5521_blue_work);
-+
-+	ret = lp5521_configure(client);
-+	if (ret < 0) {
-+		dev_err(&client->dev, "lp5521 error configuring chip \n");
-+		goto fail1;
-+	}
-+
-+	/* Set default values */
-+	chip->mode	= pdata->mode;
-+	chip->red	= pdata->red_present;
-+	chip->green	= pdata->green_present;
-+	chip->blue	= pdata->blue_present;
-+
-+	chip->ledr.brightness_set = lp5521_red_set;
-+	chip->ledr.default_trigger = NULL;
-+	snprintf(name, sizeof(name), "%s::red", pdata->label);
-+	chip->ledr.name = name;
-+	ret = led_classdev_register(&client->dev, &chip->ledr);
-+	if (ret < 0) {
-+		dev_dbg(&client->dev, "failed to register led %s, %d\n",
-+				chip->ledb.name, ret);
-+		goto fail1;
-+	}
-+
-+	chip->ledg.brightness_set = lp5521_green_set;
-+	chip->ledg.default_trigger = NULL;
-+	snprintf(name, sizeof(name), "%s::green", pdata->label);
-+	chip->ledg.name = name;
-+	ret = led_classdev_register(&client->dev, &chip->ledg);
-+	if (ret < 0) {
-+		dev_dbg(&client->dev, "failed to register led %s, %d\n",
-+				chip->ledb.name, ret);
-+		goto fail2;
-+	}
-+
-+	chip->ledb.brightness_set = lp5521_blue_set;
-+	chip->ledb.default_trigger = NULL;
-+	snprintf(name, sizeof(name), "%s::blue", pdata->label);
-+	chip->ledb.name = name;
-+	ret = led_classdev_register(&client->dev, &chip->ledb);
-+	if (ret < 0) {
-+		dev_dbg(&client->dev, "failed to register led %s, %d\n", chip->ledb.name, ret);
-+		goto fail3;
-+	}
-+
-+	ret = lp5521_register_sysfs(client);
-+	if (ret) {
-+		dev_err(&client->dev, "lp5521 registering sysfs failed \n");
-+		goto fail4;
-+	}
-+
-+	return 0;
-+
-+fail4:
-+	led_classdev_unregister(&chip->ledb);
-+fail3:
-+	led_classdev_unregister(&chip->ledg);
-+fail2:
-+	led_classdev_unregister(&chip->ledr);
-+fail1:
-+	i2c_set_clientdata(client, NULL);
-+	kfree(chip);
-+
-+	return ret;
-+}
-+
-+static int __exit lp5521_remove(struct i2c_client *client)
-+{
-+	struct lp5521_chip *chip = i2c_get_clientdata(client);
-+
-+	lp5521_unregister_sysfs(client);
-+	i2c_set_clientdata(client, NULL);
-+
-+	led_classdev_unregister(&chip->ledb);
-+	led_classdev_unregister(&chip->ledg);
-+	led_classdev_unregister(&chip->ledr);
-+
-+	kfree(chip);
-+
-+	return 0;
-+}
-+
-+static const struct i2c_device_id lp5521_id[] = {
-+	{ LP5521_DRIVER_NAME, 0},
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(i2c, lp5521_id);
-+
-+static struct i2c_driver lp5521_driver = {
-+	.driver		= {
-+		.name	= LP5521_DRIVER_NAME,
-+	},
-+	.probe		= lp5521_probe,
-+	.remove		= __exit_p(lp5521_remove),
-+	.id_table	= lp5521_id,
-+};
-+
-+static int __init lp5521_init(void)
-+{
-+	return i2c_add_driver(&lp5521_driver);
-+}
-+module_init(lp5521_init);
-+
-+static void __exit lp5521_exit(void)
-+{
-+	i2c_del_driver(&lp5521_driver);
-+}
-+module_exit(lp5521_exit);
-+
-+MODULE_AUTHOR("Mathias Nyman <mathias.nyman@nokia.com>");
-+MODULE_DESCRIPTION("lp5521 LED driver");
-+MODULE_LICENSE("GPL");
+There are few arches that have "auto detection" of CROSS_COMPILE
+variable: mips, m68k, parisc, xtensa, h8300 and blackfin.
+
+So `normal' arches don't have any chance to overwrite the flags
+because of the few offenders above. ;-)
+
+> [...]
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -508,6 +508,8 @@ else
+>  KBUILD_CFLAGS  += -O2
+>  endif
+>  
+> +include $(srctree)/arch/$(SRCARCH)/Makefile
+> +
+>  ifneq (CONFIG_FRAME_WARN,0)
+>  KBUILD_CFLAGS += $(call cc-option,-Wframe-larger-than=${CONFIG_FRAME_WARN})
+>  endif
+> @@ -516,8 +518,6 @@ endif
+>  # Arch Makefiles may override this setting
+>  KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
+>  
+> -include $(srctree)/arch/$(SRCARCH)/Makefile
+> -
+>  ifdef CONFIG_FRAME_POINTER
+>  KBUILD_CFLAGS  += -fno-omit-frame-pointer -fno-optimize-sibling-calls
+>  else
+
 -- 
-1.6.1.265.g9a013
-
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
