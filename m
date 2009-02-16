@@ -1,136 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbZBPI4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756597AbZBPJCG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756719AbZBPI4U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 03:56:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754903AbZBPI4I
+	id S1756597AbZBPJCG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 04:02:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755164AbZBPJBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 03:56:08 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:41970 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753756AbZBPI4H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 03:56:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
-         :references:mime-version:content-type:content-disposition
-         :in-reply-to:user-agent;
-        b=huS5UFQvkWZIBRp43nrD02GY0iUhoORaY2fjAAPuPgma/taIifm/ceKF989IQFHZGy
-         ghWK5tRU5nej1gWrnSBmuRN2Wn7owRZztosfqZa+YUQaf5b79nf6F9ovLuUCaBYikj8K
-         0vw9yJ/47HlOYlGbaNSSs8gkd06hIZkLYyB90=
-Date: Mon, 16 Feb 2009 09:56:08 +0100
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/6] ide: remove ide_execute_pkt_cmd()
-Message-ID: <20090216085608.GB18517@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090209231945.32406.14874.sendpatchset@localhost.localdomain> <20090209232019.32406.98822.sendpatchset@localhost.localdomain> <20090211065535.GC937@gollum.tnic> <4992D108.2070709@ru.mvista.com> <9ea470500902110537g4d6c67a3o35d1d8a4dcca0927@mail.gmail.com> <4992D77F.3090802@ru.mvista.com> <9ea470500902110832p58cf6b6at38a20f9ea7557017@mail.gmail.com> <49980979.6090305@ru.mvista.com> <20090215173901.GA5156@gollum.tnic> <4998A2A9.2060607@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4998A2A9.2060607@ru.mvista.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 16 Feb 2009 04:01:51 -0500
+Received: from sh.osrg.net ([192.16.179.4]:33412 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753695AbZBPJBu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 04:01:50 -0500
+Date: Mon, 16 Feb 2009 18:00:38 +0900
+To: bharrosh@panasas.com
+Cc: fujita.tomonori@lab.ntt.co.jp, avishay@gmail.com, jeff@garzik.org,
+       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       osd-dev@open-osd.org, linux-kernel@vger.kernel.org,
+       James.Bottomley@HansenPartnership.com, jens.axboe@oracle.com,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 1/8] exofs: Kbuild, Headers and osd utils
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <499928A3.60507@panasas.com>
+References: <1234185129-31858-1-git-send-email-bharrosh@panasas.com>
+	<20090216131806X.fujita.tomonori@lab.ntt.co.jp>
+	<499928A3.60507@panasas.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090216180028C.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 16 Feb 2009 18:00:39 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
->  Didn't quite get that statement.
->  Well, this example wasn't very convincing...
+On Mon, 16 Feb 2009 10:49:39 +0200
+Boaz Harrosh <bharrosh@panasas.com> wrote:
 
-Oh, I'm really getting tired of this!
+> FUJITA Tomonori wrote:
+> > On Mon,  9 Feb 2009 15:12:09 +0200
+> > Boaz Harrosh <bharrosh@panasas.com> wrote:
+> > 
+> >> This patch includes osd infrastructure that will be used later by
+> >> the file system.
+> >>
+> >> Also the declarations of constants, on disk structures,
+> >> and prototypes.
+> >>
+> >> And the Kbuild+Kconfig files needed to build the exofs module.
+> >>
+> >> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+> >> ---
+> >>  fs/exofs/Kbuild   |   30 +++++++
+> >>  fs/exofs/Kconfig  |   13 +++
+> >>  fs/exofs/common.h |  181 +++++++++++++++++++++++++++++++++++++++++
+> >>  fs/exofs/exofs.h  |  139 ++++++++++++++++++++++++++++++++
+> >>  fs/exofs/osd.c    |  230 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+> >>  5 files changed, 593 insertions(+), 0 deletions(-)
+> >>  create mode 100644 fs/exofs/Kbuild
+> >>  create mode 100644 fs/exofs/Kconfig
+> >>  create mode 100644 fs/exofs/common.h
+> >>  create mode 100644 fs/exofs/exofs.h
+> >>  create mode 100644 fs/exofs/osd.c
+> > 
+> >> +static void _osd_read(struct osd_request *or,
+> >> +	const struct osd_obj_id *obj, uint64_t offset, struct bio *bio)
+> >> +{
+> >> +	osd_req_read(or, obj, bio, offset);
+> >> +	EXOFS_DBGMSG("osd_req_read(p=%llX, ob=%llX, l=%llu, of=%llu)\n",
+> >> +		_LLU(obj->partition), _LLU(obj->id), _LLU(bio->bi_size),
+> >> +		_LLU(offset));
+> >> +}
+> >> +
+> >> +#ifdef __KERNEL__
+> > 
+> > Hmm?
+> > 
+> 
+> Yep, this file also complies in user mode.
 
-Here's your final example:
-
-A stack variable caching the flags check. REMEMBER, no write accesses to
-it!:
-
-<ide-cd.c>
-int ide_cd_read_toc(ide_drive_t *drive, struct request_sense *sense)
-{
-        int stat, ntracks, i;
-        struct cdrom_info *info = drive->driver_data;
-        struct cdrom_device_info *cdi = &info->devinfo;
-        struct atapi_toc *toc = info->toc;
-        struct {
-                struct atapi_toc_header hdr;
-                struct atapi_toc_entry  ent;
-        } ms_tmp;
-        long last_written;
-        unsigned long sectors_per_frame = SECTORS_PER_FRAME;
-        u8 tmp = drive->atapi_flags & IDE_AFLAG_TOCTRACKS_AS_BCD;
-</ide-cd.c>
-
-later you access the _same_ variable in an if-check:
-
-<ide-cd.c>
-        if (tmp) {
-                toc->hdr.first_track = bcd2bin(toc->hdr.first_track);
-                toc->hdr.last_track  = bcd2bin(toc->hdr.last_track);
-        }
-</ide-cd.c>
-
-
-Resulting assembly snippets:
-
-<ide-cd.s>
-.LCFI166:
-        .loc 1 1202 0
-        movl    %edx, -52(%ebp) # sense, sense
-        .loc 1 1213 0
-        movl    500(%edi), %ecx # <variable>.atapi_flags,
-        .loc 1 1204 0
-        movl    24(%eax), %eax  # <variable>.driver_data,
-.LVL399:
-        movl    %eax, -40(%ebp) #, info
-.LVL400:
-        .loc 1 1206 0
-        movl    16(%eax), %esi  # <variable>.toc, toc
-.LVL401:
-        .loc 1 1212 0
-        movl    $4, -20(%ebp)   #, sectors_per_frame
-.LVL402:
-        .loc 1 1213 0
-        movl    %ecx, -48(%ebp) #, D.31862
-</ide-cd.s>
-
-you see here the ->atapi_flags, dereferenced above, being saved on the
-stack. Here's the asm for the check later:
-
-<ide-cd.s>
-.LVL415:
-        jne     .L283   #,
-        .loc 1 1256 0
-        movb    -48(%ebp), %al  # D.31862,
-.LVL416:
-        andb    $16, %al        #,
-        movb    %al, -33(%ebp)  #, tmp
-.LVL417:
-        je      .L287   #,
-        .loc 1 1257 0
-</ide-cd.s>
-
-So, the ->atapi_flags is moved into 8bit %al from the stack! Then the
-$16 is the IDE_AFLAG_TOCTRACKS_AS_BCD, so the binary & against the
-->atapi_flags is done actually here. Then the tmp variable is SAVED ON
-THE STACK at -33(%ebp) and it is dereferenced AGAIN in the next check:
-
-.LVL426:
-        jne     .L283   #,
-        .loc 1 1297 0
-        cmpb    $0, -33(%ebp)   # tmp
-        je      .L290   #
+Even if you do, it's a good thing to add __KERNEL__ to fs/*.c?
 
 
-If you still don't see it, go play with your own assembler and do some
-code staring on your own which doesn't involve me!
+> >> +static struct bio *_bio_map_pages(struct request_queue *req_q,
+> >> +				  struct page **pages, unsigned page_count,
+> >> +				  size_t length, gfp_t gfp_mask)
+> >> +{
+> >> +	struct bio *bio;
+> >> +	int i;
+> >> +
+> >> +	bio = bio_alloc(gfp_mask, page_count);
+> >> +	if (!bio) {
+> >> +		EXOFS_DBGMSG("Failed to bio_alloc page_count=%d\n", page_count);
+> >> +		return NULL;
+> >> +	}
+> >> +
+> >> +	for (i = 0; i < page_count && length; i++) {
+> >> +		size_t use_len = min(length, PAGE_SIZE);
+> >> +
+> >> +		if (use_len !=
+> >> +		    bio_add_pc_page(req_q, bio, pages[i], use_len, 0)) {
+> >> +			EXOFS_ERR("Failed bio_add_pc_page req_q=%p pages[i]=%p "
+> >> +				  "use_len=%Zd page_count=%d length=%Zd\n",
+> >> +				  req_q, pages[i], use_len, page_count, length);
+> >> +			bio_put(bio);
+> >> +			return NULL;
+> >> +		}
+> >> +
+> >> +		length -= use_len;
+> >> +	}
+> >> +
+> >> +	WARN_ON(length);
+> >> +	return bio;
+> >> +}
+> > 
+> > 1) exofs builds bios by hand.
+> > 2) exofs passes bio to OSD SCSI ULD.
+> > 
+> > As a result, exofs and OSD SCSI ULD need to know the internal of bio,
+> > that is, you reinvent the bio handling infrastructure, as pointed out
+> > in another thread in scsi-ml.
+> > 
+> > _bio_map_pages is called where the VFS passes an array of a pointer to
+> > a page frame.
+> > 
+> > Why can't you simply pass the array to OSD SCSI ULD? Then OSD SCSI ULD
+> > can use the block layer helper functions to build a request out of
+> > pages without knowing the internal of bio.
+> > 
+> > 
+> 
+> Because actually this code is wrong and temporary and will change soon.
+> At vfs write_pages I do not get a linear array of page pointers but a
+> link-list of pages. This will not fit any current model.
 
--- 
-Regards/Gruss,
-    Boris.
+Then, why can't you pass a link-list of pages?
+
+
+> Also looking
+> ahead I will have RAID 0, 1, 5, and 6 on objects of different devices. bio
+> is the perfect collector for memory information in this situation.
+
+You will add such features to exofs, handling multiple devices
+internally?
+
+
+> exofs is not the first and only file system who is using bios. Proof of
+> the matter is that block exports a bio submit routine.
+
+Seems that exofs just passes pages and the ULD sends a SCSI command
+including these pages. I don't see how exofs needs to handle bio
+directly.
+
+
+> As I said on the other thread, I could live without it for now, for a short while,
+> but I will regret it badly and it will hurt performance in the long run.
+> 
+> <snip>
+> 
+> Boaz
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
