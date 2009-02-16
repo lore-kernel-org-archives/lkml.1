@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbZBPXcN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbZBPXcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754535AbZBPXcN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 18:32:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbZBPXb5
+	id S1755857AbZBPXcu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 18:32:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbZBPXcm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 18:31:57 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:56691 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751064AbZBPXb5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 18:31:57 -0500
-Message-ID: <4999F693.5000105@zytor.com>
-Date: Mon, 16 Feb 2009 15:28:19 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 16 Feb 2009 18:32:42 -0500
+Received: from h5.dl5rb.org.uk ([81.2.74.5]:57657 "EHLO h5.dl5rb.org.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751404AbZBPXcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 18:32:41 -0500
+Date: Mon, 16 Feb 2009 23:32:16 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Martin Michlmayr <tbm@cyrius.com>
+Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: "elf core dump: fix get_user use" breaks mips compilation
+Message-ID: <20090216233216.GA19484@linux-mips.org>
+References: <20090216120136.GA9057@deprecation.cyrius.com>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, cpw@sgi.com
-Subject: Re: #tj-percpu has been rebased
-References: <49833350.1020809@kernel.org> <200902161753.14141.rusty@rustcorp.com.au> <4999A236.9040508@zytor.com> <200902170952.21063.rusty@rustcorp.com.au>
-In-Reply-To: <200902170952.21063.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090216120136.GA9057@deprecation.cyrius.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
->>
->> All in all I think a dedicated virtual zone per CPU as opposed to
->> interleaving them seems to make more sense.  Even with 4096 CPUs and
->> reserving, say, 256 MB per CPU it's not that much address space in the
->> context of a 47-bit kernel space.  On 32 bits I don't think anything but
->> the most trivial amount of percpu space is going to fly no matter what.
+On Mon, Feb 16, 2009 at 01:01:36PM +0100, Martin Michlmayr wrote:
+
+> Hi Roland,
 > 
-> It's the TLB cost which I really don't want to pay; num_possible_cpus()
-> 4096 non-NUMA is a little silly (currently impossible).
+> Your change "elf core dump: fix get_user use"  (which made it into
+> 2.6.28.5) breaks the compilation on MIPS (which sets -Werror):
 > 
-> I'm happy to limit per-cpu allocations to pagesize, then you only need to
-> find num_possible_cpus() contig pages, and if you can't, you fall back to
-> vmalloc.
-> 
+>   CC      arch/mips/kernel/binfmt_elfn32.o
+> cc1: warnings being treated as errors
+> arch/mips/kernel/../../../fs/binfmt_elf.c: In function ‘vma_dump_size’:
+> arch/mips/kernel/../../../fs/binfmt_elf.c:1202: warning: ‘word’ may be used uninitialized in this function
+> make[1]: *** [arch/mips/kernel/binfmt_elfn32.o] Error 1
 
-num_possible_cpus() can be very large though, so in many cases the
-likelihood of finding that many pages approach zero.  Furthermore,
-num_possible_cpus() may be quite a bit larger than the actual number of
-CPUs in the system.
+Partially expanding get_user() the code basically does this:
 
-	-hpa
+	int word;
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+	if (access_ok(...))
+		__get_user(word, header);
+	else
+		word = 0;
 
+And gcc is unable to figure out that word will always be assigned to by
+both paths of the if statement.  Older gcc versions used to have that
+problem.  I can't reproduce your problem with gcc 4.3.2 and I assume
+you're using something older than that?
+
+  Ralf
