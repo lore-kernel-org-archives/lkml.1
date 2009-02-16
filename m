@@ -1,159 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757991AbZBPNe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757729AbZBPNgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757991AbZBPNe3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 08:34:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756829AbZBPNeE
+	id S1757729AbZBPNgd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 08:36:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756056AbZBPNgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 08:34:04 -0500
-Received: from 173-10-54-97-Michigan.hfc.comcastbusiness.net ([173.10.54.97]:56050
-	"EHLO crunch.scalableinformatics.com" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755975AbZBPNeC (ORCPT
+	Mon, 16 Feb 2009 08:36:24 -0500
+Received: from mail-gx0-f163.google.com ([209.85.217.163]:52885 "EHLO
+	mail-gx0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755860AbZBPNgW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 08:34:02 -0500
-X-Greylist: delayed 596 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Feb 2009 08:34:00 EST
-Message-ID: <499968F0.8000509@scalableinformatics.com>
-Date: Mon, 16 Feb 2009 08:24:00 -0500
-From: Joe Landman <landman@scalableinformatics.com>
-Reply-To: landman@scalableinformatics.com
-Organization: Scalable Informatics
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 16 Feb 2009 08:36:22 -0500
 MIME-Version: 1.0
-To: Carsten Aulbert <carsten.aulbert@aei.mpg.de>
-CC: beowulf@beowulf.org, linux-nfs@vger.kernel.org,
+In-Reply-To: <200902160931.34771.oliver@neukum.org>
+References: <5aa163d00902142008g138826br80d3ea989e7af691@mail.gmail.com>
+	 <200902160931.34771.oliver@neukum.org>
+Date: Mon, 16 Feb 2009 08:22:05 -0500
+X-Google-Sender-Auth: 69cd3f0c52d4f575
+Message-ID: <5aa163d00902160522r3a22412je3f5202076f57a0a@mail.gmail.com>
+Subject: Re: [PATCH] input: xpad.c - Xbox 360 wireless and sysfs support
+From: Mike Murphy <mamurph@cs.clemson.edu>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-usb@vger.kernel.org, linux-input@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: Tracing down 250ms open/chdir calls
-References: <49991BE7.1090104@aei.mpg.de>
-In-Reply-To: <49991BE7.1090104@aei.mpg.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Carsten Aulbert wrote:
-> Hi all,
-> 
-> sorry in advance for this vague subject and also the vague email, I'm
-> trying my best to summarize the problem:
-> 
-> On our large cluster we sometimes encounter the problem that our main
-> scheduling processes are often in state D and in the end not capable
-> anymore of pushing work to the cluster.
+On Mon, Feb 16, 2009 at 3:31 AM, Oliver Neukum <oliver@neukum.org> wrote:
+...
+>
+> 1. You need to check the returns of sscanf
 
-Hi Carsten
+Will add... this is currently preliminary and not very well tested.
 
-   Are you using a "standard" cluster scheduler (SGE, PBS, ...) or a 
-locally written one?
+> 2. This is very ugly:
+>
+> +/* read-only attrs */
+> +static ssize_t xpad_show_int(struct xpad_data *xd, struct xpad_attribute *attr,
+> +       char *buf)
+> +{
+> +       int value;
+> +       if (!strcmp(attr->attr.name, "controller_number"))
+> +               value = xd->controller_number;
+> +       else if (!strcmp(attr->attr.name, "pad_present"))
+> +               value = xd->pad_present;
+> +       else if (!strcmp(attr->attr.name, "controller_type"))
+> +               value = xd->controller_type;
+> +       else
+> +               value = 0;
+> +       return sprintf(buf, "%d\n", value);
+> +}
 
-> The head nodes are 8 core boxes with Xeon CPUs and equipped with 16 GB
-> of memory, when certain types of jobs are running we see system loads of
-> about 20-30 which might go up to 80-100 from time to time. Looking at
-> the individual cores they are mostly busy with system tasks (e.g. htop
-> shows 'red' bars).
+The above code is basically following the example in
+samples/kobject/kset-example.c. I broke the rest of the sysfs stuff
+out such that it uses separate functions for show/store, which
+definitely looks cleaner. However, given the large amount of code that
+results, I'm starting to think that re-factoring and pulling the sysfs
+code out to a separate file might be useful.
 
-Hmmm...  These are your head nodes?  Not your NFS server nodes?  Sounds 
-like there are a large number of blocked IO processes ... try a
+>
+> 3. Possible memory leak in error case:
+>
+> +static struct xpad_data *xpad_create_data(const char *name, struct kobject *parent) {
+> +       struct xpad_data *data = NULL;
+> +       int check;
+> +
+> +       data = kzalloc(sizeof(*data), GFP_KERNEL);
+> +       if (!data)
+> +               return NULL;
+> +
+> +       check = kobject_init_and_add(&data->kobj, &xpad_ktype, parent, "%s", name);
+> +       if (check) {
+> +               kobject_put(&data->kobj);
+> +               return NULL;
+> +       }
+>
 
-	vmstat 1
+My understanding from Documentation/kobject.txt is that the
+kobject_put in the 2nd error check will set the kobj's reference
+counter to zero, eventually causing the kobject core to call my
+cleanup function for the ktype (xpad_release) and free the memory. Is
+this not correct? I find the sysfs docs to be fairly thin... and sysfs
+seems to be substantially more complex than procfs or ioctls would be
+for the same purpose. However, everything I read suggested that sysfs
+is the "best" way to go in a modern kernel.
 
-and look at the "b" column (usually second from left ... or nearly 
-there).  Lots of blocked IO processes can have the affect of introducing 
-significant latency into all system calls.
+> 4. Why the cpup variety?
+>
+> +       coords[0] = (__s16) le16_to_cpup((__le16 *)(data + x_offset));
+>
 
-> stat -tt -c showed that several system calls of the scheduler take a
-> long time to complete, most notably open and chdir which took between
-> 180 and 230ms to complete (during our testing). Since most of these open
-> and chdir are via NFSv3 I'm including that list as well. The NFS servers
-> are Sun Fire X4500 boxes running Solaris 10u5 right now.
+The cpup cast is in the original stable driver
+(drivers/input/joystick/xpad.c), and I didn't question it.
 
-Hmmm.... What happens if you make these local to each box?  What are the 
-mount options for the mount points?  We have spoken to other users with 
-performance problems on such servers.  The NFS server/OS combination you 
-indicate above isn't known to be very fast.  This isn't your problem 
-(see later), but it looks like your own data suggests you are giving up 
-nearly an order of magnitude performance using this NFS server/OS 
-combination, likely at a premium price as well.
+> 5. What happens if this work is already scheduled?
+>
+>        if (data[0] & 0x08) {
+> +               padnum = xpad->controller_data->controller_number;
+>                if (data[1] & 0x80) {
+> -                       xpad->pad_present = 1;
+> -                       usb_submit_urb(xpad->bulk_out, GFP_ATOMIC);
+> -               } else
+> -                       xpad->pad_present = 0;
+> +                       printk(KERN_INFO "Wireless Xbox 360 pad #%d present\n", padnum);
+> +                       xpad->controller_data->pad_present = 1;
+> +
+> +                       INIT_WORK(&xpad->work, &xpad_work_controller);
+> +                       schedule_work(&xpad->work);
+>
 
-> A standard output line looks like:
-> 93.37   38.997264     230753      169    78      open
-> 
-> i.e. 93.37% of the system-related time was spend in 169 successful open
-> calls which took 230753us/call, thus 39 wall clock seconds were spend in
-> a minute just doing open.
-> 
-> We tried several things to understand the problem, but apart from moving
-> more files (mostly log files of currently running jobs) off NFS we did
-> not move far ahead so far. On
-> https://n0.aei.uni-hannover.de/twiki/bin/view/ATLAS/H2Problems
-> we have summarized some things.
+I'm still a little fuzzy on this... in theory, I could see that
+INIT_WORK would clobber the existing work structures while they wait
+in the queue (thought about changing to PREPARE_WORK).
 
-I didn't catch if these are tcp/udp mounts.  What are the mount options?
+However, in practice, this work queue trick is only used when a
+wireless 360 controller connects to the receiver. There is 1 instance
+of struct usb_xpad per wireless controller (4 total, since the
+receiver exposes 4 controller slots), and each instance has a separate
+struct work_struct. So two things have to happen to reschedule the
+work before it completes:
 
-> With the help of 'stress' and a tiny program just doing open/putc/close
-> into a single file, I've tried to get a feeling how good or bad things
-> are when compared to other head nodes with different tasks/loads:
-> 
-> https://n0.aei.uni-hannover.de/twiki/bin/view/ATLAS/OpenCloseIotest
+1. The user has to remove the battery pack from the controller,
+reinstall the battery pack, and re-activate the controller by pushing
+and holding the center button for at least 1 second.
 
-... and these results do in fact confirm the comment I made about the 
-NFS server/OS combo not known to be fast.
+2. The kernel has to be busy enough not to have completed the work in
+the ~2 seconds a human could have done (1).
 
- From my laptop running a Ubuntu 8.10 variant over gigabit to a known 
-very slow NFS server ...
+I need a bit of guidance from someone who has a better understanding
+of the work queues to have a good solution to this one. Is switching
+to PREPARE_WORK sufficient (with an INIT_WORK somewhere in
+xpad_probe)? Or is a more involved solution needed?
 
-./measure.exe /misc/crunch/home/landman/test2
-Wrote 24905 times into /misc/crunch/home/landman/test2, speed is 
-421.14/s, time elapsed: 59.14s
+> 6. No GFP_ATOMIC. If you can take a mutex you can sleep.
+> +               usb_submit_urb(xpad->irq_out, GFP_ATOMIC);
+>
 
+Per the "Linux Device Drivers" book (O'Reilly, 3rd ed), the claim is
+made that submissions while holding a mutex should be GFP_ATOMIC. My
+tests seemed to verify this claim... as sending LED commands
+GFP_KERNEL while holding the mutex resulted in BUGs (scheduling while
+atomic) in dmesg. Switching those GFP_KERNELs to GFP_ATOMICs
+eliminated that particular BUG.
 
-from a different server in a different location to a JackRabbit-S server 
-over NFS on a single gigabit with default mounts (this server running a 
-long IOzone)
+>        Regards
+>                Oliver
 
-./measure.exe /mnt/d/1
-Wrote 124312 times into /mnt/d/1, speed is 2072.99/s, time elapsed: 59.97s
+Thanks for your reply... I will keep working on the driver as time
+allows. This is really the first driver on which I've done any
+substantial hacking, and my formal kernel-level programming training
+was on an older version of the FreeBSD kernel, so I'm having to learn
+things as I go. I'm trying to develop based off the latest stable
+sources, so the outdated nature of most of the reference material I
+have is not helping matters.
 
-and from the same starting point but to a JackRabbit-S server over NFS 
-on a single gigabit with default mounts (this server idle)
-
-./measure.exe /mnt/d/x
-Wrote 134426 times into /mnt/d/x, speed is 2270.79/s, time elapsed: 59.20s
-
-This system would be roughly similar to your d02 machine.
-
-ly
-Assuming you aren't using mount options of noac,sync,...  Could you 
-enlighten us as to what mount options are for the head nodes?
-
-Also, the way the code is written, you are doing quite a few calls to 
-gettimeofday ... you could probably avoid this with a little re-writing 
-of the main loop.
-
-If you are using noac or sync on your NFS mounts, then this could 
-explain some of the differences you are seeing (certainly the 100/s vs 
-800/s ... but not likely the 4/s)
-
-However, if you notice that h2 in your table is an apparent outlier, 
-there may be something more systematic going on there.  Since you 
-indicate there is a high load going on while you are testing, this is 
-likely what you need to explore.
-
-Grab the atop program.  It is pretty good about letting you explore what 
-is causing load.  That is, despite your x4500's/Solaris combo showing 
-itself not to be a fast NFS server the problem appears to be more likely 
-more localized on the h2 machine than on the NFS machines.
-
-http://freshmeat.net/projects/atop/
-
-Joe
-
+Thanks,
+Mike
 -- 
-Joseph Landman, Ph.D
-Founder and CEO
-Scalable Informatics LLC,
-email: landman@scalableinformatics.com
-web  : http://www.scalableinformatics.com
-        http://jackrabbit.scalableinformatics.com
-phone: +1 734 786 8423 x121
-fax  : +1 866 888 3112
-cell : +1 734 612 4615
+Mike Murphy
+Ph.D. Candidate and NSF Graduate Research Fellow
+Clemson University School of Computing
+120 McAdams Hall
+Clemson, SC 29634-0974 USA
+Tel: +1 864.656.2838   Fax: +1 864.656.0145
+http://cirg.cs.clemson.edu/~mamurph
