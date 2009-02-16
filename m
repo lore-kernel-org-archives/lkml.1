@@ -1,245 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbZBPTJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753774AbZBPTKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753442AbZBPTJS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 14:09:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbZBPTJA
+	id S1753774AbZBPTKP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 14:10:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbZBPTKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 14:09:00 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:34720 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751342AbZBPTI6 (ORCPT
+	Mon, 16 Feb 2009 14:10:00 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:28130 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751404AbZBPTJ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 14:08:58 -0500
+	Mon, 16 Feb 2009 14:09:59 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=Dg1RTkYgy5OjwGcTZiKB6eZWxhqGmUQ6TH0fBVM8mw4rAnJlfNRhvIYLhoX30xLZv5
-         DUvmdnq9w/cQcwBEqoONTFrX3VEnVM2Ei28s+mHgcwLe0yYdwzaCx0eTqg1GtG/CScwF
-         MzDT63odyW7DESKcg4uUOB0akf5ykjDkUIiQw=
-Date: Mon, 16 Feb 2009 20:08:52 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Damien Wyart <damien.wyart@free.fr>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
+        b=vj15rnwY60wcgr3Ks7MmQFNsUT+VL+rCw3qWHRJO3d9TwHuzj2gjAdqn4dAZjiQhYE
+         XcljUU68aMDWjjJYfvRNRu0OeaEVFwVzkIl03IR9mc4kDbfdTaki14xTl3MNgATGUb04
+         Oy0XUxnixgK7jlVI6VfPmSDIDP7tFvqoZGUCk=
+Date: Mon, 16 Feb 2009 21:09:50 +0200
+From: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: pavel@suse.cz, rjw@sisk.pl, linux-pm@lists.linux-foundation.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12650] Strange load average and ksoftirqd behavior with
-	2.6.29-rc2-git1
-Message-ID: <20090216190851.GB4582@nowhere>
-References: <20090215180355.GA2273@localhost.localdomain> <20090215193102.GA16873@elte.hu> <20090216084223.GA2641@localhost.localdomain> <20090216095059.GL6182@elte.hu> <87hc2u61e9.fsf@free.fr> <20090216122632.GA3158@elte.hu> <87ljs6pmao.fsf@free.fr> <20090216132151.GA17996@elte.hu> <20090216160613.GA6785@linux.vnet.ibm.com> <20090216185616.GB6785@linux.vnet.ibm.com>
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [Bug 12713] Hang on resume from hibernation, apparently as
+	result of 213d9417fec
+Message-ID: <20090216190949.GA6868@google.com>
+References: <8f53421d0902151605v56c92642ib8c2dcf34fd92ad1@mail.gmail.com> <8f53421d0902151607w2985dce6yc1bef7e717166fc@mail.gmail.com> <20090216072711.GJ30821@kernel.dk> <8f53421d0902160012y219b4737u37f3cfb0913b228f@mail.gmail.com> <20090216084732.GK30821@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090216185616.GB6785@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090216084732.GK30821@kernel.dk>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 16, 2009 at 10:56:16AM -0800, Paul E. McKenney wrote:
-> On Mon, Feb 16, 2009 at 08:06:13AM -0800, Paul E. McKenney wrote:
-> > On Mon, Feb 16, 2009 at 02:21:51PM +0100, Ingo Molnar wrote:
-> > > 
-> > > * Damien Wyart <damien.wyart@free.fr> wrote:
-> > > 
-> > > > * Ingo Molnar <mingo@elte.hu> [090216 13:26]:
-> > > > > We do get 0x100 which is 1 << RCU_SOFTIRQ, i.e. the RCU softirq. Paul, 
-> > > > > this indeed seems to be a CONFIG_TREE_RCU=y bug.
-> > > > 
-> > > > > What is weird is that RCU_SOFTIRQ gets set again and again - but there's 
-> > > > > no raise_softirq() calls. Could you please do a two-CPU trace too via:
-> > > > 
-> > > > >    echo 3 > /debug/tracing/tracing_cpumask
-> > > > 
-> > > > > So that we can see what's happening on the other CPU?
-> > > > 
-> > > > > Also, could you please apply the debug patch below (or update to the 
-> > > > > very latest -tip tree), so that we get trace entries of softirq triggers 
-> > > > > too?
-> > > > 
-> > > > Ok, the new trace with these additional modifications is here:
-> > > > http://damien.wyart.free.fr/ksoftirqd_pb/trace_tip_2009.02.16_1300_ksoftirqd_pb_abstime_proc_mask3.txt.gz
-> > > 
-> > > thanks.
-> > > 
-> > > This confirms that SOFTIRQ_RCU gets raised here in the timer IRQ:
-> > > 
-> > >   136.255963 |   0)   sleep-2345   |               |          update_process_times() {
-> > >   136.255964 |   0)   sleep-2345   |               |            account_process_tick() {
-> > >   136.255965 |   0)   sleep-2345   |   0.779 us    |              account_system_time();
-> > >   136.255966 |   0)   sleep-2345   |   2.262 us    |            }
-> > >   136.255967 |   0)   sleep-2345   |               |            run_local_timers() {
-> > >   136.255968 |   0)   sleep-2345   |   0.802 us    |              hrtimer_run_queues();
-> > >   136.255969 |   0)   sleep-2345   |               |              raise_softirq() {
-> > >   136.255970 |   0)   sleep-2345   |               |                raise_softirq_irqoff() {
-> > >   136.255971 |   0)   sleep-2345   |               |                  __raise_softirq_irqoff() {
-> > >   136.255972 |   0)   sleep-2345   |               |                    /* nr: 1 */
-> > >   136.255973 |   0)   sleep-2345   |   2.194 us    |                  }
-> > >   136.255974 |   0)   sleep-2345   |   3.832 us    |                }
-> > >   136.255975 |   0)   sleep-2345   |   5.491 us    |              }
-> > >   136.255976 |   0)   sleep-2345   |   8.667 us    |            }
-> > >   136.255976 |   0)   sleep-2345   |   0.792 us    |            rcu_pending();
-> > >   136.255978 |   0)   sleep-2345   |               |            rcu_check_callbacks() {
-> > >   136.255979 |   0)   sleep-2345   |   0.781 us    |              idle_cpu();
-> > >   136.255981 |   0)   sleep-2345   |               |              raise_softirq() {
-> > >   136.255981 |   0)   sleep-2345   |               |                raise_softirq_irqoff() {
-> > >   136.255982 |   0)   sleep-2345   |               |                  __raise_softirq_irqoff() {
-> > >   136.255983 |   0)   sleep-2345   |               |                    /* nr: 8 */
-> > >   136.255984 |   0)   sleep-2345   |   1.555 us    |                  }
-> > >   136.255984 |   0)   sleep-2345   |   3.059 us    |                }
-> > >   136.255985 |   0)   sleep-2345   |   4.594 us    |              }
-> > >   136.255986 |   0)   sleep-2345   |   7.800 us    |            }
-> > >   136.255987 |   0)   sleep-2345   |   0.737 us    |            printk_tick();
-> > > 
-> > > again and again.
+On Mon, Feb 16, 2009 at 09:47:32AM +0100, Jens Axboe wrote:
+> On Mon, Feb 16 2009, Michael S. Tsirkin wrote:
+> > On Mon, Feb 16, 2009 at 9:27 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > On Mon, Feb 16 2009, Michael S. Tsirkin wrote:
+> > >> On Mon, Feb 16, 2009 at 2:05 AM, Michael S. Tsirkin
+> > >> <m.s.tsirkin@gmail.com> wrote:
+> > >> > Summary: seem to need to revert 213d9417fec62ef4c3675621b9364a667954d4dd
+> > >> > to fix resume from hibernation. Bugzilla entry created:
+> > >> > http://bugzilla.kernel.org/show_bug.cgi?id=12713
+> > >>
+> > >> Looking over this, I see something strange in the commit in question:
+> > >>
+> > >> diff --git a/include/linux/bio.h b/include/linux/bio.h
+> > >> index 5175aa3..f53568c 100644
+> > >> --- a/include/linux/bio.h
+> > >> +++ b/include/linux/bio.h
+> > >> @@ -163,12 +163,15 @@ struct bio {
+> > >>  #define BIO_RW         0       /* Must match RW in req flags (blkdev.h) */
+> > >>  #define BIO_RW_AHEAD   1       /* Must match FAILFAST in req flags */
+> > >>  #define BIO_RW_BARRIER 2
+> > >> -#define BIO_RW_SYNC    3
+> > >> -#define BIO_RW_META    4
+> > >> -#define BIO_RW_DISCARD 5
+> > >> -#define BIO_RW_FAILFAST_DEV            6
+> > >> -#define BIO_RW_FAILFAST_TRANSPORT      7
+> > >> -#define BIO_RW_FAILFAST_DRIVER         8
+> > >> +#define BIO_RW_SYNCIO  3
+> > >> +#define BIO_RW_UNPLUG  4
+> > >> +#define BIO_RW_META    5
+> > >> +#define BIO_RW_DISCARD 6
+> > >> +#define BIO_RW_FAILFAST_DEV            7
+> > >> +#define BIO_RW_FAILFAST_TRANSPORT      8
+> > >> +#define BIO_RW_FAILFAST_DRIVER         9
+> > >> +
+> > >> +#define BIO_RW_SYNC    (BIO_RW_SYNCIO | BIO_RW_UNPLUG)
+> > >>
+> > >>  /*
+> > >>   * upper 16 bits of bi_rw define the io priority of this bio
+> > >>
+> > >> I haven't read the code in depth, but taking running numbers and doing
+> > >> bitwise "or"
+> > >> on them looks a bit strange to me.
+> > >> So here BIO_RW_SYNC is (3 | 4) = 7, that is the same as BIO_RW_FAILFAST_DEV.
+> > >> So for example bio_failfast_dev and bio_sync are the same.
+> > >>
+> > >> Jens, could you comment on this please? Is this intentional?
+> > >
+> > > That's clearly a braino, you can't OR the shift values of course. I'll
+> > > get it fixed up asap!
 > > 
-> > Interesting...
-> > 
-> > I will take a look!
+> > Cool, send me a patch, I'll test.
 > 
-> The above sequence is more or less normal behavior -- the RCU softirq
-> handler rcu_process_callbacks() is being invoked once per tick, which
-> appears to be HZ=1000 or thereabouts.  The system appears to be mostly
-> idle during this time period.
-> 
-> One oddity is that the _bh call to __rcu_process_callbacks() is invoking
-> force_quiescent_state() each time, and force_quiescent_state() isn't
-> doing anything.  This is a possible mismatch between the conditions in
-> rcu_pending() and force_quiescent_state(), and I will look into this.
-> 
-> However, this sequence is consuming less than 10 microseconds per
-> millisecond, so cannot be the main cause of the softirq issues you
-> are seeing, though if there really is a mismatch, it needs to be fixed,
-> and I will attend to this.
-> 
-> The interesting portion of the trace is later on:
-> 
->   137.896992 |   1)  ksoftir-2302  |               |  do_softirq() {
->   137.896993 |   1)  ksoftir-2302  |               |    __do_softirq() {
->   137.896993 |   1)  ksoftir-2302  |               |      /* #1 softirq pending: 00000100 */
->   137.896994 |   1)  ksoftir-2302  |               |      /* #2 softirq pending: 00000000 */
->   137.896995 |   1)  ksoftir-2302  |               |      rcu_process_callbacks() {
->   137.896995 |   1)  ksoftir-2302  |               |        __rcu_process_callbacks() {
->   137.896996 |   1)  ksoftir-2302  |   0.498 us    |          force_quiescent_state();
->   137.896997 |   1)  ksoftir-2302  |   1.588 us    |        }
->   137.896997 |   1)  ksoftir-2302  |               |        __rcu_process_callbacks() {
->   137.896998 |   1)  ksoftir-2302  |   0.475 us    |          force_quiescent_state();
->   137.896999 |   1)  ksoftir-2302  |               |          cpu_quiet() {
->   137.896999 |   1)  ksoftir-2302  |   0.526 us    |            _spin_lock_irqsave();
->   137.897000 |   1)  ksoftir-2302  |   0.511 us    |            _spin_unlock_irqrestore();
->   137.897001 |   1)  ksoftir-2302  |   2.528 us    |          }
->   137.897002 |   1)  ksoftir-2302  |   4.607 us    |        }
->   137.897002 |   1)  ksoftir-2302  |   7.825 us    |      }
->   137.897003 |   1)  ksoftir-2302  |   0.498 us    |      _local_bh_enable();
->   137.897004 |   1)  ksoftir-2302  | + 11.430 us   |    }
->   137.897005 |   1)  ksoftir-2302  | + 12.572 us   |  }
->   137.897005 |   1)  ksoftir-2302  |   0.549 us    |  _cond_resched();
->   137.897006 |   1)  ksoftir-2302  |   0.541 us    |  kthread_should_stop();
->   137.897007 |   1)  ksoftir-2302  |               |  schedule() {
->   137.897008 |   1)  ksoftir-2302  |               |    __schedule() {
->   137.897008 |   1)  ksoftir-2302  |   0.514 us    |      _spin_lock_irq();
->   137.897009 |   1)  ksoftir-2302  |   0.594 us    |      update_rq_clock();
->   137.897011 |   1)  ksoftir-2302  |               |      deactivate_task() {
->   137.897011 |   1)  ksoftir-2302  |               |        dequeue_task() {
->   137.897011 |   1)  ksoftir-2302  |               |          dequeue_task_fair() {
->   137.897012 |   1)  ksoftir-2302  |               |            update_curr() {
->   137.897012 |   1)  ksoftir-2302  |               |              calc_delta_fair() {
->   137.897013 |   1)  ksoftir-2302  |   0.506 us    |                calc_delta_mine();
->   137.897014 |   1)  ksoftir-2302  |   1.528 us    |              }
->   137.897015 |   1)  ksoftir-2302  |   2.563 us    |            }
->   137.897015 |   1)  ksoftir-2302  |   0.513 us    |            hrtick_start_fair();
->   137.897019 |   1)  ksoftir-2302  |   4.662 us    |          }
->   137.897019 |   1)  ksoftir-2302  |   8.213 us    |        }
->   137.897020 |   1)  ksoftir-2302  |   9.195 us    |      }
->   137.897020 |   1)  ksoftir-2302  |   0.960 us    |      find_busiest_group();
->   137.897022 |   1)  ksoftir-2302  |   0.493 us    |      msecs_to_jiffies();
->   137.897023 |   1)  ksoftir-2302  |   0.511 us    |      put_prev_task_fair();
->   137.897024 |   1)  ksoftir-2302  |               |      pick_next_task() {
->   137.897024 |   1)  ksoftir-2302  |   0.481 us    |        pick_next_task_fair();
->   137.897025 |   1)  ksoftir-2302  |   0.491 us    |        pick_next_task_rt();
->   137.897026 |   1)  ksoftir-2302  |   0.474 us    |        pick_next_task_fair();
->   137.897027 |   1)  ksoftir-2302  |   0.480 us    |        pick_next_task_idle();
->   137.897028 |   1)  ksoftir-2302  |   4.516 us    |      }
->   137.897029 |   1)  ksoftir-2302  |               |      perf_counter_task_sched_out() {
->   137.897029 |   1)  ksoftir-2302  |               |        __perf_counter_sched_out() {
->   137.897030 |   1)  ksoftir-2302  |   0.516 us    |          _spin_lock();
->   137.897031 |   1)  ksoftir-2302  |   1.486 us    |        }
->   137.897031 |   1)  ksoftir-2302  |   2.462 us    |      }
->   137.897032 |   1)  ksoftir-2302  |   0.516 us    |      __lock_text_start();
->   137.897045 |   ------------------------------------------
->  1)  ksoftir-2302  =>    <idle>-0   
->  ------------------------------------------
-> 
->  1)    <idle>-0    |               |  /* nr: 8 */
->  ------------------------------------------
->  1)    <idle>-0    =>  ksoftir-2302 
->  ------------------------------------------
-> 
->   137.897064 |   1)  ksoftir-2302  |               |      finish_task_switch() {
->   137.897064 |   1)  ksoftir-2302  |               |        perf_counter_task_sched_in() {
->   137.897065 |   1)  ksoftir-2302  |   0.508 us    |          _spin_lock();
->   137.897066 |   1)  ksoftir-2302  |   1.525 us    |        }
->   137.897066 |   1)  ksoftir-2302  |   2.617 us    |      }
->   137.897067 |   1)  ksoftir-2302  | + 58.928 us   |    }
->   137.897067 |   1)  ksoftir-2302  | + 59.926 us   |  }
->   137.897068 |   1)  ksoftir-2302  |               |  do_softirq() {
->   137.897068 |   1)  ksoftir-2302  |               |    __do_softirq() {
->   137.897069 |   1)  ksoftir-2302  |               |      /* #1 softirq pending: 00000100 */
->   137.897070 |   1)  ksoftir-2302  |               |      /* #2 softirq pending: 00000000 */
->   137.897070 |   1)  ksoftir-2302  |               |      rcu_process_callbacks() {
->   137.897071 |   1)  ksoftir-2302  |               |        __rcu_process_callbacks() {
->   137.897071 |   1)  ksoftir-2302  |               |          force_quiescent_state() {
->   137.897073 |   1)  ksoftir-2302  |   1.575 us    |        }
->   137.897073 |   1)  ksoftir-2302  |               |        __rcu_process_callbacks() {
->   137.897074 |   1)  ksoftir-2302  |   0.474 us    |          force_quiescent_state();
->   137.897075 |   1)  ksoftir-2302  |               |          cpu_quiet() {
->   137.897075 |   1)  ksoftir-2302  |   0.526 us    |            _spin_lock_irqsave();
->   137.897076 |   1)  ksoftir-2302  |   0.511 us    |            _spin_unlock_irqrestore();
->   137.897077 |   1)  ksoftir-2302  |   2.532 us    |          }
->   137.897078 |   1)  ksoftir-2302  |   4.632 us    |        }
->   137.897078 |   1)  ksoftir-2302  |   7.815 us    |      }
->   137.897079 |   1)  ksoftir-2302  |   0.501 us    |      _local_bh_enable();
->   137.897080 |   1)  ksoftir-2302  | + 11.405 us   |    }
->   137.897080 |   1)  ksoftir-2302  | + 12.542 us   |  }
-> 
-> Here the calls to rcu_process_callbacks() are only 75 microseconds apart,
-> so that this function is consuming more than 10% of a CPU.  The strange
-> thing is that I don't see a raise_softirq() in between, though perhaps
-> it gets inlined or something that makes it invisible to ftrace.
+> Try this. Not a huge fan of this approach, but it should bring behaviour
+> back to what it used to be.
 
-
-More likely it's a bug in the function graph tracer.
-I will try to fix it.
-
-
-> Certainly rcu_process_callbacks() can re-invoke itself, for example,
-> when a large number of RCU callbacks has piled up.  However, there are
-> only 29 calls to __call_rcu() over the entire time period, so that does
-> not appear to be the cause.  Strangely enough, there appear to be no
-> calls to rcu_do_batch() over the full trace, but this is invoked
-> unconditionally from __rcu_process_callbacks().  So perhaps the trace
-> wasn't covering that function?
-
-
-Hmm. I have to check that too. I'm building CONFIG_RCU_TREE.
-Will try to find what happens.
-
+I verified that applying this patch on top of 2.6.29-rc5 fixes
+hibernation for me.
 
 > 
-> Whatever, this pattern continues for more than 300 milliseconds(!).
+> diff --git a/block/blktrace.c b/block/blktrace.c
+> index 39cc3bf..7cf9d1f 100644
+> --- a/block/blktrace.c
+> +++ b/block/blktrace.c
+> @@ -142,7 +142,7 @@ static void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
+>  
+>  	what |= ddir_act[rw & WRITE];
+>  	what |= MASK_TC_BIT(rw, BARRIER);
+> -	what |= MASK_TC_BIT(rw, SYNC);
+> +	what |= MASK_TC_BIT(rw, SYNCIO);
+>  	what |= MASK_TC_BIT(rw, AHEAD);
+>  	what |= MASK_TC_BIT(rw, META);
+>  	what |= MASK_TC_BIT(rw, DISCARD);
+> diff --git a/drivers/md/dm-io.c b/drivers/md/dm-io.c
+> index a343385..f14813b 100644
+> --- a/drivers/md/dm-io.c
+> +++ b/drivers/md/dm-io.c
+> @@ -328,7 +328,7 @@ static void dispatch_io(int rw, unsigned int num_regions,
+>  	struct dpages old_pages = *dp;
+>  
+>  	if (sync)
+> -		rw |= (1 << BIO_RW_SYNC);
+> +		rw |= (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_UNPLUG);
+>  
+>  	/*
+>  	 * For multiple regions we need to be careful to rewind
+> diff --git a/drivers/md/dm-kcopyd.c b/drivers/md/dm-kcopyd.c
+> index 3073618..0a225da 100644
+> --- a/drivers/md/dm-kcopyd.c
+> +++ b/drivers/md/dm-kcopyd.c
+> @@ -344,7 +344,7 @@ static int run_io_job(struct kcopyd_job *job)
+>  {
+>  	int r;
+>  	struct dm_io_request io_req = {
+> -		.bi_rw = job->rw | (1 << BIO_RW_SYNC),
+> +		.bi_rw = job->rw | (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_UNPLUG),
+>  		.mem.type = DM_IO_PAGE_LIST,
+>  		.mem.ptr.pl = job->pages,
+>  		.mem.offset = job->offset,
+> diff --git a/drivers/md/md.c b/drivers/md/md.c
+> index 4495104..03b4cd0 100644
+> --- a/drivers/md/md.c
+> +++ b/drivers/md/md.c
+> @@ -474,7 +474,7 @@ void md_super_write(mddev_t *mddev, mdk_rdev_t *rdev,
+>  	 * causes ENOTSUPP, we allocate a spare bio...
+>  	 */
+>  	struct bio *bio = bio_alloc(GFP_NOIO, 1);
+> -	int rw = (1<<BIO_RW) | (1<<BIO_RW_SYNC);
+> +	int rw = (1<<BIO_RW) | (1<<BIO_RW_SYNCIO) | (1<<BIO_RW_UNPLUG);
+>  
+>  	bio->bi_bdev = rdev->bdev;
+>  	bio->bi_sector = sector;
+> @@ -531,7 +531,7 @@ int sync_page_io(struct block_device *bdev, sector_t sector, int size,
+>  	struct completion event;
+>  	int ret;
+>  
+> -	rw |= (1 << BIO_RW_SYNC);
+> +	rw |= (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_UNPLUG);
+>  
+>  	bio->bi_bdev = bdev;
+>  	bio->bi_sector = sector;
+> diff --git a/include/linux/bio.h b/include/linux/bio.h
+> index 2aa283a..1b16108 100644
+> --- a/include/linux/bio.h
+> +++ b/include/linux/bio.h
+> @@ -171,8 +171,6 @@ struct bio {
+>  #define BIO_RW_FAILFAST_TRANSPORT	8
+>  #define BIO_RW_FAILFAST_DRIVER		9
+>  
+> -#define BIO_RW_SYNC	(BIO_RW_SYNCIO | BIO_RW_UNPLUG)
+> -
+>  #define bio_rw_flagged(bio, flag)	((bio)->bi_rw & (1 << (flag)))
+>  
+>  /*
+> diff --git a/include/linux/blktrace_api.h b/include/linux/blktrace_api.h
+> index 25379cb..6e91587 100644
+> --- a/include/linux/blktrace_api.h
+> +++ b/include/linux/blktrace_api.h
+> @@ -15,6 +15,7 @@ enum blktrace_cat {
+>  	BLK_TC_WRITE	= 1 << 1,	/* writes */
+>  	BLK_TC_BARRIER	= 1 << 2,	/* barrier */
+>  	BLK_TC_SYNC	= 1 << 3,	/* sync IO */
+> +	BLK_TC_SYNCIO	= BLK_TC_SYNC,
+>  	BLK_TC_QUEUE	= 1 << 4,	/* queueing/merging */
+>  	BLK_TC_REQUEUE	= 1 << 5,	/* requeueing */
+>  	BLK_TC_ISSUE	= 1 << 6,	/* issue */
+> diff --git a/include/linux/fs.h b/include/linux/fs.h
+> index 6022f44..67857dc 100644
+> --- a/include/linux/fs.h
+> +++ b/include/linux/fs.h
+> @@ -87,10 +87,10 @@ struct inodes_stat_t {
+>  #define WRITE 1
+>  #define READA 2		/* read-ahead  - don't block if no resources */
+>  #define SWRITE 3	/* for ll_rw_block() - wait for buffer lock */
+> -#define READ_SYNC	(READ | (1 << BIO_RW_SYNC))
+> +#define READ_SYNC	(READ | (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_UNPLUG))
+>  #define READ_META	(READ | (1 << BIO_RW_META))
+> -#define WRITE_SYNC	(WRITE | (1 << BIO_RW_SYNC))
+> -#define SWRITE_SYNC	(SWRITE | (1 << BIO_RW_SYNC))
+> +#define WRITE_SYNC	(WRITE | (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_UNPLUG))
+> +#define SWRITE_SYNC	(SWRITE | (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_UNPLUG))
+>  #define WRITE_BARRIER	(WRITE | (1 << BIO_RW_BARRIER))
+>  #define DISCARD_NOBARRIER (1 << BIO_RW_DISCARD)
+>  #define DISCARD_BARRIER ((1 << BIO_RW_DISCARD) | (1 << BIO_RW_BARRIER))
+> diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+> index 6da1435..505f319 100644
+> --- a/kernel/power/swap.c
+> +++ b/kernel/power/swap.c
+> @@ -60,6 +60,7 @@ static struct block_device *resume_bdev;
+>  static int submit(int rw, pgoff_t page_off, struct page *page,
+>  			struct bio **bio_chain)
+>  {
+> +	const int bio_rw = rw | (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_UNPLUG);
+>  	struct bio *bio;
+>  
+>  	bio = bio_alloc(__GFP_WAIT | __GFP_HIGH, 1);
+> @@ -80,7 +81,7 @@ static int submit(int rw, pgoff_t page_off, struct page *page,
+>  	bio_get(bio);
+>  
+>  	if (bio_chain == NULL) {
+> -		submit_bio(rw | (1 << BIO_RW_SYNC), bio);
+> +		submit_bio(bio_rw, bio);
+>  		wait_on_page_locked(page);
+>  		if (rw == READ)
+>  			bio_set_pages_dirty(bio);
+> @@ -90,7 +91,7 @@ static int submit(int rw, pgoff_t page_off, struct page *page,
+>  			get_page(page);	/* These pages are freed later */
+>  		bio->bi_private = *bio_chain;
+>  		*bio_chain = bio;
+> -		submit_bio(rw | (1 << BIO_RW_SYNC), bio);
+> +		submit_bio(bio_rw, bio);
+>  	}
+>  	return 0;
+>  }
+> diff --git a/mm/page_io.c b/mm/page_io.c
+> index dc6ce0a..3023c47 100644
+> --- a/mm/page_io.c
+> +++ b/mm/page_io.c
+> @@ -111,7 +111,7 @@ int swap_writepage(struct page *page, struct writeback_control *wbc)
+>  		goto out;
+>  	}
+>  	if (wbc->sync_mode == WB_SYNC_ALL)
+> -		rw |= (1 << BIO_RW_SYNC);
+> +		rw |= (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_UNPLUG);
+>  	count_vm_event(PSWPOUT);
+>  	set_page_writeback(page);
+>  	unlock_page(page);
 > 
-> Would you be willing to enable CONFIG_RCU_TRACE and CONFIG_TREE_RCU,
-> reproduce this and send the output of the debugfs files rcu/rcudata
-> and rcu/rcuhier?  The commands for this would be:
-> 
-> 	mkdir /debug || :
-> 	mount -t debugfs debugfs /debug
-> 	cat /debug/rcu/rcuhier
-> 	cat /debug/rcu/rcudata
-> 
-> I will try to reproduce locally as well.
-> 
-> 							Thanx, Paul
+> -- 
+> Jens Axboe
 
+-- 
+MST
