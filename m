@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756033AbZBPBQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756047AbZBPBVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756033AbZBPBQV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 20:16:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754749AbZBPBQK
+	id S1756047AbZBPBVr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 20:21:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbZBPBVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 20:16:10 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:45439 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754216AbZBPBQI (ORCPT
+	Sun, 15 Feb 2009 20:21:37 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:49731 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754560AbZBPBVh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 20:16:08 -0500
-Date: Mon, 16 Feb 2009 01:16:00 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>, Len Brown <len.brown@intel.com>,
-       Thomas Renninger <trenn@suse.de>, Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [Bug #12401] 2.6.28 regression: xbacklight broken on ThinkPad X61s
-Message-ID: <20090216011600.GA28929@srcf.ucam.org>
-References: <sTyoMUwdm9B.A.QCH.U40lJB@chimera> <ROx6X68CGJG.A.FEB.M50lJB@chimera> <20090215134409.GC21670@srcf.ucam.org> <200902151538.29766.rjw@sisk.pl> <20090215221647.GA15392@dose.home.local>
+	Sun, 15 Feb 2009 20:21:37 -0500
+Date: Mon, 16 Feb 2009 09:21:10 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Matt Mackall <mpm@selenic.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-crypto@vger.kernel.org, Geert.Uytterhoeven@sonycom.com
+Subject: Re: [PATCH] Export symbol ksize()
+Message-ID: <20090216012110.GA13575@gondor.apana.org.au>
+References: <Pine.LNX.4.64.0902101605070.20991@melkki.cs.Helsinki.FI> <20090212104349.GA13859@gondor.apana.org.au> <1234435521.28812.165.camel@penberg-laptop> <20090212105034.GC13859@gondor.apana.org.au> <1234454104.28812.175.camel@penberg-laptop> <20090215133638.5ef517ac.akpm@linux-foundation.org> <1234734194.5669.176.camel@calx> <20090215135555.688ae1a3.akpm@linux-foundation.org> <1234741781.5669.204.camel@calx> <20090215170052.44ee8fd5.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090215221647.GA15392@dose.home.local>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20090215170052.44ee8fd5.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 15, 2009 at 11:16:47PM +0100, Tino Keitel wrote:
+On Sun, Feb 15, 2009 at 05:00:52PM -0800, Andrew Morton wrote:
+>
+> But kmem_cache_size() would tell you how much extra secret memory there
+> is available after the object?
+> 
+> How that gets along with redzoning is a bit of a mystery though.
+> 
+> The whole concept is quite hacky and nasty, isn't it?.  Does
+> networking/crypto actually show any gain from pulling this stunt?
 
-> I think if it works without DRI in 2.6.27 and doesn't work in 2.6.28,
-> it isn't a configuration error, but a real regression.
+I see no point in calling ksize on memory that's not kmalloced.
+So no there is nothing to be gained from having kmem_cache_ksize.
 
-It only worked by accident without DRM support, since you were using the 
-ATI codepath in the firmware rather than the Intel one. That bug's been 
-fixed, so now you're following the Intel codepath - unfortunately 
-there's no way to do that without kernel-level graphics support, which 
-means DRM.
+However, for kmalloced memory we're wasting hundreds of bytes
+for the standard 1500 byte allocation without ksize which means
+that we're doing reallocations (and sometimes copying) when it
+isn't necessary.
 
+Cheers,
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
