@@ -1,81 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbZBPU2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752419AbZBPU3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754039AbZBPU2r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 15:28:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751331AbZBPU2h
+	id S1752419AbZBPU3L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 15:29:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbZBPU2y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 15:28:37 -0500
-Received: from casper.infradead.org ([85.118.1.10]:40786 "EHLO
+	Mon, 16 Feb 2009 15:28:54 -0500
+Received: from casper.infradead.org ([85.118.1.10]:40792 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751209AbZBPU2g (ORCPT
+	with ESMTP id S1751799AbZBPU2x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 15:28:36 -0500
-Subject: Re: RT scheduling and a way to make a process hang, unkillable
-From: Peter Zijlstra <peterz@infradead.org>
+	Mon, 16 Feb 2009 15:28:53 -0500
+Date: Mon, 16 Feb 2009 12:28:30 -0800
+From: Arjan van de Ven <arjan@infradead.org>
 To: Kyle Moffett <kyle@moffetthome.net>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Corey Hickey <bugfood-ml@fatooh.org>, linux-kernel@vger.kernel.org,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, mtk.manpages@gmail.com
-In-Reply-To: <f73f7ab80902161216j8690f05sf1103759cc932846@mail.gmail.com>
-References: <4997672B.1000301@fatooh.org> <1234697096.4713.24.camel@laptop>
-	 <20090216103636.GC17355@linux.vnet.ibm.com>
-	 <f73f7ab80902161216j8690f05sf1103759cc932846@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 16 Feb 2009 21:28:24 +0100
-Message-Id: <1234816104.30178.362.camel@laptop>
+Cc: Oliver Neukum <oliver@neukum.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arve =?UTF-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>,
+       Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       mark gross <mgross@linux.intel.com>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFD] Automatic suspend
+Message-ID: <20090216122830.4096c5b0@infradead.org>
+In-Reply-To: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
+References: <200902160010.16955.rjw@sisk.pl>
+	<200902160806.17901.oliver@neukum.org>
+	<20090216074048.6d70f17c@infradead.org>
+	<200902161748.09208.oliver@neukum.org>
+	<20090216093108.078aac35@infradead.org>
+	<f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.25.90 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-16 at 15:16 -0500, Kyle Moffett wrote:
-> On Mon, Feb 16, 2009 at 5:36 AM, Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-> > On Sun, Feb 15, 2009 at 12:24:56PM +0100, Peter Zijlstra wrote:
-> >> On Sat, 2009-02-14 at 16:51 -0800, Corey Hickey wrote:
-> >> > The procedure is for a program to:
-> >> > 1. run as root
-> >> > 2. set SCHED_FIFO
-> >> > 3. change UID to a user with no realtime CPU share allocated
-> >>
-> >> Hmm, setuid() should fail in that situation.
-> >>
-> >> /me goes peek at code.
-> >>
-> >> Can't find any code to make that happen, Dhaval didn't we fix that at
-> >> one point?
-> >
-> > So after some searching around, I realized we did not. Does this help?
-> > It fixes it on my system,
-> >
-> > --
-> > sched: Don't allow setuid to succeed if the user does not have rt bandwidth
-> 
-> Erm, hrm, this reminds me of the old sendmail capabilities bug.  There
-> are an awful lot of buggy binaries out there who assume that if they
-> have uid 0 and they call setuid() that it cannot fail.  They then do
-> all sorts of insecure operations, assuming that they have dropped to
-> an unprivileged UID.  This one is especially bad because it could bite
-> *any* program using setuid() which an admin happens to run with chrt.
-> 
-> Specifically, I personally think that:
->   *  Process is stuck and unkillable
-> 
-> is a much better result than:
->   *  Process runs arbitrary untrusted code with full-root privs in RT mode.
+On Mon, 16 Feb 2009 15:08:09 -0500
+Kyle Moffett <kyle@moffetthome.net> wrote:
 
-You have a point, however there are plenty of ways to fail setuid(), one
-of them is severe memory pressure, another is exceeding rlimits, also
-the security_*() hooks can do pretty much whatever.
+> I think it would be very useful to have a mechanism for userspace to
+> find out "Link detection on this NIC costs ~50mW" and "No link has
+> been detected for the last 15 minutes", so that it can compile all
+> that sort of information and prompt the user what devices they would
+> like to disable.  Perhaps an "airline mode" sort of thing
 
-So while security is important, its IMHO not a good enough reason to
-preserve broken stuff.
+modes suck... they're very much the wrong concept for power management
+(but that's a different story)
 
-[ dhaval, michael, it appears setuid() already returns errors outside
-those specified by POSIX, so I'd rather fail with -ENOTIME, or similar,
-rather than with -EAGAIN ]
+if the user (or something on its behalf) doesn't need link detection,
+he can turn it off. Really. He doesn't need to know that maybe on
+machine one this saves some power, and on machine two that power was
+already mostly saved while on machine three it doesn't save anything at
+all. Not to mention that the driver is extremely unlikely to know how
+much actual power will be saved...
+ 
 
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
