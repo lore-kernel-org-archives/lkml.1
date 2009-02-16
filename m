@@ -1,70 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbZBPXnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756160AbZBPXoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755810AbZBPXnV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 18:43:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbZBPXnL
+	id S1756160AbZBPXoQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 18:44:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbZBPXn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 18:43:11 -0500
-Received: from omr3.bezeqint.net ([192.115.104.13]:54040 "EHLO
-	omr3.bezeqint.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751402AbZBPXnK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 18:43:10 -0500
-X-Mirapoint-IP-Reputation: reputation=good-1,
-	source=Fixed,
-	refid=n/a,
-	actions=tag
-From: Union Home <info@loan.com>
-Subject: Greetings!!!
-To: info@loan.com
-Reply-To: unionhome_processingdept@8u8.com
-X-Mailer: Mirapoint Webmail Direct 3.8.6-GA
+	Mon, 16 Feb 2009 18:43:59 -0500
+Received: from smtp8.mana.pf ([202.3.225.219]:48103 "EHLO smtp8.mana.pf"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751874AbZBPXn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 18:43:58 -0500
+X-Greylist: delayed 878 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Feb 2009 18:43:58 EST
+Message-ID: <4999F6C8.3050001@sysnux.pf>
+Date: Mon, 16 Feb 2009 13:29:12 -1000
+From: Jean-Denis Girard <jd.girard@sysnux.pf>
+Organization: SysNux
+User-Agent: Thunderbird 2.0.0.19 (X11/20090114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090217014519.FFS91469@mas25.bezeqint.net>
-Date: Tue, 17 Feb 2009 01:45:19 +0200 (IST)
-X-Junkmail-Status: score=10/45, host=mr10.bezeqint.net
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A0B020A.4999FA09.0195,ss=1,fgs=0,
-	ip=192.115.104.155,
-	so=2008-09-22 23:22:13,
-	dmn=5.7.1/2008-09-02,
-	mode=single engine
-X-Junkmail-IWF: false
+To: linux-kernel <linux-kernel@vger.kernel.org>
+CC: linux-usb@vger.kernel.org
+Subject: ttyUSB sendbreak problem
+X-Enigmail-Version: 0.95.7
+OpenPGP: url=http://www.sysnux.pf/jdg.asc
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Sir/Madam
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-This is Union Home Uk   , a reputable, legal & Money lending 
-private firm in Uk. We loan money out to individuals and 
-company's in need of financial assistance. We give out loans 
-at 2.8% interest rate.
+Hi list,
 
-At Union Home base in Uk, we have a variety of loan services 
-suited for you in a low  Interest Rate .Apply  if you are 
-interested with the below information:
+I'm writing a program which communicates via modem with an embedded
+device (electrical network monitoring). The frames are terminated by a
+BREAK.
 
-1. Full name.....
-2. Address.......
-3. Sex.........
-4. Age........
-5. country.......
-6. occupation........
-7. Amount of loan needed.....
-8. Duration of loan.......
-9. phone number..........
-10.Anual Income..........
-11.Purpose Of Loan:......
+My program works fine when I use a Cyclades 8Yo multiports card, but
+fails using USB to serial adapters (tried with pl2303 and FTDI
+converters). I suspect that the BREAK are not passed correctly, but I
+don't have equipment to check.
 
-CONTACT LOAN PROCCESSING OFFICER :
-Name:Mike Adams
-Email: unionhome_processingdept@8u8.com
+I've tried with:
+ tcsendbreak(modem,0);
+ ioctl(modem, TCSBRK,0);
+ ioctl(modem, TCSBRKP, 0);
 
-We Look forward permitting Us to be at your service.
-Sincerely,
+- From pl2303 debug mode, I see that pl2303_break_ctl is called:
+ drivers/usb/serial/pl2303.c: pl2303_break_ctl - port 0
+ drivers/usb/serial/pl2303.c: pl2303_break_ctl - turning break on
+ drivers/usb/serial/pl2303.c: pl2303_write_bulk_callback - port 0
+ drivers/usb/serial/pl2303.c: pl2303_send - port 0
+ drivers/usb/serial/pl2303.c: pl2303_break_ctl - port 0
+ drivers/usb/serial/pl2303.c: pl2303_break_ctl - turning break off
 
-Mrs. Lisa S. Jakes
-Union Home
+I found a few references of similar problems in the past, but it was for
+older kernels (I'm using 2.6.28.4), so the question remains: should it
+work or is there a known problem sending BREAK using ttyUSB?
+
+
+Thanks,
+- --
+Jean-Denis Girard
+
+SysNux                  Systèmes  Linux  en Polynésie française
+http://www.sysnux.pf/   Tél: +689 50 10 40 / GSM: +689 79 75 27
+-----BEGIN PGP SIGNATURE-----
+
+iEYEARECAAYFAkmZ9sgACgkQuu7Rv+oOo/iFuQCeJSaxikghrQhjS68WKU0Hc//7
+wZQAn2XMnmunfW2avO/uPFQDrw+s9INO
+=AB0j
+-----END PGP SIGNATURE-----
