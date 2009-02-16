@@ -1,59 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbZBPVzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751954AbZBPWBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756821AbZBPVzs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 16:55:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbZBPVz0
+	id S1751954AbZBPWBS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 17:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750880AbZBPWBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 16:55:26 -0500
-Received: from bu3sch.de ([62.75.166.246]:36474 "EHLO vs166246.vserver.de"
+	Mon, 16 Feb 2009 17:01:04 -0500
+Received: from cmpxchg.org ([85.214.51.133]:58575 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756665AbZBPVzZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 16:55:25 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [PATCH] spi-gpio: Implement spidelay() for busses that need it.
-Date: Mon, 16 Feb 2009 22:53:46 +0100
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <200902151923.00120.mb@bu3sch.de> <200902161242.27773.david-b@pacbell.net>
-In-Reply-To: <200902161242.27773.david-b@pacbell.net>
-MIME-Version: 1.0
+	id S1750814AbZBPWBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 17:01:01 -0500
+Date: Mon, 16 Feb 2009 23:03:02 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] vmscan: initialize sc.order in indirect shrink_list() users
+Message-ID: <20090216220302.GA3415@cmpxchg.org>
+References: <20090210165134.GA2457@cmpxchg.org> <20090210162948.bd20d853.akpm@linux-foundation.org> <20090211015227.GA4605@cmpxchg.org> <20090216145349.GC16153@csn.ul.ie>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902162253.46704.mb@bu3sch.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20090216145349.GC16153@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 16 February 2009 21:42:27 David Brownell wrote:
-> [
->   NOTE:  removed openwrt from the cc list, it rejects posts
->   from non-subscribers.  Please don't cc such lists.
-> ]
-
-I'm sorry, I didn't know that it bounces nonsubscribers.
-
-> On Sunday 15 February 2009, Michael Buesch wrote:
-> > + * NOTE:  to clock "as fast as we can", set spi_device.max_speed_hz
-> > + * and spi_transfer.speed_hz to 0.
+On Mon, Feb 16, 2009 at 02:53:49PM +0000, Mel Gorman wrote:
+> On Wed, Feb 11, 2009 at 02:52:27AM +0100, Johannes Weiner wrote:
+> > [added Mel to CC]
+> > 
+> > On Tue, Feb 10, 2009 at 04:29:48PM -0800, Andrew Morton wrote:
+> > > On Tue, 10 Feb 2009 17:51:35 +0100
+> > > Johannes Weiner <hannes@cmpxchg.org> wrote:
+> > > 
+> > > > shrink_all_memory() and __zone_reclaim() currently don't initialize
+> > > > the .order field of their scan control.
+> > > > 
+> > > > Both of them call into functions which use that field and make certain
+> > > > decisions based on a random value.
+> > > > 
+> > > > The functions depending on the .order field are marked with a star,
+> > > > the faulty entry points are marked with a percentage sign:
+> > > > 
+> > > > * shrink_page_list()
+> > > >   * shrink_inactive_list()
+> > > >   * shrink_active_list()
+> > > >     shrink_list()
+> > > >       shrink_all_zones()
+> > > >         % shrink_all_memory()
+> > > >       shrink_zone()
+> > > >         % __zone_reclaim()
+> > > > 
+> > > > Initialize .order to zero in shrink_all_memory().  Initialize .order
+> > > > to the order parameter in __zone_reclaim().
+> > > > 
+> > > > Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> > > > ---
+> > > >  mm/vmscan.c |    2 ++
+> > > >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > > > 
+> > > > diff --git a/mm/vmscan.c b/mm/vmscan.c
+> > > > index 4422301..9ce85ea 100644
+> > > > --- a/mm/vmscan.c
+> > > > +++ b/mm/vmscan.c
+> > > > @@ -2112,6 +2112,7 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
+> > > >  		.may_unmap = 0,
+> > > >  		.swap_cluster_max = nr_pages,
+> > > >  		.may_writepage = 1,
+> > > > +		.order = 0,
+> > > >  		.isolate_pages = isolate_pages_global,
+> > > >  	};
+> > > >  
+> > > > @@ -2294,6 +2295,7 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+> > > >  					SWAP_CLUSTER_MAX),
+> > > >  		.gfp_mask = gfp_mask,
+> > > >  		.swappiness = vm_swappiness,
+> > > > +		.order = order,
+> > > >  		.isolate_pages = isolate_pages_global,
+> > > >  	};
+> > > >  	unsigned long slab_reclaimable;
+> > > 
+> > > The second hunk might fix something, but it would need a correcter
+> > > changelog, and some thought about what its runtimes effects are likely
+> > > to be, please.
+> > 
+> > zone_reclaim() is used by the watermark rebalancing of the buddy
+> > allocator right before trying to do an allocation.  Even though it
+> > tries to reclaim at least 1 << order pages, it doesn't raise sc.order
+> > to increase clustering efforts.
+> > 
 > 
-> Won't work; if spi->max_speed_hz is zero, spi_async() and
-> friends will refuse to queue any messages.
+> This affects lumpy reclaim. Direct reclaim via try_to_free_pages() and
+> kswapd() is still working but the earlier reclaim attempt via zone_reclaim()
+> on unmapped file and slab pages is ignoring teh order. While it'd be tricky
+> to measure any difference, it does make sense that __zone_reclaim() initialse
+> the order with what the caller requested.
+> 
+> > I think this happens with the assumption that the upcoming allocation
+> > can still succeed and in that case we don't want to lump too
+> > aggressively to refill the zone. 
+> 
+> I don't get what you mean here. The caller requested the higher order so
+> the work has been requested.
 
-Well, why would they do this? Any special reason?
+I meant the buffered_rmqueue() might still succeed even without lumpy
+reclaim in the case of low watermarks reached.  And if it does, we
+reclaimed 'in aggressive mode without reason'.  If it does NOT, we
+still drop into direct reclaim with lumpy reclaim.  Well, this is at
+least what I had in mind when writing the above.
 
-> I'm not averse to a solution that lets some boards use a
-> slowed-down bitbang loop.  But it would be a lot easier
-> if you kept the default the way it is, and just added
-> that slowdown as an option for the existing customization
-> case (currently oriented towards speedup, not slowdown).
+> > The allocation might succeed on
+> > another zone and now we have evicted precious pages due to clustering
+> > while we are still not sure it's even needed.
+> > 
+> 
+> Also not sure what you are getting at here. zone_reclaim() is called for the
+> preferred zones in order. Attempts are made to free within the preferred zone
+> and then allocate from it. Granted, it might evict pages and the clustering
+> was ineffective, but this is the cost of high-order reclaim.
 
-Tell me how to. This patch works for me and I'm only going to change it
-if you tell me how to. I'm not so involved in the SPI subsystem that I can
-see another obvious way to do this. So I need some advise, please.
+Sure, agreed.  I was just wondering whether higher-order reclaim was
+needed up-front when the low watermarks are reached or if it was
+enough when direct reclaim is lumpy in case the allocation fails.
 
--- 
-Greetings, Michael.
+	Hannes
