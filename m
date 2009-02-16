@@ -1,86 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752860AbZBPWGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752087AbZBPWNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752860AbZBPWGX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 17:06:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbZBPWGP
+	id S1752087AbZBPWNc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 17:13:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbZBPWNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 17:06:15 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:56835 "EHLO mx2.redhat.com"
+	Mon, 16 Feb 2009 17:13:23 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:57637 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750740AbZBPWGO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 17:06:14 -0500
-Date: Mon, 16 Feb 2009 23:02:14 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: Re: Q: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove
-	single ipi fallback for smp_call_function_many())
-Message-ID: <20090216220214.GA10093@redhat.com>
-References: <20090216163847.431174825@chello.nl> <20090216164114.433430761@chello.nl> <20090216204902.GA6924@redhat.com> <1234818201.30178.386.camel@laptop> <20090216213205.GA9098@redhat.com> <1234820704.30178.396.camel@laptop>
+	id S1750740AbZBPWNW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 17:13:22 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [RFD] Automatic suspend
+Date: Mon, 16 Feb 2009 23:12:48 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       mark gross <mgross@linux.intel.com>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+References: <200902160010.16955.rjw@sisk.pl> <200902162248.34287.rjw@sisk.pl> <20090216135339.53b4a911@infradead.org>
+In-Reply-To: <20090216135339.53b4a911@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1234820704.30178.396.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200902162312.50556.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/16, Peter Zijlstra wrote:
->
-> On Mon, 2009-02-16 at 22:32 +0100, Oleg Nesterov wrote:
-> > > I was about to write a response, but found it to be a justification for
-> > > the read_barrier_depends() at the end of the loop.
-> >
-> > I forgot to mention I don't understand the read_barrier_depends() at the
-> > end of the loop as well ;)
->
-> Suppose cpu0 adds to csd to cpu1:
->
->
->  cpu0:                 cpu1:
->
-> add entry1
-> mb();
-> send ipi
->                       run ipi handler
->                       read_barrier_depends()
->                       while (!list_empty())    [A]
->                         do foo
->
-> add entry2
-> mb();
-> [no ipi -- we still observe entry1]
->
->                         remove foo
->                         read_barrier_depends()
->                       while (!list_empty())      [B]
+On Monday 16 February 2009, Arjan van de Ven wrote:
+> On Mon, 16 Feb 2009 22:48:32 +0100
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > > Userland should never ever control the state of a device like this
+> > > directly. It should do so by a) closing the device and b) setting
+> > > latency / functional requirements.
+> > 
+> > The user, however, may want to forcibly put a device into a low power
+> > state without stopping all of the applications that depend on it (eg.
+> > have it open). Do you think that we shouldn't allow users to do such
+> > things?
+> 
+> I would think that that is a bad mistake to do. It basically breaks the 
+> contract that the kernel has with userspace.... 
 
-Still can't understand.
+OK, so I think there are two things that user space may be allowed to do as
+far as putting devices into low power states is concerned:
+* disable/enable the automatic power management of the device (provided that
+  the driver supports the automatic PM)
+* check what power states devices are in.
 
-cpu1 (generic_smp_call_function_single_interrupt) does
-list_replace_init(q->lock), this lock is also taken by
-generic_exec_single().
-
-Either cpu1 sees entry2 on list, or cpu0 sees list_empty()
-and sends ipi.
-
-> The read_barrier_depends() matches the mb() on the other cpu, without
-> which the 'new' entry might not be observed.
-
-And that mb() looks unneeded too. Again, because
-generic_smp_call_function_single_interrupt() takes call_single_queue.lock
-before it uses "data".
-
-
-Even if I missed something (very possible), then I can't understand
-why we need rmb() only on alpha.
-
-Oleg.
-
+Thanks,
+Rafael
