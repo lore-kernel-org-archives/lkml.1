@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbZBPUmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbZBPUnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754073AbZBPUmj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 15:42:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbZBPUmb
+	id S1754822AbZBPUnT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 15:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbZBPUnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 15:42:31 -0500
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:22917 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751252AbZBPUmb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 15:42:31 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=YMyP/dSYuZsMbJNKdoFpT83y+afiSBknxVyzY1deO9UGu4rPXEjFnhnAGV6v8v4z11mFhrc81xemYhs4TiudxyeQPyvm/9ZrpGqg4hZF0jF66REUsbbNif/ufQGbPTjIWYIWTLg0L5m3Gep1Fpa6psOdp80Sruk6O6fxI3+V7WA=  ;
-X-YMail-OSG: VCceXGgVM1lu.LVY1xqwQiPDkVuvatKw.IYB30wPO6shTpRWhGZ5yygo6FY3hfoE4kNlKHRaTwuCVBS959ZRC5dwOWgDFqHCO4KAMreSG9.dLoogj7jd5g.lapWI8MGVRmRqlxhF7zL7S42Vqkk9QAZjkv3HLeIfd.mH.GQFTzbNM_UtI0_vXtSVotPL
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Michael Buesch <mb@bu3sch.de>
-Subject: Re: [PATCH] spi-gpio: Implement spidelay() for busses that need it.
-Date: Mon, 16 Feb 2009 12:42:27 -0800
-User-Agent: KMail/1.9.10
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <200902151923.00120.mb@bu3sch.de>
-In-Reply-To: <200902151923.00120.mb@bu3sch.de>
+	Mon, 16 Feb 2009 15:43:05 -0500
+Received: from ns2.mvista.com ([63.81.120.155]:1786 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751881AbZBPUnD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 15:43:03 -0500
+Message-ID: <4999CFEB.3030204@ru.mvista.com>
+Date: Mon, 16 Feb 2009 23:43:23 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       Mark Lord <liml@rtr.ca>,
+       =?UTF-8?B?SGFubm8=?= =?UTF-8?B?IELDtmNr?= <hanno@hboeck.de>
+Subject: Re: [PATCH] libata: Don't trust current capacity values in identify
+ words 57-58
+References: <4999CA54.1060306@gmail.com>
+In-Reply-To: <4999CA54.1060306@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200902161242.27773.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[
-  NOTE:  removed openwrt from the cc list, it rejects posts
-  from non-subscribers.  Please don't cc such lists.
-]
+Robert Hancock wrote:
 
-On Sunday 15 February 2009, Michael Buesch wrote:
-> + * NOTE:  to clock "as fast as we can", set spi_device.max_speed_hz
-> + * and spi_transfer.speed_hz to 0.
+> Hanno BÃ¶ck reported a problem where an old Conner CP30254 240MB hard drive
+> was reported as 1.1TB in capacity by libata:
 
-Won't work; if spi->max_speed_hz is zero, spi_async() and
-friends will refuse to queue any messages.
+> http://lkml.org/lkml/2009/2/13/134
 
-I'm not averse to a solution that lets some boards use a
-slowed-down bitbang loop.  But it would be a lot easier
-if you kept the default the way it is, and just added
-that slowdown as an option for the existing customization
-case (currently oriented towards speedup, not slowdown).
+> This was caused by libata trusting the drive's reported current capacity in 
+> sectors in identify words 57 and 58 if the drive does not support LBA and the
+> current CHS translation values appear valid. Unfortunately it seems older
+> ATA specs were vague about what this field should contain and a number of drives
+> used values with wrong byte order or that were totally bogus. There's no
+> unique information that it conveys and so we can just calculate the number
+> of sectors from the reported current CHS values.
 
-- Dave
+> Signed-off-by: Robert Hancock <hancockrwd@gmail.com>
+
+> ---
+
+> Should likely go into -next for testing for a while. Of course, the fact that
+> this problem showed up in the first place shows that the number of people
+> that test libata with such boat anchors is fairly small :-)
+
+    It's been tested well enough for years in the IDE core I think.
+
+> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+> index 9fbf059..5389cbc 100644
+> --- a/drivers/ata/libata-core.c
+> +++ b/drivers/ata/libata-core.c
+> @@ -1327,7 +1327,7 @@ static u64 ata_id_n_sectors(const u16 *id)
+>  			return ata_id_u32(id, 60);
+>  	} else {
+>  		if (ata_id_current_chs_valid(id))
+> -			return ata_id_u32(id, 57);
+> +			return id[54] * id[55] * id[56];
+
+    We have mnemonics for these 3 words in <linux/ata.h>...
+
+MBR, Sergei
