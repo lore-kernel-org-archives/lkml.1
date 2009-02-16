@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753619AbZBPUj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbZBPUmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753619AbZBPUj3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 15:39:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbZBPUjU
+	id S1754073AbZBPUmj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 15:42:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbZBPUmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 15:39:20 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:1749 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751104AbZBPUjU (ORCPT
+	Mon, 16 Feb 2009 15:42:31 -0500
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:22917 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751252AbZBPUmb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 15:39:20 -0500
-Date: Mon, 16 Feb 2009 15:39:15 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Kyle Moffett <kyle@moffetthome.net>
-cc: Arjan van de Ven <arjan@infradead.org>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       =?UTF-8?B?QXJ2ZSBIasO4bm5ldsOlZw==?= <arve@android.com>,
-       Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFD] Automatic suspend
-In-Reply-To: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0902161537080.19732-100000@netrider.rowland.org>
+	Mon, 16 Feb 2009 15:42:31 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=YMyP/dSYuZsMbJNKdoFpT83y+afiSBknxVyzY1deO9UGu4rPXEjFnhnAGV6v8v4z11mFhrc81xemYhs4TiudxyeQPyvm/9ZrpGqg4hZF0jF66REUsbbNif/ufQGbPTjIWYIWTLg0L5m3Gep1Fpa6psOdp80Sruk6O6fxI3+V7WA=  ;
+X-YMail-OSG: VCceXGgVM1lu.LVY1xqwQiPDkVuvatKw.IYB30wPO6shTpRWhGZ5yygo6FY3hfoE4kNlKHRaTwuCVBS959ZRC5dwOWgDFqHCO4KAMreSG9.dLoogj7jd5g.lapWI8MGVRmRqlxhF7zL7S42Vqkk9QAZjkv3HLeIfd.mH.GQFTzbNM_UtI0_vXtSVotPL
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Michael Buesch <mb@bu3sch.de>
+Subject: Re: [PATCH] spi-gpio: Implement spidelay() for busses that need it.
+Date: Mon, 16 Feb 2009 12:42:27 -0800
+User-Agent: KMail/1.9.10
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <200902151923.00120.mb@bu3sch.de>
+In-Reply-To: <200902151923.00120.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200902161242.27773.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Feb 2009, Kyle Moffett wrote:
+[
+  NOTE:  removed openwrt from the cc list, it rejects posts
+  from non-subscribers.  Please don't cc such lists.
+]
 
-> Userspace may not have a useful decision-making capability regarding
-> functionality versus power-saving, but the user it's talking to might!
-> 
-> I think it would be very useful to have a mechanism for userspace to
-> find out "Link detection on this NIC costs ~50mW" and "No link has
-> been detected for the last 15 minutes", so that it can compile all
-> that sort of information and prompt the user what devices they would
-> like to disable.  Perhaps an "airline mode" sort of thing?
+On Sunday 15 February 2009, Michael Buesch wrote:
+> + * NOTE:  to clock "as fast as we can", set spi_device.max_speed_hz
+> + * and spi_transfer.speed_hz to 0.
 
-Even if drivers don't know how much power their devices consume (and
-generally I wouldn't expect them to), it still makes sense to offer
-userspace the discretionary power to force devices into a low-power
-mode.  USB does this.
+Won't work; if spi->max_speed_hz is zero, spi_async() and
+friends will refuse to queue any messages.
 
-Alan Stern
+I'm not averse to a solution that lets some boards use a
+slowed-down bitbang loop.  But it would be a lot easier
+if you kept the default the way it is, and just added
+that slowdown as an option for the existing customization
+case (currently oriented towards speedup, not slowdown).
 
+- Dave
