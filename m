@@ -1,98 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbZBPSZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753385AbZBPS0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752743AbZBPSZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 13:25:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbZBPSZQ
+	id S1753385AbZBPS0m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 13:26:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbZBPS0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 13:25:16 -0500
-Received: from smtp4-g21.free.fr ([212.27.42.4]:41211 "EHLO smtp4-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751303AbZBPSZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 13:25:15 -0500
-From: Philippe Grenard <philippe.grenard@laposte.net>
+	Mon, 16 Feb 2009 13:26:33 -0500
+Received: from newton.gmurray.org.uk ([81.2.114.237]:53445 "EHLO
+	newton.gmurray.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751332AbZBPS0c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 13:26:32 -0500
+X-Greylist: delayed 2036 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Feb 2009 13:26:32 EST
+X-DKIM: Sendmail DKIM Filter v2.8.1 newton.gmurray.org.uk n1GHqZhO011321
+From: Graham Murray <graham@gmurray.org.uk>
 To: linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: cannot get stable system since 2.6.28 kernel (amd64)
-Date: Mon, 16 Feb 2009 19:25:40 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.27.10-phiphi; KDE/4.2.0; x86_64; ; )
-Cc: "John Stoffel" <john@stoffel.org>
-References: <200902131944.56634.philippe.grenard@laposte.net> <200902151317.11690.philippe.grenard@laposte.net> <18840.45474.829954.528820@stoffel.org>
-In-Reply-To: <18840.45474.829954.528820@stoffel.org>
+Subject: Re: [Bug #12444] X hangs following switch from radeonfb console - Bisected
+References: <juADNmcceYF.A.mdD.Mr0lJB@chimera>
+	<rjPbZ5GRJPO.A._pG.Lt0lJB@chimera>
+X-Hashcash: 1:22:090216:linux-kernel@vger.kernel.org::UTzct0umASMcaQ2N:000000000000000000000000000000000Z5Lp
+Date: Mon, 16 Feb 2009 17:52:34 +0000
+In-Reply-To: <rjPbZ5GRJPO.A._pG.Lt0lJB@chimera> (Rafael J. Wysocki's message
+	of "Sat, 14 Feb 2009 21:38:15 +0100 (CET)")
+Message-ID: <87k57quv4t.fsf@newton.gmurray.org.uk>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.90 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902161925.40256.philippe.grenard@laposte.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 16 February 2009 01:21:54 John Stoffel wrote:
-> >>>>> "Philippe" == Philippe Grenard <philippe.grenard@laposte.net> writes:
->
-> Philippe> On Saturday 14 February 2009 10:24:51 Jaswinder Singh Rajput 
-wrote:
-> >> On Sat, Feb 14, 2009 at 1:47 PM, Philippe Grenard
-> >>
-> >> <philippe.grenard@laposte.net> wrote:
-> >> > On Friday 13 February 2009 21:48:30 John Stoffel wrote:
-> >> >> Here's your problem most probably.  The nVidia graphics module.
-> >> >> Remove that and re-try your system.  Basically, we can't help you
-> >> >> when you use a vendor's binary module.
-> >> >>
-> >> >> John
-> >> >
-> >> > Well, it does not change anything to my problem...
-> >> > Moreover, I don't understand why this would work with 2.6.27.10 but
-> >> > not with 2.6.29-rc4 ....
-> >>
-> >> May be nvidia graphics module was written based on some kernel which
-> >> is more closer to 2.6.27.10 as compare to 2.6.29-rc4.
-> >>
-> >> Another thing which John is pointing configure your bios to use
-> >> standard inbuild garphics card OR remove nvidia module and check
-> >> whether it solves your problem or not.
-> >>
-> >> --
-> >> JSR
->
-> Philippe> As I said just before, I tried it but it does not change my
-> Philippe> problem : the system still stalls randomly, sometimes during
-> Philippe> boot, sometimes after...
->
-> This smells even more of hardware problems then.  Did you change
-> anything recently besides your kernel?  And does the system still
-> reliably run with the older kernel?
->
-> If you have a second Linux computer, you can setup a newconsole to
-> hopefully capture and then post more details about your system when it
-> boots and crashes.
->
-> I'd personally pull any extra disks, re-seat memory, turn down the
-> systems settings in the BIOS to very conservative numbers, etc.  No
-> overclocking at all.
->
-> Also, try removing all but one memory module and seeing if that helps.
->
-> John
-Thanks for your attention.
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-well, I don't really believe in hardware problem for two reasons : 
-1st, nearly all my hardware is quite new ( < 1 year old ), which is, I agree, 
-not a solid proof ;-)
-2nd, the problem is really repetitive : every time I boot on older kernel, 
-everything works like a charm, every time I boot on the newer kernel, I end up 
-crashing : the "random" part is only the time before crash....
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.28.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12444
+> Subject		: X hangs following switch from radeonfb console - Bisected
+> Submitter	: Graham Murray <graham@gmurray.org.uk>
+> Date		: 2009-01-13 14:03 (33 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=7c1c2871a6a3a114853ec6836e9035ac1c0c7f7a
 
-I haven't any "overclocking" settings, and every hardware and bios settings 
-are the same : same computer, same harddisk partition, and so on. 
-2.6.28 will everytime stop after "Booting the kernel".
-2.6.29-rc* will boot, but then stalls after a random delay... Except the 
-"/proc/cpuinfo" difference between the two kernels, I don't have a clue....
-
-The thing is I can continue using the old kernel, but I thought I better 
-report this since It could hide some regression on amd64 systems ? 
-
-I'm just a regular user, so I really lack debugging experience...
-
-Philippe
+I am still seeing the problem with 2.6.29-rc5
