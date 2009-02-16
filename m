@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbZBPXlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbZBPXnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755968AbZBPXlt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 18:41:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbZBPXlk
+	id S1755810AbZBPXnV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 18:43:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbZBPXnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 18:41:40 -0500
-Received: from casper.infradead.org ([85.118.1.10]:43124 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751555AbZBPXlk (ORCPT
+	Mon, 16 Feb 2009 18:43:11 -0500
+Received: from omr3.bezeqint.net ([192.115.104.13]:54040 "EHLO
+	omr3.bezeqint.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751402AbZBPXnK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 18:41:40 -0500
-Date: Mon, 16 Feb 2009 15:41:30 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arve =?UTF-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>,
-       Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFD] Automatic suspend
-Message-ID: <20090216154130.3ecf4050@infradead.org>
-In-Reply-To: <200902170019.40599.rjw@sisk.pl>
-References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
-	<13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com>
-	<20090216145948.6fea81c3@infradead.org>
-	<200902170019.40599.rjw@sisk.pl>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 16 Feb 2009 18:43:10 -0500
+X-Mirapoint-IP-Reputation: reputation=good-1,
+	source=Fixed,
+	refid=n/a,
+	actions=tag
+From: Union Home <info@loan.com>
+Subject: Greetings!!!
+To: info@loan.com
+Reply-To: unionhome_processingdept@8u8.com
+X-Mailer: Mirapoint Webmail Direct 3.8.6-GA
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <20090217014519.FFS91469@mas25.bezeqint.net>
+Date: Tue, 17 Feb 2009 01:45:19 +0200 (IST)
+X-Junkmail-Status: score=10/45, host=mr10.bezeqint.net
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A0B020A.4999FA09.0195,ss=1,fgs=0,
+	ip=192.115.104.155,
+	so=2008-09-22 23:22:13,
+	dmn=5.7.1/2008-09-02,
+	mode=single engine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Feb 2009 00:19:38 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Dear Sir/Madam
 
-> > In addition, in hardware there does seem to be the trend where idle
-> > and suspend are converging (just look at the OLPC)...   with
-> > chipsets powering down all unused pieces, and cpus in idle taking
-> > basically no power, there no longer is much of a difference in
-> > reality between suspend and good-idle...
-> 
-> This, again, seems to be a bit x86-centric. :-)  
+This is Union Home Uk   , a reputable, legal & Money lending 
+private firm in Uk. We loan money out to individuals and 
+company's in need of financial assistance. We give out loans 
+at 2.8% interest rate.
 
-actually absolutely not. To the contrary. It is, as you said, the
-embedded systems that have, and increasingly get, finer grained per
-device controls. (x86 embedded and otherwise). The more fine grained
-control you have, the less a system wide state will give you in
-additional power savings. This is pretty much the industry trend for
-all power sensitive systems.
+At Union Home base in Uk, we have a variety of loan services 
+suited for you in a low  Interest Rate .Apply  if you are 
+interested with the below information:
 
-Android might be using last years hardware. I'm not saying we shouldn't
-support that, but we need to be careful to not design the system only
-looking backwards.
+1. Full name.....
+2. Address.......
+3. Sex.........
+4. Age........
+5. country.......
+6. occupation........
+7. Amount of loan needed.....
+8. Duration of loan.......
+9. phone number..........
+10.Anual Income..........
+11.Purpose Of Loan:......
 
+CONTACT LOAN PROCCESSING OFFICER :
+Name:Mike Adams
+Email: unionhome_processingdept@8u8.com
 
+We Look forward permitting Us to be at your service.
+Sincerely,
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Mrs. Lisa S. Jakes
+Union Home
