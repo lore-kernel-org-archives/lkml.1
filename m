@@ -1,89 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754075AbZBPPCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753753AbZBPPEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754075AbZBPPCV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 10:02:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbZBPPCJ
+	id S1753753AbZBPPEs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 10:04:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbZBPPEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 10:02:09 -0500
-Received: from sd-green-bigip-207.dreamhost.com ([208.97.132.207]:52914 "EHLO
-	spunkymail-a3.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751006AbZBPPCI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 10:02:08 -0500
-Message-ID: <49997FEA.9040300@hiramoto.org>
-Date: Mon, 16 Feb 2009 16:02:02 +0100
-From: Karl Hiramoto <karl@hiramoto.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090102)
-MIME-Version: 1.0
-To: netdev@vger.kernel.org, netfilter@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: problem with IPoA (CLIP),  NAT, and VLANS
-References: <49942409.4080506@hiramoto.org>
-In-Reply-To: <49942409.4080506@hiramoto.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Feb 2009 10:04:40 -0500
+Received: from cmpxchg.org ([85.214.51.133]:49251 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751157AbZBPPEk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 10:04:40 -0500
+Message-Id: <20090216142926.440561506@cmpxchg.org>
+User-Agent: quilt/0.47-1
+Date: Mon, 16 Feb 2009 15:29:26 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: [patch 0/8] kzfree()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Karl Hiramoto wrote:
->    
-> Hi all,
->
-> I have a scenario with  CLIP  IPoA(RFC1577) atm link over ADSL on the
-> WAN, 801.1q  VLANs on the LAN, and  NAT/MASQUERADE   that does not work.
->
->
-> Network config:
-> Nat_host <-->  router <---> server
->
-> a ping from the Nat_host  reaches the server on the WAN fine, and the
-> ping comes back to the  router, but the ping response never reaches the
-> Nat_Host.    Using TRACE rules it seems the ICMP ping response gets lost
-> inside the router.   I see the same behavior with TCP and UDP.
->
->   
+This series introduces kzfree() and converts callsites which do
+memset() + kfree() explicitely.
 
-The problem ended up being the packet being corrupted when the vlan tag
-was being added and skb_cow_head()  was being called.
+The callsites may be incomplete, I used coccinelle [1] to find them.
 
-Anyone know why skb_cow_head() would corrupt the packet?  Perhaps it was
-not allocated correctly?     I'm using a big-endian ARM IXP435 board.
+Regarding the recent re-exporting of ksize() to modules and the
+discussion around it [2], this removes the single modular in-tree user
+of ksize() again (unless I overgrepped something).
 
-NET_SKB_PAD change was already discussed:
-http://kerneltrap.org/mailarchive/linux-netdev/2009/2/7/4919204
+kfree() uses ksize() internally to determine the size of the memory
+region to zero out.  This could mean overhead as the size is actually
+that of the kmalloc cache the object is from, but memset() + kfree()
+isn't really the common fast path pattern.
 
+I left out w1 because I think it doesn't need to zero the memory at
+all.  I will take a deeper look into it and send a followup with
+either a kzfree() conversion or removal of the memset() alltogether.
 
-Signed-off by: Karl Hiramoto <karl@hiramoto.org>
+	Hannes
 
---- linux-2.6.28.4.a/include/linux/if_vlan.h    2009-02-06
-22:47:45.000000000 +0100
-+++ linux-2.6.28.4.b/include/linux/if_vlan.h    2009-02-16
-13:55:35.000000000 +0100
-@@ -183,9 +183,12 @@ static inline struct sk_buff *__vlan_put
- {
-        struct vlan_ethhdr *veth;
+[1] http://www.emn.fr/x-info/coccinelle/
 
--       if (skb_cow_head(skb, VLAN_HLEN) < 0) {
--               kfree_skb(skb);
--               return NULL;
-+       /* If not enough headroom for vlan tag */
-+       if (skb_headroom(skb) < VLAN_HLEN) {
-+               if (skb_cow_head(skb, VLAN_HLEN) < 0) {
-+                       kfree_skb(skb);
-+                       return NULL;
-+               }
-        }
-        veth = (struct vlan_ethhdr *)skb_push(skb, VLAN_HLEN)
+	@@
+	expression M, S;
+	@@
 
---- linux-2.6.28.4.a/include/linux/skbuff.h     2009-02-06
-22:47:45.000000000 +0100
-+++ linux-2.6.28.4.b/include/linux/skbuff.h     2009-02-16
-13:52:54.000000000 +0100
-@@ -1263,7 +1263,7 @@ static inline int skb_network_offset(con
-  * headroom, you should not reduce this.
-  */
- #ifndef NET_SKB_PAD
--#define NET_SKB_PAD    16
-+#define NET_SKB_PAD    32
- #endif
+	- memset(M, 0, S);
+	- kfree(M);
+	+ kzfree(M);
+
+   (from the back of my head, no coccinelle installed on this box)
+
+[2] http://lkml.org/lkml/2009/2/10/144
+
+ arch/s390/crypto/prng.c             |    3 +--
+ crypto/api.c                        |    5 +----
+ drivers/md/dm-crypt.c               |    6 ++----
+ drivers/s390/crypto/zcrypt_pcixcc.c |    3 +--
+ drivers/usb/host/hwa-hc.c           |    3 +--
+ drivers/usb/wusbcore/cbaf.c         |    3 +--
+ fs/cifs/connect.c                   |    7 ++-----
+ fs/cifs/misc.c                      |   12 ++++--------
+ fs/ecryptfs/keystore.c              |    3 +--
+ fs/ecryptfs/messaging.c             |    3 +--
+ include/linux/slab.h                |    1 +
+ mm/util.c                           |   19 +++++++++++++++++++
+ net/atm/mpoa_caches.c               |   14 ++++----------
+ 13 files changed, 39 insertions(+), 43 deletions(-)
+
