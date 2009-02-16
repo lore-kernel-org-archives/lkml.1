@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754665AbZBPUCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754876AbZBPUDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754665AbZBPUCw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 15:02:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754062AbZBPUC1
+	id S1754876AbZBPUDS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 15:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039AbZBPUC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 15:02:27 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:47872 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754039AbZBPUC0 (ORCPT
+	Mon, 16 Feb 2009 15:02:28 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:44645 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754009AbZBPUC1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 15:02:26 -0500
-Date: Mon, 16 Feb 2009 21:04:15 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH 1/3] Makefile: Include arch Makefiles as late as possible
-Message-ID: <20090216200415.GA16721@uranus.ravnborg.org>
-References: <20090204150755.GA24163@oksana.dev.rtsoft.ru> <20090204150835.GA30027@oksana.dev.rtsoft.ru> <20090204212612.GN22608@elte.hu> <20090214195702.GB1241@uranus.ravnborg.org> <20090216142001.GA27869@oksana.dev.rtsoft.ru> <20090216145317.GA3616@oksana.dev.rtsoft.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090216145317.GA3616@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 16 Feb 2009 15:02:27 -0500
+Message-ID: <4999C556.7010605@cs.helsinki.fi>
+Date: Mon, 16 Feb 2009 21:58:14 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Johannes Weiner <hannes@cmpxchg.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/8] kzfree()
+References: <20090216142926.440561506@cmpxchg.org> <20090216115931.12d9b7ed.akpm@linux-foundation.org>
+In-Reply-To: <20090216115931.12d9b7ed.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Andrew,
+
+Andrew Morton wrote:
+> On Mon, 16 Feb 2009 15:29:26 +0100 Johannes Weiner <hannes@cmpxchg.org> wrote:
 > 
-> There are few arches that have "auto detection" of CROSS_COMPILE
-> variable: mips, m68k, parisc, xtensa, h8300 and blackfin.
+>> This series introduces kzfree() and converts callsites which do
+>> memset() + kfree() explicitely.
 > 
-> So `normal' arches don't have any chance to overwrite the flags
-> because of the few offenders above. ;-)
+> I dunno, this looks like putting lipstick on a pig.
+> 
+> What is the point in zeroing memory just before freeing it?  afacit
+> this is always done as a poor-man's poisoning operation.
 
-We also have archs where we add options to gcc that may
-impact for example -fno-stack-protector.
-We had a bug in x86 in this area for a while.
+I think they do it as security paranoia to make sure other callers don't 
+accidentally see parts of crypto keys, passwords, and such. So I don't 
+think we can just get rid of the memsets.
 
-So the only sane thing is to only add the most generic options to
-KBUILD_CFLAGS before we include the arch specific part.
-And we can then add the conditional options later - like
-the KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
-in this case.
-
-We learned a few lessons in this area over time as your
-history digging also showed.
-
-	Sam
+			Pekka
