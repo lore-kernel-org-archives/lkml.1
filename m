@@ -1,70 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbZBPKdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756917AbZBPKfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756846AbZBPKdT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 05:33:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbZBPKdL
+	id S1756917AbZBPKfB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 05:35:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbZBPKex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 05:33:11 -0500
-Received: from mailrelay005.isp.belgacom.be ([195.238.6.171]:4188 "EHLO
-	mailrelay005.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753795AbZBPKdK (ORCPT
+	Mon, 16 Feb 2009 05:34:53 -0500
+Received: from casper.infradead.org ([85.118.1.10]:56283 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754405AbZBPKew (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 05:33:10 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhcFAI/OmEnCTsYx/2dsb2JhbACBbs5LhBwG
-From: Laurent Pinchart <laurent.pinchart@skynet.be>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] UVC: uvc_status_cleanup(): undefined reference to `input_unregister_device'
-Date: Mon, 16 Feb 2009 11:36:40 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.28; KDE/4.2.0; x86_64; ; )
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <20090208145835.GA1649@elte.hu> <200902150119.48355.laurent.pinchart@skynet.be> <49987418.40606@oracle.com>
-In-Reply-To: <49987418.40606@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 16 Feb 2009 05:34:52 -0500
+Subject: Re: [locking bug] inotify: inconsistent {RECLAIM_FS-ON-W} ->
+ {IN-RECLAIM_FS-W} usage.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090216081304.GA18980@elte.hu>
+References: <20090216081304.GA18980@elte.hu>
+Content-Type: text/plain
+Date: Mon, 16 Feb 2009 11:34:40 +0100
+Message-Id: <1234780480.4703.13.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.90 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902161136.41037.laurent.pinchart@skynet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 15 February 2009 20:59:20 Randy Dunlap wrote:
->
-> This should allow INPUT=y or USB_VIDEO_CLASS=INPUT, i.e., they don't always
-> have to match, in the case where INPUT=y and UVC=m (same problem exists
-> with pwc in -mm & linux-next, btw.  PWC patch follows this one.).
->
->
->
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->
-> Fix build errors when USB_VIDEO_CLASS=y and INPUT=m.
-> Fixes kernel bugzilla #12671.
->
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+On Mon, 2009-02-16 at 09:13 +0100, Ingo Molnar wrote:
 
-Acked-by: Laurent Pinchart <laurent.pinchart@skynet.be>
+> From 3023a3e27b909b3b309edac4bc9beb8103f127fa Mon Sep 17 00:00:00 2001
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Mon, 16 Feb 2009 09:10:32 +0100
+> Subject: [PATCH] inotify: fix GFP_KERNEL related deadlock
+> 
+> enhanced lockdep coverage of __GFP_NOFS turned up this new
+> lockdep assert:
+> 
+> [ 1093.677775]
+> [ 1093.677781] =================================
+> [ 1093.680031] [ INFO: inconsistent lock state ]
+> [ 1093.680031] 2.6.29-rc5-tip-01504-gb49eca1-dirty #1
+> [ 1093.680031] ---------------------------------
+> [ 1093.680031] inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-W} usage.
+> [ 1093.680031] kswapd0/308 [HC0[0]:SC0[0]:HE1:SE1] takes:
+> [ 1093.680031]  (&inode->inotify_mutex){+.+.?.}, at: [<c0205942>] inotify_inode_is_dead+0x20/0x80
+> [ 1093.680031] {RECLAIM_FS-ON-W} state was registered at:
+> [ 1093.680031]   [<c01696b9>] mark_held_locks+0x43/0x5b
+> [ 1093.680031]   [<c016baa4>] lockdep_trace_alloc+0x6c/0x6e
+> [ 1093.680031]   [<c01cf8b0>] kmem_cache_alloc+0x20/0x150
+> [ 1093.680031]   [<c040d0ec>] idr_pre_get+0x27/0x6c
+> [ 1093.680031]   [<c02056e3>] inotify_handle_get_wd+0x25/0xad
+> [ 1093.680031]   [<c0205f43>] inotify_add_watch+0x7a/0x129
+> [ 1093.680031]   [<c020679e>] sys_inotify_add_watch+0x20f/0x250
+> [ 1093.680031]   [<c010389e>] sysenter_do_call+0x12/0x35
+> [ 1093.680031]   [<ffffffff>] 0xffffffff
+> [ 1093.680031] irq event stamp: 60417
+> [ 1093.680031] hardirqs last  enabled at (60417): [<c018d5f5>] call_rcu+0x53/0x59
+> [ 1093.680031] hardirqs last disabled at (60416): [<c018d5b9>] call_rcu+0x17/0x59
+> [ 1093.680031] softirqs last  enabled at (59656): [<c0146229>] __do_softirq+0x157/0x16b
+> [ 1093.680031] softirqs last disabled at (59651): [<c0106293>] do_softirq+0x74/0x15d
+> [ 1093.680031]
+> [ 1093.680031] other info that might help us debug this:
+> [ 1093.680031] 2 locks held by kswapd0/308:
+> [ 1093.680031]  #0:  (shrinker_rwsem){++++..}, at: [<c01b0502>] shrink_slab+0x36/0x189
+> [ 1093.680031]  #1:  (&type->s_umount_key#4){+++++.}, at: [<c01e6d77>] shrink_dcache_memory+0x110/0x1fb
+> [ 1093.680031]
+> [ 1093.680031] stack backtrace:
+> [ 1093.680031] Pid: 308, comm: kswapd0 Not tainted 2.6.29-rc5-tip-01504-gb49eca1-dirty #1
+> [ 1093.680031] Call Trace:
+> [ 1093.680031]  [<c016947a>] valid_state+0x12a/0x13d
+> [ 1093.680031]  [<c016954e>] mark_lock+0xc1/0x1e9
+> [ 1093.680031]  [<c016a5b4>] ? check_usage_forwards+0x0/0x3f
+> [ 1093.680031]  [<c016ab74>] __lock_acquire+0x2c6/0xac8
+> [ 1093.680031]  [<c01688d9>] ? register_lock_class+0x17/0x228
+> [ 1093.680031]  [<c016b3d3>] lock_acquire+0x5d/0x7a
+> [ 1093.680031]  [<c0205942>] ? inotify_inode_is_dead+0x20/0x80
+> [ 1093.680031]  [<c08824c4>] __mutex_lock_common+0x3a/0x4cb
+> [ 1093.680031]  [<c0205942>] ? inotify_inode_is_dead+0x20/0x80
+> [ 1093.680031]  [<c08829ed>] mutex_lock_nested+0x2e/0x36
+> [ 1093.680031]  [<c0205942>] ? inotify_inode_is_dead+0x20/0x80
+> [ 1093.680031]  [<c0205942>] inotify_inode_is_dead+0x20/0x80
+> [ 1093.680031]  [<c01e6672>] dentry_iput+0x90/0xc2
+> [ 1093.680031]  [<c01e67a3>] d_kill+0x21/0x45
+> [ 1093.680031]  [<c01e6a46>] __shrink_dcache_sb+0x27f/0x355
+> [ 1093.680031]  [<c01e6dc5>] shrink_dcache_memory+0x15e/0x1fb
+> [ 1093.680031]  [<c01b05ed>] shrink_slab+0x121/0x189
+> [ 1093.680031]  [<c01b0d12>] kswapd+0x39f/0x561
+> [ 1093.680031]  [<c01ae499>] ? isolate_pages_global+0x0/0x233
+> [ 1093.680031]  [<c0157eae>] ? autoremove_wake_function+0x0/0x43
+> [ 1093.680031]  [<c01b0973>] ? kswapd+0x0/0x561
+> [ 1093.680031]  [<c0157daf>] kthread+0x41/0x82
+> [ 1093.680031]  [<c0157d6e>] ? kthread+0x0/0x82
+> [ 1093.680031]  [<c01043ab>] kernel_thread_helper+0x7/0x10
+> 
+> inotify_handle_get_wd() does idr_pre_get() which does a
+> kmem_cache_alloc() without __GFP_FS - and is hence deadlockable under
+> extreme MM pressure.
+> 
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Mauro, can you please apply ?
+Looks like a good catch,
+
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
 > ---
->  drivers/media/video/uvc/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> --- mmotm-2009-0214-0049.orig/drivers/media/video/uvc/Kconfig
-> +++ mmotm-2009-0214-0049/drivers/media/video/uvc/Kconfig
-> @@ -9,7 +9,7 @@ config USB_VIDEO_CLASS
->  config USB_VIDEO_CLASS_INPUT_EVDEV
->  	bool "UVC input events device support"
->  	default y
-> -	depends on USB_VIDEO_CLASS && INPUT
-> +	depends on USB_VIDEO_CLASS=INPUT || INPUT=y
->  	---help---
->  	  This option makes USB Video Class devices register an input device
->  	  to report button events.
-
-Laurent Pinchart
+>  fs/notify/inotify/inotify.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/notify/inotify/inotify.c b/fs/notify/inotify/inotify.c
+> index dae3f28..331f2e8 100644
+> --- a/fs/notify/inotify/inotify.c
+> +++ b/fs/notify/inotify/inotify.c
+> @@ -156,7 +156,7 @@ static int inotify_handle_get_wd(struct inotify_handle *ih,
+>  	int ret;
+>  
+>  	do {
+> -		if (unlikely(!idr_pre_get(&ih->idr, GFP_KERNEL)))
+> +		if (unlikely(!idr_pre_get(&ih->idr, GFP_NOFS)))
+>  			return -ENOSPC;
+>  		ret = idr_get_new_above(&ih->idr, watch, ih->last_wd+1, &watch->wd);
+>  	} while (ret == -EAGAIN);
 
