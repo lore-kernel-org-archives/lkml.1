@@ -1,111 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbZBPXkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbZBPXkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754950AbZBPXkZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 18:40:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751788AbZBPXkL
+	id S1756150AbZBPXkt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 18:40:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbZBPXkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 18:40:11 -0500
-Received: from thunk.org ([69.25.196.29]:48681 "EHLO thunker.thunk.org"
+	Mon, 16 Feb 2009 18:40:39 -0500
+Received: from ozlabs.org ([203.10.76.45]:49370 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750727AbZBPXkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 18:40:10 -0500
-Date: Mon, 16 Feb 2009 18:01:04 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: stable@kernel.org
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [cebbert@redhat.com: Re: Ext4 tree backports for 2.6.27.13 and
-	2.6.28.2]
-Message-ID: <20090216230104.GG23758@mini-me.lan>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, stable@kernel.org,
-	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+	id S1751788AbZBPXki (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 18:40:38 -0500
+To: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Sitsofe Wheeler <sitsofe@yahoo.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Greg KH <gregkh@suse.de>,
+       stable@kernel.org
+From: Rusty Russell <rusty@rustcorp.com.au>
+Date: Tue, 17 Feb 2009 10:10:34 +1030
+Subject: [PATCH] param: fix charp parameters set via sysfs
+Cc: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="J2SCkAp4GZ/dPZZf"
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Message-Id: <200902171010.34819.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Impact: fix crash on reading from /sys/module/.../ieee80211_default_rc_algo
 
---J2SCkAp4GZ/dPZZf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+The module_param type "charp" simply sets a char * pointer in the
+module to the parameter in the commandline string: this is why we keep
+the (mangled) module command line around.  But when set via sysfs (as
+about 11 charp parameters can be) this memory is freed on the way
+out of the write().  Future reads hit freed mem.
 
-Hi,
+So we kstrdup instead: this is fine, but it means we have to note when
+we've used it so we can reliably kfree the parameter when it's next
+overwritten, and also on module unload.
 
-Can you please include the patches found in the for-stable and
-for-stable-2.6.27 branches at:
+Reported-by: Sitsofe Wheeler <sitsofe@yahoo.com>
+Diagnosed-by: Frederic Weisbecker <fweisbec@gmail.com>
+Tested-by: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-	  git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git
+diff --git a/include/linux/module.h b/include/linux/module.h
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -247,6 +247,10 @@ struct module
+ 	const struct kernel_symbol *syms;
+ 	const unsigned long *crcs;
+ 	unsigned int num_syms;
++
++	/* Kernel parameters. */
++	struct kernel_param *kp;
++	unsigned int num_kp;
+ 
+ 	/* GPL-only exported symbols. */
+ 	unsigned int num_gpl_syms;
+diff --git a/include/linux/moduleparam.h b/include/linux/moduleparam.h
+--- a/include/linux/moduleparam.h
++++ b/include/linux/moduleparam.h
+@@ -138,6 +138,9 @@ extern int parse_args(const char *name,
+ 		      unsigned num,
+ 		      int (*unknown)(char *param, char *val));
+ 
++/* Called by module remove. */
++extern void destroy_params(const struct kernel_param *params, unsigned num);
++
+ /* All the helper functions */
+ /* The macros to do compile-time type checking stolen from Jakub
+    Jelinek, who IIRC came up with this idea for the 2.4 module init code. */
+diff --git a/kernel/module.c b/kernel/module.c
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -1457,6 +1457,9 @@ static void free_module(struct module *m
+ 	/* Module unload stuff */
+ 	module_unload_free(mod);
+ 
++	/* Free any allocated parameters. */
++	destroy_params(mod->kp, mod->num_kp);
++
+ 	/* release any pointers to mcount in this module */
+ 	ftrace_release(mod->module_core, mod->core_size);
+ 
+@@ -1870,8 +1873,7 @@ static noinline struct module *load_modu
+ 	unsigned int symindex = 0;
+ 	unsigned int strindex = 0;
+ 	unsigned int modindex, versindex, infoindex, pcpuindex;
+-	unsigned int num_kp, num_mcount;
+-	struct kernel_param *kp;
++	unsigned int num_mcount;
+ 	struct module *mod;
+ 	long err = 0;
+ 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
+@@ -2116,8 +2118,8 @@ static noinline struct module *load_modu
+ 
+ 	/* Now we've got everything in the final locations, we can
+ 	 * find optional sections. */
+-	kp = section_objs(hdr, sechdrs, secstrings, "__param", sizeof(*kp),
+-			  &num_kp);
++	mod->kp = section_objs(hdr, sechdrs, secstrings, "__param",
++			       sizeof(*mod->kp), &mod->num_kp);
+ 	mod->syms = section_objs(hdr, sechdrs, secstrings, "__ksymtab",
+ 				 sizeof(*mod->syms), &mod->num_syms);
+ 	mod->crcs = section_addr(hdr, sechdrs, secstrings, "__kcrctab");
+@@ -2262,11 +2264,11 @@ static noinline struct module *load_modu
+ 	 */
+ 	list_add_rcu(&mod->list, &modules);
+ 
+-	err = parse_args(mod->name, mod->args, kp, num_kp, NULL);
++	err = parse_args(mod->name, mod->args, mod->kp, mod->num_kp, NULL);
+ 	if (err < 0)
+ 		goto unlink;
+ 
+-	err = mod_sysfs_setup(mod, kp, num_kp);
++	err = mod_sysfs_setup(mod, mod->kp, mod->num_kp);
+ 	if (err < 0)
+ 		goto unlink;
+ 	add_sect_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
+diff --git a/kernel/params.c b/kernel/params.c
+--- a/kernel/params.c
++++ b/kernel/params.c
+@@ -23,6 +23,9 @@
+ #include <linux/device.h>
+ #include <linux/err.h>
+ #include <linux/slab.h>
++
++/* We abuse the high bits of "perm" to record whether we kmalloc'ed. */
++#define KPARAM_KMALLOCED	0x80000000
+ 
+ #if 0
+ #define DEBUGP printk
+@@ -217,7 +220,13 @@ int param_set_charp(const char *val, str
+ 		return -ENOSPC;
+ 	}
+ 
+-	*(char **)kp->arg = (char *)val;
++	if (kp->perm & KPARAM_KMALLOCED)
++		kfree(*(char **)kp->arg);
++
++	kp->perm |= KPARAM_KMALLOCED;
++	*(char **)kp->arg = kstrdup(val, GFP_KERNEL);
++	if (!kp->arg)
++		return -ENOMEM;
+ 	return 0;
+ }
+ 
+@@ -571,6 +580,15 @@ void module_param_sysfs_remove(struct mo
+ }
+ #endif
+ 
++void destroy_params(const struct kernel_param *params, unsigned num)
++{
++	unsigned int i;
++
++	for (i = 0; i < num; i++)
++		if (params[i].perm & KPARAM_KMALLOCED)
++			kfree(*(char **)params[i].arg);
++}
++
+ static void __init kernel_add_sysfs_param(const char *name,
+ 					  struct kernel_param *kparam,
+ 					  unsigned int name_skip)
 
-into the next 2.6.28.y and 2.6.27.y kernels, respectively?
-
-Or do you need me to send them in e-mail format via git
-format-patch/git send-email?  I can do that too if you prefer that.
-
-		 	      	       - Ted
-
-
-
-
---J2SCkAp4GZ/dPZZf
-Content-Type: message/rfc822
-Content-Disposition: inline
-
-Return-Path: <cebbert@redhat.com>
-Received: from po14.mit.edu ([unix socket])
-	by po14.mit.edu (Cyrus v2.1.5) with LMTP; Mon, 16 Feb 2009 16:37:49 -0500
-X-Sieve: CMU Sieve 2.2
-Received: from fort-point-station.mit.edu by po14.mit.edu (8.13.6/4.7) id n1GLbmDm014461; Mon, 16 Feb 2009 16:37:48 -0500 (EST)
-Received: from mit.edu (M24-004-BARRACUDA-1.MIT.EDU [18.7.7.111])
-	by fort-point-station.mit.edu (8.13.6/8.9.2) with ESMTP id n1GLbhLi004836
-	for <tytso@mit.edu>; Mon, 16 Feb 2009 16:37:43 -0500 (EST)
-Received: from mx2.redhat.com (mx2.redhat.com [66.187.237.31])
-	by mit.edu (Spam Firewall) with ESMTP id 33E14D647FE
-	for <tytso@mit.edu>; Mon, 16 Feb 2009 16:37:41 -0500 (EST)
-Received: from int-mx2.corp.redhat.com (int-mx2.corp.redhat.com [172.16.27.26])
-	by mx2.redhat.com (8.13.8/8.13.8) with ESMTP id n1GLbe2q016841;
-	Mon, 16 Feb 2009 16:37:40 -0500
-Received: from ns3.rdu.redhat.com (ns3.rdu.redhat.com [10.11.255.199])
-	by int-mx2.corp.redhat.com (8.13.1/8.13.1) with ESMTP id n1GLbeWP020811;
-	Mon, 16 Feb 2009 16:37:40 -0500
-Received: from dhcp-100-2-144.bos.redhat.com (dhcp-100-2-144.bos.redhat.com [10.16.2.144])
-	by ns3.rdu.redhat.com (8.13.8/8.13.8) with ESMTP id n1GLbdYC016657;
-	Mon, 16 Feb 2009 16:37:39 -0500
-Date: Mon, 16 Feb 2009 16:35:07 -0500
-From: Chuck Ebbert <cebbert@redhat.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-        linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Ext4 tree backports for 2.6.27.13 and 2.6.28.2
-Message-ID: <20090216163507.1e73f452@dhcp-100-2-144.bos.redhat.com>
-In-Reply-To: <20090212211935.GE6922@mini-me.lan>
-References: <E1LT8MN-0003Ps-Ur@closure.thunk.org>
-	<20090211075914.GC20842@skywalker>
-	<20090211153328.37ef255f@dhcp-100-2-144.bos.redhat.com>
-	<20090212211935.GE6922@mini-me.lan>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.42
-X-Scanned-By: MIMEDefang 2.58 on 172.16.27.26
-X-Spam-Score: 0.00
-X-Spam-Flag: NO
-
-On Thu, 12 Feb 2009 16:19:35 -0500
-Theodore Tso <tytso@mit.edu> wrote:
-
-> 
-> I've updated the for-stable and for-stable-2.6.27 branches against the
-> latest stable releases, and I've updated the two flawed backports in
-> the for-stable-2.6.27 branch.  Could you do a quick double-check and
-> make sure the fixes are as you expect, before I send a pull request to
-> stable@kernel.org?
-
-The 2.6.27 branch looks good to me.
-
---J2SCkAp4GZ/dPZZf--
