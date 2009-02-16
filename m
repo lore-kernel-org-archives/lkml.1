@@ -1,80 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbZBPAWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbZBPAhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756154AbZBPAWS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 19:22:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079AbZBPAWH
+	id S1755864AbZBPAhk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 19:37:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbZBPAhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 19:22:07 -0500
-Received: from Mycroft.westnet.com ([216.187.52.7]:60950 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753174AbZBPAWG (ORCPT
+	Sun, 15 Feb 2009 19:37:31 -0500
+Received: from smarthost03.mail.zen.net.uk ([212.23.3.142]:45628 "EHLO
+	smarthost03.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753550AbZBPAha (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 19:22:06 -0500
-MIME-Version: 1.0
+	Sun, 15 Feb 2009 19:37:30 -0500
+Date: Mon, 16 Feb 2009 00:37:19 +0000
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Hannes Eder <hannes@hanneseder.net>
+Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 27/43] drivers/net/sfc: fix sparse warnings: Should it be static?
+Message-ID: <20090216003718.GN15266@solarflare.com>
+References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net> <20090214214111.24377.87888.stgit@vmbox.hanneseder.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18840.45474.829954.528820@stoffel.org>
-Date: Sun, 15 Feb 2009 19:21:54 -0500
-From: "John Stoffel" <john@stoffel.org>
-To: Philippe Grenard <philippe.grenard@laposte.net>
-Cc: linux-kernel@vger.kernel.org,
-       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
-       John Stoffel <john@stoffel.org>, Len Brown <lenb@kernel.org>
-Subject: Re: PROBLEM: cannot get stable system since 2.6.28 kernel
-In-Reply-To: <200902151317.11690.philippe.grenard@laposte.net>
-References: <200902131944.56634.philippe.grenard@laposte.net>
-	<200902140917.38313.philippe.grenard@laposte.net>
-	<3f9a31f40902140124j4bb07aeej8af3dff89e347318@mail.gmail.com>
-	<200902151317.11690.philippe.grenard@laposte.net>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <20090214214111.24377.87888.stgit@vmbox.hanneseder.net>
+User-Agent: Mutt/1.4.1i
+X-Originating-Smarthost03-IP: [82.69.137.158]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Philippe" == Philippe Grenard <philippe.grenard@laposte.net> writes:
+Hannes Eder wrote:
+> Impact: Include header file and include the function under the same
+> condition as in the header file.  If CONFIG_SFS_MTD is not defined
+> than the functions 'efx_mtd_remove' and 'efx_mtd_rename' are defined
+> 'static inline' with an empty function body in the header file.
+> 
+> Fix this sparse warnings:
+>   drivers/net/sfc/mtd.c:204:6: warning: symbol 'efx_mtd_remove' was not declared. Should it be static?
+>   drivers/net/sfc/mtd.c:221:6: warning: symbol 'efx_mtd_rename' was not declared. Should it be static?
+>   drivers/net/sfc/mtd.c:230:5: warning: symbol 'efx_mtd_probe' was not declared. Should it be static?
+> 
+> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+> ---
+>  drivers/net/sfc/mtd.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/net/sfc/mtd.c b/drivers/net/sfc/mtd.c
+> index 665cafb..94c9ed8 100644
+> --- a/drivers/net/sfc/mtd.c
+> +++ b/drivers/net/sfc/mtd.c
+> @@ -15,6 +15,7 @@
+>  #define EFX_DRIVER_NAME "sfc_mtd"
+>  #include "net_driver.h"
+>  #include "spi.h"
+> +#include "efx.h"
+>  
+>  #define EFX_SPI_VERIFY_BUF_LEN 16
+>  
 
-Philippe> On Saturday 14 February 2009 10:24:51 Jaswinder Singh Rajput wrote:
->> On Sat, Feb 14, 2009 at 1:47 PM, Philippe Grenard
->> 
->> <philippe.grenard@laposte.net> wrote:
->> > On Friday 13 February 2009 21:48:30 John Stoffel wrote:
->> >> Here's your problem most probably.  The nVidia graphics module.
->> >> Remove that and re-try your system.  Basically, we can't help you when
->> >> you use a vendor's binary module.
->> >>
->> >> John
->> >
->> > Well, it does not change anything to my problem...
->> > Moreover, I don't understand why this would work with 2.6.27.10 but not
->> > with 2.6.29-rc4 ....
->> 
->> May be nvidia graphics module was written based on some kernel which
->> is more closer to 2.6.27.10 as compare to 2.6.29-rc4.
->> 
->> Another thing which John is pointing configure your bios to use
->> standard inbuild garphics card OR remove nvidia module and check
->> whether it solves your problem or not.
->> 
->> --
->> JSR
+OK, but...
 
-Philippe> As I said just before, I tried it but it does not change my
-Philippe> problem : the system still stalls randomly, sometimes during
-Philippe> boot, sometimes after...
+> @@ -201,6 +202,7 @@ static void efx_mtd_sync(struct mtd_info *mtd)
+>  	return;
+>  }
+>  
+> +#ifdef CONFIG_SFC_MTD
+>  void efx_mtd_remove(struct efx_nic *efx)
+>  {
+>  	if (efx->spi_flash && efx->spi_flash->mtd) {
+> @@ -266,3 +268,4 @@ int efx_mtd_probe(struct efx_nic *efx)
+>  
+>  	return 0;
+>  }
+> +#endif /* CONFIG_SFC_MTD */
 
-This smells even more of hardware problems then.  Did you change
-anything recently besides your kernel?  And does the system still
-reliably run with the older kernel?  
+This is wrong.  The entire file is conditional on CONFIG_SFC_MTD.
 
-If you have a second Linux computer, you can setup a newconsole to
-hopefully capture and then post more details about your system when it
-boots and crashes.
+Ben.
 
-I'd personally pull any extra disks, re-seat memory, turn down the
-systems settings in the BIOS to very conservative numbers, etc.  No
-overclocking at all.  
-
-Also, try removing all but one memory module and seeing if that helps.
-
-John
-
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
