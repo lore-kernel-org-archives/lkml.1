@@ -1,76 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752547AbZBPQIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847AbZBPQNG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752547AbZBPQIg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 11:08:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbZBPQI1
+	id S1752847AbZBPQNG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 11:13:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbZBPQMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 11:08:27 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:30434 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750861AbZBPQI0 (ORCPT
+	Mon, 16 Feb 2009 11:12:54 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:56636 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751017AbZBPQMx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 11:08:26 -0500
-Date: Mon, 16 Feb 2009 19:08:24 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH 1/3] Makefile: Include arch Makefiles as late as
-	possible
-Message-ID: <20090216160824.GA1616@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090204150755.GA24163@oksana.dev.rtsoft.ru> <20090204150835.GA30027@oksana.dev.rtsoft.ru> <20090204212612.GN22608@elte.hu> <20090214195702.GB1241@uranus.ravnborg.org> <20090216142001.GA27869@oksana.dev.rtsoft.ru>
+	Mon, 16 Feb 2009 11:12:53 -0500
+Message-ID: <4999908D.4050403@s5r6.in-berlin.de>
+Date: Mon, 16 Feb 2009 17:13:01 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20090216142001.GA27869@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Sam Ravnborg <sam@ravnborg.org>, Manish Katiyar <mkatiyar@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] Remove errors caught by checkpatch.pl in	kernel/kallsyms.c
+References: <ea11fea30902151034s5444efabw455c1dac1b875086@mail.gmail.com> <20090215184752.GA4970@uranus.ravnborg.org> <4999650C.6030700@s5r6.in-berlin.de> <20090216132822.GC17996@elte.hu> <4999717F.7090205@s5r6.in-berlin.de> <20090216141917.GA8981@elte.hu> <499984C1.6020004@s5r6.in-berlin.de> <20090216155023.GA4422@elte.hu>
+In-Reply-To: <20090216155023.GA4422@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 16, 2009 at 05:20:01PM +0300, Anton Vorontsov wrote:
-[...]
-> But then, this commit reverted things back (w/o your Ack):
+Ingo Molnar wrote:
+> * Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 > 
-> commit bef5b54bd7bf8117c75cb943d64549134c6d9a1f
-> Author: Ralf Baechle <ralf@linux-mips.org>
-> Date:   Wed Jul 16 13:02:24 2008 +0100
+>> Ingo Molnar wrote:
+>>> We routinely mention Sparse, lockdep, Coverity, Coccinelle, kmemleak, 
+>>> ftrace, kmemcheck and other tools as well when it motives to fix a bug 
+>>> or uncleanliness. [...] It is absolutely fine to
+>>> mention checkpatch when it catches uncleanliness in code that already 
+>>> got merged. I dont understand your point.
+>> I wrote "don't mention checkpatch" but I really meant "think about what
+>> the effect of the patch is and describe this".
 > 
->     Fix MIPS cross-compile problem
->     [...]
->     Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> 
-> [...]
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -508,6 +508,8 @@ else
->  KBUILD_CFLAGS  += -O2
->  endif
->  
-> +include $(srctree)/arch/$(SRCARCH)/Makefile
-> +
->  ifneq (CONFIG_FRAME_WARN,0)
->  KBUILD_CFLAGS += $(call cc-option,-Wframe-larger-than=${CONFIG_FRAME_WARN})
->  endif
-> @@ -516,8 +518,6 @@ endif
->  # Arch Makefiles may override this setting
->  KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
->  
-> -include $(srctree)/arch/$(SRCARCH)/Makefile
-> -
->  ifdef CONFIG_FRAME_POINTER
->  KBUILD_CFLAGS  += -fno-omit-frame-pointer -fno-optimize-sibling-calls
->  else
+> Are you arguing that in all those other cases the tools should not be 
+> mentioned either? I dont think that position is tenable.
 
-Btw, I wonder if x86's CONFIG_CC_STACKPROTECTOR is a no-op since
-v2.6.27-rc1? Seems like it is.
+I'm arguing that in all those other cases the method "think about what
+the effect of the patch is and describe this"¹ applies just as well, and
+that the mentioning of the tools used does not add value for future
+readers of the changelog.  When I go through changes from three or five
+years ago, I need other kinds of information than patch authoring tools
+that were en vogue some years ago.
 
+Including anything relevant is the most important one of the tasks when
+writing a changelog; another --- only slightly less important --- task
+is to exclude anything irrelevant.
+
+Of course what's relevant and irrelevant is in the eye of the beholder;
+but the used tools + materials (scripts, static analyzers, favourite
+editor, favourite crop of tea) surely are of very very low relevance.
+
+-------------
+¹) and if it not quite clear, describe also why this change is desirable
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Stefan Richter
+-=====-=-=== -=-= -==-=
+http://arcgraph.de/sr/
