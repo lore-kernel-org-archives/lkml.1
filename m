@@ -1,163 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753274AbZBPOxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbZBPOyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753274AbZBPOxa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 09:53:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751041AbZBPOxU
+	id S1753807AbZBPOyA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 09:54:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbZBPOxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 09:53:20 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:30149 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751034AbZBPOxU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 09:53:20 -0500
-Date: Mon, 16 Feb 2009 17:53:17 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH 1/3] Makefile: Include arch Makefiles as late as
-	possible
-Message-ID: <20090216145317.GA3616@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090204150755.GA24163@oksana.dev.rtsoft.ru> <20090204150835.GA30027@oksana.dev.rtsoft.ru> <20090204212612.GN22608@elte.hu> <20090214195702.GB1241@uranus.ravnborg.org> <20090216142001.GA27869@oksana.dev.rtsoft.ru>
+	Mon, 16 Feb 2009 09:53:51 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:36523 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751041AbZBPOxu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 09:53:50 -0500
+Date: Mon, 16 Feb 2009 14:53:49 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] vmscan: initialize sc.order in indirect shrink_list()
+	users
+Message-ID: <20090216145349.GC16153@csn.ul.ie>
+References: <20090210165134.GA2457@cmpxchg.org> <20090210162948.bd20d853.akpm@linux-foundation.org> <20090211015227.GA4605@cmpxchg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090216142001.GA27869@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090211015227.GA4605@cmpxchg.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 16, 2009 at 05:20:01PM +0300, Anton Vorontsov wrote:
-> On Sat, Feb 14, 2009 at 08:57:02PM +0100, Sam Ravnborg wrote:
-> [...]
-> > > > --- a/Makefile
-> > > > +++ b/Makefile
-> > > > @@ -525,8 +525,6 @@ else
-> > > >  KBUILD_CFLAGS	+= -O2
-> > > >  endif
-> > > >  
-> > > > -include $(srctree)/arch/$(SRCARCH)/Makefile
-> > > > -
-> > > >  ifneq (CONFIG_FRAME_WARN,0)
-> > > >  KBUILD_CFLAGS += $(call cc-option,-Wframe-larger-than=${CONFIG_FRAME_WARN})
-> > > >  endif
-> > > > @@ -555,6 +553,8 @@ ifdef CONFIG_DEBUG_SECTION_MISMATCH
-> > > >  KBUILD_CFLAGS += $(call cc-option, -fno-inline-functions-called-once)
-> > > >  endif
-> > > >  
-> > > > +include $(srctree)/arch/$(SRCARCH)/Makefile
-> > > > +
-> > > >  # arch Makefile may override CC so keep this after arch Makefile is included
-> > > >  NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
-> > > >  CHECKFLAGS     += $(NOSTDINC_FLAGS)
-> > > > -- 
+On Wed, Feb 11, 2009 at 02:52:27AM +0100, Johannes Weiner wrote:
+> [added Mel to CC]
+> 
+> On Tue, Feb 10, 2009 at 04:29:48PM -0800, Andrew Morton wrote:
+> > On Tue, 10 Feb 2009 17:51:35 +0100
+> > Johannes Weiner <hannes@cmpxchg.org> wrote:
+> > 
+> > > shrink_all_memory() and __zone_reclaim() currently don't initialize
+> > > the .order field of their scan control.
 > > > 
-> > > this patch is really for Sam to judge - Cc:-ed him.
+> > > Both of them call into functions which use that field and make certain
+> > > decisions based on a random value.
+> > > 
+> > > The functions depending on the .order field are marked with a star,
+> > > the faulty entry points are marked with a percentage sign:
+> > > 
+> > > * shrink_page_list()
+> > >   * shrink_inactive_list()
+> > >   * shrink_active_list()
+> > >     shrink_list()
+> > >       shrink_all_zones()
+> > >         % shrink_all_memory()
+> > >       shrink_zone()
+> > >         % __zone_reclaim()
+> > > 
+> > > Initialize .order to zero in shrink_all_memory().  Initialize .order
+> > > to the order parameter in __zone_reclaim().
+> > > 
+> > > Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> > > ---
+> > >  mm/vmscan.c |    2 ++
+> > >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > > 
+> > > diff --git a/mm/vmscan.c b/mm/vmscan.c
+> > > index 4422301..9ce85ea 100644
+> > > --- a/mm/vmscan.c
+> > > +++ b/mm/vmscan.c
+> > > @@ -2112,6 +2112,7 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
+> > >  		.may_unmap = 0,
+> > >  		.swap_cluster_max = nr_pages,
+> > >  		.may_writepage = 1,
+> > > +		.order = 0,
+> > >  		.isolate_pages = isolate_pages_global,
+> > >  	};
+> > >  
+> > > @@ -2294,6 +2295,7 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+> > >  					SWAP_CLUSTER_MAX),
+> > >  		.gfp_mask = gfp_mask,
+> > >  		.swappiness = vm_swappiness,
+> > > +		.order = order,
+> > >  		.isolate_pages = isolate_pages_global,
+> > >  	};
+> > >  	unsigned long slab_reclaimable;
 > > 
-> > If we move the include further down then the following:
-> > 
-> >     # Force gcc to behave correct even for buggy distributions
-> >     # Arch Makefiles may override this setting
-> >     KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
-> > 
-> > will most likely fail.
+> > The second hunk might fix something, but it would need a correcter
+> > changelog, and some thought about what its runtimes effects are likely
+> > to be, please.
 > 
-> Hm... I don't get it, the comment says that the arch "may override
-> this setting", but currently it may not, since arch makefile is
-> included before this line. So my patch also fixes this "bug", no?
+> zone_reclaim() is used by the watermark rebalancing of the buddy
+> allocator right before trying to do an allocation.  Even though it
+> tries to reclaim at least 1 << order pages, it doesn't raise sc.order
+> to increase clustering efforts.
 > 
-> Or arches supposed to overwrite "cc-option" behaviour? Hm..
-> 
-> There is an interesting commit:
-> 
-> commit e06b8b98da071f7dd78fb7822991694288047df0
-> Author: Sam Ravnborg <sam@ravnborg.org>
-> Date:   Wed Feb 13 22:43:28 2008 +0100
-> 
->     kbuild: allow -fstack-protector to take effect
-> [...]
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -507,6 +507,10 @@ else
->  KBUILD_CFLAGS  += -O2
->  endif
-> 
-> +# Force gcc to behave correct even for buggy distributions
-> +# Arch Makefiles may override this setting
-> +KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
-> +
->  include $(srctree)/arch/$(SRCARCH)/Makefile
->  
->  ifdef CONFIG_FRAME_POINTER
-> @@ -525,9 +529,6 @@ ifdef CONFIG_DEBUG_SECTION_MISMATCH
->  KBUILD_CFLAGS += $(call cc-option, -fno-inline-functions-called-once)
->  endif
->  
-> -# Force gcc to behave correct even for buggy distributions
-> -KBUILD_CFLAGS         += $(call cc-option, -fno-stack-protector)
-> -
->  # arch Makefile may override CC so keep this after arch Makefile is included
->  NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
->  CHECKFLAGS     += $(NOSTDINC_FLAGS)
-> 
-> 
-> ^^ Which does the same (wrt fno-stack-protector) as the patch I
-> sent, i.e. includes arch Makefile later.
-> 
-> But then, this commit reverted things back (w/o your Ack):
-> 
-> commit bef5b54bd7bf8117c75cb943d64549134c6d9a1f
-> Author: Ralf Baechle <ralf@linux-mips.org>
-> Date:   Wed Jul 16 13:02:24 2008 +0100
-> 
->     Fix MIPS cross-compile problem
->     [...]
->     Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
-Ok, I think I got it. It seems that Ralf was using this feature
-of arch/mips/Makefile:
+This affects lumpy reclaim. Direct reclaim via try_to_free_pages() and
+kswapd() is still working but the earlier reclaim attempt via zone_reclaim()
+on unmapped file and slab pages is ignoring teh order. While it'd be tricky
+to measure any difference, it does make sense that __zone_reclaim() initialse
+the order with what the caller requested.
 
-ifneq ($(SUBARCH),$(ARCH))
-  ifeq ($(CROSS_COMPILE),)
-    CROSS_COMPILE := $(call cc-cross-prefix, $(tool-archpref)-linux-  $(tool-archpref)-linux-gnu-  $(tool-archpref)-unknown-linux-gnu-)
-  endif
-endif
+> I think this happens with the assumption that the upcoming allocation
+> can still succeed and in that case we don't want to lump too
+> aggressively to refill the zone. 
 
-There are few arches that have "auto detection" of CROSS_COMPILE
-variable: mips, m68k, parisc, xtensa, h8300 and blackfin.
+I don't get what you mean here. The caller requested the higher order so
+the work has been requested.
 
-So `normal' arches don't have any chance to overwrite the flags
-because of the few offenders above. ;-)
+> The allocation might succeed on
+> another zone and now we have evicted precious pages due to clustering
+> while we are still not sure it's even needed.
+> 
 
-> [...]
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -508,6 +508,8 @@ else
->  KBUILD_CFLAGS  += -O2
->  endif
->  
-> +include $(srctree)/arch/$(SRCARCH)/Makefile
-> +
->  ifneq (CONFIG_FRAME_WARN,0)
->  KBUILD_CFLAGS += $(call cc-option,-Wframe-larger-than=${CONFIG_FRAME_WARN})
->  endif
-> @@ -516,8 +518,6 @@ endif
->  # Arch Makefiles may override this setting
->  KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
->  
-> -include $(srctree)/arch/$(SRCARCH)/Makefile
-> -
->  ifdef CONFIG_FRAME_POINTER
->  KBUILD_CFLAGS  += -fno-omit-frame-pointer -fno-optimize-sibling-calls
->  else
+Also not sure what you are getting at here. zone_reclaim() is called for the
+preferred zones in order. Attempts are made to free within the preferred zone
+and then allocate from it. Granted, it might evict pages and the clustering
+was ineffective, but this is the cost of high-order reclaim.
+
+> If the allocation fails from all zones, we still will use lumpy
+> reclaim for higher orders in kswapd and try_to_free_pages().
+> 
+> So I think that __zone_reclaim() leaves sc.order = 0 intentionally.
+> 
+> Mel?
+> 
+
+I don't believe it's intentional. The caller called zone_reclaim() with
+a given order. It should be used as part of the reclaim decision.
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
