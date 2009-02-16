@@ -1,80 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751923AbZBPTm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754315AbZBPTmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751923AbZBPTm2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 14:42:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbZBPTmA
+	id S1754315AbZBPTmo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 14:42:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZBPTmR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 14:42:00 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:47121 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751881AbZBPTl7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 14:41:59 -0500
-Date: Mon, 16 Feb 2009 19:41:57 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator (try 2)
-Message-ID: <20090216194157.GB31264@csn.ul.ie>
-References: <20090123154653.GA14517@wotan.suse.de> <200902041748.41801.nickpiggin@yahoo.com.au> <20090204152709.GA4799@csn.ul.ie> <200902051459.30064.nickpiggin@yahoo.com.au> <20090216184200.GA31264@csn.ul.ie> <4999BBE6.2080003@cs.helsinki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <4999BBE6.2080003@cs.helsinki.fi>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 16 Feb 2009 14:42:17 -0500
+Received: from casper.infradead.org ([85.118.1.10]:37918 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753444AbZBPTmQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 14:42:16 -0500
+Subject: Re: [PATCH 1/4] generic-smp: remove single ipi fallback for
+ smp_call_function_many()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090216191008.GA1521@redhat.com>
+References: <20090216163847.431174825@chello.nl>
+	 <20090216164114.433430761@chello.nl>  <20090216191008.GA1521@redhat.com>
+Content-Type: text/plain
+Date: Mon, 16 Feb 2009 20:41:32 +0100
+Message-Id: <1234813292.30178.327.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 16, 2009 at 09:17:58PM +0200, Pekka Enberg wrote:
-> Hi Mel,
->
-> Mel Gorman wrote:
->> I haven't done much digging in here yet. Between the large page bug and
->> other patches in my inbox, I haven't had the chance yet but that doesn't
->> stop anyone else taking a look.
->
-> So how big does an improvement/regression have to be not to be  
-> considered within noise? I mean, I randomly picked one of the results  
-> ("x86-64 speccpu integer tests") and ran it through my "summarize"  
-> script and got the following results:
->
-> 		min      max      mean     std_dev
->   slub		0.96     1.09     1.01     0.04
->   slub-min	0.95     1.10     1.00     0.04
->   slub-rvrt	0.90     1.08     0.99     0.05
->   slqb		0.96     1.07     1.00     0.04
->
+On Mon, 2009-02-16 at 20:10 +0100, Oleg Nesterov wrote:
+> On 02/16, Peter Zijlstra wrote:
+> >
+> > @@ -347,31 +384,32 @@ void smp_call_function_many(const struct
+> >  		return;
+> >  	}
+> >
+> > -	data = kmalloc(sizeof(*data) + cpumask_size(), GFP_ATOMIC);
+> > -	if (unlikely(!data)) {
+> > -		/* Slow path. */
+> > -		for_each_online_cpu(cpu) {
+> > -			if (cpu == smp_processor_id())
+> > -				continue;
+> > -			if (cpumask_test_cpu(cpu, mask))
+> > -				smp_call_function_single(cpu, func, info, wait);
+> > -		}
+> > -		return;
+> > +	data = kmalloc(sizeof(*data), GFP_ATOMIC);
+> > +	if (data)
+> > +		data->csd.flags = CSD_FLAG_ALLOC;
+> > +	else {
+> > +		data = &per_cpu(cfd_data, me);
+> > +		/*
+> > +		 * We need to wait for all previous users to go away.
+> > +		 */
+> > +		while (data->csd.flags & CSD_FLAG_LOCK)
+> > +			cpu_relax();
+> > +		data->csd.flags = CSD_FLAG_LOCK;
+> >  	}
+> >
+> >  	spin_lock_init(&data->lock);
+> > -	data->csd.flags = CSD_FLAG_ALLOC;
+> >  	if (wait)
+> >  		data->csd.flags |= CSD_FLAG_WAIT;
+> >  	data->csd.func = func;
+> >  	data->csd.info = info;
+> > -	cpumask_and(to_cpumask(data->cpumask_bits), mask, cpu_online_mask);
+> > -	cpumask_clear_cpu(smp_processor_id(), to_cpumask(data->cpumask_bits));
+> > -	data->refs = cpumask_weight(to_cpumask(data->cpumask_bits));
+> > -
+> > -	spin_lock_irqsave(&call_function_lock, flags);
+> > -	list_add_tail_rcu(&data->csd.list, &call_function_queue);
+> > -	spin_unlock_irqrestore(&call_function_lock, flags);
+> > +	cpumask_and(&data->cpumask, mask, cpu_online_mask);
+> > +	cpumask_clear_cpu(smp_processor_id(), &data->cpumask);
+> 
+> (perhaps it makes sense to use "me" instead of smp_processor_id())
 
-Well, it doesn't make a whole pile of sense to get the average of these ratios
-or the deviation between them. Each of the tests behave very differently. I'd
-consider anything over 0.5% significant but I also have to admit I wasn't
-doing multiple runs this time due to the length of time it takes. In a
-previous test, I ran them 3 times each and didn't spot large deviations.
+Ah, missed one it seems, thanks ;-)
 
-> Apart from slub-rvrt (which seems to be regressing, interesting) all the  
-> allocators seem to perform equally well. Hmm?
->
+> > +	data->refs = cpumask_weight(&data->cpumask);
+> > +
+> > +	spin_lock_irqsave(&call_function.lock, flags);
+> > +	call_function.counter++;
+> > +	list_add_tail_rcu(&data->csd.list, &call_function.queue);
+> > +	spin_unlock_irqrestore(&call_function.lock, flags);
+> 
+> What if the initialization above leaks into the critical section?
+> 
+> I mean, generic_smp_call_function_interrupt() running on another CPU
+> can see the result of list_add_tail_rcu() and cpumask_and(data->cpumask)
+> but not (say) "data->refs = ...".
 
-For this stuff, they are reasonably close but I don't believe thye are
-allocator intensive either. SPEC CPU was brought up as a workload HPC people
-would care about. Bear in mind it's also not testing NUMA or CPU scalability
-really well. It's one data-point. netperf is a much more allocator intensive
-workload.
+Ho humm, nice :-)
 
-> Btw, Yanmin, do you have access to the tests Mel is running (especially  
-> the ones where slub-rvrt seems to do worse)? Can you see this kind of  
-> regression? The results make we wonder whether we should avoid reverting  
-> all of the page allocator pass-through and just add a kmalloc cache for  
-> 8K allocations. Or not address the netperf regression at all. Double-hmm.
->
+So best would be to put that data initialization under data->lock. This
+would be a bug in the original code too.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+> Actually I don't understand the counter/free_list logic.
+> 
+> 	generic_smp_call_function_interrupt:
+> 
+> 			/*
+> 			 * When the global queue is empty, its guaranteed that no cpu
+> 			 * is still observing any entry on the free_list, therefore
+> 			 * we can go ahead and unlock them.
+> 			 */
+> 			if (!--call_function.counter)
+> 				list_splice_init(&call_function.free_list, &free_list);
+> 
+> I can't see why "its guaranteed that no cpu ...". Let's suppose CPU 0
+> "hangs" for some reason in generic_smp_call_function_interrupt() right
+> before "if (!cpumask_test_cpu(cpu, data->cpumask))" test. Then it is
+> possible that another CPU removes the single entry (which doesn't have
+> CPU 0 in data->cpumask) from call_function.queue.
+
+Then call_function.counter wouldn't be 0, and we would not release the
+list entries.
+
+> Now, if that entry is re-added, we can have a problem if CPU 0 sees
+> the partly initialized entry.
+
+Right, so the scenario is that a cpu observes the list entry after we do
+list_del_rcu() -- most likely a cpu not in the original mask, taversing
+the list for a next entry -- we have to wait for some quiescent state to
+ensure nobody is still referencing it.
+
+We cannot use regular RCU, because its quiesent state takes forever to
+happen, therefore this implementes a simple counting rcu for the queue
+domain only.
+
+When the list is empty, there's nobody seeing any elements, ergo we can
+release the entries and re-use them.
+
+> But why do we need counter/free_list at all?
+> Can't we do the following:
+> 
+> 	- initialize call_function_data.lock at boot time
+> 
+> 	- change smp_call_function_many() to initialize cfd_data
+> 	  under ->lock
+> 
+> 	- change generic_smp_call_function_interrupt() to do
+> 
+> 		list_for_each_entry_rcu(data) {
+> 
+> 			if (!cpumask_test_cpu(cpu, data->cpumask))
+> 				continue;
+> 
+> 			spin_lock(&data->lock);
+> 			if (!cpumask_test_cpu(cpu, data->cpumask)) {
+> 				spin_unlock(data->lock);
+> 				continue;
+> 			}
+> 
+> 			cpumask_clear_cpu(cpu, data->cpumask);
+> 			refs = --data->refs;
+> 
+> 			func = data->func;
+> 			info = data->info;
+> 			spin_unlock(&data->lock);
+> 
+> 			func(info);
+> 
+> 			if (refs)
+> 				continue;
+> 
+> 			...
+> 		}
+> 
+> Afaics, it is OK if smp_call_function_many() sees the "unneeded" entry on
+> list, the only thing we must ensure is that we can't "misunderstand" this
+> entry.
+> 
+> No?
+
+Hmm, could that not leed to loops, and or missed entries in the
+list-iteration?
+
+The saves approach seemed to wait until sure nobody observed the entry
+before re-using it.
+
+> 
+> Off-topic question, looks like smp_call_function_single() must not be
+> called from interrupt/bh handler, right? But the comment says nothing.
+> 
+> And,
+> 	smp_call_function_single:
+> 
+> 		/* Can deadlock when called with interrupts disabled */
+> 		WARN_ON(irqs_disabled());
+> 	
+> Just curious, we can only deadlock if wait = T, right?
+
+Right.
+
