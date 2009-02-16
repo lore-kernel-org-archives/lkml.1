@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756865AbZBPKuH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096AbZBPKyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756865AbZBPKuH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 05:50:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbZBPKtz
+	id S1755096AbZBPKyU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 05:54:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbZBPKyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 05:49:55 -0500
-Received: from smtp-101-monday.noc.nerim.net ([62.4.17.101]:54540 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751170AbZBPKtz (ORCPT
+	Mon, 16 Feb 2009 05:54:11 -0500
+Received: from ti-out-0910.google.com ([209.85.142.190]:51790 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750718AbZBPKyK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 05:49:55 -0500
-Date: Mon, 16 Feb 2009 11:49:49 +0100
-From: Damien Wyart <damien.wyart@free.fr>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12650] Strange load average and ksoftirqd behavior with
-	2.6.29-rc2-git1
-Message-ID: <20090216104949.GA23976@localhost.localdomain>
-References: <20090215080941.GA2295@localhost.localdomain> <20090215090026.GA31147@elte.hu> <20090215095128.GA3234@localhost.localdomain> <20090215101351.GA23274@elte.hu> <20090215103445.GA2335@localhost.localdomain> <20090215110104.GB31351@elte.hu> <20090215180355.GA2273@localhost.localdomain> <20090215193102.GA16873@elte.hu> <20090216084223.GA2641@localhost.localdomain> <20090216092100.GH6182@elte.hu>
+	Mon, 16 Feb 2009 05:54:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=HACrKVf8QVbBG1bfcnijQz/jXn+cYZotDj+5Nw/mdptudfQfRjaU9zzv5Ird4tNY7L
+         81/RO+Tqn2z4kaX243wNpLL4wQq6IlXjDNNz2m0stoz78EFlasXD7munCZW60NXfOVti
+         5ObNtrWvu+rBs2hEoZOTMQKro9XDsNOPdAgt8=
+Date: Mon, 16 Feb 2009 18:54:21 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Subject: [Patch] sched: use TASK_NICE for task_struct
+Message-ID: <20090216105421.GB23665@hack.private>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090216092100.GH6182@elte.hu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > Does it find any TSC time warps?
 
-> > Seems not.
+#define TASK_NICE(p)            PRIO_TO_NICE((p)->static_prio)
 
-> ok, it's indeed pretty conclusive:
+So it's better to use TASK_NICE here.
 
-> |  2 CPUs, running 2 parallel test-tasks.
-> |  checking for time-warps via:
-> |  - read time stamp counter (RDTSC) instruction (cycle resolution)
-> | 
-> |   | TSC: 0.32us, fail:0 |
+Signed-off-by: WANG Cong <wangcong@zeuux.org>
+Cc: Ingo Molnar <mingo@elte.hu>
 
-> i suspect you ran it for at least a couple of minutes, and the ksoftirqd 
-> anomaly occured during it, right?
+---
+diff --git a/kernel/sched.c b/kernel/sched.c
+index c1d0ed3..a996bcc 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5145,7 +5145,7 @@ SYSCALL_DEFINE1(nice, int, increment)
+ 	if (increment > 40)
+ 		increment = 40;
+ 
+-	nice = PRIO_TO_NICE(current->static_prio) + increment;
++	nice = TASK_NICE(current) + increment;
+ 	if (nice < -20)
+ 		nice = -20;
+ 	if (nice > 19)
 
-Yes, that's right. I ran it for a few ten of minutes and the ksoftirqd
-anomaly was occuring.
-
--- 
-Damien
