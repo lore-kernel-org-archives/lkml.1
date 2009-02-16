@@ -1,109 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756313AbZBPAvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757064AbZBPAwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756313AbZBPAvw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 19:51:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755784AbZBPAuZ
+	id S1757064AbZBPAwV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 19:52:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756180AbZBPAuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 19:50:25 -0500
-Received: from everest.las.ic.unicamp.br ([143.106.60.118]:41745 "EHLO
+	Sun, 15 Feb 2009 19:50:32 -0500
+Received: from everest.las.ic.unicamp.br ([143.106.60.118]:41759 "EHLO
 	mail.las.ic.unicamp.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755526AbZBPAuY (ORCPT
+	with ESMTP id S1756130AbZBPAua (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 19:50:24 -0500
+	Sun, 15 Feb 2009 19:50:30 -0500
 From: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
 To: mingo@elte.hu
 Cc: glommer@redhat.com, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/8] x86: define reserve_top_address for x86_64
-Date: Sun, 15 Feb 2009 21:48:54 -0300
-Message-Id: <1234745339-18587-4-git-send-email-gustavo@las.ic.unicamp.br>
+Subject: [PATCH 6/8] x86: prepare fixmap_64.h for unification
+Date: Sun, 15 Feb 2009 21:48:57 -0300
+Message-Id: <1234745339-18587-7-git-send-email-gustavo@las.ic.unicamp.br>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1234745339-18587-3-git-send-email-gustavo@las.ic.unicamp.br>
+In-Reply-To: <1234745339-18587-6-git-send-email-gustavo@las.ic.unicamp.br>
 References: <1234745339-18587-1-git-send-email-gustavo@las.ic.unicamp.br>
  <1234745339-18587-2-git-send-email-gustavo@las.ic.unicamp.br>
  <1234745339-18587-3-git-send-email-gustavo@las.ic.unicamp.br>
+ <1234745339-18587-4-git-send-email-gustavo@las.ic.unicamp.br>
+ <1234745339-18587-5-git-send-email-gustavo@las.ic.unicamp.br>
+ <1234745339-18587-6-git-send-email-gustavo@las.ic.unicamp.br>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Only for later x86 integration.
+Just prepare fixmap for later mechanic unification.
+No real modification on code.
+
+  text    data     bss     dec     hex filename
+4312362  527192  421924 5261478  5048a6 vmlinux-64.after
+4312362  527192  421924 5261478  5048a6 vmlinux-64.before
 
 Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
 Acked-by: Glauber Costa <gcosta@redhat.com>
 ---
- arch/x86/include/asm/fixmap_64.h |    2 ++
- arch/x86/mm/pgtable.c            |   18 ++++++++++++++++++
- arch/x86/mm/pgtable_32.c         |   16 ----------------
- 3 files changed, 20 insertions(+), 16 deletions(-)
+ arch/x86/include/asm/fixmap_64.h |   76 ++++++++++++++++++++++++++++++++++---
+ 1 files changed, 69 insertions(+), 7 deletions(-)
 
 diff --git a/arch/x86/include/asm/fixmap_64.h b/arch/x86/include/asm/fixmap_64.h
-index d905de0..b6c06dd 100644
+index baff6d0..95acae0 100644
 --- a/arch/x86/include/asm/fixmap_64.h
 +++ b/arch/x86/include/asm/fixmap_64.h
-@@ -68,6 +68,8 @@ enum fixed_addresses {
+@@ -6,25 +6,63 @@
+  * for more details.
+  *
+  * Copyright (C) 1998 Ingo Molnar
++ *
++ * Support of BIGMEM added by Gerhard Wichert, Siemens AG, July 1999
++ * x86_32 and x86_64 integration by Gustavo F. Padovan, February 2009
+  */
+ 
+ #ifndef _ASM_X86_FIXMAP_64_H
+ #define _ASM_X86_FIXMAP_64_H
+ 
++#ifndef __ASSEMBLY__
+ #include <linux/kernel.h>
+ #include <asm/acpi.h>
+ #include <asm/apicdef.h>
+ #include <asm/page.h>
++#ifdef CONFIG_X86_32
++#include <linux/threads.h>
++#include <asm/kmap_types.h>
++#else
+ #include <asm/vsyscall.h>
+ #ifdef CONFIG_EFI
+ #include <asm/efi.h>
+ #endif
++#endif
++
++/*
++ * We can't declare FIXADDR_TOP as variable for x86_64 because vsyscall
++ * uses fixmaps that relies on FIXADDR_TOP for proper address calculation.
++ * Because of this, FIXADDR_TOP x86 integration was left as later work.
++ */
++#ifdef CONFIG_X86_32
++/* used by vmalloc.c, vsyscall.lds.S.
++ *
++ * Leave one empty page between vmalloc'ed areas and
++ * the start of the fixmap.
++ */
++extern unsigned long __FIXADDR_TOP;
++#define FIXADDR_TOP	((unsigned long)__FIXADDR_TOP)
++
++#define FIXADDR_USER_START     __fix_to_virt(FIX_VDSO)
++#define FIXADDR_USER_END       __fix_to_virt(FIX_VDSO - 1)
++#else
++#define FIXADDR_TOP	(VSYSCALL_END-PAGE_SIZE)
++
++/* Only covers 32bit vsyscalls currently. Need another set for 64bit. */
++#define FIXADDR_USER_START	((unsigned long)VSYSCALL32_VSYSCALL)
++#define FIXADDR_USER_END	(FIXADDR_USER_START + PAGE_SIZE)
++#endif
+ 
+ /*
+  * Here we define all the compile-time 'special' virtual
+  * addresses. The point is to have a constant address at
+  * compile time, but to set the physical address only
+  * in the boot process.
++ * for x86_32: We allocate these special addresses
++ * from the end of virtual memory (0xfffff000) backwards.
++ * Also this lets us do fail-safe vmalloc(), we
++ * can guarantee that these special addresses and
++ * vmalloc()-ed addresses never overlap.
+  *
+  * These 'compile-time allocated' memory buffers are
+  * fixed-size 4k pages (or larger if used with an increment
+@@ -34,12 +72,16 @@
+  * TLB entries of such buffers will not be flushed across
+  * task switches.
+  */
+-
+ enum fixed_addresses {
++#ifdef CONFIG_X86_32
++	FIX_HOLE,
++	FIX_VDSO,
++#else
+ 	VSYSCALL_LAST_PAGE,
+ 	VSYSCALL_FIRST_PAGE = VSYSCALL_LAST_PAGE
+ 			    + ((VSYSCALL_END-VSYSCALL_START) >> PAGE_SHIFT) - 1,
+ 	VSYSCALL_HPET,
++#endif
+ 	FIX_DBGP_BASE,
+ 	FIX_EARLYCON_MEM_BASE,
+ #ifdef CONFIG_X86_LOCAL_APIC
+@@ -49,11 +91,32 @@ enum fixed_addresses {
+ 	FIX_IO_APIC_BASE_0,
+ 	FIX_IO_APIC_BASE_END = FIX_IO_APIC_BASE_0 + MAX_IO_APICS - 1,
+ #endif
++#ifdef CONFIG_X86_64
+ #ifdef CONFIG_EFI
+ 	FIX_EFI_IO_MAP_LAST_PAGE,
+ 	FIX_EFI_IO_MAP_FIRST_PAGE = FIX_EFI_IO_MAP_LAST_PAGE
+ 				  + MAX_EFI_IO_PAGES - 1,
+ #endif
++#endif
++#ifdef CONFIG_X86_VISWS_APIC
++	FIX_CO_CPU,	/* Cobalt timer */
++	FIX_CO_APIC,	/* Cobalt APIC Redirection Table */
++	FIX_LI_PCIA,	/* Lithium PCI Bridge A */
++	FIX_LI_PCIB,	/* Lithium PCI Bridge B */
++#endif
++#ifdef CONFIG_X86_F00F_BUG
++	FIX_F00F_IDT,	/* Virtual mapping for IDT */
++#endif
++#ifdef CONFIG_X86_CYCLONE_TIMER
++	FIX_CYCLONE_TIMER, /*cyclone timer register*/
++#endif
++#ifdef CONFIG_X86_32
++	FIX_KMAP_BEGIN,	/* reserved pte's for temporary kernel mappings */
++	FIX_KMAP_END = FIX_KMAP_BEGIN+(KM_TYPE_NR*NR_CPUS)-1,
++#ifdef CONFIG_PCI_MMCONFIG
++	FIX_PCIE_MCFG,
++#endif
++#endif
+ #ifdef CONFIG_PARAVIRT
+ 	FIX_PARAVIRT_BOOTMAP,
+ #endif
+@@ -73,20 +136,19 @@ enum fixed_addresses {
+ 	FIX_BTMAP_END = __end_of_permanent_fixed_addresses + 256 -
+ 			(__end_of_permanent_fixed_addresses & 255),
+ 	FIX_BTMAP_BEGIN = FIX_BTMAP_END + NR_FIX_BTMAPS*FIX_BTMAPS_SLOTS - 1,
++#ifdef CONFIG_X86_32
++	FIX_WP_TEST,
++#endif
  	__end_of_fixed_addresses
  };
  
+-extern void reserve_top_address(unsigned long reserve);
+ 
+-#define FIXADDR_TOP	(VSYSCALL_END-PAGE_SIZE)
 +extern void reserve_top_address(unsigned long reserve);
-+
- #define FIXADDR_TOP	(VSYSCALL_END-PAGE_SIZE)
  
  #define FIXADDR_SIZE	(__end_of_permanent_fixed_addresses << PAGE_SHIFT)
-diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
-index 86f2ffc..5b7c7c8 100644
---- a/arch/x86/mm/pgtable.c
-+++ b/arch/x86/mm/pgtable.c
-@@ -313,6 +313,24 @@ int ptep_clear_flush_young(struct vm_area_struct *vma,
- 	return young;
- }
+ #define FIXADDR_BOOT_SIZE	(__end_of_fixed_addresses << PAGE_SHIFT)
+ #define FIXADDR_START		(FIXADDR_TOP - FIXADDR_SIZE)
+ #define FIXADDR_BOOT_START	(FIXADDR_TOP - FIXADDR_BOOT_SIZE)
  
-+/**
-+ * reserve_top_address - reserves a hole in the top of kernel address space
-+ * @reserve - size of hole to reserve
-+ *
-+ * Can be used to relocate the fixmap area and poke a hole in the top
-+ * of kernel address space to make room for a hypervisor.
-+ */
-+void __init reserve_top_address(unsigned long reserve)
-+{
-+#ifdef CONFIG_X86_32
-+	BUG_ON(fixmaps_set > 0);
-+	printk(KERN_INFO "Reserving virtual address space above 0x%08x\n",
-+	       (int)-reserve);
-+	__FIXADDR_TOP = -reserve - PAGE_SIZE;
-+	__VMALLOC_RESERVE += reserve;
-+#endif
-+}
-+
- int fixmaps_set;
- 
- void __native_set_fixmap(enum fixed_addresses idx, pte_t pte)
-diff --git a/arch/x86/mm/pgtable_32.c b/arch/x86/mm/pgtable_32.c
-index 0951db9..c3cf6e1 100644
---- a/arch/x86/mm/pgtable_32.c
-+++ b/arch/x86/mm/pgtable_32.c
-@@ -97,22 +97,6 @@ void set_pmd_pfn(unsigned long vaddr, unsigned long pfn, pgprot_t flags)
- unsigned long __FIXADDR_TOP = 0xfffff000;
- EXPORT_SYMBOL(__FIXADDR_TOP);
- 
--/**
-- * reserve_top_address - reserves a hole in the top of kernel address space
-- * @reserve - size of hole to reserve
-- *
-- * Can be used to relocate the fixmap area and poke a hole in the top
-- * of kernel address space to make room for a hypervisor.
-- */
--void __init reserve_top_address(unsigned long reserve)
--{
--	BUG_ON(fixmaps_set > 0);
--	printk(KERN_INFO "Reserving virtual address space above 0x%08x\n",
--	       (int)-reserve);
--	__FIXADDR_TOP = -reserve - PAGE_SIZE;
--	__VMALLOC_RESERVE += reserve;
--}
+-/* Only covers 32bit vsyscalls currently. Need another set for 64bit. */
+-#define FIXADDR_USER_START	((unsigned long)VSYSCALL32_VSYSCALL)
+-#define FIXADDR_USER_END	(FIXADDR_USER_START + PAGE_SIZE)
 -
- /*
-  * vmalloc=size forces the vmalloc area to be exactly 'size'
-  * bytes. This can be used to increase (or decrease) the
++#endif /* !__ASSEMBLY__ */
+ #endif /* _ASM_X86_FIXMAP_64_H */
 -- 
 1.6.0.6
 
