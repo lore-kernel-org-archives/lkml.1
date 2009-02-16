@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbZBPXWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbZBPXXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755494AbZBPXWl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 18:22:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751799AbZBPXWd
+	id S1754507AbZBPXXY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 18:23:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbZBPXXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 18:22:33 -0500
-Received: from ozlabs.org ([203.10.76.45]:50997 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751600AbZBPXWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 18:22:32 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: #tj-percpu has been rebased
-Date: Tue, 17 Feb 2009 09:52:20 +1030
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
-Cc: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, cpw@sgi.com
-References: <49833350.1020809@kernel.org> <200902161753.14141.rusty@rustcorp.com.au> <4999A236.9040508@zytor.com>
-In-Reply-To: <4999A236.9040508@zytor.com>
+	Mon, 16 Feb 2009 18:23:13 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35531 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751816AbZBPXXM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 18:23:12 -0500
+Date: Tue, 17 Feb 2009 00:22:59 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Arve Hj?nnev?g <arve@android.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       mark gross <mgross@linux.intel.com>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFD] Automatic suspend
+Message-ID: <20090216232259.GK1370@ucw.cz>
+References: <200902160010.16955.rjw@sisk.pl> <20090216225831.GH1370@ucw.cz> <20090216231324.GA15435@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902170952.21063.rusty@rustcorp.com.au>
+In-Reply-To: <20090216231324.GA15435@srcf.ucam.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 17 February 2009 03:58:22 H. Peter Anvin wrote:
-> Rusty Russell wrote:
-> > 
-> > But note that for the non-NUMA case, you can just use kmalloc/__get_free_pages
-> > and no remapping tricks are necessary at all.
-> > 
+On Mon 2009-02-16 23:13:24, Matthew Garrett wrote:
+> On Mon, Feb 16, 2009 at 11:58:31PM +0100, Pavel Machek wrote:
 > 
-> Only if your chunks are really small.  Keep in mind that
-> num_possible_cpus() may be 4096, and so it is unlikely you'll be able to
-> get enough contiguous pages unless you're using the largepage pool, and
-> even then you only get 512 bytes per cpu.
+> > If no devices are being used, and next wakeup is far enough in the
+> > future, just put system to sleep. Long enough == so far away that
+> > suspend/wakeup is short compared to that... like 20 seconds on PC.
 > 
-> All in all I think a dedicated virtual zone per CPU as opposed to
-> interleaving them seems to make more sense.  Even with 4096 CPUs and
-> reserving, say, 256 MB per CPU it's not that much address space in the
-> context of a 47-bit kernel space.  On 32 bits I don't think anything but
-> the most trivial amount of percpu space is going to fly no matter what.
+> This is intrinsically difficult with PCs, since we have such a poorly 
+> defined set of wakeup events. We can't wakeup on generic network 
+> traffic, just WoL. 
 
-It's the TLB cost which I really don't want to pay; num_possible_cpus()
-4096 non-NUMA is a little silly (currently impossible).
+At least e1000 in thinkpad can wakeup on generic network traffic. If
+particular network card can't, you just can't sleep when network is up.
 
-I'm happy to limit per-cpu allocations to pagesize, then you only need to
-find num_possible_cpus() contig pages, and if you can't, you fall back to
-vmalloc.
+> Many machines won't wake up on keyboard events. 
 
-Thanks,
-Rusty.
+Too bad. You'll have to close the lid for autosuspend to work on such
+hw. (Or maybe you can do some hack telling the kernel to suspend
+anyway if just keyboard prevents it.)
+
+> Meanwhile, on embedded it's becoming a less interesting problem because 
+> idle and suspended are often now equivalent states. 
+
+Android people tell us otherwise.
+								Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
