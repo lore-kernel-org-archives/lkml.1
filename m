@@ -1,59 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757368AbZBPNeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757991AbZBPNe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757368AbZBPNeR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 08:34:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbZBPNeA
+	id S1757991AbZBPNe3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 08:34:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756829AbZBPNeE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 08:34:00 -0500
-Received: from mailservice.tudelft.nl ([130.161.131.5]:6704 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751596AbZBPNd7 (ORCPT
+	Mon, 16 Feb 2009 08:34:04 -0500
+Received: from 173-10-54-97-Michigan.hfc.comcastbusiness.net ([173.10.54.97]:56050
+	"EHLO crunch.scalableinformatics.com" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755975AbZBPNeC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 08:33:59 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -14.389
-Message-ID: <49996B42.5040500@tremplin-utc.net>
-Date: Mon, 16 Feb 2009 14:33:54 +0100
-From: =?UTF-8?B?w4lyaWMgUGllbA==?= <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.19) Gecko/20081231 Mandriva/2.0.0.19-1mdv2009.1 (2009.1) Thunderbird/2.0.0.19 Mnenhy/0.7.5.0
+	Mon, 16 Feb 2009 08:34:02 -0500
+X-Greylist: delayed 596 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Feb 2009 08:34:00 EST
+Message-ID: <499968F0.8000509@scalableinformatics.com>
+Date: Mon, 16 Feb 2009 08:24:00 -0500
+From: Joe Landman <landman@scalableinformatics.com>
+Reply-To: landman@scalableinformatics.com
+Organization: Scalable Informatics
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Mike Chan <mike@android.com>
-Cc: davej@codemonkey.org.uk, linux-kernel@vger.kernel.org,
-       cpufreq@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: Governor poll frequency tuneables exported in
- config.
-References: <1234469284-15924-1-git-send-email-mike@android.com>
-In-Reply-To: <1234469284-15924-1-git-send-email-mike@android.com>
-Content-Type: text/plain; charset=UTF-8
+To: Carsten Aulbert <carsten.aulbert@aei.mpg.de>
+CC: beowulf@beowulf.org, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Tracing down 250ms open/chdir calls
+References: <49991BE7.1090104@aei.mpg.de>
+In-Reply-To: <49991BE7.1090104@aei.mpg.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Chan schreef:
->     cpufreq: Governor poll frequency tuneables exported in config.
->     
-Hello,
+Carsten Aulbert wrote:
+> Hi all,
+> 
+> sorry in advance for this vague subject and also the vague email, I'm
+> trying my best to summarize the problem:
+> 
+> On our large cluster we sometimes encounter the problem that our main
+> scheduling processes are often in state D and in the end not capable
+> anymore of pushing work to the cluster.
 
-> +config CPU_FREQ_MIN_TICKS
-> +	int "Ticks between governor polling interval."
-> +	default 10
-> +	help
-> +	  Minimum number of ticks between polling interval for governors.
-I don't think it makes much sense to let anyone tune this parameter.
-This is a constant that says we need at least a 10% granularity to
-compute any statistic correctly. There is nothing much to be discussed
-or tuned.
+Hi Carsten
+
+   Are you using a "standard" cluster scheduler (SGE, PBS, ...) or a 
+locally written one?
+
+> The head nodes are 8 core boxes with Xeon CPUs and equipped with 16 GB
+> of memory, when certain types of jobs are running we see system loads of
+> about 20-30 which might go up to 80-100 from time to time. Looking at
+> the individual cores they are mostly busy with system tasks (e.g. htop
+> shows 'red' bars).
+
+Hmmm...  These are your head nodes?  Not your NFS server nodes?  Sounds 
+like there are a large number of blocked IO processes ... try a
+
+	vmstat 1
+
+and look at the "b" column (usually second from left ... or nearly 
+there).  Lots of blocked IO processes can have the affect of introducing 
+significant latency into all system calls.
+
+> stat -tt -c showed that several system calls of the scheduler take a
+> long time to complete, most notably open and chdir which took between
+> 180 and 230ms to complete (during our testing). Since most of these open
+> and chdir are via NFSv3 I'm including that list as well. The NFS servers
+> are Sun Fire X4500 boxes running Solaris 10u5 right now.
+
+Hmmm.... What happens if you make these local to each box?  What are the 
+mount options for the mount points?  We have spoken to other users with 
+performance problems on such servers.  The NFS server/OS combination you 
+indicate above isn't known to be very fast.  This isn't your problem 
+(see later), but it looks like your own data suggests you are giving up 
+nearly an order of magnitude performance using this NFS server/OS 
+combination, likely at a premium price as well.
+
+> A standard output line looks like:
+> 93.37   38.997264     230753      169    78      open
+> 
+> i.e. 93.37% of the system-related time was spend in 169 successful open
+> calls which took 230753us/call, thus 39 wall clock seconds were spend in
+> a minute just doing open.
+> 
+> We tried several things to understand the problem, but apart from moving
+> more files (mostly log files of currently running jobs) off NFS we did
+> not move far ahead so far. On
+> https://n0.aei.uni-hannover.de/twiki/bin/view/ATLAS/H2Problems
+> we have summarized some things.
+
+I didn't catch if these are tcp/udp mounts.  What are the mount options?
+
+> With the help of 'stress' and a tiny program just doing open/putc/close
+> into a single file, I've tried to get a feeling how good or bad things
+> are when compared to other head nodes with different tasks/loads:
+> 
+> https://n0.aei.uni-hannover.de/twiki/bin/view/ATLAS/OpenCloseIotest
+
+... and these results do in fact confirm the comment I made about the 
+NFS server/OS combo not known to be fast.
+
+ From my laptop running a Ubuntu 8.10 variant over gigabit to a known 
+very slow NFS server ...
+
+./measure.exe /misc/crunch/home/landman/test2
+Wrote 24905 times into /misc/crunch/home/landman/test2, speed is 
+421.14/s, time elapsed: 59.14s
 
 
-> +config CPU_FREQ_SAMPLING_LATENCY_MULTIPLIER
-> +	int "Sampling rate multiplier for governors."
-> +	default 1000
-> +	help
-> +	  Sampling latency rate multiplied by the cpu switch latency.
-> +	  Affects governor polling.
-This one, why not (although I don't think it's worth neither), and it
-would need a better documentation.
+from a different server in a different location to a JackRabbit-S server 
+over NFS on a single gigabit with default mounts (this server running a 
+long IOzone)
 
-Eric
+./measure.exe /mnt/d/1
+Wrote 124312 times into /mnt/d/1, speed is 2072.99/s, time elapsed: 59.97s
 
+and from the same starting point but to a JackRabbit-S server over NFS 
+on a single gigabit with default mounts (this server idle)
+
+./measure.exe /mnt/d/x
+Wrote 134426 times into /mnt/d/x, speed is 2270.79/s, time elapsed: 59.20s
+
+This system would be roughly similar to your d02 machine.
+
+ly
+Assuming you aren't using mount options of noac,sync,...  Could you 
+enlighten us as to what mount options are for the head nodes?
+
+Also, the way the code is written, you are doing quite a few calls to 
+gettimeofday ... you could probably avoid this with a little re-writing 
+of the main loop.
+
+If you are using noac or sync on your NFS mounts, then this could 
+explain some of the differences you are seeing (certainly the 100/s vs 
+800/s ... but not likely the 4/s)
+
+However, if you notice that h2 in your table is an apparent outlier, 
+there may be something more systematic going on there.  Since you 
+indicate there is a high load going on while you are testing, this is 
+likely what you need to explore.
+
+Grab the atop program.  It is pretty good about letting you explore what 
+is causing load.  That is, despite your x4500's/Solaris combo showing 
+itself not to be a fast NFS server the problem appears to be more likely 
+more localized on the h2 machine than on the NFS machines.
+
+http://freshmeat.net/projects/atop/
+
+Joe
+
+-- 
+Joseph Landman, Ph.D
+Founder and CEO
+Scalable Informatics LLC,
+email: landman@scalableinformatics.com
+web  : http://www.scalableinformatics.com
+        http://jackrabbit.scalableinformatics.com
+phone: +1 734 786 8423 x121
+fax  : +1 866 888 3112
+cell : +1 734 612 4615
