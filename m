@@ -1,22 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755647AbZBPQvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754646AbZBPQvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755647AbZBPQvW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 11:51:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZBPQvL
+	id S1754646AbZBPQvg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 11:51:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753511AbZBPQvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 11:51:11 -0500
-Received: from e23smtp05.au.ibm.com ([202.81.31.147]:58659 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751194AbZBPQvK (ORCPT
+	Mon, 16 Feb 2009 11:51:15 -0500
+Received: from e28smtp09.in.ibm.com ([59.145.155.9]:58754 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753315AbZBPQvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 11:51:10 -0500
+	Mon, 16 Feb 2009 11:51:14 -0500
 From: Gautham R Shenoy <ego@in.ibm.com>
-Subject: [PATCH 0/3] sched: Extend sched_mc/smt_power_savings framework.
+Subject: [PATCH 1/3] sched: code cleanup - sd_power_saving_flags(),
+	sd_balance_for_mc/package_power()
 To: linux-kernel@vger.kernel.org, svaidy@linux.vnet.ibm.com, mingo@elte.hu,
        a.p.zijlstra@chello.nl, suresh.b.siddha@intel.com, ego@in.ibm.com
-Cc: balbir@in.ibm.com, dipankar@in.ibm.com, efault@gmx.de, andi@firstfloor.org
-Date: Mon, 16 Feb 2009 22:21:00 +0530
-Message-ID: <20090216164719.12804.37013.stgit@sofia.in.ibm.com>
+Cc: balbir@in.ibm.com, dipankar@in.ibm.com, efault@gmx.de, andi@firstfloor.org,
+       Gautham R Shenoy <ego@in.ibm.com>
+Date: Mon, 16 Feb 2009 22:21:06 +0530
+Message-ID: <20090216165105.12804.32344.stgit@sofia.in.ibm.com>
+In-Reply-To: <20090216164719.12804.37013.stgit@sofia.in.ibm.com>
+References: <20090216164719.12804.37013.stgit@sofia.in.ibm.com>
 User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -25,91 +29,111 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This is a code cleanup patch which combines the functions of
+sd_balance_for_mc/package_power() and sd_power_saving_flags() into a single
+function.
 
-The following patch series extends the existing
-sched_smt/mc_power_savings framework to work on platforms that
-have onchip memory controller making each cpu package a 'node'
-
-On such machines with on-chip memory controller, each physical CPU
-package forms a NUMA node and the CPU level sched_domain will have
-only one group.  This prevents any form of power saving balance across
-these nodes.  Enabling the sched_mc/smt_power_savings tunable to work as
-designed on these new single CPU NUMA node machines will help task
-consolidation and save power as we did in other multi core multi
-socket platforms.
-
-Consolidation across NODES have implications of cross-node memory
-access and other NUMA locality issues.  Even under such constraints
-there could be scope for power savings vs performance tradeoffs and
-hence making the sched_mc/smt_powersavings work as expected on these
-platform is justified.
-
-sched_mc/smt_power_savings is still a tunable and power savings benefits
-and performance would vary depending on the workload and the system
-topology and hardware features.
-
-The patch series has been tested on a 2-Socket Quad-core Dual threaded
-box with kernbench as the workload, varying the number of threads.
-
-The following results shows the average of 3 iterations of each of the runs.
-
-|-----------------------------------------------------------------------------|
-|   testname                            | avg-time elapsed | % power consumed |
-|-----------------------------------------------------------------------------|
-|   pm_kernbench.smt-0-mc-0_threads=4   |   95.28s         |   100.00         |
-|   pm_kernbench.smt-0-mc-1_threads=4   |   98.06s         |   100.98         |
-|   pm_kernbench.smt-0-mc-2_threads=4   |   99.14s         |   101.98         |
-|   pm_kernbench.smt-1-mc-1_threads=4   |  137.62s         |    92.68         |
-|   pm_kernbench.smt-1-mc-2_threads=4   |  142.75s         |    91.89         |
-|   pm_kernbench.smt-2-mc-2_threads=4   |  142.63s         |    92.30         |
-|-----------------------------------------------------------------------------|
-|   pm_kernbench.smt-0-mc-0_threads=6   |   66.25s         |   100.00         |
-|   pm_kernbench.smt-0-mc-1_threads=6   |   71.18s         |    99.25         |
-|   pm_kernbench.smt-0-mc-2_threads=6   |   69.43s         |   100.12         |
-|   pm_kernbench.smt-1-mc-1_threads=6   |   96.46s         |    91.40         |
-|   pm_kernbench.smt-1-mc-2_threads=6   |   99.51s         |    90.49         |
-|   pm_kernbench.smt-2-mc-2_threads=6   |   99.35s         |    89.94         |
-|-----------------------------------------------------------------------------|
-|   pm_kernbench.smt-0-mc-0_threads=7   |   58.20s         |   100.00         |
-|   pm_kernbench.smt-0-mc-1_threads=7   |   62.59s         |    98.12         |
-|   pm_kernbench.smt-0-mc-2_threads=7   |   60.73s         |    99.17         |
-|   pm_kernbench.smt-1-mc-1_threads=7   |   83.70s         |    90.47         |
-|   pm_kernbench.smt-1-mc-2_threads=7   |   83.31s         |    88.98         |
-|   pm_kernbench.smt-2-mc-2_threads=7   |   83.69s         |    89.51         |
-|-----------------------------------------------------------------------------|
-|   pm_kernbench.smt-0-mc-0_threads=8   |   54.08s         |   100.00         |
-|   pm_kernbench.smt-0-mc-1_threads=8   |   57.98s         |    97.65         |
-|   pm_kernbench.smt-0-mc-2_threads=8   |   55.79s         |    99.28         |
-|   pm_kernbench.smt-1-mc-1_threads=8   |   74.31s         |    90.39         |
-|   pm_kernbench.smt-1-mc-2_threads=8   |   76.03s         |    89.88         |
-|   pm_kernbench.smt-2-mc-2_threads=8   |   76.59s         |    90.14         |
-|-----------------------------------------------------------------------------|
-|   pm_kernbench.smt-0-mc-0_threads=9   |   51.67s         |   100.00         |
-|   pm_kernbench.smt-0-mc-1_threads=9   |   54.64s         |    97.38         |
-|   pm_kernbench.smt-0-mc-2_threads=9   |   52.78s         |    98.81         |
-|   pm_kernbench.smt-1-mc-1_threads=9   |   65.91s         |    91.33         |
-|   pm_kernbench.smt-1-mc-2_threads=9   |   66.93s         |    91.36         |
-|   pm_kernbench.smt-2-mc-2_threads=9   |   67.18s         |    90.99         |
-|-----------------------------------------------------------------------------|
-
-
-Thoughts on this approach?
-
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
 ---
 
-Gautham R Shenoy (3):
-      sched: Fix sd_parent_degenerate for SD_POWERSAVINGS_BALANCE.
-      sched: Fix the wakeup nomination for sched_mc/smt_power_savings.
-      sched: code cleanup - sd_power_saving_flags(), sd_balance_for_mc/package_power()
+ include/linux/sched.h    |   46 ++++++++++++++++------------------------------
+ include/linux/topology.h |    6 ++----
+ 2 files changed, 18 insertions(+), 34 deletions(-)
 
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 02e16d2..06c5c6c 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -777,34 +777,30 @@ enum powersavings_balance_level {
+ 
+ extern int sched_mc_power_savings, sched_smt_power_savings;
+ 
+-static inline int sd_balance_for_mc_power(void)
+-{
+-	if (sched_smt_power_savings)
+-		return SD_POWERSAVINGS_BALANCE;
+-
+-	return 0;
+-}
+-
+-static inline int sd_balance_for_package_power(void)
+-{
+-	if (sched_mc_power_savings | sched_smt_power_savings)
+-		return SD_POWERSAVINGS_BALANCE;
+-
+-	return 0;
+-}
++enum sched_domain_level {
++	SD_LV_NONE = 0,
++	SD_LV_SIBLING,
++	SD_LV_MC,
++	SD_LV_CPU,
++	SD_LV_NODE,
++	SD_LV_ALLNODES,
++	SD_LV_MAX
++};
+ 
+ /*
+  * Optimise SD flags for power savings:
+  * SD_BALANCE_NEWIDLE helps agressive task consolidation and power savings.
+  * Keep default SD flags if sched_{smt,mc}_power_saving=0
+  */
+-
+-static inline int sd_power_saving_flags(void)
++static inline int sd_power_saving_flags(enum sched_domain_level level)
+ {
+-	if (sched_mc_power_savings | sched_smt_power_savings)
+-		return SD_BALANCE_NEWIDLE;
++	if (level == SD_LV_MC && !sched_smt_power_savings)
++		return 0;
++	if (level == SD_LV_CPU &&
++		!(sched_mc_power_savings || sched_smt_power_savings))
++		return 0;
+ 
+-	return 0;
++	return SD_POWERSAVINGS_BALANCE | SD_BALANCE_NEWIDLE;
+ }
+ 
+ struct sched_group {
+@@ -830,16 +826,6 @@ static inline struct cpumask *sched_group_cpus(struct sched_group *sg)
+ 	return to_cpumask(sg->cpumask);
+ }
+ 
+-enum sched_domain_level {
+-	SD_LV_NONE = 0,
+-	SD_LV_SIBLING,
+-	SD_LV_MC,
+-	SD_LV_CPU,
+-	SD_LV_NODE,
+-	SD_LV_ALLNODES,
+-	SD_LV_MAX
+-};
+-
+ struct sched_domain_attr {
+ 	int relax_domain_level;
+ };
+diff --git a/include/linux/topology.h b/include/linux/topology.h
+index e632d29..8097dce 100644
+--- a/include/linux/topology.h
++++ b/include/linux/topology.h
+@@ -125,8 +125,7 @@ int arch_update_cpu_topology(void);
+ 				| SD_WAKE_AFFINE	\
+ 				| SD_WAKE_BALANCE	\
+ 				| SD_SHARE_PKG_RESOURCES\
+-				| sd_balance_for_mc_power()\
+-				| sd_power_saving_flags(),\
++				| sd_power_saving_flags(SD_LV_MC),\
+ 	.last_balance		= jiffies,		\
+ 	.balance_interval	= 1,			\
+ }
+@@ -151,8 +150,7 @@ int arch_update_cpu_topology(void);
+ 				| SD_BALANCE_FORK	\
+ 				| SD_WAKE_AFFINE	\
+ 				| SD_WAKE_BALANCE	\
+-				| sd_balance_for_package_power()\
+-				| sd_power_saving_flags(),\
++				| sd_power_saving_flags(SD_LV_CPU),\
+ 	.last_balance		= jiffies,		\
+ 	.balance_interval	= 1,			\
+ }
 
- include/linux/sched.h    |   47 ++++++++++++++--------------------------
- include/linux/topology.h |    6 ++---
- kernel/sched.c           |   54 +++++++++++++++++++++++++++++++++++++++++++---
- kernel/sched_fair.c      |    2 +-
- 4 files changed, 71 insertions(+), 38 deletions(-)
-
---
-Thanks and Regards
-gautham.
