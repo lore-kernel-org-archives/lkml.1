@@ -1,70 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbZBPXCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755632AbZBPXDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755509AbZBPXCz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 18:02:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750938AbZBPXCr
+	id S1755632AbZBPXDb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 18:03:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbZBPXDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 18:02:47 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:57912 "EHLO ogre.sisk.pl"
+	Mon, 16 Feb 2009 18:03:20 -0500
+Received: from rtr.ca ([76.10.145.34]:37769 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750863AbZBPXCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 18:02:47 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFD] Automatic suspend
-Date: Tue, 17 Feb 2009 00:02:36 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-References: <Pine.LNX.4.44L0.0902161736210.21117-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0902161736210.21117-100000@netrider.rowland.org>
+	id S1751102AbZBPXDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 18:03:19 -0500
+Message-ID: <4999F0B8.7020700@rtr.ca>
+Date: Mon, 16 Feb 2009 18:03:20 -0500
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902170002.37973.rjw@sisk.pl>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       =?UTF-8?B?SGFubm8gQsO2Y2s=?= <hanno@hboeck.de>
+Subject: Re: [PATCH] libata: Don't trust current capacity values in identify
+ words 57-58
+References: <4999CA54.1060306@gmail.com> <4999F032.6060107@rtr.ca>
+In-Reply-To: <4999F032.6060107@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 16 February 2009, Alan Stern wrote:
-> On Mon, 16 Feb 2009, Rafael J. Wysocki wrote:
+Mark Lord wrote:
+> Robert Hancock wrote:
+>> Hanno Böck reported a problem where an old Conner CP30254 240MB hard 
+>> drive
+>> was reported as 1.1TB in capacity by libata:
+>>
+>> http://lkml.org/lkml/2009/2/13/134
+>>
+>> This was caused by libata trusting the drive's reported current 
+>> capacity in sectors in identify words 57 and 58 if the drive does not 
+>> support LBA and the
+>> current CHS translation values appear valid. Unfortunately it seems older
+>> ATA specs were vague about what this field should contain and a number 
+>> of drives
+>> used values with wrong byte order or that were totally bogus. There's no
+>> unique information that it conveys and so we can just calculate the 
+>> number
+>> of sectors from the reported current CHS values.
+>>
+>> Signed-off-by: Robert Hancock <hancockrwd@gmail.com>
+> ..
+>>      } else {
+>>          if (ata_id_current_chs_valid(id))
+>> -            return ata_id_u32(id, 57);
+>> +            return id[54] * id[55] * id[56];
+>>          else
+>>              return id[1] * id[3] * id[6];
+> ..
 > 
-> > OK, so I think there are two things that user space may be allowed to do as
-> > far as putting devices into low power states is concerned:
-> > * disable/enable the automatic power management of the device (provided that
-> >   the driver supports the automatic PM)
+> NAK.  That's not quite correct, either.
 > 
-> Set the automatic PM parameters (idle timeout, state to go to, etc.).  
-
-Yes.  I'm not sure about the state part, though.
-
-> And disabling automatic PM altogether (effectively the same as setting
-> the idle timeout to infinity).
-
-Yes.
-
-> > * check what power states devices are in.
+> The LBA capacity can be larger than the CHS capacity,
+> so we have to use the reported LBA values if at all possible.
 > 
-> What about situations where we want to distinguish between the power 
-> state of the device itself and the power state of the link?  For a disk 
-> drive we may want to power the link on and off quite a lot, as that 
-> has low latency, but spinning the disk up and down takes a long time 
-> and so should have a longer idle-time value.
+> That's why ata_id_is_lba_capacity_ok() exists,
+> and why it looks so peculiar.
+> 
+> Some of those early drives really did require that kind of logic.
+..
 
-Well, I'm not sure at the moment.
+Mind you, one can do better than that, too.
 
-Do you have any suggestions?
+The "10% solution" in there right now is a bit of a (working) hack.
+It really probably just needs to check for a flipped-LBA
+that is within +/- one full cylinder of the CHS capacity.
 
-Rafael
+Cheers
