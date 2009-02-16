@@ -1,131 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbZBPOyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753587AbZBPO7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753807AbZBPOyA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 09:54:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbZBPOxv
+	id S1753587AbZBPO7U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 09:59:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbZBPO7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 09:53:51 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:36523 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751041AbZBPOxu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 09:53:50 -0500
-Date: Mon, 16 Feb 2009 14:53:49 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] vmscan: initialize sc.order in indirect shrink_list()
-	users
-Message-ID: <20090216145349.GC16153@csn.ul.ie>
-References: <20090210165134.GA2457@cmpxchg.org> <20090210162948.bd20d853.akpm@linux-foundation.org> <20090211015227.GA4605@cmpxchg.org>
+	Mon, 16 Feb 2009 09:59:12 -0500
+Received: from cluster-g.mailcontrol.com ([208.87.233.190]:40013 "EHLO
+	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750935AbZBPO7L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 09:59:11 -0500
+Message-ID: <49997EF2.4070109@csr.com>
+Date: Mon, 16 Feb 2009 14:57:54 +0000
+From: David Vrabel <david.vrabel@csr.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090211015227.GA4605@cmpxchg.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Greg KH <greg@kroah.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] UWB and WUSB fixes
+References: <49873632.6040108@csr.com> <20090203051244.GA1826@kroah.com> <49885139.3070106@csr.com> <20090203154745.GA27533@kroah.com>
+In-Reply-To: <20090203154745.GA27533@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Feb 2009 14:57:53.0816 (UTC) FILETIME=[F1F3B180:01C99046]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 11, 2009 at 02:52:27AM +0100, Johannes Weiner wrote:
-> [added Mel to CC]
+Greg KH wrote:
 > 
-> On Tue, Feb 10, 2009 at 04:29:48PM -0800, Andrew Morton wrote:
-> > On Tue, 10 Feb 2009 17:51:35 +0100
-> > Johannes Weiner <hannes@cmpxchg.org> wrote:
-> > 
-> > > shrink_all_memory() and __zone_reclaim() currently don't initialize
-> > > the .order field of their scan control.
-> > > 
-> > > Both of them call into functions which use that field and make certain
-> > > decisions based on a random value.
-> > > 
-> > > The functions depending on the .order field are marked with a star,
-> > > the faulty entry points are marked with a percentage sign:
-> > > 
-> > > * shrink_page_list()
-> > >   * shrink_inactive_list()
-> > >   * shrink_active_list()
-> > >     shrink_list()
-> > >       shrink_all_zones()
-> > >         % shrink_all_memory()
-> > >       shrink_zone()
-> > >         % __zone_reclaim()
-> > > 
-> > > Initialize .order to zero in shrink_all_memory().  Initialize .order
-> > > to the order parameter in __zone_reclaim().
-> > > 
-> > > Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> > > ---
-> > >  mm/vmscan.c |    2 ++
-> > >  1 files changed, 2 insertions(+), 0 deletions(-)
-> > > 
-> > > diff --git a/mm/vmscan.c b/mm/vmscan.c
-> > > index 4422301..9ce85ea 100644
-> > > --- a/mm/vmscan.c
-> > > +++ b/mm/vmscan.c
-> > > @@ -2112,6 +2112,7 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
-> > >  		.may_unmap = 0,
-> > >  		.swap_cluster_max = nr_pages,
-> > >  		.may_writepage = 1,
-> > > +		.order = 0,
-> > >  		.isolate_pages = isolate_pages_global,
-> > >  	};
-> > >  
-> > > @@ -2294,6 +2295,7 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
-> > >  					SWAP_CLUSTER_MAX),
-> > >  		.gfp_mask = gfp_mask,
-> > >  		.swappiness = vm_swappiness,
-> > > +		.order = order,
-> > >  		.isolate_pages = isolate_pages_global,
-> > >  	};
-> > >  	unsigned long slab_reclaimable;
-> > 
-> > The second hunk might fix something, but it would need a correcter
-> > changelog, and some thought about what its runtimes effects are likely
-> > to be, please.
-> 
-> zone_reclaim() is used by the watermark rebalancing of the buddy
-> allocator right before trying to do an allocation.  Even though it
-> tries to reclaim at least 1 << order pages, it doesn't raise sc.order
-> to increase clustering efforts.
-> 
+> Also, it would be good to have the linux-usb developers at least review
+> any changes to these files, myself included, right?
 
-This affects lumpy reclaim. Direct reclaim via try_to_free_pages() and
-kswapd() is still working but the earlier reclaim attempt via zone_reclaim()
-on unmapped file and slab pages is ignoring teh order. While it'd be tricky
-to measure any difference, it does make sense that __zone_reclaim() initialse
-the order with what the caller requested.
+I'll post patches to the list if I think they're significant enough to
+need a review.
 
-> I think this happens with the assumption that the upcoming allocation
-> can still succeed and in that case we don't want to lump too
-> aggressively to refill the zone. 
+> It shouldn't be any more work for you, just send the patches to me and
+> forget about them, I'll queue them up at the proper time :)
 
-I don't get what you mean here. The caller requested the higher order so
-the work has been requested.
+To be honest, in the past you have been too slow to handle patches and
+review in a timely manner.  The current system of sending pull request
+direct to Linus has worked well so I'm going to stick with it for now.
 
-> The allocation might succeed on
-> another zone and now we have evicted precious pages due to clustering
-> while we are still not sure it's even needed.
-> 
-
-Also not sure what you are getting at here. zone_reclaim() is called for the
-preferred zones in order. Attempts are made to free within the preferred zone
-and then allocate from it. Granted, it might evict pages and the clustering
-was ineffective, but this is the cost of high-order reclaim.
-
-> If the allocation fails from all zones, we still will use lumpy
-> reclaim for higher orders in kswapd and try_to_free_pages().
-> 
-> So I think that __zone_reclaim() leaves sc.order = 0 intentionally.
-> 
-> Mel?
-> 
-
-I don't believe it's intentional. The caller called zone_reclaim() with
-a given order. It should be used as part of the reclaim decision.
-
+David
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+David Vrabel, Senior Software Engineer, Drivers
+CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
+Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
