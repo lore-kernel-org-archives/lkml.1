@@ -1,99 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751822AbZBPPWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbZBPPWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751822AbZBPPWe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 10:22:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbZBPPVh
+	id S1755501AbZBPPWx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 10:22:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbZBPPWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 10:21:37 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37651 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752445AbZBPPVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 10:21:35 -0500
-Date: Mon, 16 Feb 2009 16:21:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Justin Madru <jdm64@gawab.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux IDE <linux-ide@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Hugh Dickins <hugh@veritas.com>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Mikael Pettersson <mikpe@it.uu.se>
-Subject: Re: [Bug #12263] Sata soft reset filling log
-Message-ID: <20090216152111.GA31403@elte.hu>
-References: <sTyoMUwdm9B.A.QCH.U40lJB@chimera> <200902152221.43834.rjw@sisk.pl> <20090215223045.GC29300@elte.hu> <200902160012.57584.rjw@sisk.pl> <499983DF.5050503@ru.mvista.com>
+	Mon, 16 Feb 2009 10:22:34 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:56509 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755029AbZBPPWd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 10:22:33 -0500
+Message-ID: <499984C1.6020004@s5r6.in-berlin.de>
+Date: Mon, 16 Feb 2009 16:22:41 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <499983DF.5050503@ru.mvista.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Sam Ravnborg <sam@ravnborg.org>, Manish Katiyar <mkatiyar@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] Remove errors caught by checkpatch.pl in	kernel/kallsyms.c
+References: <ea11fea30902151034s5444efabw455c1dac1b875086@mail.gmail.com> <20090215184752.GA4970@uranus.ravnborg.org> <4999650C.6030700@s5r6.in-berlin.de> <20090216132822.GC17996@elte.hu> <4999717F.7090205@s5r6.in-berlin.de> <20090216141917.GA8981@elte.hu>
+In-Reply-To: <20090216141917.GA8981@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> We routinely mention Sparse, lockdep, Coverity, Coccinelle, kmemleak, 
+> ftrace, kmemcheck and other tools as well when it motives to fix a bug 
+> or uncleanliness. [...] It is absolutely fine to
+> mention checkpatch when it catches uncleanliness in code that already 
+> got merged. I dont understand your point.
 
-* Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
+I wrote "don't mention checkpatch" but I really meant "think about what
+the effect of the patch is and describe this".
 
-> Hello.
->
-> Rafael J. Wysocki wrote:
->
->>>>>> This message has been generated automatically as a part of a report
->>>>>> of regressions introduced between 2.6.27 and 2.6.28.
->
->>>>>> The following bug entry is on the current list of known regressions
->>>>>> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
->>>>>> be listed and let me know (either way).
->
->>>>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12263
->>>>>> Subject		: Sata soft reset filling log
->>>>>> Submitter	: Justin Madru <bevicm@dslextreme.com>
->>>>>> Date		: 2008-12-13 2:07 (64 days old)
->>>>>> References	: http://marc.info/?l=linux-kernel&m=122913412608533&w=4
->
->>>>> I'm still seeing this on .29-rc5, and I think that my bug #12263 
->>>>> is a duplicate of bug #12609,
->>>>> or more correctly it's a duplicate of mine because I reported first.
->
->>>>> It seems like the bug has been fixed in tip/master for some time now.
->>>>> Below is the diff of origin and tip from when I tested.
->
->>>> Ingo, do you know whinch patch in -tip fixes this regression?
->
->>> This one, done on Jan 10, more than a month ago:
->
->>>  f1d26da: Revert "libata: Add 32bit PIO support"
->
->>> When a commit causes trouble in -tip qa i immediately revert it in 
->>> 95% of the cases, no questions asked. Especially if it's related to  
->>> persistent storage.
->
->> OK, thanks.
->
->> We seem to have a working fix patch for this issue in bug #12609.
->
->    Wait, if this is indeed post-2.6.27 regression, it couldn't possibly 
-> have been caused by that patch which got merged during 2.6.29-rc1 
-> timeframe. Something's up with this bug...
+It's not really a hard problem to mention checkpatch --- it is a problem
+to make it the main point or, like in this case, the only point of the
+changelog.  (Furthermore, it is also a problem to do something routinely
+*if* doing it does not make sense.  There routinely appear coccinelle
+metapatch sources in changelogs.  That does not make sense at all, and
+doing it routinely is not a justification in itself.)
 
-SATA uses the SCSI layer, right? It could then perhaps be these bits in 
-tip:out-of-tree:
+So, "don't mention checkpatch" is simply a rule of thumb; read it as "I
+mentioned checkpatch in the changelog --- wait, I have possibly written
+a changelog that is besides the point; I should think about it once
+more".  :-)
 
- 813104e: Revert "[SCSI] simplify scsi_io_completion()"
- 84db545: Revert "[SCSI] Fix uninitialized variable error in scsi_io_completion"
- 0eb6038: Revert "[SCSI] Fix error handling for DIF/DIX"
- 3cd94dd: Revert "[SCSI] scsi_lib: don't decrement busy counters when inserting commands"
- c27aed5: Revert "[SCSI] scsi_lib: fix DID_RESET status problems"
+Now, when this particular patch is updated to get a good changelog, then
+the title could become e.g.:
+	kernel/kallsyms: change initcall level; adjust whitespace
+and anything more than that is just fluff and wasted electrons. Actually
+the changelog should rather contain a note on why device_initcall is
+supposed to be the correct initcall level.
 
-i needed these to keep an aic7xxx box from crashing. This regression got 
-introduced at around 2.6.28-rc1, so it fits the timeframe.
+Fixes due to reports from sparse, lockdep, coverity, coccinelle, etc.
+are the in this respect the same as fixes due to reports from
+checkpatch:  Patch titles should for example be
+  - "fix potential deadlock..."
+  - "fix use-after free..."
+  - "use XYZ helper..."
+  - "adjust whitespace..."
+and *not* something like "fix lockdep backtrace" or whatever.
 
-	Ingo
+A difference would be a patch title like "add sparse annotations"
+because this is indeed about what the patch does, not by which means it
+was created.
+
+Why do I make a fuzz?  Well, because many of our changelogs really suck
+and we need to become better in general.
+-- 
+Stefan Richter
+-=====-=-=== -=-= -==-=
+http://arcgraph.de/sr/
