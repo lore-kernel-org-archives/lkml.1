@@ -1,125 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756917AbZBPKfB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbZBPKhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756917AbZBPKfB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 05:35:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbZBPKex
+	id S1756925AbZBPKhU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 05:37:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbZBPKhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 05:34:53 -0500
-Received: from casper.infradead.org ([85.118.1.10]:56283 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754405AbZBPKew (ORCPT
+	Mon, 16 Feb 2009 05:37:07 -0500
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:54756 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753795AbZBPKhG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 05:34:52 -0500
-Subject: Re: [locking bug] inotify: inconsistent {RECLAIM_FS-ON-W} ->
- {IN-RECLAIM_FS-W} usage.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090216081304.GA18980@elte.hu>
-References: <20090216081304.GA18980@elte.hu>
-Content-Type: text/plain
-Date: Mon, 16 Feb 2009 11:34:40 +0100
-Message-Id: <1234780480.4703.13.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.90 
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Feb 2009 05:37:06 -0500
+Date: Mon, 16 Feb 2009 16:06:36 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Corey Hickey <bugfood-ml@fatooh.org>, linux-kernel@vger.kernel.org,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, mtk.manpages@gmail.com
+Subject: Re: RT scheduling and a way to make a process hang, unkillable
+Message-ID: <20090216103636.GC17355@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <4997672B.1000301@fatooh.org> <1234697096.4713.24.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1234697096.4713.24.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-16 at 09:13 +0100, Ingo Molnar wrote:
-
-> From 3023a3e27b909b3b309edac4bc9beb8103f127fa Mon Sep 17 00:00:00 2001
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Mon, 16 Feb 2009 09:10:32 +0100
-> Subject: [PATCH] inotify: fix GFP_KERNEL related deadlock
+On Sun, Feb 15, 2009 at 12:24:56PM +0100, Peter Zijlstra wrote:
+> On Sat, 2009-02-14 at 16:51 -0800, Corey Hickey wrote:
+> > Hello,
+> > 
+> > I've encountered a bit of a problem in recent kernels that include
+> > "Group scheduling for SCHED_RR/FIFO": it is possible for a process run
+> > by root to hang itself and become unkillable--even by a 'kill -9'.
+> > 
+> > The following kernel options must be set:
+> > CONFIG_GROUP_SCHED=y
+> > CONFIG_RT_GROUP_SCHED=y
+> > CONFIG_USER_SCHED=y
+> > 
+> > The procedure is for a program to:
+> > 1. run as root
+> > 2. set SCHED_FIFO
+> > 3. change UID to a user with no realtime CPU share allocated
 > 
-> enhanced lockdep coverage of __GFP_NOFS turned up this new
-> lockdep assert:
+> Hmm, setuid() should fail in that situation.
 > 
-> [ 1093.677775]
-> [ 1093.677781] =================================
-> [ 1093.680031] [ INFO: inconsistent lock state ]
-> [ 1093.680031] 2.6.29-rc5-tip-01504-gb49eca1-dirty #1
-> [ 1093.680031] ---------------------------------
-> [ 1093.680031] inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-W} usage.
-> [ 1093.680031] kswapd0/308 [HC0[0]:SC0[0]:HE1:SE1] takes:
-> [ 1093.680031]  (&inode->inotify_mutex){+.+.?.}, at: [<c0205942>] inotify_inode_is_dead+0x20/0x80
-> [ 1093.680031] {RECLAIM_FS-ON-W} state was registered at:
-> [ 1093.680031]   [<c01696b9>] mark_held_locks+0x43/0x5b
-> [ 1093.680031]   [<c016baa4>] lockdep_trace_alloc+0x6c/0x6e
-> [ 1093.680031]   [<c01cf8b0>] kmem_cache_alloc+0x20/0x150
-> [ 1093.680031]   [<c040d0ec>] idr_pre_get+0x27/0x6c
-> [ 1093.680031]   [<c02056e3>] inotify_handle_get_wd+0x25/0xad
-> [ 1093.680031]   [<c0205f43>] inotify_add_watch+0x7a/0x129
-> [ 1093.680031]   [<c020679e>] sys_inotify_add_watch+0x20f/0x250
-> [ 1093.680031]   [<c010389e>] sysenter_do_call+0x12/0x35
-> [ 1093.680031]   [<ffffffff>] 0xffffffff
-> [ 1093.680031] irq event stamp: 60417
-> [ 1093.680031] hardirqs last  enabled at (60417): [<c018d5f5>] call_rcu+0x53/0x59
-> [ 1093.680031] hardirqs last disabled at (60416): [<c018d5b9>] call_rcu+0x17/0x59
-> [ 1093.680031] softirqs last  enabled at (59656): [<c0146229>] __do_softirq+0x157/0x16b
-> [ 1093.680031] softirqs last disabled at (59651): [<c0106293>] do_softirq+0x74/0x15d
-> [ 1093.680031]
-> [ 1093.680031] other info that might help us debug this:
-> [ 1093.680031] 2 locks held by kswapd0/308:
-> [ 1093.680031]  #0:  (shrinker_rwsem){++++..}, at: [<c01b0502>] shrink_slab+0x36/0x189
-> [ 1093.680031]  #1:  (&type->s_umount_key#4){+++++.}, at: [<c01e6d77>] shrink_dcache_memory+0x110/0x1fb
-> [ 1093.680031]
-> [ 1093.680031] stack backtrace:
-> [ 1093.680031] Pid: 308, comm: kswapd0 Not tainted 2.6.29-rc5-tip-01504-gb49eca1-dirty #1
-> [ 1093.680031] Call Trace:
-> [ 1093.680031]  [<c016947a>] valid_state+0x12a/0x13d
-> [ 1093.680031]  [<c016954e>] mark_lock+0xc1/0x1e9
-> [ 1093.680031]  [<c016a5b4>] ? check_usage_forwards+0x0/0x3f
-> [ 1093.680031]  [<c016ab74>] __lock_acquire+0x2c6/0xac8
-> [ 1093.680031]  [<c01688d9>] ? register_lock_class+0x17/0x228
-> [ 1093.680031]  [<c016b3d3>] lock_acquire+0x5d/0x7a
-> [ 1093.680031]  [<c0205942>] ? inotify_inode_is_dead+0x20/0x80
-> [ 1093.680031]  [<c08824c4>] __mutex_lock_common+0x3a/0x4cb
-> [ 1093.680031]  [<c0205942>] ? inotify_inode_is_dead+0x20/0x80
-> [ 1093.680031]  [<c08829ed>] mutex_lock_nested+0x2e/0x36
-> [ 1093.680031]  [<c0205942>] ? inotify_inode_is_dead+0x20/0x80
-> [ 1093.680031]  [<c0205942>] inotify_inode_is_dead+0x20/0x80
-> [ 1093.680031]  [<c01e6672>] dentry_iput+0x90/0xc2
-> [ 1093.680031]  [<c01e67a3>] d_kill+0x21/0x45
-> [ 1093.680031]  [<c01e6a46>] __shrink_dcache_sb+0x27f/0x355
-> [ 1093.680031]  [<c01e6dc5>] shrink_dcache_memory+0x15e/0x1fb
-> [ 1093.680031]  [<c01b05ed>] shrink_slab+0x121/0x189
-> [ 1093.680031]  [<c01b0d12>] kswapd+0x39f/0x561
-> [ 1093.680031]  [<c01ae499>] ? isolate_pages_global+0x0/0x233
-> [ 1093.680031]  [<c0157eae>] ? autoremove_wake_function+0x0/0x43
-> [ 1093.680031]  [<c01b0973>] ? kswapd+0x0/0x561
-> [ 1093.680031]  [<c0157daf>] kthread+0x41/0x82
-> [ 1093.680031]  [<c0157d6e>] ? kthread+0x0/0x82
-> [ 1093.680031]  [<c01043ab>] kernel_thread_helper+0x7/0x10
+> /me goes peek at code.
 > 
-> inotify_handle_get_wd() does idr_pre_get() which does a
-> kmem_cache_alloc() without __GFP_FS - and is hence deadlockable under
-> extreme MM pressure.
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> Can't find any code to make that happen, Dhaval didn't we fix that at
+> one point?
 
-Looks like a good catch,
+So after some searching around, I realized we did not. Does this help?
+It fixes it on my system,
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+--
+sched: Don't allow setuid to succeed if the user does not have rt bandwidth
 
-> ---
->  fs/notify/inotify/inotify.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/notify/inotify/inotify.c b/fs/notify/inotify/inotify.c
-> index dae3f28..331f2e8 100644
-> --- a/fs/notify/inotify/inotify.c
-> +++ b/fs/notify/inotify/inotify.c
-> @@ -156,7 +156,7 @@ static int inotify_handle_get_wd(struct inotify_handle *ih,
->  	int ret;
->  
->  	do {
-> -		if (unlikely(!idr_pre_get(&ih->idr, GFP_KERNEL)))
-> +		if (unlikely(!idr_pre_get(&ih->idr, GFP_NOFS)))
->  			return -ENOSPC;
->  		ret = idr_get_new_above(&ih->idr, watch, ih->last_wd+1, &watch->wd);
->  	} while (ret == -EAGAIN);
+Corey Hickey reported that on using setuid to change the uid of a
+rt process, the process would be unkillable and not be running.
+This is because there was no rt runtime for that user group. Add
+in a check to see if a user can attach an rt task to its task group.
 
+Disclaimer: Not sure about the return values, and if setuid allows
+return values other than EPERM and EAGAIN.
+
+Not-Yet-Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+
+Index: linux-2.6/include/linux/sched.h
+===================================================================
+--- linux-2.6.orig/include/linux/sched.h
++++ linux-2.6/include/linux/sched.h
+@@ -2320,9 +2320,12 @@ extern long sched_group_rt_runtime(struc
+ extern int sched_group_set_rt_period(struct task_group *tg,
+ 				      long rt_period_us);
+ extern long sched_group_rt_period(struct task_group *tg);
++int sched_rt_can_attach(struct task_group *tg, struct task_struct *tsk);
+ #endif
+ #endif
+ 
++int rt_task_can_switch_user(uid_t uid, struct task_struct *tsk);
++
+ #ifdef CONFIG_TASK_XACCT
+ static inline void add_rchar(struct task_struct *tsk, ssize_t amt)
+ {
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -9466,6 +9466,16 @@ static int sched_rt_global_constraints(v
+ 
+ 	return ret;
+ }
++
++int sched_rt_can_attach(struct task_group *tg, struct task_struct *tsk)
++{
++	/* Don't accept realtime tasks when there is no way for them to run */
++	if (rt_task(tsk) && tg->rt_bandwidth.rt_runtime == 0)
++		return -EINVAL;
++
++	return 0;
++}
++
+ #else /* !CONFIG_RT_GROUP_SCHED */
+ static int sched_rt_global_constraints(void)
+ {
+@@ -9559,8 +9569,7 @@ cpu_cgroup_can_attach(struct cgroup_subs
+ 		      struct task_struct *tsk)
+ {
+ #ifdef CONFIG_RT_GROUP_SCHED
+-	/* Don't accept realtime tasks when there is no way for them to run */
+-	if (rt_task(tsk) && cgroup_tg(cgrp)->rt_bandwidth.rt_runtime == 0)
++	if (sched_rt_can_attach(cgroup_tg(cgrp), tsk))
+ 		return -EINVAL;
+ #else
+ 	/* We don't support RT-tasks being in separate groups */
+Index: linux-2.6/kernel/user.c
+===================================================================
+--- linux-2.6.orig/kernel/user.c
++++ linux-2.6/kernel/user.c
+@@ -216,8 +216,28 @@ static ssize_t cpu_rt_period_store(struc
+ 
+ static struct kobj_attribute cpu_rt_period_attr =
+ 	__ATTR(cpu_rt_period, 0644, cpu_rt_period_show, cpu_rt_period_store);
++
+ #endif
+ 
++#ifdef CONFIG_RT_GROUP_SCHED && CONFIG_USER_SCHED
++/*
++ * We need to check if a setuid can take place. This function should be called
++ * before successfully completing the setuid.
++ */
++
++int rt_task_can_switch_user(uid_t uid, struct task_struct *tsk)
++{
++	struct user_struct *up = find_user(uid);
++
++	return sched_rt_can_attach(up->tg, tsk);
++}
++#else
++int rt_task_can_switch_user(uid_t uid, struct task_struct *tsk)
++{
++	return 0;
++}
++
++#endif
+ /* default attributes per uid directory */
+ static struct attribute *uids_attributes[] = {
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+Index: linux-2.6/kernel/sys.c
+===================================================================
+--- linux-2.6.orig/kernel/sys.c
++++ linux-2.6/kernel/sys.c
+@@ -579,6 +579,15 @@ static int set_user(struct cred *new)
+ 		return -EAGAIN;
+ 	}
+ 
++	/*
++	 * Though rt_task_can_switch_user returns EINVAL on failure, we
++	 * return EAGAIN so as not to break semantics and because
++	 * EAGAIN implies resource not available which is the case in
++	 * this case.
++	 */
++	if (rt_task_can_switch_user(new->uid, current))
++		return -EAGAIN;
++
+ 	free_uid(new->user);
+ 	new->user = new_user;
+ 	return 0;
+
+-- 
+regards,
+Dhaval
