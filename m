@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752087AbZBPWNc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753086AbZBPWRD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752087AbZBPWNc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 17:13:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbZBPWNX
+	id S1753086AbZBPWRD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 17:17:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbZBPWQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 17:13:23 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:57637 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750740AbZBPWNW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 17:13:22 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [RFD] Automatic suspend
-Date: Mon, 16 Feb 2009 23:12:48 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-References: <200902160010.16955.rjw@sisk.pl> <200902162248.34287.rjw@sisk.pl> <20090216135339.53b4a911@infradead.org>
-In-Reply-To: <20090216135339.53b4a911@infradead.org>
+	Mon, 16 Feb 2009 17:16:52 -0500
+Received: from fk-out-0910.google.com ([209.85.128.188]:14256 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751177AbZBPWQv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 17:16:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=hBO1o9hhkxp1CbGmptoSKUqhZmEn80sz+jzOwjZVfTgzAEm8nToGpKzvAutFzxX1VD
+         wnIQqI5vwIDbqTpJWtGu0LVztGCxb1n/El8A6o2vOaqiqqup5VGbkZ3y3so8r8RhvLx8
+         cULrtLb0irGcUmDPE1zs/Pz+ZzjGU0exPwIhs=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Subject: Re: [PATCH 0/10] ide: flags query macros
+Date: Mon, 16 Feb 2009 23:17:31 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc4-next-20090213; KDE/4.2.0; i686; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Borislav Petkov <petkovbb@gmail.com>
+References: <1234699692-9452-1-git-send-email-petkovbb@gmail.com>
+In-Reply-To: <1234699692-9452-1-git-send-email-petkovbb@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200902162312.50556.rjw@sisk.pl>
+Message-Id: <200902162317.32188.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 16 February 2009, Arjan van de Ven wrote:
-> On Mon, 16 Feb 2009 22:48:32 +0100
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Sunday 15 February 2009, Borislav Petkov wrote:
+> Hi,
 > 
-> > > Userland should never ever control the state of a device like this
-> > > directly. It should do so by a) closing the device and b) setting
-> > > latency / functional requirements.
-> > 
-> > The user, however, may want to forcibly put a device into a low power
-> > state without stopping all of the applications that depend on it (eg.
-> > have it open). Do you think that we shouldn't allow users to do such
-> > things?
-> 
-> I would think that that is a bad mistake to do. It basically breaks the 
-> contract that the kernel has with userspace.... 
+> this series adds the drive->atapi_flags and drive->dev_flags macro wrappers
+> we discussed. The idea was to make the code more readable and this has
 
-OK, so I think there are two things that user space may be allowed to do as
-far as putting devices into low power states is concerned:
-* disable/enable the automatic power management of the device (provided that
-  the driver supports the automatic PM)
-* check what power states devices are in.
+Fine...
+
+> been my main concern when coming up with the macro naming, therefore
+> some macro names appear a tad more descriptive than the flag itself.
+
+...but this part destroys consistency in the process.
+
+If you think that some flag names should be fixed please just fix them
+(or just leave them alone -- I think that people invest far too much time
+into fixing all these minor things while tend to fix themselves when the
+big things are being fixed).
+
+Also ide_drv_ is bad name for ->{dev,atapi}_flags (drv == "driver" for
+most people not "drive") -- please make it either ide_dev_ or ide_dflag_.
 
 Thanks,
-Rafael
+Bart
