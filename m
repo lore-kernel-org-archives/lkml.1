@@ -1,209 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752863AbZBPSGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752843AbZBPSJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752863AbZBPSGB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 13:06:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbZBPSFw
+	id S1752843AbZBPSJW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 13:09:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbZBPSJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 13:05:52 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:15386 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751303AbZBPSFv (ORCPT
+	Mon, 16 Feb 2009 13:09:03 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:25625 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751301AbZBPSJC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 13:05:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=n1oJ/FUnqgm2RNjWWUjdCUawOJa2RdAdlioy4w9L3fbAMpmex13c9J21X92G9S8VI2
-         P0Gako2E1HRwDsRAzZzGZeLRGElCCFEzgDyRR5mTws5LbvmaoCGqUyXo49mghPNsbxAK
-         LKThG7ee64NRhgTL8rbo0m60tQBycWztz4mPY=
-Date: Mon, 16 Feb 2009 18:59:08 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Sitsofe Wheeler <sitsofe@yahoo.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: Poking ieee80211_default_rc_algo causes kernel lockups
-Message-ID: <20090216175907.GA4582@nowhere>
-References: <slrngpgfil.5gc.sitsofe@sitsofe.eeepc.localdomain> <20090215193522.GA5790@nowhere> <200902162040.44178.rusty@rustcorp.com.au>
+	Mon, 16 Feb 2009 13:09:02 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200902162040.44178.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090216161331.GB5008@kroah.com>
+References: <5aa163d00902142008g138826br80d3ea989e7af691@mail.gmail.com>
+	 <200902160931.34771.oliver@neukum.org>
+	 <5aa163d00902160522r3a22412je3f5202076f57a0a@mail.gmail.com>
+	 <20090216161331.GB5008@kroah.com>
+Date: Mon, 16 Feb 2009 13:09:00 -0500
+X-Google-Sender-Auth: 9e6c42858aac6601
+Message-ID: <5aa163d00902161009l15dae120le96436d40f998d33@mail.gmail.com>
+Subject: Re: [PATCH] input: xpad.c - Xbox 360 wireless and sysfs support
+From: Mike Murphy <mamurph@cs.clemson.edu>
+To: Greg KH <greg@kroah.com>
+Cc: Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 16, 2009 at 08:40:43PM +1030, Rusty Russell wrote:
-> On Monday 16 February 2009 06:05:23 Frederic Weisbecker wrote:
-> > So the problem seems not related to mac80211 but actually to module parameter management.
-> > I'm not sure what is the right fix.
-> 
-> Good spotting.  And in fact this bug has been here for quite a while...
-> 
-> The "simple" fix is to kstrdup, but that leaks.
-> 
-> How's this?
+On Mon, Feb 16, 2009 at 11:13 AM, Greg KH <greg@kroah.com> wrote:
+...
+>
+> The bigger question is why are you using a struct kobject in the first
+> place?  As you are a device, just use a struct device.  What are you
+> trying to do in sysfs here to make you want to use a "raw" kobject in a
+> driver?
+>
+> thanks,
+>
+> greg k-h
+>
 
+The purpose of the struct xpad_data (which contains the struct
+kobject) is to expose parameters that can be read and/or tweaked at
+runtime. At the moment, the adjustable parameters are the size of the
+dead zone around the center of the stick, and the choice of whether to
+map to a square axis. Read-only data include a unique identifier for
+each pad (wireless) and an indication as to whether the wireless pad
+is actually connected.
 
-Simple solution, and fixes the problem :-)
-I've tested the string parameter change and the mac80211 module unloading as well.
-No obvious problem.
+The idea behind this interface is to enable a future userspace
+application, likely using HAL and D-BUS, to receive events whenever a
+wireless pad connects, and to identify the particular pad in question
+(specifically, the unique ID of the pad). The user could then, for
+example, have a different dead zone size for each pad, based upon the
+actual manufacturing variations in the sticks on that pad (some appear
+more precise at centering than others). Ideally, this functionality
+could be designed in a "common" way so that the userspace code could
+eventually work with other, non-xpad gaming devices.
 
-Tested-by: Frederic Weisbecker <fweisbec@gmail.com>
+So I really just wanted a way to get some parameters to userspace. The
+consensus opinion of everything I read was that /proc additions were
+frowned upon for cluttering up /proc with kernel stuff, ioctls were
+viewed negatively because of their inconsistent nature from device to
+device, and that sysfs was the best solution for this problem.
 
-And also, Reported-by: Sitsofe Wheeler <sitsofe@yahoo.com>
+I didn't use a struct device because of the existing struct usb_xpad
+that was created on a per-gamepad basis (not necessarily per device,
+as the wireless 360 adapter is one physical device but exposes 4
+gamepads by exposing 4 logical devices [and then each gamepad, in
+turn, is technically a USB hub that can have other stuff
+attached...]). I tried not to break existing functionality.
+Additionally, struct usb_xpad contains two device pointers: one to the
+actual USB device, and one to an input device (see source of the
+in-tree xpad.c). So I followed your kobject.txt documentation and
+samples to create a new object whose sole purpose in life is to expose
+the sysfs interface, without interfering with the existing device
+entries in the driver. I'm not sure I see a clean way to use a single
+struct device here....
 
-Just one last little thing, it would be good to strip the ending newline
-while using echo without -n
-ie:
-
-root@nowhere:/sys/module/mac80211/parameters# echo heh_look_at_my_newline > ieee80211_default_rc_algo 
-root@nowhere:/sys/module/mac80211/parameters# cat ieee80211_default_rc_algo 
-heh_look_at_my_newline
-
-root@nowhere:/sys/module/mac80211/parameters# echo -n heh_look_at_hum_nothing > ieee80211_default_rc_algo 
-root@nowhere:/sys/module/mac80211/parameters# cat ieee80211_default_rc_algo 
-heh_look_at_hum_nothing
-root@nowhere:/sys/module/mac80211/parameters#
-
-Because I guess modules don't expect this newline on their strcmp.
-
-Thanks :-)
-
- 
-> param: fix charp parameters set via sysfs (eg. ieee80211_default_rc_algo)
-> 
-> The module_param type "charp" simply sets a char * pointer in the
-> module to the parameter in the commandline string: this is why we keep
-> the (mangled) module command line around.  But when set via sysfs (as
-> about 11 charp parameters can be) this memory is freed on the way
-> out of the write().
-> 
-> So we kstrdup instead: this is fine, but it means we have to note when
-> we've used it so we can reliably kfree the parameter when it's next
-> overwritten, and also on module unload.
-> 
-> Reported-by: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> 
-> diff --git a/include/linux/module.h b/include/linux/module.h
-> --- a/include/linux/module.h
-> +++ b/include/linux/module.h
-> @@ -247,6 +247,10 @@ struct module
->  	const struct kernel_symbol *syms;
->  	const unsigned long *crcs;
->  	unsigned int num_syms;
-> +
-> +	/* Kernel parameters. */
-> +	struct kernel_param *kp;
-> +	unsigned int num_kp;
->  
->  	/* GPL-only exported symbols. */
->  	unsigned int num_gpl_syms;
-> diff --git a/include/linux/moduleparam.h b/include/linux/moduleparam.h
-> --- a/include/linux/moduleparam.h
-> +++ b/include/linux/moduleparam.h
-> @@ -138,6 +138,9 @@ extern int parse_args(const char *name,
->  		      unsigned num,
->  		      int (*unknown)(char *param, char *val));
->  
-> +/* Called by module remove. */
-> +extern void destroy_params(const struct kernel_param *params, unsigned num);
-> +
->  /* All the helper functions */
->  /* The macros to do compile-time type checking stolen from Jakub
->     Jelinek, who IIRC came up with this idea for the 2.4 module init code. */
-> diff --git a/kernel/module.c b/kernel/module.c
-> --- a/kernel/module.c
-> +++ b/kernel/module.c
-> @@ -1457,6 +1457,9 @@ static void free_module(struct module *m
->  	/* Module unload stuff */
->  	module_unload_free(mod);
->  
-> +	/* Free any allocated parameters. */
-> +	destroy_params(mod->kp, mod->num_kp);
-> +
->  	/* release any pointers to mcount in this module */
->  	ftrace_release(mod->module_core, mod->core_size);
->  
-> @@ -1870,8 +1873,7 @@ static noinline struct module *load_modu
->  	unsigned int symindex = 0;
->  	unsigned int strindex = 0;
->  	unsigned int modindex, versindex, infoindex, pcpuindex;
-> -	unsigned int num_kp, num_mcount;
-> -	struct kernel_param *kp;
-> +	unsigned int num_mcount;
->  	struct module *mod;
->  	long err = 0;
->  	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
-> @@ -2116,8 +2118,8 @@ static noinline struct module *load_modu
->  
->  	/* Now we've got everything in the final locations, we can
->  	 * find optional sections. */
-> -	kp = section_objs(hdr, sechdrs, secstrings, "__param", sizeof(*kp),
-> -			  &num_kp);
-> +	mod->kp = section_objs(hdr, sechdrs, secstrings, "__param",
-> +			       sizeof(*mod->kp), &mod->num_kp);
->  	mod->syms = section_objs(hdr, sechdrs, secstrings, "__ksymtab",
->  				 sizeof(*mod->syms), &mod->num_syms);
->  	mod->crcs = section_addr(hdr, sechdrs, secstrings, "__kcrctab");
-> @@ -2262,11 +2264,11 @@ static noinline struct module *load_modu
->  	 */
->  	list_add_rcu(&mod->list, &modules);
->  
-> -	err = parse_args(mod->name, mod->args, kp, num_kp, NULL);
-> +	err = parse_args(mod->name, mod->args, mod->kp, mod->num_kp, NULL);
->  	if (err < 0)
->  		goto unlink;
->  
-> -	err = mod_sysfs_setup(mod, kp, num_kp);
-> +	err = mod_sysfs_setup(mod, mod->kp, mod->num_kp);
->  	if (err < 0)
->  		goto unlink;
->  	add_sect_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
-> diff --git a/kernel/params.c b/kernel/params.c
-> --- a/kernel/params.c
-> +++ b/kernel/params.c
-> @@ -23,6 +23,9 @@
->  #include <linux/device.h>
->  #include <linux/err.h>
->  #include <linux/slab.h>
-> +
-> +/* We abuse the high bits of "perm" to record whether we kmalloc'ed. */
-> +#define KPARAM_KMALLOCED	0x80000000
->  
->  #if 0
->  #define DEBUGP printk
-> @@ -217,7 +220,13 @@ int param_set_charp(const char *val, str
->  		return -ENOSPC;
->  	}
->  
-> -	*(char **)kp->arg = (char *)val;
-> +	if (kp->perm & KPARAM_KMALLOCED)
-> +		kfree(*(char **)kp->arg);
-> +
-> +	kp->perm |= KPARAM_KMALLOCED;
-> +	*(char **)kp->arg = kstrdup(val, GFP_KERNEL);
-> +	if (!kp->arg)
-> +		return -ENOMEM;
->  	return 0;
->  }
->  
-> @@ -571,6 +580,15 @@ void module_param_sysfs_remove(struct mo
->  }
->  #endif
->  
-> +void destroy_params(const struct kernel_param *params, unsigned num)
-> +{
-> +	unsigned int i;
-> +
-> +	for (i = 0; i < num; i++)
-> +		if (params[i].perm & KPARAM_KMALLOCED)
-> +			kfree(*(char **)params[i].arg);
-> +}
-> +
->  static void __init kernel_add_sysfs_param(const char *name,
->  					  struct kernel_param *kparam,
->  					  unsigned int name_skip)
-
+Thanks,
+Mike
+-- 
+Mike Murphy
+Ph.D. Candidate and NSF Graduate Research Fellow
+Clemson University School of Computing
+120 McAdams Hall
+Clemson, SC 29634-0974 USA
+Tel: +1 864.656.2838   Fax: +1 864.656.0145
+http://cirg.cs.clemson.edu/~mamurph
