@@ -1,84 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756356AbZBPK3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbZBPKbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756356AbZBPK3Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 05:29:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbZBPK3N
+	id S1756786AbZBPKbi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 05:31:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbZBPKba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 05:29:13 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:10504 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750849AbZBPK3M (ORCPT
+	Mon, 16 Feb 2009 05:31:30 -0500
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:47997 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753232AbZBPKb3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 05:29:12 -0500
-Message-ID: <49993FF2.9050200@panasas.com>
-Date: Mon, 16 Feb 2009 12:29:06 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
-MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: avishay@gmail.com, jeff@garzik.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, osd-dev@open-osd.org,
-       linux-kernel@vger.kernel.org, James.Bottomley@HansenPartnership.com,
-       jens.axboe@oracle.com, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 1/8] exofs: Kbuild, Headers and osd utils
-References: <499928A3.60507@panasas.com>	<20090216180028C.fujita.tomonori@lab.ntt.co.jp>	<49992F99.1060404@panasas.com> <20090216183750H.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090216183750H.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 16 Feb 2009 05:31:29 -0500
+Date: Mon, 16 Feb 2009 11:31:26 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 1/7] async: Asynchronous function calls to speed up
+ kernel boot
+Message-ID: <20090216113126.3e54863a@gondolin>
+In-Reply-To: <20090215111636.5b6cc507@infradead.org>
+References: <20090107151151.458333c1@infradead.org>
+	<20090107151226.58264d07@infradead.org>
+	<20090213162200.8fea7e0c.akpm@linux-foundation.org>
+	<20090213205949.1ebb441d@infradead.org>
+	<20090213232926.924d8740.akpm@linux-foundation.org>
+	<20090215111636.5b6cc507@infradead.org>
+Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
+ Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Feb 2009 10:29:10.0069 (UTC) FILETIME=[67732650:01C99021]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> On Mon, 16 Feb 2009 11:19:21 +0200
-> Boaz Harrosh <bharrosh@panasas.com> wrote:
-> 
->>>> Also looking
->>>> ahead I will have RAID 0, 1, 5, and 6 on objects of different devices. bio
->>>> is the perfect collector for memory information in this situation.
->>> You will add such features to exofs, handling multiple devices
->>> internally?
->>>
->> Multiple objects on Multiple devices, Yes.
-> 
-> I thought that exofs is kinda example (reference) file system.
-> 
-> Nobody has seen your code. Let's discuss when we have the
-> code. Over-designing for what we've not seen is not a good idea.
-> 
+On Sun, 15 Feb 2009 11:16:36 -0800,
+Arjan van de Ven <arjan@infradead.org> wrote:
 
-Thanks for the insults, and high credit ;)
+> * The caller needs to provide the memory
+>    - solves the case of the internal implementation getting a failed
+>      allocation. BUT it does not solve the caller not getting memory,
+>      it shifts the complexity to there.
+>    - ... or needs to cope with the call potentially failing if it
+>      lets the infrastructure to do the allocation
 
-Yes it's "kinda example (reference) file system" of a pNFS-objects
-file system. What can I do life is tough.
+We could provide a small wrapper that allocates memory for the simple
+case - but having the caller provide the memory makes it more flexible.
 
-> 
->>>> exofs is not the first and only file system who is using bios. Proof of
->>>> the matter is that block exports a bio submit routine.
->>> Seems that exofs just passes pages and the ULD sends a SCSI command
->>> including these pages. I don't see how exofs needs to handle bio
->>> directly.
->>>
->> How do you propose to collect these pages? and keep them without allocating
->> an extra list? without pre-allocating a struct request? and without re-inventing
->> the bio structure?
-> 
-> I don't think that allocating an extra list (or something) to keep
-> them hurts performance. We can talk about it when you have the real
-> performance results.
+> * The caller needs to wait (at some point) for the operation to
+>   complete, and then take care of freeing the memory.
+>   (the memory obviously could be part of some natural structure that
+>    already has its own lifecycle rules)
 
-So you are the one that starts to invent the wheel here. I thought I was
-the one that does that, only you only called me by names, because you never showed
-me where.
+So it's not so much freeing as giving up a reference.
 
-But please only answer one question for me: Please don't write back if you do not
-answer this question:
+> * There must be enough worker threads such that deadlocks due to all
+>   threads waiting on each other will not happen. Practically this
+>   probably means that if there is no progress, we need to just swallow
+>   the pill and make more threads. In addition we can borrow the thread
+>   context of the threads that are waiting for work to complete
+>   - alternative is to have 2 (or more) classes of work with a reserved
+>     thread pool for each, but I'm very not fond of this idea, because
+>     then all the advantages of sharing the implementation go away again,
+>     and over time we'll end up with many such classes
+> * The caller is not allowed to use the same memory for scheduling
+>   multiple outstanding function calls (this is fundamentally different
+>   from schedule_work, which does allow this).
+>   - we could make a flag that marks an item as "if the function and data
+>     are the same silently allow it" but I'm not too fond of that idea,
+>     it'll be fragile.
 
-Why do other filesystems allow to use bios? are they going to stop? Who is going
-to remove that?
+Agreed, that would be fragile. The caller should be able to take care
+of it best.
 
-And as I said, I am going to remove it for now, please be patient. You have never
-herd from me that I refuse to do it, did you?
+> Practically: the scheduled function is not allowed to make the metadata
+> memory go away. At least for those cases where we later want to wait
+> for the opertation; in principle we could do away with this requirement
+> if we know nobody will ever wait for the operation.
 
-Boaz
+But that would artificially limit the usefulness.
+
+> Second practical issue:
+> We can have a flag in the metadata that says that the infrastructure is 
+> supposed to kfree() the metadata at the end.
+
+I tried that, but didn't like the result.
+
+> Or we can go wild and stick
+> a pointer in of the function that needs to be called to free the
+> metadata.
+
+krefs start to look attractive...
