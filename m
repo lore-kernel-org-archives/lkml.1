@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757788AbZBPXw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757849AbZBPXxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757788AbZBPXw6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 18:52:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756307AbZBPXqc
+	id S1757849AbZBPXxV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 18:53:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756327AbZBPXqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 18:46:32 -0500
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:50809
+	Mon, 16 Feb 2009 18:46:33 -0500
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:50806
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753745AbZBPXqU (ORCPT
+	with ESMTP id S1753511AbZBPXqU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 16 Feb 2009 18:46:20 -0500
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -16,12 +16,13 @@ Cc: the arch/x86 maintainers <x86@kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Yinghai Lu <yinghai@kernel.org>, Ian Campbell <Ian.Campbell@citrix.com>,
-       Mark McLoughlin <markmc@redhat.com>
-Subject: [PATCH 17/19] xen mtrr: Use generic_validate_add_page()
-Date: Mon, 16 Feb 2009 15:46:11 -0800
-Message-Id: <657b1146c2154ffb82456a954ba645a1c229c887.1234826723.git.jeremy.fitzhardinge@citrix.com>
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 13/19] xen/dom0: add XEN_DOM0 config option
+Date: Mon, 16 Feb 2009 15:46:07 -0800
+Message-Id: <b4adea5f3e4c3ebba175f2344d138f85aa48dd57.1234826723.git.jeremy.fitzhardinge@citrix.com>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <0cd342b898fbbc8ec6a02591a7848dc29140c6ed.1234826723.git.jeremy.fitzhardinge@citrix.com>
+In-Reply-To: <0b79be113b42a033f3b3ca4d4f3ca4035c8a7bf5.1234826723.git.jeremy.fitzhardinge@citrix.com>
 References: <cover.1234826723.git.jeremy.fitzhardinge@citrix.com>
  <cover.1234826723.git.jeremy.fitzhardinge@citrix.com>
  <cover.1234826723.git.jeremy.fitzhardinge@citrix.com>
@@ -38,40 +39,71 @@ References: <cover.1234826723.git.jeremy.fitzhardinge@citrix.com>
  <e59d440a548af3d4e4bb483c73e24614a5b3af63.1234826723.git.jeremy.fitzhardinge@citrix.com>
  <2fe9663efa1686898ebf9d28e911daac3185b6b7.1234826723.git.jeremy.fitzhardinge@citrix.com>
  <0b79be113b42a033f3b3ca4d4f3ca4035c8a7bf5.1234826723.git.jeremy.fitzhardinge@citrix.com>
- <b4adea5f3e4c3ebba175f2344d138f85aa48dd57.1234826723.git.jeremy.fitzhardinge@citrix.com>
- <0dda0d4d9cf8e5aebba5d370def8c268e93e9800.1234826723.git.jeremy.fitzhardinge@citrix.com>
- <4215664baba2d7e72862150a9d0e8aa77241668d.1234826723.git.jeremy.fitzhardinge@citrix.com>
- <0cd342b898fbbc8ec6a02591a7848dc29140c6ed.1234826723.git.jeremy.fitzhardinge@citrix.com>
 In-Reply-To: <cover.1234826723.git.jeremy.fitzhardinge@citrix.com>
 References: <cover.1234826723.git.jeremy.fitzhardinge@citrix.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mark McLoughlin <markmc@redhat.com>
+Allow dom0 to be configured.  Requires more patches to do something useful.
 
-The hypervisor already performs the same validation, but
-better to do it early before getting to the range combining
-code.
-
-Signed-off-by: Mark McLoughlin <markmc@redhat.com>
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/kernel/cpu/mtrr/xen.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/x86/xen/Kconfig     |   26 ++++++++++++++++++++++++++
+ arch/x86/xen/enlighten.c |    5 +++--
+ 2 files changed, 29 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/mtrr/xen.c b/arch/x86/kernel/cpu/mtrr/xen.c
-index 7a25f88..f226044 100644
---- a/arch/x86/kernel/cpu/mtrr/xen.c
-+++ b/arch/x86/kernel/cpu/mtrr/xen.c
-@@ -16,7 +16,7 @@ static struct mtrr_ops xen_mtrr_ops = {
- //	.set               = xen_set_mtrr,
- //	.get               = xen_get_mtrr,
- 	.get_free_region   = generic_get_free_region,
--//	.validate_add_page = xen_validate_add_page,
-+	.validate_add_page = generic_validate_add_page,
- 	.have_wrcomb       = positive_have_wrcomb,
- 	.use_intel_if	   = 0,
- 	.num_var_ranges	   = xen_num_var_ranges,
+diff --git a/arch/x86/xen/Kconfig b/arch/x86/xen/Kconfig
+index 87b9ab1..e5c141a 100644
+--- a/arch/x86/xen/Kconfig
++++ b/arch/x86/xen/Kconfig
+@@ -36,3 +36,29 @@ config XEN_DEBUG_FS
+ 	help
+ 	  Enable statistics output and various tuning options in debugfs.
+ 	  Enabling this option may incur a significant performance overhead.
++
++config XEN_DOM0
++	bool "Enable Xen privileged domain support"
++	depends on XEN && X86_IO_APIC && ACPI
++	help
++	  The Xen hypervisor requires a privileged domain ("dom0") to
++	  actually manage the machine, provide devices drivers, etc.
++	  This option enables dom0 support.  A dom0 kernel can also
++	  run as an unprivileged domU kernel, or a kernel running
++	  native on bare hardware.
++
++# Dummy symbol since people have come to rely on the PRIVILEGED_GUEST
++# name in tools.
++config XEN_PRIVILEGED_GUEST
++	def_bool XEN_DOM0
++
++config XEN_PCI_PASSTHROUGH
++       bool #"Enable support for Xen PCI passthrough devices"
++       depends on XEN && PCI
++       help
++         Enable support for passing PCI devices through to
++	 unprivileged domains. (COMPLETELY UNTESTED)
++
++config XEN_DOM0_PCI
++       def_bool y
++       depends on XEN_DOM0 && PCI
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+index 62d229a..676aaf8 100644
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -169,9 +169,10 @@ static void __init xen_banner(void)
+ 
+ 	printk(KERN_INFO "Booting paravirtualized kernel on %s\n",
+ 	       pv_info.name);
+-	printk(KERN_INFO "Xen version: %d.%d%s%s\n",
++	printk(KERN_INFO "Xen version: %d.%d%s%s%s\n",
+ 	       version >> 16, version & 0xffff, extra.extraversion,
+-	       xen_feature(XENFEAT_mmu_pt_update_preserve_ad) ? " (preserve-AD)" : "");
++	       xen_feature(XENFEAT_mmu_pt_update_preserve_ad) ? " (preserve-AD)" : "",
++	       xen_initial_domain() ? " (dom0)" : "");
+ }
+ 
+ static void xen_cpuid(unsigned int *ax, unsigned int *bx,
 -- 
 1.6.0.6
 
