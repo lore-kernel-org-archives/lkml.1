@@ -1,192 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753329AbZBPTAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753696AbZBPTAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753329AbZBPTAi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 14:00:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbZBPTAX
+	id S1753696AbZBPTAw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 14:00:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbZBPTAd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 14:00:23 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:17779 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750783AbZBPTAW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 14:00:22 -0500
+	Mon, 16 Feb 2009 14:00:33 -0500
+Received: from thunk.org ([69.25.196.29]:47527 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751946AbZBPTAc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 14:00:32 -0500
+Date: Mon, 16 Feb 2009 14:00:01 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Andres Freund <andres@anarazel.de>, Alex Buell <alex.buell@munted.org.uk>
+Cc: adilger@sun.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, Jonathan Bastien-Filiatrault <joe@x2a.org>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: EXT4 ENOSPC Bug
+Message-ID: <20090216190001.GB11788@mini-me.lan>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andres Freund <andres@anarazel.de>,
+	Alex Buell <alex.buell@munted.org.uk>, adilger@sun.com,
+	LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+	Jonathan Bastien-Filiatrault <joe@x2a.org>,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+References: <20090216162028.3032666a@lithium.local.net> <200811291418.24672.andres@anarazel.de> <200812100108.04163.andres@anarazel.de> <49994FEF.2020908@anarazel.de> <20090216150156.GD22619@mini-me.lan> <499985C7.8010302@anarazel.de>
 MIME-Version: 1.0
-In-Reply-To: <ea11fea30902160824l22b10dcblc89c718015e156c8@mail.gmail.com>
-References: <ea11fea30902160824l22b10dcblc89c718015e156c8@mail.gmail.com>
-Date: Mon, 16 Feb 2009 20:00:19 +0100
-Message-ID: <154e089b0902161100h29283c01tbb47ec50b4bfbc55@mail.gmail.com>
-Subject: Re: [PATCH] Replace deprecated __initcall with device_initcall and 
-	fix whitespaces in kernel/kallsyms.c
-From: Hannes Eder <hannes@hanneseder.net>
-To: Manish Katiyar <mkatiyar@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       kernel-janitors@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090216162028.3032666a@lithium.local.net> <499985C7.8010302@anarazel.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 16, 2009 at 5:24 PM, Manish Katiyar <mkatiyar@gmail.com> wrote:
-> Patch to fix coding style whitespace issues and replace __initcall
-> with device_initcall
+On Mon, Feb 16, 2009 at 04:27:03PM +0100, Andres Freund wrote:
 >
-> Errors as reported by checkpatch.pl :-
-> Before:
-> total: 14 errors, 14 warnings, 487 lines checked
-> After :
-> total: 0 errors, 11 warnings, 486 lines checked
+> So, yes, seems to be an inode allocation problem.
 >
-> Compile tested binary verified as :-
-> Before:
->  text    data     bss     dec     hex filename
->   2405       4       0    2409     969 kernel/kallsyms.o
-> After :
->  text     data     bss     dec     hex filename
->   2405       4       0    2409     969 kernel/kallsyms.o
->
->
-> Signed-off-by: Manish Katiyar <mkatiyar@gmail.com>
-> ---
->  kernel/kallsyms.c |   29 ++++++++++++++---------------
->  1 files changed, 14 insertions(+), 15 deletions(-)
->
-> diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
-> index 7b8b0f2..0e4eae6 100644
-> --- a/kernel/kallsyms.c
-> +++ b/kernel/kallsyms.c
-> @@ -93,13 +93,13 @@ static unsigned int
-> kallsyms_expand_symbol(unsigned int off, char *result)
->
->        /* for every byte on the compressed symbol data, copy the table
->           entry for that byte */
-> -       while(len) {
-> -               tptr = &kallsyms_token_table[ kallsyms_token_index[*data] ];
-> +       while (len) {
-> +               tptr = &kallsyms_token_table[kallsyms_token_index[*data]];
->                data++;
->                len--;
->
->                while (*tptr) {
-> -                       if(skipped_first) {
-> +                       if (skipped_first) {
->                                *result = *tptr;
->                                result++;
->                        } else
-> @@ -120,7 +120,7 @@ static char kallsyms_get_symbol_type(unsigned int off)
->  {
->        /* get just the first code, look it up in the token table, and return the
->         * first char from this token */
-> -       return kallsyms_token_table[ kallsyms_token_index[ kallsyms_names[off+1] ] ];
-> +       return kallsyms_token_table[kallsyms_token_index[kallsyms_names[off + 1]]];
->  }
->
->
-> @@ -133,13 +133,13 @@ static unsigned int get_symbol_offset(unsigned long pos)
->
->        /* use the closest marker we have. We have markers every 256 positions,
->         * so that should be close enough */
-> -       name = &kallsyms_names[ kallsyms_markers[pos>>8] ];
-> +       name = &kallsyms_names[kallsyms_markers[pos >> 8]];
->
->        /* sequentially scan all the symbols up to the point we're searching for.
->         * Every symbol is stored in a [<len>][<len> bytes of data] format, so we
->         * just need to add the len to the current pointer for every symbol we
->         * wish to skip */
-> -       for(i = 0; i < (pos&0xFF); i++)
-> +       for (i = 0; i < (pos&0xFF); i++)
->                name = name + (*name) + 1;
->
->        return name - kallsyms_names;
-> @@ -323,6 +323,7 @@ int sprint_symbol(char *buffer, unsigned long address)
->
->        return len;
->  }
-> +EXPORT_SYMBOL_GPL(sprint_symbol);
->
->  /* Look up a kernel symbol and print it to the kernel messages. */
->  void __print_symbol(const char *fmt, unsigned long address)
-> @@ -333,10 +334,10 @@ void __print_symbol(const char *fmt, unsigned
-> long address)
->
->        printk(fmt, buffer);
->  }
-> +EXPORT_SYMBOL(__print_symbol);
->
->  /* To avoid using get_symbol_offset for every symbol, we carry prefix along. */
-> -struct kallsym_iter
-> -{
-> +struct kallsym_iter {
->        loff_t pos;
->        unsigned long value;
->        unsigned int nameoff; /* If iterating in core kernel symbols */
-> @@ -385,7 +386,7 @@ static int update_iter(struct kallsym_iter *iter,
-> loff_t pos)
->                iter->pos = pos;
->                return get_ksymbol_mod(iter);
->        }
-> -
-> +
->        /* If we're not on the desired position, reset to new position. */
->        if (pos != iter->pos)
->                reset_iter(iter, pos);
-> @@ -420,7 +421,7 @@ static int s_show(struct seq_file *m, void *p)
->  {
->        struct kallsym_iter *iter = m->private;
->
-> -       /* Some debugging symbols have no name.  Ignore them. */
-> +       /* Some debugging symbols have no name.  Ignore them. */
->        if (!iter->name[0])
->                return 0;
->
-> @@ -432,11 +433,11 @@ static int s_show(struct seq_file *m, void *p)
->                type = iter->exported ? toupper(iter->type) :
->                                        tolower(iter->type);
->                seq_printf(m, "%0*lx %c %s\t[%s]\n",
-> -                          (int)(2*sizeof(void*)),
-> +                          (int)(2*sizeof(void *)),
->                           iter->value, type, iter->name, iter->module_name);
->        } else
->                seq_printf(m, "%0*lx %c %s\n",
-> -                          (int)(2*sizeof(void*)),
-> +                          (int)(2*sizeof(void *)),
->                           iter->value, iter->type, iter->name);
->        return 0;
->  }
-> @@ -481,7 +482,5 @@ static int __init kallsyms_init(void)
->        proc_create("kallsyms", 0444, NULL, &kallsyms_operations);
->        return 0;
->  }
-> -__initcall(kallsyms_init);
-> +device_initcall(kallsyms_init);
->
-> -EXPORT_SYMBOL(__print_symbol);
-> -EXPORT_SYMBOL_GPL(sprint_symbol);
-> --
-> 1.5.4.3
 
+Andres, Alex, others,
 
-Hi,
+I'm pretty sure the ENOSPC problem which you both found is an inode
+allocation problem.  Some of you seem to have an easier time
+reproducing it than others; could you try this patch, and periodically
+scan your system logs for the message "ext4: find_group_flex failed,
+fallback succeeded"?  If the problem goes away for you, and you find
+the occasional aforemention message in your system log, that will
+confirm what I suspect, which is the bug is in fs/ext4/inode.c's
+find_group_flex() function.  (If I'm wrong, the fallback code will
+activate only when the filesystem is genuinely out of inodes, which
+should be very rare.)
 
-You may also want to add the md5sum of the "befor" and "after" object
-file, as Paolo pointed out, as the size alone is not a strong evidence
-that the object files are the same.
+More comments are in the patch header.  My current long-term plan for
+dealing with this is to enhance find_group_orlov() to and
+find_group_other() to understand about flex_bg's.
 
-On Mon, Feb 16, 2009 at 3:28 PM, Paolo Ciarrocchi
-<paolo.ciarrocchi@gmail.com> wrote:
-> ...
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=20211e4d344729f4d4c93da37a590fc1c3a1fd9b
+							- Ted
 
-from the above URL:
+commit 1012e25b371b203164e4766a98f1e696df68b56d
+Author: Theodore Ts'o <tytso@mit.edu>
+Date:   Mon Feb 16 13:51:16 2009 -0500
 
-paolo@paolo-desktop:~/linux.trees.git$ size /tmp/op_model_p4.o.*
-   text    data     bss     dec     hex filename
-   2691     968      32    3691     e6b /tmp/op_model_p4.o.after
-   2691     968      32    3691     e6b /tmp/op_model_p4.o.before
+    ext4: Add fallback for find_group_flex
+    
+    This is a workaround for find_group_flex() which badly needs to be
+    replaced.  One of its problems (besides ignoring the Orlov algorithm)
+    is that it is a bit hyperactive about returning failure under
+    suspicious circumstances.  This can lead to spurious ENOSPC failures.
+    Work around this for now by retrying the search using
+    find_group_other() if find_group_flex() returns -1.  If
+    find_group_other() succeeds when find_group_flex(), log a warning
+    message.  I can't quite find the motivation to spend effort working on
+    fixing find_group_flex() given that I want to replace it all anyway
+    (and in fact work on the replacement code is underway), so we may
+    leave the workaround for as long as find_group_flex() stays in the
+    kernel...
+    
+    Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 
-paolo@paolo-desktop:~/linux.trees.git$ md5sum /tmp/op_model_p4.o.*
-8c1c9823bab33333e1f7f76574e62561  /tmp/op_model_p4.o.after
-8c1c9823bab33333e1f7f76574e62561  /tmp/op_model_p4.o.before
-
--Hannes
+diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
+index a200059..21080ab 100644
+--- a/fs/ext4/ialloc.c
++++ b/fs/ext4/ialloc.c
+@@ -715,6 +715,13 @@ struct inode *ext4_new_inode(handle_t *handle, struct inode *dir, int mode)
+ 
+ 	if (sbi->s_log_groups_per_flex) {
+ 		ret2 = find_group_flex(sb, dir, &group);
++		if (ret2 == -1) {
++			ret2 = find_group_other(sb, dir, &group);
++			if (ret2 == 0)
++				printk(KERN_NOTICE "ext4: find_group_flex "
++				       "failed, fallback succeeded dir %lu\n",
++				       dir->i_ino);
++		}
+ 		goto got_group;
+ 	}
+ 
