@@ -1,97 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755819AbZBPHpR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756369AbZBPHrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755819AbZBPHpR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 02:45:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbZBPHpA
+	id S1756369AbZBPHrh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 02:47:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754312AbZBPHr0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 02:45:00 -0500
-Received: from mga01.intel.com ([192.55.52.88]:48466 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753504AbZBPHpA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 02:45:00 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,215,1233561600"; 
-   d="scan'208";a="431298528"
-Subject: Re: [PATCH NET-NEXT 0/10] hardware time stamping with new fields
-	in shinfo
-From: Patrick Ohly <patrick.ohly@intel.com>
-To: David Miller <davem@davemloft.net>
-Cc: "johnstul@us.ibm.com" <johnstul@us.ibm.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-In-Reply-To: <20090215.231626.160752710.davem@davemloft.net>
-References: <1234450670.5914.9.camel@ecld0pohly>
-	 <1234450981.5914.11.camel@ecld0pohly>
-	 <20090215.231626.160752710.davem@davemloft.net>
-Content-Type: text/plain
-Date: Mon, 16 Feb 2009 08:44:54 +0100
-Message-Id: <1234770294.10885.24.camel@pohly-MOBL>
+	Mon, 16 Feb 2009 02:47:26 -0500
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:43783 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754222AbZBPHrZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 02:47:25 -0500
+Subject: Re: vfs: Add MS_FLUSHONFSYNC mount flag
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
+       Eric Sandeen <sandeen@redhat.com>, Jan Kara <jack@suse.cz>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, fernando@kic.ac.jp,
+       Ric Wheeler <rwheeler@redhat.com>, linux-fsdevel@vger.kernel.org
+In-Reply-To: <20090215225427.GH10706@mini-me.lan>
+References: <1232186449.4831.29.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090119120349.GA10193@duck.suse.cz>
+	 <1233135913.5399.57.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090128095518.GA16554@duck.suse.cz>
+	 <1234434811.15270.7.camel@sebastian.kern.oss.ntt.co.jp>
+	 <1234434970.15433.4.camel@sebastian.kern.oss.ntt.co.jp>
+	 <499458C1.90105@redhat.com> <49945C90.3010104@garzik.org>
+	 <20090214153626.GA3973@infradead.org>
+	 <1234682606.19783.222.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090215225427.GH10706@mini-me.lan>
+Content-Type: text/plain; charset=UTF-8
+Organization: NTT Open Source Software Center
+Date: Mon, 16 Feb 2009 16:47:24 +0900
+Message-Id: <1234770444.32677.60.camel@sebastian.kern.oss.ntt.co.jp>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-16 at 09:16 +0200, David Miller wrote:
-> Ok, I applied everything and pushed it out to net-next-2.6, let's
-> see how this goes :-)
-
-Thanks :-)
-
-> That TX clone wrt. skb_orphan() issue will need a happier solution.
+On Sun, 2009-02-15 at 17:54 -0500, Theodore Tso wrote:
+> On Sun, Feb 15, 2009 at 04:23:26PM +0900, Fernando Luis Vázquez Cao wrote:
+> > You mentioned "we should integrate this with the barrier settings". Do
+> > you imply we should make it a per-device tunable too? Should we keep the
+> > barrier-related mount options some filesystems provide?
+> > 
 > 
-> Can you describe that problem in detail?  Maybe someone can come
-> up with a way to avoid that stuff.
+> Making barriers to be a per-device tunable makes sense.  The only
+> reason why we kept it as a mount option in ext4 is for benchmarking
+> purposes, and in ext3, because the filesystem predated the barrier
+> code, and there was a desire to be able to benchmark with and without
+> the old behavior --- and because akpm is still worried about the
+> performance hit of the barrier code, so he's been resistant about
+> change the default for ext3.
 
-Bouncing information about a sent packet back to the sender (in
-skb_tstamp_tx()) requires access to the socket via which the packet was
-sent (orig_skb->sk).
+Ok, I'll turn both barriers and flushonfsync into a sysfs-exported
+per-device knob and see how it turns out.
 
-This information must be available after the packet was handed to
-ops->ndo_start_xmit() in order to implement the TX time stamping
-software fallback for devices which don't implement hardware time
-stamping (not enabled and/or not implemented at all).
+By the way, should we also add/keep a mount option for "benchmarking
+purposes"?. I guess that once we get the per-device tunable we probable
+do not need it anymore.
 
-The problem now is that some device drivers call skb_orphan() on the skb
-in ops->ndo_start_xmit(). I suppose the intention is to free some
-resources a bit earlier. The unmodified igb driver did this, the bnx2
-one didn't.
+Regards,
 
-If skb_orphan() is called, then TX software time stamping is not
-possible. A user space daemon cannot detect this reliably, only make a
-guess based on the observation that it doesn't receive any TX time
-stamps. This is not fatal: the traditional time stamping method used by
-PTPd (multicast loop back) still works.
-
-But it would be nicer if that multicast loop back hack wasn't necessary.
-TX software time stamping might also be more accurate (it generates the
-time stamp after ops->ndo_start_xmit() returns, not before as in the
-looped packet code path).
-
-I see several ways to solve this:
-      * Always create another reference to skb->sk before
-        ops->ndo_start_xmit() if TX time stamping is requested.
-        Drawback: performance penalty for drivers which support TX time
-        stamping or don't call skb_orphan().
-      * Turn skb_orphan() into a nop during ops->ndo_start_xmit(), again
-        only if necessary. I think this can done by temporarily
-        overriding the skb destructor. Drawback: looks like a hack to
-        me, not sure whether that is really safe.
-      * Extend the driver API + another reference. Let drivers which
-        implement TX time stamping (and thus know when to avoid
-        skb_orphan()) signal that. dev_hard_start_xmit() then can avoid
-        the "additional sk reference" thing for these drivers. Drawback:
-        requires analyzing and potentially flagging all drivers to have
-        a real effect (as for bnx2).
-
--- 
-Best Regards, Patrick Ohly
-
-The content of this message is my personal opinion only and although
-I am an employee of Intel, the statements I make here in no way
-represent Intel's position on the issue, nor am I authorized to speak
-on behalf of Intel on this matter.
-
+Fernando
 
