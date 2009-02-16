@@ -1,108 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbZBPXUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbZBPXWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755966AbZBPXUx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 18:20:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbZBPXU2
+	id S1755494AbZBPXWl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 18:22:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751799AbZBPXWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 18:20:28 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:44630 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751579AbZBPXU0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 18:20:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent;
-        b=arpVho709GMyqUciUIBHObUZiYhBse7Bjqx5odza7l/RxKi0C8nCNlUuzUm8ebSz+d
-         p2fyUkEGS1pWXXT1MreebffKf7vGwMumjVet3og7HhxM5VeThXNoN/TUIDBmsnkXrnNW
-         o1E/Sedu5tRblHNB57zZJPUbJ5+nD2FtcQt60=
-Date: Tue, 17 Feb 2009 00:20:16 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Karl Hiramoto <karl@hiramoto.org>
-Cc: netdev@vger.kernel.org, netfilter@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: problem with IPoA (CLIP),  NAT, and VLANS
-Message-ID: <20090216232016.GA4803@ami.dom.local>
+	Mon, 16 Feb 2009 18:22:33 -0500
+Received: from ozlabs.org ([203.10.76.45]:50997 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751600AbZBPXWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 18:22:32 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: #tj-percpu has been rebased
+Date: Tue, 17 Feb 2009 09:52:20 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, cpw@sgi.com
+References: <49833350.1020809@kernel.org> <200902161753.14141.rusty@rustcorp.com.au> <4999A236.9040508@zytor.com>
+In-Reply-To: <4999A236.9040508@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49997FEA.9040300@hiramoto.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200902170952.21063.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Karl Hiramoto wrote, On 02/16/2009 04:02 PM:
-...
-> The problem ended up being the packet being corrupted when the vlan tag
-> was being added and skb_cow_head()  was being called.
+On Tuesday 17 February 2009 03:58:22 H. Peter Anvin wrote:
+> Rusty Russell wrote:
+> > 
+> > But note that for the non-NUMA case, you can just use kmalloc/__get_free_pages
+> > and no remapping tricks are necessary at all.
+> > 
 > 
-> Anyone know why skb_cow_head() would corrupt the packet?  Perhaps it was
-> not allocated correctly?     I'm using a big-endian ARM IXP435 board.
+> Only if your chunks are really small.  Keep in mind that
+> num_possible_cpus() may be 4096, and so it is unlikely you'll be able to
+> get enough contiguous pages unless you're using the largepage pool, and
+> even then you only get 512 bytes per cpu.
+> 
+> All in all I think a dedicated virtual zone per CPU as opposed to
+> interleaving them seems to make more sense.  Even with 4096 CPUs and
+> reserving, say, 256 MB per CPU it's not that much address space in the
+> context of a 47-bit kernel space.  On 32 bits I don't think anything but
+> the most trivial amount of percpu space is going to fly no matter what.
 
-Hi,
-Very nice debugging, but I think your patch doesn't look like enough:
-1) it skips copy for cloned skbs,
-2) this skb_cow_head() is needed anyway, sometimes.
-So the real bug should be found in skb_cow_head() or elsewhere.
+It's the TLB cost which I really don't want to pay; num_possible_cpus()
+4096 non-NUMA is a little silly (currently impossible).
 
-I attach here 2 patches for testing:
-1) skb->mac_header update: it looks like needed, but I don't know if
-   it matters here,
-2) an extention of your patch but with pskb_expand_head() called for
-   one to one copy.
-
-BTW, if it's not a big problem it would be nice to try this e.g. on
-2.6.29-rc5.
+I'm happy to limit per-cpu allocations to pagesize, then you only need to
+find num_possible_cpus() contig pages, and if you can't, you fall back to
+vmalloc.
 
 Thanks,
-Jarek P.
-
----> patch #1
-
- include/linux/if_vlan.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/if_vlan.h b/include/linux/if_vlan.h
-index f8ff918..e1ff5b1 100644
---- a/include/linux/if_vlan.h
-+++ b/include/linux/if_vlan.h
-@@ -210,6 +210,7 @@ static inline struct sk_buff *__vlan_put_tag(struct sk_buff *skb, u16 vlan_tci)
- 
- 	/* Move the mac addresses to the beginning of the new header. */
- 	memmove(skb->data, skb->data + VLAN_HLEN, 2 * VLAN_ETH_ALEN);
-+	skb->mac_header -= VLAN_HLEN;
- 
- 	/* first, the ethernet type */
- 	veth->h_vlan_proto = htons(ETH_P_8021Q);
-
----> patch #2
-
- include/linux/if_vlan.h |   13 ++++++++++---
- 1 files changed, 10 insertions(+), 3 deletions(-)
-
-diff --git a/include/linux/if_vlan.h b/include/linux/if_vlan.h
-index f8ff918..e9a5eb1 100644
---- a/include/linux/if_vlan.h
-+++ b/include/linux/if_vlan.h
-@@ -202,9 +202,16 @@ static inline struct sk_buff *__vlan_put_tag(struct sk_buff *skb, u16 vlan_tci)
- {
- 	struct vlan_ethhdr *veth;
- 
--	if (skb_cow_head(skb, VLAN_HLEN) < 0) {
--		kfree_skb(skb);
--		return NULL;
-+	if (skb_headroom(skb) < VLAN_HLEN) {
-+		if (skb_cow_head(skb, VLAN_HLEN) < 0) {
-+			kfree_skb(skb);
-+			return NULL;
-+		}
-+	} else {
-+		if (pskb_expand_head(skb, 0, 0, GFP_ATOMIC) < 0) {
-+			kfree_skb(skb);
-+			return NULL;
-+		}
- 	}
- 	veth = (struct vlan_ethhdr *)skb_push(skb, VLAN_HLEN);
- 
+Rusty.
