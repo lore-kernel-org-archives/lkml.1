@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbZBPPFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754337AbZBPPFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752722AbZBPPFb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 10:05:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbZBPPEw
+	id S1754337AbZBPPFu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 10:05:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbZBPPE4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 10:04:52 -0500
-Received: from cmpxchg.org ([85.214.51.133]:49260 "EHLO cmpxchg.org"
+	Mon, 16 Feb 2009 10:04:56 -0500
+Received: from cmpxchg.org ([85.214.51.133]:49266 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754511AbZBPPEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 10:04:51 -0500
-Message-Id: <20090216144725.659631692@cmpxchg.org>
+	id S1754589AbZBPPEz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 10:04:55 -0500
+Message-Id: <20090216144725.728476063@cmpxchg.org>
 User-Agent: quilt/0.47-1
-Date: Mon, 16 Feb 2009 15:29:28 +0100
+Date: Mon, 16 Feb 2009 15:29:29 +0100
 From: Johannes Weiner <hannes@cmpxchg.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 2/8] crypto: use kzfree()
+       linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [patch 3/8] s390: use kzfree()
 References: <20090216142926.440561506@cmpxchg.org>
-Content-Disposition: inline; filename=crypto-use-kzfree.patch
+Content-Disposition: inline; filename=s390-use-kzfree.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -26,34 +28,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Use kzfree() instead of memset() + kfree().
 
 Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
 ---
- crypto/api.c |    5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ arch/s390/crypto/prng.c             |    3 +--
+ drivers/s390/crypto/zcrypt_pcixcc.c |    3 +--
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
---- a/crypto/api.c
-+++ b/crypto/api.c
-@@ -569,20 +569,17 @@ EXPORT_SYMBOL_GPL(crypto_alloc_tfm);
- void crypto_destroy_tfm(void *mem, struct crypto_tfm *tfm)
+--- a/arch/s390/crypto/prng.c
++++ b/arch/s390/crypto/prng.c
+@@ -201,8 +201,7 @@ out_free:
+ static void __exit prng_exit(void)
  {
- 	struct crypto_alg *alg;
--	int size;
+ 	/* wipe me */
+-	memset(p->buf, 0, prng_chunk_size);
+-	kfree(p->buf);
++	kzfree(p->buf);
+ 	kfree(p);
  
- 	if (unlikely(!mem))
- 		return;
- 
- 	alg = tfm->__crt_alg;
--	size = ksize(mem);
- 
- 	if (!tfm->exit && alg->cra_exit)
- 		alg->cra_exit(tfm);
- 	crypto_exit_ops(tfm);
- 	crypto_mod_put(alg);
--	memset(mem, 0, size);
--	kfree(mem);
-+	kzfree(mem);
+ 	misc_deregister(&prng_dev);
+--- a/drivers/s390/crypto/zcrypt_pcixcc.c
++++ b/drivers/s390/crypto/zcrypt_pcixcc.c
+@@ -781,8 +781,7 @@ static long zcrypt_pcixcc_send_cprb(stru
+ 		/* Signal pending. */
+ 		ap_cancel_message(zdev->ap_dev, &ap_msg);
+ out_free:
+-	memset(ap_msg.message, 0x0, ap_msg.length);
+-	kfree(ap_msg.message);
++	kzfree(ap_msg.message);
+ 	return rc;
  }
- EXPORT_SYMBOL_GPL(crypto_destroy_tfm);
  
 
 
