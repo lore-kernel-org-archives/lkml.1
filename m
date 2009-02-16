@@ -1,84 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923AbZBPHX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755261AbZBPH0D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754923AbZBPHX0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 02:23:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118AbZBPHXS
+	id S1755261AbZBPH0D (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 02:26:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbZBPHZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 02:23:18 -0500
-Received: from ozlabs.org ([203.10.76.45]:51679 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752058AbZBPHXR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 02:23:17 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Tejun Heo <tj@kernel.org>
-Subject: Re: #tj-percpu has been rebased
-Date: Mon, 16 Feb 2009 17:53:13 +1030
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, cpw@sgi.com
-References: <49833350.1020809@kernel.org> <200902140728.55954.rusty@rustcorp.com.au> <4996141A.1050506@kernel.org>
-In-Reply-To: <4996141A.1050506@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Mon, 16 Feb 2009 02:25:52 -0500
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:43004 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752058AbZBPHZv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 02:25:51 -0500
+Subject: [PATCH 1/3] block: Add block_flush_device()
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Jan Kara <jack@suse.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com,
+       fernando@kic.ac.jp, rwheeler@redhat.com, linux-fsdevel@vger.kernel.org
+In-Reply-To: <1234768181.32677.7.camel@sebastian.kern.oss.ntt.co.jp>
+References: <1232109069.13775.35.camel@sebastian.kern.oss.ntt.co.jp>
+	 <1232114101.13775.63.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090116163039.GE10617@duck.suse.cz>
+	 <1232185639.4831.18.camel@sebastian.kern.oss.ntt.co.jp>
+	 <1232186449.4831.29.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090119120349.GA10193@duck.suse.cz>
+	 <1233135913.5399.57.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090128095518.GA16554@duck.suse.cz>
+	 <1234434811.15270.7.camel@sebastian.kern.oss.ntt.co.jp>
+	 <1234435245.15433.19.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090215224659.GG10706@mini-me.lan>
+	 <1234768181.32677.7.camel@sebastian.kern.oss.ntt.co.jp>
+Content-Type: text/plain
+Organization: NTT Open Source Software Center
+Date: Mon, 16 Feb 2009 16:25:47 +0900
+Message-Id: <1234769147.32677.19.camel@sebastian.kern.oss.ntt.co.jp>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902161753.14141.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 14 February 2009 11:15:14 Tejun Heo wrote:
-> Rusty Russell wrote:
-> > On Thursday 12 February 2009 14:14:08 Tejun Heo wrote:
-> >> Oops, those are the same ones.  I'll give a shot at cooking up
-> >> something which can be dynamically sized before going forward with
-> >> this one.
-> > 
-> > That's why I handed it to you! :)
-> > 
-> > Just remember we waited over 5 years for this to happen: the point of these
-> > is that Christoph showed it's still useful.
-> > 
-> > (And I really like the idea of allocing congruent areas rather than remapping
-> >  if someone can show that it's semi-reliable.  Good luck!)
-> 
-> I finished writing up the first draft last night.  Somehow I can feel
-> long grueling debugging hours ahead of me but it generally goes like
-> the following.
-> 
-> Percpu areas are allocated in chunks in vmalloc area.  Each chunk is
-> consisted of num_possible_cpus() units and the first chunk is used for
-> static percpu variables in the kernel image (special boot time
-> alloc/init handling necessary as these areas need to be brought up
-> before allocation services are running).  Unit grows as necessary and
-> all units grow or shrink in unison.  When a chunk is filled up,
-> another chunk is allocated.  ie. in vmalloc area
-> 
->   c0                           c1                         c2           
->    -------------------          -------------------        ------------
->   | u0 | u1 | u2 | u3 |        | u0 | u1 | u2 | u3 |      | u0 | u1 | u
->    -------------------  ......  -------------------  ....  ------------
-> 
-> Allocation is done in offset-size areas of single unit space.  Ie,
-> when UNIT_SIZE is 128k, an area at 134k of 512bytes occupy 512bytes at
-> 6k of c1:u0, c1:u1, c1:u2 and c1u3.  Percpu access can be done by
-> configuring percpu base registers UNIT_SIZE apart.
-> 
-> Currently it uses pte mappings but byn using larger UNIT_SIZE, it can
-> be modified to use pmd mappings.  I'm a bit skeptical about this tho.
-> Percpu pages are allocated with HIGHMEM | COLD, so they won't
-> interfere with the physical mapping and on !NUMA it lifts load from
-> pgd tlb by not having stuff for different cpus occupying the same pgd
-> page.
+This patch adds a helper function that should be used by filesystems that need
+to flush the underlying block device on fsync()/fdatasync().
 
-Not sure I understand all of this, but it sounds like a straight virtual
-mapping with some chosen separation between the mappings.
+Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+---
 
-But note that for the non-NUMA case, you can just use kmalloc/__get_free_pages
-and no remapping tricks are necessary at all.
+diff -urNp linux-2.6.29-rc4-orig/fs/buffer.c linux-2.6.29-rc4/fs/buffer.c
+--- linux-2.6.29-rc4-orig/fs/buffer.c	2009-02-16 14:45:11.000000000 +0900
++++ linux-2.6.29-rc4/fs/buffer.c	2009-02-16 14:53:26.000000000 +0900
+@@ -165,6 +165,17 @@ void end_buffer_write_sync(struct buffer
+ 	put_bh(bh);
+ }
+ 
++/* Issue flush of write caches on the block device */
++int block_flush_device(struct super_block *sb)
++{
++	int ret = 0;
++
++	ret = blkdev_issue_flush(sb->s_bdev, NULL);
++
++	return (ret == -EOPNOTSUPP) ? 0 : ret;
++}
++EXPORT_SYMBOL(block_flush_device);
++
+ /*
+  * Write out and wait upon all the dirty data associated with a block
+  * device via its mapping.  Does not take the superblock lock.
+diff -urNp linux-2.6.29-rc4-orig/include/linux/buffer_head.h linux-2.6.29-rc4/include/linux/buffer_head.h
+--- linux-2.6.29-rc4-orig/include/linux/buffer_head.h	2009-02-16 14:45:12.000000000 +0900
++++ linux-2.6.29-rc4/include/linux/buffer_head.h	2009-02-16 14:48:28.000000000 +0900
+@@ -238,6 +238,7 @@ int nobh_write_end(struct file *, struct
+ int nobh_truncate_page(struct address_space *, loff_t, get_block_t *);
+ int nobh_writepage(struct page *page, get_block_t *get_block,
+                         struct writeback_control *wbc);
++int block_flush_device(struct super_block *sb);
+ 
+ void buffer_init(void);
+ 
 
-Thanks,
-Rusty.
+
