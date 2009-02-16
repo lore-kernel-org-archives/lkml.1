@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756828AbZBPLuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbZBPLzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756828AbZBPLuk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 06:50:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbZBPLua
+	id S1756733AbZBPLzh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 06:55:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750705AbZBPLz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 06:50:30 -0500
-Received: from homer.mvista.com ([63.81.120.155]:57467 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753827AbZBPLu3 (ORCPT
+	Mon, 16 Feb 2009 06:55:29 -0500
+Received: from wa4ehsobe002.messaging.microsoft.com ([216.32.181.12]:34024
+	"EHLO WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750738AbZBPLz2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 06:50:29 -0500
-Message-ID: <49995300.7030102@ru.mvista.com>
-Date: Mon, 16 Feb 2009 14:50:24 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Mon, 16 Feb 2009 06:55:28 -0500
+X-Greylist: delayed 905 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Feb 2009 06:55:28 EST
+X-BigFish: VPS-52(z21eWz1432R62a3L98dR936eQ1805Mzzzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KF5PQW-02-K0B-01
+Date: Mon, 16 Feb 2009 12:40:10 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Andi Kleen <andi@firstfloor.org>
+CC: oprofile-list@lists.sf.net, linux-kernel@vger.kernel.org,
+       Tim Blechmann <tim@klingt.org>
+Subject: Re: 2.6.29-rc4 regression (was: Re: 2.6.28-rc9: oprofile
+	regression)
+Message-ID: <20090216114010.GG25042@erda.amd.com>
+References: <1229869416.6911.1.camel@thinkpad> <49932C35.3020300@klingt.org> <20090213190740.GD25042@erda.amd.com> <20090216112313.359ef437@thinkpad>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 13/18] ide: use ->tf_load in SELECT_DRIVE()
-References: <20080620213323.13202.71450.sendpatchset@localhost.localdomain> <20080620213451.13202.12671.sendpatchset@localhost.localdomain> <49987A37.9000300@ru.mvista.com> <4998AE87.3020502@ru.mvista.com>
-In-Reply-To: <4998AE87.3020502@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20090216112313.359ef437@thinkpad>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 16 Feb 2009 11:40:10.0757 (UTC) FILETIME=[53048B50:01C9902B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
+On 16.02.09 11:23:13, Tim Blechmann wrote:
+> > still, I can not reproduce this with my tests with v2.6.29-rc4. The
+> > regression on the systems I have runs fine on rc4. On the system you
+> > have, is commit b99170288421c79f0c2efa8b33e26e65f4bb7fb8 the first bad
+> > one? If so, I will split the patch into smaller pieces to find the
+> > change that introduces the bug.
+> 
+> i got revision df13b31c286b3e91c556167954eda088d90a4295 working, by not
+> resetting the counter width:
+> 
+> diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
+> index 12e207a..f0e019d 100644
+> --- a/arch/x86/oprofile/op_model_ppro.c
+> +++ b/arch/x86/oprofile/op_model_ppro.c
+> @@ -76,12 +76,14 @@ static void ppro_setup_ctrs(struct op_msrs const * const msrs)
+>  			return;
+>  	}
+>  
+> +#if 0
+>  	if (cpu_has_arch_perfmon) {
+>  		union cpuid10_eax eax;
+>  		eax.full = cpuid_eax(0xa);
+>  		if (counter_width < eax.split.bit_width)
+>  			counter_width = eax.split.bit_width;
+>  	}
+> +#endif
 
->>> There should be no functional changes caused by this patch.
->>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->>> Index: b/drivers/ide/ide-iops.c
->>> ===================================================================
->>> --- a/drivers/ide/ide-iops.c
->>> +++ b/drivers/ide/ide-iops.c
->>> @@ -88,11 +88,15 @@ void SELECT_DRIVE (ide_drive_t *drive)
->>>  {
->>>      ide_hwif_t *hwif = drive->hwif;
->>>      const struct ide_port_ops *port_ops = hwif->port_ops;
->>> +    ide_task_t task;
->>>  
->>>      if (port_ops && port_ops->selectproc)
->>>          port_ops->selectproc(drive);
->>>  
->>> -    hwif->OUTB(drive->select.all, hwif->io_ports.device_addr);
->>> +    memset(&task, 0, sizeof(task));
->>> +    task.tf_flags = IDE_TFLAG_OUT_DEVICE;
->>> +
->>> +    drive->hwif->tf_load(drive, &task);
->>
->>    This actually doesn't seem like a bright idea to me, considering 
->> that this gets called when starting every request. How will you look 
->> at me adding the transport method for writing this register? :-)
-> Convert SELECT_DRIVE() to use ->tf_load instead of ->OUTB.
->
->   OTOH, adding such a "backdoor" to the taskfile doesn't seem very 
-> consistent... well, I'm not excited about the whole idea conversion to 
-> tf_{load|read}() -- it's not clear what exactly this bought us.
+Andi,
 
-   We at least could have saved on memset() -- tf_load() method ignores 
-fields other than tf_flags anyway...
+do you suggest a fix for this (disable arch_perfmon for already
+implemented cpus, for all, or for this certain cpu)?
 
-MBR, Sergei
+-Robert
 
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
 
