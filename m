@@ -1,152 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757858AbZBPOIG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758113AbZBPOJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757858AbZBPOIG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 09:08:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875AbZBPOHy
+	id S1758113AbZBPOJX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 09:09:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756056AbZBPOJO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 09:07:54 -0500
-Received: from frost.carfax.org.uk ([212.13.194.111]:3536 "EHLO
-	frost.carfax.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751323AbZBPOHw (ORCPT
+	Mon, 16 Feb 2009 09:09:14 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:49400 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751875AbZBPOJO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 09:07:52 -0500
-X-Greylist: delayed 1512 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Feb 2009 09:07:51 EST
-Date: Mon, 16 Feb 2009 13:42:34 +0000
-From: Hugo Mills <hugo-lkml@carfax.org.uk>
-To: linux-btrfs@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: warn_slowpath in clean_tree_block
-Message-ID: <20090216134234.GB11816@vlad.carfax.org.uk>
-Mail-Followup-To: Hugo Mills <hugo-lkml@carfax.org.uk>,
-	linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="kORqDWCi7qDJ0mEj"
-Content-Disposition: inline
-X-GPG-Fingerprint: 8C59 86C7 81F3 93FE BB02  DDB1 20AC B3BE 515C 238D
-X-GPG-Key: 515C238D
-X-Parrot: It is no more. It has joined the choir invisible.
-X-IRC-Nicks: darksatanic darkersatanic darkling darkthing
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-frost.carfax.org.uk-Spam-Score: 0.0 (/)
-X-frost.carfax.org.uk-Spam-Report: Spam detection software, running on the system "admin.islay.bitfolk.com", has
-	identified this incoming email as possible spam.  The original message
-	has been attached to this so you can view it (if it isn't spam) or label
-	similar future email.  If you have any questions, see
-	the administrator of that system for details.
-	Content preview:  I've just started playing with Btrfs, and I'm getting a log
-	full of kernel warnings that look something like this: Feb 16 09:02:17 vlad
-	kernel: [ cut here ] Feb 16 09:02:17 vlad kernel: WARNING: at fs/btrfs/disk-io.c:815
-	clean_tree_block+0x9d/0xbb [btrfs]() Feb 16 09:02:17 vlad kernel: Hardware
-	name: System Product Name Feb 16 09:02:17 vlad kernel: Modules linked in:
-	btrfs zlib_deflate tcp_diag inet_diag kqemu cpufreq_userspace ipv6 nfsd nfs
-	lockd nfs_acl auth_rpcgss sunrpc af_packet bridge stp llc xfs exportfs it87
-	hwmon_vid powernow_k8 sbp2 ieee1394 ide_generic ide_gd_mod ide_cd_mod pcspkr
-	evdev k8temp hwmon i2c_viapro i2c_core button dm_mirror dm_region_hash dm_log
-	dm_snapshot dm_mod raid1 md_mod usbhid usb_storage libusual sg sr_mod cdrom
-	via82cxxx floppy via_rhine mii ehci_hcd uhci_hcd usbcore pata_via ide_pci_generic
-	ide_core sd_mod thermal processor fan unix Feb 16 09:02:17 vlad kernel: Pid:
-	24129, comm: btrfs-endio-wri Tainted: G W 2.6.29-rc4 #1 Feb 16 09:02:17 vlad
-	kernel: Call Trace: Feb 16 09:02:17 vlad kernel: [<ffffffff80228d7d>] warn_slowpath+0xd8/0x111
-	Feb 16 09:02:17 vlad kernel: [<ffffffff80251d9e>] __alloc_pages_internal+0xd2/0x3ec
-	Feb 16 09:02:17 vlad kernel: [<ffffffff8024d55d>] add_to_page_cache_locked+0x52/0x9e
-	Feb 16 09:02:17 vlad kernel: [<ffffffff8024d5e9>] add_to_page_cache_lru+0x40/0x58
-	Feb 16 09:02:17 vlad kernel: [<ffffffff8024dbd0>] find_or_create_page+0x62/0x88
-	Feb 16 09:02:17 vlad kernel: [<ffffffff80313244>] rb_insert_color+0xba/0xe2
-	Feb 16 09:02:17 vlad kernel: [<ffffffffa03f992a>] alloc_extent_buffer+0x268/0x2ec
-	[btrfs] Feb 16 09:02:17 vlad kernel: [<ffffffffa03e1b18>] clean_tree_block+0x9d/0xbb
-	[btrfs] Feb 16 09:02:17 vlad kernel: [<ffffffffa03d5eaf>] btrfs_init_new_buffer+0x99/0xf3
-	[btrfs] Feb 16 09:02:17 vlad kernel: [<ffffffffa03d849e>] btrfs_alloc_free_block+0x83/0x8c
-	[btrfs] Feb 16 09:02:17 vlad kernel: [<ffffffffa03cda8b>] split_leaf+0x159/0xa0a
-	[btrfs] Feb 16 09:02:17 vlad kernel: [<ffffffffa03f0de5>] btrfs_item_offset+0xb3/0xbe
-	[btrfs] Feb 16 09:02:17 vlad kernel: [<ffffffffa03c96bc>] leaf_space_used+0xb5/0xe8
-	[btrfs] Feb 16 09:02:17 vlad kernel: [...] 
-	Content analysis details:   (0.0 points, 5.0 required)
-	pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	_SUMMARY_
+	Mon, 16 Feb 2009 09:09:14 -0500
+Subject: Re: [PATCH] Export symbol ksize()
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-crypto@vger.kernel.org,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Geert.Uytterhoeven@sonycom.com
+In-Reply-To: <20090216135643.GA6927@cmpxchg.org>
+References: <1234272104-10211-1-git-send-email-kirill@shutemov.name>
+	 <84144f020902100535i4d626a9fj8cbb305120cf332a@mail.gmail.com>
+	 <20090210134651.GA5115@epbyminw8406h.minsk.epam.com>
+	 <Pine.LNX.4.64.0902101605070.20991@melkki.cs.Helsinki.FI>
+	 <20090216135643.GA6927@cmpxchg.org>
+Date: Mon, 16 Feb 2009 16:09:11 +0200
+Message-Id: <1234793351.8944.12.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Johannes,
 
---kORqDWCi7qDJ0mEj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Mon, 2009-02-16 at 14:56 +0100, Johannes Weiner wrote:
+> On Tue, Feb 10, 2009 at 04:06:53PM +0200, Pekka J Enberg wrote:
+> > On Tue, Feb 10, 2009 at 03:35:03PM +0200, Pekka Enberg wrote:
+> > > > We unexported ksize() because it's a problematic interface and you
+> > > > almost certainly want to use the alternatives (e.g. krealloc). I think
+> > > > I need bit more convincing to apply this patch...
+> >  
+> > On Tue, 10 Feb 2009, Kirill A. Shutemov wrote:
+> > > It just a quick fix. If anybody knows better solution, I have no
+> > > objections.
+> > 
+> > Herbert, what do you think of this (untested) patch? Alternatively, we 
+> > could do something like kfree_secure() but it seems overkill for this one 
+> > call-site.
+> 
+> There are more callsites which do memset() + kfree():
+> 
+> 	arch/s390/crypto/prng.c
+> 	drivers/s390/crypto/zcrypt_pcixcc.c
+> 	drivers/md/dm-crypt.c
+> 	drivers/usb/host/hwa-hc.c
+> 	drivers/usb/wusbcore/cbaf.c
+> 	(drivers/w1/w1{,_int}.c)
+> 	fs/cifs/misc.c
+> 	fs/cifs/connect.c
+> 	fs/ecryptfs/keystore.c
+> 	fs/ecryptfs/messaging.c
+> 	net/atm/mpoa_caches.c
+> 
+> How about the attached patch?  One problem is that zeroing ksize()
+> bytes can have an overhead of nearly twice the actual allocation size.
+> 
+> So we would need an interface that lets the caller pass in either a
+> number of bytes it wants to have zeroed out or say idontknow.
+> 
+> Perhaps add a size parameter that is cut to ksize() if it's too big?
+> Or (ssize_t)-1 for figureitoutyourself?
 
-   I've just started playing with Btrfs, and I'm getting a log full of
-kernel warnings that look something like this:
+I'd prefer the kzfree() interface as-is. I don't think you want to do
+the memset/kfree in a fast-path anyway.
 
-Feb 16 09:02:17 vlad kernel: ------------[ cut here ]------------
-Feb 16 09:02:17 vlad kernel: WARNING: at fs/btrfs/disk-io.c:815 clean_tree_block+0x9d/0xbb [btrfs]()
-Feb 16 09:02:17 vlad kernel: Hardware name: System Product Name
-Feb 16 09:02:17 vlad kernel: Modules linked in: btrfs zlib_deflate tcp_diag inet_diag kqemu cpufreq_userspace ipv6 nfsd nfs lockd nfs_acl auth_rpcgss sunrpc af_packet bridge stp llc xfs exportfs it87 hwmon_vid powernow_k8 sbp2 ieee1394 ide_generic ide_gd_mod ide_cd_mod pcspkr evdev k8temp hwmon i2c_viapro i2c_core button dm_mirror dm_region_hash dm_log dm_snapshot dm_mod raid1 md_mod usbhid usb_storage libusual sg sr_mod cdrom via82cxxx floppy via_rhine mii ehci_hcd uhci_hcd usbcore pata_via ide_pci_generic ide_core sd_mod thermal processor fan unix
-Feb 16 09:02:17 vlad kernel: Pid: 24129, comm: btrfs-endio-wri Tainted: G        W  2.6.29-rc4 #1
-Feb 16 09:02:17 vlad kernel: Call Trace:
-Feb 16 09:02:17 vlad kernel: [<ffffffff80228d7d>] warn_slowpath+0xd8/0x111
-Feb 16 09:02:17 vlad kernel: [<ffffffff80251d9e>] __alloc_pages_internal+0xd2/0x3ec
-Feb 16 09:02:17 vlad kernel: [<ffffffff8024d55d>] add_to_page_cache_locked+0x52/0x9e
-Feb 16 09:02:17 vlad kernel: [<ffffffff8024d5e9>] add_to_page_cache_lru+0x40/0x58
-Feb 16 09:02:17 vlad kernel: [<ffffffff8024dbd0>] find_or_create_page+0x62/0x88
-Feb 16 09:02:17 vlad kernel: [<ffffffff80313244>] rb_insert_color+0xba/0xe2
-Feb 16 09:02:17 vlad kernel: [<ffffffffa03f992a>] alloc_extent_buffer+0x268/0x2ec [btrfs]
-Feb 16 09:02:17 vlad kernel: [<ffffffffa03e1b18>] clean_tree_block+0x9d/0xbb [btrfs]
-Feb 16 09:02:17 vlad kernel: [<ffffffffa03d5eaf>] btrfs_init_new_buffer+0x99/0xf3 [btrfs]
-Feb 16 09:02:17 vlad kernel: [<ffffffffa03d849e>] btrfs_alloc_free_block+0x83/0x8c [btrfs]
-Feb 16 09:02:17 vlad kernel: [<ffffffffa03cda8b>] split_leaf+0x159/0xa0a [btrfs]
-Feb 16 09:02:17 vlad kernel: [<ffffffffa03f0de5>] btrfs_item_offset+0xb3/0xbe [btrfs]
-Feb 16 09:02:17 vlad kernel: [<ffffffffa03c96bc>] leaf_space_used+0xb5/0xe8 [btrfs]
-Feb 16 09:02:17 vlad kernel: [<ffffffffa03d0ebd>] btrfs_search_slot+0x917/0x99b [btrfs]
-Feb 16 09:02:17 vlad kernel: [<ffffffffa03ef06a>] btrfs_drop_extents+0xa75/0xab3 [btrfs]
-Feb 16 09:02:17 vlad kernel: [<ffffffffa03d14ee>] btrfs_insert_empty_items+0x7f/0x49d [btrfs]
-Feb 16 09:02:17 vlad kernel: [<ffffffffa03e6f0f>] insert_reserved_file_extent+0xd9/0x230 [btrfs]
-Feb 16 09:02:17 vlad kernel: [<ffffffffa03fa44f>] set_extent_bit+0x220/0x277 [btrfs]
-Feb 16 09:02:17 vlad kernel: [<ffffffffa03fadce>] lock_extent+0x46/0x95 [btrfs]
-Feb 16 09:02:17 vlad kernel: [<ffffffffa03e885c>] btrfs_finish_ordered_io+0xfe/0x198 [btrfs]
-Feb 16 09:02:17 vlad kernel: [<ffffffffa03fb4ff>] end_bio_extent_writepage+0xa9/0x1b1 [btrfs]
-Feb 16 09:02:17 vlad kernel: [<ffffffffa04023e4>] worker_loop+0x5f/0x15e [btrfs]
-Feb 16 09:02:17 vlad kernel: [<ffffffffa0402385>] worker_loop+0x0/0x15e [btrfs]
-Feb 16 09:02:17 vlad kernel: [<ffffffffa0402385>] worker_loop+0x0/0x15e [btrfs]
-Feb 16 09:02:17 vlad kernel: [<ffffffff80238269>] kthread+0x47/0x73
-Feb 16 09:02:17 vlad kernel: [<ffffffff8020c03a>] child_rip+0xa/0x20
-Feb 16 09:02:17 vlad kernel: [<ffffffff80238222>] kthread+0x0/0x73
-Feb 16 09:02:17 vlad kernel: [<ffffffff8020c030>] child_rip+0x0/0x20
-Feb 16 09:02:17 vlad kernel: ---[ end trace a315082d5647b979 ]---
+If you can convince Andrew to pick this patch up and maybe convert some
+call-sites to actually use it, then:
 
-   They're not all identical -- there are bits in the middle of the
-trace that change. They tend to arrive in groups of 4-8 warnings very
-close together, separated by 15-20 seconds without a warning. The
-workload was encoding a video from another filesystem, onto the Btrfs
-filesystem. It's quiet when there's nothing accessing the filesystem.
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-   The filesystem is 19GiB in size, residing on LVM-on-RAID-1 on a
-2.6.29-rc4 kernel. It was created on 2.6.29-rc3, 20GiB in size using
-btrfs tools 0.18-ge3b0f66, and shrunk online to its current size.
+			Pekka
 
-   I haven't found any similar reports on the mailing list, which
-means either I've got something unusual, or something so blindingly
-expected that nobody's bothered to mention it. I suspect the latter,
-but I'm reporting it in case it's the former.
-
-   Hugo.
-
--- 
-=== Hugo Mills: hugo@... carfax.org.uk | darksatanic.net | lug.org.uk ===
-  PGP key: 515C238D from wwwkeys.eu.pgp.net or http://www.carfax.org.uk
-       --- "You got very nice eyes, Deedee. Never noticed them ---       
-                           before. They real?"                           
-
---kORqDWCi7qDJ0mEj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iD8DBQFJmW1KIKyzvlFcI40RAjlmAJ91KrL0ur9EkEdbhhYHPbU786WPngCfQ5/j
-K5vUToe/n2/5FIgLb8J4e3g=
-=c1Qa
------END PGP SIGNATURE-----
-
---kORqDWCi7qDJ0mEj--
