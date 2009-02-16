@@ -1,49 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757925AbZBPOAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757864AbZBPOEG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757925AbZBPOAt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 09:00:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087AbZBPOAk
+	id S1757864AbZBPOEG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 09:04:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756946AbZBPODx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 09:00:40 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:56278 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750965AbZBPOAj (ORCPT
+	Mon, 16 Feb 2009 09:03:53 -0500
+Received: from DSL212-235-53-3.bb.netvision.net.il ([212.235.53.3]:40161 "EHLO
+	bh-buildlin1.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756859AbZBPODx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 09:00:39 -0500
-Message-ID: <4999717F.7090205@s5r6.in-berlin.de>
-Date: Mon, 16 Feb 2009 15:00:31 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Sam Ravnborg <sam@ravnborg.org>, Manish Katiyar <mkatiyar@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] Remove errors caught by checkpatch.pl in	kernel/kallsyms.c
-References: <ea11fea30902151034s5444efabw455c1dac1b875086@mail.gmail.com> <20090215184752.GA4970@uranus.ravnborg.org> <4999650C.6030700@s5r6.in-berlin.de> <20090216132822.GC17996@elte.hu>
-In-Reply-To: <20090216132822.GC17996@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Feb 2009 09:03:53 -0500
+X-Greylist: delayed 3887 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Feb 2009 09:03:51 EST
+From: Benny Halevy <bhalevy@panasas.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, Benny Halevy <bhalevy@panasas.com>
+Subject: [PATCH] bitmap: Cleanup find_last_bit
+Date: Mon, 16 Feb 2009 14:58:40 +0200
+Message-Id: <1234789120-31543-1-git-send-email-bhalevy@panasas.com>
+X-Mailer: git-send-email 1.6.1.3
+In-Reply-To: <200812011848.31552.rusty@rustcorp.com.au>
+References: <200812011848.31552.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
->> Furthermore, the changelog is bad (non-exiting in fact).
->> 
->> The fact that the issues where discovered using checkpatch is absolutely
->> uninteresting.  The changelog should describe /what/ is fixed, [...]
-> 
-> The commit log definitely needs enhancements but it's not uninteresting 
-> at all what tools were used to arrive to a change. [...] if a
-> good and acceptable commit results out of a tool's usage then that tool 
-> needs to be advertised some more.)
+Fix cut & paste error in header comment.
+Simplify implementation a bit.
 
-Fine, then the author could mention it below the --- delimitor in the
-patch posting.  The changelog however, as annotation of the source
-history, is not a billboard.  We also don't describe for example that a
-nice cup of hot Earl Grey or whatever was vital to the creation of a patch.
+Signed-off-by: Benny Halevy <bhalevy@panasas.com>
+---
+
+Rusty, we're using a similar mechanism for finding the highest slot ID
+in use in the nfsv4.1 slot table and I'm going to moev it over to
+using find_last_bit in our 2.6.29 patchset.
+While going over your implementation I noticed a tiny cut & paste error in
+bitops.h and I'd also like to propose a couple simplifications to make
+the implementation a bit more readable (at least to me :).
+
+Benny
+
+ include/linux/bitops.h |    2 +-
+ lib/find_last_bit.c    |   15 ++++++++-------
+ 2 files changed, 9 insertions(+), 8 deletions(-)
+
+diff --git a/include/linux/bitops.h b/include/linux/bitops.h
+index 6182913..886ebf0 100644
+--- a/include/linux/bitops.h
++++ b/include/linux/bitops.h
+@@ -142,7 +142,7 @@ extern unsigned long find_first_zero_bit(const unsigned long *addr,
+  * @addr: The address to start the search at
+  * @size: The maximum size to search
+  *
+- * Returns the bit number of the first set bit, or size.
++ * Returns the bit number of the last set bit, or size.
+  */
+ extern unsigned long find_last_bit(const unsigned long *addr,
+ 				   unsigned long size);
+diff --git a/lib/find_last_bit.c b/lib/find_last_bit.c
+index 5d202e3..e9d9cdc 100644
+--- a/lib/find_last_bit.c
++++ b/lib/find_last_bit.c
+@@ -24,22 +24,23 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
+ 	words = size / BITS_PER_LONG;
+ 
+ 	/* Partial final word? */
+-	if (size & (BITS_PER_LONG-1)) {
+-		tmp = (addr[words] & (~0UL >> (BITS_PER_LONG
+-					 - (size & (BITS_PER_LONG-1)))));
++	tmp = size & (BITS_PER_LONG-1);
++	if (tmp) {
++		tmp = addr[words] & (~0UL >> (BITS_PER_LONG - tmp));
+ 		if (tmp)
+ 			goto found;
+ 	}
+ 
+ 	while (words) {
+ 		tmp = addr[--words];
+-		if (tmp) {
+-found:
+-			return words * BITS_PER_LONG + __fls(tmp);
+-		}
++		if (tmp)
++			goto found;
+ 	}
+ 
+ 	/* Not found */
+ 	return size;
++
++found:
++	return words * BITS_PER_LONG + __fls(tmp);
+ }
+ EXPORT_SYMBOL(find_last_bit);
 -- 
-Stefan Richter
--=====-==--= --=- =----
-http://arcgraph.de/sr/
+1.6.1.3
+
