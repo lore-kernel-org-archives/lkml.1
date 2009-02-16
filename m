@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbZBPUOJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbZBPUQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754059AbZBPUOJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 15:14:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbZBPUNz
+	id S1754209AbZBPUQg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 15:16:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751331AbZBPUQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 15:13:55 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:58322 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751304AbZBPUNy (ORCPT
+	Mon, 16 Feb 2009 15:16:28 -0500
+Received: from yx-out-2324.google.com ([74.125.44.28]:30183 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751253AbZBPUQ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 15:13:54 -0500
-X-Greylist: delayed 429 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Feb 2009 15:13:54 EST
-Date: Mon, 16 Feb 2009 21:06:43 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: linux-ide@vger.kernel.org, Tejun Heo <htejun@gmail.com>
-Subject: [BUG] 2.6.29-rc2-git1 to -rc5: libata lockup on boot, LED solid,
-	100% CPU
-Message-ID: <20090216200643.GA2393@rhlx01.hs-esslingen.de>
+	Mon, 16 Feb 2009 15:16:28 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090216103636.GC17355@linux.vnet.ibm.com>
+References: <4997672B.1000301@fatooh.org> <1234697096.4713.24.camel@laptop>
+	 <20090216103636.GC17355@linux.vnet.ibm.com>
+Date: Mon, 16 Feb 2009 15:16:25 -0500
+Message-ID: <f73f7ab80902161216j8690f05sf1103759cc932846@mail.gmail.com>
+Subject: Re: RT scheduling and a way to make a process hang, unkillable
+From: Kyle Moffett <kyle@moffetthome.net>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Corey Hickey <bugfood-ml@fatooh.org>, linux-kernel@vger.kernel.org,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, mtk.manpages@gmail.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+On Mon, Feb 16, 2009 at 5:36 AM, Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+> On Sun, Feb 15, 2009 at 12:24:56PM +0100, Peter Zijlstra wrote:
+>> On Sat, 2009-02-14 at 16:51 -0800, Corey Hickey wrote:
+>> > The procedure is for a program to:
+>> > 1. run as root
+>> > 2. set SCHED_FIFO
+>> > 3. change UID to a user with no realtime CPU share allocated
+>>
+>> Hmm, setuid() should fail in that situation.
+>>
+>> /me goes peek at code.
+>>
+>> Can't find any code to make that happen, Dhaval didn't we fix that at
+>> one point?
+>
+> So after some searching around, I realized we did not. Does this help?
+> It fixes it on my system,
+>
+> --
+> sched: Don't allow setuid to succeed if the user does not have rt bandwidth
 
-My Inspiron 8000 ICH2 (i810) P3/700 UP has a hard time booting 2.6.29 things:
+Erm, hrm, this reminds me of the old sendmail capabilities bug.  There
+are an awful lot of buggy binaries out there who assume that if they
+have uid 0 and they call setuid() that it cannot fail.  They then do
+all sorts of insecure operations, assuming that they have dropped to
+an unprivileged UID.  This one is especially bad because it could bite
+*any* program using setuid() which an admin happens to run with chrt.
 
-[loaded init, shell stuff]
-...
-ata1.00: configured for UDMA/100
-ata1.01: configured for UDMA/33
-ata1: EH complete
-...
-Uniform CD-ROM driver Revision: 3.20
-[LAST LINE, FULL STOP]
----> hangs with IDE LED solidly on! <---
+Specifically, I personally think that:
+  *  Process is stuck and unkillable
 
-NOTE: kernel did NOT hang when accidentally running rc2-git1 w/o any modules loaded!
-(IOW, probably a module-related hang)
-disabling sr_mod.ko will make a boot proceed a tiny bit, then hang anyway
+is a much better result than:
+  *  Process runs arbitrary untrusted code with full-root privs in RT mode.
 
-Could be mutex deadlock (CPU hot, 100%?)
-no log errors whatsoever
-latest known working: .28-rc6 (admittedly somewhat old; DOES work currently)
-earliest known buggy: -rc2-git1, -rc4 also, -rc5 also
-no SysRq available (notebook keys: no workey, /proc/sysrq obviously
-not available either)
-
-Should I test 2.6.28.5? Every build will take two hours though...
-Not ATA-SFF 32bit bug problem, right? (already committed?)
-http://marc.info/?l=linux-kernel&m=123254501314058&w=2
-CONFIG_LOCK_STAT is NOT set/guilty here http://lkml.org/lkml/2009/2/16/5
-Will try disabling CD-ROM drives in BIOS or so.
-Any other promising ideas/patches available? libata logging? mutex
-logging?
-
-CC'd Tejun since he's been a miracle to work with recently concerning
-all things ATA ;)
-
-On a related note, -rc4 works nicely on my Aspire One, despite me
-betting that it would end up with at least two new major issues again...
-(note: plus full UDMA/66 after resume! - Tejun)
--rc5 on a P4HT blue skies, too...
-Maybe kernel quality doesn't actually degrade after all...
-
-Thanks,
-
-Andreas Mohr
+Cheers,
+Kyle Moffett
