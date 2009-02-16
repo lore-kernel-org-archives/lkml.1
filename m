@@ -1,134 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755914AbZBPXXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756069AbZBPXYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755914AbZBPXXi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 18:23:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755660AbZBPXXT
+	id S1756069AbZBPXYU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 18:24:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbZBPXX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 18:23:19 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:36725 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752973AbZBPXXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 18:23:18 -0500
-Date: Tue, 17 Feb 2009 00:19:46 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: Re: Q: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove
-	single ipi fallback for smp_call_function_many())
-Message-ID: <20090216231946.GA12009@redhat.com>
-References: <20090216163847.431174825@chello.nl> <20090216164114.433430761@chello.nl> <20090216204902.GA6924@redhat.com> <1234818201.30178.386.camel@laptop> <20090216213205.GA9098@redhat.com> <1234820704.30178.396.camel@laptop> <20090216220214.GA10093@redhat.com> <1234823097.30178.406.camel@laptop>
+	Mon, 16 Feb 2009 18:23:59 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:34596 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751851AbZBPXX6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 18:23:58 -0500
+Date: Mon, 16 Feb 2009 23:23:30 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>,
+       Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFD] Automatic suspend
+Message-ID: <20090216232329.GA15678@srcf.ucam.org>
+References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com> <13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com> <20090216145948.6fea81c3@infradead.org> <200902170019.40599.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1234823097.30178.406.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200902170019.40599.rjw@sisk.pl>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/16, Peter Zijlstra wrote:
->
-> On Mon, 2009-02-16 at 23:02 +0100, Oleg Nesterov wrote:
-> > On 02/16, Peter Zijlstra wrote:
-> > >
-> > > On Mon, 2009-02-16 at 22:32 +0100, Oleg Nesterov wrote:
-> > > > > I was about to write a response, but found it to be a justification for
-> > > > > the read_barrier_depends() at the end of the loop.
-> > > >
-> > > > I forgot to mention I don't understand the read_barrier_depends() at the
-> > > > end of the loop as well ;)
-> > >
-> > > Suppose cpu0 adds to csd to cpu1:
-> > >
-> > >
-> > >  cpu0:                 cpu1:
-> > >
-> > > add entry1
-> > > mb();
-> > > send ipi
-> > >                       run ipi handler
-> > >                       read_barrier_depends()
-> > >                       while (!list_empty())    [A]
-> > >                         do foo
-> > >
-> > > add entry2
-> > > mb();
-> > > [no ipi -- we still observe entry1]
-> > >
-> > >                         remove foo
-> > >                         read_barrier_depends()
-> > >                       while (!list_empty())      [B]
-> >
-> > Still can't understand.
-> >
-> > cpu1 (generic_smp_call_function_single_interrupt) does
-> > list_replace_init(q->lock), this lock is also taken by
-> > generic_exec_single().
-> >
-> > Either cpu1 sees entry2 on list, or cpu0 sees list_empty()
-> > and sends ipi.
->
-> cpu0:		cpu1:
->
-> spin_lock_irqsave(&dst->lock, flags);
-> ipi = list_empty(&dst->list);
-> list_add_tail(&data->list, &dst->list);
-> spin_unlock_irqrestore(&dst->lock, flags);
->
-> ipi ----->
->
-> 		while (!list_empty(&q->list)) {
->                 	unsigned int data_flags;
->
->                 	spin_lock(&q->lock);
->                		list_replace_init(&q->list, &list);
-> 	                spin_unlock(&q->lock);
->
->
-> Strictly speaking the unlock() is semi-permeable, allowing the read of
-> q->list to enter the critical section, allowing us to observe an empty
-> list, never getting to q->lock on cpu1.
+On Tue, Feb 17, 2009 at 12:19:38AM +0100, Rafael J. Wysocki wrote:
 
-Hmm. If we take &q->lock, then we alread saw !list_empty() ?
+> This, again, seems to be a bit x86-centric. :-)  The Android people are telling
+> us that on the hardware they deal with it does make sense to put the entire
+> system to sleep even for relatively short periods of time, since the latencies
+> involved are not too bad.
 
-And the question is, how can we miss list_empty() == F before spin_lock().
+Arve said that the power state was equivalent in idle and suspend, but 
+that they preferred suspend because it stopped any periodic timers. I'd 
+be more interested in making sure that unnecessary timers aren't running 
+than focusing on automatically entering system-wide suspend - Nokia have 
+been managing this since 2005 with good results.
 
-> > > The read_barrier_depends() matches the mb() on the other cpu, without
-> > > which the 'new' entry might not be observed.
-> >
-> > And that mb() looks unneeded too. Again, because
-> > generic_smp_call_function_single_interrupt() takes call_single_queue.lock
-> > before it uses "data".
-
-to clarify, I meant it is not needed unless we are going to send the IPI.
-IOW, I think we can do
-
-	if (ipi) {
-		/* Make the list addition visible before sending the ipi. */
-		wmb();
-		arch_send_call_function_single_ipi(cpu);
-	}
-
-> > Even if I missed something (very possible), then I can't understand
-> > why we need rmb() only on alpha.
->
-> Because only alpha is insane enough to do speculative reads? Dunno
-> really :-)
-
-Perhaps...
-
-It would be nice to have a comment which explains how can we miss the
-first addition without read_barrier_depends(). And why only on alpha.
-
-And arch/alpha/kernel/smp.c:handle_ipi() does mb() itself...
-
-Confused.
-
-Oleg.
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
