@@ -1,103 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754977AbZBPHJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbZBPHKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754977AbZBPHJy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 02:09:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbZBPHJp
+	id S1756628AbZBPHKY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 02:10:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbZBPHKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 02:09:45 -0500
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:42493 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751386AbZBPHJn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 02:09:43 -0500
-Subject: Re: ext4: call blkdev_issue_flush on fsync
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Jan Kara <jack@suse.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Pavel Machek <pavel@suse.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com,
-       fernando@kic.ac.jp
-In-Reply-To: <20090215224659.GG10706@mini-me.lan>
-References: <1232109069.13775.35.camel@sebastian.kern.oss.ntt.co.jp>
-	 <1232114101.13775.63.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20090116163039.GE10617@duck.suse.cz>
-	 <1232185639.4831.18.camel@sebastian.kern.oss.ntt.co.jp>
-	 <1232186449.4831.29.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20090119120349.GA10193@duck.suse.cz>
-	 <1233135913.5399.57.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20090128095518.GA16554@duck.suse.cz>
-	 <1234434811.15270.7.camel@sebastian.kern.oss.ntt.co.jp>
-	 <1234435245.15433.19.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20090215224659.GG10706@mini-me.lan>
-Content-Type: text/plain; charset=utf-8
-Organization: NTT Open Source Software Center
-Date: Mon, 16 Feb 2009 16:09:41 +0900
-Message-Id: <1234768181.32677.7.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	Mon, 16 Feb 2009 02:10:05 -0500
+Received: from ozlabs.org ([203.10.76.45]:37800 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753776AbZBPHKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 02:10:04 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PULL] cpumask bugfixes (re-xmit)
+Date: Mon, 16 Feb 2009 17:39:58 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902161739.58576.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-02-15 at 17:46 -0500, Theodore Tso wrote:
-> On Thu, Feb 12, 2009 at 07:40:45PM +0900, Fernando Luis Vázquez Cao wrote:
-> > @@ -76,25 +77,34 @@ int ext4_sync_file(struct file *file, st
-> >  	 */
-> >  	if (ext4_should_journal_data(inode)) {
-> >  		ret = ext4_force_commit(inode->i_sb);
-> > +		if (!(journal->j_flags & JBD2_BARRIER))
-> > +			goto no_journal_barrier;
-> >  		goto out;
-> >  	}
-> 
-> All of these goto statements makes it one gigantic pile of spaghetti.
-> The code will be much more understable if you do:
-> 
-> 		if (!(journal->j_flags & JBD2_BARRIER))
-> 			block_flush_device(inode->i_sb);
-> 		return ret;	
-> 
-> >  
-> > -	if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
-> > -		goto out;
-> > +	if (datasync && !(i_state & I_DIRTY_DATASYNC))
-> > +		goto flush_blkdev;
-> >  
-> 
-> Maybe instead:
-> 	if (datasync && !(i_state & I_DIRTY_DATASYNC)) {
-> 		if (i_state & I_DIRTY_PAGES)
-> 			block_flush_device(inode->i_sb);
-> 		return ret;
-> 	}
-> 
-> 
-> > -		if (journal && (journal->j_flags & JBD2_BARRIER))
-> > -			blkdev_issue_flush(inode->i_sb->s_bdev, NULL);
-> > +		if (journal && !(journal->j_flags & JBD2_BARRIER))
-> > +			goto no_journal_barrier;
-> > +		goto out;
-> 
-> Maybe instead:
-> 		if (journal && !(journal->j_flags & JBD2_BARRIER))
-> 			block_flush_device(inode->i_sb);
-> 		return ret;
->   	}
-> 
-> I'm not a fanatic about eliminating all goto's, but "goto out" which
-> could be replaced by "return ret;" is just silly.
+(Just the vital ones: the other two are speculative problems we can argue about
+ separately).
 
-Yes, you are right. I just wanted to follow the current style of the
-code, but I got carried away and took things a bit too far.
+The following changes since commit d2f8d7ee1a9b4650b4e43325b321801264f7c37a:
+  Linus Torvalds (1):
+        Linux 2.6.29-rc5
 
-I'll be replying to this email with a new iteration of the patch-set
-that leaves out the potentially conflictive bits and should be more
-readable.
+are available in the git repository at:
 
-Regards,
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-for-linus.git master
 
-Fernando
+Rusty Russell (2):
+      cpumask: fix powernow-k8: partial revert of 2fdf66b491ac706657946442789ec644cc317e1a
+      cpumask: Use cpu_*_mask accessors code: alpha
 
+ arch/alpha/kernel/process.c               |    8 ++++----
+ arch/alpha/kernel/smp.c                   |   12 ++++++------
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c |   12 +++++++-----
+ 3 files changed, 17 insertions(+), 15 deletions(-)
+
+diff --git a/arch/alpha/kernel/process.c b/arch/alpha/kernel/process.c
+index f238370..8d0097f 100644
+--- a/arch/alpha/kernel/process.c
++++ b/arch/alpha/kernel/process.c
+@@ -93,8 +93,8 @@ common_shutdown_1(void *generic_ptr)
+ 	if (cpuid != boot_cpuid) {
+ 		flags |= 0x00040000UL; /* "remain halted" */
+ 		*pflags = flags;
+-		cpu_clear(cpuid, cpu_present_map);
+-		cpu_clear(cpuid, cpu_possible_map);
++		set_cpu_present(cpuid, false);
++		set_cpu_possible(cpuid, false);
+ 		halt();
+ 	}
+ #endif
+@@ -120,8 +120,8 @@ common_shutdown_1(void *generic_ptr)
+ 
+ #ifdef CONFIG_SMP
+ 	/* Wait for the secondaries to halt. */
+-	cpu_clear(boot_cpuid, cpu_present_map);
+-	cpu_clear(boot_cpuid, cpu_possible_map);
++	set_cpu_present(boot_cpuid, false);
++	set_cpu_possible(boot_cpuid, false);
+ 	while (cpus_weight(cpu_present_map))
+ 		barrier();
+ #endif
+diff --git a/arch/alpha/kernel/smp.c b/arch/alpha/kernel/smp.c
+index 00f1dc3..b1fe567 100644
+--- a/arch/alpha/kernel/smp.c
++++ b/arch/alpha/kernel/smp.c
+@@ -120,12 +120,12 @@ void __cpuinit
+ smp_callin(void)
+ {
+ 	int cpuid = hard_smp_processor_id();
+-	cpumask_t mask = cpu_online_map;
+ 
+-	if (cpu_test_and_set(cpuid, mask)) {
++	if (cpu_online(cpuid)) {
+ 		printk("??, cpu 0x%x already present??\n", cpuid);
+ 		BUG();
+ 	}
++	set_cpu_online(cpuid, true);
+ 
+ 	/* Turn on machine checks.  */
+ 	wrmces(7);
+@@ -436,8 +436,8 @@ setup_smp(void)
+ 				((char *)cpubase + i*hwrpb->processor_size);
+ 			if ((cpu->flags & 0x1cc) == 0x1cc) {
+ 				smp_num_probed++;
+-				cpu_set(i, cpu_possible_map);
+-				cpu_set(i, cpu_present_map);
++				set_cpu_possible(i, true);
++				set_cpu_present(i, true);
+ 				cpu->pal_revision = boot_cpu_palrev;
+ 			}
+ 
+@@ -470,8 +470,8 @@ smp_prepare_cpus(unsigned int max_cpus)
+ 
+ 	/* Nothing to do on a UP box, or when told not to.  */
+ 	if (smp_num_probed == 1 || max_cpus == 0) {
+-		cpu_possible_map = cpumask_of_cpu(boot_cpuid);
+-		cpu_present_map = cpumask_of_cpu(boot_cpuid);
++		init_cpu_possible(cpumask_of(boot_cpuid));
++		init_cpu_present(cpumask_of(boot_cpuid));
+ 		printk(KERN_INFO "SMP mode deactivated.\n");
+ 		return;
+ 	}
+diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+index fb039cd..6428aa1 100644
+--- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
++++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+@@ -1157,8 +1157,7 @@ static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
+ 	data->cpu = pol->cpu;
+ 	data->currpstate = HW_PSTATE_INVALID;
+ 
+-	rc = powernow_k8_cpu_init_acpi(data);
+-	if (rc) {
++	if (powernow_k8_cpu_init_acpi(data)) {
+ 		/*
+ 		 * Use the PSB BIOS structure. This is only availabe on
+ 		 * an UP version, and is deprecated by AMD.
+@@ -1176,17 +1175,20 @@ static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
+ 			       "ACPI maintainers and complain to your BIOS "
+ 			       "vendor.\n");
+ #endif
+-			goto err_out;
++			kfree(data);
++			return -ENODEV;
+ 		}
+ 		if (pol->cpu != 0) {
+ 			printk(KERN_ERR FW_BUG PFX "No ACPI _PSS objects for "
+ 			       "CPU other than CPU0. Complain to your BIOS "
+ 			       "vendor.\n");
+-			goto err_out;
++			kfree(data);
++			return -ENODEV;
+ 		}
+ 		rc = find_psb_table(data);
+ 		if (rc) {
+-			goto err_out;
++			kfree(data);
++			return -ENODEV;
+ 		}
+ 		/* Take a crude guess here.
+ 		 * That guess was in microseconds, so multiply with 1000 */
