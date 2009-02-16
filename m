@@ -1,120 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752791AbZBPPVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752328AbZBPPVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752791AbZBPPVM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 10:21:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbZBPPUz
+	id S1752328AbZBPPVs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 10:21:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753040AbZBPPVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 10:20:55 -0500
-Received: from smtp-out002.kontent.com ([81.88.40.216]:41249 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750913AbZBPPUy convert rfc822-to-8bit (ORCPT
+	Mon, 16 Feb 2009 10:21:18 -0500
+Received: from homer.mvista.com ([63.81.120.155]:62509 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750989AbZBPPVQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 10:20:54 -0500
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Mike Murphy <mamurph@cs.clemson.edu>
-Subject: Re: [PATCH] input: xpad.c - Xbox 360 wireless and sysfs support
-Date: Mon, 16 Feb 2009 16:21:27 +0100
-User-Agent: KMail/1.9.10
-Cc: linux-usb@vger.kernel.org, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <5aa163d00902142008g138826br80d3ea989e7af691@mail.gmail.com> <200902160931.34771.oliver@neukum.org> <5aa163d00902160522r3a22412je3f5202076f57a0a@mail.gmail.com>
-In-Reply-To: <5aa163d00902160522r3a22412je3f5202076f57a0a@mail.gmail.com>
+	Mon, 16 Feb 2009 10:21:16 -0500
+Message-ID: <49998480.3090408@ru.mvista.com>
+Date: Mon, 16 Feb 2009 18:21:36 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200902161621.28142.oliver@neukum.org>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ingo Molnar <mingo@elte.hu>, Justin Madru <jdm64@gawab.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linux IDE <linux-ide@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Hugh Dickins <hugh@veritas.com>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       Mikael Pettersson <mikpe@it.uu.se>
+Subject: Re: [Bug #12263] Sata soft reset filling log
+References: <sTyoMUwdm9B.A.QCH.U40lJB@chimera> <200902152221.43834.rjw@sisk.pl> <20090215223045.GC29300@elte.hu> <200902160012.57584.rjw@sisk.pl> <499983DF.5050503@ru.mvista.com>
+In-Reply-To: <499983DF.5050503@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Monday 16 February 2009 14:22:05 schrieb Mike Murphy:
-> >
-> > 3. Possible memory leak in error case:
-> >
-> > +static struct xpad_data *xpad_create_data(const char *name, struct kobject *parent) {
-> > +       struct xpad_data *data = NULL;
-> > +       int check;
-> > +
-> > +       data = kzalloc(sizeof(*data), GFP_KERNEL);
-> > +       if (!data)
-> > +               return NULL;
-> > +
-> > +       check = kobject_init_and_add(&data->kobj, &xpad_ktype, parent, "%s", name);
-> > +       if (check) {
-> > +               kobject_put(&data->kobj);
-> > +               return NULL;
-> > +       }
-> >
-> 
-> My understanding from Documentation/kobject.txt is that the
-> kobject_put in the 2nd error check will set the kobj's reference
-> counter to zero, eventually causing the kobject core to call my
-> cleanup function for the ktype (xpad_release) and free the memory. Is
-> this not correct? I find the sysfs docs to be fairly thin... and sysfs
+Hello, I wrote:
 
-I don't know. I also find that documentation thin.
-Please add that the memory is freed elsewhere.
+>>>>>> This message has been generated automatically as a part of a report
+>>>>>> of regressions introduced between 2.6.27 and 2.6.28.
 
-> seems to be substantially more complex than procfs or ioctls would be
-> for the same purpose. However, everything I read suggested that sysfs
-> is the "best" way to go in a modern kernel.
-> 
-> > 4. Why the cpup variety?
-> >
-> > +       coords[0] = (__s16) le16_to_cpup((__le16 *)(data + x_offset));
-> >
-> 
-> The cpup cast is in the original stable driver
-> (drivers/input/joystick/xpad.c), and I didn't question it.
-> 
-> > 5. What happens if this work is already scheduled?
-> >
-> >        if (data[0] & 0x08) {
-> > +               padnum = xpad->controller_data->controller_number;
-> >                if (data[1] & 0x80) {
-> > -                       xpad->pad_present = 1;
-> > -                       usb_submit_urb(xpad->bulk_out, GFP_ATOMIC);
-> > -               } else
-> > -                       xpad->pad_present = 0;
-> > +                       printk(KERN_INFO "Wireless Xbox 360 pad #%d present\n", padnum);
-> > +                       xpad->controller_data->pad_present = 1;
-> > +
-> > +                       INIT_WORK(&xpad->work, &xpad_work_controller);
-> > +                       schedule_work(&xpad->work);
-> >
+>>>>>> The following bug entry is on the current list of known regressions
+>>>>>> introduced between 2.6.27 and 2.6.28.  Please verify if it still 
+>>>>>> should
+>>>>>> be listed and let me know (either way).
 
-> 1. The user has to remove the battery pack from the controller,
-> reinstall the battery pack, and re-activate the controller by pushing
-> and holding the center button for at least 1 second.
-> 
-> 2. The kernel has to be busy enough not to have completed the work in
-> the ~2 seconds a human could have done (1).
+>>>>>> Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=12263
+>>>>>> Subject        : Sata soft reset filling log
+>>>>>> Submitter    : Justin Madru <bevicm@dslextreme.com>
+>>>>>> Date        : 2008-12-13 2:07 (64 days old)
+>>>>>> References    : 
+>>>>>> http://marc.info/?l=linux-kernel&m=122913412608533&w=4
 
-Also what happens if the work is scheduled  and you unplug?
+>>>>> I'm still seeing this on .29-rc5, and I think that my bug #12263 is 
+>>>>> a duplicate of bug #12609,
+>>>>> or more correctly it's a duplicate of mine because I reported first.
 
-> I need a bit of guidance from someone who has a better understanding
-> of the work queues to have a good solution to this one. Is switching
-> to PREPARE_WORK sufficient (with an INIT_WORK somewhere in
-> xpad_probe)? Or is a more involved solution needed?
-> 
-> > 6. No GFP_ATOMIC. If you can take a mutex you can sleep.
-> > +               usb_submit_urb(xpad->irq_out, GFP_ATOMIC);
-> >
-> 
-> Per the "Linux Device Drivers" book (O'Reilly, 3rd ed), the claim is
-> made that submissions while holding a mutex should be GFP_ATOMIC. My
+>>>>> It seems like the bug has been fixed in tip/master for some time now.
+>>>>> Below is the diff of origin and tip from when I tested.
 
-That is not correct. It is true while holding a spinlock, not a mutex.
+>>>> Ingo, do you know whinch patch in -tip fixes this regression?
 
-> tests seemed to verify this claim... as sending LED commands
-> GFP_KERNEL while holding the mutex resulted in BUGs (scheduling while
-> atomic) in dmesg. Switching those GFP_KERNELs to GFP_ATOMICs
-> eliminated that particular BUG.
+>>> This one, done on Jan 10, more than a month ago:
 
-Please post that BUG.
+>>>  f1d26da: Revert "libata: Add 32bit PIO support"
 
-	Regards
-		Oliver
+>>> When a commit causes trouble in -tip qa i immediately revert it in 
+>>> 95% of the cases, no questions asked. Especially if it's related to 
+>>> persistent storage.
+
+>> OK, thanks.
+
+>> We seem to have a working fix patch for this issue in bug #12609.
+
+>    Wait, if this is indeed post-2.6.27 regression, it couldn't possibly 
+> have been caused by that patch which got merged during 2.6.29-rc1 
+> timeframe. Something's up with this bug...
+
+    Also, it's been reported for a hard disk while regression in bug 12609 
+only hits the ATAPI devices. I think that bug 12263 needs to be reopened.
+
+MBR, Sergei
