@@ -1,112 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756754AbZBPJdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbZBPJip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756754AbZBPJdP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 04:33:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbZBPJc6
+	id S1756061AbZBPJip (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 04:38:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbZBPJia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 04:32:58 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53418 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751886AbZBPJc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 04:32:57 -0500
-Date: Mon, 16 Feb 2009 10:32:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Damien Wyart <damien.wyart@free.fr>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12650] Strange load average and ksoftirqd behavior with
-	2.6.29-rc2-git1
-Message-ID: <20090216093251.GK6182@elte.hu>
-References: <rjPbZ5GRJPO.A.1kE.ur0lJB@chimera> <20090215080941.GA2295@localhost.localdomain> <20090215090026.GA31147@elte.hu> <20090215095128.GA3234@localhost.localdomain> <20090215101351.GA23274@elte.hu> <20090215103445.GA2335@localhost.localdomain> <20090215110104.GB31351@elte.hu> <20090215180355.GA2273@localhost.localdomain> <20090215193102.GA16873@elte.hu> <20090216084223.GA2641@localhost.localdomain>
+	Mon, 16 Feb 2009 04:38:30 -0500
+Received: from mail-bw0-f167.google.com ([209.85.218.167]:48629 "EHLO
+	mail-bw0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753027AbZBPJi3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 04:38:29 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090216084223.GA2641@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090216003718.GN15266@solarflare.com>
+References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
+	 <20090214214111.24377.87888.stgit@vmbox.hanneseder.net>
+	 <20090216003718.GN15266@solarflare.com>
+Date: Mon, 16 Feb 2009 10:38:26 +0100
+Message-ID: <154e089b0902160138n255616a0xb963dfd990d912b@mail.gmail.com>
+Subject: Re: [PATCH 27/43] drivers/net/sfc: fix sparse warnings: Should it be 
+	static?
+From: Hannes Eder <hannes@hanneseder.net>
+To: Ben Hutchings <bhutchings@solarflare.com>
+Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Feb 16, 2009 at 1:37 AM, Ben Hutchings
+<bhutchings@solarflare.com> wrote:
+> Hannes Eder wrote:
+>> Impact: Include header file and include the function under the same
+>> condition as in the header file.  If CONFIG_SFS_MTD is not defined
+>> than the functions 'efx_mtd_remove' and 'efx_mtd_rename' are defined
+>> 'static inline' with an empty function body in the header file.
+>>
+>> Fix this sparse warnings:
+>>   drivers/net/sfc/mtd.c:204:6: warning: symbol 'efx_mtd_remove' was not declared. Should it be static?
+>>   drivers/net/sfc/mtd.c:221:6: warning: symbol 'efx_mtd_rename' was not declared. Should it be static?
+>>   drivers/net/sfc/mtd.c:230:5: warning: symbol 'efx_mtd_probe' was not declared. Should it be static?
+>>
+>> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+>> ---
+>>  drivers/net/sfc/mtd.c |    3 +++
+>>  1 files changed, 3 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/drivers/net/sfc/mtd.c b/drivers/net/sfc/mtd.c
+>> index 665cafb..94c9ed8 100644
+>> --- a/drivers/net/sfc/mtd.c
+>> +++ b/drivers/net/sfc/mtd.c
+>> @@ -15,6 +15,7 @@
+>>  #define EFX_DRIVER_NAME "sfc_mtd"
+>>  #include "net_driver.h"
+>>  #include "spi.h"
+>> +#include "efx.h"
+>>
+>>  #define EFX_SPI_VERIFY_BUF_LEN 16
+>>
+>
+> OK, but...
+>
+>> @@ -201,6 +202,7 @@ static void efx_mtd_sync(struct mtd_info *mtd)
+>>       return;
+>>  }
+>>
+>> +#ifdef CONFIG_SFC_MTD
+>>  void efx_mtd_remove(struct efx_nic *efx)
+>>  {
+>>       if (efx->spi_flash && efx->spi_flash->mtd) {
+>> @@ -266,3 +268,4 @@ int efx_mtd_probe(struct efx_nic *efx)
+>>
+>>       return 0;
+>>  }
+>> +#endif /* CONFIG_SFC_MTD */
+>
+> This is wrong.  The entire file is conditional on CONFIG_SFC_MTD.
 
-Ok, the ksoftirqd/1 stats contain a smoking gun:
+Even better than. It's actually not wrong, just done twice, so we can
+omit it, thank you Ben. I'll send an update.
 
-ksoftirqd/1 (2280, #threads: 1)
----------------------------------------------------------
-se.exec_start                      :        152642.614531
-se.vruntime                        :         57051.648140
-se.sum_exec_runtime                :          5741.506722
-se.avg_overlap                     :             0.000000
-se.avg_wakeup                      :            10.000000
-se.wait_start                      :             0.000000
-se.sleep_start                     :        152642.623948
-se.block_start                     :             0.000000
-se.sleep_max                       :         22662.455146
-se.block_max                       :          4096.496408
-se.exec_max                        :             0.016849
-se.slice_max                       :             0.000000
-se.wait_max                        :             0.053862
-se.wait_sum                        :          7899.023463
-se.wait_count                      :              4235574
-sched_info.bkl_count               :                    0
-se.nr_migrations                   :                    1
-se.nr_migrations_cold              :                    0
-se.nr_failed_migrations_affine     :                   32
-se.nr_failed_migrations_running    :                   47
-se.nr_failed_migrations_hot        :                   23
-se.nr_forced_migrations            :                    0
-se.nr_forced2_migrations           :                    5
-se.nr_wakeups                      :              4235539
-se.nr_wakeups_sync                 :                    0
-se.nr_wakeups_migrate              :                   11
-se.nr_wakeups_local                :              4235506
-se.nr_wakeups_remote               :                   34
-se.nr_wakeups_affine               :                    4
-se.nr_wakeups_affine_attempts      :                   44
-se.nr_wakeups_passive              :                    7
-se.nr_wakeups_idle                 :                    0
-avg_atom                           :             0.001355
-avg_per_cpu                        :          5741.514564
-nr_switches                        :              4235404
-nr_voluntary_switches              :              4235389
-nr_involuntary_switches            :                   18
-se.load.weight                     :                 3121
-policy                             :                    0
-prio                               :                  115
-clock-delta                        :                  295
-
-these bits:
-
- se.sum_exec_runtime                :          5741.506722
- nr_switches                        :              4235404
- nr_voluntary_switches              :              4235389
- nr_involuntary_switches            :                   18
-
-mean that ksoftirqd _really_ ran more than 4 million times since bootup 
-- that is _highly_ anomalous. It means that scheduler clock is fine, and 
-that your box is really running a lot of softirq workload.
-
-Here is how it should look like normally. A 16-way testbox with almost 
-an hour of uptime, running high load with a lot of networking. Its CPU#0 
-ksoftirqd [the busiest one] has these stats:
-
- se.sum_exec_runtime                :             0.523552
- nr_switches                        :                   42
- nr_voluntary_switches              :                   42
- nr_involuntary_switches            :                    0
-
-it ran only 42 times. That is a normal ksoftirqd pattern.
-
-I'll check your traces as the next step.
-
-	Ingo
+Hannes
