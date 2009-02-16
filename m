@@ -1,54 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751509AbZBPPuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbZBPPys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751509AbZBPPuo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 10:50:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbZBPPud
+	id S1752814AbZBPPys (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 10:54:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbZBPPyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 10:50:33 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52967 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752722AbZBPPub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 10:50:31 -0500
-Date: Mon, 16 Feb 2009 16:50:23 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Manish Katiyar <mkatiyar@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] Remove errors caught by checkpatch.pl in
-	kernel/kallsyms.c
-Message-ID: <20090216155023.GA4422@elte.hu>
-References: <ea11fea30902151034s5444efabw455c1dac1b875086@mail.gmail.com> <20090215184752.GA4970@uranus.ravnborg.org> <4999650C.6030700@s5r6.in-berlin.de> <20090216132822.GC17996@elte.hu> <4999717F.7090205@s5r6.in-berlin.de> <20090216141917.GA8981@elte.hu> <499984C1.6020004@s5r6.in-berlin.de>
+	Mon, 16 Feb 2009 10:54:38 -0500
+Received: from mx3.schottelius.org ([77.109.138.221]:51314 "EHLO
+	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751052AbZBPPyh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 10:54:37 -0500
+Date: Mon, 16 Feb 2009 16:54:34 +0100
+From: Nico Schottelius <nico-linux-20090213@schottelius.org>
+To: Len Brown <lenb@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Nico Schottelius <nico-linux-20090213@schottelius.org>,
+       LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg@redhat.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org
+Subject: Re: X200: Brightness broken since 2.6.29-rc4-58-g4c098bc
+Message-ID: <20090216155434.GA5503@denkbrett.schottelius.org>
+Mail-Followup-To: Nico Schottelius <nico-linux-20090213@schottelius.org>,
+	Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Matthew Garrett <mjg@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-acpi@vger.kernel.org
+References: <20090213093354.GA10175@denkbrett.schottelius.org> <20090213094200.GC17774@elte.hu> <alpine.LFD.2.00.0902131302240.3671@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="+HP7ph2BbKc20aGI"
 Content-Disposition: inline
-In-Reply-To: <499984C1.6020004@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <alpine.LFD.2.00.0902131302240.3671@localhost.localdomain>
+User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
+X-Unix-Info: http://unix.schottelius.org/
+X-Netzseite: http://nico.schottelius.org/
+X-System-Info: ikn (Linux 2.6.29-rc3-ikn-00432-g9b8d5a1 x86_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+--+HP7ph2BbKc20aGI
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Ingo Molnar wrote:
-> > We routinely mention Sparse, lockdep, Coverity, Coccinelle, kmemleak, 
-> > ftrace, kmemcheck and other tools as well when it motives to fix a bug 
-> > or uncleanliness. [...] It is absolutely fine to
-> > mention checkpatch when it catches uncleanliness in code that already 
-> > got merged. I dont understand your point.
-> 
-> I wrote "don't mention checkpatch" but I really meant "think about what
-> the effect of the patch is and describe this".
+Len Brown [Fri, Feb 13, 2009 at 01:05:28PM -0500]:
+> Nico,
+> there are not a lot of changes between rc4 and the breakage,
+> (and none of them jump out at me) can you git-bisect?
 
-Are you arguing that in all those other cases the tools should not be 
-mentioned either? I dont think that position is tenable.
+The result of git-bisecting and some reboots:
 
-	Ingo
+ikn% git bisect start 4c098bc d5b5623
+[compile....reboot...]
+[16:50] ikn:linux-2.6% git describe=20
+v2.6.29-rc3-432-g9b8d5a1
+[16:50] ikn:linux-2.6% git bisect good
+e806b4957412bf472d826bd8cc571da041248799 is first bad commit
+commit e806b4957412bf472d826bd8cc571da041248799
+Author: Eric Anholt <eric@anholt.net>
+Date:   Thu Jan 22 09:56:58 2009 -0800
+
+    drm/i915: Suppress GEM teardown on X Server exit in KMS mode.
+   =20
+    Fixes hangs when starting X for the second time.
+   =20
+    Signed-off-by: Eric Anholt <eric@anholt.net>
+    Signed-off-by: Dave Airlie <airlied@linux.ie>
+
+:040000 040000 5405babd9cab9d53791a0b58b5ad7f823f76ec9c 70f9a79c6b3072ea077=
+7d6ab307330da37af076c M
+        drivers
+
+I saved almost all dmesg outputs, if you need some ;-)
+
+Sincerly,
+
+Nico
+
+--=20
+Think about Free and Open Source Software (FOSS).
+http://nico.schottelius.org/documentations/foss/the-term-foss/
+
+PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
+
+--+HP7ph2BbKc20aGI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmZjDoACgkQuL75KpiFGIwFewCg0Sp+PqzXnzeFHiZCLLFnVhuQ
+TWcAn2hrokbUYTT236fArL/l9OQUWv1v
+=q+rY
+-----END PGP SIGNATURE-----
+
+--+HP7ph2BbKc20aGI--
