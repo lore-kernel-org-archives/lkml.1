@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757648AbZBPMtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757429AbZBPMvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757648AbZBPMtv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 07:49:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757395AbZBPMtk
+	id S1757429AbZBPMvr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 07:51:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbZBPMvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 07:49:40 -0500
-Received: from ti-out-0910.google.com ([209.85.142.185]:53520 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754783AbZBPMtj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 07:49:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=tsJs4vpHPnooPmbPKL3ur/LNW+tE18deL8Qdih/GjjqARC0wE872tiXkYfLumC6NjH
-         R7bPPkc1aUNN8g5VId4WbQA3dfu3ymgy4+aubtqbjr122gKCAgkGDsp27oIHTd7XZsUl
-         +G02XBcMabMXbVRlbsfprpSyliDe1WVNyXaGU=
-Date: Mon, 16 Feb 2009 20:49:39 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Jiri Kosina <jkosina@suse.cz>
+	Mon, 16 Feb 2009 07:51:38 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:46457 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754635AbZBPMvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 07:51:38 -0500
+Date: Mon, 16 Feb 2009 13:51:35 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
 Cc: Luca Bigliardi <shammash@artha.org>, trivial@kernel.org,
        linux-kernel@vger.kernel.org, jdike@addtoit.com,
        Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [PATCH] Fix vde network backend in user mode linux
-Message-ID: <20090216124939.GC23665@hack.private>
-References: <20090202172822.GA2801@pintsize> <alpine.LNX.1.10.0902161334250.18110@jikos.suse.cz>
+In-Reply-To: <20090216124939.GC23665@hack.private>
+Message-ID: <alpine.LNX.1.10.0902161350350.18110@jikos.suse.cz>
+References: <20090202172822.GA2801@pintsize> <alpine.LNX.1.10.0902161334250.18110@jikos.suse.cz> <20090216124939.GC23665@hack.private>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0902161334250.18110@jikos.suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: MULTIPART/MIXED; BOUNDARY="336216065-1762519444-1234788695=:18110"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 16, 2009 at 01:38:46PM +0100, Jiri Kosina wrote:
->
->[ doesn't seem to be picked up by anyone into current -next nor -mmotm, 
->  but isn't appropriate for trivial; adding akpm to cc ]
->
->On Mon, 2 Feb 2009, Luca Bigliardi wrote:
->
->> * Replace kmalloc() with uml_kmalloc()
->>   (fix build failure)
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
+--336216065-1762519444-1234788695=:18110
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 
-Weird... I sent a patch for this several months ago! I thought
-Jeff had already taken it... No?
+On Mon, 16 Feb 2009, Américo Wang wrote:
 
+> >[ doesn't seem to be picked up by anyone into current -next nor -mmotm, 
+> >  but isn't appropriate for trivial; adding akpm to cc ]
+> >> * Replace kmalloc() with uml_kmalloc()
+> >>   (fix build failure)
+> Weird... I sent a patch for this several months ago! I thought Jeff had 
+> already taken it... No?
 
->> * Remove unnecessary UM_KERN_INFO in printk()
->>   (don't display '<6>' while printing info)
+I am not sure whether this has been fixed in another way, but current 
+linux-next still has
 
-But why only this one, not other UM_KERN_INFO in the same file?
+	void vde_init_libstuff(struct vde_data *vpri, struct vde_init *init)
+	{
+	        struct vde_open_args *args;
+	
+	        vpri->args = kmalloc(sizeof(struct vde_open_args), UM_GFP_KERNEL);
 
+so the patch hasn't been at least applied in the form it has been 
+submitted.
 
 -- 
-"Against stupidity, the gods themselves, contend in vain."
-
+Jiri Kosina
+SUSE Labs
+--336216065-1762519444-1234788695=:18110--
