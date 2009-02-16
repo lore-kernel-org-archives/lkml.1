@@ -1,82 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756629AbZBPDu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbZBPEPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756629AbZBPDu3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 22:50:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755980AbZBPDuT
+	id S1756652AbZBPEPb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 23:15:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbZBPEPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 22:50:19 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:65185 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755965AbZBPDuS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 22:50:18 -0500
-Message-ID: <4998E276.9010009@cn.fujitsu.com>
-Date: Mon, 16 Feb 2009 11:50:14 +0800
-From: Wang Chen <wangchen@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Sun, 15 Feb 2009 23:15:22 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:50358 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755948AbZBPEPW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 23:15:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=ObOWqe7xmLBln8yd/AtZk/HIZ4py/kJYjZL0wx0Jy2Eu5m9KT/CXqafvIg8OsnaF2N
+         yq3TENJUo9GHGQQ5j38I4TkzA17ozu1GTD4l3s2umrzP4UWrmmM3+h7kVYgvz21DVwxo
+         A1piGQu9Cuz74gNFR70I/3HNDp2O61ki9PgW0=
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Eric Anholt <eric@anholt.net>, Dave Airlie <airlied@redhat.com>
-Subject: Re: [Bug #12419] possible circular locking dependency on i915 dma
-References: <juADNmcceYF.A.mdD.Mr0lJB@chimera> <rjPbZ5GRJPO.A.avG.Xt0lJB@chimera>
-In-Reply-To: <rjPbZ5GRJPO.A.avG.Xt0lJB@chimera>
-Content-Type: text/plain; charset=UTF-8
+Date: Sun, 15 Feb 2009 20:15:20 -0800
+Message-ID: <3d7ff8e60902152015i1245f7byab20b9eef9425a84@mail.gmail.com>
+Subject: [PATCH] fs/bio: bio_alloc_bioset: pass right object ptr to 
+	mempool_free
+From: Subhash Peddamallu <subhash.peddamallu@gmail.com>
+To: axboe@kernel.dk
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki said the following on 2009-2-15 4:38:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.28.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12419
-> Subject		: possible circular locking dependency on i915 dma
-> Submitter	: Wang Chen <wangchen@cn.fujitsu.com>
-> Date		: 2009-01-08 14:11 (38 days old)
-> References	: http://marc.info/?l=linux-kernel&m=123142399720125&w=4
-> 
-> 
+When freeing from bio pool use right ptr to account for bs->front_pad,
+instead of bio ptr,
 
-Yes. It's still there in mainline.
-I think the commit 546b0974c39657017407c86fe79811100b60700d
-"i915: Use struct_mutex to protect ring in GEM mode." brought this regression.
+Signed-off-by: Subhash Peddamallu <subhash.peddamallu@gmail.com>
+---
+ fs/bio.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-The lockdep problem is as following:
-thread-1
-i915_cmdbuffer()
-      |
-      ---> lock(drm_device->struct_mutex)
-                   |
-		   V
-	i915_dispatch_cmdbuffer()
-		   |
-		   ---->i915_emit_box()
-                             |
-                             ----->copy_from_user()
-					|
-					-----might_fault()
-						|
-						--->lock(mm->mmap_sem)
+diff --git a/fs/bio.c b/fs/bio.c
+index 062299a..72ab251 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -302,9 +302,10 @@ void bio_init(struct bio *bio)
+ struct bio *bio_alloc_bioset(gfp_t gfp_mask, int nr_iovecs, struct bio_set *bs)
+ {
+ 	struct bio *bio = NULL;
++	void *p;
 
-thread-2
-dup_mm()
-   |
-   --->lock(mm->mmap_sem)
-           |
-	   V
-	drm_vm_open()
-	   |
-	   -------> lock(drm_device->struct_mutex)
+ 	if (bs) {
+-		void *p = mempool_alloc(bs->bio_pool, gfp_mask);
++		p = mempool_alloc(bs->bio_pool, gfp_mask);
 
-The different order to lock "mmap_sem" and "drm_dev->struct_mutex" introduces the problem.
-But it seems no way to reverse the lock order in i915.
-So how about refine the lock granularity of drm_dev->struct_mutex and exclude the mmap_sem
-lock/unlock out of the drm_dev->struct_mutex lock/unlock range?
-
+ 		if (p)
+ 			bio = p + bs->front_pad;
+@@ -329,7 +330,7 @@ struct bio *bio_alloc_bioset(gfp_t gfp_mask, int
+nr_iovecs, struct bio_set *bs)
+ 			}
+ 			if (unlikely(!bvl)) {
+ 				if (bs)
+-					mempool_free(bio, bs->bio_pool);
++					mempool_free(p, bs->bio_pool);
+ 				else
+ 					kfree(bio);
+ 				bio = NULL;
+-- 
+1.5.6.3
