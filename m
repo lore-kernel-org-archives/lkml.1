@@ -1,48 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbZBPTBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753715AbZBPTCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753863AbZBPTBW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 14:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbZBPTBL
+	id S1753715AbZBPTCV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 14:02:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbZBPTCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 14:01:11 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:44279 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751497AbZBPTBK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 14:01:10 -0500
-Date: Mon, 16 Feb 2009 19:01:00 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Frans Pop <elendil@planet.nl>
-Cc: trenn@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: cpuinfo shows wrong MHz value
-Message-ID: <20090216190100.GA10627@srcf.ucam.org>
-References: <200902142217.51655.jplatte@naasa.net> <loom.20090216T141158-818@post.gmane.org> <20090216165008.GA8249@srcf.ucam.org> <200902161913.16021.trenn@suse.de> <200902161913.16021.trenn@suse.de> <20090216181936.GA9831@srcf.ucam.org> <200902161952.38122.elendil@planet.nl>
+	Mon, 16 Feb 2009 14:02:07 -0500
+Received: from kroah.org ([198.145.64.141]:44743 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751418AbZBPTCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 14:02:05 -0500
+Date: Mon, 16 Feb 2009 10:59:14 -0800
+From: Greg KH <greg@kroah.com>
+To: Mike Murphy <mamurph@cs.clemson.edu>
+Cc: Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] input: xpad.c - Xbox 360 wireless and sysfs support
+Message-ID: <20090216185914.GA6239@kroah.com>
+References: <5aa163d00902142008g138826br80d3ea989e7af691@mail.gmail.com> <200902160931.34771.oliver@neukum.org> <5aa163d00902160522r3a22412je3f5202076f57a0a@mail.gmail.com> <20090216161331.GB5008@kroah.com> <5aa163d00902161009l15dae120le96436d40f998d33@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902161952.38122.elendil@planet.nl>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <5aa163d00902161009l15dae120le96436d40f998d33@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 16, 2009 at 07:52:37PM +0100, Frans Pop wrote:
-> Matthew Garrett wrote:
-> > On Mon, Feb 16, 2009 at 07:13:15PM +0100, Thomas Renninger wrote:
-> >> AFAIK p4-clockmode is still not synchronized with ACPI throttling?
-> > 
-> > It ought to work fine with any systems using MSR-based throttling.
+On Mon, Feb 16, 2009 at 01:09:00PM -0500, Mike Murphy wrote:
+> On Mon, Feb 16, 2009 at 11:13 AM, Greg KH <greg@kroah.com> wrote:
+> ...
+> >
+> > The bigger question is why are you using a struct kobject in the first
+> > place?  As you are a device, just use a struct device.  What are you
+> > trying to do in sysfs here to make you want to use a "raw" kobject in a
+> > driver?
+> >
+> > thanks,
+> >
+> > greg k-h
+> >
 > 
-> So what's your take on this particular bug report then Matthew? Is this a 
-> regression that should be tracked down and fixed, or is this a case where 
-> the user should just not be using the module?
+> The purpose of the struct xpad_data (which contains the struct
+> kobject) is to expose parameters that can be read and/or tweaked at
+> runtime. At the moment, the adjustable parameters are the size of the
+> dead zone around the center of the stick, and the choice of whether to
+> map to a square axis. Read-only data include a unique identifier for
+> each pad (wireless) and an indication as to whether the wireless pad
+> is actually connected.
 
-It's a bug and it should be fixed. My recollection is that we've hit 
-this kind of thing before - the frequency calculation code is awkward to 
-get right on this hardware.
+Then hang those parameters off the struct device you already have.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> The idea behind this interface is to enable a future userspace
+> application, likely using HAL and D-BUS, to receive events whenever a
+> wireless pad connects, and to identify the particular pad in question
+> (specifically, the unique ID of the pad). The user could then, for
+> example, have a different dead zone size for each pad, based upon the
+> actual manufacturing variations in the sticks on that pad (some appear
+> more precise at centering than others). Ideally, this functionality
+> could be designed in a "common" way so that the userspace code could
+> eventually work with other, non-xpad gaming devices.
+
+Have you documented them in Documentation/ABI?
+
+> I didn't use a struct device because of the existing struct usb_xpad
+> that was created on a per-gamepad basis (not necessarily per device,
+> as the wireless 360 adapter is one physical device but exposes 4
+> gamepads by exposing 4 logical devices [and then each gamepad, in
+> turn, is technically a USB hub that can have other stuff
+> attached...]).
+
+Put it on the logical device, as given to you.
+
+> I tried not to break existing functionality.  Additionally, struct
+> usb_xpad contains two device pointers: one to the actual USB device,
+> and one to an input device (see source of the in-tree xpad.c). So I
+> followed your kobject.txt documentation and samples to create a new
+> object whose sole purpose in life is to expose the sysfs interface,
+> without interfering with the existing device entries in the driver.
+> I'm not sure I see a clean way to use a single struct device here....
+
+Put it on the input device, which is what is the per-device thing.  It's
+much simpler than creating a new struct kobject.  You can even create a
+subdirectory for your attributes if you use an attribute group (which
+you should be doing anyway, it's much simpler that way.)
+
+And document the attributes please.
+
+thanks,
+
+greg k-h
