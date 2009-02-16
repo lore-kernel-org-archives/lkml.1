@@ -1,62 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752035AbZBPPUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752791AbZBPPVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752035AbZBPPUd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 10:20:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750960AbZBPPUW
+	id S1752791AbZBPPVM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 10:21:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbZBPPUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 10:20:22 -0500
-Received: from thunk.org ([69.25.196.29]:45641 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750814AbZBPPUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 10:20:21 -0500
-Date: Mon, 16 Feb 2009 10:01:56 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Andres Freund <andres@anarazel.de>
-Cc: adilger@sun.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, Jonathan Bastien-Filiatrault <joe@x2a.org>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: EXT4 ENOSPC Bug
-Message-ID: <20090216150156.GD22619@mini-me.lan>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andres Freund <andres@anarazel.de>, adilger@sun.com,
-	LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
-	Jonathan Bastien-Filiatrault <joe@x2a.org>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-References: <200811291418.24672.andres@anarazel.de> <200812100108.04163.andres@anarazel.de> <49994FEF.2020908@anarazel.de>
+	Mon, 16 Feb 2009 10:20:55 -0500
+Received: from smtp-out002.kontent.com ([81.88.40.216]:41249 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750913AbZBPPUy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 10:20:54 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Mike Murphy <mamurph@cs.clemson.edu>
+Subject: Re: [PATCH] input: xpad.c - Xbox 360 wireless and sysfs support
+Date: Mon, 16 Feb 2009 16:21:27 +0100
+User-Agent: KMail/1.9.10
+Cc: linux-usb@vger.kernel.org, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <5aa163d00902142008g138826br80d3ea989e7af691@mail.gmail.com> <200902160931.34771.oliver@neukum.org> <5aa163d00902160522r3a22412je3f5202076f57a0a@mail.gmail.com>
+In-Reply-To: <5aa163d00902160522r3a22412je3f5202076f57a0a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49994FEF.2020908@anarazel.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Message-Id: <200902161621.28142.oliver@neukum.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 16, 2009 at 12:37:19PM +0100, Andres Freund wrote:
-> Hi All,
->
-> "Luckily", to prove that I am not completly mad I recently found this  
-> problem again. On a more recent kernel:
-> 2.6.29-rc3-andres-00498-g68e80d5
-> (upstream 2.6.29 + Theodore's ext4 debug patches)
->
-> Again I got:
-> open("/home/andres/tt", O_WRONLY|O_CREAT|O_NOCTTY|O_NONBLOCK, 0666) = -1  
-> ENOSPC (No space left on device)
+Am Monday 16 February 2009 14:22:05 schrieb Mike Murphy:
+> >
+> > 3. Possible memory leak in error case:
+> >
+> > +static struct xpad_data *xpad_create_data(const char *name, struct kobject *parent) {
+> > +       struct xpad_data *data = NULL;
+> > +       int check;
+> > +
+> > +       data = kzalloc(sizeof(*data), GFP_KERNEL);
+> > +       if (!data)
+> > +               return NULL;
+> > +
+> > +       check = kobject_init_and_add(&data->kobj, &xpad_ktype, parent, "%s", name);
+> > +       if (check) {
+> > +               kobject_put(&data->kobj);
+> > +               return NULL;
+> > +       }
+> >
+> 
+> My understanding from Documentation/kobject.txt is that the
+> kobject_put in the 2nd error check will set the kobj's reference
+> counter to zero, eventually causing the kobject core to call my
+> cleanup function for the ktype (xpad_release) and free the memory. Is
+> this not correct? I find the sysfs docs to be fairly thin... and sysfs
 
-So /home/andres/tt does not exist, correct?  Does this happen for any
-attempt to create a new zero-length file using the "touch" command?
-(Even in other directories)   Can you append to a file using "cat
-/etc/mailcap >> some_existing_file"?
+I don't know. I also find that documentation thin.
+Please add that the memory is freed elsewhere.
 
-If it is "yes" to the first two questions, and "no" the third, it
-looks like this might be an inode allocation failure as opposed to a
-block allocation failure.
+> seems to be substantially more complex than procfs or ioctls would be
+> for the same purpose. However, everything I read suggested that sysfs
+> is the "best" way to go in a modern kernel.
+> 
+> > 4. Why the cpup variety?
+> >
+> > +       coords[0] = (__s16) le16_to_cpup((__le16 *)(data + x_offset));
+> >
+> 
+> The cpup cast is in the original stable driver
+> (drivers/input/joystick/xpad.c), and I didn't question it.
+> 
+> > 5. What happens if this work is already scheduled?
+> >
+> >        if (data[0] & 0x08) {
+> > +               padnum = xpad->controller_data->controller_number;
+> >                if (data[1] & 0x80) {
+> > -                       xpad->pad_present = 1;
+> > -                       usb_submit_urb(xpad->bulk_out, GFP_ATOMIC);
+> > -               } else
+> > -                       xpad->pad_present = 0;
+> > +                       printk(KERN_INFO "Wireless Xbox 360 pad #%d present\n", padnum);
+> > +                       xpad->controller_data->pad_present = 1;
+> > +
+> > +                       INIT_WORK(&xpad->work, &xpad_work_controller);
+> > +                       schedule_work(&xpad->work);
+> >
 
-Once this triggers, does it reliably continue to fail if you reboot?
-Or does it go away when you reboot?
+> 1. The user has to remove the battery pack from the controller,
+> reinstall the battery pack, and re-activate the controller by pushing
+> and holding the center button for at least 1 second.
+> 
+> 2. The kernel has to be busy enough not to have completed the work in
+> the ~2 seconds a human could have done (1).
 
-					- Ted
+Also what happens if the work is scheduled  and you unplug?
+
+> I need a bit of guidance from someone who has a better understanding
+> of the work queues to have a good solution to this one. Is switching
+> to PREPARE_WORK sufficient (with an INIT_WORK somewhere in
+> xpad_probe)? Or is a more involved solution needed?
+> 
+> > 6. No GFP_ATOMIC. If you can take a mutex you can sleep.
+> > +               usb_submit_urb(xpad->irq_out, GFP_ATOMIC);
+> >
+> 
+> Per the "Linux Device Drivers" book (O'Reilly, 3rd ed), the claim is
+> made that submissions while holding a mutex should be GFP_ATOMIC. My
+
+That is not correct. It is true while holding a spinlock, not a mutex.
+
+> tests seemed to verify this claim... as sending LED commands
+> GFP_KERNEL while holding the mutex resulted in BUGs (scheduling while
+> atomic) in dmesg. Switching those GFP_KERNELs to GFP_ATOMICs
+> eliminated that particular BUG.
+
+Please post that BUG.
+
+	Regards
+		Oliver
