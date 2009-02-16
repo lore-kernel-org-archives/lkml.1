@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752680AbZBPSrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752872AbZBPSwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752680AbZBPSrb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 13:47:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750783AbZBPSrW
+	id S1752872AbZBPSwt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 13:52:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750783AbZBPSwl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 13:47:22 -0500
-Received: from mx1.suse.de ([195.135.220.2]:52831 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750778AbZBPSrV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 13:47:21 -0500
-From: Thomas Renninger <trenn@suse.de>
-Organization: SUSE Products GmbH
+	Mon, 16 Feb 2009 13:52:41 -0500
+Received: from cpsmtpo-eml01.KPNXCHANGE.COM ([213.75.38.150]:40175 "EHLO
+	cpsmtpo-eml01.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750778AbZBPSwk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 13:52:40 -0500
+From: Frans Pop <elendil@planet.nl>
 To: Matthew Garrett <mjg59@srcf.ucam.org>
 Subject: Re: cpuinfo shows wrong MHz value
-Date: Mon, 16 Feb 2009 19:47:19 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.27.15-SLE11_BRANCH_20090211224354_e2f9ae3b-default; KDE/4.1.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <200902142217.51655.jplatte@naasa.net> <200902161913.16021.trenn@suse.de> <20090216181936.GA9831@srcf.ucam.org>
-In-Reply-To: <20090216181936.GA9831@srcf.ucam.org>
+Date: Mon, 16 Feb 2009 19:52:37 +0100
+User-Agent: KMail/1.9.9
+Cc: trenn@suse.de, linux-kernel@vger.kernel.org
+References: <200902142217.51655.jplatte@naasa.net> <loom.20090216T141158-818@post.gmane.org> <20090216165008.GA8249@srcf.ucam.org> <200902161913.16021.trenn@suse.de> <200902161913.16021.trenn@suse.de> <20090216181936.GA9831@srcf.ucam.org>
+In-reply-To: <20090216181936.GA9831@srcf.ucam.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200902161947.19374.trenn@suse.de>
+Message-Id: <200902161952.38122.elendil@planet.nl>
+X-OriginalArrivalTime: 16 Feb 2009 18:52:38.0577 (UTC) FILETIME=[BD1FAA10:01C99067]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 16 February 2009 19:19:36 Matthew Garrett wrote:
+Matthew Garrett wrote:
 > On Mon, Feb 16, 2009 at 07:13:15PM +0100, Thomas Renninger wrote:
-> > On Monday 16 February 2009 17:50:08 Matthew Garrett wrote:
-> > > On Mon, Feb 16, 2009 at 02:19:50PM +0000, Thomas Renninger wrote:
-> > > 
-> > > > There should be a message when this driver is loaded like:
-> > > > "This driver is broken. Don't use it, don't complain."
-> > > 
-> > > Please don't. It's perfectly valid (if dumb) for machines to
-> > > depend on the CPU for passive cooling even if they don't expose any P
-> > > or T states.
-> > No it's not valid. If the BIOS does not export these, it could be for
-> > a reason.
-> 
-> We have to deal with insane BIOSes on a regular basis.
-In this case I will agree with BIOS developers that they have to deal
-with insane OS implementations...
-
-> > > In that case p4-clockmod is the only code that can manage it. The 
-> > > removal of the user-visible cpufreq interface should be a strong
-> > > enough hint that it's not intended for speed control.
-> > AFAIK p4-clockmode is still not synchronized with ACPI throttling?
+>> AFAIK p4-clockmode is still not synchronized with ACPI throttling?
 > 
 > It ought to work fine with any systems using MSR-based throttling.
 
-This may come from the fact that throttling via ACPI would only kick in
-in emergency temperature case. Exactly then, when throttling should be
-used, it won't work. I tried it once and I could easily stall the system
-by throttling via ACPI and p4_clockmod.
+So what's your take on this particular bug report then Matthew? Is this a 
+regression that should be tracked down and fixed, or is this a case where 
+the user should just not be using the module?
 
-   Thomas
+Having a module that loads happily but completely screws up the reported 
+cpu frequency in /proc/cpuinfo seems suboptimal.
