@@ -1,191 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756736AbZBPETW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756697AbZBPEa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756736AbZBPETW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 23:19:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756061AbZBPETH
+	id S1756697AbZBPEa2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 23:30:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbZBPEaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 23:19:07 -0500
-Received: from sh.osrg.net ([192.16.179.4]:57204 "EHLO sh.osrg.net"
+	Sun, 15 Feb 2009 23:30:19 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:35290 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756060AbZBPETG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 23:19:06 -0500
-Date: Mon, 16 Feb 2009 13:18:16 +0900
-To: bharrosh@panasas.com
-Cc: avishay@gmail.com, jeff@garzik.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, osd-dev@open-osd.org,
-       linux-kernel@vger.kernel.org, James.Bottomley@HansenPartnership.com,
-       jens.axboe@oracle.com, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 1/8] exofs: Kbuild, Headers and osd utils
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1234185129-31858-1-git-send-email-bharrosh@panasas.com>
-References: <49902A9E.3070002@panasas.com>
-	<1234185129-31858-1-git-send-email-bharrosh@panasas.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090216131806X.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 16 Feb 2009 13:18:20 +0900 (JST)
+	id S1755948AbZBPEaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 23:30:18 -0500
+Message-ID: <4998EBB7.9000203@redhat.com>
+Date: Sun, 15 Feb 2009 22:29:43 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
+MIME-Version: 1.0
+To: Theodore Tso <tytso@mit.edu>,
+       =?ISO-8859-1?Q?Fernando_Luis_V=E1zq?= =?ISO-8859-1?Q?uez_Cao?= 
+	<fernando@oss.ntt.co.jp>,
+       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
+       Eric Sandeen <sandeen@redhat.com>, Jan Kara <jack@suse.cz>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, fernando@kic.ac.jp,
+       Ric Wheeler <rwheeler@redhat.com>
+Subject: Re: vfs: Add MS_FLUSHONFSYNC mount flag
+References: <1232186449.4831.29.camel@sebastian.kern.oss.ntt.co.jp> <20090119120349.GA10193@duck.suse.cz> <1233135913.5399.57.camel@sebastian.kern.oss.ntt.co.jp> <20090128095518.GA16554@duck.suse.cz> <1234434811.15270.7.camel@sebastian.kern.oss.ntt.co.jp> <1234434970.15433.4.camel@sebastian.kern.oss.ntt.co.jp> <499458C1.90105@redhat.com> <49945C90.3010104@garzik.org> <20090214153626.GA3973@infradead.org> <1234682606.19783.222.camel@sebastian.kern.oss.ntt.co.jp> <20090215225427.GH10706@mini-me.lan>
+In-Reply-To: <20090215225427.GH10706@mini-me.lan>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon,  9 Feb 2009 15:12:09 +0200
-Boaz Harrosh <bharrosh@panasas.com> wrote:
-
-> This patch includes osd infrastructure that will be used later by
-> the file system.
+Theodore Tso wrote:
+> On Sun, Feb 15, 2009 at 04:23:26PM +0900, Fernando Luis Vázquez Cao wrote:
+>> You mentioned "we should integrate this with the barrier settings". Do
+>> you imply we should make it a per-device tunable too? Should we keep the
+>> barrier-related mount options some filesystems provide?
+>>
 > 
-> Also the declarations of constants, on disk structures,
-> and prototypes.
+> Making barriers to be a per-device tunable makes sense.  The only
+> reason why we kept it as a mount option in ext4 is for benchmarking
+> purposes, and in ext3, because the filesystem predated the barrier
+> code, and there was a desire to be able to benchmark with and without
+> the old behavior --- and because akpm is still worried about the
+> performance hit of the barrier code, so he's been resistant about
+> change the default for ext3.
 > 
-> And the Kbuild+Kconfig files needed to build the exofs module.
-> 
-> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
-> ---
->  fs/exofs/Kbuild   |   30 +++++++
->  fs/exofs/Kconfig  |   13 +++
->  fs/exofs/common.h |  181 +++++++++++++++++++++++++++++++++++++++++
->  fs/exofs/exofs.h  |  139 ++++++++++++++++++++++++++++++++
->  fs/exofs/osd.c    |  230 +++++++++++++++++++++++++++++++++++++++++++++++++++++
->  5 files changed, 593 insertions(+), 0 deletions(-)
->  create mode 100644 fs/exofs/Kbuild
->  create mode 100644 fs/exofs/Kconfig
->  create mode 100644 fs/exofs/common.h
->  create mode 100644 fs/exofs/exofs.h
->  create mode 100644 fs/exofs/osd.c
+>        	   				- Ted
 
-> +static void _osd_read(struct osd_request *or,
-> +	const struct osd_obj_id *obj, uint64_t offset, struct bio *bio)
-> +{
-> +	osd_req_read(or, obj, bio, offset);
-> +	EXOFS_DBGMSG("osd_req_read(p=%llX, ob=%llX, l=%llu, of=%llu)\n",
-> +		_LLU(obj->partition), _LLU(obj->id), _LLU(bio->bi_size),
-> +		_LLU(offset));
-> +}
-> +
-> +#ifdef __KERNEL__
+I agree that making barriers a per-device tunable probably does make the
+most sense.  And talking w/ Dave, he points out that if it were this
+way, the fs could just issue barrier IOs at every appropriate place, and
+the bdev would just ignore them if they got tuned off, instead of the
+current fs world of trying a barrier, always watching out for
+-EOPNOTSUPP coming back up, then disabling barriers, etc.
 
-Hmm?
-
-> +static struct bio *_bio_map_pages(struct request_queue *req_q,
-> +				  struct page **pages, unsigned page_count,
-> +				  size_t length, gfp_t gfp_mask)
-> +{
-> +	struct bio *bio;
-> +	int i;
-> +
-> +	bio = bio_alloc(gfp_mask, page_count);
-> +	if (!bio) {
-> +		EXOFS_DBGMSG("Failed to bio_alloc page_count=%d\n", page_count);
-> +		return NULL;
-> +	}
-> +
-> +	for (i = 0; i < page_count && length; i++) {
-> +		size_t use_len = min(length, PAGE_SIZE);
-> +
-> +		if (use_len !=
-> +		    bio_add_pc_page(req_q, bio, pages[i], use_len, 0)) {
-> +			EXOFS_ERR("Failed bio_add_pc_page req_q=%p pages[i]=%p "
-> +				  "use_len=%Zd page_count=%d length=%Zd\n",
-> +				  req_q, pages[i], use_len, page_count, length);
-> +			bio_put(bio);
-> +			return NULL;
-> +		}
-> +
-> +		length -= use_len;
-> +	}
-> +
-> +	WARN_ON(length);
-> +	return bio;
-> +}
-
-1) exofs builds bios by hand.
-2) exofs passes bio to OSD SCSI ULD.
-
-As a result, exofs and OSD SCSI ULD need to know the internal of bio,
-that is, you reinvent the bio handling infrastructure, as pointed out
-in another thread in scsi-ml.
-
-_bio_map_pages is called where the VFS passes an array of a pointer to
-a page frame.
-
-Why can't you simply pass the array to OSD SCSI ULD? Then OSD SCSI ULD
-can use the block layer helper functions to build a request out of
-pages without knowing the internal of bio.
-
-
-> +int osd_req_read_pages(struct osd_request *or,
-> +	const struct osd_obj_id *obj, u64 offset, u64 length,
-> +	struct page **pages, int page_count)
-> +{
-> +	struct request_queue *req_q = or->osd_dev->scsi_device->request_queue;
-> +	struct bio *bio = _bio_map_pages(req_q, pages, page_count, length,
-> +					 GFP_KERNEL);
-> +
-> +	if (!bio)
-> +		return -ENOMEM;
-> +
-> +	_osd_read(or, obj, offset, bio);
-> +	return 0;
-> +}
-> +#endif /* def __KERNEL__ */
-> +
-> +int osd_req_read_kern(struct osd_request *or,
-> +	const struct osd_obj_id *obj, u64 offset, void* buff, u64 len)
-> +{
-> +	struct request_queue *req_q = or->osd_dev->scsi_device->request_queue;
-> +	struct bio *bio = bio_map_kern(req_q, buff, len, GFP_KERNEL);
-> +
-> +	if (!bio)
-> +		return -ENOMEM;
-> +
-> +	_osd_read(or, obj, offset, bio);
-> +	return 0;
-> +}
-> +
-> +static void _osd_write(struct osd_request *or,
-> +	const struct osd_obj_id *obj, uint64_t offset, struct bio *bio)
-> +{
-> +	osd_req_write(or, obj, bio, offset);
-> +	EXOFS_DBGMSG("osd_req_write(p=%llX, ob=%llX, l=%llu, of=%llu)\n",
-> +		_LLU(obj->partition), _LLU(obj->id), _LLU(bio->bi_size),
-> +		_LLU(offset));
-> +}
-> +
-> +#ifdef __KERNEL__
-> +int osd_req_write_pages(struct osd_request *or,
-> +	const struct osd_obj_id *obj, u64 offset, u64 length,
-> +	struct page **pages, int page_count)
-> +{
-> +	struct request_queue *req_q = or->osd_dev->scsi_device->request_queue;
-> +	struct bio *bio = _bio_map_pages(req_q, pages, page_count, length,
-> +					 GFP_KERNEL);
-> +
-> +	if (!bio)
-> +		return -ENOMEM;
-> +
-> +	_osd_write(or, obj, offset, bio);
-> +	return 0;
-> +}
-> +#endif /* def __KERNEL__ */
-> +
-> +int osd_req_write_kern(struct osd_request *or,
-> +	const struct osd_obj_id *obj, u64 offset, void* buff, u64 len)
-> +{
-> +	struct request_queue *req_q = or->osd_dev->scsi_device->request_queue;
-> +	struct bio *bio = bio_map_kern(req_q, buff, len, GFP_KERNEL);
-> +
-> +	if (!bio)
-> +		return -ENOMEM;
-> +
-> +	_osd_write(or, obj, offset, bio);
-> +	return 0;
-> +}
-> -- 
-> 1.6.0.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+-Eric
