@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753619AbZBPVZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754698AbZBPV0J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753619AbZBPVZj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 16:25:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750727AbZBPVZa
+	id S1754698AbZBPV0J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 16:26:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbZBPVZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 16:25:30 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:44723 "EHLO mx1.redhat.com"
+	Mon, 16 Feb 2009 16:25:54 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:42735 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750718AbZBPVZa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 16:25:30 -0500
+	id S1750727AbZBPVZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 16:25:54 -0500
+Date: Mon, 16 Feb 2009 22:22:21 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] generic-smp: remove single ipi fallback for
+	smp_call_function_many()
+Message-ID: <20090216212221.GA8048@redhat.com>
+References: <20090216163847.431174825@chello.nl> <20090216164114.433430761@chello.nl> <20090216191008.GA1521@redhat.com> <1234813292.30178.327.camel@laptop> <20090216203055.GA5135@redhat.com> <1234817701.30178.380.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Martin Michlmayr <tbm@cyrius.com>
-X-Fcc: ~/Mail/linus
-Cc: linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: "elf core dump: fix get_user use" breaks mips compilation
-In-Reply-To: Martin Michlmayr's message of  Monday, 16 February 2009 13:01:36 +0100 <20090216120136.GA9057@deprecation.cyrius.com>
-References: <20090216120136.GA9057@deprecation.cyrius.com>
-Emacs: the prosecution rests its case.
-Message-Id: <20090216212515.B62C5FC3E4@magilla.sf.frob.com>
-Date: Mon, 16 Feb 2009 13:25:15 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1234817701.30178.380.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-That is either a compiler problem or a problem with how the asm magic used
-inside get_user() informs the compiler.  The dynamics of the code are not
-actually much different than before the change.  
+On 02/16, Peter Zijlstra wrote:
+>
+> On Mon, 2009-02-16 at 21:30 +0100, Oleg Nesterov wrote:
+> >
+> > Yes I see. But if we change generic_smp_call_function_interrupt() to
+> > re-check cpumask_test_cpu(cpu, data->cpumask) under data->lock then
+> > we don't have to wait for quiescent state, afaics. And we have to
+> > take this lock anyway.
+>
+> Suppose entries A,B,C,D are queued, and some cpu1 is traversing the list
+> to execute C and is currently at B waiting for data->lock. Concurrently
+> cpu2 has completed B and removes it from the list, when cpu3 takes B and
+> inserts it at the end.
 
-I imagine this would work around it:
+Ah indeed, I see. Thanks Peter.
 
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -1211,7 +1211,7 @@ static unsigned long vma_dump_size(struc
- 	if (FILTER(ELF_HEADERS) &&
- 	    vma->vm_pgoff == 0 && (vma->vm_flags & VM_READ)) {
- 		u32 __user *header = (u32 __user *) vma->vm_start;
--		u32 word;
-+		u32 word = 0;
- 		mm_segment_t fs = get_fs();
- 		/*
- 		 * Doing it this way gets the constant folded by GCC.
+Oleg.
+
