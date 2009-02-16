@@ -1,243 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbZBPMCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbZBPMLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757184AbZBPMCz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 07:02:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbZBPMCq
+	id S1756903AbZBPMLz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 07:11:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754406AbZBPMLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 07:02:46 -0500
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:43285 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750738AbZBPMCp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 07:02:45 -0500
-Date: Mon, 16 Feb 2009 17:32:13 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Corey Hickey <bugfood-ml@fatooh.org>, linux-kernel@vger.kernel.org,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, mtk.manpages@gmail.com
-Subject: Re: RT scheduling and a way to make a process hang, unkillable
-Message-ID: <20090216120213.GB3925@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <4997672B.1000301@fatooh.org> <1234697096.4713.24.camel@laptop> <20090216103636.GC17355@linux.vnet.ibm.com> <1234782516.4703.15.camel@laptop>
+	Mon, 16 Feb 2009 07:11:46 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:16402 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754394AbZBPMLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 07:11:46 -0500
+Date: Mon, 16 Feb 2009 13:09:25 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Jan Kara <jack@suse.cz>, Theodore Tso <tytso@mit.edu>,
+       Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: ext2 + -osync: not as easy as it seems
+Message-ID: <20090216120925.GR30821@kernel.dk>
+References: <20090113131418.GD30352@atrey.karlin.mff.cuni.cz> <20090113134503.41318144@lxorguk.ukuu.org.uk> <20090113140347.GD17664@mit.edu> <20090113143011.GB10064@duck.suse.cz> <1231904239.11640.38.camel@sebastian.kern.oss.ntt.co.jp> <20090114103532.GA18834@duck.suse.cz> <20090114132146.GC6222@mit.edu> <20090114140532.GC19950@duck.suse.cz> <20090114140802.GC30821@kernel.dk> <499451A0.3070403@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1234782516.4703.15.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <499451A0.3070403@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 16, 2009 at 12:08:36PM +0100, Peter Zijlstra wrote:
-> On Mon, 2009-02-16 at 16:06 +0530, Dhaval Giani wrote:
+On Thu, Feb 12 2009, Eric Sandeen wrote:
+> Jens Axboe wrote:
+> > On Wed, Jan 14 2009, Jan Kara wrote:
+> >>> I'm not sure what you mean; if the barrier operation isn't flushing
+> >>> all of the caches all the way out to the iron oxide, it's not going to
+> >>> be working properly no matter where it is being called, whether it's
+> >>> in ext4_sync_file() or in jbd2's journal_submit_commit_record().
+> >>   Well, I thought that a barrier, as an abstraction, only guarantees that
+> >> any IO which happened before the barrier hits the iron before any IO which
+> >> has been submitted after a barrier. This is actually enough for a
+> >> journalling to work correctly but it's not enough for fsync() guarantees.
+> >> But I might be wrong...
+> > 
+> > It also guarentees that when you get a completion for that barrier
+> > write, it's on safe storage. Think of it as a flush-write-flush
+> > operation, in the presence of write back caching.
 > 
-> > sched: Don't allow setuid to succeed if the user does not have rt bandwidth
-> > 
-> > Corey Hickey reported that on using setuid to change the uid of a
-> > rt process, the process would be unkillable and not be running.
-> > This is because there was no rt runtime for that user group. Add
-> > in a check to see if a user can attach an rt task to its task group.
-> > 
-> > Disclaimer: Not sure about the return values, and if setuid allows
-> > return values other than EPERM and EAGAIN.
-> > 
-> > Not-Yet-Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> > 
-> > Index: linux-2.6/include/linux/sched.h
-> > ===================================================================
-> > --- linux-2.6.orig/include/linux/sched.h
-> > +++ linux-2.6/include/linux/sched.h
-> > @@ -2320,9 +2320,12 @@ extern long sched_group_rt_runtime(struc
-> >  extern int sched_group_set_rt_period(struct task_group *tg,
-> >  				      long rt_period_us);
-> >  extern long sched_group_rt_period(struct task_group *tg);
-> > +int sched_rt_can_attach(struct task_group *tg, struct task_struct *tsk);
-> >  #endif
-> >  #endif
-> >  
-> > +int rt_task_can_switch_user(uid_t uid, struct task_struct *tsk);
-> > +
-> >  #ifdef CONFIG_TASK_XACCT
-> >  static inline void add_rchar(struct task_struct *tsk, ssize_t amt)
-> >  {
-> > Index: linux-2.6/kernel/sched.c
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/sched.c
-> > +++ linux-2.6/kernel/sched.c
-> > @@ -9466,6 +9466,16 @@ static int sched_rt_global_constraints(v
-> >  
-> >  	return ret;
-> >  }
-> > +
-> > +int sched_rt_can_attach(struct task_group *tg, struct task_struct *tsk)
-> > +{
-> > +	/* Don't accept realtime tasks when there is no way for them to run */
-> > +	if (rt_task(tsk) && tg->rt_bandwidth.rt_runtime == 0)
-> > +		return -EINVAL;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> >  #else /* !CONFIG_RT_GROUP_SCHED */
-> >  static int sched_rt_global_constraints(void)
-> >  {
-> > @@ -9559,8 +9569,7 @@ cpu_cgroup_can_attach(struct cgroup_subs
-> >  		      struct task_struct *tsk)
-> >  {
-> >  #ifdef CONFIG_RT_GROUP_SCHED
-> > -	/* Don't accept realtime tasks when there is no way for them to run */
-> > -	if (rt_task(tsk) && cgroup_tg(cgrp)->rt_bandwidth.rt_runtime == 0)
-> > +	if (sched_rt_can_attach(cgroup_tg(cgrp), tsk))
-> >  		return -EINVAL;
-> >  #else
-> >  	/* We don't support RT-tasks being in separate groups */
-> > Index: linux-2.6/kernel/user.c
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/user.c
-> > +++ linux-2.6/kernel/user.c
-> > @@ -216,8 +216,28 @@ static ssize_t cpu_rt_period_store(struc
-> >  
-> >  static struct kobj_attribute cpu_rt_period_attr =
-> >  	__ATTR(cpu_rt_period, 0644, cpu_rt_period_show, cpu_rt_period_store);
-> > +
-> >  #endif
-> >  
-> > +#ifdef CONFIG_RT_GROUP_SCHED && CONFIG_USER_SCHED
-> > +/*
-> > + * We need to check if a setuid can take place. This function should be called
-> > + * before successfully completing the setuid.
-> > + */
-> > +
-> > +int rt_task_can_switch_user(uid_t uid, struct task_struct *tsk)
-> > +{
-> > +	struct user_struct *up = find_user(uid);
-> > +
-> > +	return sched_rt_can_attach(up->tg, tsk);
-> > +}
+> (sorry for chiming in so late)
 > 
-> Should that not be !sched_rt_can_attach(), or preferably change
-> sched_rt_can_attach() to return a boolean, like the name implies.
+> Jens, isn't this just the way it's implemented today?  At some point
+> couldn't a barrier bio simply be a reordering barrier that the storage
+> can use when destaging the write cache, rather than the heavy-handed
+> flush-write-flush we have today?
 > 
+> I guess it's a question of the intended semantics of a barrier bio, vs.
+> today's implementation based on current hardware functionality...
 
-Yeah, made it boolean. how does the following look?
+Right, the current implementation is largely an artefact of what we can
+do with todays hardware. It would be quite reasonable to decouple the
+flush from the reordering, if we were able to support that on the
+hardware side.
 
---
-sched: Don't allow setuid to succeed if the user does not have rt bandwidth
-
-Corey Hickey reported that on using setuid to change the uid of a
-rt process, the process would be unkillable and not be running.
-This is because there was no rt runtime for that user group. Add
-in a check to see if a user can attach an rt task to its task group.
-
-Disclaimer: Not sure about the return values, and if setuid allows
-return values other than EPERM and EAGAIN.
-
-Changes from v1:
-1. Peter suggested that rt_task_can_change_user should be renamed to
-task_can_change_user
-2. Changed sched_rt_can_attach to boolean.
-
-Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-
-
-Index: linux-2.6/include/linux/sched.h
-===================================================================
---- linux-2.6.orig/include/linux/sched.h
-+++ linux-2.6/include/linux/sched.h
-@@ -2320,9 +2320,12 @@ extern long sched_group_rt_runtime(struc
- extern int sched_group_set_rt_period(struct task_group *tg,
- 				      long rt_period_us);
- extern long sched_group_rt_period(struct task_group *tg);
-+int sched_rt_can_attach(struct task_group *tg, struct task_struct *tsk);
- #endif
- #endif
- 
-+int task_can_switch_user(uid_t uid, struct task_struct *tsk);
-+
- #ifdef CONFIG_TASK_XACCT
- static inline void add_rchar(struct task_struct *tsk, ssize_t amt)
- {
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -9466,6 +9466,16 @@ static int sched_rt_global_constraints(v
- 
- 	return ret;
- }
-+
-+int sched_rt_can_attach(struct task_group *tg, struct task_struct *tsk)
-+{
-+	/* Don't accept realtime tasks when there is no way for them to run */
-+	if (rt_task(tsk) && tg->rt_bandwidth.rt_runtime == 0)
-+		return 0;
-+
-+	return 1;
-+}
-+
- #else /* !CONFIG_RT_GROUP_SCHED */
- static int sched_rt_global_constraints(void)
- {
-@@ -9559,8 +9569,7 @@ cpu_cgroup_can_attach(struct cgroup_subs
- 		      struct task_struct *tsk)
- {
- #ifdef CONFIG_RT_GROUP_SCHED
--	/* Don't accept realtime tasks when there is no way for them to run */
--	if (rt_task(tsk) && cgroup_tg(cgrp)->rt_bandwidth.rt_runtime == 0)
-+	if (!sched_rt_can_attach(cgroup_tg(cgrp), tsk))
- 		return -EINVAL;
- #else
- 	/* We don't support RT-tasks being in separate groups */
-Index: linux-2.6/kernel/user.c
-===================================================================
---- linux-2.6.orig/kernel/user.c
-+++ linux-2.6/kernel/user.c
-@@ -216,8 +216,28 @@ static ssize_t cpu_rt_period_store(struc
- 
- static struct kobj_attribute cpu_rt_period_attr =
- 	__ATTR(cpu_rt_period, 0644, cpu_rt_period_show, cpu_rt_period_store);
-+
- #endif
- 
-+#ifdef CONFIG_RT_GROUP_SCHED && CONFIG_USER_SCHED
-+/*
-+ * We need to check if a setuid can take place. This function should be called
-+ * before successfully completing the setuid.
-+ */
-+
-+int task_can_switch_user(uid_t uid, struct task_struct *tsk)
-+{
-+	struct user_struct *up = find_user(uid);
-+
-+	return sched_rt_can_attach(up->tg, tsk);
-+}
-+#else
-+int task_can_switch_user(uid_t uid, struct task_struct *tsk)
-+{
-+	return 1;
-+}
-+
-+#endif
- /* default attributes per uid directory */
- static struct attribute *uids_attributes[] = {
- #ifdef CONFIG_FAIR_GROUP_SCHED
-Index: linux-2.6/kernel/sys.c
-===================================================================
---- linux-2.6.orig/kernel/sys.c
-+++ linux-2.6/kernel/sys.c
-@@ -579,6 +579,9 @@ static int set_user(struct cred *new)
- 		return -EAGAIN;
- 	}
- 
-+	if (!task_can_switch_user(new->uid, current))
-+		return -EAGAIN;
-+
- 	free_uid(new->user);
- 	new->user = new_user;
- 	return 0;
 -- 
-regards,
-Dhaval
+Jens Axboe
+
