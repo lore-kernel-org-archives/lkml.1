@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756432AbZBPCrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756562AbZBPC4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756432AbZBPCrA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 21:47:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754996AbZBPCqv
+	id S1756562AbZBPC4v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 21:56:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755578AbZBPC4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 21:46:51 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:57849 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754643AbZBPCqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 21:46:51 -0500
-Message-ID: <4998D3A6.9010406@cn.fujitsu.com>
-Date: Mon, 16 Feb 2009 10:47:02 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sun, 15 Feb 2009 21:56:36 -0500
+Received: from thunk.org ([69.25.196.29]:37199 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755559AbZBPC4f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 21:56:35 -0500
+Date: Sun, 15 Feb 2009 21:56:11 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] ext4 fixes
+Message-ID: <20090216025611.GB22619@mini-me.lan>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>
-CC: containers@lists.osdl.org, LKML <linux-kernel@vger.kernel.org>,
-       Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, gregkh@ZenIV.linux.org.uk,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [cgroup or VFS ?] WARNING: at fs/namespace.c:636	mntput_no_expire+0xac/0xf2()
-References: <4993C2A0.3050507@cn.fujitsu.com> <4993C7C2.4060100@cn.fujitsu.com> <20090212070729.GF28946@ZenIV.linux.org.uk> <4995007D.7040101@cn.fujitsu.com> <20090213054751.GI28946@ZenIV.linux.org.uk> <49950F3D.3030704@cn.fujitsu.com> <20090213064135.GJ28946@ZenIV.linux.org.uk> <20090213071816.GK28946@ZenIV.linux.org.uk> <4995208D.8050700@cn.fujitsu.com> <4998C15C.2070203@cn.fujitsu.com> <20090216023812.GT28946@ZenIV.linux.org.uk>
-In-Reply-To: <20090216023812.GT28946@ZenIV.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> OK...  So here's what we really want:
-> 	* we know that nobody will set cpu_writer->mnt to mnt from now on
-> 	* all changes to that sucker are done under cpu_writer->lock
-> 	* we want the laziest equivalent of
-> 		spin_lock(&cpu_writer->lock);
-> 		if (likely(cpu_writer->mnt != mnt)) {
-> 			spin_unlock(&cpu_writer->lock);
-> 			continue;
-> 		}
-> 		/* do stuff */
-> that would make sure we won't miss earlier setting of ->mnt done by another
-> CPU.
-> 
+Hi Linus,
 
-If this is done, I'll be available to test it.
+Please pull from:
 
-> Anyway, for now (HEAD and all -stable starting with 2.6.26) we want this:
-> 
+        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
 
-And here is my:
+to grab regression and critical bug fixes for ext4.  Thanks!!
 
-Tested-by: Li Zefan <lizf@cn.fujitsu.com>
+                                           - Ted
 
-> --- fs/namespace.c	2009-01-25 21:45:31.000000000 -0500
-> +++ fs/namespace.c	2009-02-15 21:31:14.000000000 -0500
-> @@ -614,9 +614,11 @@
->  	 */
->  	for_each_possible_cpu(cpu) {
->  		struct mnt_writer *cpu_writer = &per_cpu(mnt_writers, cpu);
-> -		if (cpu_writer->mnt != mnt)
-> -			continue;
->  		spin_lock(&cpu_writer->lock);
-> +		if (cpu_writer->mnt != mnt) {
-> +			spin_unlock(&cpu_writer->lock);
-> +			continue;
-> +		}
->  		atomic_add(cpu_writer->count, &mnt->__mnt_writers);
->  		cpu_writer->count = 0;
->  		/*
+Aneesh Kumar K.V (3):
+      ext4: Fix lockdep warning
+      ext4: Initialize preallocation list_head's properly
+      ext4: Implement range_cyclic in ext4_da_writepages instead of write_cache_pages
+
+Dan Carpenter (1):
+      ext4: Fix NULL dereference in ext4_ext_migrate()'s error handling
+
+Jan Kara (3):
+      jbd2: Fix return value of jbd2_journal_start_commit()
+      Revert "ext4: wait on all pending commits in ext4_sync_fs()"
+      jbd2: Avoid possible NULL dereference in jbd2_journal_begin_ordered_truncate()
+
+Wei Yongjun (1):
+      ext4: Fix to read empty directory blocks correctly in 64k
+
+ fs/ext4/ext4.h        |    2 +-
+ fs/ext4/inode.c       |   27 +++++++++++++++++++++++----
+ fs/ext4/mballoc.c     |   32 +++++++++++++++++++-------------
+ fs/ext4/migrate.c     |    8 +++-----
+ fs/ext4/super.c       |   11 +++++++----
+ fs/jbd2/journal.c     |   17 +++++++++++------
+ fs/jbd2/transaction.c |   42 +++++++++++++++++++++++++++++++-----------
+ fs/ocfs2/journal.h    |    6 ++++--
+ include/linux/jbd2.h  |    3 ++-
+ 9 files changed, 101 insertions(+), 47 deletions(-)
+
+
 
