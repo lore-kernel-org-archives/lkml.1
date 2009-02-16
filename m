@@ -1,78 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753220AbZBPSEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752863AbZBPSGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753220AbZBPSEh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 13:04:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbZBPSE1
+	id S1752863AbZBPSGB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 13:06:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbZBPSFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 13:04:27 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:57883 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751018AbZBPSE0 (ORCPT
+	Mon, 16 Feb 2009 13:05:52 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:15386 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751303AbZBPSFv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 13:04:26 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4999AA93.5030009@s5r6.in-berlin.de>
-Date: Mon, 16 Feb 2009 19:04:03 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
+	Mon, 16 Feb 2009 13:05:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=n1oJ/FUnqgm2RNjWWUjdCUawOJa2RdAdlioy4w9L3fbAMpmex13c9J21X92G9S8VI2
+         P0Gako2E1HRwDsRAzZzGZeLRGElCCFEzgDyRR5mTws5LbvmaoCGqUyXo49mghPNsbxAK
+         LKThG7ee64NRhgTL8rbo0m60tQBycWztz4mPY=
+Date: Mon, 16 Feb 2009 18:59:08 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Sitsofe Wheeler <sitsofe@yahoo.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: Poking ieee80211_default_rc_algo causes kernel lockups
+Message-ID: <20090216175907.GA4582@nowhere>
+References: <slrngpgfil.5gc.sitsofe@sitsofe.eeepc.localdomain> <20090215193522.GA5790@nowhere> <200902162040.44178.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Sam Ravnborg <sam@ravnborg.org>, Manish Katiyar <mkatiyar@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] Remove errors caught by checkpatch.pl in	kernel/kallsyms.c
-References: <ea11fea30902151034s5444efabw455c1dac1b875086@mail.gmail.com> <20090215184752.GA4970@uranus.ravnborg.org> <4999650C.6030700@s5r6.in-berlin.de> <20090216132822.GC17996@elte.hu> <4999717F.7090205@s5r6.in-berlin.de> <20090216141917.GA8981@elte.hu> <499984C1.6020004@s5r6.in-berlin.de> <20090216155023.GA4422@elte.hu> <4999908D.4050403@s5r6.in-berlin.de> <20090216171233.GB25907@elte.hu>
-In-Reply-To: <20090216171233.GB25907@elte.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200902162040.44178.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-> That position of not adding tool information to the commit log is not 
-> just not tenable but also incredibly silly.
+On Mon, Feb 16, 2009 at 08:40:43PM +1030, Rusty Russell wrote:
+> On Monday 16 February 2009 06:05:23 Frederic Weisbecker wrote:
+> > So the problem seems not related to mac80211 but actually to module parameter management.
+> > I'm not sure what is the right fix.
+> 
+> Good spotting.  And in fact this bug has been here for quite a while...
+> 
+> The "simple" fix is to kstrdup, but that leaks.
+> 
+> How's this?
 
-It's not a hard requirement; it's a rule of thumb to detect changelogs
-which lack important information.
 
-I made it sound like a hard requirement for simplicity's sake. :-)
+Simple solution, and fixes the problem :-)
+I've tested the string parameter change and the mac80211 module unloading as well.
+No obvious problem.
 
-(The rule works thusly:  If the author put irrelevant information into
-the log, then this is a sign that insufficient care was taken and hence
-there is a danger that necessary information was forgotten.)
+Tested-by: Frederic Weisbecker <fweisbec@gmail.com>
 
-> Those tools are useful, they result in fixes, so why should the patch 
-> author pretend and hide the method of finding problems from the Git 
-> history?
+And also, Reported-by: Sitsofe Wheeler <sitsofe@yahoo.com>
 
-Because the result is what counts:  What is the change doing?  Why
-change the source in this way?
+Just one last little thing, it would be good to strip the ending newline
+while using echo without -n
+ie:
 
-The changelogs don't teach programming or discuss our development
-methods.  They are not a channel for feedback from tools users to tools
-developers.
+root@nowhere:/sys/module/mac80211/parameters# echo heh_look_at_my_newline > ieee80211_default_rc_algo 
+root@nowhere:/sys/module/mac80211/parameters# cat ieee80211_default_rc_algo 
+heh_look_at_my_newline
 
-I stress again that putting irrelevant information into the log is
-almost as bad as forgetting relevant information.  The S/N ratio is
-lowered by the latter /and/ by the former.
+root@nowhere:/sys/module/mac80211/parameters# echo -n heh_look_at_hum_nothing > ieee80211_default_rc_algo 
+root@nowhere:/sys/module/mac80211/parameters# cat ieee80211_default_rc_algo 
+heh_look_at_hum_nothing
+root@nowhere:/sys/module/mac80211/parameters#
 
-> We often write "found via review" or "found via testing". It's 
-> useful and it gives people an idea of how certain types of fixes were 
-> found.
+Because I guess modules don't expect this newline on their strcmp.
 
-We write it
-  - to acknowledge the work which was spent by people,
-  - to describe under which circumstances an issue was reproducible.
+Thanks :-)
 
-"I used script XYZ to find whitespace style deviations" is fundamentally
-different from "I used this and that benchmark setup to produce the
-following results" --- because there are several alternative and
-*obvious* ways to find style deviations, while there may be only
-non-trivial and highly specific ways to reproduce a bug or performance
-result.
--- 
-Stefan Richter
--=====-==--= --=- =----
-http://arcgraph.de/sr/
+ 
+> param: fix charp parameters set via sysfs (eg. ieee80211_default_rc_algo)
+> 
+> The module_param type "charp" simply sets a char * pointer in the
+> module to the parameter in the commandline string: this is why we keep
+> the (mangled) module command line around.  But when set via sysfs (as
+> about 11 charp parameters can be) this memory is freed on the way
+> out of the write().
+> 
+> So we kstrdup instead: this is fine, but it means we have to note when
+> we've used it so we can reliably kfree the parameter when it's next
+> overwritten, and also on module unload.
+> 
+> Reported-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> 
+> diff --git a/include/linux/module.h b/include/linux/module.h
+> --- a/include/linux/module.h
+> +++ b/include/linux/module.h
+> @@ -247,6 +247,10 @@ struct module
+>  	const struct kernel_symbol *syms;
+>  	const unsigned long *crcs;
+>  	unsigned int num_syms;
+> +
+> +	/* Kernel parameters. */
+> +	struct kernel_param *kp;
+> +	unsigned int num_kp;
+>  
+>  	/* GPL-only exported symbols. */
+>  	unsigned int num_gpl_syms;
+> diff --git a/include/linux/moduleparam.h b/include/linux/moduleparam.h
+> --- a/include/linux/moduleparam.h
+> +++ b/include/linux/moduleparam.h
+> @@ -138,6 +138,9 @@ extern int parse_args(const char *name,
+>  		      unsigned num,
+>  		      int (*unknown)(char *param, char *val));
+>  
+> +/* Called by module remove. */
+> +extern void destroy_params(const struct kernel_param *params, unsigned num);
+> +
+>  /* All the helper functions */
+>  /* The macros to do compile-time type checking stolen from Jakub
+>     Jelinek, who IIRC came up with this idea for the 2.4 module init code. */
+> diff --git a/kernel/module.c b/kernel/module.c
+> --- a/kernel/module.c
+> +++ b/kernel/module.c
+> @@ -1457,6 +1457,9 @@ static void free_module(struct module *m
+>  	/* Module unload stuff */
+>  	module_unload_free(mod);
+>  
+> +	/* Free any allocated parameters. */
+> +	destroy_params(mod->kp, mod->num_kp);
+> +
+>  	/* release any pointers to mcount in this module */
+>  	ftrace_release(mod->module_core, mod->core_size);
+>  
+> @@ -1870,8 +1873,7 @@ static noinline struct module *load_modu
+>  	unsigned int symindex = 0;
+>  	unsigned int strindex = 0;
+>  	unsigned int modindex, versindex, infoindex, pcpuindex;
+> -	unsigned int num_kp, num_mcount;
+> -	struct kernel_param *kp;
+> +	unsigned int num_mcount;
+>  	struct module *mod;
+>  	long err = 0;
+>  	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
+> @@ -2116,8 +2118,8 @@ static noinline struct module *load_modu
+>  
+>  	/* Now we've got everything in the final locations, we can
+>  	 * find optional sections. */
+> -	kp = section_objs(hdr, sechdrs, secstrings, "__param", sizeof(*kp),
+> -			  &num_kp);
+> +	mod->kp = section_objs(hdr, sechdrs, secstrings, "__param",
+> +			       sizeof(*mod->kp), &mod->num_kp);
+>  	mod->syms = section_objs(hdr, sechdrs, secstrings, "__ksymtab",
+>  				 sizeof(*mod->syms), &mod->num_syms);
+>  	mod->crcs = section_addr(hdr, sechdrs, secstrings, "__kcrctab");
+> @@ -2262,11 +2264,11 @@ static noinline struct module *load_modu
+>  	 */
+>  	list_add_rcu(&mod->list, &modules);
+>  
+> -	err = parse_args(mod->name, mod->args, kp, num_kp, NULL);
+> +	err = parse_args(mod->name, mod->args, mod->kp, mod->num_kp, NULL);
+>  	if (err < 0)
+>  		goto unlink;
+>  
+> -	err = mod_sysfs_setup(mod, kp, num_kp);
+> +	err = mod_sysfs_setup(mod, mod->kp, mod->num_kp);
+>  	if (err < 0)
+>  		goto unlink;
+>  	add_sect_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
+> diff --git a/kernel/params.c b/kernel/params.c
+> --- a/kernel/params.c
+> +++ b/kernel/params.c
+> @@ -23,6 +23,9 @@
+>  #include <linux/device.h>
+>  #include <linux/err.h>
+>  #include <linux/slab.h>
+> +
+> +/* We abuse the high bits of "perm" to record whether we kmalloc'ed. */
+> +#define KPARAM_KMALLOCED	0x80000000
+>  
+>  #if 0
+>  #define DEBUGP printk
+> @@ -217,7 +220,13 @@ int param_set_charp(const char *val, str
+>  		return -ENOSPC;
+>  	}
+>  
+> -	*(char **)kp->arg = (char *)val;
+> +	if (kp->perm & KPARAM_KMALLOCED)
+> +		kfree(*(char **)kp->arg);
+> +
+> +	kp->perm |= KPARAM_KMALLOCED;
+> +	*(char **)kp->arg = kstrdup(val, GFP_KERNEL);
+> +	if (!kp->arg)
+> +		return -ENOMEM;
+>  	return 0;
+>  }
+>  
+> @@ -571,6 +580,15 @@ void module_param_sysfs_remove(struct mo
+>  }
+>  #endif
+>  
+> +void destroy_params(const struct kernel_param *params, unsigned num)
+> +{
+> +	unsigned int i;
+> +
+> +	for (i = 0; i < num; i++)
+> +		if (params[i].perm & KPARAM_KMALLOCED)
+> +			kfree(*(char **)params[i].arg);
+> +}
+> +
+>  static void __init kernel_add_sysfs_param(const char *name,
+>  					  struct kernel_param *kparam,
+>  					  unsigned int name_skip)
+
