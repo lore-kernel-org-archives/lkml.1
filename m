@@ -1,58 +1,325 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757925AbZBPNJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757156AbZBPNOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757925AbZBPNJz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 08:09:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757284AbZBPNJi
+	id S1757156AbZBPNOS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 08:14:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755182AbZBPNN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 08:09:38 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:56125 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757210AbZBPNJh (ORCPT
+	Mon, 16 Feb 2009 08:13:57 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:38944 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754897AbZBPNNz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 08:09:37 -0500
-Message-ID: <49996588.2040501@s5r6.in-berlin.de>
-Date: Mon, 16 Feb 2009 14:09:28 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14
+	Mon, 16 Feb 2009 08:13:55 -0500
+Date: Mon, 16 Feb 2009 14:57:46 +0200
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Felipe Balbi <me@felipebalbi.com>, Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: [PATCH] leds: triggers: introduce gpio led trigger
+Message-ID: <20090216125746.GR21181@scadufax.research.nokia.com>
+Reply-To: felipe.balbi@nokia.com
+References: <1234786651-4433-1-git-send-email-felipe.balbi@nokia.com>
 MIME-Version: 1.0
-To: Manish Katiyar <mkatiyar@gmail.com>
-CC: mingo@elte.hu, LKML <linux-kernel@vger.kernel.org>,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] Remove errors caught by checkpatch.pl in kernel/utsname_sysctl.c
-References: <ea11fea30902151039n447cc111medb9721a95af81a8@mail.gmail.com>
-In-Reply-To: <ea11fea30902151039n447cc111medb9721a95af81a8@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1234786651-4433-1-git-send-email-felipe.balbi@nokia.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 16 Feb 2009 13:12:29.0527 (UTC) FILETIME=[3861C670:01C99038]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Manish Katiyar wrote:
-> --- a/kernel/utsname_sysctl.c
-> +++ b/kernel/utsname_sysctl.c
-> @@ -49,7 +49,7 @@ static int proc_do_uts_string(ctl_table *table, int
-> write, struct file *filp,
->  	int r;
->  	memcpy(&uts_table, table, sizeof(uts_table));
->  	uts_table.data = get_uts(table, write);
-> -	r = proc_dostring(&uts_table,write,filp,buffer,lenp, ppos);
-> +	r = proc_dostring(&uts_table, write, filp, buffer, lenp, ppos);
->  	put_uts(table, write, uts_table.data);
->  	return r;
->  }
-> @@ -142,4 +142,4 @@ static int __init utsname_sysctl_init(void)
->  	return 0;
->  }
+On Mon, Feb 16, 2009 at 01:17:31PM +0100, Balbi Felipe (Nokia-D/Helsinki) wrote:
+> From: Felipe Balbi <me@felipebalbi.com>
 > 
-> -__initcall(utsname_sysctl_init);
-> +device_initcall(utsname_sysctl_init);
+> The gpio led trigger will allow leds to be triggered by
+> gpio events.
+> 
+> There's a timer function that keeps checking the gpio
+> value in order to know when we need to turn leds on/off.
+> 
+> It's useful for usecases as n810's keypad leds that could
+> be triggered by the gpio event generated when user slides
+> up to show the keypad.
+> 
+> We also provide means for userland to tell us what is the
+> desired brightness for that special led when it goes on
+> so userland could use information from ambient light sensors
+> and not set led brightness too high if it's not necessary.
+> 
+> This trigger was tested with n810.
+> 
+> Cc: Richard Purdie <rpurdie@rpsys.net>
+> Signed-off-by: Felipe Balbi <me@felipebalbi.com>
+> ---
+>  drivers/leds/Kconfig        |   13 +++
+>  drivers/leds/Makefile       |    1 +
+>  drivers/leds/ledtrig-gpio.c |  229 +++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 243 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/leds/ledtrig-gpio.c
+> 
+> diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+> index 7427136..2bd77d5 100644
+> --- a/drivers/leds/Kconfig
+> +++ b/drivers/leds/Kconfig
+> @@ -216,6 +216,19 @@ config LEDS_TRIGGER_BACKLIGHT
+> 
+>           If unsure, say N.
+> 
+> +config LEDS_TRIGGER_GPIO
+> +       tristate "LED GPIO Trigger"
+> +       depends on LEDS_TRIGGERS
+> +       depends on GPIOLIB
+> +       help
+> +         This allows LEDs to be controlled by gpio events. It's good
+> +         when using gpios as switches and triggering the needed LEDs
+> +         from there. One use case is n810's keypad LEDs that could
+> +         be triggered by this trigger when user slides up to show
+> +         keypad.
+> +
+> +         If unsure, say N.
+> +
+>  config LEDS_TRIGGER_DEFAULT_ON
+>         tristate "LED Default ON Trigger"
+>         depends on LEDS_TRIGGERS
+> diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
+> index 9d76f0f..c9e5d31 100644
+> --- a/drivers/leds/Makefile
+> +++ b/drivers/leds/Makefile
+> @@ -30,4 +30,5 @@ obj-$(CONFIG_LEDS_TRIGGER_TIMER)      += ledtrig-timer.o
+>  obj-$(CONFIG_LEDS_TRIGGER_IDE_DISK)    += ledtrig-ide-disk.o
+>  obj-$(CONFIG_LEDS_TRIGGER_HEARTBEAT)   += ledtrig-heartbeat.o
+>  obj-$(CONFIG_LEDS_TRIGGER_BACKLIGHT)   += ledtrig-backlight.o
+> +obj-$(CONFIG_LEDS_TRIGGER_GPIO)                += ledtrig-gpio.o
+>  obj-$(CONFIG_LEDS_TRIGGER_DEFAULT_ON)  += ledtrig-default-on.o
+> diff --git a/drivers/leds/ledtrig-gpio.c b/drivers/leds/ledtrig-gpio.c
+> new file mode 100644
+> index 0000000..af24dcf
+> --- /dev/null
+> +++ b/drivers/leds/ledtrig-gpio.c
+> @@ -0,0 +1,229 @@
+> +/*
+> + * ledtrig-gio.c - LED Trigger Based on GPIO events
+> + *
+> + * Copyright 2009 Felipe Balbi <me@felipebalbi.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/kernel.h>
+> +#include <linux/init.h>
+> +#include <linux/gpio.h>
+> +#include <linux/workqueue.h>
+> +#include <linux/leds.h>
+> +#include "leds.h"
+> +
+> +struct gpio_trig_data {
+> +       struct delayed_work work;
+> +       struct led_classdev *led;
+> +
+> +       unsigned desired_brightness;    /* desired brightness when led is on */
+> +       unsigned inverted;              /* true when gpio is inverted */
+> +       unsigned gpio;                  /* gpio that triggers the leds */
+> +};
+> +
+> +static ssize_t gpio_trig_brightness_show(struct device *dev,
+> +               struct device_attribute *attr, char *buf)
+> +{
+> +       struct led_classdev *led = dev_get_drvdata(dev);
+> +       struct gpio_trig_data *gpio_data = led->trigger_data;
+> +
+> +       return sprintf(buf, "%u\n", gpio_data->desired_brightness);
+> +}
+> +
+> +static ssize_t gpio_trig_brightness_store(struct device *dev,
+> +               struct device_attribute *attr, const char *buf, size_t n)
+> +{
+> +       struct led_classdev *led = dev_get_drvdata(dev);
+> +       struct gpio_trig_data *gpio_data = led->trigger_data;
+> +       unsigned desired_brightness;
+> +       int ret;
+> +
+> +       ret = sscanf(buf, "%u", &desired_brightness);
+> +       if (ret < 1 || desired_brightness > 255) {
+> +               dev_err(dev, "invalid value\n");
+> +               return -EINVAL;
+> +       }
+> +
+> +       gpio_data->desired_brightness = desired_brightness;
+> +
+> +       return n;
+> +}
+> +static DEVICE_ATTR(desired_brightness, 0644, gpio_trig_brightness_show,
+> +               gpio_trig_brightness_store);
+> +
+> +static ssize_t gpio_trig_inverted_show(struct device *dev,
+> +               struct device_attribute *attr, char *buf)
+> +{
+> +       struct led_classdev *led = dev_get_drvdata(dev);
+> +       struct gpio_trig_data *gpio_data = led->trigger_data;
+> +
+> +       return sprintf(buf, "%s\n", gpio_data->inverted ? "yes" : "no");
+> +}
+> +
+> +static ssize_t gpio_trig_inverted_store(struct device *dev,
+> +               struct device_attribute *attr, const char *buf, size_t n)
+> +{
+> +       struct led_classdev *led = dev_get_drvdata(dev);
+> +       struct gpio_trig_data *gpio_data = led->trigger_data;
+> +       unsigned inverted;
+> +       int ret;
+> +
+> +       ret = sscanf(buf, "%u", &inverted);
+> +       if (ret < 1) {
+> +               dev_err(dev, "invalid value\n");
+> +               return -EINVAL;
+> +       }
+> +
+> +       gpio_data->inverted = !!inverted;
+> +
+> +       return n;
+> +}
+> +static DEVICE_ATTR(inverted, 0644, gpio_trig_inverted_show,
+> +               gpio_trig_inverted_store);
+> +
+> +static ssize_t gpio_trig_gpio_show(struct device *dev,
+> +               struct device_attribute *attr, char *buf)
+> +{
+> +       struct led_classdev *led = dev_get_drvdata(dev);
+> +       struct gpio_trig_data *gpio_data = led->trigger_data;
+> +
+> +       return sprintf(buf, "%u\n", gpio_data->gpio);
+> +}
+> +
+> +static ssize_t gpio_trig_gpio_store(struct device *dev,
+> +               struct device_attribute *attr, const char *buf, size_t n)
+> +{
+> +       struct led_classdev *led = dev_get_drvdata(dev);
+> +       struct gpio_trig_data *gpio_data = led->trigger_data;
+> +       unsigned gpio;
+> +       int ret;
+> +
+> +       ret = sscanf(buf, "%u", &gpio);
+> +       if (ret < 1) {
+> +               dev_err(dev, "couldn't read gpio number\n");
+> +               cancel_delayed_work(&gpio_data->work);
+> +               return -EINVAL;
+> +       }
+> +
+> +       gpio_data->gpio = gpio;
+> +       schedule_delayed_work(&gpio_data->work, msecs_to_jiffies(50));
+> +
+> +       return n;
+> +}
+> +static DEVICE_ATTR(gpio, 0644, gpio_trig_gpio_show, gpio_trig_gpio_store);
+> +
+> +static void gpio_trig_work(struct work_struct *work)
+> +{
+> +       struct gpio_trig_data *gpio_data = container_of(work,
+> +                       struct gpio_trig_data, work.work);
+> +
+> +       if (!gpio_data->gpio)
+> +               goto out;
+> +
+> +       if (!gpio_data->inverted) {
+> +               if (gpio_get_value(gpio_data->gpio)) {
+> +                       if (gpio_data->desired_brightness)
+> +                               led_set_brightness(gpio_data->led,
+> +                                               gpio_data->desired_brightness);
+> +                       else
+> +                               led_set_brightness(gpio_data->led, LED_FULL);
+> +               } else {
+> +                       led_set_brightness(gpio_data->led, LED_OFF);
+> +               }
+> +       } else {
+> +               if (!gpio_get_value(gpio_data->gpio)) {
+> +                       if (gpio_data->desired_brightness)
+> +                               led_set_brightness(gpio_data->led,
+> +                                               gpio_data->desired_brightness);
+> +                       else
+> +                               led_set_brightness(gpio_data->led, LED_FULL);
+> +               } else {
+> +                       led_set_brightness(gpio_data->led, LED_OFF);
+> +               }
+> +       }
+> +
+> +out:
+> +       /* Completely arbitrary constant. I'm guessing user won't be able
+> +        * to trigger gpio event twice in less then 50ms and in case of
+> +        * having to trigger several leds, we won't notice the delay between
+> +        * them.
+> +        */
+> +       schedule_delayed_work(&gpio_data->work, msecs_to_jiffies(50));
+> +}
+> +
+> +static void gpio_trig_activate(struct led_classdev *led)
+> +{
+> +       struct gpio_trig_data *gpio_data;
+> +       int ret;
+> +
+> +       gpio_data = kzalloc(sizeof(*gpio_data), GFP_KERNEL);
+> +       if (!gpio_data)
+> +               return;
+> +
+> +       ret = device_create_file(led->dev, &dev_attr_gpio);
+> +       if (ret)
+> +               goto err_gpio;
+> +
+> +       ret = device_create_file(led->dev, &dev_attr_inverted);
+> +       if (ret)
+> +               goto err_inverted;
+> +
+> +       ret = device_create_file(led->dev, &dev_attr_desired_brightness);
+> +       if (ret)
+> +               goto err_brightness;
+> +
+> +       gpio_data->led = led;
+> +       led->trigger_data = gpio_data;
+> +       INIT_DELAYED_WORK(&gpio_data->work, gpio_trig_work);
+> +
+> +       return;
+> +
+> +err_brightness:
+> +       device_remove_file(led->dev, &dev_attr_inverted);
+> +
+> +err_inverted:
+> +       device_remove_file(led->dev, &dev_attr_gpio);
+> +
+> +err_gpio:
+> +       kfree(gpio_data);
+> +}
+> +
+> +static void gpio_trig_deactivate(struct led_classdev *led)
+> +{
+> +       struct gpio_trig_data *gpio_data = led->trigger_data;
+> +
+> +       if (gpio_data) {
+> +               device_remove_file(led->dev, &dev_attr_gpio);
+> +               device_remove_file(led->dev, &dev_attr_inverted);
+> +               device_remove_file(led->dev, &dev_attr_desired_brightness);
+> +               cancel_delayed_work(&gpio_data->work);
 
-The changelog should note that this is a whitespace fix + initcall
-annotation change.
+Just a question. Should I flush_scheduled_work() here ??
 
-That checkpatch was somehow involved in the creation of this patch is
-entirely uninteresting for the changelog.
+Here goes a patch adding it:
+
+diff --git a/drivers/leds/ledtrig-gpio.c b/drivers/leds/ledtrig-gpio.c
+index af24dcf..d532812 100644
+--- a/drivers/leds/ledtrig-gpio.c
++++ b/drivers/leds/ledtrig-gpio.c
+@@ -202,6 +202,7 @@ static void gpio_trig_deactivate(struct led_classdev *led)
+                device_remove_file(led->dev, &dev_attr_inverted);
+                device_remove_file(led->dev, &dev_attr_desired_brightness);
+                cancel_delayed_work(&gpio_data->work);
++               flush_scheduled_work();
+                kfree(gpio_data);
+        }
+ }
+
 -- 
-Stefan Richter
--=====-==--= --=- =----
-http://arcgraph.de/sr/
+balbi
