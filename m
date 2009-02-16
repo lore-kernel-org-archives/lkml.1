@@ -1,115 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbZBPWZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752652AbZBPWiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752815AbZBPWZn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 17:25:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbZBPWZe
+	id S1752652AbZBPWiu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 17:38:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbZBPWil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 17:25:34 -0500
-Received: from casper.infradead.org ([85.118.1.10]:32967 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750732AbZBPWZd (ORCPT
+	Mon, 16 Feb 2009 17:38:41 -0500
+Received: from arroyo.ext.ti.com ([192.94.94.40]:53314 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750941AbZBPWil convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 17:25:33 -0500
-Subject: Re: Q: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove
- single ipi fallback for smp_call_function_many())
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090216220214.GA10093@redhat.com>
-References: <20090216163847.431174825@chello.nl>
-	 <20090216164114.433430761@chello.nl> <20090216204902.GA6924@redhat.com>
-	 <1234818201.30178.386.camel@laptop> <20090216213205.GA9098@redhat.com>
-	 <1234820704.30178.396.camel@laptop>  <20090216220214.GA10093@redhat.com>
-Content-Type: text/plain
-Date: Mon, 16 Feb 2009 23:24:57 +0100
-Message-Id: <1234823097.30178.406.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.90 
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Feb 2009 17:38:41 -0500
+From: "Woodruff, Richard" <r-woodruff2@ti.com>
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Alan Stern <stern@rowland.harvard.edu>,
+       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       =?iso-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>,
+       Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+Date: Mon, 16 Feb 2009 16:36:43 -0600
+Subject: RE: [RFD] Automatic suspend
+Thread-Topic: [RFD] Automatic suspend
+Thread-Index: AcmQgNNh0rnJaLOJS3+2X4+2ygxrqwAACmLA
+Message-ID: <13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com>
+References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
+	<Pine.LNX.4.44L0.0902161537080.19732-100000@netrider.rowland.org>
+	<20090216124520.315320dc@infradead.org>
+	<13B9B4C6EF24D648824FF11BE896716203771DCF1E@dlee02.ent.ti.com>
+ <20090216135204.064f553b@infradead.org>
+In-Reply-To: <20090216135204.064f553b@infradead.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-16 at 23:02 +0100, Oleg Nesterov wrote:
-> On 02/16, Peter Zijlstra wrote:
+
+> From: Arjan van de Ven [mailto:arjan@infradead.org]
+> Sent: Monday, February 16, 2009 3:52 PM
+> On Mon, 16 Feb 2009 15:32:06 -0600
+> "Woodruff, Richard" <r-woodruff2@ti.com> wrote:
 > >
-> > On Mon, 2009-02-16 at 22:32 +0100, Oleg Nesterov wrote:
-> > > > I was about to write a response, but found it to be a justification for
-> > > > the read_barrier_depends() at the end of the loop.
-> > >
-> > > I forgot to mention I don't understand the read_barrier_depends() at the
-> > > end of the loop as well ;)
-> >
-> > Suppose cpu0 adds to csd to cpu1:
-> >
-> >
-> >  cpu0:                 cpu1:
-> >
-> > add entry1
-> > mb();
-> > send ipi
-> >                       run ipi handler
-> >                       read_barrier_depends()
-> >                       while (!list_empty())    [A]
-> >                         do foo
-> >
-> > add entry2
-> > mb();
-> > [no ipi -- we still observe entry1]
-> >
-> >                         remove foo
-> >                         read_barrier_depends()
-> >                       while (!list_empty())      [B]
-> 
-> Still can't understand.
-> 
-> cpu1 (generic_smp_call_function_single_interrupt) does
-> list_replace_init(q->lock), this lock is also taken by
-> generic_exec_single().
-> 
-> Either cpu1 sees entry2 on list, or cpu0 sees list_empty()
-> and sends ipi.
+> > - It provides a way to handle overdrive/turbo operating points out of
+> > band from the generically tuned cpufreq governors like ondemand.  The
+> > way we characterize overdrive is stricter then what Intel has talked
+> > about for x86.
+>
+> if you have an improved-for-your-systems governor then I'm sure that is
+> very welcome in the kernel.
 
-cpu0:		cpu1:
+No, the generic governors were not substantially improved. Not every customer is using cpufreq for DVFS. As such we went underneath it. If we had more community presence at the start time we might have also tried that.
 
-spin_lock_irqsave(&dst->lock, flags);
-ipi = list_empty(&dst->list);
-list_add_tail(&data->list, &dst->list);
-spin_unlock_irqrestore(&dst->lock, flags);
+> I think just about all of us agree that the final decision needs to be
+> in the driver (possibly followed by something that gets various device
+> requests and combines it into hw settings); we're just talking about
+> what inputs feed into that decision ;)
+>
+> And for different types of devices that's guaranteed to be different...
+> and sometimes we'll be hampered by existing interfaces, so we might end
+> up with hacky stuff.
 
-ipi ----->
+Is there some kind of roadmap which can be plotted which goes from course to more granular control?
 
-		while (!list_empty(&q->list)) {
-                	unsigned int data_flags;
+Phase 1 (all or nothing): like wakelocks (minus back light): system-auto-suspend-on, system-auto-suspend-off.  The drivers can still veto as they do today.
 
-                	spin_lock(&q->lock);
-               		list_replace_init(&q->list, &list);
-	                spin_unlock(&q->lock);
+Phase 2: Subsystem generic tunable, on say latency + bandwidth. Start with CPU then move to classes like USB.
 
+Phase 3: ??? if needed add direct device control, hints on an extended fadvise(), and explicit control left to open/close and direct ioctls?
 
-Strictly speaking the unlock() is semi-permeable, allowing the read of
-q->list to enter the critical section, allowing us to observe an empty
-list, never getting to q->lock on cpu1.
+I don't know that 1,2,3 above even make sense.  However, the notion of actually plotting out a course with goals does as it will take a long time and it is good to get some benefit along the way.
 
-The mb()/rbd() pair seems to avoid that.
-
-> > The read_barrier_depends() matches the mb() on the other cpu, without
-> > which the 'new' entry might not be observed.
-> 
-> And that mb() looks unneeded too. Again, because
-> generic_smp_call_function_single_interrupt() takes call_single_queue.lock
-> before it uses "data".
-> 
-> 
-> Even if I missed something (very possible), then I can't understand
-> why we need rmb() only on alpha.
-
-Because only alpha is insane enough to do speculative reads? Dunno
-really :-)
+Thanks,
+Richard W.
 
