@@ -1,68 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbZBPKXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756356AbZBPK3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756570AbZBPKXl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 05:23:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbZBPKXd
+	id S1756356AbZBPK3Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 05:29:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbZBPK3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 05:23:33 -0500
-Received: from mail.klingt.org ([86.59.21.178]:57076 "EHLO klingt.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753845AbZBPKXc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 05:23:32 -0500
-Date: Mon, 16 Feb 2009 11:23:13 +0100
-From: Tim Blechmann <tim@klingt.org>
-To: Robert Richter <robert.richter@amd.com>
-Cc: oprofile-list@lists.sf.net, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29-rc4 regression (was: Re: 2.6.28-rc9: oprofile
- regression)
-Message-ID: <20090216112313.359ef437@thinkpad>
-In-Reply-To: <20090213190740.GD25042@erda.amd.com>
-References: <1229869416.6911.1.camel@thinkpad>
- <49932C35.3020300@klingt.org>
- <20090213190740.GD25042@erda.amd.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 16 Feb 2009 05:29:13 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:10504 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750849AbZBPK3M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 05:29:12 -0500
+Message-ID: <49993FF2.9050200@panasas.com>
+Date: Mon, 16 Feb 2009 12:29:06 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+MIME-Version: 1.0
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: avishay@gmail.com, jeff@garzik.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, osd-dev@open-osd.org,
+       linux-kernel@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+       jens.axboe@oracle.com, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 1/8] exofs: Kbuild, Headers and osd utils
+References: <499928A3.60507@panasas.com>	<20090216180028C.fujita.tomonori@lab.ntt.co.jp>	<49992F99.1060404@panasas.com> <20090216183750H.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090216183750H.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (klingt.org [127.0.0.1]); Mon, 16 Feb 2009 11:23:15 +0100 (CET)
+X-OriginalArrivalTime: 16 Feb 2009 10:29:10.0069 (UTC) FILETIME=[67732650:01C99021]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> still, I can not reproduce this with my tests with v2.6.29-rc4. The
-> regression on the systems I have runs fine on rc4. On the system you
-> have, is commit b99170288421c79f0c2efa8b33e26e65f4bb7fb8 the first bad
-> one? If so, I will split the patch into smaller pieces to find the
-> change that introduces the bug.
+FUJITA Tomonori wrote:
+> On Mon, 16 Feb 2009 11:19:21 +0200
+> Boaz Harrosh <bharrosh@panasas.com> wrote:
+> 
+>>>> Also looking
+>>>> ahead I will have RAID 0, 1, 5, and 6 on objects of different devices. bio
+>>>> is the perfect collector for memory information in this situation.
+>>> You will add such features to exofs, handling multiple devices
+>>> internally?
+>>>
+>> Multiple objects on Multiple devices, Yes.
+> 
+> I thought that exofs is kinda example (reference) file system.
+> 
+> Nobody has seen your code. Let's discuss when we have the
+> code. Over-designing for what we've not seen is not a good idea.
+> 
 
-i got revision df13b31c286b3e91c556167954eda088d90a4295 working, by not
-resetting the counter width:
+Thanks for the insults, and high credit ;)
 
-diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
-index 12e207a..f0e019d 100644
---- a/arch/x86/oprofile/op_model_ppro.c
-+++ b/arch/x86/oprofile/op_model_ppro.c
-@@ -76,12 +76,14 @@ static void ppro_setup_ctrs(struct op_msrs const * const msrs)
- 			return;
- 	}
- 
-+#if 0
- 	if (cpu_has_arch_perfmon) {
- 		union cpuid10_eax eax;
- 		eax.full = cpuid_eax(0xa);
- 		if (counter_width < eax.split.bit_width)
- 			counter_width = eax.split.bit_width;
- 	}
-+#endif
+Yes it's "kinda example (reference) file system" of a pNFS-objects
+file system. What can I do life is tough.
 
+> 
+>>>> exofs is not the first and only file system who is using bios. Proof of
+>>>> the matter is that block exports a bio submit routine.
+>>> Seems that exofs just passes pages and the ULD sends a SCSI command
+>>> including these pages. I don't see how exofs needs to handle bio
+>>> directly.
+>>>
+>> How do you propose to collect these pages? and keep them without allocating
+>> an extra list? without pre-allocating a struct request? and without re-inventing
+>> the bio structure?
+> 
+> I don't think that allocating an extra list (or something) to keep
+> them hurts performance. We can talk about it when you have the real
+> performance results.
 
-this tweak did not work on later kernels, that i tested, though, and i 
-haven't had time to look into it in more detail.
+So you are the one that starts to invent the wheel here. I thought I was
+the one that does that, only you only called me by names, because you never showed
+me where.
 
-tim
+But please only answer one question for me: Please don't write back if you do not
+answer this question:
 
--- 
-tim@klingt.org
-http://tim.klingt.org
+Why do other filesystems allow to use bios? are they going to stop? Who is going
+to remove that?
 
-Linux is like a wigwam: no windows, no gates, apache inside, stable.
+And as I said, I am going to remove it for now, please be patient. You have never
+herd from me that I refuse to do it, did you?
+
+Boaz
