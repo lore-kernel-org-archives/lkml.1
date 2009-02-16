@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbZBPNBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757736AbZBPNCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757551AbZBPNBW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 08:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755860AbZBPNBN
+	id S1757736AbZBPNCe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 08:02:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755182AbZBPNCZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 08:01:13 -0500
-Received: from welcomes-you.com ([85.214.50.128]:33371 "EHLO
-	smtp.welcomes-you.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755667AbZBPNBM (ORCPT
+	Mon, 16 Feb 2009 08:02:25 -0500
+Received: from smtp-101-monday.noc.nerim.net ([62.4.17.101]:53645 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754954AbZBPNCZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 08:01:12 -0500
-Message-ID: <49996380.1090902@aei.mpg.de>
-Date: Mon, 16 Feb 2009 14:00:48 +0100
-From: Carsten Aulbert <carsten.aulbert@aei.mpg.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 16 Feb 2009 08:02:25 -0500
+From: Damien Wyart <damien.wyart@free.fr>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #12650] Strange load average and ksoftirqd behavior with 2.6.29-rc2-git1
+References: <20090215090026.GA31147@elte.hu>
+	<20090215095128.GA3234@localhost.localdomain>
+	<20090215101351.GA23274@elte.hu>
+	<20090215103445.GA2335@localhost.localdomain>
+	<20090215110104.GB31351@elte.hu>
+	<20090215180355.GA2273@localhost.localdomain>
+	<20090215193102.GA16873@elte.hu>
+	<20090216084223.GA2641@localhost.localdomain>
+	<20090216095059.GL6182@elte.hu> <87hc2u61e9.fsf@free.fr>
+	<20090216122632.GA3158@elte.hu>
+Date: Mon, 16 Feb 2009 14:02:23 +0100
+Message-ID: <87ljs6pmao.fsf@free.fr>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.90
 MIME-Version: 1.0
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-CC: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-       beowulf@beowulf.org
-Subject: Re: Tracing down 250ms open/chdir calls
-References: <49991BE7.1090104@aei.mpg.de> <1234788998.7708.40.camel@heimdal.trondhjem.org>
-In-Reply-To: <1234788998.7708.40.camel@heimdal.trondhjem.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Trond,
+* Ingo Molnar <mingo@elte.hu> [090216 13:26]:
+> We do get 0x100 which is 1 << RCU_SOFTIRQ, i.e. the RCU softirq. Paul, 
+> this indeed seems to be a CONFIG_TREE_RCU=y bug.
 
-Trond Myklebust schrieb:
-> 2.6.27.7 has a known NFS client performance bug due to a change in the
-> authentication code. The fix was merged in 2.6.27.9: see the commit
-> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git&a=commitdiff&h=a0f04d0096bd7edb543576c55f7a0993628f924a
+> What is weird is that RCU_SOFTIRQ gets set again and again - but there's 
+> no raise_softirq() calls. Could you please do a two-CPU trace too via:
 
-Maybe that's also a reason why we don't see it that often anymore -
-although the user load has shifted a bit also. We are running 2.7.27.14
-(and .15 since Friday).
+>    echo 3 > /debug/tracing/tracing_cpumask
 
-Thanks for letting me know, I'll probably re-run the tests again with a
-newer kernel.
+> So that we can see what's happening on the other CPU?
 
-Cheers
+> Also, could you please apply the debug patch below (or update to the 
+> very latest -tip tree), so that we get trace entries of softirq triggers 
+> too?
 
-Carsten
+Ok, the new trace with these additional modifications is here:
+http://damien.wyart.free.fr/ksoftirqd_pb/trace_tip_2009.02.16_1300_ksoftirqd_pb_abstime_proc_mask3.txt.gz
+
+-- 
+Damien
