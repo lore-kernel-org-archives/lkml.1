@@ -1,79 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751017AbZBPPSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752035AbZBPPUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751017AbZBPPSs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 10:18:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbZBPPSh
+	id S1752035AbZBPPUd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 10:20:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750960AbZBPPUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 10:18:37 -0500
-Received: from homer.mvista.com ([63.81.120.155]:62403 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750861AbZBPPSg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 10:18:36 -0500
-Message-ID: <499983DF.5050503@ru.mvista.com>
-Date: Mon, 16 Feb 2009 18:18:55 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Mon, 16 Feb 2009 10:20:22 -0500
+Received: from thunk.org ([69.25.196.29]:45641 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750814AbZBPPUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 10:20:21 -0500
+Date: Mon, 16 Feb 2009 10:01:56 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Andres Freund <andres@anarazel.de>
+Cc: adilger@sun.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, Jonathan Bastien-Filiatrault <joe@x2a.org>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: EXT4 ENOSPC Bug
+Message-ID: <20090216150156.GD22619@mini-me.lan>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andres Freund <andres@anarazel.de>, adilger@sun.com,
+	LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+	Jonathan Bastien-Filiatrault <joe@x2a.org>,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+References: <200811291418.24672.andres@anarazel.de> <200812100108.04163.andres@anarazel.de> <49994FEF.2020908@anarazel.de>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ingo Molnar <mingo@elte.hu>, Justin Madru <jdm64@gawab.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux IDE <linux-ide@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Hugh Dickins <hugh@veritas.com>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Mikael Pettersson <mikpe@it.uu.se>
-Subject: Re: [Bug #12263] Sata soft reset filling log
-References: <sTyoMUwdm9B.A.QCH.U40lJB@chimera> <200902152221.43834.rjw@sisk.pl> <20090215223045.GC29300@elte.hu> <200902160012.57584.rjw@sisk.pl>
-In-Reply-To: <200902160012.57584.rjw@sisk.pl>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49994FEF.2020908@anarazel.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Mon, Feb 16, 2009 at 12:37:19PM +0100, Andres Freund wrote:
+> Hi All,
+>
+> "Luckily", to prove that I am not completly mad I recently found this  
+> problem again. On a more recent kernel:
+> 2.6.29-rc3-andres-00498-g68e80d5
+> (upstream 2.6.29 + Theodore's ext4 debug patches)
+>
+> Again I got:
+> open("/home/andres/tt", O_WRONLY|O_CREAT|O_NOCTTY|O_NONBLOCK, 0666) = -1  
+> ENOSPC (No space left on device)
 
-Rafael J. Wysocki wrote:
+So /home/andres/tt does not exist, correct?  Does this happen for any
+attempt to create a new zero-length file using the "touch" command?
+(Even in other directories)   Can you append to a file using "cat
+/etc/mailcap >> some_existing_file"?
 
->>>>>This message has been generated automatically as a part of a report
->>>>>of regressions introduced between 2.6.27 and 2.6.28.
+If it is "yes" to the first two questions, and "no" the third, it
+looks like this might be an inode allocation failure as opposed to a
+block allocation failure.
 
->>>>>The following bug entry is on the current list of known regressions
->>>>>introduced between 2.6.27 and 2.6.28.  Please verify if it still should
->>>>>be listed and let me know (either way).
+Once this triggers, does it reliably continue to fail if you reboot?
+Or does it go away when you reboot?
 
->>>>>Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12263
->>>>>Subject		: Sata soft reset filling log
->>>>>Submitter	: Justin Madru <bevicm@dslextreme.com>
->>>>>Date		: 2008-12-13 2:07 (64 days old)
->>>>>References	: http://marc.info/?l=linux-kernel&m=122913412608533&w=4
-
->>>>I'm still seeing this on .29-rc5, and I think that my bug #12263 is a 
->>>>duplicate of bug #12609,
->>>>or more correctly it's a duplicate of mine because I reported first.
-
->>>>It seems like the bug has been fixed in tip/master for some time now.
->>>>Below is the diff of origin and tip from when I tested.
-
->>>Ingo, do you know whinch patch in -tip fixes this regression?
-
->>This one, done on Jan 10, more than a month ago:
-
->>  f1d26da: Revert "libata: Add 32bit PIO support"
-
->>When a commit causes trouble in -tip qa i immediately revert it in 95% 
->>of the cases, no questions asked. Especially if it's related to 
->>persistent storage.
-
-> OK, thanks.
-
-> We seem to have a working fix patch for this issue in bug #12609.
-
-    Wait, if this is indeed post-2.6.27 regression, it couldn't possibly have 
-been caused by that patch which got merged during 2.6.29-rc1 timeframe. 
-Something's up with this bug...
-
-MBR, Sergei
+					- Ted
