@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbZBPXuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbZBPXuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756428AbZBPXuj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 18:50:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755821AbZBPXq0
+	id S1757939AbZBPXuz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 18:50:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbZBPXq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 18:46:26 -0500
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:50811
+	Mon, 16 Feb 2009 18:46:27 -0500
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:50815
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753073AbZBPXqT (ORCPT
+	with ESMTP id S1751992AbZBPXqT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 16 Feb 2009 18:46:19 -0500
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -18,11 +18,11 @@ Cc: the arch/x86 maintainers <x86@kernel.org>,
        Yinghai Lu <yinghai@kernel.org>, Ian Campbell <Ian.Campbell@citrix.com>,
        Ian Campbell <ian.campbell@citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 10/19] xen/dom0: Use host E820 map
-Date: Mon, 16 Feb 2009 15:46:04 -0800
-Message-Id: <e59d440a548af3d4e4bb483c73e24614a5b3af63.1234826723.git.jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 12/19] xen: clear reserved bits in l3 entries given in the initial pagetables
+Date: Mon, 16 Feb 2009 15:46:06 -0800
+Message-Id: <0b79be113b42a033f3b3ca4d4f3ca4035c8a7bf5.1234826723.git.jeremy.fitzhardinge@citrix.com>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <f156acbfffc23cccd71b71d36e6668c6c246f3b4.1234826723.git.jeremy.fitzhardinge@citrix.com>
+In-Reply-To: <2fe9663efa1686898ebf9d28e911daac3185b6b7.1234826723.git.jeremy.fitzhardinge@citrix.com>
 References: <cover.1234826723.git.jeremy.fitzhardinge@citrix.com>
  <cover.1234826723.git.jeremy.fitzhardinge@citrix.com>
  <cover.1234826723.git.jeremy.fitzhardinge@citrix.com>
@@ -36,6 +36,8 @@ References: <cover.1234826723.git.jeremy.fitzhardinge@citrix.com>
  <8349825a016bec5b8712940ad6f8c3f18f8003fb.1234826723.git.jeremy.fitzhardinge@citrix.com>
  <f156acbfffc23cccd71b71d36e6668c6c246f3b4.1234826723.git.jeremy.fitzhardinge@citrix.com>
  <f156acbfffc23cccd71b71d36e6668c6c246f3b4.1234826723.git.jeremy.fitzhardinge@citrix.com>
+ <e59d440a548af3d4e4bb483c73e24614a5b3af63.1234826723.git.jeremy.fitzhardinge@citrix.com>
+ <2fe9663efa1686898ebf9d28e911daac3185b6b7.1234826723.git.jeremy.fitzhardinge@citrix.com>
 In-Reply-To: <cover.1234826723.git.jeremy.fitzhardinge@citrix.com>
 References: <cover.1234826723.git.jeremy.fitzhardinge@citrix.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -44,128 +46,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ian Campbell <ian.campbell@citrix.com>
 
-Unlike the non-paravirt Xen port we do not have distinct psuedo-physical
-and I/O memory resource-spaces and therefore resources in the two
-can clash. Fix this by registering a memory map which matches the
-underlying I/O map. Currently this wastes the memory in the reserved
-regions. Eventually we should remap this memory to the end of the
-address space.
+In native PAE, the only flag that may be legitimately set in an L3
+entry is Present.  When Xen grafts the top-level PAE L3 pagetable
+entries into the L4 pagetable, it must also set the other permissions
+flags so that the mapped pages are actually accessible.
+
+However, due to a bug in the hypervisor, it validates update to the L3
+entries as formal PAE entries, so it will refuse to validate these
+entries with the extra bits requires for 4-level pagetables.
+
+This patch simply masks the entries back to the bare PAE level,
+leaving Xen to add whatever bits it feels are necessary.
 
 Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/setup.c           |   45 +++++++++++++++++++++++++++++++++++++--
- include/xen/interface/memory.h |   29 +++++++++++++++++++++++++
- 2 files changed, 71 insertions(+), 3 deletions(-)
+ arch/x86/xen/mmu.c |   15 +++++++++++++++
+ 1 files changed, 15 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
-index 3e4cf46..175396c 100644
---- a/arch/x86/xen/setup.c
-+++ b/arch/x86/xen/setup.c
-@@ -19,6 +19,7 @@
- 
- #include <xen/page.h>
- #include <xen/interface/callback.h>
-+#include <xen/interface/memory.h>
- #include <xen/interface/physdev.h>
- #include <xen/features.h>
- 
-@@ -36,16 +37,54 @@ extern void xen_syscall32_target(void);
- /**
-  * machine_specific_memory_setup - Hook for machine specific memory setup.
-  **/
--
- char * __init xen_memory_setup(void)
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index 367a7d2..5f034a1 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -1778,6 +1778,7 @@ __init pgd_t *xen_setup_kernel_pagetable(pgd_t *pgd,
+ 					 unsigned long max_pfn)
  {
- 	unsigned long max_pfn = xen_start_info->nr_pages;
-+	unsigned long long mem_end;
-+	int rc;
-+	struct xen_memory_map memmap;
-+	/*
-+	 * This is rather large for a stack variable but this early in
-+	 * the boot process we know we have plenty slack space.
-+	 */
-+	struct e820entry map[E820MAX];
-+	int op = xen_initial_domain() ?
-+		XENMEM_machine_memory_map :
-+		XENMEM_memory_map;
+ 	pmd_t *kernel_pmd;
 +	int i;
  
- 	max_pfn = min(MAX_DOMAIN_PAGES, max_pfn);
-+	mem_end = PFN_PHYS((u64)max_pfn);
-+
-+	memmap.nr_entries = E820MAX;
-+	set_xen_guest_handle(memmap.buffer, map);
-+
-+	rc = HYPERVISOR_memory_op(op, &memmap);
-+	if (rc == -ENOSYS) {
-+		memmap.nr_entries = 1;
-+		map[0].addr = 0ULL;
-+		map[0].size = mem_end;
-+		/* 8MB slack (to balance backend allocations). */
-+		map[0].size += 8ULL << 20;
-+		map[0].type = E820_RAM;
-+		rc = 0;
-+	}
-+	BUG_ON(rc);
+ 	init_pg_tables_start = __pa(pgd);
+ 	init_pg_tables_end = __pa(pgd) + xen_start_info->nr_pt_frames*PAGE_SIZE;
+@@ -1789,6 +1790,20 @@ __init pgd_t *xen_setup_kernel_pagetable(pgd_t *pgd,
+ 	xen_map_identity_early(level2_kernel_pgt, max_pfn);
  
- 	e820.nr_map = 0;
--
--	e820_add_region(0, PFN_PHYS((u64)max_pfn), E820_RAM);
-+	for (i = 0; i < memmap.nr_entries; i++) {
-+		unsigned long long end = map[i].addr + map[i].size;
-+		if (map[i].type == E820_RAM) {
-+			if (map[i].addr > mem_end)
-+				continue;
-+			if (end > mem_end) {
-+				/* Truncate region to max_mem. */
-+				map[i].size -= end - mem_end;
-+			}
-+		}
-+		if (map[i].size > 0)
-+			e820_add_region(map[i].addr, map[i].size, map[i].type);
-+	}
+ 	memcpy(swapper_pg_dir, pgd, sizeof(pgd_t) * PTRS_PER_PGD);
++
++	/*
++	 * When running a 32 bit domain 0 on a 64 bit hypervisor a
++	 * pinned L3 (such as the initial pgd here) contains bits
++	 * which are reserved in the PAE layout but not in the 64 bit
++	 * layout. Unfortunately some versions of the hypervisor
++	 * (incorrectly) validate compat mode guests against the PAE
++	 * layout and hence will not allow such a pagetable to be
++	 * pinned by the guest. Therefore we mask off only the PFN and
++	 * Present bits of the supplied L3.
++	 */
++	for (i = 0; i < PTRS_PER_PGD; i++)
++		swapper_pg_dir[i].pgd &= (PTE_PFN_MASK | _PAGE_PRESENT);
++
+ 	set_pgd(&swapper_pg_dir[KERNEL_PGD_BOUNDARY],
+ 			__pgd(__pa(level2_kernel_pgt) | _PAGE_PRESENT));
  
- 	/*
- 	 * Even though this is normal, usable memory under Xen, reserve
-diff --git a/include/xen/interface/memory.h b/include/xen/interface/memory.h
-index af36ead..e6c6bcb 100644
---- a/include/xen/interface/memory.h
-+++ b/include/xen/interface/memory.h
-@@ -142,4 +142,33 @@ struct xen_translate_gpfn_list {
- };
- DEFINE_GUEST_HANDLE_STRUCT(xen_translate_gpfn_list);
- 
-+/*
-+ * Returns the pseudo-physical memory map as it was when the domain
-+ * was started (specified by XENMEM_set_memory_map).
-+ * arg == addr of struct xen_memory_map.
-+ */
-+#define XENMEM_memory_map           9
-+struct xen_memory_map {
-+    /*
-+     * On call the number of entries which can be stored in buffer. On
-+     * return the number of entries which have been stored in
-+     * buffer.
-+     */
-+    unsigned int nr_entries;
-+
-+    /*
-+     * Entries in the buffer are in the same format as returned by the
-+     * BIOS INT 0x15 EAX=0xE820 call.
-+     */
-+    GUEST_HANDLE(void) buffer;
-+};
-+DEFINE_GUEST_HANDLE_STRUCT(xen_memory_map);
-+
-+/*
-+ * Returns the real physical memory map. Passes the same structure as
-+ * XENMEM_memory_map.
-+ * arg == addr of struct xen_memory_map.
-+ */
-+#define XENMEM_machine_memory_map   10
-+
- #endif /* __XEN_PUBLIC_MEMORY_H__ */
 -- 
 1.6.0.6
 
