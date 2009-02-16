@@ -1,96 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757864AbZBPOEG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757858AbZBPOIG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757864AbZBPOEG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 09:04:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756946AbZBPODx
+	id S1757858AbZBPOIG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 09:08:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875AbZBPOHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 09:03:53 -0500
-Received: from DSL212-235-53-3.bb.netvision.net.il ([212.235.53.3]:40161 "EHLO
-	bh-buildlin1.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756859AbZBPODx (ORCPT
+	Mon, 16 Feb 2009 09:07:54 -0500
+Received: from frost.carfax.org.uk ([212.13.194.111]:3536 "EHLO
+	frost.carfax.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751323AbZBPOHw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 09:03:53 -0500
-X-Greylist: delayed 3887 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Feb 2009 09:03:51 EST
-From: Benny Halevy <bhalevy@panasas.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, Benny Halevy <bhalevy@panasas.com>
-Subject: [PATCH] bitmap: Cleanup find_last_bit
-Date: Mon, 16 Feb 2009 14:58:40 +0200
-Message-Id: <1234789120-31543-1-git-send-email-bhalevy@panasas.com>
-X-Mailer: git-send-email 1.6.1.3
-In-Reply-To: <200812011848.31552.rusty@rustcorp.com.au>
-References: <200812011848.31552.rusty@rustcorp.com.au>
+	Mon, 16 Feb 2009 09:07:52 -0500
+X-Greylist: delayed 1512 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Feb 2009 09:07:51 EST
+Date: Mon, 16 Feb 2009 13:42:34 +0000
+From: Hugo Mills <hugo-lkml@carfax.org.uk>
+To: linux-btrfs@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: warn_slowpath in clean_tree_block
+Message-ID: <20090216134234.GB11816@vlad.carfax.org.uk>
+Mail-Followup-To: Hugo Mills <hugo-lkml@carfax.org.uk>,
+	linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="kORqDWCi7qDJ0mEj"
+Content-Disposition: inline
+X-GPG-Fingerprint: 8C59 86C7 81F3 93FE BB02  DDB1 20AC B3BE 515C 238D
+X-GPG-Key: 515C238D
+X-Parrot: It is no more. It has joined the choir invisible.
+X-IRC-Nicks: darksatanic darkersatanic darkling darkthing
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-frost.carfax.org.uk-Spam-Score: 0.0 (/)
+X-frost.carfax.org.uk-Spam-Report: Spam detection software, running on the system "admin.islay.bitfolk.com", has
+	identified this incoming email as possible spam.  The original message
+	has been attached to this so you can view it (if it isn't spam) or label
+	similar future email.  If you have any questions, see
+	the administrator of that system for details.
+	Content preview:  I've just started playing with Btrfs, and I'm getting a log
+	full of kernel warnings that look something like this: Feb 16 09:02:17 vlad
+	kernel: [ cut here ] Feb 16 09:02:17 vlad kernel: WARNING: at fs/btrfs/disk-io.c:815
+	clean_tree_block+0x9d/0xbb [btrfs]() Feb 16 09:02:17 vlad kernel: Hardware
+	name: System Product Name Feb 16 09:02:17 vlad kernel: Modules linked in:
+	btrfs zlib_deflate tcp_diag inet_diag kqemu cpufreq_userspace ipv6 nfsd nfs
+	lockd nfs_acl auth_rpcgss sunrpc af_packet bridge stp llc xfs exportfs it87
+	hwmon_vid powernow_k8 sbp2 ieee1394 ide_generic ide_gd_mod ide_cd_mod pcspkr
+	evdev k8temp hwmon i2c_viapro i2c_core button dm_mirror dm_region_hash dm_log
+	dm_snapshot dm_mod raid1 md_mod usbhid usb_storage libusual sg sr_mod cdrom
+	via82cxxx floppy via_rhine mii ehci_hcd uhci_hcd usbcore pata_via ide_pci_generic
+	ide_core sd_mod thermal processor fan unix Feb 16 09:02:17 vlad kernel: Pid:
+	24129, comm: btrfs-endio-wri Tainted: G W 2.6.29-rc4 #1 Feb 16 09:02:17 vlad
+	kernel: Call Trace: Feb 16 09:02:17 vlad kernel: [<ffffffff80228d7d>] warn_slowpath+0xd8/0x111
+	Feb 16 09:02:17 vlad kernel: [<ffffffff80251d9e>] __alloc_pages_internal+0xd2/0x3ec
+	Feb 16 09:02:17 vlad kernel: [<ffffffff8024d55d>] add_to_page_cache_locked+0x52/0x9e
+	Feb 16 09:02:17 vlad kernel: [<ffffffff8024d5e9>] add_to_page_cache_lru+0x40/0x58
+	Feb 16 09:02:17 vlad kernel: [<ffffffff8024dbd0>] find_or_create_page+0x62/0x88
+	Feb 16 09:02:17 vlad kernel: [<ffffffff80313244>] rb_insert_color+0xba/0xe2
+	Feb 16 09:02:17 vlad kernel: [<ffffffffa03f992a>] alloc_extent_buffer+0x268/0x2ec
+	[btrfs] Feb 16 09:02:17 vlad kernel: [<ffffffffa03e1b18>] clean_tree_block+0x9d/0xbb
+	[btrfs] Feb 16 09:02:17 vlad kernel: [<ffffffffa03d5eaf>] btrfs_init_new_buffer+0x99/0xf3
+	[btrfs] Feb 16 09:02:17 vlad kernel: [<ffffffffa03d849e>] btrfs_alloc_free_block+0x83/0x8c
+	[btrfs] Feb 16 09:02:17 vlad kernel: [<ffffffffa03cda8b>] split_leaf+0x159/0xa0a
+	[btrfs] Feb 16 09:02:17 vlad kernel: [<ffffffffa03f0de5>] btrfs_item_offset+0xb3/0xbe
+	[btrfs] Feb 16 09:02:17 vlad kernel: [<ffffffffa03c96bc>] leaf_space_used+0xb5/0xe8
+	[btrfs] Feb 16 09:02:17 vlad kernel: [...] 
+	Content analysis details:   (0.0 points, 5.0 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix cut & paste error in header comment.
-Simplify implementation a bit.
 
-Signed-off-by: Benny Halevy <bhalevy@panasas.com>
----
+--kORqDWCi7qDJ0mEj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Rusty, we're using a similar mechanism for finding the highest slot ID
-in use in the nfsv4.1 slot table and I'm going to moev it over to
-using find_last_bit in our 2.6.29 patchset.
-While going over your implementation I noticed a tiny cut & paste error in
-bitops.h and I'd also like to propose a couple simplifications to make
-the implementation a bit more readable (at least to me :).
+   I've just started playing with Btrfs, and I'm getting a log full of
+kernel warnings that look something like this:
 
-Benny
+Feb 16 09:02:17 vlad kernel: ------------[ cut here ]------------
+Feb 16 09:02:17 vlad kernel: WARNING: at fs/btrfs/disk-io.c:815 clean_tree_block+0x9d/0xbb [btrfs]()
+Feb 16 09:02:17 vlad kernel: Hardware name: System Product Name
+Feb 16 09:02:17 vlad kernel: Modules linked in: btrfs zlib_deflate tcp_diag inet_diag kqemu cpufreq_userspace ipv6 nfsd nfs lockd nfs_acl auth_rpcgss sunrpc af_packet bridge stp llc xfs exportfs it87 hwmon_vid powernow_k8 sbp2 ieee1394 ide_generic ide_gd_mod ide_cd_mod pcspkr evdev k8temp hwmon i2c_viapro i2c_core button dm_mirror dm_region_hash dm_log dm_snapshot dm_mod raid1 md_mod usbhid usb_storage libusual sg sr_mod cdrom via82cxxx floppy via_rhine mii ehci_hcd uhci_hcd usbcore pata_via ide_pci_generic ide_core sd_mod thermal processor fan unix
+Feb 16 09:02:17 vlad kernel: Pid: 24129, comm: btrfs-endio-wri Tainted: G        W  2.6.29-rc4 #1
+Feb 16 09:02:17 vlad kernel: Call Trace:
+Feb 16 09:02:17 vlad kernel: [<ffffffff80228d7d>] warn_slowpath+0xd8/0x111
+Feb 16 09:02:17 vlad kernel: [<ffffffff80251d9e>] __alloc_pages_internal+0xd2/0x3ec
+Feb 16 09:02:17 vlad kernel: [<ffffffff8024d55d>] add_to_page_cache_locked+0x52/0x9e
+Feb 16 09:02:17 vlad kernel: [<ffffffff8024d5e9>] add_to_page_cache_lru+0x40/0x58
+Feb 16 09:02:17 vlad kernel: [<ffffffff8024dbd0>] find_or_create_page+0x62/0x88
+Feb 16 09:02:17 vlad kernel: [<ffffffff80313244>] rb_insert_color+0xba/0xe2
+Feb 16 09:02:17 vlad kernel: [<ffffffffa03f992a>] alloc_extent_buffer+0x268/0x2ec [btrfs]
+Feb 16 09:02:17 vlad kernel: [<ffffffffa03e1b18>] clean_tree_block+0x9d/0xbb [btrfs]
+Feb 16 09:02:17 vlad kernel: [<ffffffffa03d5eaf>] btrfs_init_new_buffer+0x99/0xf3 [btrfs]
+Feb 16 09:02:17 vlad kernel: [<ffffffffa03d849e>] btrfs_alloc_free_block+0x83/0x8c [btrfs]
+Feb 16 09:02:17 vlad kernel: [<ffffffffa03cda8b>] split_leaf+0x159/0xa0a [btrfs]
+Feb 16 09:02:17 vlad kernel: [<ffffffffa03f0de5>] btrfs_item_offset+0xb3/0xbe [btrfs]
+Feb 16 09:02:17 vlad kernel: [<ffffffffa03c96bc>] leaf_space_used+0xb5/0xe8 [btrfs]
+Feb 16 09:02:17 vlad kernel: [<ffffffffa03d0ebd>] btrfs_search_slot+0x917/0x99b [btrfs]
+Feb 16 09:02:17 vlad kernel: [<ffffffffa03ef06a>] btrfs_drop_extents+0xa75/0xab3 [btrfs]
+Feb 16 09:02:17 vlad kernel: [<ffffffffa03d14ee>] btrfs_insert_empty_items+0x7f/0x49d [btrfs]
+Feb 16 09:02:17 vlad kernel: [<ffffffffa03e6f0f>] insert_reserved_file_extent+0xd9/0x230 [btrfs]
+Feb 16 09:02:17 vlad kernel: [<ffffffffa03fa44f>] set_extent_bit+0x220/0x277 [btrfs]
+Feb 16 09:02:17 vlad kernel: [<ffffffffa03fadce>] lock_extent+0x46/0x95 [btrfs]
+Feb 16 09:02:17 vlad kernel: [<ffffffffa03e885c>] btrfs_finish_ordered_io+0xfe/0x198 [btrfs]
+Feb 16 09:02:17 vlad kernel: [<ffffffffa03fb4ff>] end_bio_extent_writepage+0xa9/0x1b1 [btrfs]
+Feb 16 09:02:17 vlad kernel: [<ffffffffa04023e4>] worker_loop+0x5f/0x15e [btrfs]
+Feb 16 09:02:17 vlad kernel: [<ffffffffa0402385>] worker_loop+0x0/0x15e [btrfs]
+Feb 16 09:02:17 vlad kernel: [<ffffffffa0402385>] worker_loop+0x0/0x15e [btrfs]
+Feb 16 09:02:17 vlad kernel: [<ffffffff80238269>] kthread+0x47/0x73
+Feb 16 09:02:17 vlad kernel: [<ffffffff8020c03a>] child_rip+0xa/0x20
+Feb 16 09:02:17 vlad kernel: [<ffffffff80238222>] kthread+0x0/0x73
+Feb 16 09:02:17 vlad kernel: [<ffffffff8020c030>] child_rip+0x0/0x20
+Feb 16 09:02:17 vlad kernel: ---[ end trace a315082d5647b979 ]---
 
- include/linux/bitops.h |    2 +-
- lib/find_last_bit.c    |   15 ++++++++-------
- 2 files changed, 9 insertions(+), 8 deletions(-)
+   They're not all identical -- there are bits in the middle of the
+trace that change. They tend to arrive in groups of 4-8 warnings very
+close together, separated by 15-20 seconds without a warning. The
+workload was encoding a video from another filesystem, onto the Btrfs
+filesystem. It's quiet when there's nothing accessing the filesystem.
 
-diff --git a/include/linux/bitops.h b/include/linux/bitops.h
-index 6182913..886ebf0 100644
---- a/include/linux/bitops.h
-+++ b/include/linux/bitops.h
-@@ -142,7 +142,7 @@ extern unsigned long find_first_zero_bit(const unsigned long *addr,
-  * @addr: The address to start the search at
-  * @size: The maximum size to search
-  *
-- * Returns the bit number of the first set bit, or size.
-+ * Returns the bit number of the last set bit, or size.
-  */
- extern unsigned long find_last_bit(const unsigned long *addr,
- 				   unsigned long size);
-diff --git a/lib/find_last_bit.c b/lib/find_last_bit.c
-index 5d202e3..e9d9cdc 100644
---- a/lib/find_last_bit.c
-+++ b/lib/find_last_bit.c
-@@ -24,22 +24,23 @@ unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
- 	words = size / BITS_PER_LONG;
- 
- 	/* Partial final word? */
--	if (size & (BITS_PER_LONG-1)) {
--		tmp = (addr[words] & (~0UL >> (BITS_PER_LONG
--					 - (size & (BITS_PER_LONG-1)))));
-+	tmp = size & (BITS_PER_LONG-1);
-+	if (tmp) {
-+		tmp = addr[words] & (~0UL >> (BITS_PER_LONG - tmp));
- 		if (tmp)
- 			goto found;
- 	}
- 
- 	while (words) {
- 		tmp = addr[--words];
--		if (tmp) {
--found:
--			return words * BITS_PER_LONG + __fls(tmp);
--		}
-+		if (tmp)
-+			goto found;
- 	}
- 
- 	/* Not found */
- 	return size;
-+
-+found:
-+	return words * BITS_PER_LONG + __fls(tmp);
- }
- EXPORT_SYMBOL(find_last_bit);
+   The filesystem is 19GiB in size, residing on LVM-on-RAID-1 on a
+2.6.29-rc4 kernel. It was created on 2.6.29-rc3, 20GiB in size using
+btrfs tools 0.18-ge3b0f66, and shrunk online to its current size.
+
+   I haven't found any similar reports on the mailing list, which
+means either I've got something unusual, or something so blindingly
+expected that nobody's bothered to mention it. I suspect the latter,
+but I'm reporting it in case it's the former.
+
+   Hugo.
+
 -- 
-1.6.1.3
+=== Hugo Mills: hugo@... carfax.org.uk | darksatanic.net | lug.org.uk ===
+  PGP key: 515C238D from wwwkeys.eu.pgp.net or http://www.carfax.org.uk
+       --- "You got very nice eyes, Deedee. Never noticed them ---       
+                           before. They real?"                           
 
+--kORqDWCi7qDJ0mEj
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iD8DBQFJmW1KIKyzvlFcI40RAjlmAJ91KrL0ur9EkEdbhhYHPbU786WPngCfQ5/j
+K5vUToe/n2/5FIgLb8J4e3g=
+=c1Qa
+-----END PGP SIGNATURE-----
+
+--kORqDWCi7qDJ0mEj--
