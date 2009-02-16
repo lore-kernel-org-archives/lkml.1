@@ -1,109 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756255AbZBPCeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756496AbZBPChU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756255AbZBPCeT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Feb 2009 21:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbZBPCeH
+	id S1756496AbZBPChU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Feb 2009 21:37:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755432AbZBPChH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Feb 2009 21:34:07 -0500
-Received: from mga09.intel.com ([134.134.136.24]:50020 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752407AbZBPCeG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Feb 2009 21:34:06 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,214,1233561600"; 
-   d="scan'208";a="490253318"
-Date: Mon, 16 Feb 2009 10:34:02 +0800
-From: Wu Fengguang <wfg@linux.intel.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
-       "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>,
-       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
-Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
-Message-ID: <20090216023402.GA6199@localhost>
-References: <492BE47B.3010802@vlnb.net> <20081125114908.GA16545@localhost> <492BE97A.3050606@vlnb.net> <492BEAE8.9050809@vlnb.net> <20081125121534.GA16778@localhost> <492EDCFB.7080302@vlnb.net> <20081128004830.GA8874@localhost> <49946BE6.1040005@vlnb.net> <20090213015721.GA5565@localhost> <4995D339.5050502@vlnb.net>
+	Sun, 15 Feb 2009 21:37:07 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:13222 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755401AbZBPChF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Feb 2009 21:37:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=GYtbRB4F75Mlla9Wjb4EuLw/TQ+kRsXAJK4kg9LqZDhPjWr/lVMyaAt3j8fIu9bqyA
+         wbZUOf9PszNDkCWlVKojeWpgNuZ7rQZGw/sZM+YxVH6SBpRCMB18saXIXkFCbGByYWBr
+         94T/Lp2llB5EDXHUV3OcKu1AjJegplBmXyUBc=
+Date: Mon, 16 Feb 2009 03:37:01 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       rusty@rustcorp.com.au
+Subject: Re: Poking ieee80211_default_rc_algo causes kernel lockups
+Message-ID: <20090216023700.GA14928@nowhere>
+References: <slrngpgfil.5gc.sitsofe@sitsofe.eeepc.localdomain> <20090215170214.GK5835@nowhere> <883216.75749.qm@web110607.mail.gq1.yahoo.com> <20090215194147.GB5790@nowhere> <690182.5203.qm@web110608.mail.gq1.yahoo.com> <20090216014015.GC5790@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4995D339.5050502@vlnb.net>
+In-Reply-To: <20090216014015.GC5790@nowhere>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 13, 2009 at 11:08:25PM +0300, Vladislav Bolkhovitin wrote:
-> Wu Fengguang, on 02/13/2009 04:57 AM wrote:
->> On Thu, Feb 12, 2009 at 09:35:18PM +0300, Vladislav Bolkhovitin wrote:
->>> Sorry for such a huge delay. There were many other activities I had 
->>> to  do before + I had to be sure I didn't miss anything.
->>>
->>> We didn't use NFS, we used SCST (http://scst.sourceforge.net) with   
->>> iSCSI-SCST target driver. It has similar to NFS architecture, where N 
->>>  threads (N=5 in this case) handle IO from remote initiators 
->>> (clients)  coming from wire using iSCSI protocol. In addition, SCST 
->>> has patch  called export_alloc_io_context (see   
->>> http://lkml.org/lkml/2008/12/10/282), which allows for the IO threads 
->>>  queue IO using single IO context, so we can see if context RA can   
->>> replace grouping IO threads in single IO context.
->>>
->>> Unfortunately, the results are negative. We find neither any 
->>> advantages  of context RA over current RA implementation, nor 
->>> possibility for  context RA to replace grouping IO threads in single 
->>> IO context.
->>>
->>> Setup on the target (server) was the following. 2 SATA drives grouped 
->>> in  md RAID-0 with average local read throughput ~120MB/s ("dd 
->>> if=/dev/zero  of=/dev/md0 bs=1M count=20000" outputs "20971520000 
->>> bytes (21 GB)  copied, 177,742 s, 118 MB/s"). The md device was 
->>> partitioned on 3  partitions. The first partition was 10% of space in 
->>> the beginning of the  device, the last partition was 10% of space in 
->>> the end of the device,  the middle one was the rest in the middle of 
->>> the space them. Then the  first and the last partitions were exported 
->>> to the initiator (client).  They were /dev/sdb and /dev/sdc on it 
->>> correspondingly.
->>
->> Vladislav, Thank you for the benchmarks! I'm very interested in
->> optimizing your workload and figuring out what happens underneath.
->>
->> Are the client and server two standalone boxes connected by GBE?
->
-> Yes, they directly connected using GbE.
->
->> When you set readahead sizes in the benchmarks, you are setting them
->> in the server side? I.e. "linux-4dtq" is the SCST server?
->
-> Yes, it's the server. On the client all the parameters were left default.
->
->> What's the
->> client side readahead size?
->
-> Default, i.e. 128K
->
->> It would help a lot to debug readahead if you can provide the
->> server side readahead stats and trace log for the worst case.
->> This will automatically answer the above questions as well as disclose
->> the micro-behavior of readahead:
->>
->>         mount -t debugfs none /sys/kernel/debug
->>
->>         echo > /sys/kernel/debug/readahead/stats # reset counters
->>         # do benchmark
->>         cat /sys/kernel/debug/readahead/stats
->>
->>         echo 1 > /sys/kernel/debug/readahead/trace_enable
->>         # do micro-benchmark, i.e. run the same benchmark for a short time
->>         echo 0 > /sys/kernel/debug/readahead/trace_enable
->>         dmesg
->>
->> The above readahead trace should help find out how the client side
->> sequential reads convert into server side random reads, and how we can
->> prevent that.
->
-> We will do it as soon as we have a free window on that system.
+On Mon, Feb 16, 2009 at 02:40:15AM +0100, Frederic Weisbecker wrote:
+> On Sun, Feb 15, 2009 at 01:02:15PM -0800, Sitsofe Wheeler wrote:
+> > > From: Frederic Weisbecker <fweisbec@gmail.com>
+> > 
+> > > 
+> > > On Sun, Feb 15, 2009 at 11:24:41AM -0800, Sitsofe Wheeler wrote:
+> > > > > Could you please enable the CONFIG_DETECT_SOFTLOCKUP option in your kernel?
+> > > > 
+> > > > > It's on Kernel Hacking > Detect Soft Lockups.
+> > > > > With some chances you will have a relevant stacktrace of the lockup, in case
+> > > > > I couldn't reproduce it.
+> > > > 
+> > > > I'll try (the kernel I'm currently using is jam packed with with debug 
+> > > options) but I'm unconvinced it will unfreeze enough for anything useful...
+> > > 
+> > > No need to actually, I guess we found it...
+> > 
+> > That's good news - the only way I could have reported the soft lockup stack trace would have been by taking a photo of the screen. The stack trace was pretty much what is seen inside <http://groups.google.com/group/fa.linux.kernel/browse_frm/thread/d4a6ce26360613fa/b362792a2debced6?#b362792a2debced6> anyway. The thing that I'm curious about is why did it show up as an oops last time and as a complete lockup this time?
+> 
+> 
+> I don't know :-)
+> 
+> > 
+> > My one thought is that this is actually a parameter that was not intended to be changed and shouldn't have accepted being written to.
+> 
+> 
+> I guess there aren't any module string parameter which expect to be changed like that,
+> just by changing the pointer value.
+> Usually, when you have a string parameter, you parse it at load time, and keep the value as an integer.
+> So it makes only sense to change such values at runtime through a callback given by the module. And that's
+> what mac80211 does through debugfs.
+> 
+> > However one wonders how the syfs framework was supposed to work in other cases. 
+> 
+> 
+> Actually, what I can see is that in case of module_param() with char * types, the permission
+> of the file is often 0444 or 0, so it is safe.
+> 
+> There are exceptions however:
+> 
+> $ git-grep -E "charp, 04?[123567]+"
+> arch/um/drivers/hostaudio_kern.c:module_param(dsp, charp, 0644);
+> arch/um/drivers/hostaudio_kern.c:module_param(mixer, charp, 0644);
+> drivers/misc/lkdtm.c:module_param(cpoint_name, charp, 0644);
+> drivers/misc/lkdtm.c:module_param(cpoint_type, charp, 0644);
+> drivers/net/wireless/libertas/if_sdio.c:module_param_named(helper_name, lbs_helper_name, charp, 0644);
+> drivers/net/wireless/libertas/if_sdio.c:module_param_named(fw_name, lbs_fw_name, charp, 0644);
+> drivers/net/wireless/libertas/if_usb.c:module_param_named(fw_name, lbs_fw_name, charp, 0644);
+> drivers/net/wireless/libertas_tf/if_usb.c:module_param_named(fw_name, lbtf_fw_name, charp, 0644);
+> drivers/video/vt8623fb.c:module_param(mode_option, charp, 0644);
+> net/mac80211/rate.c:module_param(ieee80211_default_rc_algo, charp, 0644);
+> 
+> I'm preparing a patchset to set them only readable, it doesn't fix this module bug,
+> but anyway, such string params writable at runtime don't make any sense.
 
-Thank you. For NFS, the client side read/readahead requests will be
-split into units of rsize which will be served by a pool of nfsd
-concurrently and possibly out of order. Does SCST have the same
-process? If so, what's the rsize value for your SCST benchmarks?
 
-Thanks,
-Fengguang
+Well, actually all of these callsites seem to handle the case when their param value change.
+So only the module param core should be fixed...
+
+ 
+> >It sounds like there is a very
+> >small window for making your own private copy of whatever sysfs passes to you and under the current system who 
+> >throws away old strings (given that it looks like pointers are being swapped)? Are they refcounted or something?
+> 
+> When you register a module param, its address is stored inside a struct kernel_param.
+> Once you change the value of the param, it's totally fine for int/long/boolean...
+> since no memory is allocated for that, only the integer value is changed on the static memory, though
+> a module must deal with this asynchronous event given the fact it let it writable by the
+> user, and I guess it's not always a good idea.
+> 
+> So for an integer called a, you will put a module_param(a, int, ...) which will
+> allocate a struct kernel_param, and store &a inside.
+> 
+> For params such as strings, its very different, since you register a char *p,
+> its address is stored in, say,  pp (as a char **).
+> and later the equivalent of the following is done:
+> 
+> open: tmp = kzalloc(PAGE_SIZE, GFP_KERNEL);
+> write: fill(pp);
+>       *(char **)pp = tmp;
+> release: kfree(tmp)
+> read: read(**pp) => crash
+> 
+> And no there is no refcounting. But that would be perhaps too much for that.
+> Really I think a callback registered on module_param() would be better, not only
+> for appropriate allocation but for event handling too.
+
