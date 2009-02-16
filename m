@@ -1,129 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752033AbZBPR3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752690AbZBPR35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752033AbZBPR3b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 12:29:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751104AbZBPR3S
+	id S1752690AbZBPR35 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 12:29:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZBPR3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 12:29:18 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:5664 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751095AbZBPR3R (ORCPT
+	Mon, 16 Feb 2009 12:29:47 -0500
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:51825 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752340AbZBPR3q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 12:29:17 -0500
-MIME-Version: 1.0
-In-Reply-To: <20090215121201.26072.42971.stgit@vmbox.hanneseder.net>
-References: <154e089b0902150347o4e06683dy1c9c02dc2564ea4f@mail.gmail.com>
-	 <20090215121201.26072.42971.stgit@vmbox.hanneseder.net>
-Date: Mon, 16 Feb 2009 18:29:15 +0100
-Message-ID: <154e089b0902160929v617ed7d6o963da936b35ef7fb@mail.gmail.com>
-Subject: Re: [PATCH 31/43 v2] drivers/net/tokenring: fix sparse warning: cast 
-	truncates bits from const value
-From: Hannes Eder <hannes@hanneseder.net>
-To: netdev@vger.kernel.org
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jay Schulist <jjschlst@gmail.com>, Al Viro <viro@zeniv.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 16 Feb 2009 12:29:46 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhcFAP8vmUlMQWt2/2dsb2JhbACBbs9rhBwG
+Date: Mon, 16 Feb 2009 12:24:42 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, akpm <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>
+Subject: Re: irq-disabled vs vmap vs text_poke
+Message-ID: <20090216172441.GA12576@Krystal>
+References: <1234529407.6519.28.camel@twins> <20090213141839.GA31922@Krystal> <4995A0B7.1030705@redhat.com> <20090213165555.GA4684@Krystal> <4995B88C.2090900@redhat.com> <20090213185725.GC7124@Krystal> <4995E925.3080506@redhat.com> <4999808B.5080505@redhat.com> <20090216153145.GB19182@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090216153145.GB19182@wotan.suse.de>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:22:45 up 46 days, 17:20,  5 users,  load average: 0.20, 0.30,
+	0.28
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 15, 2009 at 1:13 PM, Hannes Eder <hannes@hanneseder.net> wrote:
-> Impact: Remove the write-only field 'current_ring_status' completely.
->
-> Fix this sparse warnings:
->  drivers/net/tokenring/smctr.c:4410:52: warning: cast truncates bits from constant value (100 becomes 0)
->  drivers/net/tokenring/smctr.c:4415:52: warning: cast truncates bits from constant value (400 becomes 0)
->  drivers/net/tokenring/smctr.c:4420:52: warning: cast truncates bits from constant value (800 becomes 0)
->  drivers/net/tokenring/smctr.c:4425:52: warning: cast truncates bits from constant value (1000 becomes 0)
->  drivers/net/tokenring/smctr.c:4430:52: warning: cast truncates bits from constant value (2000 becomes 0)
->  drivers/net/tokenring/smctr.c:4435:52: warning: cast truncates bits from constant value (4000 becomes 0)
->  drivers/net/tokenring/smctr.c:4440:52: warning: cast truncates bits from constant value (8000 becomes 0)
->
-> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
-> ---
->  drivers/net/tokenring/smctr.c |   10 ----------
->  drivers/net/tokenring/smctr.h |    1 -
->  2 files changed, 0 insertions(+), 11 deletions(-)
->
-> diff --git a/drivers/net/tokenring/smctr.c b/drivers/net/tokenring/smctr.c
-> index 5a3ff20..e66eb8a 100644
-> --- a/drivers/net/tokenring/smctr.c
-> +++ b/drivers/net/tokenring/smctr.c
-> @@ -4393,52 +4393,42 @@ static int smctr_ring_status_chg(struct net_device *dev)
->         {
->                 case RING_RECOVERY:
->                         printk(KERN_INFO "%s: Ring Recovery\n", dev->name);
-> -                        tp->current_ring_status |= RING_RECOVERY;
->                         break;
->
->                 case SINGLE_STATION:
->                         printk(KERN_INFO "%s: Single Statinon\n", dev->name);
-> -                        tp->current_ring_status |= SINGLE_STATION;
->                         break;
->
->                 case COUNTER_OVERFLOW:
->                         printk(KERN_INFO "%s: Counter Overflow\n", dev->name);
-> -                        tp->current_ring_status |= COUNTER_OVERFLOW;
->                         break;
->
->                 case REMOVE_RECEIVED:
->                         printk(KERN_INFO "%s: Remove Received\n", dev->name);
-> -                        tp->current_ring_status |= REMOVE_RECEIVED;
->                         break;
->
->                 case AUTO_REMOVAL_ERROR:
->                         printk(KERN_INFO "%s: Auto Remove Error\n", dev->name);
-> -                        tp->current_ring_status |= AUTO_REMOVAL_ERROR;
->                         break;
->
->                 case LOBE_WIRE_FAULT:
->                         printk(KERN_INFO "%s: Lobe Wire Fault\n", dev->name);
-> -                        tp->current_ring_status |= LOBE_WIRE_FAULT;
->                         break;
->
->                 case TRANSMIT_BEACON:
->                         printk(KERN_INFO "%s: Transmit Beacon\n", dev->name);
-> -                        tp->current_ring_status |= TRANSMIT_BEACON;
->                         break;
->
->                 case SOFT_ERROR:
->                         printk(KERN_INFO "%s: Soft Error\n", dev->name);
-> -                        tp->current_ring_status |= SOFT_ERROR;
->                         break;
->
->                 case HARD_ERROR:
->                         printk(KERN_INFO "%s: Hard Error\n", dev->name);
-> -                        tp->current_ring_status |= HARD_ERROR;
->                         break;
->
->                 case SIGNAL_LOSS:
->                         printk(KERN_INFO "%s: Signal Loss\n", dev->name);
-> -                        tp->current_ring_status |= SIGNAL_LOSS;
->                         break;
->
->                 default:
-> diff --git a/drivers/net/tokenring/smctr.h b/drivers/net/tokenring/smctr.h
-> index 52df7dd..6e5700a 100644
-> --- a/drivers/net/tokenring/smctr.h
-> +++ b/drivers/net/tokenring/smctr.h
-> @@ -977,7 +977,6 @@ typedef struct net_local {
->        __u8            monitor_state_ready;
->        __u16           ring_status;
->        __u8            ring_status_flags;
-> -       __u8            current_ring_status;
->        __u8            state;
->
->        __u8            join_state;
->
->
+* Nick Piggin (npiggin@suse.de) wrote:
+> On Mon, Feb 16, 2009 at 10:04:43AM -0500, Masami Hiramatsu wrote:
+> > >>>>>BTW, what about using map_vm_area() in text_poke() instead of vmap()?
+> > >>>>>Since text_poke() just maps text pages to alias pages temporarily,
+> > >>>>>I think we don't need to use delayed vunmap().
+> 
+> [...] 
+> 
+> > Here is the patch which replace v(un)map with (un)map_vm_area.
+> 
+> I don't quite understand the point of this... delayed vunmap() is
+> just an implementation detail of vmap subsystem. Callers should not
+> have to care.
+> 
 
-forwarding a mail from Jay Schulist:
+AFAIK, map_vm_area/unmap_vm_area is faster than vmap/vunmap.  This is
+the point of this patch. Masami, could you provide a quick benchmark of
+text_poke()/seconds before and after this optimization is applied to
+confirm this ?
 
-On Mon, Feb 16, 2009 at 4:17 PM, Jay Schulist <jjschlst@gmail.com> wrote:
-> Hello,
-> I'm at this email these days. That field was likely a hold-over from
-> the original port of their windows driver to Linux, it has never been
-> used that I know of. Removing it looks like a fine solution to me.
->
-> Jay
+Thanks,
+
+Mathieu
+
+>  
+> > Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> > ---
+> >  arch/x86/include/asm/alternative.h |    1 +
+> >  arch/x86/kernel/alternative.c      |   25 ++++++++++++++++++++-----
+> >  init/main.c                        |    3 +++
+> >  3 files changed, 24 insertions(+), 5 deletions(-)
+> > 
+> > Index: linux-2.6/arch/x86/include/asm/alternative.h
+> > ===================================================================
+> > --- linux-2.6.orig/arch/x86/include/asm/alternative.h
+> > +++ linux-2.6/arch/x86/include/asm/alternative.h
+> > @@ -177,6 +177,7 @@ extern void add_nops(void *insns, unsign
+> >   * The _early version expects the memory to already be RW.
+> >   */
+> > 
+> > +extern void text_poke_init(void);
+> >  extern void *text_poke(void *addr, const void *opcode, size_t len);
+> >  extern void *text_poke_early(void *addr, const void *opcode, size_t len);
+> > 
+> > Index: linux-2.6/arch/x86/kernel/alternative.c
+> > ===================================================================
+> > --- linux-2.6.orig/arch/x86/kernel/alternative.c
+> > +++ linux-2.6/arch/x86/kernel/alternative.c
+> > @@ -485,6 +485,16 @@ void *text_poke_early(void *addr, const
+> >  	return addr;
+> >  }
+> > 
+> > +static struct vm_struct *text_poke_area[2];
+> > +static DEFINE_SPINLOCK(text_poke_lock);
+> > +
+> > +void __init text_poke_init(void)
+> > +{
+> > +	text_poke_area[0] = get_vm_area(PAGE_SIZE, VM_ALLOC);
+> > +	text_poke_area[1] = get_vm_area(2 * PAGE_SIZE, VM_ALLOC);
+> > +	BUG_ON(!text_poke_area[0] || !text_poke_area[1]);
+> > +}
+> > +
+> >  /**
+> >   * text_poke - Update instructions on a live kernel
+> >   * @addr: address to modify
+> > @@ -501,8 +511,9 @@ void *__kprobes text_poke(void *addr, co
+> >  	unsigned long flags;
+> >  	char *vaddr;
+> >  	int nr_pages = 2;
+> > -	struct page *pages[2];
+> > -	int i;
+> > +	struct page *pages[2], **pgp = pages;
+> > +	int i, ret;
+> > +	struct vm_struct *vma;
+> > 
+> >  	if (!core_kernel_text((unsigned long)addr)) {
+> >  		pages[0] = vmalloc_to_page(addr);
+> > @@ -515,12 +526,16 @@ void *__kprobes text_poke(void *addr, co
+> >  	BUG_ON(!pages[0]);
+> >  	if (!pages[1])
+> >  		nr_pages = 1;
+> > -	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
+> > -	BUG_ON(!vaddr);
+> > +	spin_lock(&text_poke_lock);
+> > +	vma = text_poke_area[nr_pages-1];
+> > +	ret = map_vm_area(vma, PAGE_KERNEL, &pgp);
+> > +	BUG_ON(ret);
+> > +	vaddr = vma->addr;
+> >  	local_irq_save(flags);
+> >  	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
+> >  	local_irq_restore(flags);
+> > -	vunmap(vaddr);
+> > +	unmap_kernel_range((unsigned long)vma->addr, (unsigned 
+> > long)vma->size);
+> > +	spin_unlock(&text_poke_lock);
+> >  	sync_core();
+> >  	/* Could also do a CLFLUSH here to speed up CPU recovery; but
+> >  	   that causes hangs on some VIA CPUs. */
+> > Index: linux-2.6/init/main.c
+> > ===================================================================
+> > --- linux-2.6.orig/init/main.c
+> > +++ linux-2.6/init/main.c
+> > @@ -676,6 +676,9 @@ asmlinkage void __init start_kernel(void
+> >  	taskstats_init_early();
+> >  	delayacct_init();
+> > 
+> > +#ifdef CONFIG_X86
+> > +	text_poke_init();
+> > +#endif
+> >  	check_bugs();
+> > 
+> >  	acpi_early_init(); /* before LAPIC and SMP init */
+> > 
+> > -- 
+> > Masami Hiramatsu
+> > 
+> > Software Engineer
+> > Hitachi Computer Products (America) Inc.
+> > Software Solutions Division
+> > 
+> > e-mail: mhiramat@redhat.com
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
