@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755168AbZBQWT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbZBQWYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755168AbZBQWT2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 17:19:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbZBQWTS
+	id S1754504AbZBQWYh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 17:24:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbZBQWYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 17:19:18 -0500
-Received: from outbound-mail-39.bluehost.com ([69.89.20.193]:43402 "HELO
-	outbound-mail-39.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750828AbZBQWTR (ORCPT
+	Tue, 17 Feb 2009 17:24:21 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:43956 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751170AbZBQWYU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 17:19:17 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=sCb/styuBd29q/pNdO3n9xQVAmAVulUvXt4uknksBQh7MRnzrUPrAz6xmpW1865qkMwG5gvbiR4zsc+AQmJFPh46vz2z5Xx0Lx8K3LJEyAoUh9955n3L4EipNCKiB1aN;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [RFD] Automatic suspend
-Date: Tue, 17 Feb 2009 14:19:13 -0800
-User-Agent: KMail/1.9.10
-Cc: mark gross <mgross@linux.intel.com>, Pavel Machek <pavel@suse.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Arve Hj?nnev?g" <arve@android.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-References: <200902160010.16955.rjw@sisk.pl> <20090217215717.GA25605@linux.intel.com> <20090217220439.GA1573@srcf.ucam.org>
-In-Reply-To: <20090217220439.GA1573@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902171419.14823.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+	Tue, 17 Feb 2009 17:24:20 -0500
+From: Jay Vosburgh <fubar@us.ibm.com>
+To: Brian Haley <brian.haley@hp.com>
+cc: Andrey Borzenkov <arvidjaar@mail.ru>, "J.A. Magall"@us.ibm.com,
+       =?ISO-8859-1?Q?=F3n?= <jamagallon@ono.com>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, bonding-devel@lists.sourceforge.net
+Subject: Re: [Bonding-devel] 2.6.29 regression? Bonding tied to IPV6 in 29-rc5
+In-reply-to: <499B30DC.5040303@hp.com>
+References: <alpine.LFD.2.00.0902131413120.3179@localhost.localdomain> <20090217095232.5da06b9f@werewolf.home> <200902172001.41804.arvidjaar@mail.ru> <200902172117.22671.arvidjaar@mail.ru> <499B19AF.1000003@hp.com> <16929.1234904788@death.nxdomain.ibm.com> <499B30DC.5040303@hp.com>
+Comments: In-reply-to Brian Haley <brian.haley@hp.com>
+   message dated "Tue, 17 Feb 2009 16:49:16 -0500."
+X-Mailer: MH-E 8.0.3; nmh 1.3-RC3; GNU Emacs 22.2.1
+Date: Tue, 17 Feb 2009 14:24:14 -0800
+Message-ID: <21405.1234909454@death.nxdomain.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, February 17, 2009 2:04 pm Matthew Garrett wrote:
-> On Tue, Feb 17, 2009 at 01:57:17PM -0800, mark gross wrote:
-> > Putting the wake on key event issue aside, is it possible to have wake
-> > up's on the ms time scale?  I ask because I thought the XO did exactly
-> > this (but left the screen live).  Why does it take 20 sec to get into
-> > or out of S3 on my laptop?
+Brian Haley <brian.haley@hp.com> wrote:
+
+>Jay Vosburgh wrote:
+[...]
+>> 	Putting the ipv6 bits into a different module might not help,
+>> either, because the "core" bonding code would still have the call to the
+>> ipv6 functions.  Unless there's some magic way to somehow know at
+>> runtime whether or not the ipv6 module is loaded, and only try to
+>> resolve those symbols if ipv6 is loaded.  That seems complicated.
 >
-> Graphics reinit, dumping graphics contents back into RAM, us resuming
-> devices in series, that kind of thing. On some hardware you'll spend a
-> noticable amount of time in the BIOS before any of the Linux resume code
-> gets touched. I thought the XO had got sub second, but I wasn't sure
-> that they were in the low ms range.
+>This separate bonding_ipv6 module would have to register itself with the
+>"core" one with a new proto_ops of some sort.  Calls are made for the
+>appropriate method, for example bond_ops->send_gratuitous(bond).  We'd
+>change the IPv4 code too.  It's just a theory, does make things more
+>complicated.
 
-IME a good chunk of it is BIOS time.  On my x200s resume is very fast (on the 
-order of a second or two though I haven't measured), while on my Eee and T61 
-machines it's much slower, even though they're all using Intel gfx.
+	I don't see any reason to change the IPv4 bits; there won't ever
+be a case of ipv4 not being loaded, and this would just add the
+complexity of a registration gizmo with no real benefit.  A "bonding
+ipv6 ops" would be strictly a hack to deal with ipv6 module dependencies
+for cases when the kernel is built with CONFIG_IPV6 but the ipv6 module
+itself is prevented from loading.
 
-Of course we should really be shooting for sub-second times or about the time 
-it takes you to open your lid (or even much faster in the case of demand 
-suspend/resume for servers/desktops).
+	A registration gizmo doesn't need to be especially complicated;
+there's only three functions in bond_ipv6.c that are called from the
+bonding core: bond_send_unsolicited_na, and the ipv6 notifier register /
+unregister.  The bonding_ipv6 module can simply be bond_ipv6.c, which
+calls some exported "hey, bond_send_unsol_na is here" thing in the
+bonding core during init and another "hey, send_unsol_na is gone" during
+unload.  The bonding_ipv6 module can do its own notifier registration
+handing.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+>> 	To answer your question, I have come across this (aliasing ipv6
+>> to nothing in modprobe.conf to disable IPv6) from time to time, but
+>> didn't think of it when the NA code was added to bonding.
+>
+>So I guess I'll start hacking the above, unless someone has a better
+>suggestion.
+
+	Well, I think this is pretty heinous, but I don't have a better
+idea at the moment.
+
+	-J
+
+---
+	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
