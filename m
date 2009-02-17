@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753837AbZBQKe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbZBQKiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753837AbZBQKe0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 05:34:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751093AbZBQKeS
+	id S1752743AbZBQKiA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 05:38:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbZBQKhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 05:34:18 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49261 "EHLO mx2.mail.elte.hu"
+	Tue, 17 Feb 2009 05:37:52 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49061 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750962AbZBQKeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 05:34:17 -0500
-Date: Tue, 17 Feb 2009 11:34:01 +0100
+	id S1751182AbZBQKhw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 05:37:52 -0500
+Date: Tue, 17 Feb 2009 11:37:29 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Steven Rostedt <rostedt@goodmis.org>
 Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
@@ -17,14 +17,14 @@ Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 04/15] ftrace: break up ftrace_match_records into
-	smaller components
-Message-ID: <20090217103401.GA6602@elte.hu>
-References: <20090217051227.957864159@goodmis.org> <20090217051405.772028305@goodmis.org>
+Subject: Re: [PATCH 12/15] ftrace: add traceon traceoff commands to
+	enable/disable the buffers
+Message-ID: <20090217103729.GB6602@elte.hu>
+References: <20090217051227.957864159@goodmis.org> <20090217051407.422977785@goodmis.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090217051405.772028305@goodmis.org>
+In-Reply-To: <20090217051407.422977785@goodmis.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,31 +41,25 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> +static void ftrace_match_records(char *buff, int len, int enable)
-> +{
-> +	char *search;
-> +	struct ftrace_page *pg;
-> +	struct dyn_ftrace *rec;
-> +	int type;
-> +	unsigned long flag = enable ? FTRACE_FL_FILTER : FTRACE_FL_NOTRACE;
-> +	unsigned search_len;
-> +	int not;
+> +	if (*count != -1)
+> +		(*count)--;
 
-Small style nit, the above looks better as:
+minor nit: it's a tiny bit more compact as:
 
-> +	unsigned int search_len;
-> +	struct ftrace_page *pg;
-> +	struct dyn_ftrace *rec;
-> +	unsigned long flag;
-> +	char *search;
-> +	int type;
-> +	int not;
+> +	if (*count != -1)
+> +		--*count;
+
+and this:
+
+>  	return register_tracer(&function_trace);
+>  }
+>  
+>  device_initcall(init_function_trace);
 > +
-> +	flag = enable ? FTRACE_FL_FILTER : FTRACE_FL_NOTRACE;
 
-and this is what we do in other places of the tracing code.
-
-(Also note the change of 'unsigned search_len' to 'unsigned int 
-search_len'.)
+there should be no newline between device_initcall() and the 
+preceding function. (we can think of it as a late attribute of 
+the function, attached to the function. We do the same for 
+EXPORT_SYMBOL's too, etc.)
 
 	Ingo
