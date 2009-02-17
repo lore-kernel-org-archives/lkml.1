@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbZBQIMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751449AbZBQIMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754203AbZBQIMZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 03:12:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZBQIKy
+	id S1751449AbZBQIMG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 03:12:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbZBQIKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 03:10:54 -0500
-Received: from sh.osrg.net ([192.16.179.4]:55118 "EHLO sh.osrg.net"
+	Tue, 17 Feb 2009 03:10:51 -0500
+Received: from sh.osrg.net ([192.16.179.4]:55117 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752457AbZBQIKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 03:10:44 -0500
+	id S1752452AbZBQIKn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 03:10:43 -0500
 From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [PATCH mmotm 1/6] nilfs2: remove timedwait ioctl command
-Date: Tue, 17 Feb 2009 16:42:01 +0900
-Message-Id: <1234856526-1947-2-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+Subject: [PATCH mmotm 3/6] nilfs2: remove compat ioctl code
+Date: Tue, 17 Feb 2009 16:42:03 +0900
+Message-Id: <1234856526-1947-4-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1234856526-1947-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 References: <1234856526-1947-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
@@ -25,272 +25,341 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This removes NILFS_IOCTL_TIMEDWAIT command from ioctl interface along
-with the related flags and wait queue.
-
-The command is terrible because it just sleeps in the ioctl.  I prefer
-to avoid this by devising means of event polling in userland program.
-By reconsidering the userland GC daemon, I found this is possible
-without changing behaviour of the daemon and sacrificing efficiency.
+This removes compat code from the nilfs ioctls and applies the same
+function for both .ioctl and .compat_ioctl file operations.
 
 Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 ---
- fs/nilfs2/ioctl.c         |   95 +--------------------------------------------
- fs/nilfs2/segment.c       |    5 +--
- fs/nilfs2/the_nilfs.c     |    1 -
- fs/nilfs2/the_nilfs.h     |    6 ---
- include/linux/nilfs2_fs.h |   22 ----------
- 5 files changed, 2 insertions(+), 127 deletions(-)
+ fs/nilfs2/dir.c           |    2 +-
+ fs/nilfs2/file.c          |    2 +-
+ fs/nilfs2/ioctl.c         |  228 ---------------------------------------------
+ fs/nilfs2/nilfs.h         |    1 -
+ include/linux/nilfs2_fs.h |   41 --------
+ 5 files changed, 2 insertions(+), 272 deletions(-)
 
+diff --git a/fs/nilfs2/dir.c b/fs/nilfs2/dir.c
+index 1b7e6dd..393316c 100644
+--- a/fs/nilfs2/dir.c
++++ b/fs/nilfs2/dir.c
+@@ -704,7 +704,7 @@ struct file_operations nilfs_dir_operations = {
+ 	.readdir	= nilfs_readdir,
+ 	.ioctl		= nilfs_ioctl,
+ #ifdef CONFIG_COMPAT
+-	.compat_ioctl	= nilfs_compat_ioctl,
++	.compat_ioctl	= nilfs_ioctl,
+ #endif	/* CONFIG_COMPAT */
+ 	.fsync		= nilfs_sync_file,
+ 
+diff --git a/fs/nilfs2/file.c b/fs/nilfs2/file.c
+index 34c751b..1670038 100644
+--- a/fs/nilfs2/file.c
++++ b/fs/nilfs2/file.c
+@@ -140,7 +140,7 @@ struct file_operations nilfs_file_operations = {
+ 	.aio_write	= generic_file_aio_write,
+ 	.ioctl		= nilfs_ioctl,
+ #ifdef CONFIG_COMPAT
+-	.compat_ioctl	= nilfs_compat_ioctl,
++	.compat_ioctl	= nilfs_ioctl,
+ #endif	/* CONFIG_COMPAT */
+ 	.mmap		= nilfs_file_mmap,
+ 	.open		= generic_file_open,
 diff --git a/fs/nilfs2/ioctl.c b/fs/nilfs2/ioctl.c
-index 9e4d9e6..85a291c 100644
+index 7fbd9fe..33aff88 100644
 --- a/fs/nilfs2/ioctl.c
 +++ b/fs/nilfs2/ioctl.c
-@@ -578,62 +578,9 @@ int nilfs_ioctl_prepare_clean_segments(struct the_nilfs *nilfs,
- static int nilfs_ioctl_clean_segments(struct inode *inode, struct file *filp,
- 				      unsigned int cmd, void __user *argp)
- {
+@@ -631,231 +631,3 @@ int nilfs_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
+ 		return -ENOTTY;
+ 	}
+ }
+-
+-/* compat_ioctl */
+-#ifdef CONFIG_COMPAT
+-#include <linux/compat.h>
+-
+-static int nilfs_compat_locked_ioctl(struct inode *inode, struct file *filp,
+-				     unsigned int cmd, unsigned long arg)
+-{
 -	int ret;
 -
- 	if (!capable(CAP_SYS_ADMIN))
- 		return -EPERM;
--
--	ret = nilfs_clean_segments(inode->i_sb, argp);
--	clear_nilfs_cond_nongc_write(NILFS_SB(inode->i_sb)->s_nilfs);
+-	lock_kernel();
+-	ret = nilfs_ioctl(inode, filp, cmd, arg);
+-	unlock_kernel();
 -	return ret;
 -}
 -
--static int nilfs_ioctl_test_cond(struct the_nilfs *nilfs, int cond)
--{
--	return (cond & NILFS_TIMEDWAIT_SEG_WRITE) &&
--		nilfs_cond_nongc_write(nilfs);
--}
--
--static void nilfs_ioctl_clear_cond(struct the_nilfs *nilfs, int cond)
--{
--	if (cond & NILFS_TIMEDWAIT_SEG_WRITE)
--		clear_nilfs_cond_nongc_write(nilfs);
--}
--
--static int nilfs_ioctl_timedwait(struct inode *inode, struct file *filp,
--				 unsigned int cmd, void __user *argp)
--{
--	struct the_nilfs *nilfs = NILFS_SB(inode->i_sb)->s_nilfs;
--	struct nilfs_wait_cond wc;
--	long ret;
--
--	if (!capable(CAP_SYS_ADMIN))
--		return -EPERM;
--	if (copy_from_user(&wc, argp, sizeof(wc)))
--		return -EFAULT;
--
--	unlock_kernel();
--	ret = wc.wc_flags ?
--		wait_event_interruptible_timeout(
--			nilfs->ns_cleanerd_wq,
--			nilfs_ioctl_test_cond(nilfs, wc.wc_cond),
--			timespec_to_jiffies(&wc.wc_timeout)) :
--		wait_event_interruptible(
--			nilfs->ns_cleanerd_wq,
--			nilfs_ioctl_test_cond(nilfs, wc.wc_cond));
--	lock_kernel();
--	nilfs_ioctl_clear_cond(nilfs, wc.wc_cond);
--
--	if (ret > 0) {
--		jiffies_to_timespec(ret, &wc.wc_timeout);
--		if (copy_to_user(argp, &wc, sizeof(wc)))
--			return -EFAULT;
--		return 0;
--	}
--	if (ret != 0)
--		return -EINTR;
--
--	return wc.wc_flags ? -ETIME : 0;
-+	return nilfs_clean_segments(inode->i_sb, argp);
- }
- 
- static int nilfs_ioctl_sync(struct inode *inode, struct file *filp,
-@@ -679,8 +626,6 @@ int nilfs_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
- 		return nilfs_ioctl_get_bdescs(inode, filp, cmd, argp);
- 	case NILFS_IOCTL_CLEAN_SEGMENTS:
- 		return nilfs_ioctl_clean_segments(inode, filp, cmd, argp);
--	case NILFS_IOCTL_TIMEDWAIT:
--		return nilfs_ioctl_timedwait(inode, filp, cmd, argp);
- 	case NILFS_IOCTL_SYNC:
- 		return nilfs_ioctl_sync(inode, filp, cmd, argp);
- 	default:
-@@ -871,41 +816,6 @@ nilfs_compat_ioctl_clean_segments(struct inode *inode, struct file *filp,
- 		inode, filp, cmd, (unsigned long)uargv);
- }
- 
 -static int
--nilfs_compat_ioctl_timedwait(struct inode *inode, struct file *filp,
--			     unsigned int cmd, unsigned long arg)
+-nilfs_compat_ioctl_uargv32_to_uargv(struct nilfs_argv32 __user *uargv32,
+-				    struct nilfs_argv __user *uargv)
 -{
--	struct nilfs_wait_cond __user *uwcond;
--	struct nilfs_wait_cond32 __user *uwcond32;
--	struct timespec ts;
--	int cond, flags, ret;
+-	compat_uptr_t base;
+-	compat_size_t nmembs, size;
+-	compat_int_t index, flags;
 -
--	uwcond = compat_alloc_user_space(sizeof(struct nilfs_wait_cond));
--	uwcond32 = compat_ptr(arg);
--	if (get_user(cond, &uwcond32->wc_cond) ||
--	    put_user(cond, &uwcond->wc_cond) ||
--	    get_user(flags, &uwcond32->wc_flags) ||
--	    put_user(flags, &uwcond->wc_flags) ||
--	    get_user(ts.tv_sec, &uwcond32->wc_timeout.tv_sec) ||
--	    get_user(ts.tv_nsec, &uwcond32->wc_timeout.tv_nsec) ||
--	    put_user(ts.tv_sec, &uwcond->wc_timeout.tv_sec) ||
--	    put_user(ts.tv_nsec, &uwcond->wc_timeout.tv_nsec))
+-	if (get_user(base, &uargv32->v_base) ||
+-	    put_user(compat_ptr(base), &uargv->v_base) ||
+-	    get_user(nmembs, &uargv32->v_nmembs) ||
+-	    put_user(nmembs, &uargv->v_nmembs) ||
+-	    get_user(size, &uargv32->v_size) ||
+-	    put_user(size, &uargv->v_size) ||
+-	    get_user(index, &uargv32->v_index) ||
+-	    put_user(index, &uargv->v_index) ||
+-	    get_user(flags, &uargv32->v_flags) ||
+-	    put_user(flags, &uargv->v_flags))
 -		return -EFAULT;
--
--	ret = nilfs_compat_locked_ioctl(inode, filp, cmd,
--					(unsigned long)uwcond);
--	if (ret < 0)
--		return ret;
--
--	if (get_user(ts.tv_sec, &uwcond->wc_timeout.tv_sec) ||
--	    get_user(ts.tv_nsec, &uwcond->wc_timeout.tv_nsec) ||
--	    put_user(ts.tv_sec, &uwcond32->wc_timeout.tv_sec) ||
--	    put_user(ts.tv_nsec, &uwcond32->wc_timeout.tv_nsec))
--		return -EFAULT;
--
 -	return 0;
 -}
 -
- static int nilfs_compat_ioctl_sync(struct inode *inode, struct file *filp,
- 				   unsigned int cmd, unsigned long arg)
- {
-@@ -943,9 +853,6 @@ long nilfs_compat_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
- 	case NILFS_IOCTL32_CLEAN_SEGMENTS:
- 		return nilfs_compat_ioctl_clean_segments(
- 			inode, filp, NILFS_IOCTL_CLEAN_SEGMENTS, arg);
--	case NILFS_IOCTL32_TIMEDWAIT:
--		return nilfs_compat_ioctl_timedwait(
--			inode, filp, NILFS_IOCTL_TIMEDWAIT, arg);
- 	case NILFS_IOCTL_SYNC:
- 		return nilfs_compat_ioctl_sync(inode, filp, cmd, arg);
- 	default:
-diff --git a/fs/nilfs2/segment.c b/fs/nilfs2/segment.c
-index 6d66c5c..5db12d7 100644
---- a/fs/nilfs2/segment.c
-+++ b/fs/nilfs2/segment.c
-@@ -2114,11 +2114,8 @@ static void nilfs_segctor_complete_write(struct nilfs_sc_info *sci)
- 		nilfs_drop_collected_inodes(&sci->sc_gc_inodes);
- 		if (update_sr)
- 			nilfs_commit_gcdat_inode(nilfs);
--	} else {
-+	} else
- 		nilfs->ns_nongc_ctime = sci->sc_seg_ctime;
--		set_nilfs_cond_nongc_write(nilfs);
--		wake_up(&nilfs->ns_cleanerd_wq);
--	}
- 
- 	sci->sc_nblk_inc += sci->sc_nblk_this_inc;
- 
-diff --git a/fs/nilfs2/the_nilfs.c b/fs/nilfs2/the_nilfs.c
-index 852e0bf..69b6255 100644
---- a/fs/nilfs2/the_nilfs.c
-+++ b/fs/nilfs2/the_nilfs.c
-@@ -73,7 +73,6 @@ struct the_nilfs *alloc_nilfs(struct block_device *bdev)
- 	nilfs->ns_gc_inodes_h = NULL;
- 	INIT_LIST_HEAD(&nilfs->ns_used_segments);
- 	init_rwsem(&nilfs->ns_segctor_sem);
--	init_waitqueue_head(&nilfs->ns_cleanerd_wq);
- 
- 	return nilfs;
- }
-diff --git a/fs/nilfs2/the_nilfs.h b/fs/nilfs2/the_nilfs.h
-index 9cd3c11..75da373 100644
---- a/fs/nilfs2/the_nilfs.h
-+++ b/fs/nilfs2/the_nilfs.h
-@@ -37,7 +37,6 @@ enum {
- 	THE_NILFS_LOADED,       /* Roll-back/roll-forward has done and
- 				   the latest checkpoint was loaded */
- 	THE_NILFS_DISCONTINUED,	/* 'next' pointer chain has broken */
--	THE_NILFS_COND_NONGC_WRITE,	/* Condition to wake up cleanerd */
- };
- 
- /**
-@@ -74,7 +73,6 @@ enum {
-  * @ns_gc_dat: shadow inode of the DAT file inode for GC
-  * @ns_gc_inodes: dummy inodes to keep live blocks
-  * @ns_gc_inodes_h: hash list to keep dummy inode holding live blocks
-- * @ns_cleanerd_wq: wait queue for cleanerd
-  * @ns_blocksize_bits: bit length of block size
-  * @ns_nsegments: number of segments in filesystem
-  * @ns_blocks_per_segment: number of blocks per segment
-@@ -151,9 +149,6 @@ struct the_nilfs {
- 	struct list_head	ns_gc_inodes;
- 	struct hlist_head      *ns_gc_inodes_h;
- 
--	/* cleanerd */
--	wait_queue_head_t	ns_cleanerd_wq;
+-static int
+-nilfs_compat_ioctl_uargv_to_uargv32(struct nilfs_argv __user *uargv,
+-				    struct nilfs_argv32 __user *uargv32)
+-{
+-	size_t nmembs;
 -
- 	/* Disk layout information (static) */
- 	unsigned int		ns_blocksize_bits;
- 	unsigned long		ns_nsegments;
-@@ -186,7 +181,6 @@ static inline int nilfs_##name(struct the_nilfs *nilfs)			\
- THE_NILFS_FNS(INIT, init)
- THE_NILFS_FNS(LOADED, loaded)
- THE_NILFS_FNS(DISCONTINUED, discontinued)
--THE_NILFS_FNS(COND_NONGC_WRITE, cond_nongc_write)
+-	if (get_user(nmembs, &uargv->v_nmembs) ||
+-	    put_user(nmembs, &uargv32->v_nmembs))
+-		return -EFAULT;
+-	return 0;
+-}
+-
+-static int
+-nilfs_compat_ioctl_get_by_argv(struct inode *inode, struct file *filp,
+-			       unsigned int cmd, unsigned long arg)
+-{
+-	struct nilfs_argv __user *uargv;
+-	struct nilfs_argv32 __user *uargv32;
+-	int ret;
+-
+-	uargv = compat_alloc_user_space(sizeof(struct nilfs_argv));
+-	uargv32 = compat_ptr(arg);
+-	ret = nilfs_compat_ioctl_uargv32_to_uargv(uargv32, uargv);
+-	if (ret < 0)
+-		return ret;
+-
+-	ret = nilfs_compat_locked_ioctl(inode, filp, cmd, (unsigned long)uargv);
+-	if (ret < 0)
+-		return ret;
+-
+-	return nilfs_compat_ioctl_uargv_to_uargv32(uargv, uargv32);
+-}
+-
+-static int
+-nilfs_compat_ioctl_change_cpmode(struct inode *inode, struct file *filp,
+-				 unsigned int cmd, unsigned long arg)
+-{
+-	struct nilfs_cpmode __user *ucpmode;
+-	struct nilfs_cpmode32 __user *ucpmode32;
+-	int mode;
+-
+-	ucpmode = compat_alloc_user_space(sizeof(struct nilfs_cpmode));
+-	ucpmode32 = compat_ptr(arg);
+-	if (copy_in_user(&ucpmode->cm_cno, &ucpmode32->cm_cno,
+-			 sizeof(__u64)) ||
+-	    get_user(mode, &ucpmode32->cm_mode) ||
+-	    put_user(mode, &ucpmode->cm_mode))
+-		return -EFAULT;
+-
+-	return nilfs_compat_locked_ioctl(
+-		inode, filp, cmd, (unsigned long)ucpmode);
+-}
+-
+-
+-static inline int
+-nilfs_compat_ioctl_delete_checkpoint(struct inode *inode, struct file *filp,
+-				     unsigned int cmd, unsigned long arg)
+-{
+-	return nilfs_compat_locked_ioctl(inode, filp, cmd, arg);
+-}
+-
+-static inline int
+-nilfs_compat_ioctl_get_cpinfo(struct inode *inode, struct file *filp,
+-			      unsigned int cmd, unsigned long arg)
+-{
+-	return nilfs_compat_ioctl_get_by_argv(inode, filp, cmd, arg);
+-}
+-
+-static inline int
+-nilfs_compat_ioctl_get_cpstat(struct inode *inode, struct file *filp,
+-			      unsigned int cmd, unsigned long arg)
+-{
+-	return nilfs_compat_locked_ioctl(inode, filp, cmd, arg);
+-}
+-
+-static inline int
+-nilfs_compat_ioctl_get_suinfo(struct inode *inode, struct file *filp,
+-			      unsigned int cmd, unsigned long arg)
+-{
+-	return nilfs_compat_ioctl_get_by_argv(inode, filp, cmd, arg);
+-}
+-
+-static int
+-nilfs_compat_ioctl_get_sustat(struct inode *inode, struct file *filp,
+-			      unsigned int cmd, unsigned long arg)
+-{
+-	struct nilfs_sustat __user *usustat;
+-	struct nilfs_sustat32 __user *usustat32;
+-	time_t ctime, nongc_ctime;
+-	int ret;
+-
+-	usustat = compat_alloc_user_space(sizeof(struct nilfs_sustat));
+-	ret = nilfs_compat_locked_ioctl(inode, filp, cmd,
+-					(unsigned long)usustat);
+-	if (ret < 0)
+-		return ret;
+-
+-	usustat32 = compat_ptr(arg);
+-	if (copy_in_user(&usustat32->ss_nsegs, &usustat->ss_nsegs,
+-			 sizeof(__u64)) ||
+-	    copy_in_user(&usustat32->ss_ncleansegs, &usustat->ss_ncleansegs,
+-			 sizeof(__u64)) ||
+-	    copy_in_user(&usustat32->ss_ndirtysegs, &usustat->ss_ndirtysegs,
+-			 sizeof(__u64)) ||
+-	    get_user(ctime, &usustat->ss_ctime) ||
+-	    put_user(ctime, &usustat32->ss_ctime) ||
+-	    get_user(nongc_ctime, &usustat->ss_nongc_ctime) ||
+-	    put_user(nongc_ctime, &usustat32->ss_nongc_ctime))
+-		return -EFAULT;
+-	return 0;
+-}
+-
+-static inline int
+-nilfs_compat_ioctl_get_vinfo(struct inode *inode, struct file *filp,
+-			      unsigned int cmd, unsigned long arg)
+-{
+-	return nilfs_compat_ioctl_get_by_argv(inode, filp, cmd, arg);
+-}
+-
+-static inline int
+-nilfs_compat_ioctl_get_bdescs(struct inode *inode, struct file *filp,
+-			     unsigned int cmd, unsigned long arg)
+-{
+-	return nilfs_compat_ioctl_get_by_argv(inode, filp, cmd, arg);
+-}
+-
+-static int
+-nilfs_compat_ioctl_clean_segments(struct inode *inode, struct file *filp,
+-				  unsigned int cmd, unsigned long arg)
+-{
+-	struct nilfs_argv __user *uargv;
+-	struct nilfs_argv32 __user *uargv32;
+-	int i, ret;
+-
+-	uargv = compat_alloc_user_space(sizeof(struct nilfs_argv) * 5);
+-	uargv32 = compat_ptr(arg);
+-	for (i = 0; i < 5; i++) {
+-		ret = nilfs_compat_ioctl_uargv32_to_uargv(&uargv32[i],
+-							  &uargv[i]);
+-		if (ret < 0)
+-			return ret;
+-	}
+-	return nilfs_compat_locked_ioctl(
+-		inode, filp, cmd, (unsigned long)uargv);
+-}
+-
+-static int nilfs_compat_ioctl_sync(struct inode *inode, struct file *filp,
+-				   unsigned int cmd, unsigned long arg)
+-{
+-	return nilfs_compat_locked_ioctl(inode, filp, cmd, arg);
+-}
+-
+-long nilfs_compat_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+-{
+-	struct inode *inode = filp->f_dentry->d_inode;
+-
+-	switch (cmd) {
+-	case NILFS_IOCTL32_CHANGE_CPMODE:
+-		return nilfs_compat_ioctl_change_cpmode(
+-			inode, filp, NILFS_IOCTL_CHANGE_CPMODE, arg);
+-	case NILFS_IOCTL_DELETE_CHECKPOINT:
+-		return nilfs_compat_ioctl_delete_checkpoint(
+-			inode, filp, cmd, arg);
+-	case NILFS_IOCTL32_GET_CPINFO:
+-		return nilfs_compat_ioctl_get_cpinfo(
+-			inode, filp, NILFS_IOCTL_GET_CPINFO, arg);
+-	case NILFS_IOCTL_GET_CPSTAT:
+-		return nilfs_compat_ioctl_get_cpstat(inode, filp, cmd, arg);
+-	case NILFS_IOCTL32_GET_SUINFO:
+-		return nilfs_compat_ioctl_get_suinfo(
+-			inode, filp, NILFS_IOCTL_GET_SUINFO, arg);
+-	case NILFS_IOCTL32_GET_SUSTAT:
+-		return nilfs_compat_ioctl_get_sustat(
+-			inode, filp, NILFS_IOCTL_GET_SUSTAT, arg);
+-	case NILFS_IOCTL32_GET_VINFO:
+-		return nilfs_compat_ioctl_get_vinfo(
+-			inode, filp, NILFS_IOCTL_GET_VINFO, arg);
+-	case NILFS_IOCTL32_GET_BDESCS:
+-		return nilfs_compat_ioctl_get_bdescs(
+-			inode, filp, NILFS_IOCTL_GET_BDESCS, arg);
+-	case NILFS_IOCTL32_CLEAN_SEGMENTS:
+-		return nilfs_compat_ioctl_clean_segments(
+-			inode, filp, NILFS_IOCTL_CLEAN_SEGMENTS, arg);
+-	case NILFS_IOCTL_SYNC:
+-		return nilfs_compat_ioctl_sync(inode, filp, cmd, arg);
+-	default:
+-		return -ENOIOCTLCMD;
+-	}
+-}
+-#endif
+diff --git a/fs/nilfs2/nilfs.h b/fs/nilfs2/nilfs.h
+index 30c5341..ad17fa9 100644
+--- a/fs/nilfs2/nilfs.h
++++ b/fs/nilfs2/nilfs.h
+@@ -243,7 +243,6 @@ extern int nilfs_sync_file(struct file *, struct dentry *, int);
  
- void nilfs_set_last_segment(struct the_nilfs *, sector_t, u64, __u64);
- struct the_nilfs *alloc_nilfs(struct block_device *);
+ /* ioctl.c */
+ int nilfs_ioctl(struct inode *, struct file *, unsigned int, unsigned long);
+-long nilfs_compat_ioctl(struct file *, unsigned int, unsigned long);
+ int nilfs_ioctl_prepare_clean_segments(struct the_nilfs *, void __user *);
+ 
+ /* inode.c */
 diff --git a/include/linux/nilfs2_fs.h b/include/linux/nilfs2_fs.h
-index e38fad2..b0a6b39 100644
+index 8fb64ce..306c446 100644
 --- a/include/linux/nilfs2_fs.h
 +++ b/include/linux/nilfs2_fs.h
-@@ -763,18 +763,6 @@ struct nilfs_bdesc {
- 	__u32 bd_level;
- };
- 
--#define	NILFS_TIMEDWAIT_WRITE_LOCKED	0x1
--#define	NILFS_TIMEDWAIT_SEG_WRITE	0x2
--
--/**
-- * struct nilfs_wait_cond -
-- */
--struct nilfs_wait_cond {
--	int wc_cond;
--	int wc_flags;
--	struct timespec wc_timeout;
--};
--
- #define NILFS_IOCTL_IDENT		'n'
- 
- #define NILFS_IOCTL_CHANGE_CPMODE  \
-@@ -795,8 +783,6 @@ struct nilfs_wait_cond {
- 	_IOWR(NILFS_IOCTL_IDENT, 0x87, struct nilfs_argv)
- #define NILFS_IOCTL_CLEAN_SEGMENTS  \
- 	_IOW(NILFS_IOCTL_IDENT, 0x88, struct nilfs_argv[5])
--#define NILFS_IOCTL_TIMEDWAIT  \
--	_IOWR(NILFS_IOCTL_IDENT, 0x89, struct nilfs_wait_cond)
- #define NILFS_IOCTL_SYNC  \
- 	_IOR(NILFS_IOCTL_IDENT, 0x8A, __u64)
+@@ -793,45 +793,4 @@ struct nilfs_bdesc {
  #define NILFS_IOCTL_RESIZE  \
-@@ -827,12 +813,6 @@ struct nilfs_sustat32 {
- 	compat_time_t ss_nongc_ctime;
- };
+ 	_IOW(NILFS_IOCTL_IDENT, 0x8B, __u64)
  
--struct nilfs_wait_cond32 {
--	compat_int_t wc_cond;
--	compat_int_t wc_flags;
--	struct compat_timespec wc_timeout;
+-/* compat_ioctl */
+-#ifdef CONFIG_COMPAT
+-#include <linux/compat.h>
+-
+-struct nilfs_cpmode32 {
+-	__u64 cm_cno;
+-	compat_int_t cm_mode;
 -};
 -
- #define NILFS_IOCTL32_CHANGE_CPMODE  \
- 	_IOW(NILFS_IOCTL_IDENT, 0x80, struct nilfs_cpmode32)
- #define NILFS_IOCTL32_GET_CPINFO  \
-@@ -847,8 +827,6 @@ struct nilfs_wait_cond32 {
- 	_IOWR(NILFS_IOCTL_IDENT, 0x87, struct nilfs_argv32)
- #define NILFS_IOCTL32_CLEAN_SEGMENTS  \
- 	_IOW(NILFS_IOCTL_IDENT, 0x88, struct nilfs_argv32[5])
--#define NILFS_IOCTL32_TIMEDWAIT  \
--	_IOWR(NILFS_IOCTL_IDENT, 0x89, struct nilfs_wait_cond32)
- #endif	/* CONFIG_COMPAT */
- 
+-struct nilfs_argv32 {
+-	compat_caddr_t v_base;
+-	compat_size_t v_nmembs;
+-	compat_size_t v_size;
+-	compat_int_t v_index;
+-	compat_int_t v_flags;
+-};
+-
+-struct nilfs_sustat32 {
+-	__u64 ss_nsegs;
+-	__u64 ss_ncleansegs;
+-	__u64 ss_ndirtysegs;
+-	compat_time_t ss_ctime;
+-	compat_time_t ss_nongc_ctime;
+-};
+-
+-#define NILFS_IOCTL32_CHANGE_CPMODE  \
+-	_IOW(NILFS_IOCTL_IDENT, 0x80, struct nilfs_cpmode32)
+-#define NILFS_IOCTL32_GET_CPINFO  \
+-	_IOR(NILFS_IOCTL_IDENT, 0x82, struct nilfs_argv32)
+-#define NILFS_IOCTL32_GET_SUINFO  \
+-	_IOR(NILFS_IOCTL_IDENT, 0x84, struct nilfs_argv32)
+-#define NILFS_IOCTL32_GET_SUSTAT  \
+-	_IOR(NILFS_IOCTL_IDENT, 0x85, struct nilfs_sustat32)
+-#define NILFS_IOCTL32_GET_VINFO  \
+-	_IOWR(NILFS_IOCTL_IDENT, 0x86, struct nilfs_argv32)
+-#define NILFS_IOCTL32_GET_BDESCS  \
+-	_IOWR(NILFS_IOCTL_IDENT, 0x87, struct nilfs_argv32)
+-#define NILFS_IOCTL32_CLEAN_SEGMENTS  \
+-	_IOW(NILFS_IOCTL_IDENT, 0x88, struct nilfs_argv32[5])
+-#endif	/* CONFIG_COMPAT */
+-
  #endif	/* _LINUX_NILFS_FS_H */
 -- 
 1.5.6.5
