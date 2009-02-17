@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751844AbZBQOoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753109AbZBQOpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751844AbZBQOoQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 09:44:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbZBQOn6
+	id S1753109AbZBQOpL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 09:45:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZBQOo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 09:43:58 -0500
-Received: from titan.dewahost.net ([205.234.111.6]:48913 "EHLO
-	titan.dewahost.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751790AbZBQOn5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 09:43:57 -0500
-Date: Tue, 17 Feb 2009 18:43:49 +0400
-From: Constantin Baranov <baranov@mercdev.com>
-To: Ben Hutchings <bhutchings@solarflare.com>
-Cc: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] niu: improve ethtool support for gigabit copper
- cards
-Message-Id: <20090217184349.3c735c58.baranov@mercdev.com>
-In-Reply-To: <1234878837.3183.4.camel@achroite>
-References: <20090217154334.97837477.baranov@mercdev.com>
-	<1234878837.3183.4.camel@achroite>
-Organization: Mercury Development, LLC
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - titan.dewahost.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - mercdev.com
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Tue, 17 Feb 2009 09:44:56 -0500
+Received: from ns.suse.de ([195.135.220.2]:53698 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751548AbZBQOoz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 09:44:55 -0500
+Date: Tue, 17 Feb 2009 15:44:51 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT] HID fixes for 2.6.29-rc5
+Message-ID: <alpine.LNX.1.10.0902171408270.18110@jikos.suse.cz>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Hutchings <bhutchings@solarflare.com> wrote:
-> On Tue, 2009-02-17 at 15:43 +0400, Constantin Baranov wrote:
-> > Introduced support for link speed and duplex setting (ethtool -s),
-> > link advertising parameters and autonegotiation (ethtool -r):
-> [...]
-> 
-> I haven't looked closely at this, but is there anything here that can't
-> be handled by mii_get_settings() and other functions in the mii driver?
+Linus,
 
-mii_ethtool_gset() reports fixed set of supported modes and mii_ethtool_sset()
-doesn't check whether requested mode is supported when autonegotiation is
-disabled. Also mii module declares mdio_write() operation as returning void,
-thus mii routines will ignore errors that may occur. Although all of these is
-not so critical I decided not to use mii module.
+could you please pull from 'for-linus' branch of
 
--- 
-Constantin Baranov,
-Mercury Development, LLC
+        git://git.kernel.org/pub/scm/linux/kernel/git/jikos/hid.git for-linus
+
+to receive HID fixes that should be present in 2.6.29. It contains some
+device-specific additions/changes blacklist/quirklist changes, endianity fix
+in hid alias and fixes potential missing unlock in hidraw driver.
+
+Thanks.
+
+ drivers/hid/hid-core.c   |   13 +++++++------
+ drivers/hid/hid-ids.h    |    3 +++
+ drivers/hid/hidraw.c     |   14 +++++++++-----
+ scripts/mod/file2alias.c |    1 +
+ 4 files changed, 20 insertions(+), 11 deletions(-)
+
+Anssi Hannula (1):
+      HID: move tmff and zpff devices from ignore_list to blacklist
+
+Dan Carpenter (1):
+      HID: unlock properly on error paths in hidraw_ioctl()
+
+Jiri Slaby (1):
+      HID: fix bus endianity in file2alias
+
+Michael Tokarev (1):
+      HID: blacklist Powercom USB UPS
+
