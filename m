@@ -1,105 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752042AbZBQGoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752195AbZBQGrI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752042AbZBQGoS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 01:44:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbZBQGoD
+	id S1752195AbZBQGrI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 01:47:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750807AbZBQGq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 01:44:03 -0500
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:34068 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750727AbZBQGoB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 01:44:01 -0500
-Date: Tue, 17 Feb 2009 12:13:49 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Bharata B Rao <bharata@in.ibm.com>, Paul Menage <menage@google.com>,
-       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH 0/4] Memory controller soft limit patches (v2)
-Message-ID: <20090217064349.GC3513@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090216110844.29795.17804.sendpatchset@localhost.localdomain> <20090217090523.975bbec2.kamezawa.hiroyu@jp.fujitsu.com> <20090217030526.GA20958@balbir.in.ibm.com> <20090217130352.4ba7f91c.kamezawa.hiroyu@jp.fujitsu.com> <20090217044110.GD20958@balbir.in.ibm.com> <20090217141039.440e5463.kamezawa.hiroyu@jp.fujitsu.com> <20090217053903.GA3513@balbir.in.ibm.com> <20090217153658.225e1c5c.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090217153658.225e1c5c.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 17 Feb 2009 01:46:56 -0500
+Received: from mail.gmx.net ([213.165.64.20]:39611 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750727AbZBQGqz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 01:46:55 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+jNzIF67mjo1DzBoigvjK1Of+3mpEpqRKeT2BZcp
+	5IfdbjsnVewqL2
+Subject: Re: [BUG] SCHED_IDLE makes system unresponsive
+From: Mike Galbraith <efault@gmx.de>
+To: John Werden <jwerden@hotpop.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20090216205535.1a1eafe0@desktop.workplace>
+References: <20090216205535.1a1eafe0@desktop.workplace>
+Content-Type: text/plain
+Date: Tue, 17 Feb 2009 07:46:51 +0100
+Message-Id: <1234853211.5507.42.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.41
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-02-17 15:36:58]:
+Hi,
 
-> On Tue, 17 Feb 2009 11:09:03 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Mon, 2009-02-16 at 20:55 +0100, John Werden wrote:
+> I use a file indexer program named pinot and the newest versions of
+> it seem to freeze my system (completely unresponsive X Server/GUI,
+> frozen mouse pointer, no hdd activity). I could track the problem down
+> to a single commit, which makes pinot use SCHED_IDLE instead of
+> priority 15:
 > 
-> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-02-17 14:10:39]:
-> > 
-> > > On Tue, 17 Feb 2009 10:11:10 +0530
-> > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-02-17 13:03:52]:
-> > > > 
-> > > > > On Tue, 17 Feb 2009 08:35:26 +0530
-> > > > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > > > I don't want to add any new big burden to kernel hackers of memory management,
-> > > > > they work hard to improve memory reclaim. This patch will change the behavior.
-> > > > > 
-> > > > 
-> > > > I don't think I agree, this approach suggests that before doing global
-> > > > reclaim, there are several groups that are using more than their
-> > > > share of memory, so it makes sense to reclaim from them first.
-> > > > 
-> > > 
-> > > > 
-> > > > > BTW, in typical bad case, several threads on cpus goes into memory recalim at once and
-> > > > > all thread will visit this memcg's soft-limit tree at once and soft-limit will
-> > > > > not work as desired anyway.
-> > > > > You can't avoid this problem at alloc_page() hot-path.
-> > > > 
-> > > > Even if all threads go into soft-reclaim at once, the tree will become
-> > > > empty after a point and we will just return saying there are no more
-> > > > memcg's to reclaim from (we remove the memcg from the tree when
-> > > > reclaiming), then those threads will go into regular reclaim if there
-> > > > is still memory pressure.
-> > > 
-> > > Yes. the largest-excess group will be removed. So, it seems that it doesn't work
-> > > as designed. rbtree is considered as just a hint ? If so, rbtree seems to be
-> > > overkill.
-> > > 
-> > > just a question:
-> > > Assume memcg under hierarchy.
-> > >    ../group_A/                 usage=1G, soft_limit=900M  hierarchy=1
-> > >               01/              usage=200M, soft_limit=100M
-> > >               02/              usage=300M, soft_limit=200M
-> > >               03/              usage=500M, soft_limit=300M  <==== 200M over.
-> > >                  004/          usage=200M, soft_limit=100M
-> > >                  005/          usage=300M, soft_limit=200M
-> > > 
-> > > At memory shortage, group 03's memory will be reclaimed 
-> > >   - reclaim memory from 03, 03/004, 03/005
-> > > 
-> > > When 100M of group 03' memory is reclaimed, group_A 's memory is reclaimd at the
-> > > same time, implicitly. Doesn't this break your rb-tree ?
-> > > 
-> > > I recommend you that soft-limit can be only applied to the node which is top of
-> > > hierarchy.
-> > 
-> > Yes, that can be done, but the reason for putting both was to target
-> > the right memcg early.
-> > 
-> My point is  that sort by rb-tree is broken in above case.
->
+> http://svn.berlios.de/wsvn/pinot/?op=comp&compare[]=%2F@1557&compare[]=%2F@1558
+> 
+> I also found out that the problem is already known on the mailing
+> list, but I don't know if it was solved with the following commit in
+> 2.6.28.2:
+> 
+> http://lkml.org/lkml/2009/1/22/416
+> 
+> other related threads I found:
+> 
+> http://lkml.org/lkml/2009/1/11/70
+> http://lkml.org/lkml/2009/1/30/297
+> 
+> Is this correct? I use 2.6.28.5 and still encounter the problem (I
+> didn't test it with earlier kernel versions). How can I work around this
+> or/and make SCHED_IDLE work as intended? It looks like right now every
+> running program could freeze my system which I definitely don't want.
 
-OK, I'll explore, experiment and think about adding just the root 
+If you need to use SCHED_IDLE in 28-stable, you'll want the below.
 
--- 
-	Balbir
+commit 6bc912b71b6f33b041cfde93ca3f019cbaa852bc
+Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date:   Thu Jan 15 14:53:38 2009 +0100
+
+    sched: SCHED_OTHER vs SCHED_IDLE isolation
+    
+    Stronger SCHED_IDLE isolation:
+    
+     - no SCHED_IDLE buddies
+     - never let SCHED_IDLE preempt on wakeup
+     - always preempt SCHED_IDLE on wakeup
+     - limit SLEEPER fairness for SCHED_IDLE.
+    
+    Signed-off-by: Mike Galbraith <efault@gmx.de>
+    Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+---
+ kernel/sched_fair.c |   30 ++++++++++++++++++++++--------
+ 1 file changed, 22 insertions(+), 8 deletions(-)
+
+Index: linux-2.6.28/kernel/sched_fair.c
+===================================================================
+--- linux-2.6.28.orig/kernel/sched_fair.c
++++ linux-2.6.28/kernel/sched_fair.c
+@@ -681,9 +681,13 @@ place_entity(struct cfs_rq *cfs_rq, stru
+ 			unsigned long thresh = sysctl_sched_latency;
+ 
+ 			/*
+-			 * convert the sleeper threshold into virtual time
++			 * Convert the sleeper threshold into virtual time.
++			 * SCHED_IDLE is a special sub-class.  We care about
++			 * fairness only relative to other SCHED_IDLE tasks,
++			 * all of which have the same weight.
+ 			 */
+-			if (sched_feat(NORMALIZED_SLEEPER))
++			if (sched_feat(NORMALIZED_SLEEPER) &&
++					task_of(se)->policy != SCHED_IDLE)
+ 				thresh = calc_delta_fair(thresh, se);
+ 
+ 			vruntime -= thresh;
+@@ -1328,14 +1332,18 @@ wakeup_preempt_entity(struct sched_entit
+ 
+ static void set_last_buddy(struct sched_entity *se)
+ {
+-	for_each_sched_entity(se)
+-		cfs_rq_of(se)->last = se;
++	if (likely(task_of(se)->policy != SCHED_IDLE)) {
++		for_each_sched_entity(se)
++			cfs_rq_of(se)->last = se;
++	}
+ }
+ 
+ static void set_next_buddy(struct sched_entity *se)
+ {
+-	for_each_sched_entity(se)
+-		cfs_rq_of(se)->next = se;
++	if (likely(task_of(se)->policy != SCHED_IDLE)) {
++		for_each_sched_entity(se)
++			cfs_rq_of(se)->next = se;
++	}
+ }
+ 
+ /*
+@@ -1382,11 +1390,17 @@ static void check_preempt_wakeup(struct
+ 		return;
+ 
+ 	/*
+-	 * Batch tasks do not preempt (their preemption is driven by
++	 * Batch and idle tasks do not preempt (their preemption is driven by
+ 	 * the tick):
+ 	 */
+-	if (unlikely(p->policy == SCHED_BATCH))
++	if (unlikely(p->policy != SCHED_NORMAL))
++		return;
++
++	/* Idle tasks are by definition preempted by everybody. */
++	if (unlikely(curr->policy == SCHED_IDLE)) {
++		resched_task(curr);
+ 		return;
++	}
+ 
+ 	if (!sched_feat(WAKEUP_PREEMPT))
+ 		return;
+commit cce7ade803699463ecc62a065ca522004f7ccb3d
+Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date:   Thu Jan 15 14:53:37 2009 +0100
+
+    sched: SCHED_IDLE weight change
+    
+    Increase the SCHED_IDLE weight from 2 to 3, this gives much more stable
+    vruntime numbers.
+    
+    time advanced in 100ms:
+    
+     weight=2
+    
+     64765.988352
+     67012.881408
+     88501.412352
+    
+     weight=3
+    
+     35496.181411
+     34130.971298
+     35497.411573
+    
+    Signed-off-by: Mike Galbraith <efault@gmx.de>
+    Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+---
+ kernel/sched.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.28/kernel/sched.c
+===================================================================
+--- linux-2.6.28.orig/kernel/sched.c
++++ linux-2.6.28/kernel/sched.c
+@@ -1314,8 +1314,8 @@ static inline void update_load_sub(struc
+  * slice expiry etc.
+  */
+ 
+-#define WEIGHT_IDLEPRIO		2
+-#define WMULT_IDLEPRIO		(1 << 31)
++#define WEIGHT_IDLEPRIO                3
++#define WMULT_IDLEPRIO         1431655765
+ 
+ /*
+  * Nice levels are multiplicative, with a gentle 10% change for every
+
+
