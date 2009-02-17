@@ -1,280 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbZBQPZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754435AbZBQP0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754195AbZBQPZy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 10:25:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbZBQPZ3
+	id S1754435AbZBQP0R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 10:26:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZBQPZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 10:25:29 -0500
-Received: from exprod7og115.obsmtp.com ([64.18.2.217]:44117 "EHLO
-	exprod7og115.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751385AbZBQPZ0 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 10:25:26 -0500
-From: "Yang, Bo" <Bo.Yang@lsi.com>
-To: "Yang, Bo" <Bo.Yang@lsi.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@osdl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: "Austria, Winston" <Winston.Austria@lsi.com>
-Date: Tue, 17 Feb 2009 08:25:07 -0700
-Subject: [PATCH 2/9] scsi: megaraid_sas - Add poll wait support to megaraid
- sas driver - I
-Thread-Topic: [PATCH 2/9] scsi: megaraid_sas - Add poll wait support to
- megaraid sas driver - I
-Thread-Index: AciIcSnS7H5xFQtCQzyNHR19nlBrTUImYsQgAAFMQJA=
-Message-ID: <4B6A08C587958942AA3002690DD4F8C33A07FB3B@cosmail02.lsi.com>
-In-Reply-To: <4B6A08C587958942AA3002690DD4F8C33A07FB03@cosmail02.lsi.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Tue, 17 Feb 2009 10:25:56 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:53592 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754202AbZBQPZz (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 10:25:55 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>
+Cc: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org
+Subject: Re: mmotm 2009-02-14-00-49 uploaded -epoll busted.
+In-Reply-To: Your message of "Sat, 14 Feb 2009 00:51:41 PST."
+             <200902140851.n1E8pfIN030501@imap1.linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <200902140851.n1E8pfIN030501@imap1.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1234881458_6651P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 17 Feb 2009 09:37:38 -0500
+Message-ID: <7379.1234881458@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add Poll_wait mechanism to Gen-2 MegaRAID SAS Linux driver.  In the aen handler, driver needs to wakeup poll handler similar to the way it raises SIGIO.  Driver needs to reregister for AEN with the FW when it receives AEN.
+--==_Exmh_1234881458_6651P
+Content-Type: text/plain; charset=us-ascii
 
-Signed-off-by Bo Yang<bo.yang@lsi.com>
+On Sat, 14 Feb 2009 00:51:41 PST, akpm@linux-foundation.org said:
+> The mm-of-the-moment snapshot 2009-02-14-00-49 has been uploaded to
 
----
-drivers/scsi/megaraid/megaraid_sas.c |  133 ++++++++++++++++++++++++++++++++++-
- drivers/scsi/megaraid/megaraid_sas.h |   15 +++
- 2 files changed, 147 insertions(+), 1 deletion(-)
+The epoll patch series breaks nscd in some odd way.  After it's started
+in the /etc/rc* scripts, the rest of boot proceeds very slowly, smells like
+nscd calls are hitting timeouts.  Boot time went from ~1 minute to ~10 mins.
 
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-02-12 15:36:36.000000000 -0500
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-02-12 15:39:26.000000000 -0500
-@@ -40,6 +40,7 @@
- #include <linux/compat.h>
- #include <linux/blkdev.h>
- #include <linux/mutex.h>
-+#include <linux/poll.h>
+nscd is Fedora Rawhide nscd-2.9.90-3.x86_64, in case that matters...
 
- #include <scsi/scsi.h>
- #include <scsi/scsi_cmnd.h>
-@@ -89,6 +90,11 @@ static struct megasas_mgmt_info megasas_
- static struct fasync_struct *megasas_async_queue;
- static DEFINE_MUTEX(megasas_async_queue_mutex);
+Also, the series isn't bisectable right where it matters most, complaining
+about implicit definitions of wake_up_nested...
 
-+static int megasas_poll_wait_aen;
-+static DECLARE_WAIT_QUEUE_HEAD (megasas_poll_wait);
-+extern void
-+poll_wait(struct file *filp, wait_queue_head_t *q, poll_table *token);
-+
- static u32 megasas_dbg_lvl;
+epoll-keyed-wakeups-v2-add-__wake_up_locked_key-and-__wake_up_sync_key.patch
+epoll-keyed-wakeups-v2-introduce-new-_poll-wakeup-macros.patch  GOOD
+epoll-keyed-wakeups-v3-introduce-new-_poll-wakeup-macros.patch  BISECT BUSTED
+epoll-keyed-wakeups-v2-make-sockets-use-keyed-wakeups.patch
+epoll-keyed-wakeups-v2-teach-epoll-about-hints-coming-with-the-wakeup-key.patch
+epoll-keyed-wakeups-v2-teach-epoll-about-hints-coming-with-the-wakeup-key-update.patch  BAD
 
- static void
-@@ -1277,6 +1283,8 @@ megasas_bios_param(struct scsi_device *s
-        return 0;
- }
 
-+static void megasas_aen_polling(void *arg);
-+
- /**
-  * megasas_service_aen -       Processes an event notification
-  * @instance:                  Adapter soft state
-@@ -1295,8 +1303,20 @@ megasas_service_aen(struct megasas_insta
-        /*
-         * Don't signal app if it is just an aborted previously registered aen
-         */
--       if (!cmd->abort_aen)
-+       if ((!cmd->abort_aen) && (instance->unload == 0)) {
-+               struct megasas_aen_event *ev;
-+               ev = kzalloc(sizeof(*ev), GFP_ATOMIC);
-+               if (!ev) {
-+                       printk(KERN_ERR "%s: out of memory\n", __FUNCTION__);
-+               } else {
-+                       ev->instance = instance;
-+                       INIT_WORK(&ev->hotplug_work, megasas_aen_polling);
-+                       schedule_delayed_work(&ev->hotplug_work, 0);
-+               }
-+               megasas_poll_wait_aen = 1;
-+               wake_up(&megasas_poll_wait);
-                kill_fasync(&megasas_async_queue, SIGIO, POLL_IN);
-+       }
-        else
-                cmd->abort_aen = 0;
 
-@@ -2621,6 +2641,7 @@ megasas_probe_one(struct pci_dev *pdev,
+--==_Exmh_1234881458_6651P
+Content-Type: application/pgp-signature
 
-        megasas_dbg_lvl = 0;
-        instance->flag = 0;
-+       instance->unload = 0;
-        instance->last_time = 0;
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-        /*
-@@ -2924,6 +2945,7 @@ static void __devexit megasas_detach_one
-        struct megasas_instance *instance;
+iD8DBQFJmsuycC3lWbTT17ARAgsdAKCb2V18rbMmesr60eusN6r+04fdzACcCvgd
+LhdhGZxE0KkwyCRnK43YFW8=
+=j923
+-----END PGP SIGNATURE-----
 
-        instance = pci_get_drvdata(pdev);
-+       instance->unload = 1;
-        host = instance->host;
-
-        if (poll_mode_io)
-@@ -3027,6 +3049,21 @@ static int megasas_mgmt_fasync(int fd, s
- }
-
- /**
-+ * megasas_mgmt_poll -  char node "poll" entry point
-+ * */
-+static unsigned int megasas_mgmt_poll(struct file *file, poll_table *wait)
-+{
-+       unsigned int mask = 0;
-+       poll_wait(file, &megasas_poll_wait, wait);
-+
-+       if (megasas_poll_wait_aen) {
-+               mask |=   (POLLIN | POLLRDNORM);
-+               megasas_poll_wait_aen = 0;
-+       }
-+       return mask;
-+}
-+
-+/**
-  * megasas_mgmt_fw_ioctl -     Issues management ioctls to FW
-  * @instance:                  Adapter soft state
-  * @argp:                      User's ioctl packet
-@@ -3348,6 +3385,7 @@ static const struct file_operations mega
-        .open = megasas_mgmt_open,
-        .fasync = megasas_mgmt_fasync,
-        .unlocked_ioctl = megasas_mgmt_ioctl,
-+       .poll = megasas_mgmt_poll,
- #ifdef CONFIG_COMPAT
-        .compat_ioctl = megasas_mgmt_compat_ioctl,
- #endif
-@@ -3462,6 +3500,99 @@ out:
-        return retval;
- }
-
-+
-+static void
-+megasas_aen_polling(struct work_struct *work)
-+{
-+       struct megasas_aen_event *ev =
-+               container_of(work, struct megasas_aen_event, hotplug_work);
-+       struct megasas_instance *instance = ev->instance;
-+       struct megasas_evt_log_info eli;
-+       union megasas_evt_class_locale class_locale;
-+       int doscan = 0;
-+       u32 seq_num;
-+       int error;
-+
-+       if (!instance) {
-+               printk(KERN_ERR "%s: invalid instance!\n", __FUNCTION__);
-+               kfree(ev);
-+               return;
-+       }
-+
-+       if (instance->evt_detail) {
-+               printk(KERN_INFO "%s[%d]: event code 0x%04x\n", __FUNCTION__,
-+                       instance->host->host_no, instance->evt_detail->code);
-+
-+               switch (instance->evt_detail->code) {
-+
-+               case MR_EVT_LD_CREATED:
-+               case MR_EVT_PD_INSERTED:
-+               case MR_EVT_LD_DELETED:
-+               case MR_EVT_LD_OFFLINE:
-+               case MR_EVT_CFG_CLEARED:
-+               case MR_EVT_PD_REMOVED:
-+               case MR_EVT_FOREIGN_CFG_IMPORTED:
-+               case MR_EVT_LD_STATE_CHANGE:
-+                       doscan = 1;
-+                       break;
-+               default:
-+                       doscan = 0;
-+                       break;
-+               }
-+       } else {
-+               printk(KERN_ERR "%s[%d]: invalid evt_detail!\n",
-+                       __FUNCTION__, instance->host->host_no);
-+               kfree(ev);
-+               return;
-+       }
-+
-+       if (doscan) {
-+               printk(KERN_INFO "%s[%d]: scanning ...\n",
-+                       __FUNCTION__, instance->host->host_no);
-+               scsi_scan_host(instance->host);
-+               msleep(1000);
-+       }
-+
-+       kfree(ev);
-+       /**
-+       * Get the latest sequence number from FW
-+       **/
-+
-+       memset(&eli, 0, sizeof(eli));
-+
-+       if (megasas_get_seq_num(instance, &eli)) {
-+               printk(KERN_ERR "%s[%d]: failed to get seq_num\n",
-+                       __FUNCTION__, instance->host->host_no);
-+               return;
-+       }
-+
-+       seq_num = instance->evt_detail->seq_num + 1;
-+
-+       /**
-+       * Register AEN with FW for latest sequence number plus 1
-+       **/
-+
-+       class_locale.members.reserved = 0;
-+       class_locale.members.locale = MR_EVT_LOCALE_ALL;
-+       class_locale.members.class = MR_EVT_CLASS_DEBUG;
-+
-+       down(&instance->aen_mutex);
-+
-+       error = megasas_register_aen(instance, seq_num,
-+                               class_locale.word);
-+
-+       up(&instance->aen_mutex);
-+
-+       if (error)
-+               printk(KERN_ERR "%s[%d]: register aen failed error %x\n",
-+                        __FUNCTION__, instance->host->host_no, error);
-+       else
-+               printk(KERN_INFO "%s[%d]: aen registered\n",
-+                       __FUNCTION__, instance->host->host_no);
-+
-+}
-+
-+
- static DRIVER_ATTR(poll_mode_io, S_IRUGO|S_IWUGO,
-                megasas_sysfs_show_poll_mode_io,
-                megasas_sysfs_set_poll_mode_io);
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h      2009-02-12 15:36:37.000000000 -0500
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h       2009-02-12 15:24:58.000000000 -0500
-@@ -132,6 +132,16 @@
- #define MR_DCMD_CLUSTER_RESET_ALL              0x08010100
- #define MR_DCMD_CLUSTER_RESET_LD               0x08010200
-
-+#define MR_EVT_CFG_CLEARED                     0x0004
-+
-+#define MR_EVT_LD_STATE_CHANGE                 0x0051
-+#define MR_EVT_PD_INSERTED                     0x005b
-+#define MR_EVT_PD_REMOVED                      0x0070
-+#define MR_EVT_LD_CREATED                      0x008a
-+#define MR_EVT_LD_DELETED                      0x008b
-+#define MR_EVT_FOREIGN_CFG_IMPORTED            0x00db
-+#define MR_EVT_LD_OFFLINE                      0x00fc
-+
- /*
-  * MFI command completion codes
-  */
-@@ -1072,6 +1082,11 @@ struct megasas_evt_detail {
-        u32 (*read_fw_status_reg)(struct megasas_register_set __iomem *);
-  };
-
-+struct megasas_aen_event {
-+       struct work_struct hotplug_work;
-+       struct megasas_instance *instance;
-+};
-+
- struct megasas_instance {
-
-        u32 *producer;
+--==_Exmh_1234881458_6651P--
