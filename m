@@ -1,121 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752738AbZBQBKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753021AbZBQBOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752738AbZBQBKW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 20:10:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750749AbZBQBKI
+	id S1753021AbZBQBOp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 20:14:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbZBQBOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 20:10:08 -0500
-Received: from satoko.is.fushizen.net ([207.192.69.114]:49642 "EHLO
-	satoko.is.fushizen.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750721AbZBQBKH (ORCPT
+	Mon, 16 Feb 2009 20:14:37 -0500
+Received: from qb-out-0506.google.com ([72.14.204.228]:44892 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751377AbZBQBOg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 20:10:07 -0500
-From: Bryan Donlan <bdonlan@gmail.com>
-To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: sct@redhat.com, akpm@linux-foundation.org, adilger@sun.com, tytso@mit.edu,
-       Bryan Donlan <bdonlan@gmail.com>
-Subject: [PATCH v2] ext[234]: Return -EIO not -ESTALE on directory traversal through deleted inode
-Date: Mon, 16 Feb 2009 20:10:03 -0500
-Message-Id: <1234833003-19631-1-git-send-email-bdonlan@gmail.com>
-X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <20090214141411.GD26628@mini-me.lan>
-References: <20090214141411.GD26628@mini-me.lan>
+	Mon, 16 Feb 2009 20:14:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ia9stVhbSk1OkZzvGqk/8dkmUjK5FWEP8vCRGO8vVW57YWPuLQDqmgbxg+RZHrmI+w
+         rQ/RO+XRG+xnj8qN8cKTgQQsaFzc1tnRev18n+W9O9dPon7sfHbD+9VZuuPN3oLJiLjs
+         XIVJMl/T6vwRxRsCXA6TOAcDm+LkzKiBIr4vU=
+MIME-Version: 1.0
+In-Reply-To: <20090205180856.GA20805@kroah.com>
+References: <1233319715-4877-1-git-send-email-tom.leiming@gmail.com>
+	 <20090130065224.47729f41@infradead.org>
+	 <20090204230851.GF18484@kroah.com>
+	 <20090204170858.2d07b546@infradead.org>
+	 <20090205180856.GA20805@kroah.com>
+Date: Tue, 17 Feb 2009 09:14:34 +0800
+Message-ID: <d82e647a0902161714y46ac2785lbd0bd964902289e5@mail.gmail.com>
+Subject: Re: [PATCH] driver core: remove polling for driver_probe_done(v3)
+From: Ming Lei <tom.leiming@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, kay.sievers@vrfy.org,
+       cornelia.huck@de.ibm.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ext[234]_iget() functions in the ext[234] family of filesystems returns
--ESTALE if invoked on a deleted inode, in order to report errors to NFS
-properly. However, in ext[234]_lookup(), this -ESTALE can be propagated to
-userspace if the filesystem is corrupted such that a directory entry
-references a deleted inode. This leads to a misleading error message - "Stale
-NFS file handle" - and confusion on the part of the admin.
+Hi, Greg
+Would you mind queuing this patch into your tree?
+Thanks!
 
-The bug can be easily reproduced by creating a new filesystem, making a link
-to an unused inode using debugfs, then mounting and attempting to ls -l
-said link.
+2009/2/6 Greg KH <greg@kroah.com>:
+> On Wed, Feb 04, 2009 at 05:08:58PM -0800, Arjan van de Ven wrote:
+>> On Wed, 4 Feb 2009 15:08:51 -0800
+>> Greg KH <greg@kroah.com> wrote:
+>>
+>> > On Fri, Jan 30, 2009 at 06:52:24AM -0800, Arjan van de Ven wrote:
+>> > > On Fri, 30 Jan 2009 20:48:35 +0800
+>> > > tom.leiming@gmail.com wrote:
+>> > >
+>> > > > From: Ming Lei <tom.leiming@gmail.com>
+>> > > >
+>> > > > This patch adds a function : driver_wait_probe_done,
+>> > > > which waits on condition of probing done to replace
+>> > > > polling for driver_probe_done in fs initialization.
+>> > > >
+>> > > > There is no better way to avoid polling for
+>> > > > driver_probe_done _and_ existence of the root device,
+>> > > > so we does not replace the driver_probe_done with
+>> > > > driver_wait_probe_done in such special case.
+>> > > >
+>> > > > Removing polling in fs initialization may lead to
+>> > > > a faster boot.
+>> > > >
+>> > > > Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+>> > >
+>> > > ok this one will work fine ;)
+>> > >
+>> > > Reviewed-by: Arjan van de Ven <arjan@linux.intel.com>
+>> > >
+>> > > thanks for fixing this up
+>> > > (it will clash with the patch that moves this to one place, but the
+>> > > same cleanup can be done there)
+>> >
+>> > What patch is that?  Should i be taking this?  Or are they in some
+>> > other tree?
+>>
+>> it's the suspend-resume regression fixes that either you already have
+>> or that raphael sent to you
+>
+> Hm, ok, I don't see any left in my tree, or queue, so perhaps someone
+> might want to resend them to me?
+>
+> thanks,
+>
+> greg k-h
+>
 
-This patch thus changes ext[234]_lookup to return -EIO if it receives -ESTALE
-from ext[234]_iget(), as ext[234] does for other filesystem metadata
-corruption; and also invokes the appropriate ext*_error functions when
-this case is detected.
 
-Signed-off-by: Bryan Donlan <bdonlan@gmail.com>
----
- fs/ext2/namei.c |   12 ++++++++++--
- fs/ext3/namei.c |   12 ++++++++++--
- fs/ext4/namei.c |   12 ++++++++++--
- 3 files changed, 30 insertions(+), 6 deletions(-)
 
-diff --git a/fs/ext2/namei.c b/fs/ext2/namei.c
-index 90ea179..e3d2d34 100644
---- a/fs/ext2/namei.c
-+++ b/fs/ext2/namei.c
-@@ -66,8 +66,16 @@ static struct dentry *ext2_lookup(struct inode * dir, struct dentry *dentry, str
- 	inode = NULL;
- 	if (ino) {
- 		inode = ext2_iget(dir->i_sb, ino);
--		if (IS_ERR(inode))
--			return ERR_CAST(inode);
-+		if (unlikely(IS_ERR(inode))) {
-+			if (PTR_ERR(inode) == -ESTALE) {
-+				ext2_error(dir->i_sb, "ext2_lookup",
-+						"deleted inode referenced: %lu",
-+						ino);
-+				return ERR_PTR(-EIO);
-+			} else {
-+				return ERR_CAST(inode);
-+			}
-+		}
- 	}
- 	return d_splice_alias(inode, dentry);
- }
-diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
-index 4db4ffa..7a99af0 100644
---- a/fs/ext3/namei.c
-+++ b/fs/ext3/namei.c
-@@ -1047,8 +1047,16 @@ static struct dentry *ext3_lookup(struct inode * dir, struct dentry *dentry, str
- 			return ERR_PTR(-EIO);
- 		}
- 		inode = ext3_iget(dir->i_sb, ino);
--		if (IS_ERR(inode))
--			return ERR_CAST(inode);
-+		if (unlikely(IS_ERR(inode))) {
-+			if (PTR_ERR(inode) == -ESTALE) {
-+				ext3_error(dir->i_sb, "ext2_lookup",
-+						"deleted inode referenced: %lu",
-+						ino);
-+				return ERR_PTR(-EIO);
-+			} else {
-+				return ERR_CAST(inode);
-+			}
-+		}
- 	}
- 	return d_splice_alias(inode, dentry);
- }
-diff --git a/fs/ext4/namei.c b/fs/ext4/namei.c
-index ba702bd..a61637b 100644
---- a/fs/ext4/namei.c
-+++ b/fs/ext4/namei.c
-@@ -1052,8 +1052,16 @@ static struct dentry *ext4_lookup(struct inode *dir, struct dentry *dentry, stru
- 			return ERR_PTR(-EIO);
- 		}
- 		inode = ext4_iget(dir->i_sb, ino);
--		if (IS_ERR(inode))
--			return ERR_CAST(inode);
-+		if (unlikely(IS_ERR(inode))) {
-+			if (PTR_ERR(inode) == -ESTALE) {
-+				ext4_error(dir->i_sb, "ext2_lookup",
-+						"deleted inode referenced: %u",
-+						ino);
-+				return ERR_PTR(-EIO);
-+			} else {
-+				return ERR_CAST(inode);
-+			}
-+		}
- 	}
- 	return d_splice_alias(inode, dentry);
- }
 -- 
-1.5.6.3
-
+Lei Ming
