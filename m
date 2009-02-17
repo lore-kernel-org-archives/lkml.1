@@ -1,83 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344AbZBQBH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752738AbZBQBKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753344AbZBQBH0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 20:07:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbZBQBHO
+	id S1752738AbZBQBKW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 20:10:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750749AbZBQBKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 20:07:14 -0500
-Received: from mga12.intel.com ([143.182.124.36]:39462 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751156AbZBQBHN (ORCPT
+	Mon, 16 Feb 2009 20:10:08 -0500
+Received: from satoko.is.fushizen.net ([207.192.69.114]:49642 "EHLO
+	satoko.is.fushizen.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750721AbZBQBKH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 20:07:13 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,219,1233561600"; 
-   d="scan'208";a="111269715"
-Subject: Re: [patch] SLQB slab allocator (try 2)
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Mel Gorman <mel@csn.ul.ie>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <4999BBE6.2080003@cs.helsinki.fi>
-References: <20090123154653.GA14517@wotan.suse.de>
-	 <200902041748.41801.nickpiggin@yahoo.com.au>
-	 <20090204152709.GA4799@csn.ul.ie>
-	 <200902051459.30064.nickpiggin@yahoo.com.au>
-	 <20090216184200.GA31264@csn.ul.ie>  <4999BBE6.2080003@cs.helsinki.fi>
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 17 Feb 2009 09:06:55 +0800
-Message-Id: <1234832815.2604.410.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Mon, 16 Feb 2009 20:10:07 -0500
+From: Bryan Donlan <bdonlan@gmail.com>
+To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: sct@redhat.com, akpm@linux-foundation.org, adilger@sun.com, tytso@mit.edu,
+       Bryan Donlan <bdonlan@gmail.com>
+Subject: [PATCH v2] ext[234]: Return -EIO not -ESTALE on directory traversal through deleted inode
+Date: Mon, 16 Feb 2009 20:10:03 -0500
+Message-Id: <1234833003-19631-1-git-send-email-bdonlan@gmail.com>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <20090214141411.GD26628@mini-me.lan>
+References: <20090214141411.GD26628@mini-me.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-16 at 21:17 +0200, Pekka Enberg wrote:
-> Hi Mel,
-> 
-> Mel Gorman wrote:
-> > I haven't done much digging in here yet. Between the large page bug and
-> > other patches in my inbox, I haven't had the chance yet but that doesn't
-> > stop anyone else taking a look.
-> 
-> So how big does an improvement/regression have to be not to be 
-> considered within noise? I mean, I randomly picked one of the results 
-> ("x86-64 speccpu integer tests") and ran it through my "summarize" 
-> script and got the following results:
-> 
-> 		min      max      mean     std_dev
->    slub		0.96     1.09     1.01     0.04
->    slub-min	0.95     1.10     1.00     0.04
->    slub-rvrt	0.90     1.08     0.99     0.05
->    slqb		0.96     1.07     1.00     0.04
-> 
-> Apart from slub-rvrt (which seems to be regressing, interesting) all the 
-> allocators seem to perform equally well. Hmm?
-I wonder if different compilation of kernel might cause different cache alignment
-which has much impact on small result difference.
+The ext[234]_iget() functions in the ext[234] family of filesystems returns
+-ESTALE if invoked on a deleted inode, in order to report errors to NFS
+properly. However, in ext[234]_lookup(), this -ESTALE can be propagated to
+userspace if the filesystem is corrupted such that a directory entry
+references a deleted inode. This leads to a misleading error message - "Stale
+NFS file handle" - and confusion on the part of the admin.
 
-If a workload isn't slab-allocation intensive, perhaps the impact caused by different
-compilation is a little bigger.
+The bug can be easily reproduced by creating a new filesystem, making a link
+to an unused inode using debugfs, then mounting and attempting to ls -l
+said link.
 
+This patch thus changes ext[234]_lookup to return -EIO if it receives -ESTALE
+from ext[234]_iget(), as ext[234] does for other filesystem metadata
+corruption; and also invokes the appropriate ext*_error functions when
+this case is detected.
 
-> 
-> Btw, Yanmin, do you have access to the tests Mel is running (especially 
-> the ones where slub-rvrt seems to do worse)?
-As it takes a long time (more than 20 hours) to run cpu2006, I run cpu2000 instead
-of cpu2006. Now, we are trying to integrate cpu2006 into testing infrastructure.
-﻿Let me check it firstly.
+Signed-off-by: Bryan Donlan <bdonlan@gmail.com>
+---
+ fs/ext2/namei.c |   12 ++++++++++--
+ fs/ext3/namei.c |   12 ++++++++++--
+ fs/ext4/namei.c |   12 ++++++++++--
+ 3 files changed, 30 insertions(+), 6 deletions(-)
 
->  Can you see this kind of 
-> regression? The results make we wonder whether we should avoid reverting 
-> all of the page allocator pass-through and just add a kmalloc cache for 
-> 8K allocations. Or not address the netperf regression at all. Double-hmm.
-> 
-> 			Pekka
+diff --git a/fs/ext2/namei.c b/fs/ext2/namei.c
+index 90ea179..e3d2d34 100644
+--- a/fs/ext2/namei.c
++++ b/fs/ext2/namei.c
+@@ -66,8 +66,16 @@ static struct dentry *ext2_lookup(struct inode * dir, struct dentry *dentry, str
+ 	inode = NULL;
+ 	if (ino) {
+ 		inode = ext2_iget(dir->i_sb, ino);
+-		if (IS_ERR(inode))
+-			return ERR_CAST(inode);
++		if (unlikely(IS_ERR(inode))) {
++			if (PTR_ERR(inode) == -ESTALE) {
++				ext2_error(dir->i_sb, "ext2_lookup",
++						"deleted inode referenced: %lu",
++						ino);
++				return ERR_PTR(-EIO);
++			} else {
++				return ERR_CAST(inode);
++			}
++		}
+ 	}
+ 	return d_splice_alias(inode, dentry);
+ }
+diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
+index 4db4ffa..7a99af0 100644
+--- a/fs/ext3/namei.c
++++ b/fs/ext3/namei.c
+@@ -1047,8 +1047,16 @@ static struct dentry *ext3_lookup(struct inode * dir, struct dentry *dentry, str
+ 			return ERR_PTR(-EIO);
+ 		}
+ 		inode = ext3_iget(dir->i_sb, ino);
+-		if (IS_ERR(inode))
+-			return ERR_CAST(inode);
++		if (unlikely(IS_ERR(inode))) {
++			if (PTR_ERR(inode) == -ESTALE) {
++				ext3_error(dir->i_sb, "ext2_lookup",
++						"deleted inode referenced: %lu",
++						ino);
++				return ERR_PTR(-EIO);
++			} else {
++				return ERR_CAST(inode);
++			}
++		}
+ 	}
+ 	return d_splice_alias(inode, dentry);
+ }
+diff --git a/fs/ext4/namei.c b/fs/ext4/namei.c
+index ba702bd..a61637b 100644
+--- a/fs/ext4/namei.c
++++ b/fs/ext4/namei.c
+@@ -1052,8 +1052,16 @@ static struct dentry *ext4_lookup(struct inode *dir, struct dentry *dentry, stru
+ 			return ERR_PTR(-EIO);
+ 		}
+ 		inode = ext4_iget(dir->i_sb, ino);
+-		if (IS_ERR(inode))
+-			return ERR_CAST(inode);
++		if (unlikely(IS_ERR(inode))) {
++			if (PTR_ERR(inode) == -ESTALE) {
++				ext4_error(dir->i_sb, "ext2_lookup",
++						"deleted inode referenced: %u",
++						ino);
++				return ERR_PTR(-EIO);
++			} else {
++				return ERR_CAST(inode);
++			}
++		}
+ 	}
+ 	return d_splice_alias(inode, dentry);
+ }
+-- 
+1.5.6.3
 
