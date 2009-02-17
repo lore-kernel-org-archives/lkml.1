@@ -1,60 +1,540 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbZBQT3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752840AbZBQTaN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753904AbZBQT3u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 14:29:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbZBQT3m
+	id S1752840AbZBQTaN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 14:30:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbZBQT3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 14:29:42 -0500
-Received: from mail-gx0-f163.google.com ([209.85.217.163]:54085 "EHLO
-	mail-gx0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751443AbZBQT3l (ORCPT
+	Tue, 17 Feb 2009 14:29:55 -0500
+Received: from casper.infradead.org ([85.118.1.10]:51500 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754041AbZBQT3y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 14:29:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=Yux/QKZHgT6y5QGLB5BSU6ATydk8rBkMclV3TmjAhF4KxtWbGEZZwoHvqY0YaRHJXz
-         Y+9MOx8cJl6xYlnOVF2N+UO4QkHdVxV1QvEDQ+8c5iJz6n+uzWE9yeYzk613uF2dRQxM
-         FD0OknH7zLdeRpMFniJKNbnXzPdwj6kl9F17c=
-Message-ID: <499B0FD7.2050906@gmail.com>
-Date: Tue, 17 Feb 2009 14:28:23 -0500
-From: David Pflug <dtpflug@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090124)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [BUG] >2.6.27 dies at cardbus init on laptop
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 17 Feb 2009 14:29:54 -0500
+Subject: [PATCH -v4] generic-ipi: remove kmalloc()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <1234892420.4744.158.camel@laptop>
+References: <20090216163847.431174825@chello.nl>
+	 <20090216164114.433430761@chello.nl> <1234885258.4744.153.camel@laptop>
+	 <20090217172113.GA26459@redhat.com>  <1234892420.4744.158.camel@laptop>
+Content-Type: text/plain
+Date: Tue, 17 Feb 2009 20:29:18 +0100
+Message-Id: <1234898958.4744.225.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.90 
 Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While trying to boot kernels greater than 2.6.27 on this Toshiba
-Satellite 1135-S155, it freezes while initializing Texas Instruments
-PCI1410 PC card Cardbus Controller [104c:ac50]. However, it boots with
-pci=noacpi. The IRQ of the cardbus is shared by one of the USB
-controllers and the IDE controller.
+On Tue, 2009-02-17 at 18:40 +0100, Peter Zijlstra wrote:
+> Let me spin a new patch and build a kernel with it ;-)
 
-Identical symptoms on 2.6.29rc5.
+On top of Nick's patch.
 
-Last few messages with default kernel line:
-pci 0000:00:1e.0:   PREFETCH window: 0x00000040000000-0x0000004bffffff
-pci 0000:02:02.0: enabling device (0000 -> 0003)
-ACPI: PCI Interrupt Link [LNKC] enabled at IRQ 11
-PCI: setting IRQ 11 as level-triggered
-pci 0000:02:02.0: PCI INT A -> Link[LNKC] -> GSI 11 (level, low) -> IRQ 11
+My quad has been happily building kernels with this the past 30 minutes
+or so.
 
-dmesg with acpi=off:
-http://dpaste.com/hold/121766/
+---
+Subject: generic-ipi: remove kmalloc()
 
-Kernel config:
-http://dpaste.com/hold/121721/
+Remove the use of kmalloc() from the smp_call_function_*() calls.
 
-lspci output:
-http://dpaste.com/hold/121768/
+Steven's generic-ipi patch (d7240b98: generic-ipi: use per cpu data for
+single cpu ipi calls) started the discussion on the use of kmalloc() in
+this code and fixed the smp_call_function_single(.wait=0) fallback case.
 
-Is there anything else I can do to help debug?
+In this patch we complete this by also providing means for the _many()
+call, which fully removes the need for kmalloc() in this code.
 
---
-David Pflug
+The problem with the _many() call is that other cpus might still be
+observing our entry when we're done with it. It solved this by
+dynamically allocating data elements and RCU-freeing it.
+
+We solve it by using a single per-cpu entry which provides static
+storage and solves one half of the problem (avoiding referencing freed
+data).
+
+The other half, ensuring the queue iteration it still possible, is done
+by placing re-used entries at the head of the list. This means that if
+someone was still iterating that entry when it got moved will now
+re-visit the entries on the list it had already seen, but avoids
+skipping over entries like would have happened had we placed the new
+entry at the end.
+
+Furthermore, visiting entries twice is not a problem, since we remove
+our cpu from the entry's cpumask once its called.
+
+We also optimize both the _single() and _many() interrupt handler to
+copy the entry to their local stack and freeing it for re-use before we
+call the function.
+
+Many thanks to Oleg for his suggestions and poking him holes in my
+earlier attempts.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ smp.c |  285 +++++++++++++++++++++++++++++++++++++++---------------------------
+ 1 file changed, 171 insertions(+), 114 deletions(-)
+
+Index: linux-2.6/kernel/smp.c
+===================================================================
+--- linux-2.6.orig/kernel/smp.c
++++ linux-2.6/kernel/smp.c
+@@ -10,23 +10,28 @@
+ #include <linux/rcupdate.h>
+ #include <linux/rculist.h>
+ #include <linux/smp.h>
++#include <linux/cpu.h>
+ 
+ static DEFINE_PER_CPU(struct call_single_queue, call_single_queue);
+-static LIST_HEAD(call_function_queue);
+-__cacheline_aligned_in_smp DEFINE_SPINLOCK(call_function_lock);
++
++static struct {
++	struct list_head	queue;
++	spinlock_t		lock;
++} call_function __cacheline_aligned_in_smp = {
++	.queue = LIST_HEAD_INIT(call_function.queue),
++	.lock  = __SPIN_LOCK_UNLOCKED(call_function.lock),
++};
+ 
+ enum {
+ 	CSD_FLAG_WAIT		= 0x01,
+-	CSD_FLAG_ALLOC		= 0x02,
+-	CSD_FLAG_LOCK		= 0x04,
++	CSD_FLAG_LOCK		= 0x02,
+ };
+ 
+ struct call_function_data {
+ 	struct call_single_data csd;
+ 	spinlock_t lock;
+ 	unsigned int refs;
+-	struct rcu_head rcu_head;
+-	unsigned long cpumask_bits[];
++	cpumask_var_t cpumask;
+ };
+ 
+ struct call_single_queue {
+@@ -34,8 +39,45 @@ struct call_single_queue {
+ 	spinlock_t lock;
+ };
+ 
++static DEFINE_PER_CPU(struct call_function_data, cfd_data) = {
++	.lock = __SPIN_LOCK_UNLOCKED(cfd_data.lock),
++};
++
++static int
++hotplug_cfd(struct notifier_block *nfb, unsigned long action, void *hcpu)
++{
++	long cpu = (long)hcpu;
++	struct call_function_data *cfd = &per_cpu(cfd_data, cpu);
++
++	switch (action) {
++	case CPU_UP_PREPARE:
++	case CPU_UP_PREPARE_FROZEN:
++		if (!alloc_cpumask_var_node(&cfd->cpumask, GFP_KERNEL,
++				cpu_to_node(cpu)))
++			return NOTIFY_BAD;
++		break;
++
++#ifdef CONFIG_CPU_HOTPLUG
++	case CPU_UP_CANCELED:
++	case CPU_UP_CANCELED_FROZEN:
++
++	case CPU_DEAD:
++	case CPU_DEAD_FROZEN:
++		free_cpumask_var(cfd->cpumask);
++		break;
++#endif
++	};
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block __cpuinitdata hotplug_cfd_notifier = {
++	.notifier_call = hotplug_cfd,
++};
++
+ static int __cpuinit init_call_single_data(void)
+ {
++	void *cpu = (void *)(long)smp_processor_id();
+ 	int i;
+ 
+ 	for_each_possible_cpu(i) {
+@@ -44,18 +86,59 @@ static int __cpuinit init_call_single_da
+ 		spin_lock_init(&q->lock);
+ 		INIT_LIST_HEAD(&q->list);
+ 	}
++
++	hotplug_cfd(&hotplug_cfd_notifier, CPU_UP_PREPARE, cpu);
++	register_cpu_notifier(&hotplug_cfd_notifier);
++
+ 	return 0;
+ }
+ early_initcall(init_call_single_data);
+ 
+-static void csd_flag_wait(struct call_single_data *data)
++/*
++ * csd_wait/csd_complete are used for synchronous ipi calls
++ */
++static void csd_wait_prepare(struct call_single_data *data)
++{
++	data->flags |= CSD_FLAG_WAIT;
++}
++
++static void csd_complete(struct call_single_data *data)
++{
++	/*
++	 * Serialize stores to data with the flag clear and wakeup.
++	 */
++	smp_wmb();
++	data->flags &= ~CSD_FLAG_WAIT;
++}
++
++static void csd_wait(struct call_single_data *data)
++{
++	while (data->flags & CSD_FLAG_WAIT)
++		cpu_relax();
++}
++
++/*
++ * csd_lock/csd_unlock used to serialize access to per-cpu csd resources
++ *
++ * For non-synchronous ipi calls the csd can still be in use by the previous
++ * function call. For multi-cpu calls its even more interesting as we'll have
++ * to ensure no other cpu is observing our csd.
++ */
++static void csd_lock(struct call_single_data *data)
+ {
+-	/* Wait for response */
+-	do {
+-		if (!(data->flags & CSD_FLAG_WAIT))
+-			break;
++	while (data->flags & CSD_FLAG_LOCK)
+ 		cpu_relax();
+-	} while (1);
++	data->flags = CSD_FLAG_LOCK;
++}
++
++static void csd_unlock(struct call_single_data *data)
++{
++	WARN_ON(!(data->flags & CSD_FLAG_LOCK));
++	/*
++	 * Serialize stores to data with the flags clear.
++	 */
++	smp_wmb();
++	data->flags &= ~CSD_FLAG_LOCK;
+ }
+ 
+ /*
+@@ -89,16 +172,7 @@ static void generic_exec_single(int cpu,
+ 		arch_send_call_function_single_ipi(cpu);
+ 
+ 	if (wait)
+-		csd_flag_wait(data);
+-}
+-
+-static void rcu_free_call_data(struct rcu_head *head)
+-{
+-	struct call_function_data *data;
+-
+-	data = container_of(head, struct call_function_data, rcu_head);
+-
+-	kfree(data);
++		csd_wait(data);
+ }
+ 
+ /*
+@@ -122,41 +196,36 @@ void generic_smp_call_function_interrupt
+ 	 * It's ok to use list_for_each_rcu() here even though we may delete
+ 	 * 'pos', since list_del_rcu() doesn't clear ->next
+ 	 */
+-	rcu_read_lock();
+-	list_for_each_entry_rcu(data, &call_function_queue, csd.list) {
+-		int refs;
+-
+-		if (!cpumask_test_cpu(cpu, to_cpumask(data->cpumask_bits)))
+-			continue;
+-
+-		data->csd.func(data->csd.info);
++	list_for_each_entry_rcu(data, &call_function.queue, csd.list) {
++		void (*func)(void *);
++		void *info;
++		int refs, wait;
+ 
+ 		spin_lock(&data->lock);
+-		cpumask_clear_cpu(cpu, to_cpumask(data->cpumask_bits));
++		if (!cpumask_test_cpu(cpu, data->cpumask)) {
++			spin_unlock(&data->lock);
++			continue;
++		}
++		cpumask_clear_cpu(cpu, data->cpumask);
+ 		WARN_ON(data->refs == 0);
+-		data->refs--;
+-		refs = data->refs;
++		refs = --data->refs;
++		func = data->csd.func;
++		info = data->csd.info;
++		wait = (data->csd.flags & CSD_FLAG_WAIT);
+ 		spin_unlock(&data->lock);
+ 
+-		if (refs)
+-			continue;
++		if (!refs) {
++			spin_lock(&call_function.lock);
++			list_del_rcu(&data->csd.list);
++			spin_unlock(&call_function.lock);
++			csd_unlock(&data->csd);
++		}
+ 
+-		spin_lock(&call_function_lock);
+-		list_del_rcu(&data->csd.list);
+-		spin_unlock(&call_function_lock);
++		func(info);
+ 
+-		if (data->csd.flags & CSD_FLAG_WAIT) {
+-			/*
+-			 * serialize stores to data with the flag clear
+-			 * and wakeup
+-			 */
+-			smp_wmb();
+-			data->csd.flags &= ~CSD_FLAG_WAIT;
+-		}
+-		if (data->csd.flags & CSD_FLAG_ALLOC)
+-			call_rcu(&data->rcu_head, rcu_free_call_data);
++		if (!refs && wait)
++			csd_complete(&data->csd);
+ 	}
+-	rcu_read_unlock();
+ 
+ 	put_cpu();
+ }
+@@ -169,7 +238,6 @@ void generic_smp_call_function_single_in
+ {
+ 	struct call_single_queue *q = &__get_cpu_var(call_single_queue);
+ 	LIST_HEAD(list);
+-	unsigned int data_flags;
+ 
+ 	spin_lock(&q->lock);
+ 	list_replace_init(&q->list, &list);
+@@ -177,29 +245,28 @@ void generic_smp_call_function_single_in
+ 
+ 	while (!list_empty(&list)) {
+ 		struct call_single_data *data;
++		void (*func)(void *);
++		void *info;
++		int wait;
+ 
+-		data = list_entry(list.next, struct call_single_data,
+-					list);
++		data = list_first_entry(&list, struct call_single_data, list);
+ 		list_del(&data->list);
++		func = data->func;
++		info = data->info;
+ 
+ 		/*
+-		 * 'data' can be invalid after this call if
+-		 * flags == 0 (when called through
+-		 * generic_exec_single(), so save them away before
+-		 * making the call.
++		 * 'data' can be invalid after this if flags == 0 
++		 * when called through generic_exec_single()
+ 		 */
+-		data_flags = data->flags;
++		wait = (data->flags & CSD_FLAG_WAIT);
+ 
+-		data->func(data->info);
++		if (data->flags & CSD_FLAG_LOCK)
++			csd_unlock(data);
++
++		func(info);
+ 
+-		if (data_flags & CSD_FLAG_WAIT) {
+-			smp_wmb();
+-			data->flags &= ~CSD_FLAG_WAIT;
+-		} else if (data_flags & CSD_FLAG_LOCK) {
+-			smp_wmb();
+-			data->flags &= ~CSD_FLAG_LOCK;
+-		} else if (data_flags & CSD_FLAG_ALLOC)
+-			kfree(data);
++		if (wait)
++			csd_complete(data);
+ 	}
+ }
+ 
+@@ -218,7 +285,9 @@ static DEFINE_PER_CPU(struct call_single
+ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+ 			     int wait)
+ {
+-	struct call_single_data d;
++	struct call_single_data d = {
++		.flags = 0,
++	};
+ 	unsigned long flags;
+ 	/* prevent preemption and reschedule on another processor,
+ 	   as well as CPU removal */
+@@ -239,13 +308,11 @@ int smp_call_function_single(int cpu, vo
+ 			/*
+ 			 * We are calling a function on a single CPU
+ 			 * and we are not going to wait for it to finish.
+-			 * We first try to allocate the data, but if we
+-			 * fail, we fall back to use a per cpu data to pass
+-			 * the information to that CPU. Since all callers
+-			 * of this code will use the same data, we must
+-			 * synchronize the callers to prevent a new caller
+-			 * from corrupting the data before the callee
+-			 * can access it.
++			 * We use a per cpu data to pass the information to
++			 * that CPU. Since all callers of this code will
++			 * use the same data, we must synchronize the
++			 * callers to prevent a new caller from corrupting
++			 * the data before the callee can access it.
+ 			 *
+ 			 * The CSD_FLAG_LOCK is used to let us know when
+ 			 * the IPI handler is done with the data.
+@@ -255,18 +322,11 @@ int smp_call_function_single(int cpu, vo
+ 			 * will make sure the callee is done with the
+ 			 * data before a new caller will use it.
+ 			 */
+-			data = kmalloc(sizeof(*data), GFP_ATOMIC);
+-			if (data)
+-				data->flags = CSD_FLAG_ALLOC;
+-			else {
+-				data = &per_cpu(csd_data, me);
+-				while (data->flags & CSD_FLAG_LOCK)
+-					cpu_relax();
+-				data->flags = CSD_FLAG_LOCK;
+-			}
++			data = &per_cpu(csd_data, me);
++			csd_lock(data);
+ 		} else {
+ 			data = &d;
+-			data->flags = CSD_FLAG_WAIT;
++			csd_wait_prepare(data);
+ 		}
+ 
+ 		data->func = func;
+@@ -326,14 +386,14 @@ void smp_call_function_many(const struct
+ {
+ 	struct call_function_data *data;
+ 	unsigned long flags;
+-	int cpu, next_cpu;
++	int cpu, next_cpu, me = smp_processor_id();
+ 
+ 	/* Can deadlock when called with interrupts disabled */
+ 	WARN_ON(irqs_disabled());
+ 
+ 	/* So, what's a CPU they want?  Ignoring this one. */
+ 	cpu = cpumask_first_and(mask, cpu_online_mask);
+-	if (cpu == smp_processor_id())
++	if (cpu == me)
+ 		cpu = cpumask_next_and(cpu, mask, cpu_online_mask);
+ 	/* No online cpus?  We're done. */
+ 	if (cpu >= nr_cpu_ids)
+@@ -341,7 +401,7 @@ void smp_call_function_many(const struct
+ 
+ 	/* Do we have another CPU which isn't us? */
+ 	next_cpu = cpumask_next_and(cpu, mask, cpu_online_mask);
+-	if (next_cpu == smp_processor_id())
++	if (next_cpu == me)
+ 		next_cpu = cpumask_next_and(next_cpu, mask, cpu_online_mask);
+ 
+ 	/* Fastpath: do that cpu by itself. */
+@@ -350,31 +410,28 @@ void smp_call_function_many(const struct
+ 		return;
+ 	}
+ 
+-	data = kmalloc(sizeof(*data) + cpumask_size(), GFP_ATOMIC);
+-	if (unlikely(!data)) {
+-		/* Slow path. */
+-		for_each_online_cpu(cpu) {
+-			if (cpu == smp_processor_id())
+-				continue;
+-			if (cpumask_test_cpu(cpu, mask))
+-				smp_call_function_single(cpu, func, info, wait);
+-		}
+-		return;
+-	}
++	data = &per_cpu(cfd_data, me);
++	csd_lock(&data->csd);
+ 
+-	spin_lock_init(&data->lock);
+-	data->csd.flags = CSD_FLAG_ALLOC;
++	spin_lock_irqsave(&data->lock, flags);
+ 	if (wait)
+-		data->csd.flags |= CSD_FLAG_WAIT;
++		csd_wait_prepare(&data->csd);
++
+ 	data->csd.func = func;
+ 	data->csd.info = info;
+-	cpumask_and(to_cpumask(data->cpumask_bits), mask, cpu_online_mask);
+-	cpumask_clear_cpu(smp_processor_id(), to_cpumask(data->cpumask_bits));
+-	data->refs = cpumask_weight(to_cpumask(data->cpumask_bits));
+-
+-	spin_lock_irqsave(&call_function_lock, flags);
+-	list_add_tail_rcu(&data->csd.list, &call_function_queue);
+-	spin_unlock_irqrestore(&call_function_lock, flags);
++	cpumask_and(data->cpumask, mask, cpu_online_mask);
++	cpumask_clear_cpu(me, data->cpumask);
++	data->refs = cpumask_weight(data->cpumask);
++
++	spin_lock(&call_function.lock);
++	/*
++	 * Place then entry at the _HEAD_ of the list, so that any cpu still
++	 * observing the entry in generic_smp_call_function_interrupt() will
++	 * not miss any other list entries (instead it can see some twice).
++	 */
++	list_add_rcu(&data->csd.list, &call_function.queue);
++	spin_unlock(&call_function.lock);
++	spin_unlock_irqrestore(&data->lock, flags);
+ 
+ 	/*
+ 	 * Make the list addition visible before sending the ipi.
+@@ -384,11 +441,11 @@ void smp_call_function_many(const struct
+ 	smp_mb();
+ 
+ 	/* Send a message to all CPUs in the map */
+-	arch_send_call_function_ipi_mask(to_cpumask(data->cpumask_bits));
++	arch_send_call_function_ipi_mask(data->cpumask);
+ 
+ 	/* optionally wait for the CPUs to complete */
+ 	if (wait)
+-		csd_flag_wait(&data->csd);
++		csd_wait(&data->csd);
+ }
+ EXPORT_SYMBOL(smp_call_function_many);
+ 
+@@ -418,20 +475,20 @@ EXPORT_SYMBOL(smp_call_function);
+ 
+ void ipi_call_lock(void)
+ {
+-	spin_lock(&call_function_lock);
++	spin_lock(&call_function.lock);
+ }
+ 
+ void ipi_call_unlock(void)
+ {
+-	spin_unlock(&call_function_lock);
++	spin_unlock(&call_function.lock);
+ }
+ 
+ void ipi_call_lock_irq(void)
+ {
+-	spin_lock_irq(&call_function_lock);
++	spin_lock_irq(&call_function.lock);
+ }
+ 
+ void ipi_call_unlock_irq(void)
+ {
+-	spin_unlock_irq(&call_function_lock);
++	spin_unlock_irq(&call_function.lock);
+ }
+
+
