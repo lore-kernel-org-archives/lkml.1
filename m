@@ -1,92 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753717AbZBQVhK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbZBQVii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753717AbZBQVhK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 16:37:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbZBQVg5
+	id S1754158AbZBQVii (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 16:38:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbZBQVi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 16:36:57 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40750 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751098AbZBQVg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 16:36:56 -0500
-Date: Tue, 17 Feb 2009 22:36:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Junio C Hamano <gitster@pobox.com>,
-       =?utf-8?B?IlMuw4dhxJ9sYXIgT251ciI=?= <caglar@pardus.org.tr>
-Subject: Re: [PATCH] Add *.rej to .gitignore
-Message-ID: <20090217213639.GA2949@elte.hu>
-References: <499B1729.5040802@goop.org> <alpine.LFD.2.00.0902171315400.21686@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0902171315400.21686@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.3 required=5.9 tests=BAYES_00,SUBJECT_FUZZY_TION autolearn=no SpamAssassin version=3.2.3
-	0.2 SUBJECT_FUZZY_TION     Attempt to obfuscate words in Subject:
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 17 Feb 2009 16:38:29 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:45457 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751252AbZBQVi2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 16:38:28 -0500
+Subject: Re: [PATCH -v4] generic-ipi: remove kmalloc()
+From: Peter Zijlstra <peterz@infradead.org>
+To: paulmck@linux.vnet.ibm.com
+Cc: Oleg Nesterov <oleg@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090217213027.GI6761@linux.vnet.ibm.com>
+References: <20090216163847.431174825@chello.nl>
+	 <20090216164114.433430761@chello.nl> <1234885258.4744.153.camel@laptop>
+	 <20090217172113.GA26459@redhat.com> <1234892420.4744.158.camel@laptop>
+	 <1234898958.4744.225.camel@laptop>
+	 <20090217213027.GI6761@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Tue, 17 Feb 2009 22:38:09 +0100
+Message-Id: <1234906689.4744.241.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-02-17 at 13:30 -0800, Paul E. McKenney wrote:
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Tue, 17 Feb 2009, Jeremy Fitzhardinge wrote:
-> > 
-> > (This effectively reverts 1f5d3a6b6532e25a5cdf1f311956b2b03d343a48)
+> > +static void csd_complete(struct call_single_data *data)
+> > +{
+> > +	/*
+> > +	 * Serialize stores to data with the flag clear and wakeup.
+> > +	 */
+> > +	smp_wmb();
 > 
-> I really dont' think we should ignore .rej files. 
+> Shouldn't the above be an smp_mb()?  There are reads preceding the calls
+> to csd_complete() that look to me like they need to remain ordered
+> before the flag-clearing below -- just in case of a quick reuse of this
+> call_single_data structure.
+
+Good point, however I just did a patch that made CSD_FLAG_WAIT go
+away :-)
+
+> > +	data->flags &= ~CSD_FLAG_WAIT;
+> > +}
+> > +
+> > +static void csd_wait(struct call_single_data *data)
+> > +{
+> > +	while (data->flags & CSD_FLAG_WAIT)
+> > +		cpu_relax();
+> > +}
+> > +
+> > +/*
+> > + * csd_lock/csd_unlock used to serialize access to per-cpu csd resources
+> > + *
+> > + * For non-synchronous ipi calls the csd can still be in use by the previous
+> > + * function call. For multi-cpu calls its even more interesting as we'll have
+> > + * to ensure no other cpu is observing our csd.
+> > + */
+> > +static void csd_lock(struct call_single_data *data)
+> >  {
+> > -	/* Wait for response */
+> > -	do {
+> > -		if (!(data->flags & CSD_FLAG_WAIT))
+> > -			break;
+> > +	while (data->flags & CSD_FLAG_LOCK)
+> >  		cpu_relax();
+> > -	} while (1);
+> > +	data->flags = CSD_FLAG_LOCK;
 > 
-> They are _error_ cases, after all. People want to know about 
-> them. And if you don't want to see them, you should remove 
-> them.
+> OK, I'll bite...  Why don't we need a memory barrier here?
 
-hm, ok. Still it would be nice to have some sort of commit-time 
-reminder.
+cpu_relax() is a compiler barrier, missing a memory barrier will just
+make us spin this little while extra until the cacheline does hit us.
 
-I _do_ notice .rej files because i have:
+> > +}
+> > +
+> > +static void csd_unlock(struct call_single_data *data)
+> > +{
+> > +	WARN_ON(!(data->flags & CSD_FLAG_LOCK));
+> > +	/*
+> > +	 * Serialize stores to data with the flags clear.
+> > +	 */
+> > +	smp_wmb();
+> 
+> I am a bit worried about this being smp_wmb() rather than smp_mb(),
+> but don't have a smoking gun.
 
-  chmod +x .git/hooks/pre-commit
 
-in my repo and .rej files trigger the checks there.
+		data->func(data->info);
 
-But the pre-commit hook is pretty painful to use when merging 
-upstream updates: in the upstream kernel there's tons of commits 
-that scream out loud and i have to commit a second time via 'git 
-commit -n'.
+		/*
+		 * Unlocked CSDs are valid through generic_exec_single()
+		 */
+		if (data_flags & CSD_FLAG_LOCK)
+			csd_unlock(data);
 
-I'm still holding out and all the commits we do in our repo are 
-.git/hooks/pre-commit-clean, but it's discomforting to see how 
-much stuff goes into the kernel with basic problems.
+could the data->info read be delayed until after csd_unlock() ?
 
-Just do something like this:
+I'll make it an mb().
 
-   $ chmod +x .git/hooks/pre-commit
 
-   $ git checkout -b tmp.test v2.6.28
+> And about here I get lost -- trying to find what the heck this patch
+> applies to...  :-/
 
-   $ git merge --no-ff --no-commit v2.6.29-rc5
-   [...]
-   Automatic merge went well; stopped before committing as requested
+Right, I was in the process of sending out a full patch-set again.
 
-   $ git commit 2>&1 | grep ' (line ' | wc -l
-   5334
-
-So 5334 lines with trivial problems were introduced in this 
-cycle alone (and that only scratches the surface really) - 
-that's about 0.5% of all new lines (we added about 1 million new 
-lines in this cycle).
-
-That rate is too high IMO and the noise makes it harder to use 
-this tool.
-
-	Ingo
