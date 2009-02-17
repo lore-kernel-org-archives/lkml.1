@@ -1,92 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754282AbZBQStd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbZBQSyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754282AbZBQStd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 13:49:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbZBQStZ
+	id S1753922AbZBQSyQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 13:54:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbZBQSyD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 13:49:25 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:3899 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751844AbZBQStY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 13:49:24 -0500
-Date: Tue, 17 Feb 2009 19:47:01 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
-Cc: pavel@suse.cz, rjw@sisk.pl, linux-pm@lists.linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [Bug 12713] Hang on resume from hibernation, apparently as result of 213d9417fec
-Message-ID: <20090217184701.GJ30821@kernel.dk>
-References: <8f53421d0902151605v56c92642ib8c2dcf34fd92ad1@mail.gmail.com> <8f53421d0902151607w2985dce6yc1bef7e717166fc@mail.gmail.com> <20090216072711.GJ30821@kernel.dk> <8f53421d0902160012y219b4737u37f3cfb0913b228f@mail.gmail.com> <20090216084732.GK30821@kernel.dk> <20090216190949.GA6868@google.com>
+	Tue, 17 Feb 2009 13:54:03 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:63641 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752310AbZBQSyA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 13:54:00 -0500
+Date: Tue, 17 Feb 2009 13:53:58 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 10/15] ftrace: trace different functions with a different
+ tracer
+In-Reply-To: <20090217184554.GH6761@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.1.10.0902171353180.14430@gandalf.stny.rr.com>
+References: <20090217051227.957864159@goodmis.org> <20090217051407.035764950@goodmis.org> <20090217184554.GH6761@linux.vnet.ibm.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090216190949.GA6868@google.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 16 2009, Michael S. Tsirkin wrote:
-> On Mon, Feb 16, 2009 at 09:47:32AM +0100, Jens Axboe wrote:
-> > On Mon, Feb 16 2009, Michael S. Tsirkin wrote:
-> > > On Mon, Feb 16, 2009 at 9:27 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > > On Mon, Feb 16 2009, Michael S. Tsirkin wrote:
-> > > >> On Mon, Feb 16, 2009 at 2:05 AM, Michael S. Tsirkin
-> > > >> <m.s.tsirkin@gmail.com> wrote:
-> > > >> > Summary: seem to need to revert 213d9417fec62ef4c3675621b9364a667954d4dd
-> > > >> > to fix resume from hibernation. Bugzilla entry created:
-> > > >> > http://bugzilla.kernel.org/show_bug.cgi?id=12713
-> > > >>
-> > > >> Looking over this, I see something strange in the commit in question:
-> > > >>
-> > > >> diff --git a/include/linux/bio.h b/include/linux/bio.h
-> > > >> index 5175aa3..f53568c 100644
-> > > >> --- a/include/linux/bio.h
-> > > >> +++ b/include/linux/bio.h
-> > > >> @@ -163,12 +163,15 @@ struct bio {
-> > > >>  #define BIO_RW         0       /* Must match RW in req flags (blkdev.h) */
-> > > >>  #define BIO_RW_AHEAD   1       /* Must match FAILFAST in req flags */
-> > > >>  #define BIO_RW_BARRIER 2
-> > > >> -#define BIO_RW_SYNC    3
-> > > >> -#define BIO_RW_META    4
-> > > >> -#define BIO_RW_DISCARD 5
-> > > >> -#define BIO_RW_FAILFAST_DEV            6
-> > > >> -#define BIO_RW_FAILFAST_TRANSPORT      7
-> > > >> -#define BIO_RW_FAILFAST_DRIVER         8
-> > > >> +#define BIO_RW_SYNCIO  3
-> > > >> +#define BIO_RW_UNPLUG  4
-> > > >> +#define BIO_RW_META    5
-> > > >> +#define BIO_RW_DISCARD 6
-> > > >> +#define BIO_RW_FAILFAST_DEV            7
-> > > >> +#define BIO_RW_FAILFAST_TRANSPORT      8
-> > > >> +#define BIO_RW_FAILFAST_DRIVER         9
-> > > >> +
-> > > >> +#define BIO_RW_SYNC    (BIO_RW_SYNCIO | BIO_RW_UNPLUG)
-> > > >>
-> > > >>  /*
-> > > >>   * upper 16 bits of bi_rw define the io priority of this bio
-> > > >>
-> > > >> I haven't read the code in depth, but taking running numbers and doing
-> > > >> bitwise "or"
-> > > >> on them looks a bit strange to me.
-> > > >> So here BIO_RW_SYNC is (3 | 4) = 7, that is the same as BIO_RW_FAILFAST_DEV.
-> > > >> So for example bio_failfast_dev and bio_sync are the same.
-> > > >>
-> > > >> Jens, could you comment on this please? Is this intentional?
-> > > >
-> > > > That's clearly a braino, you can't OR the shift values of course. I'll
-> > > > get it fixed up asap!
-> > > 
-> > > Cool, send me a patch, I'll test.
+
+On Tue, 17 Feb 2009, Paul E. McKenney wrote:
+> > This will unregister all functions matching glob that has an entry
+> > pointing to ops.
 > > 
-> > Try this. Not a huge fan of this approach, but it should bring behaviour
-> > back to what it used to be.
+> >   void unregister_ftrace_function_hook_all(char *glob)
+> > 
+> > This simply unregisters all funcs.
 > 
-> I verified that applying this patch on top of 2.6.29-rc5 fixes
-> hibernation for me.
+> Looks like a nice addition!
+> 
+> One RCU type mismatch called out below.
+> 
+> > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> > ---
+> >  include/linux/ftrace.h |   18 ++++
+> >  kernel/trace/ftrace.c  |  247 ++++++++++++++++++++++++++++++++++++++++++++++++
+> >  2 files changed, 265 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+> > index f0a0ecc..13918c4 100644
+> > --- a/include/linux/ftrace.h
+> > +++ b/include/linux/ftrace.h
+> > @@ -106,6 +106,24 @@ struct ftrace_func_command {
+> >  /* asm/ftrace.h must be defined for archs supporting dynamic ftrace */
+> >  #include <asm/ftrace.h>
+> 
+> [ . . . ]
+> 
+> > +
+> > +static void
+> > +__unregister_ftrace_function_hook(char *glob, struct ftrace_hook_ops *ops,
+> > +				  void *data, int flags)
+> > +{
+> > +	struct ftrace_func_hook *entry;
+> > +	struct hlist_node *n, *tmp;
+> > +	char str[KSYM_SYMBOL_LEN];
+> > +	int type = MATCH_FULL;
+> > +	int i, len = 0;
+> > +	char *search;
+> > +
+> > +	if (glob && (strcmp(glob, "*") || !strlen(glob)))
+> > +		glob = NULL;
+> > +	else {
+> > +		int not;
+> > +
+> > +		type = ftrace_setup_glob(glob, strlen(glob), &search, &not);
+> > +		len = strlen(search);
+> > +
+> > +		/* we do not support '!' for function hooks */
+> > +		if (WARN_ON(not))
+> > +			return;
+> > +	}
+> > +
+> > +	mutex_lock(&ftrace_lock);
+> > +	for (i = 0; i < FTRACE_FUNC_HASHSIZE; i++) {
+> > +		struct hlist_head *hhd = &ftrace_func_hash[i];
+> > +
+> > +		hlist_for_each_entry_safe(entry, n, tmp, hhd, node) {
+> > +
+> > +			/* break up if statements for readability */
+> > +			if ((flags & HOOK_TEST_FUNC) && entry->ops != ops)
+> > +				continue;
+> > +
+> > +			if ((flags & HOOK_TEST_DATA) && entry->data != data)
+> > +				continue;
+> > +
+> > +			/* do this last, since it is the most expensive */
+> > +			if (glob) {
+> > +				kallsyms_lookup(entry->ip, NULL, NULL,
+> > +						NULL, str);
+> > +				if (!ftrace_match(str, glob, len, type))
+> > +					continue;
+> > +			}
+> > +
+> > +			hlist_del(&entry->node);
+> > +			call_rcu(&entry->rcu, ftrace_free_entry_rcu);
+> 
+> This should be call_rcu_sched() to match the preemption disabling.
 
-Thanks for testing and confirming, it's queued up for inclusion asap.
+Thanks! I should have CC'd you on that. I thought that was not right.
+Will fix.
 
--- 
-Jens Axboe
+-- Steve
 
+> 
+> > +		}
+> > +	}
+> > +	__disable_ftrace_function_hook();
+> > +	mutex_unlock(&ftrace_lock);
+> > +}
+> 
+> 
