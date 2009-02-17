@@ -1,44 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbZBQV0J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752086AbZBQV01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753995AbZBQV0J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 16:26:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbZBQVZx
+	id S1752086AbZBQV01 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 16:26:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbZBQVZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 16:25:53 -0500
-Received: from mga06.intel.com ([134.134.136.21]:22154 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751118AbZBQVZx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 16:25:53 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,225,1233561600"; 
-   d="scan'208";a="387573825"
-Message-ID: <499B2B5F.2070407@linux.intel.com>
-Date: Tue, 17 Feb 2009 13:25:51 -0800
-From: "H. Peter Anvin" <hpa@linux.intel.com>
-Organization: Intel Open Source Technology Center
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/headers] x86: truncate ISA addresses to unsigned int
-References: <tip-a7eb518998529c08cc53fef17756d9fe433b0c23@kernel.org> <1234905865.23466.11.camel@localhost.localdomain>
-In-Reply-To: <1234905865.23466.11.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Feb 2009 16:25:56 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:59495 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752086AbZBQVZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 16:25:55 -0500
+Date: Tue, 17 Feb 2009 16:25:51 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patches] libata fixes
+Message-ID: <20090217212551.GA8468@havoc.gtf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
->> +static inline unsigned int isa_virt_to_bus(volatile void *address)
-> 
-> The rest looks fine, but why is the address volatile?  The macro below
-> never actually dereferences it.
-> 
 
-Because a volatile is permitted.  virt_to_phys() takes a volatile 
-pointer for that reason.
+Please pull from 'upstream-linus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
 
-	-hpa
+to receive the following updates:
+
+ drivers/ata/libata-sff.c |   28 +++++++++++++++++++++-------
+ drivers/ata/sata_nv.c    |   14 ++++++++------
+ 2 files changed, 29 insertions(+), 13 deletions(-)
+
+Sergei Shtylyov (1):
+      libata-sff: fix 32-bit PIO ATAPI regression
+
+Tejun Heo (1):
+      sata_nv: give up hardreset on nf2
+
+diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
+index 0b299b0..714cb04 100644
+--- a/drivers/ata/libata-sff.c
++++ b/drivers/ata/libata-sff.c
+@@ -773,18 +773,32 @@ unsigned int ata_sff_data_xfer32(struct ata_device *dev, unsigned char *buf,
+ 	else
+ 		iowrite32_rep(data_addr, buf, words);
+ 
++	/* Transfer trailing bytes, if any */
+ 	if (unlikely(slop)) {
+-		__le32 pad;
++		unsigned char pad[4];
++
++		/* Point buf to the tail of buffer */
++		buf += buflen - slop;
++
++		/*
++		 * Use io*_rep() accessors here as well to avoid pointlessly
++		 * swapping bytes to and fro on the big endian machines...
++		 */
+ 		if (rw == READ) {
+-			pad = cpu_to_le32(ioread32(ap->ioaddr.data_addr));
+-			memcpy(buf + buflen - slop, &pad, slop);
++			if (slop < 3)
++				ioread16_rep(data_addr, pad, 1);
++			else
++				ioread32_rep(data_addr, pad, 1);
++			memcpy(buf, pad, slop);
+ 		} else {
+-			memcpy(&pad, buf + buflen - slop, slop);
+-			iowrite32(le32_to_cpu(pad), ap->ioaddr.data_addr);
++			memcpy(pad, buf, slop);
++			if (slop < 3)
++				iowrite16_rep(data_addr, pad, 1);
++			else
++				iowrite32_rep(data_addr, pad, 1);
+ 		}
+-		words++;
+ 	}
+-	return words << 2;
++	return (buflen + 1) & ~1;
+ }
+ EXPORT_SYMBOL_GPL(ata_sff_data_xfer32);
+ 
+diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
+index 444af04..55a8eed 100644
+--- a/drivers/ata/sata_nv.c
++++ b/drivers/ata/sata_nv.c
+@@ -421,19 +421,21 @@ static struct ata_port_operations nv_generic_ops = {
+ 	.hardreset		= ATA_OP_NULL,
+ };
+ 
+-/* OSDL bz3352 reports that nf2/3 controllers can't determine device
+- * signature reliably.  Also, the following thread reports detection
+- * failure on cold boot with the standard debouncing timing.
++/* nf2 is ripe with hardreset related problems.
++ *
++ * kernel bz#3352 reports nf2/3 controllers can't determine device
++ * signature reliably.  The following thread reports detection failure
++ * on cold boot with the standard debouncing timing.
+  *
+  * http://thread.gmane.org/gmane.linux.ide/34098
+  *
+- * Debounce with hotplug timing and request follow-up SRST.
++ * And bz#12176 reports that hardreset simply doesn't work on nf2.
++ * Give up on it and just don't do hardreset.
+  */
+ static struct ata_port_operations nv_nf2_ops = {
+-	.inherits		= &nv_common_ops,
++	.inherits		= &nv_generic_ops,
+ 	.freeze			= nv_nf2_freeze,
+ 	.thaw			= nv_nf2_thaw,
+-	.hardreset		= nv_noclassify_hardreset,
+ };
+ 
+ /* For initial probing after boot and hot plugging, hardreset mostly
