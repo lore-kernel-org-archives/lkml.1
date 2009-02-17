@@ -1,216 +1,280 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754150AbZBQPwE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754463AbZBQPwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754150AbZBQPwE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 10:52:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbZBQPvw
+	id S1754463AbZBQPwX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 10:52:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbZBQPvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 17 Feb 2009 10:51:55 -0500
+Received: from exprod7og101.obsmtp.com ([64.18.2.155]:53522 "EHLO
+	exprod7og101.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751306AbZBQPvw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 17 Feb 2009 10:51:52 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:33943 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751499AbZBQPvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 10:51:51 -0500
-Date: Tue, 17 Feb 2009 07:51:47 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Oleg Nesterov <oleg@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: Q: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove
-	single ipi fallback for smp_call_function_many())
-Message-ID: <20090217155147.GE6761@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1234818201.30178.386.camel@laptop> <20090216213205.GA9098@redhat.com> <1234820704.30178.396.camel@laptop> <20090216220214.GA10093@redhat.com> <1234823097.30178.406.camel@laptop> <20090216231946.GA12009@redhat.com> <1234862974.4744.31.camel@laptop> <20090217101130.GA8660@wotan.suse.de> <1234866453.4744.58.camel@laptop> <20090217112657.GE26402@wotan.suse.de>
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Yang, Bo" <Bo.Yang@lsi.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "Austria, Winston" <Winston.Austria@lsi.com>
+Date: Tue, 17 Feb 2009 08:51:35 -0700
+Subject: [PATCH 4/9] scsi: megaraid_sas - Add new controller 0x73(new SAS2)
+  support to the driver
+Thread-Topic: [PATCH 4/9] scsi: megaraid_sas - Add new controller 0x73(new
+ SAS2)  support to the driver
+Thread-Index: AciIcSnS7H5xFQtCQzyNHR19nlBrTUImYsQgAAFMQJAAAQsscAAAaQSQ
+Message-ID: <4B6A08C587958942AA3002690DD4F8C33A07FB75@cosmail02.lsi.com>
+In-Reply-To: <4B6A08C587958942AA3002690DD4F8C33A07FB58@cosmail02.lsi.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090217112657.GE26402@wotan.suse.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 12:26:57PM +0100, Nick Piggin wrote:
-> cc linux-arch
-> 
-> On Tue, Feb 17, 2009 at 11:27:33AM +0100, Peter Zijlstra wrote:
-> > > But hmm, why even bother with all this complexity? Why not just
-> > > remove the outer loop completely? Do the lock and the list_replace_init
-> > > unconditionally. It would turn tricky lockless code into simple locked
-> > > code... we've already taken an interrupt anyway, so chances are pretty
-> > > high that we have work here to do, right?
-> > 
-> > Well, that's a practical suggestion, and I agree.
-> 
-> How's this?
-> 
-> --
-> Simplify the barriers in generic remote function call interrupt code.
-> 
-> Firstly, just unconditionally take the lock and check the list in the
-> generic_call_function_single_interrupt IPI handler. As we've just taken
-> an IPI here, the chances are fairly high that there will be work on the
-> list for us, so do the locking unconditionally. This removes the tricky
-> lockless list_empty check and dubious barriers. The change looks bigger
-> than it is because it is just removing an outer loop.
-> 
-> Secondly, clarify architecture specific IPI locking rules. Generic code
-> has no tools to impose any sane ordering on IPIs if they go outside
-> normal cache coherency, ergo the arch code must make them appear to
-> obey cache coherency as a "memory operation" to initiate an IPI, and
-> a "memory operation" to receive one. This way at least they can be
-> reasoned about in generic code, and smp_mb used to provide ordering. 
-> 
-> The combination of these two changes means that explict barriers can
-> be taken out of queue handling for the single case -- shared data is
-> explicitly locked, and ipi ordering must conform to that, so no
-> barriers needed. An extra barrier is needed in the many handler, so
-> as to ensure we load the list element after the IPI is received.
-> 
-> Does any architecture actually needs barriers? For the initiator I
-> could see it, but for the handler I would be surprised. The other
-> thing we could do for simplicity is just to require that a full
-> barrier is required before generating an IPI, and after receiving an
-> IPI. We can't just do that in generic code without auditing
-> architectures. There have been subtle hangs here on some archs in
-> the past.
-> 
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
-> 
-> ---
->  kernel/smp.c |   83 +++++++++++++++++++++++++++++++----------------------------
->  1 file changed, 44 insertions(+), 39 deletions(-)
-> 
-> Index: linux-2.6/kernel/smp.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/smp.c
-> +++ linux-2.6/kernel/smp.c
-> @@ -74,9 +74,16 @@ static void generic_exec_single(int cpu,
->  	spin_unlock_irqrestore(&dst->lock, flags);
-> 
->  	/*
-> -	 * Make the list addition visible before sending the ipi.
-> +	 * The list addition should be visible before sending the IPI
-> +	 * handler locks the list to pull the entry off it because of
-> +	 * normal cache coherency rules implied by spinlocks.
-> +	 *
-> +	 * If IPIs can go out of order to the cache coherency protocol
-> +	 * in an architecture, sufficient synchronisation should be added
-> +	 * to arch code to make it appear to obey cache coherency WRT
-> +	 * locking and barrier primitives. Generic code isn't really equipped
-> +	 * to do the right thing...
->  	 */
-> -	smp_mb();
-> 
->  	if (ipi)
->  		arch_send_call_function_single_ipi(cpu);
-> @@ -104,6 +111,14 @@ void generic_smp_call_function_interrupt
->  	int cpu = get_cpu();
-> 
->  	/*
-> +	 * Ensure entry is visible on call_function_queue after we have
-> +	 * entered the IPI. See comment in smp_call_function_many.
-> +	 * If we don't have this, then we may miss an entry on the list
-> +	 * and never get another IPI to process it.
-> +	 */
-> +	smp_mb();
-> +
-> +	/*
->  	 * It's ok to use list_for_each_rcu() here even though we may delete
->  	 * 'pos', since list_del_rcu() doesn't clear ->next
->  	 */
-> @@ -154,49 +169,37 @@ void generic_smp_call_function_single_in
->  {
->  	struct call_single_queue *q = &__get_cpu_var(call_single_queue);
->  	LIST_HEAD(list);
-> +	unsigned int data_flags;
-> 
-> -	/*
-> -	 * Need to see other stores to list head for checking whether
-> -	 * list is empty without holding q->lock
-> -	 */
-> -	smp_read_barrier_depends();
-> -	while (!list_empty(&q->list)) {
-> -		unsigned int data_flags;
-> -
-> -		spin_lock(&q->lock);
-> -		list_replace_init(&q->list, &list);
-> -		spin_unlock(&q->lock);
-> -
-> -		while (!list_empty(&list)) {
-> -			struct call_single_data *data;
-> -
-> -			data = list_entry(list.next, struct call_single_data,
-> -						list);
-> -			list_del(&data->list);
-> +	spin_lock(&q->lock);
-> +	list_replace_init(&q->list, &list);
-> +	spin_unlock(&q->lock);
+Add new controller 0x73(new SAS2) support to the MegaRAID SAS driver.
 
-OK, I'll bite...
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 
-How do we avoid deadlock in the case where a pair of CPUs send to each
-other concurrently?
+---
+drivers/scsi/megaraid/megaraid_sas.c |  145 +++++++++++++++++++++++++++++++++--
+ drivers/scsi/megaraid/megaraid_sas.h |    5 +
+ 2 files changed, 144 insertions(+), 6 deletions(-)
 
-							Thanx, Paul
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-02-12 15:52:27.000000000 -0500
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-02-12 15:54:41.000000000 -0500
+@@ -76,6 +76,10 @@ static struct pci_device_id megasas_pci_
+        /* gen2*/
+        {PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_SAS0079GEN2)},
+        /* gen2*/
++       {PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_SAS0073SKINNY)},
++       /* skinny*/
++       {PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_SAS0071SKINNY)},
++       /* skinny*/
+        {PCI_DEVICE(PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_VERDE_ZCR)},
+        /* xscale IOP, vega */
+        {PCI_DEVICE(PCI_VENDOR_ID_DELL, PCI_DEVICE_ID_DELL_PERC5)},
+@@ -336,6 +340,100 @@ static struct megasas_instance_template
+ };
 
-> 
-> -			/*
-> -			 * 'data' can be invalid after this call if
-> -			 * flags == 0 (when called through
-> -			 * generic_exec_single(), so save them away before
-> -			 * making the call.
-> -			 */
-> -			data_flags = data->flags;
-> +	while (!list_empty(&list)) {
-> +		struct call_single_data *data;
-> 
-> -			data->func(data->info);
-> +		data = list_entry(list.next, struct call_single_data,
-> +					list);
-> +		list_del(&data->list);
-> 
-> -			if (data_flags & CSD_FLAG_WAIT) {
-> -				smp_wmb();
-> -				data->flags &= ~CSD_FLAG_WAIT;
-> -			} else if (data_flags & CSD_FLAG_LOCK) {
-> -				smp_wmb();
-> -				data->flags &= ~CSD_FLAG_LOCK;
-> -			} else if (data_flags & CSD_FLAG_ALLOC)
-> -				kfree(data);
-> -		}
->  		/*
-> -		 * See comment on outer loop
-> +		 * 'data' can be invalid after this call if
-> +		 * flags == 0 (when called through
-> +		 * generic_exec_single(), so save them away before
-> +		 * making the call.
->  		 */
-> -		smp_read_barrier_depends();
-> +		data_flags = data->flags;
-> +
-> +		data->func(data->info);
-> +
-> +		if (data_flags & CSD_FLAG_WAIT) {
-> +			smp_wmb();
-> +			data->flags &= ~CSD_FLAG_WAIT;
-> +		} else if (data_flags & CSD_FLAG_LOCK) {
-> +			smp_wmb();
-> +			data->flags &= ~CSD_FLAG_LOCK;
-> +		} else if (data_flags & CSD_FLAG_ALLOC)
-> +			kfree(data);
->  	}
->  }
-> 
-> @@ -375,6 +378,8 @@ void smp_call_function_many(const struct
-> 
->  	/*
->  	 * Make the list addition visible before sending the ipi.
-> +	 * (IPIs must obey or appear to obey normal Linux cache coherency
-> +	 * rules -- see comment in generic_exec_single).
->  	 */
->  	smp_mb();
-> 
+ /**
++ * megasas_enable_intr_skinny -        Enables interrupts
++ * @regs:                      MFI register set
++ */
++static inline void
++megasas_enable_intr_skinny(struct megasas_register_set __iomem *regs)
++{
++       writel(0xFFFFFFFF, &(regs)->outbound_intr_mask);
++
++       /* write ~0x00000005 (4 & 1) to the intr mask*/
++       writel(~MFI_SKINNY_ENABLE_INTERRUPT_MASK, &(regs)->outbound_intr_mask);
++
++       /* Dummy readl to force pci flush */
++       readl(&regs->outbound_intr_mask);
++}
++
++/**
++ * megasas_disable_intr_skinny -       Disables interrupt
++ * @regs:                      MFI register set
++ */
++static inline void
++megasas_disable_intr_skinny(struct megasas_register_set __iomem *regs)
++{
++       u32 mask = 0xFFFFFFFF;
++       writel(mask, &regs->outbound_intr_mask);
++       /* Dummy readl to force pci flush */
++       readl(&regs->outbound_intr_mask);
++}
++
++/**
++ * megasas_read_fw_status_reg_skinny - returns the current FW status value
++ * @regs:                      MFI register set
++ */
++static u32
++megasas_read_fw_status_reg_skinny(struct megasas_register_set __iomem *regs)
++{
++       return readl(&(regs)->outbound_scratch_pad);
++}
++
++/**
++ * megasas_clear_interrupt_skinny -    Check & clear interrupt
++ * @regs:                              MFI register set
++ */
++static int
++megasas_clear_intr_skinny(struct megasas_register_set __iomem *regs)
++{
++       u32 status;
++       /*
++        * Check if it is our interrupt
++        */
++       status = readl(&regs->outbound_intr_status);
++
++       if (!(status & MFI_SKINNY_ENABLE_INTERRUPT_MASK)) {
++               return 1;
++       }
++
++       /*
++        * Clear the interrupt by writing back the same value
++        */
++       writel(status, &regs->outbound_intr_status);
++
++       /*
++       * dummy read to flush PCI
++       */
++       readl(&regs->outbound_intr_status);
++
++       return 0;
++}
++
++/**
++ * megasas_fire_cmd_skinny -   Sends command to the FW
++ * @frame_phys_addr :          Physical address of cmd
++ * @frame_count :              Number of frames for the command
++ * @regs :                     MFI register set
++ */
++static inline void
++megasas_fire_cmd_skinny(dma_addr_t frame_phys_addr, u32 frame_count,
++                       struct megasas_register_set __iomem *regs)
++{
++       writel(0, &(regs)->inbound_high_queue_port);
++       writel((frame_phys_addr | (frame_count<<1))|1,
++                       &(regs)->inbound_low_queue_port);
++       /*msleep(5);*/
++}
++
++static struct megasas_instance_template megasas_instance_template_skinny = {
++
++       .fire_cmd = megasas_fire_cmd_skinny,
++       .enable_intr = megasas_enable_intr_skinny,
++       .disable_intr = megasas_disable_intr_skinny,
++       .clear_intr = megasas_clear_intr_skinny,
++       .read_fw_status_reg = megasas_read_fw_status_reg_skinny,
++};
++
++/**
+ *      The following functions are defined for gen2 (deviceid : 0x78 0x79)
+ *      controllers
+ */
+@@ -1322,7 +1420,6 @@ megasas_service_aen(struct megasas_insta
+        else
+                cmd->abort_aen = 0;
+
+-       instance->aen_cmd = NULL;
+        megasas_return_cmd(instance, cmd);
+ }
+
+@@ -1589,16 +1686,34 @@ megasas_transition_to_ready(struct megas
+                        /*
+                         * Set the CLR bit in inbound doorbell
+                         */
+-                       writel(MFI_INIT_CLEAR_HANDSHAKE|MFI_INIT_HOTPLUG,
+-                               &instance->reg_set->inbound_doorbell);
++                       if ((instance->pdev->device == \
++                               PCI_DEVICE_ID_LSI_SAS0073SKINNY) ||
++                               (instance->pdev->device ==
++                               PCI_DEVICE_ID_LSI_SAS0071SKINNY)) {
++
++                               writel(
++                                 MFI_INIT_CLEAR_HANDSHAKE|MFI_INIT_HOTPLUG,
++                                 &instance->reg_set->outbound_scratch_pad);
++                       } else {
++                               writel(
++                                   MFI_INIT_CLEAR_HANDSHAKE|MFI_INIT_HOTPLUG,
++                                       &instance->reg_set->inbound_doorbell);
++                       }
+
+                        max_wait = 2;
+                        cur_state = MFI_STATE_WAIT_HANDSHAKE;
+                        break;
+
+                case MFI_STATE_BOOT_MESSAGE_PENDING:
+-                       writel(MFI_INIT_HOTPLUG,
+-                               &instance->reg_set->inbound_doorbell);
++                       if ((instance->pdev->device ==
++                               PCI_DEVICE_ID_LSI_SAS0073SKINNY) ||
++                       (instance->pdev->device ==
++                               PCI_DEVICE_ID_LSI_SAS0071SKINNY)) {
++                               writel(MFI_INIT_HOTPLUG,
++                               &instance->reg_set->outbound_scratch_pad);
++                       } else
++                               writel(MFI_INIT_HOTPLUG,
++                                       &instance->reg_set->inbound_doorbell);
+
+                        max_wait = 10;
+                        cur_state = MFI_STATE_BOOT_MESSAGE_PENDING;
+@@ -1609,7 +1724,15 @@ megasas_transition_to_ready(struct megas
+                         * Bring it to READY state; assuming max wait 10 secs
+                         */
+                        instance->instancet->disable_intr(instance->reg_set);
+-                       writel(MFI_RESET_FLAGS, &instance->reg_set->inbound_doorbell);
++                       if ((instance->pdev->device ==
++                               PCI_DEVICE_ID_LSI_SAS0073SKINNY) ||
++                               (instance->pdev->device ==
++                               PCI_DEVICE_ID_LSI_SAS0071SKINNY)) {
++                               writel(MFI_RESET_FLAGS,
++                               &instance->reg_set->outbound_scratch_pad);
++                       } else
++                               writel(MFI_RESET_FLAGS,
++                               &instance->reg_set->inbound_doorbell);
+
+                        max_wait = 60;
+                        cur_state = MFI_STATE_OPERATIONAL;
+@@ -2114,6 +2237,8 @@ static int megasas_init_mfi(struct megas
+         * Map the message registers
+         */
+        if ((instance->pdev->device == PCI_DEVICE_ID_LSI_SAS1078GEN2) ||
++               (instance->pdev->device == PCI_DEVICE_ID_LSI_SAS0071SKINNY) ||
++               (instance->pdev->device == PCI_DEVICE_ID_LSI_SAS0073SKINNY) ||
+                (instance->pdev->device == PCI_DEVICE_ID_LSI_SAS0079GEN2)) {
+                instance->base_addr = pci_resource_start(instance->pdev, 1);
+        } else {
+@@ -2144,6 +2269,10 @@ static int megasas_init_mfi(struct megas
+                case PCI_DEVICE_ID_LSI_SAS0079GEN2:
+                        instance->instancet = &megasas_instance_template_gen2;
+                        break;
++               case PCI_DEVICE_ID_LSI_SAS0073SKINNY:
++               case PCI_DEVICE_ID_LSI_SAS0071SKINNY:
++                       instance->instancet = &megasas_instance_template_skinny;
++                       break;
+                case PCI_DEVICE_ID_LSI_SAS1064R:
+                case PCI_DEVICE_ID_DELL_PERC5:
+                default:
+@@ -2413,6 +2542,10 @@ megasas_register_aen(struct megasas_inst
+                                       "previous AEN command\n");
+                                return ret_val;
+                        }
++                       /**
++                       * set the AEN to NULL after abort AEN
++                       **/
++                       instance->aen_cmd = NULL;
+                }
+        }
+
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h      2009-02-12 15:52:28.000000000 -0500
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h       2009-02-12 15:24:58.000000000 -0500
+@@ -30,6 +30,8 @@
+ #define        PCI_DEVICE_ID_LSI_VERDE_ZCR             0x0413
+ #define        PCI_DEVICE_ID_LSI_SAS1078GEN2           0x0078
+ #define        PCI_DEVICE_ID_LSI_SAS0079GEN2           0x0079
++#define        PCI_DEVICE_ID_LSI_SAS0073SKINNY         0x0073
++#define        PCI_DEVICE_ID_LSI_SAS0071SKINNY         0x0071
+
+ /*
+  * =====================================
+@@ -594,6 +596,9 @@ struct megasas_ctrl_info {
+ #define MFI_REPLY_1078_MESSAGE_INTERRUPT       0x80000000
+ #define MFI_REPLY_GEN2_MESSAGE_INTERRUPT       0x00000001
+ #define MFI_GEN2_ENABLE_INTERRUPT_MASK         (0x00000001 | 0x00000004)
++#define MFI_REPLY_SKINNY_MESSAGE_INTERRUPT     0x40000000
++#define MFI_SKINNY_ENABLE_INTERRUPT_MASK       (0x00000001 | 0x00000008)
++
+
+ /*
+ * register set for both 1068 and 1078 controllers
