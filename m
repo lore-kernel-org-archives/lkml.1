@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753710AbZBQMac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753243AbZBQMdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753710AbZBQMac (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 07:30:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZBQMaW
+	id S1753243AbZBQMdS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 07:33:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbZBQMdD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 07:30:22 -0500
-Received: from mx2.suse.de ([195.135.220.15]:52999 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750913AbZBQMaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 07:30:21 -0500
-Date: Tue, 17 Feb 2009 13:30:17 +0100
-From: Nick Piggin <npiggin@suse.de>
+	Tue, 17 Feb 2009 07:33:03 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:37359 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750886AbZBQMdB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 07:33:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=J/EChjo9zz1UyoGwqdZH26NXLsBA0xLcrdAJ/87WWdx/865ZBw9JkXgQK8aZDQsurP
+         ay2eXAVCT1bhbfS8A2FlGPn2FXy+wu6Ip+HXBGWb4Fj6BhSIcjBJjS2Zj7doRYusNUUT
+         SHA32Q/jrqR5PzH5I2+QPrfYM1B9e54B8KKHk=
+MIME-Version: 1.0
+In-Reply-To: <1234871651.4744.89.camel@laptop>
+References: <1234863220.4744.34.camel@laptop> <499A99BC.2080700@bk.jp.nec.com>
+	 <20090217201651.576E.A69D9226@jp.fujitsu.com>
+	 <1234871651.4744.89.camel@laptop>
+Date: Tue, 17 Feb 2009 21:33:00 +0900
+X-Google-Sender-Auth: 72d386d106bd34d8
+Message-ID: <2f11576a0902170433x52b63a05ie96601c741c3fc7a@mail.gmail.com>
+Subject: Re: [PATCH] Add tracepoints to track pagecache transition
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 To: Peter Zijlstra <peterz@infradead.org>
-Cc: Edward Shishkin <edward.shishkin@gmail.com>,
+Cc: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>, linux-kernel@vger.kernel.org,
+       Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Kazuto Miyoshi <miyoshi@linux.bs1.fc.nec.co.jp>, rostedt@goodmis.org,
+       linux-mm <linux-mm@kvack.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Ryan Hope <rmh3093@gmail.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel@vger.kernel.org,
-       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>
-Subject: Re: set_page_dirty races (was: Re: [patch 2/4] vfs: add set_page_dirty_notag)
-Message-ID: <20090217123017.GG26402@wotan.suse.de>
-References: <18841.60432.329341.514726@edward.zelnet.ru> <1234861781.4744.21.camel@laptop> <20090217093805.GB31323@wotan.suse.de> <1234865116.4744.46.camel@laptop> <20090217102443.GA26402@wotan.suse.de> <1234867200.4744.65.camel@laptop> <20090217112512.GD26402@wotan.suse.de> <1234870772.4744.79.camel@laptop> <20090217115532.GF26402@wotan.suse.de> <1234872334.4744.95.camel@laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1234872334.4744.95.camel@laptop>
-User-Agent: Mutt/1.5.9i
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 01:05:34PM +0100, Peter Zijlstra wrote:
-> On Tue, 2009-02-17 at 12:55 +0100, Nick Piggin wrote:
-> > If nobody thinks it is insane, I'll resend to Andrew in a new thread.
-> 
-> Right, gup_fast() seems to also respect .write properly,
+>> If you want to see I/O activity, you need to add tracepoint into block
+>> layer.
+>
+> We already have that, Arnaldo converted blktrace to use tracepoints and
+> wrote an ftrace tracer for it.
 
-Phew! :)
-
-> so it would
-> also be used to balance that.
-> 
-> I guess gup_fast() would need to use trylock_page(), and fall back to
-> the slow path when we start taking PG_locked on .write.
-
-Yeah, you're right there. It might also be possible to have a flag
-somewhere to avoid the lock if the underlying filesystem doesn't
-have a page_mkwrite or doesn't account dirty... which could avoid
-the overhead for the common case of anonymous or tmpfs memory.
-
-For gup_fast that pretty much implies an extra page flag I think. But
-let's not get too worried with details... I don't think put_user_pages
-hurts, even if it only remains as put_page loop. Just to help reader
-through the page refcounting. 
- 
-> I suppose we should start converting a few gup users over to pup before
-> handing the thing to Andrew, to have at least a few examples in-kernel.
-
-Could do. There are quite a few easy ones.
+Yup. I agree I selected wrong word.
+My point is, if he want to know I/O delaying reason, the number of the
+cache pages seems unrelated thing.
