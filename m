@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755149AbZBQUKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754341AbZBQUMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755149AbZBQUKu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 15:10:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbZBQUK3
+	id S1754341AbZBQUMe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 15:12:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbZBQUMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 15:10:29 -0500
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:15507 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753429AbZBQUK2 (ORCPT
+	Tue, 17 Feb 2009 15:12:25 -0500
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:42985 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751253AbZBQUMZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 15:10:28 -0500
-Message-ID: <499B19AF.1000003@hp.com>
-Date: Tue, 17 Feb 2009 15:10:23 -0500
-From: Brian Haley <brian.haley@hp.com>
-Organization: Open Source and Linux Organization
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 17 Feb 2009 15:12:25 -0500
+Date: Tue, 17 Feb 2009 15:04:51 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Johannes Weiner <hannes@cmpxchg.org>, Mel Gorman <mel@csn.ul.ie>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: [patch] SLQB slab allocator (try 2)
+In-Reply-To: <84144f020902171143i5844ef83h20cb4bee4f65c904@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0902171504090.24395@qirst.com>
+References: <20090123154653.GA14517@wotan.suse.de>  <200902041748.41801.nickpiggin@yahoo.com.au>  <20090204152709.GA4799@csn.ul.ie>  <200902051459.30064.nickpiggin@yahoo.com.au>  <20090216184200.GA31264@csn.ul.ie> <4999BBE6.2080003@cs.helsinki.fi> 
+ <alpine.DEB.1.10.0902171120040.27813@qirst.com>  <1234890096.11511.6.camel@penberg-laptop>  <alpine.DEB.1.10.0902171204070.15929@qirst.com>  <20090217181157.GA2158@cmpxchg.org> <84144f020902171143i5844ef83h20cb4bee4f65c904@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, netdev@vger.kernel.org,
-       bonding-devel@lists.sourceforge.net,
-       =?ISO-8859-1?Q?=22J=2EA=2E_Magall?= =?ISO-8859-1?Q?=F3n=22?= 
-	<jamagallon@ono.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.29 regression? Bonding tied to IPV6 in 29-rc5
-References: <alpine.LFD.2.00.0902131413120.3179@localhost.localdomain> <20090217095232.5da06b9f@werewolf.home> <200902172001.41804.arvidjaar@mail.ru> <200902172117.22671.arvidjaar@mail.ru>
-In-Reply-To: <200902172117.22671.arvidjaar@mail.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrey Borzenkov wrote:
-> On 17 of February 2009 20:01:38 Andrey Borzenkov wrote:
->> Forward to bonding and netdev
->>
->> On 17 of February 2009 11:52:32 J.A. Magallón wrote:
->>> Hi all...
->>>
->>> Don't know if this is specific for -rc5, I have jumped from 28.4 to
->>> 29-rc5. In this latest kernel, I can not install 'bonding' module
->>> if 'ipv6' is disabled to load via modprobe.conf:
->>>
->>> install ipv6 /bin/true
->>>
->>> Trying bonding gives this dmesg:
->>>
->>> bonding: Unknown symbol ndisc_build_skb
->>> bonding: Unknown symbol in6_dev_finish_destroy
->>> bonding: Unknown symbol ndisc_send_skb
->>> bonding: Unknown symbol unregister_inet6addr_notifier
->>> bonding: Unknown symbol register_inet6addr_notifier
->>>
->>> Commenting the line in modprobe.conf makes things smooth again.
->>> We can not disable ipv6 anymore ?
->> If IPv6 is disable in kernel config bonding loads. But I think it is
->> regression, it should be possible to disable IPv6 if not required.
-> 
-> This hard dependency was apparently introduced by this commit:
-> 
-> commit 305d552accae6afb859c493ebc7d98ca3371dae2
-> Author: Brian Haley <brian.haley@hp.com>
-> Date:   Tue Nov 4 17:51:14 2008 -0800
-> 
->     bonding: send IPv6 neighbor advertisement on failover
+On Tue, 17 Feb 2009, Pekka Enberg wrote:
 
-I initially had bonding IPv6 support as a Kconfig option, but it was 
-decided it would be cleaner if it just got built-in whenever CONFIG_IPV6 
-was set like SCTP, with the assumption you might want it.
+> >> +#define SLUB_MAX_SIZE (2 * PAGE_SIZE)
+>
+> On Tue, Feb 17, 2009 at 8:11 PM, Johannes Weiner <hannes@cmpxchg.org> wrote:
+> > This relies on PAGE_SIZE being 4k.  If you want 8k, why don't you say
+> > so?  Pekka did this explicitely.
+>
+> That could be a problem, sure. Especially for architecture that have 64 K pages.
 
-Is it a common configuration to not allow a module to load like you're 
-doing in modprobe.conf?  I don't know how hard it would be to rip this 
-out into it's own bonding_ipv6.ko module, simply turning-off CONFIG_IPV6 
-seems better.
+You could likely put a complicated formula in there instead. But 2 *
+PAGE_SIZE is simple and will work on all platforms regardless of pagesize.
 
--Brian
