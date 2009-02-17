@@ -1,137 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753759AbZBQMou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbZBQMqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753759AbZBQMou (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 07:44:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbZBQMom
+	id S1753847AbZBQMqG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 07:46:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbZBQMpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 07:44:42 -0500
-Received: from mail.datangmobile.cn ([219.142.67.62]:46341 "EHLO
-	mail.datangmobile.cn" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750913AbZBQMol convert rfc822-to-8bit (ORCPT
+	Tue, 17 Feb 2009 07:45:55 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:54056 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751414AbZBQMpy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 07:44:41 -0500
-content-class: urn:content-classes:message
+	Tue, 17 Feb 2009 07:45:54 -0500
+Date: Tue, 17 Feb 2009 07:45:52 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 12/15] ftrace: add traceon traceoff commands to enable/disable
+ the buffers
+In-Reply-To: <20090217103729.GB6602@elte.hu>
+Message-ID: <alpine.DEB.1.10.0902170743520.910@gandalf.stny.rr.com>
+References: <20090217051227.957864159@goodmis.org> <20090217051407.422977785@goodmis.org> <20090217103729.GB6602@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6249.0
-Subject: [PATCH] fix the interrupt loss problem on powerpc IPIC (2.6.23)
-Date: Tue, 17 Feb 2009 20:44:37 +0800
-Message-ID: <D728AD1FA2543948B89DE29C5BF4CD0716AC2DDE@bjmail1.bj.datangmobile.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] fix the interrupt loss problem on powerpc IPIC (2.6.23)
-Thread-Index: AcmQ2n06DcXf5Ar+T+SgI94lU1s0UQADMFlQAAVmoQA=
-From: <dayu@datangmobile.cn>
-To: <LeoLi@freescale.com>, <linux-kernel@vger.kernel.org>
-Cc: <linuxppc-dev@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Da Yu <dayu@datangmobile.cn>
-Date: Tue, 17 Feb 2009 19:58:20 +0800
-Subject: [PATCH] fix the interrupt loss problem on powerpc IPIC (2.6.23)
 
-Signed-off-by: Da Yu <dayu@datangmobile.cn>
----
+On Tue, 17 Feb 2009, Ingo Molnar wrote:
 
---- a/arch/powerpc/sysdev/ipic.c	2009-02-17 15:10:18.000000000 +0800
-+++ b/arch/powerpc/sysdev/ipic.c	2009-02-17 20:05:28.000000000 +0800
-@@ -561,8 +561,7 @@ static void ipic_ack_irq(unsigned int vi
-
- 	spin_lock_irqsave(&ipic_lock, flags);
-
--	temp = ipic_read(ipic->regs, ipic_info[src].pend);
--	temp |= (1 << (31 - ipic_info[src].bit));
-+	temp = 1 << (31 - ipic_info[src].bit);
- 	ipic_write(ipic->regs, ipic_info[src].pend, temp);
-
- 	spin_unlock_irqrestore(&ipic_lock, flags);
-@@ -581,8 +580,7 @@ static void ipic_mask_irq_and_ack(unsign
- 	temp &= ~(1 << (31 - ipic_info[src].bit));
- 	ipic_write(ipic->regs, ipic_info[src].mask, temp);
-
--	temp = ipic_read(ipic->regs, ipic_info[src].pend);
--	temp |= (1 << (31 - ipic_info[src].bit));
-+	temp = 1 << (31 - ipic_info[src].bit);
- 	ipic_write(ipic->regs, ipic_info[src].pend, temp);
-
- 	spin_unlock_irqrestore(&ipic_lock, flags);
-
-
-
-
-
-
- 
-
------邮件原件-----
-发件人: Li Yang-R58472 [mailto:LeoLi@freescale.com] 
-发送时间: 2009年2月17日 18:17
-收件人: 笪禹; linux-kernel@vger.kernel.org
-抄送: linuxppc-dev@ozlabs.org
-主题: RE: PROBLEM: incorrect interrupt ack lead to interrupt loss on freescale powerpc
-
-> -----Original Message-----
-> From: dayu@datangmobile.cn [mailto:dayu@datangmobile.cn]
-> Sent: Tuesday, February 17, 2009 4:34 PM
-> To: linux-kernel@vger.kernel.org
-> Cc: Li Yang-R58472
-> Subject: PROBLEM: incorrect interrupt ack lead to interrupt loss on 
-> freescale powerpc
 > 
->  
-> [1.] One line summary of the problem: incorrect interrupt ack  lead to 
-> interrupt loss
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > +	if (*count != -1)
+> > +		(*count)--;
+> 
+> minor nit: it's a tiny bit more compact as:
+> 
+> > +	if (*count != -1)
+> > +		--*count;
 
-Acked-by: Li Yang <leoli@freescale.com>
+Doesn't that move the pointer? Cases like these, I prefer the parenthesis,
+because I get confused about C ordering.
 
-However, please resend the patch with a brief description and Signed-off-by at the top of the patch.  You can read the Documentation/SubmittiongPatches for more information, or even a Chinese version under Documentation/zh_CN/.
+> 
+> and this:
+> 
+> >  	return register_tracer(&function_trace);
+> >  }
+> >  
+> >  device_initcall(init_function_trace);
+> > +
+> 
+> there should be no newline between device_initcall() and the 
+> preceding function. (we can think of it as a late attribute of 
+> the function, attached to the function. We do the same for 
+> EXPORT_SYMBOL's too, etc.)
 
-Here are some small comments about the patch itself,
+OK,
 
---- a/arch/powerpc/sysdev/ipic.c	2009-02-17 15:10:18.000000000 +0800
-+++ b/arch/powerpc/sysdev/ipic.c	2009-02-17 15:10:24.000000000 +0800
-@@ -9,6 +9,7 @@
-  * under  the terms of  the GNU General  Public License as published by the
-  * Free Software Foundation;  either version 2 of the  License, or (at your
-  * option) any later version.
-+ * Da Yu <dayu@datangmobile.cn> fixed the interrupt loss problem on 
-+ powerpc IPIC
+Do you want me to rebase, or just send out new "clean up" patches?
 
+-- Steve
 
-It's not recommended to add changelog in the source now.  Please describe in the patch description area.
-
-  */
- #include <linux/kernel.h>
- #include <linux/init.h>
-@@ -561,8 +562,7 @@
- 
- 	spin_lock_irqsave(&ipic_lock, flags);
- 
--	temp = ipic_read(ipic->regs, ipic_info[src].pend);
--	temp |= (1 << (31 - ipic_info[src].bit));
-+	temp = (1 << (31 - ipic_info[src].bit));
-
-
-Remove unneeded brackets.
-
-
- 	ipic_write(ipic->regs, ipic_info[src].pend, temp);
- 
- 	spin_unlock_irqrestore(&ipic_lock, flags); @@ -581,8 +581,7 @@
- 	temp &= ~(1 << (31 - ipic_info[src].bit));
- 	ipic_write(ipic->regs, ipic_info[src].mask, temp);
- 
--	temp = ipic_read(ipic->regs, ipic_info[src].pend);
--	temp |= (1 << (31 - ipic_info[src].bit));
-+	temp = (1 << (31 - ipic_info[src].bit));
-
-Same as above.
-
-
- 	ipic_write(ipic->regs, ipic_info[src].pend, temp);
- 
- 	spin_unlock_irqrestore(&ipic_lock, flags);
