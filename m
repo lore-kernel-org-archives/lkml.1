@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751180AbZBQFPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbZBQFPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751180AbZBQFPK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 00:15:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbZBQFOK
+	id S1754693AbZBQFPg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 00:15:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbZBQFOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 00:14:10 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:41990 "EHLO
+	Tue, 17 Feb 2009 00:14:11 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:33850 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751601AbZBQFOH (ORCPT
+	with ESMTP id S1751658AbZBQFOH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 17 Feb 2009 00:14:07 -0500
-Message-Id: <20090217051405.538980274@goodmis.org>
+Message-Id: <20090217051406.189453081@goodmis.org>
 References: <20090217051227.957864159@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 17 Feb 2009 00:12:30 -0500
+Date: Tue, 17 Feb 2009 00:12:33 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -21,69 +21,96 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 03/15] ftrace: rename ftrace_match to ftrace_match_records
-Content-Disposition: inline; filename=0003-ftrace-rename-ftrace_match-to-ftrace_match_records.patch
+Subject: [PATCH 06/15] ftrace: enable filtering only when a function is filtered on
+Content-Disposition: inline; filename=0006-ftrace-enable-filtering-only-when-a-function-is-fil.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Impact: clean up
+Impact: fix to prevent empty set_ftrace_filter and no ftrace output
 
-ftrace_match is too generic of a name. What it really does is
-search all records and matches the records with the given string,
-and either sets or unsets the functions to be traced depending
-on if the parameter 'enable' is set or not.
+The function filter is used to only trace a given set of functions.
+The filter is enabled when a function name is echoed into the
+set_ftrace_filter file. But if the name has a typo and the function
+is not found, the filter is enabled, but no function is listed.
 
-This allows us to make another function called ftrace_match that
-can be used to test a single record.
+This makes a confusing situation where set_ftrace_filter is empty
+but no functions ever get enabled for tracing.
+
+For example:
+
+ # cat /debug/tracing/set_ftrace_filter
+
+  #### all functions enabled ####
+
+ # echo bad_name > set_ftrace_filter
+ # cat /debug/tracing/set_ftrace_filter
+
+ # echo function > current_tracer
+ # cat trace
+
+  # tracer: nop
+  #
+  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+  #              | |       |          |         |
+
+This patch changes that to only enable filtering if a function
+is set to be filtered on. Now, the filter is not enabled if
+a bad name is echoed into set_ftrace_filter.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/ftrace.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ kernel/trace/ftrace.c |   14 ++++++++------
+ 1 files changed, 8 insertions(+), 6 deletions(-)
 
 diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index fed1ebc..f397d7a 100644
+index 9e60ae4..340f88b 100644
 --- a/kernel/trace/ftrace.c
 +++ b/kernel/trace/ftrace.c
-@@ -1054,7 +1054,7 @@ enum {
- };
+@@ -1153,8 +1153,6 @@ static void ftrace_match_records(char *buff, int len, int enable)
  
- static void
--ftrace_match(unsigned char *buff, int len, int enable)
-+ftrace_match_records(unsigned char *buff, int len, int enable)
- {
- 	char str[KSYM_SYMBOL_LEN];
- 	char *search = NULL;
-@@ -1197,7 +1197,7 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
- 	if (isspace(ch)) {
- 		iter->filtered++;
- 		iter->buffer[iter->buffer_idx] = 0;
--		ftrace_match(iter->buffer, iter->buffer_idx, enable);
-+		ftrace_match_records(iter->buffer, iter->buffer_idx, enable);
- 		iter->buffer_idx = 0;
- 	} else
- 		iter->flags |= FTRACE_ITER_CONT;
-@@ -1236,7 +1236,7 @@ ftrace_set_regex(unsigned char *buf, int len, int reset, int enable)
- 	if (reset)
- 		ftrace_filter_reset(enable);
- 	if (buf)
--		ftrace_match(buf, len, enable);
-+		ftrace_match_records(buf, len, enable);
- 	mutex_unlock(&ftrace_regex_lock);
+ 	/* should not be called from interrupt context */
+ 	spin_lock(&ftrace_lock);
+-	if (enable)
+-		ftrace_filtered = 1;
+ 	do_for_each_ftrace_rec(pg, rec) {
+ 
+ 		if (rec->flags & FTRACE_FL_FAILED)
+@@ -1166,7 +1164,12 @@ static void ftrace_match_records(char *buff, int len, int enable)
+ 			else
+ 				rec->flags |= flag;
+ 		}
+-
++		/*
++		 * Only enable filtering if we have a function that
++		 * is filtered on.
++		 */
++		if (enable && (rec->flags & FTRACE_FL_FILTER))
++			ftrace_filtered = 1;
+ 	} while_for_each_ftrace_rec();
+ 	spin_unlock(&ftrace_lock);
  }
+@@ -1217,9 +1220,6 @@ static void ftrace_match_module_records(char *buff, char *mod, int enable)
  
-@@ -1286,7 +1286,7 @@ ftrace_regex_release(struct inode *inode, struct file *file, int enable)
- 	if (iter->buffer_idx) {
- 		iter->filtered++;
- 		iter->buffer[iter->buffer_idx] = 0;
--		ftrace_match(iter->buffer, iter->buffer_idx, enable);
-+		ftrace_match_records(iter->buffer, iter->buffer_idx, enable);
- 	}
+ 	/* should not be called from interrupt context */
+ 	spin_lock(&ftrace_lock);
+-	if (enable)
+-		ftrace_filtered = 1;
+-
+ 	do_for_each_ftrace_rec(pg, rec) {
  
- 	mutex_lock(&ftrace_sysctl_lock);
+ 		if (rec->flags & FTRACE_FL_FAILED)
+@@ -1232,6 +1232,8 @@ static void ftrace_match_module_records(char *buff, char *mod, int enable)
+ 			else
+ 				rec->flags |= flag;
+ 		}
++		if (enable && (rec->flags & FTRACE_FL_FILTER))
++			ftrace_filtered = 1;
+ 
+ 	} while_for_each_ftrace_rec();
+ 	spin_unlock(&ftrace_lock);
 -- 
 1.5.6.5
 
