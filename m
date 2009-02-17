@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754435AbZBQP0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468AbZBQP24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754435AbZBQP0R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 10:26:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZBQPZ4
+	id S1753468AbZBQP24 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 10:28:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZBQP2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 10:25:56 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:53592 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754202AbZBQPZz (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 10:25:55 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>
-Cc: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org
-Subject: Re: mmotm 2009-02-14-00-49 uploaded -epoll busted.
-In-Reply-To: Your message of "Sat, 14 Feb 2009 00:51:41 PST."
-             <200902140851.n1E8pfIN030501@imap1.linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <200902140851.n1E8pfIN030501@imap1.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1234881458_6651P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Tue, 17 Feb 2009 10:28:45 -0500
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:52106 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751241AbZBQP2n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 10:28:43 -0500
+Message-ID: <499AD7A5.6060009@in.ibm.com>
+Date: Tue, 17 Feb 2009 20:58:37 +0530
+From: "Sachin P. Sant" <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: Next 17 : warn_slowpath() / powernowk8_cpu_init
+References: <20090217203832.d6f2ef79.sfr@canb.auug.org.au> <499AD63B.5040608@in.ibm.com>
+In-Reply-To: <499AD63B.5040608@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Tue, 17 Feb 2009 09:37:38 -0500
-Message-ID: <7379.1234881458@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1234881458_6651P
-Content-Type: text/plain; charset=us-ascii
+Sachin P. Sant wrote:
+> While booting next 17 kernel on a x86_64 box noticed the following
+>
+> powernow-k8: Found 1 Dual-Core AMD Opteron(tm) Processor 2218 
+> processors (4 cpu cores) (version 2.20.00)
+> ------------[ cut here ]------------
+> WARNING: at arch/x86/kernel/cpu/cpufreq/powernow-k8.c:1255 
+> powernowk8_cpu_init+0x493/0xd22()
+/proc/cpuinfo output
+processor       : 0
+vendor_id       : AuthenticAMD
+cpu family      : 15
+model           : 65
+model name      : Dual-Core AMD Opteron(tm) Processor 2218
+stepping        : 2
+cpu MHz         : 2200.007
+cache size      : 1024 KB
+physical id     : 0
+siblings        : 2
+core id         : 0
+cpu cores       : 2
+apicid          : 0
+initial apicid  : 0
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt rdtscp lm 3dnowext 3dnow rep_good pni cx16 lahf_lm cmp_legacy svm extapic cr8_legacy
+bogomips        : 4400.01
+TLB size        : 1024 4K pages
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 40 bits physical, 48 bits virtual
+power management: ts fid vid ttp tm stc
 
-On Sat, 14 Feb 2009 00:51:41 PST, akpm@linux-foundation.org said:
-> The mm-of-the-moment snapshot 2009-02-14-00-49 has been uploaded to
+Let me know if more information is required.
 
-The epoll patch series breaks nscd in some odd way.  After it's started
-in the /etc/rc* scripts, the rest of boot proceeds very slowly, smells like
-nscd calls are hitting timeouts.  Boot time went from ~1 minute to ~10 mins.
+Thanks
+-Sachin
 
-nscd is Fedora Rawhide nscd-2.9.90-3.x86_64, in case that matters...
+-- 
 
-Also, the series isn't bisectable right where it matters most, complaining
-about implicit definitions of wake_up_nested...
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
 
-epoll-keyed-wakeups-v2-add-__wake_up_locked_key-and-__wake_up_sync_key.patch
-epoll-keyed-wakeups-v2-introduce-new-_poll-wakeup-macros.patch  GOOD
-epoll-keyed-wakeups-v3-introduce-new-_poll-wakeup-macros.patch  BISECT BUSTED
-epoll-keyed-wakeups-v2-make-sockets-use-keyed-wakeups.patch
-epoll-keyed-wakeups-v2-teach-epoll-about-hints-coming-with-the-wakeup-key.patch
-epoll-keyed-wakeups-v2-teach-epoll-about-hints-coming-with-the-wakeup-key-update.patch  BAD
-
-
-
---==_Exmh_1234881458_6651P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJmsuycC3lWbTT17ARAgsdAKCb2V18rbMmesr60eusN6r+04fdzACcCvgd
-LhdhGZxE0KkwyCRnK43YFW8=
-=j923
------END PGP SIGNATURE-----
-
---==_Exmh_1234881458_6651P--
