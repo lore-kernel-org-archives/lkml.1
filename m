@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753144AbZBQOmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954AbZBQOn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753144AbZBQOmR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 09:42:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbZBQOmB
+	id S1753954AbZBQOn0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 09:43:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbZBQOnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 09:42:01 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55794 "EHLO mx2.redhat.com"
+	Tue, 17 Feb 2009 09:43:17 -0500
+Received: from gate.crashing.org ([63.228.1.57]:50983 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751844AbZBQOmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 09:42:00 -0500
-Date: Tue, 17 Feb 2009 11:41:50 -0300
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org
-Subject: [GIT PATCHES for 2.6.29] V4L/DVB fixes
-Message-ID: <20090217114150.302fc656@pedra.chehab.org>
-Organization: Red Hat
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1751145AbZBQOnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 09:43:17 -0500
+Cc: "<dayu@datangmobile.cn>" <dayu@datangmobile.cn>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Message-Id: <22854A2F-2FBD-4F1A-B623-DB5C91E97509@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Li Yang <leoli@freescale.com>
+In-Reply-To: <2a27d3730902170638h43724c03k6b50843158842e1e@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] fix the interrupt loss problem on powerpc IPIC (2.6.23)
+Date: Tue, 17 Feb 2009 08:43:03 -0600
+References: <D728AD1FA2543948B89DE29C5BF4CD0716AC2DDE@bjmail1.bj.datangmobile.com> <76C7F485-EF75-4B83-B673-564E6243C7C6@kernel.crashing.org> <2a27d3730902170638h43724c03k6b50843158842e1e@mail.gmail.com>
+X-Mailer: Apple Mail (2.930.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
 
-Please pull from:
-        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
+On Feb 17, 2009, at 8:38 AM, Li Yang wrote:
 
-For the following fixes:
+> On Tue, Feb 17, 2009 at 10:12 PM, Kumar Gala <galak@kernel.crashing.org 
+> > wrote:
+>>
+>> On Feb 17, 2009, at 6:44 AM, <dayu@datangmobile.cn> <dayu@datangmobile.cn 
+>> >
+>> wrote:
+>>
+>>> From: Da Yu <dayu@datangmobile.cn>
+>>> Date: Tue, 17 Feb 2009 19:58:20 +0800
+>>> Subject: [PATCH] fix the interrupt loss problem on powerpc IPIC  
+>>> (2.6.23)
+>>>
+>>> Signed-off-by: Da Yu <dayu@datangmobile.cn>
+>>> ---
+>>
+>> Please provide a bit more description as to why this fixes the issue.
+>
+> The pending register is write 1 clear.  If there are more than one
+> external interrupts pending at the same time, acking the first
+> interrupt will also clear other interrupt pending bits.  That will
+> cause loss of interrupt.
+>
+> - Leo
 
-   - dvb core: Revert a broken commit (dda06a8e4610757de) - This fixes 
-	       a regression since kernel 2.6.27;
-   - zoran: Update MAINTAINERS entry;
-   - tuner: fix TUV1236D analog/digital setup;
-   - radio-si470x.c: Correction of Stereo detection/setting and signal 
-		     strength indication and fix LED status output
-   - gspca:: Destroy the URBs at disconnection time;
-   - ivtv: fix decoder crash regression and a regression in get sliced 
-	   vbi format.
+Thanks.  That should be included in the commit message.
 
-Cheers,
-Mauro.
-
----
-
- MAINTAINERS                                |    6 ++--
- drivers/media/common/tuners/tuner-simple.c |   10 ++---
- drivers/media/dvb/dvb-core/dmxdev.c        |   16 ++++-----
- drivers/media/dvb/dvb-core/dvb_demux.c     |   16 +++-----
- drivers/media/radio/radio-si470x.c         |   55 +++++++++++++++++++++++-----
- drivers/media/video/gspca/gspca.c          |    5 +++
- drivers/media/video/ivtv/ivtv-ioctl.c      |   26 +++++++-------
- 7 files changed, 84 insertions(+), 50 deletions(-)
-
-Adam Baker (1):
-      V4L/DVB (10619): gspca - main: Destroy the URBs at disconnection time.
-
-Hans Verkuil (2):
-      V4L/DVB (10625): ivtv: fix decoder crash regression
-      V4L/DVB (10626): ivtv: fix regression in get sliced vbi format
-
-Mauro Carvalho Chehab (2):
-      V4L/DVB (10527): tuner: fix TUV1236D analog/digital setup
-      V4L/DVB (10572): Revert commit dda06a8e4610757def753ee3a541a0b1a1feb36b
-
-Tobias Lorenz (2):
-      V4L/DVB (10532): Correction of Stereo detection/setting and signal strength indication
-      V4L/DVB (10533): fix LED status output
-
-Trent Piepho (1):
-      V4L/DVB (10516a): zoran: Update MAINTAINERS entry
-
----------------------------------------------------
-V4L/DVB development is hosted at http://linuxtv.org
+- k
