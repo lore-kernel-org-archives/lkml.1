@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752438AbZBQVFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754890AbZBQVGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752438AbZBQVFq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 16:05:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754243AbZBQVFa
+	id S1754890AbZBQVGi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 16:06:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZBQVG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 16:05:30 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:35566 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753764AbZBQVF1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 16:05:27 -0500
-Message-ID: <499B267E.2090509@zytor.com>
-Date: Tue, 17 Feb 2009 13:05:02 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@medozas.de>
-CC: Alain Knaff <alain@knaff.lu>, the arch/x86 maintainers <x86@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: tip: bzip2/lzma now in tip:x86/setup-lzma
-References: <200901042146.n04LkHgP005837@hitchhiker.hitchhiker.org.lu.hitchhiker.org.lu> <4961415C.1050708@zytor.com> <49614243.70102@knaff.lu> <496142E4.8040308@zytor.com> <49614491.7020903@knaff.lu> <49614D1F.8020900@zytor.com> <alpine.LSU.2.00.0902172202230.5620@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <alpine.LSU.2.00.0902172202230.5620@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Feb 2009 16:06:26 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:60582 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751400AbZBQVGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 16:06:24 -0500
+From: Jay Vosburgh <fubar@us.ibm.com>
+To: Brian Haley <brian.haley@hp.com>
+cc: Andrey Borzenkov <arvidjaar@mail.ru>,
+       =?ISO-8859-1?Q?=22J=2EA=2E_Magall?=@us.ibm.com,
+       =?ISO-8859-1?Q?=F3n=22?= <jamagallon@ono.com>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, bonding-devel@lists.sourceforge.net
+Subject: Re: [Bonding-devel] 2.6.29 regression? Bonding tied to IPV6 in 29-rc5
+In-reply-to: <499B19AF.1000003@hp.com>
+References: <alpine.LFD.2.00.0902131413120.3179@localhost.localdomain> <20090217095232.5da06b9f@werewolf.home> <200902172001.41804.arvidjaar@mail.ru> <200902172117.22671.arvidjaar@mail.ru> <499B19AF.1000003@hp.com>
+Comments: In-reply-to Brian Haley <brian.haley@hp.com>
+   message dated "Tue, 17 Feb 2009 15:10:23 -0500."
+X-Mailer: MH-E 8.0.3; nmh 1.3-RC3; GNU Emacs 22.2.1
+Date: Tue, 17 Feb 2009 13:06:28 -0800
+Message-ID: <16929.1234904788@death.nxdomain.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Monday 2009-01-05 00:58, H. Peter Anvin wrote:
->> I have pulled the x86 parts of the bzip2/lzma patchset into
->> tip:x86/setup-lzma.  I would appreciate it if you could look at it and
->> make sure it looks sane.  I have not added the ARM portions (patch 4),
->> since those should go via the ARM tree, nor the capstone patch 5, which
->> can only be added after the old code is removed from *all* remaining
->> architectures.
-> 
-> It seems to work well here. It would be cool if this finds its way
-> into mainline sometime.
+Brian Haley <brian.haley@hp.com> wrote:
 
-There were some build failures with "make randconfig" I seem to recall. 
-  Those need to be addressed soon if we're going to be able to push this 
-for .30.
+>Andrey Borzenkov wrote:
+[...]
+>> This hard dependency was apparently introduced by this commit:
+>> 
+>> commit 305d552accae6afb859c493ebc7d98ca3371dae2
+>> Author: Brian Haley <brian.haley@hp.com>
+>> Date:   Tue Nov 4 17:51:14 2008 -0800
+>> 
+>>     bonding: send IPv6 neighbor advertisement on failover
+>
+>I initially had bonding IPv6 support as a Kconfig option, but it was 
+>decided it would be cleaner if it just got built-in whenever CONFIG_IPV6 
+>was set like SCTP, with the assumption you might want it.
+>
+>Is it a common configuration to not allow a module to load like you're 
+>doing in modprobe.conf?  I don't know how hard it would be to rip this 
+>out into it's own bonding_ipv6.ko module, simply turning-off CONFIG_IPV6 
+>seems better.
 
-	-hpa
+	I'm not sure either of those really helps.  Distro kernels are
+built with CONFIG_IPV6 (and would have the CONFIG_BONDING_IPV6_DINGUS
+enabled as well), so the common case users would have it enabled, too.
 
+	Putting the ipv6 bits into a different module might not help,
+either, because the "core" bonding code would still have the call to the
+ipv6 functions.  Unless there's some magic way to somehow know at
+runtime whether or not the ipv6 module is loaded, and only try to
+resolve those symbols if ipv6 is loaded.  That seems complicated.
+
+	To answer your question, I have come across this (aliasing ipv6
+to nothing in modprobe.conf to disable IPv6) from time to time, but
+didn't think of it when the NA code was added to bonding.
+
+	-J
+
+---
+	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
