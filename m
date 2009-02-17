@@ -1,66 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752574AbZBQWdH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624AbZBQWdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752574AbZBQWdH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 17:33:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbZBQWcz
+	id S1754624AbZBQWdf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 17:33:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbZBQWdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 17:32:55 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35304 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752407AbZBQWcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 17:32:54 -0500
-Date: Tue, 17 Feb 2009 17:32:47 -0500 (EST)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       Alasdair G Kergon <agk@redhat.com>
-Subject: A suggestion to preserve bio vector
-Message-ID: <Pine.LNX.4.64.0902171707001.28612@hs20-bc2-1.build.redhat.com>
+	Tue, 17 Feb 2009 17:33:23 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:32325 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752678AbZBQWdV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 17:33:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=n2mPNGMc6uSt9NEJ/AjGAfjTHFicuPvZCMNBg2GX0+IRW6MK5IoizWsgLVnInps0Fc
+         ZLJbbZyJ44zTs9VJJADhGtEVNYIus1pH6DD+YQ/kR/2RptFfX6bBh5G+1ncAANxKcPhV
+         nq40PLTiv3v2d0RcjW/yrixUin9ZMUoNG0gWA=
+Date: Tue, 17 Feb 2009 23:33:17 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dmitry.torokhov@gmail.com, dtor@mail.ru, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: Re: [PATCH v2] psmouse: run kpsmoused only while needed
+Message-ID: <20090217223316.GB5194@nowhere>
+References: <4984ec6a.0637560a.3217.4534@mx.google.com> <20090213160526.b5d619e6.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090213160526.b5d619e6.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Fri, Feb 13, 2009 at 04:05:26PM -0800, Andrew Morton wrote:
+> On Sat, 31 Jan 2009 16:27:22 -0800 (PST)
+> Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> 
+> > While looking at the workqueue tracer, I noticed that kpsmoused receives
+> > rarely (if not never) events.
+> > 
+> > Currently, when a mouse has to resync, it uses the kpsmoused singlethreaded
+> > workqueue. But resync are rare. While reading an old discussion, it seems
+> > that usual workqueue events can't be used for that purpose because resync
+> > can take too much time and could delay the other works in queue.
+> > 
+> > But if you have built psmouse driver, this workqueue will always be present
+> > whether you have a ps/2 port or not. And its events are rare.
+> > 
+> > To avoid this pointless task, this patch makes the kpsmoused a kernel
+> > thread only created on the fly when a resync is needed. Once the resync is done,
+> > this thread will die. So you will almost never see it, and it will not be
+> > an inactive task anymore.
+> > 
+> > This thread is created through a usual workqueue event (because we can't create
+> > it from interrupt).
+> > 
+> > Changes in V2:
+> > 
+> > _ fix the "resync" mispelled in the patch and the changelog
+> > _ don't schedule more than one resync in case of concurrent interrupts
+> > _ if resync_pending is not cleared after a few time before disconnect, print a warning.
+> > 
+> 
+> This patch seems complicated.
 
-We have found a bio bug in device mapper raid1 and multipath.
 
-When processing a request, dm-raid1 and dm-multipath record the fields 
-bi_sector, bi_bdev, bi_size, bi_idx, bi_flags. If the bio fails, it 
-restores these fields and resubmits the same bio to the other device.
+Yeah, I know :-/
 
-The problem is that when the driver reports partial completions with 
-__blk_end_request having nr_bytes less than the total request size, the 
-bio layer will patch the bi_sector, bi_size and bio vector to reflect the 
-progress.
+ 
+> 
+> > 
+> > diff --git a/drivers/input/mouse/psmouse-base.c b/drivers/input/mouse/psmouse-base.c
+> > index f8f86de..fc4490e 100644
+> > --- a/drivers/input/mouse/psmouse-base.c
+> > +++ b/drivers/input/mouse/psmouse-base.c
+> > @@ -20,6 +20,7 @@
+> >  #include <linux/init.h>
+> >  #include <linux/libps2.h>
+> >  #include <linux/mutex.h>
+> > +#include <linux/kthread.h>
+> >  
+> >  #include "psmouse.h"
+> >  #include "synaptics.h"
+> > @@ -104,8 +105,6 @@ static struct attribute_group psmouse_attribute_group = {
+> >   */
+> >  static DEFINE_MUTEX(psmouse_mutex);
+> >  
+> > -static struct workqueue_struct *kpsmoused_wq;
+> > -
+> >  struct psmouse_protocol {
+> >  	enum psmouse_type type;
+> >  	const char *name;
+> > @@ -203,11 +202,6 @@ static psmouse_ret_t psmouse_process_byte(struct psmouse *psmouse)
+> >  	return PSMOUSE_FULL_PACKET;
+> >  }
+> >  
+> > -void psmouse_queue_work(struct psmouse *psmouse, struct delayed_work *work,
+> > -		unsigned long delay)
+> > -{
+> > -	queue_delayed_work(kpsmoused_wq, work, delay);
+> > -}
+> >  
+> >  /*
+> >   * __psmouse_set_state() sets new psmouse state and resets all flags.
+> > @@ -313,7 +307,10 @@ static irqreturn_t psmouse_interrupt(struct serio *serio,
+> >  		       psmouse->name, psmouse->phys, psmouse->pktcnt);
+> >  		psmouse->badbyte = psmouse->packet[0];
+> >  		__psmouse_set_state(psmouse, PSMOUSE_RESYNCING);
+> > -		psmouse_queue_work(psmouse, &psmouse->resync_work, 0);
+> > +		if (atomic_inc_return(&psmouse->resync_pending) == 1)
+> > +			schedule_work(&psmouse->resync_work);
+> > +		else
+> > +			atomic_dec(&psmouse->resync_pending);
+> >  		goto out;
+> >  	}
+> 
+> This little trick looks inherently racy.  Suppose
+> psmouse_resync_thread_helper() is concurrently fiddling with
+> ->resync_pending.
+> 
+> Dunno - maybe it isn't racy.  I can't really be bothered working it
+> out, because it should be obviosuly non-racy!
+> 
+> Can we remove ->resync_pending?  Just unconditionally do the
+> schedule_work()?  schedule_work() will take care of things
+> appropriately, won't it?
+> There is, I guess, a small possibility that we'll end up with two (or
+> more!) kernel threads running at the same time.  But the psmouse code
+> should be able to handle that appropriately.
 
-If the request later fails, device mapper will resubmit the request to the 
-other device --- but the bio vector was modified, this new request has 
-mismatching bi_size and total request length, and it causes crashes on 
-BUG().
 
-Could it be possible to modify the bio layer so that it doesn't modify the 
-bio vector? Does anything need to modify the vector while the request is 
-being processed?
+Well, that's ok. But I still need to keep a reference counting of the threads
+created, just to be sure all is finished and avoid freeing the mouse struct too early.
 
-There are alternate approaches, but they are not as good:
+ 
+> > @@ -350,7 +347,11 @@ static irqreturn_t psmouse_interrupt(struct serio *serio,
+> >  	    time_after(jiffies, psmouse->last + psmouse->resync_time * HZ)) {
+> >  		psmouse->badbyte = psmouse->packet[0];
+> >  		__psmouse_set_state(psmouse, PSMOUSE_RESYNCING);
+> > -		psmouse_queue_work(psmouse, &psmouse->resync_work, 0);
+> > +
+> > +		if (atomic_inc_return(&psmouse->resync_pending) == 1)
+> > +			schedule_work(&psmouse->resync_work);
+> > +		else
+> > +			atomic_dec(&psmouse->resync_pending);
+> >  		goto out;
+> >  	}
+> >  
+> 
+> etc.
+> 
+> >  
+> >  
+> >  /*
+> > - * psmouse_resync() attempts to re-validate current protocol.
+> > + * psmouse_resync_thread() attempts to re-validate current protocol.
+> > + * This thread is created on the fly when needed because its job can take too
+> > + * much time on events workqueues, and the resync is rare enough to avoid
+> > + * the need of a private workqueue.
+> >   */
+> >  
+> > -static void psmouse_resync(struct work_struct *work)
+> > +static int psmouse_resync_thread(void *v)
+> >  {
+> > -	struct psmouse *parent = NULL, *psmouse =
+> > -		container_of(work, struct psmouse, resync_work.work);
+> > +	struct psmouse *psmouse = v;
+> > +	struct psmouse *parent = NULL;
+> >  	struct serio *serio = psmouse->ps2dev.serio;
+> >  	psmouse_ret_t rc = PSMOUSE_GOOD_DATA;
+> >  	int failed = 0, enabled = 0;
+> > @@ -1072,6 +1076,30 @@ static void psmouse_resync(struct work_struct *work)
+> >  		psmouse_activate(parent);
+> >   out:
+> >  	mutex_unlock(&psmouse_mutex);
+> > +
+> > +	/*
+> > +	 * While disconnecting, the driver wants to be sure all resync are done
+> > +	 */
+> > +	atomic_dec(&psmouse->resync_pending);
+> > +	wake_up(&psmouse->resync_pending_queue);
+> > +	return 0;
+> > +}
+> > +
+> > +/* Launch the resync thread */
+> > +static void psmouse_resync_thread_helper(struct work_struct *work)
+> > +{
+> > +	struct task_struct *t;
+> > +	struct psmouse *psmouse;
+> > +
+> > +	psmouse = container_of(work, struct psmouse, resync_work);
+> > +
+> > +	t = kthread_run(psmouse_resync_thread, psmouse, "kpsmoused");
+> > +	if (t == ERR_PTR(-ENOMEM)) {
+> > +		printk(KERN_WARNING "psmouse.c: failed to create kpsmoused"
+> > +				    " thread\n");
+> > +		atomic_dec(&psmouse->resync_pending);
+> > +		wake_up(&psmouse->resync_pending_queue);
+> > +	}
+> >  }
+> 
+> I expect I asked before "can we use the kernel/async.c code for this".
+> It's such an obvious question that it should be covered in the
+> changelog.
 
-- copy and restore the vector for each request in dm-raid1 and 
-dm-multipath - needless memory allocation and performance degradation per 
-request.
 
-- when request fails, resubmit only that part that reflects the failed 
-data. - this would need to recheck all drivers that handle bios that they 
-produce sensible bios on errors (if we change semantics from "bio contains 
-junk on error" to "bio must reflect progress on error", this would need 
-extensive review). Also, there's an experimental patch on device mapper 
-that makes it to share bio vector when splitting the request to multiple 
-targets (it saves memory and improves performance) and this approach would 
-break the patch.
+Yes, I answered you about that on the V1 discussion of this patch.
+The problem with async is that we don't have any guarantee that the job
+will be executed asynchronously. If we are running low on memory, or if there are too
+much jobs pending, async can decide to execute synchronously the function.
 
-So, redefine semantics to "bio vector is not modified" looks like a best 
-solution to me. I'd like to know what do you think about it.
+That would have been handy: I would just need to call async_synchronize_cookie_special()
+to ensure all is finished.
 
-Mikulas
+
+> 
+> 
+> 
+
