@@ -1,44 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754970AbZBQXHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbZBQXKK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754970AbZBQXHm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 18:07:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbZBQXHd
+	id S1754674AbZBQXKK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 18:10:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbZBQXJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 18:07:33 -0500
-Received: from mail.lang.hm ([64.81.33.126]:52383 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751008AbZBQXHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 18:07:32 -0500
-Date: Tue, 17 Feb 2009 15:07:26 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Matthew Wilcox <matthew@wil.cx>
-cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       DL-MPTFusionLinux@lsi.com
-Subject: Re: mpt fusion broken sometime since 2.6.24
-In-Reply-To: <20090217230050.GG16841@parisc-linux.org>
-Message-ID: <alpine.DEB.1.10.0902171506500.26625@asgard.lang.hm>
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm> <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm> <20090217230050.GG16841@parisc-linux.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Tue, 17 Feb 2009 18:09:58 -0500
+Received: from 93-97-173-237.zone5.bethere.co.uk ([93.97.173.237]:52508 "EHLO
+	tim.rpsys.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751008AbZBQXJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 18:09:58 -0500
+Subject: Re: [PATCH] leds: triggers: introduce gpio led trigger
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Felipe Balbi <felipe.balbi@nokia.com>
+Cc: linux-kernel@vger.kernel.org,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Felipe Balbi <me@felipe.balbi.com>, Felipe Balbi <me@felipebalbi.com>
+In-Reply-To: <1234869491-29630-2-git-send-email-felipe.balbi@nokia.com>
+References: <20090216131426.GU21181@scadufax.research.nokia.com>
+	 <1234869491-29630-1-git-send-email-felipe.balbi@nokia.com>
+	 <1234869491-29630-2-git-send-email-felipe.balbi@nokia.com>
+Content-Type: text/plain
+Date: Tue, 17 Feb 2009 23:11:13 +0000
+Message-Id: <1234912273.5312.71.camel@dax.rpnet.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Feb 2009, Matthew Wilcox wrote:
+On Tue, 2009-02-17 at 13:18 +0200, Felipe Balbi wrote:
+> From: Felipe Balbi <me@felipe.balbi.com>
+> 
+> The gpio led trigger will allow leds to be triggered by
+> gpio events.
+> 
+> When we give the led a gpio number, the trigger will
+> request_irq() on that so we don't have to keep polling
+> for gpio state.
+> 
+> It's useful for usecases as n810's keypad leds that could
+> be triggered by the gpio event generated when user slides
+> up to show the keypad.
+> 
+> We also provide means for userland to tell us what is the
+> desired brightness for that special led when it goes on
+> so userland could use information from ambient light sensors
+> and not set led brightness too high if it's not necessary.
+> 
+> This trigger was tested with n810.
 
-> On Tue, Feb 17, 2009 at 01:44:55PM -0800, david@lang.hm wrote:
->> I got a picture of the failed boot at
->> http://linux.lang.hm/linux/IMG00052.jpg
->
-> The PCI-MSI line is probably indicative.  Can you try booting with:
->
-> mptbase.mpt_msi_enable_sas=0
->
-> and also send us an lspci -v so we can update the blacklist?
+Added to the LED tree, thanks.
 
-is that disabling SAS for this system? if so, that's the wrong thing to do 
-(the drives are SAS)
+Richard
 
-David Lang
+
+-- 
+Richard Purdie
+Intel Open Source Technology Centre
+
