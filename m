@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753001AbZBQBa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbZBQBcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753001AbZBQBa6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 20:30:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZBQBat
+	id S1753456AbZBQBcZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 20:32:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZBQBcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 20:30:49 -0500
-Received: from hera.kernel.org ([140.211.167.34]:47320 "EHLO hera.kernel.org"
+	Mon, 16 Feb 2009 20:32:16 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47368 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751339AbZBQBas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 20:30:48 -0500
-Message-ID: <499A1316.9000204@kernel.org>
-Date: Mon, 16 Feb 2009 17:29:58 -0800
+	id S1751339AbZBQBcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 20:32:15 -0500
+Message-ID: <499A136D.2040006@kernel.org>
+Date: Mon, 16 Feb 2009 17:31:25 -0800
 From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
@@ -18,7 +18,9 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>
 CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/2] x86: add x2apic config
+Subject: [PATCH 2/2] x86: fold apic_ops into genapic
+References: <499A1316.9000204@kernel.org>
+In-Reply-To: <499A1316.9000204@kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -28,264 +30,817 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Impact: cleanup
 
-so could deselect x2apic
-and INTR_REMAP will select x2apic
+make it simple, don't need have one extra struct
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
 ---
- arch/x86/Kconfig             |   11 +++++++++++
- arch/x86/include/asm/apic.h  |   18 +++++++++++++++---
- arch/x86/kernel/Makefile     |    4 ++--
- arch/x86/kernel/apic.c       |   24 ++++++++++++------------
- arch/x86/kernel/cpu/common.c |    2 +-
- arch/x86/kernel/genapic_64.c |    4 ++++
- arch/x86/kernel/setup.c      |    3 +--
- arch/x86/kernel/smpboot.c    |    2 +-
- 8 files changed, 47 insertions(+), 21 deletions(-)
+ arch/x86/include/asm/apic.h               |   97 +++++++++---------------------
+ arch/x86/include/asm/genapic.h            |   61 ++++++++++++++++++
+ arch/x86/kernel/apic.c                    |   63 +------------------
+ arch/x86/kernel/bigsmp_32.c               |    7 ++
+ arch/x86/kernel/cpu/mcheck/mce_amd_64.c   |    2 
+ arch/x86/kernel/cpu/mcheck/mce_intel_64.c |    2 
+ arch/x86/kernel/cpu/perf_counter.c        |    2 
+ arch/x86/kernel/cpu/perfctr-watchdog.c    |    2 
+ arch/x86/kernel/es7000_32.c               |    7 ++
+ arch/x86/kernel/genapic_64.c              |    2 
+ arch/x86/kernel/genapic_flat_64.c         |   16 ++++
+ arch/x86/kernel/genx2apic_cluster.c       |   11 ++-
+ arch/x86/kernel/genx2apic_phys.c          |   11 ++-
+ arch/x86/kernel/genx2apic_uv_x.c          |    9 ++
+ arch/x86/kernel/ipi.c                     |    2 
+ arch/x86/kernel/irq.c                     |    2 
+ arch/x86/kernel/nmi.c                     |    2 
+ arch/x86/kernel/numaq_32.c                |    7 ++
+ arch/x86/kernel/probe_32.c                |    7 ++
+ arch/x86/kernel/summit_32.c               |    7 ++
+ arch/x86/kernel/vmi_32.c                  |    6 -
+ arch/x86/kernel/vmiclock_32.c             |    2 
+ arch/x86/lguest/boot.c                    |   19 +++--
+ arch/x86/xen/enlighten.c                  |   21 +++---
+ 24 files changed, 205 insertions(+), 162 deletions(-)
 
-Index: linux-2.6/arch/x86/Kconfig
-===================================================================
---- linux-2.6.orig/arch/x86/Kconfig
-+++ linux-2.6/arch/x86/Kconfig
-@@ -236,6 +236,16 @@ config SMP
- 
- 	  If you don't know what to do here, say N.
- 
-+config X86_X2APIC
-+	bool "Support x2apic"
-+	depends on X86_LOCAL_APIC && X86_64
-+	default y
-+	---help---
-+	  This enables x2apic aka 32bit apicid and access local apic via MSR.
-+	  You may need to enable INTR_REMAP too
-+
-+	  If you don't know what to do here, say Y.
-+
- config SPARSE_IRQ
- 	bool "Support sparse irq numbering"
- 	depends on PCI_MSI || HT_IRQ
-@@ -1835,6 +1845,7 @@ config DMAR_FLOPPY_WA
- config INTR_REMAP
- 	bool "Support for Interrupt Remapping (EXPERIMENTAL)"
- 	depends on X86_64 && X86_IO_APIC && PCI_MSI && ACPI && EXPERIMENTAL
-+	select X86_X2APIC
- 	---help---
- 	  Supports Interrupt remapping for IO-APIC and MSI devices.
- 	  To use x2apic mode in the CPU's which support x2APIC enhancements or
 Index: linux-2.6/arch/x86/include/asm/apic.h
 ===================================================================
 --- linux-2.6.orig/arch/x86/include/asm/apic.h
 +++ linux-2.6/arch/x86/include/asm/apic.h
-@@ -112,7 +112,7 @@ static inline u32 native_apic_msr_read(u
+@@ -92,6 +92,12 @@ static inline u32 native_apic_mem_read(u
+ 	return *((volatile u32 *)(APIC_BASE + reg));
+ }
+ 
++extern void native_apic_wait_icr_idle(void);
++extern u32 native_safe_apic_wait_icr_idle(void);
++extern void native_apic_icr_write(u32 low, u32 id);
++extern u64 native_apic_icr_read(void);
++
++#ifdef CONFIG_X86_X2APIC
+ static inline void native_apic_msr_write(u32 reg, u32 v)
+ {
+ 	if (reg == APIC_DFR || reg == APIC_ID || reg == APIC_LDR ||
+@@ -112,7 +118,31 @@ static inline u32 native_apic_msr_read(u
  	return low;
  }
  
--#ifndef CONFIG_X86_32
-+#ifdef CONFIG_X86_X2APIC
+-#ifdef CONFIG_X86_X2APIC
++static inline void native_x2apic_wait_icr_idle(void)
++{
++	/* no need to wait for icr idle in x2apic */
++	return;
++}
++
++static inline u32 native_safe_x2apic_wait_icr_idle(void)
++{
++	/* no need to wait for icr idle in x2apic */
++	return 0;
++}
++
++static inline void native_x2apic_icr_write(u32 low, u32 id)
++{
++	wrmsrl(APIC_BASE_MSR + (APIC_ICR >> 4), ((__u64) id) << 32 | low);
++}
++
++static inline u64 native_x2apic_icr_read(void)
++{
++	unsigned long val;
++
++	rdmsrl(APIC_BASE_MSR + (APIC_ICR >> 4), val);
++	return val;
++}
++
  extern int x2apic;
  extern void check_x2apic(void);
  extern void enable_x2apic(void);
-@@ -131,7 +131,19 @@ static inline int x2apic_enabled(void)
- 	return 0;
+@@ -146,47 +176,6 @@ static inline int x2apic_enabled(void)
  }
- #else
--#define x2apic_enabled()	0
-+static inline void check_x2apic(void)
-+{
-+}
-+static inline void enable_x2apic(void)
-+{
-+}
-+static inline void enable_IR_x2apic(void)
-+{
-+}
-+static inline int x2apic_enabled(void)
-+{
-+	return 0;
-+}
  #endif
  
- struct apic_ops {
-@@ -177,7 +189,7 @@ static inline u32 safe_apic_wait_icr_idl
- 
+-struct apic_ops {
+-	u32 (*read)(u32 reg);
+-	void (*write)(u32 reg, u32 v);
+-	u64 (*icr_read)(void);
+-	void (*icr_write)(u32 low, u32 high);
+-	void (*wait_icr_idle)(void);
+-	u32 (*safe_wait_icr_idle)(void);
+-};
+-
+-extern struct apic_ops *apic_ops;
+-
+-static inline u32 apic_read(u32 reg)
+-{
+-	return apic_ops->read(reg);
+-}
+-
+-static inline void apic_write(u32 reg, u32 val)
+-{
+-	apic_ops->write(reg, val);
+-}
+-
+-static inline u64 apic_icr_read(void)
+-{
+-	return apic_ops->icr_read();
+-}
+-
+-static inline void apic_icr_write(u32 low, u32 high)
+-{
+-	apic_ops->icr_write(low, high);
+-}
+-
+-static inline void apic_wait_icr_idle(void)
+-{
+-	apic_ops->wait_icr_idle();
+-}
+-
+-static inline u32 safe_apic_wait_icr_idle(void)
+-{
+-	return apic_ops->safe_wait_icr_idle();
+-}
+-
  extern int get_physical_broadcast(void);
  
--#ifdef CONFIG_X86_64
-+#ifdef CONFIG_X86_X2APIC
- static inline void ack_x2APIC_irq(void)
- {
- 	/* Docs say use 0 for future compatibility */
-Index: linux-2.6/arch/x86/kernel/Makefile
+ #ifdef CONFIG_X86_X2APIC
+@@ -197,18 +186,6 @@ static inline void ack_x2APIC_irq(void)
+ }
+ #endif
+ 
+-
+-static inline void ack_APIC_irq(void)
+-{
+-	/*
+-	 * ack_APIC_irq() actually gets compiled as a single instruction
+-	 * ... yummie.
+-	 */
+-
+-	/* Docs say use 0 for future compatibility */
+-	apic_write(APIC_EOI, 0);
+-}
+-
+ extern int lapic_get_maxlvt(void);
+ extern void clear_local_APIC(void);
+ extern void connect_bsp_APIC(void);
+@@ -256,18 +233,6 @@ static inline void disable_local_APIC(vo
+ #define	SET_APIC_ID(x)		(apic->set_apic_id(x))
+ #else
+ 
+-#ifdef CONFIG_X86_LOCAL_APIC
+-static inline unsigned default_get_apic_id(unsigned long x)
+-{
+-	unsigned int ver = GET_APIC_VERSION(apic_read(APIC_LVR));
+-
+-	if (APIC_XAPIC(ver))
+-		return (x >> 24) & 0xFF;
+-	else
+-		return (x >> 24) & 0x0F;
+-}
+-#endif
+-
+ #endif
+ 
+ #endif /* _ASM_X86_APIC_H */
+Index: linux-2.6/arch/x86/include/asm/genapic.h
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/Makefile
-+++ linux-2.6/arch/x86/kernel/Makefile
-@@ -117,8 +117,8 @@ obj-$(CONFIG_SWIOTLB)			+= pci-swiotlb.o
- # 64 bit specific files
- ifeq ($(CONFIG_X86_64),y)
-         obj-y				+= genapic_64.o genapic_flat_64.o
--        obj-y				+= genx2apic_cluster.o
--        obj-y				+= genx2apic_phys.o
-+        obj-$(CONFIG_X86_X2APIC)	+= genx2apic_cluster.o
-+        obj-$(CONFIG_X86_X2APIC)	+= genx2apic_phys.o
- 	obj-$(CONFIG_X86_UV)		+= genx2apic_uv_x.o tlb_uv.o
- 	obj-$(CONFIG_X86_UV)		+= bios_uv.o uv_irq.o uv_sysfs.o
-         obj-$(CONFIG_X86_PM_TIMER)	+= pmtimer_64.o
+--- linux-2.6.orig/arch/x86/include/asm/genapic.h
++++ linux-2.6/arch/x86/include/asm/genapic.h
+@@ -5,6 +5,7 @@
+ 
+ #include <asm/mpspec.h>
+ #include <asm/atomic.h>
++#include <asm/apic.h>
+ 
+ /*
+  * Copyright 2004 James Cleverdon, IBM.
+@@ -83,10 +84,70 @@ struct genapic {
+ 	void (*smp_callin_clear_local_apic)(void);
+ 	void (*store_NMI_vector)(unsigned short *high, unsigned short *low);
+ 	void (*inquire_remote_apic)(int apicid);
++
++	/* apic ops */
++	u32 (*read)(u32 reg);
++	void (*write)(u32 reg, u32 v);
++	u64 (*icr_read)(void);
++	void (*icr_write)(u32 low, u32 high);
++	void (*wait_icr_idle)(void);
++	u32 (*safe_wait_icr_idle)(void);
+ };
+ 
+ extern struct genapic *apic;
+ 
++static inline u32 apic_read(u32 reg)
++{
++	return apic->read(reg);
++}
++
++static inline void apic_write(u32 reg, u32 val)
++{
++	apic->write(reg, val);
++}
++
++static inline u64 apic_icr_read(void)
++{
++	return apic->icr_read();
++}
++
++static inline void apic_icr_write(u32 low, u32 high)
++{
++	apic->icr_write(low, high);
++}
++
++static inline void apic_wait_icr_idle(void)
++{
++	apic->wait_icr_idle();
++}
++
++static inline u32 safe_apic_wait_icr_idle(void)
++{
++	return apic->safe_wait_icr_idle();
++}
++
++
++static inline void ack_APIC_irq(void)
++{
++	/*
++	 * ack_APIC_irq() actually gets compiled as a single instruction
++	 * ... yummie.
++	 */
++
++	/* Docs say use 0 for future compatibility */
++	apic_write(APIC_EOI, 0);
++}
++
++static inline unsigned default_get_apic_id(unsigned long x)
++{
++	unsigned int ver = GET_APIC_VERSION(apic_read(APIC_LVR));
++
++	if (APIC_XAPIC(ver))
++		return (x >> 24) & 0xFF;
++	else
++		return (x >> 24) & 0x0F;
++}
++
+ /*
+  * Warm reset vector default position:
+  */
 Index: linux-2.6/arch/x86/kernel/apic.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/apic.c
 +++ linux-2.6/arch/x86/kernel/apic.c
-@@ -113,11 +113,7 @@ static __init int setup_apicpmtimer(char
- __setup("apicpmtimer", setup_apicpmtimer);
- #endif
+@@ -211,18 +211,13 @@ static int modern_apic(void)
+ 	return lapic_get_version() >= 0x14;
+ }
  
--#ifdef CONFIG_X86_64
--#define HAVE_X2APIC
+-/*
+- * Paravirt kernels also might be using these below ops. So we still
+- * use generic apic_read()/apic_write(), which might be pointing to different
+- * ops in PARAVIRT case.
+- */
+-void xapic_wait_icr_idle(void)
++void native_apic_wait_icr_idle(void)
+ {
+ 	while (apic_read(APIC_ICR) & APIC_ICR_BUSY)
+ 		cpu_relax();
+ }
+ 
+-u32 safe_xapic_wait_icr_idle(void)
++u32 native_safe_apic_wait_icr_idle(void)
+ {
+ 	u32 send_status;
+ 	int timeout;
+@@ -238,13 +233,13 @@ u32 safe_xapic_wait_icr_idle(void)
+ 	return send_status;
+ }
+ 
+-void xapic_icr_write(u32 low, u32 id)
++void native_apic_icr_write(u32 low, u32 id)
+ {
+ 	apic_write(APIC_ICR2, SET_APIC_DEST_FIELD(id));
+ 	apic_write(APIC_ICR, low);
+ }
+ 
+-static u64 xapic_icr_read(void)
++u64 native_apic_icr_read(void)
+ {
+ 	u32 icr1, icr2;
+ 
+@@ -254,54 +249,6 @@ static u64 xapic_icr_read(void)
+ 	return icr1 | ((u64)icr2 << 32);
+ }
+ 
+-static struct apic_ops xapic_ops = {
+-	.read = native_apic_mem_read,
+-	.write = native_apic_mem_write,
+-	.icr_read = xapic_icr_read,
+-	.icr_write = xapic_icr_write,
+-	.wait_icr_idle = xapic_wait_icr_idle,
+-	.safe_wait_icr_idle = safe_xapic_wait_icr_idle,
+-};
+-
+-struct apic_ops __read_mostly *apic_ops = &xapic_ops;
+-EXPORT_SYMBOL_GPL(apic_ops);
+-
+-#ifdef CONFIG_X86_X2APIC
+-static void x2apic_wait_icr_idle(void)
+-{
+-	/* no need to wait for icr idle in x2apic */
+-	return;
+-}
+-
+-static u32 safe_x2apic_wait_icr_idle(void)
+-{
+-	/* no need to wait for icr idle in x2apic */
+-	return 0;
+-}
+-
+-void x2apic_icr_write(u32 low, u32 id)
+-{
+-	wrmsrl(APIC_BASE_MSR + (APIC_ICR >> 4), ((__u64) id) << 32 | low);
+-}
+-
+-static u64 x2apic_icr_read(void)
+-{
+-	unsigned long val;
+-
+-	rdmsrl(APIC_BASE_MSR + (APIC_ICR >> 4), val);
+-	return val;
+-}
+-
+-static struct apic_ops x2apic_ops = {
+-	.read = native_apic_msr_read,
+-	.write = native_apic_msr_write,
+-	.icr_read = x2apic_icr_read,
+-	.icr_write = x2apic_icr_write,
+-	.wait_icr_idle = x2apic_wait_icr_idle,
+-	.safe_wait_icr_idle = safe_x2apic_wait_icr_idle,
+-};
 -#endif
 -
--#ifdef HAVE_X2APIC
-+#ifdef CONFIG_X86_X2APIC
- int x2apic;
- /* x2apic enabled before OS handover */
- static int x2apic_preenabled;
-@@ -270,7 +266,7 @@ static struct apic_ops xapic_ops = {
- struct apic_ops __read_mostly *apic_ops = &xapic_ops;
- EXPORT_SYMBOL_GPL(apic_ops);
- 
--#ifdef HAVE_X2APIC
-+#ifdef CONFIG_X86_X2APIC
- static void x2apic_wait_icr_idle(void)
- {
- 	/* no need to wait for icr idle in x2apic */
-@@ -1324,11 +1320,14 @@ void __cpuinit end_local_APIC_setup(void
- 	apic_pm_activate();
- }
- 
--#ifdef HAVE_X2APIC
-+#ifdef CONFIG_X86_X2APIC
- void check_x2apic(void)
- {
- 	int msr, msr2;
- 
-+	if (!cpu_has_x2apic)
-+		return;
-+
- 	rdmsr(MSR_IA32_APICBASE, msr, msr2);
- 
- 	if (msr & X2APIC_ENABLE) {
-@@ -1342,6 +1341,9 @@ void enable_x2apic(void)
- {
- 	int msr, msr2;
- 
-+	if (!x2apic)
-+		return;
-+
- 	rdmsr(MSR_IA32_APICBASE, msr, msr2);
- 	if (!(msr & X2APIC_ENABLE)) {
- 		pr_info("Enabling x2apic\n");
-@@ -1443,7 +1445,7 @@ end:
- 
- 	return;
- }
--#endif /* HAVE_X2APIC */
-+#endif /* CONFIG_X86_X2APIC */
- 
- #ifdef CONFIG_X86_64
- /*
-@@ -1574,7 +1576,7 @@ void __init early_init_lapic_mapping(voi
+ /**
+  * enable_NMI_through_LVT0 - enable NMI through local vector table 0
   */
- void __init init_apic_mappings(void)
- {
--#ifdef HAVE_X2APIC
-+#ifdef CONFIG_X86_X2APIC
- 	if (x2apic) {
- 		boot_cpu_physical_apicid = read_apic_id();
- 		return;
-@@ -1638,9 +1640,7 @@ int __init APIC_init_uniprocessor(void)
+@@ -1333,7 +1280,6 @@ void check_x2apic(void)
+ 	if (msr & X2APIC_ENABLE) {
+ 		pr_info("x2apic enabled by BIOS, switching to x2apic ops\n");
+ 		x2apic_preenabled = x2apic = 1;
+-		apic_ops = &x2apic_ops;
  	}
- #endif
+ }
  
--#ifdef HAVE_X2APIC
- 	enable_IR_x2apic();
--#endif
- #ifdef CONFIG_X86_64
- 	default_setup_apic_routing();
- #endif
-@@ -2025,7 +2025,7 @@ static int lapic_resume(struct sys_devic
+@@ -1407,7 +1353,6 @@ void __init enable_IR_x2apic(void)
  
- 	local_irq_save(flags);
- 
--#ifdef HAVE_X2APIC
-+#ifdef CONFIG_X86_X2APIC
- 	if (x2apic)
+ 	if (!x2apic) {
+ 		x2apic = 1;
+-		apic_ops = &x2apic_ops;
  		enable_x2apic();
- 	else
-Index: linux-2.6/arch/x86/kernel/cpu/common.c
+ 	}
+ 
+Index: linux-2.6/arch/x86/kernel/bigsmp_32.c
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/common.c
-+++ linux-2.6/arch/x86/kernel/cpu/common.c
-@@ -1060,7 +1060,7 @@ void __cpuinit cpu_init(void)
- 	barrier();
+--- linux-2.6.orig/arch/x86/kernel/bigsmp_32.c
++++ linux-2.6/arch/x86/kernel/bigsmp_32.c
+@@ -263,4 +263,11 @@ struct genapic apic_bigsmp = {
+ 	.smp_callin_clear_local_apic	= NULL,
+ 	.store_NMI_vector		= NULL,
+ 	.inquire_remote_apic		= default_inquire_remote_apic,
++
++	.read				= native_apic_mem_read,
++	.write				= native_apic_mem_write,
++	.icr_read			= native_apic_icr_read,
++	.icr_write			= native_apic_icr_write,
++	.wait_icr_idle			= native_apic_wait_icr_idle,
++	.safe_wait_icr_idle		= native_safe_apic_wait_icr_idle,
+ };
+Index: linux-2.6/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
++++ linux-2.6/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
+@@ -24,7 +24,7 @@
+ #include <linux/smp.h>
+ #include <linux/sysdev.h>
+ #include <linux/sysfs.h>
+-#include <asm/apic.h>
++#include <asm/genapic.h>
+ #include <asm/mce.h>
+ #include <asm/msr.h>
+ #include <asm/percpu.h>
+Index: linux-2.6/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
++++ linux-2.6/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
+@@ -7,7 +7,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/percpu.h>
+ #include <asm/processor.h>
+-#include <asm/apic.h>
++#include <asm/genapic.h>
+ #include <asm/msr.h>
+ #include <asm/mce.h>
+ #include <asm/hw_irq.h>
+Index: linux-2.6/arch/x86/kernel/cpu/perf_counter.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/perf_counter.c
++++ linux-2.6/arch/x86/kernel/cpu/perf_counter.c
+@@ -17,7 +17,7 @@
+ #include <linux/sched.h>
  
- 	check_efer();
--	if (cpu != 0 && x2apic)
-+	if (cpu != 0)
- 		enable_x2apic();
+ #include <asm/perf_counter.h>
+-#include <asm/apic.h>
++#include <asm/genapic.h>
  
- 	/*
+ static bool perf_counters_initialized __read_mostly;
+ 
+Index: linux-2.6/arch/x86/kernel/cpu/perfctr-watchdog.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/perfctr-watchdog.c
++++ linux-2.6/arch/x86/kernel/cpu/perfctr-watchdog.c
+@@ -19,7 +19,7 @@
+ #include <linux/nmi.h>
+ #include <linux/kprobes.h>
+ 
+-#include <asm/apic.h>
++#include <asm/genapic.h>
+ #include <asm/perf_counter.h>
+ 
+ struct nmi_watchdog_ctlblk {
+Index: linux-2.6/arch/x86/kernel/es7000_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/es7000_32.c
++++ linux-2.6/arch/x86/kernel/es7000_32.c
+@@ -806,4 +806,11 @@ struct genapic apic_es7000 = {
+ 	.smp_callin_clear_local_apic	= NULL,
+ 	.store_NMI_vector		= NULL,
+ 	.inquire_remote_apic		= default_inquire_remote_apic,
++
++	.read				= native_apic_mem_read,
++	.write				= native_apic_mem_write,
++	.icr_read			= native_apic_icr_read,
++	.icr_write			= native_apic_icr_write,
++	.wait_icr_idle			= native_apic_wait_icr_idle,
++	.safe_wait_icr_idle		= native_safe_apic_wait_icr_idle,
+ };
 Index: linux-2.6/arch/x86/kernel/genapic_64.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/genapic_64.c
 +++ linux-2.6/arch/x86/kernel/genapic_64.c
-@@ -35,8 +35,10 @@ static struct genapic *apic_probe[] __in
- #ifdef CONFIG_X86_UV
- 	&apic_x2apic_uv_x,
- #endif
-+#ifdef CONFIG_X86_X2APIC
- 	&apic_x2apic_phys,
- 	&apic_x2apic_cluster,
-+#endif
- 	&apic_physflat,
- 	NULL,
+@@ -19,8 +19,8 @@
+ #include <linux/dmar.h>
+ 
+ #include <asm/smp.h>
+-#include <asm/ipi.h>
+ #include <asm/genapic.h>
++#include <asm/ipi.h>
+ #include <asm/setup.h>
+ 
+ extern struct genapic apic_flat;
+Index: linux-2.6/arch/x86/kernel/genapic_flat_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/genapic_flat_64.c
++++ linux-2.6/arch/x86/kernel/genapic_flat_64.c
+@@ -17,8 +17,8 @@
+ #include <linux/init.h>
+ #include <linux/hardirq.h>
+ #include <asm/smp.h>
+-#include <asm/ipi.h>
+ #include <asm/genapic.h>
++#include <asm/ipi.h>
+ 
+ #ifdef CONFIG_ACPI
+ #include <acpi/acpi_bus.h>
+@@ -229,6 +229,13 @@ struct genapic apic_flat =  {
+ 	.smp_callin_clear_local_apic	= NULL,
+ 	.store_NMI_vector		= NULL,
+ 	.inquire_remote_apic		= NULL,
++
++	.read				= native_apic_mem_read,
++	.write				= native_apic_mem_write,
++	.icr_read			= native_apic_icr_read,
++	.icr_write			= native_apic_icr_write,
++	.wait_icr_idle			= native_apic_wait_icr_idle,
++	.safe_wait_icr_idle		= native_safe_apic_wait_icr_idle,
  };
-@@ -46,10 +48,12 @@ static struct genapic *apic_probe[] __in
+ 
+ /*
+@@ -374,4 +381,11 @@ struct genapic apic_physflat =  {
+ 	.smp_callin_clear_local_apic	= NULL,
+ 	.store_NMI_vector		= NULL,
+ 	.inquire_remote_apic		= NULL,
++
++	.read				= native_apic_mem_read,
++	.write				= native_apic_mem_write,
++	.icr_read			= native_apic_icr_read,
++	.icr_write			= native_apic_icr_write,
++	.wait_icr_idle			= native_apic_wait_icr_idle,
++	.safe_wait_icr_idle		= native_safe_apic_wait_icr_idle,
+ };
+Index: linux-2.6/arch/x86/kernel/genx2apic_cluster.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/genx2apic_cluster.c
++++ linux-2.6/arch/x86/kernel/genx2apic_cluster.c
+@@ -7,8 +7,8 @@
+ #include <linux/dmar.h>
+ 
+ #include <asm/smp.h>
+-#include <asm/ipi.h>
+ #include <asm/genapic.h>
++#include <asm/ipi.h>
+ 
+ DEFINE_PER_CPU(u32, x86_cpu_to_logical_apicid);
+ 
+@@ -46,7 +46,7 @@ static void
+ 	/*
+ 	 * send the IPI.
+ 	 */
+-	x2apic_icr_write(cfg, apicid);
++	native_x2apic_icr_write(cfg, apicid);
+ }
+ 
+ /*
+@@ -234,4 +234,11 @@ struct genapic apic_x2apic_cluster = {
+ 	.smp_callin_clear_local_apic	= NULL,
+ 	.store_NMI_vector		= NULL,
+ 	.inquire_remote_apic		= NULL,
++
++	.read				= native_apic_msr_read,
++	.write				= native_apic_msr_write,
++	.icr_read			= native_x2apic_icr_read,
++	.icr_write			= native_x2apic_icr_write,
++	.wait_icr_idle			= native_x2apic_wait_icr_idle,
++	.safe_wait_icr_idle		= native_safe_x2apic_wait_icr_idle,
+ };
+Index: linux-2.6/arch/x86/kernel/genx2apic_phys.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/genx2apic_phys.c
++++ linux-2.6/arch/x86/kernel/genx2apic_phys.c
+@@ -7,8 +7,8 @@
+ #include <linux/dmar.h>
+ 
+ #include <asm/smp.h>
+-#include <asm/ipi.h>
+ #include <asm/genapic.h>
++#include <asm/ipi.h>
+ 
+ static int x2apic_phys;
+ 
+@@ -50,7 +50,7 @@ static void __x2apic_send_IPI_dest(unsig
+ 	/*
+ 	 * send the IPI.
+ 	 */
+-	x2apic_icr_write(cfg, apicid);
++	native_x2apic_icr_write(cfg, apicid);
+ }
+ 
+ static void x2apic_send_IPI_mask(const struct cpumask *mask, int vector)
+@@ -220,4 +220,11 @@ struct genapic apic_x2apic_phys = {
+ 	.smp_callin_clear_local_apic	= NULL,
+ 	.store_NMI_vector		= NULL,
+ 	.inquire_remote_apic		= NULL,
++
++	.read				= native_apic_msr_read,
++	.write				= native_apic_msr_write,
++	.icr_read			= native_x2apic_icr_read,
++	.icr_write			= native_x2apic_icr_write,
++	.wait_icr_idle			= native_x2apic_wait_icr_idle,
++	.safe_wait_icr_idle		= native_safe_x2apic_wait_icr_idle,
+ };
+Index: linux-2.6/arch/x86/kernel/genx2apic_uv_x.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/genx2apic_uv_x.c
++++ linux-2.6/arch/x86/kernel/genx2apic_uv_x.c
+@@ -22,8 +22,8 @@
+ #include <linux/proc_fs.h>
+ #include <asm/current.h>
+ #include <asm/smp.h>
+-#include <asm/ipi.h>
+ #include <asm/genapic.h>
++#include <asm/ipi.h>
+ #include <asm/pgtable.h>
+ #include <asm/uv/uv.h>
+ #include <asm/uv/uv_mmrs.h>
+@@ -292,6 +292,13 @@ struct genapic apic_x2apic_uv_x = {
+ 	.smp_callin_clear_local_apic	= NULL,
+ 	.store_NMI_vector		= NULL,
+ 	.inquire_remote_apic		= NULL,
++
++	.read				= native_apic_msr_read,
++	.write				= native_apic_msr_write,
++	.icr_read			= native_x2apic_icr_read,
++	.icr_write			= native_x2apic_icr_write,
++	.wait_icr_idle			= native_x2apic_wait_icr_idle,
++	.safe_wait_icr_idle		= native_safe_x2apic_wait_icr_idle,
+ };
+ 
+ static __cpuinit void set_x2apic_extra_bits(int pnode)
+Index: linux-2.6/arch/x86/kernel/ipi.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/ipi.c
++++ linux-2.6/arch/x86/kernel/ipi.c
+@@ -15,7 +15,7 @@
+ #include <asm/mtrr.h>
+ #include <asm/tlbflush.h>
+ #include <asm/mmu_context.h>
+-#include <asm/apic.h>
++#include <asm/genapic.h>
+ #include <asm/proto.h>
+ #include <asm/ipi.h>
+ 
+Index: linux-2.6/arch/x86/kernel/irq.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/irq.c
++++ linux-2.6/arch/x86/kernel/irq.c
+@@ -8,7 +8,7 @@
+ #include <linux/smp.h>
+ #include <linux/ftrace.h>
+ 
+-#include <asm/apic.h>
++#include <asm/genapic.h>
+ #include <asm/io_apic.h>
+ #include <asm/irq.h>
+ #include <asm/idle.h>
+Index: linux-2.6/arch/x86/kernel/nmi.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/nmi.c
++++ linux-2.6/arch/x86/kernel/nmi.c
+@@ -11,7 +11,7 @@
+  *  Mikael Pettersson	: PM converted to driver model. Disable/enable API.
   */
- void __init default_setup_apic_routing(void)
- {
-+#ifdef CONFIG_X86_X2APIC
- 	if (apic == &apic_x2apic_phys || apic == &apic_x2apic_cluster) {
- 		if (!intr_remapping_enabled)
- 			apic = &apic_flat;
- 	}
-+#endif
  
- 	if (apic == &apic_flat) {
- 		if (max_physical_apicid >= 8)
-Index: linux-2.6/arch/x86/kernel/setup.c
+-#include <asm/apic.h>
++#include <asm/genapic.h>
+ 
+ #include <linux/nmi.h>
+ #include <linux/mm.h>
+Index: linux-2.6/arch/x86/kernel/numaq_32.c
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup.c
-+++ linux-2.6/arch/x86/kernel/setup.c
-@@ -836,8 +836,7 @@ void __init setup_arch(char **cmdline_p)
- #else
- 	num_physpages = max_pfn;
- 
-- 	if (cpu_has_x2apic)
-- 		check_x2apic();
-+	check_x2apic();
- 
- 	/* How many end-of-memory variables you have, grandma! */
- 	/* need this before calling reserve_initrd */
-Index: linux-2.6/arch/x86/kernel/smpboot.c
+--- linux-2.6.orig/arch/x86/kernel/numaq_32.c
++++ linux-2.6/arch/x86/kernel/numaq_32.c
+@@ -569,4 +569,11 @@ struct genapic apic_numaq = {
+ 	.smp_callin_clear_local_apic	= numaq_smp_callin_clear_local_apic,
+ 	.store_NMI_vector		= numaq_store_NMI_vector,
+ 	.inquire_remote_apic		= NULL,
++
++	.read				= native_apic_mem_read,
++	.write				= native_apic_mem_write,
++	.icr_read			= native_apic_icr_read,
++	.icr_write			= native_apic_icr_write,
++	.wait_icr_idle			= native_apic_wait_icr_idle,
++	.safe_wait_icr_idle		= native_safe_apic_wait_icr_idle,
+ };
+Index: linux-2.6/arch/x86/kernel/probe_32.c
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/smpboot.c
-+++ linux-2.6/arch/x86/kernel/smpboot.c
-@@ -1128,8 +1128,8 @@ void __init native_smp_prepare_cpus(unsi
- 	current_thread_info()->cpu = 0;  /* needed? */
- 	set_cpu_sibling_map(0);
+--- linux-2.6.orig/arch/x86/kernel/probe_32.c
++++ linux-2.6/arch/x86/kernel/probe_32.c
+@@ -127,6 +127,13 @@ struct genapic apic_default = {
+ 	.smp_callin_clear_local_apic	= NULL,
+ 	.store_NMI_vector		= NULL,
+ 	.inquire_remote_apic		= default_inquire_remote_apic,
++
++	.read				= native_apic_mem_read,
++	.write				= native_apic_mem_write,
++	.icr_read			= native_apic_icr_read,
++	.icr_write			= native_apic_icr_write,
++	.wait_icr_idle			= native_apic_wait_icr_idle,
++	.safe_wait_icr_idle		= native_safe_apic_wait_icr_idle,
+ };
  
--#ifdef CONFIG_X86_64
- 	enable_IR_x2apic();
-+#ifdef CONFIG_X86_64
- 	default_setup_apic_routing();
+ extern struct genapic apic_numaq;
+Index: linux-2.6/arch/x86/kernel/summit_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/summit_32.c
++++ linux-2.6/arch/x86/kernel/summit_32.c
+@@ -599,4 +599,11 @@ struct genapic apic_summit = {
+ 	.smp_callin_clear_local_apic	= NULL,
+ 	.store_NMI_vector		= NULL,
+ 	.inquire_remote_apic		= default_inquire_remote_apic,
++
++	.read				= native_apic_mem_read,
++	.write				= native_apic_mem_write,
++	.icr_read			= native_apic_icr_read,
++	.icr_write			= native_apic_icr_write,
++	.wait_icr_idle			= native_apic_wait_icr_idle,
++	.safe_wait_icr_idle		= native_safe_apic_wait_icr_idle,
+ };
+Index: linux-2.6/arch/x86/kernel/vmi_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/vmi_32.c
++++ linux-2.6/arch/x86/kernel/vmi_32.c
+@@ -32,7 +32,7 @@
+ #include <asm/io.h>
+ #include <asm/fixmap.h>
+ #include <asm/apicdef.h>
+-#include <asm/apic.h>
++#include <asm/genapic.h>
+ #include <asm/processor.h>
+ #include <asm/timer.h>
+ #include <asm/vmi_time.h>
+@@ -798,8 +798,8 @@ static inline int __init activate_vmi(vo
  #endif
  
+ #ifdef CONFIG_X86_LOCAL_APIC
+-       para_fill(apic_ops->read, APICRead);
+-       para_fill(apic_ops->write, APICWrite);
++       para_fill(apic->read, APICRead);
++       para_fill(apic->write, APICWrite);
+ #endif
+ 
+ 	/*
+Index: linux-2.6/arch/x86/kernel/vmiclock_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/vmiclock_32.c
++++ linux-2.6/arch/x86/kernel/vmiclock_32.c
+@@ -30,7 +30,7 @@
+ #include <asm/vmi_time.h>
+ #include <asm/arch_hooks.h>
+ #include <asm/apicdef.h>
+-#include <asm/apic.h>
++#include <asm/genapic.h>
+ #include <asm/timer.h>
+ #include <asm/i8253.h>
+ #include <asm/irq_vectors.h>
+Index: linux-2.6/arch/x86/lguest/boot.c
+===================================================================
+--- linux-2.6.orig/arch/x86/lguest/boot.c
++++ linux-2.6/arch/x86/lguest/boot.c
+@@ -55,7 +55,7 @@
+ #include <linux/lguest_launcher.h>
+ #include <linux/virtio_console.h>
+ #include <linux/pm.h>
+-#include <asm/apic.h>
++#include <asm/genapic.h>
+ #include <asm/lguest.h>
+ #include <asm/paravirt.h>
+ #include <asm/param.h>
+@@ -828,13 +828,14 @@ static u32 lguest_apic_safe_wait_icr_idl
+ 	return 0;
+ }
+ 
+-static struct apic_ops lguest_basic_apic_ops = {
+-	.read = lguest_apic_read,
+-	.write = lguest_apic_write,
+-	.icr_read = lguest_apic_icr_read,
+-	.icr_write = lguest_apic_icr_write,
+-	.wait_icr_idle = lguest_apic_wait_icr_idle,
+-	.safe_wait_icr_idle = lguest_apic_safe_wait_icr_idle,
++static void set_lguest_basic_apic_ops(void)
++{
++	apic->read = lguest_apic_read;
++	apic->write = lguest_apic_write;
++	apic->icr_read = lguest_apic_icr_read;
++	apic->icr_write = lguest_apic_icr_write;
++	apic->wait_icr_idle = lguest_apic_wait_icr_idle;
++	apic->safe_wait_icr_idle = lguest_apic_safe_wait_icr_idle;
+ };
+ #endif
+ 
+@@ -1035,7 +1036,7 @@ __init void lguest_init(void)
+ 
+ #ifdef CONFIG_X86_LOCAL_APIC
+ 	/* apic read/write intercepts */
+-	apic_ops = &lguest_basic_apic_ops;
++	set_lguest_basic_apic_ops();
+ #endif
+ 
+ 	/* time operations */
+Index: linux-2.6/arch/x86/xen/enlighten.c
+===================================================================
+--- linux-2.6.orig/arch/x86/xen/enlighten.c
++++ linux-2.6/arch/x86/xen/enlighten.c
+@@ -36,7 +36,7 @@
+ #include <xen/hvc-console.h>
+ 
+ #include <asm/paravirt.h>
+-#include <asm/apic.h>
++#include <asm/genapic.h>
+ #include <asm/page.h>
+ #include <asm/xen/hypercall.h>
+ #include <asm/xen/hypervisor.h>
+@@ -554,14 +554,15 @@ static u32 xen_safe_apic_wait_icr_idle(v
+         return 0;
+ }
+ 
+-static struct apic_ops xen_basic_apic_ops = {
+-	.read = xen_apic_read,
+-	.write = xen_apic_write,
+-	.icr_read = xen_apic_icr_read,
+-	.icr_write = xen_apic_icr_write,
+-	.wait_icr_idle = xen_apic_wait_icr_idle,
+-	.safe_wait_icr_idle = xen_safe_apic_wait_icr_idle,
+-};
++static void set_xen_basic_apic_ops(void)
++{
++	apic->read = xen_apic_read;
++	apic->write = xen_apic_write;
++	apic->icr_read = xen_apic_icr_read;
++	apic->icr_write = xen_apic_icr_write;
++	apic->wait_icr_idle = xen_apic_wait_icr_idle;
++	apic->safe_wait_icr_idle = xen_safe_apic_wait_icr_idle;
++}
+ 
+ #endif
+ 
+@@ -898,7 +899,7 @@ asmlinkage void __init xen_start_kernel(
+ 	/*
+ 	 * set up the basic apic ops.
+ 	 */
+-	apic_ops = &xen_basic_apic_ops;
++	set_xen_basic_apic_ops();
+ #endif
+ 
+ 	if (xen_feature(XENFEAT_mmu_pt_update_preserve_ad)) {
