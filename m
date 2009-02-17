@@ -1,107 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbZBQBE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344AbZBQBH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754762AbZBQBE1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 20:04:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbZBQBES
+	id S1753344AbZBQBH0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 20:07:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbZBQBHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 20:04:18 -0500
-Received: from h155.mvista.com ([63.81.120.155]:4539 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751170AbZBQBER (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 20:04:17 -0500
-Message-ID: <499A0D0B.7070007@ru.mvista.com>
-Date: Tue, 17 Feb 2009 04:04:11 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 13/18] ide: use ->tf_load in SELECT_DRIVE()
-References: <20080620213323.13202.71450.sendpatchset@localhost.localdomain> <4998AE87.3020502@ru.mvista.com> <49995300.7030102@ru.mvista.com> <200902162251.49271.bzolnier@gmail.com>
-In-Reply-To: <200902162251.49271.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Feb 2009 20:07:14 -0500
+Received: from mga12.intel.com ([143.182.124.36]:39462 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751156AbZBQBHN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 20:07:13 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,219,1233561600"; 
+   d="scan'208";a="111269715"
+Subject: Re: [patch] SLQB slab allocator (try 2)
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Mel Gorman <mel@csn.ul.ie>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <4999BBE6.2080003@cs.helsinki.fi>
+References: <20090123154653.GA14517@wotan.suse.de>
+	 <200902041748.41801.nickpiggin@yahoo.com.au>
+	 <20090204152709.GA4799@csn.ul.ie>
+	 <200902051459.30064.nickpiggin@yahoo.com.au>
+	 <20090216184200.GA31264@csn.ul.ie>  <4999BBE6.2080003@cs.helsinki.fi>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 17 Feb 2009 09:06:55 +0800
+Message-Id: <1234832815.2604.410.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Mon, 2009-02-16 at 21:17 +0200, Pekka Enberg wrote:
+> Hi Mel,
+> 
+> Mel Gorman wrote:
+> > I haven't done much digging in here yet. Between the large page bug and
+> > other patches in my inbox, I haven't had the chance yet but that doesn't
+> > stop anyone else taking a look.
+> 
+> So how big does an improvement/regression have to be not to be 
+> considered within noise? I mean, I randomly picked one of the results 
+> ("x86-64 speccpu integer tests") and ran it through my "summarize" 
+> script and got the following results:
+> 
+> 		min      max      mean     std_dev
+>    slub		0.96     1.09     1.01     0.04
+>    slub-min	0.95     1.10     1.00     0.04
+>    slub-rvrt	0.90     1.08     0.99     0.05
+>    slqb		0.96     1.07     1.00     0.04
+> 
+> Apart from slub-rvrt (which seems to be regressing, interesting) all the 
+> allocators seem to perform equally well. Hmm?
+I wonder if different compilation of kernel might cause different cache alignment
+which has much impact on small result difference.
 
-Bartlomiej Zolnierkiewicz wrote:
-> On Monday 16 February 2009, Sergei Shtylyov wrote:
->   
->> Hello, I wrote:
->>
->>     
->>>>> There should be no functional changes caused by this patch.
->>>>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->>>>> Index: b/drivers/ide/ide-iops.c
->>>>> ===================================================================
->>>>> --- a/drivers/ide/ide-iops.c
->>>>> +++ b/drivers/ide/ide-iops.c
->>>>> @@ -88,11 +88,15 @@ void SELECT_DRIVE (ide_drive_t *drive)
->>>>>  {
->>>>>      ide_hwif_t *hwif = drive->hwif;
->>>>>      const struct ide_port_ops *port_ops = hwif->port_ops;
->>>>> +    ide_task_t task;
->>>>>  
->>>>>      if (port_ops && port_ops->selectproc)
->>>>>          port_ops->selectproc(drive);
->>>>>  
->>>>> -    hwif->OUTB(drive->select.all, hwif->io_ports.device_addr);
->>>>> +    memset(&task, 0, sizeof(task));
->>>>> +    task.tf_flags = IDE_TFLAG_OUT_DEVICE;
->>>>> +
->>>>> +    drive->hwif->tf_load(drive, &task);
->>>>>           
->>>>    This actually doesn't seem like a bright idea to me, considering 
->>>> that this gets called when starting every request. How will you look 
->>>> at me adding the transport method for writing this register? :-)
->>>>         
->
-> Please check profiles first -- it might not be worth it. [1]
->
->   
->>> Convert SELECT_DRIVE() to use ->tf_load instead of ->OUTB.
->>>
->>>   OTOH, adding such a "backdoor" to the taskfile doesn't seem very 
->>> consistent... well, I'm not excited about the whole idea conversion to 
->>> tf_{load|read}() -- it's not clear what exactly this bought us.
->>>       
->
-> This was explained some months ago already, so just to recall -- it was
-> a part of a bigger work removing duplicated code and allowing abstraction
-> of the ATA logic.
->
-> Anyway this is not set in a stone so if you have proposal of a better
-> approach please come forward with it.
->   
+If a workload isn't slab-allocation intensive, perhaps the impact caused by different
+compilation is a little bigger.
 
-   Er... I think that the previous IN()/OUT() methods were better. Note 
-that we ended up using the local version of them in the dafault 
-ide_tf_{load}read}() anyway -- as Alan has pointed out it might be worth 
-splitting those into I/O and memory space versions... although given 
-general slowness of the I/O accesses, this is probably not going to win 
-much speed-wise.
 
->>    We at least could have saved on memset() -- tf_load() method ignores 
->> fields other than tf_flags anyway...
->>     
->
-> Unless it is huge performance win (unlikely) this is not a good idea as it would be a maintainance nightmare.
->   
-> ->tf_load does only use cmd->tf_flags today but it might change one day
-> and nobody will remember to audit all users that they pass a valid cmd...
->   
+> 
+> Btw, Yanmin, do you have access to the tests Mel is running (especially 
+> the ones where slub-rvrt seems to do worse)?
+As it takes a long time (more than 20 hours) to run cpu2006, I run cpu2000 instead
+of cpu2006. Now, we are trying to integrate cpu2006 into testing infrastructure.
+﻿Let me check it firstly.
 
-   It's just quite unbearable to see (especially for a long time 
-assembly coder) how a single register write is turning into *that*.
-So, it still seems worth risking... :-)
-
-> Thanks,
-> Bart
->   
-
-MBR, Sergei
-
+>  Can you see this kind of 
+> regression? The results make we wonder whether we should avoid reverting 
+> all of the page allocator pass-through and just add a kmalloc cache for 
+> 8K allocations. Or not address the netperf regression at all. Double-hmm.
+> 
+> 			Pekka
 
