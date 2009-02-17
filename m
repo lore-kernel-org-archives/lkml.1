@@ -1,126 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753050AbZBQOTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765AbZBQOTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753050AbZBQOTU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 09:19:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbZBQOTF
+	id S1753765AbZBQOTv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 09:19:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbZBQOTl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 09:19:05 -0500
-Received: from mx2.netapp.com ([216.240.18.37]:13607 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751741AbZBQOTD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 09:19:03 -0500
-X-IronPort-AV: E=Sophos;i="4.38,223,1233561600"; 
-   d="scan'208";a="128525489"
-Subject: Re: [PATCH] NFS: Pagecache usage optimization on nfs
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <200902172343.13838.nickpiggin@yahoo.com.au>
-References: <6.0.0.20.2.20090217132810.05709598@172.19.0.2>
-	 <200902172343.13838.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: NetApp
-Date: Tue, 17 Feb 2009 09:18:42 -0500
-Message-Id: <1234880322.8412.124.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-X-OriginalArrivalTime: 17 Feb 2009 14:18:59.0983 (UTC) FILETIME=[AD4AC9F0:01C9910A]
+	Tue, 17 Feb 2009 09:19:41 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:46651 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751705AbZBQOTl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 09:19:41 -0500
+Date: Tue, 17 Feb 2009 14:19:24 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Brian Swetland <swetland@google.com>
+Cc: Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Arve Hj?nnev?g <arve@android.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       mark gross <mgross@linux.intel.com>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFD] Automatic suspend
+Message-ID: <20090217141924.GA25335@srcf.ucam.org>
+References: <200902160010.16955.rjw@sisk.pl> <20090216225831.GH1370@ucw.cz> <20090216231324.GA15435@srcf.ucam.org> <20090216232259.GK1370@ucw.cz> <20090216232619.GB15678@srcf.ucam.org> <20090217141434.GA12378@bulgaria.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090217141434.GA12378@bulgaria.corp.google.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-17 at 23:43 +1100, Nick Piggin wrote:
-> On Tuesday 17 February 2009 15:55:12 Hisashi Hifumi wrote:
-> > Hi, Trond.
-> >
-> > I wrote "is_partially_uptodate" aops for nfs client named
-> > nfs_is_partially_uptodate(). This aops checks that nfs_page is attached to
-> > a page and read IO to a page is within the range between wb_pgbase and
-> > wb_pgbase + wb_bytes of the nfs_page. If this aops succeed, we do not have
-> > to issue actual read IO to NFS server even if a page is not uptodate
-> > because the portion we want to read are uptodate. So with this patch random
-> > read/write mixed workloads or random read after random write workloads can
-> > be optimized and we can get performance improvement.
-> >
-> > I did benchmark test using sysbench.
-> >
-> > sysbench --num-threads=16 --max-requests=100000 --test=fileio
-> > --file-block-size=2K --file-total-size=200M --file-test-mode=rndrw
-> > --file-fsync-freq=0
-> > --file-rw-ratio=0.5 run
-> >
-> > The result was:
-> >
-> > -2.6.29-rc4
-> >
-> > Operations performed:  33356 Read, 66682 Write, 128 Other = 100166 Total
-> > Read 65.148Mb  Written 130.24Mb  Total transferred 195.39Mb  (3.1093Mb/sec)
-> >  1591.97 Requests/sec executed
-> >
-> > Test execution summary:
-> >     total time:                          62.8391s
-> >     total number of events:              100038
-> >     total time taken by event execution: 841.7603
-> >     per-request statistics:
-> >          min:                            0.0000s
-> >          avg:                            0.0084s
-> >          max:                            16.4564s
-> >          approx.  95 percentile:         0.0446s
-> >
-> > Threads fairness:
-> >     events (avg/stddev):           6252.3750/306.48
-> >     execution time (avg/stddev):   52.6100/0.38
-> >
-> >
-> > -2.6.29-rc4 + patch
-> >
-> > Operations performed:  33346 Read, 66662 Write, 128 Other = 100136 Total
-> > Read 65.129Mb  Written 130.2Mb  Total transferred 195.33Mb  (5.0113Mb/sec)
-> >  2565.81 Requests/sec executed
-> >
-> > Test execution summary:
-> >     total time:                          38.9772s
-> >     total number of events:              100008
-> >     total time taken by event execution: 339.6821
-> >     per-request statistics:
-> >          min:                            0.0000s
-> >          avg:                            0.0034s
-> >          max:                            1.6768s
-> >          approx.  95 percentile:         0.0200s
-> >
-> > Threads fairness:
-> >     events (avg/stddev):           6250.5000/302.04
-> >     execution time (avg/stddev):   21.2301/0.45
-> >
-> >
-> > I/O performance was significantly improved by following patch.
+On Tue, Feb 17, 2009 at 06:14:34AM -0800, Brian Swetland wrote:
+> [Matthew Garrett <mjg59@srcf.ucam.org>]
+> > https://lists.linux-foundation.org/pipermail/linux-pm/2009-January/019493.html 
+> > says that they're the same on their current platform.
 > 
-> OK, but again this is not something too sane to do is it (ask for 2K IO
-> size on 4K page system)? What are the comparison results with 4K IO
-> size? I guess it will help some cases, but it's probably hard to find
-> realistic workloads that see such an improvement.
+> Well on the Qualcomm MSM72xx SoCs, yeah they're pretty similar -- we can
+> reasonably enter power collapse (full shutdown of the ARM11 and
+> peripherals) from idle.  But this is not (to my knowledge) true of *all*
+> SoCs out there.  Also, resuming from this state can take 5-30ms
+> (depending on how distracted the baseband processor is by what's going
+> on on the network).
 
-The other thing that worries me about it is that the scheme relies
-entirely on using the page dirtying mechanism to track updated parts of
-a page. You will lose that information as soon as the page cache is
-flushed to disk.
-IOW: I would expect those numbers to change greatly if you increase the
-file size to the point where the VM starts evicting the pages.
+Mm. Resume from deep idle on x86 is typically in the usec range, but 
+this is the kind of constraint that pm_qos exposes nicely.
 
-There are plenty of ways in which one can tune the performance of NFS.
-It all depends on the application. For instance, our lack of tracking of
-holes means that we tend to perform very poorly when dealing with reads
-of sparse files such as in the above test. Perhaps that might be
-considered as an alternative idea?
-
-Cheers
-  Trond
 -- 
-Trond Myklebust
-Linux NFS client maintainer
-
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
+Matthew Garrett | mjg59@srcf.ucam.org
