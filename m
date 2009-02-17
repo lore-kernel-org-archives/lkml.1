@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754419AbZBQXVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbZBQXVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754419AbZBQXVH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 18:21:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754846AbZBQXUx
+	id S1755473AbZBQXVZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 18:21:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbZBQXVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 18:20:53 -0500
-Received: from smtp2.ono.com ([62.42.230.20]:19780 "EHLO resmaa12.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753175AbZBQXUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 18:20:53 -0500
-Date: Wed, 18 Feb 2009 00:20:46 +0100
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Intel driver vs MTRRs conflict
-Message-ID: <20090218002046.55c17814@werewolf.home>
-X-Mailer: Claws Mail 3.7.0cvs67 (GTK+ 2.15.3; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Feb 2009 18:21:09 -0500
+Received: from mail.lang.hm ([64.81.33.126]:44538 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754678AbZBQXVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 18:21:08 -0500
+Date: Tue, 17 Feb 2009 15:20:59 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Yinghai Lu <yinghai@kernel.org>
+cc: Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       DL-MPTFusionLinux@lsi.com
+Subject: Re: mpt fusion broken sometime since 2.6.24
+In-Reply-To: <86802c440902171511s1abcc0eao560df4b8fcea0e7c@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0902171514120.26625@asgard.lang.hm>
+References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>  <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm>  <20090217230050.GG16841@parisc-linux.org>  <alpine.DEB.1.10.0902171506500.26625@asgard.lang.hm>
+ <86802c440902171511s1abcc0eao560df4b8fcea0e7c@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all...
+On Tue, 17 Feb 2009, Yinghai Lu wrote:
 
-I have a little problem (near religious, not real, as averything works fine)
-with the intel driver crying about mtrrs:
+> Subject: Re: mpt fusion broken sometime since 2.6.24
+> 
+> On Tue, Feb 17, 2009 at 3:07 PM,  <david@lang.hm> wrote:
+>> On Tue, 17 Feb 2009, Matthew Wilcox wrote:
+>>
+>>> On Tue, Feb 17, 2009 at 01:44:55PM -0800, david@lang.hm wrote:
+>>>>
+>>>> I got a picture of the failed boot at
+>>>> http://linux.lang.hm/linux/IMG00052.jpg
+>>>
+>>> The PCI-MSI line is probably indicative.  Can you try booting with:
+>>>
+>>> mptbase.mpt_msi_enable_sas=0
+>>>
+>>> and also send us an lspci -v so we can update the blacklist?
+>>
+>> is that disabling SAS for this system? if so, that's the wrong thing to do
+>> (the drives are SAS)
+>>
+> it only disable MSI with that mptsas.
+> and mptsas will use ioapic routing.
+>
+> can you post whole bootlog?
 
-[drm] Initialized drm 1.1.0 20060810
-pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-pci 0000:00:02.0: setting latency timer to 64
-[drm] Initialized i915 1.6.0 20080730 on minor 0
-X:3004 conflicting memory types 20000000-30000000 write-combining<->uncached-minus
-reserve_memtype failed 0x20000000-0x30000000, track write-combining, req write-combining
-X:3004 conflicting memory types 20000000-30000000 write-combining<->uncached-minus
-reserve_memtype failed 0x20000000-0x30000000, track write-combining, req write-combining
-X:3004 conflicting memory types 20000000-30000000 write-combining<->uncached-minus
-reserve_memtype failed 0x20000000-0x30000000, track write-combining, req write-combining
-X:3031 freeing invalid memtype 20000000-30000000
-X:3004 conflicting memory types 20000000-30000000 write-combining<->uncached-minus
-reserve_memtype failed 0x20000000-0x30000000, track write-combining, req write-combining
-X:3032 freeing invalid memtype 20000000-30000000
-X:3004 conflicting memory types 20000000-30000000 write-combining<->uncached-minus
-reserve_memtype failed 0x20000000-0x30000000, track write-combining, req write-combining
-X:3033 freeing invalid memtype 20000000-30000000
-X:3004 conflicting memory types 20000000-30000000 write-combining<->uncached-minus
-reserve_memtype failed 0x20000000-0x30000000, track write-combining, req write-combining
-X:3034 freeing invalid memtype 20000000-30000000
+unfortunantly it's booting from CD and the only drives in the system are 
+the ones that are not being accessed.
 
-But that mtrr is there:
-
-one:~# cat /proc/mtrr
-reg00: base=0x000000000 (    0MB), size=  512MB, count=1: write-back
-reg01: base=0x01f500000 (  501MB), size=    1MB, count=1: uncachable
-reg02: base=0x01f600000 (  502MB), size=    2MB, count=1: uncachable
-reg03: base=0x01f800000 (  504MB), size=    8MB, count=1: uncachable
-reg04: base=0x020000000 (  512MB), size=  256MB, count=1: write-combining
-
-Where is the problem ? Kernel or driver side ?
-This logs are with kernel 2.6.29-rc5, and intel driver 2.6.1.
-
-As I said, everything works. And even fast for the kind of machine, it's an
-Aspire One and gears gives 740 fps, and video playback is pretty smooth.
-But perhaps it would be faster if X could get that mtrr it claims ?
-
-TIA
-
--- 
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2009.1 (Cooker) for x86_64
-Linux 2.6.28.2-desktop-1mnb (gcc 4.3.2 (GCC) #1 Wed Jan
+David Lang
