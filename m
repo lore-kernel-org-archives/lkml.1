@@ -1,55 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753126AbZBQLxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752527AbZBQLyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753126AbZBQLxg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 06:53:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbZBQLx2
+	id S1752527AbZBQLyY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 06:54:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbZBQLyH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 06:53:28 -0500
-Received: from mail-ew0-f31.google.com ([209.85.219.31]:34516 "EHLO
-	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751253AbZBQLx1 (ORCPT
+	Tue, 17 Feb 2009 06:54:07 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:2307 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751253AbZBQLyF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 06:53:27 -0500
+	Tue, 17 Feb 2009 06:54:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=OQa1GQo2eEvcNaXsD3lOp9kngNx1i+AV0ktbNkHbvAKIPcezghr13uhQZZhP53D9Vn
+         sS6DCuOBZFOirkG3PuuU40PRP3K/pHbFpHOe1BtvBVkdNcToosXQ3A4NlFKiJefAAk1w
+         0Rumr4wOoMwExH1XXZMW+Wdj0aW8cHdtuSosc=
+Date: Tue, 17 Feb 2009 11:53:57 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Karl Hiramoto <karl@hiramoto.org>
+Cc: Patrick McHardy <kaber@trash.net>, netdev@vger.kernel.org,
+       netfilter@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v2] Re: problem with IPoA (CLIP),  NAT, and VLANS
+Message-ID: <20090217115357.GA6130@ff.dom.local>
+References: <20090216232016.GA4803@ami.dom.local> <499A7D7D.1090607@trash.net> <20090217093908.GB5341@ff.dom.local> <499A99F4.60405@hiramoto.org>
 MIME-Version: 1.0
-In-Reply-To: <cc43514a0902170242m5af7e511ne00f424f06a5da22@mail.gmail.com>
-References: <1234722028-8110-1-git-send-email-andr345@gmail.com>
-	 <200902170921.56789.rusty@rustcorp.com.au>
-	 <cc43514a0902170242m5af7e511ne00f424f06a5da22@mail.gmail.com>
-Date: Tue, 17 Feb 2009 12:53:25 +0100
-Message-ID: <ac3eb2510902170353ia62a630nbe5cf059ca7d616e@mail.gmail.com>
-Subject: Re: [RFC PATCH 0/6] module, kbuild: Faster boot with custom kernel.
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Andreas Robinson <andr345@gmail.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, sam@ravnborg.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <499A99F4.60405@hiramoto.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 11:42, Andreas Robinson <andr345@gmail.com> wrote:
-> On Mon, Feb 16, 2009 at 11:51 PM, Rusty Russell <rusty@rustcorp.com.au> wrote:
->>
->>  This isn't crazy.  But you'd need to benchmark against the minimal
->> userspace solution: a binary with all the modules built into
->> it which calls sys_init_module on each one, then does the root swizzle
->> or whatever.
->>
->> I think you'd find the difference to be in the noise.
+On Tue, Feb 17, 2009 at 12:05:24PM +0100, Karl Hiramoto wrote:
+> 
+> 
+> Jarek Poplawski wrote:
+> > Sorry:
+> > -----------------> take 2: changelog fix only
+> >
+> > vlan: Update skb->mac_header in __vlan_put_tag().
+> >
+> > After moving mac addresses in __vlan_put_tag() skb->mac_header needs
+> > to be updated.
+> >   
+> This works on IPoE.  I notice no change with or w/o this patch on IPoE
+> only routing.    However has no effect on the original problem i
+> reported with  IPoA --> NAT --> VLAN
+> 
+> Tested-by: Karl Hiramoto <karl@hiramoto.org>
 
-Usual distro setups load like 100+ modules on every bootup. Modprobing
-and symbol-resolving is serialized and uses stop_machine(), so there
-might be some significant difference here when loading a huge number
-of modules individually. Monolithic versus modular kernels usually
-make about 2+ seconds difference on a recent laptop.
+Yes, since it didn't affect the working case with your patch, I didn't
+expect it would matter here, but it looks like needed so good to know
+it seems not to make anything wrong at least.
 
-> your're right and I'll get right on it.
+Thanks for testing,
+Jarek P.
 
-For distros it's probably more interesting not to get rid of the
-initramfs, but possibly have the mkinitrd/mkinitramfs tool to pre-link
-all the usual modules if faster bootup is expected. Having only the
-few modules pre-linked which are usually included in the initramfs,
-might, as Rusty expects, not make that much difference.
-
-Kay
+> 
+> > Reported-by: Karl Hiramoto <karl@hiramoto.org>
+> > Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+> > ---
+> >
+> >  include/linux/if_vlan.h |    1 +
+> >  1 files changed, 1 insertions(+), 0 deletions(-)
+> >
+> > diff --git a/include/linux/if_vlan.h b/include/linux/if_vlan.h
+> > index f8ff918..e1ff5b1 100644
+> > --- a/include/linux/if_vlan.h
+> > +++ b/include/linux/if_vlan.h
+> > @@ -210,6 +210,7 @@ static inline struct sk_buff *__vlan_put_tag(struct sk_buff *skb, u16 vlan_tci)
+> >  
+> >  	/* Move the mac addresses to the beginning of the new header. */
+> >  	memmove(skb->data, skb->data + VLAN_HLEN, 2 * VLAN_ETH_ALEN);
+> > +	skb->mac_header -= VLAN_HLEN;
+> >  
+> >  	/* first, the ethernet type */
+> >  	veth->h_vlan_proto = htons(ETH_P_8021Q);
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe netdev" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >
+> >   
+> 
