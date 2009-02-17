@@ -1,117 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751931AbZBQFMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751682AbZBQFOM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751931AbZBQFMM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 00:12:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbZBQFL7
+	id S1751682AbZBQFOM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 00:14:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbZBQFN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 00:11:59 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34287 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751098AbZBQFL6 (ORCPT
+	Tue, 17 Feb 2009 00:13:57 -0500
+Received: from chmailsrv.int.mrv.com ([66.43.110.11]:28028 "EHLO
+	chmailsrv.int.mrv.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750828AbZBQFN5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 00:11:58 -0500
-Date: Tue, 17 Feb 2009 14:10:39 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Bharata B Rao <bharata@in.ibm.com>, Paul Menage <menage@google.com>,
-       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH 0/4] Memory controller soft limit patches (v2)
-Message-Id: <20090217141039.440e5463.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090217044110.GD20958@balbir.in.ibm.com>
-References: <20090216110844.29795.17804.sendpatchset@localhost.localdomain>
-	<20090217090523.975bbec2.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090217030526.GA20958@balbir.in.ibm.com>
-	<20090217130352.4ba7f91c.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090217044110.GD20958@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Feb 2009 00:13:57 -0500
+X-Greylist: delayed 912 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Feb 2009 00:13:56 EST
+Date: Mon, 16 Feb 2009 20:58:43 -0800
+From: Nye Liu <nyet@mrv.com>
+To: linux-kernel@vger.kernel.org, jirislaby@gmail.com
+Subject: modpost: Something amiss with do_hid_entry() - id->bus endianess
+	wrong?
+Message-ID: <20090217045840.GA28536@mrv.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 17 Feb 2009 05:01:05.0955 (UTC) FILETIME=[BD377730:01C990BC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Feb 2009 10:11:10 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+i am having problems with endianness on the id->bus value in do_hid_entry().
 
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-02-17 13:03:52]:
-> 
-> > On Tue, 17 Feb 2009 08:35:26 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > I don't want to add any new big burden to kernel hackers of memory management,
-> > they work hard to improve memory reclaim. This patch will change the behavior.
-> > 
-> 
-> I don't think I agree, this approach suggests that before doing global
-> reclaim, there are several groups that are using more than their
-> share of memory, so it makes sense to reclaim from them first.
-> 
+i think there is a "TO_NATIVE(id->bus);" missing in scripts/mod/file2alias.c:
 
-> 
-> > BTW, in typical bad case, several threads on cpus goes into memory recalim at once and
-> > all thread will visit this memcg's soft-limit tree at once and soft-limit will
-> > not work as desired anyway.
-> > You can't avoid this problem at alloc_page() hot-path.
-> 
-> Even if all threads go into soft-reclaim at once, the tree will become
-> empty after a point and we will just return saying there are no more
-> memcg's to reclaim from (we remove the memcg from the tree when
-> reclaiming), then those threads will go into regular reclaim if there
-> is still memory pressure.
+# modinfo --version
+module-init-tools version 3.4
+# modinfo hid_dell
+filename:
+/lib/modules/2.6.28-1-amd64/kernel/drivers/hid/hid-dell.ko
+license:        GPL
+alias:          hid:b0300v000013BAp00000017
+alias:          hid:b0300v0000413Cp00002105
+alias:          hid:b0300v0000413Cp00002005
+depends:        hid,usbhid
+vermagic:       2.6.28-1-amd64 SMP mod_unload modversions 
 
-Yes. the largest-excess group will be removed. So, it seems that it doesn't work
-as designed. rbtree is considered as just a hint ? If so, rbtree seems to be
-overkill.
+notice it says "b0300", but the proper hid bus id is 0x0003 (from udev):
+[ 2374.572122] dell 0003:413C:2005.0006: input,hidraw1: USB HID v1.10 Keyboard [DELL DELL USB Keyboard] on usb-0000:00:1d.3-2/input0 
 
-just a question:
-Assume memcg under hierarchy.
-   ../group_A/                 usage=1G, soft_limit=900M  hierarchy=1
-              01/              usage=200M, soft_limit=100M
-              02/              usage=300M, soft_limit=200M
-              03/              usage=500M, soft_limit=300M  <==== 200M over.
-                 004/          usage=200M, soft_limit=100M
-                 005/          usage=300M, soft_limit=200M
+this is preventing udev from autoloading any of the usbhid modules
+unless you hack modules.alias
 
-At memory shortage, group 03's memory will be reclaimed 
-  - reclaim memory from 03, 03/004, 03/005
+or do i have an outdated modinfo/modutils?
 
-When 100M of group 03' memory is reclaimed, group_A 's memory is reclaimd at the
-same time, implicitly. Doesn't this break your rb-tree ?
+-- 
+Nye Liu
+nliu@mrv.com
+(818) 772-6235x248
+(818) 772-0576 fax
 
-I recommend you that soft-limit can be only applied to the node which is top of
-hierarchy.
- 
-> > 
-> > > > 3. After this patch, res_counter is no longer for general purpose res_counter...
-> > > >    It seems to have too many unnecessary accessories for general purpose.  
-> > > 
-> > > Why not? Soft limits are a feature of any controller. The return of
-> > > highest ancestor might be the only policy we impose right now. But as
-> > > new controllers start using res_counter, we can clearly add a policy
-> > > callback.
-> > > 
-> > I think you forget that memroy cgroups is an only controller in which the kernel
-> > can reduce the usage of resource without any harmful to users.
-> > soft-limit is nonsense for general resources, I think.
-> > 
-> 
-> Really? Even for CPUs? soft-limit is a form of shares (please don't
-> confuse with cpu.shares). Soft limits is used as a way of implementing
-> work conserving controllers.
-> 
-
-I don't think cpu needs this. It works under share and no hardlimit.
-
-THanks,
--Kame
-
-
+"Who would be stupid enough to quote a fictitious character?"
+	-- Don Quixote
