@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754309AbZBQRYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753613AbZBQRZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754309AbZBQRYr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 12:24:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753911AbZBQRYh
+	id S1753613AbZBQRZN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 12:25:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752912AbZBQRYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 12:24:37 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:60679 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752686AbZBQRYg (ORCPT
+	Tue, 17 Feb 2009 12:24:55 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:35997 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752864AbZBQRYy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 12:24:36 -0500
-Date: Tue, 17 Feb 2009 12:24:34 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Masami Hiramatsu <mhiramat@redhat.com>, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <peterz@infradead.org>, akpm <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>
-Subject: Re: irq-disabled vs vmap vs text_poke
-In-Reply-To: <20090217171845.GA14435@Krystal>
-Message-ID: <alpine.DEB.1.10.0902171224050.910@gandalf.stny.rr.com>
-References: <4995B88C.2090900@redhat.com> <20090213185725.GC7124@Krystal> <4995E925.3080506@redhat.com> <4999808B.5080505@redhat.com> <20090216153145.GB19182@wotan.suse.de> <20090216172441.GA12576@Krystal> <499A1A43.6000009@redhat.com> <20090217030353.GA31504@wotan.suse.de>
- <499AEA72.9090702@redhat.com> <alpine.DEB.1.10.0902171158180.910@gandalf.stny.rr.com> <20090217171845.GA14435@Krystal>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 17 Feb 2009 12:24:54 -0500
+Subject: Re: [patch] SLQB slab allocator (try 2)
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Mel Gorman <mel@csn.ul.ie>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+In-Reply-To: <alpine.DEB.1.10.0902171204070.15929@qirst.com>
+References: <20090123154653.GA14517@wotan.suse.de>
+	 <200902041748.41801.nickpiggin@yahoo.com.au>
+	 <20090204152709.GA4799@csn.ul.ie>
+	 <200902051459.30064.nickpiggin@yahoo.com.au>
+	 <20090216184200.GA31264@csn.ul.ie> <4999BBE6.2080003@cs.helsinki.fi>
+	 <alpine.DEB.1.10.0902171120040.27813@qirst.com>
+	 <1234890096.11511.6.camel@penberg-laptop>
+	 <alpine.DEB.1.10.0902171204070.15929@qirst.com>
+Date: Tue, 17 Feb 2009 19:24:52 +0200
+Message-Id: <1234891492.11511.8.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-02-17 at 12:05 -0500, Christoph Lameter wrote:
+> Well yes you missed two locations (kmalloc_caches array has to be
+> redimensioned) and I also was writing the same patch...
 
-On Tue, 17 Feb 2009, Mathieu Desnoyers wrote:
-> > 
+:-)
+
+On Tue, 2009-02-17 at 12:05 -0500, Christoph Lameter wrote:
+> Subject: SLUB: Do not pass 8k objects through to the page allocator
 > 
-> Anyway dynamic ftrace only need to do code patching at early boot,
-> right? Or do you need also to patch the call sites a bit later too ?
-> Because there is a text_poke_early for that purpose : modifying code
-> when it is still writable.
+> Increase the maximum object size in SLUB so that 8k objects are not
+> passed through to the page allocator anymore. The network stack uses 8k
+> objects for performance critical operations.
+> 
+> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
-It modifies the code both at early boot up, and when it is enabled later 
-on at run time.
+Looks good to me. Yanmin, please retest netperf with this one instead if
+you have the time. I'll replace the revert with this patch but keep your
+default order tweak patch.
 
--- Steve
+			Pekka
 
