@@ -1,62 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbZBQXKK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753921AbZBQXLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754674AbZBQXKK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 18:10:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbZBQXJ6
+	id S1753921AbZBQXLT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 18:11:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbZBQXLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 18:09:58 -0500
-Received: from 93-97-173-237.zone5.bethere.co.uk ([93.97.173.237]:52508 "EHLO
-	tim.rpsys.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751008AbZBQXJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 18:09:58 -0500
-Subject: Re: [PATCH] leds: triggers: introduce gpio led trigger
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Felipe Balbi <felipe.balbi@nokia.com>
-Cc: linux-kernel@vger.kernel.org,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Felipe Balbi <me@felipe.balbi.com>, Felipe Balbi <me@felipebalbi.com>
-In-Reply-To: <1234869491-29630-2-git-send-email-felipe.balbi@nokia.com>
-References: <20090216131426.GU21181@scadufax.research.nokia.com>
-	 <1234869491-29630-1-git-send-email-felipe.balbi@nokia.com>
-	 <1234869491-29630-2-git-send-email-felipe.balbi@nokia.com>
-Content-Type: text/plain
-Date: Tue, 17 Feb 2009 23:11:13 +0000
-Message-Id: <1234912273.5312.71.camel@dax.rpnet.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Feb 2009 18:11:05 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:33097 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751008AbZBQXLD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 18:11:03 -0500
+Date: Tue, 17 Feb 2009 16:11:01 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: david@lang.hm
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       DL-MPTFusionLinux@lsi.com
+Subject: Re: mpt fusion broken sometime since 2.6.24
+Message-ID: <20090217231101.GH16841@parisc-linux.org>
+References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm> <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm> <20090217230050.GG16841@parisc-linux.org> <alpine.DEB.1.10.0902171506500.26625@asgard.lang.hm>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0902171506500.26625@asgard.lang.hm>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-17 at 13:18 +0200, Felipe Balbi wrote:
-> From: Felipe Balbi <me@felipe.balbi.com>
+On Tue, Feb 17, 2009 at 03:07:26PM -0800, david@lang.hm wrote:
+> >mptbase.mpt_msi_enable_sas=0
 > 
-> The gpio led trigger will allow leds to be triggered by
-> gpio events.
-> 
-> When we give the led a gpio number, the trigger will
-> request_irq() on that so we don't have to keep polling
-> for gpio state.
-> 
-> It's useful for usecases as n810's keypad leds that could
-> be triggered by the gpio event generated when user slides
-> up to show the keypad.
-> 
-> We also provide means for userland to tell us what is the
-> desired brightness for that special led when it goes on
-> so userland could use information from ambient light sensors
-> and not set led brightness too high if it's not necessary.
-> 
-> This trigger was tested with n810.
+> is that disabling SAS for this system? if so, that's the wrong thing to do 
+> (the drives are SAS)
 
-Added to the LED tree, thanks.
+no, it's disabling msi for sas controllers.
 
-Richard
-
+nb, I said this patch (e382968ba618e016ff7922dff9a6140c2f9108c8) was
+the wrong way to go about getting MSI working.
 
 -- 
-Richard Purdie
-Intel Open Source Technology Centre
-
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
