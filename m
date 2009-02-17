@@ -1,116 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752703AbZBQPds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954AbZBQPgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752703AbZBQPds (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 10:33:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbZBQPdk
+	id S1753954AbZBQPgs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 10:36:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752310AbZBQPgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 10:33:40 -0500
-Received: from bear.ext.ti.com ([192.94.94.41]:41218 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752407AbZBQPdj convert rfc822-to-8bit (ORCPT
+	Tue, 17 Feb 2009 10:36:39 -0500
+Received: from exprod7og111.obsmtp.com ([64.18.2.175]:50170 "EHLO
+	exprod7og111.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751492AbZBQPgi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 10:33:39 -0500
-From: "Woodruff, Richard" <r-woodruff2@ti.com>
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Brian Swetland <swetland@google.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       =?iso-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>,
-       Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>, Len Brown <lenb@kernel.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-Date: Tue, 17 Feb 2009 09:32:46 -0600
-Subject: RE: [RFD] Automatic suspend
-Thread-Topic: [RFD] Automatic suspend
-Thread-Index: AcmRD+ui/tA8/CFzQM2l+iM5MKxDMQAASRTQ
-Message-ID: <13B9B4C6EF24D648824FF11BE896716203771DD342@dlee02.ent.ti.com>
-References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
-	<13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com>
-	<20090216145948.6fea81c3@infradead.org>	<200902170019.40599.rjw@sisk.pl>
-	<20090216232329.GA15678@srcf.ucam.org>
-	<20090217142001.GB12378@bulgaria.corp.google.com>
-	<20090217064630.688bf639@infradead.org>
-	<20090217145141.GA26158@srcf.ucam.org>
- <20090217065622.3e0a9956@infradead.org>
-In-Reply-To: <20090217065622.3e0a9956@infradead.org>
+	Tue, 17 Feb 2009 10:36:38 -0500
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Yang, Bo" <Bo.Yang@lsi.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "Austria, Winston" <Winston.Austria@lsi.com>
+Date: Tue, 17 Feb 2009 08:36:18 -0700
+Subject: [PATCH 3/9] scsi: megaraid_sas - Add poll wait support to megaraid
+ sas driver - II
+Thread-Topic: [PATCH 3/9] scsi: megaraid_sas - Add poll wait support to
+ megaraid sas driver - II
+Thread-Index: AciIcSnS7H5xFQtCQzyNHR19nlBrTUImYsQgAAFMQJAAAQsscA==
+Message-ID: <4B6A08C587958942AA3002690DD4F8C33A07FB58@cosmail02.lsi.com>
+In-Reply-To: <4B6A08C587958942AA3002690DD4F8C33A07FB3B@cosmail02.lsi.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
 acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Add poll wait support to megaraid sas driver - II, Add Poll_wait mechanism to Gen-2 Linux driver.  Avoid the depending upon storelib to continue events.
 
-> From: Arjan van de Ven [mailto:arjan@infradead.org]
-> Sent: Tuesday, February 17, 2009 8:56 AM
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 
-> On Tue, 17 Feb 2009 14:51:41 +0000
-> Matthew Garrett <mjg59@srcf.ucam.org> wrote:
->
-> > On Tue, Feb 17, 2009 at 06:46:30AM -0800, Arjan van de Ven wrote:
-> >
-> > > actually with powertop... on the open source side things are
-> > > actually won. It took all of 6 months...
-> > > I don't see that as a valid excuse. In fact, if this kind of
-> > > solution makes real userspace scheduled timers to be missed then I
-> > > consider it a serious functionality misfeature.
+---
+drivers/scsi/megaraid/megaraid_sas.c |   25 +++++++++++++++++++++++++
+ drivers/scsi/megaraid/megaraid_sas.h |    1 +
+ 2 files changed, 26 insertions(+)
 
-Maybe for the optimization time scales x86 is targeting.  User space across OS still throws off our MHz a good distance from ideal estimates.
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-02-12 15:44:26.000000000 -0500
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-02-12 15:47:21.000000000 -0500
+@@ -95,6 +95,8 @@ static DECLARE_WAIT_QUEUE_HEAD (megasas_
+ extern void
+ poll_wait(struct file *filp, wait_queue_head_t *q, poll_table *token);
 
-I still hear complaints about frequent wakes even when using a bare minimum user space which can get 95+% lowest C-state residency with average 700mS.  If you frequency scale in lowest C-State YMMV if your external power chip is slow.  Waiting on voltage ramp times is lost power.
++static u32 support_poll_for_event;
++
+ static u32 megasas_dbg_lvl;
 
-One of our Application people (application is low level here) went though and tweaked kernel in a few spots with minimum user space and could get (this is with out a meaningful UI on NFS root mounted system):
+ static void
+@@ -3427,6 +3429,15 @@ static DRIVER_ATTR(release_date, S_IRUGO
+                   NULL);
 
-1st set of hacks got:
-Cn Avg residency
-C0 (cpu running) ( 0.0%)
-C1 0.0ms ( 0.0%)
-C2 0.0ms ( 0.0%)
-C3 217.2ms ( 1.8%)
-C4 0.0ms ( 0.0%)
-C5 0.0ms ( 0.0%)
-C6 354.9ms ( 0.3%)
-C7 1953.4ms (97.8%)
+ static ssize_t
++megasas_sysfs_show_support_poll_for_event(struct device_driver *dd, char *buf)
++{
++       return sprintf(buf, "%u\n", support_poll_for_event);
++}
++
++static DRIVER_ATTR(support_poll_for_event, S_IRUGO,
++                       megasas_sysfs_show_support_poll_for_event, NULL);
++
++static ssize_t
+ megasas_sysfs_show_dbg_lvl(struct device_driver *dd, char *buf)
+ {
+        return sprintf(buf, "%u\n", megasas_dbg_lvl);
+@@ -3610,6 +3621,8 @@ static int __init megasas_init(void)
+        printk(KERN_INFO "megasas: %s %s\n", MEGASAS_VERSION,
+               MEGASAS_EXT_VERSION);
 
-Second set got:
-# powertop -d -t 300
-PowerTOP 1.10 (C) 2007 Intel Corporation
-Collecting data for 300 seconds
-Cn Avg residency
-C0 (cpu running) ( 0.0%)
-C1 0.0ms ( 0.0%)
-C2 0.2ms ( 0.0%)
-C3 3.8ms ( 0.0%)
-C4 0.0ms ( 0.0%)
-C5 0.0ms ( 0.0%)
-C6 0.0ms ( 0.0%)
-C7 73165.9ms (100.0%)
++       support_poll_for_event = 1;
++
+        memset(&megasas_mgmt_info, 0, sizeof(megasas_mgmt_info));
 
-I'll see about posting his change write up.  Not all probably can be done but several could.
+        /*
+@@ -3642,6 +3655,12 @@ static int __init megasas_init(void)
+                                  &driver_attr_release_date);
+        if (rval)
+                goto err_dcf_rel_date;
++
++       rval = driver_create_file(&megasas_pci_driver.driver,
++                               &driver_attr_support_poll_for_event);
++       if (rval)
++               goto err_dcf_support_poll_for_event;
++
+        rval = driver_create_file(&megasas_pci_driver.driver,
+                                  &driver_attr_dbg_lvl);
+        if (rval)
+@@ -3659,6 +3678,10 @@ err_dcf_poll_mode_io:
+ err_dcf_dbg_lvl:
+        driver_remove_file(&megasas_pci_driver.driver,
+                           &driver_attr_release_date);
++err_dcf_support_poll_for_event:
++       driver_remove_file(&megasas_pci_driver.driver,
++                       &driver_attr_support_poll_for_event);
++
+ err_dcf_rel_date:
+        driver_remove_file(&megasas_pci_driver.driver, &driver_attr_version);
+ err_dcf_attr_ver:
+@@ -3678,6 +3701,8 @@ static void __exit megasas_exit(void)
+        driver_remove_file(&megasas_pci_driver.driver,
+                           &driver_attr_dbg_lvl);
+        driver_remove_file(&megasas_pci_driver.driver,
++                       &driver_attr_support_poll_for_event);
++       driver_remove_file(&megasas_pci_driver.driver,
+                           &driver_attr_release_date);
+        driver_remove_file(&megasas_pci_driver.driver, &driver_attr_version);
 
-> > Remember that Android has an open marketplace designed to appeal to
-> > Java programmers - users are going to end up downloading code from
-> > there and then blaming the platform if their battery life heads
-> > towards zero. I think "We can't trust our userland not to be dumb" is
-> > a valid concern.
->
-> so use range timers / timer slack for those apps that you do not trust.
-> That is not a big deal, and solves the issue of timer wakeups...
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h      2009-02-12 15:44:27.000000000 -0500
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h       2009-02-12 15:24:58.000000000 -0500
+@@ -1135,6 +1135,7 @@ struct megasas_instance {
+        struct tasklet_struct isr_tasklet;
 
-I not so sure it is that straight forward in practice.  End systems integrate a lot of 3rd party software who view performance 1st and have no thought of power.
+        u8 flag;
++       u8 unload;
+        unsigned long last_time;
 
-It might be android has a better chance to control more of those api's being exported but its coverage isn't complete and others gluing pieces together won't.
-
-Regards,
-Richard W.
-
+        struct timer_list io_completion_timer;
