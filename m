@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754150AbZBQVpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753961AbZBQVsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754150AbZBQVpV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 16:45:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbZBQVpH
+	id S1753961AbZBQVsr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 16:48:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbZBQVsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 16:45:07 -0500
-Received: from mail.lang.hm ([64.81.33.126]:59782 "EHLO bifrost.lang.hm"
+	Tue, 17 Feb 2009 16:48:38 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56173 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751118AbZBQVpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 16:45:04 -0500
-Date: Tue, 17 Feb 2009 13:44:55 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: linux-kernel <linux-kernel@vger.kernel.org>
-cc: linux-scsi@vger.kernel.org, DL-MPTFusionLinux@lsi.com
-Subject: Re: mpt fusion broken sometime since 2.6.24
-In-Reply-To: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>
-Message-ID: <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm>
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1751385AbZBQVsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 16:48:37 -0500
+Date: Tue, 17 Feb 2009 22:48:29 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Damien Wyart <damien.wyart@free.fr>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #12650] Strange load average and ksoftirqd behavior with
+	2.6.29-rc2-git1
+Message-ID: <20090217214829.GB6976@elte.hu>
+References: <87ljs6pmao.fsf@free.fr> <20090216132151.GA17996@elte.hu> <20090216160613.GA6785@linux.vnet.ibm.com> <20090216185616.GB6785@linux.vnet.ibm.com> <20090216200923.GA28938@elte.hu> <20090216223944.GF6785@linux.vnet.ibm.com> <20090216225108.GA15904@linux.vnet.ibm.com> <20090217094657.GA1845@elte.hu> <20090217140130.GA6761@linux.vnet.ibm.com> <20090217153925.GA2308@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090217153925.GA2308@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I got a picture of the failed boot at 
-http://linux.lang.hm/linux/IMG00052.jpg
 
-David Lang
+* Damien Wyart <damien.wyart@free.fr> wrote:
 
-On Tue, 17 Feb 2009, david@lang.hm wrote:
-
-> Date: Tue, 17 Feb 2009 14:24:27 -0800 (PST)
-> From: david@lang.hm
-> To: linux-kernel <linux-kernel@vger.kernel.org>
-> Cc: linux-scsi@vger.kernel.org, DL-MPTFusionLinux@lsi.com
-> Subject: mpt fusion broken sometime since 2.6.24
+> Hello Paul,
 > 
-> I have some systems with the MPT fusion raid cards in them and SAS drives, 
-> they work find on the 2.6.24 'etch and a half' debian kernel, but when I try 
-> and install a 2.6.28 kernel there are numerous timeouts during boot and the 
-> raid array is not recognised.
->
-> I tried a 2.6.27 kernel I have laying around and got the same results with 
-> it.
->
-> is this a known problem with a work-around? or am I just lucky enough to be 
-> the only one hitting this?
->
-> David Lang
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> > > There's no strong reason - we've been back and forth about RCU in
+> > > the dynticks code. Mind sending a test patch for Damien to try?
+> 
+> > But of course!  ;-)
+> 
+> With this patch, the problem goes away and system activity 
+> seems normal, both on the P4 with high load and on the recent 
+> laptop.
+
+Applied to tip:x86/urgent, thanks a lot for the patient testing 
+and tracing!
+
+	Ingo
