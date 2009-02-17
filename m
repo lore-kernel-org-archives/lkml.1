@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753207AbZBQM21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472AbZBQM3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753207AbZBQM21 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 07:28:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbZBQM2P
+	id S1753472AbZBQM3n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 07:29:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332AbZBQM3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 07:28:15 -0500
-Received: from stinky.trash.net ([213.144.137.162]:54836 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751332AbZBQM2O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 07:28:14 -0500
-Message-ID: <499AAD5B.8060706@trash.net>
-Date: Tue, 17 Feb 2009 13:28:11 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Tue, 17 Feb 2009 07:29:34 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:59583 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750913AbZBQM3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 07:29:33 -0500
+Date: Tue, 17 Feb 2009 13:25:44 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] generic-smp: remove single ipi fallback for
+	smp_call_function_many()
+Message-ID: <20090217122544.GA14292@redhat.com>
+References: <20090216163847.431174825@chello.nl> <20090216164114.433430761@chello.nl> <20090216191008.GA1521@redhat.com>
 MIME-Version: 1.0
-To: Karl Hiramoto <karl@hiramoto.org>
-CC: Jarek Poplawski <jarkao2@gmail.com>, netdev@vger.kernel.org,
-       netfilter@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: problem with IPoA (CLIP),  NAT, and VLANS
-References: <20090216232016.GA4803@ami.dom.local> <499AA433.8070308@hiramoto.org>
-In-Reply-To: <499AA433.8070308@hiramoto.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090216191008.GA1521@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Karl Hiramoto wrote:
-> What Patrick,  said may be the case,  that the underlaying atm driver is
-> not specifying the headroom.   The driver is ported to 2.6.28 from
-> 2.6.11 based on the BSD licensed intel libaries:
-> http://www.intel.com/design/network/products/npfamily/download_ixp400.htm
+On 02/16, Oleg Nesterov wrote:
+>
+> > +	data->refs = cpumask_weight(&data->cpumask);
+> > +
+> > +	spin_lock_irqsave(&call_function.lock, flags);
+> > +	call_function.counter++;
+> > +	list_add_tail_rcu(&data->csd.list, &call_function.queue);
+> > +	spin_unlock_irqrestore(&call_function.lock, flags);
+>
+> What if the initialization above leaks into the critical section?
+>
+> I mean, generic_smp_call_function_interrupt() running on another CPU
+> can see the result of list_add_tail_rcu() and cpumask_and(data->cpumask)
+> but not (say) "data->refs = ...".
 
-If those are the ones I think they are, I'm not too surprised ...
+I was wrong, sorry.
 
-> Where underneath a bunch of layers the skb is allocated with kmalloc like:
-> 
-> size = PAGE_ALIGN (size + CACHE_LINE_SIZE);
-> order = get_order (size);
-> page = alloc_pages (GFP_KERNEL, order);
+list_add_tail_rcu() implies wmb() and list_for_each_entry_rcu() does
+smp_read_barrier_depends(), so another CPU must always see the fully
+initialized entry.
 
-How does it initialize the netdev struct?
+Oleg.
 
