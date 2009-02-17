@@ -1,75 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336AbZBQVJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbZBQVRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754336AbZBQVJj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 16:09:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbZBQVJ3
+	id S1753423AbZBQVRh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 16:17:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbZBQVR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 16:09:29 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:33256 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751492AbZBQVJ2 (ORCPT
+	Tue, 17 Feb 2009 16:17:28 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50633 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751778AbZBQVR1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 16:09:28 -0500
-Date: Tue, 17 Feb 2009 22:11:19 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT] kbuild
-Message-ID: <20090217211119.GA29190@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Tue, 17 Feb 2009 16:17:27 -0500
+Date: Tue, 17 Feb 2009 13:16:32 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Junio C Hamano <gitster@pobox.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       =?UTF-8?Q?=22S=2E=C3=87a=C4=9Flar_Onur=22?= <caglar@pardus.org.tr>
+Subject: Re: [PATCH] Add *.rej to .gitignore
+In-Reply-To: <499B1729.5040802@goop.org>
+Message-ID: <alpine.LFD.2.00.0902171315400.21686@localhost.localdomain>
+References: <499B1729.5040802@goop.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus.
 
-Please pull the following kbuild related fixes.
 
-The significant part of this is the updates to the markup_oops.pl script.
-The rest is udpated to tags, rpm and setlocalversion.
-And a small update that touches top-lvel Makefile:
-- We create a source symlink during *config and not the prepare phase as before
+On Tue, 17 Feb 2009, Jeremy Fitzhardinge wrote:
+> 
+> (This effectively reverts 1f5d3a6b6532e25a5cdf1f311956b2b03d343a48)
 
-	Sam
+I really dont' think we should ignore .rej files. 
 
-The following changes since commit d2f8d7ee1a9b4650b4e43325b321801264f7c37a:
-  Linus Torvalds (1):
-        Linux 2.6.29-rc5
+They are _error_ cases, after all. People want to know about them. And if 
+you don't want to see them, you should remove them.
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git master
-
-Alexey Dobriyan (1):
-      kbuild: fix tags generation of config symbols
-
-Andi Kleen (1):
-      kbuild: create the source symlink earlier in the objdir
-
-Arjan van de Ven (2):
-      scripts: add x86 register parser to markup_oops.pl
-      scripts: add x86 64 bit support to the markup_oops.pl script
-
-Josh Hunt (1):
-      kbuild: add vmlinux to kernel rpm
-
-Michael Neuling (1):
-      bootgraph: fix for use with dot symbols
-
-Mike Frysinger (1):
-      kbuild,setlocalversion: shorten the make time when using svn
-
-Rabin Vincent (1):
-      kbuild: add sys_* entries for syscalls in tags
-
- Makefile                |    2 +-
- scripts/bootgraph.pl    |    4 +-
- scripts/markup_oops.pl  |  161 ++++++++++++++++++++++++++++++++++++++++++++---
- scripts/package/mkspec  |    8 +++
- scripts/setlocalversion |    9 +---
- scripts/tags.sh         |   12 +++-
- 6 files changed, 174 insertions(+), 22 deletions(-)
+		Linus
