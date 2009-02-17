@@ -1,155 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995AbZBQDb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbZBQDsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755995AbZBQDb6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 22:31:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754211AbZBQD3l
+	id S1753955AbZBQDsS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 22:48:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbZBQDsB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 22:29:41 -0500
-Received: from mga03.intel.com ([143.182.124.21]:17603 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753454AbZBQD32 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 22:29:28 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,220,1233561600"; 
-   d="scan'208";a="111302149"
-From: Yu Zhao <yu.zhao@intel.com>
-To: jbarnes@virtuousgeek.org
-Cc: linux-pci@vger.kernel.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Yu Zhao <yu.zhao@intel.com>
-Subject: [PATCH v9 7/7] PCI: manual for SR-IOV user and driver developer
-Date: Mon, 16 Feb 2009 21:28:40 +0800
-Message-Id: <1234790920-1810-8-git-send-email-yu.zhao@intel.com>
-X-Mailer: git-send-email 1.6.1
-In-Reply-To: <1234790920-1810-1-git-send-email-yu.zhao@intel.com>
-References: <1234790920-1810-1-git-send-email-yu.zhao@intel.com>
+	Mon, 16 Feb 2009 22:48:01 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:50537 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751334AbZBQDsA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 22:48:00 -0500
+Message-ID: <499A3322.3030704@cn.fujitsu.com>
+Date: Tue, 17 Feb 2009 11:46:42 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86,4kstack: use percpu data for hardirq and softirq stack
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Yu Zhao <yu.zhao@intel.com>
----
- Documentation/DocBook/kernel-api.tmpl |    1 +
- Documentation/PCI/pci-iov-howto.txt   |   99 +++++++++++++++++++++++++++++++++
- 2 files changed, 100 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/PCI/pci-iov-howto.txt
 
-diff --git a/Documentation/DocBook/kernel-api.tmpl b/Documentation/DocBook/kernel-api.tmpl
-index 5818ff7..506e611 100644
---- a/Documentation/DocBook/kernel-api.tmpl
-+++ b/Documentation/DocBook/kernel-api.tmpl
-@@ -251,6 +251,7 @@ X!Edrivers/pci/hotplug.c
- -->
- !Edrivers/pci/probe.c
- !Edrivers/pci/rom.c
-+!Edrivers/pci/iov.c
-      </sect1>
-      <sect1><title>PCI Hotplug Support Library</title>
- !Edrivers/pci/hotplug/pci_hotplug_core.c
-diff --git a/Documentation/PCI/pci-iov-howto.txt b/Documentation/PCI/pci-iov-howto.txt
-new file mode 100644
-index 0000000..fc73ef5
---- /dev/null
-+++ b/Documentation/PCI/pci-iov-howto.txt
-@@ -0,0 +1,99 @@
-+		PCI Express I/O Virtualization Howto
-+		Copyright (C) 2009 Intel Corporation
-+		    Yu Zhao <yu.zhao@intel.com>
-+
-+
-+1. Overview
-+
-+1.1 What is SR-IOV
-+
-+Single Root I/O Virtualization (SR-IOV) is a PCI Express Extended
-+capability which makes one physical device appear as multiple virtual
-+devices. The physical device is referred to as Physical Function (PF)
-+while the virtual devices are referred to as Virtual Functions (VF).
-+Allocation of the VF can be dynamically controlled by the PF via
-+registers encapsulated in the capability. By default, this feature is
-+not enabled and the PF behaves as traditional PCIe device. Once it's
-+turned on, each VF's PCI configuration space can be accessed by its own
-+Bus, Device and Function Number (Routing ID). And each VF also has PCI
-+Memory Space, which is used to map its register set. VF device driver
-+operates on the register set so it can be functional and appear as a
-+real existing PCI device.
-+
-+2. User Guide
-+
-+2.1 How can I enable SR-IOV capability
-+
-+The device driver (PF driver) will control the enabling and disabling
-+of the capability via API provided by SR-IOV core. If the hardware
-+has SR-IOV capability, loading its PF driver would enable it and all
-+VFs associated with the PF.
-+
-+2.2 How can I use the Virtual Functions
-+
-+The VF is treated as hot-plugged PCI devices in the kernel, so they
-+should be able to work in the same way as real PCI devices. The VF
-+requires device driver that is same as a normal PCI device's.
-+
-+3. Developer Guide
-+
-+3.1 SR-IOV API
-+
-+To enable SR-IOV capability:
-+	int pci_enable_sriov(struct pci_dev *dev, int nr_virtfn);
-+	'nr_virtfn' is number of VFs to be enabled.
-+
-+To disable SR-IOV capability:
-+	void pci_disable_sriov(struct pci_dev *dev);
-+
-+To notify SR-IOV core of Virtual Function Migration:
-+	irqreturn_t pci_sriov_migration(struct pci_dev *dev);
-+
-+3.2 Usage example
-+
-+Following piece of code illustrates the usage of the SR-IOV API.
-+
-+static int __devinit dev_probe(struct pci_dev *dev, const struct pci_device_id *id)
-+{
-+	pci_enable_sriov(dev, NR_VIRTFN);
-+
-+	...
-+
-+	return 0;
-+}
-+
-+static void __devexit dev_remove(struct pci_dev *dev)
-+{
-+	pci_disable_sriov(dev);
-+
-+	...
-+}
-+
-+static int dev_suspend(struct pci_dev *dev, pm_message_t state)
-+{
-+	...
-+
-+	return 0;
-+}
-+
-+static int dev_resume(struct pci_dev *dev)
-+{
-+	...
-+
-+	return 0;
-+}
-+
-+static void dev_shutdown(struct pci_dev *dev)
-+{
-+	...
-+}
-+
-+static struct pci_driver dev_driver = {
-+	.name =		"SR-IOV Physical Function driver",
-+	.id_table =	dev_id_table,
-+	.probe =	dev_probe,
-+	.remove =	__devexit_p(dev_remove),
-+	.suspend =	dev_suspend,
-+	.resume =	dev_resume,
-+	.shutdown =	dev_shutdown,
-+};
--- 
-1.5.6.4
+Impact: economize memory for large NR_CPUS
+
+percpu data is setup earlier than irq, we can use percpu data
+to economize memory.
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+ irq_32.c |   29 +++++++++++++++--------------
+ 1 file changed, 15 insertions(+), 14 deletions(-)
+diff --git a/arch/x86/kernel/irq_32.c b/arch/x86/kernel/irq_32.c
+index 74b9ff7..aafd483 100644
+--- a/arch/x86/kernel/irq_32.c
++++ b/arch/x86/kernel/irq_32.c
+@@ -16,6 +16,7 @@
+ #include <linux/cpu.h>
+ #include <linux/delay.h>
+ #include <linux/uaccess.h>
++#include <linux/percpu.h>
+ 
+ #include <asm/apic.h>
+ 
+@@ -55,13 +56,13 @@ static inline void print_stack_overflow(void) { }
+ union irq_ctx {
+ 	struct thread_info      tinfo;
+ 	u32                     stack[THREAD_SIZE/sizeof(u32)];
+-};
++} __attribute__((aligned(PAGE_SIZE)));
+ 
+-static union irq_ctx *hardirq_ctx[NR_CPUS] __read_mostly;
+-static union irq_ctx *softirq_ctx[NR_CPUS] __read_mostly;
++static DEFINE_PER_CPU(union irq_ctx *, hardirq_ctx);
++static DEFINE_PER_CPU(union irq_ctx *, softirq_ctx);
+ 
+-static char softirq_stack[NR_CPUS * THREAD_SIZE] __page_aligned_bss;
+-static char hardirq_stack[NR_CPUS * THREAD_SIZE] __page_aligned_bss;
++static DEFINE_PER_CPU_PAGE_ALIGNED(union irq_ctx, hardirq_stack);
++static DEFINE_PER_CPU_PAGE_ALIGNED(union irq_ctx, softirq_stack);
+ 
+ static void call_on_stack(void *func, void *stack)
+ {
+@@ -81,7 +82,7 @@ execute_on_irq_stack(int overflow, struct irq_desc *desc, int irq)
+ 	u32 *isp, arg1, arg2;
+ 
+ 	curctx = (union irq_ctx *) current_thread_info();
+-	irqctx = hardirq_ctx[smp_processor_id()];
++	irqctx = __get_cpu_var(hardirq_ctx);
+ 
+ 	/*
+ 	 * this is where we switch to the IRQ stack. However, if we are
+@@ -125,34 +126,34 @@ void __cpuinit irq_ctx_init(int cpu)
+ {
+ 	union irq_ctx *irqctx;
+ 
+-	if (hardirq_ctx[cpu])
++	if (per_cpu(hardirq_ctx, cpu))
+ 		return;
+ 
+-	irqctx = (union irq_ctx*) &hardirq_stack[cpu*THREAD_SIZE];
++	irqctx = &per_cpu(hardirq_stack, cpu);
+ 	irqctx->tinfo.task		= NULL;
+ 	irqctx->tinfo.exec_domain	= NULL;
+ 	irqctx->tinfo.cpu		= cpu;
+ 	irqctx->tinfo.preempt_count	= HARDIRQ_OFFSET;
+ 	irqctx->tinfo.addr_limit	= MAKE_MM_SEG(0);
+ 
+-	hardirq_ctx[cpu] = irqctx;
++	per_cpu(hardirq_ctx, cpu) = irqctx;
+ 
+-	irqctx = (union irq_ctx *) &softirq_stack[cpu*THREAD_SIZE];
++	irqctx = &per_cpu(softirq_stack, cpu);
+ 	irqctx->tinfo.task		= NULL;
+ 	irqctx->tinfo.exec_domain	= NULL;
+ 	irqctx->tinfo.cpu		= cpu;
+ 	irqctx->tinfo.preempt_count	= 0;
+ 	irqctx->tinfo.addr_limit	= MAKE_MM_SEG(0);
+ 
+-	softirq_ctx[cpu] = irqctx;
++	per_cpu(softirq_ctx, cpu) = irqctx;
+ 
+ 	printk(KERN_DEBUG "CPU %u irqstacks, hard=%p soft=%p\n",
+-	       cpu, hardirq_ctx[cpu], softirq_ctx[cpu]);
++	       cpu, per_cpu(hardirq_ctx, cpu),  per_cpu(softirq_ctx, cpu));
+ }
+ 
+ void irq_ctx_exit(int cpu)
+ {
+-	hardirq_ctx[cpu] = NULL;
++	per_cpu(hardirq_ctx, cpu) = NULL;
+ }
+ 
+ asmlinkage void do_softirq(void)
+@@ -169,7 +170,7 @@ asmlinkage void do_softirq(void)
+ 
+ 	if (local_softirq_pending()) {
+ 		curctx = current_thread_info();
+-		irqctx = softirq_ctx[smp_processor_id()];
++		irqctx = __get_cpu_var(softirq_ctx);
+ 		irqctx->tinfo.task = curctx->task;
+ 		irqctx->tinfo.previous_esp = current_stack_pointer;
+ 
+
 
