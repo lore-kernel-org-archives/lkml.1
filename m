@@ -1,82 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751882AbZBQIp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbZBQIpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751882AbZBQIp1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 03:45:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751031AbZBQIpN
+	id S1752648AbZBQIpm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 03:45:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbZBQIpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 03:45:13 -0500
-Received: from mga09.intel.com ([134.134.136.24]:18055 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751022AbZBQIpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 03:45:11 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,222,1233561600"; 
-   d="scan'208";a="490553968"
-Date: Tue, 17 Feb 2009 09:47:29 +0100
-From: Samuel Ortiz <sameo@openedhand.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Rakib Mullick <rakib.mullick@gmail.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Jean Delvare <khali@linux-fr.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Philipp Zabel <philipp.zabel@gmail.com>,
-       Roel Kluin <roel.kluin@gmail.com>, Julia Lawall <julia@diku.dk>
-Subject: [GIT] MFD pull request
-Message-ID: <20090217084728.GA2818@sortiz.org>
-Reply-To: Samuel Ortiz <sameo@openedhand.com>
+	Tue, 17 Feb 2009 03:45:30 -0500
+Received: from chmailsrv.int.mrv.com ([66.43.110.11]:37539 "EHLO
+	chmailsrv.int.mrv.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751031AbZBQIpa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 03:45:30 -0500
+Date: Tue, 17 Feb 2009 00:45:27 -0800
+From: Nye Liu <nyet@mrv.com>
+To: linux-kernel@vger.kernel.org, nyet@nyet.org
+Subject: [PATCH] modules: hid id->bus needs TO_NATIVE() in
+	scripts/mod/file2alias.c
+Message-ID: <20090217084523.GA3623@mrv.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 17 Feb 2009 08:47:51.0611 (UTC) FILETIME=[6AD1D0B0:01C990DC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+From: Nye Liu <nyet@mrv.com>
 
-I have some bug fixes for the mfd code. Could you please pull them in:
+When building a module alias, the bus identifier must be converted to
+native endianness. The hid bus id entries were not being properly
+swapped in little endian systems.
 
-The following changes since commit d2f8d7ee1a9b4650b4e43325b321801264f7c37a:
-  Linus Torvalds (1):
-        Linux 2.6.29-rc5
+For example:
 
-are available in the git repository at:
+    # modinfo hid_dell
+    filename:
+    /lib/modules/2.6.28-1-amd64/kernel/drivers/hid/hid-dell.ko
+    license: GPL
+    alias: hid:b0300v000013BAp00000017
+    alias: hid:b0300v0000413Cp00002105
+    alias: hid:b0300v0000413Cp00002005
+    depends: hid,usbhid
 
-  git://git.o-hand.com/linux-mfd for-linus
+b0300 should read b0003
 
-Alexey Dobriyan (1):
-      mfd: fix sm501 section mismatches
+Signed-off-by: Nye Liu <nyet@mrv.com>
 
-Jean Delvare (1):
-      mfd: terminate pcf50633 i2c_device_id list
+diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
+index 491b8b1..4eea60b 100644
+--- a/scripts/mod/file2alias.c
++++ b/scripts/mod/file2alias.c
+@@ -210,6 +210,7 @@ static void do_usb_table(void *symval, unsigned long size,
+ static int do_hid_entry(const char *filename,
+                             struct hid_device_id *id, char *alias)
+ {
++       id->bus = TO_NATIVE(id->bus);
+        id->vendor = TO_NATIVE(id->vendor);
+        id->product = TO_NATIVE(id->product);
+ 
 
-Julia Lawall (1):
-      mfd: Fix egpio kzalloc return test
-
-Mark Brown (5):
-      mfd: Initialise WM8350 interrupts earlier
-      mfd: Improve diagnostics for WM8350 ID register probe
-      mfd: Mark WM835x USB_SLV_500MA bit as accessible
-      mfd: Fix TWL4030 build on some ARM variants
-      mfd: Ensure all WM8350 IRQs are masked at startup
-
-Philipp Zabel (1):
-      mfd: fix htc-egpio iomem resource handling using resource_size
-
-Rakib Mullick (1):
-      mfd: Fix sm501_register_gpio section mismatch
-
-Roel Kluin (1):
-      mfd: wm8350 tries reaches -1
-
- drivers/mfd/htc-egpio.c     |    4 +-
- drivers/mfd/pcf50633-core.c |    1 +
- drivers/mfd/sm501.c         |   26 +++++++++++-----------
- drivers/mfd/twl4030-core.c  |    2 +-
- drivers/mfd/wm8350-core.c   |   48 +++++++++++++++++++++++++++++++-----------
- drivers/mfd/wm8350-regmap.c |    2 +-
- 6 files changed, 53 insertions(+), 30 deletions(-)
 -- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+Nye Liu
+nliu@mrv.com
+(818) 772-6235x248
+(818) 772-0576 fax
+
+"Who would be stupid enough to quote a fictitious character?"
+	-- Don Quixote
