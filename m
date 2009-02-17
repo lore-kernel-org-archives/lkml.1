@@ -1,154 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbZBQE63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751921AbZBQFBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754124AbZBQE63 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 23:58:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbZBQE6S
+	id S1751921AbZBQFBS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 00:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbZBQFBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 23:58:18 -0500
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:56845 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750861AbZBQE6R (ORCPT
+	Tue, 17 Feb 2009 00:01:06 -0500
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:46621 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750773AbZBQFBF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 23:58:17 -0500
-Message-Id: <6.0.0.20.2.20090217132810.05709598@172.19.0.2>
-X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
-Date: Tue, 17 Feb 2009 13:55:12 +0900
-To: Trond.Myklebust@netapp.com, linux-nfs@vger.kernel.org
-From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Subject: [PATCH] NFS: Pagecache usage optimization on nfs
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Feb 2009 00:01:05 -0500
+Date: Tue, 17 Feb 2009 10:30:33 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Corey Hickey <bugfood-ml@fatooh.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, mtk.manpages@gmail.com
+Subject: Re: RT scheduling and a way to make a process hang, unkillable
+Message-ID: <20090217050033.GA10409@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <4997672B.1000301@fatooh.org> <1234697096.4713.24.camel@laptop> <20090216103636.GC17355@linux.vnet.ibm.com> <1234782516.4703.15.camel@laptop> <20090216120213.GB3925@linux.vnet.ibm.com> <1234787082.30178.3.camel@laptop> <20090216131440.GC3925@linux.vnet.ibm.com> <20090216132014.GD3925@linux.vnet.ibm.com> <4999BC0C.1010304@fatooh.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4999BC0C.1010304@fatooh.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Trond.
+On Mon, Feb 16, 2009 at 11:18:36AM -0800, Corey Hickey wrote:
+> Dhaval Giani wrote:
+> > And it continues on! Please try this version.
+> > 
+> > sched: Don't allow setuid to succeed if the user does not have rt bandwidth
+> > 
+> > Corey Hickey reported that on using setuid to change the uid of a
+> > rt process, the process would be unkillable and not be running.
+> > This is because there was no rt runtime for that user group. Add
+> > in a check to see if a user can attach an rt task to its task group.
+> > 
+> > Disclaimer: Not sure about the return values, and if setuid allows
+> > return values other than EPERM and EAGAIN.
+> > 
+> > Changes from v3:
+> > 1. Actually fix the leak.
+> > 
+> > Changes from v2:
+> > 1. Patch compiles for CONFIG_CGROUP_SCHED as well
+> > 2. Fix two memory leaks.
+> > 
+> > Changes from v1:
+> > 1. Peter suggested that rt_task_can_change_user should be renamed to
+> > task_can_change_user
+> > 2. Changed sched_rt_can_attach to boolean.
+> > 
+> > Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> 
+> Thank you, Peter and Dhaval, for looking at this. I appreciate your work.
+> 
+> I tested patch v4 on 2.6.29-rc5, and I get frequent kernel BUG messages.
+> Should I be testing your patch on a different source tree? The patch
+> applied to rc5 ok but with lots of offsets.
+> 
 
-I wrote "is_partially_uptodate" aops for nfs client named nfs_is_partially_uptodate().
-This aops checks that nfs_page is attached to a page and read IO to a page is 
-within the range between wb_pgbase and wb_pgbase + wb_bytes of the nfs_page. 
-If this aops succeed, we do not have to issue actual read IO to NFS server 
-even if a page is not uptodate because the portion we want to read are uptodate.
-So with this patch random read/write mixed workloads or random read after random write 
-workloads can be optimized and we can get performance improvement.
- 
-I did benchmark test using sysbench.
+This was on top of tip I think. But yeah, that would be expected.
+Yesterday was really not working out, I figured out this one, and had
+fixed this in the next version. I have a better patch arond here.
 
-sysbench --num-threads=16 --max-requests=100000 --test=fileio --file-block-size=2K 
---file-total-size=200M --file-test-mode=rndrw --file-fsync-freq=0 
---file-rw-ratio=0.5 run
-
-The result was:
-
--2.6.29-rc4
-
-Operations performed:  33356 Read, 66682 Write, 128 Other = 100166 Total
-Read 65.148Mb  Written 130.24Mb  Total transferred 195.39Mb  (3.1093Mb/sec)
- 1591.97 Requests/sec executed
-
-Test execution summary:
-    total time:                          62.8391s
-    total number of events:              100038
-    total time taken by event execution: 841.7603
-    per-request statistics:
-         min:                            0.0000s
-         avg:                            0.0084s
-         max:                            16.4564s
-         approx.  95 percentile:         0.0446s
-
-Threads fairness:
-    events (avg/stddev):           6252.3750/306.48
-    execution time (avg/stddev):   52.6100/0.38
-
-
--2.6.29-rc4 + patch
-
-Operations performed:  33346 Read, 66662 Write, 128 Other = 100136 Total
-Read 65.129Mb  Written 130.2Mb  Total transferred 195.33Mb  (5.0113Mb/sec)
- 2565.81 Requests/sec executed
-
-Test execution summary:
-    total time:                          38.9772s
-    total number of events:              100008
-    total time taken by event execution: 339.6821
-    per-request statistics:
-         min:                            0.0000s
-         avg:                            0.0034s
-         max:                            1.6768s
-         approx.  95 percentile:         0.0200s
-
-Threads fairness:
-    events (avg/stddev):           6250.5000/302.04
-    execution time (avg/stddev):   21.2301/0.45
-
-
-I/O performance was significantly improved by following patch.
-Please merge my patch.
-Thanks.
-
-Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-
-diff -Nrup linux-2.6.29-rc5.org/fs/nfs/file.c linux-2.6.29-rc5/fs/nfs/file.c
---- linux-2.6.29-rc5.org/fs/nfs/file.c	2009-02-16 12:31:18.000000000 +0900
-+++ linux-2.6.29-rc5/fs/nfs/file.c	2009-02-16 13:05:29.000000000 +0900
-@@ -449,6 +449,7 @@ const struct address_space_operations nf
- 	.releasepage = nfs_release_page,
- 	.direct_IO = nfs_direct_IO,
- 	.launder_page = nfs_launder_page,
-+	.is_partially_uptodate = nfs_is_partially_uptodate,
- };
- 
- static int nfs_vm_page_mkwrite(struct vm_area_struct *vma, struct page *page)
-diff -Nrup linux-2.6.29-rc5.org/fs/nfs/read.c linux-2.6.29-rc5/fs/nfs/read.c
---- linux-2.6.29-rc5.org/fs/nfs/read.c	2009-02-16 12:31:18.000000000 +0900
-+++ linux-2.6.29-rc5/fs/nfs/read.c	2009-02-16 13:05:29.000000000 +0900
-@@ -599,6 +599,33 @@ out:
- 	return ret;
- }
- 
-+int nfs_is_partially_uptodate(struct page *page, read_descriptor_t *desc,
-+				unsigned long from)
-+{
-+	struct inode *inode = page->mapping->host;
-+	unsigned to;
-+	struct nfs_page *req = NULL;
-+
-+	spin_lock(&inode->i_lock);
-+	if (PagePrivate(page)) {
-+		req = (struct nfs_page *)page_private(page);
-+		if (req)
-+			kref_get(&req->wb_kref);
-+	}
-+	spin_unlock(&inode->i_lock);
-+	if (!req)
-+		return 0;
-+
-+	to = min_t(unsigned, PAGE_CACHE_SIZE - from, desc->count);
-+	to = from + to;
-+	if (from >= req->wb_pgbase && to <= req->wb_pgbase + req->wb_bytes) {
-+		nfs_release_request(req);
-+		return 1;
-+	}
-+	nfs_release_request(req);
-+	return 0;
-+}
-+
- int __init nfs_init_readpagecache(void)
- {
- 	nfs_rdata_cachep = kmem_cache_create("nfs_read_data",
-diff -Nrup linux-2.6.29-rc5.org/include/linux/nfs_fs.h linux-2.6.29-rc5/include/linux/nfs_fs.h
---- linux-2.6.29-rc5.org/include/linux/nfs_fs.h	2009-02-16 12:31:18.000000000 +0900
-+++ linux-2.6.29-rc5/include/linux/nfs_fs.h	2009-02-16 13:05:29.000000000 +0900
-@@ -506,6 +506,9 @@ extern int  nfs_readpages(struct file *,
- 		struct list_head *, unsigned);
- extern int  nfs_readpage_result(struct rpc_task *, struct nfs_read_data *);
- extern void nfs_readdata_release(void *data);
-+extern int  nfs_is_partially_uptodate(struct page *, read_descriptor_t *,
-+		unsigned long);
-+
- 
- /*
-  * Allocate nfs_read_data structures
-
+thanks,
+-- 
+regards,
+Dhaval
