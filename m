@@ -1,279 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbZBQQhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbZBQQjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754129AbZBQQhs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 11:37:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbZBQQh0
+	id S1753258AbZBQQjU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 11:39:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750989AbZBQQjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 11:37:26 -0500
-Received: from exprod7og115.obsmtp.com ([64.18.2.217]:46874 "EHLO
-	exprod7og115.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752044AbZBQQhY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 11:37:24 -0500
-From: "Yang, Bo" <Bo.Yang@lsi.com>
-To: "Yang, Bo" <Bo.Yang@lsi.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@osdl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: "Austria, Winston" <Winston.Austria@lsi.com>
-Date: Tue, 17 Feb 2009 08:37:00 -0800
-Subject: [PATCH 5/9] scsi: megaraid_sas - Add memory support required by
- 0x73 controller
-Thread-Topic: [PATCH 5/9] scsi: megaraid_sas - Add memory support required
- by 0x73 controller
-Thread-Index: AciIcSnS7H5xFQtCQzyNHR19nlBrTUImYsQgAAFMQJAAAQsscAAAaQSQAAFE92A=
-Message-ID: <4B6A08C587958942AA3002690DD4F8C33A07FBD2@cosmail02.lsi.com>
-In-Reply-To: <4B6A08C587958942AA3002690DD4F8C33A07FB75@cosmail02.lsi.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 17 Feb 2009 11:39:10 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57014 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751511AbZBQQjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 11:39:09 -0500
+Date: Tue, 17 Feb 2009 17:38:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [git pull] timer fix
+Message-ID: <20090217163854.GA4252@elte.hu>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add memory support required by 0x73 controller
+Linus,
 
-Signed-off-by Bo Yang<bo.yang@lsi.com>
+Please pull the latest timers-fixes-for-linus git tree from:
 
----
-drivers/scsi/megaraid/megaraid_sas.c |  164 +++++++++++++++++++++++++++++++++++
- drivers/scsi/megaraid/megaraid_sas.h |   19 ++++
- 2 files changed, 183 insertions(+)
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers-fixes-for-linus
 
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-02-12 16:05:07.000000000 -0500
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-02-12 16:12:54.000000000 -0500
-@@ -2039,6 +2039,144 @@ static int megasas_alloc_cmds(struct meg
+ Thanks,
+
+	Ingo
+
+------------------>
+Peter Zijlstra (1):
+      timers: more consistently use clock vs timer
+
+
+ kernel/posix-cpu-timers.c |   60 ++++++++++++++++++++++----------------------
+ 1 files changed, 30 insertions(+), 30 deletions(-)
+
+diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+index 2313a4c..e976e50 100644
+--- a/kernel/posix-cpu-timers.c
++++ b/kernel/posix-cpu-timers.c
+@@ -681,6 +681,33 @@ static void cpu_timer_fire(struct k_itimer *timer)
  }
-
- /**
-+ * megasas_skinny_mem_alloc:   allocation memory for 0x73 and 0x71 controller
-+ * @instance:                  Adapter soft state
-+ *
-+ * this function will allocate the memory for 0.73 comtroller.
+ 
+ /*
++ * Sample a process (thread group) timer for the given group_leader task.
++ * Must be called with tasklist_lock held for reading.
 + */
-+static int
-+megasas_skinny_mem_alloc(struct megasas_instance *instance)
++static int cpu_timer_sample_group(const clockid_t which_clock,
++				  struct task_struct *p,
++				  union cpu_time_count *cpu)
 +{
-+       u8              i = 0, mem_alloc_done = 0;
-+       u32             *virt, ind, num_bk = 0;
-+       dma_addr_t      paddr;
-+       u32              mem_alloc_size = MEGASAS_SKINNY_SZ_MEM_BK * 256;
-+       u32             *mem_tb = instance->skinny_mm_tb;
++	struct task_cputime cputime;
 +
-+       instance->skinny_mm_tb = pci_alloc_consistent(instance->pdev,
-+                                MEGASAS_SKINNY_MAX_NUM_MEM_BK*sizeof(u32),
-+                                &instance->skinny_mm_tb_h);
-+
-+       memset(instance->skinny_mm_tb, 0,
-+               MEGASAS_SKINNY_MAX_NUM_MEM_BK * sizeof(u32));
-+
-+       instance->skinny_mm_alloc_ind = 0;
-+
-+       while (!mem_alloc_done) {
-+
-+                       virt = pci_alloc_consistent(instance->pdev,
-+                                                        mem_alloc_size,
-+                                                        &paddr);
-+                       if (virt) {
-+                               num_bk = (mem_alloc_size/
-+                                               MEGASAS_SKINNY_SZ_MEM_BK);
-+
-+                               for (ind = 0; ind < num_bk; ind++) {
-+                                       if (instance->skinny_mm_alloc_ind <
-+                                               MEGASAS_SKINNY_MAX_NUM_MEM_BK) {
-+                                               *mem_tb = (u32)(paddr+
-+                                               (MEGASAS_SKINNY_SZ_MEM_BK*ind));
-+                                               mem_tb++;
-+                                               instance->skinny_mm_alloc_ind++;
-+                                       } else {
-+                                               mem_alloc_done = 1;
-+                                       }
-+                               }
-+
-+                               instance->skinny_mm_bk[i].vir   = virt;
-+                               instance->skinny_mm_bk[i].paddr = paddr;
-+                               instance->skinny_mm_bk[i].sz = mem_alloc_size;
-+                       } else {
-+                               if (mem_alloc_size > MEGASAS_SKINNY_SZ_MEM_BK)
-+                                       mem_alloc_size = mem_alloc_size / 2;
-+                       }
-+       }
-+
-+       if (instance->skinny_mm_alloc_ind == 0)
-+               return -1;
-+
-+       return 0;
++	thread_group_cputimer(p, &cputime);
++	switch (CPUCLOCK_WHICH(which_clock)) {
++	default:
++		return -EINVAL;
++	case CPUCLOCK_PROF:
++		cpu->cpu = cputime_add(cputime.utime, cputime.stime);
++		break;
++	case CPUCLOCK_VIRT:
++		cpu->cpu = cputime.utime;
++		break;
++	case CPUCLOCK_SCHED:
++		cpu->sched = cputime.sum_exec_runtime + task_delta_exec(p);
++		break;
++	}
++	return 0;
 +}
 +
-+/**
-+ * megasas_skinny_mem_alloc:   de-allocate memory for 0x73 and 0x71 controller
-+ * @instance:                  Adapter soft state
-+ *
-+ * this function will de-allocate the memory for 0.73 comtroller.
-+ */
-+static void
-+megasas_skinny_mem_dealloc(struct megasas_instance *instance)
-+{
-+       int i = 0;
-+
-+       for (i = 0; i < MEGASAS_SKINNY_MAX_NUM_MEM_BK; i++) {
-+               if (instance->skinny_mm_bk[i].vir) {
-+                       pci_free_consistent(instance->pdev,
-+                               instance->skinny_mm_bk[i].sz,
-+                               instance->skinny_mm_bk[i].vir,
-+                               instance->skinny_mm_bk[i].paddr);
-+               }
-+       }
-+
-+       if (instance->skinny_mm_tb)
-+               pci_free_consistent(instance->pdev,
-+                       MEGASAS_SKINNY_MAX_NUM_MEM_BK * sizeof(u32),
-+                       instance->skinny_mm_tb,
-+                       instance->skinny_mm_tb_h);
-+
-+}
-+
-+/**
-+ * megasas_mem_to_fw - Send requested memory to FW
-+ * @instance:          Adapter soft state
-+ *
-+ * Issues an internal command (DCMD) to get the FW's controller structure.
-+ * This information is mainly used to send out the memory table  to FW
-+ */
-+static int
-+megasas_mem_to_fw(struct megasas_instance *instance)
-+{
-+       int ret = 0;
-+       struct megasas_cmd *cmd;
-+       struct megasas_dcmd_frame *dcmd;
-+
-+       cmd = megasas_get_cmd(instance);
-+
-+       if (!cmd) {
-+               printk(KERN_DEBUG "megasas (get_pd_list): Failed to get cmd\n");
-+               return -ENOMEM;
-+       }
-+
-+       dcmd = &cmd->frame->dcmd;
-+
-+       memset(dcmd->mbox.b, 0, MFI_MBOX_SIZE);
-+
-+       dcmd->mbox.s[0] = instance->skinny_mm_alloc_ind;
-+       dcmd->mbox.s[2] = MEGASAS_SKINNY_SZ_MEM_BK / 1024;
-+
-+       dcmd->cmd = MFI_CMD_DCMD;
-+       dcmd->cmd_status = 0xFF;
-+       dcmd->sge_count = 1;
-+       dcmd->flags = MFI_FRAME_DIR_READ;
-+       dcmd->timeout = 0;
-+       dcmd->data_xfer_len = sizeof(u32) * MEGASAS_SKINNY_MAX_NUM_MEM_BK;
-+       dcmd->opcode = MR_DCMD_CTRL_MFI_HOST_MEM_ALLOC;
-+       dcmd->sgl.sge32[0].phys_addr = instance->skinny_mm_tb_h;
-+       dcmd->sgl.sge32[0].length = sizeof(u32) * MEGASAS_SKINNY_MAX_NUM_MEM_BK;
-+
-+       if (!megasas_issue_polled(instance, cmd)) {
-+               ret = 0;
-+
-+       } else {
-+               ret = -1;
-+       }
-+
-+       megasas_return_cmd(instance, cmd);
-+
-+       return ret;
-+}
-+
-+/**
-  * megasas_get_controller_info -       Returns FW's controller structure
-  * @instance:                          Adapter soft state
-  * @ctrl_info:                         Controller information structure
-@@ -2290,6 +2428,9 @@ static int megasas_init_mfi(struct megas
-         * Get various operational parameters from status register
-         */
-        instance->max_fw_cmds = instance->instancet->read_fw_status_reg(reg_set) & 0x00FFFF;
-+       instance->memory_need =
-+               instance->instancet->read_fw_status_reg(reg_set) & 0x08000000;
-+
-        /*
-         * Reduce the max supported cmds by 1. This is to ensure that the
-         * reply_q_sz (1 more than the max cmd that driver may send)
-@@ -2325,6 +2466,25 @@ static int megasas_init_mfi(struct megas
-                goto fail_reply_queue;
-        }
-
-+       if (instance->memory_need) {
-+               if ((instance->pdev->device ==
-+                       PCI_DEVICE_ID_LSI_SAS0073SKINNY) ||
-+                       (instance->pdev->device ==
-+                       PCI_DEVICE_ID_LSI_SAS0071SKINNY)) {
-+
-+                       if (megasas_skinny_mem_alloc(instance)) {
-+                               printk(KERN_DEBUG "megasas: failed "
-+                                               "allocate mem\n");
-+                               megasas_skinny_mem_dealloc(instance);
-+                       }
-+
-+                       if (megasas_mem_to_fw(instance)) {
-+                               printk(KERN_DEBUG "megasas: fail to "
-+                                       "dcmd cmd to pass mem to fw\n");
-+                       }
-+               }
-+       }
-+
-        if (megasas_issue_init_mfi(instance))
-                goto fail_fw_init;
-
-@@ -3110,6 +3270,10 @@ static void __devexit megasas_detach_one
-
-        free_irq(instance->pdev->irq, instance);
-
-+       if (instance->memory_need) {
-+               megasas_skinny_mem_dealloc(instance);
-+       }
-+
-        megasas_release_mfi(instance);
-
-        pci_free_consistent(pdev, sizeof(struct megasas_evt_detail),
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h      2009-02-12 16:05:08.000000000 -0500
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h       2009-02-12 15:24:58.000000000 -0500
-@@ -1092,6 +1092,16 @@ struct megasas_aen_event {
-        struct megasas_instance *instance;
- };
-
-+#define MR_DCMD_CTRL_MFI_HOST_MEM_ALLOC                0x0100e100
-+#define MEGASAS_SKINNY_SZ_MEM_BK               (64*1024)
-+#define MEGASAS_SKINNY_MAX_NUM_MEM_BK          512
-+
-+struct megasas_skinny_mm_bk {
-+       u32                     vir;
-+       u32                     sz;
-+       dma_addr_t              paddr;
-+};
-+
- struct megasas_instance {
-
-        u32 *producer;
-@@ -1105,6 +1115,15 @@ struct megasas_instance {
-        unsigned long base_addr;
-        struct megasas_register_set __iomem *reg_set;
-
-+       u32 *skinny_mm_tb;
-+       dma_addr_t skinny_mm_tb_h;
-+
-+       struct megasas_skinny_mm_bk skinny_mm_bk[MEGASAS_SKINNY_MAX_NUM_MEM_BK];
-+
-+       u32 skinny_mm_alloc_ind;
-+       struct megasas_pd_list pd_list[MEGASAS_MAX_PD];
-+
-+       u8 memory_need;
-        s8 init_id;
-
-        u16 max_num_sge;
++/*
+  * Guts of sys_timer_settime for CPU timers.
+  * This is called with the timer locked and interrupts disabled.
+  * If we return TIMER_RETRY, it's necessary to release the timer's lock
+@@ -741,7 +768,7 @@ int posix_cpu_timer_set(struct k_itimer *timer, int flags,
+ 	if (CPUCLOCK_PERTHREAD(timer->it_clock)) {
+ 		cpu_clock_sample(timer->it_clock, p, &val);
+ 	} else {
+-		cpu_clock_sample_group(timer->it_clock, p, &val);
++		cpu_timer_sample_group(timer->it_clock, p, &val);
+ 	}
+ 
+ 	if (old) {
+@@ -889,7 +916,7 @@ void posix_cpu_timer_get(struct k_itimer *timer, struct itimerspec *itp)
+ 			read_unlock(&tasklist_lock);
+ 			goto dead;
+ 		} else {
+-			cpu_clock_sample_group(timer->it_clock, p, &now);
++			cpu_timer_sample_group(timer->it_clock, p, &now);
+ 			clear_dead = (unlikely(p->exit_state) &&
+ 				      thread_group_empty(p));
+ 		}
+@@ -1244,7 +1271,7 @@ void posix_cpu_timer_schedule(struct k_itimer *timer)
+ 			clear_dead_task(timer, now);
+ 			goto out_unlock;
+ 		}
+-		cpu_clock_sample_group(timer->it_clock, p, &now);
++		cpu_timer_sample_group(timer->it_clock, p, &now);
+ 		bump_cpu_timer(timer, now);
+ 		/* Leave the tasklist_lock locked for the call below.  */
+ 	}
+@@ -1409,33 +1436,6 @@ void run_posix_cpu_timers(struct task_struct *tsk)
+ }
+ 
+ /*
+- * Sample a process (thread group) timer for the given group_leader task.
+- * Must be called with tasklist_lock held for reading.
+- */
+-static int cpu_timer_sample_group(const clockid_t which_clock,
+-				  struct task_struct *p,
+-				  union cpu_time_count *cpu)
+-{
+-	struct task_cputime cputime;
+-
+-	thread_group_cputimer(p, &cputime);
+-	switch (CPUCLOCK_WHICH(which_clock)) {
+-	default:
+-		return -EINVAL;
+-	case CPUCLOCK_PROF:
+-		cpu->cpu = cputime_add(cputime.utime, cputime.stime);
+-		break;
+-	case CPUCLOCK_VIRT:
+-		cpu->cpu = cputime.utime;
+-		break;
+-	case CPUCLOCK_SCHED:
+-		cpu->sched = cputime.sum_exec_runtime + task_delta_exec(p);
+-		break;
+-	}
+-	return 0;
+-}
+-
+-/*
+  * Set one of the process-wide special case CPU timers.
+  * The tsk->sighand->siglock must be held by the caller.
+  * The *newval argument is relative and we update it to be absolute, *oldval
