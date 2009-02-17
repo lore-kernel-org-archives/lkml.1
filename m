@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754046AbZBQPCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753857AbZBQPDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754046AbZBQPCR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 10:02:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbZBQPCA
+	id S1753857AbZBQPDf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 10:03:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbZBQPDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 10:02:00 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40304 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751365AbZBQPCA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 10:02:00 -0500
-Date: Tue, 17 Feb 2009 15:37:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 00/15] [git pull] for tip/tracing/ftrace
-Message-ID: <20090217143752.GB7576@elte.hu>
-References: <20090217051227.957864159@goodmis.org> <20090217104213.GC6602@elte.hu> <alpine.DEB.1.10.0902170747160.910@gandalf.stny.rr.com>
+	Tue, 17 Feb 2009 10:03:22 -0500
+Received: from exprod7og110.obsmtp.com ([64.18.2.173]:45716 "EHLO
+	exprod7og110.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750746AbZBQPDV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 10:03:21 -0500
+X-Greylist: delayed 1102 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Feb 2009 10:03:20 EST
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Austria, Winston" <Winston.Austria@lsi.com>,
+       "Yang, Bo" <Bo.Yang@lsi.com>
+Date: Tue, 17 Feb 2009 06:44:24 -0800
+Subject: [PATCH 1/9] scsi: megaraid_sas - Fix the tape drive support
+Thread-Topic: [PATCH 1/9] scsi: megaraid_sas - Fix the tape drive support
+Thread-Index: AciIcSnS7H5xFQtCQzyNHR19nlBrTUImYsQg
+Message-ID: <4B6A08C587958942AA3002690DD4F8C33A07FB03@cosmail02.lsi.com>
+In-Reply-To: <1205787285.6767.185.camel@localhost.localdomain>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0902170747160.910@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Add the Tape drive fix to the megaraid_sas driver: If the command is for the tape device, set the FW pthru timeout to the os layer timeout value.
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 
-> > > I implement a 'traceon' and 'traceoff' to have a function 
-> > > start or stop tracing when it is hit. It also includes a 
-> > > counter for the number of times to implement the trace on/off.
-> > > 
-> > >  echo '*_lock:traceon:4' > set_ftrace_filter
-> > >  echo '*_unlock:traceoff:5' > set_ftrace_filter
-> > 
-> > if there's no counter specified, does it default to 1 
-> > [single-shot trigger] or infinity?
-> 
-> Bad documentation on my part :-/
-> 
-> No number is infinity, since infinity is no number ;-)
+---
+drivers/scsi/megaraid/megaraid_sas.c |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-Well infinity is a number too, in most schools of algebra, just 
-one with unusual properties :)
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-02-12 15:24:58.000000000 -0500
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-02-12 15:33:57.000000000 -0500
+@@ -687,6 +687,17 @@ megasas_build_dcdb(struct megasas_instan
+        memcpy(pthru->cdb, scp->cmnd, scp->cmd_len);
 
-	Ingo
+        /*
++       * If the command is for the tape device, set the
++       * pthru timeout to the os layer timeout value.
++       */
++       if (scp->device->type == TYPE_TAPE) {
++               if ((scp->request->timeout / HZ) > 0xFFFF)
++                       pthru->timeout = 0xFFFF;
++               else
++                       pthru->timeout = scp->request->timeout / HZ;
++       }
++
++       /*
+         * Construct SGL
+         */
+        if (IS_DMA64) {
