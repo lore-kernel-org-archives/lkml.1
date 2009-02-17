@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752585AbZBQIc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751619AbZBQInr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752585AbZBQIc1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 03:32:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbZBQIcS
+	id S1751619AbZBQInr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 03:43:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbZBQIni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 03:32:18 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55438 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751308AbZBQIcS (ORCPT
+	Tue, 17 Feb 2009 03:43:38 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:58741 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750825AbZBQIng (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 03:32:18 -0500
-Subject: Re: irq-disabled vs vmap vs text_poke
-From: Peter Zijlstra <peterz@infradead.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>
-In-Reply-To: <20090217030353.GA31504@wotan.suse.de>
-References: <20090213141839.GA31922@Krystal> <4995A0B7.1030705@redhat.com>
-	 <20090213165555.GA4684@Krystal> <4995B88C.2090900@redhat.com>
-	 <20090213185725.GC7124@Krystal> <4995E925.3080506@redhat.com>
-	 <4999808B.5080505@redhat.com> <20090216153145.GB19182@wotan.suse.de>
-	 <20090216172441.GA12576@Krystal> <499A1A43.6000009@redhat.com>
-	 <20090217030353.GA31504@wotan.suse.de>
-Content-Type: text/plain
-Date: Tue, 17 Feb 2009 09:31:56 +0100
-Message-Id: <1234859516.4744.12.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.90 
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Feb 2009 03:43:36 -0500
+Date: Tue, 17 Feb 2009 09:43:31 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Matt Mackall <mpm@selenic.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] Export symbol ksize()
+In-Reply-To: <1234748316.5669.222.camel@calx>
+Message-ID: <alpine.LRH.2.00.0902170940430.3391@vixen.sonytel.be>
+References: <1234272104-10211-1-git-send-email-kirill@shutemov.name> <84144f020902100535i4d626a9fj8cbb305120cf332a@mail.gmail.com> <20090210134651.GA5115@epbyminw8406h.minsk.epam.com> <Pine.LNX.4.64.0902101605070.20991@melkki.cs.Helsinki.FI>
+ <20090212104349.GA13859@gondor.apana.org.au> <1234435521.28812.165.camel@penberg-laptop> <20090212105034.GC13859@gondor.apana.org.au> <1234454104.28812.175.camel@penberg-laptop> <20090215133638.5ef517ac.akpm@linux-foundation.org> <1234734194.5669.176.camel@calx>
+ <20090215135555.688ae1a3.akpm@linux-foundation.org> <1234741781.5669.204.camel@calx> <20090215170052.44ee8fd5.akpm@linux-foundation.org> <1234748316.5669.222.camel@calx>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-17 at 04:03 +0100, Nick Piggin wrote:
+On Sun, 15 Feb 2009, Matt Mackall wrote:
+> On Sun, 2009-02-15 at 17:00 -0800, Andrew Morton wrote:
+> > On Sun, 15 Feb 2009 17:49:41 -0600 Matt Mackall <mpm@selenic.com> wrote:
+> 
+> > The whole concept is quite hacky and nasty, isn't it?.
+> 
+> It is, which is part of why we were trying to kill it. The primary users
+> were thing growing buffers ala realloc. So we were pushing to change the
+> callers to just do a realloc. But IPSEC doesn't fit well into that mold.
+> 
+> The fundamental problem here for networking is that 1500 is not very
+> close to a power of two and just about everything in the VM wants it to
+> be. If we could get SKBs fitting more nicely in memory, I think it would
+> cease to be a concern.
 
-> It is not a bad idea, but I don't think it quite goes far enough.
-> IMO we should reserve 2 pages of virtual memory for each CPU, and
-> then do the mapping/unmapping without locking, and with another
-> variant of unmap_kernel_range that does not do the global TLB
-> flush.
+Does it help to remind that 4 KiB - 2 * 1500 = 1096 \approx 1024?
+(hmm, the difference is 72 \approx 64)?
 
-A bit like kmap_atomic() except for 2 pages and !highmem. Should work.
+If 1500 is so common as an allocation size, it may make sense to start
+special-casing it...
 
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
