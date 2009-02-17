@@ -1,318 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbZBQEtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752925AbZBQE5p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753598AbZBQEtc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 23:49:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbZBQEtX
+	id S1752925AbZBQE5p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 23:57:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbZBQE5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 23:49:23 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:34034 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750923AbZBQEtW (ORCPT
+	Mon, 16 Feb 2009 23:57:35 -0500
+Received: from yw-out-2324.google.com ([74.125.46.29]:62731 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751169AbZBQE5e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 23:49:22 -0500
-Date: Mon, 16 Feb 2009 23:49:19 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/7] tracing/function-graph-tracer: make arch generic
- push pop functions
-In-Reply-To: <20090213053004.787392572@goodmis.org>
-Message-ID: <alpine.DEB.1.10.0902162346190.30397@gandalf.stny.rr.com>
-References: <20090213052358.524970112@goodmis.org> <20090213053004.787392572@goodmis.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 16 Feb 2009 23:57:34 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090217031813.GD8343@kroah.com>
+References: <5aa163d00902142008g138826br80d3ea989e7af691@mail.gmail.com>
+	 <200902160931.34771.oliver@neukum.org>
+	 <5aa163d00902160522r3a22412je3f5202076f57a0a@mail.gmail.com>
+	 <20090216161331.GB5008@kroah.com>
+	 <5aa163d00902161009l15dae120le96436d40f998d33@mail.gmail.com>
+	 <20090216185914.GA6239@kroah.com>
+	 <5aa163d00902161130r2030adb8h6eb1ec08bda92744@mail.gmail.com>
+	 <20090216202215.GA6543@kroah.com>
+	 <5aa163d00902161853x27d98a83l3c2c02abe651fe1e@mail.gmail.com>
+	 <20090217031813.GD8343@kroah.com>
+Date: Mon, 16 Feb 2009 23:57:31 -0500
+X-Google-Sender-Auth: 55b00c6b3c382f51
+Message-ID: <5aa163d00902162057l106c001bo519a5241c79b5e96@mail.gmail.com>
+Subject: Re: [PATCH] input: xpad.c - Xbox 360 wireless and sysfs support
+From: Mike Murphy <mamurph@cs.clemson.edu>
+To: Greg KH <greg@kroah.com>
+Cc: Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Feb 16, 2009 at 10:18 PM, Greg KH <greg@kroah.com> wrote:
+>
+> input_set_drvdata() and input_get_drvdata() is what you are looking for.
+>
 
-Ingo,
+Thanks! That solved the problem at least as far as getting the entries
+to show up in sysfs... though somehow now I'm having problems with the
+I/O buffers, and a cat of the sysfs file shows no output (not even a
+blank line). I added a couple printk's to one of the routines, and the
+values are being read correctly from the data structure, but no
+working I/O (cannot set the values either, per printk results). The
+dmesg output shows the printk results, so the functions are getting
+called. Even the count from sprintf is correct, and the resulting
+buffer looks like it should... though with the extra blank line I
+added in the last printk:
 
-This patch is to make function graph arch generic. But since the PowerPC 
-changes depend on it, we want to push it through the PowerPC tree. But 
-since it touches x86 code, can you give an Acked-by to it?
+static ssize_t xpad_show_dead_zone(struct device *dev, char *buf)
+{
+	struct usb_xpad *xpad = to_xpad(dev);
+	int count;
+	printk(KERN_INFO "Dead zone is %d\n", xpad->dead_zone);
+	count = sprintf(buf, "%d\n", xpad->dead_zone);
+	printk(KERN_INFO "Count is %d\n", count);
+	printk(KERN_INFO "Buffer is %s\n", buf);
+	return count;
+}
+
+Unless that is some common error that is obvious from its description,
+I will have to chase the bug down tomorrow or Wednesday. It's getting
+a bit late here.
 
 Thanks,
-
--- Steve
-
-
-On Fri, 13 Feb 2009, Steven Rostedt wrote:
-
-> From: Steven Rostedt <srostedt@redhat.com>
-> 
-> There is nothing really arch specific of the push and pop functions
-> used by the function graph tracer. This patch moves them to generic
-> code.
-> 
-> Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  arch/x86/include/asm/ftrace.h        |   25 -----------
->  arch/x86/kernel/ftrace.c             |   75 +---------------------------------
->  include/linux/ftrace.h               |   24 +++++++++++
->  kernel/trace/trace_functions_graph.c |   75 ++++++++++++++++++++++++++++++++++
->  4 files changed, 100 insertions(+), 99 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/ftrace.h b/arch/x86/include/asm/ftrace.h
-> index b55b4a7..db24c22 100644
-> --- a/arch/x86/include/asm/ftrace.h
-> +++ b/arch/x86/include/asm/ftrace.h
-> @@ -55,29 +55,4 @@ struct dyn_arch_ftrace {
->  #endif /* __ASSEMBLY__ */
->  #endif /* CONFIG_FUNCTION_TRACER */
->  
-> -#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-> -
-> -#ifndef __ASSEMBLY__
-> -
-> -/*
-> - * Stack of return addresses for functions
-> - * of a thread.
-> - * Used in struct thread_info
-> - */
-> -struct ftrace_ret_stack {
-> -	unsigned long ret;
-> -	unsigned long func;
-> -	unsigned long long calltime;
-> -};
-> -
-> -/*
-> - * Primary handler of a function return.
-> - * It relays on ftrace_return_to_handler.
-> - * Defined in entry_32/64.S
-> - */
-> -extern void return_to_handler(void);
-> -
-> -#endif /* __ASSEMBLY__ */
-> -#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
-> -
->  #endif /* _ASM_X86_FTRACE_H */
-> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-> index 1b43086..258c8d5 100644
-> --- a/arch/x86/kernel/ftrace.c
-> +++ b/arch/x86/kernel/ftrace.c
-> @@ -389,79 +389,6 @@ void ftrace_nmi_exit(void)
->  
->  #endif /* !CONFIG_DYNAMIC_FTRACE */
->  
-> -/* Add a function return address to the trace stack on thread info.*/
-> -static int push_return_trace(unsigned long ret, unsigned long long time,
-> -				unsigned long func, int *depth)
-> -{
-> -	int index;
-> -
-> -	if (!current->ret_stack)
-> -		return -EBUSY;
-> -
-> -	/* The return trace stack is full */
-> -	if (current->curr_ret_stack == FTRACE_RETFUNC_DEPTH - 1) {
-> -		atomic_inc(&current->trace_overrun);
-> -		return -EBUSY;
-> -	}
-> -
-> -	index = ++current->curr_ret_stack;
-> -	barrier();
-> -	current->ret_stack[index].ret = ret;
-> -	current->ret_stack[index].func = func;
-> -	current->ret_stack[index].calltime = time;
-> -	*depth = index;
-> -
-> -	return 0;
-> -}
-> -
-> -/* Retrieve a function return address to the trace stack on thread info.*/
-> -static void pop_return_trace(struct ftrace_graph_ret *trace, unsigned long *ret)
-> -{
-> -	int index;
-> -
-> -	index = current->curr_ret_stack;
-> -
-> -	if (unlikely(index < 0)) {
-> -		ftrace_graph_stop();
-> -		WARN_ON(1);
-> -		/* Might as well panic, otherwise we have no where to go */
-> -		*ret = (unsigned long)panic;
-> -		return;
-> -	}
-> -
-> -	*ret = current->ret_stack[index].ret;
-> -	trace->func = current->ret_stack[index].func;
-> -	trace->calltime = current->ret_stack[index].calltime;
-> -	trace->overrun = atomic_read(&current->trace_overrun);
-> -	trace->depth = index;
-> -	barrier();
-> -	current->curr_ret_stack--;
-> -
-> -}
-> -
-> -/*
-> - * Send the trace to the ring-buffer.
-> - * @return the original return address.
-> - */
-> -unsigned long ftrace_return_to_handler(void)
-> -{
-> -	struct ftrace_graph_ret trace;
-> -	unsigned long ret;
-> -
-> -	pop_return_trace(&trace, &ret);
-> -	trace.rettime = cpu_clock(raw_smp_processor_id());
-> -	ftrace_graph_return(&trace);
-> -
-> -	if (unlikely(!ret)) {
-> -		ftrace_graph_stop();
-> -		WARN_ON(1);
-> -		/* Might as well panic. What else to do? */
-> -		ret = (unsigned long)panic;
-> -	}
-> -
-> -	return ret;
-> -}
-> -
->  /*
->   * Hook the return address and push it in the stack of return addrs
->   * in current thread info.
-> @@ -520,7 +447,7 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
->  
->  	calltime = cpu_clock(raw_smp_processor_id());
->  
-> -	if (push_return_trace(old, calltime,
-> +	if (ftrace_push_return_trace(old, calltime,
->  				self_addr, &trace.depth) == -EBUSY) {
->  		*parent = old;
->  		return;
-> diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-> index 677432b..a7f8134 100644
-> --- a/include/linux/ftrace.h
-> +++ b/include/linux/ftrace.h
-> @@ -380,6 +380,30 @@ struct ftrace_graph_ret {
->  #ifdef CONFIG_FUNCTION_GRAPH_TRACER
->  
->  /*
-> + * Stack of return addresses for functions
-> + * of a thread.
-> + * Used in struct thread_info
-> + */
-> +struct ftrace_ret_stack {
-> +	unsigned long ret;
-> +	unsigned long func;
-> +	unsigned long long calltime;
-> +};
-> +
-> +/*
-> + * Primary handler of a function return.
-> + * It relays on ftrace_return_to_handler.
-> + * Defined in entry_32/64.S
-> + */
-> +extern void return_to_handler(void);
-> +
-> +extern int
-> +ftrace_push_return_trace(unsigned long ret, unsigned long long time,
-> +			 unsigned long func, int *depth);
-> +extern void
-> +ftrace_pop_return_trace(struct ftrace_graph_ret *trace, unsigned long *ret);
-> +
-> +/*
->   * Sometimes we don't want to trace a function with the function
->   * graph tracer but we want them to keep traced by the usual function
->   * tracer if the function graph tracer is not configured.
-> diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-> index 930c08e..dce71a5 100644
-> --- a/kernel/trace/trace_functions_graph.c
-> +++ b/kernel/trace/trace_functions_graph.c
-> @@ -42,6 +42,81 @@ static struct tracer_flags tracer_flags = {
->  /* pid on the last trace processed */
->  static pid_t last_pid[NR_CPUS] = { [0 ... NR_CPUS-1] = -1 };
->  
-> +/* Add a function return address to the trace stack on thread info.*/
-> +int
-> +ftrace_push_return_trace(unsigned long ret, unsigned long long time,
-> +			 unsigned long func, int *depth)
-> +{
-> +	int index;
-> +
-> +	if (!current->ret_stack)
-> +		return -EBUSY;
-> +
-> +	/* The return trace stack is full */
-> +	if (current->curr_ret_stack == FTRACE_RETFUNC_DEPTH - 1) {
-> +		atomic_inc(&current->trace_overrun);
-> +		return -EBUSY;
-> +	}
-> +
-> +	index = ++current->curr_ret_stack;
-> +	barrier();
-> +	current->ret_stack[index].ret = ret;
-> +	current->ret_stack[index].func = func;
-> +	current->ret_stack[index].calltime = time;
-> +	*depth = index;
-> +
-> +	return 0;
-> +}
-> +
-> +/* Retrieve a function return address to the trace stack on thread info.*/
-> +void
-> +ftrace_pop_return_trace(struct ftrace_graph_ret *trace, unsigned long *ret)
-> +{
-> +	int index;
-> +
-> +	index = current->curr_ret_stack;
-> +
-> +	if (unlikely(index < 0)) {
-> +		ftrace_graph_stop();
-> +		WARN_ON(1);
-> +		/* Might as well panic, otherwise we have no where to go */
-> +		*ret = (unsigned long)panic;
-> +		return;
-> +	}
-> +
-> +	*ret = current->ret_stack[index].ret;
-> +	trace->func = current->ret_stack[index].func;
-> +	trace->calltime = current->ret_stack[index].calltime;
-> +	trace->overrun = atomic_read(&current->trace_overrun);
-> +	trace->depth = index;
-> +	barrier();
-> +	current->curr_ret_stack--;
-> +
-> +}
-> +
-> +/*
-> + * Send the trace to the ring-buffer.
-> + * @return the original return address.
-> + */
-> +unsigned long ftrace_return_to_handler(void)
-> +{
-> +	struct ftrace_graph_ret trace;
-> +	unsigned long ret;
-> +
-> +	ftrace_pop_return_trace(&trace, &ret);
-> +	trace.rettime = cpu_clock(raw_smp_processor_id());
-> +	ftrace_graph_return(&trace);
-> +
-> +	if (unlikely(!ret)) {
-> +		ftrace_graph_stop();
-> +		WARN_ON(1);
-> +		/* Might as well panic. What else to do? */
-> +		ret = (unsigned long)panic;
-> +	}
-> +
-> +	return ret;
-> +}
-> +
->  static int graph_trace_init(struct trace_array *tr)
->  {
->  	int cpu, ret;
-> -- 
-> 1.5.6.5
-> 
-> -- 
-> 
-> 
+Mike
+-- 
+Mike Murphy
+Ph.D. Candidate and NSF Graduate Research Fellow
+Clemson University School of Computing
+120 McAdams Hall
+Clemson, SC 29634-0974 USA
+Tel: +1 864.656.2838   Fax: +1 864.656.0145
+http://cirg.cs.clemson.edu/~mamurph
