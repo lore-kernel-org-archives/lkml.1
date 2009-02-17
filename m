@@ -1,115 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752931AbZBQOY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbZBQOZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752931AbZBQOY3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 09:24:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbZBQOYV
+	id S1753828AbZBQOZZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 09:25:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbZBQOZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 09:24:21 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:37408 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750886AbZBQOYV (ORCPT
+	Tue, 17 Feb 2009 09:25:10 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:58846 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750886AbZBQOZJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 09:24:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=yBJh5SwIxO+JsLveX/DcRC5kxwCrJrUdZZT17K5NVfrLxGU2WUPFDa0XiPt7ujSOy+
-         rsj1L+mDga74Kb7xmptlODJWFmJMikO1cwMIrByJdKjOOEdJo96Mpy7uqIuKDwMvx7nX
-         EMnYww9bSU2STjf2zV78GHbjsc6Z886ROHe/0=
-Date: Tue, 17 Feb 2009 15:24:15 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [PATCH 00/15] [git pull] for tip/tracing/ftrace
-Message-ID: <20090217142414.GA5888@nowhere>
-References: <20090217051227.957864159@goodmis.org>
+	Tue, 17 Feb 2009 09:25:09 -0500
+Date: Tue, 17 Feb 2009 14:24:53 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Brian Swetland <swetland@google.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Arjan van de Ven <arjan@infradead.org>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>,
+       Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFD] Automatic suspend
+Message-ID: <20090217142453.GA25530@srcf.ucam.org>
+References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com> <13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com> <20090216145948.6fea81c3@infradead.org> <200902170019.40599.rjw@sisk.pl> <20090216232329.GA15678@srcf.ucam.org> <20090217142001.GB12378@bulgaria.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090217051227.957864159@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090217142001.GB12378@bulgaria.corp.google.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 12:12:27AM -0500, Steven Rostedt wrote:
-> 
-> Ingo,
-> 
-> This is a patch series that offers a variety of features.
-> 
-> The first is to add:
-> 
->  #### all functions enabled ####
-> 
-> to set_ftrace_filter when all functions will be traced when function
-> tracing is on.
-> 
-> The next is to add a :command: interface, and the module command:
-> 
->  echo '*:mod:ext4' > set_ftrace_filter
-> 
-> Will select all functions in the ext4 module.
-> 
->  echo '!*write*:mod:ext4' > set_ftrace_filter
-> 
-> will remove all functions with the characters 'write' and are
-> in ext4.
-> 
-> Next we extend the :command: interface as well as add a way to
-> hook tracers to specific functions. Instead of tracing all functions
-> the same, this patch series adds a hash to be able to trace different
-> functions differently.
-> 
-> I implement a 'traceon' and 'traceoff' to have a function start or
-> stop tracing when it is hit. It also includes a counter for the
-> number of times to implement the trace on/off.
-> 
->  echo '*_lock:traceon:4' > set_ftrace_filter
->  echo '*_unlock:traceoff:5' > set_ftrace_filter
+On Tue, Feb 17, 2009 at 06:20:01AM -0800, Brian Swetland wrote:
 
-That's great!
-I guess it could be useful to be able to pass it as a kernel parameter.
-Something like that ftrace=function_tracer ftrace_filter='*_lock:traceon:4'
+> Of course that still doesn't address userspace.  Aggressively going to
+> suspend lets us compensate for userspace programs that do somewhat silly
+> things (I agree that it would be best if they didn't but they do and
+> getting *everyone* to write their userspace code to avoid spinning or
+> avoid waking up on short-duration timers to poll is a losing battle).
 
+Like Pavel pointed out, you could (in principle) handle this by sending 
+a SIGSTOP to everything. The obvious problem with doing so is that this 
+wouldn't result in the processes letting go of the devices, so you 
+wouldn't neccessarily actually get to enter the runtime idle state as a 
+result. Hmm. I'll think about this.
 
-> This will have all functions that end with _lock turn on tracing
-> and all that end with _unlock disable it, 4 times each.
-> 
-> The following patches are in:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> 
->     branch: tip/tracing/ftrace
-> 
-> 
-> Steven Rostedt (15):
->       ftrace: state that all functions are enabled in set_ftrace_filter
->       ftrace: add do_for_each_ftrace_rec and while_for_each_ftrace_rec
->       ftrace: rename ftrace_match to ftrace_match_records
->       ftrace: break up ftrace_match_records into smaller components
->       ftrace: add module command function filter selection
->       ftrace: enable filtering only when a function is filtered on
->       ftrace: add command interface for function selection
->       ftrace: convert ftrace_lock from a spinlock to mutex
->       ftrace: consolidate mutexes
->       ftrace: trace different functions with a different tracer
->       ring-buffer: add tracing_is_on to test if ring buffer is enabled
->       ftrace: add traceon traceoff commands to enable/disable the buffers
->       ftrace: show selected functions in set_ftrace_filter
->       ftrace: add pretty print to selected fuction traces
->       ftrace: add pretty print function for traceon and traceoff hooks
-> 
-> ----
->  include/linux/ftrace.h         |   40 ++
->  include/linux/ring_buffer.h    |    2 +
->  kernel/trace/ftrace.c          |  929 +++++++++++++++++++++++++++++++---------
->  kernel/trace/ring_buffer.c     |    9 +
->  kernel/trace/trace_functions.c |  163 +++++++
->  5 files changed, 946 insertions(+), 197 deletions(-)
-> -- 
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
