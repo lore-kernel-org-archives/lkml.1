@@ -1,79 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbZBQVud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754418AbZBQVyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754808AbZBQVud (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 16:50:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbZBQVuS
+	id S1754418AbZBQVyQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 16:54:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbZBQVyB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 16:50:18 -0500
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:17151 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752125AbZBQVuR (ORCPT
+	Tue, 17 Feb 2009 16:54:01 -0500
+Received: from mga05.intel.com ([192.55.52.89]:9251 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751385AbZBQVyA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 16:50:17 -0500
-Message-ID: <499B30DC.5040303@hp.com>
-Date: Tue, 17 Feb 2009 16:49:16 -0500
-From: Brian Haley <brian.haley@hp.com>
-Organization: Open Source and Linux Organization
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 17 Feb 2009 16:54:00 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,225,1233561600"; 
+   d="scan'208";a="431750220"
+Date: Tue, 17 Feb 2009 13:57:17 -0800
+From: mark gross <mgross@linux.intel.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Arve Hj?nnev?g <arve@android.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFD] Automatic suspend
+Message-ID: <20090217215717.GA25605@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <200902160010.16955.rjw@sisk.pl> <20090216225831.GH1370@ucw.cz> <20090216231324.GA15435@srcf.ucam.org>
 MIME-Version: 1.0
-To: Jay Vosburgh <fubar@us.ibm.com>
-CC: Andrey Borzenkov <arvidjaar@mail.ru>, "J.A. Magall"@us.ibm.com,
-       =?ISO-8859-1?Q?=F3n?= <jamagallon@ono.com>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, bonding-devel@lists.sourceforge.net
-Subject: Re: [Bonding-devel] 2.6.29 regression? Bonding tied to IPV6 in 29-rc5
-References: <alpine.LFD.2.00.0902131413120.3179@localhost.localdomain> <20090217095232.5da06b9f@werewolf.home> <200902172001.41804.arvidjaar@mail.ru> <200902172117.22671.arvidjaar@mail.ru> <499B19AF.1000003@hp.com> <16929.1234904788@death.nxdomain.ibm.com>
-In-Reply-To: <16929.1234904788@death.nxdomain.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090216231324.GA15435@srcf.ucam.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jay Vosburgh wrote:
-> Brian Haley <brian.haley@hp.com> wrote:
+On Mon, Feb 16, 2009 at 11:13:24PM +0000, Matthew Garrett wrote:
+> On Mon, Feb 16, 2009 at 11:58:31PM +0100, Pavel Machek wrote:
 > 
->> Andrey Borzenkov wrote:
-> [...]
->>> This hard dependency was apparently introduced by this commit:
->>>
->>> commit 305d552accae6afb859c493ebc7d98ca3371dae2
->>> Author: Brian Haley <brian.haley@hp.com>
->>> Date:   Tue Nov 4 17:51:14 2008 -0800
->>>
->>>     bonding: send IPv6 neighbor advertisement on failover
->> I initially had bonding IPv6 support as a Kconfig option, but it was 
->> decided it would be cleaner if it just got built-in whenever CONFIG_IPV6 
->> was set like SCTP, with the assumption you might want it.
->>
->> Is it a common configuration to not allow a module to load like you're 
->> doing in modprobe.conf?  I don't know how hard it would be to rip this 
->> out into it's own bonding_ipv6.ko module, simply turning-off CONFIG_IPV6 
->> seems better.
+> > If no devices are being used, and next wakeup is far enough in the
+> > future, just put system to sleep. Long enough == so far away that
+> > suspend/wakeup is short compared to that... like 20 seconds on PC.
 > 
-> 	I'm not sure either of those really helps.  Distro kernels are
-> built with CONFIG_IPV6 (and would have the CONFIG_BONDING_IPV6_DINGUS
-> enabled as well), so the common case users would have it enabled, too.
+> This is intrinsically difficult with PCs, since we have such a poorly 
+> defined set of wakeup events. We can't wakeup on generic network 
+> traffic, just WoL. Many machines won't wake up on keyboard events. 
+> Meanwhile, on embedded it's becoming a less interesting problem because 
+> idle and suspended are often now equivalent states. Concentrating on 
+> runtime PM of as much hardware as possible is arguably more interesting 
+> for the majority of use cases.
 
-I think that was one of the reasons too.
+Putting the wake on key event issue aside, is it possible to have wake
+up's on the ms time scale?  I ask because I thought the XO did exactly
+this (but left the screen live).  Why does it take 20 sec to get into
+or out of S3 on my laptop?
 
-> 	Putting the ipv6 bits into a different module might not help,
-> either, because the "core" bonding code would still have the call to the
-> ipv6 functions.  Unless there's some magic way to somehow know at
-> runtime whether or not the ipv6 module is loaded, and only try to
-> resolve those symbols if ipv6 is loaded.  That seems complicated.
+--mgross
 
-This separate bonding_ipv6 module would have to register itself with the 
-"core" one with a new proto_ops of some sort.  Calls are made for the 
-appropriate method, for example bond_ops->send_gratuitous(bond).  We'd 
-change the IPv4 code too.  It's just a theory, does make things more 
-complicated.
-
-> 	To answer your question, I have come across this (aliasing ipv6
-> to nothing in modprobe.conf to disable IPv6) from time to time, but
-> didn't think of it when the NA code was added to bonding.
-
-So I guess I'll start hacking the above, unless someone has a better 
-suggestion.
-
--Brian
+> 
+> -- 
+> Matthew Garrett | mjg59@srcf.ucam.org
