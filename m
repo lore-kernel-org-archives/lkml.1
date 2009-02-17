@@ -1,121 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbZBQOyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754137AbZBQOza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753859AbZBQOyY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 09:54:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbZBQOyP
+	id S1754137AbZBQOza (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 09:55:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbZBQOzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 09:54:15 -0500
-Received: from ti-out-0910.google.com ([209.85.142.185]:56371 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751526AbZBQOyO (ORCPT
+	Tue, 17 Feb 2009 09:55:21 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:34686 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751526AbZBQOzV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 09:54:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=MLtNbRAE7p845y7M0XH5o71X/2bqggBxeTuZn55kx5XTLVnNeY6RfCl5IloKwOKGTv
-         Bkp38O/TL1eB76A6rN0RtPvF7Fb6pkH2jeTw4r1t5WA+sHmEfH5XNBsMJ11IMGWbdS0s
-         HJhOiyqyUeq6Jd1FU85YUmbsECiE26FEkqOXs=
-From: tom.leiming@gmail.com
-To: kay.sievers@vrfy.org, greg@kroah.com
-Cc: cornelia.huck@de.ibm.com, arjan@infradead.org,
-       linux-kernel@vger.kernel.org, Ming Lei <tom.leiming@gmail.com>
-Subject: [PATCH/RESEND] driver core: remove polling for driver_probe_done(v3)
-Date: Tue, 17 Feb 2009 22:54:04 +0800
-Message-Id: <1234882444-6862-1-git-send-email-tom.leiming@gmail.com>
-X-Mailer: git-send-email 1.6.0.GIT
+	Tue, 17 Feb 2009 09:55:21 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [RFD] Automatic suspend
+Date: Tue, 17 Feb 2009 15:56:58 +0100
+User-Agent: KMail/1.9.10
+Cc: Brian Swetland <swetland@google.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
+       Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>, Len Brown <lenb@kernel.org>
+References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com> <20090217142001.GB12378@bulgaria.corp.google.com> <20090217142453.GA25530@srcf.ucam.org>
+In-Reply-To: <20090217142453.GA25530@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902171557.02149.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ming Lei <tom.leiming@gmail.com>
+Am Tuesday 17 February 2009 15:24:53 schrieb Matthew Garrett:
+> On Tue, Feb 17, 2009 at 06:20:01AM -0800, Brian Swetland wrote:
+> 
+> > Of course that still doesn't address userspace.  Aggressively going to
+> > suspend lets us compensate for userspace programs that do somewhat silly
+> > things (I agree that it would be best if they didn't but they do and
+> > getting *everyone* to write their userspace code to avoid spinning or
+> > avoid waking up on short-duration timers to poll is a losing battle).
+> 
+> Like Pavel pointed out, you could (in principle) handle this by sending 
+> a SIGSTOP to everything. The obvious problem with doing so is that this 
+> wouldn't result in the processes letting go of the devices, so you 
+> wouldn't neccessarily actually get to enter the runtime idle state as a 
+> result. Hmm. I'll think about this.
 
-This patch adds a function : driver_wait_probe_done,
-which waits on condition of probing done to replace
-polling for driver_probe_done in fs initialization.
+They don't let go of the devices if you suspend either. If you want that
+you need active cooperation from user space. In fact if you suspend you
+give drivers the guarantee of not getting any output without prior
+notification, making their lives easier.
 
-There is no better way to avoid polling for
-driver_probe_done _and_ existence of the root device,
-so we does not replace the driver_probe_done with
-driver_wait_probe_done in such special case.
+	Regards
+		Oliver
 
-Removing polling in fs initialization may lead to
-a faster boot.
-
-Signed-off-by: Ming Lei <tom.leiming@gmail.com>
-Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-Reviewed-by: Arjan van de Ven <arjan@linux.intel.com>
----
- drivers/base/dd.c      |   12 ++++++++++++
- include/linux/device.h |    1 +
- init/do_mounts.c       |    4 ++--
- init/do_mounts_md.c    |    3 +--
- 4 files changed, 16 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index 9b721d3..8f9f6fb 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -168,6 +168,18 @@ int driver_probe_done(void)
- }
- 
- /**
-+ * driver_wait_probe_done
-+ * Wait until the probe sequence is finished.
-+ *
-+ */
-+void driver_wait_probe_done(void)
-+{
-+	pr_debug("%s: probe_count = %d\n", __func__,
-+		 atomic_read(&probe_count));
-+	wait_event(probe_waitqueue, atomic_read(&probe_count) == 0);
-+}
-+
-+/**
-  * driver_probe_device - attempt to bind device & driver together
-  * @drv: driver to bind a device to
-  * @dev: device to try to bind to the driver
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 45e5b19..c53cdbf 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -147,6 +147,7 @@ extern void put_driver(struct device_driver *drv);
- extern struct device_driver *driver_find(const char *name,
- 					 struct bus_type *bus);
- extern int driver_probe_done(void);
-+extern void driver_wait_probe_done(void);
- 
- /* sysfs interface for exporting driver attributes */
- 
-diff --git a/init/do_mounts.c b/init/do_mounts.c
-index 708105e..9cb1985 100644
---- a/init/do_mounts.c
-+++ b/init/do_mounts.c
-@@ -371,8 +371,8 @@ void __init prepare_namespace(void)
- 	}
- 
- 	/* wait for the known devices to complete their probing */
--	while (driver_probe_done() != 0)
--		msleep(100);
-+	driver_wait_probe_done();
-+
- 	async_synchronize_full();
- 
- 	md_run_setup();
-diff --git a/init/do_mounts_md.c b/init/do_mounts_md.c
-index ff95e31..63b77f0 100644
---- a/init/do_mounts_md.c
-+++ b/init/do_mounts_md.c
-@@ -281,8 +281,7 @@ static void __init autodetect_raid(void)
- 	 */
- 	printk(KERN_INFO "md: Waiting for all devices to be available before autodetect\n");
- 	printk(KERN_INFO "md: If you don't use raid, use raid=noautodetect\n");
--	while (driver_probe_done() < 0)
--		msleep(100);
-+	driver_wait_probe_done();
- 	fd = sys_open("/dev/md0", 0, 0);
- 	if (fd >= 0) {
- 		sys_ioctl(fd, RAID_AUTORUN, raid_autopart);
--- 
-1.6.0
 
