@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765AbZBQOTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbZBQOV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753765AbZBQOTv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 09:19:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbZBQOTl
+	id S1753487AbZBQOV4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 09:21:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbZBQOVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 09:19:41 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:46651 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751705AbZBQOTl (ORCPT
+	Tue, 17 Feb 2009 09:21:47 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:24106 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750886AbZBQOVq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 09:19:41 -0500
-Date: Tue, 17 Feb 2009 14:19:24 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Brian Swetland <swetland@google.com>
-Cc: Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Arve Hj?nnev?g <arve@android.com>,
+	Tue, 17 Feb 2009 09:21:46 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:references:
+	mime-version:content-type:content-disposition:in-reply-to:organization:
+	user-agent:x-system-of-record;
+	b=iqZsacNhGTqno6Zhg5ow/HgOlCbJUTmAJaJSiNY93OGNCrUVH+4FVgntyZiIJLOFN
+	VQHElIf4QJbbHHkbSIZlg==
+Date: Tue, 17 Feb 2009 06:20:01 -0800
+From: Brian Swetland <swetland@google.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Arjan van de Ven <arjan@infradead.org>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
        Alan Stern <stern@rowland.harvard.edu>,
+       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>,
+       Pavel Machek <pavel@ucw.cz>,
        Nigel Cunningham <nigel@nigel.suspend2.net>,
-       mark gross <mgross@linux.intel.com>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>, Uli Luckas <u.luckas@road.de>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
        Igor Stoppa <igor.stoppa@nokia.com>, Len Brown <lenb@kernel.org>
 Subject: Re: [RFD] Automatic suspend
-Message-ID: <20090217141924.GA25335@srcf.ucam.org>
-References: <200902160010.16955.rjw@sisk.pl> <20090216225831.GH1370@ucw.cz> <20090216231324.GA15435@srcf.ucam.org> <20090216232259.GK1370@ucw.cz> <20090216232619.GB15678@srcf.ucam.org> <20090217141434.GA12378@bulgaria.corp.google.com>
+Message-ID: <20090217142001.GB12378@bulgaria.corp.google.com>
+References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com> <13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com> <20090216145948.6fea81c3@infradead.org> <200902170019.40599.rjw@sisk.pl> <20090216232329.GA15678@srcf.ucam.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090217141434.GA12378@bulgaria.corp.google.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20090216232329.GA15678@srcf.ucam.org>
+Organization: Google, Inc.
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 06:14:34AM -0800, Brian Swetland wrote:
-> [Matthew Garrett <mjg59@srcf.ucam.org>]
-> > https://lists.linux-foundation.org/pipermail/linux-pm/2009-January/019493.html 
-> > says that they're the same on their current platform.
+[Matthew Garrett <mjg59@srcf.ucam.org>]
+> On Tue, Feb 17, 2009 at 12:19:38AM +0100, Rafael J. Wysocki wrote:
 > 
-> Well on the Qualcomm MSM72xx SoCs, yeah they're pretty similar -- we can
-> reasonably enter power collapse (full shutdown of the ARM11 and
-> peripherals) from idle.  But this is not (to my knowledge) true of *all*
-> SoCs out there.  Also, resuming from this state can take 5-30ms
-> (depending on how distracted the baseband processor is by what's going
-> on on the network).
+> > This, again, seems to be a bit x86-centric. :-)  The Android people are telling
+> > us that on the hardware they deal with it does make sense to put the entire
+> > system to sleep even for relatively short periods of time, since the latencies
+> > involved are not too bad.
+> 
+> Arve said that the power state was equivalent in idle and suspend, but 
+> that they preferred suspend because it stopped any periodic timers. I'd 
+> be more interested in making sure that unnecessary timers aren't running 
+> than focusing on automatically entering system-wide suspend - Nokia have 
+> been managing this since 2005 with good results.
 
-Mm. Resume from deep idle on x86 is typically in the usec range, but 
-this is the kind of constraint that pm_qos exposes nicely.
+We'd totally agree that doing something about periodic timers would be a
+big win.  There's also the situation that the longest ARM linux can sit
+in idle right now is ~2s at a time (Arve can expand on the exact issue
+relating to a 32bit signed nanosecond value somewhere iirc), which we'd
+want to sort out as well.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Of course that still doesn't address userspace.  Aggressively going to
+suspend lets us compensate for userspace programs that do somewhat silly
+things (I agree that it would be best if they didn't but they do and
+getting *everyone* to write their userspace code to avoid spinning or
+avoid waking up on short-duration timers to poll is a losing battle).
+
+Brian
+
