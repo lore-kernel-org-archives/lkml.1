@@ -1,90 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752527AbZBQLyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbZBQLyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752527AbZBQLyY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 06:54:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbZBQLyH
+	id S1754286AbZBQLyt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 06:54:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbZBQLyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 06:54:07 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:2307 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751253AbZBQLyF (ORCPT
+	Tue, 17 Feb 2009 06:54:40 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:45867 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751253AbZBQLyj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 06:54:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=OQa1GQo2eEvcNaXsD3lOp9kngNx1i+AV0ktbNkHbvAKIPcezghr13uhQZZhP53D9Vn
-         sS6DCuOBZFOirkG3PuuU40PRP3K/pHbFpHOe1BtvBVkdNcToosXQ3A4NlFKiJefAAk1w
-         0Rumr4wOoMwExH1XXZMW+Wdj0aW8cHdtuSosc=
-Date: Tue, 17 Feb 2009 11:53:57 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Karl Hiramoto <karl@hiramoto.org>
-Cc: Patrick McHardy <kaber@trash.net>, netdev@vger.kernel.org,
-       netfilter@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH v2] Re: problem with IPoA (CLIP),  NAT, and VLANS
-Message-ID: <20090217115357.GA6130@ff.dom.local>
-References: <20090216232016.GA4803@ami.dom.local> <499A7D7D.1090607@trash.net> <20090217093908.GB5341@ff.dom.local> <499A99F4.60405@hiramoto.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <499A99F4.60405@hiramoto.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 17 Feb 2009 06:54:39 -0500
+Subject: Re: [PATCH] Add tracepoints to track pagecache transition
+From: Peter Zijlstra <peterz@infradead.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>, linux-kernel@vger.kernel.org,
+       Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Kazuto Miyoshi <miyoshi@linux.bs1.fc.nec.co.jp>, rostedt@goodmis.org,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+In-Reply-To: <20090217201651.576E.A69D9226@jp.fujitsu.com>
+References: <1234863220.4744.34.camel@laptop>
+	 <499A99BC.2080700@bk.jp.nec.com>
+	 <20090217201651.576E.A69D9226@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Tue, 17 Feb 2009 12:54:11 +0100
+Message-Id: <1234871651.4744.89.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 12:05:24PM +0100, Karl Hiramoto wrote:
-> 
-> 
-> Jarek Poplawski wrote:
-> > Sorry:
-> > -----------------> take 2: changelog fix only
-> >
-> > vlan: Update skb->mac_header in __vlan_put_tag().
-> >
-> > After moving mac addresses in __vlan_put_tag() skb->mac_header needs
-> > to be updated.
-> >   
-> This works on IPoE.  I notice no change with or w/o this patch on IPoE
-> only routing.    However has no effect on the original problem i
-> reported with  IPoA --> NAT --> VLAN
-> 
-> Tested-by: Karl Hiramoto <karl@hiramoto.org>
+On Tue, 2009-02-17 at 20:38 +0900, KOSAKI Motohiro wrote:
+> If you want to see I/O activity, you need to add tracepoint into block
+> layer.
 
-Yes, since it didn't affect the working case with your patch, I didn't
-expect it would matter here, but it looks like needed so good to know
-it seems not to make anything wrong at least.
+We already have that, Arnaldo converted blktrace to use tracepoints and
+wrote an ftrace tracer for it.
 
-Thanks for testing,
-Jarek P.
-
-> 
-> > Reported-by: Karl Hiramoto <karl@hiramoto.org>
-> > Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
-> > ---
-> >
-> >  include/linux/if_vlan.h |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/include/linux/if_vlan.h b/include/linux/if_vlan.h
-> > index f8ff918..e1ff5b1 100644
-> > --- a/include/linux/if_vlan.h
-> > +++ b/include/linux/if_vlan.h
-> > @@ -210,6 +210,7 @@ static inline struct sk_buff *__vlan_put_tag(struct sk_buff *skb, u16 vlan_tci)
-> >  
-> >  	/* Move the mac addresses to the beginning of the new header. */
-> >  	memmove(skb->data, skb->data + VLAN_HLEN, 2 * VLAN_ETH_ALEN);
-> > +	skb->mac_header -= VLAN_HLEN;
-> >  
-> >  	/* first, the ethernet type */
-> >  	veth->h_vlan_proto = htons(ETH_P_8021Q);
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe netdev" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >
-> >   
-> 
