@@ -1,91 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbZBQXRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbZBQXUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755060AbZBQXRS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 18:17:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754195AbZBQXRF
+	id S1754691AbZBQXUk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 18:20:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbZBQXUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 18:17:05 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:48185 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753126AbZBQXRD (ORCPT
+	Tue, 17 Feb 2009 18:20:30 -0500
+Received: from rv-out-0506.google.com ([209.85.198.234]:54779 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752678AbZBQXU3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 18:17:03 -0500
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <m1pri623g9.fsf@fess.ebiederm.org>
-	<49815BF6.7060402@jp.fujitsu.com>
-	<200902131129.09523.jbarnes@virtuousgeek.org>
-	<m11vu1wtk6.fsf@fess.ebiederm.org> <m1ab8p89is.fsf@fess.ebiederm.org>
-	<m11vu183ti.fsf@fess.ebiederm.org> <49991D8C.1050705@jp.fujitsu.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 17 Feb 2009 15:17:18 -0800
-In-Reply-To: <49991D8C.1050705@jp.fujitsu.com> (Kenji Kaneshige's message of "Mon\, 16 Feb 2009 17\:02\:20 +0900")
-Message-ID: <m1y6w4u001.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 17 Feb 2009 18:20:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=g2MIhwWCNiSI87PFDiEHwr7TwFunoogqrZzoTHoOG5vqlr0IIgRAZGYa+gxBPH57I1
+         es4hC4vonhY78JPuDgN7oVG9EZymXgqjirr+gn+F/GjcktjlT8LRE4YH2Y5/7Mprt6o8
+         ngp5oaCmzLoOWrjmwLL0nebBRjBNV0N+pPjy0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: kaneshige.kenji@jp.fujitsu.com, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
-	*      [score: 0.0950]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] pciehp:  Handle interrupts that happen during initialization.
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+In-Reply-To: <20090217231101.GH16841@parisc-linux.org>
+References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>
+	 <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm>
+	 <20090217230050.GG16841@parisc-linux.org>
+	 <alpine.DEB.1.10.0902171506500.26625@asgard.lang.hm>
+	 <20090217231101.GH16841@parisc-linux.org>
+Date: Tue, 17 Feb 2009 15:20:28 -0800
+X-Google-Sender-Auth: f6111311e901a661
+Message-ID: <86802c440902171520r4eb9c94ev416a54c540cf60c1@mail.gmail.com>
+Subject: Re: mpt fusion broken sometime since 2.6.24
+From: Yinghai Lu <yinghai@kernel.org>
+To: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: david@lang.hm, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, DL-MPTFusionLinux@lsi.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> writes:
-
-> Eric W. Biederman wrote:
->> ebiederm@xmission.com (Eric W. Biederman) writes:
->> 
->>> And on the big gotcha's I have found one more I am tracking.
->>>
->>> I am seeing pci bridges with a NULL pointer for the subordinate bus.
->>> Earlier I had thought that this was a symptom of the double remove
->>> but I have been able to reproduce it without that.
->>>
->>> On just a little bit deeper investigation it looks like the cases
->>> are dying are all coming when the nested bridge reappears.
->>>
->>> Which is wrong on so many levels as I am toggle power to the outer
->>> slot, so the nested bridge should not even exist at that time.  Ugh.
->>> More tracing to for me on that one.
->> 
->> Ok. Got it.  I was processing the interrupt for a device after it had
->> been hot removed but before the device state had disappeared.
->> 
->> pcie_isr looks like it would be even worse in that situation.  Looping forever
->> if pciehp_readw(ctrl, PCIE_EXPSLTA) always succeed sand returns 0xffff.
->> 
->> That loop in there appears impossibly misguided.  If the pending interrupt
->> values change after you have received the interrupt another instance
->> of the same interrupt should be pending so the loop should be completely
->> unnecessary.
->> 
+On Tue, Feb 17, 2009 at 3:11 PM, Matthew Wilcox <matthew@wil.cx> wrote:
+> On Tue, Feb 17, 2009 at 03:07:26PM -0800, david@lang.hm wrote:
+>> >mptbase.mpt_msi_enable_sas=0
+>>
+>> is that disabling SAS for this system? if so, that's the wrong thing to do
+>> (the drives are SAS)
 >
-> For level-triggered interrupt, I think it's true.
+> no, it's disabling msi for sas controllers.
 >
-> But for edge-triggered interrupt, I don't think it's true. I think
-> only one interrupt is generated if the first hotplug event occurs
-> and the second hotplug event occurs before clearing the status of
-> first hotplug event.
+> nb, I said this patch (e382968ba618e016ff7922dff9a6140c2f9108c8) was
+> the wrong way to go about getting MSI working.
 
-My test case is edge-triggered MSI's.  The issue is that I get an interrupt
-from the card that I am unplugging, but by the time the interrupt handler
-is executed the card is physically absent, but the pci_dev structure is
-still present in the kernel.
+yes. that patch really does disable the mptsas with MSI.
 
-Eric
+http://lkml.org/lkml/2009/2/6/375
+it should get into 2.6.29...
+
+YH
