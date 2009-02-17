@@ -1,142 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbZBQRNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754155AbZBQRNb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753442AbZBQRNP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 12:13:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbZBQRM7
+	id S1754155AbZBQRNb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 12:13:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412AbZBQRNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 12:12:59 -0500
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:52810 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752304AbZBQRM7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 12:12:59 -0500
-Date: Tue, 17 Feb 2009 12:05:07 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Mel Gorman <mel@csn.ul.ie>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Subject: Re: [patch] SLQB slab allocator (try 2)
-In-Reply-To: <1234890096.11511.6.camel@penberg-laptop>
-Message-ID: <alpine.DEB.1.10.0902171204070.15929@qirst.com>
-References: <20090123154653.GA14517@wotan.suse.de>  <200902041748.41801.nickpiggin@yahoo.com.au>  <20090204152709.GA4799@csn.ul.ie>  <200902051459.30064.nickpiggin@yahoo.com.au>  <20090216184200.GA31264@csn.ul.ie> <4999BBE6.2080003@cs.helsinki.fi> 
- <alpine.DEB.1.10.0902171120040.27813@qirst.com> <1234890096.11511.6.camel@penberg-laptop>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 17 Feb 2009 12:13:14 -0500
+Received: from smtp-in.kfki.hu ([148.6.0.26]:45751 "EHLO smtp1.kfki.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753251AbZBQRNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 12:13:12 -0500
+Date: Tue, 17 Feb 2009 18:13:04 +0100 (CET)
+From: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+To: Kyle Moffett <kyle@moffetthome.net>
+cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] Update jhash.h with the new version of Jenkins' hash
+In-Reply-To: <f73f7ab80902120546w2ac30501v10fc55b9c8270be9@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0902171723330.27283@blackhole.kfki.hu>
+References: <alpine.DEB.2.00.0902111107480.15665@blackhole.kfki.hu>  <20090212001223.GA5757@movementarian.org>  <alpine.DEB.2.00.0902121006440.18739@blackhole.kfki.hu> <f73f7ab80902120546w2ac30501v10fc55b9c8270be9@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well yes you missed two locations (kmalloc_caches array has to be
-redimensioned) and I also was writing the same patch...
+Hi,
 
-Here is mine:
+On Thu, 12 Feb 2009, Kyle Moffett wrote:
 
-Subject: SLUB: Do not pass 8k objects through to the page allocator
+> On Thu, Feb 12, 2009 at 4:11 AM, Jozsef Kadlecsik
+> <kadlec@blackhole.kfki.hu> wrote:
+> > The current jhash.h implements the lookup2() hash function by Bob Jenkins.
+> > However, lookup2() is outdated as Bob wrote a new hash function called
+> > lookup3(). The new hash function
+> >
+> > - mixes better than lookup2(): it passes the check that every input bit
+> >  changes every output bit 50% of the time, while lookup2() failed it.
+> > - performs better: compiled with -O2 on Core2 Duo, lookup3() 20-40% faster
+> >  than lookup2() depending on the key length.
+> 
+> Well, there's another question which is not addressed by Bob Jenkins'
+> design docs:
+> 
+> Kernel code usually runs cache-cold, whereas Bob Jenkins did most of
+> his testing cache-hot in tight loops.  If you compile both lookup2 and
+> lookup3 with -Os and run them in a loop with a cache flush, how well
+> do they compare then?
 
-Increase the maximum object size in SLUB so that 8k objects are not
-passed through to the page allocator anymore. The network stack uses 8k
-objects for performance critical operations.
+In order to get as much data as possible, I dusted off the good old cttest 
+program which was used long time ago to test and pick the currently used 
+lookup2 function. I added lookup3 to cttest, converted the internals to 
+follow the current netfilter/conntrack hash lookup usage and introduced a 
+large enough input buffer to force cold cache. I also added the superfast 
+hash by Paul Hsieh and murmur2 hash of Austin Appleby, to check those as 
+well.
 
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+The test program and all the generated html pages and graphs are at
+http://www.kfki.hu/~kadlec/sw/netfilter/ct3/. Here follows just a terse 
+summary:
 
-Index: linux-2.6/include/linux/slub_def.h
-===================================================================
---- linux-2.6.orig/include/linux/slub_def.h	2009-02-17 10:45:51.000000000 -0600
-+++ linux-2.6/include/linux/slub_def.h	2009-02-17 11:06:53.000000000 -0600
-@@ -121,10 +121,21 @@
- #define KMALLOC_SHIFT_LOW ilog2(KMALLOC_MIN_SIZE)
+- Superfasthash is definitely not good enough as it can too easily 
+  produce just too much clashes.
+- The murmur2 hash is the fastest one and looks quite good, still it
+  had got some trouble at specific hash table sizes.
+- No weakness could be spotted with the lookup3 hash.
+- When compiling with -Os, the hashes from fastest to slowest are:
+  murmur2, lookup3, superfast, lookup2.
+- When compiling with -O2, the hashes from fastest to slowest are:
+  murmur2, superfast, lookup3 and lookup2.
 
- /*
-+ * Maximum kmalloc object size handled by SLUB. Larger object allocations
-+ * are passed through to the page allocator. The page allocator "fastpath"
-+ * is relatively slow so we need this value sufficiently high so that
-+ * performance critical objects are allocated through the SLUB fastpath.
-+ *
-+ * This should be dropped to PAGE_SIZE / 2 once the page allocator
-+ * "fastpath" becomes competitive with the slab allocator fastpaths.
-+ */
-+#define SLUB_MAX_SIZE (2 * PAGE_SIZE)
-+
-+/*
-  * We keep the general caches in an array of slab caches that are used for
-  * 2^x bytes of allocations.
-  */
--extern struct kmem_cache kmalloc_caches[PAGE_SHIFT + 1];
-+extern struct kmem_cache kmalloc_caches[PAGE_SHIFT + 2];
+On Thu, 12 Feb 2009, Rusty Russell wrote:
 
- /*
-  * Sorry that the following has to be that ugly but some versions of GCC
-@@ -212,7 +223,7 @@
- static __always_inline void *kmalloc(size_t size, gfp_t flags)
- {
- 	if (__builtin_constant_p(size)) {
--		if (size > PAGE_SIZE)
-+		if (size > SLUB_MAX_SIZE)
- 			return kmalloc_large(size, flags);
+> My concern was that it's also bigger (and we inline it).  Performance is
+> pretty much a wash since we so rarely hash more than a few words.
 
- 		if (!(flags & SLUB_DMA)) {
-@@ -234,7 +245,7 @@
- static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
- {
- 	if (__builtin_constant_p(size) &&
--		size <= PAGE_SIZE && !(flags & SLUB_DMA)) {
-+		size <= SLUB_MAX_SIZE && !(flags & SLUB_DMA)) {
- 			struct kmem_cache *s = kmalloc_slab(size);
+In netfilter/conntrack (;-) we call the hash function for every packet, so 
+even if a small number of cycle can be gained at one lookup, I think it's 
+worth. And in the IPv4/IPv6 neutral nf_conntrack we hash 9 words.
 
- 		if (!s)
-Index: linux-2.6/mm/slub.c
-===================================================================
---- linux-2.6.orig/mm/slub.c	2009-02-17 10:49:47.000000000 -0600
-+++ linux-2.6/mm/slub.c	2009-02-17 10:58:14.000000000 -0600
-@@ -2475,7 +2475,7 @@
-  *		Kmalloc subsystem
-  *******************************************************************/
+> Any stats on code size changes?
 
--struct kmem_cache kmalloc_caches[PAGE_SHIFT + 1] __cacheline_aligned;
-+struct kmem_cache kmalloc_caches[PAGE_SHIFT + 2] __cacheline_aligned;
- EXPORT_SYMBOL(kmalloc_caches);
+The minimal code here
 
- static int __init setup_slub_min_order(char *str)
-@@ -2658,7 +2658,7 @@
- {
- 	struct kmem_cache *s;
+#include <stdint.h>
 
--	if (unlikely(size > PAGE_SIZE))
-+	if (unlikely(size > SLUB_MAX_SIZE))
- 		return kmalloc_large(size, flags);
+typedef uint64_t u64;
+typedef uint32_t u32;
+typedef uint16_t u16;
+typedef uint8_t u8;
 
- 	s = get_slab(size, flags);
-@@ -2686,7 +2686,7 @@
- {
- 	struct kmem_cache *s;
+#ifdef JHASH
+#include "jhash.h"
+#else
+#include "jhash3.h"
+#endif
 
--	if (unlikely(size > PAGE_SIZE))
-+	if (unlikely(size > SLUB_MAX_SIZE))
- 		return kmalloc_large_node(size, flags, node);
+u32 hash(const u32 *key, u32 len, u32 initval)
+{
+        return jhash2(key, len, initval);
+}
+/* eof */
 
- 	s = get_slab(size, flags);
-@@ -3223,7 +3223,7 @@
- {
- 	struct kmem_cache *s;
+compiled with -Os, then stripped, give:
 
--	if (unlikely(size > PAGE_SIZE))
-+	if (unlikely(size > SLUB_MAX_SIZE))
- 		return kmalloc_large(size, gfpflags);
+-rw-r--r-- 1 kadlec kadlec 1080 2009-02-17 14:10 lookup2.o
+-rw-r--r-- 1 kadlec kadlec 1024 2009-02-17 14:10 lookup3.o
 
- 	s = get_slab(size, gfpflags);
-@@ -3239,7 +3239,7 @@
- {
- 	struct kmem_cache *s;
+So I think the currently used lookup2 can safely be replaced with lookup3.
 
--	if (unlikely(size > PAGE_SIZE))
-+	if (unlikely(size > SLUB_MAX_SIZE))
- 		return kmalloc_large_node(size, gfpflags, node);
-
- 	s = get_slab(size, gfpflags);
+Best regards,
+Jozsef
+-
+E-mail  : kadlec@blackhole.kfki.hu, kadlec@mail.kfki.hu
+PGP key : http://www.kfki.hu/~kadlec/pgp_public_key.txt
+Address : KFKI Research Institute for Particle and Nuclear Physics
+          H-1525 Budapest 114, POB. 49, Hungary
