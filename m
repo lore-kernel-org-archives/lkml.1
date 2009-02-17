@@ -1,83 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755203AbZBQXPE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbZBQXRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755203AbZBQXPE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 18:15:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbZBQXOt
+	id S1755060AbZBQXRS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 18:17:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754195AbZBQXRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 18:14:49 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:57754 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753843AbZBQXOs (ORCPT
+	Tue, 17 Feb 2009 18:17:05 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:48185 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753126AbZBQXRD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 18:14:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent;
-        b=Uu69qdACngA1XzlZe/uWJcoptcB2pyhjsPVNHgPq2uX9Z9AEawv+3g134EUctkW4t3
-         sF1Vbuh+VkFE44l0L1lgdVDMPOJVEHUSvJw4YBYJ0XUf2n/KD3ZdXWf+k66F2zsUEj5z
-         RafyqQ9d4i083TQ5edUYdH4BbVLOgP9LKOpJ0=
-Date: Wed, 18 Feb 2009 00:12:55 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Karl Hiramoto <karl@hiramoto.org>
-Cc: netdev@vger.kernel.org, netfilter@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: problem with IPoA (CLIP),  NAT, and VLANS
-Message-ID: <20090217231255.GA3389@ami.dom.local>
+	Tue, 17 Feb 2009 18:17:03 -0500
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <m1pri623g9.fsf@fess.ebiederm.org>
+	<49815BF6.7060402@jp.fujitsu.com>
+	<200902131129.09523.jbarnes@virtuousgeek.org>
+	<m11vu1wtk6.fsf@fess.ebiederm.org> <m1ab8p89is.fsf@fess.ebiederm.org>
+	<m11vu183ti.fsf@fess.ebiederm.org> <49991D8C.1050705@jp.fujitsu.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 17 Feb 2009 15:17:18 -0800
+In-Reply-To: <49991D8C.1050705@jp.fujitsu.com> (Kenji Kaneshige's message of "Mon\, 16 Feb 2009 17\:02\:20 +0900")
+Message-ID: <m1y6w4u001.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <499AB345.3070904@hiramoto.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Rcpt-To: kaneshige.kenji@jp.fujitsu.com, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.0950]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] pciehp:  Handle interrupts that happen during initialization.
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Karl Hiramoto wrote, On 02/17/2009 01:53 PM:
+Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> writes:
 
-> Jarek Poplawski wrote:
->> On Tue, Feb 17, 2009 at 12:49:07PM +0100, Karl Hiramoto wrote:
->> ...
->>   
->>> A side note:  so far the original patch i sent works in all cases i have
->>> tested, but fails with tcpdump.   I suspect its because the skb gets cloned.
->>>     
->> If there is something readable from this tcpdump, it should be helpful
->> to see a packet for working and non-working case during such ping
->> (with -nXX option).
->> Jarek P.
->>   
-> 
-> Note:  I have the patches i sent applied,  plus the  "skb->mac_header -=
-> VLAN_HLEN;"   patch from Jarek on 2.6.28.4
-> 
-> Doing a tcpdump simultaneously  on the atm and eth0.1 on the linux router.
+> Eric W. Biederman wrote:
+>> ebiederm@xmission.com (Eric W. Biederman) writes:
+>> 
+>>> And on the big gotcha's I have found one more I am tracking.
+>>>
+>>> I am seeing pci bridges with a NULL pointer for the subordinate bus.
+>>> Earlier I had thought that this was a symptom of the double remove
+>>> but I have been able to reproduce it without that.
+>>>
+>>> On just a little bit deeper investigation it looks like the cases
+>>> are dying are all coming when the nested bridge reappears.
+>>>
+>>> Which is wrong on so many levels as I am toggle power to the outer
+>>> slot, so the nested bridge should not even exist at that time.  Ugh.
+>>> More tracing to for me on that one.
+>> 
+>> Ok. Got it.  I was processing the interrupt for a device after it had
+>> been hot removed but before the device state had disappeared.
+>> 
+>> pcie_isr looks like it would be even worse in that situation.  Looping forever
+>> if pciehp_readw(ctrl, PCIE_EXPSLTA) always succeed sand returns 0xffff.
+>> 
+>> That loop in there appears impossibly misguided.  If the pending interrupt
+>> values change after you have received the interrupt another instance
+>> of the same interrupt should be pending so the loop should be completely
+>> unnecessary.
+>> 
+>
+> For level-triggered interrupt, I think it's true.
+>
+> But for edge-triggered interrupt, I don't think it's true. I think
+> only one interrupt is generated if the first hotplug event occurs
+> and the second hotplug event occurs before clearing the status of
+> first hotplug event.
 
-Nice job. Since tcpdump sees corrupted data, and we don't know if it's
-before or after hitting the driver I'd suggest to try full skb_copy()
-yet. So could you try if with your patch + the patch below tcpdump
-still breaks these things?
+My test case is edge-triggered MSI's.  The issue is that I get an interrupt
+from the card that I am unplugging, but by the time the interrupt handler
+is executed the card is physically absent, but the pci_dev structure is
+still present in the kernel.
 
-BTW, I wonder what IXP400 config options do you use (especially
-CONFIG_IXP400_ETH_SKB_RECYCLE)?
-
-Jarek P.
-
---- patch #3 (for debugging only)
-
- net/core/dev.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/net/core/dev.c b/net/core/dev.c
-index a17e006..b822a5d 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -1346,7 +1346,7 @@ static void dev_queue_xmit_nit(struct sk_buff *skb, struct net_device *dev)
- 		if ((ptype->dev == dev || !ptype->dev) &&
- 		    (ptype->af_packet_priv == NULL ||
- 		     (struct sock *)ptype->af_packet_priv != skb->sk)) {
--			struct sk_buff *skb2= skb_clone(skb, GFP_ATOMIC);
-+			struct sk_buff *skb2= skb_copy(skb, GFP_ATOMIC);
- 			if (!skb2)
- 				break;
- 
+Eric
