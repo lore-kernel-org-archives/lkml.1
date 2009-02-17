@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbZBQUB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbZBQUBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754551AbZBQUB1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 15:01:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbZBQUBU
+	id S1754877AbZBQUBl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 15:01:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754605AbZBQUBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 15:01:20 -0500
-Received: from smtp6.tech.numericable.fr ([82.216.111.42]:48567 "EHLO
-	smtp6.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751717AbZBQUBT (ORCPT
+	Tue, 17 Feb 2009 15:01:30 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:45879 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754570AbZBQUB2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 15:01:19 -0500
-Message-ID: <499B178B.9090601@numericable.fr>
-Date: Tue, 17 Feb 2009 21:01:15 +0100
-From: etienne <etienne.basset@numericable.fr>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 17 Feb 2009 15:01:28 -0500
+Date: Tue, 17 Feb 2009 21:01:27 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: Andreas Mohr <andi@lisas.de>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       WimVanSebroeck@rhlx01.hs-esslingen.de
+Subject: Re: [BUG] 2.6.29-rc2-git1 to -rc5: libata lockup on boot, LED
+	solid, 100% CPU
+Message-ID: <20090217200127.GA30981@rhlx01.hs-esslingen.de>
 MIME-Version: 1.0
-To: Casey Schaufler <casey@schaufler-ca.com>
-CC: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org
-Subject: [PATCH] SMACK netfilter smacklabel socket match
-References: <fa.O38YY4pVfLlMFJNBI3mhgn+qOcQ@ifi.uio.no> <fa.c87eBVWyCqqi9h1c54QlwKDAIbg@ifi.uio.no> <fa.f7jv/+EnhNJziduAqQS3XHiU6/A@ifi.uio.no> <fa.1A5YyyPb1uCn//vnk7baNJGI0IM@ifi.uio.no> <fa.HFpMNTzIQ1+pODZB3+XkfnipCfo@ifi.uio.no> <fa.3IBoeBnwT1eZcqeO6DAE1tHBYc4@ifi.uio.no>
-In-Reply-To: <fa.3IBoeBnwT1eZcqeO6DAE1tHBYc4@ifi.uio.no>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hello,
+<wim@iguana.be>
+Bcc: 
+Subject: Re: [BUG] 2.6.29-rc2-git1 to -rc5: libata lockup on boot, LED
+	solid, 100% CPU
+Reply-To: 
+In-Reply-To: <18841.54304.460011.351580@harpo.it.uu.se>
+X-Priority: none
 
+[CC'd Sergei and Wim; thanks a lot for your work!]
 
-i was playing with smack, trying to do funny things
-Alas, when I use a 'labelled process' and try to access internet, packet are dropped sooner or later (because of ip options)
+Hi,
 
-I tried to 
-echo 0.0.0.0/0 @ > /smack/netlabel 
-with no success...
+On Mon, Feb 16, 2009 at 10:01:20PM +0100, Mikael Pettersson wrote:
+> Andreas Mohr writes:
+>  > Should I test 2.6.28.5? Every build will take two hours though...
+>  > Not ATA-SFF 32bit bug problem, right? (already committed?)
+>  > http://marc.info/?l=linux-kernel&m=123254501314058&w=2
+> 
+> To me it looks like the 32-bit PIO bug. The patch you cited above was
+> just the first to identify the issue. This is still unfixed in 29-rc5.
+> Please test Sergei's latest proposed patch posted yesterday to linux-ide.
 
+Bingo. That patch ( http://marc.info/?l=linux-ide&m=123482861218381&w=2 )
+made -rc5 boot for me. Well, after additionally disabling iTCO_wdt.ko,
+that is... (on my Dell Inspiron 8000 i810)
 
-looking at security/smack/smack_lsm.c:smack_host_label
-the following lines
+And HDD did seem to be a wee bit more reponsive, too, but that could be
+mere illusion...
 
-bestmask.s_addr = 0;
-...
-if ((miap->s_addr | bestmask.s_addr) == bestmask.s_addr)
-   continue;
+Thanks,
 
-if the dest we try to reach match the 0.0.0.0/0, this condition will be true (either because we have a better match or because, well (miap->s_addr | bestmask.s_addr) == bestmask.s_addr == 0
-
-So let the 0.0.0.0/0 a chance!
-
-I realize this patch is a little ugly, a cleaner way would be to insert  struct smk_netlbladdr sorted from longest to smallest mask and break the loop as soon as we have a match...
-regards,
-Etienne 
-
-
-
-Signed-off-by: Etienne <etienne.basset@numericable.fr>
-------
-diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
-index 0278bc0..9d2576d 100644
---- a/security/smack/smack_lsm.c
-+++ b/security/smack/smack_lsm.c
-@@ -1540,7 +1540,7 @@ static char *smack_host_label(struct sockaddr_in *sip)
-                 * If the list entry mask is less specific than the best
-                 * already found this entry is uninteresting.
-                 */
--               if ((miap->s_addr | bestmask.s_addr) == bestmask.s_addr)
-+               if ( ((miap->s_addr | bestmask.s_addr) == bestmask.s_addr) &&  (miap->s_addr | bestmask.s_addr) != 0  )
-                        continue;
-                /*
-                 * This is better than any entry found so far.
+Andreas Mohr
