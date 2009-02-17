@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753303AbZBQPY5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739AbZBQPZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753303AbZBQPY5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 10:24:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbZBQPYt
+	id S1753739AbZBQPZj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 10:25:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZBQPZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 10:24:49 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:40811 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751018AbZBQPYt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 10:24:49 -0500
-Date: Tue, 17 Feb 2009 10:24:46 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
-cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Kazuto Miyoshi <miyoshi@linux.bs1.fc.nec.co.jp>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH] Add tracepoints to track pagecache transition
-In-Reply-To: <499A99BC.2080700@bk.jp.nec.com>
-Message-ID: <alpine.DEB.1.10.0902171021320.910@gandalf.stny.rr.com>
-References: <499A7CAD.9030409@bk.jp.nec.com> <1234863220.4744.34.camel@laptop> <499A99BC.2080700@bk.jp.nec.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 17 Feb 2009 10:25:26 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:53592 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751451AbZBQPZZ (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 10:25:25 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@canonical.com>
+Cc: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org
+Subject: Re: mmotm 2010-02-14-00-49 uploaded - synaptics breakage
+In-Reply-To: Your message of "Sat, 14 Feb 2009 00:51:41 PST."
+             <200902140851.n1E8pfIN030501@imap1.linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <200902140851.n1E8pfIN030501@imap1.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1234880923_6651P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 17 Feb 2009 09:28:43 -0500
+Message-ID: <7080.1234880923@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1234880923_6651P
+Content-Type: text/plain; charset=us-ascii
 
-On Tue, 17 Feb 2009, Atsushi Tsuji wrote:
-> > 
-> > This is rather asymmetric, why don't we care about the offset for the
-> > removed page?
-> > 
-> 
-> Indeed.
-> I added the offset to the argument for the removed page and resend fixed patch.
-> 
-> Signed-off-by: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+On Sat, 14 Feb 2009 00:51:41 PST, akpm@linux-foundation.org said:
+> The mm-of-the-moment snapshot 2009-02-14-00-49 has been uploaded to
 
-Could you package it up in one patch again and resend with [PATCH v2].
-Also make sure to Cc the memory folks, and ask for an Acked-by from them.
+The two patches:
 
-Thanks,
+psmouse-synaptics-ensure-we-reset-the-device-on-resume.patch
+psmouse-synaptics-ensure-we-reset-the-device-on-resume-fix.patch
 
--- Steve
+make my laptop (Dell Latitude D820) throw this message at every boot:
+
+WARNING: synaptics was reset on resume. Try using the synaptics_resume_reset module parameter if you have trouble on resume
+
+I have no idea what it does at resume, I don't *use* suspend/resume.
+
+Is this supposed to be resume-only, or at every boot?
+
+--==_Exmh_1234880923_6651P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJmsmbcC3lWbTT17ARAoSuAKD66itSvMvkca3PNyH6YvLFFh1cCACfXqGu
+ZPq8LsNdVhIAGRBz1F9dgdg=
+=eZTs
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1234880923_6651P--
