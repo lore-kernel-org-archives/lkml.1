@@ -1,95 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751964AbZBQJKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752950AbZBQJK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751964AbZBQJKA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 04:10:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbZBQJJn
+	id S1752950AbZBQJK2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 04:10:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbZBQJJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 04:09:43 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:53983 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750883AbZBQJJm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 04:09:42 -0500
-Message-ID: <499A7E98.4060001@cn.fujitsu.com>
-Date: Tue, 17 Feb 2009 17:08:40 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] cpuhotplug: remove cpu_hotplug_init()
-Content-Type: text/plain; charset=UTF-8
+	Tue, 17 Feb 2009 04:09:52 -0500
+Received: from casper.infradead.org ([85.118.1.10]:38502 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751404AbZBQJJu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 04:09:50 -0500
+Subject: Re: [patch 2/4] vfs: add set_page_dirty_notag
+From: Peter Zijlstra <peterz@infradead.org>
+To: Edward Shishkin <edward.shishkin@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       Ryan Hope <rmh3093@gmail.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel@vger.kernel.org,
+       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>
+In-Reply-To: <18841.60432.329341.514726@edward.zelnet.ru>
+References: <18837.24581.181196.569183@edward.zelnet.ru>
+	 <1234530519.6519.46.camel@twins> <49957C43.7050701@gmail.com>
+	 <1234534150.6519.101.camel@twins>
+	 <18838.49922.215481.399653@edward.zelnet.ru>
+	 <1234645893.4695.8.camel@laptop>
+	 <18841.60432.329341.514726@edward.zelnet.ru>
+Content-Type: text/plain
+Date: Tue, 17 Feb 2009 10:09:41 +0100
+Message-Id: <1234861781.4744.21.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.90 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-02-17 at 01:43 +0300, Edward Shishkin wrote:
 
-cpu_hotplug_init() is almost equal to a dummy function,
-this patch remove it.
+>  > How much performance gain do you see by avoiding that radix tree op? 
+>  > 
+> 
+> Nop. We want to use it with extended semantics.
+> All dirty pages are divided into 2 categories:
+> 
+> A) tagged in the radix tree (with PAGECACHE_TAG_DIRTY).
+> B) captured by atoms (usual linked lists).
+> 
+> reiser4_writepages() looks for pages of "A" in the radix tree
+> and moves them to "B". set_page_dirty_notag(), introduced by
+> my patch, is needed for pages of "B".
+> 
+> If "B" is empty, then we get the traditional semantics with
+> regular ->writepages().
+> 
+> That's all!
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
- include/linux/cpu.h |    5 -----
- init/main.c         |    1 -
- kernel/cpu.c        |   11 +++--------
- 3 files changed, 3 insertions(+), 14 deletions(-)
-diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-index c2747ac..7579807 100644
---- a/include/linux/cpu.h
-+++ b/include/linux/cpu.h
-@@ -70,7 +70,6 @@ static inline void unregister_cpu_notifier(struct notifier_block *nb)
- 
- int cpu_up(unsigned int cpu);
- void notify_cpu_starting(unsigned int cpu);
--extern void cpu_hotplug_init(void);
- extern void cpu_maps_update_begin(void);
- extern void cpu_maps_update_done(void);
- 
-@@ -85,10 +84,6 @@ static inline void unregister_cpu_notifier(struct notifier_block *nb)
- {
- }
- 
--static inline void cpu_hotplug_init(void)
--{
--}
--
- static inline void cpu_maps_update_begin(void)
- {
- }
-diff --git a/init/main.c b/init/main.c
-index 8442094..cf35e72 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -639,7 +639,6 @@ asmlinkage void __init start_kernel(void)
- 	page_cgroup_init();
- 	mem_init();
- 	enable_debug_pagealloc();
--	cpu_hotplug_init();
- 	kmem_cache_init();
- 	debug_objects_mem_init();
- 	idr_init_cache();
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 79e40f0..0c927ff 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -34,14 +34,9 @@ static struct {
- 	 * an ongoing cpu hotplug operation.
- 	 */
- 	int refcount;
--} cpu_hotplug;
--
--void __init cpu_hotplug_init(void)
--{
--	cpu_hotplug.active_writer = NULL;
--	mutex_init(&cpu_hotplug.lock);
--	cpu_hotplug.refcount = 0;
--}
-+} cpu_hotplug = {
-+	.lock = __MUTEX_INITIALIZER(cpu_hotplug.lock),
-+};
- 
- #ifdef CONFIG_HOTPLUG_CPU
- 
+Ah, indeed. I had not considered such a scheme.
 
+> Add set_page_dirty_notag() to the core library to enable
+> extended functionality of radix tree attached to inode->i_mapping.
+> 
+> Signed-off-by: Edward Shishkin<edward.shishkin@gmail.com>
+
+Looks good to me
+
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+> ---
+>  include/linux/mm.h  |    1 +
+>  mm/page-writeback.c |   36 ++++++++++++++++++++++++++++++++++++
+>  2 files changed, 37 insertions(+)
+> 
+> --- mmotm.orig/include/linux/mm.h
+> +++ mmotm/include/linux/mm.h
+> @@ -841,6 +841,7 @@ int redirty_page_for_writepage(struct wr
+>  				struct page *page);
+>  int set_page_dirty(struct page *page);
+>  int set_page_dirty_lock(struct page *page);
+> +int set_page_dirty_notag(struct page *page);
+>  int clear_page_dirty_for_io(struct page *page);
+>  
+>  extern unsigned long move_page_tables(struct vm_area_struct *vma,
+> --- mmotm.orig/mm/page-writeback.c
+> +++ mmotm/mm/page-writeback.c
+> @@ -1248,6 +1248,42 @@ int __set_page_dirty_nobuffers(struct pa
+>  EXPORT_SYMBOL(__set_page_dirty_nobuffers);
+>  
+>  /*
+> + * set_page_dirty_notag() -- similar to __set_page_dirty_nobuffers()
+> + * except it doesn't tag the page dirty in the page-cache radix tree.
+> + * This means that the address space using this cannot use the regular
+> + * filemap ->writepages() helpers and must provide its own means of
+> + * tracking and finding non-tagged dirty pages.
+> + *
+> + * NOTE: furthermore, this version also doesn't handle truncate races.
+> + */
+> +int set_page_dirty_notag(struct page *page)
+> +{
+> +	struct address_space *mapping = page->mapping;
+> +
+> +	if (!TestSetPageDirty(page)) {
+> +		WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
+> +		if (mapping_cap_account_dirty(mapping)) {
+> +		        /*
+> +			 * The accounting functions rely on
+> +			 * being atomic wrt interrupts.
+> +			 */
+> +		        unsigned long flags;
+> +			local_irq_save(flags);
+> +			__inc_zone_page_state(page, NR_FILE_DIRTY);
+> +			__inc_bdi_stat(mapping->backing_dev_info,
+> +				       BDI_RECLAIMABLE);
+> +			task_dirty_inc(current);
+> +			task_io_account_write(PAGE_CACHE_SIZE);
+> +			local_irq_restore(flags);
+> +		}
+> +		__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+> +		return 1;
+> +	}
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(set_page_dirty_notag);
+> +
+> +/*
+>   * When a writepage implementation decides that it doesn't want to write this
+>   * page for some reason, it should redirty the locked page via
+>   * redirty_page_for_writepage() and it should then unlock the page and return 0
 
