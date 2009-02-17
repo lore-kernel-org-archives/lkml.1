@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbZBQO4N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbZBQO4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754205AbZBQO4N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 09:56:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbZBQOz5
+	id S1754386AbZBQO4l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 09:56:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbZBQO4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 09:55:57 -0500
-Received: from wf-out-1314.google.com ([209.85.200.173]:33379 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751526AbZBQOz4 (ORCPT
+	Tue, 17 Feb 2009 09:56:31 -0500
+Received: from casper.infradead.org ([85.118.1.10]:52360 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752186AbZBQO4a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 09:55:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=SKzZkeXfYN2rezuN8J1cWF33FpeFNQUrIsnZPAkLuPzaGYEftVhvkEU7Mk10wudxtS
-         yf//NO5LzHcE4n/3fh3R0osToEV3X7evz+uI6Ldg24gimIfr1lzPG/+daHNYxTYw+rX4
-         +2ht9MDqDF0h22amjiG8BkLXjdKz1T7Er6HSs=
-MIME-Version: 1.0
-In-Reply-To: <20090217143251.GA1803@yoda.jdub.homelinux.org>
-References: <D728AD1FA2543948B89DE29C5BF4CD0716AC2DDE@bjmail1.bj.datangmobile.com>
-	 <76C7F485-EF75-4B83-B673-564E6243C7C6@kernel.crashing.org>
-	 <20090217143251.GA1803@yoda.jdub.homelinux.org>
-Date: Tue, 17 Feb 2009 22:55:55 +0800
-X-Google-Sender-Auth: 9b3ab5758e2f0be3
-Message-ID: <2a27d3730902170655nea2ae17x7186c4d8325b3778@mail.gmail.com>
-Subject: Re: [PATCH] fix the interrupt loss problem on powerpc IPIC (2.6.23)
-From: Li Yang <leoli@freescale.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: dayu@datangmobile.cn, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, galak@kernel.crashing.org
-Content-Type: text/plain; charset=UTF-8
+	Tue, 17 Feb 2009 09:56:30 -0500
+Date: Tue, 17 Feb 2009 06:56:22 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Brian Swetland <swetland@google.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arve =?UTF-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>,
+       Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFD] Automatic suspend
+Message-ID: <20090217065622.3e0a9956@infradead.org>
+In-Reply-To: <20090217145141.GA26158@srcf.ucam.org>
+References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
+	<13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com>
+	<20090216145948.6fea81c3@infradead.org>
+	<200902170019.40599.rjw@sisk.pl>
+	<20090216232329.GA15678@srcf.ucam.org>
+	<20090217142001.GB12378@bulgaria.corp.google.com>
+	<20090217064630.688bf639@infradead.org>
+	<20090217145141.GA26158@srcf.ucam.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 10:32 PM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-> On Tue, Feb 17, 2009 at 08:12:33AM -0600, Kumar Gala wrote:
->>
->> On Feb 17, 2009, at 6:44 AM, <dayu@datangmobile.cn> <dayu@datangmobile.cn
->> > wrote:
->>
->>> From: Da Yu <dayu@datangmobile.cn>
->>> Date: Tue, 17 Feb 2009 19:58:20 +0800
->>> Subject: [PATCH] fix the interrupt loss problem on powerpc IPIC
->>> (2.6.23)
->>>
->>> Signed-off-by: Da Yu <dayu@datangmobile.cn>
->>> ---
->>
->> Please provide a bit more description as to why this fixes the issue.
->
-> Including whether it still applies to mainline, since your topic seems
-> to indicate it's for 2.6.23.  That is pretty old by now.
+On Tue, 17 Feb 2009 14:51:41 +0000
+Matthew Garrett <mjg59@srcf.ucam.org> wrote:
 
-The problem still exists in mainline.  But the patch doesn't seem to apply.
+> On Tue, Feb 17, 2009 at 06:46:30AM -0800, Arjan van de Ven wrote:
+> 
+> > actually with powertop... on the open source side things are
+> > actually won. It took all of 6 months...
+> > I don't see that as a valid excuse. In fact, if this kind of
+> > solution makes real userspace scheduled timers to be missed then I
+> > consider it a serious functionality misfeature.
+> 
+> Remember that Android has an open marketplace designed to appeal to
+> Java programmers - users are going to end up downloading code from
+> there and then blaming the platform if their battery life heads
+> towards zero. I think "We can't trust our userland not to be dumb" is
+> a valid concern.
 
-Dayu,
+so use range timers / timer slack for those apps that you do not trust.
+That is not a big deal, and solves the issue of timer wakeups...
 
-Could you re-spin the patch for the latest kernel?  Thanks.
 
-- Leo
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
