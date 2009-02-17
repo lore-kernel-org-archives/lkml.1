@@ -1,44 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754787AbZBQXB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbZBQXBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754787AbZBQXB2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 18:01:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbZBQXBJ
+	id S1754109AbZBQXBs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 18:01:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbZBQXBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 18:01:09 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:51456 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754028AbZBQXBH (ORCPT
+	Tue, 17 Feb 2009 18:01:11 -0500
+Received: from sov-mail-b0016.gradwell.net ([193.84.87.40]:51588 "EHLO
+	sov-mail-b0016.gradwell.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753501AbZBQXBI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 18:01:07 -0500
-Date: Tue, 17 Feb 2009 16:00:50 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: david@lang.hm
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       DL-MPTFusionLinux@lsi.com
-Subject: Re: mpt fusion broken sometime since 2.6.24
-Message-ID: <20090217230050.GG16841@parisc-linux.org>
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm> <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 17 Feb 2009 18:01:08 -0500
+Date: Tue, 17 Feb 2009 22:59:46 +0000
+From: Alex Buell <alex.buell@munted.org.uk>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Theodore Tso <tytso@mit.edu>, Andres Freund <andres@anarazel.de>,
+       adilger@sun.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, Jonathan Bastien-Filiatrault <joe@x2a.org>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: EXT4 ENOSPC Bug
+Message-ID: <20090217225946.053b8149@lithium.local.net>
+In-Reply-To: <499B4097.90808@redhat.com>
+References: <20090216162028.3032666a@lithium.local.net>
+	<200811291418.24672.andres@anarazel.de>
+	<200812100108.04163.andres@anarazel.de>
+	<49994FEF.2020908@anarazel.de>
+	<20090216150156.GD22619@mini-me.lan>
+	<499985C7.8010302@anarazel.de>
+	<20090216190001.GB11788@mini-me.lan>
+	<499AFE32.7070003@redhat.com>
+	<499B1935.10906@redhat.com>
+	<20090217223017.3a86a045@lithium.local.net>
+	<499B4097.90808@redhat.com>
+Organization: One tortoiseshell cat, very high maintenance
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.11; i686-pc-linux-gnu)
+X-Face: "wUuhsy:X)M;>-dA\j"&y@*\$91]iX10Iv1WG_oNbGYpo,eqc06O?"VSeRTx]xM\LiITUh01z}<|GF/4Gzz(MAU~;p4AS,%TB69M:vB-9+i'#W7$UQCW&UP#zt{VdLlzEiw8k~jL<
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 01:44:55PM -0800, david@lang.hm wrote:
-> I got a picture of the failed boot at 
-> http://linux.lang.hm/linux/IMG00052.jpg
+On Tue, 17 Feb 2009 16:56:23 -0600, I waved a wand and this message
+magically appears in front of Eric Sandeen:
 
-The PCI-MSI line is probably indicative.  Can you try booting with:
+> Alex Buell wrote:
+> > On Tue, 17 Feb 2009 14:08:21 -0600, I waved a wand and this message
+> > magically appears in front of Eric Sandeen:
+> > 
+> >> FWIW my problem seems to be different than others have encountered;
+> >> mine persists past reboot, while other reporters have said that a
+> >> reboot (remount) makes the problem go away.
+> >>
+> >> I seem to be encountering some silliness in find_group_flex when 2
+> >> out of 3 groups are full (I "only" have 55k inodes left, all in
+> >> the last group).
+> > 
+> > I've discovered a forced fsck clears this. HTH.
+> 
+> Do you have the output of the fsck run?
 
-mptbase.mpt_msi_enable_sas=0
-
-and also send us an lspci -v so we can update the blacklist?
-
+I'm afraid not, there's no way to save the output on a forced fsck
+reboot.
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+http://www.munted.org.uk
+
+Fearsome grindings.
