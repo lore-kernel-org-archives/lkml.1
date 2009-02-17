@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753015AbZBQQ2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753150AbZBQQbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753015AbZBQQ2i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 11:28:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZBQQ23
+	id S1753150AbZBQQbv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 11:31:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbZBQQbl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 11:28:29 -0500
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:50275 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751301AbZBQQ23 (ORCPT
+	Tue, 17 Feb 2009 11:31:41 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:40133 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751460AbZBQQbk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 11:28:29 -0500
-Date: Tue, 17 Feb 2009 11:20:40 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Mel Gorman <mel@csn.ul.ie>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Subject: Re: [patch] SLQB slab allocator (try 2)
-In-Reply-To: <4999BBE6.2080003@cs.helsinki.fi>
-Message-ID: <alpine.DEB.1.10.0902171120040.27813@qirst.com>
-References: <20090123154653.GA14517@wotan.suse.de> <200902041748.41801.nickpiggin@yahoo.com.au> <20090204152709.GA4799@csn.ul.ie> <200902051459.30064.nickpiggin@yahoo.com.au> <20090216184200.GA31264@csn.ul.ie> <4999BBE6.2080003@cs.helsinki.fi>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 17 Feb 2009 11:31:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=VL8PG6/E5dG20dglfvcrqDS0pRfXot2DVGl9BRvpO7+4MwToQP0qJZW8mCo8N/teSf
+         A6pv8fj/2oNazTuyr4CkHGKZXsSa6b2DmLqchnP18y1nAClU9FZY06xNhg8wBAEdI6rQ
+         ZJlq9DpINENTeWx+TPx+2/uDmTmLLBELs7P/U=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Tue, 17 Feb 2009 16:31:38 +0000
+Message-ID: <6278d2220902170831n3801a935x578b5dff64d00c62@mail.gmail.com>
+Subject: [2.6.29-rc5 ACPI] truncated dsobject list...
+From: Daniel J Blueman <daniel.blueman@gmail.com>
+To: linux-acpi@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Feb 2009, Pekka Enberg wrote:
+With 2.6.29-rc5 on an Intel S5000PAL server (BIOS
+S5000.86B.10.60.0091.100920081631), we see ACPI object list truncation
+[1]. Does it make sense to increase the default element allocation?
 
-> Btw, Yanmin, do you have access to the tests Mel is running (especially the
-> ones where slub-rvrt seems to do worse)? Can you see this kind of regression?
-> The results make we wonder whether we should avoid reverting all of the page
-> allocator pass-through and just add a kmalloc cache for 8K allocations. Or not
-> address the netperf regression at all. Double-hmm.
+Many thanks,
+  Daniel
 
+--- [1]
 
-Going to 8k for the limit beyond we pass through to the page allocator may
-be the simplest and best solution. Someone please work on the page
-allocator...
-
+ACPI: EC: Look up EC in DSDT
+ACPI Warning (dsobject-0502): Package List length (6) larger than
+NumElements count (4), truncated
+[20081204]
+-- 
+Daniel J Blueman
