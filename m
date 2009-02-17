@@ -1,35 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338AbZBQPKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753824AbZBQPKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753338AbZBQPKZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 10:10:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbZBQPJp
+	id S1753824AbZBQPKs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 10:10:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751988AbZBQPJs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 10:09:45 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:53738 "EHLO
+	Tue, 17 Feb 2009 10:09:48 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:60668 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751131AbZBQPJm (ORCPT
+	with ESMTP id S1751318AbZBQPJn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 10:09:42 -0500
+	Tue, 17 Feb 2009 10:09:43 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:references:in-reply-to
          :mime-version:content-disposition:message-id:content-type
          :content-transfer-encoding;
-        b=Jt+R1y8ZllAd9UAOpyx1CGQuOzLKOFmniUX5qFMnDm4IdFisN42/XmflOLAAJ2Vy1h
-         Xvxrbte7UMNmP+WBG7zlenUaAmPrqiUN5GWERc2UWSWwybwps7Q0O1uhNxE9aKd1pXB3
-         0anKFqRsiXMEmlqdzBAOCpfLPwK680GWzkFWU=
+        b=RfMjHNYUKxQU/d+0DBj7sONmYhGlVc4Z6b72gTWnL6GHAwlRPzPl8gXaOKjyCR6nQ7
+         5wLI25iTQu3cYM4vDdSrNNN8Yy4t2QFUhd8XcVXXWNUGkPRpCtEFM6S0tDPeeg1SDfpV
+         PHreKzoxqf1Mx2FGMGr22jbhEQ8l2Ds2w2MRw=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: [PATCH 0/10] ide: flags query macros
-Date: Tue, 17 Feb 2009 15:33:28 +0100
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 13/18] ide: use ->tf_load in SELECT_DRIVE()
+Date: Tue, 17 Feb 2009 15:43:21 +0100
 User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-next-20090216; KDE/4.2.0; i686; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Borislav Petkov <petkovbb@gmail.com>
-References: <1234699692-9452-1-git-send-email-petkovbb@gmail.com>
-In-Reply-To: <1234699692-9452-1-git-send-email-petkovbb@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080620213323.13202.71450.sendpatchset@localhost.localdomain> <200902162251.49271.bzolnier@gmail.com> <499A0D0B.7070007@ru.mvista.com>
+In-Reply-To: <499A0D0B.7070007@ru.mvista.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200902171533.29135.bzolnier@gmail.com>
+Message-Id: <200902171543.21892.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
@@ -37,47 +36,90 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 15 February 2009, Borislav Petkov wrote:
-> Hi,
+On Tuesday 17 February 2009, Sergei Shtylyov wrote:
+> Hello.
 > 
-> this series adds the drive->atapi_flags and drive->dev_flags macro wrappers
-> we discussed. The idea was to make the code more readable and this has
-> been my main concern when coming up with the macro naming, therefore
-> some macro names appear a tad more descriptive than the flag itself.
+> Bartlomiej Zolnierkiewicz wrote:
+> > On Monday 16 February 2009, Sergei Shtylyov wrote:
+> >   
+> >> Hello, I wrote:
+> >>
+> >>     
+> >>>>> There should be no functional changes caused by this patch.
+> >>>>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> >>>>> Index: b/drivers/ide/ide-iops.c
+> >>>>> ===================================================================
+> >>>>> --- a/drivers/ide/ide-iops.c
+> >>>>> +++ b/drivers/ide/ide-iops.c
+> >>>>> @@ -88,11 +88,15 @@ void SELECT_DRIVE (ide_drive_t *drive)
+> >>>>>  {
+> >>>>>      ide_hwif_t *hwif = drive->hwif;
+> >>>>>      const struct ide_port_ops *port_ops = hwif->port_ops;
+> >>>>> +    ide_task_t task;
+> >>>>>  
+> >>>>>      if (port_ops && port_ops->selectproc)
+> >>>>>          port_ops->selectproc(drive);
+> >>>>>  
+> >>>>> -    hwif->OUTB(drive->select.all, hwif->io_ports.device_addr);
+> >>>>> +    memset(&task, 0, sizeof(task));
+> >>>>> +    task.tf_flags = IDE_TFLAG_OUT_DEVICE;
+> >>>>> +
+> >>>>> +    drive->hwif->tf_load(drive, &task);
+> >>>>>           
+> >>>>    This actually doesn't seem like a bright idea to me, considering 
+> >>>> that this gets called when starting every request. How will you look 
+> >>>> at me adding the transport method for writing this register? :-)
+> >>>>         
+> >
+> > Please check profiles first -- it might not be worth it. [1]
+> >
+> >   
+> >>> Convert SELECT_DRIVE() to use ->tf_load instead of ->OUTB.
+> >>>
+> >>>   OTOH, adding such a "backdoor" to the taskfile doesn't seem very 
+> >>> consistent... well, I'm not excited about the whole idea conversion to 
+> >>> tf_{load|read}() -- it's not clear what exactly this bought us.
+> >>>       
+> >
+> > This was explained some months ago already, so just to recall -- it was
+> > a part of a bigger work removing duplicated code and allowing abstraction
+> > of the ATA logic.
+> >
+> > Anyway this is not set in a stone so if you have proposal of a better
+> > approach please come forward with it.
+> >   
 > 
->  drivers/ide/cmd640.c           |    2 +-
->  drivers/ide/ht6560b.c          |    3 +-
->  drivers/ide/ide-atapi.c        |   15 ++++++-------
->  drivers/ide/ide-cd.c           |   44 ++++++++++++++++++++-------------------
->  drivers/ide/ide-cd_ioctl.c     |   18 +++++++---------
->  drivers/ide/ide-devsets.c      |    8 ++----
->  drivers/ide/ide-disk.c         |   32 ++++++++++++++--------------
->  drivers/ide/ide-disk_proc.c    |    2 +-
->  drivers/ide/ide-dma.c          |    3 +-
->  drivers/ide/ide-eh.c           |   17 +++++++--------
->  drivers/ide/ide-floppy.c       |    6 ++--
->  drivers/ide/ide-floppy_ioctl.c |    2 +-
->  drivers/ide/ide-gd.c           |   14 ++++++------
->  drivers/ide/ide-io.c           |    9 +++----
->  drivers/ide/ide-ioctls.c       |    6 ++--
->  drivers/ide/ide-iops.c         |    6 ++--
->  drivers/ide/ide-lib.c          |    2 +-
->  drivers/ide/ide-park.c         |   11 ++++-----
->  drivers/ide/ide-pm.c           |    2 +-
->  drivers/ide/ide-probe.c        |   36 +++++++++++++++++---------------
->  drivers/ide/ide-proc.c         |    2 +-
->  drivers/ide/ide-tape.c         |   12 +++++-----
->  drivers/ide/ide-taskfile.c     |   16 +++++---------
->  drivers/ide/ns87415.c          |    5 +--
->  drivers/ide/pdc202xx_old.c     |    4 +-
->  drivers/ide/sc1200.c           |    2 +-
->  drivers/ide/trm290.c           |    4 +-
->  27 files changed, 136 insertions(+), 147 deletions(-)
+>    Er... I think that the previous IN()/OUT() methods were better. Note 
+> that we ended up using the local version of them in the dafault 
+> ide_tf_{load}read}() anyway -- as Alan has pointed out it might be worth 
 
-One more thing I forgot yesterday:
+During ide_tf_{load,read}() addition I was a bit too optimistic about
+the possibility of the quick io{read,write}* conversion later...
 
-Since it is not a lot of modified lines and the change is rather
-straightforward it could as well be done in a single patch...
+> splitting those into I/O and memory space versions... although given 
+> general slowness of the I/O accesses, this is probably not going to win 
+> much speed-wise.
+
+Maybe it would be worth to add ->tf_{inb,outb} to struct ide_tp_ops
+and convert default tp_ops to use them...  OTOH we should reinvestigate
+the io{read,write}*() way first (maybe things have improved there)...
+
+> >>    We at least could have saved on memset() -- tf_load() method ignores 
+> >> fields other than tf_flags anyway...
+> >>     
+> >
+> > Unless it is huge performance win (unlikely) this is not a good idea as it would be a maintainance nightmare.
+> >   
+> > ->tf_load does only use cmd->tf_flags today but it might change one day
+> > and nobody will remember to audit all users that they pass a valid cmd...
+> >   
+> 
+>    It's just quite unbearable to see (especially for a long time 
+> assembly coder) how a single register write is turning into *that*.
+> So, it still seems worth risking... :-)
+
+I see your point here.  If SELECT_DRIVE() is performance sensitive we
+may just add another struct ide_tp_ops method for it...
 
 Thanks,
 Bart
