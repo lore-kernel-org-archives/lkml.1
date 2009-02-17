@@ -1,150 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbZBQJ52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752728AbZBQKCF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753537AbZBQJ52 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 04:57:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbZBQJ5T
+	id S1752728AbZBQKCF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 05:02:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbZBQKBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 04:57:19 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:58481 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751369AbZBQJ5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 04:57:18 -0500
-Date: Tue, 17 Feb 2009 09:57:17 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] vmscan: initialize sc.order in indirect shrink_list()
-	users
-Message-ID: <20090217095716.GD31264@csn.ul.ie>
-References: <20090210165134.GA2457@cmpxchg.org> <20090210162948.bd20d853.akpm@linux-foundation.org> <20090211015227.GA4605@cmpxchg.org> <20090216145349.GC16153@csn.ul.ie> <20090216220302.GA3415@cmpxchg.org>
+	Tue, 17 Feb 2009 05:01:54 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:41814 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751566AbZBQKBx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 05:01:53 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090216220302.GA3415@cmpxchg.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <499A7EE2.50108@imap.cc>
+References: <499A7EE2.50108@imap.cc>
+Date: Tue, 17 Feb 2009 11:01:51 +0100
+Message-ID: <ac3eb2510902170201t696df348ka167c12ad5819494@mail.gmail.com>
+Subject: Re: 2.6.28.[45] boot failure: request_module: runaway loop modprobe 
+	binfmt-464c
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 16, 2009 at 11:03:02PM +0100, Johannes Weiner wrote:
-> On Mon, Feb 16, 2009 at 02:53:49PM +0000, Mel Gorman wrote:
-> > On Wed, Feb 11, 2009 at 02:52:27AM +0100, Johannes Weiner wrote:
-> > > [added Mel to CC]
-> > > 
-> > > On Tue, Feb 10, 2009 at 04:29:48PM -0800, Andrew Morton wrote:
-> > > > On Tue, 10 Feb 2009 17:51:35 +0100
-> > > > Johannes Weiner <hannes@cmpxchg.org> wrote:
-> > > > 
-> > > > > shrink_all_memory() and __zone_reclaim() currently don't initialize
-> > > > > the .order field of their scan control.
-> > > > > 
-> > > > > Both of them call into functions which use that field and make certain
-> > > > > decisions based on a random value.
-> > > > > 
-> > > > > The functions depending on the .order field are marked with a star,
-> > > > > the faulty entry points are marked with a percentage sign:
-> > > > > 
-> > > > > * shrink_page_list()
-> > > > >   * shrink_inactive_list()
-> > > > >   * shrink_active_list()
-> > > > >     shrink_list()
-> > > > >       shrink_all_zones()
-> > > > >         % shrink_all_memory()
-> > > > >       shrink_zone()
-> > > > >         % __zone_reclaim()
-> > > > > 
-> > > > > Initialize .order to zero in shrink_all_memory().  Initialize .order
-> > > > > to the order parameter in __zone_reclaim().
-> > > > > 
-> > > > > Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> > > > > ---
-> > > > >  mm/vmscan.c |    2 ++
-> > > > >  1 files changed, 2 insertions(+), 0 deletions(-)
-> > > > > 
-> > > > > diff --git a/mm/vmscan.c b/mm/vmscan.c
-> > > > > index 4422301..9ce85ea 100644
-> > > > > --- a/mm/vmscan.c
-> > > > > +++ b/mm/vmscan.c
-> > > > > @@ -2112,6 +2112,7 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
-> > > > >  		.may_unmap = 0,
-> > > > >  		.swap_cluster_max = nr_pages,
-> > > > >  		.may_writepage = 1,
-> > > > > +		.order = 0,
-> > > > >  		.isolate_pages = isolate_pages_global,
-> > > > >  	};
-> > > > >  
-> > > > > @@ -2294,6 +2295,7 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
-> > > > >  					SWAP_CLUSTER_MAX),
-> > > > >  		.gfp_mask = gfp_mask,
-> > > > >  		.swappiness = vm_swappiness,
-> > > > > +		.order = order,
-> > > > >  		.isolate_pages = isolate_pages_global,
-> > > > >  	};
-> > > > >  	unsigned long slab_reclaimable;
-> > > > 
-> > > > The second hunk might fix something, but it would need a correcter
-> > > > changelog, and some thought about what its runtimes effects are likely
-> > > > to be, please.
-> > > 
-> > > zone_reclaim() is used by the watermark rebalancing of the buddy
-> > > allocator right before trying to do an allocation.  Even though it
-> > > tries to reclaim at least 1 << order pages, it doesn't raise sc.order
-> > > to increase clustering efforts.
-> > > 
-> > 
-> > This affects lumpy reclaim. Direct reclaim via try_to_free_pages() and
-> > kswapd() is still working but the earlier reclaim attempt via zone_reclaim()
-> > on unmapped file and slab pages is ignoring teh order. While it'd be tricky
-> > to measure any difference, it does make sense that __zone_reclaim() initialse
-> > the order with what the caller requested.
-> > 
-> > > I think this happens with the assumption that the upcoming allocation
-> > > can still succeed and in that case we don't want to lump too
-> > > aggressively to refill the zone. 
-> > 
-> > I don't get what you mean here. The caller requested the higher order so
-> > the work has been requested.
-> 
-> I meant the buffered_rmqueue() might still succeed even without lumpy
-> reclaim in the case of low watermarks reached. 
+On Tue, Feb 17, 2009 at 10:09, Tilman Schmidt <tilman@imap.cc> wrote:
+> My workhorse machine (Pentium D 940, Intel DG965QF board,
+> mirrored SATA disks), which runs fine with kernel:
+> ts@xenon:~> uname -a
+> Linux xenon 2.6.28.3-testing #1 SMP PREEMPT Mon Feb 2 23:32:07 CET 2009 i686 i686 i386 GNU/Linux
+> fails to come up with an identically configured 2.6.28.4 or 2.6.28.5
+> kernel. The boot process hangs at about the time the root
+> file system is mounted, the last messages being (scribbled
+> down manually on a piece of paper, please make allowances):
+>
+> /dev/RAID/root: recovering journal ... clean
+> fsck successful. Mounting root device r/w
+> Mounting root /dev/RAID/root
+> kjournald starting. Commit interval 5 seconds
+> EXT3 FS on dm-0, internal journal
+> EXT3-fs: mounted filesystem with ordered data mode.
+> request_module: runaway loop modprobe binfmt-464c
+> request_module: runaway loop modprobe binfmt-464c
+> request_module: runaway loop modprobe binfmt-464c
+> request_module: runaway loop modprobe binfmt-464c
+> request_module: runaway loop modprobe binfmt-464c
 
-I think I get you now. You are saying that reclaiming order-0 pages increases
-the free count so we might get over the watermarks and the allocation would
-succeed. Thing is, watermarks calculated in zone_watermark_ok() take order
-as a parameter and has this in it.
+Are you sure, that you don't have a 32/64 bit mismatch between the
+kernel and userspace? Like you miss 32-bit emulation in a 64-bit
+kernel, or your modprobe is 64-bit and you are trying to run it on a
+32-bit kernel?
 
-        for (o = 0; o < order; o++) {
-                /* At the next order, this order's pages become * unavailable */
-                free_pages -= z->free_area[o].nr_free << o;
-
-So, to reach the low watermarks for a high-order allocation, we still
-need lumpy reclaim.
-
-> And if it does, we
-> reclaimed 'in aggressive mode without reason'.  If it does NOT, we
-> still drop into direct reclaim with lumpy reclaim.  Well, this is at
-> least what I had in mind when writing the above.
-> 
-> > > The allocation might succeed on
-> > > another zone and now we have evicted precious pages due to clustering
-> > > while we are still not sure it's even needed.
-> > > 
-> > 
-> > Also not sure what you are getting at here. zone_reclaim() is called for the
-> > preferred zones in order. Attempts are made to free within the preferred zone
-> > and then allocate from it. Granted, it might evict pages and the clustering
-> > was ineffective, but this is the cost of high-order reclaim.
-> 
-> Sure, agreed.  I was just wondering whether higher-order reclaim was
-> needed up-front when the low watermarks are reached or if it was
-> enough when direct reclaim is lumpy in case the allocation fails.
-> 
-
-It's needed up front because order is also taken into account for the
-watermark calculations.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Kay
