@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752968AbZBQLYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753531AbZBQLZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752968AbZBQLYp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 06:24:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbZBQLYg
+	id S1753531AbZBQLZO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 06:25:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745AbZBQLY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 06:24:36 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33137 "EHLO mx2.mail.elte.hu"
+	Tue, 17 Feb 2009 06:24:58 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34049 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750974AbZBQLYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 06:24:35 -0500
-Date: Tue, 17 Feb 2009 12:24:18 +0100
+	id S1751422AbZBQLY5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 06:24:57 -0500
+Date: Tue, 17 Feb 2009 12:24:42 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Yinghai Lu <yinghai@kernel.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] x86: add x2apic config
-Message-ID: <20090217112418.GA18557@elte.hu>
-References: <499A1316.9000204@kernel.org>
+Subject: Re: [PATCH] x86: fold apic_ops into genapic -v2
+Message-ID: <20090217112442.GB18557@elte.hu>
+References: <499A1316.9000204@kernel.org> <499A136D.2040006@kernel.org> <499A60F6.5080704@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <499A1316.9000204@kernel.org>
+In-Reply-To: <499A60F6.5080704@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,24 +40,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 > Impact: cleanup
 > 
-> so could deselect x2apic
-> and INTR_REMAP will select x2apic
+> make it simple, don't need have one extra struct
+> v2: fix sgi_uv compiling
 > 
 > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 > 
 > ---
->  arch/x86/Kconfig             |   11 +++++++++++
->  arch/x86/include/asm/apic.h  |   18 +++++++++++++++---
->  arch/x86/kernel/Makefile     |    4 ++--
->  arch/x86/kernel/apic.c       |   24 ++++++++++++------------
->  arch/x86/kernel/cpu/common.c |    2 +-
->  arch/x86/kernel/genapic_64.c |    4 ++++
->  arch/x86/kernel/setup.c      |    3 +--
->  arch/x86/kernel/smpboot.c    |    2 +-
->  8 files changed, 47 insertions(+), 21 deletions(-)
+>  arch/x86/include/asm/apic.h               |   97 +++++++++---------------------
+>  arch/x86/include/asm/genapic.h            |   61 ++++++++++++++++++
+>  arch/x86/kernel/apic.c                    |   63 +------------------
+>  arch/x86/kernel/bigsmp_32.c               |    7 ++
+>  arch/x86/kernel/cpu/mcheck/mce_amd_64.c   |    2 
+>  arch/x86/kernel/cpu/mcheck/mce_intel_64.c |    2 
+>  arch/x86/kernel/cpu/perf_counter.c        |    2 
+>  arch/x86/kernel/cpu/perfctr-watchdog.c    |    2 
+>  arch/x86/kernel/es7000_32.c               |    7 ++
+>  arch/x86/kernel/genapic_64.c              |    2 
+>  arch/x86/kernel/genapic_flat_64.c         |   16 ++++
+>  arch/x86/kernel/genx2apic_cluster.c       |   11 ++-
+>  arch/x86/kernel/genx2apic_phys.c          |   11 ++-
+>  arch/x86/kernel/genx2apic_uv_x.c          |    9 ++
+>  arch/x86/kernel/ipi.c                     |    2 
+>  arch/x86/kernel/irq.c                     |    2 
+>  arch/x86/kernel/nmi.c                     |    2 
+>  arch/x86/kernel/numaq_32.c                |    7 ++
+>  arch/x86/kernel/probe_32.c                |    7 ++
+>  arch/x86/kernel/summit_32.c               |    7 ++
+>  arch/x86/kernel/uv_irq.c                  |    2 
+>  arch/x86/kernel/vmi_32.c                  |    6 -
+>  arch/x86/kernel/vmiclock_32.c             |    2 
+>  arch/x86/lguest/boot.c                    |   19 +++--
+>  arch/x86/xen/enlighten.c                  |   21 +++---
+>  25 files changed, 206 insertions(+), 163 deletions(-)
 
-Applied to tip:x86/apic, thanks Yinghai! Note that i switched 
-around the default to default n and extended the help text - 
-please double check it.
+Applied to tip:x86/apic, thanks Yinghai!
 
 	Ingo
