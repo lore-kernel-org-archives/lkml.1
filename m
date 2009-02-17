@@ -1,55 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752655AbZBQN7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752797AbZBQOBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752655AbZBQN7T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 08:59:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbZBQN7G
+	id S1752797AbZBQOBo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 09:01:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbZBQOBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 08:59:06 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:4454 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751171AbZBQN7G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 08:59:06 -0500
-Date: Tue, 17 Feb 2009 13:58:34 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Arjan van de Ven <arjan@infradead.org>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Arve Hj?nnev?g <arve@android.com>,
-       Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFD] Automatic suspend
-Message-ID: <20090217135833.GB25029@sirena.org.uk>
-References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com> <13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com> <20090216145948.6fea81c3@infradead.org> <200902170019.40599.rjw@sisk.pl> <20090216232329.GA15678@srcf.ucam.org>
+	Tue, 17 Feb 2009 09:01:35 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:53487 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751131AbZBQOBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 09:01:34 -0500
+Date: Tue, 17 Feb 2009 06:01:30 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Damien Wyart <damien.wyart@free.fr>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #12650] Strange load average and ksoftirqd behavior with
+	2.6.29-rc2-git1
+Message-ID: <20090217140130.GA6761@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <87hc2u61e9.fsf@free.fr> <20090216122632.GA3158@elte.hu> <87ljs6pmao.fsf@free.fr> <20090216132151.GA17996@elte.hu> <20090216160613.GA6785@linux.vnet.ibm.com> <20090216185616.GB6785@linux.vnet.ibm.com> <20090216200923.GA28938@elte.hu> <20090216223944.GF6785@linux.vnet.ibm.com> <20090216225108.GA15904@linux.vnet.ibm.com> <20090217094657.GA1845@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090216232329.GA15678@srcf.ucam.org>
-X-Cookie: New systems generate new problems.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20090217094657.GA1845@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 16, 2009 at 11:23:30PM +0000, Matthew Garrett wrote:
+On Tue, Feb 17, 2009 at 10:46:57AM +0100, Ingo Molnar wrote:
+> 
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > On Mon, Feb 16, 2009 at 02:39:44PM -0800, Paul E. McKenney wrote:
+> > > On Mon, Feb 16, 2009 at 09:09:23PM +0100, Ingo Molnar wrote:
+> > > > 
+> > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > > > 
+> > > > > Here the calls to rcu_process_callbacks() are only 75 
+> > > > > microseconds apart, so that this function is consuming more 
+> > > > > than 10% of a CPU.  The strange thing is that I don't see a 
+> > > > > raise_softirq() in between, though perhaps it gets inlined or 
+> > > > > something that makes it invisible to ftrace.
+> > > > 
+> > > > look at the latest trace please, that has even the most inline 
+> > > > raise-softirq method instrumented, so all the raising is 
+> > > > visible.
+> > > 
+> > > Ah, my apologies!  This time looking at:
+> > > 
+> > > http://damien.wyart.free.fr/ksoftirqd_pb/trace_tip_2009.02.16_ksoftirqd_pb_abstime_proc.txt.gz
+> > > 
+> > > 
+> > >   799.521187 |   1)    <idle>-0    |               |  rcu_check_callbacks() {
+> > >   799.521371 |   1)    <idle>-0    |               |  rcu_check_callbacks() {
+> > >   799.521555 |   1)    <idle>-0    |               |  rcu_check_callbacks() {
+> > >   799.521738 |   1)    <idle>-0    |               |  rcu_check_callbacks() {
+> > >   799.521934 |   1)    <idle>-0    |               |  rcu_check_callbacks() {
+> > >   799.522068 |   1)  ksoftir-2324  |               |                rcu_check_callbacks() {
+> > >   799.522208 |   1)    <idle>-0    |               |  rcu_check_callbacks() {
+> > >   799.522392 |   1)    <idle>-0    |               |  rcu_check_callbacks() {
+> > >   799.522575 |   1)    <idle>-0    |               |  rcu_check_callbacks() {
+> > >   799.522759 |   1)    <idle>-0    |               |  rcu_check_callbacks() {
+> > >   799.522956 |   1)    <idle>-0    |               |  rcu_check_callbacks() {
+> > >   799.523074 |   1)  ksoftir-2324  |               |                  rcu_check_callbacks() {
+> > >   799.523214 |   1)    <idle>-0    |               |  rcu_check_callbacks() {
+> > >   799.523397 |   1)    <idle>-0    |               |  rcu_check_callbacks() {
+> > >   799.523579 |   1)    <idle>-0    |               |  rcu_check_callbacks() {
+> > >   799.523762 |   1)    <idle>-0    |               |  rcu_check_callbacks() {
+> > >   799.523960 |   1)    <idle>-0    |               |  rcu_check_callbacks() {
+> > >   799.524079 |   1)  ksoftir-2324  |               |                  rcu_check_callbacks() {
+> > >   799.524220 |   1)    <idle>-0    |               |  rcu_check_callbacks() {
+> > >   799.524403 |   1)    <idle>-0    |               |  rcu_check_callbacks() {
+> > >   799.524587 |   1)    <idle>-0    |               |  rcu_check_callbacks() {
+> > >   799.524770 |   1)    <idle>-0    |               |  rcu_check_callbacks() {
+> > > [ . . . ]
+> > > 
+> > > Yikes!!!
+> > > 
+> > > Why is rcu_check_callbacks() being invoked so often?  It should be called
+> > > but once per jiffy, and here it is called no less than 22 times in about
+> > > 3.5 milliseconds, meaning one call every 160 microseconds or so.
+> > 
+> > BTW, the other question I have is "why do we need to call 
+> > rcu_pending() and rcu_check_callbacks() from the idle loop of 
+> > 32-bit x86, especially given that no other architecture does 
+> > this?".  Don't get me wrong, it would be good to get rcutree's 
+> > rcu_pending() to avoid spuriously saying that 
+> > rcu_check_callbacks() should be invoked, so I would still like 
+> > the trace with my patch, but...
+> 
+> There's no strong reason - we've been back and forth about RCU 
+> in the dynticks code. Mind sending a test patch for Damien to 
+> try?
 
-> Arve said that the power state was equivalent in idle and suspend, but 
-> that they preferred suspend because it stopped any periodic timers. I'd 
-> be more interested in making sure that unnecessary timers aren't running 
-> than focusing on automatically entering system-wide suspend - Nokia have 
-> been managing this since 2005 with good results.
+But of course!  ;-)
 
-Definitely.  Even in the embedded case there is hardware which takes a
-relatively long time to fully power down and resume without winning an
-enormous amount on the power front (analogue stuff is a common culprit
-here, it can take a noticable amount of time to bring it up cleanly).
+The following patch removes the call to rcu_pending() and
+rcu_check_callbacks() from the x86 32-bit idle loop in order to
+reduce the softirq load on idle systems.
+
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+
+ process_32.c |    3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+index a546f55..bd4da2a 100644
+--- a/arch/x86/kernel/process_32.c
++++ b/arch/x86/kernel/process_32.c
+@@ -104,9 +104,6 @@ void cpu_idle(void)
+ 			check_pgt_cache();
+ 			rmb();
+ 
+-			if (rcu_pending(cpu))
+-				rcu_check_callbacks(cpu, 0);
+-
+ 			if (cpu_is_offline(cpu))
+ 				play_dead();
+ 
