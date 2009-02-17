@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753243AbZBQMdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbZBQMlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753243AbZBQMdS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 07:33:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbZBQMdD
+	id S1752815AbZBQMlj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 07:41:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbZBQMlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 07:33:03 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:37359 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750886AbZBQMdB (ORCPT
+	Tue, 17 Feb 2009 07:41:31 -0500
+Received: from casper.infradead.org ([85.118.1.10]:45303 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751414AbZBQMlb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 07:33:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=J/EChjo9zz1UyoGwqdZH26NXLsBA0xLcrdAJ/87WWdx/865ZBw9JkXgQK8aZDQsurP
-         ay2eXAVCT1bhbfS8A2FlGPn2FXy+wu6Ip+HXBGWb4Fj6BhSIcjBJjS2Zj7doRYusNUUT
-         SHA32Q/jrqR5PzH5I2+QPrfYM1B9e54B8KKHk=
-MIME-Version: 1.0
-In-Reply-To: <1234871651.4744.89.camel@laptop>
-References: <1234863220.4744.34.camel@laptop> <499A99BC.2080700@bk.jp.nec.com>
-	 <20090217201651.576E.A69D9226@jp.fujitsu.com>
-	 <1234871651.4744.89.camel@laptop>
-Date: Tue, 17 Feb 2009 21:33:00 +0900
-X-Google-Sender-Auth: 72d386d106bd34d8
-Message-ID: <2f11576a0902170433x52b63a05ie96601c741c3fc7a@mail.gmail.com>
-Subject: Re: [PATCH] Add tracepoints to track pagecache transition
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>, linux-kernel@vger.kernel.org,
-       Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Kazuto Miyoshi <miyoshi@linux.bs1.fc.nec.co.jp>, rostedt@goodmis.org,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 17 Feb 2009 07:41:31 -0500
+Subject: Re: Q: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove
+ single ipi fallback for smp_call_function_many())
+From: Peter Zijlstra <peterz@infradead.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <1234862974.4744.31.camel@laptop>
+References: <20090216163847.431174825@chello.nl>
+	 <20090216164114.433430761@chello.nl> <20090216204902.GA6924@redhat.com>
+	 <1234818201.30178.386.camel@laptop> <20090216213205.GA9098@redhat.com>
+	 <1234820704.30178.396.camel@laptop> <20090216220214.GA10093@redhat.com>
+	 <1234823097.30178.406.camel@laptop>  <20090216231946.GA12009@redhat.com>
+	 <1234862974.4744.31.camel@laptop>
+Content-Type: text/plain
+Date: Tue, 17 Feb 2009 13:40:55 +0100
+Message-Id: <1234874455.4744.96.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.90 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> If you want to see I/O activity, you need to add tracepoint into block
->> layer.
->
-> We already have that, Arnaldo converted blktrace to use tracepoints and
-> wrote an ftrace tracer for it.
+On Tue, 2009-02-17 at 10:29 +0100, Peter Zijlstra wrote:
+> > It would be nice to have a comment which explains how can we miss the
+> > first addition without read_barrier_depends(). And why only on alpha.
+> 
+> Paul, care to once again enlighten us? The best I can remember is that
+> alpha has split caches, and the rmb is needed for them to become
+> coherent -- no other arch is crazy in exactly that way.
+> 
+> But note that read_barrier_depends() is not quite a NOP for !alpha, it
+> does that ACCESS_ONCE() thing, which very much makes a difference, even
+> on x86.
 
-Yup. I agree I selected wrong word.
-My point is, if he want to know I/O delaying reason, the number of the
-cache pages seems unrelated thing.
+I've been saying crazy stuff, read_barrier_depends() is a NOP, I got
+confused with rcu_dereference(). My bad.
+
