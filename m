@@ -1,373 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbZBQRKL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbZBQRNP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960AbZBQRKL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 12:10:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbZBQRJ4
+	id S1753442AbZBQRNP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 12:13:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbZBQRM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 12:09:56 -0500
-Received: from exprod7og106.obsmtp.com ([64.18.2.165]:48301 "EHLO
-	exprod7og106.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752406AbZBQRJz convert rfc822-to-8bit (ORCPT
+	Tue, 17 Feb 2009 12:12:59 -0500
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:52810 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752304AbZBQRM7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 12:09:55 -0500
-From: "Yang, Bo" <Bo.Yang@lsi.com>
-To: "Yang, Bo" <Bo.Yang@lsi.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@osdl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: "Austria, Winston" <Winston.Austria@lsi.com>
-Date: Tue, 17 Feb 2009 10:09:39 -0700
-Subject: [PATCH 6/9] scsi: megaraid_sas - Report the unconfigured PD (system
- PD) to OS
-Thread-Topic: [PATCH 6/9] scsi: megaraid_sas - Report the unconfigured PD
- (system PD) to OS
-Thread-Index: AciIcSnS7H5xFQtCQzyNHR19nlBrTUImYsQgAAFMQJAAAQsscAAAaQSQAAFE92AAAZ3CEA==
-Message-ID: <4B6A08C587958942AA3002690DD4F8C33A07FC2B@cosmail02.lsi.com>
-In-Reply-To: <4B6A08C587958942AA3002690DD4F8C33A07FBD2@cosmail02.lsi.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 17 Feb 2009 12:12:59 -0500
+Date: Tue, 17 Feb 2009 12:05:07 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Mel Gorman <mel@csn.ul.ie>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: [patch] SLQB slab allocator (try 2)
+In-Reply-To: <1234890096.11511.6.camel@penberg-laptop>
+Message-ID: <alpine.DEB.1.10.0902171204070.15929@qirst.com>
+References: <20090123154653.GA14517@wotan.suse.de>  <200902041748.41801.nickpiggin@yahoo.com.au>  <20090204152709.GA4799@csn.ul.ie>  <200902051459.30064.nickpiggin@yahoo.com.au>  <20090216184200.GA31264@csn.ul.ie> <4999BBE6.2080003@cs.helsinki.fi> 
+ <alpine.DEB.1.10.0902171120040.27813@qirst.com> <1234890096.11511.6.camel@penberg-laptop>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the support for reporting the unconfigured PD (system PD) to OS in MegaRAID SAS driver
+Well yes you missed two locations (kmalloc_caches array has to be
+redimensioned) and I also was writing the same patch...
 
-Signed-off-by Bo Yang<bo.yang@lsi.com>
+Here is mine:
 
----
-drivers/scsi/megaraid/megaraid_sas.c |  148 ++++++++++++++++++++++++++++++++++-
- drivers/scsi/megaraid/megaraid_sas.h |   92 +++++++++++++++++++++
- 2 files changed, 237 insertions(+), 3 deletions(-)
+Subject: SLUB: Do not pass 8k objects through to the page allocator
 
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-02-12 16:16:42.000000000 -0500
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-02-12 16:24:41.000000000 -0500
-@@ -1119,6 +1119,11 @@ megasas_queue_command(struct scsi_cmnd *
+Increase the maximum object size in SLUB so that 8k objects are not
+passed through to the page allocator anymore. The network stack uses 8k
+objects for performance critical operations.
 
- static int megasas_slave_configure(struct scsi_device *sdev)
- {
-+       u16             pd_index = 0;
-+       struct  megasas_instance *instance ;
-+
-+       instance = megasas_lookup_instance(sdev->host->host_no);
-+
-        /*
-         * Don't export physical disk devices to the disk driver.
-         *
-@@ -1126,7 +1131,17 @@ static int megasas_slave_configure(struc
-         *        That will be fixed once LSI engineers have audited the
-         *        firmware for possible issues.
-         */
--       if (sdev->channel < MEGASAS_MAX_PD_CHANNELS && sdev->type == TYPE_DISK)
-+       if (sdev->channel < MEGASAS_MAX_PD_CHANNELS &&
-+                               sdev->type == TYPE_DISK) {
-+               pd_index = (sdev->channel * MEGASAS_MAX_DEV_PER_CHANNEL) +
-+                               sdev->id;
-+
-+               if (instance->pd_list[pd_index].driveState ==
-+                               MR_PD_STATE_SYSTEM) {
-+                       sdev->timeout = 90 * HZ;
-+                       return 0;
-+               }
-+
-                return -ENXIO;
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
-        /*
-@@ -1423,6 +1438,29 @@ megasas_service_aen(struct megasas_insta
-        megasas_return_cmd(instance, cmd);
- }
+Index: linux-2.6/include/linux/slub_def.h
+===================================================================
+--- linux-2.6.orig/include/linux/slub_def.h	2009-02-17 10:45:51.000000000 -0600
++++ linux-2.6/include/linux/slub_def.h	2009-02-17 11:06:53.000000000 -0600
+@@ -121,10 +121,21 @@
+ #define KMALLOC_SHIFT_LOW ilog2(KMALLOC_MIN_SIZE)
 
-+static int megasas_slave_alloc(struct scsi_device *sdev)
-+{
-+       u16             pd_index = 0;
-+       struct megasas_instance *instance ;
-+       instance = megasas_lookup_instance(sdev->host->host_no);
-+
-+       if (sdev->channel < MEGASAS_MAX_PD_CHANNELS) {
-+               /*
-+                * Open the OS scan to the SYSTEM PD
-+                */
-+               pd_index =
-+                   (sdev->channel * MEGASAS_MAX_DEV_PER_CHANNEL) + sdev->id;
-+               if ((instance->pd_list[pd_index].driveState ==
-+                       MR_PD_STATE_SYSTEM) &&
-+                       (instance->pd_list[pd_index].driveType ==
-+                       TYPE_DISK)) {
-+                       return 0;
-+               }
-+
-+               return -ENXIO;
-+       }
-+       return 0;
-+}
  /*
-  * Scsi host template for megaraid_sas driver
-  */
-@@ -1432,6 +1470,7 @@ static struct scsi_host_template megasas
-        .name = "LSI SAS based MegaRAID driver",
-        .proc_name = "megaraid_sas",
-        .slave_configure = megasas_slave_configure,
-+       .slave_alloc = megasas_slave_alloc,
-        .queuecommand = megasas_queue_command,
-        .eh_device_reset_handler = megasas_reset_device,
-        .eh_bus_reset_handler = megasas_reset_bus_host,
-@@ -2143,7 +2182,7 @@ megasas_mem_to_fw(struct megasas_instanc
-        cmd = megasas_get_cmd(instance);
-
-        if (!cmd) {
--               printk(KERN_DEBUG "megasas (get_pd_list): Failed to get cmd\n");
-+               printk(KERN_DEBUG "megasas (mem_to_fw): Failed to get cmd\n");
-                return -ENOMEM;
-        }
-
-@@ -2152,7 +2191,7 @@ megasas_mem_to_fw(struct megasas_instanc
-        memset(dcmd->mbox.b, 0, MFI_MBOX_SIZE);
-
-        dcmd->mbox.s[0] = instance->skinny_mm_alloc_ind;
--       dcmd->mbox.s[2] = MEGASAS_SKINNY_SZ_MEM_BK / 1024;
-+       dcmd->mbox.s[2] = MEGASAS_SKINNY_SZ_MEM_BK/1024;
-
-        dcmd->cmd = MFI_CMD_DCMD;
-        dcmd->cmd_status = 0xFF;
-@@ -2177,6 +2216,100 @@ megasas_mem_to_fw(struct megasas_instanc
- }
-
- /**
-+ * megasas_get_pd_list_info -  Returns FW's pd_list structure
-+ * @instance:                          Adapter soft state
-+ * @pd_list:                           pd_list structure
++ * Maximum kmalloc object size handled by SLUB. Larger object allocations
++ * are passed through to the page allocator. The page allocator "fastpath"
++ * is relatively slow so we need this value sufficiently high so that
++ * performance critical objects are allocated through the SLUB fastpath.
 + *
-+ * Issues an internal command (DCMD) to get the FW's controller PD
-+ * list structure.  This information is mainly used to find out SYSTEM
-+ * supported by the FW.
++ * This should be dropped to PAGE_SIZE / 2 once the page allocator
++ * "fastpath" becomes competitive with the slab allocator fastpaths.
 + */
-+static int
-+megasas_get_pd_list(struct megasas_instance *instance)
-+{
-+       int ret = 0, pd_index = 0;
-+       struct megasas_cmd *cmd;
-+       struct megasas_dcmd_frame *dcmd;
-+       struct MR_PD_LIST *ci;
-+       struct MR_PD_ADDRESS *pd_addr;
-+       dma_addr_t ci_h = 0;
-+
-+       cmd = megasas_get_cmd(instance);
-+
-+       if (!cmd) {
-+               printk(KERN_DEBUG "megasas (get_pd_list): Failed to get cmd\n");
-+               return -ENOMEM;
-+       }
-+
-+       dcmd = &cmd->frame->dcmd;
-+
-+       ci = pci_alloc_consistent(instance->pdev,
-+                 MEGASAS_MAX_PD * sizeof(struct MR_PD_LIST), &ci_h);
-+
-+       if (!ci) {
-+               printk(KERN_DEBUG "Failed to alloc mem for pd_list\n");
-+               megasas_return_cmd(instance, cmd);
-+               return -ENOMEM;
-+       }
-+
-+       memset(ci, 0, sizeof(*ci));
-+       memset(dcmd->mbox.b, 0, MFI_MBOX_SIZE);
-+
-+       dcmd->mbox.b[0] = MR_PD_QUERY_TYPE_EXPOSED_TO_HOST;
-+       dcmd->mbox.b[1] = 0;
-+       dcmd->cmd = MFI_CMD_DCMD;
-+       dcmd->cmd_status = 0xFF;
-+       dcmd->sge_count = 1;
-+       dcmd->flags = MFI_FRAME_DIR_READ;
-+       dcmd->timeout = 0;
-+       dcmd->data_xfer_len = MEGASAS_MAX_PD * sizeof(struct MR_PD_LIST);
-+       dcmd->opcode = MR_DCMD_PD_LIST_QUERY;
-+       dcmd->sgl.sge32[0].phys_addr = ci_h;
-+       dcmd->sgl.sge32[0].length = MEGASAS_MAX_PD * sizeof(struct MR_PD_LIST);
-+
-+       if (!megasas_issue_polled(instance, cmd)) {
-+               ret = 0;
-+
-+       } else {
-+               ret = -1;
-+       }
-+
-+       /*
-+       * the following function will get the instance PD LIST.
-+       */
-+
-+       pd_addr = ci->addr;
-+
-+       if ( ret == 0 &&
-+               (ci->count <
-+                 (MEGASAS_MAX_PD_CHANNELS * MEGASAS_MAX_DEV_PER_CHANNEL))) {
-+
-+               memset(instance->pd_list, 0,
-+                       MEGASAS_MAX_PD * sizeof(struct megasas_pd_list));
-+
-+               for (pd_index = 0; pd_index < ci->count; pd_index++) {
-+
-+                       instance->pd_list[pd_addr->deviceId].tid        =
-+                                                       pd_addr->deviceId;
-+                       instance->pd_list[pd_addr->deviceId].driveType  =
-+                                                       pd_addr->scsiDevType;
-+                       instance->pd_list[pd_addr->deviceId].driveState =
-+                                                       MR_PD_STATE_SYSTEM;
-+
-+                       pd_addr++;
-+               }
-+
-+       }
-+
-+       pci_free_consistent(instance->pdev, sizeof(struct megasas_ctrl_info),
-+                           ci, ci_h);
-+
-+       megasas_return_cmd(instance, cmd);
-+
-+       return ret;
-+}
-+
-+/**
-  * megasas_get_controller_info -       Returns FW's controller structure
-  * @instance:                          Adapter soft state
-  * @ctrl_info:                         Controller information structure
-@@ -2488,6 +2621,15 @@ static int megasas_init_mfi(struct megas
-        if (megasas_issue_init_mfi(instance))
-                goto fail_fw_init;
-
-+       /**
-+       * for passthrough
-+       * the following function will get the PD LIST.
-+       **/
-+
-+       memset(instance->pd_list, 0,
-+               MEGASAS_MAX_PD * sizeof(struct megasas_pd_list));
-+       megasas_get_pd_list(instance);
-+
-        ctrl_info = kmalloc(sizeof(struct megasas_ctrl_info), GFP_KERNEL);
-
-        /*
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h      2009-02-12 16:16:43.000000000 -0500
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h       2009-02-12 15:24:58.000000000 -0500
-@@ -133,6 +133,7 @@
- #define MR_DCMD_CLUSTER                                0x08000000
- #define MR_DCMD_CLUSTER_RESET_ALL              0x08010100
- #define MR_DCMD_CLUSTER_RESET_LD               0x08010200
-+#define MR_DCMD_PD_LIST_QUERY                  0x02010100
-
- #define MR_EVT_CFG_CLEARED                     0x0004
-
-@@ -263,9 +264,98 @@ enum MR_EVT_ARGS {
-        MR_EVT_ARGS_STR,
-        MR_EVT_ARGS_TIME,
-        MR_EVT_ARGS_ECC,
-+       MR_EVT_ARGS_LD_PROP,
-+       MR_EVT_ARGS_PD_SPARE,
-+       MR_EVT_ARGS_PD_INDEX,
-+       MR_EVT_ARGS_DIAG_PASS,
-+       MR_EVT_ARGS_DIAG_FAIL,
-+       MR_EVT_ARGS_PD_LBA_LBA,
-+       MR_EVT_ARGS_PORT_PHY,
-+       MR_EVT_ARGS_PD_MISSING,
-+       MR_EVT_ARGS_PD_ADDRESS,
-+       MR_EVT_ARGS_BITMAP,
-+       MR_EVT_ARGS_CONNECTOR,
-+       MR_EVT_ARGS_PD_PD,
-+       MR_EVT_ARGS_PD_FRU,
-+       MR_EVT_ARGS_PD_PATHINFO,
-+       MR_EVT_ARGS_PD_POWER_STATE,
-+       MR_EVT_ARGS_GENERIC,
-+};
-
-+/*
-+ * define constants for device list query options
-+ */
-+enum MR_PD_QUERY_TYPE {
-+    MR_PD_QUERY_TYPE_ALL                = 0,
-+    MR_PD_QUERY_TYPE_STATE              = 1,
-+    MR_PD_QUERY_TYPE_POWER_STATE        = 2,
-+    MR_PD_QUERY_TYPE_MEDIA_TYPE         = 3,
-+    MR_PD_QUERY_TYPE_SPEED              = 4,
-+    MR_PD_QUERY_TYPE_EXPOSED_TO_HOST    = 5,
-+} __attribute__ ((packed));
-+
-+#define MR_EVT_CFG_CLEARED                             0x0004
-+#define MR_EVT_LD_STATE_CHANGE                         0x0051
-+#define MR_EVT_PD_INSERTED                             0x005b
-+#define MR_EVT_PD_REMOVED                              0x0070
-+#define MR_EVT_LD_CREATED                              0x008a
-+#define MR_EVT_LD_DELETED                              0x008b
-+#define MR_EVT_FOREIGN_CFG_IMPORTED                    0x00db
-+#define MR_EVT_LD_OFFLINE                              0x00fc
-+#define MR_EVT_CTRL_HOST_BUS_SCAN_REQUESTED            0x0152
-+
-+
-+enum MR_PD_STATE {
-+    MR_PD_STATE_UNCONFIGURED_GOOD   = 0x00,
-+    MR_PD_STATE_UNCONFIGURED_BAD    = 0x01,
-+    MR_PD_STATE_HOT_SPARE           = 0x02,
-+    MR_PD_STATE_OFFLINE             = 0x10,
-+    MR_PD_STATE_FAILED              = 0x11,
-+    MR_PD_STATE_REBUILD             = 0x14,
-+    MR_PD_STATE_ONLINE              = 0x18,
-+    MR_PD_STATE_COPYBACK            = 0x20,
-+    MR_PD_STATE_SYSTEM              = 0x40,
- };
-
-+ /*
-+ * defines the physical drive address structure
-+ */
-+struct MR_PD_ADDRESS {
-+       u16     deviceId;
-+       u16     enclDeviceId;
-+       union {
-+               struct {
-+                       u8  enclIndex;
-+                       u8  slotNumber;
-+               } mrPdAddress;
-+               struct {
-+                       u8  enclPosition;
-+                       u8  enclConnectorIndex;
-+               } mrEnclAddress;
-+       };
-+       u8      scsiDevType;
-+       union {
-+               u8      connectedPortBitmap;
-+               u8      connectedPortNumbers;
-+       };
-+       u64     sasAddr[2];
-+} __attribute__ ((packed));
++#define SLUB_MAX_SIZE (2 * PAGE_SIZE)
 +
 +/*
-+ * defines the physical drive list structure
-+ */
-+struct MR_PD_LIST {
-+    u32             size;
-+    u32             count;
-+    struct MR_PD_ADDRESS   addr[1];
-+} __attribute__ ((packed));
-+
-+struct megasas_pd_list {
-+    u16             tid;
-+    u8             driveType;
-+    u8             driveState;
-+} __attribute__ ((packed));
-+
- /*
-  * SAS controller properties
+  * We keep the general caches in an array of slab caches that are used for
+  * 2^x bytes of allocations.
   */
-@@ -552,6 +642,8 @@ struct megasas_ctrl_info {
- #define MEGASAS_DEFAULT_INIT_ID                        -1
- #define MEGASAS_MAX_LUN                                8
- #define MEGASAS_MAX_LD                         64
-+#define MEGASAS_MAX_PD                         (MEGASAS_MAX_PD_CHANNELS * \
-+                                               MEGASAS_MAX_DEV_PER_CHANNEL)
+-extern struct kmem_cache kmalloc_caches[PAGE_SHIFT + 1];
++extern struct kmem_cache kmalloc_caches[PAGE_SHIFT + 2];
 
- #define MEGASAS_DBG_LVL                                1
+ /*
+  * Sorry that the following has to be that ugly but some versions of GCC
+@@ -212,7 +223,7 @@
+ static __always_inline void *kmalloc(size_t size, gfp_t flags)
+ {
+ 	if (__builtin_constant_p(size)) {
+-		if (size > PAGE_SIZE)
++		if (size > SLUB_MAX_SIZE)
+ 			return kmalloc_large(size, flags);
+
+ 		if (!(flags & SLUB_DMA)) {
+@@ -234,7 +245,7 @@
+ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+ {
+ 	if (__builtin_constant_p(size) &&
+-		size <= PAGE_SIZE && !(flags & SLUB_DMA)) {
++		size <= SLUB_MAX_SIZE && !(flags & SLUB_DMA)) {
+ 			struct kmem_cache *s = kmalloc_slab(size);
+
+ 		if (!s)
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c	2009-02-17 10:49:47.000000000 -0600
++++ linux-2.6/mm/slub.c	2009-02-17 10:58:14.000000000 -0600
+@@ -2475,7 +2475,7 @@
+  *		Kmalloc subsystem
+  *******************************************************************/
+
+-struct kmem_cache kmalloc_caches[PAGE_SHIFT + 1] __cacheline_aligned;
++struct kmem_cache kmalloc_caches[PAGE_SHIFT + 2] __cacheline_aligned;
+ EXPORT_SYMBOL(kmalloc_caches);
+
+ static int __init setup_slub_min_order(char *str)
+@@ -2658,7 +2658,7 @@
+ {
+ 	struct kmem_cache *s;
+
+-	if (unlikely(size > PAGE_SIZE))
++	if (unlikely(size > SLUB_MAX_SIZE))
+ 		return kmalloc_large(size, flags);
+
+ 	s = get_slab(size, flags);
+@@ -2686,7 +2686,7 @@
+ {
+ 	struct kmem_cache *s;
+
+-	if (unlikely(size > PAGE_SIZE))
++	if (unlikely(size > SLUB_MAX_SIZE))
+ 		return kmalloc_large_node(size, flags, node);
+
+ 	s = get_slab(size, flags);
+@@ -3223,7 +3223,7 @@
+ {
+ 	struct kmem_cache *s;
+
+-	if (unlikely(size > PAGE_SIZE))
++	if (unlikely(size > SLUB_MAX_SIZE))
+ 		return kmalloc_large(size, gfpflags);
+
+ 	s = get_slab(size, gfpflags);
+@@ -3239,7 +3239,7 @@
+ {
+ 	struct kmem_cache *s;
+
+-	if (unlikely(size > PAGE_SIZE))
++	if (unlikely(size > SLUB_MAX_SIZE))
+ 		return kmalloc_large_node(size, gfpflags, node);
+
+ 	s = get_slab(size, gfpflags);
