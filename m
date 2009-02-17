@@ -1,89 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635AbZBQPaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753601AbZBQPby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753635AbZBQPaV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 10:30:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbZBQPaG
+	id S1753601AbZBQPby (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 10:31:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbZBQPbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 10:30:06 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:44294 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751385AbZBQPaE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 10:30:04 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:references:
-	mime-version:content-type:content-disposition:in-reply-to:organization:
-	user-agent:x-system-of-record;
-	b=YXIsqrfwnE8LtCYGmpYckJUV9GVpW81xaJnes3TYI4Q3uPLP8rRIVeqWtPvsZLPiR
-	BvJ5bwZ9dbQCURnue0HAA==
-Date: Tue, 17 Feb 2009 07:28:11 -0800
-From: Brian Swetland <swetland@google.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>,
-       Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFD] Automatic suspend
-Message-ID: <20090217152811.GA12686@bulgaria.corp.google.com>
-References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com> <13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com> <20090216145948.6fea81c3@infradead.org> <200902170019.40599.rjw@sisk.pl> <20090216232329.GA15678@srcf.ucam.org> <20090217142001.GB12378@bulgaria.corp.google.com> <20090217064630.688bf639@infradead.org>
+	Tue, 17 Feb 2009 10:31:42 -0500
+Received: from h155.mvista.com ([63.81.120.155]:26142 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750921AbZBQPbl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 10:31:41 -0500
+Message-ID: <499AD872.2060605@ru.mvista.com>
+Date: Tue, 17 Feb 2009 18:32:02 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090217064630.688bf639@infradead.org>
-Organization: Google, Inc.
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-System-Of-Record: true
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/18] ide: use ->tf_load in SELECT_DRIVE()
+References: <20080620213323.13202.71450.sendpatchset@localhost.localdomain> <200902162251.49271.bzolnier@gmail.com> <499A0D0B.7070007@ru.mvista.com> <200902171543.21892.bzolnier@gmail.com>
+In-Reply-To: <200902171543.21892.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Arjan van de Ven <arjan@infradead.org>]
-> On Tue, 17 Feb 2009 06:20:01 -0800
-> Brian Swetland <swetland@google.com> wrote:
-> 
-> > Of course that still doesn't address userspace.  Aggressively going to
-> > suspend lets us compensate for userspace programs that do somewhat
-> > silly things (I agree that it would be best if they didn't but they
-> > do and getting *everyone* to write their userspace code to avoid
-> > spinning or avoid waking up on short-duration timers to poll is a
-> > losing battle).
-> 
-> actually with powertop... on the open source side things are actually
-> won. It took all of 6 months...
-> I don't see that as a valid excuse. In fact, if this kind of solution
-> makes real userspace scheduled timers to be missed then I consider it a
-> serious functionality misfeature.
+Bartlomiej Zolnierkiewicz wrote:
 
-While you can't expect the kernel to solve all the problems of
-userspace, here's the broad situation one could end up in
-(note this specific sequence is generic and not based on any one
-specific product experience):
+>>>>>>>There should be no functional changes caused by this patch.
+>>>>>>>Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>>>>>>>Index: b/drivers/ide/ide-iops.c
+>>>>>>>===================================================================
+>>>>>>>--- a/drivers/ide/ide-iops.c
+>>>>>>>+++ b/drivers/ide/ide-iops.c
+>>>>>>>@@ -88,11 +88,15 @@ void SELECT_DRIVE (ide_drive_t *drive)
+>>>>>>> {
+>>>>>>>     ide_hwif_t *hwif = drive->hwif;
+>>>>>>>     const struct ide_port_ops *port_ops = hwif->port_ops;
+>>>>>>>+    ide_task_t task;
+>>>>>>> 
+>>>>>>>     if (port_ops && port_ops->selectproc)
+>>>>>>>         port_ops->selectproc(drive);
+>>>>>>> 
+>>>>>>>-    hwif->OUTB(drive->select.all, hwif->io_ports.device_addr);
+>>>>>>>+    memset(&task, 0, sizeof(task));
+>>>>>>>+    task.tf_flags = IDE_TFLAG_OUT_DEVICE;
+>>>>>>>+
+>>>>>>>+    drive->hwif->tf_load(drive, &task);
 
-- carrier deploys a device 
-- carrier agrees to allow installation of arbitrary third party apps
-  without some horrible certification program requiring app authors
-  to jump through hoops, wait ages for approval, etc
-- users rejoice and install all kinds of apps
-- some apps are poorly written and impact battery life
-- users complain to carrier about battery life
+>>>>>>   This actually doesn't seem like a bright idea to me, considering 
+>>>>>>that this gets called when starting every request. How will you look 
+>>>>>>at me adding the transport method for writing this register? :-)
 
-You will end up with some crappy apps that do really dumb things.
-However, even if they're badly written users may still install and use
-these apps because hey, they do something the user likes.
+>>>Please check profiles first -- it might not be worth it. [1]
 
->From the Android standpoint, we're trying to balance protecting the
-system from poorly designed apps and somehow letting the user know "hey
-app X is chewing up a lot of power" (work in progress on this).
+>>>>>Convert SELECT_DRIVE() to use ->tf_load instead of ->OUTB.
 
-While I'd love for every app developer to actively tune their apps for a
-good mobile experience, I am skeptical that this is going to happen.
+>>>>>  OTOH, adding such a "backdoor" to the taskfile doesn't seem very 
+>>>>>consistent... well, I'm not excited about the whole idea conversion to 
+>>>>>tf_{load|read}() -- it's not clear what exactly this bought us.
 
-Brian
+>>>This was explained some months ago already, so just to recall -- it was
+>>>a part of a bigger work removing duplicated code and allowing abstraction
+>>>of the ATA logic.
+
+>>>Anyway this is not set in a stone so if you have proposal of a better
+>>>approach please come forward with it.
+
+>>   Er... I think that the previous IN()/OUT() methods were better. Note 
+>>that we ended up using the local version of them in the dafault 
+>>ide_tf_{load}read}() anyway -- as Alan has pointed out it might be worth 
+
+> During ide_tf_{load,read}() addition I was a bit too optimistic about
+> the possibility of the quick io{read,write}* conversion later...
+
+>>splitting those into I/O and memory space versions... although given 
+>>general slowness of the I/O accesses, this is probably not going to win 
+>>much speed-wise.
+
+> Maybe it would be worth to add ->tf_{inb,outb} to struct ide_tp_ops
+> and convert default tp_ops to use them...  OTOH we should reinvestigate
+> the io{read,write}*() way first (maybe things have improved there)...
+
+    Yes, let's not be hasty here...
+
+>>>>   We at least could have saved on memset() -- tf_load() method ignores 
+>>>>fields other than tf_flags anyway...
+
+>>>Unless it is huge performance win (unlikely) this is not a good idea as it would be a maintainance nightmare.
+
+>>>->tf_load does only use cmd->tf_flags today but it might change one day
+>>>and nobody will remember to audit all users that they pass a valid cmd...
+
+>>   It's just quite unbearable to see (especially for a long time 
+>>assembly coder) how a single register write is turning into *that*.
+>>So, it still seems worth risking... :-)
+
+> I see your point here.  If SELECT_DRIVE() is performance sensitive we
+> may just add another struct ide_tp_ops method for it...
+
+    Or we may finally teach selectproc() to also do that, turning it into 
+analog of libata's dev_select() method.
+
+> Thanks,
+> Bart
+
+MBR, Sergei
