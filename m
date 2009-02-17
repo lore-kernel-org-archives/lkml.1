@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754890AbZBQVGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336AbZBQVJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754890AbZBQVGi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 16:06:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZBQVG0
+	id S1754336AbZBQVJj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 16:09:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbZBQVJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 16:06:26 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:60582 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751400AbZBQVGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 16:06:24 -0500
-From: Jay Vosburgh <fubar@us.ibm.com>
-To: Brian Haley <brian.haley@hp.com>
-cc: Andrey Borzenkov <arvidjaar@mail.ru>,
-       =?ISO-8859-1?Q?=22J=2EA=2E_Magall?=@us.ibm.com,
-       =?ISO-8859-1?Q?=F3n=22?= <jamagallon@ono.com>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, bonding-devel@lists.sourceforge.net
-Subject: Re: [Bonding-devel] 2.6.29 regression? Bonding tied to IPV6 in 29-rc5
-In-reply-to: <499B19AF.1000003@hp.com>
-References: <alpine.LFD.2.00.0902131413120.3179@localhost.localdomain> <20090217095232.5da06b9f@werewolf.home> <200902172001.41804.arvidjaar@mail.ru> <200902172117.22671.arvidjaar@mail.ru> <499B19AF.1000003@hp.com>
-Comments: In-reply-to Brian Haley <brian.haley@hp.com>
-   message dated "Tue, 17 Feb 2009 15:10:23 -0500."
-X-Mailer: MH-E 8.0.3; nmh 1.3-RC3; GNU Emacs 22.2.1
-Date: Tue, 17 Feb 2009 13:06:28 -0800
-Message-ID: <16929.1234904788@death.nxdomain.ibm.com>
+	Tue, 17 Feb 2009 16:09:29 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:33256 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751492AbZBQVJ2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 16:09:28 -0500
+Date: Tue, 17 Feb 2009 22:11:19 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT] kbuild
+Message-ID: <20090217211119.GA29190@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brian Haley <brian.haley@hp.com> wrote:
+Hi Linus.
 
->Andrey Borzenkov wrote:
-[...]
->> This hard dependency was apparently introduced by this commit:
->> 
->> commit 305d552accae6afb859c493ebc7d98ca3371dae2
->> Author: Brian Haley <brian.haley@hp.com>
->> Date:   Tue Nov 4 17:51:14 2008 -0800
->> 
->>     bonding: send IPv6 neighbor advertisement on failover
->
->I initially had bonding IPv6 support as a Kconfig option, but it was 
->decided it would be cleaner if it just got built-in whenever CONFIG_IPV6 
->was set like SCTP, with the assumption you might want it.
->
->Is it a common configuration to not allow a module to load like you're 
->doing in modprobe.conf?  I don't know how hard it would be to rip this 
->out into it's own bonding_ipv6.ko module, simply turning-off CONFIG_IPV6 
->seems better.
+Please pull the following kbuild related fixes.
 
-	I'm not sure either of those really helps.  Distro kernels are
-built with CONFIG_IPV6 (and would have the CONFIG_BONDING_IPV6_DINGUS
-enabled as well), so the common case users would have it enabled, too.
+The significant part of this is the updates to the markup_oops.pl script.
+The rest is udpated to tags, rpm and setlocalversion.
+And a small update that touches top-lvel Makefile:
+- We create a source symlink during *config and not the prepare phase as before
 
-	Putting the ipv6 bits into a different module might not help,
-either, because the "core" bonding code would still have the call to the
-ipv6 functions.  Unless there's some magic way to somehow know at
-runtime whether or not the ipv6 module is loaded, and only try to
-resolve those symbols if ipv6 is loaded.  That seems complicated.
+	Sam
 
-	To answer your question, I have come across this (aliasing ipv6
-to nothing in modprobe.conf to disable IPv6) from time to time, but
-didn't think of it when the NA code was added to bonding.
+The following changes since commit d2f8d7ee1a9b4650b4e43325b321801264f7c37a:
+  Linus Torvalds (1):
+        Linux 2.6.29-rc5
 
-	-J
+are available in the git repository at:
 
----
-	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
+  git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git master
+
+Alexey Dobriyan (1):
+      kbuild: fix tags generation of config symbols
+
+Andi Kleen (1):
+      kbuild: create the source symlink earlier in the objdir
+
+Arjan van de Ven (2):
+      scripts: add x86 register parser to markup_oops.pl
+      scripts: add x86 64 bit support to the markup_oops.pl script
+
+Josh Hunt (1):
+      kbuild: add vmlinux to kernel rpm
+
+Michael Neuling (1):
+      bootgraph: fix for use with dot symbols
+
+Mike Frysinger (1):
+      kbuild,setlocalversion: shorten the make time when using svn
+
+Rabin Vincent (1):
+      kbuild: add sys_* entries for syscalls in tags
+
+ Makefile                |    2 +-
+ scripts/bootgraph.pl    |    4 +-
+ scripts/markup_oops.pl  |  161 ++++++++++++++++++++++++++++++++++++++++++++---
+ scripts/package/mkspec  |    8 +++
+ scripts/setlocalversion |    9 +---
+ scripts/tags.sh         |   12 +++-
+ 6 files changed, 174 insertions(+), 22 deletions(-)
