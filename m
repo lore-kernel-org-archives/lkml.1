@@ -1,88 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752203AbZBQHp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752035AbZBQHvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752203AbZBQHp6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 02:45:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbZBQHpu
+	id S1752035AbZBQHvx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 02:51:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbZBQHvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 02:45:50 -0500
-Received: from mail.gmx.net ([213.165.64.20]:50293 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751069AbZBQHpt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 02:45:49 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19m9yR+kcRmay/U3RpdbrcksJ0Hz+ipJzCzUl6sp6
-	n5WSpKKc7xhltp
-Subject: Re: 2.6.29-rc4 regression
-From: Mike Galbraith <efault@gmx.de>
-To: Tim Blechmann <tim@klingt.org>
-Cc: Robert Richter <robert.richter@amd.com>, oprofile-list@lists.sf.net,
+	Tue, 17 Feb 2009 02:51:44 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:58916 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750883AbZBQHvn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 02:51:43 -0500
+Message-ID: <499A6C7C.9060106@linux.vnet.ibm.com>
+Date: Tue, 17 Feb 2009 01:51:24 -0600
+From: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Johannes Weiner <hannes@cmpxchg.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <499961AF.8030909@klingt.org>
-References: <1229869416.6911.1.camel@thinkpad> <49932C35.3020300@klingt.org>
-	 <20090213190740.GD25042@erda.amd.com> <20090216112313.359ef437@thinkpad>
-	 <20090216113349.GF25042@erda.amd.com>  <499961AF.8030909@klingt.org>
-Content-Type: text/plain
-Date: Tue, 17 Feb 2009 08:45:40 +0100
-Message-Id: <1234856740.6867.22.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.57
+Subject: Re: [patch 7/8] ecryptfs: use kzfree()
+References: <20090216142926.440561506@cmpxchg.org> <20090216144726.088020837@cmpxchg.org>
+In-Reply-To: <20090216144726.088020837@cmpxchg.org>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=5D35E502
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig82585C0BC219E1CC4686197B"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-16 at 13:53 +0100, Tim Blechmann wrote:
-> >>> still, I can not reproduce this with my tests with v2.6.29-rc4. The
-> >>> regression on the systems I have runs fine on rc4. On the system you
-> >>> have, is commit b99170288421c79f0c2efa8b33e26e65f4bb7fb8 the first bad
-> >>> one? If so, I will split the patch into smaller pieces to find the
-> >>> change that introduces the bug.
-> >> i got revision df13b31c286b3e91c556167954eda088d90a4295 working, by not
-> >> resetting the counter width:
-> >>
-> >> diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
-> >> index 12e207a..f0e019d 100644
-> >> --- a/arch/x86/oprofile/op_model_ppro.c
-> >> +++ b/arch/x86/oprofile/op_model_ppro.c
-> >> @@ -76,12 +76,14 @@ static void ppro_setup_ctrs(struct op_msrs const * const msrs)
-> >>  			return;
-> >>  	}
-> >>  
-> >> +#if 0
-> >>  	if (cpu_has_arch_perfmon) {
-> >>  		union cpuid10_eax eax;
-> >>  		eax.full = cpuid_eax(0xa);
-> >>  		if (counter_width < eax.split.bit_width)
-> >>  			counter_width = eax.split.bit_width;
-> >>  	}
-> >> +#endif
-> >>
-> >>
-> >> this tweak did not work on later kernels, that i tested, though, and i 
-> >> haven't had time to look into it in more detail.
-> 
-> hm, i just tried to compile 2.6.28 with this patch applied, and there
-> the NMIs are delivered correctly.
-> 
-> > Thanks Tim, on later kernels, is it the behaviour you mentioned that
-> > no NMIs are delivered and you do not receive any NMI?
-> 
-> on the current 2.6.29-rc5, no NMIs are delivered. however i have also
-> applied the performance counter branch from tip, maybe that interferes
-> with oprofile?
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig82585C0BC219E1CC4686197B
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Hm.
+Johannes Weiner wrote:
+> Use kzfree() instead of memset() + kfree().
+>=20
+> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> Cc: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
 
-If you're using latest tip, there _should_ be no interference.  There
-was a problem a short while back in that both perfcounters and oprofile
-register die handlers, but that was resolved by increasing oprofile's
-handler priority, so that it takes over NMI handling while profiling.
+Acked-by: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
 
-I just did an oprofile test run with x86-tip/master while kerneltop was
-running.  NMIs stopped being handled by kerneltop once oprofile started,
-and resumed after oprofile finished... seems to be working.
+Thanks for kzfree() and the updates to eCryptfs - I will put it to use
+in the future.
 
-	-Mike 
+> ---
+>  fs/ecryptfs/keystore.c  |    3 +--
+>  fs/ecryptfs/messaging.c |    3 +--
+>  2 files changed, 2 insertions(+), 4 deletions(-)
+>=20
+> --- a/fs/ecryptfs/keystore.c
+> +++ b/fs/ecryptfs/keystore.c
+> @@ -740,8 +740,7 @@ ecryptfs_write_tag_70_packet(char *dest,
+>  out_release_free_unlock:
+>  	crypto_free_hash(s->hash_desc.tfm);
+>  out_free_unlock:
+> -	memset(s->block_aligned_filename, 0, s->block_aligned_filename_size);=
 
+> -	kfree(s->block_aligned_filename);
+> +	kzfree(s->block_aligned_filename);
+>  out_unlock:
+>  	mutex_unlock(s->tfm_mutex);
+>  out:
+> --- a/fs/ecryptfs/messaging.c
+> +++ b/fs/ecryptfs/messaging.c
+> @@ -291,8 +291,7 @@ int ecryptfs_exorcise_daemon(struct ecry
+>  	if (daemon->user_ns)
+>  		put_user_ns(daemon->user_ns);
+>  	mutex_unlock(&daemon->mux);
+> -	memset(daemon, 0, sizeof(*daemon));
+> -	kfree(daemon);
+> +	kzfree(daemon);
+>  out:
+>  	return rc;
+>  }
+>=20
+>=20
+
+
+
+--------------enig82585C0BC219E1CC4686197B
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkmabIIACgkQqDCb9l015QLPyACcCSOVkzCRUeBe3Jc1N0Cfxxf0
+CZ8AnA+6FD4jFxDuGQGfrrQuzDb+9Zko
+=8FHV
+-----END PGP SIGNATURE-----
+
+--------------enig82585C0BC219E1CC4686197B--
