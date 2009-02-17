@@ -1,60 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751682AbZBQFOM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753660AbZBQFOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751682AbZBQFOM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 00:14:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbZBQFN5
+	id S1753660AbZBQFOd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 00:14:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbZBQFOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 00:13:57 -0500
-Received: from chmailsrv.int.mrv.com ([66.43.110.11]:28028 "EHLO
-	chmailsrv.int.mrv.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750828AbZBQFN5 (ORCPT
+	Tue, 17 Feb 2009 00:14:07 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:33840 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751542AbZBQFOG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 00:13:57 -0500
-X-Greylist: delayed 912 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Feb 2009 00:13:56 EST
-Date: Mon, 16 Feb 2009 20:58:43 -0800
-From: Nye Liu <nyet@mrv.com>
-To: linux-kernel@vger.kernel.org, jirislaby@gmail.com
-Subject: modpost: Something amiss with do_hid_entry() - id->bus endianess
-	wrong?
-Message-ID: <20090217045840.GA28536@mrv.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 17 Feb 2009 05:01:05.0955 (UTC) FILETIME=[BD377730:01C990BC]
+	Tue, 17 Feb 2009 00:14:06 -0500
+Message-Id: <20090217051227.957864159@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Tue, 17 Feb 2009 00:12:27 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [PATCH 00/15] [git pull] for tip/tracing/ftrace 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i am having problems with endianness on the id->bus value in do_hid_entry().
 
-i think there is a "TO_NATIVE(id->bus);" missing in scripts/mod/file2alias.c:
+Ingo,
 
-# modinfo --version
-module-init-tools version 3.4
-# modinfo hid_dell
-filename:
-/lib/modules/2.6.28-1-amd64/kernel/drivers/hid/hid-dell.ko
-license:        GPL
-alias:          hid:b0300v000013BAp00000017
-alias:          hid:b0300v0000413Cp00002105
-alias:          hid:b0300v0000413Cp00002005
-depends:        hid,usbhid
-vermagic:       2.6.28-1-amd64 SMP mod_unload modversions 
+This is a patch series that offers a variety of features.
 
-notice it says "b0300", but the proper hid bus id is 0x0003 (from udev):
-[ 2374.572122] dell 0003:413C:2005.0006: input,hidraw1: USB HID v1.10 Keyboard [DELL DELL USB Keyboard] on usb-0000:00:1d.3-2/input0 
+The first is to add:
 
-this is preventing udev from autoloading any of the usbhid modules
-unless you hack modules.alias
+ #### all functions enabled ####
 
-or do i have an outdated modinfo/modutils?
+to set_ftrace_filter when all functions will be traced when function
+tracing is on.
 
+The next is to add a :command: interface, and the module command:
+
+ echo '*:mod:ext4' > set_ftrace_filter
+
+Will select all functions in the ext4 module.
+
+ echo '!*write*:mod:ext4' > set_ftrace_filter
+
+will remove all functions with the characters 'write' and are
+in ext4.
+
+Next we extend the :command: interface as well as add a way to
+hook tracers to specific functions. Instead of tracing all functions
+the same, this patch series adds a hash to be able to trace different
+functions differently.
+
+I implement a 'traceon' and 'traceoff' to have a function start or
+stop tracing when it is hit. It also includes a counter for the
+number of times to implement the trace on/off.
+
+ echo '*_lock:traceon:4' > set_ftrace_filter
+ echo '*_unlock:traceoff:5' > set_ftrace_filter
+
+This will have all functions that end with _lock turn on tracing
+and all that end with _unlock disable it, 4 times each.
+
+The following patches are in:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+
+    branch: tip/tracing/ftrace
+
+
+Steven Rostedt (15):
+      ftrace: state that all functions are enabled in set_ftrace_filter
+      ftrace: add do_for_each_ftrace_rec and while_for_each_ftrace_rec
+      ftrace: rename ftrace_match to ftrace_match_records
+      ftrace: break up ftrace_match_records into smaller components
+      ftrace: add module command function filter selection
+      ftrace: enable filtering only when a function is filtered on
+      ftrace: add command interface for function selection
+      ftrace: convert ftrace_lock from a spinlock to mutex
+      ftrace: consolidate mutexes
+      ftrace: trace different functions with a different tracer
+      ring-buffer: add tracing_is_on to test if ring buffer is enabled
+      ftrace: add traceon traceoff commands to enable/disable the buffers
+      ftrace: show selected functions in set_ftrace_filter
+      ftrace: add pretty print to selected fuction traces
+      ftrace: add pretty print function for traceon and traceoff hooks
+
+----
+ include/linux/ftrace.h         |   40 ++
+ include/linux/ring_buffer.h    |    2 +
+ kernel/trace/ftrace.c          |  929 +++++++++++++++++++++++++++++++---------
+ kernel/trace/ring_buffer.c     |    9 +
+ kernel/trace/trace_functions.c |  163 +++++++
+ 5 files changed, 946 insertions(+), 197 deletions(-)
 -- 
-Nye Liu
-nliu@mrv.com
-(818) 772-6235x248
-(818) 772-0576 fax
-
-"Who would be stupid enough to quote a fictitious character?"
-	-- Don Quixote
