@@ -1,55 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754938AbZBQWit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbZBQWjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754938AbZBQWit (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 17:38:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbZBQWik
+	id S1755281AbZBQWjY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 17:39:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbZBQWjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 17:38:40 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59391
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753463AbZBQWik (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 17:38:40 -0500
-Date: Tue, 17 Feb 2009 14:38:24 -0800 (PST)
-Message-Id: <20090217.143824.121552155.davem@davemloft.net>
-To: jeremy@goop.org
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       sam@ravnborg.org, gitster@pobox.com, mingo@elte.hu,
-       caglar@pardus.org.tr
-Subject: Re: [PATCH] Add *.rej to .gitignore
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <499B1729.5040802@goop.org>
-References: <499B1729.5040802@goop.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Feb 2009 17:39:14 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:60852 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753608AbZBQWjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 17:39:12 -0500
+Date: Tue, 17 Feb 2009 14:39:10 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: Q: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove
+	single ipi fallback for smp_call_function_many())
+Message-ID: <20090217223910.GM6761@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090216220214.GA10093@redhat.com> <1234823097.30178.406.camel@laptop> <20090216231946.GA12009@redhat.com> <1234862974.4744.31.camel@laptop> <20090217101130.GA8660@wotan.suse.de> <1234866453.4744.58.camel@laptop> <20090217112657.GE26402@wotan.suse.de> <20090217192810.GA4980@redhat.com> <20090217213256.GJ6761@linux.vnet.ibm.com> <20090217214518.GA13189@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090217214518.GA13189@redhat.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Date: Tue, 17 Feb 2009 11:59:37 -0800
-
-> *.rej files really are unwanted.  If there are any .rej files, they can be found by
-> some other means (perhaps git itself could warn when committing with *.rej files present,
-> or add some distinct notion of "ignored files" vs "never commit" files).
+On Tue, Feb 17, 2009 at 10:45:18PM +0100, Oleg Nesterov wrote:
+> On 02/17, Paul E. McKenney wrote:
+> >
+> > On Tue, Feb 17, 2009 at 08:28:10PM +0100, Oleg Nesterov wrote:
+> > >
+> > > So the question is: is there any arch which surely needs this barrier?
+> > >
+> > > IOW,
+> > > 	int COND;
+> > >
+> > > 	void smp_xxx_interrupt(regs)
+> > > 	{
+> > > 		BUG_ON(!COND);
+> > > 	}
+> > >
+> > > 	COND = 1;
+> > > 	mb();
+> > > 	smp_send_xxx(cpu);
+> > >
+> > > can we really hit the BUG_ON() above on some arch?
+> >
+> > If all of the above is executed by the same task, tripping the BUG_ON()
+> > means either a compiler or CPU bug.
 > 
-> (This effectively reverts 1f5d3a6b6532e25a5cdf1f311956b2b03d343a48)
+> I think you misunderstood...
 > 
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> smp_send_xxx() sends the ipi to another CPU, and smp_xxx_interrupt() is
+> the handler.
 
-I don't know about this.
+You are right, I did miss that completely.  :-/
 
-I really want to know if there are reject files there if I
-am checking to see if my tree is clean.
+I have seen hardware in which the IPI could beat the cache invalidation
+from the sending CPU to the interrupted CPU, and in which one or both of
+the CPUs would have to execute special cache-flush/invalidation/whatever
+instructions for the interrupted CPU to have a consistent view of the
+data (in your example, "COND").
 
-This has caught many patch application errors for myself
-personally in the past, so I really don't want git to
-start silently ignoring those things.
+But we had a little chat with the hardware designers, and in subsequent
+hardware, the IPI interacted with the cache-coherence protocol so as to
+prevent the above bug from firing.  However, this was x86-based hardware,
+which orders writes.  Weakly ordered systems would likely need a memory
+barrier somewhere, whether as shown above or buried in the smp_send_xxx()
+primitive.
 
-People should delete reject file explicitly, as they are
-evidence of a patch that would not apply cleanly.  If you
-abort trying to add the patch, fine, but cleaning up the
-reject files is part of that operation.
-
+							Thanx, Paul
