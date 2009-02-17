@@ -1,187 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753301AbZBQLie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbZBQLis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753301AbZBQLie (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 06:38:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbZBQLiZ
+	id S1754157AbZBQLis (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 06:38:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZBQLii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 06:38:25 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50687 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750961AbZBQLiY (ORCPT
+	Tue, 17 Feb 2009 06:38:38 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:62834 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753454AbZBQLig (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 06:38:24 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
-Subject: Re: [PATCH] Add tracepoints to track pagecache transition
-Cc: kosaki.motohiro@jp.fujitsu.com, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, Jason Baron <jbaron@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Kazuto Miyoshi <miyoshi@linux.bs1.fc.nec.co.jp>, rostedt@goodmis.org,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <499A99BC.2080700@bk.jp.nec.com>
-References: <1234863220.4744.34.camel@laptop> <499A99BC.2080700@bk.jp.nec.com>
-Message-Id: <20090217201651.576E.A69D9226@jp.fujitsu.com>
+	Tue, 17 Feb 2009 06:38:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=VfKCsGyG3DThFiQoZp5BYZ6zk8XwY5wHSjhr3BtTDywSAhULa7s/mbv6jj/eZNY80/
+         95E8+/BSwPy7rzozldC2KHZg0d6A0xOQDlhyLQ18LyDbzcmMjroZ7aIxxriSqkFADcyJ
+         aSK7vsZn64nw/eZvmVw2m50GEfcpeVVDASJQY=
+Message-ID: <499AA1B5.5090501@gmail.com>
+Date: Tue, 17 Feb 2009 12:38:29 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Nye Liu <nyet@mrv.com>
+CC: linux-kernel@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>
+Subject: Re: modpost: Something amiss with do_hid_entry() - id->bus endianess
+ wrong?
+References: <20090217045840.GA28536@mrv.com>
+In-Reply-To: <20090217045840.GA28536@mrv.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 17 Feb 2009 20:38:20 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-
-In my 1st impression, this patch description is a bit strange.
-
-> The below patch adds instrumentation for pagecache.
+Nye Liu wrote:
+> i am having problems with endianness on the id->bus value in do_hid_entry().
 > 
-> I thought it would be useful to trace pagecache behavior for problem
-> analysis (performance bottlenecks, behavior differences between stable
-> time and trouble time).
-> 
-> By using those tracepoints, we can describe and visualize pagecache
-> transition (file-by-file basis) in kernel and  pagecache
-> consumes most of the memory in running system and pagecache hit rate
-> and writeback behavior will influence system load and performance.
+> i think there is a "TO_NATIVE(id->bus);" missing in scripts/mod/file2alias.c:
 
-Why do you think this tracepoint describe pagecache hit rate?
-and, why describe writeback behavior?
+Definitely! Good spotting, thanks.
 
-> 
-> I attached an example which is visualization of pagecache status using
-> SystemTap. 
-
-it seems no attached. and SystemTap isn't used kernel developer at all.
-I don't think it's enough explanation.
-Can you make seekwatcher liked completed comsumer program?
-(if you don't know seekwatcher, see http://oss.oracle.com/~mason/seekwatcher/)
-
-> That graph describes pagecache transition of File A and File B
-> on a file-by-file basis with the situation where regular I/O to File A
-> is delayed because of other I/O to File B. 
-
-If you want to see I/O activity, you need to add tracepoint into block layer.
-
-> We visually understand
-> pagecache for File A is narrowed down due to I/O pressure from File B.
-
-confused. Can we assume the number of anon pages/files pages ratio don't chage?
-
-
-> Peter Zijlstra wrote:
-> > On Tue, 2009-02-17 at 18:00 +0900, Atsushi Tsuji wrote:
-> > 
-> >> The below patch adds instrumentation for pagecache.
-> > 
-> > And somehow you forgot to CC any of the mm people.. ;-)
-> 
-> Hi Peter,
-> 
-> Ah, sorry.
-> Thank you for adding to CC list.
-> 
-> >> +DECLARE_TRACE(filemap_add_to_page_cache,
-> >> +	TPPROTO(struct address_space *mapping, pgoff_t offset),
-> >> +	TPARGS(mapping, offset));
-> >> +DECLARE_TRACE(filemap_remove_from_page_cache,
-> >> +	TPPROTO(struct address_space *mapping),
-> >> +	TPARGS(mapping));
-> > 
-> > This is rather asymmetric, why don't we care about the offset for the
-> > removed page?
-> > 
-> 
-> Indeed.
-> I added the offset to the argument for the removed page and resend fixed patch.
-> 
-> Signed-off-by: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
-> ---
-> diff --git a/include/trace/filemap.h b/include/trace/filemap.h
-
-please add diffstat.
-
-
-> new file mode 100644
-> index 0000000..a17dc92
-> --- /dev/null
-> +++ b/include/trace/filemap.h
-> @@ -0,0 +1,13 @@
-> +#ifndef _TRACE_FILEMAP_H
-> +#define _TRACE_FILEMAP_H
-> +
-> +#include <linux/tracepoint.h>
-> +
-> +DECLARE_TRACE(filemap_add_to_page_cache,
-> +	TPPROTO(struct address_space *mapping, pgoff_t offset),
-> +	TPARGS(mapping, offset));
-> +DECLARE_TRACE(filemap_remove_from_page_cache,
-> +	TPPROTO(struct address_space *mapping, pgoff_t offset),
-> +	TPARGS(mapping, offset));
-> +
-> +#endif
-> diff --git a/mm/filemap.c b/mm/filemap.c
-> index 23acefe..23f75d2 100644
-> --- a/mm/filemap.c
-> +++ b/mm/filemap.c
-> @@ -34,6 +34,7 @@
->  #include <linux/hardirq.h> /* for BUG_ON(!in_atomic()) only */
->  #include <linux/memcontrol.h>
->  #include <linux/mm_inline.h> /* for page_is_file_cache() */
-> +#include <trace/filemap.h>
->  #include "internal.h"
->  
->  /*
-> @@ -43,6 +44,8 @@
->  
->  #include <asm/mman.h>
->  
-> +DEFINE_TRACE(filemap_add_to_page_cache);
-> +DEFINE_TRACE(filemap_remove_from_page_cache);
->  
->  /*
->   * Shared mappings implemented 30.11.1994. It's not fully working yet,
-> @@ -120,6 +123,7 @@ void __remove_from_page_cache(struct page *page)
->  	page->mapping = NULL;
->  	mapping->nrpages--;
->  	__dec_zone_page_state(page, NR_FILE_PAGES);
-> +	trace_filemap_remove_from_page_cache(mapping, page->index);
-
-__remove_from_page_cache() is passed struct page.
-Why don't you use struct page
-
-and, this mean
-  - the page have been removed from mapping.
-  - vmstate have been decremented.
-  - but, the page haven't been uncharged from memcg.
-
-Why?
-
-
->  	BUG_ON(page_mapped(page));
->  	mem_cgroup_uncharge_cache_page(page);
->  
-> @@ -475,6 +479,7 @@ int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
->  		if (likely(!error)) {
->  			mapping->nrpages++;
->  			__inc_zone_page_state(page, NR_FILE_PAGES);
-> +			trace_filemap_add_to_page_cache(mapping, offset);
-
-Why do you select this line?
-In general, trace point calling under spin lock grabbing is a bit problematic.
-
-
->  		} else {
->  			page->mapping = NULL;
->  			mem_cgroup_uncharge_cache_page(page);
-> 
-
-And, both function is freqentlly called one.
-I worry about performance issue. can you prove no degression?
-
-
+Could you try the patch I posted a minute ago?
