@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbZBRGz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754152AbZBRHCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753956AbZBRGz7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 01:55:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbZBRGzr
+	id S1754152AbZBRHCT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 02:02:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbZBRHCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 01:55:47 -0500
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:49258 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752042AbZBRGzr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 01:55:47 -0500
-Message-ID: <499BB0F1.50507@linux.vnet.ibm.com>
-Date: Wed, 18 Feb 2009 07:55:45 +0100
-From: Frank Blaschka <blaschka@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Wed, 18 Feb 2009 02:02:09 -0500
+Received: from mga02.intel.com ([134.134.136.20]:40162 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751973AbZBRHCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 02:02:08 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,227,1233561600"; 
+   d="scan'208";a="387701239"
+Date: Wed, 18 Feb 2009 01:01:35 +0800
+From: Yu Zhao <yu.zhao@intel.com>
+To: Greg KH <greg@kroah.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v9 6/7] PCI: document SR-IOV sysfs entries
+Message-ID: <20090217170135.GA2520@yzhao-otc.sh.intel.com>
+References: <1234790920-1810-1-git-send-email-yu.zhao@intel.com> <1234790920-1810-7-git-send-email-yu.zhao@intel.com> <20090217125021.GA2403@yzhao-otc.sh.intel.com> <20090218034910.GA10990@kroah.com> <20090217144303.GA2452@yzhao-otc.sh.intel.com> <20090218062116.GA20081@kroah.com>
 MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: David Miller <davem@davemloft.net>, arvidjaar@mail.ru, rjw@sisk.pl,
-       netdev@vger.kernel.org, bonding-devel@lists.sourceforge.net,
-       jamagallon@ono.com, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29 regression? Bonding tied to IPV6 in 29-rc5
-References: <alpine.LFD.2.00.0902131413120.3179@localhost.localdomain> <20090217095232.5da06b9f@werewolf.home> <200902172001.41804.arvidjaar@mail.ru> <20090217.142946.232071526.davem@davemloft.net> <25143.1234932076@turing-police.cc.vt.edu>
-In-Reply-To: <25143.1234932076@turing-police.cc.vt.edu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090218062116.GA20081@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We have the same issue with the qeth_l3 driver (it requires IPv6 symbols).
-Distributors compile with IPv6 but some customes want to disable IPv6 without
-building a custom kernel. If there would be a generic solution to address
-this kind of runtime IPv6 dependencies this would be creat.  
-
-Valdis.Kletnieks@vt.edu schrieb:
-> On Tue, 17 Feb 2009 14:29:46 PST, David Miller said:
->> Don't configure ipv6 into your kernel, really.
->>
->> There is no other way to handle this.  If we want to support
->> IPV6 layer things in the bonding driver, it is going to
->> call helper functions in the ipv6 module and therefore must
->> be able to load it and use functions in it.
+On Wed, Feb 18, 2009 at 02:21:16PM +0800, Greg KH wrote:
+> On Tue, Feb 17, 2009 at 10:43:03PM +0800, Yu Zhao wrote:
+> > On Wed, Feb 18, 2009 at 11:49:10AM +0800, Greg KH wrote:
+> > > On Tue, Feb 17, 2009 at 08:50:21PM +0800, Yu Zhao wrote:
+> > > > I'd like to create a subdirectory under PCI device sysfs directory and
+> > > > put some symbol links into that directory (only symbol links). Should I
+> > > > use `device' or `kobject'? Currently I use `device' and get two extra
+> > > > file/directory (uevent and power) which look like useless for my case
+> > > > because this subdirectory doesn't reflect a real device.
+> > > 
+> > > Neither, just use an attribute group, no new struct device should be
+> > > needed at all.
+> > 
+> > Yes, I was thinking using an attribute group, however, it looks like we
+> > can't put symbol link into a group. Maybe I'm wrong, shed some light,
+> > please?
 > 
-> What does a poor corporate user do if they're running a distro kernel that
-> was built with CONFIG_IPV6, but local security policy says "Disable IPv6
-> because we don't do it yet, or because it breaks mission-critical software
-> package XYZ?"  There's a *lot* of people who implement that by the "block
-> the ipv6 module from loading" trick.  And building a kernel that doesn't
-> include IPv6 may not be feasible due to vendor certification issues...
-> 
-> Heck, *I*'m almost in that boat - probably need to use bonded ethernet on some
-> servers because we can't get 10GigE, but the software used in the project the
-> servers were bought for blows chunks if it gets a whiff of an IPv6 address.
-> Ended up spending 3 weeks doing a massive kludgery of one sort in DNS for the
-> rest of the world, and equally massive lying in /etc/hosts for the hosts...
-> (Don't ask - it was long and ugly, and just disabling the module would have
-> saved me about 2.95 weeks of work, so I know where those people are coming
-> from...)
-> 
+> Why would you want a symbolic link in an attribute group?
 
+Sorry I didn't make myself clear. I'd like to create a subdirectory (its
+parent is controlled by a `struct device') to only hold symbol links. Can
+I use an `attribute group' of the parent `struct device' for this, or a
+child `struct device', or a bare `struct kobject'?
 
+Regards,
+Yu
