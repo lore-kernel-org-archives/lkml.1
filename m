@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753315AbZBQMva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbZBQMwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753315AbZBQMva (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 07:51:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbZBQMvW
+	id S1753884AbZBQMwy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 07:52:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbZBQMwr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 07:51:22 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47616 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751056AbZBQMvV (ORCPT
+	Tue, 17 Feb 2009 07:52:47 -0500
+Received: from fk-out-0910.google.com ([209.85.128.187]:28326 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751093AbZBQMwq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 07:51:21 -0500
-Subject: Re: next-20090216: slqb
-From: Peter Zijlstra <peterz@infradead.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Nick Piggin <npiggin@suse.de>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-In-Reply-To: <84144f020902170331m765c50d6xd792de14ac220b9d@mail.gmail.com>
-References: <20090216172016.f1d159a7.sfr@canb.auug.org.au>
-	 <20090217005539.GA6292@x200.localdomain>
-	 <20090217102733.GB26402@wotan.suse.de>
-	 <84144f020902170331m765c50d6xd792de14ac220b9d@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 17 Feb 2009 13:48:15 +0100
-Message-Id: <1234874895.4744.98.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.90 
+	Tue, 17 Feb 2009 07:52:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=EGBUqErSGHyEU69qgHH4coFPoDYTJwG4w6swzBiK5acfNKXBIW3+SmldgU0t8BXxJF
+         EfM1TNtq5a0kPnewuO/vWRBFn29DW6d0Lri7EkaeYa7wziYZIi2nkR5gH3CdKdl3KHmt
+         CJ6UbUuf429RkcQ1BXoNj1CVwOj5sh106FbEI=
+Message-ID: <499AB31C.9000200@gmail.com>
+Date: Tue, 17 Feb 2009 13:52:44 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] rio: Add missing parentheses
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-17 at 13:31 +0200, Pekka Enberg wrote:
-> On Tue, Feb 17, 2009 at 03:55:40AM +0300, Alexey Dobriyan wrote:
-> >> FYI, on powerpc-64-smp-n-debug-n:
-> >>
-> >> mm/slqb.c: In function '__slab_free':
-> >> mm/slqb.c:1648: error: implicit declaration of function 'slab_free_to_remote'
-> >> mm/slqb.c: In function 'kmem_cache_open':
-> >> mm/slqb.c:2174: error: implicit declaration of function 'kmem_cache_dyn_array_free'
-> >> mm/slqb.c:2175: warning: label 'error_cpu_array' defined but not used
-> >> mm/slqb.c: In function 'kmem_cache_destroy':
-> >> mm/slqb.c:2294: error: implicit declaration of function 'claim_remote_free_list'
-> >> mm/slqb.c: In function 'kmem_cache_reap_percpu':
-> >> mm/slqb.c:2547: error: implicit declaration of function 'flush_remote_free_cache'
-> >> mm/slqb.c: In function 'kmem_cache_init':
-> >> mm/slqb.c:2783: error: 'per_cpu__kmem_cpu_nodes' undeclared (first use in this function)
-> >> mm/slqb.c:2783: error: (Each undeclared identifier is reported only once
-> >> mm/slqb.c:2783: error: for each function it appears in.)
-> >> mm/slqb.c:2784: error: 'kmem_cpu_cache' undeclared (first use in this function)
-> 
-> On Tue, Feb 17, 2009 at 12:27 PM, Nick Piggin <npiggin@suse.de> wrote:
-> > Hmm, I guess this (SMP=n && NUMA=y) must be a valid config on ppc if
-> > SLQB is the only one tripping on it, so I'll look at code to fix tihs
-> > up.
-> 
-> It would be nice if one of the ppc devs confirmed this, though. Other
-> architectures don't seem to support the combination.
+#include <stdio.h>
 
-I get a strong sense of deja-vu
+int main(int argc, char* argv[])
+{
+	printf ("%d\n", 1 + (1 == 0) ? 2 : 4);
+	return 0;
+}
 
-                           Subject: 
-next Feb 10: mm/slqb build break
+gcc test.c;a.out
+2
 
-FWIW, I don't think NUMA without SMP makes any kind of sense and the
-arch Kconfig should be fixed.
+I think this was intended? otherwise we could also do
+
+return tty->index || (tty->driver == rio_driver) ? 0 : 256;
+--------------------------->8-------------8<------------------------------
+Add missing parentheses
+
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/drivers/char/rio/rio_linux.c b/drivers/char/rio/rio_linux.c
+index 2e8a6ee..ce81da5 100644
+--- a/drivers/char/rio/rio_linux.c
++++ b/drivers/char/rio/rio_linux.c
+@@ -333,7 +333,7 @@ void rio_copy_to_card(void *from, void __iomem *to, int len)
+ 
+ int rio_minor(struct tty_struct *tty)
+ {
+-	return tty->index + (tty->driver == rio_driver) ? 0 : 256;
++	return tty->index + ((tty->driver == rio_driver) ? 0 : 256);
+ }
+ 
+ static int rio_set_real_termios(void *ptr)
 
