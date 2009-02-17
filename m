@@ -1,66 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbZBQSNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753921AbZBQSRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754512AbZBQSNa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 13:13:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbZBQSNU
+	id S1753921AbZBQSRR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 13:17:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbZBQSRE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 13:13:20 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:34528 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750980AbZBQSNU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 13:13:20 -0500
-Message-ID: <499AFE32.7070003@redhat.com>
-Date: Tue, 17 Feb 2009 12:13:06 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 17 Feb 2009 13:17:04 -0500
+Received: from smtp-12.star.net.uk ([212.125.75.81]:34040 "HELO
+	smtp-12.star.net.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751535AbZBQSRB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 13:17:01 -0500
+Date: Tue, 17 Feb 2009 18:15:17 +0000
+From: Bob Wilkinson <bob@fourtheye.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PROBLEM] Multiple BUG: unable to handle kernel paging request
+Message-ID: <20090217181517.GA828@fourtheye.org>
+References: <20090216211012.GA31416@fourtheye.org> <20090216134129.6f9e7458@infradead.org>
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Andres Freund <andres@anarazel.de>,
-       Alex Buell <alex.buell@munted.org.uk>, adilger@sun.com,
-       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
-       Jonathan Bastien-Filiatrault <joe@x2a.org>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: EXT4 ENOSPC Bug
-References: <20090216162028.3032666a@lithium.local.net> <200811291418.24672.andres@anarazel.de> <200812100108.04163.andres@anarazel.de> <49994FEF.2020908@anarazel.de> <20090216150156.GD22619@mini-me.lan> <499985C7.8010302@anarazel.de> <20090216190001.GB11788@mini-me.lan>
-In-Reply-To: <20090216190001.GB11788@mini-me.lan>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090216134129.6f9e7458@infradead.org>
+X-Operating-System: Linux spain 2.6.26-1-sparc64
+X-Debian-Version: 5.0
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Mon, Feb 16, 2009 at 04:27:03PM +0100, Andres Freund wrote:
->> So, yes, seems to be an inode allocation problem.
->>
+On Mon, Feb 16, 2009 at 01:41:29PM -0800, Arjan van de Ven wrote:
+> On Mon, 16 Feb 2009 21:10:12 +0000
+> Bob Wilkinson <bob@fourtheye.org> wrote:
 > 
-> Andres, Alex, others,
+> > Hello
+> > 
+> >      I have been having many problems with the stability of one of
+> > my machines. It does have a lot of attached peripherals, and
+> > regularly crashes. It does not always boot. I have attached as much
+> > information as I know to.
+> > 
+> > There are multiple 
+> > 
+> > BUG: unable to handle kernel paging request 
 > 
-> I'm pretty sure the ENOSPC problem which you both found is an inode
-> allocation problem.  Some of you seem to have an easier time
-> reproducing it than others; could you try this patch, and periodically
-> scan your system logs for the message "ext4: find_group_flex failed,
-> fallback succeeded"?  If the problem goes away for you, and you find
-> the occasional aforemention message in your system log, that will
-> confirm what I suspect, which is the bug is in fs/ext4/inode.c's
-> find_group_flex() function.  (If I'm wrong, the fallback code will
-> activate only when the filesystem is genuinely out of inodes, which
-> should be very rare.)
+> you're using a rather old kernel; it might be better to report such an
+> issue to your distribution instead.
 > 
-> More comments are in the patch header.  My current long-term plan for
-> dealing with this is to enhance find_group_orlov() to and
-> find_group_other() to understand about flex_bg's.
+> 
+> however, one thing to try is to put "mem=750M" on the kernel command
+> line; if your bios lies to you about how much memory you have that
+> would work around it.
 
-Ok, I finally got to where I can reliably hit this.  Just as I was about
-to install an ext4 with this patch in place, and the bug was preventing
-the new initrd creation ;)  But worked around that, and:
+Hi Arjan
 
-ext4: find_group_flex failed, fallback succeeded dir 258402
-ext4: find_group_flex failed, fallback succeeded dir 258402
-ext4: find_group_flex failed, fallback succeeded dir 258402
-ext4: find_group_flex failed, fallback succeeded dir 258402
-....
+Thanks for your suggestion. I added this to the end of the boot line in 
+grub.conf. I needed to restart again today and saw this in the kern.log.
 
-I'll see if I can dig a bit more as to why the find_group_flex failed,
-if you think it's worth it, Ted.
+Feb 17 09:21:57 italy kernel: [    0.114545] ACPI: Core revision 20080321
+Feb 17 09:21:57 italy kernel: [    0.123946] ACPI: setting ELCR to 0200 (from 0e00)
+Feb 17 09:21:57 italy kernel: [    0.128008] weird, boot CPU (#0) not listedby the BIOS.
+Feb 17 09:21:57 italy kernel: [    0.128008] SMP motherboard not detected.
+Feb 17 09:21:57 italy kernel: [    0.128008] Local APIC not detected. Using dummy APIC emulation.
+Feb 17 09:21:57 italy kernel: [    0.128008] SMP disabled
+Feb 17 09:21:57 italy kernel: [    0.128008] Brought up 1 CPUs
+Feb 17 09:21:57 italy kernel: [    0.128070] Total of 1 processors activated (1863.87 BogoMIPS).
 
--Eric
+I do find it weird that the BIOS does not list the one - and only
+- CPU.
+
+I will build a newer kernel from source and see how I get on with
+that. I do suspect that I have some combination of intermittently
+faulty hardware. I quite often have a locked up machine - sometimes
+with three keyboard lights flashing, sometimes responding to
+CTRL-ALT-SYSRQ commands - sometimes not...
+
+> Arjan van de Ven 	Intel Open Source Technology Centre
+> For development, discussion and tips for power savings, 
+> visit http://www.lesswatts.org
+
+Bob
