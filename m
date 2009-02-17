@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751893AbZBQIwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751882AbZBQI5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751893AbZBQIwp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 03:52:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbZBQIwg
+	id S1751882AbZBQI5P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 03:57:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbZBQI5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 03:52:36 -0500
-Received: from smtp2.ono.com ([62.42.230.20]:16810 "EHLO resmaa12.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751051AbZBQIwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 03:52:36 -0500
-Date: Tue, 17 Feb 2009 09:52:32 +0100
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mdv Cooker <cooker@mandrivalinux.org>
-Subject: Bonding tied to IPV6 in 29-rc5
-Message-ID: <20090217095232.5da06b9f@werewolf.home>
-In-Reply-To: <alpine.LFD.2.00.0902131413120.3179@localhost.localdomain>
-References: <alpine.LFD.2.00.0902131413120.3179@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.0cvs64 (GTK+ 2.15.3; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Feb 2009 03:57:00 -0500
+Received: from www.tglx.de ([62.245.132.106]:60428 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750859AbZBQI47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 03:56:59 -0500
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       malware-list@lists.printk.net, eparis@redhat.com, hch@infradead.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCHv2 3/5] VFS: DazukoFS, stackable-fs, file access control
+From: John Ogness <dazukocode@ogness.net>
+References: <8663jrgwo4.fsf@johno.fn.ogness.net>
+	<861vufgwlt.fsf@johno.fn.ogness.net>
+	<86wsc7fhzc.fsf_-_@johno.fn.ogness.net>
+	<86skmvfhx6.fsf_-_@johno.fn.ogness.net>
+	<m1k57vcsr1.fsf@fess.ebiederm.org>
+Date: Tue, 17 Feb 2009 09:55:30 +0100
+In-Reply-To: <m1k57vcsr1.fsf@fess.ebiederm.org> (Eric W. Biederman's message of "Thu\, 12 Feb 2009 12\:20\:02 -0800")
+Message-ID: <86fxidfnnh.fsf@johno.fn.ogness.net>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all...
+On 2009-02-12, ebiederm@xmission.com (Eric W. Biederman) wrote:
+>> Patch 3: Creates /dev/dazukofs.ctrl to allow for groups to be added,
+>>          listed, and deleted. Also, /dev/dazukofs.[0-9] devices are
+>>          created to support multiple groups.
+>
+> Great another global namespace for process groups.  What is your
+> plan for making this work in a container?
 
-Don't know if this is specific for -rc5, I have jumped from 28.4 to 29-rc5.
-In this latest kernel, I can not install 'bonding' module if 'ipv6' is
-disabled to load via modprobe.conf:
+It is good that you mention it. This is something that I totally
+missed. I am not yet certain what kind of a role DazukoFS should have
+within containers.  I need to learn the container API's and see what
+kinds of options are available. The next patchset (which it seems
+won't be coming too quickly now) will address this in some form.
 
-install ipv6 /bin/true
-
-Trying bonding gives this dmesg:
-
-bonding: Unknown symbol ndisc_build_skb
-bonding: Unknown symbol in6_dev_finish_destroy
-bonding: Unknown symbol ndisc_send_skb
-bonding: Unknown symbol unregister_inet6addr_notifier
-bonding: Unknown symbol register_inet6addr_notifier
-
-Commenting the line in modprobe.conf makes things smooth again.
-We can not disable ipv6 anymore ?
-
-TIA
-
--- 
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2009.1 (Cooker) for x86_64
-Linux 2.6.28.2-desktop-1mnb (gcc 4.3.2 (GCC) #1 Wed Jan
+John Ogness
