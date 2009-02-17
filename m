@@ -1,83 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754534AbZBQPqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbZBQPtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754534AbZBQPqH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 10:46:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbZBQPpq
+	id S1753510AbZBQPtn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 10:49:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbZBQPte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 10:45:46 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35283 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752841AbZBQPpp (ORCPT
+	Tue, 17 Feb 2009 10:49:34 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:50819 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751123AbZBQPtd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 10:45:45 -0500
-Date: Tue, 17 Feb 2009 07:44:32 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH 2/4] generic-smp: remove kmalloc usage
-In-Reply-To: <1234859071.4744.10.camel@laptop>
-Message-ID: <alpine.LFD.2.00.0902170736380.21686@localhost.localdomain>
-References: <20090216163847.431174825@chello.nl>  <20090216164114.521787803@chello.nl>  <alpine.LFD.2.00.0902161636480.21686@localhost.localdomain> <1234859071.4744.10.camel@laptop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 17 Feb 2009 10:49:33 -0500
+Subject: Re: [PATCH mmotm 4/6] nilfs2: use unlocked_ioctl
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Ryusuke Konishi <ryusuke@osrg.net>
+Cc: konishi.ryusuke@lab.ntt.co.jp, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090218.004341.65155545.ryusuke@osrg.net>
+References: <1234856526-1947-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+	 <1234856526-1947-5-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+	 <1234869973.21383.1.camel@penberg-laptop>
+	 <20090218.004341.65155545.ryusuke@osrg.net>
+Date: Tue, 17 Feb 2009 17:49:28 +0200
+Message-Id: <1234885768.11511.0.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-02-18 at 00:43 +0900, Ryusuke Konishi wrote:
+> That's right, but the nilfs_ioctl_timedwait() itself was removed by
+> the first patch of this patch set.  And, the compat ioctl was removed
+> in the third patch.  So they don't appear in this patch.
 
+Oh, okay. I missed rest of the series. Thanks!
 
-On Tue, 17 Feb 2009, Peter Zijlstra wrote:
-> 
-> Ah, no, I don't actually. I remove the kmalloc+call_rcu stuff in 2, not
-> the newly cfd mini rcu thing.
-
-I'm not talking about the "mini-rcu", I'm talking about the _existing_ rcu 
-code that you play games with, just before you then remove it.
-
-See here:
-
- - patch 1/4:
-
-	@@ -25,8 +40,11 @@ struct call_function_data {
-	        struct call_single_data csd;
-	        spinlock_t lock;
-	        unsigned int refs;
-	-       struct rcu_head rcu_head;
-	-       unsigned long cpumask_bits[];
-	+       union {
-	+               struct rcu_head rcu_head;
-	+               struct list_head free_list;
-	+       };
-	+       struct cpumask cpumask;
-	 };
-
- - patch 2/4:
-
-	 struct call_function_data {
-	        struct call_single_data csd;
-	        spinlock_t lock;
-	        unsigned int refs;
-	-       union {
-	-               struct rcu_head rcu_head;
-	-               struct list_head free_list;
-	-       };
-	+       struct list_head free_list;
-	        struct cpumask cpumask;
-	 };
-
-ie that ugly/complex/subtle union of rcu_head that you added in 1/4 you 
-then remove immediately in 2/4. Making the patches just harder to read. 
-
-Just remove it. I'd say fold 1+2 into one patch, instead of playing games 
-with that thing. Just make the patch remove the kmalloc.
-
-Or at least get rid of the _games_ you play with that union. Now it just 
-makes the patch unreadable.
-
-		Linus
