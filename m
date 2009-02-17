@@ -1,80 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753745AbZBQRR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887AbZBQRTG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753745AbZBQRR0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 12:17:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbZBQRRS
+	id S1753887AbZBQRTG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 12:19:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbZBQRSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 12:17:18 -0500
-Received: from mailbackup.inode.at ([213.229.60.24]:39774 "EHLO
-	mailbackup.inode.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750945AbZBQRRR (ORCPT
+	Tue, 17 Feb 2009 12:18:54 -0500
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:57293 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752316AbZBQRSy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 12:17:17 -0500
-Date: Tue, 17 Feb 2009 18:16:01 +0100
-From: Matthias Reichl <hias@horus.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [Bug #12612] hard lockup when interrupting cdda2wav
-Message-ID: <20090217171601.GA3351@horus.com>
-Mail-Followup-To: Matthias Reichl <hias@horus.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-References: <sTyoMUwdm9B.A.QCH.U40lJB@chimera> <ROx6X68CGJG.A.NoH.m40lJB@chimera>
-MIME-Version: 1.0
+	Tue, 17 Feb 2009 12:18:54 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtoEAFd8mklMQWt2/2dsb2JhbACBbtE7hBMG
+Date: Tue, 17 Feb 2009 12:18:45 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <peterz@infradead.org>, akpm <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>
+Subject: Re: irq-disabled vs vmap vs text_poke
+Message-ID: <20090217171845.GA14435@Krystal>
+References: <4995B88C.2090900@redhat.com> <20090213185725.GC7124@Krystal> <4995E925.3080506@redhat.com> <4999808B.5080505@redhat.com> <20090216153145.GB19182@wotan.suse.de> <20090216172441.GA12576@Krystal> <499A1A43.6000009@redhat.com> <20090217030353.GA31504@wotan.suse.de> <499AEA72.9090702@redhat.com> <alpine.DEB.1.10.0902171158180.910@gandalf.stny.rr.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <ROx6X68CGJG.A.NoH.m40lJB@chimera>
+In-Reply-To: <alpine.DEB.1.10.0902171158180.910@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:17:28 up 47 days, 17:15,  4 users,  load average: 0.13, 0.14,
+	0.15
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The bug is still present in 2.6.28.5:
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> On Tue, 17 Feb 2009, Masami Hiramatsu wrote:
+> > 
+> > Thanks, I think text_poke() doesn't need high performance currently,
+> > because it's not called so frequently, nor from the normal operation.
+> > 
+> > However, Would dynamic ftrace need performance?
+> 
+> Are you talking about replacing what dynamic ftrace does now with 
+> text_poke? Well, It takes just under a second right now to do all the 
+> conversions. Looking at the list on my booted box, it converts 19805 
+> locations. It takes care to run stop machine, and it also has code to 
+> handle NMIs on the other CPUS while it runs.
+> 
+> Changing text must be done extremely carefully on a running box. If the 
+> code being changed is also executed on another CPU then you will most 
+> likely take a GPF on that CPU.
+> 
+> Also, every arch must do things a bit different, due to the way modules 
+> are handled.
+> 
+> -- Steve
+> 
 
-=============================================
-[ INFO: possible recursive locking detected ]
-2.6.28.5-dbg #1
----------------------------------------------
-swapper/0 is trying to acquire lock:
- (&q->__queue_lock){.+..}, at: [<ffffffff8040e615>] blk_put_request+0x25/0x60
+Anyway dynamic ftrace only need to do code patching at early boot,
+right? Or do you need also to patch the call sites a bit later too ?
+Because there is a text_poke_early for that purpose : modifying code
+when it is still writable.
 
-but task is already holding lock:
- (&q->__queue_lock){.+..}, at: [<ffffffff8040e4fa>] blk_end_io+0x5a/0xa0
+Mathieu
 
-other info that might help us debug this:
-1 lock held by swapper/0:
- #0:  (&q->__queue_lock){.+..}, at: [<ffffffff8040e4fa>] blk_end_io+0x5a/0xa0
 
-stack backtrace:
-Pid: 0, comm: swapper Not tainted 2.6.28.5-dbg #1
-Call Trace:
- <IRQ>  [<ffffffff8026cd07>] __lock_acquire+0x1797/0x1930
- [<ffffffff806abf8b>] error_exit+0x29/0xa9
- [<ffffffff80521f40>] sg_rq_end_io+0x0/0x2e0
- [<ffffffff8026cf3a>] lock_acquire+0x9a/0xe0
- [<ffffffff8040e615>] blk_put_request+0x25/0x60
- [<ffffffff806ab973>] _spin_lock_irqsave+0x43/0x90
- [<ffffffff8040e615>] blk_put_request+0x25/0x60
- [<ffffffff8040e615>] blk_put_request+0x25/0x60
- [<ffffffff80520a94>] sg_finish_rem_req+0xa4/0x100
- [<ffffffff805221b8>] sg_rq_end_io+0x278/0x2e0
- [<ffffffff8040e2a1>] end_that_request_last+0x61/0x260
- [<ffffffff8040e508>] blk_end_io+0x68/0xa0
- [<ffffffff80508181>] scsi_end_request+0x41/0xd0
- [<ffffffff80508870>] scsi_io_completion+0x130/0x470
- [<ffffffff80413405>] blk_done_softirq+0x75/0x90
- [<ffffffff802488ab>] __do_softirq+0x9b/0x180
- [<ffffffff80213df3>] native_sched_clock+0x13/0x70
- [<ffffffff8020d6ec>] call_softirq+0x1c/0x30
- [<ffffffff8020f175>] do_softirq+0x65/0xa0
- [<ffffffff80248345>] irq_exit+0xa5/0xb0
- [<ffffffff8020f467>] do_IRQ+0x107/0x1d0
- [<ffffffff8020c7fb>] ret_from_intr+0x0/0xf
- <EOI>  [<ffffffff80214ba6>] mwait_idle+0x56/0x60
- [<ffffffff80214b9d>] mwait_idle+0x4d/0x60
- [<ffffffff8020b353>] cpu_idle+0x63/0xc0
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
