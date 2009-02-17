@@ -1,128 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752950AbZBQJK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753283AbZBQJKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752950AbZBQJK2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 04:10:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbZBQJJw
+	id S1753283AbZBQJKz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 04:10:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbZBQJKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 04:09:52 -0500
-Received: from casper.infradead.org ([85.118.1.10]:38502 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751404AbZBQJJu (ORCPT
+	Tue, 17 Feb 2009 04:10:07 -0500
+Received: from posthamster.phnxsoft.com ([195.227.45.4]:1782 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752328AbZBQJKD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 04:09:50 -0500
-Subject: Re: [patch 2/4] vfs: add set_page_dirty_notag
-From: Peter Zijlstra <peterz@infradead.org>
-To: Edward Shishkin <edward.shishkin@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       Ryan Hope <rmh3093@gmail.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel@vger.kernel.org,
-       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>
-In-Reply-To: <18841.60432.329341.514726@edward.zelnet.ru>
-References: <18837.24581.181196.569183@edward.zelnet.ru>
-	 <1234530519.6519.46.camel@twins> <49957C43.7050701@gmail.com>
-	 <1234534150.6519.101.camel@twins>
-	 <18838.49922.215481.399653@edward.zelnet.ru>
-	 <1234645893.4695.8.camel@laptop>
-	 <18841.60432.329341.514726@edward.zelnet.ru>
-Content-Type: text/plain
-Date: Tue, 17 Feb 2009 10:09:41 +0100
-Message-Id: <1234861781.4744.21.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.90 
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Feb 2009 04:10:03 -0500
+Message-ID: <499A7EE2.50108@imap.cc>
+Date: Tue, 17 Feb 2009 10:09:54 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14 Mnenhy/0.7.6.0
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.28.[45] boot failure: request_module: runaway loop modprobe binfmt-464c
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig994980F4828A0CA5AD8DB7CB"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-17 at 01:43 +0300, Edward Shishkin wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig994980F4828A0CA5AD8DB7CB
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
->  > How much performance gain do you see by avoiding that radix tree op? 
->  > 
-> 
-> Nop. We want to use it with extended semantics.
-> All dirty pages are divided into 2 categories:
-> 
-> A) tagged in the radix tree (with PAGECACHE_TAG_DIRTY).
-> B) captured by atoms (usual linked lists).
-> 
-> reiser4_writepages() looks for pages of "A" in the radix tree
-> and moves them to "B". set_page_dirty_notag(), introduced by
-> my patch, is needed for pages of "B".
-> 
-> If "B" is empty, then we get the traditional semantics with
-> regular ->writepages().
-> 
-> That's all!
+My workhorse machine (Pentium D 940, Intel DG965QF board,
+mirrored SATA disks), which runs fine with kernel:
+ts@xenon:~> uname -a
+Linux xenon 2.6.28.3-testing #1 SMP PREEMPT Mon Feb 2 23:32:07 CET 2009 i=
+686 i686 i386 GNU/Linux
+fails to come up with an identically configured 2.6.28.4 or 2.6.28.5
+kernel. The boot process hangs at about the time the root
+file system is mounted, the last messages being (scribbled
+down manually on a piece of paper, please make allowances):
 
-Ah, indeed. I had not considered such a scheme.
+/dev/RAID/root: recovering journal ... clean
+fsck successful. Mounting root device r/w
+Mounting root /dev/RAID/root
+kjournald starting. Commit interval 5 seconds
+EXT3 FS on dm-0, internal journal
+EXT3-fs: mounted filesystem with ordered data mode.
+request_module: runaway loop modprobe binfmt-464c
+request_module: runaway loop modprobe binfmt-464c
+request_module: runaway loop modprobe binfmt-464c
+request_module: runaway loop modprobe binfmt-464c
+request_module: runaway loop modprobe binfmt-464c
 
-> Add set_page_dirty_notag() to the core library to enable
-> extended functionality of radix tree attached to inode->i_mapping.
-> 
-> Signed-off-by: Edward Shishkin<edward.shishkin@gmail.com>
+After a pause of about 15 seconds, there is another set of
+messages:
 
-Looks good to me
+CPA self-test:
+ 4k 3070 large 219 gb 0 x 3289[c0000000-f77fd000] miss 0
+ 4k 194558 large 32 gb 0 x 194590[c0000000-f77fd000] miss 0
+ 4k 194558 large 32 gb 0 x 194590[c0000000-f77fd000] miss 0
+ok.
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Then, silence. The keyboard remains operative inasmuch as I can
+use the SysRq functions to sync and reboot, but otherwise the
+system does not go any further. Going back to kernel 2.6.28.3
+the system comes up fine again.
 
-> ---
->  include/linux/mm.h  |    1 +
->  mm/page-writeback.c |   36 ++++++++++++++++++++++++++++++++++++
->  2 files changed, 37 insertions(+)
-> 
-> --- mmotm.orig/include/linux/mm.h
-> +++ mmotm/include/linux/mm.h
-> @@ -841,6 +841,7 @@ int redirty_page_for_writepage(struct wr
->  				struct page *page);
->  int set_page_dirty(struct page *page);
->  int set_page_dirty_lock(struct page *page);
-> +int set_page_dirty_notag(struct page *page);
->  int clear_page_dirty_for_io(struct page *page);
->  
->  extern unsigned long move_page_tables(struct vm_area_struct *vma,
-> --- mmotm.orig/mm/page-writeback.c
-> +++ mmotm/mm/page-writeback.c
-> @@ -1248,6 +1248,42 @@ int __set_page_dirty_nobuffers(struct pa
->  EXPORT_SYMBOL(__set_page_dirty_nobuffers);
->  
->  /*
-> + * set_page_dirty_notag() -- similar to __set_page_dirty_nobuffers()
-> + * except it doesn't tag the page dirty in the page-cache radix tree.
-> + * This means that the address space using this cannot use the regular
-> + * filemap ->writepages() helpers and must provide its own means of
-> + * tracking and finding non-tagged dirty pages.
-> + *
-> + * NOTE: furthermore, this version also doesn't handle truncate races.
-> + */
-> +int set_page_dirty_notag(struct page *page)
-> +{
-> +	struct address_space *mapping = page->mapping;
-> +
-> +	if (!TestSetPageDirty(page)) {
-> +		WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
-> +		if (mapping_cap_account_dirty(mapping)) {
-> +		        /*
-> +			 * The accounting functions rely on
-> +			 * being atomic wrt interrupts.
-> +			 */
-> +		        unsigned long flags;
-> +			local_irq_save(flags);
-> +			__inc_zone_page_state(page, NR_FILE_DIRTY);
-> +			__inc_bdi_stat(mapping->backing_dev_info,
-> +				       BDI_RECLAIMABLE);
-> +			task_dirty_inc(current);
-> +			task_io_account_write(PAGE_CACHE_SIZE);
-> +			local_irq_restore(flags);
-> +		}
-> +		__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
-> +		return 1;
-> +	}
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL(set_page_dirty_notag);
-> +
-> +/*
->   * When a writepage implementation decides that it doesn't want to write this
->   * page for some reason, it should redirty the locked page via
->   * redirty_page_for_writepage() and it should then unlock the page and return 0
+The most conspicuous symtpom is of course the five consecutive
+"runaway loop" messages I never saw before. But before that,
+the order in which the PCI and USB devices are detected also
+appears surprisingly changed for a stable release.
 
+I am prepared to bisect this if somebody reminds me how to do
+that for stable releases. The tree
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6
+doesn't seem to have them.
+
+Thanks
+Tilman
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enig994980F4828A0CA5AD8DB7CB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFJmn7oQ3+did9BuFsRAsIpAKCLZYYO7nCPZ5GAXMZ+QqD9cfGUFACfeky+
+Neuxze9cYoe0NGPvkRRSFZA=
+=dMTS
+-----END PGP SIGNATURE-----
+
+--------------enig994980F4828A0CA5AD8DB7CB--
