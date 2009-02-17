@@ -1,66 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbZBQToX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754921AbZBQToj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753305AbZBQToX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 14:44:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbZBQTnv
+	id S1754921AbZBQToj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 14:44:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbZBQTn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 14:43:51 -0500
-Received: from cmpxchg.org ([85.214.51.133]:38462 "EHLO cmpxchg.org"
+	Tue, 17 Feb 2009 14:43:57 -0500
+Received: from cmpxchg.org ([85.214.51.133]:38475 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753329AbZBQTnu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 14:43:50 -0500
-Message-Id: <20090217184135.913080050@cmpxchg.org>
+	id S1754611AbZBQTn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 14:43:56 -0500
+Message-Id: <20090217184135.747921027@cmpxchg.org>
 User-Agent: quilt/0.47-1
-Date: Tue, 17 Feb 2009 19:26:18 +0100
+Date: Tue, 17 Feb 2009 19:26:16 +0100
 From: Johannes Weiner <hannes@cmpxchg.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
        Chas Williams <chas@cmf.nrl.navy.mil>,
        Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 3/7] s390: use kzfree()
+       linux-kernel@vger.kernel.org, Matt Mackall <mpm@selenic.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>
+Subject: [patch 1/7] slab: introduce kzfree()
 References: <20090217182615.897042724@cmpxchg.org>
-Content-Disposition: inline; filename=s390-use-kzfree.patch
+Content-Disposition: inline; filename=slab-introduce-kzfree.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use kzfree() instead of memset() + kfree().
+kzfree() is a wrapper for kfree() that additionally zeroes the
+underlying memory before releasing it to the slab allocator.
+
+Currently there is code which memset()s the memory region of an object
+before releasing it back to the slab allocator to make sure
+security-sensitive data are really zeroed out after use.
+
+These callsites can then just use kzfree() which saves some code,
+makes users greppable and allows for a stupid destructor that isn't
+necessarily aware of the actual object size.
 
 Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
 Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Matt Mackall <mpm@selenic.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: Nick Piggin <npiggin@suse.de>
 ---
- arch/s390/crypto/prng.c             |    3 +--
- drivers/s390/crypto/zcrypt_pcixcc.c |    3 +--
- 2 files changed, 2 insertions(+), 4 deletions(-)
+ include/linux/slab.h |    1 +
+ mm/util.c            |   20 ++++++++++++++++++++
+ 2 files changed, 21 insertions(+)
 
---- a/arch/s390/crypto/prng.c
-+++ b/arch/s390/crypto/prng.c
-@@ -201,8 +201,7 @@ out_free:
- static void __exit prng_exit(void)
- {
- 	/* wipe me */
--	memset(p->buf, 0, prng_chunk_size);
--	kfree(p->buf);
-+	kzfree(p->buf);
- 	kfree(p);
+--- a/include/linux/slab.h
++++ b/include/linux/slab.h
+@@ -127,6 +127,7 @@ int kmem_ptr_validate(struct kmem_cache 
+ void * __must_check __krealloc(const void *, size_t, gfp_t);
+ void * __must_check krealloc(const void *, size_t, gfp_t);
+ void kfree(const void *);
++void kzfree(const void *);
+ size_t ksize(const void *);
  
- 	misc_deregister(&prng_dev);
---- a/drivers/s390/crypto/zcrypt_pcixcc.c
-+++ b/drivers/s390/crypto/zcrypt_pcixcc.c
-@@ -781,8 +781,7 @@ static long zcrypt_pcixcc_send_cprb(stru
- 		/* Signal pending. */
- 		ap_cancel_message(zdev->ap_dev, &ap_msg);
- out_free:
--	memset(ap_msg.message, 0x0, ap_msg.length);
--	kfree(ap_msg.message);
-+	kzfree(ap_msg.message);
- 	return rc;
+ /*
+--- a/mm/util.c
++++ b/mm/util.c
+@@ -129,6 +129,26 @@ void *krealloc(const void *p, size_t new
  }
+ EXPORT_SYMBOL(krealloc);
  
++/**
++ * kzfree - like kfree but zero memory
++ * @p: object to free memory of
++ *
++ * The memory of the object @p points to is zeroed before freed.
++ * If @p is %NULL, kzfree() does nothing.
++ */
++void kzfree(const void *p)
++{
++	size_t ks;
++	void *mem = (void *)p;
++
++	if (unlikely(ZERO_OR_NULL_PTR(mem)))
++		return;
++	ks = ksize(mem);
++	memset(mem, 0, ks);
++	kfree(mem);
++}
++EXPORT_SYMBOL(kzfree);
++
+ /*
+  * strndup_user - duplicate an existing string from user space
+  * @s: The string to duplicate
 
 
