@@ -1,65 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754571AbZBQRtF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754385AbZBQRu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754571AbZBQRtF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 12:49:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbZBQRsp
+	id S1754385AbZBQRu7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 12:50:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbZBQRuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 12:48:45 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:53571 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753379AbZBQRso (ORCPT
+	Tue, 17 Feb 2009 12:50:46 -0500
+Received: from exprod7og102.obsmtp.com ([64.18.2.157]:55471 "EHLO
+	exprod7og102.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751886AbZBQRup convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 12:48:44 -0500
-Date: Tue, 17 Feb 2009 12:48:42 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Masami Hiramatsu <mhiramat@redhat.com>, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <peterz@infradead.org>, akpm <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>
-Subject: Re: irq-disabled vs vmap vs text_poke
-In-Reply-To: <20090217172850.GB14435@Krystal>
-Message-ID: <alpine.DEB.1.10.0902171246510.910@gandalf.stny.rr.com>
-References: <4995E925.3080506@redhat.com> <4999808B.5080505@redhat.com> <20090216153145.GB19182@wotan.suse.de> <20090216172441.GA12576@Krystal> <499A1A43.6000009@redhat.com> <20090217030353.GA31504@wotan.suse.de> <499AEA72.9090702@redhat.com>
- <alpine.DEB.1.10.0902171158180.910@gandalf.stny.rr.com> <20090217171845.GA14435@Krystal> <alpine.DEB.1.10.0902171224050.910@gandalf.stny.rr.com> <20090217172850.GB14435@Krystal>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 17 Feb 2009 12:50:45 -0500
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Yang, Bo" <Bo.Yang@lsi.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "Austria, Winston" <Winston.Austria@lsi.com>
+Date: Tue, 17 Feb 2009 10:50:22 -0700
+Subject: [PATCH 9/9] scsi: megaraid_sas - Update the Version and ChangeLog
+Thread-Topic: [PATCH 9/9] scsi: megaraid_sas - Update the Version and
+ ChangeLog
+Thread-Index: AciIcSnS7H5xFQtCQzyNHR19nlBrTUImYsQgAAFMQJAAAQsscAAAaQSQAAFE92AAAZ3CEAAAdldwAABNQ3AAALsTUA==
+Message-ID: <4B6A08C587958942AA3002690DD4F8C33A07FC71@cosmail02.lsi.com>
+In-Reply-To: <4B6A08C587958942AA3002690DD4F8C33A07FC5B@cosmail02.lsi.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Update the Version and ChangeLog
 
-On Tue, 17 Feb 2009, Mathieu Desnoyers wrote:
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 
-> * Steven Rostedt (rostedt@goodmis.org) wrote:
-> > 
-> > On Tue, 17 Feb 2009, Mathieu Desnoyers wrote:
-> > > > 
-> > > 
-> > > Anyway dynamic ftrace only need to do code patching at early boot,
-> > > right? Or do you need also to patch the call sites a bit later too ?
-> > > Because there is a text_poke_early for that purpose : modifying code
-> > > when it is still writable.
-> > 
-> > It modifies the code both at early boot up, and when it is enabled later 
-> > on at run time.
-> > 
-> > -- Steve
-> > 
-> 
-> OK, so without text_poke, how does it deal with kernel with text pages
-> marked read-only after boot ?
+---
+Documentation/scsi/ChangeLog.megaraid_sas |   25 +++++++++++++++++++++++++
+ drivers/scsi/megaraid/megaraid_sas.c      |    2 +-
+ drivers/scsi/megaraid/megaraid_sas.h      |    6 +++---
+ 3 files changed, 29 insertions(+), 4 deletions(-)
 
-Actually, we cheat. If DYNAMIC_FTRACE is configured in, we do not set the 
-text sections to read only. But if this needs to be fixed, we can easily 
-change it so that before we do the convesion, we set all text back to 
-write and after the conversion we set it back to read.  The conversion 
-itself is done via stop_machine, so we do not need to worry about other 
-things going on.
+diff -rupN linux-2.6.28_orig/Documentation/scsi/ChangeLog.megaraid_sas linux-2.6.28_new/Documentation/scsi/ChangeLog.megaraid_sas
+--- linux-2.6.28_orig/Documentation/scsi/ChangeLog.megaraid_sas 2009-02-12 17:30:44.000000000 -0500
++++ linux-2.6.28_new/Documentation/scsi/ChangeLog.megaraid_sas  2009-02-12 15:24:58.000000000 -0500
+@@ -1,4 +1,29 @@
 
--- Steve
++1 Release Date    : Tues. Feb. 10, 2009 10:12:45 PST 2009 -
++                        (emaild-id:megaraidlinux@lsi.com)
++                        Bo Yang
++
++2 Current Version : 00.00.04.03
++3 Older Version   : 00.00.04.01
++
++1.     Add the Tape drive fix to the driver: If the command is for the tape device, set the
++       pthru timeout to the os layer timeout value.
++
++2.     Add Poll_wait mechanism to Gen-2 Linux driv.
++               In the aen handler, driver needs to wakeup poll handler similar to the way it raises SIGIO.
++               Driver needs to reregister for AEN with the FW when it receives AEN. This will ensure AEN
++               continuity and avoid depending upon storelib to continue events.
++
++3.     Add new controller 0x73(new SAS2)  support to the driver.
++
++4.     Add memory support required by 0x73 controller.
++
++5.     Report the unconfigured PD (system PD) to OS.
++
++6.     Add the IEEE SGL support to the driver
++
++7.     Reasign the Application cmds to 0x73 controller
++
+ 1 Release Date    : Thur.July. 24 11:41:51 PST 2008 -
+                        (emaild-id:megaraidlinux@lsi.com)
+                        Sumant Patro
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-02-12 17:30:45.000000000 -0500
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-02-12 17:31:58.000000000 -0500
+@@ -10,7 +10,7 @@
+  *        2 of the License, or (at your option) any later version.
+  *
+  * FILE                : megaraid_sas.c
+- * Version     : v00.00.04.01-rc1
++ * Version     : v00.00.04.03-rc1
+  *
+  * Authors:
+  *     (email-id : megaraidlinux@lsi.com)
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h      2009-02-12 17:30:47.000000000 -0500
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h       2009-02-12 17:32:44.000000000 -0500
+@@ -18,9 +18,9 @@
+ /*
+  * MegaRAID SAS Driver meta data
+  */
+-#define MEGASAS_VERSION                                "00.00.04.01"
+-#define MEGASAS_RELDATE                                "July 24, 2008"
+-#define MEGASAS_EXT_VERSION                    "Thu July 24 11:41:51 PST 2008"
++#define MEGASAS_VERSION                                "00.00.04.03-rc1"
++#define MEGASAS_RELDATE                                "Feb. 10, 2009"
++#define MEGASAS_EXT_VERSION                    "Tues Feb. 10 11:41:51 PST 2009"
 
+ /*
+  * Device IDs
