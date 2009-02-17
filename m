@@ -1,92 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbZBQSGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbZBQSKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754124AbZBQSGy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 13:06:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129AbZBQSGo
+	id S1753963AbZBQSKh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 13:10:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbZBQSKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 13:06:44 -0500
-Received: from h155.mvista.com ([63.81.120.155]:28517 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753090AbZBQSGn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 13:06:43 -0500
-Message-ID: <499AFCC7.60403@ru.mvista.com>
-Date: Tue, 17 Feb 2009 21:07:03 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 2/2 resend] libata-sff: avoid byte swapping in ata_sff_data_xfer()
-References: <200902152230.38271.sshtylyov@ru.mvista.com> <4998717A.2090507@pobox.com> <49987672.2050102@ru.mvista.com>
-In-Reply-To: <49987672.2050102@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Feb 2009 13:10:30 -0500
+Received: from cmpxchg.org ([85.214.51.133]:39535 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752230AbZBQSK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 13:10:29 -0500
+Date: Tue, 17 Feb 2009 19:11:57 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Mel Gorman <mel@csn.ul.ie>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: [patch] SLQB slab allocator (try 2)
+Message-ID: <20090217181157.GA2158@cmpxchg.org>
+References: <20090123154653.GA14517@wotan.suse.de> <200902041748.41801.nickpiggin@yahoo.com.au> <20090204152709.GA4799@csn.ul.ie> <200902051459.30064.nickpiggin@yahoo.com.au> <20090216184200.GA31264@csn.ul.ie> <4999BBE6.2080003@cs.helsinki.fi> <alpine.DEB.1.10.0902171120040.27813@qirst.com> <1234890096.11511.6.camel@penberg-laptop> <alpine.DEB.1.10.0902171204070.15929@qirst.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0902171204070.15929@qirst.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
+On Tue, Feb 17, 2009 at 12:05:07PM -0500, Christoph Lameter wrote:
+> Well yes you missed two locations (kmalloc_caches array has to be
+> redimensioned) and I also was writing the same patch...
+> 
+> Here is mine:
+> 
+> Subject: SLUB: Do not pass 8k objects through to the page allocator
+> 
+> Increase the maximum object size in SLUB so that 8k objects are not
+> passed through to the page allocator anymore. The network stack uses 8k
+> objects for performance critical operations.
+> 
+> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+> 
+> Index: linux-2.6/include/linux/slub_def.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/slub_def.h	2009-02-17 10:45:51.000000000 -0600
+> +++ linux-2.6/include/linux/slub_def.h	2009-02-17 11:06:53.000000000 -0600
+> @@ -121,10 +121,21 @@
+>  #define KMALLOC_SHIFT_LOW ilog2(KMALLOC_MIN_SIZE)
+> 
+>  /*
+> + * Maximum kmalloc object size handled by SLUB. Larger object allocations
+> + * are passed through to the page allocator. The page allocator "fastpath"
+> + * is relatively slow so we need this value sufficiently high so that
+> + * performance critical objects are allocated through the SLUB fastpath.
+> + *
+> + * This should be dropped to PAGE_SIZE / 2 once the page allocator
+> + * "fastpath" becomes competitive with the slab allocator fastpaths.
+> + */
+> +#define SLUB_MAX_SIZE (2 * PAGE_SIZE)
 
->>> Handling of the trailing byte in ata_sff_data_xfer() is suboptimal 
->>> bacause:
+This relies on PAGE_SIZE being 4k.  If you want 8k, why don't you say
+so?  Pekka did this explicitely.
 
->>> - it always initializes the padding buffer to 0 which is not really 
->>> needed in
->>>   both the read and write cases;
-
->>> - it has to use memcpy() to transfer a single byte from/to the 
->>> padding buffer;
-
->> Have you looked at the assembly, before deciding it is suboptiomal?
-
->    I'm estimating the code itself, not what the compiler can do to fix 
-> it. :-)
-
->> gcc optimizes tiny arrays and structures quite well, and is well 
->> capable of seeing one path where the initialization is clobbered 
->> without a single read, and another code path where it is used.
-
->    The initialier just shouldn't have been there in the first place, 
-> clobbered or not. And let's looks at what gcc gave me:
-
-[...]
-
->> As for memcpy, for small and/or constant values that is quite often a 
->> compiler builtin.  It is rarely useful, these days, to convert a 
->> memcpy() to a hand-rolled 
-
-> version of same.
-
->    Here memcpy() just shouldn't have appeared in the first place. But 
-> indeed, gcc did optimize it away.
-
-    In fact, we could do without both memcpy and io*15_rep() I think:
-
-  	if (unlikely(buflen & 0x01)) {
-		u16 pad;
-
-		/* Point buf to the tail of buffer */
-		buf += buflen - 1;
-
-		/*
-		 * Copy from/to pad's LSB only (host order),
-		 * dropping its MSB or zero-extending it...
-		 */
-  		if (rw == READ) {
-			pad = ioread16(data_addr);
-			*buf = (unsigned char)pad;
-  		} else {
-			pad = *buf;
-			iowrite16(pad, data_addr);
-		}
-	}
-
-    It should work -- that easy... although io{read|write}16() will still 
-byte-swap.
-
->>     Jeff
-
-MBR, Sergei
+	Hannes
