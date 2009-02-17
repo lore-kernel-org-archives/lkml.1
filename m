@@ -1,121 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752044AbZBQIKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752782AbZBQILJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752044AbZBQIKg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 03:10:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbZBQIKX
+	id S1752782AbZBQILJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 03:11:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZBQIKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 03:10:23 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:8324 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751229AbZBQIKW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 03:10:22 -0500
-Message-ID: <499A70E7.4000405@panasas.com>
-Date: Tue, 17 Feb 2009 10:10:15 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
-MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
-       jeff@garzik.org, linux-kernel@vger.kernel.org, avishay@gmail.com,
-       osd-dev@open-osd.org, jens.axboe@oracle.com,
-       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [osd-dev] [PATCH 1/8] exofs: Kbuild, Headers and osd utils
-References: <49992F99.1060404@panasas.com>	<20090216183750H.fujita.tomonori@lab.ntt.co.jp>	<49993FF2.9050200@panasas.com> <20090217092042C.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090217092042C.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Feb 2009 08:10:19.0674 (UTC) FILETIME=[2C8F7FA0:01C990D7]
+	Tue, 17 Feb 2009 03:10:43 -0500
+Received: from sh.osrg.net ([192.16.179.4]:55113 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752426AbZBQIKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 03:10:42 -0500
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Subject: [PATCH mmotm 2/6] nilfs2: use fixed sized types for ioctl structures
+Date: Tue, 17 Feb 2009 16:42:02 +0900
+Message-Id: <1234856526-1947-3-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1234856526-1947-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+References: <1234856526-1947-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+X-Dispatcher: imput version 20050308(IM148)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 17 Feb 2009 17:10:35 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> 
-> Can you stop the argument, "exofs is similar to the existing
-> traditional file systems hence it should be treated equally". It's
-> simply untrue. Does anyone except for panasas people insist the same
-> argument?
-> 
+Nilfs ioctl had structures not having fixed sized types such as:
 
-No I will not, it is true. exofs is just a regular old filesystem
-nothing different.
+  struct nilfs_argv {
+         void *v_base;
+         size_t v_nmembs;
+         size_t v_size;
+         int v_index;
+         int v_flags;
+  };
 
-> We are talking about the design of exofs, which also affects the
-> design of OSD ULD (including the library) living in SCSI
-> mid-layer. 
+Further, some of them are wrongly aligned:
 
-The ULD belongs to scsi but the library could sit else where, how
-is that an argument?
+  e.g.
 
-> It's something completely different from existing
-> traditional file systems that work nicely on the top of the block
-> layer.
-> 
+  struct nilfs_cpmode {
+        __u64 cm_cno;
+        int cm_mode;
+  };
 
-Nicely is a matter of opinion. I think that building a bio in stages
-in the background, then at the point of execution build a request-from-bio
-and execute is a nice design that makes sure nothing is duplicated, copied,
-and wheels are not re-invented. Current Kernel design is nice, why change
-it?
+The size of wrongly aligned structures varies depending on
+architectures, and it breaks the identity of ioctl commands, which
+leads to arch dependent errors.
 
-> As discussed in another thread, now OSD ULD reinvents the bio handling
-> infrastructure because of the design of exofs. 
+Previously, these are compensated by using compat_ioctl.
 
-Not true, show me where? You keep saying that. Where in the code is it
-reinvented?
+This fixes these problems and allows removal of compat ioctl.
 
-> But OSD ULD can use the
-> block layer helper functions to avoid the re-invention if we change
-> the exofs design to take pages instead of bios.
+Since this will change sizes of those structures, binary compatibility
+for the past utilities will once break; new utilities have to be used
+instead.  However, it would be helpful to avoid platform dependent
+problems in the long term.
 
-That, above is exactly a re-invention of block layer. What was all that
-scatterlist pointers and scsi_execute_async() cleanup that you worked
-so hard to get rid off. It was a list of pages+offsets+lengths, that's what
-it was. Now you ask me to do the same, keep an external structure of
-pages+offsets+lengths. pass them three layers down and at some point in
-time force new block_layer interfaces, which do not fully exist today,
-to prepare a request for submission.
+Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+---
+ fs/nilfs2/ioctl.c         |   11 +++++------
+ include/linux/nilfs2_fs.h |   23 ++++++++++++++---------
+ 2 files changed, 19 insertions(+), 15 deletions(-)
 
-No! the decision was, keep preparation of request local and submit it
-in place, without intermediate structures. From-memory-to-request
-in one stage.
+diff --git a/fs/nilfs2/ioctl.c b/fs/nilfs2/ioctl.c
+index 85a291c..7fbd9fe 100644
+--- a/fs/nilfs2/ioctl.c
++++ b/fs/nilfs2/ioctl.c
+@@ -41,6 +41,7 @@ static int nilfs_ioctl_wrap_copy(struct the_nilfs *nilfs,
+ 						   void *, size_t, size_t))
+ {
+ 	void *buf;
++	void __user *base = (void __user *)(unsigned long)argv->v_base;
+ 	size_t maxmembs, total, n;
+ 	ssize_t nr;
+ 	int ret, i;
+@@ -64,9 +65,8 @@ static int nilfs_ioctl_wrap_copy(struct the_nilfs *nilfs,
+ 		n = (argv->v_nmembs - i < maxmembs) ?
+ 			argv->v_nmembs - i : maxmembs;
+ 		if ((dir & _IOC_WRITE) &&
+-		    copy_from_user(buf,
+-			    (void __user *)argv->v_base + argv->v_size * i,
+-			    argv->v_size * n)) {
++		    copy_from_user(buf, base + argv->v_size * i,
++				   argv->v_size * n)) {
+ 			ret = -EFAULT;
+ 			break;
+ 		}
+@@ -78,9 +78,8 @@ static int nilfs_ioctl_wrap_copy(struct the_nilfs *nilfs,
+ 			break;
+ 		}
+ 		if ((dir & _IOC_READ) &&
+-		    copy_to_user(
+-			    (void __user *)argv->v_base + argv->v_size * i,
+-			    buf, argv->v_size * nr)) {
++		    copy_to_user(base + argv->v_size * i, buf,
++				 argv->v_size * nr)) {
+ 			ret = -EFAULT;
+ 			break;
+ 		}
+diff --git a/include/linux/nilfs2_fs.h b/include/linux/nilfs2_fs.h
+index b0a6b39..8fb64ce 100644
+--- a/include/linux/nilfs2_fs.h
++++ b/include/linux/nilfs2_fs.h
+@@ -499,6 +499,7 @@ NILFS_CHECKPOINT_FNS(SKETCH, sketch)
+ /**
+  * struct nilfs_cpinfo - checkpoint information
+  * @ci_flags: flags
++ * @ci_pad: padding
+  * @ci_cno: checkpoint number
+  * @ci_create: creation timestamp
+  * @ci_nblk_inc: number of blocks incremented by this checkpoint
+@@ -508,6 +509,7 @@ NILFS_CHECKPOINT_FNS(SKETCH, sketch)
+  */
+ struct nilfs_cpinfo {
+ 	__u32 ci_flags;
++	__u32 ci_pad;
+ 	__u64 ci_cno;
+ 	__u64 ci_create;
+ 	__u64 ci_nblk_inc;
+@@ -668,7 +670,8 @@ enum {
+  */
+ struct nilfs_cpmode {
+ 	__u64 cm_cno;
+-	int cm_mode;
++	__u32 cm_mode;
++	__u32 cm_pad;
+ };
+ 
+ /**
+@@ -676,15 +679,15 @@ struct nilfs_cpmode {
+  * @v_base:
+  * @v_nmembs:
+  * @v_size:
+- * @v_index:
+  * @v_flags:
++ * @v_index:
+  */
+ struct nilfs_argv {
+-	void *v_base;
+-	size_t v_nmembs;	/* number of members */
+-	size_t v_size;		/* size of members */
+-	int v_index;
+-	int v_flags;
++	__u64 v_base;
++	__u32 v_nmembs;	/* number of members */
++	__u16 v_size;	/* size of members */
++	__u16 v_flags;
++	__u64 v_index;
+ };
+ 
+ /**
+@@ -721,8 +724,8 @@ struct nilfs_sustat {
+ 	__u64 ss_nsegs;
+ 	__u64 ss_ncleansegs;
+ 	__u64 ss_ndirtysegs;
+-	time_t ss_ctime;
+-	time_t ss_nongc_ctime;
++	__u64 ss_ctime;
++	__u64 ss_nongc_ctime;
+ };
+ 
+ /**
+@@ -750,6 +753,7 @@ struct nilfs_vdesc {
+ 	__u64 vd_blocknr;
+ 	__u64 vd_offset;
+ 	__u32 vd_flags;
++	__u32 vd_pad;
+ };
+ 
+ /**
+@@ -761,6 +765,7 @@ struct nilfs_bdesc {
+ 	__u64 bd_blocknr;
+ 	__u64 bd_offset;
+ 	__u32 bd_level;
++	__u32 bd_pad;
+ };
+ 
+ #define NILFS_IOCTL_IDENT		'n'
+-- 
+1.5.6.5
 
-That's what I want. The bio lets me do that yesterday, lots of file
-systems do that yesterday.
-
-All I'm asking for is one small blk_make_request() that is a parallel
-of generic_make_request() of the BLOCK_FS, for the BLOCK_PC requests
-
-If someone wanted a filesystem over tape drives, over st.c or osst.c.
-He would design it similar. collect bios in background, point and shoot.
-The blk_map_xxx functions where made to satisfy user-mode interfaces, for
-filesystems it was bio for ages.
-
-> For now, it works
-
-> perfectly for exofs. In the future, we might change it but we don't
-> know until you submit patches (or the performance results) that show
-> taking pages doesn't work for exofs nicely.
-> 
-
-I don't know about you, but me, I don't have to do some work to know
-it's bad. I can imagine before hand that it is bad. I usually run
-hundreds of simulations in my head, discarding any bad options until I
-find the one way I like. Usually the short easiest way is also the best.
-(Since I'm very lazy)
-Like with bidi for example, Why not just take two requests instead of
-one? But I was sent to do all that gigantic work so everyone will see
-that.
-
-> I guess that we need to evolve the block layer to support OSD stuff
-> cleanly than we've discussed recently. But again we can do when we
-> definitely need to do.
-
-It's not that big and long evolution. It is a simple:
-
-struct request *blk_make_request(struct bio*, gfp_t gfp);
-
-And we are done. more simple then that? I don't know
-
-Boaz
