@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbZBQIpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751893AbZBQIwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752648AbZBQIpm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 03:45:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbZBQIpa
+	id S1751893AbZBQIwp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 03:52:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbZBQIwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 03:45:30 -0500
-Received: from chmailsrv.int.mrv.com ([66.43.110.11]:37539 "EHLO
-	chmailsrv.int.mrv.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751031AbZBQIpa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 03:45:30 -0500
-Date: Tue, 17 Feb 2009 00:45:27 -0800
-From: Nye Liu <nyet@mrv.com>
-To: linux-kernel@vger.kernel.org, nyet@nyet.org
-Subject: [PATCH] modules: hid id->bus needs TO_NATIVE() in
-	scripts/mod/file2alias.c
-Message-ID: <20090217084523.GA3623@mrv.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 17 Feb 2009 08:47:51.0611 (UTC) FILETIME=[6AD1D0B0:01C990DC]
+	Tue, 17 Feb 2009 03:52:36 -0500
+Received: from smtp2.ono.com ([62.42.230.20]:16810 "EHLO resmaa12.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751051AbZBQIwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 03:52:36 -0500
+Date: Tue, 17 Feb 2009 09:52:32 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mdv Cooker <cooker@mandrivalinux.org>
+Subject: Bonding tied to IPV6 in 29-rc5
+Message-ID: <20090217095232.5da06b9f@werewolf.home>
+In-Reply-To: <alpine.LFD.2.00.0902131413120.3179@localhost.localdomain>
+References: <alpine.LFD.2.00.0902131413120.3179@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.0cvs64 (GTK+ 2.15.3; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nye Liu <nyet@mrv.com>
+Hi all...
 
-When building a module alias, the bus identifier must be converted to
-native endianness. The hid bus id entries were not being properly
-swapped in little endian systems.
+Don't know if this is specific for -rc5, I have jumped from 28.4 to 29-rc5.
+In this latest kernel, I can not install 'bonding' module if 'ipv6' is
+disabled to load via modprobe.conf:
 
-For example:
+install ipv6 /bin/true
 
-    # modinfo hid_dell
-    filename:
-    /lib/modules/2.6.28-1-amd64/kernel/drivers/hid/hid-dell.ko
-    license: GPL
-    alias: hid:b0300v000013BAp00000017
-    alias: hid:b0300v0000413Cp00002105
-    alias: hid:b0300v0000413Cp00002005
-    depends: hid,usbhid
+Trying bonding gives this dmesg:
 
-b0300 should read b0003
+bonding: Unknown symbol ndisc_build_skb
+bonding: Unknown symbol in6_dev_finish_destroy
+bonding: Unknown symbol ndisc_send_skb
+bonding: Unknown symbol unregister_inet6addr_notifier
+bonding: Unknown symbol register_inet6addr_notifier
 
-Signed-off-by: Nye Liu <nyet@mrv.com>
+Commenting the line in modprobe.conf makes things smooth again.
+We can not disable ipv6 anymore ?
 
-diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
-index 491b8b1..4eea60b 100644
---- a/scripts/mod/file2alias.c
-+++ b/scripts/mod/file2alias.c
-@@ -210,6 +210,7 @@ static void do_usb_table(void *symval, unsigned long size,
- static int do_hid_entry(const char *filename,
-                             struct hid_device_id *id, char *alias)
- {
-+       id->bus = TO_NATIVE(id->bus);
-        id->vendor = TO_NATIVE(id->vendor);
-        id->product = TO_NATIVE(id->product);
- 
+TIA
 
 -- 
-Nye Liu
-nliu@mrv.com
-(818) 772-6235x248
-(818) 772-0576 fax
-
-"Who would be stupid enough to quote a fictitious character?"
-	-- Don Quixote
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2009.1 (Cooker) for x86_64
+Linux 2.6.28.2-desktop-1mnb (gcc 4.3.2 (GCC) #1 Wed Jan
