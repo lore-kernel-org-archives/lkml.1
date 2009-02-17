@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755680AbZBQFRM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755021AbZBQFRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755680AbZBQFRM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 00:17:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbZBQFOU
+	id S1755021AbZBQFRa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 00:17:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbZBQFOV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 00:14:20 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42028 "EHLO
+	Tue, 17 Feb 2009 00:14:21 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:53237 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751940AbZBQFOI (ORCPT
+	with ESMTP id S1751975AbZBQFOI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 17 Feb 2009 00:14:08 -0500
-Message-Id: <20090217051407.035764950@goodmis.org>
+Message-Id: <20090217051407.422977785@goodmis.org>
 References: <20090217051227.957864159@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 17 Feb 2009 00:12:37 -0500
+Date: Tue, 17 Feb 2009 00:12:39 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -21,383 +21,194 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 10/15] ftrace: trace different functions with a different tracer
-Content-Disposition: inline; filename=0010-ftrace-trace-different-functions-with-a-different-t.patch
+Subject: [PATCH 12/15] ftrace: add traceon traceoff commands to enable/disable the buffers
+Content-Disposition: inline; filename=0012-ftrace-add-traceon-traceoff-commands-to-enable-disa.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Impact: new feature
+This patch adds the new function selection commands traceon and
+traceoff. traceon sets the function to enable the ring buffers
+while traceoff disables the ring buffers.  You can pass in the
+number of times you want the command to be executed when the function
+is hit. It will only execute if the state of the buffers are not
+already in that state.
 
-Currently, the function tracer only gives you an ability to hook
-a tracer to all functions being traced. The dynamic function trace
-allows you to pick and choose which of those functions will be
-traced, but all functions being traced will call all tracers that
-registered with the function tracer.
+Example:
 
-This patch adds a new feature that allows a tracer to hook to specific
-functions, even when all functions are being traced. It allows for
-different functions to call different tracer hooks.
+ # echo do_fork:traceon:4
 
-The way this is accomplished is by a special function that will hook
-to the function tracer and will set up a hash table knowing which
-tracer hook to call with which function. This is the most general
-and easiest method to accomplish this. Later, an arch may choose
-to supply their own method in changing the mcount call of a function
-to call a different tracer. But that will be an exercise for the
-future.
+Will enable the ring buffers if they are disabled every time it
+hits do_fork, up to 4 times.
 
-To register a function:
+ # echo sys_close:traceoff
 
- struct ftrace_hook_ops {
-	void			(*func)(unsigned long ip,
-					unsigned long parent_ip,
-					void **data);
-	int			(*callback)(unsigned long ip, void **data);
-	void			(*free)(void **data);
- };
-
- int register_ftrace_function_hook(char *glob, struct ftrace_hook_ops *ops,
-				  void *data);
-
-glob is a simple glob to search for the functions to hook.
-ops is a pointer to the operations (listed below)
-data is the default data to be passed to the hook functions when traced
-
-ops:
- func is the hook function to call when the functions are traced
- callback is a callback function that is called when setting up the hash.
-   That is, if the tracer needs to do something special for each
-   function, that is being traced, and wants to give each function
-   its own data. The address of the entry data is passed to this
-   callback, so that the callback may wish to update the entry to
-   whatever it would like.
- free is a callback for when the entry is freed. In case the tracer
-   allocated any data, it is give the chance to free it.
-
-To unregister we have three functions:
-
-  void
-  unregister_ftrace_function_hook(char *glob, struct ftrace_hook_ops *ops,
-				void *data)
-
-This will unregister all hooks that match glob, point to ops, and
-have its data matching data. (note, if glob is NULL, blank or '*',
-all functions will be tested).
-
-  void
-  unregister_ftrace_function_hook_func(char *glob,
-				 struct ftrace_hook_ops *ops)
-
-This will unregister all functions matching glob that has an entry
-pointing to ops.
-
-  void unregister_ftrace_function_hook_all(char *glob)
-
-This simply unregisters all funcs.
+This will disable the ring buffers every time (unlimited) when
+sys_close is called.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- include/linux/ftrace.h |   18 ++++
- kernel/trace/ftrace.c  |  247 ++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 265 insertions(+), 0 deletions(-)
+ kernel/trace/trace_functions.c |  135 ++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 135 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index f0a0ecc..13918c4 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -106,6 +106,24 @@ struct ftrace_func_command {
- /* asm/ftrace.h must be defined for archs supporting dynamic ftrace */
- #include <asm/ftrace.h>
+diff --git a/kernel/trace/trace_functions.c b/kernel/trace/trace_functions.c
+index 36bf956..5c95708 100644
+--- a/kernel/trace/trace_functions.c
++++ b/kernel/trace/trace_functions.c
+@@ -9,6 +9,7 @@
+  *  Copyright (C) 2004-2006 Ingo Molnar
+  *  Copyright (C) 2004 William Lee Irwin III
+  */
++#include <linux/ring_buffer.h>
+ #include <linux/debugfs.h>
+ #include <linux/uaccess.h>
+ #include <linux/ftrace.h>
+@@ -231,9 +232,143 @@ static struct tracer function_trace __read_mostly =
+ #endif
+ };
  
-+struct ftrace_hook_ops {
-+	void			(*func)(unsigned long ip,
-+					unsigned long parent_ip,
-+					void **data);
-+	int			(*callback)(unsigned long ip, void **data);
-+	void			(*free)(void **data);
-+};
++#ifdef CONFIG_DYNAMIC_FTRACE
++static void
++ftrace_traceon(unsigned long ip, unsigned long parent_ip, void **data)
++{
++	long *count = (long *)data;
 +
-+extern int
-+register_ftrace_function_hook(char *glob, struct ftrace_hook_ops *ops,
-+			      void *data);
-+extern void
-+unregister_ftrace_function_hook(char *glob, struct ftrace_hook_ops *ops,
-+				void *data);
-+extern void
-+unregister_ftrace_function_hook_func(char *glob, struct ftrace_hook_ops *ops);
-+extern void unregister_ftrace_function_hook_all(char *glob);
++	if (tracing_is_on())
++		return;
 +
- enum {
- 	FTRACE_FL_FREE		= (1 << 0),
- 	FTRACE_FL_FAILED	= (1 << 1),
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 157d4f6..0b80e32 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -27,6 +27,7 @@
- #include <linux/sysctl.h>
- #include <linux/ctype.h>
- #include <linux/list.h>
-+#include <linux/hash.h>
- 
- #include <asm/ftrace.h>
- 
-@@ -1245,6 +1246,252 @@ static int __init ftrace_mod_cmd_init(void)
- }
- device_initcall(ftrace_mod_cmd_init);
- 
-+#define FTRACE_HASH_BITS 7
-+#define FTRACE_FUNC_HASHSIZE (1 << FTRACE_HASH_BITS)
-+static struct hlist_head ftrace_func_hash[FTRACE_FUNC_HASHSIZE] __read_mostly;
++	if (!*count)
++		return;
 +
-+struct ftrace_func_hook {
-+	struct hlist_node	node;
-+	struct ftrace_hook_ops	*ops;
-+	unsigned long		flags;
-+	unsigned long		ip;
-+	void			*data;
-+	struct rcu_head		rcu;
-+};
++	if (*count != -1)
++		(*count)--;
++
++	tracing_on();
++}
 +
 +static void
-+function_trace_hook_call(unsigned long ip, unsigned long parent_ip)
++ftrace_traceoff(unsigned long ip, unsigned long parent_ip, void **data)
 +{
-+	struct ftrace_func_hook *entry;
-+	struct hlist_head *hhd;
-+	struct hlist_node *n;
-+	unsigned long key;
-+	int resched;
++	long *count = (long *)data;
 +
-+	key = hash_long(ip, FTRACE_HASH_BITS);
-+
-+	hhd = &ftrace_func_hash[key];
-+
-+	if (hlist_empty(hhd))
++	if (!tracing_is_on())
 +		return;
 +
-+	/*
-+	 * Disable preemption for these calls to prevent a RCU grace
-+	 * period. This syncs the hash iteration and freeing of items
-+	 * on the hash. rcu_read_lock is too dangerous here.
-+	 */
-+	resched = ftrace_preempt_disable();
-+	hlist_for_each_entry_rcu(entry, n, hhd, node) {
-+		if (entry->ip == ip)
-+			entry->ops->func(ip, parent_ip, &entry->data);
-+	}
-+	ftrace_preempt_enable(resched);
++	if (!*count)
++		return;
++
++	if (*count != -1)
++		(*count)--;
++
++	tracing_off();
 +}
 +
-+static struct ftrace_ops trace_hook_ops __read_mostly =
-+{
-+	.func = function_trace_hook_call,
++static struct ftrace_hook_ops traceon_hook_ops = {
++	.func			= ftrace_traceon,
 +};
 +
-+static int ftrace_hook_registered;
++static struct ftrace_hook_ops traceoff_hook_ops = {
++	.func			= ftrace_traceoff,
++};
 +
-+static void __enable_ftrace_function_hook(void)
++static int
++ftrace_trace_onoff_unreg(char *glob, char *cmd, char *param)
 +{
-+	int i;
++	struct ftrace_hook_ops *ops;
 +
-+	if (ftrace_hook_registered)
-+		return;
++	/* we register both traceon and traceoff to this callback */
++	if (strcmp(cmd, "traceon") == 0)
++		ops = &traceon_hook_ops;
++	else
++		ops = &traceoff_hook_ops;
 +
-+	for (i = 0; i < FTRACE_FUNC_HASHSIZE; i++) {
-+		struct hlist_head *hhd = &ftrace_func_hash[i];
-+		if (hhd->first)
-+			break;
-+	}
-+	/* Nothing registered? */
-+	if (i == FTRACE_FUNC_HASHSIZE)
-+		return;
++	unregister_ftrace_function_hook_func(glob, ops);
 +
-+	__register_ftrace_function(&trace_hook_ops);
-+	ftrace_startup(0);
-+	ftrace_hook_registered = 1;
++	return 0;
 +}
 +
-+static void __disable_ftrace_function_hook(void)
++static int
++ftrace_trace_onoff_callback(char *glob, char *cmd, char *param, int enable)
 +{
-+	int i;
++	struct ftrace_hook_ops *ops;
++	void *count = (void *)-1;
++	char *number;
++	int ret;
 +
-+	if (!ftrace_hook_registered)
-+		return;
-+
-+	for (i = 0; i < FTRACE_FUNC_HASHSIZE; i++) {
-+		struct hlist_head *hhd = &ftrace_func_hash[i];
-+		if (hhd->first)
-+			return;
-+	}
-+
-+	/* no more funcs left */
-+	__unregister_ftrace_function(&trace_hook_ops);
-+	ftrace_shutdown(0);
-+	ftrace_hook_registered = 0;
-+}
-+
-+
-+static void ftrace_free_entry_rcu(struct rcu_head *rhp)
-+{
-+	struct ftrace_func_hook *entry =
-+		container_of(rhp, struct ftrace_func_hook, rcu);
-+
-+	if (entry->ops->free)
-+		entry->ops->free(&entry->data);
-+	kfree(entry);
-+}
-+
-+
-+int
-+register_ftrace_function_hook(char *glob, struct ftrace_hook_ops *ops,
-+			      void *data)
-+{
-+	struct ftrace_func_hook *entry;
-+	struct ftrace_page *pg;
-+	struct dyn_ftrace *rec;
-+	unsigned long key;
-+	int type, len, not;
-+	int count = 0;
-+	char *search;
-+
-+	type = ftrace_setup_glob(glob, strlen(glob), &search, &not);
-+	len = strlen(search);
-+
-+	/* we do not support '!' for function hooks */
-+	if (WARN_ON(not))
++	/* hash funcs only work with set_ftrace_filter */
++	if (!enable)
 +		return -EINVAL;
 +
-+	mutex_lock(&ftrace_lock);
-+	do_for_each_ftrace_rec(pg, rec) {
++	if (glob[0] == '!')
++		return ftrace_trace_onoff_unreg(glob+1, cmd, param);
 +
-+		if (rec->flags & FTRACE_FL_FAILED)
-+			continue;
++	/* we register both traceon and traceoff to this callback */
++	if (strcmp(cmd, "traceon") == 0)
++		ops = &traceon_hook_ops;
++	else
++		ops = &traceoff_hook_ops;
 +
-+		if (!ftrace_match_record(rec, search, len, type))
-+			continue;
++	if (!param)
++		goto out_reg;
 +
-+		entry = kmalloc(sizeof(*entry), GFP_KERNEL);
-+		if (!entry) {
-+			/* If we did not hook to any, then return error */
-+			if (!count)
-+				count = -ENOMEM;
-+			goto out_unlock;
-+		}
++	number = strsep(&param, ":");
 +
-+		count++;
++	if (!strlen(number))
++		goto out_reg;
 +
-+		entry->data = data;
++	/*
++	 * We use the callback data field (which is a pointer)
++	 * as our counter.
++	 */
++	ret = strict_strtoul(number, 0, (unsigned long *)&count);
++	if (ret)
++		return ret;
 +
-+		/*
-+		 * The caller might want to do something special
-+		 * for each function we find. We call the callback
-+		 * to give the caller an opportunity to do so.
-+		 */
-+		if (ops->callback) {
-+			if (ops->callback(rec->ip, &entry->data) < 0) {
-+				/* caller does not like this func */
-+				kfree(entry);
-+				continue;
-+			}
-+		}
++ out_reg:
++	ret = register_ftrace_function_hook(glob, ops, count);
 +
-+		entry->ops = ops;
-+		entry->ip = rec->ip;
-+
-+		key = hash_long(entry->ip, FTRACE_HASH_BITS);
-+		hlist_add_head_rcu(&entry->node, &ftrace_func_hash[key]);
-+
-+	} while_for_each_ftrace_rec();
-+	__enable_ftrace_function_hook();
-+
-+ out_unlock:
-+	mutex_unlock(&ftrace_lock);
-+
-+	return count;
++	return ret;
 +}
 +
-+enum {
-+	HOOK_TEST_FUNC		= 1,
-+	HOOK_TEST_DATA		= 2
++static struct ftrace_func_command ftrace_traceon_cmd = {
++	.name			= "traceon",
++	.func			= ftrace_trace_onoff_callback,
 +};
 +
-+static void
-+__unregister_ftrace_function_hook(char *glob, struct ftrace_hook_ops *ops,
-+				  void *data, int flags)
++static struct ftrace_func_command ftrace_traceoff_cmd = {
++	.name			= "traceoff",
++	.func			= ftrace_trace_onoff_callback,
++};
++
++static int __init init_func_cmd_traceon(void)
 +{
-+	struct ftrace_func_hook *entry;
-+	struct hlist_node *n, *tmp;
-+	char str[KSYM_SYMBOL_LEN];
-+	int type = MATCH_FULL;
-+	int i, len = 0;
-+	char *search;
++	int ret;
 +
-+	if (glob && (strcmp(glob, "*") || !strlen(glob)))
-+		glob = NULL;
-+	else {
-+		int not;
++	ret = register_ftrace_command(&ftrace_traceoff_cmd);
++	if (ret)
++		return ret;
 +
-+		type = ftrace_setup_glob(glob, strlen(glob), &search, &not);
-+		len = strlen(search);
-+
-+		/* we do not support '!' for function hooks */
-+		if (WARN_ON(not))
-+			return;
-+	}
-+
-+	mutex_lock(&ftrace_lock);
-+	for (i = 0; i < FTRACE_FUNC_HASHSIZE; i++) {
-+		struct hlist_head *hhd = &ftrace_func_hash[i];
-+
-+		hlist_for_each_entry_safe(entry, n, tmp, hhd, node) {
-+
-+			/* break up if statements for readability */
-+			if ((flags & HOOK_TEST_FUNC) && entry->ops != ops)
-+				continue;
-+
-+			if ((flags & HOOK_TEST_DATA) && entry->data != data)
-+				continue;
-+
-+			/* do this last, since it is the most expensive */
-+			if (glob) {
-+				kallsyms_lookup(entry->ip, NULL, NULL,
-+						NULL, str);
-+				if (!ftrace_match(str, glob, len, type))
-+					continue;
-+			}
-+
-+			hlist_del(&entry->node);
-+			call_rcu(&entry->rcu, ftrace_free_entry_rcu);
-+		}
-+	}
-+	__disable_ftrace_function_hook();
-+	mutex_unlock(&ftrace_lock);
++	ret = register_ftrace_command(&ftrace_traceon_cmd);
++	if (ret)
++		unregister_ftrace_command(&ftrace_traceoff_cmd);
++	return ret;
 +}
-+
-+void
-+unregister_ftrace_function_hook(char *glob, struct ftrace_hook_ops *ops,
-+				void *data)
++#else
++static inline int init_func_cmd_traceon(void)
 +{
-+	__unregister_ftrace_function_hook(glob, ops, data,
-+					  HOOK_TEST_FUNC | HOOK_TEST_DATA);
++	return 0;
 +}
++#endif /* CONFIG_DYNAMIC_FTRACE */
 +
-+void
-+unregister_ftrace_function_hook_func(char *glob, struct ftrace_hook_ops *ops)
-+{
-+	__unregister_ftrace_function_hook(glob, ops, NULL, HOOK_TEST_FUNC);
-+}
-+
-+void unregister_ftrace_function_hook_all(char *glob)
-+{
-+	__unregister_ftrace_function_hook(glob, NULL, NULL, 0);
-+}
-+
- static LIST_HEAD(ftrace_commands);
- static DEFINE_MUTEX(ftrace_cmd_mutex);
+ static __init int init_function_trace(void)
+ {
++	init_func_cmd_traceon();
+ 	return register_tracer(&function_trace);
+ }
  
+ device_initcall(init_function_trace);
++
 -- 
 1.5.6.5
 
