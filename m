@@ -1,59 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbZBRCuc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755605AbZBRCvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754743AbZBRCuc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 21:50:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZBRCuW
+	id S1755605AbZBRCvU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 21:51:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbZBRCvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 21:50:22 -0500
-Received: from hera.kernel.org ([140.211.167.34]:50310 "EHLO hera.kernel.org"
+	Tue, 17 Feb 2009 21:51:12 -0500
+Received: from mga09.intel.com ([134.134.136.24]:27443 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751403AbZBRCuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 21:50:21 -0500
-Message-ID: <499B774C.5010705@kernel.org>
-Date: Tue, 17 Feb 2009 18:49:48 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751256AbZBRCvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 21:51:11 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,225,1233561600"; 
+   d="scan'208";a="490818803"
+Date: Tue, 17 Feb 2009 20:50:21 +0800
+From: Yu Zhao <yu.zhao@intel.com>
+To: greg@kroah.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v9 6/7] PCI: document SR-IOV sysfs entries
+Message-ID: <20090217125021.GA2403@yzhao-otc.sh.intel.com>
+References: <1234790920-1810-1-git-send-email-yu.zhao@intel.com> <1234790920-1810-7-git-send-email-yu.zhao@intel.com>
 MIME-Version: 1.0
-To: david@lang.hm
-CC: Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       DL-MPTFusionLinux@lsi.com
-Subject: Re: mpt fusion broken sometime since 2.6.24
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>  <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm>  <20090217230050.GG16841@parisc-linux.org>  <alpine.DEB.1.10.0902171506500.26625@asgard.lang.hm> <86802c440902171511s1abcc0eao560df4b8fcea0e7c@mail.gmail.com> <alpine.DEB.1.10.0902171514120.26625@asgard.lang.hm> <499B46B2.5040601@kernel.org> <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm> <499B6BF7.9090300@kernel.org> <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm> <499B724A.2040408@kernel.org> <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm> <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>
-In-Reply-To: <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1234790920-1810-7-git-send-email-yu.zhao@intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-> On Tue, 17 Feb 2009, david@lang.hm wrote:
+Hi Greg,
+
+The `struct device' is preferred over the `struct kobject' in all cases
+that create subdirectory in sysfs, is this true?
+
+I'd like to create a subdirectory under PCI device sysfs directory and
+put some symbol links into that directory (only symbol links). Should I
+use `device' or `kobject'? Currently I use `device' and get two extra
+file/directory (uevent and power) which look like useless for my case
+because this subdirectory doesn't reflect a real device.
+
+I checked some code and found they use kobject_init_and_add(). Should
+I use it instead, or keep using the `device'?
+
+Please advise.
+
+Regards,
+Yu
+
+On Mon, Feb 16, 2009 at 09:28:39PM +0800, Zhao, Yu wrote:
+> Signed-off-by: Yu Zhao <yu.zhao@intel.com>
+> ---
+>  Documentation/ABI/testing/sysfs-bus-pci |   27 +++++++++++++++++++++++++++
+>  1 files changed, 27 insertions(+), 0 deletions(-)
 > 
->>> do you have chance to try current tip/master
->>> http://people.redhat.com/mingo/tip.git/readme.txt
->>> or 2.6.29-rcX
->>> plus following patch?
->>
->> I will see about trying this.
+> diff --git a/Documentation/ABI/testing/sysfs-bus-pci b/Documentation/ABI/testing/sysfs-bus-pci
+> index ceddcff..84dc100 100644
+> --- a/Documentation/ABI/testing/sysfs-bus-pci
+> +++ b/Documentation/ABI/testing/sysfs-bus-pci
+> @@ -9,3 +9,30 @@ Description:
+>  		that some devices may have malformatted data.  If the
+>  		underlying VPD has a writable section then the
+>  		corresponding section of this file will be writable.
+> +
+> +What:		/sys/bus/pci/devices/.../virtfn/N
+> +Date:		February 2009
+> +Contact:	Yu Zhao <yu.zhao@intel.com>
+> +Description:
+> +		This symbol link appears when hardware supports SR-IOV
+> +		capability and Physical Function driver has enabled it.
+> +		The symbol link points to the PCI device sysfs entry of
+> +		Virtual Function whose index is N (0...MaxVFs-1).
+> +
+> +What:		/sys/bus/pci/devices/.../virtfn/dep_link
+> +Date:		February 2009
+> +Contact:	Yu Zhao <yu.zhao@intel.com>
+> +Description:
+> +		This symbol link appears when hardware supports SR-IOV
+> +		capability and Physical Function driver has enabled it,
+> +		and this device has vendor specific dependencies with
+> +		others. The symbol link points to the PCI device sysfs
+> +		entry of Physical Function this device depends on.
+> +
+> +What:		/sys/bus/pci/devices/.../physfn
+> +Date:		February 2009
+> +Contact:	Yu Zhao <yu.zhao@intel.com>
+> +Description:
+> +		This symbol link appears when a device is Virtual Function.
+> +		The symbol link points to the PCI device sysfs entry of
+> +		Physical Function this device associates with.
+> -- 
+> 1.5.6.4
 > 
-> does the fact that I am compiling a monolithic kernel (no modules) make
-> any difference related to the patch below?
-
-please try this patch too. wonder if your BIOS does enable the HT MSI ...
-
-
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index baad093..7e97b90 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -1981,6 +1981,9 @@ static void __devinit quirk_msi_ht_cap(struct pci_dev *dev)
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_HT2000_PCIE,
- 			quirk_msi_ht_cap);
- 
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_8132_BRIDGE,
-+			quirk_msi_ht_cap);
-+
- 
- /* The nVidia CK804 chipset may have 2 HT MSI mappings.
-  * MSI are supported if the MSI capability set in any of these mappings.
