@@ -1,59 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbZBQQ5G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbZBQRBr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754180AbZBQQ5G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 11:57:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbZBQQ4m
+	id S1753457AbZBQRBr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 12:01:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbZBQRBj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 11:56:42 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:35644 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753822AbZBQQ4l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 11:56:41 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 3/3] MN10300: Fix typo && -> || in
-	arch/mn10300/unit-asb2305/pci.c
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-am33-list@redhat.com, linux-kernel@vger.kernel.org,
-       Wei Yongjun <yjwei@cn.fujitsu.com>, David Howells <dhowells@redhat.com>
-Date: Tue, 17 Feb 2009 16:56:03 +0000
-Message-ID: <20090217165603.17657.11820.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20090217165552.17657.90940.stgit@warthog.procyon.org.uk>
-References: <20090217165552.17657.90940.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Tue, 17 Feb 2009 12:01:39 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:59277 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751862AbZBQRBi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 12:01:38 -0500
+Subject: Re: [patch] SLQB slab allocator (try 2)
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Mel Gorman <mel@csn.ul.ie>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+In-Reply-To: <alpine.DEB.1.10.0902171120040.27813@qirst.com>
+References: <20090123154653.GA14517@wotan.suse.de>
+	 <200902041748.41801.nickpiggin@yahoo.com.au>
+	 <20090204152709.GA4799@csn.ul.ie>
+	 <200902051459.30064.nickpiggin@yahoo.com.au>
+	 <20090216184200.GA31264@csn.ul.ie> <4999BBE6.2080003@cs.helsinki.fi>
+	 <alpine.DEB.1.10.0902171120040.27813@qirst.com>
+Date: Tue, 17 Feb 2009 19:01:36 +0200
+Message-Id: <1234890096.11511.6.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wei Yongjun <yjwei@cn.fujitsu.com>
+Hi Christoph,
 
-Fix the typo && -> ||.
+On Mon, 16 Feb 2009, Pekka Enberg wrote:
+> > Btw, Yanmin, do you have access to the tests Mel is running (especially the
+> > ones where slub-rvrt seems to do worse)? Can you see this kind of regression?
+> > The results make we wonder whether we should avoid reverting all of the page
+> > allocator pass-through and just add a kmalloc cache for 8K allocations. Or not
+> > address the netperf regression at all. Double-hmm.
 
-Signed-off-by: Wei Yongjun <yjwei@cn.fujitsu.com>
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+On Tue, 2009-02-17 at 11:20 -0500, Christoph Lameter wrote:
+> Going to 8k for the limit beyond we pass through to the page allocator may
+> be the simplest and best solution. Someone please work on the page
+> allocator...
 
- arch/mn10300/unit-asb2305/pci.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Yeah. Something like this totally untested patch, perhaps?
 
+			Pekka
 
-diff --git a/arch/mn10300/unit-asb2305/pci.c b/arch/mn10300/unit-asb2305/pci.c
-index 1a86425..07dbbcd 100644
---- a/arch/mn10300/unit-asb2305/pci.c
-+++ b/arch/mn10300/unit-asb2305/pci.c
-@@ -173,7 +173,7 @@ static int pci_ampci_write_config_byte(struct pci_bus *bus, unsigned int devfn,
- 		BRIDGEREGB(where) = value;
- 	} else {
- 		if (bus->number == 0 &&
--		    (devfn == PCI_DEVFN(2, 0) && devfn == PCI_DEVFN(3, 0))
-+		    (devfn == PCI_DEVFN(2, 0) || devfn == PCI_DEVFN(3, 0))
- 		    )
- 			__pcidebug("<= %02x", bus, devfn, where, value);
- 		CONFIG_ADDRESS = CONFIG_CMD(bus, devfn, where);
+diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
+index 2f5c16b..e93cb3d 100644
+--- a/include/linux/slub_def.h
++++ b/include/linux/slub_def.h
+@@ -201,6 +201,13 @@ static __always_inline struct kmem_cache *kmalloc_slab(size_t size)
+ #define SLUB_DMA (__force gfp_t)0
+ #endif
+ 
++/*
++ * The maximum allocation size that will be satisfied by the slab allocator for
++ * kmalloc(). Requests that exceed this limit are passed directly to the page
++ * allocator.
++ */
++#define SLAB_LIMIT (8 * 1024)
++
+ void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
+ void *__kmalloc(size_t size, gfp_t flags);
+ 
+@@ -212,7 +219,7 @@ static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
+ static __always_inline void *kmalloc(size_t size, gfp_t flags)
+ {
+ 	if (__builtin_constant_p(size)) {
+-		if (size > PAGE_SIZE)
++		if (size > SLAB_LIMIT)
+ 			return kmalloc_large(size, flags);
+ 
+ 		if (!(flags & SLUB_DMA)) {
+@@ -234,7 +241,7 @@ void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
+ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+ {
+ 	if (__builtin_constant_p(size) &&
+-		size <= PAGE_SIZE && !(flags & SLUB_DMA)) {
++		size <= SLAB_LIMIT && !(flags & SLUB_DMA)) {
+ 			struct kmem_cache *s = kmalloc_slab(size);
+ 
+ 		if (!s)
+diff --git a/mm/slub.c b/mm/slub.c
+index 0280eee..a324188 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -2658,7 +2658,7 @@ void *__kmalloc(size_t size, gfp_t flags)
+ {
+ 	struct kmem_cache *s;
+ 
+-	if (unlikely(size > PAGE_SIZE))
++	if (unlikely(size > SLAB_LIMIT))
+ 		return kmalloc_large(size, flags);
+ 
+ 	s = get_slab(size, flags);
+@@ -2686,7 +2686,7 @@ void *__kmalloc_node(size_t size, gfp_t flags, int node)
+ {
+ 	struct kmem_cache *s;
+ 
+-	if (unlikely(size > PAGE_SIZE))
++	if (unlikely(size > SLAB_LIMIT))
+ 		return kmalloc_large_node(size, flags, node);
+ 
+ 	s = get_slab(size, flags);
+@@ -3223,7 +3223,7 @@ void *__kmalloc_track_caller(size_t size, gfp_t gfpflags, unsigned long caller)
+ {
+ 	struct kmem_cache *s;
+ 
+-	if (unlikely(size > PAGE_SIZE))
++	if (unlikely(size > SLAB_LIMIT))
+ 		return kmalloc_large(size, gfpflags);
+ 
+ 	s = get_slab(size, gfpflags);
+@@ -3239,7 +3239,7 @@ void *__kmalloc_node_track_caller(size_t size, gfp_t gfpflags,
+ {
+ 	struct kmem_cache *s;
+ 
+-	if (unlikely(size > PAGE_SIZE))
++	if (unlikely(size > SLAB_LIMIT))
+ 		return kmalloc_large_node(size, gfpflags, node);
+ 
+ 	s = get_slab(size, gfpflags);
+
 
