@@ -1,49 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbZBQPPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbZBQPQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753486AbZBQPPV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 10:15:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZBQPPH
+	id S1754002AbZBQPQa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 10:16:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbZBQPQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 10:15:07 -0500
-Received: from mail-ausfall.charite.de ([193.175.70.131]:35076 "EHLO
-	mail-ausfall.charite.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751073AbZBQPPG (ORCPT
+	Tue, 17 Feb 2009 10:16:21 -0500
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:37484 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751073AbZBQPQV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 10:15:06 -0500
-Date: Tue, 17 Feb 2009 16:15:02 +0100
-From: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: sync-Regression in 2.6.28.2?
-Message-ID: <20090217151502.GC16681@charite.de>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-References: <20090127093533.GB7037@charite.de> <20090209134958.GP27548@charite.de> <20090215134235.GB15398@charite.de> <200902171517.23980.nickpiggin@yahoo.com.au>
+	Tue, 17 Feb 2009 10:16:21 -0500
+Date: Tue, 17 Feb 2009 10:08:21 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Johannes Weiner <hannes@cmpxchg.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Matt Mackall <mpm@selenic.com>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [patch 1/8] slab: introduce kzfree()
+In-Reply-To: <20090216152751.GA27520@cmpxchg.org>
+Message-ID: <alpine.DEB.1.10.0902171007010.19685@qirst.com>
+References: <20090216142926.440561506@cmpxchg.org> <20090216144725.572446535@cmpxchg.org> <20090216152751.GA27520@cmpxchg.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200902171517.23980.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Nick Piggin <nickpiggin@yahoo.com.au>:
+Why would you want to zero an object on release? Is this for security?
 
-> > Still there in 2.6.28.5 :(
-> 
-> I believe it is basically a deadlock in ext4 due to the cyclic writeback
-> change.
+Please give us some rationale for this. Do we need free on zero now for
+all allocators?
 
-That could be. It happens during time of big write activity here.
- 
-> http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=commitdiff;h=2acf2c261b823d9d9ed954f348b97620297a36b5
-> 
-> ext4 guys, is this correct? Is there a minimal fix that can be made for
-> .stable kernels?
-> 
 
--- 
-Ralf Hildebrandt                                Ralf.Hildebrandt@charite.de
-Charite - Universitätsmedizin Berlin            Tel.  +49 (0)30-450 570-155
-Geschäftsbereich IT | Abt. Netzwerk             Fax.  +49 (0)30-450 570-962
-Hindenburgdamm 30 | 12200 Berlin
