@@ -1,61 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbZBQXUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754419AbZBQXVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754691AbZBQXUk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 18:20:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbZBQXUa
+	id S1754419AbZBQXVH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 18:21:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754846AbZBQXUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 18:20:30 -0500
-Received: from rv-out-0506.google.com ([209.85.198.234]:54779 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752678AbZBQXU3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 18:20:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=g2MIhwWCNiSI87PFDiEHwr7TwFunoogqrZzoTHoOG5vqlr0IIgRAZGYa+gxBPH57I1
-         es4hC4vonhY78JPuDgN7oVG9EZymXgqjirr+gn+F/GjcktjlT8LRE4YH2Y5/7Mprt6o8
-         ngp5oaCmzLoOWrjmwLL0nebBRjBNV0N+pPjy0=
-MIME-Version: 1.0
-In-Reply-To: <20090217231101.GH16841@parisc-linux.org>
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>
-	 <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm>
-	 <20090217230050.GG16841@parisc-linux.org>
-	 <alpine.DEB.1.10.0902171506500.26625@asgard.lang.hm>
-	 <20090217231101.GH16841@parisc-linux.org>
-Date: Tue, 17 Feb 2009 15:20:28 -0800
-X-Google-Sender-Auth: f6111311e901a661
-Message-ID: <86802c440902171520r4eb9c94ev416a54c540cf60c1@mail.gmail.com>
-Subject: Re: mpt fusion broken sometime since 2.6.24
-From: Yinghai Lu <yinghai@kernel.org>
-To: Matthew Wilcox <matthew@wil.cx>, Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: david@lang.hm, linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, DL-MPTFusionLinux@lsi.com
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 17 Feb 2009 18:20:53 -0500
+Received: from smtp2.ono.com ([62.42.230.20]:19780 "EHLO resmaa12.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753175AbZBQXUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 18:20:53 -0500
+Date: Wed, 18 Feb 2009 00:20:46 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Intel driver vs MTRRs conflict
+Message-ID: <20090218002046.55c17814@werewolf.home>
+X-Mailer: Claws Mail 3.7.0cvs67 (GTK+ 2.15.3; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 3:11 PM, Matthew Wilcox <matthew@wil.cx> wrote:
-> On Tue, Feb 17, 2009 at 03:07:26PM -0800, david@lang.hm wrote:
->> >mptbase.mpt_msi_enable_sas=0
->>
->> is that disabling SAS for this system? if so, that's the wrong thing to do
->> (the drives are SAS)
->
-> no, it's disabling msi for sas controllers.
->
-> nb, I said this patch (e382968ba618e016ff7922dff9a6140c2f9108c8) was
-> the wrong way to go about getting MSI working.
+Hi all...
 
-yes. that patch really does disable the mptsas with MSI.
+I have a little problem (near religious, not real, as averything works fine)
+with the intel driver crying about mtrrs:
 
-http://lkml.org/lkml/2009/2/6/375
-it should get into 2.6.29...
+[drm] Initialized drm 1.1.0 20060810
+pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+pci 0000:00:02.0: setting latency timer to 64
+[drm] Initialized i915 1.6.0 20080730 on minor 0
+X:3004 conflicting memory types 20000000-30000000 write-combining<->uncached-minus
+reserve_memtype failed 0x20000000-0x30000000, track write-combining, req write-combining
+X:3004 conflicting memory types 20000000-30000000 write-combining<->uncached-minus
+reserve_memtype failed 0x20000000-0x30000000, track write-combining, req write-combining
+X:3004 conflicting memory types 20000000-30000000 write-combining<->uncached-minus
+reserve_memtype failed 0x20000000-0x30000000, track write-combining, req write-combining
+X:3031 freeing invalid memtype 20000000-30000000
+X:3004 conflicting memory types 20000000-30000000 write-combining<->uncached-minus
+reserve_memtype failed 0x20000000-0x30000000, track write-combining, req write-combining
+X:3032 freeing invalid memtype 20000000-30000000
+X:3004 conflicting memory types 20000000-30000000 write-combining<->uncached-minus
+reserve_memtype failed 0x20000000-0x30000000, track write-combining, req write-combining
+X:3033 freeing invalid memtype 20000000-30000000
+X:3004 conflicting memory types 20000000-30000000 write-combining<->uncached-minus
+reserve_memtype failed 0x20000000-0x30000000, track write-combining, req write-combining
+X:3034 freeing invalid memtype 20000000-30000000
 
-YH
+But that mtrr is there:
+
+one:~# cat /proc/mtrr
+reg00: base=0x000000000 (    0MB), size=  512MB, count=1: write-back
+reg01: base=0x01f500000 (  501MB), size=    1MB, count=1: uncachable
+reg02: base=0x01f600000 (  502MB), size=    2MB, count=1: uncachable
+reg03: base=0x01f800000 (  504MB), size=    8MB, count=1: uncachable
+reg04: base=0x020000000 (  512MB), size=  256MB, count=1: write-combining
+
+Where is the problem ? Kernel or driver side ?
+This logs are with kernel 2.6.29-rc5, and intel driver 2.6.1.
+
+As I said, everything works. And even fast for the kind of machine, it's an
+Aspire One and gears gives 740 fps, and video playback is pretty smooth.
+But perhaps it would be faster if X could get that mtrr it claims ?
+
+TIA
+
+-- 
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2009.1 (Cooker) for x86_64
+Linux 2.6.28.2-desktop-1mnb (gcc 4.3.2 (GCC) #1 Wed Jan
