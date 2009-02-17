@@ -1,54 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753152AbZBQO3H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbZBQOah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753152AbZBQO3H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 09:29:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbZBQO2y
+	id S1753514AbZBQOah (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 09:30:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbZBQOa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 09:28:54 -0500
-Received: from h155.mvista.com ([63.81.120.155]:25041 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751856AbZBQO2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 09:28:53 -0500
-Message-ID: <499AC9BA.1080906@ru.mvista.com>
-Date: Tue, 17 Feb 2009 17:29:14 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Tue, 17 Feb 2009 09:30:29 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:60780 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751998AbZBQOa3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 09:30:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=xqCfJVgmc7t5gSwDemyxZiiD7ghDwyXrcc45TIzjCf9DNSjaOpRE6vd/iQCX8voN0m
+         bInZlgkN/Mz2m9XxAwuQa9lboKCFvpKnDTRSBVvVdheS582sCc3fqV9LR3rIvklmLhTf
+         S/iQGDnVA0m3xATMbBRGf5cKRwHx5xE9cbJAw=
+Message-ID: <499AC9FF.8040605@tuffmail.co.uk>
+Date: Tue, 17 Feb 2009 14:30:23 +0000
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, Borislav Petkov <petkovbb@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/6] ide: add ->dma_expiry method and remove ->dma_exec_cmd
- one
-References: <20090209231945.32406.14874.sendpatchset@localhost.localdomain> <200902111730.39460.bzolnier@gmail.com> <49930B2D.8090503@ru.mvista.com> <200902171516.34091.bzolnier@gmail.com>
-In-Reply-To: <200902171516.34091.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+CC: linux-kernel@vger.kernel.org, corentincj@iksaif.net,
+       acpi4asus-user@lists.sourceforge.net
+Subject: Re: EeePC card reader activated after suspend to ram
+References: <20090217135857.GA2854@silver.sucs.org>
+In-Reply-To: <20090217135857.GA2854@silver.sucs.org>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+Sitsofe Wheeler wrote:
+> Hi,
+>
+> I've found that there is a particular circumstance when the card reader
+> in my EeePC 900 will always be activated on resume even though before
+> the suspend to ram it was switched off.
+>
+> The steps to reproduce are as follows:
+>
+> 1. Ensure the card reader is enabled before Linux boots (e.g. if Linux
+> is already running do (as root)
+> echo 1 > /sys/devices/platform/eeepc/cardr
+> and then reboot).
+> 2. In the freshly booted kernel issue (as root)
+> echo 0 > /sys/devices/platform/eeepc/cardr
+> 3. Initiate suspend to RAM e.g.:
+> echo mem > /sys/power/state 
+> 4. Press a key to resume.
+>
+> Notice that the logs will contain something similar to the following:
+>
+> kernel: [  841.435629] Restarting tasks ... done.
+> kernel: [  907.576216] usb 1-5: new high speed USB device using ehci_hcd and address 3
+> kernel: [  907.699381] usb 1-5: configuration #1 chosen from 1 choice
+> kernel: [  907.707460] scsi3 : SCSI emulation for USB Mass Storage devices
+>
+> Doing
+> cat /sys/devices/platform/eeepc/cardr
+> returns 0. Issuing
+> echo 0 > /sys/devices/platform/eeepc/cardr
+> even though the card reader is supposedly off will result in it being
+> disabled until after the next suspend to ram/resume.
+>
+> Reproduced with a clean 2.6.29rc5 and the heavily Xandros patched
+> Xandros 2.6.21 kernel that the Eee ships with.
+>
+> Does anyone have any ideas about this one?
+>   
 
->>Hello.
+It happens on my 701 too. The driver doesn't explicitly cache the
+"cardr" value, so I'd blame the BIOS.
 
->>Bartlomiej Zolnierkiewicz wrote:
+You could work around it. Add a hack somewhere that does the equivalent of
 
->>>>Bartlomiej Zolnierkiewicz wrote:
+x=`cat /sys/devices/platform/eeepc/cardr`
+echo $x > /sys/devices/platform/eeepc/cardr
 
->>>>>* Rename dma_timer_expiry() to ide_dma_sff_expiry() and export it.
+But it is a tradeoff. This is a largely unused feature. You've found one
+pretty harmless bug in the hardware... there's the risk that there's
+another hardware bug which would then be easier to trigger, and cause
+bigger problems. It'd be much better if Asus could fix the BIOS :-).
 
->>>>>* Add ->dma_expiry method
+Alan
 
->>>>   This name doesn't seem to make much sense. Why not leave it dma_timer_expiry?
-
->>>Well, the name matches with hwif->expiry one + the downside of leaving it at
->>>dma_timer_expiry is a need to reformat all struct ide_dma_ops instances...
-
-> On the 2nd look it doesn't seem to be a problem (I must have been looking at
-> some odd case previously) -- I'll fix it up later.
-
-    I vote for timer_expiry().
-
-MBR, Sergei
