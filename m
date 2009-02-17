@@ -1,99 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752035AbZBQHvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752044AbZBQIKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752035AbZBQHvx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 02:51:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbZBQHvo
+	id S1752044AbZBQIKg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 03:10:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbZBQIKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 02:51:44 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:58916 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750883AbZBQHvn (ORCPT
+	Tue, 17 Feb 2009 03:10:23 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:8324 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751229AbZBQIKW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 02:51:43 -0500
-Message-ID: <499A6C7C.9060106@linux.vnet.ibm.com>
-Date: Tue, 17 Feb 2009 01:51:24 -0600
-From: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 17 Feb 2009 03:10:22 -0500
+Message-ID: <499A70E7.4000405@panasas.com>
+Date: Tue, 17 Feb 2009 10:10:15 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
 MIME-Version: 1.0
-To: Johannes Weiner <hannes@cmpxchg.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 7/8] ecryptfs: use kzfree()
-References: <20090216142926.440561506@cmpxchg.org> <20090216144726.088020837@cmpxchg.org>
-In-Reply-To: <20090216144726.088020837@cmpxchg.org>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=5D35E502
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig82585C0BC219E1CC4686197B"
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
+       jeff@garzik.org, linux-kernel@vger.kernel.org, avishay@gmail.com,
+       osd-dev@open-osd.org, jens.axboe@oracle.com,
+       linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [osd-dev] [PATCH 1/8] exofs: Kbuild, Headers and osd utils
+References: <49992F99.1060404@panasas.com>	<20090216183750H.fujita.tomonori@lab.ntt.co.jp>	<49993FF2.9050200@panasas.com> <20090217092042C.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090217092042C.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Feb 2009 08:10:19.0674 (UTC) FILETIME=[2C8F7FA0:01C990D7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig82585C0BC219E1CC4686197B
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+FUJITA Tomonori wrote:
+> 
+> Can you stop the argument, "exofs is similar to the existing
+> traditional file systems hence it should be treated equally". It's
+> simply untrue. Does anyone except for panasas people insist the same
+> argument?
+> 
 
-Johannes Weiner wrote:
-> Use kzfree() instead of memset() + kfree().
->=20
-> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> Cc: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
+No I will not, it is true. exofs is just a regular old filesystem
+nothing different.
 
-Acked-by: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
+> We are talking about the design of exofs, which also affects the
+> design of OSD ULD (including the library) living in SCSI
+> mid-layer. 
 
-Thanks for kzfree() and the updates to eCryptfs - I will put it to use
-in the future.
+The ULD belongs to scsi but the library could sit else where, how
+is that an argument?
 
-> ---
->  fs/ecryptfs/keystore.c  |    3 +--
->  fs/ecryptfs/messaging.c |    3 +--
->  2 files changed, 2 insertions(+), 4 deletions(-)
->=20
-> --- a/fs/ecryptfs/keystore.c
-> +++ b/fs/ecryptfs/keystore.c
-> @@ -740,8 +740,7 @@ ecryptfs_write_tag_70_packet(char *dest,
->  out_release_free_unlock:
->  	crypto_free_hash(s->hash_desc.tfm);
->  out_free_unlock:
-> -	memset(s->block_aligned_filename, 0, s->block_aligned_filename_size);=
+> It's something completely different from existing
+> traditional file systems that work nicely on the top of the block
+> layer.
+> 
 
-> -	kfree(s->block_aligned_filename);
-> +	kzfree(s->block_aligned_filename);
->  out_unlock:
->  	mutex_unlock(s->tfm_mutex);
->  out:
-> --- a/fs/ecryptfs/messaging.c
-> +++ b/fs/ecryptfs/messaging.c
-> @@ -291,8 +291,7 @@ int ecryptfs_exorcise_daemon(struct ecry
->  	if (daemon->user_ns)
->  		put_user_ns(daemon->user_ns);
->  	mutex_unlock(&daemon->mux);
-> -	memset(daemon, 0, sizeof(*daemon));
-> -	kfree(daemon);
-> +	kzfree(daemon);
->  out:
->  	return rc;
->  }
->=20
->=20
+Nicely is a matter of opinion. I think that building a bio in stages
+in the background, then at the point of execution build a request-from-bio
+and execute is a nice design that makes sure nothing is duplicated, copied,
+and wheels are not re-invented. Current Kernel design is nice, why change
+it?
 
+> As discussed in another thread, now OSD ULD reinvents the bio handling
+> infrastructure because of the design of exofs. 
 
+Not true, show me where? You keep saying that. Where in the code is it
+reinvented?
 
---------------enig82585C0BC219E1CC4686197B
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> But OSD ULD can use the
+> block layer helper functions to avoid the re-invention if we change
+> the exofs design to take pages instead of bios.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+That, above is exactly a re-invention of block layer. What was all that
+scatterlist pointers and scsi_execute_async() cleanup that you worked
+so hard to get rid off. It was a list of pages+offsets+lengths, that's what
+it was. Now you ask me to do the same, keep an external structure of
+pages+offsets+lengths. pass them three layers down and at some point in
+time force new block_layer interfaces, which do not fully exist today,
+to prepare a request for submission.
 
-iEYEARECAAYFAkmabIIACgkQqDCb9l015QLPyACcCSOVkzCRUeBe3Jc1N0Cfxxf0
-CZ8AnA+6FD4jFxDuGQGfrrQuzDb+9Zko
-=8FHV
------END PGP SIGNATURE-----
+No! the decision was, keep preparation of request local and submit it
+in place, without intermediate structures. From-memory-to-request
+in one stage.
 
---------------enig82585C0BC219E1CC4686197B--
+That's what I want. The bio lets me do that yesterday, lots of file
+systems do that yesterday.
+
+All I'm asking for is one small blk_make_request() that is a parallel
+of generic_make_request() of the BLOCK_FS, for the BLOCK_PC requests
+
+If someone wanted a filesystem over tape drives, over st.c or osst.c.
+He would design it similar. collect bios in background, point and shoot.
+The blk_map_xxx functions where made to satisfy user-mode interfaces, for
+filesystems it was bio for ages.
+
+> For now, it works
+
+> perfectly for exofs. In the future, we might change it but we don't
+> know until you submit patches (or the performance results) that show
+> taking pages doesn't work for exofs nicely.
+> 
+
+I don't know about you, but me, I don't have to do some work to know
+it's bad. I can imagine before hand that it is bad. I usually run
+hundreds of simulations in my head, discarding any bad options until I
+find the one way I like. Usually the short easiest way is also the best.
+(Since I'm very lazy)
+Like with bidi for example, Why not just take two requests instead of
+one? But I was sent to do all that gigantic work so everyone will see
+that.
+
+> I guess that we need to evolve the block layer to support OSD stuff
+> cleanly than we've discussed recently. But again we can do when we
+> definitely need to do.
+
+It's not that big and long evolution. It is a simple:
+
+struct request *blk_make_request(struct bio*, gfp_t gfp);
+
+And we are done. more simple then that? I don't know
+
+Boaz
