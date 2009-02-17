@@ -1,110 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbZBQSbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753875AbZBQSek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754158AbZBQSbU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 13:31:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbZBQSbK
+	id S1753875AbZBQSek (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 13:34:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbZBQSeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 13:31:10 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:56266 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752892AbZBQSbI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 13:31:08 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 17 Feb 2009 10:31:07 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Valdis.Kletnieks@vt.edu
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mm-commits@vger.kernel.org
-Subject: Re: mmotm 2009-02-14-00-49 uploaded -epoll busted.
-In-Reply-To: <7379.1234881458@turing-police.cc.vt.edu>
-Message-ID: <alpine.DEB.1.10.0902171023400.21510@alien.or.mcafeemobile.com>
-References: <200902140851.n1E8pfIN030501@imap1.linux-foundation.org> <7379.1234881458@turing-police.cc.vt.edu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 17 Feb 2009 13:34:31 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:42217 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752898AbZBQSeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 13:34:31 -0500
+Date: Tue, 17 Feb 2009 19:30:14 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] generic-smp: remove kmalloc()
+Message-ID: <20090217183014.GA3934@redhat.com>
+References: <20090216163847.431174825@chello.nl> <20090216164114.433430761@chello.nl> <1234885258.4744.153.camel@laptop> <20090217172113.GA26459@redhat.com> <1234892420.4744.158.camel@laptop> <1234892764.4744.159.camel@laptop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1234892764.4744.159.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Feb 2009, Valdis.Kletnieks@vt.edu wrote:
+On 02/17, Peter Zijlstra wrote:
+>
+> On Tue, 2009-02-17 at 18:40 +0100, Peter Zijlstra wrote:
+>
+> > > What do you think?
+> >
+> > While I would say, don't do that to your deadlock scenario, I do like
+> > the extra freedom this provides, so I'm inclined to go with this. Let me
+> > spin a new patch and build a kernel with it ;-)
+>
+> Should we do the same for the _single case? It too can copy the csd data
+> into the stack and return before calling func.
 
-> On Sat, 14 Feb 2009 00:51:41 PST, akpm@linux-foundation.org said:
-> > The mm-of-the-moment snapshot 2009-02-14-00-49 has been uploaded to
-> 
-> The epoll patch series breaks nscd in some odd way.  After it's started
-> in the /etc/rc* scripts, the rest of boot proceeds very slowly, smells like
-> nscd calls are hitting timeouts.  Boot time went from ~1 minute to ~10 mins.
-> 
-> nscd is Fedora Rawhide nscd-2.9.90-3.x86_64, in case that matters...
-> 
-> Also, the series isn't bisectable right where it matters most, complaining
-> about implicit definitions of wake_up_nested...
-> 
-> epoll-keyed-wakeups-v2-add-__wake_up_locked_key-and-__wake_up_sync_key.patch
-> epoll-keyed-wakeups-v2-introduce-new-_poll-wakeup-macros.patch  GOOD
-> epoll-keyed-wakeups-v3-introduce-new-_poll-wakeup-macros.patch  BISECT BUSTED
-> epoll-keyed-wakeups-v2-make-sockets-use-keyed-wakeups.patch
-> epoll-keyed-wakeups-v2-teach-epoll-about-hints-coming-with-the-wakeup-key.patch
-> epoll-keyed-wakeups-v2-teach-epoll-about-hints-coming-with-the-wakeup-key-update.patch  BAD
+If you are going to change _many(), then I'd say it makes sense to change
+_single() too...
 
-Alright, I took a peek at nscd and noticed it waits only for RDNORM.
-Inside the socket code, the full flags computation is performed inside the 
-poll function, and ATM socket code has simple signaling of IN/OUT/ERR. We 
-could changethe socket code to allow more fine grained event signaling, 
-but IMO is not worth it. Epoll ends up calling the device poll anyway, and 
-since this is an optimization patch, a simple change to post a full IN/OUT 
-mask is enough.
-Andrew, the patch below replaced the one you have under the name:
+But, Peter, please think twice ;) I am not really sure we need this change.
 
-epoll-keyed-wakeups-v2-make-sockets-use-keyed-wakeups.patch
+Let's look at the deadlock scenario again,
 
+        void func(void *arg)
+        {
+                lock(LOCK);
+                unlock(LOCK);
+        }
 
+        smp_call_function(func, NULL, 0);
 
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+        lock(LOCK);
+        smp_call_function(another_func, NULL, 0);
+        unlock(LOCK);
 
+First of all, if this LOCK can be locked from irq, then we need
+lock_irq(LOCK) before the 2nd smp_call_function(). Yes, smp_call_function()
+removes smp_processor_id() from ->mask, but still the code above is hardly
+correct.
 
-- Davide
+Otoh, perhaps we can allow to call smp_call_function() with irqs disabled
+(unless wait of course), in that case this change makes a bit more sense.
+Perhaps.
 
+So this all is up to you. If you think this change does not complicate
+the code too much, then we can count it as minor optimization, because it
+can speedup smp_call_function() sometimes.
 
----
- net/core/sock.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+Oleg.
 
-Index: linux-2.6.mod/net/core/sock.c
-===================================================================
---- linux-2.6.mod.orig/net/core/sock.c	2009-02-17 10:14:56.000000000 -0800
-+++ linux-2.6.mod/net/core/sock.c	2009-02-17 10:21:43.000000000 -0800
-@@ -1630,7 +1630,7 @@ static void sock_def_error_report(struct
- {
- 	read_lock(&sk->sk_callback_lock);
- 	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
--		wake_up_interruptible(sk->sk_sleep);
-+		wake_up_interruptible_poll(sk->sk_sleep, POLLERR);
- 	sk_wake_async(sk, SOCK_WAKE_IO, POLL_ERR);
- 	read_unlock(&sk->sk_callback_lock);
- }
-@@ -1639,7 +1639,8 @@ static void sock_def_readable(struct soc
- {
- 	read_lock(&sk->sk_callback_lock);
- 	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
--		wake_up_interruptible_sync(sk->sk_sleep);
-+		wake_up_interruptible_sync_poll(sk->sk_sleep, POLLIN |
-+						POLLRDNORM | POLLRDBAND);
- 	sk_wake_async(sk, SOCK_WAKE_WAITD, POLL_IN);
- 	read_unlock(&sk->sk_callback_lock);
- }
-@@ -1653,7 +1654,8 @@ static void sock_def_write_space(struct 
- 	 */
- 	if ((atomic_read(&sk->sk_wmem_alloc) << 1) <= sk->sk_sndbuf) {
- 		if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
--			wake_up_interruptible_sync(sk->sk_sleep);
-+			wake_up_interruptible_sync_poll(sk->sk_sleep, POLLOUT |
-+							POLLWRNORM | POLLWRBAND);
- 
- 		/* Should agree with poll, otherwise some programs break */
- 		if (sock_writeable(sk))
