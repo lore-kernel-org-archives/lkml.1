@@ -1,82 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbZBQAa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbZBQAgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754300AbZBQAa4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 19:30:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbZBQAan
+	id S1754023AbZBQAgS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 19:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750740AbZBQAgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 19:30:43 -0500
-Received: from sh.osrg.net ([192.16.179.4]:58849 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751194AbZBQAam (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 19:30:42 -0500
-Date: Tue, 17 Feb 2009 09:20:55 +0900
-To: bharrosh@panasas.com
-Cc: fujita.tomonori@lab.ntt.co.jp, avishay@gmail.com, jeff@garzik.org,
-       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       osd-dev@open-osd.org, linux-kernel@vger.kernel.org,
-       James.Bottomley@HansenPartnership.com, jens.axboe@oracle.com,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 1/8] exofs: Kbuild, Headers and osd utils
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <49993FF2.9050200@panasas.com>
-References: <49992F99.1060404@panasas.com>
-	<20090216183750H.fujita.tomonori@lab.ntt.co.jp>
-	<49993FF2.9050200@panasas.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090217092042C.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 17 Feb 2009 09:20:58 +0900 (JST)
+	Mon, 16 Feb 2009 19:36:04 -0500
+Received: from h155.mvista.com ([63.81.120.155]:4231 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750729AbZBQAgB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 19:36:01 -0500
+Message-ID: <499A066A.7060509@ru.mvista.com>
+Date: Tue, 17 Feb 2009 03:35:54 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Mark Lord <liml@rtr.ca>
+Cc: Robert Hancock <hancockrwd@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       =?UTF-8?B?SGFubm8gQsO2Y2s=?= <hanno@hboeck.de>
+Subject: Re: [PATCH] libata: Don't trust current capacity values in identify
+ words 57-58
+References: <4999CA54.1060306@gmail.com> <4999F032.6060107@rtr.ca>
+In-Reply-To: <4999F032.6060107@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Feb 2009 12:29:06 +0200
-Boaz Harrosh <bharrosh@panasas.com> wrote:
+Hello.
 
-> >>>> exofs is not the first and only file system who is using bios. Proof of
-> >>>> the matter is that block exports a bio submit routine.
-> >>> Seems that exofs just passes pages and the ULD sends a SCSI command
-> >>> including these pages. I don't see how exofs needs to handle bio
-> >>> directly.
-> >>>
-> >> How do you propose to collect these pages? and keep them without allocating
-> >> an extra list? without pre-allocating a struct request? and without re-inventing
-> >> the bio structure?
-> > 
-> > I don't think that allocating an extra list (or something) to keep
-> > them hurts performance. We can talk about it when you have the real
-> > performance results.
-> 
-> So you are the one that starts to invent the wheel here. I thought I was
-> the one that does that, only you only called me by names, because you never showed
-> me where.
-> 
-> But please only answer one question for me: Please don't write back if you do not
-> answer this question:
-> 
-> Why do other filesystems allow to use bios? are they going to stop? Who is going
-> to remove that?
+Mark Lord wrote:
 
-Can you stop the argument, "exofs is similar to the existing
-traditional file systems hence it should be treated equally". It's
-simply untrue. Does anyone except for panasas people insist the same
-argument?
+>> Hanno Böck reported a problem where an old Conner CP30254 240MB hard 
+>> drive
+>> was reported as 1.1TB in capacity by libata:
+>>
+>> http://lkml.org/lkml/2009/2/13/134
+>>
+>> This was caused by libata trusting the drive's reported current 
+>> capacity in sectors in identify words 57 and 58 if the drive does not 
+>> support LBA and the
+>> current CHS translation values appear valid. Unfortunately it seems 
+>> older
+>> ATA specs were vague about what this field should contain and a 
+>> number of drives
+>> used values with wrong byte order or that were totally bogus. There's no
+>> unique information that it conveys and so we can just calculate the 
+>> number
+>> of sectors from the reported current CHS values.
+>>
+>> Signed-off-by: Robert Hancock <hancockrwd@gmail.com>
+> ..
+>>      } else {
+>>          if (ata_id_current_chs_valid(id))
+>> -            return ata_id_u32(id, 57);
+>> +            return id[54] * id[55] * id[56];
+>>          else
+>>              return id[1] * id[3] * id[6];
+> ..
+>
+> NAK.  That's not quite correct, either.
+>
+> The LBA capacity can be larger than the CHS capacity,
+> so we have to use the reported LBA values if at all possible.
+>
+> That's why ata_id_is_lba_capacity_ok() exists,
+> and why it looks so peculiar.
 
-We are talking about the design of exofs, which also affects the
-design of OSD ULD (including the library) living in SCSI
-mid-layer. It's something completely different from existing
-traditional file systems that work nicely on the top of the block
-layer.
+   I think that checking LBA validity is a matter of another patch. This 
+patch in itself should be sufficient.
 
-As discussed in another thread, now OSD ULD reinvents the bio handling
-infrastructure because of the design of exofs. But OSD ULD can use the
-block layer helper functions to avoid the re-invention if we change
-the exofs design to take pages instead of bios. For now, it works
-perfectly for exofs. In the future, we might change it but we don't
-know until you submit patches (or the performance results) that show
-taking pages doesn't work for exofs nicely.
+> Some of those early drives really did require that kind of logic.
 
-I guess that we need to evolve the block layer to support OSD stuff
-cleanly than we've discussed recently. But again we can do when we
-definitely need to do.
+   I hightly doubt that this 240 MB drive is LBA capable at all.
+
+> Cheers
+
+MBR, Sergei
+
+
