@@ -1,79 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752925AbZBQE5p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbZBQE63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752925AbZBQE5p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 23:57:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbZBQE5f
+	id S1754124AbZBQE63 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 23:58:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbZBQE6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 23:57:35 -0500
-Received: from yw-out-2324.google.com ([74.125.46.29]:62731 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751169AbZBQE5e (ORCPT
+	Mon, 16 Feb 2009 23:58:18 -0500
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:56845 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750861AbZBQE6R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 23:57:34 -0500
-MIME-Version: 1.0
-In-Reply-To: <20090217031813.GD8343@kroah.com>
-References: <5aa163d00902142008g138826br80d3ea989e7af691@mail.gmail.com>
-	 <200902160931.34771.oliver@neukum.org>
-	 <5aa163d00902160522r3a22412je3f5202076f57a0a@mail.gmail.com>
-	 <20090216161331.GB5008@kroah.com>
-	 <5aa163d00902161009l15dae120le96436d40f998d33@mail.gmail.com>
-	 <20090216185914.GA6239@kroah.com>
-	 <5aa163d00902161130r2030adb8h6eb1ec08bda92744@mail.gmail.com>
-	 <20090216202215.GA6543@kroah.com>
-	 <5aa163d00902161853x27d98a83l3c2c02abe651fe1e@mail.gmail.com>
-	 <20090217031813.GD8343@kroah.com>
-Date: Mon, 16 Feb 2009 23:57:31 -0500
-X-Google-Sender-Auth: 55b00c6b3c382f51
-Message-ID: <5aa163d00902162057l106c001bo519a5241c79b5e96@mail.gmail.com>
-Subject: Re: [PATCH] input: xpad.c - Xbox 360 wireless and sysfs support
-From: Mike Murphy <mamurph@cs.clemson.edu>
-To: Greg KH <greg@kroah.com>
-Cc: Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 16 Feb 2009 23:58:17 -0500
+Message-Id: <6.0.0.20.2.20090217132810.05709598@172.19.0.2>
+X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
+Date: Tue, 17 Feb 2009 13:55:12 +0900
+To: Trond.Myklebust@netapp.com, linux-nfs@vger.kernel.org
+From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Subject: [PATCH] NFS: Pagecache usage optimization on nfs
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 16, 2009 at 10:18 PM, Greg KH <greg@kroah.com> wrote:
->
-> input_set_drvdata() and input_get_drvdata() is what you are looking for.
->
+Hi, Trond.
 
-Thanks! That solved the problem at least as far as getting the entries
-to show up in sysfs... though somehow now I'm having problems with the
-I/O buffers, and a cat of the sysfs file shows no output (not even a
-blank line). I added a couple printk's to one of the routines, and the
-values are being read correctly from the data structure, but no
-working I/O (cannot set the values either, per printk results). The
-dmesg output shows the printk results, so the functions are getting
-called. Even the count from sprintf is correct, and the resulting
-buffer looks like it should... though with the extra blank line I
-added in the last printk:
+I wrote "is_partially_uptodate" aops for nfs client named nfs_is_partially_uptodate().
+This aops checks that nfs_page is attached to a page and read IO to a page is 
+within the range between wb_pgbase and wb_pgbase + wb_bytes of the nfs_page. 
+If this aops succeed, we do not have to issue actual read IO to NFS server 
+even if a page is not uptodate because the portion we want to read are uptodate.
+So with this patch random read/write mixed workloads or random read after random write 
+workloads can be optimized and we can get performance improvement.
+ 
+I did benchmark test using sysbench.
 
-static ssize_t xpad_show_dead_zone(struct device *dev, char *buf)
-{
-	struct usb_xpad *xpad = to_xpad(dev);
-	int count;
-	printk(KERN_INFO "Dead zone is %d\n", xpad->dead_zone);
-	count = sprintf(buf, "%d\n", xpad->dead_zone);
-	printk(KERN_INFO "Count is %d\n", count);
-	printk(KERN_INFO "Buffer is %s\n", buf);
-	return count;
-}
+sysbench --num-threads=16 --max-requests=100000 --test=fileio --file-block-size=2K 
+--file-total-size=200M --file-test-mode=rndrw --file-fsync-freq=0 
+--file-rw-ratio=0.5 run
 
-Unless that is some common error that is obvious from its description,
-I will have to chase the bug down tomorrow or Wednesday. It's getting
-a bit late here.
+The result was:
 
-Thanks,
-Mike
--- 
-Mike Murphy
-Ph.D. Candidate and NSF Graduate Research Fellow
-Clemson University School of Computing
-120 McAdams Hall
-Clemson, SC 29634-0974 USA
-Tel: +1 864.656.2838   Fax: +1 864.656.0145
-http://cirg.cs.clemson.edu/~mamurph
+-2.6.29-rc4
+
+Operations performed:  33356 Read, 66682 Write, 128 Other = 100166 Total
+Read 65.148Mb  Written 130.24Mb  Total transferred 195.39Mb  (3.1093Mb/sec)
+ 1591.97 Requests/sec executed
+
+Test execution summary:
+    total time:                          62.8391s
+    total number of events:              100038
+    total time taken by event execution: 841.7603
+    per-request statistics:
+         min:                            0.0000s
+         avg:                            0.0084s
+         max:                            16.4564s
+         approx.  95 percentile:         0.0446s
+
+Threads fairness:
+    events (avg/stddev):           6252.3750/306.48
+    execution time (avg/stddev):   52.6100/0.38
+
+
+-2.6.29-rc4 + patch
+
+Operations performed:  33346 Read, 66662 Write, 128 Other = 100136 Total
+Read 65.129Mb  Written 130.2Mb  Total transferred 195.33Mb  (5.0113Mb/sec)
+ 2565.81 Requests/sec executed
+
+Test execution summary:
+    total time:                          38.9772s
+    total number of events:              100008
+    total time taken by event execution: 339.6821
+    per-request statistics:
+         min:                            0.0000s
+         avg:                            0.0034s
+         max:                            1.6768s
+         approx.  95 percentile:         0.0200s
+
+Threads fairness:
+    events (avg/stddev):           6250.5000/302.04
+    execution time (avg/stddev):   21.2301/0.45
+
+
+I/O performance was significantly improved by following patch.
+Please merge my patch.
+Thanks.
+
+Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+
+diff -Nrup linux-2.6.29-rc5.org/fs/nfs/file.c linux-2.6.29-rc5/fs/nfs/file.c
+--- linux-2.6.29-rc5.org/fs/nfs/file.c	2009-02-16 12:31:18.000000000 +0900
++++ linux-2.6.29-rc5/fs/nfs/file.c	2009-02-16 13:05:29.000000000 +0900
+@@ -449,6 +449,7 @@ const struct address_space_operations nf
+ 	.releasepage = nfs_release_page,
+ 	.direct_IO = nfs_direct_IO,
+ 	.launder_page = nfs_launder_page,
++	.is_partially_uptodate = nfs_is_partially_uptodate,
+ };
+ 
+ static int nfs_vm_page_mkwrite(struct vm_area_struct *vma, struct page *page)
+diff -Nrup linux-2.6.29-rc5.org/fs/nfs/read.c linux-2.6.29-rc5/fs/nfs/read.c
+--- linux-2.6.29-rc5.org/fs/nfs/read.c	2009-02-16 12:31:18.000000000 +0900
++++ linux-2.6.29-rc5/fs/nfs/read.c	2009-02-16 13:05:29.000000000 +0900
+@@ -599,6 +599,33 @@ out:
+ 	return ret;
+ }
+ 
++int nfs_is_partially_uptodate(struct page *page, read_descriptor_t *desc,
++				unsigned long from)
++{
++	struct inode *inode = page->mapping->host;
++	unsigned to;
++	struct nfs_page *req = NULL;
++
++	spin_lock(&inode->i_lock);
++	if (PagePrivate(page)) {
++		req = (struct nfs_page *)page_private(page);
++		if (req)
++			kref_get(&req->wb_kref);
++	}
++	spin_unlock(&inode->i_lock);
++	if (!req)
++		return 0;
++
++	to = min_t(unsigned, PAGE_CACHE_SIZE - from, desc->count);
++	to = from + to;
++	if (from >= req->wb_pgbase && to <= req->wb_pgbase + req->wb_bytes) {
++		nfs_release_request(req);
++		return 1;
++	}
++	nfs_release_request(req);
++	return 0;
++}
++
+ int __init nfs_init_readpagecache(void)
+ {
+ 	nfs_rdata_cachep = kmem_cache_create("nfs_read_data",
+diff -Nrup linux-2.6.29-rc5.org/include/linux/nfs_fs.h linux-2.6.29-rc5/include/linux/nfs_fs.h
+--- linux-2.6.29-rc5.org/include/linux/nfs_fs.h	2009-02-16 12:31:18.000000000 +0900
++++ linux-2.6.29-rc5/include/linux/nfs_fs.h	2009-02-16 13:05:29.000000000 +0900
+@@ -506,6 +506,9 @@ extern int  nfs_readpages(struct file *,
+ 		struct list_head *, unsigned);
+ extern int  nfs_readpage_result(struct rpc_task *, struct nfs_read_data *);
+ extern void nfs_readdata_release(void *data);
++extern int  nfs_is_partially_uptodate(struct page *, read_descriptor_t *,
++		unsigned long);
++
+ 
+ /*
+  * Allocate nfs_read_data structures
+
