@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbZBQR2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754471AbZBQR3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754206AbZBQR2m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 12:28:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbZBQR2e
+	id S1754471AbZBQR3T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 12:29:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbZBQR27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 12:28:34 -0500
-Received: from zone0.gcu-squad.org ([212.85.147.21]:39099 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752686AbZBQR2d (ORCPT
+	Tue, 17 Feb 2009 12:28:59 -0500
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:58384 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752692AbZBQR27 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 12:28:33 -0500
-Date: Tue, 17 Feb 2009 18:28:20 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Frank Seidel <frank@f-seidel.de>
-Cc: Frank Seidel <fseidel@suse.de>,
-       linux kernel <linux-kernel@vger.kernel.org>, rlove@rlove.org,
-       lm-sensors@lm-sensors.org
-Subject: Re: [PATCHv2] MAINTAINERS: switch hdaps to Frank Seidel
-Message-ID: <20090217182820.1ac46c01@hyperion.delvare>
-In-Reply-To: <49982084.80609@f-seidel.de>
-References: <49980A67.7030403@suse.de>
-	<49982084.80609@f-seidel.de>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+	Tue, 17 Feb 2009 12:28:59 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtoEANV8mklMQWt2/2dsb2JhbACBbtFEhBMG
+Date: Tue, 17 Feb 2009 12:28:50 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <peterz@infradead.org>, akpm <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>
+Subject: Re: irq-disabled vs vmap vs text_poke
+Message-ID: <20090217172850.GB14435@Krystal>
+References: <4995E925.3080506@redhat.com> <4999808B.5080505@redhat.com> <20090216153145.GB19182@wotan.suse.de> <20090216172441.GA12576@Krystal> <499A1A43.6000009@redhat.com> <20090217030353.GA31504@wotan.suse.de> <499AEA72.9090702@redhat.com> <alpine.DEB.1.10.0902171158180.910@gandalf.stny.rr.com> <20090217171845.GA14435@Krystal> <alpine.DEB.1.10.0902171224050.910@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0902171224050.910@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:28:10 up 47 days, 17:26,  4 users,  load average: 0.41, 0.33,
+	0.23
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Frank,
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> On Tue, 17 Feb 2009, Mathieu Desnoyers wrote:
+> > > 
+> > 
+> > Anyway dynamic ftrace only need to do code patching at early boot,
+> > right? Or do you need also to patch the call sites a bit later too ?
+> > Because there is a text_poke_early for that purpose : modifying code
+> > when it is still writable.
+> 
+> It modifies the code both at early boot up, and when it is enabled later 
+> on at run time.
+> 
+> -- Steve
+> 
 
-On Sun, 15 Feb 2009 15:02:44 +0100, Frank Seidel wrote:
-> From: Frank Seidel <frank@f-seidel.de>
-> 
-> As Rovert Love doesn't any more seem to be realy
-> active on hdaps driver i'll happily take it over.
-> 
-> Signed-off-by: Frank Seidel <frank@f-seidel.de>
-> ---
->  MAINTAINERS |    8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
-> 
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -1905,10 +1905,10 @@ W:	http://gigaset307x.sourceforge.net/
->  S:	Maintained
->  
->  HARD DRIVE ACTIVE PROTECTION SYSTEM (HDAPS) DRIVER
-> -P:	Robert Love
-> -M:	rlove@rlove.org
-> -M:	linux-kernel@vger.kernel.org
-> -W:	http://www.kernel.org/pub/linux/kernel/people/rml/hdaps/
-> +P:	Frank Seidel
-> +M:	frank@f-seidel.de
-> +M:	lm-sensors@lm-sensors.org
-> +W:	http://www.kernel.org/pub/linux/kernel/people/fseidel/hdaps
+OK, so without text_poke, how does it deal with kernel with text pages
+marked read-only after boot ?
 
-It looks like you accidentally created directory hsdpa instead of hdaps?
-
->  S:	Maintained
->  
->  GSPCA FINEPIX SUBDRIVER
-> 
+Mathieu
 
 
 -- 
-Jean Delvare
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
