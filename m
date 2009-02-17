@@ -1,78 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753749AbZBQC60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbZBQDEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753749AbZBQC60 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 21:58:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbZBQC6R
+	id S1753515AbZBQDEO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 22:04:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750880AbZBQDD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 21:58:17 -0500
-Received: from casper.infradead.org ([85.118.1.10]:51643 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751865AbZBQC6R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 21:58:17 -0500
-Date: Mon, 16 Feb 2009 18:57:58 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arve =?UTF-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFD] Automatic suspend
-Message-ID: <20090216185758.1a4d041d@infradead.org>
-In-Reply-To: <Pine.LNX.4.44L0.0902162141190.24097-100000@netrider.rowland.org>
-References: <20090216145655.727cd39c@infradead.org>
-	<Pine.LNX.4.44L0.0902162141190.24097-100000@netrider.rowland.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+	Mon, 16 Feb 2009 22:03:57 -0500
+Received: from ns2.suse.de ([195.135.220.15]:40602 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750744AbZBQDD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 22:03:57 -0500
+Date: Tue, 17 Feb 2009 04:03:53 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Peter Zijlstra <peterz@infradead.org>, akpm <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>
+Subject: Re: irq-disabled vs vmap vs text_poke
+Message-ID: <20090217030353.GA31504@wotan.suse.de>
+References: <20090213141839.GA31922@Krystal> <4995A0B7.1030705@redhat.com> <20090213165555.GA4684@Krystal> <4995B88C.2090900@redhat.com> <20090213185725.GC7124@Krystal> <4995E925.3080506@redhat.com> <4999808B.5080505@redhat.com> <20090216153145.GB19182@wotan.suse.de> <20090216172441.GA12576@Krystal> <499A1A43.6000009@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <499A1A43.6000009@redhat.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Feb 2009 21:43:52 -0500 (EST)
-Alan Stern <stern@rowland.harvard.edu> wrote:
-
-> On Mon, 16 Feb 2009, Arjan van de Ven wrote:
+On Mon, Feb 16, 2009 at 09:00:35PM -0500, Masami Hiramatsu wrote:
+> Mathieu Desnoyers wrote:
+> >* Nick Piggin (npiggin@suse.de) wrote:
+> >>On Mon, Feb 16, 2009 at 10:04:43AM -0500, Masami Hiramatsu wrote:
+> >>>>>>>>BTW, what about using map_vm_area() in text_poke() instead of 
+> >>>>>>>>vmap()?
+> >>>>>>>>Since text_poke() just maps text pages to alias pages temporarily,
+> >>>>>>>>I think we don't need to use delayed vunmap().
+> >>[...] 
+> >>
+> >>>Here is the patch which replace v(un)map with (un)map_vm_area.
+> >>I don't quite understand the point of this... delayed vunmap() is
+> >>just an implementation detail of vmap subsystem. Callers should not
+> >>have to care.
+> >>
+> >
+> >AFAIK, map_vm_area/unmap_vm_area is faster than vmap/vunmap.  This is
+> >the point of this patch. Masami, could you provide a quick benchmark of
+> >text_poke()/seconds before and after this optimization is applied to
+> >confirm this ?
 > 
-> > > Set the automatic PM parameters (idle timeout, state to go to,
-> > > etc.). And disabling automatic PM altogether (effectively the
-> > > same as setting the idle timeout to infinity).
-> > > 
-> > 
-> > shouldn't idle timeout etc be internal to the driver?
-> > Yes policy preferences / constraints makes sense to communicate,
-> > actual settings do not. For one they keep changing fast all the time
-> > anyway.
+> Sure, here is the result of calling text_poke() 2^14 times.
 > 
-> Sorry, I don't agree.  A single driver may control many different
-> kinds of device -- it may not even be aware of the distinction!
-> Consider the SCSI disk driver: It has to handle both traditional
-> rotating media and solid-state disks.  Clearly they should have
-> different runtime PM parameters.  But the driver isn't in a good
-> position to know what those parameters should be.
+> <Without this patch>
+> Total: 3634133356(cycles), 221809(cycles/text_poke)
+> Total: 3699532690(cycles), 225801(cycles/text_poke)
+> Total: 3249855588(cycles), 198355(cycles/text_poke)
+> 
+> <With this patch>
+> Total: 483467579(cycles), 29508(cycles/text_poke)
+> Total: 497441301(cycles), 30361(cycles/text_poke)
+> Total: 497604548(cycles), 30371(cycles/text_poke)
 
-... and userspace is ?
-Sorry I don't buy that. Kernel is supposed to abstract the hardware...
-That's its fundamental task. Now if the driver doesn't know it can get
-help from the subsystem, that's perfectly fine.
+Hmm, on bigger SMP systems, I think the global TLB flush required
+for unmap_kernel_range will reverse these numbers.
 
+ 
+> BTW, this is not only for performance, but also simplicity and its need.
+> Vmap may allocate new vm_area. However, since text_poke() just needs to
+> map pages temporarily (yeah, very short time), we don't want to call
+> kmalloc or any other memory allocators.
+> And since text_poke() makes WRITABLE aliases of READ-ONLY pages, we
+> want to purge these pages ASAP.
+> So, I think just reserving a small vm_area for text_poke() and
+> reusing it is enough.
 
-(and quiet often the kernel gets updated more often as the userspace)
+It is not a bad idea, but I don't think it quite goes far enough.
+IMO we should reserve 2 pages of virtual memory for each CPU, and
+then do the mapping/unmapping without locking, and with another
+variant of unmap_kernel_range that does not do the global TLB
+flush.
 
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Unless performance doesn't really matter much, in which case, I
+guess your patch is nice because it avoids doing the allocations.
