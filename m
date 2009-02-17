@@ -1,130 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753255AbZBQEpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbZBQErD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753255AbZBQEpL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 23:45:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbZBQEo6
+	id S1753727AbZBQErD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 23:47:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbZBQEqx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 23:44:58 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:3572 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751047AbZBQEo5 (ORCPT
+	Mon, 16 Feb 2009 23:46:53 -0500
+Received: from Mycroft.westnet.com ([216.187.52.7]:34263 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751047AbZBQEqw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 23:44:57 -0500
-Message-ID: <499A40C6.9070800@panasas.com>
-Date: Tue, 17 Feb 2009 06:44:54 +0200
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 3.0a1 (X11/2008050714)
+	Mon, 16 Feb 2009 23:46:52 -0500
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] bitmap: Cleanup find_last_bit
-References: <200812011848.31552.rusty@rustcorp.com.au> <1234789120-31543-1-git-send-email-bhalevy@panasas.com> <200902170940.59703.rusty@rustcorp.com.au>
-In-Reply-To: <200902170940.59703.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Feb 2009 04:44:55.0596 (UTC) FILETIME=[7AD66EC0:01C990BA]
+Message-ID: <18842.16695.145336.851447@stoffel.org>
+Date: Mon, 16 Feb 2009 23:46:47 -0500
+From: "John Stoffel" <john@stoffel.org>
+To: Philippe Grenard <philippe.grenard@laposte.net>
+Cc: linux-kernel@vger.kernel.org, "John Stoffel" <john@stoffel.org>
+Subject: Re: PROBLEM: cannot get stable system since 2.6.28 kernel (amd64)
+In-Reply-To: <200902161925.40256.philippe.grenard@laposte.net>
+References: <200902131944.56634.philippe.grenard@laposte.net>
+	<200902151317.11690.philippe.grenard@laposte.net>
+	<18840.45474.829954.528820@stoffel.org>
+	<200902161925.40256.philippe.grenard@laposte.net>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb. 17, 2009, 1:10 +0200, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> On Monday 16 February 2009 23:28:40 Benny Halevy wrote:
->> Fix cut & paste error in header comment.
->> Simplify implementation a bit.
-> 
-> Hi Benny,
-> 
->   Nice catch!  But I disagree with one change:
-> 
->>  	/* Partial final word? */
->> -	if (size & (BITS_PER_LONG-1)) {
->> -		tmp = (addr[words] & (~0UL >> (BITS_PER_LONG
->> -					 - (size & (BITS_PER_LONG-1)))));
->> +	tmp = size & (BITS_PER_LONG-1);
->> +	if (tmp) {
->> +		tmp = addr[words] & (~0UL >> (BITS_PER_LONG - tmp));
->>  		if (tmp)
->>  			goto found;
->>  	}
-> 
-> The overloading of tmp to the remainder size here is not really a cleanup: it
-> makes it into a dual-use var.  I know it's called tmp, but that's a sign of
-> poor code too :)
-> 
-> I'd prefer a new final_bits var: gcc will almost certainly just slap it in
-> a register anyway, but it's clearer.
-> 
-> tmp could then be called something like... word?
+>>>>> "Philippe" == Philippe Grenard <philippe.grenard@laposte.net> writes:
 
-Yeah, I like that too.
-I'm about to go on a flight
-so the following was just tested to compile...
+Philippe> well, I don't really believe in hardware problem for two
+Philippe> reasons : 1st, nearly all my hardware is quite new ( < 1
+Philippe> year old ), which is, I agree, not a solid proof ;-) 2nd,
+Philippe> the problem is really repetitive : every time I boot on
+Philippe> older kernel, everything works like a charm, every time I
+Philippe> boot on the newer kernel, I end up crashing : the "random"
+Philippe> part is only the time before crash....
 
-diff --git a/include/linux/bitops.h b/include/linux/bitops.h
-index 6182913..886ebf0 100644
---- a/include/linux/bitops.h
-+++ b/include/linux/bitops.h
-@@ -142,7 +142,7 @@ extern unsigned long find_first_zero_bit(const unsigned long *addr,
-  * @addr: The address to start the search at
-  * @size: The maximum size to search
-  *
-- * Returns the bit number of the first set bit, or size.
-+ * Returns the bit number of the last set bit, or size.
-  */
- extern unsigned long find_last_bit(const unsigned long *addr,
- 				   unsigned long size);
-diff --git a/lib/find_last_bit.c b/lib/find_last_bit.c
-index 5d202e3..6a35783 100644
---- a/lib/find_last_bit.c
-+++ b/lib/find_last_bit.c
-@@ -17,29 +17,31 @@
- 
- unsigned long find_last_bit(const unsigned long *addr, unsigned long size)
- {
-+	unsigned long final_bits = size;
- 	unsigned long words;
--	unsigned long tmp;
-+	unsigned long word;
- 
- 	/* Start at final word. */
--	words = size / BITS_PER_LONG;
-+	words = final_bits / BITS_PER_LONG;
- 
- 	/* Partial final word? */
--	if (size & (BITS_PER_LONG-1)) {
--		tmp = (addr[words] & (~0UL >> (BITS_PER_LONG
--					 - (size & (BITS_PER_LONG-1)))));
--		if (tmp)
-+	size &= (BITS_PER_LONG-1);
-+	if (size) {
-+		word = addr[words] & (~0UL >> (BITS_PER_LONG - size));
-+		if (word)
- 			goto found;
- 	}
- 
- 	while (words) {
--		tmp = addr[--words];
--		if (tmp) {
--found:
--			return words * BITS_PER_LONG + __fls(tmp);
--		}
-+		word = addr[--words];
-+		if (word)
-+			goto found;
- 	}
- 
- 	/* Not found */
--	return size;
-+	return final_bits;
-+
-+found:
-+	return words * BITS_PER_LONG + __fls(word);
- }
- EXPORT_SYMBOL(find_last_bit);
--- 
-1.6.1.3
+Philippe> I haven't any "overclocking" settings, and every hardware
+Philippe> and bios settings are the same : same computer, same
+Philippe> harddisk partition, and so on.  2.6.28 will everytime stop
+Philippe> after "Booting the kernel".  2.6.29-rc* will boot, but then
+Philippe> stalls after a random delay... Except the "/proc/cpuinfo"
+Philippe> difference between the two kernels, I don't have a clue....
 
+Philippe> The thing is I can continue using the old kernel, but I
+Philippe> thought I better report this since It could hide some
+Philippe> regression on amd64 systems ?
 
-> 
-> Thanks!
-> Rusty.
+It's certainly sounding like a regression, or misconfiguration
+somewhere.  Can you start doing a 'git bisect' routine on this to see
+if you can find the commit which causes this regression?
+
+It will take around 10 or some recompiles and reboots, but should do
+the trick, or at least help narrow things down alot.  Read
+Documentation/BUG-HUNTING ofr how to do a bisect run.  
+
+You could also go back and re-build your 2.6.28 kernel and config from
+scratch to confirm that it's really working properly.  Then, jump to
+2.6.29-rc5 (just released) and do a 'make oldconfig' and see what
+you're prompted for.  If it still crashes, send us the original
+config, and a diff to the new config (diff -u) so we can look it over.
+
+Also, make sure you're not running *any* binary kernel modules, since
+that will make us completely ignore you.  We can't debug issues like
+this when nVidia graphics modules are in the system since we can't
+tell what that module does to the rest of the kernel and it's not
+worth ou time to figure out.
+
+I'm running 2.6.29-rc3 on my AMD64 system and it's been nice and
+stable and my hardware too is under a year old.  
+
+John
+
