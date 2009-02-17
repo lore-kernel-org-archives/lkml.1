@@ -1,60 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751944AbZBRJVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403AbZBRJWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751944AbZBRJVe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 04:21:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbZBRJUx
+	id S1753403AbZBRJWn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 04:22:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbZBRJW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 04:20:53 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:59358 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753604AbZBRJUt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 04:20:49 -0500
-Date: Wed, 18 Feb 2009 10:20:47 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Alain Knaff <alain@knaff.lu>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       the arch/x86 maintainers <x86@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: tip: bzip2/lzma now in tip:x86/setup-lzma
-In-Reply-To: <499BBD62.5090506@knaff.lu>
-Message-ID: <alpine.LSU.2.00.0902181012130.5116@fbirervta.pbzchgretzou.qr>
-References: <200901042146.n04LkHgP005837@hitchhiker.hitchhiker.org.lu.hitchhiker.org.lu> <4961415C.1050708@zytor.com> <49614243.70102@knaff.lu> <496142E4.8040308@zytor.com> <49614491.7020903@knaff.lu> <49614D1F.8020900@zytor.com>
- <alpine.LSU.2.00.0902172202230.5620@fbirervta.pbzchgretzou.qr> <499B267E.2090509@zytor.com> <20090217220825.GA24337@elte.hu> <20090217233708.GA10756@elte.hu> <499B5BCA.8000905@zytor.com> <499BBD62.5090506@knaff.lu>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Wed, 18 Feb 2009 04:22:26 -0500
+Received: from mga09.intel.com ([134.134.136.24]:5919 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751826AbZBRJWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 04:22:25 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,228,1233561600"; 
+   d="scan'208";a="490892698"
+Date: Wed, 18 Feb 2009 03:21:55 +0800
+From: Yu Zhao <yu.zhao@intel.com>
+To: Greg KH <greg@kroah.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v9 6/7] PCI: document SR-IOV sysfs entries
+Message-ID: <20090217192155.GA2612@yzhao-otc.sh.intel.com>
+References: <1234790920-1810-1-git-send-email-yu.zhao@intel.com> <1234790920-1810-7-git-send-email-yu.zhao@intel.com> <20090217125021.GA2403@yzhao-otc.sh.intel.com> <20090218034910.GA10990@kroah.com> <20090217144303.GA2452@yzhao-otc.sh.intel.com> <20090218062116.GA20081@kroah.com> <20090217170135.GA2520@yzhao-otc.sh.intel.com> <20090218071916.GA15114@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090218071916.GA15114@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Feb 18, 2009 at 03:19:16PM +0800, Greg KH wrote:
+> On Wed, Feb 18, 2009 at 01:01:35AM +0800, Yu Zhao wrote:
+> > On Wed, Feb 18, 2009 at 02:21:16PM +0800, Greg KH wrote:
+> > > On Tue, Feb 17, 2009 at 10:43:03PM +0800, Yu Zhao wrote:
+> > > > On Wed, Feb 18, 2009 at 11:49:10AM +0800, Greg KH wrote:
+> > > > > On Tue, Feb 17, 2009 at 08:50:21PM +0800, Yu Zhao wrote:
+> > > > > > I'd like to create a subdirectory under PCI device sysfs directory and
+> > > > > > put some symbol links into that directory (only symbol links). Should I
+> > > > > > use `device' or `kobject'? Currently I use `device' and get two extra
+> > > > > > file/directory (uevent and power) which look like useless for my case
+> > > > > > because this subdirectory doesn't reflect a real device.
+> > > > > 
+> > > > > Neither, just use an attribute group, no new struct device should be
+> > > > > needed at all.
+> > > > 
+> > > > Yes, I was thinking using an attribute group, however, it looks like we
+> > > > can't put symbol link into a group. Maybe I'm wrong, shed some light,
+> > > > please?
+> > > 
+> > > Why would you want a symbolic link in an attribute group?
+> > 
+> > Sorry I didn't make myself clear. I'd like to create a subdirectory (its
+> > parent is controlled by a `struct device') to only hold symbol links.
+> 
+> Ick.  What would those links be to?  And what are they for?
+> 
+> > Can I use an `attribute group' of the parent `struct device' for this,
+> > or a child `struct device', or a bare `struct kobject'?
+> 
+> You can't use an attribute group for symlinks.
+> You should use a struct device, but be careful, you are going to be
+> creating uevents that I don't think you really want to.
 
-On Wednesday 2009-02-18 08:48, Alain Knaff wrote:
->
->>  The sanest thing to do is to 
->> compress with all the compressors that are configured into the kernel, 
->> and then use the smallest image of the ones that can be produced, 
->> *including the uncompressed image*.
->
->... so, if I understood correctly, that would mean compressing the
->kernel 4 times, and keeping the smallest?
->Given the relatively low speed of compression, I feel that such a
->feature would really annoy people who compile their kernel often (such
->as kernel or module developers).
+Thank you for the clarification.
 
-I would expect of *module* developers to build their code by means of
-an out-of-tree directory, thereby not causing regeneration of the
-vmlinux binary or initramfs image. Even if they stayed within the
-Linux srctree, they could take a shortcut by explicitly stating the
-target (`make that/foo.ko`). modpost is still something that takes
-much more time with allmodconfig than compressing the kernel and/or
-changed modules over and over.
+> 
+> Care to describe what you are trying to do first?
 
->Btw, what *is* the standard work flow of supplying your own built-in
->initramfs? Do such developers usually supply a directory tree, or do
->they already cpio it before supplying it to the kernel? Or do they even
->compress it themselves?
+I'd like to link child PCI devices to their parent PCI device's
+subdirectory.  These child PCI devices are PCI functions that are on
+the same level as their parent in the PCI hierarchy, so current PCI code
+won't create symbol links for them in their parent directory as what it
+does for PCI bridge. For example, device 01:00.0 is the parent and 01:00.1
+is the child, I'd like to put a symbol link into
+/sys/bus/pci/device/0000:01:00.0/child/ which points to
+/sys/bus/pci/device/0000:01:00.1.  This can let user space application
+know the relationship between this two devices.
 
-As for me: a separate staging directory that is totally unrelated to
-the Linux tree, and manually running the cpio command. And not
-embodying it into the kernel because all bootloaders used so far
-support reading an extra initramfs image.
+Regards,
+Yu
