@@ -1,68 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbZBQSKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbZBQSMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753963AbZBQSKh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 13:10:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbZBQSKa
+	id S1754148AbZBQSMn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 13:12:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbZBQSMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 13:10:30 -0500
-Received: from cmpxchg.org ([85.214.51.133]:39535 "EHLO cmpxchg.org"
+	Tue, 17 Feb 2009 13:12:34 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41703 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752230AbZBQSK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 13:10:29 -0500
-Date: Tue, 17 Feb 2009 19:11:57 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Mel Gorman <mel@csn.ul.ie>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Subject: Re: [patch] SLQB slab allocator (try 2)
-Message-ID: <20090217181157.GA2158@cmpxchg.org>
-References: <20090123154653.GA14517@wotan.suse.de> <200902041748.41801.nickpiggin@yahoo.com.au> <20090204152709.GA4799@csn.ul.ie> <200902051459.30064.nickpiggin@yahoo.com.au> <20090216184200.GA31264@csn.ul.ie> <4999BBE6.2080003@cs.helsinki.fi> <alpine.DEB.1.10.0902171120040.27813@qirst.com> <1234890096.11511.6.camel@penberg-laptop> <alpine.DEB.1.10.0902171204070.15929@qirst.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0902171204070.15929@qirst.com>
+	id S1751810AbZBQSMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 13:12:33 -0500
+Message-ID: <499AFDAF.2060705@kernel.org>
+Date: Tue, 17 Feb 2009 10:10:55 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+CC: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] x86, apic: move APIC drivers to arch/x86/kernel/apic/*
+References: <tip-f62bae5009c1ba596cd475cafbc83e0570a36e26@kernel.org>
+In-Reply-To: <tip-f62bae5009c1ba596cd475cafbc83e0570a36e26@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 12:05:07PM -0500, Christoph Lameter wrote:
-> Well yes you missed two locations (kmalloc_caches array has to be
-> redimensioned) and I also was writing the same patch...
-> 
-> Here is mine:
-> 
-> Subject: SLUB: Do not pass 8k objects through to the page allocator
-> 
-> Increase the maximum object size in SLUB so that 8k objects are not
-> passed through to the page allocator anymore. The network stack uses 8k
-> objects for performance critical operations.
-> 
-> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
-> 
-> Index: linux-2.6/include/linux/slub_def.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/slub_def.h	2009-02-17 10:45:51.000000000 -0600
-> +++ linux-2.6/include/linux/slub_def.h	2009-02-17 11:06:53.000000000 -0600
-> @@ -121,10 +121,21 @@
->  #define KMALLOC_SHIFT_LOW ilog2(KMALLOC_MIN_SIZE)
-> 
->  /*
-> + * Maximum kmalloc object size handled by SLUB. Larger object allocations
-> + * are passed through to the page allocator. The page allocator "fastpath"
-> + * is relatively slow so we need this value sufficiently high so that
-> + * performance critical objects are allocated through the SLUB fastpath.
-> + *
-> + * This should be dropped to PAGE_SIZE / 2 once the page allocator
-> + * "fastpath" becomes competitive with the slab allocator fastpaths.
-> + */
-> +#define SLUB_MAX_SIZE (2 * PAGE_SIZE)
+could move probe_32.c es7000_32.c numaq_32.c summit_32.c to apic/ too
 
-This relies on PAGE_SIZE being 4k.  If you want 8k, why don't you say
-so?  Pekka did this explicitely.
+YH
 
-	Hannes
+Ingo Molnar wrote:
+> Author:     Ingo Molnar <mingo@elte.hu>
+> AuthorDate: Tue, 17 Feb 2009 18:09:24 +0100
+> Commit:     Ingo Molnar <mingo@elte.hu>
+> CommitDate: Tue, 17 Feb 2009 18:17:36 +0100
+> 
+> x86, apic: move APIC drivers to arch/x86/kernel/apic/*
+> 
+> arch/x86/kernel/ is getting a bit crowded, and the APIC
+> drivers are scattered into various different files.
+> 
+> Move them to arch/x86/kernel/apic/*, and also remove
+> the 'gen' prefix from those which had it.
+> 
+> Also move APIC related functionality: the IO-APIC driver,
+> the NMI and the IPI code.
+> 
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> 
+> ---
+>  arch/x86/kernel/Makefile                           |   27 ++++++++-----------
+>  arch/x86/kernel/apic/Makefile                      |   15 +++++++++++
+>  arch/x86/kernel/{ => apic}/apic.c                  |    0
+>  arch/x86/kernel/{genapic_64.c => apic/apic_64.c}   |    0
+>  .../{genapic_flat_64.c => apic/apic_flat_64.c}     |    0
+>  arch/x86/kernel/{ => apic}/io_apic.c               |    0
+>  arch/x86/kernel/{ => apic}/ipi.c                   |    0
+>  arch/x86/kernel/{ => apic}/nmi.c                   |    0
+>  .../{genx2apic_cluster.c => apic/x2apic_cluster.c} |    0
+>  .../{genx2apic_phys.c => apic/x2apic_phys.c}       |    0
+>  .../{genx2apic_uv_x.c => apic/x2apic_uv_x.c}       |    0
+>  11 files changed, 26 insertions(+), 16 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+> index 1cefd21..9139ff6 100644
+> --- a/arch/x86/kernel/Makefile
+> +++ b/arch/x86/kernel/Makefile
+> @@ -58,13 +58,12 @@ obj-$(CONFIG_PCI)		+= early-quirks.o
+>  apm-y				:= apm_32.o
+>  obj-$(CONFIG_APM)		+= apm.o
+>  obj-$(CONFIG_SMP)		+= smp.o
+> -obj-$(CONFIG_SMP)		+= smpboot.o tsc_sync.o ipi.o
+> +obj-$(CONFIG_SMP)		+= smpboot.o tsc_sync.o
+>  obj-$(CONFIG_SMP)		+= setup_percpu.o
+>  obj-$(CONFIG_X86_64_SMP)	+= tsc_sync.o
+>  obj-$(CONFIG_X86_TRAMPOLINE)	+= trampoline_$(BITS).o
+>  obj-$(CONFIG_X86_MPPARSE)	+= mpparse.o
+> -obj-$(CONFIG_X86_LOCAL_APIC)	+= apic.o nmi.o ipi.o
+> -obj-$(CONFIG_X86_IO_APIC)	+= io_apic.o
+> +obj-$(CONFIG_X86_LOCAL_APIC)	+= apic/
+>  obj-$(CONFIG_X86_REBOOTFIXUPS)	+= reboot_fixups_32.o
+>  obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
+>  obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
+> @@ -116,17 +115,13 @@ obj-$(CONFIG_SWIOTLB)			+= pci-swiotlb_64.o # NB rename without _64
+>  ###
+>  # 64 bit specific files
+>  ifeq ($(CONFIG_X86_64),y)
+> -        obj-y				+= genapic_64.o genapic_flat_64.o
+> -        obj-$(CONFIG_X86_X2APIC)	+= genx2apic_cluster.o
+> -        obj-$(CONFIG_X86_X2APIC)	+= genx2apic_phys.o
+> -	obj-$(CONFIG_X86_UV)		+= genx2apic_uv_x.o tlb_uv.o
+> -	obj-$(CONFIG_X86_UV)		+= bios_uv.o uv_irq.o uv_sysfs.o
+> -        obj-$(CONFIG_X86_PM_TIMER)	+= pmtimer_64.o
+> -        obj-$(CONFIG_AUDIT)		+= audit_64.o
+> -
+> -        obj-$(CONFIG_GART_IOMMU)	+= pci-gart_64.o aperture_64.o
+> -        obj-$(CONFIG_CALGARY_IOMMU)	+= pci-calgary_64.o tce_64.o
+> -        obj-$(CONFIG_AMD_IOMMU)		+= amd_iommu_init.o amd_iommu.o
+> -
+> -        obj-$(CONFIG_PCI_MMCONFIG)	+= mmconf-fam10h_64.o
+> +	obj-$(CONFIG_X86_UV)		+= tlb_uv.o bios_uv.o uv_irq.o uv_sysfs.o
+> +	obj-$(CONFIG_X86_PM_TIMER)	+= pmtimer_64.o
+> +	obj-$(CONFIG_AUDIT)		+= audit_64.o
+> +
+> +	obj-$(CONFIG_GART_IOMMU)	+= pci-gart_64.o aperture_64.o
+> +	obj-$(CONFIG_CALGARY_IOMMU)	+= pci-calgary_64.o tce_64.o
+> +	obj-$(CONFIG_AMD_IOMMU)		+= amd_iommu_init.o amd_iommu.o
+> +
+> +	obj-$(CONFIG_PCI_MMCONFIG)	+= mmconf-fam10h_64.o
+>  endif
+> diff --git a/arch/x86/kernel/apic/Makefile b/arch/x86/kernel/apic/Makefile
+> new file mode 100644
+> index 0000000..da20b70
+> --- /dev/null
+> +++ b/arch/x86/kernel/apic/Makefile
+> @@ -0,0 +1,15 @@
+> +#
+> +# Makefile for local APIC drivers and for the IO-APIC code
+> +#
+> +
+> +obj-y				:= apic.o ipi.o nmi.o
+> +obj-$(CONFIG_X86_IO_APIC)	+= io_apic.o
+> +obj-$(CONFIG_SMP)		+= ipi.o
+> +
+> +ifeq ($(CONFIG_X86_64),y)
+> +obj-y				+= apic_64.o apic_flat_64.o
+> +obj-$(CONFIG_X86_X2APIC)	+= x2apic_cluster.o
+> +obj-$(CONFIG_X86_X2APIC)	+= x2apic_phys.o
+> +obj-$(CONFIG_X86_UV)		+= x2apic_uv_x.o
+> +endif
+> +
+> diff --git a/arch/x86/kernel/apic.c b/arch/x86/kernel/apic/apic.c
+> similarity index 100%
+> rename from arch/x86/kernel/apic.c
+> rename to arch/x86/kernel/apic/apic.c
+> diff --git a/arch/x86/kernel/genapic_64.c b/arch/x86/kernel/apic/apic_64.c
+> similarity index 100%
+> rename from arch/x86/kernel/genapic_64.c
+> rename to arch/x86/kernel/apic/apic_64.c
+> diff --git a/arch/x86/kernel/genapic_flat_64.c b/arch/x86/kernel/apic/apic_flat_64.c
+> similarity index 100%
+> rename from arch/x86/kernel/genapic_flat_64.c
+> rename to arch/x86/kernel/apic/apic_flat_64.c
+> diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+> similarity index 100%
+> rename from arch/x86/kernel/io_apic.c
+> rename to arch/x86/kernel/apic/io_apic.c
+> diff --git a/arch/x86/kernel/ipi.c b/arch/x86/kernel/apic/ipi.c
+> similarity index 100%
+> rename from arch/x86/kernel/ipi.c
+> rename to arch/x86/kernel/apic/ipi.c
+> diff --git a/arch/x86/kernel/nmi.c b/arch/x86/kernel/apic/nmi.c
+> similarity index 100%
+> rename from arch/x86/kernel/nmi.c
+> rename to arch/x86/kernel/apic/nmi.c
+> diff --git a/arch/x86/kernel/genx2apic_cluster.c b/arch/x86/kernel/apic/x2apic_cluster.c
+> similarity index 100%
+> rename from arch/x86/kernel/genx2apic_cluster.c
+> rename to arch/x86/kernel/apic/x2apic_cluster.c
+> diff --git a/arch/x86/kernel/genx2apic_phys.c b/arch/x86/kernel/apic/x2apic_phys.c
+> similarity index 100%
+> rename from arch/x86/kernel/genx2apic_phys.c
+> rename to arch/x86/kernel/apic/x2apic_phys.c
+> diff --git a/arch/x86/kernel/genx2apic_uv_x.c b/arch/x86/kernel/apic/x2apic_uv_x.c
+> similarity index 100%
+> rename from arch/x86/kernel/genx2apic_uv_x.c
+> rename to arch/x86/kernel/apic/x2apic_uv_x.c
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-tip-commits" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
