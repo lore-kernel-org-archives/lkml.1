@@ -1,135 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbZBQRBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbZBQRCH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753457AbZBQRBr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 12:01:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbZBQRBj
+	id S1753978AbZBQRCH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 12:02:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbZBQRBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 12:01:39 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:59277 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751862AbZBQRBi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 12:01:38 -0500
-Subject: Re: [patch] SLQB slab allocator (try 2)
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Mel Gorman <mel@csn.ul.ie>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-In-Reply-To: <alpine.DEB.1.10.0902171120040.27813@qirst.com>
-References: <20090123154653.GA14517@wotan.suse.de>
-	 <200902041748.41801.nickpiggin@yahoo.com.au>
-	 <20090204152709.GA4799@csn.ul.ie>
-	 <200902051459.30064.nickpiggin@yahoo.com.au>
-	 <20090216184200.GA31264@csn.ul.ie> <4999BBE6.2080003@cs.helsinki.fi>
-	 <alpine.DEB.1.10.0902171120040.27813@qirst.com>
-Date: Tue, 17 Feb 2009 19:01:36 +0200
-Message-Id: <1234890096.11511.6.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Tue, 17 Feb 2009 12:01:53 -0500
+Received: from mx34.mail.ru ([94.100.176.48]:7752 "EHLO mx34.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753223AbZBQRBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 12:01:52 -0500
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, netdev@vger.kernel.org,
+       bonding-devel@lists.sourceforge.net
+Subject: 2.6.29 regression? Bonding tied to IPV6 in 29-rc5
+Date: Tue, 17 Feb 2009 20:01:38 +0300
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-1avb; KDE/4.2.0; i686; ; )
+Cc: "J.A. =?iso-8859-1?q?Magall=F3n?=" <jamagallon@ono.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.00.0902131413120.3179@localhost.localdomain> <20090217095232.5da06b9f@werewolf.home>
+In-Reply-To: <20090217095232.5da06b9f@werewolf.home>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1637276.dJUPc8l8uO";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+Message-Id: <200902172001.41804.arvidjaar@mail.ru>
+X-Spam: Not detected
+X-Mras: Ok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christoph,
+--nextPart1637276.dJUPc8l8uO
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Mon, 16 Feb 2009, Pekka Enberg wrote:
-> > Btw, Yanmin, do you have access to the tests Mel is running (especially the
-> > ones where slub-rvrt seems to do worse)? Can you see this kind of regression?
-> > The results make we wonder whether we should avoid reverting all of the page
-> > allocator pass-through and just add a kmalloc cache for 8K allocations. Or not
-> > address the netperf regression at all. Double-hmm.
+=46orward to bonding and netdev
 
-On Tue, 2009-02-17 at 11:20 -0500, Christoph Lameter wrote:
-> Going to 8k for the limit beyond we pass through to the page allocator may
-> be the simplest and best solution. Someone please work on the page
-> allocator...
+On 17 of February 2009 11:52:32 J.A. Magall=F3n wrote:
+> Hi all...
+>
+> Don't know if this is specific for -rc5, I have jumped from 28.4 to
+> 29-rc5. In this latest kernel, I can not install 'bonding' module if
+> 'ipv6' is disabled to load via modprobe.conf:
+>
+> install ipv6 /bin/true
+>
+> Trying bonding gives this dmesg:
+>
+> bonding: Unknown symbol ndisc_build_skb
+> bonding: Unknown symbol in6_dev_finish_destroy
+> bonding: Unknown symbol ndisc_send_skb
+> bonding: Unknown symbol unregister_inet6addr_notifier
+> bonding: Unknown symbol register_inet6addr_notifier
+>
+> Commenting the line in modprobe.conf makes things smooth again.
+> We can not disable ipv6 anymore ?
+>
 
-Yeah. Something like this totally untested patch, perhaps?
+If IPv6 is disable in kernel config bonding loads. But I think it is=20
+regression, it should be possible to disable IPv6 if not required.
 
-			Pekka
+--nextPart1637276.dJUPc8l8uO
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
-index 2f5c16b..e93cb3d 100644
---- a/include/linux/slub_def.h
-+++ b/include/linux/slub_def.h
-@@ -201,6 +201,13 @@ static __always_inline struct kmem_cache *kmalloc_slab(size_t size)
- #define SLUB_DMA (__force gfp_t)0
- #endif
- 
-+/*
-+ * The maximum allocation size that will be satisfied by the slab allocator for
-+ * kmalloc(). Requests that exceed this limit are passed directly to the page
-+ * allocator.
-+ */
-+#define SLAB_LIMIT (8 * 1024)
-+
- void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
- void *__kmalloc(size_t size, gfp_t flags);
- 
-@@ -212,7 +219,7 @@ static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
- static __always_inline void *kmalloc(size_t size, gfp_t flags)
- {
- 	if (__builtin_constant_p(size)) {
--		if (size > PAGE_SIZE)
-+		if (size > SLAB_LIMIT)
- 			return kmalloc_large(size, flags);
- 
- 		if (!(flags & SLUB_DMA)) {
-@@ -234,7 +241,7 @@ void *kmem_cache_alloc_node(struct kmem_cache *, gfp_t flags, int node);
- static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
- {
- 	if (__builtin_constant_p(size) &&
--		size <= PAGE_SIZE && !(flags & SLUB_DMA)) {
-+		size <= SLAB_LIMIT && !(flags & SLUB_DMA)) {
- 			struct kmem_cache *s = kmalloc_slab(size);
- 
- 		if (!s)
-diff --git a/mm/slub.c b/mm/slub.c
-index 0280eee..a324188 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2658,7 +2658,7 @@ void *__kmalloc(size_t size, gfp_t flags)
- {
- 	struct kmem_cache *s;
- 
--	if (unlikely(size > PAGE_SIZE))
-+	if (unlikely(size > SLAB_LIMIT))
- 		return kmalloc_large(size, flags);
- 
- 	s = get_slab(size, flags);
-@@ -2686,7 +2686,7 @@ void *__kmalloc_node(size_t size, gfp_t flags, int node)
- {
- 	struct kmem_cache *s;
- 
--	if (unlikely(size > PAGE_SIZE))
-+	if (unlikely(size > SLAB_LIMIT))
- 		return kmalloc_large_node(size, flags, node);
- 
- 	s = get_slab(size, flags);
-@@ -3223,7 +3223,7 @@ void *__kmalloc_track_caller(size_t size, gfp_t gfpflags, unsigned long caller)
- {
- 	struct kmem_cache *s;
- 
--	if (unlikely(size > PAGE_SIZE))
-+	if (unlikely(size > SLAB_LIMIT))
- 		return kmalloc_large(size, gfpflags);
- 
- 	s = get_slab(size, gfpflags);
-@@ -3239,7 +3239,7 @@ void *__kmalloc_node_track_caller(size_t size, gfp_t gfpflags,
- {
- 	struct kmem_cache *s;
- 
--	if (unlikely(size > PAGE_SIZE))
-+	if (unlikely(size > SLAB_LIMIT))
- 		return kmalloc_large_node(size, gfpflags, node);
- 
- 	s = get_slab(size, gfpflags);
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
+iEYEABECAAYFAkma7XUACgkQR6LMutpd94yslQCgr24HkjZ2/b6tdSdNyRDd0O+v
+TscAoJRRRG0sEQrm3ah7ckShoE5VI2gZ
+=D46+
+-----END PGP SIGNATURE-----
 
+--nextPart1637276.dJUPc8l8uO--
