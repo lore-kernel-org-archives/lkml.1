@@ -1,294 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753692AbZBQUuQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbZBQUxH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753692AbZBQUuQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 15:50:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751131AbZBQUuD
+	id S1753916AbZBQUxH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 15:53:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbZBQUwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 15:50:03 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:54436 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751098AbZBQUuB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 15:50:01 -0500
-Subject: Re: [PATCH -v4] generic-ipi: remove kmalloc()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <1234901777.4744.233.camel@laptop>
-References: <20090216163847.431174825@chello.nl>
-	 <20090216164114.433430761@chello.nl> <1234885258.4744.153.camel@laptop>
-	 <20090217172113.GA26459@redhat.com> <1234892420.4744.158.camel@laptop>
-	 <1234898958.4744.225.camel@laptop>  <20090217200247.GA8158@redhat.com>
-	 <1234901512.4744.230.camel@laptop>  <1234901777.4744.233.camel@laptop>
-Content-Type: text/plain
-Date: Tue, 17 Feb 2009 21:49:41 +0100
-Message-Id: <1234903781.4744.235.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.90 
+	Tue, 17 Feb 2009 15:52:54 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57251 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751413AbZBQUwx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 15:52:53 -0500
+Message-ID: <499B2349.1050006@kernel.org>
+Date: Tue, 17 Feb 2009 12:51:21 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] x86, apic: move APIC drivers to	arch/x86/kernel/apic/*
+References: <tip-f62bae5009c1ba596cd475cafbc83e0570a36e26@kernel.org> <499AFDAF.2060705@kernel.org> <20090217181839.GA26541@elte.hu> <20090217184110.GA331@elte.hu>
+In-Reply-To: <20090217184110.GA331@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-17 at 21:16 +0100, Peter Zijlstra wrote:
-> On Tue, 2009-02-17 at 21:11 +0100, Peter Zijlstra wrote:
-> > 
-> > > As for the previous version. I am almost sure I missed something
-> > > again, but do we really need both CSD_FLAG_WAIT and CSD_FLAG_LOCK
-> > > flags? smp_call_function_many(wait => 1) can just wait for
-> > > !CSD_FLAG_LOCK.
-> > 
-> > I suppose we can.
+it seems you forgot to push it out.
+
+YH
+
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> Ah, no, that would mean we cannot distinguish between the sync and async
-> case in generic_exec_single().
-
-Which can of course be solved like so, we could even drop the new .wait
-argument to __smp_call_function_single() as CSD_FLAG_WAIT wasn't exposed
-before and non of the current users use it.
-
----
-Index: linux-2.6/kernel/smp.c
-===================================================================
---- linux-2.6.orig/kernel/smp.c
-+++ linux-2.6/kernel/smp.c
-@@ -23,8 +23,7 @@ static struct {
- };
- 
- enum {
--	CSD_FLAG_WAIT		= 0x01,
--	CSD_FLAG_LOCK		= 0x02,
-+	CSD_FLAG_LOCK		= 0x01,
- };
- 
- struct call_function_data {
-@@ -95,41 +94,21 @@ static int __cpuinit init_call_single_da
- early_initcall(init_call_single_data);
- 
- /*
-- * csd_wait/csd_complete are used for synchronous ipi calls
-- */
--static void csd_wait_prepare(struct call_single_data *data)
--{
--	data->flags |= CSD_FLAG_WAIT;
--}
--
--static void csd_complete(struct call_single_data *data)
--{
--	if (data->flags & CSD_FLAG_WAIT) {
--		/*
--		 * Serialize stores to data with the flag clear and wakeup.
--		 */
--		smp_wmb();
--		data->flags &= ~CSD_FLAG_WAIT;
--	}
--}
--
--static void csd_wait(struct call_single_data *data)
--{
--	while (data->flags & CSD_FLAG_WAIT)
--		cpu_relax();
--}
--
--/*
-  * csd_lock/csd_unlock used to serialize access to per-cpu csd resources
-  *
-  * For non-synchronous ipi calls the csd can still be in use by the previous
-  * function call. For multi-cpu calls its even more interesting as we'll have
-  * to ensure no other cpu is observing our csd.
-  */
--static void csd_lock(struct call_single_data *data)
-+static void csd_lock_wait(struct call_single_data *data)
- {
- 	while (data->flags & CSD_FLAG_LOCK)
- 		cpu_relax();
-+}
-+
-+static void csd_lock(struct call_single_data *data)
-+{
-+	csd_lock_wait(data);
- 	data->flags = CSD_FLAG_LOCK;
- }
- 
-@@ -147,11 +126,12 @@ static void csd_unlock(struct call_singl
-  * Insert a previously allocated call_single_data element for execution
-  * on the given CPU. data must already have ->func, ->info, and ->flags set.
-  */
--static void generic_exec_single(int cpu, struct call_single_data *data)
-+static
-+void generic_exec_single(int cpu, struct call_single_data *data, int wait)
- {
- 	struct call_single_queue *dst = &per_cpu(call_single_queue, cpu);
--	int wait = data->flags & CSD_FLAG_WAIT, ipi;
- 	unsigned long flags;
-+	int ipi;
- 
- 	spin_lock_irqsave(&dst->lock, flags);
- 	ipi = list_empty(&dst->list);
-@@ -174,7 +154,7 @@ static void generic_exec_single(int cpu,
- 		arch_send_call_function_single_ipi(cpu);
- 
- 	if (wait)
--		csd_wait(data);
-+		csd_lock_wait(data);
- }
- 
- /*
-@@ -222,7 +202,6 @@ void generic_smp_call_function_interrupt
- 		if (refs)
- 			continue;
- 
--		csd_complete(&data->csd);
- 		csd_unlock(&data->csd);
- 	}
- 
-@@ -260,9 +239,6 @@ void generic_smp_call_function_single_in
- 
- 		data->func(data->info);
- 
--		if (data_flags & CSD_FLAG_WAIT)
--			csd_complete(data);
--
- 		/*
- 		 * Unlocked CSDs are valid through generic_exec_single()
- 		 */
-@@ -303,36 +279,16 @@ int smp_call_function_single(int cpu, vo
- 		func(info);
- 		local_irq_restore(flags);
- 	} else if ((unsigned)cpu < nr_cpu_ids && cpu_online(cpu)) {
--		struct call_single_data *data;
-+		struct call_single_data *data = &d;
- 
--		if (!wait) {
--			/*
--			 * We are calling a function on a single CPU
--			 * and we are not going to wait for it to finish.
--			 * We use a per cpu data to pass the information to
--			 * that CPU. Since all callers of this code will
--			 * use the same data, we must synchronize the
--			 * callers to prevent a new caller from corrupting
--			 * the data before the callee can access it.
--			 *
--			 * The CSD_FLAG_LOCK is used to let us know when
--			 * the IPI handler is done with the data.
--			 * The first caller will set it, and the callee
--			 * will clear it. The next caller must wait for
--			 * it to clear before we set it again. This
--			 * will make sure the callee is done with the
--			 * data before a new caller will use it.
--			 */
-+		if (!wait)
- 			data = &per_cpu(csd_data, me);
--			csd_lock(data);
--		} else {
--			data = &d;
--			csd_wait_prepare(data);
--		}
-+
-+		csd_lock(data);
- 
- 		data->func = func;
- 		data->info = info;
--		generic_exec_single(cpu, data);
-+		generic_exec_single(cpu, data, wait);
- 	} else {
- 		err = -ENXIO;	/* CPU not online */
- 	}
-@@ -352,12 +308,16 @@ EXPORT_SYMBOL(smp_call_function_single);
-  * instance.
-  *
-  */
--void __smp_call_function_single(int cpu, struct call_single_data *data)
-+void __smp_call_function_single(int cpu, struct call_single_data *data,
-+				int wait)
- {
-+	if (wait)
-+		csd_lock(data);
-+
- 	/* Can deadlock when called with interrupts disabled */
--	WARN_ON((data->flags & CSD_FLAG_WAIT) && irqs_disabled());
-+	WARN_ON(wait && irqs_disabled());
- 
--	generic_exec_single(cpu, data);
-+	generic_exec_single(cpu, data, wait);
- }
- 
- /* FIXME: Shim for archs using old arch_send_call_function_ipi API. */
-@@ -415,9 +375,6 @@ void smp_call_function_many(const struct
- 	csd_lock(&data->csd);
- 
- 	spin_lock_irqsave(&data->lock, flags);
--	if (wait)
--		csd_wait_prepare(&data->csd);
--
- 	data->csd.func = func;
- 	data->csd.info = info;
- 	cpumask_and(data->cpumask, mask, cpu_online_mask);
-@@ -446,7 +403,7 @@ void smp_call_function_many(const struct
- 
- 	/* optionally wait for the CPUs to complete */
- 	if (wait)
--		csd_wait(&data->csd);
-+		csd_lock_wait(&data->csd);
- }
- EXPORT_SYMBOL(smp_call_function_many);
- 
-Index: linux-2.6/block/blk-softirq.c
-===================================================================
---- linux-2.6.orig/block/blk-softirq.c
-+++ linux-2.6/block/blk-softirq.c
-@@ -64,7 +64,7 @@ static int raise_blk_irq(int cpu, struct
- 		data->info = rq;
- 		data->flags = 0;
- 
--		__smp_call_function_single(cpu, data);
-+		__smp_call_function_single(cpu, data, 0);
- 		return 0;
- 	}
- 
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -1120,7 +1120,7 @@ static void hrtick_start(struct rq *rq, 
- 	if (rq == this_rq()) {
- 		hrtimer_restart(timer);
- 	} else if (!rq->hrtick_csd_pending) {
--		__smp_call_function_single(cpu_of(rq), &rq->hrtick_csd);
-+		__smp_call_function_single(cpu_of(rq), &rq->hrtick_csd, 0);
- 		rq->hrtick_csd_pending = 1;
- 	}
- }
-Index: linux-2.6/kernel/softirq.c
-===================================================================
---- linux-2.6.orig/kernel/softirq.c
-+++ linux-2.6/kernel/softirq.c
-@@ -518,7 +518,7 @@ static int __try_remote_softirq(struct c
- 		cp->flags = 0;
- 		cp->priv = softirq;
- 
--		__smp_call_function_single(cpu, cp);
-+		__smp_call_function_single(cpu, cp, 0);
- 		return 0;
- 	}
- 	return 1;
-Index: linux-2.6/include/linux/smp.h
-===================================================================
---- linux-2.6.orig/include/linux/smp.h
-+++ linux-2.6/include/linux/smp.h
-@@ -82,7 +82,8 @@ smp_call_function_mask(cpumask_t mask, v
- 	return 0;
- }
- 
--void __smp_call_function_single(int cpuid, struct call_single_data *data);
-+void __smp_call_function_single(int cpuid, struct call_single_data *data,
-+				int wait);
- 
- /*
-  * Generic and arch helpers
-
+>> * Yinghai Lu <yinghai@kernel.org> wrote:
+>>
+>>> could move probe_32.c es7000_32.c numaq_32.c summit_32.c to 
+>>> apic/ too
+>> yeah, that's indeed the plan, just didnt get around testing that 
+>> yet.
+> 
+> Below is the commit. Beyond what you listed, i moved bigsmp_32.c 
+> too. By renaming apic_64.c to probe_64.c we get the probing code 
+> mostly consolidated as well.
+> 
+> 	Ingo
+> 
+> ---------------->
+>>From 2a05180fe2e5b414f0cb2ccfc80e6c90563e3c67 Mon Sep 17 00:00:00 2001
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Tue, 17 Feb 2009 20:35:16 +0100
+> Subject: [PATCH] x86, apic: move remaining APIC drivers to arch/x86/kernel/apic/*
+> 
+> Move the 32-bit extended-arch APIC drivers to arch/x86/kernel/apic/
+> too, and rename apic_64.c to probe_64.c.
+> 
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  arch/x86/kernel/Makefile                       |    6 +-----
+>  arch/x86/kernel/apic/Makefile                  |    9 +++++++--
+>  arch/x86/kernel/{ => apic}/bigsmp_32.c         |    0
+>  arch/x86/kernel/{ => apic}/es7000_32.c         |    0
+>  arch/x86/kernel/{ => apic}/numaq_32.c          |    0
+>  arch/x86/kernel/{ => apic}/probe_32.c          |    0
+>  arch/x86/kernel/apic/{apic_64.c => probe_64.c} |    0
+>  arch/x86/kernel/{ => apic}/summit_32.c         |    0
+>  8 files changed, 8 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+> index 9139ff6..c70537d 100644
+> --- a/arch/x86/kernel/Makefile
+> +++ b/arch/x86/kernel/Makefile
+> @@ -30,7 +30,7 @@ obj-y			+= traps.o irq.o irq_$(BITS).o dumpstack_$(BITS).o
+>  obj-y			+= time_$(BITS).o ioport.o ldt.o dumpstack.o
+>  obj-y			+= setup.o i8259.o irqinit_$(BITS).o
+>  obj-$(CONFIG_X86_VISWS)	+= visws_quirks.o
+> -obj-$(CONFIG_X86_32)	+= probe_32.o probe_roms_32.o
+> +obj-$(CONFIG_X86_32)	+= probe_roms_32.o
+>  obj-$(CONFIG_X86_32)	+= sys_i386_32.o i386_ksyms_32.o
+>  obj-$(CONFIG_X86_64)	+= sys_x86_64.o x8664_ksyms_64.o
+>  obj-$(CONFIG_X86_64)	+= syscall_64.o vsyscall_64.o
+> @@ -70,10 +70,6 @@ obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
+>  obj-$(CONFIG_KEXEC)		+= machine_kexec_$(BITS).o
+>  obj-$(CONFIG_KEXEC)		+= relocate_kernel_$(BITS).o crash.o
+>  obj-$(CONFIG_CRASH_DUMP)	+= crash_dump_$(BITS).o
+> -obj-$(CONFIG_X86_BIGSMP)	+= bigsmp_32.o
+> -obj-$(CONFIG_X86_NUMAQ)		+= numaq_32.o
+> -obj-$(CONFIG_X86_ES7000)	+= es7000_32.o
+> -obj-$(CONFIG_X86_SUMMIT)	+= summit_32.o
+>  obj-y				+= vsmp_64.o
+>  obj-$(CONFIG_KPROBES)		+= kprobes.o
+>  obj-$(CONFIG_MODULES)		+= module_$(BITS).o
+> diff --git a/arch/x86/kernel/apic/Makefile b/arch/x86/kernel/apic/Makefile
+> index da20b70..97f558d 100644
+> --- a/arch/x86/kernel/apic/Makefile
+> +++ b/arch/x86/kernel/apic/Makefile
+> @@ -2,14 +2,19 @@
+>  # Makefile for local APIC drivers and for the IO-APIC code
+>  #
+>  
+> -obj-y				:= apic.o ipi.o nmi.o
+> +obj-y				:= apic.o probe_$(BITS).o ipi.o nmi.o
+>  obj-$(CONFIG_X86_IO_APIC)	+= io_apic.o
+>  obj-$(CONFIG_SMP)		+= ipi.o
+> +obj-$
+>  
+>  ifeq ($(CONFIG_X86_64),y)
+> -obj-y				+= apic_64.o apic_flat_64.o
+> +obj-y				+= apic_flat_64.o
+>  obj-$(CONFIG_X86_X2APIC)	+= x2apic_cluster.o
+>  obj-$(CONFIG_X86_X2APIC)	+= x2apic_phys.o
+>  obj-$(CONFIG_X86_UV)		+= x2apic_uv_x.o
+>  endif
+>  
+> +obj-$(CONFIG_X86_BIGSMP)	+= bigsmp_32.o
+> +obj-$(CONFIG_X86_NUMAQ)		+= numaq_32.o
+> +obj-$(CONFIG_X86_ES7000)	+= es7000_32.o
+> +obj-$(CONFIG_X86_SUMMIT)	+= summit_32.o
+> diff --git a/arch/x86/kernel/bigsmp_32.c b/arch/x86/kernel/apic/bigsmp_32.c
+> similarity index 100%
+> rename from arch/x86/kernel/bigsmp_32.c
+> rename to arch/x86/kernel/apic/bigsmp_32.c
+> diff --git a/arch/x86/kernel/es7000_32.c b/arch/x86/kernel/apic/es7000_32.c
+> similarity index 100%
+> rename from arch/x86/kernel/es7000_32.c
+> rename to arch/x86/kernel/apic/es7000_32.c
+> diff --git a/arch/x86/kernel/numaq_32.c b/arch/x86/kernel/apic/numaq_32.c
+> similarity index 100%
+> rename from arch/x86/kernel/numaq_32.c
+> rename to arch/x86/kernel/apic/numaq_32.c
+> diff --git a/arch/x86/kernel/probe_32.c b/arch/x86/kernel/apic/probe_32.c
+> similarity index 100%
+> rename from arch/x86/kernel/probe_32.c
+> rename to arch/x86/kernel/apic/probe_32.c
+> diff --git a/arch/x86/kernel/apic/apic_64.c b/arch/x86/kernel/apic/probe_64.c
+> similarity index 100%
+> rename from arch/x86/kernel/apic/apic_64.c
+> rename to arch/x86/kernel/apic/probe_64.c
+> diff --git a/arch/x86/kernel/summit_32.c b/arch/x86/kernel/apic/summit_32.c
+> similarity index 100%
+> rename from arch/x86/kernel/summit_32.c
+> rename to arch/x86/kernel/apic/summit_32.c
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-tip-commits" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
