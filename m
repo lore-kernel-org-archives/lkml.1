@@ -1,77 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887AbZBQRTG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753453AbZBQRVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753887AbZBQRTG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 12:19:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbZBQRSy
+	id S1753453AbZBQRVp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 12:21:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbZBQRVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 12:18:54 -0500
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:57293 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752316AbZBQRSy (ORCPT
+	Tue, 17 Feb 2009 12:21:36 -0500
+Received: from sov-mail-b0016.gradwell.net ([193.84.87.40]:44971 "EHLO
+	sov-mail-b0016.gradwell.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752195AbZBQRVg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 12:18:54 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtoEAFd8mklMQWt2/2dsb2JhbACBbtE7hBMG
-Date: Tue, 17 Feb 2009 12:18:45 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <peterz@infradead.org>, akpm <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>
-Subject: Re: irq-disabled vs vmap vs text_poke
-Message-ID: <20090217171845.GA14435@Krystal>
-References: <4995B88C.2090900@redhat.com> <20090213185725.GC7124@Krystal> <4995E925.3080506@redhat.com> <4999808B.5080505@redhat.com> <20090216153145.GB19182@wotan.suse.de> <20090216172441.GA12576@Krystal> <499A1A43.6000009@redhat.com> <20090217030353.GA31504@wotan.suse.de> <499AEA72.9090702@redhat.com> <alpine.DEB.1.10.0902171158180.910@gandalf.stny.rr.com>
+	Tue, 17 Feb 2009 12:21:36 -0500
+Date: Tue, 17 Feb 2009 17:21:15 +0000
+From: Alex Buell <alex.buell@munted.org.uk>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Andres Freund <andres@anarazel.de>, adilger@sun.com,
+       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+       Jonathan Bastien-Filiatrault <joe@x2a.org>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: EXT4 ENOSPC Bug
+Message-ID: <20090217172115.7a42044a@lithium.local.net>
+In-Reply-To: <20090216190001.GB11788@mini-me.lan>
+References: <20090216162028.3032666a@lithium.local.net>
+	<200811291418.24672.andres@anarazel.de>
+	<200812100108.04163.andres@anarazel.de>
+	<49994FEF.2020908@anarazel.de>
+	<20090216150156.GD22619@mini-me.lan>
+	<499985C7.8010302@anarazel.de>
+	<20090216190001.GB11788@mini-me.lan>
+Organization: One tortoiseshell cat, very high maintenance
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.11; i686-pc-linux-gnu)
+X-Face: "wUuhsy:X)M;>-dA\j"&y@*\$91]iX10Iv1WG_oNbGYpo,eqc06O?"VSeRTx]xM\LiITUh01z}<|GF/4Gzz(MAU~;p4AS,%TB69M:vB-9+i'#W7$UQCW&UP#zt{VdLlzEiw8k~jL<
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0902171158180.910@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:17:28 up 47 days, 17:15,  4 users,  load average: 0.13, 0.14,
-	0.15
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> On Tue, 17 Feb 2009, Masami Hiramatsu wrote:
-> > 
-> > Thanks, I think text_poke() doesn't need high performance currently,
-> > because it's not called so frequently, nor from the normal operation.
-> > 
-> > However, Would dynamic ftrace need performance?
-> 
-> Are you talking about replacing what dynamic ftrace does now with 
-> text_poke? Well, It takes just under a second right now to do all the 
-> conversions. Looking at the list on my booted box, it converts 19805 
-> locations. It takes care to run stop machine, and it also has code to 
-> handle NMIs on the other CPUS while it runs.
-> 
-> Changing text must be done extremely carefully on a running box. If the 
-> code being changed is also executed on another CPU then you will most 
-> likely take a GPF on that CPU.
-> 
-> Also, every arch must do things a bit different, due to the way modules 
-> are handled.
-> 
-> -- Steve
-> 
+On Mon, 16 Feb 2009 14:00:01 -0500, I waved a wand and this message
+magically appears in front of Theodore Tso:
 
-Anyway dynamic ftrace only need to do code patching at early boot,
-right? Or do you need also to patch the call sites a bit later too ?
-Because there is a text_poke_early for that purpose : modifying code
-when it is still writable.
+> On Mon, Feb 16, 2009 at 04:27:03PM +0100, Andres Freund wrote:
+> >
+> > So, yes, seems to be an inode allocation problem.
+> 
+> Andres, Alex, others,
+> 
+> I'm pretty sure the ENOSPC problem which you both found is an inode
+> allocation problem.  Some of you seem to have an easier time
+> reproducing it than others; could you try this patch, and periodically
+> scan your system logs for the message "ext4: find_group_flex failed,
+> fallback succeeded"?  If the problem goes away for you, and you find
+> the occasional aforemention message in your system log, that will
+> confirm what I suspect, which is the bug is in fs/ext4/inode.c's
+> find_group_flex() function.  (If I'm wrong, the fallback code will
+> activate only when the filesystem is genuinely out of inodes, which
+> should be very rare.)
 
-Mathieu
+OK, I had to go look through the archives on linux-ext4 mailing list to
+see what the context was. For myself, this used to happen at least once
+a week with 2.6.26, and less frequently with 2.6.27. I think that 2.6.28
+with your patch should get rid of that problem altogether. I will of
+course get in touch should I see any more of these find_group_flex
+failures as that would mean your patch worked. 
 
-
+Thanks for your work on tracking this one down!
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+http://www.munted.org.uk
+
+Fearsome grindings.
