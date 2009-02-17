@@ -1,187 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752753AbZBQCA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753148AbZBQCP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752753AbZBQCA5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 21:00:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750729AbZBQCAs
+	id S1753148AbZBQCP3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 21:15:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbZBQCPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 21:00:48 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:34974 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750726AbZBQCAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 21:00:47 -0500
-Message-ID: <499A1A43.6000009@redhat.com>
-Date: Mon, 16 Feb 2009 21:00:35 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
+	Mon, 16 Feb 2009 21:15:14 -0500
+Received: from mail-gx0-f222.google.com ([209.85.217.222]:53152 "EHLO
+	mail-gx0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750923AbZBQCPM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 21:15:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=xLPCUnJx99y6lmBsSzjkwu6Jc6HgiVbTGg5SR03pGsOSVZqPepv9oPA4l78QXYcZow
+         qwXO/Adt+C4MBRqEJV+zObc0FEaMxtfjPBHqJCl3n01FHF02j0jiSMHla3T+Ges9YDhv
+         NKetoCesL9/w7cdjOO55XvB9DgGLNTYFB9+6c=
+Message-ID: <499A1DAC.6090200@gmail.com>
+Date: Mon, 16 Feb 2009 20:15:08 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Nick Piggin <npiggin@suse.de>
-CC: Peter Zijlstra <peterz@infradead.org>, akpm <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>
-Subject: Re: irq-disabled vs vmap vs text_poke
-References: <1234529407.6519.28.camel@twins> <20090213141839.GA31922@Krystal> <4995A0B7.1030705@redhat.com> <20090213165555.GA4684@Krystal> <4995B88C.2090900@redhat.com> <20090213185725.GC7124@Krystal> <4995E925.3080506@redhat.com> <4999808B.5080505@redhat.com> <20090216153145.GB19182@wotan.suse.de> <20090216172441.GA12576@Krystal>
-In-Reply-To: <20090216172441.GA12576@Krystal>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+CC: ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       Mark Lord <liml@rtr.ca>, =?UTF-8?B?SGFubm8gQsO2Y2s=?= <hanno@hboeck.de>
+Subject: [PATCH v2] libata: Don't trust current capacity values in identify
+ words 57-58
+References: <4999CA54.1060306@gmail.com> <4999CFEB.3030204@ru.mvista.com>
+In-Reply-To: <4999CFEB.3030204@ru.mvista.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * Nick Piggin (npiggin@suse.de) wrote:
->> On Mon, Feb 16, 2009 at 10:04:43AM -0500, Masami Hiramatsu wrote:
->>>>>>>> BTW, what about using map_vm_area() in text_poke() instead of vmap()?
->>>>>>>> Since text_poke() just maps text pages to alias pages temporarily,
->>>>>>>> I think we don't need to use delayed vunmap().
->> [...] 
->>
->>> Here is the patch which replace v(un)map with (un)map_vm_area.
->> I don't quite understand the point of this... delayed vunmap() is
->> just an implementation detail of vmap subsystem. Callers should not
->> have to care.
->>
-> 
-> AFAIK, map_vm_area/unmap_vm_area is faster than vmap/vunmap.  This is
-> the point of this patch. Masami, could you provide a quick benchmark of
-> text_poke()/seconds before and after this optimization is applied to
-> confirm this ?
+Hanno Böck reported a problem where an old Conner CP30254 240MB hard drive
+was reported as 1.1TB in capacity by libata:
 
-Sure, here is the result of calling text_poke() 2^14 times.
+http://lkml.org/lkml/2009/2/13/134
 
-<Without this patch>
-Total: 3634133356(cycles), 221809(cycles/text_poke)
-Total: 3699532690(cycles), 225801(cycles/text_poke)
-Total: 3249855588(cycles), 198355(cycles/text_poke)
+This was caused by libata trusting the drive's reported current capacity in 
+sectors in identify words 57 and 58 if the drive does not support LBA and the
+current CHS translation values appear valid. Unfortunately it seems older
+ATA specs were vague about what this field should contain and a number of drives
+used values with wrong byte order or that were totally bogus. There's no
+unique information that it conveys and so we can just calculate the number
+of sectors from the reported current CHS values.
 
-<With this patch>
-Total: 483467579(cycles), 29508(cycles/text_poke)
-Total: 497441301(cycles), 30361(cycles/text_poke)
-Total: 497604548(cycles), 30371(cycles/text_poke)
+While we're at it, clean up this function to use named constants for the
+identify word values.
 
-BTW, this is not only for performance, but also simplicity and its need.
-Vmap may allocate new vm_area. However, since text_poke() just needs to
-map pages temporarily (yeah, very short time), we don't want to call
-kmalloc or any other memory allocators.
-And since text_poke() makes WRITABLE aliases of READ-ONLY pages, we
-want to purge these pages ASAP.
-So, I think just reserving a small vm_area for text_poke() and
-reusing it is enough.
+Signed-off-by: Robert Hancock <hancockrwd@gmail.com>
 
-Thanks,
-
-> 
-> Thanks,
-> 
-> Mathieu
-> 
->>  
->>> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
->>> ---
->>>  arch/x86/include/asm/alternative.h |    1 +
->>>  arch/x86/kernel/alternative.c      |   25 ++++++++++++++++++++-----
->>>  init/main.c                        |    3 +++
->>>  3 files changed, 24 insertions(+), 5 deletions(-)
->>>
->>> Index: linux-2.6/arch/x86/include/asm/alternative.h
->>> ===================================================================
->>> --- linux-2.6.orig/arch/x86/include/asm/alternative.h
->>> +++ linux-2.6/arch/x86/include/asm/alternative.h
->>> @@ -177,6 +177,7 @@ extern void add_nops(void *insns, unsign
->>>   * The _early version expects the memory to already be RW.
->>>   */
->>>
->>> +extern void text_poke_init(void);
->>>  extern void *text_poke(void *addr, const void *opcode, size_t len);
->>>  extern void *text_poke_early(void *addr, const void *opcode, size_t len);
->>>
->>> Index: linux-2.6/arch/x86/kernel/alternative.c
->>> ===================================================================
->>> --- linux-2.6.orig/arch/x86/kernel/alternative.c
->>> +++ linux-2.6/arch/x86/kernel/alternative.c
->>> @@ -485,6 +485,16 @@ void *text_poke_early(void *addr, const
->>>  	return addr;
->>>  }
->>>
->>> +static struct vm_struct *text_poke_area[2];
->>> +static DEFINE_SPINLOCK(text_poke_lock);
->>> +
->>> +void __init text_poke_init(void)
->>> +{
->>> +	text_poke_area[0] = get_vm_area(PAGE_SIZE, VM_ALLOC);
->>> +	text_poke_area[1] = get_vm_area(2 * PAGE_SIZE, VM_ALLOC);
->>> +	BUG_ON(!text_poke_area[0] || !text_poke_area[1]);
->>> +}
->>> +
->>>  /**
->>>   * text_poke - Update instructions on a live kernel
->>>   * @addr: address to modify
->>> @@ -501,8 +511,9 @@ void *__kprobes text_poke(void *addr, co
->>>  	unsigned long flags;
->>>  	char *vaddr;
->>>  	int nr_pages = 2;
->>> -	struct page *pages[2];
->>> -	int i;
->>> +	struct page *pages[2], **pgp = pages;
->>> +	int i, ret;
->>> +	struct vm_struct *vma;
->>>
->>>  	if (!core_kernel_text((unsigned long)addr)) {
->>>  		pages[0] = vmalloc_to_page(addr);
->>> @@ -515,12 +526,16 @@ void *__kprobes text_poke(void *addr, co
->>>  	BUG_ON(!pages[0]);
->>>  	if (!pages[1])
->>>  		nr_pages = 1;
->>> -	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
->>> -	BUG_ON(!vaddr);
->>> +	spin_lock(&text_poke_lock);
->>> +	vma = text_poke_area[nr_pages-1];
->>> +	ret = map_vm_area(vma, PAGE_KERNEL, &pgp);
->>> +	BUG_ON(ret);
->>> +	vaddr = vma->addr;
->>>  	local_irq_save(flags);
->>>  	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
->>>  	local_irq_restore(flags);
->>> -	vunmap(vaddr);
->>> +	unmap_kernel_range((unsigned long)vma->addr, (unsigned 
->>> long)vma->size);
->>> +	spin_unlock(&text_poke_lock);
->>>  	sync_core();
->>>  	/* Could also do a CLFLUSH here to speed up CPU recovery; but
->>>  	   that causes hangs on some VIA CPUs. */
->>> Index: linux-2.6/init/main.c
->>> ===================================================================
->>> --- linux-2.6.orig/init/main.c
->>> +++ linux-2.6/init/main.c
->>> @@ -676,6 +676,9 @@ asmlinkage void __init start_kernel(void
->>>  	taskstats_init_early();
->>>  	delayacct_init();
->>>
->>> +#ifdef CONFIG_X86
->>> +	text_poke_init();
->>> +#endif
->>>  	check_bugs();
->>>
->>>  	acpi_early_init(); /* before LAPIC and SMP init */
->>>
->>> -- 
->>> Masami Hiramatsu
->>>
->>> Software Engineer
->>> Hitachi Computer Products (America) Inc.
->>> Software Solutions Division
->>>
->>> e-mail: mhiramat@redhat.com
-> 
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 9fbf059..33b5549 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -1322,14 +1322,16 @@ static u64 ata_id_n_sectors(const u16 *id)
+ {
+ 	if (ata_id_has_lba(id)) {
+ 		if (ata_id_has_lba48(id))
+-			return ata_id_u64(id, 100);
++			return ata_id_u64(id, ATA_ID_LBA_CAPACITY_2);
+ 		else
+-			return ata_id_u32(id, 60);
++			return ata_id_u32(id, ATA_ID_LBA_CAPACITY);
+ 	} else {
+ 		if (ata_id_current_chs_valid(id))
+-			return ata_id_u32(id, 57);
++			return id[ATA_ID_CUR_CYLS] * id[ATA_ID_CUR_HEADS] *
++			       id[ATA_ID_CUR_SECTORS];
+ 		else
+-			return id[1] * id[3] * id[6];
++			return id[ATA_ID_CYLS] * id[ATA_ID_HEADS] *
++			       id[ATA_ID_SECTORS];
+ 	}
+ }
+ 
