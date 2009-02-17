@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbZBQRCH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945AbZBQRC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753978AbZBQRCH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 12:02:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbZBQRBx
+	id S1753945AbZBQRC5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 12:02:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbZBQRCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 12:01:53 -0500
-Received: from mx34.mail.ru ([94.100.176.48]:7752 "EHLO mx34.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753223AbZBQRBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 12:01:52 -0500
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, netdev@vger.kernel.org,
-       bonding-devel@lists.sourceforge.net
-Subject: 2.6.29 regression? Bonding tied to IPV6 in 29-rc5
-Date: Tue, 17 Feb 2009 20:01:38 +0300
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-1avb; KDE/4.2.0; i686; ; )
-Cc: "J.A. =?iso-8859-1?q?Magall=F3n?=" <jamagallon@ono.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.00.0902131413120.3179@localhost.localdomain> <20090217095232.5da06b9f@werewolf.home>
-In-Reply-To: <20090217095232.5da06b9f@werewolf.home>
+	Tue, 17 Feb 2009 12:02:47 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:33658 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752686AbZBQRCr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 12:02:47 -0500
+Date: Tue, 17 Feb 2009 12:02:44 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Masami Hiramatsu <mhiramat@redhat.com>
+cc: Nick Piggin <npiggin@suse.de>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Peter Zijlstra <peterz@infradead.org>, akpm <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>
+Subject: Re: irq-disabled vs vmap vs text_poke
+In-Reply-To: <499AEA72.9090702@redhat.com>
+Message-ID: <alpine.DEB.1.10.0902171158180.910@gandalf.stny.rr.com>
+References: <20090213141839.GA31922@Krystal> <4995A0B7.1030705@redhat.com> <20090213165555.GA4684@Krystal> <4995B88C.2090900@redhat.com> <20090213185725.GC7124@Krystal> <4995E925.3080506@redhat.com> <4999808B.5080505@redhat.com> <20090216153145.GB19182@wotan.suse.de>
+ <20090216172441.GA12576@Krystal> <499A1A43.6000009@redhat.com> <20090217030353.GA31504@wotan.suse.de> <499AEA72.9090702@redhat.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1637276.dJUPc8l8uO";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200902172001.41804.arvidjaar@mail.ru>
-X-Spam: Not detected
-X-Mras: Ok
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1637276.dJUPc8l8uO
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-=46orward to bonding and netdev
+On Tue, 17 Feb 2009, Masami Hiramatsu wrote:
+> 
+> Thanks, I think text_poke() doesn't need high performance currently,
+> because it's not called so frequently, nor from the normal operation.
+> 
+> However, Would dynamic ftrace need performance?
 
-On 17 of February 2009 11:52:32 J.A. Magall=F3n wrote:
-> Hi all...
->
-> Don't know if this is specific for -rc5, I have jumped from 28.4 to
-> 29-rc5. In this latest kernel, I can not install 'bonding' module if
-> 'ipv6' is disabled to load via modprobe.conf:
->
-> install ipv6 /bin/true
->
-> Trying bonding gives this dmesg:
->
-> bonding: Unknown symbol ndisc_build_skb
-> bonding: Unknown symbol in6_dev_finish_destroy
-> bonding: Unknown symbol ndisc_send_skb
-> bonding: Unknown symbol unregister_inet6addr_notifier
-> bonding: Unknown symbol register_inet6addr_notifier
->
-> Commenting the line in modprobe.conf makes things smooth again.
-> We can not disable ipv6 anymore ?
->
+Are you talking about replacing what dynamic ftrace does now with 
+text_poke? Well, It takes just under a second right now to do all the 
+conversions. Looking at the list on my booted box, it converts 19805 
+locations. It takes care to run stop machine, and it also has code to 
+handle NMIs on the other CPUS while it runs.
 
-If IPv6 is disable in kernel config bonding loads. But I think it is=20
-regression, it should be possible to disable IPv6 if not required.
+Changing text must be done extremely carefully on a running box. If the 
+code being changed is also executed on another CPU then you will most 
+likely take a GPF on that CPU.
 
---nextPart1637276.dJUPc8l8uO
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Also, every arch must do things a bit different, due to the way modules 
+are handled.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+-- Steve
 
-iEYEABECAAYFAkma7XUACgkQR6LMutpd94yslQCgr24HkjZ2/b6tdSdNyRDd0O+v
-TscAoJRRRG0sEQrm3ah7ckShoE5VI2gZ
-=D46+
------END PGP SIGNATURE-----
-
---nextPart1637276.dJUPc8l8uO--
