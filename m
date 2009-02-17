@@ -1,95 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753660AbZBQKRB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752921AbZBQKYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753660AbZBQKRB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 05:17:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbZBQKQx
+	id S1752921AbZBQKYs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 05:24:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751805AbZBQKYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 05:16:53 -0500
-Received: from az33egw02.freescale.net ([192.88.158.103]:60824 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750962AbZBQKQw convert rfc822-to-8bit (ORCPT
+	Tue, 17 Feb 2009 05:24:39 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:6707 "EHLO
+	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751741AbZBQKYi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 05:16:52 -0500
-Content-class: urn:content-classes:message
+	Tue, 17 Feb 2009 05:24:38 -0500
+X-BigFish: VPS-22(z34a4jz1432R98dR1805M936fM4cd6kzzzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KF7GWN-02-0OM-01
+Date: Tue, 17 Feb 2009 11:24:07 +0100
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/7] x86: memtest: introduce array to store memtest
+	patterns
+Message-ID: <20090217102407.GB6298@alberich.amd.com>
+References: <20090213144600.GA6298@alberich.amd.com> <20090213145124.GB13000@alberich.amd.com> <4995B35F.5080708@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: PROBLEM: incorrect interrupt ack  lead to interrupt loss on freescale powerpc
-Date: Tue, 17 Feb 2009 18:16:46 +0800
-Message-ID: <3A45394FD742FA419B760BB8D398F9ED246D03@zch01exm26.fsl.freescale.net>
-In-Reply-To: <D728AD1FA2543948B89DE29C5BF4CD0716A9ADD8@bjmail1.bj.datangmobile.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: PROBLEM: incorrect interrupt ack  lead to interrupt loss on freescale powerpc
-Thread-Index: AcmQ2n06DcXf5Ar+T+SgI94lU1s0UQADMFlQ
-References: <D728AD1FA2543948B89DE29C5BF4CD0716A9ADD8@bjmail1.bj.datangmobile.com>
-From: "Li Yang-R58472" <LeoLi@freescale.com>
-To: <dayu@datangmobile.cn>, <linux-kernel@vger.kernel.org>
-Cc: <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <4995B35F.5080708@zytor.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 17 Feb 2009 10:24:23.0437 (UTC) FILETIME=[E70453D0:01C990E9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: dayu@datangmobile.cn [mailto:dayu@datangmobile.cn] 
-> Sent: Tuesday, February 17, 2009 4:34 PM
-> To: linux-kernel@vger.kernel.org
-> Cc: Li Yang-R58472
-> Subject: PROBLEM: incorrect interrupt ack lead to interrupt 
-> loss on freescale powerpc
+On Fri, Feb 13, 2009 at 09:52:31AM -0800, H. Peter Anvin wrote:
+> Andreas Herrmann wrote:
+> > -#define _MAX_MEM_PATTERNS 4
+> > +static unsigned long patterns[] = {
+> > +	0UL,
+> > +	-1UL,
+> > +#ifdef CONFIG_X86_64
+> > +	0x5555555555555555UL,
+> > +	0xaaaaaaaaaaaaaaaaUL,
+> > +#else
+> > +	0x55555555UL,
+> > +	0xaaaaaaaaUL,
+> > +#endif
+> > +};
 > 
->  
-> [1.] One line summary of the problem: incorrect interrupt ack 
->  lead to interrupt loss
+> Why not just use u64 for the pattern even on 32 bits?
 
-Acked-by: Li Yang <leoli@freescale.com>
+I just assumed that this was a settled thing.
 
-However, please resend the patch with a brief description and Signed-off-by at the top of the patch.  You can read the Documentation/SubmittiongPatches for more information, or even a Chinese version under Documentation/zh_CN/.
+Yinghai, was there a specific reason why you did not use an u64 for
+the memory test pattern on 32-bit?
+(See commit 1f067167a83d1c7f80437fd1d32b55508aaca009 "x86: seperate
+memtest from init_64.c")
 
-Here are some small comments about the patch itself,
-
---- a/arch/powerpc/sysdev/ipic.c	2009-02-17 15:10:18.000000000 +0800
-+++ b/arch/powerpc/sysdev/ipic.c	2009-02-17 15:10:24.000000000 +0800
-@@ -9,6 +9,7 @@
-  * under  the terms of  the GNU General  Public License as published by the
-  * Free Software Foundation;  either version 2 of the  License, or (at your
-  * option) any later version.
-+ * Da Yu <dayu@datangmobile.cn> fixed the interrupt loss problem on powerpc IPIC
+If not I'll adapt this and send out a new patch set.
 
 
-It's not recommended to add changelog in the source now.  Please describe in the patch description area.
+Regards,
 
-  */
- #include <linux/kernel.h>
- #include <linux/init.h>
-@@ -561,8 +562,7 @@
- 
- 	spin_lock_irqsave(&ipic_lock, flags);
- 
--	temp = ipic_read(ipic->regs, ipic_info[src].pend);
--	temp |= (1 << (31 - ipic_info[src].bit));
-+	temp = (1 << (31 - ipic_info[src].bit));
+Andreas
 
 
-Remove unneeded brackets.
-
-
- 	ipic_write(ipic->regs, ipic_info[src].pend, temp);
- 
- 	spin_unlock_irqrestore(&ipic_lock, flags);
-@@ -581,8 +581,7 @@
- 	temp &= ~(1 << (31 - ipic_info[src].bit));
- 	ipic_write(ipic->regs, ipic_info[src].mask, temp);
- 
--	temp = ipic_read(ipic->regs, ipic_info[src].pend);
--	temp |= (1 << (31 - ipic_info[src].bit));
-+	temp = (1 << (31 - ipic_info[src].bit));
-
-Same as above.
-
-
- 	ipic_write(ipic->regs, ipic_info[src].pend, temp);
- 
- 	spin_unlock_irqrestore(&ipic_lock, flags);
