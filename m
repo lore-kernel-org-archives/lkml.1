@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbZBQFSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754137AbZBQFTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbZBQFSs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 00:18:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbZBQFOY
+	id S1754137AbZBQFTM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 00:19:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbZBQFOZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 00:14:24 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:53253 "EHLO
+	Tue, 17 Feb 2009 00:14:25 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:42053 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752215AbZBQFOK (ORCPT
+	with ESMTP id S1752216AbZBQFOK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 17 Feb 2009 00:14:10 -0500
-Message-Id: <20090217051407.644936411@goodmis.org>
+Message-Id: <20090217051405.772028305@goodmis.org>
 References: <20090217051227.957864159@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 17 Feb 2009 00:12:40 -0500
+Date: Tue, 17 Feb 2009 00:12:31 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -21,273 +21,191 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 13/15] ftrace: show selected functions in set_ftrace_filter
-Content-Disposition: inline; filename=0013-ftrace-show-selected-functions-in-set_ftrace_filter.patch
+Subject: [PATCH 04/15] ftrace: break up ftrace_match_records into smaller components
+Content-Disposition: inline; filename=0004-ftrace-break-up-ftrace_match_records-into-smaller-c.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-This patch adds output to show what functions have tracer hooks
-attached to them.
+Impact: clean up
 
-  # echo 'sys_open:traceon:4' > /debug/tracing/set_ftrace_filter
-  # cat set_ftrace_filter
+ftrace_match_records does a lot of things that other features
+can use. This patch breaks up ftrace_match_records and pulls
+out ftrace_setup_glob and ftrace_match_record.
 
- #### all functions enabled ####
- sys_open:ftrace_traceon:0000000000000004
+ftrace_setup_glob prepares a simple glob expression for use with
+ftrace_match_record. ftrace_match_record compares a single record
+with a glob type.
 
-  # echo 'do_fork:traceoff:' > set_ftrace_filter
-  # cat set_ftrace_filter
-
- #### all functions enabled ####
- sys_open:ftrace_traceon:0000000000000002
- do_fork:ftrace_traceoff:ffffffffffffffff
-
-Note the 4 changed to a 2. This is because The code was executed twice
-since the traceoff was added. If a cat is done again:
-
- #### all functions enabled ####
- sys_open:ftrace_traceon
- do_fork:ftrace_traceoff:ffffffffffffffff
-
-The number disappears. That is because it will not print a NULL.
-
-Callbacks to allow the tracer to pretty print will be implemented soon.
+Breaking this up will allow for more features to run on individual
+records.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/ftrace.c |  123 +++++++++++++++++++++++++++++++++++++++++--------
- 1 files changed, 103 insertions(+), 20 deletions(-)
+ kernel/trace/ftrace.c |  115 ++++++++++++++++++++++++++++++++-----------------
+ 1 files changed, 75 insertions(+), 40 deletions(-)
 
 diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 0b80e32..1e05884 100644
+index f397d7a..fcec313 100644
 --- a/kernel/trace/ftrace.c
 +++ b/kernel/trace/ftrace.c
-@@ -45,14 +45,14 @@
- 			ftrace_kill();		\
- 	} while (0)
- 
-+/* hash bits for specific function selection */
-+#define FTRACE_HASH_BITS 7
-+#define FTRACE_FUNC_HASHSIZE (1 << FTRACE_HASH_BITS)
-+
- /* ftrace_enabled is a method to turn ftrace on or off */
- int ftrace_enabled __read_mostly;
- static int last_ftrace_enabled;
- 
--/* set when tracing only a pid */
--struct pid *ftrace_pid_trace;
--static struct pid * const ftrace_swapper_pid = &init_struct_pid;
--
- /* Quick disabling of function tracer. */
- int function_trace_stop;
- 
-@@ -248,6 +248,21 @@ static void ftrace_update_pid_func(void)
- # error Dynamic ftrace depends on MCOUNT_RECORD
- #endif
- 
-+/* set when tracing only a pid */
-+struct pid *ftrace_pid_trace;
-+static struct pid * const ftrace_swapper_pid = &init_struct_pid;
-+static struct hlist_head ftrace_func_hash[FTRACE_FUNC_HASHSIZE] __read_mostly;
-+
-+struct ftrace_func_hook {
-+	struct hlist_node	node;
-+	struct ftrace_hook_ops	*ops;
-+	unsigned long		flags;
-+	unsigned long		ip;
-+	void			*data;
-+	struct rcu_head		rcu;
-+};
-+
-+
- enum {
- 	FTRACE_ENABLE_CALLS		= (1 << 0),
- 	FTRACE_DISABLE_CALLS		= (1 << 1),
-@@ -750,12 +765,14 @@ enum {
- 	FTRACE_ITER_NOTRACE	= (1 << 2),
- 	FTRACE_ITER_FAILURES	= (1 << 3),
- 	FTRACE_ITER_PRINTALL	= (1 << 4),
-+	FTRACE_ITER_HASH	= (1 << 5),
+@@ -1053,79 +1053,114 @@ enum {
+ 	MATCH_END_ONLY,
  };
  
- #define FTRACE_BUFF_MAX (KSYM_SYMBOL_LEN+4) /* room for wildcards */
- 
- struct ftrace_iterator {
- 	struct ftrace_page	*pg;
-+	int			hidx;
- 	int			idx;
- 	unsigned		flags;
- 	unsigned char		buffer[FTRACE_BUFF_MAX+1];
-@@ -764,17 +781,86 @@ struct ftrace_iterator {
- };
- 
- static void *
-+t_hash_next(struct seq_file *m, void *v, loff_t *pos)
-+{
-+	struct ftrace_iterator *iter = m->private;
-+	struct hlist_node *hnd = v;
-+	struct hlist_head *hhd;
-+
-+	WARN_ON(!(iter->flags & FTRACE_ITER_HASH));
-+
-+	(*pos)++;
-+
-+ retry:
-+	if (iter->hidx >= FTRACE_FUNC_HASHSIZE)
-+		return NULL;
-+
-+	hhd = &ftrace_func_hash[iter->hidx];
-+
-+	if (hlist_empty(hhd)) {
-+		iter->hidx++;
-+		hnd = NULL;
-+		goto retry;
-+	}
-+
-+	if (!hnd)
-+		hnd = hhd->first;
-+	else {
-+		hnd = hnd->next;
-+		if (!hnd) {
-+			iter->hidx++;
-+			goto retry;
-+		}
-+	}
-+
-+	return hnd;
-+}
-+
-+static void *t_hash_start(struct seq_file *m, loff_t *pos)
-+{
-+	struct ftrace_iterator *iter = m->private;
-+	void *p = NULL;
-+
-+	iter->flags |= FTRACE_ITER_HASH;
-+
-+	return t_hash_next(m, p, pos);
-+}
-+
-+static int t_hash_show(struct seq_file *m, void *v)
-+{
-+	struct ftrace_func_hook *rec;
-+	struct hlist_node *hnd = v;
-+	char str[KSYM_SYMBOL_LEN];
-+
-+	rec = hlist_entry(hnd, struct ftrace_func_hook, node);
-+
-+	kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
-+	seq_printf(m, "%s:", str);
-+
-+	kallsyms_lookup((unsigned long)rec->ops->func, NULL, NULL, NULL, str);
-+	seq_printf(m, "%s", str);
-+
-+	if (rec->data)
-+		seq_printf(m, ":%p", rec->data);
-+	seq_putc(m, '\n');
-+
-+	return 0;
-+}
-+
-+static void *
- t_next(struct seq_file *m, void *v, loff_t *pos)
+-static void
+-ftrace_match_records(unsigned char *buff, int len, int enable)
++/*
++ * (static function - no need for kernel doc)
++ *
++ * Pass in a buffer containing a glob and this function will
++ * set search to point to the search part of the buffer and
++ * return the type of search it is (see enum above).
++ * This does modify buff.
++ *
++ * Returns enum type.
++ *  search returns the pointer to use for comparison.
++ *  not returns 1 if buff started with a '!'
++ *     0 otherwise.
++ */
++static int
++ftrace_setup_glob(unsigned char *buff, int len, char **search, int *not)
  {
- 	struct ftrace_iterator *iter = m->private;
- 	struct dyn_ftrace *rec = NULL;
+-	char str[KSYM_SYMBOL_LEN];
+-	char *search = NULL;
+-	struct ftrace_page *pg;
+-	struct dyn_ftrace *rec;
+ 	int type = MATCH_FULL;
+-	unsigned long flag = enable ? FTRACE_FL_FILTER : FTRACE_FL_NOTRACE;
+-	unsigned i, match = 0, search_len = 0;
+-	int not = 0;
++	int i;
  
-+	if (iter->flags & FTRACE_ITER_HASH)
-+		return t_hash_next(m, v, pos);
+ 	if (buff[0] == '!') {
+-		not = 1;
++		*not = 1;
+ 		buff++;
+ 		len--;
+-	}
++	} else
++		*not = 0;
 +
- 	(*pos)++;
++	*search = buff;
  
- 	if (iter->flags & FTRACE_ITER_PRINTALL)
- 		return NULL;
- 
--	mutex_lock(&ftrace_lock);
-  retry:
- 	if (iter->idx >= iter->pg->index) {
- 		if (iter->pg->next) {
-@@ -803,7 +889,6 @@ t_next(struct seq_file *m, void *v, loff_t *pos)
- 			goto retry;
+ 	for (i = 0; i < len; i++) {
+ 		if (buff[i] == '*') {
+ 			if (!i) {
+-				search = buff + i + 1;
++				*search = buff + 1;
+ 				type = MATCH_END_ONLY;
+-				search_len = len - (i + 1);
+ 			} else {
+-				if (type == MATCH_END_ONLY) {
++				if (type == MATCH_END_ONLY)
+ 					type = MATCH_MIDDLE_ONLY;
+-				} else {
+-					match = i;
++				else
+ 					type = MATCH_FRONT_ONLY;
+-				}
+ 				buff[i] = 0;
+ 				break;
+ 			}
  		}
  	}
--	mutex_unlock(&ftrace_lock);
  
- 	return rec;
- }
-@@ -813,6 +898,7 @@ static void *t_start(struct seq_file *m, loff_t *pos)
- 	struct ftrace_iterator *iter = m->private;
- 	void *p = NULL;
- 
-+	mutex_lock(&ftrace_lock);
- 	/*
- 	 * For set_ftrace_filter reading, if we have the filter
- 	 * off, we can short cut and just print out that all
-@@ -820,12 +906,15 @@ static void *t_start(struct seq_file *m, loff_t *pos)
- 	 */
- 	if (iter->flags & FTRACE_ITER_FILTER && !ftrace_filtered) {
- 		if (*pos > 0)
--			return NULL;
-+			return t_hash_start(m, pos);
- 		iter->flags |= FTRACE_ITER_PRINTALL;
- 		(*pos)++;
- 		return iter;
- 	}
- 
-+	if (iter->flags & FTRACE_ITER_HASH)
-+		return t_hash_start(m, pos);
++	return type;
++}
 +
- 	if (*pos > 0) {
- 		if (iter->idx < 0)
- 			return p;
-@@ -835,11 +924,15 @@ static void *t_start(struct seq_file *m, loff_t *pos)
- 
- 	p = t_next(m, p, pos);
- 
-+	if (!p)
-+		return t_hash_start(m, pos);
++static int
++ftrace_match_record(struct dyn_ftrace *rec, char *regex, int len, int type)
++{
++	char str[KSYM_SYMBOL_LEN];
++	int matched = 0;
++	char *ptr;
 +
- 	return p;
- }
- 
- static void t_stop(struct seq_file *m, void *p)
- {
-+	mutex_unlock(&ftrace_lock);
- }
- 
- static int t_show(struct seq_file *m, void *v)
-@@ -848,6 +941,9 @@ static int t_show(struct seq_file *m, void *v)
- 	struct dyn_ftrace *rec = v;
- 	char str[KSYM_SYMBOL_LEN];
- 
-+	if (iter->flags & FTRACE_ITER_HASH)
-+		return t_hash_show(m, v);
++	kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
++	switch (type) {
++	case MATCH_FULL:
++		if (strcmp(str, regex) == 0)
++			matched = 1;
++		break;
++	case MATCH_FRONT_ONLY:
++		if (strncmp(str, regex, len) == 0)
++			matched = 1;
++		break;
++	case MATCH_MIDDLE_ONLY:
++		if (strstr(str, regex))
++			matched = 1;
++		break;
++	case MATCH_END_ONLY:
++		ptr = strstr(str, regex);
++		if (ptr && (ptr[len] == 0))
++			matched = 1;
++		break;
++	}
 +
- 	if (iter->flags & FTRACE_ITER_PRINTALL) {
- 		seq_printf(m, "#### all functions enabled ####\n");
- 		return 0;
-@@ -1246,19 +1342,6 @@ static int __init ftrace_mod_cmd_init(void)
- }
- device_initcall(ftrace_mod_cmd_init);
++	return matched;
++}
++
++static void ftrace_match_records(char *buff, int len, int enable)
++{
++	char *search;
++	struct ftrace_page *pg;
++	struct dyn_ftrace *rec;
++	int type;
++	unsigned long flag = enable ? FTRACE_FL_FILTER : FTRACE_FL_NOTRACE;
++	unsigned search_len;
++	int not;
++
++	type = ftrace_setup_glob(buff, len, &search, &not);
++
++	search_len = strlen(search);
++
+ 	/* should not be called from interrupt context */
+ 	spin_lock(&ftrace_lock);
+ 	if (enable)
+ 		ftrace_filtered = 1;
+ 	do_for_each_ftrace_rec(pg, rec) {
+-		int matched = 0;
+-		char *ptr;
  
--#define FTRACE_HASH_BITS 7
--#define FTRACE_FUNC_HASHSIZE (1 << FTRACE_HASH_BITS)
--static struct hlist_head ftrace_func_hash[FTRACE_FUNC_HASHSIZE] __read_mostly;
--
--struct ftrace_func_hook {
--	struct hlist_node	node;
--	struct ftrace_hook_ops	*ops;
--	unsigned long		flags;
--	unsigned long		ip;
--	void			*data;
--	struct rcu_head		rcu;
--};
--
- static void
- function_trace_hook_call(unsigned long ip, unsigned long parent_ip)
- {
+ 		if (rec->flags & FTRACE_FL_FAILED)
+ 			continue;
+-		kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
+-		switch (type) {
+-		case MATCH_FULL:
+-			if (strcmp(str, buff) == 0)
+-				matched = 1;
+-			break;
+-		case MATCH_FRONT_ONLY:
+-			if (memcmp(str, buff, match) == 0)
+-				matched = 1;
+-			break;
+-		case MATCH_MIDDLE_ONLY:
+-			if (strstr(str, search))
+-				matched = 1;
+-			break;
+-		case MATCH_END_ONLY:
+-			ptr = strstr(str, search);
+-			if (ptr && (ptr[search_len] == 0))
+-				matched = 1;
+-			break;
+-		}
+-		if (matched) {
++
++		if (ftrace_match_record(rec, search, search_len, type)) {
+ 			if (not)
+ 				rec->flags &= ~flag;
+ 			else
+ 				rec->flags |= flag;
+ 		}
++
+ 	} while_for_each_ftrace_rec();
+ 	spin_unlock(&ftrace_lock);
+ }
 -- 
 1.5.6.5
 
