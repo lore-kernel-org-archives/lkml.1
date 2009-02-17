@@ -1,75 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752881AbZBQLFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753780AbZBQLGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752881AbZBQLFp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 06:05:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751253AbZBQLFc
+	id S1753780AbZBQLGB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 06:06:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbZBQLFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 06:05:32 -0500
-Received: from sd-green-bigip-177.dreamhost.com ([208.97.132.177]:48677 "EHLO
-	spunkymail-a5.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751047AbZBQLFb (ORCPT
+	Tue, 17 Feb 2009 06:05:47 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:36715 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752915AbZBQLFp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 06:05:31 -0500
-X-Greylist: delayed 72202 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Feb 2009 06:05:30 EST
-Message-ID: <499A99F4.60405@hiramoto.org>
-Date: Tue, 17 Feb 2009 12:05:24 +0100
-From: Karl Hiramoto <karl@hiramoto.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090102)
+	Tue, 17 Feb 2009 06:05:45 -0500
+Message-ID: <499A99BC.2080700@bk.jp.nec.com>
+Date: Tue, 17 Feb 2009 20:04:28 +0900
+From: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.0; ja; rv:1.8.1.9) Gecko/20071031 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Patrick McHardy <kaber@trash.net>, netdev@vger.kernel.org,
-       netfilter@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH v2] Re: problem with IPoA (CLIP),  NAT, and VLANS
-References: <20090216232016.GA4803@ami.dom.local> <499A7D7D.1090607@trash.net> <20090217093908.GB5341@ff.dom.local>
-In-Reply-To: <20090217093908.GB5341@ff.dom.local>
+To: Peter Zijlstra <peterz@infradead.org>
+CC: linux-kernel@vger.kernel.org, Jason Baron <jbaron@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Kazuto Miyoshi <miyoshi@linux.bs1.fc.nec.co.jp>, rostedt@goodmis.org,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH] Add tracepoints to track pagecache transition
+References: <499A7CAD.9030409@bk.jp.nec.com> <1234863220.4744.34.camel@laptop>
+In-Reply-To: <1234863220.4744.34.camel@laptop>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Peter Zijlstra wrote:
+> On Tue, 2009-02-17 at 18:00 +0900, Atsushi Tsuji wrote:
+> 
+>> The below patch adds instrumentation for pagecache.
+> 
+> And somehow you forgot to CC any of the mm people.. ;-)
 
+Hi Peter,
 
-Jarek Poplawski wrote:
-> Sorry:
-> -----------------> take 2: changelog fix only
->
-> vlan: Update skb->mac_header in __vlan_put_tag().
->
-> After moving mac addresses in __vlan_put_tag() skb->mac_header needs
-> to be updated.
->   
-This works on IPoE.  I notice no change with or w/o this patch on IPoE
-only routing.    However has no effect on the original problem i
-reported with  IPoA --> NAT --> VLAN
+Ah, sorry.
+Thank you for adding to CC list.
 
-Tested-by: Karl Hiramoto <karl@hiramoto.org>
+>> +DECLARE_TRACE(filemap_add_to_page_cache,
+>> +	TPPROTO(struct address_space *mapping, pgoff_t offset),
+>> +	TPARGS(mapping, offset));
+>> +DECLARE_TRACE(filemap_remove_from_page_cache,
+>> +	TPPROTO(struct address_space *mapping),
+>> +	TPARGS(mapping));
+> 
+> This is rather asymmetric, why don't we care about the offset for the
+> removed page?
+> 
 
-> Reported-by: Karl Hiramoto <karl@hiramoto.org>
-> Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
-> ---
->
->  include/linux/if_vlan.h |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
->
-> diff --git a/include/linux/if_vlan.h b/include/linux/if_vlan.h
-> index f8ff918..e1ff5b1 100644
-> --- a/include/linux/if_vlan.h
-> +++ b/include/linux/if_vlan.h
-> @@ -210,6 +210,7 @@ static inline struct sk_buff *__vlan_put_tag(struct sk_buff *skb, u16 vlan_tci)
->  
->  	/* Move the mac addresses to the beginning of the new header. */
->  	memmove(skb->data, skb->data + VLAN_HLEN, 2 * VLAN_ETH_ALEN);
-> +	skb->mac_header -= VLAN_HLEN;
->  
->  	/* first, the ethernet type */
->  	veth->h_vlan_proto = htons(ETH_P_8021Q);
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
->   
+Indeed.
+I added the offset to the argument for the removed page and resend fixed patch.
+
+Signed-off-by: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+---
+diff --git a/include/trace/filemap.h b/include/trace/filemap.h
+new file mode 100644
+index 0000000..a17dc92
+--- /dev/null
++++ b/include/trace/filemap.h
+@@ -0,0 +1,13 @@
++#ifndef _TRACE_FILEMAP_H
++#define _TRACE_FILEMAP_H
++
++#include <linux/tracepoint.h>
++
++DECLARE_TRACE(filemap_add_to_page_cache,
++	TPPROTO(struct address_space *mapping, pgoff_t offset),
++	TPARGS(mapping, offset));
++DECLARE_TRACE(filemap_remove_from_page_cache,
++	TPPROTO(struct address_space *mapping, pgoff_t offset),
++	TPARGS(mapping, offset));
++
++#endif
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 23acefe..23f75d2 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -34,6 +34,7 @@
+ #include <linux/hardirq.h> /* for BUG_ON(!in_atomic()) only */
+ #include <linux/memcontrol.h>
+ #include <linux/mm_inline.h> /* for page_is_file_cache() */
++#include <trace/filemap.h>
+ #include "internal.h"
+ 
+ /*
+@@ -43,6 +44,8 @@
+ 
+ #include <asm/mman.h>
+ 
++DEFINE_TRACE(filemap_add_to_page_cache);
++DEFINE_TRACE(filemap_remove_from_page_cache);
+ 
+ /*
+  * Shared mappings implemented 30.11.1994. It's not fully working yet,
+@@ -120,6 +123,7 @@ void __remove_from_page_cache(struct page *page)
+ 	page->mapping = NULL;
+ 	mapping->nrpages--;
+ 	__dec_zone_page_state(page, NR_FILE_PAGES);
++	trace_filemap_remove_from_page_cache(mapping, page->index);
+ 	BUG_ON(page_mapped(page));
+ 	mem_cgroup_uncharge_cache_page(page);
+ 
+@@ -475,6 +479,7 @@ int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
+ 		if (likely(!error)) {
+ 			mapping->nrpages++;
+ 			__inc_zone_page_state(page, NR_FILE_PAGES);
++			trace_filemap_add_to_page_cache(mapping, offset);
+ 		} else {
+ 			page->mapping = NULL;
+ 			mem_cgroup_uncharge_cache_page(page);
 
