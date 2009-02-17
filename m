@@ -1,102 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752141AbZBQLkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754369AbZBQLk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752141AbZBQLkM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 06:40:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754186AbZBQLjl
+	id S1754369AbZBQLk5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 06:40:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbZBQLkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 06:39:41 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:34080 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754112AbZBQLjk (ORCPT
+	Tue, 17 Feb 2009 06:40:49 -0500
+Received: from jurassic.park.msu.ru ([195.208.223.243]:52271 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751648AbZBQLks (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 06:39:40 -0500
-Subject: Re: set_page_dirty races (was: Re: [patch 2/4] vfs: add
- set_page_dirty_notag)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Edward Shishkin <edward.shishkin@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ryan Hope <rmh3093@gmail.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel@vger.kernel.org,
-       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>
-In-Reply-To: <20090217112512.GD26402@wotan.suse.de>
-References: <49957C43.7050701@gmail.com> <1234534150.6519.101.camel@twins>
-	 <18838.49922.215481.399653@edward.zelnet.ru>
-	 <1234645893.4695.8.camel@laptop>
-	 <18841.60432.329341.514726@edward.zelnet.ru>
-	 <1234861781.4744.21.camel@laptop> <20090217093805.GB31323@wotan.suse.de>
-	 <1234865116.4744.46.camel@laptop> <20090217102443.GA26402@wotan.suse.de>
-	 <1234867200.4744.65.camel@laptop>  <20090217112512.GD26402@wotan.suse.de>
-Content-Type: text/plain
-Date: Tue, 17 Feb 2009 12:39:32 +0100
-Message-Id: <1234870772.4744.79.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.90 
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Feb 2009 06:40:48 -0500
+Date: Tue, 17 Feb 2009 14:40:56 +0300
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Richard Henderson <rth@twiddle.net>, Al Viro <viro@zeniv.linux.org.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] alpha: binfmt_aout fix
+Message-ID: <20090217114054.GA26176@jurassic.park.msu.ru>
+References: <20090217104956.GC25856@jurassic.park.msu.ru> <20090217110842.GA22272@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090217110842.GA22272@infradead.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-17 at 12:25 +0100, Nick Piggin wrote:
+On Tue, Feb 17, 2009 at 06:08:42AM -0500, Christoph Hellwig wrote:
+> I think the proper fix for this is to make sure newly registered
+> binfmts are added to the tail of the list, not the front.
 
-> Introduce put_user_pages function.
-> 
-> In order to have more flexibility to deal with issues surrounding
-> get_user_pages difficulties[*], introduce put_user_pages function
-> intended to release pages acquired by get_user_pages. For now, just
-> do the regular put_page thing. If all callers are converted, it could
-> be used to help with such races. In the meantime, it will actually
-> serve as a small extra piece of documentation for the code.
-> 
-> [*] eg. get_user_pages caller can bypass page_mkwrite calls into the
->     filesystem to notify of page dirty activity if the page gets cleaned
->     before the caller calls its final set_page_dirty).
+Yes, I was thinking about that. But then I need to make sure
+that alpha binfmt_loader is registered first, which is not
+possible at the moment as binfmts get registered at core_initcall
+level.
+If it's acceptable to change binfmts initcall level to, say,
+fs_initcall, then changing list_add() to list_add_tail() would
+certainly work fine here.
 
-Hmm, if we want to distinguish between .write=1 and .write=0, we would
-have to pass .write to pup too, right?
-
-> ---
->  include/linux/mm.h |    1 +
->  mm/memory.c        |   13 ++++++++++++-
->  2 files changed, 13 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/include/linux/mm.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/mm.h
-> +++ linux-2.6/include/linux/mm.h
-> @@ -826,6 +826,7 @@ extern int access_process_vm(struct task
->  int get_user_pages(struct task_struct *tsk, struct mm_struct *mm, unsigned long start,
->  		int len, int write, int force, struct page **pages, struct vm_area_struct **vmas);
->  
-> +void put_user_pages(struct page **pages, int nr);
->  extern int try_to_release_page(struct page * page, gfp_t gfp_mask);
->  extern void do_invalidatepage(struct page *page, unsigned long offset);
->  
-> Index: linux-2.6/mm/memory.c
-> ===================================================================
-> --- linux-2.6.orig/mm/memory.c
-> +++ linux-2.6/mm/memory.c
-> @@ -1370,9 +1370,20 @@ int get_user_pages(struct task_struct *t
->  				start, len, flags,
->  				pages, vmas);
->  }
-> -
->  EXPORT_SYMBOL(get_user_pages);
->  
-> +/*
-> + * put_user_pages should be used to release pages acquired with get_user_pages.
-> + */
-> +void put_user_pages(struct page **pages, int nr)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < nr; i++)
-> +		put_page(pages[i]);
-> +}
-> +EXPORT_SYMBOL(put_user_pages);
-> +
->  pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr,
->  			spinlock_t **ptl)
->  {
-> 
-
+Ivan.
