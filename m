@@ -1,52 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbZBQTC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754397AbZBQTDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754596AbZBQTC0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 14:02:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbZBQTCQ
+	id S1754397AbZBQTDV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 14:03:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbZBQTDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 14:02:16 -0500
-Received: from zone0.gcu-squad.org ([212.85.147.21]:27971 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752866AbZBQTCQ (ORCPT
+	Tue, 17 Feb 2009 14:03:04 -0500
+Received: from moutng.kundenserver.de ([212.227.17.10]:63852 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751732AbZBQTDB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 14:02:16 -0500
-Date: Tue, 17 Feb 2009 20:02:00 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       LM Sensors <lm-sensors@lm-sensors.org>
-Subject: [GIT PULL] hwmon fixes for 2.6.29
-Message-ID: <20090217200200.3b9ce3ea@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 17 Feb 2009 14:03:01 -0500
+Message-ID: <499B09FB.1070909@vlnb.net>
+Date: Tue, 17 Feb 2009 22:03:23 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+MIME-Version: 1.0
+To: Wu Fengguang <wfg@linux.intel.com>
+CC: Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
+       "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>,
+       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
+References: <492BE47B.3010802@vlnb.net> <20081125114908.GA16545@localhost> <492BE97A.3050606@vlnb.net> <492BEAE8.9050809@vlnb.net> <20081125121534.GA16778@localhost> <492EDCFB.7080302@vlnb.net> <20081128004830.GA8874@localhost> <49946BE6.1040005@vlnb.net> <20090213015721.GA5565@localhost> <4995D339.5050502@vlnb.net> <20090216023402.GA6199@localhost>
+In-Reply-To: <20090216023402.GA6199@localhost>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/J6I3fqelM0m/Mxl/qG9B3HuZN72aVZm4vMX8
+ c/YSPAAvzOlPATJHbUXvDfSy6XziPzN2TzDj6WRVa8OHm86hdS
+ 19/erp3ord2tpH9pWrvOQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Wu Fengguang, on 02/16/2009 05:34 AM wrote:
+> On Fri, Feb 13, 2009 at 11:08:25PM +0300, Vladislav Bolkhovitin wrote:
+>> Wu Fengguang, on 02/13/2009 04:57 AM wrote:
+>>> On Thu, Feb 12, 2009 at 09:35:18PM +0300, Vladislav Bolkhovitin wrote:
+>>>> Sorry for such a huge delay. There were many other activities I had 
+>>>> to  do before + I had to be sure I didn't miss anything.
+>>>>
+>>>> We didn't use NFS, we used SCST (http://scst.sourceforge.net) with   
+>>>> iSCSI-SCST target driver. It has similar to NFS architecture, where N 
+>>>>  threads (N=5 in this case) handle IO from remote initiators 
+>>>> (clients)  coming from wire using iSCSI protocol. In addition, SCST 
+>>>> has patch  called export_alloc_io_context (see   
+>>>> http://lkml.org/lkml/2008/12/10/282), which allows for the IO threads 
+>>>>  queue IO using single IO context, so we can see if context RA can   
+>>>> replace grouping IO threads in single IO context.
+>>>>
+>>>> Unfortunately, the results are negative. We find neither any 
+>>>> advantages  of context RA over current RA implementation, nor 
+>>>> possibility for  context RA to replace grouping IO threads in single 
+>>>> IO context.
+>>>>
+>>>> Setup on the target (server) was the following. 2 SATA drives grouped 
+>>>> in  md RAID-0 with average local read throughput ~120MB/s ("dd 
+>>>> if=/dev/zero  of=/dev/md0 bs=1M count=20000" outputs "20971520000 
+>>>> bytes (21 GB)  copied, 177,742 s, 118 MB/s"). The md device was 
+>>>> partitioned on 3  partitions. The first partition was 10% of space in 
+>>>> the beginning of the  device, the last partition was 10% of space in 
+>>>> the end of the device,  the middle one was the rest in the middle of 
+>>>> the space them. Then the  first and the last partitions were exported 
+>>>> to the initiator (client).  They were /dev/sdb and /dev/sdc on it 
+>>>> correspondingly.
+>>> Vladislav, Thank you for the benchmarks! I'm very interested in
+>>> optimizing your workload and figuring out what happens underneath.
+>>>
+>>> Are the client and server two standalone boxes connected by GBE?
+>> Yes, they directly connected using GbE.
+>>
+>>> When you set readahead sizes in the benchmarks, you are setting them
+>>> in the server side? I.e. "linux-4dtq" is the SCST server?
+>> Yes, it's the server. On the client all the parameters were left default.
+>>
+>>> What's the
+>>> client side readahead size?
+>> Default, i.e. 128K
+>>
+>>> It would help a lot to debug readahead if you can provide the
+>>> server side readahead stats and trace log for the worst case.
+>>> This will automatically answer the above questions as well as disclose
+>>> the micro-behavior of readahead:
+>>>
+>>>         mount -t debugfs none /sys/kernel/debug
+>>>
+>>>         echo > /sys/kernel/debug/readahead/stats # reset counters
+>>>         # do benchmark
+>>>         cat /sys/kernel/debug/readahead/stats
+>>>
+>>>         echo 1 > /sys/kernel/debug/readahead/trace_enable
+>>>         # do micro-benchmark, i.e. run the same benchmark for a short time
+>>>         echo 0 > /sys/kernel/debug/readahead/trace_enable
+>>>         dmesg
+>>>
+>>> The above readahead trace should help find out how the client side
+>>> sequential reads convert into server side random reads, and how we can
+>>> prevent that.
+>> We will do it as soon as we have a free window on that system.
+> 
+> Thank you. For NFS, the client side read/readahead requests will be
+> split into units of rsize which will be served by a pool of nfsd
+> concurrently and possibly out of order. Does SCST have the same
+> process? If so, what's the rsize value for your SCST benchmarks?
 
-Please pull some hwmon subsystem fixes for Linux 2.6.29 from:
+No, there is no such splitting in SCST. Client sees raw SCSI disks from 
+server and what client sends is directly and in full size sent by the 
+server to its backstorage using regular buffered read() 
+(fd->f_op->aio_read() followed by 
+wait_on_retry_sync_kiocb()/wait_on_sync_kiocb() to be precise).
 
-git://jdelvare.pck.nerim.net/jdelvare-2.6 hwmon-for-linus
+Thanks,
+Vlad
 
- MAINTAINERS               |    8 ++++----
- drivers/hwmon/f71882fg.c  |    4 ++--
- drivers/hwmon/vt1211.c    |    2 +-
- drivers/hwmon/w83627ehf.c |    2 +-
- 4 files changed, 8 insertions(+), 8 deletions(-)
-
----------------
-
-Frank Seidel (1):
-      MAINTAINERS: Switch hdaps to Frank Seidel
-
-Hans de Goede (1):
-      hwmon: Fix ACPI resource check error handling
-
-Jean Delvare (1):
-      hwmon: (f71882fg) Hide misleading error message
-
--- 
-Jean Delvare
