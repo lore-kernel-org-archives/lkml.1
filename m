@@ -1,70 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752477AbZBQNPR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752536AbZBQNac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752477AbZBQNPR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 08:15:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751020AbZBQNPB
+	id S1752536AbZBQNac (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 08:30:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332AbZBQNaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 08:15:01 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:38435 "EHLO
+	Tue, 17 Feb 2009 08:30:23 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:47993 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750886AbZBQNPA convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751327AbZBQNaW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 08:15:00 -0500
-Date: Tue, 17 Feb 2009 10:14:30 -0300
+	Tue, 17 Feb 2009 08:30:22 -0500
+Date: Tue, 17 Feb 2009 10:29:51 -0300
 From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: =?ISO-8859-1?B?TultZXRoIE3hcnRvbg==?= <nm127@freemail.hu>,
-       linux-media@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Trivial Patch Monkey <trivial@kernel.org>
-Subject: Re: [PATCH] DAB: fix typo
-Message-ID: <20090217101430.51db676b@pedra.chehab.org>
-In-Reply-To: <alpine.LNX.1.10.0902171220370.18110@jikos.suse.cz>
-References: <498622DA.9080106@freemail.hu>
-	<alpine.LNX.1.10.0902111400540.31014@jikos.suse.cz>
-	<20090217081917.568af731@pedra.chehab.org>
-	<alpine.LNX.1.10.0902171220370.18110@jikos.suse.cz>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       linux1394-devel@lists.sourceforge.net,
+       Christian Dolzer <c.dolzer@digital-everywhere.com>,
+       Andreas Monitzer <andy@monitzer.com>, Manu Abraham <manu@linuxtv.org>,
+       Fabio De Lorenzo <delorenzo.fabio@gmail.com>,
+       Robert Berger <robert.berger@reliableembeddedsystems.com>,
+       Ben Backx <ben@bbackx.com>, Henrik Kurelid <henrik@kurelid.se>,
+       Rambaldi <Rambaldi@xs4all.nl>
+Subject: Re: [review patch 0/1] add firedtv driver for FireWire-attached DVB
+ receivers
+Message-ID: <20090217102951.21dab08c@pedra.chehab.org>
+In-Reply-To: <tkrat.63c8bdca2465364b@s5r6.in-berlin.de>
+References: <tkrat.265ed076d414bd49@s5r6.in-berlin.de>
+	<tkrat.63c8bdca2465364b@s5r6.in-berlin.de>
 X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Feb 2009 12:21:53 +0100 (CET)
-Jiri Kosina <jkosina@suse.cz> wrote:
+On Mon, 16 Feb 2009 20:33:17 +0100 (CET)
+Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-> On Tue, 17 Feb 2009, Mauro Carvalho Chehab wrote:
+> firedtv is a driver for FireWire-attached DVB receivers from Digital
+> Everywhere GmbH.  The devices are known as FireDTV (external boxes) and
+> FloppyDTV (internal cards, also connected through FireWire).  The driver
+> supports
+>   - the DVB-C, DVB-S/S2, and DVB-T range of FireDTV and FloppyDTV
+>     models,
+>   - control and reception through Linux' common DVB userspace ABI,
+>   - standard definition video reception (MPEG2-TS, to be decoded
+>     by userspace client software),
+>   - Common Interface for Conditional Access Modules,
+>   - input from infrared remote control.
 > 
-> > > > From: Márton Németh <nm127@freemail.hu>
-> > > > 
-> > > > Fix typo in "DAB adapters" section in Kconfig.
-> > > > 
-> > > > Signed-off-by: Márton Németh <nm127@freemail.hu>
-> > > > ---
-> > > > --- linux-2.6.29-rc3/drivers/media/Kconfig.orig	2008-12-25 00:26:37.000000000 +0100
-> > > > +++ linux-2.6.29-rc3/drivers/media/Kconfig	2009-02-01 13:30:54.000000000 +0100
-> > > > @@ -117,7 +117,7 @@ source "drivers/media/dvb/Kconfig"
-> > > >  config DAB
-> > > >  	boolean "DAB adapters"
-> > > >  	---help---
-> > > > -	  Allow selecting support for for Digital Audio Broadcasting (DAB)
-> > > > +	  Allow selecting support for Digital Audio Broadcasting (DAB)
-> > > >  	  Receiver adapters.
-> > > 
-> > > Didn't find this in today's linux-next, so I have applied it to trivial 
-> > > tree.
-> > I was just applying it on my tree right now. Anyway, it is OK for me if you
-> > apply it at trivial.
+> High definition support has yet to be added.  Also, firedtv still
+> requires the ieee1394 kernel API but alternative support of the new
+> firewire kernel API is in progress.
 > 
-> No problem, if you take it through your tree I am fine with that, it will 
-> be easier that way to avoid conflicts in -next.
+> The driver, formerly known as firesat, was originally written by Andreas
+> Monitzer.  Manu Abraham, Ben Backx, and Henrik Kurelid updated and
+> extended the driver; I did trivial cleanups, refactoring and small
+> fixes.
 > 
-> I am dropping the patch from trivial tree.
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-Ok. I've just sent it to my linux-next tree.
+The driver looks sane to my eyes. I found just one minor issue (see bellow).
+Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+
+> +
+> +		/*
+> +		 * AV/C specs say that answers should be sent within 150 ms.
+> +		 * Time out after 200 ms.
+> +		 */
+> +		if (wait_event_timeout(fdtv->avc_wait,
+> +				       fdtv->avc_reply_received,
+> +				       HZ / 5) != 0) {
+
+Instead of using HZ, it would be better to use:
+	msecs_to_jiffies(200)
+
 
 Cheers,
 Mauro
