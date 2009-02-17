@@ -1,129 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954AbZBQPgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753485AbZBQPjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753954AbZBQPgs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 10:36:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752310AbZBQPgj
+	id S1753485AbZBQPjm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 10:39:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbZBQPjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 10:36:39 -0500
-Received: from exprod7og111.obsmtp.com ([64.18.2.175]:50170 "EHLO
-	exprod7og111.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751492AbZBQPgi convert rfc822-to-8bit (ORCPT
+	Tue, 17 Feb 2009 10:39:33 -0500
+Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:49947 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751365AbZBQPjc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 10:36:38 -0500
-From: "Yang, Bo" <Bo.Yang@lsi.com>
-To: "Yang, Bo" <Bo.Yang@lsi.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@osdl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: "Austria, Winston" <Winston.Austria@lsi.com>
-Date: Tue, 17 Feb 2009 08:36:18 -0700
-Subject: [PATCH 3/9] scsi: megaraid_sas - Add poll wait support to megaraid
- sas driver - II
-Thread-Topic: [PATCH 3/9] scsi: megaraid_sas - Add poll wait support to
- megaraid sas driver - II
-Thread-Index: AciIcSnS7H5xFQtCQzyNHR19nlBrTUImYsQgAAFMQJAAAQsscA==
-Message-ID: <4B6A08C587958942AA3002690DD4F8C33A07FB58@cosmail02.lsi.com>
-In-Reply-To: <4B6A08C587958942AA3002690DD4F8C33A07FB3B@cosmail02.lsi.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 17 Feb 2009 10:39:32 -0500
+Date: Tue, 17 Feb 2009 16:39:25 +0100
+From: Damien Wyart <damien.wyart@free.fr>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Galbraith <efault@gmx.de>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #12650] Strange load average and ksoftirqd behavior with
+	2.6.29-rc2-git1
+Message-ID: <20090217153925.GA2308@localhost.localdomain>
+References: <20090216122632.GA3158@elte.hu> <87ljs6pmao.fsf@free.fr> <20090216132151.GA17996@elte.hu> <20090216160613.GA6785@linux.vnet.ibm.com> <20090216185616.GB6785@linux.vnet.ibm.com> <20090216200923.GA28938@elte.hu> <20090216223944.GF6785@linux.vnet.ibm.com> <20090216225108.GA15904@linux.vnet.ibm.com> <20090217094657.GA1845@elte.hu> <20090217140130.GA6761@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090217140130.GA6761@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add poll wait support to megaraid sas driver - II, Add Poll_wait mechanism to Gen-2 Linux driver.  Avoid the depending upon storelib to continue events.
+Hello Paul,
 
-Signed-off-by Bo Yang<bo.yang@lsi.com>
+> > There's no strong reason - we've been back and forth about RCU in
+> > the dynticks code. Mind sending a test patch for Damien to try?
 
----
-drivers/scsi/megaraid/megaraid_sas.c |   25 +++++++++++++++++++++++++
- drivers/scsi/megaraid/megaraid_sas.h |    1 +
- 2 files changed, 26 insertions(+)
+> But of course!  ;-)
 
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-02-12 15:44:26.000000000 -0500
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-02-12 15:47:21.000000000 -0500
-@@ -95,6 +95,8 @@ static DECLARE_WAIT_QUEUE_HEAD (megasas_
- extern void
- poll_wait(struct file *filp, wait_queue_head_t *q, poll_table *token);
+With this patch, the problem goes away and system activity seems normal,
+both on the P4 with high load and on the recent laptop.
 
-+static u32 support_poll_for_event;
-+
- static u32 megasas_dbg_lvl;
+Btw, could you explain briefly why, without this patch, a kernel
+enabling classical RCU doesn't show the ksoftirqd problem at all?
 
- static void
-@@ -3427,6 +3429,15 @@ static DRIVER_ATTR(release_date, S_IRUGO
-                   NULL);
 
- static ssize_t
-+megasas_sysfs_show_support_poll_for_event(struct device_driver *dd, char *buf)
-+{
-+       return sprintf(buf, "%u\n", support_poll_for_event);
-+}
-+
-+static DRIVER_ATTR(support_poll_for_event, S_IRUGO,
-+                       megasas_sysfs_show_support_poll_for_event, NULL);
-+
-+static ssize_t
- megasas_sysfs_show_dbg_lvl(struct device_driver *dd, char *buf)
- {
-        return sprintf(buf, "%u\n", megasas_dbg_lvl);
-@@ -3610,6 +3621,8 @@ static int __init megasas_init(void)
-        printk(KERN_INFO "megasas: %s %s\n", MEGASAS_VERSION,
-               MEGASAS_EXT_VERSION);
+Damien
 
-+       support_poll_for_event = 1;
-+
-        memset(&megasas_mgmt_info, 0, sizeof(megasas_mgmt_info));
+> The following patch removes the call to rcu_pending() and
+> rcu_check_callbacks() from the x86 32-bit idle loop in order to
+> reduce the softirq load on idle systems.
 
-        /*
-@@ -3642,6 +3655,12 @@ static int __init megasas_init(void)
-                                  &driver_attr_release_date);
-        if (rval)
-                goto err_dcf_rel_date;
-+
-+       rval = driver_create_file(&megasas_pci_driver.driver,
-+                               &driver_attr_support_poll_for_event);
-+       if (rval)
-+               goto err_dcf_support_poll_for_event;
-+
-        rval = driver_create_file(&megasas_pci_driver.driver,
-                                  &driver_attr_dbg_lvl);
-        if (rval)
-@@ -3659,6 +3678,10 @@ err_dcf_poll_mode_io:
- err_dcf_dbg_lvl:
-        driver_remove_file(&megasas_pci_driver.driver,
-                           &driver_attr_release_date);
-+err_dcf_support_poll_for_event:
-+       driver_remove_file(&megasas_pci_driver.driver,
-+                       &driver_attr_support_poll_for_event);
-+
- err_dcf_rel_date:
-        driver_remove_file(&megasas_pci_driver.driver, &driver_attr_version);
- err_dcf_attr_ver:
-@@ -3678,6 +3701,8 @@ static void __exit megasas_exit(void)
-        driver_remove_file(&megasas_pci_driver.driver,
-                           &driver_attr_dbg_lvl);
-        driver_remove_file(&megasas_pci_driver.driver,
-+                       &driver_attr_support_poll_for_event);
-+       driver_remove_file(&megasas_pci_driver.driver,
-                           &driver_attr_release_date);
-        driver_remove_file(&megasas_pci_driver.driver, &driver_attr_version);
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> ---
 
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h      2009-02-12 15:44:27.000000000 -0500
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h       2009-02-12 15:24:58.000000000 -0500
-@@ -1135,6 +1135,7 @@ struct megasas_instance {
-        struct tasklet_struct isr_tasklet;
+>  process_32.c |    3 ---
+>  1 file changed, 3 deletions(-)
 
-        u8 flag;
-+       u8 unload;
-        unsigned long last_time;
+> diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+> index a546f55..bd4da2a 100644
+> --- a/arch/x86/kernel/process_32.c
+> +++ b/arch/x86/kernel/process_32.c
+> @@ -104,9 +104,6 @@ void cpu_idle(void)
+>  			check_pgt_cache();
+>  			rmb();
 
-        struct timer_list io_completion_timer;
+> -			if (rcu_pending(cpu))
+> -				rcu_check_callbacks(cpu, 0);
+> -
+>  			if (cpu_is_offline(cpu))
+>  				play_dead();
