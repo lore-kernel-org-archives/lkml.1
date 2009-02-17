@@ -1,96 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753820AbZBQQkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbZBQQog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753820AbZBQQkm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 11:40:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751566AbZBQQke
+	id S1753355AbZBQQog (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 11:44:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZBQQoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 11:40:34 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57747 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750921AbZBQQkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 11:40:33 -0500
-Date: Tue, 17 Feb 2009 17:40:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [git pull] scheduler fix
-Message-ID: <20090217164025.GA4539@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 17 Feb 2009 11:44:24 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:43424 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750989AbZBQQoX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 11:44:23 -0500
+Subject: Re: [PATCH -next/mmotm/resend/lost] wireless: fix for
+	CONFIG_NL80211=n
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org,
+       akpm <akpm@linux-foundation.org>, linville@tuxdriver.com
+In-Reply-To: <20090213163935.ea924a9a.randy.dunlap@oracle.com> (sfid-20090214_013927_260784_1DD3BDE7)
+References: <20090213163935.ea924a9a.randy.dunlap@oracle.com>
+	 (sfid-20090214_013927_260784_1DD3BDE7)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ZtTcPGLy+nSr2Z/uNMVj"
+Date: Tue, 17 Feb 2009 17:44:17 +0100
+Message-Id: <1234889057.29785.5.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
 
-Please pull the latest sched-fixes-for-linus git tree from:
+--=-ZtTcPGLy+nSr2Z/uNMVj
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
+On Fri, 2009-02-13 at 16:39 -0800, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+>=20
+> Add empty function for case of CONFIG_NL80211=3Dn:
+>=20
+> net/wireless/scan.c:35: error: implicit declaration of function 'nl80211_=
+send_scan_aborted'
+>=20
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
- Thanks,
+bump &
+Acked-by: Johannes Berg <johannes@sipsolutions.net>
 
-	Ingo
+I forgot this when adding the scan abort part.
 
------------------->
-Ingo Molnar (1):
-      sched: cpu hotplug fix
+> ---
+>  net/wireless/nl80211.h |    4 ++++
+>  1 file changed, 4 insertions(+)
+>=20
+> --- linux-next-20090212.orig/net/wireless/nl80211.h
+> +++ linux-next-20090212/net/wireless/nl80211.h
+> @@ -27,6 +27,10 @@ static inline void
+>  nl80211_send_scan_done(struct cfg80211_registered_device *rdev,
+>  		       struct net_device *netdev)
+>  {}
+> +static inline void nl80211_send_scan_aborted(
+> +					struct cfg80211_registered_device *rdev,
+> +					struct net_device *netdev)
+> +{}
+>  #endif /* CONFIG_NL80211 */
+> =20
+>  #endif /* __NET_WIRELESS_NL80211_H */
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-wireless"=
+ in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>=20
 
+--=-ZtTcPGLy+nSr2Z/uNMVj
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
- kernel/sched.c |   15 ++++++++++++---
- 1 files changed, 12 insertions(+), 3 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index c1d0ed3..410eec4 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -6944,20 +6944,26 @@ static void free_rootdomain(struct root_domain *rd)
- 
- static void rq_attach_root(struct rq *rq, struct root_domain *rd)
- {
-+	struct root_domain *old_rd = NULL;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&rq->lock, flags);
- 
- 	if (rq->rd) {
--		struct root_domain *old_rd = rq->rd;
-+		old_rd = rq->rd;
- 
- 		if (cpumask_test_cpu(rq->cpu, old_rd->online))
- 			set_rq_offline(rq);
- 
- 		cpumask_clear_cpu(rq->cpu, old_rd->span);
- 
--		if (atomic_dec_and_test(&old_rd->refcount))
--			free_rootdomain(old_rd);
-+		/*
-+		 * If we dont want to free the old_rt yet then
-+		 * set old_rd to NULL to skip the freeing later
-+		 * in this function:
-+		 */
-+		if (!atomic_dec_and_test(&old_rd->refcount))
-+			old_rd = NULL;
- 	}
- 
- 	atomic_inc(&rd->refcount);
-@@ -6968,6 +6974,9 @@ static void rq_attach_root(struct rq *rq, struct root_domain *rd)
- 		set_rq_online(rq);
- 
- 	spin_unlock_irqrestore(&rq->lock, flags);
-+
-+	if (old_rd)
-+		free_rootdomain(old_rd);
- }
- 
- static int __init_refok init_rootdomain(struct root_domain *rd, bool bootmem)
+iQIcBAABAgAGBQJJmuldAAoJEKVg1VMiehFYaPsP/ArQ2cAA12EPOgvyB8nyKsqt
+q0ZZl0fInOTPN8uDCpdM8KyWAXLwkFD86i36kjkCsEk5uWN55UzabaGXnp20t61y
+Xpd4f2pGmvOdRuX44MA8HlAa6Can5fseSDNHVUA4JKSlWcOeiprB9wgph+0jhAoJ
+lCDAzk11xxeWA49yPiNQ/aIsHcuLNnx3F/wvoF8uOAUljkNT5PEKXBKSE+DNj4WS
+Nez27RqaBgHyyI5sggqTl0KR7o/NmzXof+k/b3QL7aP5JNsojo5g3zl4exFbPnkn
+Km0XMgH0pMg7KPjgKlCxqPdoCj+qIMvTEkZ0hupwzGka99cxc9cCPR9Mm30cQLX/
+0OwblI8zV2P27M4L7dqghS7Fa3mx5HsXw0hzLe8ZYyBWq1LDNjwwdcGNdBScqxoc
+VNwgG2rYjHPIKwY/B1Wp0Ko8ASb2Wh3a9NFJ8nVZKgMwDtS1W6ssvWl+By5IhTza
+gspW5CpBWsMe1/t5rHiQNScHE/BmcvPs32C826FtMrt1x0YNNCCVdlvEQWUIkvie
+0l+EXfPJGpbENrSxK5kyxx5mT3r3n/UaRs5kt74WdxXH6lybZRA4BRzdp3vaB9kg
+H5nPtKivj9+YNGFxM1EuEn8wxhFgFGn4m62MrAeTu+I1I5VgRmPKuJl37o4k7Og7
+OeMNvGyu5sdjMALX6KAk
+=OHg2
+-----END PGP SIGNATURE-----
+
+--=-ZtTcPGLy+nSr2Z/uNMVj--
+
