@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954AbZBQOn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751844AbZBQOoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753954AbZBQOn0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 09:43:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbZBQOnR
+	id S1751844AbZBQOoQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 09:44:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbZBQOn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 09:43:17 -0500
-Received: from gate.crashing.org ([63.228.1.57]:50983 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751145AbZBQOnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 09:43:17 -0500
-Cc: "<dayu@datangmobile.cn>" <dayu@datangmobile.cn>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Message-Id: <22854A2F-2FBD-4F1A-B623-DB5C91E97509@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Li Yang <leoli@freescale.com>
-In-Reply-To: <2a27d3730902170638h43724c03k6b50843158842e1e@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Tue, 17 Feb 2009 09:43:58 -0500
+Received: from titan.dewahost.net ([205.234.111.6]:48913 "EHLO
+	titan.dewahost.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751790AbZBQOn5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 09:43:57 -0500
+Date: Tue, 17 Feb 2009 18:43:49 +0400
+From: Constantin Baranov <baranov@mercdev.com>
+To: Ben Hutchings <bhutchings@solarflare.com>
+Cc: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] niu: improve ethtool support for gigabit copper
+ cards
+Message-Id: <20090217184349.3c735c58.baranov@mercdev.com>
+In-Reply-To: <1234878837.3183.4.camel@achroite>
+References: <20090217154334.97837477.baranov@mercdev.com>
+	<1234878837.3183.4.camel@achroite>
+Organization: Mercury Development, LLC
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] fix the interrupt loss problem on powerpc IPIC (2.6.23)
-Date: Tue, 17 Feb 2009 08:43:03 -0600
-References: <D728AD1FA2543948B89DE29C5BF4CD0716AC2DDE@bjmail1.bj.datangmobile.com> <76C7F485-EF75-4B83-B673-564E6243C7C6@kernel.crashing.org> <2a27d3730902170638h43724c03k6b50843158842e1e@mail.gmail.com>
-X-Mailer: Apple Mail (2.930.3)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - titan.dewahost.net
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - mercdev.com
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ben Hutchings <bhutchings@solarflare.com> wrote:
+> On Tue, 2009-02-17 at 15:43 +0400, Constantin Baranov wrote:
+> > Introduced support for link speed and duplex setting (ethtool -s),
+> > link advertising parameters and autonegotiation (ethtool -r):
+> [...]
+> 
+> I haven't looked closely at this, but is there anything here that can't
+> be handled by mii_get_settings() and other functions in the mii driver?
 
-On Feb 17, 2009, at 8:38 AM, Li Yang wrote:
+mii_ethtool_gset() reports fixed set of supported modes and mii_ethtool_sset()
+doesn't check whether requested mode is supported when autonegotiation is
+disabled. Also mii module declares mdio_write() operation as returning void,
+thus mii routines will ignore errors that may occur. Although all of these is
+not so critical I decided not to use mii module.
 
-> On Tue, Feb 17, 2009 at 10:12 PM, Kumar Gala <galak@kernel.crashing.org 
-> > wrote:
->>
->> On Feb 17, 2009, at 6:44 AM, <dayu@datangmobile.cn> <dayu@datangmobile.cn 
->> >
->> wrote:
->>
->>> From: Da Yu <dayu@datangmobile.cn>
->>> Date: Tue, 17 Feb 2009 19:58:20 +0800
->>> Subject: [PATCH] fix the interrupt loss problem on powerpc IPIC  
->>> (2.6.23)
->>>
->>> Signed-off-by: Da Yu <dayu@datangmobile.cn>
->>> ---
->>
->> Please provide a bit more description as to why this fixes the issue.
->
-> The pending register is write 1 clear.  If there are more than one
-> external interrupts pending at the same time, acking the first
-> interrupt will also clear other interrupt pending bits.  That will
-> cause loss of interrupt.
->
-> - Leo
-
-Thanks.  That should be included in the commit message.
-
-- k
+-- 
+Constantin Baranov,
+Mercury Development, LLC
