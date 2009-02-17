@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755771AbZBQXXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755406AbZBQXYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755771AbZBQXXW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 18:23:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbZBQXXJ
+	id S1755406AbZBQXYS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 18:24:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810AbZBQXYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 18:23:09 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44192 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752874AbZBQXXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 18:23:08 -0500
-Message-ID: <499B46B2.5040601@kernel.org>
-Date: Tue, 17 Feb 2009 15:22:26 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 17 Feb 2009 18:24:00 -0500
+Received: from outbound-mail-05.bluehost.com ([69.89.21.15]:59296 "HELO
+	outbound-mail-05.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754027AbZBQXX7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 18:23:59 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=GwgUpwIWDCG4epwa0SJ1SNvlvF3FkHCLoM8Eb5Wd0RfpP01++o4dz8ZGjYyiv4UcmBUnJ33boORCIHpw/kFS1oO0JqH6l9oY3C8vl6lXqCwsrmEfL0xOptOxrhniRAfN;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [Bug #12705] X200: Brightness broken since 2.6.29-rc4-58-g4c098bc
+Date: Tue, 17 Feb 2009 15:23:57 -0800
+User-Agent: KMail/1.9.10
+Cc: Eric Anholt <eric.anholt@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>,
+       Nico Schottelius <nico-linux-20090213@schottelius.org>
+References: <juADNmcceYF.A.mdD.Mr0lJB@chimera> <1234911925.9844.89.camel@gaiman> <20090217231313.GA2654@srcf.ucam.org>
+In-Reply-To: <20090217231313.GA2654@srcf.ucam.org>
 MIME-Version: 1.0
-To: david@lang.hm
-CC: Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       DL-MPTFusionLinux@lsi.com
-Subject: Re: mpt fusion broken sometime since 2.6.24
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>  <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm>  <20090217230050.GG16841@parisc-linux.org>  <alpine.DEB.1.10.0902171506500.26625@asgard.lang.hm> <86802c440902171511s1abcc0eao560df4b8fcea0e7c@mail.gmail.com> <alpine.DEB.1.10.0902171514120.26625@asgard.lang.hm>
-In-Reply-To: <alpine.DEB.1.10.0902171514120.26625@asgard.lang.hm>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902171523.57612.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-> On Tue, 17 Feb 2009, Yinghai Lu wrote:
-> 
->> Subject: Re: mpt fusion broken sometime since 2.6.24
->>
->> On Tue, Feb 17, 2009 at 3:07 PM,  <david@lang.hm> wrote:
->>> On Tue, 17 Feb 2009, Matthew Wilcox wrote:
->>>
->>>> On Tue, Feb 17, 2009 at 01:44:55PM -0800, david@lang.hm wrote:
->>>>>
->>>>> I got a picture of the failed boot at
->>>>> http://linux.lang.hm/linux/IMG00052.jpg
->>>>
->>>> The PCI-MSI line is probably indicative.  Can you try booting with:
->>>>
->>>> mptbase.mpt_msi_enable_sas=0
->>>>
->>>> and also send us an lspci -v so we can update the blacklist?
->>>
->>> is that disabling SAS for this system? if so, that's the wrong thing
->>> to do
->>> (the drives are SAS)
->>>
->> it only disable MSI with that mptsas.
->> and mptsas will use ioapic routing.
->>
->> can you post whole bootlog?
-> 
-> unfortunantly it's booting from CD and the only drives in the system are
-> the ones that are not being accessed.
+On Tuesday, February 17, 2009 3:13 pm Matthew Garrett wrote:
+> On Tue, Feb 17, 2009 at 03:05:25PM -0800, Eric Anholt wrote:
+> > On Sun, 2009-02-15 at 13:43 +0000, Matthew Garrett wrote:
+> > > On Sat, Feb 14, 2009 at 09:38:23PM +0100, Rafael J. Wysocki wrote:
+> > > > The following bug entry is on the current list of known regressions
+> > > > from 2.6.28.  Please verify if it still should be listed and let me
+> > > > know (either way).
+> > >
+> > > I think Eric sent a test patch for this. Did that get pushed?
+> >
+> > I haven't done anything in the area of brightness control.
+>
+> This was drm failing to initialise because of incorrect mtrr setup and
+> opregion not working as a result.
 
-i mean with kernel before 2.6.24..
+I sent one out; it just made the ioremap in i915_initialize into an ioremap_wc 
+for consistency.
 
-YH
+-- 
+Jesse Barnes, Intel Open Source Technology Center
