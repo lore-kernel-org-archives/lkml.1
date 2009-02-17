@@ -1,350 +1,291 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbZBQBVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753001AbZBQBa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753196AbZBQBVA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 20:21:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbZBQBUw
+	id S1753001AbZBQBa6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 20:30:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZBQBat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 20:20:52 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57629 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751035AbZBQBUv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 20:20:51 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [RFC][PATCH 4/4] Memory controller soft limit reclaim on contention (v2)
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Bharata B Rao <bharata@in.ibm.com>, Paul Menage <menage@google.com>,
-       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090216110916.29795.41945.sendpatchset@localhost.localdomain>
-References: <20090216110844.29795.17804.sendpatchset@localhost.localdomain> <20090216110916.29795.41945.sendpatchset@localhost.localdomain>
-Message-Id: <20090217100001.8BCC.A69D9226@jp.fujitsu.com>
+	Mon, 16 Feb 2009 20:30:49 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47320 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751339AbZBQBas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Feb 2009 20:30:48 -0500
+Message-ID: <499A1316.9000204@kernel.org>
+Date: Mon, 16 Feb 2009 17:29:58 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] x86: add x2apic config
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 17 Feb 2009 10:20:44 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> From: Balbir Singh <balbir@linux.vnet.ibm.com>
-> 
-> Changelog v2...v1
-> 1. Added support for hierarchical soft limits
-> 
-> This patch allows reclaim from memory cgroups on contention (via the
-> __alloc_pages_internal() path). If a order greater than 0 is specified, we
-> anyway fall back on try_to_free_pages().
-> 
-> memory cgroup soft limit reclaim finds the group that exceeds its soft limit
-> by the largest amount and reclaims pages from it and then reinserts the
-> cgroup into its correct place in the rbtree.
-> 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-> 
->  include/linux/memcontrol.h |    1 
->  mm/memcontrol.c            |  105 +++++++++++++++++++++++++++++++++++++++-----
->  mm/page_alloc.c            |   10 ++++
->  3 files changed, 104 insertions(+), 12 deletions(-)
-> 
-> 
-> diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
-> index 18146c9..a50f73e 100644
-> --- a/include/linux/memcontrol.h
-> +++ b/include/linux/memcontrol.h
-> @@ -116,6 +116,7 @@ static inline bool mem_cgroup_disabled(void)
->  }
->  
->  extern bool mem_cgroup_oom_called(struct task_struct *task);
-> +extern unsigned long mem_cgroup_soft_limit_reclaim(gfp_t gfp_mask);
->  
->  #else /* CONFIG_CGROUP_MEM_RES_CTLR */
->  struct mem_cgroup;
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index a2617ac..dd835d3 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -188,6 +188,7 @@ struct mem_cgroup {
->  	struct rb_node mem_cgroup_node;
->  	unsigned long long usage_in_excess;
->  	unsigned long last_tree_update;
-> +	bool on_tree;
->  
->  	/*
->  	 * statistics. This must be placed at the end of memcg.
-> @@ -195,7 +196,7 @@ struct mem_cgroup {
->  	struct mem_cgroup_stat stat;
->  };
->  
-> -#define	MEM_CGROUP_TREE_UPDATE_INTERVAL		(HZ)
-> +#define	MEM_CGROUP_TREE_UPDATE_INTERVAL		(HZ/4)
 
-??
-moving [3/4] is proper more?
+Impact: cleanup
 
+so could deselect x2apic
+and INTR_REMAP will select x2apic
 
->  
->  enum charge_type {
->  	MEM_CGROUP_CHARGE_TYPE_CACHE = 0,
-> @@ -229,14 +230,15 @@ static void mem_cgroup_get(struct mem_cgroup *mem);
->  static void mem_cgroup_put(struct mem_cgroup *mem);
->  static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem);
->  
-> -static void mem_cgroup_insert_exceeded(struct mem_cgroup *mem)
-> +static void __mem_cgroup_insert_exceeded(struct mem_cgroup *mem)
->  {
->  	struct rb_node **p = &mem_cgroup_soft_limit_exceeded_groups.rb_node;
->  	struct rb_node *parent = NULL;
->  	struct mem_cgroup *mem_node;
-> -	unsigned long flags;
->  
-> -	spin_lock_irqsave(&memcg_soft_limit_tree_lock, flags);
-> +	if (mem->on_tree)
-> +		return;
-> +
->  	while (*p) {
->  		parent = *p;
->  		mem_node = rb_entry(parent, struct mem_cgroup, mem_cgroup_node);
-> @@ -253,6 +255,23 @@ static void mem_cgroup_insert_exceeded(struct mem_cgroup *mem)
->  	rb_insert_color(&mem->mem_cgroup_node,
->  			&mem_cgroup_soft_limit_exceeded_groups);
->  	mem->last_tree_update = jiffies;
-> +	mem->on_tree = true;
-> +}
-> +
-> +static void __mem_cgroup_remove_exceeded(struct mem_cgroup *mem)
-> +{
-> +	if (!mem->on_tree)
-> +		return;
-> +	rb_erase(&mem->mem_cgroup_node, &mem_cgroup_soft_limit_exceeded_groups);
-> +	mem->on_tree = false;
-> +}
-> +
-> +static void mem_cgroup_insert_exceeded(struct mem_cgroup *mem)
-> +{
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&memcg_soft_limit_tree_lock, flags);
-> +	__mem_cgroup_insert_exceeded(mem);
->  	spin_unlock_irqrestore(&memcg_soft_limit_tree_lock, flags);
->  }
->  
-> @@ -260,10 +279,34 @@ static void mem_cgroup_remove_exceeded(struct mem_cgroup *mem)
->  {
->  	unsigned long flags;
->  	spin_lock_irqsave(&memcg_soft_limit_tree_lock, flags);
-> -	rb_erase(&mem->mem_cgroup_node, &mem_cgroup_soft_limit_exceeded_groups);
-> +	__mem_cgroup_remove_exceeded(mem);
->  	spin_unlock_irqrestore(&memcg_soft_limit_tree_lock, flags);
->  }
->  
-> +static struct mem_cgroup *mem_cgroup_get_largest_soft_limit_exceeding_node(void)
-> +{
-> +	struct rb_node *rightmost = NULL;
-> +	struct mem_cgroup *mem = NULL;
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&memcg_soft_limit_tree_lock, flags);
-> +	rightmost = rb_last(&mem_cgroup_soft_limit_exceeded_groups);
-> +	if (!rightmost)
-> +		goto done;		/* Nothing to reclaim from */
-> +
-> +	mem = rb_entry(rightmost, struct mem_cgroup, mem_cgroup_node);
-> +	mem_cgroup_get(mem);
-> +	/*
-> +	 * Remove the node now but someone else can add it back,
-> +	 * we will to add it back at the end of reclaim to its correct
-> +	 * position in the tree.
-> +	 */
-> +	__mem_cgroup_remove_exceeded(mem);
-> +done:
-> +	spin_unlock_irqrestore(&memcg_soft_limit_tree_lock, flags);
-> +	return mem;
-> +}
-> +
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-Do you remember we discuss about zone reclaim balancing thing 
-in "reclaim bail out"thread at about 2 month ago?
+---
+ arch/x86/Kconfig             |   11 +++++++++++
+ arch/x86/include/asm/apic.h  |   18 +++++++++++++++---
+ arch/x86/kernel/Makefile     |    4 ++--
+ arch/x86/kernel/apic.c       |   24 ++++++++++++------------
+ arch/x86/kernel/cpu/common.c |    2 +-
+ arch/x86/kernel/genapic_64.c |    4 ++++
+ arch/x86/kernel/setup.c      |    3 +--
+ arch/x86/kernel/smpboot.c    |    2 +-
+ 8 files changed, 47 insertions(+), 21 deletions(-)
 
-The "largest exceeding" policy seems to have similar problems.
-if largest exceeding group is most active, 
-
-  1. do the largest group activity and charge memory over softlimit.
-  2. reclaim memory from the largest group.
-  3. goto 1.
-
-then, system can become livelock.
-
-I think per-group priority is not good idea.
-
-
-
->  static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
->  					 struct page_cgroup *pc,
->  					 bool charge)
-> @@ -886,7 +929,8 @@ mem_cgroup_select_victim(struct mem_cgroup *root_mem)
->   * If shrink==true, for avoiding to free too much, this returns immedieately.
->   */
->  static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
-> -				   gfp_t gfp_mask, bool noswap, bool shrink)
-> +				   gfp_t gfp_mask, bool noswap, bool shrink,
-> +				   bool check_soft)
-
-Now, we get three boolean argument.
-So, can we convert "int flags" argument?
-
-I don't think mem_cgroup_hierarchical_reclaim(memcg, GFP_KERNEL, false, true, false) is
-self-described good look.
-
-
->  {
->  	struct mem_cgroup *victim;
->  	int ret, total = 0;
-> @@ -913,7 +957,11 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
->  		if (shrink)
->  			return ret;
->  		total += ret;
-> -		if (mem_cgroup_check_under_limit(root_mem))
-> +
-> +		if (check_soft) {
-> +			if (res_counter_soft_limit_excess(&root_mem->res))
-> +				return 1 + total;
-> +		} else if (mem_cgroup_check_under_limit(root_mem))
->  			return 1 + total;
-
-I don't understand what's mean "1 +".
-
-
->  	}
->  	return total;
-> @@ -1044,7 +1092,7 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
->  			goto nomem;
->  
->  		ret = mem_cgroup_hierarchical_reclaim(mem_over_limit, gfp_mask,
-> -							noswap, false);
-> +							noswap, false, false);
->  		if (ret)
->  			continue;
->  
-> @@ -1686,7 +1734,7 @@ int mem_cgroup_shrink_usage(struct page *page,
->  
->  	do {
->  		progress = mem_cgroup_hierarchical_reclaim(mem,
-> -					gfp_mask, true, false);
-> +					gfp_mask, true, false, false);
->  		progress += mem_cgroup_check_under_limit(mem);
->  	} while (!progress && --retry);
->  
-> @@ -1741,7 +1789,7 @@ static int mem_cgroup_resize_limit(struct mem_cgroup *memcg,
->  			break;
->  
->  		progress = mem_cgroup_hierarchical_reclaim(memcg, GFP_KERNEL,
-> -						   false, true);
-> +						   false, true, false);
->  		curusage = res_counter_read_u64(&memcg->res, RES_USAGE);
->  		/* Usage is reduced ? */
->    		if (curusage >= oldusage)
-> @@ -1789,7 +1837,8 @@ int mem_cgroup_resize_memsw_limit(struct mem_cgroup *memcg,
->  		if (!ret)
->  			break;
->  
-> -		mem_cgroup_hierarchical_reclaim(memcg, GFP_KERNEL, true, true);
-> +		mem_cgroup_hierarchical_reclaim(memcg, GFP_KERNEL, true, true,
-> +						false);
->  		curusage = res_counter_read_u64(&memcg->memsw, RES_USAGE);
->  		/* Usage is reduced ? */
->  		if (curusage >= oldusage)
-> @@ -1940,6 +1989,38 @@ try_to_free:
->  	goto out;
->  }
->  
-> +unsigned long mem_cgroup_soft_limit_reclaim(gfp_t gfp_mask)
-> +{
-> +	unsigned long nr_reclaimed = 0;
-> +	struct mem_cgroup *mem;
-> +	unsigned long flags;
-> +
-> +	do {
-> +		mem = mem_cgroup_get_largest_soft_limit_exceeding_node();
-> +		if (!mem)
-> +			break;
-> +		if (mem_cgroup_is_obsolete(mem)) {
-> +			mem_cgroup_put(mem);
-> +			continue;
-> +		}
-> +		nr_reclaimed +=
-> +			mem_cgroup_hierarchical_reclaim(mem, gfp_mask, false,
-> +							false, true);
-> +		spin_lock_irqsave(&memcg_soft_limit_tree_lock, flags);
-> +		mem->usage_in_excess = res_counter_soft_limit_excess(&mem->res);
-> +		/*
-> +		 * We need to remove and reinsert the node in its correct
-> +		 * position
-> +		 */
-> +		__mem_cgroup_remove_exceeded(mem);
-> +		if (mem->usage_in_excess)
-> +			__mem_cgroup_insert_exceeded(mem);
-> +		spin_unlock_irqrestore(&memcg_soft_limit_tree_lock, flags);
-> +		mem_cgroup_put(mem);
-> +	} while (!nr_reclaimed);
-> +	return nr_reclaimed;
-> +}
-
-this function is called from reclaim hotpath. but it grab glocal spin lock..
-I don't like this.
-
-
-> +
->  int mem_cgroup_force_empty_write(struct cgroup *cont, unsigned int event)
->  {
->  	return mem_cgroup_force_empty(mem_cgroup_from_cont(cont), true);
-> @@ -2528,6 +2609,8 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
->  	mem->last_scanned_child = 0;
->  	mem->usage_in_excess = 0;
->  	mem->last_tree_update = 0;	/* Yes, time begins at 0 here */
-> +	mem->on_tree = false;
-> +
->  	spin_lock_init(&mem->reclaim_param_lock);
->  
->  	if (parent)
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index 7be9386..c50e29b 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -1579,7 +1579,15 @@ nofail_alloc:
->  	reclaim_state.reclaimed_slab = 0;
->  	p->reclaim_state = &reclaim_state;
->  
-> -	did_some_progress = try_to_free_pages(zonelist, order, gfp_mask);
-> +	did_some_progress = mem_cgroup_soft_limit_reclaim(gfp_mask);
-> +	/*
-> +	 * If we made no progress or need higher order allocations
-> +	 * try_to_free_pages() is still our best bet, since mem_cgroup
-> +	 * reclaim does not handle freeing pages greater than order 0
-> +	 */
-> +	if (!did_some_progress || order)
-> +		did_some_progress = try_to_free_pages(zonelist, order,
-> +							gfp_mask);
->  
->  	p->reclaim_state = NULL;
->  	p->flags &= ~PF_MEMALLOC;
-
-this is very freqently called place. then we want to
-  - if no memcgroup using, no performance regression.
-  - if no softlimit but using memcg, performance degression is smaller than 1%.
-
-Do you have any performance number?
-
-
-
+Index: linux-2.6/arch/x86/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/x86/Kconfig
++++ linux-2.6/arch/x86/Kconfig
+@@ -236,6 +236,16 @@ config SMP
+ 
+ 	  If you don't know what to do here, say N.
+ 
++config X86_X2APIC
++	bool "Support x2apic"
++	depends on X86_LOCAL_APIC && X86_64
++	default y
++	---help---
++	  This enables x2apic aka 32bit apicid and access local apic via MSR.
++	  You may need to enable INTR_REMAP too
++
++	  If you don't know what to do here, say Y.
++
+ config SPARSE_IRQ
+ 	bool "Support sparse irq numbering"
+ 	depends on PCI_MSI || HT_IRQ
+@@ -1835,6 +1845,7 @@ config DMAR_FLOPPY_WA
+ config INTR_REMAP
+ 	bool "Support for Interrupt Remapping (EXPERIMENTAL)"
+ 	depends on X86_64 && X86_IO_APIC && PCI_MSI && ACPI && EXPERIMENTAL
++	select X86_X2APIC
+ 	---help---
+ 	  Supports Interrupt remapping for IO-APIC and MSI devices.
+ 	  To use x2apic mode in the CPU's which support x2APIC enhancements or
+Index: linux-2.6/arch/x86/include/asm/apic.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/apic.h
++++ linux-2.6/arch/x86/include/asm/apic.h
+@@ -112,7 +112,7 @@ static inline u32 native_apic_msr_read(u
+ 	return low;
+ }
+ 
+-#ifndef CONFIG_X86_32
++#ifdef CONFIG_X86_X2APIC
+ extern int x2apic;
+ extern void check_x2apic(void);
+ extern void enable_x2apic(void);
+@@ -131,7 +131,19 @@ static inline int x2apic_enabled(void)
+ 	return 0;
+ }
+ #else
+-#define x2apic_enabled()	0
++static inline void check_x2apic(void)
++{
++}
++static inline void enable_x2apic(void)
++{
++}
++static inline void enable_IR_x2apic(void)
++{
++}
++static inline int x2apic_enabled(void)
++{
++	return 0;
++}
+ #endif
+ 
+ struct apic_ops {
+@@ -177,7 +189,7 @@ static inline u32 safe_apic_wait_icr_idl
+ 
+ extern int get_physical_broadcast(void);
+ 
+-#ifdef CONFIG_X86_64
++#ifdef CONFIG_X86_X2APIC
+ static inline void ack_x2APIC_irq(void)
+ {
+ 	/* Docs say use 0 for future compatibility */
+Index: linux-2.6/arch/x86/kernel/Makefile
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/Makefile
++++ linux-2.6/arch/x86/kernel/Makefile
+@@ -117,8 +117,8 @@ obj-$(CONFIG_SWIOTLB)			+= pci-swiotlb.o
+ # 64 bit specific files
+ ifeq ($(CONFIG_X86_64),y)
+         obj-y				+= genapic_64.o genapic_flat_64.o
+-        obj-y				+= genx2apic_cluster.o
+-        obj-y				+= genx2apic_phys.o
++        obj-$(CONFIG_X86_X2APIC)	+= genx2apic_cluster.o
++        obj-$(CONFIG_X86_X2APIC)	+= genx2apic_phys.o
+ 	obj-$(CONFIG_X86_UV)		+= genx2apic_uv_x.o tlb_uv.o
+ 	obj-$(CONFIG_X86_UV)		+= bios_uv.o uv_irq.o uv_sysfs.o
+         obj-$(CONFIG_X86_PM_TIMER)	+= pmtimer_64.o
+Index: linux-2.6/arch/x86/kernel/apic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic.c
++++ linux-2.6/arch/x86/kernel/apic.c
+@@ -113,11 +113,7 @@ static __init int setup_apicpmtimer(char
+ __setup("apicpmtimer", setup_apicpmtimer);
+ #endif
+ 
+-#ifdef CONFIG_X86_64
+-#define HAVE_X2APIC
+-#endif
+-
+-#ifdef HAVE_X2APIC
++#ifdef CONFIG_X86_X2APIC
+ int x2apic;
+ /* x2apic enabled before OS handover */
+ static int x2apic_preenabled;
+@@ -270,7 +266,7 @@ static struct apic_ops xapic_ops = {
+ struct apic_ops __read_mostly *apic_ops = &xapic_ops;
+ EXPORT_SYMBOL_GPL(apic_ops);
+ 
+-#ifdef HAVE_X2APIC
++#ifdef CONFIG_X86_X2APIC
+ static void x2apic_wait_icr_idle(void)
+ {
+ 	/* no need to wait for icr idle in x2apic */
+@@ -1324,11 +1320,14 @@ void __cpuinit end_local_APIC_setup(void
+ 	apic_pm_activate();
+ }
+ 
+-#ifdef HAVE_X2APIC
++#ifdef CONFIG_X86_X2APIC
+ void check_x2apic(void)
+ {
+ 	int msr, msr2;
+ 
++	if (!cpu_has_x2apic)
++		return;
++
+ 	rdmsr(MSR_IA32_APICBASE, msr, msr2);
+ 
+ 	if (msr & X2APIC_ENABLE) {
+@@ -1342,6 +1341,9 @@ void enable_x2apic(void)
+ {
+ 	int msr, msr2;
+ 
++	if (!x2apic)
++		return;
++
+ 	rdmsr(MSR_IA32_APICBASE, msr, msr2);
+ 	if (!(msr & X2APIC_ENABLE)) {
+ 		pr_info("Enabling x2apic\n");
+@@ -1443,7 +1445,7 @@ end:
+ 
+ 	return;
+ }
+-#endif /* HAVE_X2APIC */
++#endif /* CONFIG_X86_X2APIC */
+ 
+ #ifdef CONFIG_X86_64
+ /*
+@@ -1574,7 +1576,7 @@ void __init early_init_lapic_mapping(voi
+  */
+ void __init init_apic_mappings(void)
+ {
+-#ifdef HAVE_X2APIC
++#ifdef CONFIG_X86_X2APIC
+ 	if (x2apic) {
+ 		boot_cpu_physical_apicid = read_apic_id();
+ 		return;
+@@ -1638,9 +1640,7 @@ int __init APIC_init_uniprocessor(void)
+ 	}
+ #endif
+ 
+-#ifdef HAVE_X2APIC
+ 	enable_IR_x2apic();
+-#endif
+ #ifdef CONFIG_X86_64
+ 	default_setup_apic_routing();
+ #endif
+@@ -2025,7 +2025,7 @@ static int lapic_resume(struct sys_devic
+ 
+ 	local_irq_save(flags);
+ 
+-#ifdef HAVE_X2APIC
++#ifdef CONFIG_X86_X2APIC
+ 	if (x2apic)
+ 		enable_x2apic();
+ 	else
+Index: linux-2.6/arch/x86/kernel/cpu/common.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/common.c
++++ linux-2.6/arch/x86/kernel/cpu/common.c
+@@ -1060,7 +1060,7 @@ void __cpuinit cpu_init(void)
+ 	barrier();
+ 
+ 	check_efer();
+-	if (cpu != 0 && x2apic)
++	if (cpu != 0)
+ 		enable_x2apic();
+ 
+ 	/*
+Index: linux-2.6/arch/x86/kernel/genapic_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/genapic_64.c
++++ linux-2.6/arch/x86/kernel/genapic_64.c
+@@ -35,8 +35,10 @@ static struct genapic *apic_probe[] __in
+ #ifdef CONFIG_X86_UV
+ 	&apic_x2apic_uv_x,
+ #endif
++#ifdef CONFIG_X86_X2APIC
+ 	&apic_x2apic_phys,
+ 	&apic_x2apic_cluster,
++#endif
+ 	&apic_physflat,
+ 	NULL,
+ };
+@@ -46,10 +48,12 @@ static struct genapic *apic_probe[] __in
+  */
+ void __init default_setup_apic_routing(void)
+ {
++#ifdef CONFIG_X86_X2APIC
+ 	if (apic == &apic_x2apic_phys || apic == &apic_x2apic_cluster) {
+ 		if (!intr_remapping_enabled)
+ 			apic = &apic_flat;
+ 	}
++#endif
+ 
+ 	if (apic == &apic_flat) {
+ 		if (max_physical_apicid >= 8)
+Index: linux-2.6/arch/x86/kernel/setup.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup.c
++++ linux-2.6/arch/x86/kernel/setup.c
+@@ -836,8 +836,7 @@ void __init setup_arch(char **cmdline_p)
+ #else
+ 	num_physpages = max_pfn;
+ 
+- 	if (cpu_has_x2apic)
+- 		check_x2apic();
++	check_x2apic();
+ 
+ 	/* How many end-of-memory variables you have, grandma! */
+ 	/* need this before calling reserve_initrd */
+Index: linux-2.6/arch/x86/kernel/smpboot.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/smpboot.c
++++ linux-2.6/arch/x86/kernel/smpboot.c
+@@ -1128,8 +1128,8 @@ void __init native_smp_prepare_cpus(unsi
+ 	current_thread_info()->cpu = 0;  /* needed? */
+ 	set_cpu_sibling_map(0);
+ 
+-#ifdef CONFIG_X86_64
+ 	enable_IR_x2apic();
++#ifdef CONFIG_X86_64
+ 	default_setup_apic_routing();
+ #endif
+ 
