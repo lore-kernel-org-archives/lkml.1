@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752296AbZBQKq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752630AbZBQKrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752296AbZBQKq5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 05:46:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbZBQKqs
+	id S1752630AbZBQKrq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 05:47:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbZBQKrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 05:46:48 -0500
-Received: from jurassic.park.msu.ru ([195.208.223.243]:40492 "EHLO
+	Tue, 17 Feb 2009 05:47:37 -0500
+Received: from jurassic.park.msu.ru ([195.208.223.243]:40498 "EHLO
 	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751378AbZBQKqq (ORCPT
+	with ESMTP id S1750989AbZBQKrg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 05:46:46 -0500
-Date: Tue, 17 Feb 2009 13:46:53 +0300
+	Tue, 17 Feb 2009 05:47:36 -0500
+Date: Tue, 17 Feb 2009 13:47:34 +0300
 From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Richard Henderson <rth@twiddle.net>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jay Estabrook <jay.estabrook@hp.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] alpha: pci sysfs resources
-Message-ID: <20090217104653.GA25856@jurassic.park.msu.ru>
+Cc: Richard Henderson <rth@twiddle.net>, linux-kernel@vger.kernel.org
+Subject: [PATCH] alpha: xchg/cmpxchg cleanup and fixes
+Message-ID: <20090217104734.GB25856@jurassic.park.msu.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -26,498 +24,857 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This closes http://bugzilla.kernel.org/show_bug.cgi?id=10893
-which is a showstopper for X development on alpha.
+- "_local" versions of xchg/cmpxchg functions duplicate code
+  of non-local ones (quite a few pages of assembler), except
+  memory barriers. We can generate these two variants from a
+  single header file using simple macros;
 
-The generic HAVE_PCI_MMAP code (drivers/pci-sysfs.c) is not
-very useful since we have to deal with three different types
-of MMIO address spaces: sparse and dense mappings for old
-ev4/ev5 machines and "normal" 1:1 MMIO space (bwx) for ev56 and
-later.
-Also "write combine" mappings are meaningless on alpha - roughly
-speaking, alpha does write combining, IO reordering and other
-optimizations by default, unless user splits IO accesses
-with memory barriers.
+- convert xchg macro back to inline function using always_inline
+  attribute;
 
-I think the cleanest way to deal with resource files on alpha
-is to convert the default no-op pci_create_resource_files() and
-pci_remove_resource_files() for !HAVE_PCI_MMAP case into __weak
-functions and override them with alpha specific ones.
-
-Another alpha hook is needed for "legacy_" resource files
-to handle sparse addressing (pci_adjust_legacy_attr).
-
-With the "standard" resourceN files on ev56/ev6 libpciaccess
-works "out of the box". Handling of resourceN_sparse/resourceN_dense
-files on older machines obviously requires some userland work.
-
-Sparse/dense stuff has been tested on sx164 (pca56/pyxis, normally
-uses bwx IO) with the kernel hacked into "cia compatible" mode.
+- use proper argument types for cmpxchg_u8/u16 functions
+  to fix a problem with negative arguments.
 
 Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
 ---
- arch/alpha/include/asm/pci.h  |   14 ++
- arch/alpha/kernel/Makefile    |    2 +-
- arch/alpha/kernel/pci-sysfs.c |  366 +++++++++++++++++++++++++++++++++++++++++
- drivers/pci/pci-sysfs.c       |   19 ++-
- 4 files changed, 398 insertions(+), 3 deletions(-)
+ arch/alpha/include/asm/system.h |  547 ++++-----------------------------------
+ arch/alpha/include/asm/xchg.h   |  258 ++++++++++++++++++
+ 2 files changed, 308 insertions(+), 497 deletions(-)
 
-diff --git a/arch/alpha/include/asm/pci.h b/arch/alpha/include/asm/pci.h
-index 2a14302..cb04eaa 100644
---- a/arch/alpha/include/asm/pci.h
-+++ b/arch/alpha/include/asm/pci.h
-@@ -273,4 +273,18 @@ struct pci_dev *alpha_gendev_to_pci(struct device *dev);
+diff --git a/arch/alpha/include/asm/system.h b/arch/alpha/include/asm/system.h
+index afe20fa..5aa40cc 100644
+--- a/arch/alpha/include/asm/system.h
++++ b/arch/alpha/include/asm/system.h
+@@ -309,518 +309,71 @@ extern int __min_ipl;
+ #define tbia()		__tbi(-2, /* no second argument */)
  
- extern struct pci_dev *isa_bridge;
+ /*
+- * Atomic exchange.
+- * Since it can be used to implement critical sections
+- * it must clobber "memory" (also for interrupts in UP).
++ * Atomic exchange routines.
+  */
  
-+extern int pci_legacy_read(struct pci_bus *bus, loff_t port, u32 *val,
-+			   size_t count);
-+extern int pci_legacy_write(struct pci_bus *bus, loff_t port, u32 val,
-+			    size_t count);
-+extern int pci_mmap_legacy_page_range(struct pci_bus *bus,
-+				      struct vm_area_struct *vma,
-+				      enum pci_mmap_state mmap_state);
-+extern void pci_adjust_legacy_attr(struct pci_bus *bus,
-+				   enum pci_mmap_state mmap_type);
-+#define HAVE_PCI_LEGACY	1
+-static inline unsigned long
+-__xchg_u8(volatile char *m, unsigned long val)
+-{
+-	unsigned long ret, tmp, addr64;
+-
+-	__asm__ __volatile__(
+-	"	andnot	%4,7,%3\n"
+-	"	insbl	%1,%4,%1\n"
+-	"1:	ldq_l	%2,0(%3)\n"
+-	"	extbl	%2,%4,%0\n"
+-	"	mskbl	%2,%4,%2\n"
+-	"	or	%1,%2,%2\n"
+-	"	stq_c	%2,0(%3)\n"
+-	"	beq	%2,2f\n"
+-#ifdef CONFIG_SMP
+-	"	mb\n"
+-#endif
+-	".subsection 2\n"
+-	"2:	br	1b\n"
+-	".previous"
+-	: "=&r" (ret), "=&r" (val), "=&r" (tmp), "=&r" (addr64)
+-	: "r" ((long)m), "1" (val) : "memory");
+-
+-	return ret;
+-}
+-
+-static inline unsigned long
+-__xchg_u16(volatile short *m, unsigned long val)
+-{
+-	unsigned long ret, tmp, addr64;
+-
+-	__asm__ __volatile__(
+-	"	andnot	%4,7,%3\n"
+-	"	inswl	%1,%4,%1\n"
+-	"1:	ldq_l	%2,0(%3)\n"
+-	"	extwl	%2,%4,%0\n"
+-	"	mskwl	%2,%4,%2\n"
+-	"	or	%1,%2,%2\n"
+-	"	stq_c	%2,0(%3)\n"
+-	"	beq	%2,2f\n"
+-#ifdef CONFIG_SMP
+-	"	mb\n"
+-#endif
+-	".subsection 2\n"
+-	"2:	br	1b\n"
+-	".previous"
+-	: "=&r" (ret), "=&r" (val), "=&r" (tmp), "=&r" (addr64)
+-	: "r" ((long)m), "1" (val) : "memory");
+-
+-	return ret;
+-}
+-
+-static inline unsigned long
+-__xchg_u32(volatile int *m, unsigned long val)
+-{
+-	unsigned long dummy;
+-
+-	__asm__ __volatile__(
+-	"1:	ldl_l %0,%4\n"
+-	"	bis $31,%3,%1\n"
+-	"	stl_c %1,%2\n"
+-	"	beq %1,2f\n"
+-#ifdef CONFIG_SMP
+-	"	mb\n"
+-#endif
+-	".subsection 2\n"
+-	"2:	br 1b\n"
+-	".previous"
+-	: "=&r" (val), "=&r" (dummy), "=m" (*m)
+-	: "rI" (val), "m" (*m) : "memory");
+-
+-	return val;
+-}
+-
+-static inline unsigned long
+-__xchg_u64(volatile long *m, unsigned long val)
+-{
+-	unsigned long dummy;
+-
+-	__asm__ __volatile__(
+-	"1:	ldq_l %0,%4\n"
+-	"	bis $31,%3,%1\n"
+-	"	stq_c %1,%2\n"
+-	"	beq %1,2f\n"
+-#ifdef CONFIG_SMP
+-	"	mb\n"
+-#endif
+-	".subsection 2\n"
+-	"2:	br 1b\n"
+-	".previous"
+-	: "=&r" (val), "=&r" (dummy), "=m" (*m)
+-	: "rI" (val), "m" (*m) : "memory");
++#define __ASM__MB
++#define ____xchg(type, args...)		__xchg ## type ## _local(args)
++#define ____cmpxchg(type, args...)	__cmpxchg ## type ## _local(args)
++#include <asm/xchg.h>
+ 
+-	return val;
+-}
+-
+-/* This function doesn't exist, so you'll get a linker error
+-   if something tries to do an invalid xchg().  */
+-extern void __xchg_called_with_bad_pointer(void);
+-
+-#define __xchg(ptr, x, size) \
+-({ \
+-	unsigned long __xchg__res; \
+-	volatile void *__xchg__ptr = (ptr); \
+-	switch (size) { \
+-		case 1: __xchg__res = __xchg_u8(__xchg__ptr, x); break; \
+-		case 2: __xchg__res = __xchg_u16(__xchg__ptr, x); break; \
+-		case 4: __xchg__res = __xchg_u32(__xchg__ptr, x); break; \
+-		case 8: __xchg__res = __xchg_u64(__xchg__ptr, x); break; \
+-		default: __xchg_called_with_bad_pointer(); __xchg__res = x; \
+-	} \
+-	__xchg__res; \
+-})
+-
+-#define xchg(ptr,x)							     \
+-  ({									     \
+-     __typeof__(*(ptr)) _x_ = (x);					     \
+-     (__typeof__(*(ptr))) __xchg((ptr), (unsigned long)_x_, sizeof(*(ptr))); \
++#define xchg_local(ptr,x)						\
++  ({									\
++     __typeof__(*(ptr)) _x_ = (x);					\
++     (__typeof__(*(ptr))) __xchg_local((ptr), (unsigned long)_x_,	\
++				       sizeof(*(ptr)));			\
+   })
+ 
+-static inline unsigned long
+-__xchg_u8_local(volatile char *m, unsigned long val)
+-{
+-	unsigned long ret, tmp, addr64;
+-
+-	__asm__ __volatile__(
+-	"	andnot	%4,7,%3\n"
+-	"	insbl	%1,%4,%1\n"
+-	"1:	ldq_l	%2,0(%3)\n"
+-	"	extbl	%2,%4,%0\n"
+-	"	mskbl	%2,%4,%2\n"
+-	"	or	%1,%2,%2\n"
+-	"	stq_c	%2,0(%3)\n"
+-	"	beq	%2,2f\n"
+-	".subsection 2\n"
+-	"2:	br	1b\n"
+-	".previous"
+-	: "=&r" (ret), "=&r" (val), "=&r" (tmp), "=&r" (addr64)
+-	: "r" ((long)m), "1" (val) : "memory");
+-
+-	return ret;
+-}
+-
+-static inline unsigned long
+-__xchg_u16_local(volatile short *m, unsigned long val)
+-{
+-	unsigned long ret, tmp, addr64;
+-
+-	__asm__ __volatile__(
+-	"	andnot	%4,7,%3\n"
+-	"	inswl	%1,%4,%1\n"
+-	"1:	ldq_l	%2,0(%3)\n"
+-	"	extwl	%2,%4,%0\n"
+-	"	mskwl	%2,%4,%2\n"
+-	"	or	%1,%2,%2\n"
+-	"	stq_c	%2,0(%3)\n"
+-	"	beq	%2,2f\n"
+-	".subsection 2\n"
+-	"2:	br	1b\n"
+-	".previous"
+-	: "=&r" (ret), "=&r" (val), "=&r" (tmp), "=&r" (addr64)
+-	: "r" ((long)m), "1" (val) : "memory");
+-
+-	return ret;
+-}
+-
+-static inline unsigned long
+-__xchg_u32_local(volatile int *m, unsigned long val)
+-{
+-	unsigned long dummy;
+-
+-	__asm__ __volatile__(
+-	"1:	ldl_l %0,%4\n"
+-	"	bis $31,%3,%1\n"
+-	"	stl_c %1,%2\n"
+-	"	beq %1,2f\n"
+-	".subsection 2\n"
+-	"2:	br 1b\n"
+-	".previous"
+-	: "=&r" (val), "=&r" (dummy), "=m" (*m)
+-	: "rI" (val), "m" (*m) : "memory");
+-
+-	return val;
+-}
+-
+-static inline unsigned long
+-__xchg_u64_local(volatile long *m, unsigned long val)
+-{
+-	unsigned long dummy;
+-
+-	__asm__ __volatile__(
+-	"1:	ldq_l %0,%4\n"
+-	"	bis $31,%3,%1\n"
+-	"	stq_c %1,%2\n"
+-	"	beq %1,2f\n"
+-	".subsection 2\n"
+-	"2:	br 1b\n"
+-	".previous"
+-	: "=&r" (val), "=&r" (dummy), "=m" (*m)
+-	: "rI" (val), "m" (*m) : "memory");
+-
+-	return val;
+-}
+-
+-#define __xchg_local(ptr, x, size) \
+-({ \
+-	unsigned long __xchg__res; \
+-	volatile void *__xchg__ptr = (ptr); \
+-	switch (size) { \
+-		case 1: __xchg__res = __xchg_u8_local(__xchg__ptr, x); break; \
+-		case 2: __xchg__res = __xchg_u16_local(__xchg__ptr, x); break; \
+-		case 4: __xchg__res = __xchg_u32_local(__xchg__ptr, x); break; \
+-		case 8: __xchg__res = __xchg_u64_local(__xchg__ptr, x); break; \
+-		default: __xchg_called_with_bad_pointer(); __xchg__res = x; \
+-	} \
+-	__xchg__res; \
+-})
+-
+-#define xchg_local(ptr,x)						     \
+-  ({									     \
+-     __typeof__(*(ptr)) _x_ = (x);					     \
+-     (__typeof__(*(ptr))) __xchg_local((ptr), (unsigned long)_x_,	     \
+-     		sizeof(*(ptr))); \
++#define cmpxchg_local(ptr, o, n)					\
++  ({									\
++     __typeof__(*(ptr)) _o_ = (o);					\
++     __typeof__(*(ptr)) _n_ = (n);					\
++     (__typeof__(*(ptr))) __cmpxchg_local((ptr), (unsigned long)_o_,	\
++					  (unsigned long)_n_,		\
++					  sizeof(*(ptr)));		\
+   })
+ 
+-/* 
+- * Atomic compare and exchange.  Compare OLD with MEM, if identical,
+- * store NEW in MEM.  Return the initial value in MEM.  Success is
+- * indicated by comparing RETURN with OLD.
+- *
+- * The memory barrier should be placed in SMP only when we actually
+- * make the change. If we don't change anything (so if the returned
+- * prev is equal to old) then we aren't acquiring anything new and
+- * we don't need any memory barrier as far I can tell.
+- */
+-
+-#define __HAVE_ARCH_CMPXCHG 1
+-
+-static inline unsigned long
+-__cmpxchg_u8(volatile char *m, long old, long new)
+-{
+-	unsigned long prev, tmp, cmp, addr64;
+-
+-	__asm__ __volatile__(
+-	"	andnot	%5,7,%4\n"
+-	"	insbl	%1,%5,%1\n"
+-	"1:	ldq_l	%2,0(%4)\n"
+-	"	extbl	%2,%5,%0\n"
+-	"	cmpeq	%0,%6,%3\n"
+-	"	beq	%3,2f\n"
+-	"	mskbl	%2,%5,%2\n"
+-	"	or	%1,%2,%2\n"
+-	"	stq_c	%2,0(%4)\n"
+-	"	beq	%2,3f\n"
+-#ifdef CONFIG_SMP
+-	"	mb\n"
+-#endif
+-	"2:\n"
+-	".subsection 2\n"
+-	"3:	br	1b\n"
+-	".previous"
+-	: "=&r" (prev), "=&r" (new), "=&r" (tmp), "=&r" (cmp), "=&r" (addr64)
+-	: "r" ((long)m), "Ir" (old), "1" (new) : "memory");
+-
+-	return prev;
+-}
+-
+-static inline unsigned long
+-__cmpxchg_u16(volatile short *m, long old, long new)
+-{
+-	unsigned long prev, tmp, cmp, addr64;
+-
+-	__asm__ __volatile__(
+-	"	andnot	%5,7,%4\n"
+-	"	inswl	%1,%5,%1\n"
+-	"1:	ldq_l	%2,0(%4)\n"
+-	"	extwl	%2,%5,%0\n"
+-	"	cmpeq	%0,%6,%3\n"
+-	"	beq	%3,2f\n"
+-	"	mskwl	%2,%5,%2\n"
+-	"	or	%1,%2,%2\n"
+-	"	stq_c	%2,0(%4)\n"
+-	"	beq	%2,3f\n"
+-#ifdef CONFIG_SMP
+-	"	mb\n"
+-#endif
+-	"2:\n"
+-	".subsection 2\n"
+-	"3:	br	1b\n"
+-	".previous"
+-	: "=&r" (prev), "=&r" (new), "=&r" (tmp), "=&r" (cmp), "=&r" (addr64)
+-	: "r" ((long)m), "Ir" (old), "1" (new) : "memory");
+-
+-	return prev;
+-}
+-
+-static inline unsigned long
+-__cmpxchg_u32(volatile int *m, int old, int new)
+-{
+-	unsigned long prev, cmp;
+-
+-	__asm__ __volatile__(
+-	"1:	ldl_l %0,%5\n"
+-	"	cmpeq %0,%3,%1\n"
+-	"	beq %1,2f\n"
+-	"	mov %4,%1\n"
+-	"	stl_c %1,%2\n"
+-	"	beq %1,3f\n"
+-#ifdef CONFIG_SMP
+-	"	mb\n"
+-#endif
+-	"2:\n"
+-	".subsection 2\n"
+-	"3:	br 1b\n"
+-	".previous"
+-	: "=&r"(prev), "=&r"(cmp), "=m"(*m)
+-	: "r"((long) old), "r"(new), "m"(*m) : "memory");
+-
+-	return prev;
+-}
++#define cmpxchg64_local(ptr, o, n)					\
++  ({									\
++	BUILD_BUG_ON(sizeof(*(ptr)) != 8);				\
++	cmpxchg_local((ptr), (o), (n));					\
++  })
+ 
+-static inline unsigned long
+-__cmpxchg_u64(volatile long *m, unsigned long old, unsigned long new)
+-{
+-	unsigned long prev, cmp;
+-
+-	__asm__ __volatile__(
+-	"1:	ldq_l %0,%5\n"
+-	"	cmpeq %0,%3,%1\n"
+-	"	beq %1,2f\n"
+-	"	mov %4,%1\n"
+-	"	stq_c %1,%2\n"
+-	"	beq %1,3f\n"
+ #ifdef CONFIG_SMP
+-	"	mb\n"
++#undef __ASM__MB
++#define __ASM__MB	"\tmb\n"
+ #endif
+-	"2:\n"
+-	".subsection 2\n"
+-	"3:	br 1b\n"
+-	".previous"
+-	: "=&r"(prev), "=&r"(cmp), "=m"(*m)
+-	: "r"((long) old), "r"(new), "m"(*m) : "memory");
+-
+-	return prev;
+-}
+-
+-/* This function doesn't exist, so you'll get a linker error
+-   if something tries to do an invalid cmpxchg().  */
+-extern void __cmpxchg_called_with_bad_pointer(void);
+-
+-static __always_inline unsigned long
+-__cmpxchg(volatile void *ptr, unsigned long old, unsigned long new, int size)
+-{
+-	switch (size) {
+-		case 1:
+-			return __cmpxchg_u8(ptr, old, new);
+-		case 2:
+-			return __cmpxchg_u16(ptr, old, new);
+-		case 4:
+-			return __cmpxchg_u32(ptr, old, new);
+-		case 8:
+-			return __cmpxchg_u64(ptr, old, new);
+-	}
+-	__cmpxchg_called_with_bad_pointer();
+-	return old;
+-}
+-
+-#define cmpxchg(ptr, o, n)						 \
+-  ({									 \
+-     __typeof__(*(ptr)) _o_ = (o);					 \
+-     __typeof__(*(ptr)) _n_ = (n);					 \
+-     (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,		 \
+-				    (unsigned long)_n_, sizeof(*(ptr))); \
++#undef ____xchg
++#undef ____cmpxchg
++#define ____xchg(type, args...)		__xchg ##type(args)
++#define ____cmpxchg(type, args...)	__cmpxchg ##type(args)
++#include <asm/xchg.h>
 +
-+extern int pci_create_resource_files(struct pci_dev *dev);
-+extern void pci_remove_resource_files(struct pci_dev *dev);
++#define xchg(ptr,x)							\
++  ({									\
++     __typeof__(*(ptr)) _x_ = (x);					\
++     (__typeof__(*(ptr))) __xchg((ptr), (unsigned long)_x_,		\
++				 sizeof(*(ptr)));			\
+   })
+-#define cmpxchg64(ptr, o, n)						 \
+-  ({									 \
+-	BUILD_BUG_ON(sizeof(*(ptr)) != 8);				 \
+-	cmpxchg((ptr), (o), (n));					 \
+-  })
+-
+-static inline unsigned long
+-__cmpxchg_u8_local(volatile char *m, long old, long new)
+-{
+-	unsigned long prev, tmp, cmp, addr64;
+-
+-	__asm__ __volatile__(
+-	"	andnot	%5,7,%4\n"
+-	"	insbl	%1,%5,%1\n"
+-	"1:	ldq_l	%2,0(%4)\n"
+-	"	extbl	%2,%5,%0\n"
+-	"	cmpeq	%0,%6,%3\n"
+-	"	beq	%3,2f\n"
+-	"	mskbl	%2,%5,%2\n"
+-	"	or	%1,%2,%2\n"
+-	"	stq_c	%2,0(%4)\n"
+-	"	beq	%2,3f\n"
+-	"2:\n"
+-	".subsection 2\n"
+-	"3:	br	1b\n"
+-	".previous"
+-	: "=&r" (prev), "=&r" (new), "=&r" (tmp), "=&r" (cmp), "=&r" (addr64)
+-	: "r" ((long)m), "Ir" (old), "1" (new) : "memory");
+-
+-	return prev;
+-}
+-
+-static inline unsigned long
+-__cmpxchg_u16_local(volatile short *m, long old, long new)
+-{
+-	unsigned long prev, tmp, cmp, addr64;
+-
+-	__asm__ __volatile__(
+-	"	andnot	%5,7,%4\n"
+-	"	inswl	%1,%5,%1\n"
+-	"1:	ldq_l	%2,0(%4)\n"
+-	"	extwl	%2,%5,%0\n"
+-	"	cmpeq	%0,%6,%3\n"
+-	"	beq	%3,2f\n"
+-	"	mskwl	%2,%5,%2\n"
+-	"	or	%1,%2,%2\n"
+-	"	stq_c	%2,0(%4)\n"
+-	"	beq	%2,3f\n"
+-	"2:\n"
+-	".subsection 2\n"
+-	"3:	br	1b\n"
+-	".previous"
+-	: "=&r" (prev), "=&r" (new), "=&r" (tmp), "=&r" (cmp), "=&r" (addr64)
+-	: "r" ((long)m), "Ir" (old), "1" (new) : "memory");
+-
+-	return prev;
+-}
+-
+-static inline unsigned long
+-__cmpxchg_u32_local(volatile int *m, int old, int new)
+-{
+-	unsigned long prev, cmp;
+-
+-	__asm__ __volatile__(
+-	"1:	ldl_l %0,%5\n"
+-	"	cmpeq %0,%3,%1\n"
+-	"	beq %1,2f\n"
+-	"	mov %4,%1\n"
+-	"	stl_c %1,%2\n"
+-	"	beq %1,3f\n"
+-	"2:\n"
+-	".subsection 2\n"
+-	"3:	br 1b\n"
+-	".previous"
+-	: "=&r"(prev), "=&r"(cmp), "=m"(*m)
+-	: "r"((long) old), "r"(new), "m"(*m) : "memory");
+-
+-	return prev;
+-}
+-
+-static inline unsigned long
+-__cmpxchg_u64_local(volatile long *m, unsigned long old, unsigned long new)
+-{
+-	unsigned long prev, cmp;
+-
+-	__asm__ __volatile__(
+-	"1:	ldq_l %0,%5\n"
+-	"	cmpeq %0,%3,%1\n"
+-	"	beq %1,2f\n"
+-	"	mov %4,%1\n"
+-	"	stq_c %1,%2\n"
+-	"	beq %1,3f\n"
+-	"2:\n"
+-	".subsection 2\n"
+-	"3:	br 1b\n"
+-	".previous"
+-	: "=&r"(prev), "=&r"(cmp), "=m"(*m)
+-	: "r"((long) old), "r"(new), "m"(*m) : "memory");
+-
+-	return prev;
+-}
+-
+-static __always_inline unsigned long
+-__cmpxchg_local(volatile void *ptr, unsigned long old, unsigned long new,
+-		int size)
+-{
+-	switch (size) {
+-		case 1:
+-			return __cmpxchg_u8_local(ptr, old, new);
+-		case 2:
+-			return __cmpxchg_u16_local(ptr, old, new);
+-		case 4:
+-			return __cmpxchg_u32_local(ptr, old, new);
+-		case 8:
+-			return __cmpxchg_u64_local(ptr, old, new);
+-	}
+-	__cmpxchg_called_with_bad_pointer();
+-	return old;
+-}
+ 
+-#define cmpxchg_local(ptr, o, n)					 \
+-  ({									 \
+-     __typeof__(*(ptr)) _o_ = (o);					 \
+-     __typeof__(*(ptr)) _n_ = (n);					 \
+-     (__typeof__(*(ptr))) __cmpxchg_local((ptr), (unsigned long)_o_,	 \
+-				    (unsigned long)_n_, sizeof(*(ptr))); \
++#define cmpxchg(ptr, o, n)						\
++  ({									\
++     __typeof__(*(ptr)) _o_ = (o);					\
++     __typeof__(*(ptr)) _n_ = (n);					\
++     (__typeof__(*(ptr))) __cmpxchg((ptr), (unsigned long)_o_,		\
++				    (unsigned long)_n_,	sizeof(*(ptr)));\
+   })
+-#define cmpxchg64_local(ptr, o, n)					 \
+-  ({									 \
+-	BUILD_BUG_ON(sizeof(*(ptr)) != 8);				 \
+-	cmpxchg_local((ptr), (o), (n));					 \
 +
- #endif /* __ALPHA_PCI_H */
-diff --git a/arch/alpha/kernel/Makefile b/arch/alpha/kernel/Makefile
-index e203713..7739a62 100644
---- a/arch/alpha/kernel/Makefile
-+++ b/arch/alpha/kernel/Makefile
-@@ -12,7 +12,7 @@ obj-y    := entry.o traps.o process.o init_task.o osf_sys.o irq.o \
++#define cmpxchg64(ptr, o, n)						\
++  ({									\
++	BUILD_BUG_ON(sizeof(*(ptr)) != 8);				\
++	cmpxchg((ptr), (o), (n));					\
+   })
  
- obj-$(CONFIG_VGA_HOSE)	+= console.o
- obj-$(CONFIG_SMP)	+= smp.o
--obj-$(CONFIG_PCI)	+= pci.o pci_iommu.o
-+obj-$(CONFIG_PCI)	+= pci.o pci_iommu.o pci-sysfs.o
- obj-$(CONFIG_SRM_ENV)	+= srm_env.o
- obj-$(CONFIG_MODULES)	+= module.o
++#undef __ASM__MB
++#undef ____cmpxchg
++
++#define __HAVE_ARCH_CMPXCHG 1
  
-diff --git a/arch/alpha/kernel/pci-sysfs.c b/arch/alpha/kernel/pci-sysfs.c
+ #endif /* __ASSEMBLY__ */
+ 
+diff --git a/arch/alpha/include/asm/xchg.h b/arch/alpha/include/asm/xchg.h
 new file mode 100644
-index 0000000..6ea822e
+index 0000000..beba1b8
 --- /dev/null
-+++ b/arch/alpha/kernel/pci-sysfs.c
-@@ -0,0 +1,366 @@
++++ b/arch/alpha/include/asm/xchg.h
+@@ -0,0 +1,258 @@
++#ifndef __ALPHA_SYSTEM_H
++#error Do not include xchg.h directly!
++#else
 +/*
-+ * arch/alpha/kernel/pci-sysfs.c
-+ *
-+ * Copyright (C) 2009 Ivan Kokshaysky
-+ *
-+ * Alpha PCI resource files.
-+ *
-+ * Loosely based on generic HAVE_PCI_MMAP implementation in
-+ * drivers/pci/pci-sysfs.c
++ * xchg/xchg_local and cmpxchg/cmpxchg_local share the same code
++ * except that local version do not have the expensive memory barrier.
++ * So this file is included twice from asm/system.h.
 + */
 +
-+#include <linux/sched.h>
-+#include <linux/pci.h>
-+
-+static int hose_mmap_page_range(struct pci_controller *hose,
-+				struct vm_area_struct *vma,
-+				enum pci_mmap_state mmap_type, int sparse)
-+{
-+	unsigned long base;
-+
-+	if (mmap_type == pci_mmap_mem)
-+		base = sparse ? hose->sparse_mem_base : hose->dense_mem_base;
-+	else
-+		base = sparse ? hose->sparse_io_base : hose->dense_io_base;
-+
-+	vma->vm_pgoff += base >> PAGE_SHIFT;
-+	vma->vm_flags |= (VM_IO | VM_RESERVED);
-+
-+	return io_remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff,
-+				  vma->vm_end - vma->vm_start,
-+				  vma->vm_page_prot);
-+}
-+
-+static int __pci_mmap_fits(struct pci_dev *pdev, int num,
-+			   struct vm_area_struct *vma, int sparse)
-+{
-+	unsigned long nr, start, size;
-+	int shift = sparse ? 5 : 0;
-+
-+	nr = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
-+	start = vma->vm_pgoff;
-+	size = ((pci_resource_len(pdev, num) - 1) >> (PAGE_SHIFT - shift)) + 1;
-+
-+	if (start < size && size - start >= nr)
-+		return 1;
-+	WARN(1, "process \"%s\" tried to map%s 0x%08lx-0x%08lx on %s BAR %d "
-+		"(size 0x%08lx)\n",
-+		current->comm, sparse ? " sparse" : "", start, start + nr,
-+		pci_name(pdev), num, size);
-+	return 0;
-+}
-+
-+/**
-+ * pci_mmap_resource - map a PCI resource into user memory space
-+ * @kobj: kobject for mapping
-+ * @attr: struct bin_attribute for the file being mapped
-+ * @vma: struct vm_area_struct passed into the mmap
-+ * @sparse: address space type
-+ *
-+ * Use the bus mapping routines to map a PCI resource into userspace.
++/*
++ * Atomic exchange.
++ * Since it can be used to implement critical sections
++ * it must clobber "memory" (also for interrupts in UP).
 + */
-+static int pci_mmap_resource(struct kobject *kobj, struct bin_attribute *attr,
-+			     struct vm_area_struct *vma, int sparse)
++
++static inline unsigned long
++____xchg(_u8, volatile char *m, unsigned long val)
 +{
-+	struct pci_dev *pdev = to_pci_dev(container_of(kobj,
-+						       struct device, kobj));
-+	struct resource *res = (struct resource *)attr->private;
-+	enum pci_mmap_state mmap_type;
-+	struct pci_bus_region bar;
-+	int i;
++	unsigned long ret, tmp, addr64;
 +
-+	for (i = 0; i < PCI_ROM_RESOURCE; i++)
-+		if (res == &pdev->resource[i])
-+			break;
-+	if (i >= PCI_ROM_RESOURCE)
-+		return -ENODEV;
++	__asm__ __volatile__(
++	"	andnot	%4,7,%3\n"
++	"	insbl	%1,%4,%1\n"
++	"1:	ldq_l	%2,0(%3)\n"
++	"	extbl	%2,%4,%0\n"
++	"	mskbl	%2,%4,%2\n"
++	"	or	%1,%2,%2\n"
++	"	stq_c	%2,0(%3)\n"
++	"	beq	%2,2f\n"
++		__ASM__MB
++	".subsection 2\n"
++	"2:	br	1b\n"
++	".previous"
++	: "=&r" (ret), "=&r" (val), "=&r" (tmp), "=&r" (addr64)
++	: "r" ((long)m), "1" (val) : "memory");
 +
-+	if (!__pci_mmap_fits(pdev, i, vma, sparse))
-+		return -EINVAL;
-+
-+	if (iomem_is_exclusive(res->start))
-+		return -EINVAL;
-+
-+	pcibios_resource_to_bus(pdev, &bar, res);
-+	vma->vm_pgoff += bar.start >> (PAGE_SHIFT - (sparse ? 5 : 0));
-+	mmap_type = res->flags & IORESOURCE_MEM ? pci_mmap_mem : pci_mmap_io;
-+
-+	return hose_mmap_page_range(pdev->sysdata, vma, mmap_type, sparse);
++	return ret;
 +}
 +
-+static int pci_mmap_resource_sparse(struct kobject *kobj,
-+				    struct bin_attribute *attr,
-+				    struct vm_area_struct *vma)
++static inline unsigned long
++____xchg(_u16, volatile short *m, unsigned long val)
 +{
-+	return pci_mmap_resource(kobj, attr, vma, 1);
++	unsigned long ret, tmp, addr64;
++
++	__asm__ __volatile__(
++	"	andnot	%4,7,%3\n"
++	"	inswl	%1,%4,%1\n"
++	"1:	ldq_l	%2,0(%3)\n"
++	"	extwl	%2,%4,%0\n"
++	"	mskwl	%2,%4,%2\n"
++	"	or	%1,%2,%2\n"
++	"	stq_c	%2,0(%3)\n"
++	"	beq	%2,2f\n"
++		__ASM__MB
++	".subsection 2\n"
++	"2:	br	1b\n"
++	".previous"
++	: "=&r" (ret), "=&r" (val), "=&r" (tmp), "=&r" (addr64)
++	: "r" ((long)m), "1" (val) : "memory");
++
++	return ret;
 +}
 +
-+static int pci_mmap_resource_dense(struct kobject *kobj,
-+				   struct bin_attribute *attr,
-+				   struct vm_area_struct *vma)
++static inline unsigned long
++____xchg(_u32, volatile int *m, unsigned long val)
 +{
-+	return pci_mmap_resource(kobj, attr, vma, 0);
++	unsigned long dummy;
++
++	__asm__ __volatile__(
++	"1:	ldl_l %0,%4\n"
++	"	bis $31,%3,%1\n"
++	"	stl_c %1,%2\n"
++	"	beq %1,2f\n"
++		__ASM__MB
++	".subsection 2\n"
++	"2:	br 1b\n"
++	".previous"
++	: "=&r" (val), "=&r" (dummy), "=m" (*m)
++	: "rI" (val), "m" (*m) : "memory");
++
++	return val;
 +}
 +
-+/**
-+ * pci_remove_resource_files - cleanup resource files
-+ * @dev: dev to cleanup
++static inline unsigned long
++____xchg(_u64, volatile long *m, unsigned long val)
++{
++	unsigned long dummy;
++
++	__asm__ __volatile__(
++	"1:	ldq_l %0,%4\n"
++	"	bis $31,%3,%1\n"
++	"	stq_c %1,%2\n"
++	"	beq %1,2f\n"
++		__ASM__MB
++	".subsection 2\n"
++	"2:	br 1b\n"
++	".previous"
++	: "=&r" (val), "=&r" (dummy), "=m" (*m)
++	: "rI" (val), "m" (*m) : "memory");
++
++	return val;
++}
++
++/* This function doesn't exist, so you'll get a linker error
++   if something tries to do an invalid xchg().  */
++extern void __xchg_called_with_bad_pointer(void);
++
++static __always_inline unsigned long
++____xchg(, volatile void *ptr, unsigned long x, int size)
++{
++	switch (size) {
++		case 1:
++			return ____xchg(_u8, ptr, x);
++		case 2:
++			return ____xchg(_u16, ptr, x);
++		case 4:
++			return ____xchg(_u32, ptr, x);
++		case 8:
++			return ____xchg(_u64, ptr, x);
++	}
++	__xchg_called_with_bad_pointer();
++	return x;
++}
++
++/*
++ * Atomic compare and exchange.  Compare OLD with MEM, if identical,
++ * store NEW in MEM.  Return the initial value in MEM.  Success is
++ * indicated by comparing RETURN with OLD.
 + *
-+ * If we created resource files for @dev, remove them from sysfs and
-+ * free their resources.
++ * The memory barrier should be placed in SMP only when we actually
++ * make the change. If we don't change anything (so if the returned
++ * prev is equal to old) then we aren't acquiring anything new and
++ * we don't need any memory barrier as far I can tell.
 + */
-+void pci_remove_resource_files(struct pci_dev *pdev)
++
++static inline unsigned long
++____cmpxchg(_u8, volatile char *m, unsigned char old, unsigned char new)
 +{
-+	int i;
++	unsigned long prev, tmp, cmp, addr64;
 +
-+	for (i = 0; i < PCI_ROM_RESOURCE; i++) {
-+		struct bin_attribute *res_attr;
++	__asm__ __volatile__(
++	"	andnot	%5,7,%4\n"
++	"	insbl	%1,%5,%1\n"
++	"1:	ldq_l	%2,0(%4)\n"
++	"	extbl	%2,%5,%0\n"
++	"	cmpeq	%0,%6,%3\n"
++	"	beq	%3,2f\n"
++	"	mskbl	%2,%5,%2\n"
++	"	or	%1,%2,%2\n"
++	"	stq_c	%2,0(%4)\n"
++	"	beq	%2,3f\n"
++		__ASM__MB
++	"2:\n"
++	".subsection 2\n"
++	"3:	br	1b\n"
++	".previous"
++	: "=&r" (prev), "=&r" (new), "=&r" (tmp), "=&r" (cmp), "=&r" (addr64)
++	: "r" ((long)m), "Ir" (old), "1" (new) : "memory");
 +
-+		res_attr = pdev->res_attr[i];
-+		if (res_attr) {
-+			sysfs_remove_bin_file(&pdev->dev.kobj, res_attr);
-+			kfree(res_attr);
-+		}
++	return prev;
++}
 +
-+		res_attr = pdev->res_attr_wc[i];
-+		if (res_attr) {
-+			sysfs_remove_bin_file(&pdev->dev.kobj, res_attr);
-+			kfree(res_attr);
-+		}
++static inline unsigned long
++____cmpxchg(_u16, volatile short *m, unsigned short old, unsigned short new)
++{
++	unsigned long prev, tmp, cmp, addr64;
++
++	__asm__ __volatile__(
++	"	andnot	%5,7,%4\n"
++	"	inswl	%1,%5,%1\n"
++	"1:	ldq_l	%2,0(%4)\n"
++	"	extwl	%2,%5,%0\n"
++	"	cmpeq	%0,%6,%3\n"
++	"	beq	%3,2f\n"
++	"	mskwl	%2,%5,%2\n"
++	"	or	%1,%2,%2\n"
++	"	stq_c	%2,0(%4)\n"
++	"	beq	%2,3f\n"
++		__ASM__MB
++	"2:\n"
++	".subsection 2\n"
++	"3:	br	1b\n"
++	".previous"
++	: "=&r" (prev), "=&r" (new), "=&r" (tmp), "=&r" (cmp), "=&r" (addr64)
++	: "r" ((long)m), "Ir" (old), "1" (new) : "memory");
++
++	return prev;
++}
++
++static inline unsigned long
++____cmpxchg(_u32, volatile int *m, int old, int new)
++{
++	unsigned long prev, cmp;
++
++	__asm__ __volatile__(
++	"1:	ldl_l %0,%5\n"
++	"	cmpeq %0,%3,%1\n"
++	"	beq %1,2f\n"
++	"	mov %4,%1\n"
++	"	stl_c %1,%2\n"
++	"	beq %1,3f\n"
++		__ASM__MB
++	"2:\n"
++	".subsection 2\n"
++	"3:	br 1b\n"
++	".previous"
++	: "=&r"(prev), "=&r"(cmp), "=m"(*m)
++	: "r"((long) old), "r"(new), "m"(*m) : "memory");
++
++	return prev;
++}
++
++static inline unsigned long
++____cmpxchg(_u64, volatile long *m, unsigned long old, unsigned long new)
++{
++	unsigned long prev, cmp;
++
++	__asm__ __volatile__(
++	"1:	ldq_l %0,%5\n"
++	"	cmpeq %0,%3,%1\n"
++	"	beq %1,2f\n"
++	"	mov %4,%1\n"
++	"	stq_c %1,%2\n"
++	"	beq %1,3f\n"
++		__ASM__MB
++	"2:\n"
++	".subsection 2\n"
++	"3:	br 1b\n"
++	".previous"
++	: "=&r"(prev), "=&r"(cmp), "=m"(*m)
++	: "r"((long) old), "r"(new), "m"(*m) : "memory");
++
++	return prev;
++}
++
++/* This function doesn't exist, so you'll get a linker error
++   if something tries to do an invalid cmpxchg().  */
++extern void __cmpxchg_called_with_bad_pointer(void);
++
++static __always_inline unsigned long
++____cmpxchg(, volatile void *ptr, unsigned long old, unsigned long new,
++	      int size)
++{
++	switch (size) {
++		case 1:
++			return ____cmpxchg(_u8, ptr, old, new);
++		case 2:
++			return ____cmpxchg(_u16, ptr, old, new);
++		case 4:
++			return ____cmpxchg(_u32, ptr, old, new);
++		case 8:
++			return ____cmpxchg(_u64, ptr, old, new);
 +	}
++	__cmpxchg_called_with_bad_pointer();
++	return old;
 +}
 +
-+static int sparse_mem_mmap_fits(struct pci_dev *pdev, int num)
-+{
-+	struct pci_bus_region bar;
-+	struct pci_controller *hose = pdev->sysdata;
-+	long dense_offset;
-+	unsigned long sparse_size;
-+
-+	pcibios_resource_to_bus(pdev, &bar, &pdev->resource[num]);
-+
-+	/* All core logic chips have 4G sparse address space, except
-+	   CIA which has 16G (see xxx_SPARSE_MEM and xxx_DENSE_MEM
-+	   definitions in asm/core_xxx.h files). This corresponds
-+	   to 128M or 512M of the bus space. */
-+	dense_offset = (long)(hose->dense_mem_base - hose->sparse_mem_base);
-+	sparse_size = dense_offset >= 0x400000000UL ? 0x20000000 : 0x8000000;
-+
-+	return bar.end < sparse_size;
-+}
-+
-+static int pci_create_one_attr(struct pci_dev *pdev, int num, char *name,
-+			       char *suffix, struct bin_attribute *res_attr,
-+			       unsigned long sparse)
-+{
-+	size_t size = pci_resource_len(pdev, num);
-+
-+	sprintf(name, "resource%d%s", num, suffix);
-+	res_attr->mmap = sparse ? pci_mmap_resource_sparse :
-+				  pci_mmap_resource_dense;
-+	res_attr->attr.name = name;
-+	res_attr->attr.mode = S_IRUSR | S_IWUSR;
-+	res_attr->size = sparse ? size << 5 : size;
-+	res_attr->private = &pdev->resource[num];
-+	return sysfs_create_bin_file(&pdev->dev.kobj, res_attr);
-+}
-+
-+static int pci_create_attr(struct pci_dev *pdev, int num)
-+{
-+	/* allocate attribute structure, piggyback attribute name */
-+	int retval, nlen1, nlen2 = 0, res_count = 1;
-+	unsigned long sparse_base, dense_base;
-+	struct bin_attribute *attr;
-+	struct pci_controller *hose = pdev->sysdata;
-+	char *suffix, *attr_name;
-+
-+	suffix = "";	/* Assume bwx machine, normal resourceN files. */
-+	nlen1 = 10;
-+
-+	if (pdev->resource[num].flags & IORESOURCE_MEM) {
-+		sparse_base = hose->sparse_mem_base;
-+		dense_base = hose->dense_mem_base;
-+		if (sparse_base && !sparse_mem_mmap_fits(pdev, num)) {
-+			sparse_base = 0;
-+			suffix = "_dense";
-+			nlen1 = 16;	/* resourceN_dense */
-+		}
-+	} else {
-+		sparse_base = hose->sparse_io_base;
-+		dense_base = hose->dense_io_base;
-+	}
-+
-+	if (sparse_base) {
-+		suffix = "_sparse";
-+		nlen1 = 17;
-+		if (dense_base) {
-+			nlen2 = 16;	/* resourceN_dense */
-+			res_count = 2;
-+		}
-+	}
-+
-+	attr = kzalloc(sizeof(*attr) * res_count + nlen1 + nlen2, GFP_ATOMIC);
-+	if (!attr)
-+		return -ENOMEM;
-+
-+	/* Create bwx, sparse or single dense file */
-+	attr_name = (char *)(attr + res_count);
-+	pdev->res_attr[num] = attr;
-+	retval = pci_create_one_attr(pdev, num, attr_name, suffix, attr,
-+				     sparse_base);
-+	if (retval || res_count == 1)
-+		return retval;
-+
-+	/* Create dense file */
-+	attr_name += nlen1;
-+	attr++;
-+	pdev->res_attr_wc[num] = attr;
-+	return pci_create_one_attr(pdev, num, attr_name, "_dense", attr, 0);
-+}
-+
-+/**
-+ * pci_create_resource_files - create resource files in sysfs for @dev
-+ * @dev: dev in question
-+ *
-+ * Walk the resources in @dev creating files for each resource available.
-+ */
-+int pci_create_resource_files(struct pci_dev *pdev)
-+{
-+	int i;
-+	int retval;
-+
-+	/* Expose the PCI resources from this device as files */
-+	for (i = 0; i < PCI_ROM_RESOURCE; i++) {
-+
-+		/* skip empty resources */
-+		if (!pci_resource_len(pdev, i))
-+			continue;
-+
-+		retval = pci_create_attr(pdev, i);
-+		if (retval) {
-+			pci_remove_resource_files(pdev);
-+			return retval;
-+		}
-+	}
-+	return 0;
-+}
-+
-+/* Legacy I/O bus mapping stuff. */
-+
-+static int __legacy_mmap_fits(struct pci_controller *hose,
-+			      struct vm_area_struct *vma,
-+			      unsigned long res_size, int sparse)
-+{
-+	unsigned long nr, start, size;
-+
-+	nr = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
-+	start = vma->vm_pgoff;
-+	size = ((res_size - 1) >> PAGE_SHIFT) + 1;
-+
-+	if (start < size && size - start >= nr)
-+		return 1;
-+	WARN(1, "process \"%s\" tried to map%s 0x%08lx-0x%08lx on hose %d "
-+		"(size 0x%08lx)\n",
-+		current->comm, sparse ? " sparse" : "", start, start + nr,
-+		hose->index, size);
-+	return 0;
-+}
-+
-+static inline int has_sparse(struct pci_controller *hose,
-+			     enum pci_mmap_state mmap_type)
-+{
-+	unsigned long base;
-+
-+	base = (mmap_type == pci_mmap_mem) ? hose->sparse_mem_base :
-+					     hose->sparse_io_base;
-+
-+	return base != 0;
-+}
-+
-+int pci_mmap_legacy_page_range(struct pci_bus *bus, struct vm_area_struct *vma,
-+			       enum pci_mmap_state mmap_type)
-+{
-+	struct pci_controller *hose = bus->sysdata;
-+	int sparse = has_sparse(hose, mmap_type);
-+	unsigned long res_size;
-+
-+	res_size = (mmap_type == pci_mmap_mem) ? bus->legacy_mem->size :
-+						 bus->legacy_io->size;
-+	if (!__legacy_mmap_fits(hose, vma, res_size, sparse))
-+		return -EINVAL;
-+
-+	return hose_mmap_page_range(hose, vma, mmap_type, sparse);
-+}
-+
-+/**
-+ * pci_adjust_legacy_attr - adjustment of legacy file attributes
-+ * @b: bus to create files under
-+ * @mmap_type: I/O port or memory
-+ *
-+ * Adjust file name and size for sparse mappings.
-+ */
-+void pci_adjust_legacy_attr(struct pci_bus *bus, enum pci_mmap_state mmap_type)
-+{
-+	struct pci_controller *hose = bus->sysdata;
-+
-+	if (!has_sparse(hose, mmap_type))
-+		return;
-+
-+	if (mmap_type == pci_mmap_mem) {
-+		bus->legacy_mem->attr.name = "legacy_mem_sparse";
-+		bus->legacy_mem->size <<= 5;
-+	} else {
-+		bus->legacy_io->attr.name = "legacy_io_sparse";
-+		bus->legacy_io->size <<= 5;
-+	}
-+	return;
-+}
-+
-+/* Legacy I/O bus read/write functions */
-+int pci_legacy_read(struct pci_bus *bus, loff_t port, u32 *val, size_t size)
-+{
-+	struct pci_controller *hose = bus->sysdata;
-+
-+	port += hose->io_space->start;
-+
-+	switch(size) {
-+	case 1:
-+		*((u8 *)val) = inb(port);
-+		return 1;
-+	case 2:
-+		if (port & 1)
-+			return -EINVAL;
-+		*((u16 *)val) = inw(port);
-+		return 2;
-+	case 4:
-+		if (port & 3)
-+			return -EINVAL;
-+		*((u32 *)val) = inl(port);
-+		return 4;
-+	}
-+	return -EINVAL;
-+}
-+
-+int pci_legacy_write(struct pci_bus *bus, loff_t port, u32 val, size_t size)
-+{
-+	struct pci_controller *hose = bus->sysdata;
-+
-+	port += hose->io_space->start;
-+
-+	switch(size) {
-+	case 1:
-+		outb(port, val);
-+		return 1;
-+	case 2:
-+		if (port & 1)
-+			return -EINVAL;
-+		outw(port, val);
-+		return 2;
-+	case 4:
-+		if (port & 3)
-+			return -EINVAL;
-+		outl(port, val);
-+		return 4;
-+	}
-+	return -EINVAL;
-+}
-diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-index dfc4e0d..1c89298 100644
---- a/drivers/pci/pci-sysfs.c
-+++ b/drivers/pci/pci-sysfs.c
-@@ -493,6 +493,19 @@ pci_mmap_legacy_io(struct kobject *kobj, struct bin_attribute *attr,
- }
- 
- /**
-+ * pci_adjust_legacy_attr - adjustment of legacy file attributes
-+ * @b: bus to create files under
-+ * @mmap_type: I/O port or memory
-+ *
-+ * Stub implementation. Can be overridden by arch if necessary.
-+ */
-+void __weak
-+pci_adjust_legacy_attr(struct pci_bus *b, enum pci_mmap_state mmap_type)
-+{
-+	return;
-+}
-+
-+/**
-  * pci_create_legacy_files - create legacy I/O port and memory files
-  * @b: bus to create files under
-  *
-@@ -518,6 +531,7 @@ void pci_create_legacy_files(struct pci_bus *b)
- 	b->legacy_io->read = pci_read_legacy_io;
- 	b->legacy_io->write = pci_write_legacy_io;
- 	b->legacy_io->mmap = pci_mmap_legacy_io;
-+	pci_adjust_legacy_attr(b, pci_mmap_io);
- 	error = device_create_bin_file(&b->dev, b->legacy_io);
- 	if (error)
- 		goto legacy_io_err;
-@@ -528,6 +542,7 @@ void pci_create_legacy_files(struct pci_bus *b)
- 	b->legacy_mem->size = 1024*1024;
- 	b->legacy_mem->attr.mode = S_IRUSR | S_IWUSR;
- 	b->legacy_mem->mmap = pci_mmap_legacy_mem;
-+	pci_adjust_legacy_attr(b, pci_mmap_mem);
- 	error = device_create_bin_file(&b->dev, b->legacy_mem);
- 	if (error)
- 		goto legacy_mem_err;
-@@ -719,8 +734,8 @@ static int pci_create_resource_files(struct pci_dev *pdev)
- 	return 0;
- }
- #else /* !HAVE_PCI_MMAP */
--static inline int pci_create_resource_files(struct pci_dev *dev) { return 0; }
--static inline void pci_remove_resource_files(struct pci_dev *dev) { return; }
-+int __weak pci_create_resource_files(struct pci_dev *dev) { return 0; }
-+void __weak pci_remove_resource_files(struct pci_dev *dev) { return; }
- #endif /* HAVE_PCI_MMAP */
- 
- /**
++#endif
