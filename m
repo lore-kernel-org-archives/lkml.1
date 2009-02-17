@@ -1,201 +1,279 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753921AbZBQQhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbZBQQhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753921AbZBQQhe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 11:37:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbZBQQhW
+	id S1754129AbZBQQhs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 11:37:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbZBQQh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 11:37:22 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40580 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750921AbZBQQhV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 11:37:21 -0500
-Date: Tue, 17 Feb 2009 17:37:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [git pull] tracing fixes
-Message-ID: <20090217163711.GA3680@elte.hu>
+	Tue, 17 Feb 2009 11:37:26 -0500
+Received: from exprod7og115.obsmtp.com ([64.18.2.217]:46874 "EHLO
+	exprod7og115.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752044AbZBQQhY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 11:37:24 -0500
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Yang, Bo" <Bo.Yang@lsi.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "Austria, Winston" <Winston.Austria@lsi.com>
+Date: Tue, 17 Feb 2009 08:37:00 -0800
+Subject: [PATCH 5/9] scsi: megaraid_sas - Add memory support required by
+ 0x73 controller
+Thread-Topic: [PATCH 5/9] scsi: megaraid_sas - Add memory support required
+ by 0x73 controller
+Thread-Index: AciIcSnS7H5xFQtCQzyNHR19nlBrTUImYsQgAAFMQJAAAQsscAAAaQSQAAFE92A=
+Message-ID: <4B6A08C587958942AA3002690DD4F8C33A07FBD2@cosmail02.lsi.com>
+In-Reply-To: <4B6A08C587958942AA3002690DD4F8C33A07FB75@cosmail02.lsi.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Add memory support required by 0x73 controller
 
-Please pull the latest tracing-fixes-for-linus git tree from:
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tracing-fixes-for-linus
+---
+drivers/scsi/megaraid/megaraid_sas.c |  164 +++++++++++++++++++++++++++++++++++
+ drivers/scsi/megaraid/megaraid_sas.h |   19 ++++
+ 2 files changed, 183 insertions(+)
 
- Thanks,
-
-	Ingo
-
------------------->
-Pekka Paalanen (3):
-      mmiotrace: count events lost due to not recording
-      trace: mmiotrace to the tracer menu in Kconfig
-      doc: mmiotrace.txt, buffer size control change
-
-
- Documentation/tracers/mmiotrace.txt |    6 ++----
- arch/x86/Kconfig.debug              |   24 ++----------------------
- kernel/trace/Kconfig                |   23 +++++++++++++++++++++++
- kernel/trace/trace_mmiotrace.c      |   14 ++++++++++----
- 4 files changed, 37 insertions(+), 30 deletions(-)
-
-diff --git a/Documentation/tracers/mmiotrace.txt b/Documentation/tracers/mmiotrace.txt
-index cde23b4..5731c67 100644
---- a/Documentation/tracers/mmiotrace.txt
-+++ b/Documentation/tracers/mmiotrace.txt
-@@ -78,12 +78,10 @@ to view your kernel log and look for "mmiotrace has lost events" warning. If
- events were lost, the trace is incomplete. You should enlarge the buffers and
- try again. Buffers are enlarged by first seeing how large the current buffers
- are:
--$ cat /debug/tracing/trace_entries
-+$ cat /debug/tracing/buffer_size_kb
- gives you a number. Approximately double this number and write it back, for
- instance:
--$ echo 0 > /debug/tracing/tracing_enabled
--$ echo 128000 > /debug/tracing/trace_entries
--$ echo 1 > /debug/tracing/tracing_enabled
-+$ echo 128000 > /debug/tracing/buffer_size_kb
- Then start again from the top.
- 
- If you are doing a trace for a driver project, e.g. Nouveau, you should also
-diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-index 10d6cc3..e1983fa 100644
---- a/arch/x86/Kconfig.debug
-+++ b/arch/x86/Kconfig.debug
-@@ -174,28 +174,8 @@ config IOMMU_LEAK
- 	  Add a simple leak tracer to the IOMMU code. This is useful when you
- 	  are debugging a buggy device driver that leaks IOMMU mappings.
- 
--config MMIOTRACE
--	bool "Memory mapped IO tracing"
--	depends on DEBUG_KERNEL && PCI
--	select TRACING
--	help
--	  Mmiotrace traces Memory Mapped I/O access and is meant for
--	  debugging and reverse engineering. It is called from the ioremap
--	  implementation and works via page faults. Tracing is disabled by
--	  default and can be enabled at run-time.
--
--	  See Documentation/tracers/mmiotrace.txt.
--	  If you are not helping to develop drivers, say N.
--
--config MMIOTRACE_TEST
--	tristate "Test module for mmiotrace"
--	depends on MMIOTRACE && m
--	help
--	  This is a dumb module for testing mmiotrace. It is very dangerous
--	  as it will write garbage to IO memory starting at a given address.
--	  However, it should be safe to use on e.g. unused portion of VRAM.
--
--	  Say N, unless you absolutely know what you are doing.
-+config HAVE_MMIOTRACE_SUPPORT
-+	def_bool y
- 
- #
- # IO delay types:
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index e2a4ff6..58a93fb 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -302,4 +302,27 @@ config FTRACE_STARTUP_TEST
- 	  functioning properly. It will do tests on all the configured
- 	  tracers of ftrace.
- 
-+config MMIOTRACE
-+	bool "Memory mapped IO tracing"
-+	depends on HAVE_MMIOTRACE_SUPPORT && DEBUG_KERNEL && PCI
-+	select TRACING
-+	help
-+	  Mmiotrace traces Memory Mapped I/O access and is meant for
-+	  debugging and reverse engineering. It is called from the ioremap
-+	  implementation and works via page faults. Tracing is disabled by
-+	  default and can be enabled at run-time.
-+
-+	  See Documentation/tracers/mmiotrace.txt.
-+	  If you are not helping to develop drivers, say N.
-+
-+config MMIOTRACE_TEST
-+	tristate "Test module for mmiotrace"
-+	depends on MMIOTRACE && m
-+	help
-+	  This is a dumb module for testing mmiotrace. It is very dangerous
-+	  as it will write garbage to IO memory starting at a given address.
-+	  However, it should be safe to use on e.g. unused portion of VRAM.
-+
-+	  Say N, unless you absolutely know what you are doing.
-+
- endmenu
-diff --git a/kernel/trace/trace_mmiotrace.c b/kernel/trace/trace_mmiotrace.c
-index fffcb06..80e503e 100644
---- a/kernel/trace/trace_mmiotrace.c
-+++ b/kernel/trace/trace_mmiotrace.c
-@@ -9,6 +9,7 @@
- #include <linux/kernel.h>
- #include <linux/mmiotrace.h>
- #include <linux/pci.h>
-+#include <asm/atomic.h>
- 
- #include "trace.h"
- 
-@@ -19,6 +20,7 @@ struct header_iter {
- static struct trace_array *mmio_trace_array;
- static bool overrun_detected;
- static unsigned long prev_overruns;
-+static atomic_t dropped_count;
- 
- static void mmio_reset_data(struct trace_array *tr)
- {
-@@ -121,11 +123,11 @@ static void mmio_close(struct trace_iterator *iter)
- 
- static unsigned long count_overruns(struct trace_iterator *iter)
- {
--	unsigned long cnt = 0;
-+	unsigned long cnt = atomic_xchg(&dropped_count, 0);
- 	unsigned long over = ring_buffer_overruns(iter->tr->buffer);
- 
- 	if (over > prev_overruns)
--		cnt = over - prev_overruns;
-+		cnt += over - prev_overruns;
- 	prev_overruns = over;
- 	return cnt;
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-02-12 16:05:07.000000000 -0500
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-02-12 16:12:54.000000000 -0500
+@@ -2039,6 +2039,144 @@ static int megasas_alloc_cmds(struct meg
  }
-@@ -310,8 +312,10 @@ static void __trace_mmiotrace_rw(struct trace_array *tr,
- 
- 	event	= ring_buffer_lock_reserve(tr->buffer, sizeof(*entry),
- 					   &irq_flags);
--	if (!event)
-+	if (!event) {
-+		atomic_inc(&dropped_count);
- 		return;
-+	}
- 	entry	= ring_buffer_event_data(event);
- 	tracing_generic_entry_update(&entry->ent, 0, preempt_count());
- 	entry->ent.type			= TRACE_MMIO_RW;
-@@ -338,8 +342,10 @@ static void __trace_mmiotrace_map(struct trace_array *tr,
- 
- 	event	= ring_buffer_lock_reserve(tr->buffer, sizeof(*entry),
- 					   &irq_flags);
--	if (!event)
-+	if (!event) {
-+		atomic_inc(&dropped_count);
- 		return;
-+	}
- 	entry	= ring_buffer_event_data(event);
- 	tracing_generic_entry_update(&entry->ent, 0, preempt_count());
- 	entry->ent.type			= TRACE_MMIO_MAP;
+
+ /**
++ * megasas_skinny_mem_alloc:   allocation memory for 0x73 and 0x71 controller
++ * @instance:                  Adapter soft state
++ *
++ * this function will allocate the memory for 0.73 comtroller.
++ */
++static int
++megasas_skinny_mem_alloc(struct megasas_instance *instance)
++{
++       u8              i = 0, mem_alloc_done = 0;
++       u32             *virt, ind, num_bk = 0;
++       dma_addr_t      paddr;
++       u32              mem_alloc_size = MEGASAS_SKINNY_SZ_MEM_BK * 256;
++       u32             *mem_tb = instance->skinny_mm_tb;
++
++       instance->skinny_mm_tb = pci_alloc_consistent(instance->pdev,
++                                MEGASAS_SKINNY_MAX_NUM_MEM_BK*sizeof(u32),
++                                &instance->skinny_mm_tb_h);
++
++       memset(instance->skinny_mm_tb, 0,
++               MEGASAS_SKINNY_MAX_NUM_MEM_BK * sizeof(u32));
++
++       instance->skinny_mm_alloc_ind = 0;
++
++       while (!mem_alloc_done) {
++
++                       virt = pci_alloc_consistent(instance->pdev,
++                                                        mem_alloc_size,
++                                                        &paddr);
++                       if (virt) {
++                               num_bk = (mem_alloc_size/
++                                               MEGASAS_SKINNY_SZ_MEM_BK);
++
++                               for (ind = 0; ind < num_bk; ind++) {
++                                       if (instance->skinny_mm_alloc_ind <
++                                               MEGASAS_SKINNY_MAX_NUM_MEM_BK) {
++                                               *mem_tb = (u32)(paddr+
++                                               (MEGASAS_SKINNY_SZ_MEM_BK*ind));
++                                               mem_tb++;
++                                               instance->skinny_mm_alloc_ind++;
++                                       } else {
++                                               mem_alloc_done = 1;
++                                       }
++                               }
++
++                               instance->skinny_mm_bk[i].vir   = virt;
++                               instance->skinny_mm_bk[i].paddr = paddr;
++                               instance->skinny_mm_bk[i].sz = mem_alloc_size;
++                       } else {
++                               if (mem_alloc_size > MEGASAS_SKINNY_SZ_MEM_BK)
++                                       mem_alloc_size = mem_alloc_size / 2;
++                       }
++       }
++
++       if (instance->skinny_mm_alloc_ind == 0)
++               return -1;
++
++       return 0;
++}
++
++/**
++ * megasas_skinny_mem_alloc:   de-allocate memory for 0x73 and 0x71 controller
++ * @instance:                  Adapter soft state
++ *
++ * this function will de-allocate the memory for 0.73 comtroller.
++ */
++static void
++megasas_skinny_mem_dealloc(struct megasas_instance *instance)
++{
++       int i = 0;
++
++       for (i = 0; i < MEGASAS_SKINNY_MAX_NUM_MEM_BK; i++) {
++               if (instance->skinny_mm_bk[i].vir) {
++                       pci_free_consistent(instance->pdev,
++                               instance->skinny_mm_bk[i].sz,
++                               instance->skinny_mm_bk[i].vir,
++                               instance->skinny_mm_bk[i].paddr);
++               }
++       }
++
++       if (instance->skinny_mm_tb)
++               pci_free_consistent(instance->pdev,
++                       MEGASAS_SKINNY_MAX_NUM_MEM_BK * sizeof(u32),
++                       instance->skinny_mm_tb,
++                       instance->skinny_mm_tb_h);
++
++}
++
++/**
++ * megasas_mem_to_fw - Send requested memory to FW
++ * @instance:          Adapter soft state
++ *
++ * Issues an internal command (DCMD) to get the FW's controller structure.
++ * This information is mainly used to send out the memory table  to FW
++ */
++static int
++megasas_mem_to_fw(struct megasas_instance *instance)
++{
++       int ret = 0;
++       struct megasas_cmd *cmd;
++       struct megasas_dcmd_frame *dcmd;
++
++       cmd = megasas_get_cmd(instance);
++
++       if (!cmd) {
++               printk(KERN_DEBUG "megasas (get_pd_list): Failed to get cmd\n");
++               return -ENOMEM;
++       }
++
++       dcmd = &cmd->frame->dcmd;
++
++       memset(dcmd->mbox.b, 0, MFI_MBOX_SIZE);
++
++       dcmd->mbox.s[0] = instance->skinny_mm_alloc_ind;
++       dcmd->mbox.s[2] = MEGASAS_SKINNY_SZ_MEM_BK / 1024;
++
++       dcmd->cmd = MFI_CMD_DCMD;
++       dcmd->cmd_status = 0xFF;
++       dcmd->sge_count = 1;
++       dcmd->flags = MFI_FRAME_DIR_READ;
++       dcmd->timeout = 0;
++       dcmd->data_xfer_len = sizeof(u32) * MEGASAS_SKINNY_MAX_NUM_MEM_BK;
++       dcmd->opcode = MR_DCMD_CTRL_MFI_HOST_MEM_ALLOC;
++       dcmd->sgl.sge32[0].phys_addr = instance->skinny_mm_tb_h;
++       dcmd->sgl.sge32[0].length = sizeof(u32) * MEGASAS_SKINNY_MAX_NUM_MEM_BK;
++
++       if (!megasas_issue_polled(instance, cmd)) {
++               ret = 0;
++
++       } else {
++               ret = -1;
++       }
++
++       megasas_return_cmd(instance, cmd);
++
++       return ret;
++}
++
++/**
+  * megasas_get_controller_info -       Returns FW's controller structure
+  * @instance:                          Adapter soft state
+  * @ctrl_info:                         Controller information structure
+@@ -2290,6 +2428,9 @@ static int megasas_init_mfi(struct megas
+         * Get various operational parameters from status register
+         */
+        instance->max_fw_cmds = instance->instancet->read_fw_status_reg(reg_set) & 0x00FFFF;
++       instance->memory_need =
++               instance->instancet->read_fw_status_reg(reg_set) & 0x08000000;
++
+        /*
+         * Reduce the max supported cmds by 1. This is to ensure that the
+         * reply_q_sz (1 more than the max cmd that driver may send)
+@@ -2325,6 +2466,25 @@ static int megasas_init_mfi(struct megas
+                goto fail_reply_queue;
+        }
+
++       if (instance->memory_need) {
++               if ((instance->pdev->device ==
++                       PCI_DEVICE_ID_LSI_SAS0073SKINNY) ||
++                       (instance->pdev->device ==
++                       PCI_DEVICE_ID_LSI_SAS0071SKINNY)) {
++
++                       if (megasas_skinny_mem_alloc(instance)) {
++                               printk(KERN_DEBUG "megasas: failed "
++                                               "allocate mem\n");
++                               megasas_skinny_mem_dealloc(instance);
++                       }
++
++                       if (megasas_mem_to_fw(instance)) {
++                               printk(KERN_DEBUG "megasas: fail to "
++                                       "dcmd cmd to pass mem to fw\n");
++                       }
++               }
++       }
++
+        if (megasas_issue_init_mfi(instance))
+                goto fail_fw_init;
+
+@@ -3110,6 +3270,10 @@ static void __devexit megasas_detach_one
+
+        free_irq(instance->pdev->irq, instance);
+
++       if (instance->memory_need) {
++               megasas_skinny_mem_dealloc(instance);
++       }
++
+        megasas_release_mfi(instance);
+
+        pci_free_consistent(pdev, sizeof(struct megasas_evt_detail),
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h      2009-02-12 16:05:08.000000000 -0500
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h       2009-02-12 15:24:58.000000000 -0500
+@@ -1092,6 +1092,16 @@ struct megasas_aen_event {
+        struct megasas_instance *instance;
+ };
+
++#define MR_DCMD_CTRL_MFI_HOST_MEM_ALLOC                0x0100e100
++#define MEGASAS_SKINNY_SZ_MEM_BK               (64*1024)
++#define MEGASAS_SKINNY_MAX_NUM_MEM_BK          512
++
++struct megasas_skinny_mm_bk {
++       u32                     vir;
++       u32                     sz;
++       dma_addr_t              paddr;
++};
++
+ struct megasas_instance {
+
+        u32 *producer;
+@@ -1105,6 +1115,15 @@ struct megasas_instance {
+        unsigned long base_addr;
+        struct megasas_register_set __iomem *reg_set;
+
++       u32 *skinny_mm_tb;
++       dma_addr_t skinny_mm_tb_h;
++
++       struct megasas_skinny_mm_bk skinny_mm_bk[MEGASAS_SKINNY_MAX_NUM_MEM_BK];
++
++       u32 skinny_mm_alloc_ind;
++       struct megasas_pd_list pd_list[MEGASAS_MAX_PD];
++
++       u8 memory_need;
+        s8 init_id;
+
+        u16 max_num_sge;
