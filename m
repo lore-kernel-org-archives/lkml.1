@@ -1,208 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779AbZBQUKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755149AbZBQUKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754779AbZBQUKh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 15:10:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbZBQUKY
+	id S1755149AbZBQUKu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 15:10:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbZBQUK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 15:10:24 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:43948 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751717AbZBQUKX (ORCPT
+	Tue, 17 Feb 2009 15:10:29 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:15507 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753429AbZBQUK2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 15:10:23 -0500
-Date: Tue, 17 Feb 2009 15:10:21 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: scsi: aic7xxx hang since v2.6.28-rc1 ...
-In-Reply-To: <20090215115823.GB19464@elte.hu>
-Message-ID: <Pine.LNX.4.44L0.0902171507370.18399-100000@iolanthe.rowland.org>
+	Tue, 17 Feb 2009 15:10:28 -0500
+Message-ID: <499B19AF.1000003@hp.com>
+Date: Tue, 17 Feb 2009 15:10:23 -0500
+From: Brian Haley <brian.haley@hp.com>
+Organization: Open Source and Linux Organization
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, netdev@vger.kernel.org,
+       bonding-devel@lists.sourceforge.net,
+       =?ISO-8859-1?Q?=22J=2EA=2E_Magall?= =?ISO-8859-1?Q?=F3n=22?= 
+	<jamagallon@ono.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.29 regression? Bonding tied to IPV6 in 29-rc5
+References: <alpine.LFD.2.00.0902131413120.3179@localhost.localdomain> <20090217095232.5da06b9f@werewolf.home> <200902172001.41804.arvidjaar@mail.ru> <200902172117.22671.arvidjaar@mail.ru>
+In-Reply-To: <200902172117.22671.arvidjaar@mail.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 15 Feb 2009, Ingo Molnar wrote:
-
-> * Ingo Molnar <mingo@elte.hu> wrote:
+Andrey Borzenkov wrote:
+> On 17 of February 2009 20:01:38 Andrey Borzenkov wrote:
+>> Forward to bonding and netdev
+>>
+>> On 17 of February 2009 11:52:32 J.A. Magallón wrote:
+>>> Hi all...
+>>>
+>>> Don't know if this is specific for -rc5, I have jumped from 28.4 to
+>>> 29-rc5. In this latest kernel, I can not install 'bonding' module
+>>> if 'ipv6' is disabled to load via modprobe.conf:
+>>>
+>>> install ipv6 /bin/true
+>>>
+>>> Trying bonding gives this dmesg:
+>>>
+>>> bonding: Unknown symbol ndisc_build_skb
+>>> bonding: Unknown symbol in6_dev_finish_destroy
+>>> bonding: Unknown symbol ndisc_send_skb
+>>> bonding: Unknown symbol unregister_inet6addr_notifier
+>>> bonding: Unknown symbol register_inet6addr_notifier
+>>>
+>>> Commenting the line in modprobe.conf makes things smooth again.
+>>> We can not disable ipv6 anymore ?
+>> If IPv6 is disable in kernel config bonding loads. But I think it is
+>> regression, it should be possible to disable IPv6 if not required.
 > 
-> > Here's an SCSI regression i tracked down recently. I'll follow up with
-> > more info.
+> This hard dependency was apparently introduced by this commit:
 > 
-> I sent this to James Bottomley about a month ago, who suggested that the
-> bug looks similar to problems caused by:
+> commit 305d552accae6afb859c493ebc7d98ca3371dae2
+> Author: Brian Haley <brian.haley@hp.com>
+> Date:   Tue Nov 4 17:51:14 2008 -0800
 > 
->  | commit b60af5b0adf0da24c673598c8d3fb4d4189a15ce
->  | Author: Alan Stern <stern@rowland.harvard.edu>
->  | Date:   Mon Nov 3 15:56:47 2008 -0500
->  |
->  |     [SCSI] simplify scsi_io_completion()
-> 
-> I could not revert that patch because it had a lot of followup dependencies,
-> but by experimentation i figured out the following string of gradual reverts
-> to scsi_lib.c [the revert commits can be found in tip:out-of-tree]:
-> 
->  813104e: Revert "[SCSI] simplify scsi_io_completion()"
->  84db545: Revert "[SCSI] Fix uninitialized variable error in scsi_io_completion"
->  0eb6038: Revert "[SCSI] Fix error handling for DIF/DIX"
->  3cd94dd: Revert "[SCSI] scsi_lib: don't decrement busy counters when inserting commands"
->  c27aed5: Revert "[SCSI] scsi_lib: fix DID_RESET status problems"
-> 
-> These reverts solved the problem and the box has not locked up in the SCSI irq 
-> completion code since then. The code has not had any changes upstream since i
-> did the reverts, so the bug is still relevant as of .29-rc5.
-> 
-> ( James suggested i send this bugreport to this list too, so that it does not
->   get single-threaded on him as he is busy with other things - so more suggestions
->   are welcome. I can try proposed fix patches. James suggested the patch below
->   and i dont think it will show us much more than what we already know: that we
->   are looping in scsi_run_queue(). )
+>     bonding: send IPv6 neighbor advertisement on failover
 
-I have no idea if this will make any difference for the problem you're
-seeing, but it has been submitted and it's worth trying out.  If the
-problem still occurs, I'll write a diagnostic patch to add log messages
-giving the destiny of each request in scsi_io_completion().
+I initially had bonding IPv6 support as a Kconfig option, but it was 
+decided it would be cleaner if it just got built-in whenever CONFIG_IPV6 
+was set like SCTP, with the assumption you might want it.
 
-Alan Stern
+Is it a common configuration to not allow a module to load like you're 
+doing in modprobe.conf?  I don't know how hard it would be to rip this 
+out into it's own bonding_ipv6.ko module, simply turning-off CONFIG_IPV6 
+seems better.
 
-
-
-
-This patch (as1144c) removes scsi_end_request().  The routine had only
-one caller, so it is moved inline and simplified.
-
-In addition, if no forward progress has been made then the patch
-decrements a request's retry counter before unpreparing and requeuing
-it, to avoid infinite retry loops.
-
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-
-Index: usb-2.6/drivers/scsi/scsi_lib.c
-===================================================================
---- usb-2.6.orig/drivers/scsi/scsi_lib.c
-+++ usb-2.6/drivers/scsi/scsi_lib.c
-@@ -703,71 +703,6 @@ void scsi_run_host_queues(struct Scsi_Ho
- 
- static void __scsi_release_buffers(struct scsi_cmnd *, int);
- 
--/*
-- * Function:    scsi_end_request()
-- *
-- * Purpose:     Post-processing of completed commands (usually invoked at end
-- *		of upper level post-processing and scsi_io_completion).
-- *
-- * Arguments:   cmd	 - command that is complete.
-- *              error    - 0 if I/O indicates success, < 0 for I/O error.
-- *              bytes    - number of bytes of completed I/O
-- *		requeue  - indicates whether we should requeue leftovers.
-- *
-- * Lock status: Assumed that lock is not held upon entry.
-- *
-- * Returns:     cmd if requeue required, NULL otherwise.
-- *
-- * Notes:       This is called for block device requests in order to
-- *              mark some number of sectors as complete.
-- * 
-- *		We are guaranteeing that the request queue will be goosed
-- *		at some point during this call.
-- * Notes:	If cmd was requeued, upon return it will be a stale pointer.
-- */
--static struct scsi_cmnd *scsi_end_request(struct scsi_cmnd *cmd, int error,
--					  int bytes, int requeue)
--{
--	struct request_queue *q = cmd->device->request_queue;
--	struct request *req = cmd->request;
--
--	/*
--	 * If there are blocks left over at the end, set up the command
--	 * to queue the remainder of them.
--	 */
--	if (blk_end_request(req, error, bytes)) {
--		int leftover = (req->hard_nr_sectors << 9);
--
--		if (blk_pc_request(req))
--			leftover = req->data_len;
--
--		/* kill remainder if no retrys */
--		if (error && scsi_noretry_cmd(cmd))
--			blk_end_request(req, error, leftover);
--		else {
--			if (requeue) {
--				/*
--				 * Bleah.  Leftovers again.  Stick the
--				 * leftovers in the front of the
--				 * queue, and goose the queue again.
--				 */
--				scsi_release_buffers(cmd);
--				scsi_requeue_command(q, cmd);
--				cmd = NULL;
--			}
--			return cmd;
--		}
--	}
--
--	/*
--	 * This will goose the queue request function at the end, so we don't
--	 * need to worry about launching another command.
--	 */
--	__scsi_release_buffers(cmd, 0);
--	scsi_next_command(cmd);
--	return NULL;
--}
--
- static inline unsigned int scsi_sgtable_index(unsigned short nents)
- {
- 	unsigned int index;
-@@ -929,7 +864,6 @@ static void scsi_end_bidi_request(struct
- void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
- {
- 	int result = cmd->result;
--	int this_count;
- 	struct request_queue *q = cmd->device->request_queue;
- 	struct request *req = cmd->request;
- 	int error = 0;
-@@ -980,18 +914,30 @@ void scsi_io_completion(struct scsi_cmnd
- 	SCSI_LOG_HLCOMPLETE(1, printk("%ld sectors total, "
- 				      "%d bytes done.\n",
- 				      req->nr_sectors, good_bytes));
--
--	/* A number of bytes were successfully read.  If there
--	 * are leftovers and there is some kind of error
--	 * (result != 0), retry the rest.
--	 */
--	if (scsi_end_request(cmd, error, good_bytes, result == 0) == NULL)
-+	if (blk_end_request(req, error, good_bytes) == 0) {
-+		/* This request is completely finished; start the next one */
-+		scsi_next_command(cmd);
- 		return;
--	this_count = blk_rq_bytes(req);
-+	}
- 
- 	error = -EIO;
- 
--	if (host_byte(result) == DID_RESET) {
-+	/* The request isn't finished yet.  Figure out what to do next. */
-+	if (result == 0) {
-+		/* No error, so carry out the remainder of the request.
-+		 * Failure to make forward progress counts against the
-+		 * the number of retries.
-+		 */
-+		if (good_bytes > 0 || --req->retries >= 0)
-+			action = ACTION_REPREP;
-+		else {
-+			action = ACTION_FAIL;
-+			description = "Retries exhausted";
-+		}
-+	} else if (error && scsi_noretry_cmd(cmd)) {
-+		/* Retrys are disallowed, so kill the remainder. */
-+		action = ACTION_FAIL;
-+	} else if (host_byte(result) == DID_RESET) {
- 		/* Third party bus reset or reset for error recovery
- 		 * reasons.  Just retry the command and see what
- 		 * happens.
-
+-Brian
