@@ -1,83 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752536AbZBQNac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752518AbZBQNhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752536AbZBQNac (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 08:30:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332AbZBQNaX
+	id S1752518AbZBQNhf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 08:37:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751253AbZBQNhR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 08:30:23 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47993 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751327AbZBQNaW (ORCPT
+	Tue, 17 Feb 2009 08:37:17 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:51495 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751191AbZBQNhP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 08:30:22 -0500
-Date: Tue, 17 Feb 2009 10:29:51 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       linux1394-devel@lists.sourceforge.net,
-       Christian Dolzer <c.dolzer@digital-everywhere.com>,
-       Andreas Monitzer <andy@monitzer.com>, Manu Abraham <manu@linuxtv.org>,
-       Fabio De Lorenzo <delorenzo.fabio@gmail.com>,
-       Robert Berger <robert.berger@reliableembeddedsystems.com>,
-       Ben Backx <ben@bbackx.com>, Henrik Kurelid <henrik@kurelid.se>,
-       Rambaldi <Rambaldi@xs4all.nl>
-Subject: Re: [review patch 0/1] add firedtv driver for FireWire-attached DVB
- receivers
-Message-ID: <20090217102951.21dab08c@pedra.chehab.org>
-In-Reply-To: <tkrat.63c8bdca2465364b@s5r6.in-berlin.de>
-References: <tkrat.265ed076d414bd49@s5r6.in-berlin.de>
-	<tkrat.63c8bdca2465364b@s5r6.in-berlin.de>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 17 Feb 2009 08:37:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=JsxS9U4byI5oSLfrbacdX4CLIK2kIplJYCppwU8IJTDD42mBduEAljMqs4DQlbuiJ0
+         1ZsbWKWikVGowiLEVeG8ZYJOsxFFgGIA3ruf+Dya3J1jXfyF9jDK77uNEnzaVEjAuVJO
+         tdxIsmRhqV09vlz6ERU1bjSPjnxZsfo4k0aYs=
+Date: Tue, 17 Feb 2009 13:37:07 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Karl Hiramoto <karl@hiramoto.org>
+Cc: netdev@vger.kernel.org, netfilter@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: problem with IPoA (CLIP),  NAT, and VLANS
+Message-ID: <20090217133707.GA6802@ff.dom.local>
+References: <20090216232016.GA4803@ami.dom.local> <499AA433.8070308@hiramoto.org> <20090217122052.GB6130@ff.dom.local> <499AB345.3070904@hiramoto.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <499AB345.3070904@hiramoto.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Feb 2009 20:33:17 +0100 (CET)
-Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+On Tue, Feb 17, 2009 at 01:53:25PM +0100, Karl Hiramoto wrote:
+> Jarek Poplawski wrote:
+> > On Tue, Feb 17, 2009 at 12:49:07PM +0100, Karl Hiramoto wrote:
+> > ...
+> >   
+> >> A side note:  so far the original patch i sent works in all cases i have
+> >> tested, but fails with tcpdump.   I suspect its because the skb gets cloned.
 
-> firedtv is a driver for FireWire-attached DVB receivers from Digital
-> Everywhere GmbH.  The devices are known as FireDTV (external boxes) and
-> FloppyDTV (internal cards, also connected through FireWire).  The driver
-> supports
->   - the DVB-C, DVB-S/S2, and DVB-T range of FireDTV and FloppyDTV
->     models,
->   - control and reception through Linux' common DVB userspace ABI,
->   - standard definition video reception (MPEG2-TS, to be decoded
->     by userspace client software),
->   - Common Interface for Conditional Access Modules,
->   - input from infrared remote control.
-> 
-> High definition support has yet to be added.  Also, firedtv still
-> requires the ieee1394 kernel API but alternative support of the new
-> firewire kernel API is in progress.
-> 
-> The driver, formerly known as firesat, was originally written by Andreas
-> Monitzer.  Manu Abraham, Ben Backx, and Henrik Kurelid updated and
-> extended the driver; I did trivial cleanups, refactoring and small
-> fixes.
-> 
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Hmm... I would like to make sure: if tcpdump breaks it too, then
+we don't need to blame skb_cow_head(), do we? If it's like this then
+it looks like the driver's problem with copied/cloned skbs?! (Maybe
+because some "private" offset is overwritten?)
 
-The driver looks sane to my eyes. I found just one minor issue (see bellow).
-Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-
-> +
-> +		/*
-> +		 * AV/C specs say that answers should be sent within 150 ms.
-> +		 * Time out after 200 ms.
-> +		 */
-> +		if (wait_event_timeout(fdtv->avc_wait,
-> +				       fdtv->avc_reply_received,
-> +				       HZ / 5) != 0) {
-
-Instead of using HZ, it would be better to use:
-	msecs_to_jiffies(200)
-
-
-Cheers,
-Mauro
+Jarek P.
