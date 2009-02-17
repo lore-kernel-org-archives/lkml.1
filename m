@@ -1,77 +1,318 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbZBQErD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbZBQEtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753727AbZBQErD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Feb 2009 23:47:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbZBQEqx
+	id S1753598AbZBQEtc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Feb 2009 23:49:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbZBQEtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Feb 2009 23:46:53 -0500
-Received: from Mycroft.westnet.com ([216.187.52.7]:34263 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751047AbZBQEqw (ORCPT
+	Mon, 16 Feb 2009 23:49:23 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:34034 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750923AbZBQEtW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Feb 2009 23:46:52 -0500
+	Mon, 16 Feb 2009 23:49:22 -0500
+Date: Mon, 16 Feb 2009 23:49:19 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Geoff Levand <geoffrey.levand@am.sony.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/7] tracing/function-graph-tracer: make arch generic
+ push pop functions
+In-Reply-To: <20090213053004.787392572@goodmis.org>
+Message-ID: <alpine.DEB.1.10.0902162346190.30397@gandalf.stny.rr.com>
+References: <20090213052358.524970112@goodmis.org> <20090213053004.787392572@goodmis.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18842.16695.145336.851447@stoffel.org>
-Date: Mon, 16 Feb 2009 23:46:47 -0500
-From: "John Stoffel" <john@stoffel.org>
-To: Philippe Grenard <philippe.grenard@laposte.net>
-Cc: linux-kernel@vger.kernel.org, "John Stoffel" <john@stoffel.org>
-Subject: Re: PROBLEM: cannot get stable system since 2.6.28 kernel (amd64)
-In-Reply-To: <200902161925.40256.philippe.grenard@laposte.net>
-References: <200902131944.56634.philippe.grenard@laposte.net>
-	<200902151317.11690.philippe.grenard@laposte.net>
-	<18840.45474.829954.528820@stoffel.org>
-	<200902161925.40256.philippe.grenard@laposte.net>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Philippe" == Philippe Grenard <philippe.grenard@laposte.net> writes:
 
-Philippe> well, I don't really believe in hardware problem for two
-Philippe> reasons : 1st, nearly all my hardware is quite new ( < 1
-Philippe> year old ), which is, I agree, not a solid proof ;-) 2nd,
-Philippe> the problem is really repetitive : every time I boot on
-Philippe> older kernel, everything works like a charm, every time I
-Philippe> boot on the newer kernel, I end up crashing : the "random"
-Philippe> part is only the time before crash....
+Ingo,
 
-Philippe> I haven't any "overclocking" settings, and every hardware
-Philippe> and bios settings are the same : same computer, same
-Philippe> harddisk partition, and so on.  2.6.28 will everytime stop
-Philippe> after "Booting the kernel".  2.6.29-rc* will boot, but then
-Philippe> stalls after a random delay... Except the "/proc/cpuinfo"
-Philippe> difference between the two kernels, I don't have a clue....
+This patch is to make function graph arch generic. But since the PowerPC 
+changes depend on it, we want to push it through the PowerPC tree. But 
+since it touches x86 code, can you give an Acked-by to it?
 
-Philippe> The thing is I can continue using the old kernel, but I
-Philippe> thought I better report this since It could hide some
-Philippe> regression on amd64 systems ?
+Thanks,
 
-It's certainly sounding like a regression, or misconfiguration
-somewhere.  Can you start doing a 'git bisect' routine on this to see
-if you can find the commit which causes this regression?
+-- Steve
 
-It will take around 10 or some recompiles and reboots, but should do
-the trick, or at least help narrow things down alot.  Read
-Documentation/BUG-HUNTING ofr how to do a bisect run.  
 
-You could also go back and re-build your 2.6.28 kernel and config from
-scratch to confirm that it's really working properly.  Then, jump to
-2.6.29-rc5 (just released) and do a 'make oldconfig' and see what
-you're prompted for.  If it still crashes, send us the original
-config, and a diff to the new config (diff -u) so we can look it over.
+On Fri, 13 Feb 2009, Steven Rostedt wrote:
 
-Also, make sure you're not running *any* binary kernel modules, since
-that will make us completely ignore you.  We can't debug issues like
-this when nVidia graphics modules are in the system since we can't
-tell what that module does to the rest of the kernel and it's not
-worth ou time to figure out.
-
-I'm running 2.6.29-rc3 on my AMD64 system and it's been nice and
-stable and my hardware too is under a year old.  
-
-John
-
+> From: Steven Rostedt <srostedt@redhat.com>
+> 
+> There is nothing really arch specific of the push and pop functions
+> used by the function graph tracer. This patch moves them to generic
+> code.
+> 
+> Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> ---
+>  arch/x86/include/asm/ftrace.h        |   25 -----------
+>  arch/x86/kernel/ftrace.c             |   75 +---------------------------------
+>  include/linux/ftrace.h               |   24 +++++++++++
+>  kernel/trace/trace_functions_graph.c |   75 ++++++++++++++++++++++++++++++++++
+>  4 files changed, 100 insertions(+), 99 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/ftrace.h b/arch/x86/include/asm/ftrace.h
+> index b55b4a7..db24c22 100644
+> --- a/arch/x86/include/asm/ftrace.h
+> +++ b/arch/x86/include/asm/ftrace.h
+> @@ -55,29 +55,4 @@ struct dyn_arch_ftrace {
+>  #endif /* __ASSEMBLY__ */
+>  #endif /* CONFIG_FUNCTION_TRACER */
+>  
+> -#ifdef CONFIG_FUNCTION_GRAPH_TRACER
+> -
+> -#ifndef __ASSEMBLY__
+> -
+> -/*
+> - * Stack of return addresses for functions
+> - * of a thread.
+> - * Used in struct thread_info
+> - */
+> -struct ftrace_ret_stack {
+> -	unsigned long ret;
+> -	unsigned long func;
+> -	unsigned long long calltime;
+> -};
+> -
+> -/*
+> - * Primary handler of a function return.
+> - * It relays on ftrace_return_to_handler.
+> - * Defined in entry_32/64.S
+> - */
+> -extern void return_to_handler(void);
+> -
+> -#endif /* __ASSEMBLY__ */
+> -#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+> -
+>  #endif /* _ASM_X86_FTRACE_H */
+> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+> index 1b43086..258c8d5 100644
+> --- a/arch/x86/kernel/ftrace.c
+> +++ b/arch/x86/kernel/ftrace.c
+> @@ -389,79 +389,6 @@ void ftrace_nmi_exit(void)
+>  
+>  #endif /* !CONFIG_DYNAMIC_FTRACE */
+>  
+> -/* Add a function return address to the trace stack on thread info.*/
+> -static int push_return_trace(unsigned long ret, unsigned long long time,
+> -				unsigned long func, int *depth)
+> -{
+> -	int index;
+> -
+> -	if (!current->ret_stack)
+> -		return -EBUSY;
+> -
+> -	/* The return trace stack is full */
+> -	if (current->curr_ret_stack == FTRACE_RETFUNC_DEPTH - 1) {
+> -		atomic_inc(&current->trace_overrun);
+> -		return -EBUSY;
+> -	}
+> -
+> -	index = ++current->curr_ret_stack;
+> -	barrier();
+> -	current->ret_stack[index].ret = ret;
+> -	current->ret_stack[index].func = func;
+> -	current->ret_stack[index].calltime = time;
+> -	*depth = index;
+> -
+> -	return 0;
+> -}
+> -
+> -/* Retrieve a function return address to the trace stack on thread info.*/
+> -static void pop_return_trace(struct ftrace_graph_ret *trace, unsigned long *ret)
+> -{
+> -	int index;
+> -
+> -	index = current->curr_ret_stack;
+> -
+> -	if (unlikely(index < 0)) {
+> -		ftrace_graph_stop();
+> -		WARN_ON(1);
+> -		/* Might as well panic, otherwise we have no where to go */
+> -		*ret = (unsigned long)panic;
+> -		return;
+> -	}
+> -
+> -	*ret = current->ret_stack[index].ret;
+> -	trace->func = current->ret_stack[index].func;
+> -	trace->calltime = current->ret_stack[index].calltime;
+> -	trace->overrun = atomic_read(&current->trace_overrun);
+> -	trace->depth = index;
+> -	barrier();
+> -	current->curr_ret_stack--;
+> -
+> -}
+> -
+> -/*
+> - * Send the trace to the ring-buffer.
+> - * @return the original return address.
+> - */
+> -unsigned long ftrace_return_to_handler(void)
+> -{
+> -	struct ftrace_graph_ret trace;
+> -	unsigned long ret;
+> -
+> -	pop_return_trace(&trace, &ret);
+> -	trace.rettime = cpu_clock(raw_smp_processor_id());
+> -	ftrace_graph_return(&trace);
+> -
+> -	if (unlikely(!ret)) {
+> -		ftrace_graph_stop();
+> -		WARN_ON(1);
+> -		/* Might as well panic. What else to do? */
+> -		ret = (unsigned long)panic;
+> -	}
+> -
+> -	return ret;
+> -}
+> -
+>  /*
+>   * Hook the return address and push it in the stack of return addrs
+>   * in current thread info.
+> @@ -520,7 +447,7 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+>  
+>  	calltime = cpu_clock(raw_smp_processor_id());
+>  
+> -	if (push_return_trace(old, calltime,
+> +	if (ftrace_push_return_trace(old, calltime,
+>  				self_addr, &trace.depth) == -EBUSY) {
+>  		*parent = old;
+>  		return;
+> diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+> index 677432b..a7f8134 100644
+> --- a/include/linux/ftrace.h
+> +++ b/include/linux/ftrace.h
+> @@ -380,6 +380,30 @@ struct ftrace_graph_ret {
+>  #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+>  
+>  /*
+> + * Stack of return addresses for functions
+> + * of a thread.
+> + * Used in struct thread_info
+> + */
+> +struct ftrace_ret_stack {
+> +	unsigned long ret;
+> +	unsigned long func;
+> +	unsigned long long calltime;
+> +};
+> +
+> +/*
+> + * Primary handler of a function return.
+> + * It relays on ftrace_return_to_handler.
+> + * Defined in entry_32/64.S
+> + */
+> +extern void return_to_handler(void);
+> +
+> +extern int
+> +ftrace_push_return_trace(unsigned long ret, unsigned long long time,
+> +			 unsigned long func, int *depth);
+> +extern void
+> +ftrace_pop_return_trace(struct ftrace_graph_ret *trace, unsigned long *ret);
+> +
+> +/*
+>   * Sometimes we don't want to trace a function with the function
+>   * graph tracer but we want them to keep traced by the usual function
+>   * tracer if the function graph tracer is not configured.
+> diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
+> index 930c08e..dce71a5 100644
+> --- a/kernel/trace/trace_functions_graph.c
+> +++ b/kernel/trace/trace_functions_graph.c
+> @@ -42,6 +42,81 @@ static struct tracer_flags tracer_flags = {
+>  /* pid on the last trace processed */
+>  static pid_t last_pid[NR_CPUS] = { [0 ... NR_CPUS-1] = -1 };
+>  
+> +/* Add a function return address to the trace stack on thread info.*/
+> +int
+> +ftrace_push_return_trace(unsigned long ret, unsigned long long time,
+> +			 unsigned long func, int *depth)
+> +{
+> +	int index;
+> +
+> +	if (!current->ret_stack)
+> +		return -EBUSY;
+> +
+> +	/* The return trace stack is full */
+> +	if (current->curr_ret_stack == FTRACE_RETFUNC_DEPTH - 1) {
+> +		atomic_inc(&current->trace_overrun);
+> +		return -EBUSY;
+> +	}
+> +
+> +	index = ++current->curr_ret_stack;
+> +	barrier();
+> +	current->ret_stack[index].ret = ret;
+> +	current->ret_stack[index].func = func;
+> +	current->ret_stack[index].calltime = time;
+> +	*depth = index;
+> +
+> +	return 0;
+> +}
+> +
+> +/* Retrieve a function return address to the trace stack on thread info.*/
+> +void
+> +ftrace_pop_return_trace(struct ftrace_graph_ret *trace, unsigned long *ret)
+> +{
+> +	int index;
+> +
+> +	index = current->curr_ret_stack;
+> +
+> +	if (unlikely(index < 0)) {
+> +		ftrace_graph_stop();
+> +		WARN_ON(1);
+> +		/* Might as well panic, otherwise we have no where to go */
+> +		*ret = (unsigned long)panic;
+> +		return;
+> +	}
+> +
+> +	*ret = current->ret_stack[index].ret;
+> +	trace->func = current->ret_stack[index].func;
+> +	trace->calltime = current->ret_stack[index].calltime;
+> +	trace->overrun = atomic_read(&current->trace_overrun);
+> +	trace->depth = index;
+> +	barrier();
+> +	current->curr_ret_stack--;
+> +
+> +}
+> +
+> +/*
+> + * Send the trace to the ring-buffer.
+> + * @return the original return address.
+> + */
+> +unsigned long ftrace_return_to_handler(void)
+> +{
+> +	struct ftrace_graph_ret trace;
+> +	unsigned long ret;
+> +
+> +	ftrace_pop_return_trace(&trace, &ret);
+> +	trace.rettime = cpu_clock(raw_smp_processor_id());
+> +	ftrace_graph_return(&trace);
+> +
+> +	if (unlikely(!ret)) {
+> +		ftrace_graph_stop();
+> +		WARN_ON(1);
+> +		/* Might as well panic. What else to do? */
+> +		ret = (unsigned long)panic;
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+>  static int graph_trace_init(struct trace_array *tr)
+>  {
+>  	int cpu, ret;
+> -- 
+> 1.5.6.5
+> 
+> -- 
+> 
+> 
