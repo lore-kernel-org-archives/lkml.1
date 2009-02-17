@@ -1,118 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752086AbZBQV01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbZBQVad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752086AbZBQV01 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 16:26:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbZBQVZ4
+	id S1753518AbZBQVad (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 16:30:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbZBQVaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 16:25:56 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:59495 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752086AbZBQVZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 16:25:55 -0500
-Date: Tue, 17 Feb 2009 16:25:51 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] libata fixes
-Message-ID: <20090217212551.GA8468@havoc.gtf.org>
+	Tue, 17 Feb 2009 16:30:22 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49650 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750814AbZBQVaV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 16:30:21 -0500
+Date: Tue, 17 Feb 2009 13:29:00 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Balaji Rao <balajirrao@openmoko.org>
+Cc: linux-kernel@vger.kernel.org, andy@openmoko.com, drzeus-mmc@drzeus.cx
+Subject: Re: [PATCH] mmc: In mmc_power_up, use previously selected ocr if
+ available
+Message-Id: <20090217132900.dc041bd5.akpm@linux-foundation.org>
+In-Reply-To: <20090209132806.GD3278@fedora.yogi>
+References: <20090209132806.GD3278@fedora.yogi>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 9 Feb 2009 18:58:08 +0530
+Balaji Rao <balajirrao@openmoko.org> wrote:
 
-Please pull from 'upstream-linus' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+> When mmc_power_up is called during unsafe resume, host->ocr should be
+> used instead of host->ocr_avail.
+> 
+> Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
+> Cc: Andy Green <andy@openmoko.com>
+> Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>
+> ---
+>  drivers/mmc/core/core.c |    8 +++++++-
+>  1 files changed, 7 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+> index df6ce4a..3ad7f87 100644
+> --- a/drivers/mmc/core/core.c
+> +++ b/drivers/mmc/core/core.c
+> @@ -572,7 +572,13 @@ void mmc_set_timing(struct mmc_host *host, unsigned int timing)
+>   */
+>  static void mmc_power_up(struct mmc_host *host)
+>  {
+> -	int bit = fls(host->ocr_avail) - 1;
+> +	int bit;
+> +
+> +	/* If ocr is set, we use it */
+> +	if (host->ocr)
+> +		bit = ffs(host->ocr) - 1;
+> +	else
+> +		bit = fls(host->ocr_avail) - 1;
+>  
+>  	host->ios.vdd = bit;
+>  	if (mmc_host_is_spi(host)) {
 
-to receive the following updates:
+What are the user-visible consequences of not having this patch in
+their kernels?
 
- drivers/ata/libata-sff.c |   28 +++++++++++++++++++++-------
- drivers/ata/sata_nv.c    |   14 ++++++++------
- 2 files changed, 29 insertions(+), 13 deletions(-)
+In other words, what does this patch fix?
 
-Sergei Shtylyov (1):
-      libata-sff: fix 32-bit PIO ATAPI regression
+Please always include this information in changelogs.
 
-Tejun Heo (1):
-      sata_nv: give up hardreset on nf2
+See, this patch is applicable to 2.6.28, 2.6.27, 2.6.26, 2.6.25 and
+probably earlier.  But I don't have a clue whether it should be applied
+to those kernels, because you didn't tell me.
 
-diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
-index 0b299b0..714cb04 100644
---- a/drivers/ata/libata-sff.c
-+++ b/drivers/ata/libata-sff.c
-@@ -773,18 +773,32 @@ unsigned int ata_sff_data_xfer32(struct ata_device *dev, unsigned char *buf,
- 	else
- 		iowrite32_rep(data_addr, buf, words);
- 
-+	/* Transfer trailing bytes, if any */
- 	if (unlikely(slop)) {
--		__le32 pad;
-+		unsigned char pad[4];
-+
-+		/* Point buf to the tail of buffer */
-+		buf += buflen - slop;
-+
-+		/*
-+		 * Use io*_rep() accessors here as well to avoid pointlessly
-+		 * swapping bytes to and fro on the big endian machines...
-+		 */
- 		if (rw == READ) {
--			pad = cpu_to_le32(ioread32(ap->ioaddr.data_addr));
--			memcpy(buf + buflen - slop, &pad, slop);
-+			if (slop < 3)
-+				ioread16_rep(data_addr, pad, 1);
-+			else
-+				ioread32_rep(data_addr, pad, 1);
-+			memcpy(buf, pad, slop);
- 		} else {
--			memcpy(&pad, buf + buflen - slop, slop);
--			iowrite32(le32_to_cpu(pad), ap->ioaddr.data_addr);
-+			memcpy(pad, buf, slop);
-+			if (slop < 3)
-+				iowrite16_rep(data_addr, pad, 1);
-+			else
-+				iowrite32_rep(data_addr, pad, 1);
- 		}
--		words++;
- 	}
--	return words << 2;
-+	return (buflen + 1) & ~1;
- }
- EXPORT_SYMBOL_GPL(ata_sff_data_xfer32);
- 
-diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
-index 444af04..55a8eed 100644
---- a/drivers/ata/sata_nv.c
-+++ b/drivers/ata/sata_nv.c
-@@ -421,19 +421,21 @@ static struct ata_port_operations nv_generic_ops = {
- 	.hardreset		= ATA_OP_NULL,
- };
- 
--/* OSDL bz3352 reports that nf2/3 controllers can't determine device
-- * signature reliably.  Also, the following thread reports detection
-- * failure on cold boot with the standard debouncing timing.
-+/* nf2 is ripe with hardreset related problems.
-+ *
-+ * kernel bz#3352 reports nf2/3 controllers can't determine device
-+ * signature reliably.  The following thread reports detection failure
-+ * on cold boot with the standard debouncing timing.
-  *
-  * http://thread.gmane.org/gmane.linux.ide/34098
-  *
-- * Debounce with hotplug timing and request follow-up SRST.
-+ * And bz#12176 reports that hardreset simply doesn't work on nf2.
-+ * Give up on it and just don't do hardreset.
-  */
- static struct ata_port_operations nv_nf2_ops = {
--	.inherits		= &nv_common_ops,
-+	.inherits		= &nv_generic_ops,
- 	.freeze			= nv_nf2_freeze,
- 	.thaw			= nv_nf2_thaw,
--	.hardreset		= nv_noclassify_hardreset,
- };
- 
- /* For initial probing after boot and hot plugging, hardreset mostly
+
+
