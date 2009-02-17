@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754137AbZBQOza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbZBQO4N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754137AbZBQOza (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 09:55:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbZBQOzV
+	id S1754205AbZBQO4N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 09:56:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbZBQOz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 09:55:21 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:34686 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751526AbZBQOzV (ORCPT
+	Tue, 17 Feb 2009 09:55:57 -0500
+Received: from wf-out-1314.google.com ([209.85.200.173]:33379 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751526AbZBQOz4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 09:55:21 -0500
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [RFD] Automatic suspend
-Date: Tue, 17 Feb 2009 15:56:58 +0100
-User-Agent: KMail/1.9.10
-Cc: Brian Swetland <swetland@google.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>, Len Brown <lenb@kernel.org>
-References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com> <20090217142001.GB12378@bulgaria.corp.google.com> <20090217142453.GA25530@srcf.ucam.org>
-In-Reply-To: <20090217142453.GA25530@srcf.ucam.org>
+	Tue, 17 Feb 2009 09:55:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=SKzZkeXfYN2rezuN8J1cWF33FpeFNQUrIsnZPAkLuPzaGYEftVhvkEU7Mk10wudxtS
+         yf//NO5LzHcE4n/3fh3R0osToEV3X7evz+uI6Ldg24gimIfr1lzPG/+daHNYxTYw+rX4
+         +2ht9MDqDF0h22amjiG8BkLXjdKz1T7Er6HSs=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+In-Reply-To: <20090217143251.GA1803@yoda.jdub.homelinux.org>
+References: <D728AD1FA2543948B89DE29C5BF4CD0716AC2DDE@bjmail1.bj.datangmobile.com>
+	 <76C7F485-EF75-4B83-B673-564E6243C7C6@kernel.crashing.org>
+	 <20090217143251.GA1803@yoda.jdub.homelinux.org>
+Date: Tue, 17 Feb 2009 22:55:55 +0800
+X-Google-Sender-Auth: 9b3ab5758e2f0be3
+Message-ID: <2a27d3730902170655nea2ae17x7186c4d8325b3778@mail.gmail.com>
+Subject: Re: [PATCH] fix the interrupt loss problem on powerpc IPIC (2.6.23)
+From: Li Yang <leoli@freescale.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: dayu@datangmobile.cn, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, galak@kernel.crashing.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902171557.02149.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Tuesday 17 February 2009 15:24:53 schrieb Matthew Garrett:
-> On Tue, Feb 17, 2009 at 06:20:01AM -0800, Brian Swetland wrote:
-> 
-> > Of course that still doesn't address userspace.  Aggressively going to
-> > suspend lets us compensate for userspace programs that do somewhat silly
-> > things (I agree that it would be best if they didn't but they do and
-> > getting *everyone* to write their userspace code to avoid spinning or
-> > avoid waking up on short-duration timers to poll is a losing battle).
-> 
-> Like Pavel pointed out, you could (in principle) handle this by sending 
-> a SIGSTOP to everything. The obvious problem with doing so is that this 
-> wouldn't result in the processes letting go of the devices, so you 
-> wouldn't neccessarily actually get to enter the runtime idle state as a 
-> result. Hmm. I'll think about this.
+On Tue, Feb 17, 2009 at 10:32 PM, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+> On Tue, Feb 17, 2009 at 08:12:33AM -0600, Kumar Gala wrote:
+>>
+>> On Feb 17, 2009, at 6:44 AM, <dayu@datangmobile.cn> <dayu@datangmobile.cn
+>> > wrote:
+>>
+>>> From: Da Yu <dayu@datangmobile.cn>
+>>> Date: Tue, 17 Feb 2009 19:58:20 +0800
+>>> Subject: [PATCH] fix the interrupt loss problem on powerpc IPIC
+>>> (2.6.23)
+>>>
+>>> Signed-off-by: Da Yu <dayu@datangmobile.cn>
+>>> ---
+>>
+>> Please provide a bit more description as to why this fixes the issue.
+>
+> Including whether it still applies to mainline, since your topic seems
+> to indicate it's for 2.6.23.  That is pretty old by now.
 
-They don't let go of the devices if you suspend either. If you want that
-you need active cooperation from user space. In fact if you suspend you
-give drivers the guarantee of not getting any output without prior
-notification, making their lives easier.
+The problem still exists in mainline.  But the patch doesn't seem to apply.
 
-	Regards
-		Oliver
+Dayu,
 
+Could you re-spin the patch for the latest kernel?  Thanks.
 
+- Leo
