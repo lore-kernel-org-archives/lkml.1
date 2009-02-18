@@ -1,73 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbZBRR3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755703AbZBRR3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755318AbZBRR3A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 12:29:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbZBRR2v
+	id S1755703AbZBRR3f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 12:29:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbZBRR30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 12:28:51 -0500
-Received: from mga14.intel.com ([143.182.124.37]:23736 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752768AbZBRR2u convert rfc822-to-8bit (ORCPT
+	Wed, 18 Feb 2009 12:29:26 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59212 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752266AbZBRR3Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 12:28:50 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,230,1233561600"; 
-   d="scan'208";a="111928384"
-From: "Yu, Fenghua" <fenghua.yu@intel.com>
-To: "'Ingo Molnar'" <mingo@elte.hu>,
-       "'Linus Torvalds'" <torvalds@linux-foundation.org>
-CC: "'David Woodhouse'" <dwmw2@infradead.org>,
-       "'Stephen Rothwell'" <sfr@canb.auug.org.au>,
-       "'iommu@lists.linux-foundation.org'" 
-	<iommu@lists.linux-foundation.org>,
-       "'LKML'" <linux-kernel@vger.kernel.org>
-Date: Wed, 18 Feb 2009 09:28:44 -0800
-Subject: RE: [PATCH] Suspend and Resume Support for Intel IOMMU
-Thread-Topic: [PATCH] Suspend and Resume Support for Intel IOMMU
-Thread-Index: AcmR7R9CRYKQMlpjQEq29qpy5FRTJQAAGA2w
-Message-ID: <A6AD88C3F2289247BE726C37303E1EB894F11D64@orsmsx505.amr.corp.intel.com>
-References: <20090218165633.GA20167@linux-os.sc.intel.com>
- <alpine.LFD.2.00.0902180910160.21686@localhost.localdomain>
- <20090218171935.GA14625@elte.hu>
-In-Reply-To: <20090218171935.GA14625@elte.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 18 Feb 2009 12:29:25 -0500
+Date: Wed, 18 Feb 2009 12:29:23 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Geoff Levand <geoffrey.levand@am.sony.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/7] tracing/function-graph-tracer: make arch generic
+ push pop functions
+In-Reply-To: <20090218125334.GA1300@elte.hu>
+Message-ID: <alpine.DEB.1.10.0902181218360.11411@gandalf.stny.rr.com>
+References: <20090213052358.524970112@goodmis.org> <20090213053004.787392572@goodmis.org> <alpine.DEB.1.10.0902162346190.30397@gandalf.stny.rr.com> <20090218010039.GL25856@elte.hu> <alpine.DEB.1.10.0902172243550.1360@gandalf.stny.rr.com>
+ <20090218125334.GA1300@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->> On Wed, 18 Feb 2009, Fenghua Yu wrote:
->> >
->> > +static int vtd_enabled;
->> ..
->> > +static int iommu_resume(struct sys_device *dev)
->> > +{
->> ..
->> > +	if (!vtd_enabled)
->> > +		return 0;
->> 
->> Hmm. Why do this?
->> 
->> Wouldn't it be much more logical to only register the 
->> iommu_sysdev if the thing is enabled, rather than having an 
->> odd flag that gets tested at runtime?
->
->The sysdev_class_register() could be done straight in 
->intel_iommu_init(), because that gets called by pci_iommu_init() 
->which is an fs_initcall() - so all the sysdev facilities should 
->be up and running already.
+On Wed, 18 Feb 2009, Ingo Molnar wrote:
 
-That was my original concern. I'll remove the vtd_enabled flag and
-register device_iommu in intel_iommu_init() in an updated patch.
+> 
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > On Wed, 18 Feb 2009, Ingo Molnar wrote:
+> > 
+> > > 
+> > > * Steven Rostedt <rostedt@goodmis.org> wrote:
+> > > 
+> > > > Ingo,
+> > > > 
+> > > > This patch is to make function graph arch generic. But since 
+> > > > the PowerPC changes depend on it, we want to push it through 
+> > > > the PowerPC tree. But since it touches x86 code, can you give 
+> > > > an Acked-by to it?
+> > > 
+> > > hm, but it's all ftrace bits. Could this go through the tracing 
+> > > tree? That's how it's generally done for most cross-arch 
+> > > subsystems. By having it in a separate tree we risk conflicts 
+> > > and various logistics problems. It's not like the PPC tree is 
+> > > modifying its ftrace.c file all that frequently, right?
+> > 
+> > Ingo,
+> > 
+> > How about this. We could incorporate some of the power of git. 
+> > I could make a separate branch based off of Linus's 2.6.29-rc5 
+> > announcement, and apply just this patch (the ftrace generic 
+> > and x86 change). If you give me your Acked-by, I'll add that 
+> > too.
+> > 
+> > This way, both you and Ben could pull from this branch to get 
+> > the one change. When it goes upstream, because it has the same 
+> > SHA1, git could easily resolve it.
+> 
+> Sure, that's fine too - if the separate tree is semantically 
+> meaningful. If it pulls in too many ftrace prerequisites i doubt 
+> it's appropriate for the PPC tree.
 
-Thanks.
+Yeah, I'll just make a new branch based off of Linus's 2.6.29-rc5 
+announcement, and add the one patch, and not touch it again. This will be 
+a simple merge of one patch from a change set that is in both trees.
 
--Fenghua
+-- Steve
 
