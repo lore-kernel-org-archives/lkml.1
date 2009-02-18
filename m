@@ -1,62 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756392AbZBRBbN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbZBRBbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756392AbZBRBbN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 20:31:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754676AbZBRB3m
+	id S1756241AbZBRBbs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 20:31:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757267AbZBRBbO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 20:29:42 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:47591 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756877AbZBRB3l (ORCPT
+	Tue, 17 Feb 2009 20:31:14 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:57896 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755794AbZBRBbN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 20:29:41 -0500
-Date: Tue, 17 Feb 2009 20:29:38 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: linux-kernel@vger.kernel.org
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 6/6] ftrace: show unlimited when traceon or traceoff has
- no counter
-In-Reply-To: <20090217182126.214630484@goodmis.org>
-Message-ID: <alpine.DEB.1.10.0902172028540.14430@gandalf.stny.rr.com>
-References: <20090217182048.233060814@goodmis.org> <20090217182126.214630484@goodmis.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 17 Feb 2009 20:31:13 -0500
+Message-ID: <499B64DC.2060600@zytor.com>
+Date: Tue, 17 Feb 2009 17:31:08 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: =?ISO-8859-1?Q?=22J=2EA=2E_Magall=F3n=22?= <jamagallon@ono.com>
+CC: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Intel driver vs MTRRs conflict
+References: <20090218002046.55c17814@werewolf.home>
+In-Reply-To: <20090218002046.55c17814@werewolf.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 17 Feb 2009, Steven Rostedt wrote:
-
-> From: Steven Rostedt <srostedt@redhat.com>
+J.A. Magallón wrote:
 > 
-> Impact: clean up
+> As I said, everything works. And even fast for the kind of machine, it's an
+> Aspire One and gears gives 740 fps, and video playback is pretty smooth.
+> But perhaps it would be faster if X could get that mtrr it claims ?
 > 
-> The traceon and traceoff function probes are confusing to developers
-> to what happens when a counter is not specified. This should help
-> clear things up.
-> 
->  # echo "*:traceoff" > set_ftrace_filter
 
-Silly cut and paste error. That should have been:
+Which CPU?
 
-  # echo "do_fork:traceoff" > set_ftrace_filter
-
-Oh well.
-
--- Steve
-
->  # cat /debug/tracing/set_ftrace_filter
-> 
->   #### all functions enabled ####
->   do_fork:traceoff:unlimited
-> 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+	-hpa
