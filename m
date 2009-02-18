@@ -1,276 +1,453 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754876AbZBRPyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755038AbZBRPye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754876AbZBRPyR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 10:54:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbZBRPx3
+	id S1755038AbZBRPye (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 10:54:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbZBRPxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 10:53:29 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:57301 "EHLO
+	Wed, 18 Feb 2009 10:53:32 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:57307 "EHLO
 	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752568AbZBRPxZ (ORCPT
+	by vger.kernel.org with ESMTP id S1752848AbZBRPx0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 10:53:25 -0500
+	Wed, 18 Feb 2009 10:53:26 -0500
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: Herbert Xu <herbert@gondor.apana.org.au>
 Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH 2/5] crypto: testmgr - Add support for the pcomp interface
-Date: Wed, 18 Feb 2009 16:53:19 +0100
-Message-Id: <1234972402-24298-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       James Morris <jmorris@namei.org>
+Subject: [PATCH 3/5] crypto: new zlib crypto module, using pcomp
+Date: Wed, 18 Feb 2009 16:53:20 +0100
+Message-Id: <1234972402-24298-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1234972402-24298-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <1234972402-24298-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
 References: <1234972402-24298-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
  <1234972402-24298-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
+ <1234972402-24298-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: James Morris <jmorris@namei.org>
 ---
- crypto/testmgr.c |  181 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- crypto/testmgr.h |    9 +++
- 2 files changed, 190 insertions(+), 0 deletions(-)
+ crypto/Kconfig            |    8 +
+ crypto/Makefile           |    1 +
+ crypto/zlib.c             |  351 +++++++++++++++++++++++++++++++++++++++++++++
+ include/crypto/compress.h |   12 ++
+ 4 files changed, 372 insertions(+), 0 deletions(-)
+ create mode 100644 crypto/zlib.c
 
-diff --git a/crypto/testmgr.c b/crypto/testmgr.c
-index a75f11f..54b96ed 100644
---- a/crypto/testmgr.c
-+++ b/crypto/testmgr.c
-@@ -72,6 +72,13 @@ struct comp_test_suite {
- 	} comp, decomp;
- };
+diff --git a/crypto/Kconfig b/crypto/Kconfig
+index c00c985..85cc7fa 100644
+--- a/crypto/Kconfig
++++ b/crypto/Kconfig
+@@ -743,6 +743,14 @@ config CRYPTO_DEFLATE
  
-+struct pcomp_test_suite {
-+	struct {
-+		struct pcomp_testvec *vecs;
-+		unsigned int count;
-+	} comp, decomp;
+ 	  You will most probably want this if using IPSec.
+ 
++config CRYPTO_ZLIB
++	tristate "Zlib compression algorithm"
++	select CRYPTO_PCOMP
++	select ZLIB_INFLATE
++	select ZLIB_DEFLATE
++	help
++	  This is the zlib algorithm.
++
+ config CRYPTO_LZO
+ 	tristate "LZO compression algorithm"
+ 	select CRYPTO_ALGAPI
+diff --git a/crypto/Makefile b/crypto/Makefile
+index 8de194f..836a764 100644
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -72,6 +72,7 @@ obj-$(CONFIG_CRYPTO_ANUBIS) += anubis.o
+ obj-$(CONFIG_CRYPTO_SEED) += seed.o
+ obj-$(CONFIG_CRYPTO_SALSA20) += salsa20_generic.o
+ obj-$(CONFIG_CRYPTO_DEFLATE) += deflate.o
++obj-$(CONFIG_CRYPTO_ZLIB) += zlib.o
+ obj-$(CONFIG_CRYPTO_MICHAEL_MIC) += michael_mic.o
+ obj-$(CONFIG_CRYPTO_CRC32C) += crc32c.o
+ obj-$(CONFIG_CRYPTO_AUTHENC) += authenc.o
+diff --git a/crypto/zlib.c b/crypto/zlib.c
+new file mode 100644
+index 0000000..77b865d
+--- /dev/null
++++ b/crypto/zlib.c
+@@ -0,0 +1,351 @@
++/*
++ * Cryptographic API.
++ *
++ * Zlib algorithm
++ *
++ * Copyright 2008 Sony Corporation
++ *
++ * Based on deflate.c, which is
++ * Copyright (c) 2003 James Morris <jmorris@intercode.com.au>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the Free
++ * Software Foundation; either version 2 of the License, or (at your option)
++ * any later version.
++ *
++ * FIXME: deflate transforms will require up to a total of about 436k of kernel
++ * memory on i386 (390k for compression, the rest for decompression), as the
++ * current zlib kernel code uses a worst case pre-allocation system by default.
++ * This needs to be fixed so that the amount of memory required is properly
++ * related to the winbits and memlevel parameters.
++ */
++
++#define pr_fmt(fmt)	"%s: " fmt, __func__
++
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/zlib.h>
++#include <linux/vmalloc.h>
++#include <linux/interrupt.h>
++#include <linux/mm.h>
++#include <linux/net.h>
++#include <linux/slab.h>
++
++#include <crypto/internal/compress.h>
++
++
++struct zlib_ctx {
++	struct zlib_decomp_params decomp_params;
++	struct z_stream_s comp_stream;
++	struct z_stream_s decomp_stream;
 +};
 +
- struct hash_test_suite {
- 	struct hash_testvec *vecs;
- 	unsigned int count;
-@@ -86,6 +93,7 @@ struct alg_test_desc {
- 		struct aead_test_suite aead;
- 		struct cipher_test_suite cipher;
- 		struct comp_test_suite comp;
-+		struct pcomp_test_suite pcomp;
- 		struct hash_test_suite hash;
- 	} suite;
- };
-@@ -898,6 +906,157 @@ out:
- 	return ret;
- }
- 
-+static int test_pcomp(struct crypto_pcomp *tfm,
-+		      struct pcomp_testvec *ctemplate,
-+		      struct pcomp_testvec *dtemplate, int ctcount,
-+		      int dtcount)
++
++static void zlib_comp_exit(struct zlib_ctx *ctx)
 +{
-+	const char *algo = crypto_tfm_alg_driver_name(crypto_pcomp_tfm(tfm));
-+	unsigned int i;
-+	char result[COMP_BUF_SIZE];
-+	int error;
++	struct z_stream_s *stream = &ctx->comp_stream;
 +
-+	for (i = 0; i < ctcount; i++) {
-+		struct comp_request req;
-+
-+		error = crypto_compress_setup(tfm, ctemplate[i].params);
-+		if (error) {
-+			pr_err("alg: pcomp: compression setup failed on test "
-+			       "%d for %s: error=%d\n", i + 1, algo, error);
-+			return error;
-+		}
-+
-+		error = crypto_compress_init(tfm);
-+		if (error) {
-+			pr_err("alg: pcomp: compression init failed on test "
-+			       "%d for %s: error=%d\n", i + 1, algo, error);
-+			return error;
-+		}
-+
-+		memset(result, 0, sizeof(result));
-+
-+		req.next_in = ctemplate[i].input;
-+		req.avail_in = ctemplate[i].inlen / 2;
-+		req.next_out = result;
-+		req.avail_out = ctemplate[i].outlen / 2;
-+
-+		error = crypto_compress_update(tfm, &req);
-+		if (error && (error != -EAGAIN || req.avail_in)) {
-+			pr_err("alg: pcomp: compression update failed on test "
-+			       "%d for %s: error=%d\n", i + 1, algo, error);
-+			return error;
-+		}
-+
-+		/* Add remaining input data */
-+		req.avail_in += (ctemplate[i].inlen + 1) / 2;
-+
-+		error = crypto_compress_update(tfm, &req);
-+		if (error && (error != -EAGAIN || req.avail_in)) {
-+			pr_err("alg: pcomp: compression update failed on test "
-+			       "%d for %s: error=%d\n", i + 1, algo, error);
-+			return error;
-+		}
-+
-+		/* Provide remaining output space */
-+		req.avail_out += COMP_BUF_SIZE - ctemplate[i].outlen / 2;
-+
-+		error = crypto_compress_final(tfm, &req);
-+		if (error) {
-+			pr_err("alg: pcomp: compression final failed on test "
-+			       "%d for %s: error=%d\n", i + 1, algo, error);
-+			return error;
-+		}
-+
-+		if (COMP_BUF_SIZE - req.avail_out != ctemplate[i].outlen) {
-+			pr_err("alg: comp: Compression test %d failed for %s: "
-+			       "output len = %d (expected %d)\n", i + 1, algo,
-+			       COMP_BUF_SIZE - req.avail_out,
-+			       ctemplate[i].outlen);
-+			return -EINVAL;
-+		}
-+
-+		if (memcmp(result, ctemplate[i].output, ctemplate[i].outlen)) {
-+			pr_err("alg: pcomp: Compression test %d failed for "
-+			       "%s\n", i + 1, algo);
-+			hexdump(result, ctemplate[i].outlen);
-+			return -EINVAL;
-+		}
++	if (stream->workspace) {
++		zlib_deflateEnd(stream);
++		vfree(stream->workspace);
++		stream->workspace = NULL;
 +	}
++}
 +
-+	for (i = 0; i < dtcount; i++) {
-+		struct comp_request req;
++static void zlib_decomp_exit(struct zlib_ctx *ctx)
++{
++	struct z_stream_s *stream = &ctx->decomp_stream;
 +
-+		error = crypto_decompress_setup(tfm, dtemplate[i].params);
-+		if (error) {
-+			pr_err("alg: pcomp: decompression setup failed on "
-+			       "test %d for %s: error=%d\n", i + 1, algo,
-+			       error);
-+			return error;
-+		}
++	if (stream->workspace) {
++		zlib_inflateEnd(stream);
++		kfree(stream->workspace);
++		stream->workspace = NULL;
++	}
++}
 +
-+		error = crypto_decompress_init(tfm);
-+		if (error) {
-+			pr_err("alg: pcomp: decompression init failed on test "
-+			       "%d for %s: error=%d\n", i + 1, algo, error);
-+			return error;
-+		}
++static int zlib_init(struct crypto_tfm *tfm)
++{
++	return 0;
++}
 +
-+		memset(result, 0, sizeof(result));
++static void zlib_exit(struct crypto_tfm *tfm)
++{
++	struct zlib_ctx *ctx = crypto_tfm_ctx(tfm);
 +
-+		req.next_in = dtemplate[i].input;
-+		req.avail_in = dtemplate[i].inlen / 2;
-+		req.next_out = result;
-+		req.avail_out = dtemplate[i].outlen / 2;
++	zlib_comp_exit(ctx);
++	zlib_decomp_exit(ctx);
++}
 +
-+		error = crypto_decompress_update(tfm, &req);
-+		if (error  && (error != -EAGAIN || req.avail_in)) {
-+			pr_err("alg: pcomp: decompression update failed on "
-+			       "test %d for %s: error=%d\n", i + 1, algo,
-+			       error);
-+			return error;
-+		}
 +
-+		/* Add remaining input data */
-+		req.avail_in += (dtemplate[i].inlen + 1) / 2;
++static int zlib_compress_setup(struct crypto_pcomp *tfm, const void *params)
++{
++	struct zlib_ctx *ctx = crypto_tfm_ctx(crypto_pcomp_tfm(tfm));
++	const struct zlib_comp_params *zparams = params;
++	struct z_stream_s *stream = &ctx->comp_stream;
++	size_t workspacesize;
++	int ret = 0;
 +
-+		error = crypto_decompress_update(tfm, &req);
-+		if (error  && (error != -EAGAIN || req.avail_in)) {
-+			pr_err("alg: pcomp: decompression update failed on "
-+			       "test %d for %s: error=%d\n", i + 1, algo,
-+			       error);
-+			return error;
-+		}
++	zlib_comp_exit(ctx);
 +
-+		/* Provide remaining output space */
-+		req.avail_out += COMP_BUF_SIZE - dtemplate[i].outlen / 2;
++	workspacesize = zlib_deflate_workspacesize();
++	stream->workspace = vmalloc(workspacesize);
++	if (!stream->workspace)
++		return -ENOMEM;
 +
-+		error = crypto_decompress_final(tfm, &req);
-+		if (error  && (error != -EAGAIN || req.avail_in)) {
-+			pr_err("alg: pcomp: decompression final failed on "
-+			       "test %d for %s: error=%d\n", i + 1, algo,
-+			       error);
-+			return error;
-+		}
-+
-+		if (COMP_BUF_SIZE - req.avail_out != dtemplate[i].outlen) {
-+			pr_err("alg: comp: Decompression test %d failed for "
-+			       "%s: output len = %d (expected %d)\n", i + 1,
-+			       algo, COMP_BUF_SIZE - req.avail_out,
-+			       dtemplate[i].outlen);
-+			return -EINVAL;
-+		}
-+
-+		if (memcmp(result, dtemplate[i].output, dtemplate[i].outlen)) {
-+			pr_err("alg: pcomp: Decompression test %d failed for "
-+			       "%s\n", i + 1, algo);
-+			hexdump(result, dtemplate[i].outlen);
-+			return -EINVAL;
-+		}
++	memset(stream->workspace, 0, workspacesize);
++	ret = zlib_deflateInit2(stream, zparams->level, zparams->method,
++				zparams->windowBits, zparams->memLevel,
++				zparams->strategy);
++	if (ret != Z_OK) {
++		vfree(stream->workspace);
++		stream->workspace = NULL;
++		return -EINVAL;
 +	}
 +
 +	return 0;
 +}
 +
- static int alg_test_aead(const struct alg_test_desc *desc, const char *driver,
- 			 u32 type, u32 mask)
- {
-@@ -1007,6 +1166,28 @@ static int alg_test_comp(const struct alg_test_desc *desc, const char *driver,
- 	return err;
- }
- 
-+static int alg_test_pcomp(const struct alg_test_desc *desc, const char *driver,
-+			  u32 type, u32 mask)
++static int zlib_compress_init(struct crypto_pcomp *tfm)
 +{
-+	struct crypto_pcomp *tfm;
-+	int err;
++	int ret;
++	struct zlib_ctx *dctx = crypto_tfm_ctx(crypto_pcomp_tfm(tfm));
++	struct z_stream_s *stream = &dctx->comp_stream;
 +
-+	tfm = crypto_alloc_pcomp(driver, type, mask);
-+	if (IS_ERR(tfm)) {
-+		pr_err("alg: pcomp: Failed to load transform for %s: %ld\n",
-+		       driver, PTR_ERR(tfm));
-+		return PTR_ERR(tfm);
-+	}
++	ret = zlib_deflateReset(stream);
++	if (ret != Z_OK)
++		return -EINVAL;
 +
-+	err = test_pcomp(tfm, desc->suite.pcomp.comp.vecs,
-+			 desc->suite.pcomp.decomp.vecs,
-+			 desc->suite.pcomp.comp.count,
-+			 desc->suite.pcomp.decomp.count);
-+
-+	crypto_free_pcomp(tfm);
-+	return err;
++	return 0;
 +}
 +
- static int alg_test_hash(const struct alg_test_desc *desc, const char *driver,
- 			 u32 type, u32 mask)
- {
-diff --git a/crypto/testmgr.h b/crypto/testmgr.h
-index 132953e..81b7eb0 100644
---- a/crypto/testmgr.h
-+++ b/crypto/testmgr.h
-@@ -15,6 +15,8 @@
- #ifndef _CRYPTO_TESTMGR_H
- #define _CRYPTO_TESTMGR_H
- 
-+#include <crypto/compress.h>
++static int zlib_compress_update(struct crypto_pcomp *tfm,
++				struct comp_request *req)
++{
++	int ret;
++	struct zlib_ctx *dctx = crypto_tfm_ctx(crypto_pcomp_tfm(tfm));
++	struct z_stream_s *stream = &dctx->comp_stream;
 +
- #define MAX_DIGEST_SIZE		64
- #define MAX_TAP			8
- 
-@@ -8347,6 +8349,13 @@ struct comp_testvec {
- 	char output[COMP_BUF_SIZE];
- };
- 
-+struct pcomp_testvec {
-+	const void *params;
-+	int inlen, outlen;
-+	char input[COMP_BUF_SIZE];
-+	char output[COMP_BUF_SIZE];
++	pr_debug("avail_in %u, avail_out %u\n", req->avail_in, req->avail_out);
++	stream->next_in = req->next_in;
++	stream->avail_in = req->avail_in;
++	stream->next_out = req->next_out;
++	stream->avail_out = req->avail_out;
++
++	ret = zlib_deflate(stream, Z_NO_FLUSH);
++	switch (ret) {
++	case Z_OK:
++		break;
++
++	case Z_BUF_ERROR:
++		pr_debug("zlib_deflate could not make progress\n");
++		return -EAGAIN;
++
++	default:
++		pr_debug("zlib_deflate failed %d\n", ret);
++		return -EINVAL;
++	}
++
++	pr_debug("avail_in %u, avail_out %u (consumed %u, produced %u)\n",
++		 stream->avail_in, stream->avail_out,
++		 req->avail_in - stream->avail_in,
++		 req->avail_out - stream->avail_out);
++	req->next_in = stream->next_in;
++	req->avail_in = stream->avail_in;
++	req->next_out = stream->next_out;
++	req->avail_out = stream->avail_out;
++	return 0;
++}
++
++static int zlib_compress_final(struct crypto_pcomp *tfm,
++			       struct comp_request *req)
++{
++	int ret;
++	struct zlib_ctx *dctx = crypto_tfm_ctx(crypto_pcomp_tfm(tfm));
++	struct z_stream_s *stream = &dctx->comp_stream;
++
++	pr_debug("avail_in %u, avail_out %u\n", req->avail_in, req->avail_out);
++	stream->next_in = req->next_in;
++	stream->avail_in = req->avail_in;
++	stream->next_out = req->next_out;
++	stream->avail_out = req->avail_out;
++
++	ret = zlib_deflate(stream, Z_FINISH);
++	if (ret != Z_STREAM_END) {
++		pr_debug("zlib_deflate failed %d\n", ret);
++		return -EINVAL;
++	}
++
++	pr_debug("avail_in %u, avail_out %u (consumed %u, produced %u)\n",
++		 stream->avail_in, stream->avail_out,
++		 req->avail_in - stream->avail_in,
++		 req->avail_out - stream->avail_out);
++	req->next_in = stream->next_in;
++	req->avail_in = stream->avail_in;
++	req->next_out = stream->next_out;
++	req->avail_out = stream->avail_out;
++	return 0;
++}
++
++
++static int zlib_decompress_setup(struct crypto_pcomp *tfm, const void *params)
++{
++	struct zlib_ctx *ctx = crypto_tfm_ctx(crypto_pcomp_tfm(tfm));
++	const struct zlib_decomp_params *zparams = params;
++	struct z_stream_s *stream = &ctx->decomp_stream;
++	int ret = 0;
++
++	zlib_decomp_exit(ctx);
++
++	ctx->decomp_params = *zparams;
++
++	stream->workspace = kzalloc(zlib_inflate_workspacesize(), GFP_KERNEL);
++	if (!stream->workspace)
++		return -ENOMEM;
++
++	ret = zlib_inflateInit2(stream, zparams->windowBits);
++	if (ret != Z_OK) {
++		kfree(stream->workspace);
++		stream->workspace = NULL;
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static int zlib_decompress_init(struct crypto_pcomp *tfm)
++{
++	int ret;
++	struct zlib_ctx *dctx = crypto_tfm_ctx(crypto_pcomp_tfm(tfm));
++	struct z_stream_s *stream = &dctx->decomp_stream;
++
++	ret = zlib_inflateReset(stream);
++	if (ret != Z_OK)
++		return -EINVAL;
++
++	return 0;
++}
++
++static int zlib_decompress_update(struct crypto_pcomp *tfm,
++				  struct comp_request *req)
++{
++	int ret;
++	struct zlib_ctx *dctx = crypto_tfm_ctx(crypto_pcomp_tfm(tfm));
++	struct z_stream_s *stream = &dctx->decomp_stream;
++
++	pr_debug("avail_in %u, avail_out %u\n", req->avail_in, req->avail_out);
++	stream->next_in = req->next_in;
++	stream->avail_in = req->avail_in;
++	stream->next_out = req->next_out;
++	stream->avail_out = req->avail_out;
++
++	ret = zlib_inflate(stream, Z_SYNC_FLUSH);
++	switch (ret) {
++	case Z_OK:
++	case Z_STREAM_END:
++		break;
++
++	case Z_BUF_ERROR:
++		pr_debug("zlib_inflate could not make progress\n");
++		return -EAGAIN;
++
++	default:
++		pr_debug("zlib_inflate failed %d\n", ret);
++		return -EINVAL;
++	}
++
++	pr_debug("avail_in %u, avail_out %u (consumed %u, produced %u)\n",
++		 stream->avail_in, stream->avail_out,
++		 req->avail_in - stream->avail_in,
++		 req->avail_out - stream->avail_out);
++	req->next_in = stream->next_in;
++	req->avail_in = stream->avail_in;
++	req->next_out = stream->next_out;
++	req->avail_out = stream->avail_out;
++	return 0;
++}
++
++static int zlib_decompress_final(struct crypto_pcomp *tfm,
++				 struct comp_request *req)
++{
++	int ret;
++	struct zlib_ctx *dctx = crypto_tfm_ctx(crypto_pcomp_tfm(tfm));
++	struct z_stream_s *stream = &dctx->decomp_stream;
++
++	pr_debug("avail_in %u, avail_out %u\n", req->avail_in, req->avail_out);
++	stream->next_in = req->next_in;
++	stream->avail_in = req->avail_in;
++	stream->next_out = req->next_out;
++	stream->avail_out = req->avail_out;
++
++	if (dctx->decomp_params.windowBits < 0) {
++		ret = zlib_inflate(stream, Z_SYNC_FLUSH);
++		/*
++		 * Work around a bug in zlib, which sometimes wants to taste an
++		 * extra byte when being used in the (undocumented) raw deflate
++		 * mode. (From USAGI).
++		 */
++		if (ret == Z_OK && !stream->avail_in && stream->avail_out) {
++			const void *saved_next_in = stream->next_in;
++			u8 zerostuff = 0;
++
++			stream->next_in = &zerostuff;
++			stream->avail_in = 1;
++			ret = zlib_inflate(stream, Z_FINISH);
++			stream->next_in = saved_next_in;
++			stream->avail_in = 0;
++		}
++	} else
++		ret = zlib_inflate(stream, Z_FINISH);
++	if (ret != Z_STREAM_END) {
++		pr_debug("zlib_inflate failed %d\n", ret);
++		return -EINVAL;
++	}
++
++	pr_debug("avail_in %u, avail_out %u (consumed %u, produced %u)\n",
++		 stream->avail_in, stream->avail_out,
++		 req->avail_in - stream->avail_in,
++		 req->avail_out - stream->avail_out);
++	req->next_in = stream->next_in;
++	req->avail_in = stream->avail_in;
++	req->next_out = stream->next_out;
++	req->avail_out = stream->avail_out;
++	return 0;
++}
++
++
++static struct pcomp_alg zlib_alg = {
++	.compress_setup		= zlib_compress_setup,
++	.compress_init		= zlib_compress_init,
++	.compress_update	= zlib_compress_update,
++	.compress_final		= zlib_compress_final,
++	.decompress_setup	= zlib_decompress_setup,
++	.decompress_init	= zlib_decompress_init,
++	.decompress_update	= zlib_decompress_update,
++	.decompress_final	= zlib_decompress_final,
++
++	.base			= {
++		.cra_name	= "zlib",
++		.cra_flags	= CRYPTO_ALG_TYPE_PCOMPRESS,
++		.cra_ctxsize	= sizeof(struct zlib_ctx),
++		.cra_module	= THIS_MODULE,
++		.cra_init	= zlib_init,
++		.cra_exit	= zlib_exit,
++	}
 +};
 +
- /*
-  * Deflate test vectors (null-terminated strings).
-  * Params: winbits=-11, Z_DEFAULT_COMPRESSION, MAX_MEM_LEVEL.
++static int __init zlib_mod_init(void)
++{
++	return crypto_register_pcomp(&zlib_alg);
++}
++
++static void __exit zlib_mod_fini(void)
++{
++	crypto_unregister_pcomp(&zlib_alg);
++}
++
++module_init(zlib_mod_init);
++module_exit(zlib_mod_fini);
++
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("Zlib Compression Algorithm");
++MODULE_AUTHOR("Sony Corporation");
+diff --git a/include/crypto/compress.h b/include/crypto/compress.h
+index bcf1ff5..67ba57d 100644
+--- a/include/crypto/compress.h
++++ b/include/crypto/compress.h
+@@ -30,6 +30,18 @@ struct comp_request {
+ 	unsigned int avail_out;		/* bytes available at next_out */
+ };
+ 
++struct zlib_comp_params {
++	int level;			/* e.g. Z_DEFAULT_COMPRESSION */
++	int method;			/* e.g. Z_DEFLATED */
++	int windowBits;			/* e.g. MAX_WBITS */
++	int memLevel;			/* e.g. DEF_MEM_LEVEL */
++	int strategy;			/* e.g. Z_DEFAULT_STRATEGY */
++};
++
++struct zlib_decomp_params {
++	int windowBits;			/* e.g. DEF_WBITS */
++};
++
+ struct crypto_pcomp {
+ 	struct crypto_tfm base;
+ };
 -- 
 1.6.0.4
 
