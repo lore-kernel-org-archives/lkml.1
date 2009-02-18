@@ -1,134 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbZBRTdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756504AbZBRTeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756029AbZBRTdc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 14:33:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbZBRTdX
+	id S1756504AbZBRTeO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 14:34:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbZBRTd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 14:33:23 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:58321 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752903AbZBRTdW (ORCPT
+	Wed, 18 Feb 2009 14:33:59 -0500
+Received: from rv-out-0506.google.com ([209.85.198.238]:21971 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753161AbZBRTd6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 14:33:22 -0500
-Subject: Re: [PATCH] pci: enable MSI on 8132
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: david@lang.hm, matthew@wil.cx, yinghai@kernel.org,
-       jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, DL-MPTFusionLinux@lsi.com,
-       linux-pci@vger.kernel.org
-In-Reply-To: <20090218111510.b720aacb.akpm@linux-foundation.org>
-References: <499B46B2.5040601@kernel.org>
-	 <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm>
-	 <499B6BF7.9090300@kernel.org>
-	 <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm>
-	 <499B724A.2040408@kernel.org>
-	 <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm>
-	 <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>
-	 <499B774C.5010705@kernel.org>
-	 <alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm>
-	 <499B9129.50104@kernel.org> <20090218122137.GJ16841@parisc-linux.org>
-	 <alpine.DEB.1.10.0902180426420.25606@asgard.lang.hm>
-	 <20090218100448.7f7c5b86.akpm@linux-foundation.org>
-	 <1234982285.3225.42.camel@localhost.localdomain>
-	 <20090218111510.b720aacb.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 18 Feb 2009 19:33:17 +0000
-Message-Id: <1234985597.3225.62.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Wed, 18 Feb 2009 14:33:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=uWtRyATTsDoIn0JFYAkcJ6rnoBev3y3ihZ3+SgcmnKRLHuEd0S8rNrjdwyEAwX7Vtf
+         z3QR4bzPt6vFLe5F4HBVKlKwLM9AeQHWGprRH5JnaeZ/qg61u3atR4CiPqNYrIlqWwsH
+         H6OEBJwznpX6qVGrMI8ri87RaRsdYYpm9/Eyk=
+MIME-Version: 1.0
+In-Reply-To: <1234927467.4707.15.camel@rzhang-desktop>
+References: <1234927467.4707.15.camel@rzhang-desktop>
+Date: Wed, 18 Feb 2009 11:33:57 -0800
+X-Google-Sender-Auth: f0abf0a98ca8538f
+Message-ID: <86802c440902181133x320c80f6ue0dbb38880ffe267@mail.gmail.com>
+Subject: Re: i915 regression in 2.6.29-rc5
+From: Yinghai Lu <yinghai@kernel.org>
+To: ZhangRui <rui.zhang@intel.com>, Ingo Molnar <mingo@elte.hu>
+Cc: dri_devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
+       jbarnes@virtuousgeek.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-18 at 11:15 -0800, Andrew Morton wrote:
-> On Wed, 18 Feb 2009 18:38:04 +0000
-> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> 
-> > On Wed, 2009-02-18 at 10:04 -0800, Andrew Morton wrote:
-> > > On Wed, 18 Feb 2009 04:27:28 -0800 (PST) david@lang.hm wrote:
-> > > 
-> > > > On Wed, 18 Feb 2009, Matthew Wilcox wrote:
-> > > > 
-> > > > > On Tue, Feb 17, 2009 at 08:40:09PM -0800, Yinghai Lu wrote:
-> > > > >>
-> > > > >> Impact: workaround BIOS that doesn't enable that bit
-> > > > >>
-> > > > >> David reported that LSI sas doesn't work with MSI.
-> > > > >> it turns out that BIOS doesn't enable HT MSI
-> > > > >> 8132 does support HT MSI.
-> > > > >> add quirk to enable it
-> > > > >>
-> > > > >> Reported-by: David Lang <david@lang.hm>
-> > > > >> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> > > > >
-> > > > > Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
-> > > > >
-> > > > > Jesse, I think this should go into Linus' tree sooner rather than later.
-> > > > 
-> > > > please forward to -stable as well. this is a regression since the card 
-> > > > works with older kernels.
-> > > > 
-> > > 
-> > > Which kernel version introduced the regression?
-> > 
-> > Technically, it's not a regression.  The MSI problem has always been
-> > there, it was just exposed when the SAS card switched to using MSI by
-> > default.  It's fixed by the bridge quirk  ... of course it's unclear how
-> > many more bridges with problems there are.
-> > 
-> > > Do we not need mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch as
-> > > well, to fix this regression?
-> > 
-> > No ... it's a separate issue.  MSI was enabled for fusion SAS in 2.6.26;
-> > the problem msi patch which the above corrects actually has the effect
-> > of disabling MSI for fusion and went into 2.6.29-rc2, which isn't a
-> > kernel that's been tested here.
-> 
-> <scratches head>
+On Tue, Feb 17, 2009 at 7:24 PM, ZhangRui <rui.zhang@intel.com> wrote:
+> Hi, all,
+>
+> I got an i915 failure in 2.6.29-rc5.
+>
+> problem description: the screen doesn't come back after suspend/resume.
+> A workaround is to boot with "nomodesetting".
+>
+> I got this error message during i915 driver load time,
+> [   22.606749] mtrr: type mismatch for e0000000,10000000 old: write-back new: write-combining
+> [   22.606752] [drm] MTRR allocation failed
+> [   22.606753] .  Graphics performance may suffer.
 
-OK, back on the ball; the names of the patches you're referring to are
-in master:/home/akpm/public_html/mmotm/broken-out
+CONFIG_MTRR_SANITIZER=y
+CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=1
+CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
 
-> So it should be the case that _either_ of
-> mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch and
-> pci-enable-msi-on-8132.patch would fix David's machine?
+may help this one.
 
-No.  pci-enable-msi-on-8132.patch alone should fix the box.  Without it,
-the MSI routing isn't working properly.
-
-The fact that MSI is affecting fusion is caused by this patch:
-
-commit 23a274c8a5adafc74a66f16988776fc7dd6f6e51
-Author: Prakash, Sathya <sathya.prakash@lsi.com>
-Date:   Fri Mar 7 15:53:21 2008 +0530
-
-    [SCSI] mpt fusion: Enable MSI by default for SAS controllers
- 
-However that wasn't correctly implemented and had to be fixed, but the
-bottom line is that with this patch as fixes, fusion now tries to enable
-MSI for the SAS card (and has since 2.6.26)
-
-A recent patch that went in to 2.6.29-rc2 was
-
-commit e382968ba618e016ff7922dff9a6140c2f9108c8
-Author: Kashyap, Desai <kashyap.desai@lsi.com>
-Date:   Thu Jan 8 14:27:16 2009 +0530
-
-    [SCSI] mpt fusion: Add separate msi enable disable for FC,SPI,SAS
-
-This was misimplemented and actually disables MSI globally in the driver
-(contrary to what LSI wanted to do).
-
-What mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch is fix this and
-re-enable MSI by default on SAS cards (going back to the position we
-were in after 23a274c8a5adafc74a66f16988776fc7dd6f6e51).
-
-What I'm saying is I'm happy to wait for LSI to sort out the current
-mess ... hopefully dynamically, and in the meantime, MSI being globally
-disabled for fusion isn't really a problem.
-
-James
-
-
+YH
