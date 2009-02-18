@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754317AbZBRWbE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757496AbZBRWbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754317AbZBRWbE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 17:31:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbZBRWaY
+	id S1757496AbZBRWbc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 17:31:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbZBRWaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 17:30:24 -0500
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:43888
+	Wed, 18 Feb 2009 17:30:25 -0500
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:43889
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752447AbZBRWaX (ORCPT
+	with ESMTP id S1752469AbZBRWaX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 18 Feb 2009 17:30:23 -0500
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -22,9 +22,9 @@ Cc: the arch/x86 maintainers <x86@kernel.org>,
        Alok N Kataria <akataria@vmware.com>, Avi Kivity <avi@redhat.com>,
        Marcelo Tosatti <mtosatti@redhat.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 6/9] x86/paravirt: allow preemption with lazy mmu mode
-Date: Wed, 18 Feb 2009 14:30:15 -0800
-Message-Id: <bb490ee65960b57a95874510baf766bc2b8574fd.1234988621.git.jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 7/9] mm: allow preemption in apply_to_pte_range
+Date: Wed, 18 Feb 2009 14:30:16 -0800
+Message-Id: <72c108781364f9cbf0f9094978d59c271602896f.1234988621.git.jeremy.fitzhardinge@citrix.com>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <cover.1234988621.git.jeremy.fitzhardinge@citrix.com>
 References: <cover.1234988621.git.jeremy.fitzhardinge@citrix.com>
@@ -36,86 +36,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Lift restrictions on preemption with lazy mmu mode, as it is now allowed.
+Preemption is now allowed for lazy mmu mode, so don't disable
+it for the inner loop of apply_to_pte_range.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/kernel/paravirt.c |    7 ++++---
- arch/x86/xen/mmu.c         |    8 +-------
- 2 files changed, 5 insertions(+), 10 deletions(-)
+ mm/memory.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
-index 554dadd..1a81ce9 100644
---- a/arch/x86/kernel/paravirt.c
-+++ b/arch/x86/kernel/paravirt.c
-@@ -248,7 +248,6 @@ static DEFINE_PER_CPU(enum paravirt_lazy_mode, paravirt_lazy_mode) = PARAVIRT_LA
- static inline void enter_lazy(enum paravirt_lazy_mode mode)
- {
- 	BUG_ON(__get_cpu_var(paravirt_lazy_mode) != PARAVIRT_LAZY_NONE);
--	BUG_ON(preemptible());
+diff --git a/mm/memory.c b/mm/memory.c
+index b80cc31..baa999e 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -1718,7 +1718,6 @@ static int apply_to_pte_range(struct mm_struct *mm, pmd_t *pmd,
  
- 	__get_cpu_var(paravirt_lazy_mode) = mode;
- }
-@@ -256,7 +255,6 @@ static inline void enter_lazy(enum paravirt_lazy_mode mode)
- static void leave_lazy(enum paravirt_lazy_mode mode)
- {
- 	BUG_ON(__get_cpu_var(paravirt_lazy_mode) != mode);
--	BUG_ON(preemptible());
+ 	BUG_ON(pmd_huge(*pmd));
  
- 	__get_cpu_var(paravirt_lazy_mode) = PARAVIRT_LAZY_NONE;
- }
-@@ -273,6 +271,8 @@ void paravirt_leave_lazy_mmu(void)
+-	preempt_disable();
+ 	arch_enter_lazy_mmu_mode();
  
- void paravirt_enter_lazy_cpu(void)
- {
-+	BUG_ON(preemptible());
-+
- 	if (percpu_read(paravirt_lazy_mode) == PARAVIRT_LAZY_MMU) {
- 		arch_leave_lazy_mmu_mode();
- 		set_thread_flag(TIF_LAZY_MMU_UPDATES);
-@@ -282,6 +282,8 @@ void paravirt_enter_lazy_cpu(void)
+ 	token = pmd_pgtable(*pmd);
+@@ -1730,7 +1729,6 @@ static int apply_to_pte_range(struct mm_struct *mm, pmd_t *pmd,
+ 	} while (pte++, addr += PAGE_SIZE, addr != end);
  
- void paravirt_leave_lazy_cpu(void)
- {
-+	BUG_ON(preemptible());
-+
- 	leave_lazy(PARAVIRT_LAZY_CPU);
+ 	arch_leave_lazy_mmu_mode();
+-	preempt_enable();
  
- 	if (test_and_clear_thread_flag(TIF_LAZY_MMU_UPDATES))
-@@ -301,7 +303,6 @@ void arch_flush_lazy_mmu_mode(void)
- 	preempt_disable();
- 
- 	if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_MMU) {
--		WARN_ON(preempt_count() == 1);
- 		arch_leave_lazy_mmu_mode();
- 		arch_enter_lazy_mmu_mode();
- 	}
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index 2669c58..92c6463 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -412,10 +412,6 @@ void set_pte_mfn(unsigned long vaddr, unsigned long mfn, pgprot_t flags)
- void xen_set_pte_at(struct mm_struct *mm, unsigned long addr,
- 		    pte_t *ptep, pte_t pteval)
- {
--	/* updates to init_mm may be done without lock */
--	if (mm == &init_mm)
--		preempt_disable();
--
- 	ADD_STATS(set_pte_at, 1);
- //	ADD_STATS(set_pte_at_pinned, xen_page_pinned(ptep));
- 	ADD_STATS(set_pte_at_current, mm == current->mm);
-@@ -436,9 +432,7 @@ void xen_set_pte_at(struct mm_struct *mm, unsigned long addr,
- 	}
- 	xen_set_pte(ptep, pteval);
- 
--out:
--	if (mm == &init_mm)
--		preempt_enable();
-+out:	return;
- }
- 
- pte_t xen_ptep_modify_prot_start(struct mm_struct *mm,
+ 	if (mm != &init_mm)
+ 		pte_unmap_unlock(pte-1, ptl);
 -- 
 1.6.0.6
 
