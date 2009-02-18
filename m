@@ -1,76 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752563AbZBRJgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbZBRJgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752563AbZBRJgU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 04:36:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbZBRJfk
+	id S1754010AbZBRJgk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 04:36:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbZBRJgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 04:35:40 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45323
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752960AbZBRJfi (ORCPT
+	Wed, 18 Feb 2009 04:36:08 -0500
+Received: from mx3.schottelius.org ([77.109.138.221]:39126 "EHLO
+	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752206AbZBRJgE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 04:35:38 -0500
-Date: Wed, 18 Feb 2009 01:35:23 -0800 (PST)
-Message-Id: <20090218.013523.148813511.davem@davemloft.net>
-To: airlied@linux.ie
-CC: benh@kernel.crashing.org, dri-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: drm: radeon: Fix unaligned access in r300_scratch().
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Feb 2009 04:36:04 -0500
+Date: Wed, 18 Feb 2009 10:36:02 +0100
+From: Nico Schottelius <nico-kernel@schottelius.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Eric Anholt <eric.anholt@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>,
+       Nico Schottelius <nico-linux-20090213@schottelius.org>
+Subject: Re: [Bug #12705] X200: Brightness broken since
+	2.6.29-rc4-58-g4c098bc
+Message-ID: <20090218093602.GA7722@denkbrett.schottelius.org>
+Mail-Followup-To: Nico Schottelius <nico-kernel@schottelius.org>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	Matthew Garrett <mjg59@srcf.ucam.org>,
+	Eric Anholt <eric.anholt@intel.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	Nico Schottelius <nico-linux-20090213@schottelius.org>
+References: <juADNmcceYF.A.mdD.Mr0lJB@chimera> <1234911925.9844.89.camel@gaiman> <20090217231313.GA2654@srcf.ucam.org> <200902171523.57612.jbarnes@virtuousgeek.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="CE+1k2dSO48ffgeK"
+Content-Disposition: inline
+In-Reply-To: <200902171523.57612.jbarnes@virtuousgeek.org>
+User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
+X-Unix-Info: http://unix.schottelius.org/
+X-Netzseite: http://nico.schottelius.org/
+X-System-Info: ikn (Linux 2.6.29-rc4-ikn-00001-gd5b5623 x86_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-drm: radeon: Fix unaligned access in r300_scratch().
+--CE+1k2dSO48ffgeK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-In compat mode, the cmdbuf->buf 64-bit address cookie can
-potentially be only 32-bit aligned.  Dereferencing this as
-64-bit causes expensive unaligned traps on platforms like
-sparc64.
+Jesse Barnes [Tue, Feb 17, 2009 at 03:23:57PM -0800]:
+> On Tuesday, February 17, 2009 3:13 pm Matthew Garrett wrote:
+> > This was drm failing to initialise because of incorrect mtrr setup and
+> > opregion not working as a result.
+>=20
+> I sent one out; it just made the ioremap in i915_initialize into an iorem=
+ap_wc=20
+> for consistency.
 
-Use get_unaligned() to fix.
+If you refer to <200902131104.04318.jbarnes@virtuousgeek.org>,
+as stated in <20090216131351.GA4839@denkbrett.schottelius.org>, it does not
+fix the problem here.
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- drivers/gpu/drm/radeon/r300_cmdbuf.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+Sincerly,
 
-diff --git a/drivers/gpu/drm/radeon/r300_cmdbuf.c b/drivers/gpu/drm/radeon/r300_cmdbuf.c
-index cace396..3efa633 100644
---- a/drivers/gpu/drm/radeon/r300_cmdbuf.c
-+++ b/drivers/gpu/drm/radeon/r300_cmdbuf.c
-@@ -37,6 +37,8 @@
- #include "radeon_drv.h"
- #include "r300_reg.h"
- 
-+#include <asm/unaligned.h>
-+
- #define R300_SIMULTANEOUS_CLIPRECTS		4
- 
- /* Values for R300_RE_CLIPRECT_CNTL depending on the number of cliprects
-@@ -917,6 +919,7 @@ static int r300_scratch(drm_radeon_private_t *dev_priv,
- {
- 	u32 *ref_age_base;
- 	u32 i, buf_idx, h_pending;
-+	u64 ptr_addr;
- 	RING_LOCALS;
- 
- 	if (cmdbuf->bufsz <
-@@ -930,7 +933,8 @@ static int r300_scratch(drm_radeon_private_t *dev_priv,
- 
- 	dev_priv->scratch_ages[header.scratch.reg]++;
- 
--	ref_age_base =  (u32 *)(unsigned long)*((uint64_t *)cmdbuf->buf);
-+	ptr_addr = get_unaligned((u64 *)cmdbuf->buf);
-+	ref_age_base = (u32 *)(unsigned long)ptr_addr;
- 
- 	cmdbuf->buf += sizeof(u64);
- 	cmdbuf->bufsz -= sizeof(u64);
--- 
-1.6.1.2.350.g88cc
+Nico
 
+--=20
+Think about Free and Open Source Software (FOSS).
+http://nico.schottelius.org/documentations/foss/the-term-foss/
+
+PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
+
+--CE+1k2dSO48ffgeK
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmb1oIACgkQuL75KpiFGIwacACg6BGuVlCOJu2Is+pG9KvzbC1G
+090AoNlj05w7V/uIRKhZlO7ws9jUKfmp
+=wtZ8
+-----END PGP SIGNATURE-----
+
+--CE+1k2dSO48ffgeK--
