@@ -1,132 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754519AbZBRQSZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbZBRQUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754519AbZBRQSZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 11:18:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbZBRQSR
+	id S1754649AbZBRQUL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 11:20:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112AbZBRQT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 11:18:17 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:58629 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752814AbZBRQSQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 11:18:16 -0500
-Date: Wed, 18 Feb 2009 17:15:15 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] generic-ipi: remove kmalloc()
-Message-ID: <20090218161515.GA24895@redhat.com>
-References: <20090217215904.059250145@chello.nl> <20090217220053.500765201@chello.nl> <20090218002823.GA25408@linux.vnet.ibm.com>
+	Wed, 18 Feb 2009 11:19:59 -0500
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:31627 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750802AbZBRQT6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 11:19:58 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: [PATCH] x86: use dev_printk in quirk message
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+Cc: Fenghua Yu <fenghua.yu@intel.com>, linux-kernel@vger.kernel.org
+Date: Wed, 18 Feb 2009 09:19:57 -0700
+Message-ID: <20090218161957.12773.31822.stgit@bob.kio>
+User-Agent: StGIT/0.14.3.215.gff3d
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090218002823.GA25408@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/17, Paul E. McKenney wrote:
->
-> On Tue, Feb 17, 2009 at 10:59:06PM +0100, Peter Zijlstra wrote:
-> > +static void csd_lock(struct call_single_data *data)
-> >  {
-> > -	/* Wait for response */
-> > -	do {
-> > -		if (!(data->flags & CSD_FLAG_WAIT))
-> > -			break;
-> > +	while (data->flags & CSD_FLAG_LOCK)
-> >  		cpu_relax();
-> > -	} while (1);
-> > +	data->flags = CSD_FLAG_LOCK;
->
-> We do need an smp_mb() here, otherwise, the call from
-> smp_call_function_single() could be reordered by either CPU or compiler
-> as follows:
->
-> 	data->func = func;
-> 	data->info = info;
-> 	csd_lock(data);
->
-> This might come as a bit of a surprise to the other CPU still trying to
-> use the old values for data->func and data->info.
+This patch changes a VIA PCI quirk to use dev_info() rather than printk().
 
-Could you explain a bit more here?
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+---
+ arch/x86/kernel/pci-dma.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-The compiler can't re-order this code due to cpu_relax(). Cpu can
-re-order, but this doesn't matter because both the sender and ipi
-handler take call_single_queue->lock.
-
-And, giwen that csd_unlock() does mb() before csd_unlock(), how
-it is possible that other CPU (ipi handler) still uses the old
-values in *data after we see !CSD_FLAG_LOCK ?
-
-> Note that this smb_mb() is required even if cpu_relax() contains a
-> memory barrier, as it is possible to execute csd_lock_wait() without
-> executing the cpu_relax(), if you get there at just the right time.
-
-Can't understand... Nobody can do csd_wait() on this per-cpu entry,
-but I guess you meant something else.
-
-> OK...  What prevents the following sequence of events?
->
-> o	CPU 0 calls smp_call_function_many(), targeting numerous CPUs,
-> 	including CPU 2.  CPU 0 therefore enqueues this on the global
-> 	call_function.queue.  "wait" is not specified, so CPU 0 returns
-> 	immediately after sending the IPIs.
->
-> 	It decrements the ->refs field, but, finding the result
-> 	non-zero, refrains from removing the element that CPU 0
-> 	enqueued, and also refrains from invoking csd_unlock().
->
-> o	CPU 3 also receives the IPI, and also calls the needed function.
-> 	Now, only CPU 1 need receive the IPI for the element to be
-> 	removed.
-
-so we have a single entry E0 on list,
-
-> o	CPU 3 calls smp_call_function_many(), targeting numerous CPUs,
-> 	but -not- including CPU 2.  CPU 3 therefore also this on the
-> 	global call_function.queue and sends the IPIs, but no IPI for
-> 	CPU 2.	Your choice as to whether CPU 3 waits or not.
-
-now we have E3 -> E0
-
-> o	CPU 2 receives CPU 3's IPI, but CPU 0's element is first on the
-> 	list.  CPU 2 fetches the pointer (via list_for_each_entry_rcu()),
-> 	and then...
-
-it actually sees E3, not E0
-
-> o	CPU 1 finally re-enables irqs and receives the IPIs!!!  It
-> 	finds CPU 0's element on the queue, calls the function,
-> 	decrements the ->refs field, and finds that it is zero.
-> 	So, CPU 1 invokes list_del_rcu() to remove the element
-> 	(OK so far, as list_del_rcu() doesn't overwrite the next
-> 	pointer), then invokes csd_unlock() to release the element.
->
-> o	CPU 0 then invokes another smp_call_function_many(), also
-> 	multiple CPUs, but -not- to CPU 2.  It requeues the element
-> 	that was just csd_unlock()ed above, carrying CPU 2 with it.
-> 	It IPIs CPUs 1 and 3, but not CPU 2.
-
-and inserts the element E0 at the head of the list again,
-
->
-> o	CPU 2 continues, and falls off the bottom of the list.
-
-afaics, it doesn't.
-
-Every time smp_call_function_many() reuses the element, it sets its
-->next pointer to the head of the list. If we race with another CPU
-which fetches this pointer, this CPU has to re-scan the whole list,
-but since we always modify/read data under data->lock this should
-be safe, that CPU must notice (!cpumask_test_cpu(cpu, data->cpumask).
-
-No?
-
-Oleg.
+diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+index b254285..022833b 100644
+--- a/arch/x86/kernel/pci-dma.c
++++ b/arch/x86/kernel/pci-dma.c
+@@ -290,8 +290,7 @@ fs_initcall(pci_iommu_init);
+ static __devinit void via_no_dac(struct pci_dev *dev)
+ {
+ 	if ((dev->class >> 8) == PCI_CLASS_BRIDGE_PCI && forbid_dac == 0) {
+-		printk(KERN_INFO
+-			"PCI: VIA PCI bridge detected. Disabling DAC.\n");
++		dev_info(&dev->dev, "disabling DAC on VIA PCI bridge\n");
+ 		forbid_dac = 1;
+ 	}
+ }
 
