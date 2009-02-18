@@ -1,122 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbZBRDsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbZBRDsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754863AbZBRDsO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 22:48:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbZBRDr5
+	id S1755344AbZBRDsq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 22:48:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbZBRDsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 22:47:57 -0500
-Received: from hera.kernel.org ([140.211.167.34]:40402 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750886AbZBRDr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 22:47:57 -0500
-Message-ID: <499B84CE.7090707@kernel.org>
-Date: Tue, 17 Feb 2009 19:47:26 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 17 Feb 2009 22:48:37 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:48840 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753004AbZBRDsh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 22:48:37 -0500
+Date: Tue, 17 Feb 2009 22:48:33 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Geoff Levand <geoffrey.levand@am.sony.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/7] tracing/function-graph-tracer: make arch generic
+ push pop functions
+In-Reply-To: <20090218010039.GL25856@elte.hu>
+Message-ID: <alpine.DEB.1.10.0902172243550.1360@gandalf.stny.rr.com>
+References: <20090213052358.524970112@goodmis.org> <20090213053004.787392572@goodmis.org> <alpine.DEB.1.10.0902162346190.30397@gandalf.stny.rr.com> <20090218010039.GL25856@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: david@lang.hm
-CC: Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       DL-MPTFusionLinux@lsi.com
-Subject: Re: mpt fusion broken sometime since 2.6.24
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>  <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm>  <20090217230050.GG16841@parisc-linux.org>  <alpine.DEB.1.10.0902171506500.26625@asgard.lang.hm> <86802c440902171511s1abcc0eao560df4b8fcea0e7c@mail.gmail.com> <alpine.DEB.1.10.0902171514120.26625@asgard.lang.hm> <499B46B2.5040601@kernel.org> <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm> <499B6BF7.9090300@kernel.org> <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm> <499B724A.2040408@kernel.org> <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm> <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm> <499B774C.5010705@kernel.org> <alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm> <499B807B.2050509@kernel.org> <alpine.DEB.1.10.0902171935110.26625@asgard.lang.hm>
-In-Reply-To: <alpine.DEB.1.10.0902171935110.26625@asgard.lang.hm>
-Content-Type: multipart/mixed;
- boundary="------------070007070007020405030709"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070007070007020405030709
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 
-please try two patches at the same time on 2.6.29-rc5.
-don't apply other patch.
+On Wed, 18 Feb 2009, Ingo Molnar wrote:
 
-YH
+> 
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > Ingo,
+> > 
+> > This patch is to make function graph arch generic. But since 
+> > the PowerPC changes depend on it, we want to push it through 
+> > the PowerPC tree. But since it touches x86 code, can you give 
+> > an Acked-by to it?
+> 
+> hm, but it's all ftrace bits. Could this go through the tracing 
+> tree? That's how it's generally done for most cross-arch 
+> subsystems. By having it in a separate tree we risk conflicts 
+> and various logistics problems. It's not like the PPC tree is 
+> modifying its ftrace.c file all that frequently, right?
 
---------------070007070007020405030709
-Content-Type: text/x-patch;
- name="enable_8132_msi.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="enable_8132_msi.patch"
+Ingo,
 
-[PATCH] pci: enable MSI on 8132
+How about this. We could incorporate some of the power of git. I could 
+make a separate branch based off of Linus's 2.6.29-rc5 announcement, and 
+apply just this patch (the ftrace generic and x86 change). If you give me 
+your Acked-by, I'll add that too.
 
-Impact: workaround BIOS that doesn't enable that bit
+This way, both you and Ben could pull from this branch to get the one 
+change. When it goes upstream, because it has the same SHA1, git could 
+easily resolve it.
 
-David reported that LSI sas doesn't work with MSI.
-it turns out that BIOS doesn't enable HT MSI
-8132 does support HT MSI.
-add quirk to enable it
+-- Steve
 
-Reported-by: David Lang <david@lang.hm>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- drivers/pci/quirks.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/pci/quirks.c
-===================================================================
---- linux-2.6.orig/drivers/pci/quirks.c
-+++ linux-2.6/drivers/pci/quirks.c
-@@ -1981,7 +1981,6 @@ static void __devinit quirk_msi_ht_cap(s
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_HT2000_PCIE,
- 			quirk_msi_ht_cap);
- 
--
- /* The nVidia CK804 chipset may have 2 HT MSI mappings.
-  * MSI are supported if the MSI capability set in any of these mappings.
-  */
-@@ -2032,6 +2031,9 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_S
- 			 PCI_DEVICE_ID_SERVERWORKS_HT1000_PXB,
- 			 ht_enable_msi_mapping);
- 
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_8132_BRIDGE,
-+			 ht_enable_msi_mapping);
-+
- /* The P5N32-SLI Premium motherboard from Asus has a problem with msi
-  * for the MCP55 NIC. It is not yet determined whether the msi problem
-  * also affects other devices. As for now, turn off msi for this device.
-
---------------070007070007020405030709
-Content-Type: text/x-patch;
- name="enable_lsi_sas_msi.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="enable_lsi_sas_msi.patch"
-
-[PATCH] mpt: fix enable lsi sas to use msi as default
-
-Impact: fix bug
-
-the third param in module_param(,,) is perm instead of default value.
-we still need to assign default at first.
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- drivers/message/fusion/mptbase.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/drivers/message/fusion/mptbase.c
-===================================================================
---- linux-2.6.orig/drivers/message/fusion/mptbase.c
-+++ linux-2.6/drivers/message/fusion/mptbase.c
-@@ -90,8 +90,8 @@ module_param(mpt_msi_enable_fc, int, 0);
- MODULE_PARM_DESC(mpt_msi_enable_fc, " Enable MSI Support for FC \
- 		controllers (default=0)");
- 
--static int mpt_msi_enable_sas;
--module_param(mpt_msi_enable_sas, int, 1);
-+static int mpt_msi_enable_sas = 1;
-+module_param(mpt_msi_enable_sas, int, 0);
- MODULE_PARM_DESC(mpt_msi_enable_sas, " Enable MSI Support for SAS \
- 		controllers (default=1)");
- 
-
---------------070007070007020405030709--
