@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758013AbZBRVix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757738AbZBRVhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758013AbZBRVix (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:38:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754824AbZBRVfg
+	id S1757738AbZBRVhy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:37:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbZBRVfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:35:36 -0500
-Received: from kroah.org ([198.145.64.141]:56138 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 16:35:33 -0500
+Received: from kroah.org ([198.145.64.141]:56106 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754678AbZBRVff (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:35:35 -0500
-Date: Wed, 18 Feb 2009 13:32:30 -0800
+	id S1754243AbZBRVfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:35:32 -0500
+Date: Wed, 18 Feb 2009 13:32:23 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mike Galbraith <efault@gmx.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 09/39] sched: SCHED_OTHER vs SCHED_IDLE isolation
-Message-ID: <20090218213230.GJ19814@kroah.com>
+       alan@lxorguk.ukuu.org.uk, David Woodhouse <David.Woodhouse@intel.com>
+Subject: [patch 06/39] Fix Intel IOMMU write-buffer flushing
+Message-ID: <20090218213223.GG19814@kroah.com>
 References: <20090218212144.965748151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sched-sched_other-vs-sched_idle-isolation.patch"
+Content-Disposition: inline; filename="fix-intel-iommu-write-buffer-flushing.patch"
 In-Reply-To: <20090218213021.GA19814@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,86 +39,63 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+From: David Woodhouse <dwmw2@infradead.org>
 
-commit 6bc912b71b6f33b041cfde93ca3f019cbaa852bc upstream.
+commit ca77fde8e62cecb2c0769052228d15b901367af8 upstream.
 
-Stronger SCHED_IDLE isolation:
+This is the cause of the DMA faults and disk corruption that people have
+been seeing. Some chipsets neglect to report the RWBF "capability" --
+the flag which says that we need to flush the chipset write-buffer when
+changing the DMA page tables, to ensure that the change is visible to
+the IOMMU.
 
- - no SCHED_IDLE buddies
- - never let SCHED_IDLE preempt on wakeup
- - always preempt SCHED_IDLE on wakeup
- - limit SLEEPER fairness for SCHED_IDLE.
+Override that bit on the affected chipsets, and everything is happy
+again.
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Thanks to Chris and Bhavesh and others for helping to debug.
+
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+Tested-by: Chris Wright <chrisw@sous-sol.org>
+Reviewed-by: Bhavesh Davda <bhavesh@vmware.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/sched_fair.c |   30 ++++++++++++++++++++++--------
- 1 file changed, 22 insertions(+), 8 deletions(-)
+ drivers/pci/intel-iommu.c |   14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -681,9 +681,13 @@ place_entity(struct cfs_rq *cfs_rq, stru
- 			unsigned long thresh = sysctl_sched_latency;
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -506,7 +506,7 @@ static void iommu_flush_write_buffer(str
+ 	u32 val;
+ 	unsigned long flag;
  
- 			/*
--			 * convert the sleeper threshold into virtual time
-+			 * Convert the sleeper threshold into virtual time.
-+			 * SCHED_IDLE is a special sub-class.  We care about
-+			 * fairness only relative to other SCHED_IDLE tasks,
-+			 * all of which have the same weight.
- 			 */
--			if (sched_feat(NORMALIZED_SLEEPER))
-+			if (sched_feat(NORMALIZED_SLEEPER) &&
-+					task_of(se)->policy != SCHED_IDLE)
- 				thresh = calc_delta_fair(thresh, se);
+-	if (!cap_rwbf(iommu->cap))
++	if (!rwbf_quirk && !cap_rwbf(iommu->cap))
+ 		return;
+ 	val = iommu->gcmd | DMA_GCMD_WBF;
  
- 			vruntime -= thresh;
-@@ -1328,14 +1332,18 @@ wakeup_preempt_entity(struct sched_entit
- 
- static void set_last_buddy(struct sched_entity *se)
- {
--	for_each_sched_entity(se)
--		cfs_rq_of(se)->last = se;
-+	if (likely(task_of(se)->policy != SCHED_IDLE)) {
-+		for_each_sched_entity(se)
-+			cfs_rq_of(se)->last = se;
-+	}
+@@ -1315,6 +1315,8 @@ static void domain_remove_dev_info(struc
+ 	spin_unlock_irqrestore(&device_domain_lock, flags);
  }
  
- static void set_next_buddy(struct sched_entity *se)
- {
--	for_each_sched_entity(se)
--		cfs_rq_of(se)->next = se;
-+	if (likely(task_of(se)->policy != SCHED_IDLE)) {
-+		for_each_sched_entity(se)
-+			cfs_rq_of(se)->next = se;
-+	}
- }
- 
- /*
-@@ -1382,12 +1390,18 @@ static void check_preempt_wakeup(struct 
- 		return;
- 
- 	/*
--	 * Batch tasks do not preempt (their preemption is driven by
-+	 * Batch and idle tasks do not preempt (their preemption is driven by
- 	 * the tick):
- 	 */
--	if (unlikely(p->policy == SCHED_BATCH))
-+	if (unlikely(p->policy != SCHED_NORMAL))
- 		return;
- 
-+	/* Idle tasks are by definition preempted by everybody. */
-+	if (unlikely(curr->policy == SCHED_IDLE)) {
-+		resched_task(curr);
-+		return;
-+	}
++static int rwbf_quirk = 0;
 +
- 	if (!sched_feat(WAKEUP_PREEMPT))
- 		return;
- 
+ /*
+  * find_domain
+  * Note: we use struct pci_dev->dev.archdata.iommu stores the info
+@@ -2436,3 +2438,13 @@ u64 intel_iommu_iova_to_pfn(struct dmar_
+ 	return pfn >> VTD_PAGE_SHIFT;
+ }
+ EXPORT_SYMBOL_GPL(intel_iommu_iova_to_pfn);
++
++static void __devinit quirk_iommu_rwbf(struct pci_dev *dev)
++{
++	/* Mobile 4 Series Chipset neglects to set RWBF capability,
++	   but needs it */
++	printk(KERN_INFO "DMAR: Forcing write-buffer flush capability\n");
++	rwbf_quirk = 1;
++}
++
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2a40, quirk_iommu_rwbf);
 
