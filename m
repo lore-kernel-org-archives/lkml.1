@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755855AbZBRSCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755957AbZBRSC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755855AbZBRSCS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 13:02:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbZBRSCA
+	id S1755957AbZBRSC4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 13:02:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbZBRSCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 13:02:00 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:26099 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753456AbZBRSB7 (ORCPT
+	Wed, 18 Feb 2009 13:02:46 -0500
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:35570 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752141AbZBRSCp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 13:01:59 -0500
-Message-ID: <499C4D35.9000104@oracle.com>
-Date: Wed, 18 Feb 2009 10:02:29 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: [PATCH] module: fix build for CONFIG_SYSFS=n
-References: <20090218191640.0b023029.sfr@canb.auug.org.au>
-In-Reply-To: <20090218191640.0b023029.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 18 Feb 2009 13:02:45 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AuMFAAjam0lMQWt2/2dsb2JhbACBbtNFhBMG
+Date: Wed, 18 Feb 2009 13:02:32 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
+       pierre-marc.fournier@polymtl.ca
+Subject: Moving Userspace RCU (urcu) from GPL to LGPL license
+Message-ID: <20090218180232.GA21389@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt707.oracle.com [141.146.40.85]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A09020B.499C4D07.00F2:SCFSTAT928724,ss=1,fgs=0
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:49:56 up 48 days, 17:48,  4 users,  load average: 1.06, 0.61,
+	0.45
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Hi Paul,
 
-Fix this build error when CONFIG_SYSFS=n:
+I think that it would be good to distribute the userspace rcu work we
+are currently doing (ref. :
+http://lttng.org/cgi-bin/gitweb.cgi?p=userspace-rcu.git) as a
+LGPL library rather than GPL so it can be linked to the userspace part
+of the LTTng tracer. We want to provide this tracer as a LGPL library so
+proprietary applications can link to it and therefore be traceable. The
+only thing is that we cannot put GPL code into a LGPL library.
 
-kernel/built-in.o: In function `free_module':
-module.c:(.text+0x4f8a2): undefined reference to `destroy_params'
+The other point is that I use a few low-level primitives from the Linux
+kernel header (e.g. atomic increment for x86, barrier macros). Those are
+simple one-liners, but, still, I wonder about the licensing
+implications. I could simply "rewrite" them, but that would be a shame
+to have a different primitive implementation of those simple primitives
+in userspace and in kernel-space just for a licensing question. I would
+really like to keep the Linux kernel coding-style within this library.
+So the question would be : are those headers, distributed with the Linux
+kernel, distributed under GPL license ? Is there any special clause that
+would permit using their content under LGPL ? If not, would the
+community see such use favorably ?
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Rusty Russell <rusty@rustcorp.com.au>
----
- kernel/module.c |    2 ++
- 1 file changed, 2 insertions(+)
+Ideas/comments are welcome.
 
---- linux-next-20090218.orig/kernel/module.c
-+++ linux-next-20090218/kernel/module.c
-@@ -1464,8 +1464,10 @@ static void free_module(struct module *m
- 	/* Module unload stuff */
- 	module_unload_free(mod);
- 
-+#ifdef CONFIG_SYSFS
- 	/* Free any allocated parameters. */
- 	destroy_params(mod->kp, mod->num_kp);
-+#endif
- 
- 	/* release any pointers to mcount in this module */
- 	ftrace_release(mod->module_core, mod->core_size);
+Thanks,
+
+Mathieu
+
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
