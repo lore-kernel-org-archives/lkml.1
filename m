@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759676AbZBRWi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759826AbZBRWip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759676AbZBRWi1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 17:38:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757895AbZBRWcJ
+	id S1759826AbZBRWip (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 17:38:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757876AbZBRWcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 17:32:09 -0500
-Received: from kroah.org ([198.145.64.141]:34842 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 17:32:12 -0500
+Received: from kroah.org ([198.145.64.141]:34855 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756972AbZBRWcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 17:32:03 -0500
-Date: Wed, 18 Feb 2009 14:29:19 -0800
+	id S1756960AbZBRWcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 17:32:04 -0500
+Date: Wed, 18 Feb 2009 14:29:21 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Marcelo Tosatti <mtosatti@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 12/36] x86/cpa: make sure cpa is safe to call in lazy mmu
-	mode
-Message-ID: <20090218222919.GM10668@kroah.com>
+       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org
+Subject: [patch 13/36] ext4: Add support for non-native signed/unsigned
+	htree hash algorithms
+Message-ID: <20090218222921.GN10668@kroah.com>
 References: <20090218222447.432108614@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-cpa-make-sure-cpa-is-safe-to-call-in-lazy-mmu-mode.patch"
+Content-Disposition: inline; filename="ext4-add-support-for-non-native-signed-unsigned-htree-hash-algorithms.patch"
 In-Reply-To: <20090218222841.GA10668@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,58 +40,231 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+From: "Theodore Ts'o" <tytso@mit.edu>
 
-commit 4f06b0436b2ddbd3b67b10e77098a6862787b3eb upstream.
+(cherry picked from commit f99b25897a86fcfff9140396a97261ae65fed872)
 
-Impact: fix race leading to crash under KVM and Xen
+The original ext3 hash algorithms assumed that variables of type char
+were signed, as God and K&R intended.  Unfortunately, this assumption
+is not true on some architectures.  Userspace support for marking
+filesystems with non-native signed/unsigned chars was added two years
+ago, but the kernel-side support was never added (until now).
 
-The CPA code may be called while we're in lazy mmu update mode - for
-example, when using DEBUG_PAGE_ALLOC and doing a slab allocation
-in an interrupt handler which interrupted a lazy mmu update.  In this
-case, the in-memory pagetable state may be out of date due to pending
-queued updates.  We need to flush any pending updates before inspecting
-the page table.  Similarly, we must explicitly flush any modifications
-CPA may have made (which comes down to flushing queued operations when
-flushing the TLB).
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Acked-by: Marcelo Tosatti <mtosatti@redhat.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/mm/pageattr.c |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ fs/ext4/ext4.h    |    3 ++
+ fs/ext4/ext4_sb.h |    1 
+ fs/ext4/hash.c    |   77 ++++++++++++++++++++++++++++++++++++++++++++++--------
+ fs/ext4/namei.c   |    7 ++++
+ fs/ext4/super.c   |   12 ++++++++
+ 5 files changed, 90 insertions(+), 10 deletions(-)
 
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -619,6 +619,13 @@ static int __change_page_attr(struct cpa
- 	unsigned int level;
- 	pte_t *kpte, old_pte;
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -889,6 +889,9 @@ static inline __le16 ext4_rec_len_to_dis
+ #define DX_HASH_LEGACY		0
+ #define DX_HASH_HALF_MD4	1
+ #define DX_HASH_TEA		2
++#define DX_HASH_LEGACY_UNSIGNED	3
++#define DX_HASH_HALF_MD4_UNSIGNED	4
++#define DX_HASH_TEA_UNSIGNED		5
  
-+	/*
-+	 * If we're called with lazy mmu updates enabled, the
-+	 * in-memory pte state may be stale.  Flush pending updates to
-+	 * bring them up to date.
-+	 */
-+	arch_flush_lazy_mmu_mode();
+ #ifdef __KERNEL__
+ 
+--- a/fs/ext4/ext4_sb.h
++++ b/fs/ext4/ext4_sb.h
+@@ -56,6 +56,7 @@ struct ext4_sb_info {
+ 	u32 s_next_generation;
+ 	u32 s_hash_seed[4];
+ 	int s_def_hash_version;
++	int s_hash_unsigned;	/* 3 if hash should be signed, 0 if not */
+ 	struct percpu_counter s_freeblocks_counter;
+ 	struct percpu_counter s_freeinodes_counter;
+ 	struct percpu_counter s_dirs_counter;
+--- a/fs/ext4/hash.c
++++ b/fs/ext4/hash.c
+@@ -35,23 +35,71 @@ static void TEA_transform(__u32 buf[4], 
+ 
+ 
+ /* The old legacy hash */
+-static __u32 dx_hack_hash (const char *name, int len)
++static __u32 dx_hack_hash_unsigned(const char *name, int len)
+ {
+-	__u32 hash0 = 0x12a3fe2d, hash1 = 0x37abe8f9;
++	__u32 hash, hash0 = 0x12a3fe2d, hash1 = 0x37abe8f9;
++	const unsigned char *ucp = (const unsigned char *) name;
 +
- repeat:
- 	kpte = lookup_address(address, &level);
- 	if (!kpte)
-@@ -836,6 +843,13 @@ static int change_page_attr_set_clr(unsi
- 	else
- 		cpa_flush_all(cache);
- 
-+	/*
-+	 * If we've been called with lazy mmu updates enabled, then
-+	 * make sure that everything gets flushed out before we
-+	 * return.
-+	 */
-+	arch_flush_lazy_mmu_mode();
++	while (len--) {
++		hash = hash1 + (hash0 ^ (((int) *ucp++) * 7152373));
 +
- out:
- 	cpa_fill_pool(NULL);
++		if (hash & 0x80000000)
++			hash -= 0x7fffffff;
++		hash1 = hash0;
++		hash0 = hash;
++	}
++	return hash0 << 1;
++}
++
++static __u32 dx_hack_hash_signed(const char *name, int len)
++{
++	__u32 hash, hash0 = 0x12a3fe2d, hash1 = 0x37abe8f9;
++	const signed char *scp = (const signed char *) name;
++
+ 	while (len--) {
+-		__u32 hash = hash1 + (hash0 ^ (*name++ * 7152373));
++		hash = hash1 + (hash0 ^ (((int) *scp++) * 7152373));
  
+-		if (hash & 0x80000000) hash -= 0x7fffffff;
++		if (hash & 0x80000000)
++			hash -= 0x7fffffff;
+ 		hash1 = hash0;
+ 		hash0 = hash;
+ 	}
+-	return (hash0 << 1);
++	return hash0 << 1;
+ }
+ 
+-static void str2hashbuf(const char *msg, int len, __u32 *buf, int num)
++static void str2hashbuf_signed(const char *msg, int len, __u32 *buf, int num)
+ {
+ 	__u32	pad, val;
+ 	int	i;
++	const signed char *scp = (const signed char *) msg;
++
++	pad = (__u32)len | ((__u32)len << 8);
++	pad |= pad << 16;
++
++	val = pad;
++	if (len > num*4)
++		len = num * 4;
++	for (i = 0; i < len; i++) {
++		if ((i % 4) == 0)
++			val = pad;
++		val = ((int) scp[i]) + (val << 8);
++		if ((i % 4) == 3) {
++			*buf++ = val;
++			val = pad;
++			num--;
++		}
++	}
++	if (--num >= 0)
++		*buf++ = val;
++	while (--num >= 0)
++		*buf++ = pad;
++}
++
++static void str2hashbuf_unsigned(const char *msg, int len, __u32 *buf, int num)
++{
++	__u32	pad, val;
++	int	i;
++	const unsigned char *ucp = (const unsigned char *) msg;
+ 
+ 	pad = (__u32)len | ((__u32)len << 8);
+ 	pad |= pad << 16;
+@@ -62,7 +110,7 @@ static void str2hashbuf(const char *msg,
+ 	for (i=0; i < len; i++) {
+ 		if ((i % 4) == 0)
+ 			val = pad;
+-		val = msg[i] + (val << 8);
++		val = ((int) ucp[i]) + (val << 8);
+ 		if ((i % 4) == 3) {
+ 			*buf++ = val;
+ 			val = pad;
+@@ -95,6 +143,8 @@ int ext4fs_dirhash(const char *name, int
+ 	const char	*p;
+ 	int		i;
+ 	__u32		in[8], buf[4];
++	void		(*str2hashbuf)(const char *, int, __u32 *, int) =
++				str2hashbuf_signed;
+ 
+ 	/* Initialize the default seed for the hash checksum functions */
+ 	buf[0] = 0x67452301;
+@@ -113,13 +163,18 @@ int ext4fs_dirhash(const char *name, int
+ 	}
+ 
+ 	switch (hinfo->hash_version) {
++	case DX_HASH_LEGACY_UNSIGNED:
++		hash = dx_hack_hash_unsigned(name, len);
++		break;
+ 	case DX_HASH_LEGACY:
+-		hash = dx_hack_hash(name, len);
++		hash = dx_hack_hash_signed(name, len);
+ 		break;
++	case DX_HASH_HALF_MD4_UNSIGNED:
++		str2hashbuf = str2hashbuf_unsigned;
+ 	case DX_HASH_HALF_MD4:
+ 		p = name;
+ 		while (len > 0) {
+-			str2hashbuf(p, len, in, 8);
++			(*str2hashbuf)(p, len, in, 8);
+ 			half_md4_transform(buf, in);
+ 			len -= 32;
+ 			p += 32;
+@@ -127,10 +182,12 @@ int ext4fs_dirhash(const char *name, int
+ 		minor_hash = buf[2];
+ 		hash = buf[1];
+ 		break;
++	case DX_HASH_TEA_UNSIGNED:
++		str2hashbuf = str2hashbuf_unsigned;
+ 	case DX_HASH_TEA:
+ 		p = name;
+ 		while (len > 0) {
+-			str2hashbuf(p, len, in, 4);
++			(*str2hashbuf)(p, len, in, 4);
+ 			TEA_transform(buf, in);
+ 			len -= 16;
+ 			p += 16;
+--- a/fs/ext4/namei.c
++++ b/fs/ext4/namei.c
+@@ -371,6 +371,8 @@ dx_probe(struct dentry *dentry, struct i
+ 		goto fail;
+ 	}
+ 	hinfo->hash_version = root->info.hash_version;
++	if (hinfo->hash_version <= DX_HASH_TEA)
++		hinfo->hash_version += EXT4_SB(dir->i_sb)->s_hash_unsigned;
+ 	hinfo->seed = EXT4_SB(dir->i_sb)->s_hash_seed;
+ 	if (dentry)
+ 		ext4fs_dirhash(dentry->d_name.name, dentry->d_name.len, hinfo);
+@@ -640,6 +642,9 @@ int ext4_htree_fill_tree(struct file *di
+ 	dir = dir_file->f_path.dentry->d_inode;
+ 	if (!(EXT4_I(dir)->i_flags & EXT4_INDEX_FL)) {
+ 		hinfo.hash_version = EXT4_SB(dir->i_sb)->s_def_hash_version;
++		if (hinfo.hash_version <= DX_HASH_TEA)
++			hinfo.hash_version +=
++				EXT4_SB(dir->i_sb)->s_hash_unsigned;
+ 		hinfo.seed = EXT4_SB(dir->i_sb)->s_hash_seed;
+ 		count = htree_dirblock_to_tree(dir_file, dir, 0, &hinfo,
+ 					       start_hash, start_minor_hash);
+@@ -1418,6 +1423,8 @@ static int make_indexed_dir(handle_t *ha
+ 
+ 	/* Initialize as for dx_probe */
+ 	hinfo.hash_version = root->info.hash_version;
++	if (hinfo.hash_version <= DX_HASH_TEA)
++		hinfo.hash_version += EXT4_SB(dir->i_sb)->s_hash_unsigned;
+ 	hinfo.seed = EXT4_SB(dir->i_sb)->s_hash_seed;
+ 	ext4fs_dirhash(name, namelen, &hinfo);
+ 	frame = frames;
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -2172,6 +2172,18 @@ static int ext4_fill_super(struct super_
+ 	for (i = 0; i < 4; i++)
+ 		sbi->s_hash_seed[i] = le32_to_cpu(es->s_hash_seed[i]);
+ 	sbi->s_def_hash_version = es->s_def_hash_version;
++	i = le32_to_cpu(es->s_flags);
++	if (i & EXT2_FLAGS_UNSIGNED_HASH)
++		sbi->s_hash_unsigned = 3;
++	else if ((i & EXT2_FLAGS_SIGNED_HASH) == 0) {
++#ifdef __CHAR_UNSIGNED__
++		es->s_flags |= cpu_to_le32(EXT2_FLAGS_UNSIGNED_HASH);
++		sbi->s_hash_unsigned = 3;
++#else
++		es->s_flags |= cpu_to_le32(EXT2_FLAGS_SIGNED_HASH);
++#endif
++		sb->s_dirt = 1;
++	}
+ 
+ 	if (sbi->s_blocks_per_group > blocksize * 8) {
+ 		printk(KERN_ERR
 
