@@ -1,101 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbZBRQLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754557AbZBRQOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754859AbZBRQLV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 11:11:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbZBRQKw
+	id S1754557AbZBRQOu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 11:14:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbZBRQOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 11:10:52 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42485 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753258AbZBRQKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 11:10:51 -0500
-Date: Wed, 18 Feb 2009 17:10:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 2/2] tracing/function-graph-tracer: provide
-	documentation for the function graph tracer
-Message-ID: <20090218161041.GA29863@elte.hu>
-References: <499ba227.077e420a.56d6.ffffc38b@mx.google.com> <20090218140150.GA31620@elte.hu> <20090218155827.GA5765@nowhere>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090218155827.GA5765@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 18 Feb 2009 11:14:41 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50920 "EHLO
+	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752815AbZBRQOl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 11:14:41 -0500
+Date: Wed, 18 Feb 2009 16:45:46 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: "Kirill A. Shutemov" <kirill@shutemov.name>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] [RESEND] binfmt_script: rewrite using
+ parse_shell_args()
+Message-ID: <20090218164546.7d2b312a@the-village.bc.nu>
+In-Reply-To: <20090218152956.GA15633@srcf.ucam.org>
+References: <1234970162-10694-1-git-send-email-kirill@shutemov.name>
+	<1234970162-10694-2-git-send-email-kirill@shutemov.name>
+	<20090218151616.GC15195@srcf.ucam.org>
+	<20090218152252.GB5270@epbyminw8406h.minsk.epam.com>
+	<20090218152956.GA15633@srcf.ucam.org>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > > As mentioned before, this breaks userspace ABI.
+> > 
+> > Do you have real world example of breakage?
+> 
+> Have you checked every script on every Linux system?
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> On Wed, Feb 18, 2009 at 03:01:50PM +0100, Ingo Molnar wrote:
-> > 
-> > btw., a minor trace-output observation. We currently have this 
-> > default output:
-> > 
-> > # tracer: function_graph
-> > #
-> > # CPU  DURATION                  FUNCTION CALLS
-> > # |     |   |                     |   |   |   |
-> > 
-> >  0)               |  sys_open() {
-> >  0)               |    do_sys_open() {
-> >  0)               |      getname() {
-> >  0)               |        kmem_cache_alloc() {
-> >  0)   1.382 us    |          __might_sleep();
-> >  0)   2.478 us    |        }
-> > 
-> > Wouldnt this tweaked version look even nicer:
-> > 
-> > #
-> > # [ tracer: function_graph ]
-> > #
-> >  CPU)  <duration>   |  <function-name>
-> >  ..............................................
-> >    0)               |  sys_open() {
-> >    0)               |    do_sys_open() {
-> >    0)               |      getname() {
-> >    0)               |        kmem_cache_alloc() {
-> >    0)   1.382 us    |          __might_sleep();
-> >    0)   2.478 us    |        }
-> > 
-> > 
-> > Changes:
-> > 
-> >  1) Added an empty '#' line to the head. Looks nicer because 
-> >     the comment is now symmetric.
-> 
-> Right.
->  
-> >  2) Shifted of the CPU field two positions to the left. Better 
-> >     for paste-ability and makes the 'CPU)' header fit as well.
-> 
-> 
-> Good.
-> 
-> 
-> >  3) Changed the field description in the header portion to a 
-> >     standard <field> notation.
-> 
-> 
-> I guess it's more a matter of taste here.
-> I like the uppercase titles because they draw a good separation between
-> titles and traces.
-
-hm, to me they look a bit sloppy. It's hard to align them to the 
-colums so they look detached - despite the '| | |' vertical 
-lines. Unless you find the <field> notation outright ugly, could 
-we try that and see how it goes?
-
-	Ingo
+And even if he did its an ABI and an important one. It is fixed and
+defined. If you want a non standard behaviour please implement it via
+binfmt_misc and a helper.
