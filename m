@@ -1,73 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754040AbZBRNJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbZBRNL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754040AbZBRNJy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 08:09:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752296AbZBRNJa
+	id S1753532AbZBRNL7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 08:11:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbZBRNLu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 08:09:30 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:24554 "EHLO
-	SG2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751585AbZBRNJ1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 08:09:27 -0500
-X-BigFish: VPS3(zzzzzzz32i43j65h)
-X-Spam-TCS-SCL: 4:0
-X-FB-SS: 5,
-X-WSS-ID: 0KF9J73-03-C6P-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Avi Kivity <avi@redhat.com>
-CC: Marcelo Tosatti <mtosatti@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 2/3] kvm mmu: remove redundant check in mmu_set_spte
-Date: Wed, 18 Feb 2009 14:08:59 +0100
-Message-ID: <1234962540-7131-3-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.6.4
-In-Reply-To: <1234962540-7131-1-git-send-email-joerg.roedel@amd.com>
-References: <1234962540-7131-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 18 Feb 2009 13:09:00.0210 (UTC) FILETIME=[10720920:01C991CA]
+	Wed, 18 Feb 2009 08:11:50 -0500
+Received: from mx2.compro.net ([216.54.166.4]:51645 "EHLO mx2.compro.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751492AbZBRNLt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 08:11:49 -0500
+X-IronPort-AV: E=Sophos;i="4.38,229,1233550800"; 
+   d="scan'208";a="3396762"
+Message-ID: <499C0913.9050905@compro.net>
+Date: Wed, 18 Feb 2009 08:11:47 -0500
+From: Mark Hounschell <markh@compro.net>
+Reply-To: markh@compro.net
+Organization: Compro Computer Svcs.
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Mark Hounschell <dmarkh@cfl.rr.com>
+CC: Borislav Petkov <borislav.petkov@amd.com>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       john stultz <johnstul@us.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: PROBLEM: Can't boot a (HZ = 1000) kernel using an AMD	Phenom-II
+ processor
+References: <20090127163843.GA1628@aftab> <497FA725.7020503@cfl.rr.com> <497FA7F2.3060709@cfl.rr.com> <20090203151137.GB12017@aftab> <498897C1.2090802@compro.net> <498B1FA9.2050203@cfl.rr.com> <20090206135248.GB23459@aftab> <498C44FA.1010106@compro.net> <498C7980.2060309@compro.net> <498CB798.7050308@cfl.rr.com> <20090209141841.GA31643@aftab> <49904BED.7090208@cfl.rr.com>
+In-Reply-To: <49904BED.7090208@cfl.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following code flow is unnecessary:
+Mark Hounschell wrote:
+> Borislav Petkov wrote:
 
-	if (largepage)
-		was_rmapped = is_large_pte(*shadow_pte);
-	 else
-	 	was_rmapped = 1;
+>> maybe I wasn't clear enough - I meant to boot a _1000HZ_ kernel not a
+>> 250HZ one with highres timers disabled, if the line above is correct.
+>> Can you try the same thing as above again, please, but this time use a
+>> 1000HZ 32bit kernel.
+>>
+>> Thanks.
+>>
+> 
+> Sorry, hows this?
+> BIOS EBDA/lowmem at: 0009f000/0009f000
+> Initializing cgroup subsys cpuset
+> Linux version 2.6.28.3-1000Hz (root@harley) (gcc version 4.3.1 20080507
+> (prerelease) [gcc-4_3-branch revision 135036] (SUSE Linux) ) #3 SMP PREEMPT Mon Feb9
+> KERNEL supported cpus:
+>   Intel GenuineIntel
+>   AMD AuthenticAMD
+>   NSC Geode by NSC
+>   Cyrix CyrixInstead
+>   Centaur CentaurHauls
+>   Transmeta GenuineTMx86
+>   Transmeta TransmetaCPU
+>   UMC UMC UMC UMC
+> BIOS-provided physical RAM map:
+>  BIOS-e820: 0000000000000000 - 000000000009f400 (usable)
+>  BIOS-e820: 000000000009f400 - 00000000000a0000 (reserved)
+>  BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+>  BIOS-e820: 0000000000100000 - 00000000bffe0000 (usable)
+>  BIOS-e820: 00000000bffe0000 - 00000000bffe3000 (ACPI NVS)
+>  BIOS-e820: 00000000bffe3000 - 00000000bfff0000 (ACPI data)
+>  BIOS-e820: 00000000bfff0000 - 00000000c0000000 (reserved)
+>  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
+>  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
+>  BIOS-e820: 0000000100000000 - 0000000140000000 (usable)
+> DMI 2.5 present.
+> Phoenix BIOS detected: BIOS may corrupt low RAM, working it around.
+> last_pfn = 0xbffe0 max_arch_pfn = 0x100000
+> x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+> RAMDISK: 375a8000 - 37fef376
+> Allocated new RAMDISK: 004a7000 - 00eee376
+> Move RAMDISK from 00000000375a8000 - 0000000037fef375 to 004a7000 - 00eee375
+> ACPI: RSDP 000F7FB0, 0024 (r2 RX780 )
+> ACPI: XSDT BFFE3080, 0044 (r1 RX780  AWRDACPI 42302E31 AWRD        0)
+> ACPI: FACP BFFE8C80, 00F4 (r3 RX780  AWRDACPI 42302E31 AWRD        0)
+> FADT: X_PM1a_EVT_BLK.bit_width (8) does not match PM1_EVT_LEN (4)
+> ACPI: DSDT BFFE3200, 5A71 (r1 RX780  AWRDACPI     1000 MSFT  100000E)
+> ACPI: FACS BFFE0000, 0040
+> ACPI: HPET BFFE8E40, 0038 (r1 RX780  AWRDACPI 42302E31 AWRD       98)
+> ACPI: MCFG BFFE8E80, 003C (r1 RX780  AWRDACPI 42302E31 AWRD        0)
+> ACPI: APIC BFFE8D80, 0084 (r1 RX780  AWRDACPI 42302E31 AWRD        0)
+> 2183MB HIGHMEM available.
+> 887MB LOWMEM available.
+>   mapped low ram: 0 - 377fe000
+>   low ram: 00000000 - 377fe000
+>   bootmap 00012000 - 00018f00
+> (9 early reservations) ==> bootmem [0000000000 - 00377fe000]
+>   #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
+>   #1 [0000001000 - 0000002000]    EX TRAMPOLINE ==> [0000001000 - 0000002000]
+>   #2 [0000006000 - 0000007000]       TRAMPOLINE ==> [0000006000 - 0000007000]
+>   #3 [0000100000 - 00004a3c54]    TEXT DATA BSS ==> [0000100000 - 00004a3c54]
+>   #4 [00004a4000 - 00004a7000]    INIT_PG_TABLE ==> [00004a4000 - 00004a7000]
+>   #5 [000009f000 - 0000100000]    BIOS reserved ==> [000009f000 - 0000100000]
+>   #6 [0000010000 - 0000012000]          PGTABLE ==> [0000010000 - 0000012000]
+>   #7 [00004a7000 - 0000eee376]      NEW RAMDISK ==> [00004a7000 - 0000eee376]
+>   #8 [0000012000 - 0000019000]          BOOTMAP ==> [0000012000 - 0000019000]
+> Scan SMP from c0000000 for 1024 bytes.
+> Scan SMP from c009fc00 for 1024 bytes.
+> Scan SMP from c00f0000 for 65536 bytes.
+> found SMP MP-table at [c00f3f00] 000f3f00
+> Zone PFN ranges:
+>   DMA      0x00000010 -> 0x00001000
+>   Normal   0x00001000 -> 0x000377fe
+>   HighMem  0x000377fe -> 0x000bffe0
+> Movable zone start PFN for each node
+> early_node_map[2] active PFN ranges
+>     0: 0x00000010 -> 0x0000009f
+>     0: 0x00000100 -> 0x000bffe0
+> ACPI: PM-Timer IO Port: 0x4008
+> ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+> ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
+> ACPI: LAPIC (acpi_id[0x02] lapic_id[0x02] enabled)
+> ACPI: LAPIC (acpi_id[0x03] lapic_id[0x03] enabled)
+> ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
+> ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
+> ACPI: LAPIC_NMI (acpi_id[0x02] high edge lint[0x1])
+> ACPI: LAPIC_NMI (acpi_id[0x03] high edge lint[0x1])
+> ACPI: IOAPIC (id[0x04] address[0xfec00000] gsi_base[0])
+> IOAPIC[0]: apic_id 4, version 33, address 0xfec00000, GSI 0-23
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 low level)
+> Enabling APIC mode:  Flat.  Using 1 I/O APICs
+> ACPI: HPET id: 0x10b9a201 base: 0xfed00000
+> Using ACPI (MADT) for SMP configuration information
+> SMP: Allowing 4 CPUs, 0 hotplug CPUs
+> mapped APIC to ffffb000 (fee00000)
+> mapped IOAPIC to ffffa000 (fec00000)
+> Allocating PCI resources starting at c2000000 (gap: c0000000:20000000)
+> PERCPU: Allocating 36864 bytes of per cpu data
+> Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 780143
+> Kernel command line: root=/dev/sda5 hwprobe=-modules.pata apm=off selinux=0
+> noresume splash=silent apic=debug console=ttyS0,19200n8 vga=normal
+> Enabling fast FPU save and restore... done.
+> Enabling unmasked SIMD FPU exception support... done.
+> Initializing CPU#0
+> Preemptible RCU implementation.
+> PID hash table entries: 4096 (order: 12, 16384 bytes)
+> Fast TSC calibration using PIT
+> Detected 3359.811 MHz processor.
+> Console: colour VGA+ 80x25
+> console [ttyS0] enabled
+> Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
+> Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
+> Memory: 3104320k/3145600k available (1835k kernel code, 39920k reserved, 1099k
+> data, 276k init, 2236296k highmem)
+> virtual kernel memory layout:
+>     fixmap  : 0xffe19000 - 0xfffff000   (1944 kB)
+>     pkmap   : 0xff800000 - 0xffc00000   (4096 kB)
+>     vmalloc : 0xf7ffe000 - 0xff7fe000   ( 120 MB)
+>     lowmem  : 0xc0000000 - 0xf77fe000   ( 887 MB)
+>       .init : 0xc03e3000 - 0xc0428000   ( 276 kB)
+>       .data : 0xc02caf57 - 0xc03ddc4c   (1099 kB)
+>       .text : 0xc0100000 - 0xc02caf57   (1835 kB)
+> Checking if this processor honours the WP bit even in supervisor mode...Ok.
+> SLUB: Genslabs=12, HWalign=64, Order=0-3, MinObjects=0, CPUs=4, Nodes=1
+> HPE
+> 
 
-The is_large_pte() function will always evaluate to one here because the
-(largepage && !is_large_pte) case is already handled in the first
-if-clause. So we can remove this check and set was_rmapped to one always
-here.
+I guess this didn't help much? Anything else I can do, let me know.
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kvm/mmu.c |    8 ++------
- 1 files changed, 2 insertions(+), 6 deletions(-)
-
-diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index ef060ec..c90b4b2 100644
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -1791,12 +1791,8 @@ static void mmu_set_spte(struct kvm_vcpu *vcpu, u64 *shadow_pte,
- 			pgprintk("hfn old %lx new %lx\n",
- 				 spte_to_pfn(*shadow_pte), pfn);
- 			rmap_remove(vcpu->kvm, shadow_pte);
--		} else {
--			if (largepage)
--				was_rmapped = is_large_pte(*shadow_pte);
--			else
--				was_rmapped = 1;
--		}
-+		} else
-+			was_rmapped = 1;
- 	}
- 	if (set_spte(vcpu, shadow_pte, pte_access, user_fault, write_fault,
- 		      dirty, largepage, global, gfn, pfn, speculative, true)) {
--- 
-1.5.6.4
-
-
+Regards
+Mark
