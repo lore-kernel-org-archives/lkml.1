@@ -1,77 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbZBRRsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755776AbZBRRsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755481AbZBRRsO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 12:48:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbZBRRr5
+	id S1755776AbZBRRsb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 12:48:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbZBRRsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 12:47:57 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58643 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753351AbZBRRr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 12:47:56 -0500
-Date: Wed, 18 Feb 2009 18:47:14 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>, Nick Piggin <npiggin@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: Q: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove
-	single ipi fallback for smp_call_function_many())
-Message-ID: <20090218174714.GA19396@elte.hu>
-References: <20090217213256.GJ6761@linux.vnet.ibm.com> <20090217214518.GA13189@redhat.com> <20090217223910.GM6761@linux.vnet.ibm.com> <20090218135212.GB23125@wotan.suse.de> <alpine.LFD.2.00.0902180744520.21686@localhost.localdomain> <20090218162116.GC29863@elte.hu> <alpine.LFD.2.00.0902180828430.21686@localhost.localdomain> <20090218165808.GA9120@elte.hu> <20090218170517.GA9769@elte.hu> <alpine.LFD.2.00.0902180913110.21686@localhost.localdomain>
+	Wed, 18 Feb 2009 12:48:07 -0500
+Received: from sd-green-bigip-145.dreamhost.com ([208.97.132.145]:35993 "EHLO
+	spunkymail-a10.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754029AbZBRRsF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 12:48:05 -0500
+Message-ID: <499C49CD.3000709@hiramoto.org>
+Date: Wed, 18 Feb 2009 18:47:57 +0100
+From: Karl Hiramoto <karl@hiramoto.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090102)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0902180913110.21686@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: netdev@vger.kernel.org, netfilter@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: problem with IPoA (CLIP),  NAT, and VLANS
+References: <20090217231255.GA3389@ami.dom.local>
+In-Reply-To: <20090217231255.GA3389@ami.dom.local>
+Content-Type: multipart/mixed;
+ boundary="------------060407070905020601030105"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------060407070905020601030105
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Jarek Poplawski wrote:
+> Karl Hiramoto wrote, On 02/17/2009 01:53 PM:
+>
+>   
+>> Jarek Poplawski wrote:
+>>     
+>>> On Tue, Feb 17, 2009 at 12:49:07PM +0100, Karl Hiramoto wrote:
+>>> ...
+>>>   
+>>>       
+>>>> A side note:  so far the original patch i sent works in all cases i have
+>>>> tested, but fails with tcpdump.   I suspect its because the skb gets cloned.
+>>>>     
+>>>>         
+>>> If there is something readable from this tcpdump, it should be helpful
+>>> to see a packet for working and non-working case during such ping
+>>> (with -nXX option).
+>>> Jarek P.
+>>>   
+>>>       
+>> Note:  I have the patches i sent applied,  plus the  "skb->mac_header -=
+>> VLAN_HLEN;"   patch from Jarek on 2.6.28.4
+>>
+>> Doing a tcpdump simultaneously  on the atm and eth0.1 on the linux router.
+>>     
+>
+> Nice job. Since tcpdump sees corrupted data, and we don't know if it's
+> before or after hitting the driver I'd suggest to try full skb_copy()
+> yet. So could you try if with your patch + the patch below tcpdump
+> still breaks these things?
+>
+> BTW, I wonder what IXP400 config options do you use (especially
+> CONFIG_IXP400_ETH_SKB_RECYCLE)?
+>
+> Jarek P.
 
-> 
-> 
-> On Wed, 18 Feb 2009, Ingo Molnar wrote:
-> >
-> > an off-list comment pointed out this piece of information as 
-> > well:
-> > 
-> >   http://www.sandpile.org/ia32/coherent.htm
-> > 
-> >   A WRMSR to one of the x2APIC MSRs (0000_0800h...0000_0BFFh) is 
-> >   not guaranteed to be serializing.
-> > 
-> > So i suspect we should just enclose it in smp_mb() pairs to make 
-> > sure it's a full barrier in both directions?
-> 
-> Why would we care about "both directions"?
-> 
-> I think putting an sfence _before_ the wrmsr (and not even all 
-> of them - just put it in front of the "send IPI" sequence) 
-> should be fine. Any other ordering sounds like just 
-> unnecessary overhead to me.
-> 
-> We do want this to be low-overhead, even if we probably don't 
-> care _that_ much.
+Thanks for the replies.  Jarek, the last debugging patch you sent did
+not work.  It did give me a good hint though.  The attached patch in for
+AF_PACKET   receive in the when tcpdump is active and which calls
+skb_clone() did fix my issue.
 
-yeah, you are right, making sure prior stores become visible 
-should be the only worry here.
 
-	Ingo
+CONFIG_IXP400_ETH_SKB_RECYCLE does not exist in the code i have..  From
+what i downloaded from intel,  i stripped out all the stuff that is not
+having to do with ATM.  The functionalities of ixp4xx_qmgr ixp4xx_npe
+and ixp4xx_eth  are now in the mainline kernel.    Ideally it would be
+nice to get what this library does with the atm hardware into the
+mainline, however the code in it's current state would not meet kernel
+standards, and is quite a mess.
+
+
+But yes,  the skb->data is   recycled  in a memory pool,   and i think i
+noticed a few times packets that were corrupt, were really pointing to
+old recycled packets.   I haven't confirmed this yet though.
+
+
+I did eliminate the first  patch i sent 
+http://lkml.org/lkml/2009/2/16/163    to  __vlan_put_tag()
+
+And now only use the patch Jarek sent:  http://lkml.org/lkml/2009/2/17/104
+
+Now i don't have any problems with the vlan tags after changing my atm
+driver to do skb_reserve() like:
+
+skb = dev_alloc_skb(size + NET_SKB_PAD);
+
+skb_reserve(skb, NET_SKB_PAD);
+
+
+So something with my driver causes skb_clone() to corrupt the packet
+but  calling skb_copy() instead  keeps everything working.   There are
+definitely other cases where skb_clone() is called so really have to fix
+this in the atm_dev, but not really sure at the moment where to look next.
+
+
+Thanks.
+--
+Karl
+
+
+
+--------------060407070905020601030105
+Content-Type: text/plain;
+ name="tcpdump-fix-hack.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="tcpdump-fix-hack.patch"
+
+diff -Naurp linux-2.6.28.4.a/net/packet/af_packet.c linux-2.6.28.4.b/net/packet/af_packet.c
+--- linux-2.6.28.4.a/net/packet/af_packet.c	2009-02-06 22:47:45.000000000 +0100
++++ linux-2.6.28.4.b/net/packet/af_packet.c	2009-02-18 16:10:08.000000000 +0100
+@@ -524,7 +524,7 @@ static int packet_rcv(struct sk_buff *sk
+ 		goto drop_n_acct;
+ 
+ 	if (skb_shared(skb)) {
+-		struct sk_buff *nskb = skb_clone(skb, GFP_ATOMIC);
++		struct sk_buff *nskb = skb_copy(skb, GFP_ATOMIC);
+ 		if (nskb == NULL)
+ 			goto drop_n_acct;
+ 
+
+--------------060407070905020601030105--
