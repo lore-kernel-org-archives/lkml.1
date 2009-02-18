@@ -1,72 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756207AbZBRTPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756463AbZBRTPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756207AbZBRTPU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 14:15:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbZBRTPB
+	id S1756463AbZBRTPv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 14:15:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbZBRTPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 14:15:01 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:51651 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752295AbZBRTPA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 14:15:00 -0500
-Subject: Re: [PATCH] pci: enable MSI on 8132
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
-       Matthew Wilcox <matthew@wil.cx>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       DL-MPTFusionLinux@lsi.com, linux-pci@vger.kernel.org
-In-Reply-To: <499C5CAD.1070404@kernel.org>
-References: <499B46B2.5040601@kernel.org>
-	 <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm>
-	 <499B6BF7.9090300@kernel.org>
-	 <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm>
-	 <499B724A.2040408@kernel.org>
-	 <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm>
-	 <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>
-	 <499B774C.5010705@kernel.org>
-	 <alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm>
-	 <499B9129.50104@kernel.org> <20090218122137.GJ16841@parisc-linux.org>
-	 <alpine.DEB.1.10.0902180426420.25606@asgard.lang.hm>
-	 <20090218100448.7f7c5b86.akpm@linux-foundation.org>
-	 <1234982285.3225.42.camel@localhost.localdomain>
-	 <499C5CAD.1070404@kernel.org>
-Content-Type: text/plain
-Date: Wed, 18 Feb 2009 19:14:55 +0000
-Message-Id: <1234984495.3225.48.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Feb 2009 14:15:40 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33507 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753301AbZBRTPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 14:15:40 -0500
+Date: Wed, 18 Feb 2009 20:15:29 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH v2] module: fix build for CONFIG_SYSFS=n
+Message-ID: <20090218191529.GC8889@elte.hu>
+References: <20090218191640.0b023029.sfr@canb.auug.org.au> <499C4D35.9000104@oracle.com> <20090218180932.GC19995@elte.hu> <499C54E8.7060004@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <499C54E8.7060004@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-18 at 11:08 -0800, Yinghai Lu wrote:
-> James Bottomley wrote:
-> > On Wed, 2009-02-18 at 10:04 -0800, Andrew Morton wrote:
-> > 
-> >> Do we not need mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch as
-> >> well, to fix this regression?
-> > 
-> > No ... it's a separate issue.  MSI was enabled for fusion SAS in 2.6.26;
-> > the problem msi patch which the above corrects actually has the effect
-> > of disabling MSI for fusion and went into 2.6.29-rc2, which isn't a
-> > kernel that's been tested here.
-> > 
+
+* Randy Dunlap <randy.dunlap@oracle.com> wrote:
+
+> > Is destroy_params() dependent on SYSFS? If yes then it would be 
 > 
-> so for 2.6.26, 27, 28 need pci-enable-msi-on-8132.patch
+> Yes.
+> 
+> > far cleaner if there was a NOP destroy_params() inline for the 
+> > !SYSFS case.
+> 
+> 
+> 
+> 
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix this build error when CONFIG_SYSFS=n:
+> 
+> kernel/built-in.o: In function `free_module':
+> module.c:(.text+0x4f8a2): undefined reference to `destroy_params'
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> cc: Rusty Russell <rusty@rustcorp.com.au>
+> ---
+>  kernel/params.c |    6 ++++++
+>  1 file changed, 6 insertions(+)
+> 
+> --- linux-next-20090218.orig/kernel/params.c
+> +++ linux-next-20090218/kernel/params.c
+> @@ -761,6 +761,12 @@ static int __init param_sysfs_init(void)
+>  }
+>  subsys_initcall(param_sysfs_init);
+>  
+> +#else	/* !CONFIG_SYSFS */
+> +
+> +inline void destroy_params(const struct kernel_param *params, unsigned num)
+> +{
+> +}
+> +
+>  #endif /* CONFIG_SYSFS */
 
-I'm a bit lost with the names, but if that's the PCI quirk fix, then yes
+thanks!
 
-> 2.6.29 need pci-enable-msi-on-8132.patch and mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-Like I said, I'm happy to have MSI completely disabled until LSI wants
-to comment, so no ... only the PCI quirk fix.  The true fix is to have
-the drivers participate in dynamic testing of MSI IRQ routing, but I've
-somewhat lost sight of that.
-
-James
-
-
+	Ingo
