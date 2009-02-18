@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbZBRVgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757432AbZBRVgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757340AbZBRVgU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:36:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbZBRVf3
+	id S1757432AbZBRVgw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:36:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbZBRVfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:35:29 -0500
-Received: from kroah.org ([198.145.64.141]:56047 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 16:35:30 -0500
+Received: from kroah.org ([198.145.64.141]:56070 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753032AbZBRVf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:35:28 -0500
-Date: Wed, 18 Feb 2009 13:32:14 -0800
+	id S1753930AbZBRVf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:35:29 -0500
+Date: Wed, 18 Feb 2009 13:32:17 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,19 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Nadia Derbey <Nadia.Derbey@bull.net>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>,
-       Bastian Blank <bastian@waldi.eu.org>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Serge Hallyn <serue@us.ibm.com>
-Subject: [patch 02/39] mqueue: fix si_pid value in mqueue do_notify()
-Message-ID: <20090218213214.GC19814@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Wim Van Sebroeck <wim@iguana.be>
+Subject: [patch 03/39] WATCHDOG: iTCO_wdt: fix SMI_EN regression 2
+Message-ID: <20090218213217.GD19814@kroah.com>
 References: <20090218212144.965748151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mqueue-fix-si_pid-value-in-mqueue-do_notify.patch"
+Content-Disposition: inline; filename="watchdog-itco_wdt-fix-smi_en-regression-2.patch"
 In-Reply-To: <20090218213021.GA19814@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -45,55 +39,204 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+From: Wim Van Sebroeck <wim@iguana.be>
 
-commit a6684999f7c6bddd75cf9755ad7ff44435f72fff upstream.
+commit 12d60e28bed3f593aac5385acbdbb089eb8ae21e upstream.
 
-If a process registers for asynchronous notification on a POSIX message
-queue, it gets a signal and a siginfo_t structure when a message arrives
-on the message queue.  The si_pid in the siginfo_t structure is set to the
-PID of the process that sent the message to the message queue.
+bugzilla: #12363
+commit 7cd5b08be3c489df11b559fef210b81133764ad4 added a second regression:
+some Dell's and Compaq's lockup on boot. So we revert most of the code.
+The ICH9 reboot issue remains in place and will need some more fixing... :-(
 
-The principle is the following:
-. when mq_notify(SIGEV_SIGNAL) is called, the caller registers for
-  notification when a msg arrives. The associated pid structure is stroed into
-  inode_info->notify_owner. Let's call this process P1.
-. when mq_send() is called by say P2, P2 sends a signal to P1 to notify
-  him about msg arrival.
-
-The way .si_pid is set today is not correct, since it doesn't take into account
-the fact that the process that is sending the message might not be in the
-same namespace as the notified one.
-
-This patch proposes to set si_pid to the sender's pid into the notify_owner
-namespace.
-
-Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Acked-by: Oleg Nesterov <oleg@redhat.com>
-Cc: Roland McGrath <roland@redhat.com>
-Cc: Bastian Blank <bastian@waldi.eu.org>
-Cc: Pavel Emelyanov <xemul@openvz.org>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- ipc/mqueue.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/watchdog/Kconfig               |    2 -
+ drivers/watchdog/iTCO_vendor_support.c |   32 ++++++++++++++++++++++++++----
+ drivers/watchdog/iTCO_wdt.c            |   35 +++++++++++++--------------------
+ 3 files changed, 43 insertions(+), 26 deletions(-)
 
---- a/ipc/mqueue.c
-+++ b/ipc/mqueue.c
-@@ -506,7 +506,8 @@ static void __do_notify(struct mqueue_in
- 			sig_i.si_errno = 0;
- 			sig_i.si_code = SI_MESGQ;
- 			sig_i.si_value = info->notify.sigev_value;
--			sig_i.si_pid = task_tgid_vnr(current);
-+			sig_i.si_pid = task_tgid_nr_ns(current,
-+						ns_of_pid(info->notify_owner));
- 			sig_i.si_uid = current->uid;
+--- a/drivers/watchdog/iTCO_vendor_support.c
++++ b/drivers/watchdog/iTCO_vendor_support.c
+@@ -1,7 +1,7 @@
+ /*
+  *	intel TCO vendor specific watchdog driver support
+  *
+- *	(c) Copyright 2006-2008 Wim Van Sebroeck <wim@iguana.be>.
++ *	(c) Copyright 2006-2009 Wim Van Sebroeck <wim@iguana.be>.
+  *
+  *	This program is free software; you can redistribute it and/or
+  *	modify it under the terms of the GNU General Public License
+@@ -19,7 +19,7 @@
  
- 			kill_pid_info(info->notify.sigev_signo,
+ /* Module and version information */
+ #define DRV_NAME	"iTCO_vendor_support"
+-#define DRV_VERSION	"1.02"
++#define DRV_VERSION	"1.03"
+ #define PFX		DRV_NAME ": "
+ 
+ /* Includes */
+@@ -77,6 +77,26 @@ MODULE_PARM_DESC(vendorsupport, "iTCO ve
+  *	    20.6 seconds.
+  */
+ 
++static void supermicro_old_pre_start(unsigned long acpibase)
++{
++	unsigned long val32;
++
++	/* Bit 13: TCO_EN -> 0 = Disables TCO logic generating an SMI# */
++	val32 = inl(SMI_EN);
++	val32 &= 0xffffdfff;	/* Turn off SMI clearing watchdog */
++	outl(val32, SMI_EN);	/* Needed to activate watchdog */
++}
++
++static void supermicro_old_pre_stop(unsigned long acpibase)
++{
++	unsigned long val32;
++
++	/* Bit 13: TCO_EN -> 1 = Enables the TCO logic to generate SMI# */
++	val32 = inl(SMI_EN);
++	val32 |= 0x00002000;	/* Turn on SMI clearing watchdog */
++	outl(val32, SMI_EN);	/* Needed to deactivate watchdog */
++}
++
+ static void supermicro_old_pre_keepalive(unsigned long acpibase)
+ {
+ 	/* Reload TCO Timer (done in iTCO_wdt_keepalive) + */
+@@ -228,14 +248,18 @@ static void supermicro_new_pre_set_heart
+ void iTCO_vendor_pre_start(unsigned long acpibase,
+ 			   unsigned int heartbeat)
+ {
+-	if (vendorsupport == SUPERMICRO_NEW_BOARD)
++	if (vendorsupport == SUPERMICRO_OLD_BOARD)
++		supermicro_old_pre_start(acpibase);
++	else if (vendorsupport == SUPERMICRO_NEW_BOARD)
+ 		supermicro_new_pre_start(heartbeat);
+ }
+ EXPORT_SYMBOL(iTCO_vendor_pre_start);
+ 
+ void iTCO_vendor_pre_stop(unsigned long acpibase)
+ {
+-	if (vendorsupport == SUPERMICRO_NEW_BOARD)
++	if (vendorsupport == SUPERMICRO_OLD_BOARD)
++		supermicro_old_pre_stop(acpibase);
++	else if (vendorsupport == SUPERMICRO_NEW_BOARD)
+ 		supermicro_new_pre_stop();
+ }
+ EXPORT_SYMBOL(iTCO_vendor_pre_stop);
+--- a/drivers/watchdog/iTCO_wdt.c
++++ b/drivers/watchdog/iTCO_wdt.c
+@@ -1,7 +1,7 @@
+ /*
+- *	intel TCO Watchdog Driver (Used in i82801 and i6300ESB chipsets)
++ *	intel TCO Watchdog Driver (Used in i82801 and i63xxESB chipsets)
+  *
+- *	(c) Copyright 2006-2008 Wim Van Sebroeck <wim@iguana.be>.
++ *	(c) Copyright 2006-2009 Wim Van Sebroeck <wim@iguana.be>.
+  *
+  *	This program is free software; you can redistribute it and/or
+  *	modify it under the terms of the GNU General Public License
+@@ -63,7 +63,7 @@
+ 
+ /* Module and version information */
+ #define DRV_NAME	"iTCO_wdt"
+-#define DRV_VERSION	"1.04"
++#define DRV_VERSION	"1.05"
+ #define PFX		DRV_NAME ": "
+ 
+ /* Includes */
+@@ -236,16 +236,16 @@ MODULE_DEVICE_TABLE(pci, iTCO_wdt_pci_tb
+ 
+ /* Address definitions for the TCO */
+ /* TCO base address */
+-#define	TCOBASE		iTCO_wdt_private.ACPIBASE + 0x60
++#define TCOBASE		iTCO_wdt_private.ACPIBASE + 0x60
+ /* SMI Control and Enable Register */
+-#define	SMI_EN		iTCO_wdt_private.ACPIBASE + 0x30
++#define SMI_EN		iTCO_wdt_private.ACPIBASE + 0x30
+ 
+ #define TCO_RLD		TCOBASE + 0x00	/* TCO Timer Reload and Curr. Value */
+ #define TCOv1_TMR	TCOBASE + 0x01	/* TCOv1 Timer Initial Value	*/
+-#define	TCO_DAT_IN	TCOBASE + 0x02	/* TCO Data In Register		*/
+-#define	TCO_DAT_OUT	TCOBASE + 0x03	/* TCO Data Out Register	*/
+-#define	TCO1_STS	TCOBASE + 0x04	/* TCO1 Status Register		*/
+-#define	TCO2_STS	TCOBASE + 0x06	/* TCO2 Status Register		*/
++#define TCO_DAT_IN	TCOBASE + 0x02	/* TCO Data In Register		*/
++#define TCO_DAT_OUT	TCOBASE + 0x03	/* TCO Data Out Register	*/
++#define TCO1_STS	TCOBASE + 0x04	/* TCO1 Status Register		*/
++#define TCO2_STS	TCOBASE + 0x06	/* TCO2 Status Register		*/
+ #define TCO1_CNT	TCOBASE + 0x08	/* TCO1 Control Register	*/
+ #define TCO2_CNT	TCOBASE + 0x0a	/* TCO2 Control Register	*/
+ #define TCOv2_TMR	TCOBASE + 0x12	/* TCOv2 Timer Initial Value	*/
+@@ -338,7 +338,6 @@ static int iTCO_wdt_unset_NO_REBOOT_bit(
+ static int iTCO_wdt_start(void)
+ {
+ 	unsigned int val;
+-	unsigned long val32;
+ 
+ 	spin_lock(&iTCO_wdt_private.io_lock);
+ 
+@@ -351,11 +350,6 @@ static int iTCO_wdt_start(void)
+ 		return -EIO;
+ 	}
+ 
+-	/* Bit 13: TCO_EN -> 0 = Disables TCO logic generating an SMI# */
+-	val32 = inl(SMI_EN);
+-	val32 &= 0xffffdfff;	/* Turn off SMI clearing watchdog */
+-	outl(val32, SMI_EN);
+-
+ 	/* Force the timer to its reload value by writing to the TCO_RLD
+ 	   register */
+ 	if (iTCO_wdt_private.iTCO_version == 2)
+@@ -378,7 +372,6 @@ static int iTCO_wdt_start(void)
+ static int iTCO_wdt_stop(void)
+ {
+ 	unsigned int val;
+-	unsigned long val32;
+ 
+ 	spin_lock(&iTCO_wdt_private.io_lock);
+ 
+@@ -390,11 +383,6 @@ static int iTCO_wdt_stop(void)
+ 	outw(val, TCO1_CNT);
+ 	val = inw(TCO1_CNT);
+ 
+-	/* Bit 13: TCO_EN -> 1 = Enables the TCO logic to generate SMI# */
+-	val32 = inl(SMI_EN);
+-	val32 |= 0x00002000;
+-	outl(val32, SMI_EN);
+-
+ 	/* Set the NO_REBOOT bit to prevent later reboots, just for sure */
+ 	iTCO_wdt_set_NO_REBOOT_bit();
+ 
+@@ -649,6 +637,7 @@ static int __devinit iTCO_wdt_init(struc
+ 	int ret;
+ 	u32 base_address;
+ 	unsigned long RCBA;
++	unsigned long val32;
+ 
+ 	/*
+ 	 *      Find the ACPI/PM base I/O address which is the base
+@@ -695,6 +684,10 @@ static int __devinit iTCO_wdt_init(struc
+ 		ret = -EIO;
+ 		goto out;
+ 	}
++	/* Bit 13: TCO_EN -> 0 = Disables TCO logic generating an SMI# */
++	val32 = inl(SMI_EN);
++	val32 &= 0xffffdfff;	/* Turn off SMI clearing watchdog */
++	outl(val32, SMI_EN);
+ 
+ 	/* The TCO I/O registers reside in a 32-byte range pointed to
+ 	   by the TCOBASE value */
+--- a/drivers/watchdog/Kconfig
++++ b/drivers/watchdog/Kconfig
+@@ -399,7 +399,7 @@ config ITCO_WDT
+ 	---help---
+ 	  Hardware driver for the intel TCO timer based watchdog devices.
+ 	  These drivers are included in the Intel 82801 I/O Controller
+-	  Hub family (from ICH0 up to ICH8) and in the Intel 6300ESB
++	  Hub family (from ICH0 up to ICH10) and in the Intel 63xxESB
+ 	  controller hub.
+ 
+ 	  The TCO (Total Cost of Ownership) timer is a watchdog timer
 
