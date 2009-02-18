@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758282AbZBRVsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760632AbZBRVsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758282AbZBRVsu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:48:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754416AbZBRVgg
+	id S1760632AbZBRVsd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:48:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757212AbZBRVge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:36:36 -0500
-Received: from kroah.org ([198.145.64.141]:56439 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 16:36:34 -0500
+Received: from kroah.org ([198.145.64.141]:56424 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754254AbZBRVgE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:36:04 -0500
-Date: Wed, 18 Feb 2009 13:33:23 -0800
+	id S1754237AbZBRVgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:36:05 -0500
+Date: Wed, 18 Feb 2009 13:33:12 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,49 +22,112 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org
-Subject: [patch 37/39] jbd2: On a __journal_expect() assertion failure
-	printk "JBD2", not "EXT3-fs"
-Message-ID: <20090218213323.GL19814@kroah.com>
+       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [patch 31/39] ext4: Dont allow new groups to be added during block
+	allocation
+Message-ID: <20090218213312.GF19814@kroah.com>
 References: <20090218212144.965748151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="jbd2-on-a-__journal_expect-assertion-failure-printk-jbd2-not-ext3-fs.patch"
+Content-Disposition: inline; filename="ext4-don-t-allow-new-groups-to-be-added-during-block-allocation.patch"
 In-Reply-To: <20090218213021.GA19814@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: "Theodore Ts'o" <tytso@mit.edu>
+From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-(cherry picked from commit 08ec8c3878cea0bf91f2ba3c0badf44b383752d0)
+(cherry picked from commit 8556e8f3b6c4c11601ce1e9ea8090a6d8bd5daae)
 
-Otherwise it can be very confusing to find a "EXT3-fs: " failure in
-the middle of EXT4-fs failures, and it makes it harder to track the
-source of the failure.
+After we mark the blocks in the buddy cache as allocated,
+we need to ensure that we don't reinit the buddy cache until
+the block bitmap is updated.  This commit achieves this by holding
+the group_info alloc_semaphore till ext4_mb_release_context
 
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/jbd2.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ fs/ext4/mballoc.c |   16 +++++++++++++---
+ fs/ext4/mballoc.h |    5 +++++
+ 2 files changed, 18 insertions(+), 3 deletions(-)
 
---- a/include/linux/jbd2.h
-+++ b/include/linux/jbd2.h
-@@ -308,7 +308,8 @@ void buffer_assertion_failure(struct buf
- 		int val = (expr);					     \
- 		if (!val) {						     \
- 			printk(KERN_ERR					     \
--				"EXT3-fs unexpected failure: %s;\n",# expr); \
-+			       "JBD2 unexpected failure: %s: %s;\n",	     \
-+			       __func__, #expr);			     \
- 			printk(KERN_ERR why "\n");			     \
- 		}							     \
- 		val;							     \
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -1052,7 +1052,8 @@ static void ext4_mb_release_desc(struct 
+ 	if (e4b->bd_buddy_page)
+ 		page_cache_release(e4b->bd_buddy_page);
+ 	/* Done with the buddy cache */
+-	up_read(e4b->alloc_semp);
++	if (e4b->alloc_semp)
++		up_read(e4b->alloc_semp);
+ }
+ 
+ 
+@@ -1372,7 +1373,9 @@ static void ext4_mb_use_best_found(struc
+ 	get_page(ac->ac_bitmap_page);
+ 	ac->ac_buddy_page = e4b->bd_buddy_page;
+ 	get_page(ac->ac_buddy_page);
+-
++	/* on allocation we use ac to track the held semaphore */
++	ac->alloc_semp =  e4b->alloc_semp;
++	e4b->alloc_semp = NULL;
+ 	/* store last allocated for subsequent stream allocation */
+ 	if ((ac->ac_flags & EXT4_MB_HINT_DATA)) {
+ 		spin_lock(&sbi->s_md_lock);
+@@ -4286,6 +4289,7 @@ ext4_mb_initialize_context(struct ext4_a
+ 	ac->ac_pa = NULL;
+ 	ac->ac_bitmap_page = NULL;
+ 	ac->ac_buddy_page = NULL;
++	ac->alloc_semp = NULL;
+ 	ac->ac_lg = NULL;
+ 
+ 	/* we have to define context: we'll we work with a file or
+@@ -4466,6 +4470,8 @@ static int ext4_mb_release_context(struc
+ 		}
+ 		ext4_mb_put_pa(ac, ac->ac_sb, pa);
+ 	}
++	if (ac->alloc_semp)
++		up_read(ac->alloc_semp);
+ 	if (ac->ac_bitmap_page)
+ 		page_cache_release(ac->ac_bitmap_page);
+ 	if (ac->ac_buddy_page)
+@@ -4566,10 +4572,14 @@ repeat:
+ 				ac->ac_o_ex.fe_len < ac->ac_b_ex.fe_len)
+ 			ext4_mb_new_preallocation(ac);
+ 	}
+-
+ 	if (likely(ac->ac_status == AC_STATUS_FOUND)) {
+ 		*errp = ext4_mb_mark_diskspace_used(ac, handle, reserv_blks);
+ 		if (*errp ==  -EAGAIN) {
++			/*
++			 * drop the reference that we took
++			 * in ext4_mb_use_best_found
++			 */
++			ext4_mb_release_context(ac);
+ 			ac->ac_b_ex.fe_group = 0;
+ 			ac->ac_b_ex.fe_start = 0;
+ 			ac->ac_b_ex.fe_len = 0;
+--- a/fs/ext4/mballoc.h
++++ b/fs/ext4/mballoc.h
+@@ -216,6 +216,11 @@ struct ext4_allocation_context {
+ 	__u8 ac_op;		/* operation, for history only */
+ 	struct page *ac_bitmap_page;
+ 	struct page *ac_buddy_page;
++	/*
++	 * pointer to the held semaphore upon successful
++	 * block allocation
++	 */
++	struct rw_semaphore *alloc_semp;
+ 	struct ext4_prealloc_space *ac_pa;
+ 	struct ext4_locality_group *ac_lg;
+ };
 
