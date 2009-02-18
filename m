@@ -1,53 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753675AbZBRCkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbZBRClI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753675AbZBRCkj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 21:40:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbZBRCka
+	id S1754910AbZBRClI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 21:41:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbZBRCkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 21:40:30 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:34505 "EHLO e8.ny.us.ibm.com"
+	Tue, 17 Feb 2009 21:40:52 -0500
+Received: from mail.lang.hm ([64.81.33.126]:37095 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751051AbZBRCk3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 21:40:29 -0500
-Date: Tue, 17 Feb 2009 18:40:25 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Oleg Nesterov <oleg@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>
-Subject: Re: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove single
-	ipi fallback for smp_call_function_many())
-Message-ID: <20090218024025.GB7459@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1234820704.30178.396.camel@laptop> <20090216220214.GA10093@redhat.com> <1234823097.30178.406.camel@laptop> <20090216231946.GA12009@redhat.com> <1234862974.4744.31.camel@laptop> <20090217101130.GA8660@wotan.suse.de> <1234866453.4744.58.camel@laptop> <20090217112657.GE26402@wotan.suse.de> <20090217155147.GE6761@linux.vnet.ibm.com> <1234923331.29823.2.camel@vayu>
+	id S1753318AbZBRCkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 21:40:51 -0500
+Date: Tue, 17 Feb 2009 18:40:35 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Yinghai Lu <yinghai@kernel.org>
+cc: Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       DL-MPTFusionLinux@lsi.com
+Subject: Re: mpt fusion broken sometime since 2.6.24
+In-Reply-To: <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm>
+Message-ID: <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>
+References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>  <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm>  <20090217230050.GG16841@parisc-linux.org>  <alpine.DEB.1.10.0902171506500.26625@asgard.lang.hm> <86802c440902171511s1abcc0eao560df4b8fcea0e7c@mail.gmail.com>
+ <alpine.DEB.1.10.0902171514120.26625@asgard.lang.hm> <499B46B2.5040601@kernel.org> <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm> <499B6BF7.9090300@kernel.org> <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm> <499B724A.2040408@kernel.org>
+ <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1234923331.29823.2.camel@vayu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 06:15:31PM -0800, Suresh Siddha wrote:
-> On Tue, 2009-02-17 at 07:51 -0800, Paul E. McKenney wrote:
-> > On Tue, Feb 17, 2009 at 12:26:57PM +0100, Nick Piggin wrote:
-> > > +	spin_lock(&q->lock);
-> > > +	list_replace_init(&q->list, &list);
-> > > +	spin_unlock(&q->lock);
-> > 
-> > OK, I'll bite...
-> > 
-> > How do we avoid deadlock in the case where a pair of CPUs send to each
-> > other concurrently?
-> 
-> Sender takes the lock with interrupts-disabled. That should prevent any
-> deadlock, right?
+On Tue, 17 Feb 2009, david@lang.hm wrote:
 
-You are of course correct!  Apologies for my confusion!!!
+>> do you have chance to try current tip/master
+>> http://people.redhat.com/mingo/tip.git/readme.txt
+>> or 2.6.29-rcX
+>> plus following patch?
+>
+> I will see about trying this.
 
-							Thanx, Paul
+does the fact that I am compiling a monolithic kernel (no modules) make 
+any difference related to the patch below?
+
+David Lang
+
+>> or can you check if there is update fw for your LSI card?
+>
+> this is more work, I'll look into that as well.
+>
+> David Lang
+>
+>> [PATCH] mpt: fix enable lsi sas to use msi as default
+>> 
+>> Impact: fix bug
+>> 
+>> the third param in module_param(,,) is perm instead of default value.
+>> we still need to assign default at first.
+>> 
+>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>> 
+>> ---
+>> drivers/message/fusion/mptbase.c |    4 ++--
+>> 1 file changed, 2 insertions(+), 2 deletions(-)
+>> 
+>> Index: linux-2.6/drivers/message/fusion/mptbase.c
+>> ===================================================================
+>> --- linux-2.6.orig/drivers/message/fusion/mptbase.c
+>> +++ linux-2.6/drivers/message/fusion/mptbase.c
+>> @@ -90,8 +90,8 @@ module_param(mpt_msi_enable_fc, int, 0);
+>> MODULE_PARM_DESC(mpt_msi_enable_fc, " Enable MSI Support for FC \
+>> 		controllers (default=0)");
+>> 
+>> -static int mpt_msi_enable_sas;
+>> -module_param(mpt_msi_enable_sas, int, 1);
+>> +static int mpt_msi_enable_sas = 1;
+>> +module_param(mpt_msi_enable_sas, int, 0);
+>> MODULE_PARM_DESC(mpt_msi_enable_sas, " Enable MSI Support for SAS \
+>> 		controllers (default=1)");
+>> 
+>> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
