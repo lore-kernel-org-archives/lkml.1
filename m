@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755354AbZBRSKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbZBRSKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755354AbZBRSKA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 13:10:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbZBRSJv
+	id S1755910AbZBRSKu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 13:10:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbZBRSKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 13:09:51 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47684 "EHLO mx2.mail.elte.hu"
+	Wed, 18 Feb 2009 13:10:40 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:49218 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751445AbZBRSJu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 13:09:50 -0500
-Date: Wed, 18 Feb 2009 19:09:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] module: fix build for CONFIG_SYSFS=n
-Message-ID: <20090218180932.GC19995@elte.hu>
-References: <20090218191640.0b023029.sfr@canb.auug.org.au> <499C4D35.9000104@oracle.com>
+	id S1751445AbZBRSKj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 13:10:39 -0500
+Date: Wed, 18 Feb 2009 15:10:02 -0300
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] kvm mmu: handle compound pages in kvm_is_mmio_pfn
+Message-ID: <20090218181002.GD25719@amt.cnet>
+References: <1234962540-7131-1-git-send-email-joerg.roedel@amd.com> <1234962540-7131-2-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <499C4D35.9000104@oracle.com>
+In-Reply-To: <1234962540-7131-2-git-send-email-joerg.roedel@amd.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+BTW some page bits are erroneously transferred to the struct page's
+within the compound page. We've got away with that so far because
+these bits (such as dirty and accessed) are not used by the limited
+hugetlb/hugetlbfs implementation ATM.
+
+Acked-by: Marcelo Tosatti <mtosatti@redhat.com>
+
+On Wed, Feb 18, 2009 at 02:08:58PM +0100, Joerg Roedel wrote:
+> The function kvm_is_mmio_pfn is called before put_page is called on a
+> page by KVM. This is a problem when when this function is called on some
+> struct page which is part of a compund page. It does not test the
+> reserved flag of the compound page but of the struct page within the
+> compount page. This is a problem when KVM works with hugepages allocated
+> at boot time. These pages have the reserved bit set in all tail pages.
+> Only the flag in the compount head is cleared. KVM would not put such a
+> page which results in a memory leak.
 > 
-> Fix this build error when CONFIG_SYSFS=n:
-> 
-> kernel/built-in.o: In function `free_module':
-> module.c:(.text+0x4f8a2): undefined reference to `destroy_params'
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> cc: Rusty Russell <rusty@rustcorp.com.au>
+> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 > ---
->  kernel/module.c |    2 ++
->  1 file changed, 2 insertions(+)
+>  virt/kvm/kvm_main.c |    6 ++++--
+>  1 files changed, 4 insertions(+), 2 deletions(-)
 > 
-> --- linux-next-20090218.orig/kernel/module.c
-> +++ linux-next-20090218/kernel/module.c
-> @@ -1464,8 +1464,10 @@ static void free_module(struct module *m
->  	/* Module unload stuff */
->  	module_unload_free(mod);
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index 266bdaf..0ed662d 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -535,8 +535,10 @@ static inline int valid_vcpu(int n)
 >  
-> +#ifdef CONFIG_SYSFS
->  	/* Free any allocated parameters. */
->  	destroy_params(mod->kp, mod->num_kp);
-> +#endif
+>  inline int kvm_is_mmio_pfn(pfn_t pfn)
+>  {
+> -	if (pfn_valid(pfn))
+> -		return PageReserved(pfn_to_page(pfn));
+> +	if (pfn_valid(pfn)) {
+> +		struct page *page = compound_head(pfn_to_page(pfn));
+> +		return PageReserved(page);
+> +	}
+>  
+>  	return true;
+>  }
 
-Is destroy_params() dependent on SYSFS? If yes then it would be 
-far cleaner if there was a NOP destroy_params() inline for the 
-!SYSFS case.
-
-	Ingo
