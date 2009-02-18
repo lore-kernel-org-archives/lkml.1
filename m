@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755398AbZBRCsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbZBRCuc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755398AbZBRCsh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 21:48:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbZBRCs2
+	id S1754743AbZBRCuc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 21:50:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZBRCuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 21:48:28 -0500
-Received: from lixom.net ([66.141.50.11]:44818 "EHLO mail.lixom.net"
+	Tue, 17 Feb 2009 21:50:22 -0500
+Received: from hera.kernel.org ([140.211.167.34]:50310 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751403AbZBRCs2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 21:48:28 -0500
-X-Greylist: delayed 455 seconds by postgrey-1.27 at vger.kernel.org; Tue, 17 Feb 2009 21:48:27 EST
-Date: Tue, 17 Feb 2009 20:43:12 -0600
-From: Olof Johansson <olof@lixom.net>
-To: dayu@datangmobile.cn
-Cc: leoli@freescale.com, galak@kernel.crashing.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix the interrupt loss problem on powerpc IPIC
-	(2.6.25-2.6.28)
-Message-ID: <20090218024312.GA14848@lixom.net>
-References: <D728AD1FA2543948B89DE29C5BF4CD0716AC37FD@bjmail1.bj.datangmobile.com>
+	id S1751403AbZBRCuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 21:50:21 -0500
+Message-ID: <499B774C.5010705@kernel.org>
+Date: Tue, 17 Feb 2009 18:49:48 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <D728AD1FA2543948B89DE29C5BF4CD0716AC37FD@bjmail1.bj.datangmobile.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: david@lang.hm
+CC: Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       DL-MPTFusionLinux@lsi.com
+Subject: Re: mpt fusion broken sometime since 2.6.24
+References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>  <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm>  <20090217230050.GG16841@parisc-linux.org>  <alpine.DEB.1.10.0902171506500.26625@asgard.lang.hm> <86802c440902171511s1abcc0eao560df4b8fcea0e7c@mail.gmail.com> <alpine.DEB.1.10.0902171514120.26625@asgard.lang.hm> <499B46B2.5040601@kernel.org> <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm> <499B6BF7.9090300@kernel.org> <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm> <499B724A.2040408@kernel.org> <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm> <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>
+In-Reply-To: <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 18, 2009 at 10:16:07AM +0800, dayu@datangmobile.cn wrote:
-> From: Da Yu <dayu@datangmobile.cn>
-> Date: Wed, 18 Feb 2009 19:58:20 +0800
-> Subject: [PATCH] fix the interrupt loss problem on powerpc IPIC (2.6.25-2.6.28)
+david@lang.hm wrote:
+> On Tue, 17 Feb 2009, david@lang.hm wrote:
 > 
-> Signed-off-by: Da Yu <dayu@datangmobile.cn>
-
-Still no proper explanation in the patch.
-
-Also, with this change, is 'temp' really needed, or can you just pass in the
-mask by hand?
-
-
--Olof
-
-> ---
+>>> do you have chance to try current tip/master
+>>> http://people.redhat.com/mingo/tip.git/readme.txt
+>>> or 2.6.29-rcX
+>>> plus following patch?
+>>
+>> I will see about trying this.
 > 
-> --- a/arch/powerpc/sysdev/ipic.c	2009-02-18 09:47:04.000000000 +0800
-> +++ b/arch/powerpc/sysdev/ipic.c	2009-02-18 09:46:34.000000000 +0800
-> @@ -568,8 +568,7 @@ static void ipic_ack_irq(unsigned int vi
-> 
->  	spin_lock_irqsave(&ipic_lock, flags);
-> 
-> -	temp = ipic_read(ipic->regs, ipic_info[src].ack);
-> -	temp |= (1 << (31 - ipic_info[src].bit));
-> +	temp = 1 << (31 - ipic_info[src].bit);
->  	ipic_write(ipic->regs, ipic_info[src].ack, temp);
-> 
->  	/* mb() can't guarantee that ack is finished.  But it does finish
+> does the fact that I am compiling a monolithic kernel (no modules) make
+> any difference related to the patch below?
 
+please try this patch too. wonder if your BIOS does enable the HT MSI ...
+
+
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index baad093..7e97b90 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -1981,6 +1981,9 @@ static void __devinit quirk_msi_ht_cap(struct pci_dev *dev)
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_HT2000_PCIE,
+ 			quirk_msi_ht_cap);
+ 
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_8132_BRIDGE,
++			quirk_msi_ht_cap);
++
+ 
+ /* The nVidia CK804 chipset may have 2 HT MSI mappings.
+  * MSI are supported if the MSI capability set in any of these mappings.
