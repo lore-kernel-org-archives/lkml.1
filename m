@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755272AbZBRAmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbZBRAsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755272AbZBRAmk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 19:42:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbZBRAmb
+	id S1754819AbZBRAsZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 19:48:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbZBRAsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 19:42:31 -0500
-Received: from mga10.intel.com ([192.55.52.92]:2657 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751660AbZBRAma (ORCPT
+	Tue, 17 Feb 2009 19:48:16 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56603 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751723AbZBRAsP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 19:42:30 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,225,1233561600"; 
-   d="scan'208";a="666380177"
-Date: Tue, 17 Feb 2009 16:45:47 -0800
-From: mark gross <mgross@linux.intel.com>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Arjan van de Ven <arjan@infradead.org>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>,
-       Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Uli Luckas <u.luckas@road.de>, Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFD] Automatic suspend
-Message-ID: <20090218004547.GB26292@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com> <13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com> <20090216145948.6fea81c3@infradead.org> <200902170019.40599.rjw@sisk.pl> <20090216232329.GA15678@srcf.ucam.org>
+	Tue, 17 Feb 2009 19:48:15 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [patch] SLQB slab allocator (try 2)
+Cc: kosaki.motohiro@jp.fujitsu.com, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Johannes Weiner <hannes@cmpxchg.org>, Mel Gorman <mel@csn.ul.ie>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+In-Reply-To: <alpine.DEB.1.10.0902171504090.24395@qirst.com>
+References: <84144f020902171143i5844ef83h20cb4bee4f65c904@mail.gmail.com> <alpine.DEB.1.10.0902171504090.24395@qirst.com>
+Message-Id: <20090218093858.8990.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090216232329.GA15678@srcf.ucam.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Wed, 18 Feb 2009 09:48:09 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 16, 2009 at 11:23:30PM +0000, Matthew Garrett wrote:
-> On Tue, Feb 17, 2009 at 12:19:38AM +0100, Rafael J. Wysocki wrote:
+> On Tue, 17 Feb 2009, Pekka Enberg wrote:
 > 
-> > This, again, seems to be a bit x86-centric. :-)  The Android people are telling
-> > us that on the hardware they deal with it does make sense to put the entire
-> > system to sleep even for relatively short periods of time, since the latencies
-> > involved are not too bad.
+> > >> +#define SLUB_MAX_SIZE (2 * PAGE_SIZE)
+> >
+> > On Tue, Feb 17, 2009 at 8:11 PM, Johannes Weiner <hannes@cmpxchg.org> wrote:
+> > > This relies on PAGE_SIZE being 4k.  If you want 8k, why don't you say
+> > > so?  Pekka did this explicitely.
+> >
+> > That could be a problem, sure. Especially for architecture that have 64 K pages.
 > 
-> Arve said that the power state was equivalent in idle and suspend, but 
-> that they preferred suspend because it stopped any periodic timers. I'd 
-> be more interested in making sure that unnecessary timers aren't running 
-> than focusing on automatically entering system-wide suspend - Nokia have 
-> been managing this since 2005 with good results.
->
+> You could likely put a complicated formula in there instead. But 2 *
+> PAGE_SIZE is simple and will work on all platforms regardless of pagesize.
 
-I think they where talking timers as hardware devices pulling electrons,
-not SW timers triggering wake ups.  I guess the timer hardware could be
-running, and pulling power, even when not programmed to trigger any
-event or IRQ.
+I think 2 * PAGE_SIZE is best and the patch description is needed change.
+it's because almost architecture use two pages for stack and current page
+allocator don't have delayed consolidation mechanism for order-1 page.
 
---mgross
+In addition, if pekka patch (SLAB_LIMIT = 8K) run on ia64, 16K allocation 
+always fallback to page allocator and using 64K (4 times memory consumption!).
+
+Am I misunderstand anything?
+
+
+
