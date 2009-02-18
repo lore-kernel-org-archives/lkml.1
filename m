@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbZBRVn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759412AbZBRVo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759338AbZBRVn6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:43:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757291AbZBRVgE
+	id S1759412AbZBRVo0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:44:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757209AbZBRVfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:36:04 -0500
-Received: from kroah.org ([198.145.64.141]:56323 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 16:35:51 -0500
+Received: from kroah.org ([198.145.64.141]:56261 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757217AbZBRVfw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:35:52 -0500
-Date: Wed, 18 Feb 2009 13:33:03 -0800
+	id S1756920AbZBRVfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:35:46 -0500
+Date: Wed, 18 Feb 2009 13:32:51 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,106 +22,97 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [patch 26/39] ext4: Fix race between read_block_bitmap() and
-	mark_diskspace_used()
-Message-ID: <20090218213303.GA19814@kroah.com>
+       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org
+Subject: [patch 20/39] jbd2: Add barrier not supported test to
+	journal_wait_on_commit_record
+Message-ID: <20090218213251.GU19814@kroah.com>
 References: <20090218212144.965748151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext4-fix-race-between-read_block_bitmap-and-mark_diskspace_used.patch"
+Content-Disposition: inline; filename="jbd2-add-barrier-not-supported-test-to-journal_wait_on_commit_record.patch"
 In-Reply-To: <20090218213021.GA19814@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+From: "Theodore Ts'o" <tytso@mit.edu>
 
-(cherry picked from commit e8134b27e351e813414da3b95aa8eac6d3908088)
+(cherry picked from commit fd98496f467b3d26d05ab1498f41718b5ef13de5)
 
-We need to make sure we update the block bitmap and clear
-EXT4_BG_BLOCK_UNINIT flag with sb_bgl_lock held, since
-ext4_read_block_bitmap() looks at EXT4_BG_BLOCK_UNINIT to decide
-whether to initialize the block bitmap each time it is called
-(introduced by commit c806e68f), and this can race with block
-allocations in ext4_mb_mark_diskspace_used().
+Xen doesn't report that barriers are not supported until buffer I/O is
+reported as completed, instead of when the buffer I/O is submitted.
+Add a check and a fallback codepath to journal_wait_on_commit_record()
+to detect this case, so that attempts to mount ext4 filesystems on
+LVM/devicemapper devices on Xen guests don't blow up with an "Aborting
+journal on device XXX"; "Remounting filesystem read-only" error.
 
-ext4_read_block_bitmap does:
+Thanks to Andreas Sundstrom for reporting this issue.
 
-spin_lock(sb_bgl_lock(EXT4_SB(sb), block_group));
-if (desc->bg_flags & cpu_to_le16(EXT4_BG_BLOCK_UNINIT)) {
-	ext4_init_block_bitmap(sb, bh, block_group, desc);
-
-Now on the block allocation side we do
-
-mb_set_bits(sb_bgl_lock(sbi, ac->ac_b_ex.fe_group), bitmap_bh->b_data,
-			ac->ac_b_ex.fe_start, ac->ac_b_ex.fe_len);
-....
-spin_lock(sb_bgl_lock(sbi, ac->ac_b_ex.fe_group));
-if (gdp->bg_flags & cpu_to_le16(EXT4_BG_BLOCK_UNINIT)) {
-	gdp->bg_flags &= cpu_to_le16(~EXT4_BG_BLOCK_UNINIT);
-
-ie on allocation we update the bitmap then we take the sb_bgl_lock
-and clear the EXT4_BG_BLOCK_UNINIT flag. What can happen is a
-parallel ext4_read_block_bitmap can zero out the bitmap in between
-the above mb_set_bits and spin_lock(sb_bg_lock..)
-
-The race results in below user visible errors
-EXT4-fs error (device sdb1): ext4_mb_release_inode_pa: free 100, pa_free 105
-EXT4-fs error (device sdb1): mb_free_blocks: double-free of inode 0's block ..
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/mballoc.c |   15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+ fs/jbd2/commit.c |   27 +++++++++++++++++++++++++--
+ 1 file changed, 25 insertions(+), 2 deletions(-)
 
---- a/fs/ext4/mballoc.c
-+++ b/fs/ext4/mballoc.c
-@@ -1070,7 +1070,10 @@ static void mb_clear_bits(spinlock_t *lo
- 			cur += 32;
- 			continue;
- 		}
--		mb_clear_bit_atomic(lock, cur, bm);
-+		if (lock)
-+			mb_clear_bit_atomic(lock, cur, bm);
-+		else
-+			mb_clear_bit(cur, bm);
- 		cur++;
+--- a/fs/jbd2/commit.c
++++ b/fs/jbd2/commit.c
+@@ -25,6 +25,7 @@
+ #include <linux/crc32.h>
+ #include <linux/writeback.h>
+ #include <linux/backing-dev.h>
++#include <linux/bio.h>
+ 
+ /*
+  * Default IO end handler for temporary BJ_IO buffer_heads.
+@@ -168,12 +169,34 @@ static int journal_submit_commit_record(
+  * This function along with journal_submit_commit_record
+  * allows to write the commit record asynchronously.
+  */
+-static int journal_wait_on_commit_record(struct buffer_head *bh)
++static int journal_wait_on_commit_record(journal_t *journal,
++					 struct buffer_head *bh)
+ {
+ 	int ret = 0;
+ 
++retry:
+ 	clear_buffer_dirty(bh);
+ 	wait_on_buffer(bh);
++	if (buffer_eopnotsupp(bh) && (journal->j_flags & JBD2_BARRIER)) {
++		printk(KERN_WARNING
++		       "JBD2: wait_on_commit_record: sync failed on %s - "
++		       "disabling barriers\n", journal->j_devname);
++		spin_lock(&journal->j_state_lock);
++		journal->j_flags &= ~JBD2_BARRIER;
++		spin_unlock(&journal->j_state_lock);
++
++		lock_buffer(bh);
++		clear_buffer_dirty(bh);
++		set_buffer_uptodate(bh);
++		bh->b_end_io = journal_end_buffer_io_sync;
++
++		ret = submit_bh(WRITE_SYNC, bh);
++		if (ret) {
++			unlock_buffer(bh);
++			return ret;
++		}
++		goto retry;
++	}
+ 
+ 	if (unlikely(!buffer_uptodate(bh)))
+ 		ret = -EIO;
+@@ -799,7 +822,7 @@ wait_for_iobuf:
+ 			__jbd2_journal_abort_hard(journal);
  	}
- }
-@@ -1088,7 +1091,10 @@ static void mb_set_bits(spinlock_t *lock
- 			cur += 32;
- 			continue;
- 		}
--		mb_set_bit_atomic(lock, cur, bm);
-+		if (lock)
-+			mb_set_bit_atomic(lock, cur, bm);
-+		else
-+			mb_set_bit(cur, bm);
- 		cur++;
- 	}
- }
-@@ -3033,10 +3039,9 @@ ext4_mb_mark_diskspace_used(struct ext4_
- 		}
- 	}
- #endif
--	mb_set_bits(sb_bgl_lock(sbi, ac->ac_b_ex.fe_group), bitmap_bh->b_data,
--				ac->ac_b_ex.fe_start, ac->ac_b_ex.fe_len);
--
- 	spin_lock(sb_bgl_lock(sbi, ac->ac_b_ex.fe_group));
-+	mb_set_bits(NULL, bitmap_bh->b_data,
-+				ac->ac_b_ex.fe_start, ac->ac_b_ex.fe_len);
- 	if (gdp->bg_flags & cpu_to_le16(EXT4_BG_BLOCK_UNINIT)) {
- 		gdp->bg_flags &= cpu_to_le16(~EXT4_BG_BLOCK_UNINIT);
- 		gdp->bg_free_blocks_count =
+ 	if (!err && !is_journal_aborted(journal))
+-		err = journal_wait_on_commit_record(cbh);
++		err = journal_wait_on_commit_record(journal, cbh);
+ 
+ 	if (err)
+ 		jbd2_journal_abort(journal, err);
 
