@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753822AbZBRMzL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753659AbZBRM47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753822AbZBRMzL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 07:55:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbZBRMyz
+	id S1753659AbZBRM47 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 07:56:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbZBRM4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 07:54:55 -0500
-Received: from stinky.trash.net ([213.144.137.162]:51797 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751635AbZBRMyy (ORCPT
+	Wed, 18 Feb 2009 07:56:51 -0500
+Received: from mail-gx0-f163.google.com ([209.85.217.163]:39136 "EHLO
+	mail-gx0-f163.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751340AbZBRM4u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 07:54:54 -0500
-Message-ID: <499C0519.2050204@trash.net>
-Date: Wed, 18 Feb 2009 13:54:49 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 18 Feb 2009 07:56:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=OB1/kweMhuPEr2sZZln28LY4YX2wa4ScaI8F+mrUqH1pIz4213br/WB+xaGY3+e+PC
+         JlJ/8TmFe33p+MAQdbnAjbvJ7sWJJMT2lB0oTblF6j1ZJxAiq07+N/M6QcRsybO2h8a5
+         guWhlS/eTAjfH1wjJtXCcPwcfSXKrXJiztILk=
+Date: Wed, 18 Feb 2009 20:56:49 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@osdl.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: [Patch] mm: fix null pointer dereference in vm_normal_page()
+Message-ID: <20090218125649.GU7272@hack.private>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       David Miller <davem@davemloft.net>, Rick Jones <rick.jones2@hp.com>,
-       Eric Dumazet <dada1@cosmosbay.com>, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, tglx@linutronix.de,
-       Martin Josefsson <gandalf@wlug.westbo.se>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] timers: add mod_timer_pending()
-References: <20090218051906.174295181@vyatta.com> <20090218052747.437271195@vyatta.com> <20090218092041.GC3294@elte.hu> <499BDDFE.5010101@trash.net> <20090218120508.GB4100@elte.hu> <499C000A.4040205@trash.net> <20090218125049.GA28791@elte.hu>
-In-Reply-To: <20090218125049.GA28791@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> To accelerate matters i've committed the new API patch into a 
-> new standalone topic branch: tip:timers/new-apis.
-> 
-> Unless there are objections or test failures, you (or Stephen or 
-> David) can then git-pull it into the networking tree via the Git 
-> coordinates below - and you'll get this single commit in a 
-> surgical manner - no other timer changes are included.
-> 
-> Doing so has the advantage of:
-> 
-> - You not having to wait a kernel cycle for the API to go
->   upstream.
-> 
-> - You can also push it upstream without waiting for the timer 
->   tree. (the timer tree and the networking tree will share the 
->   exact same commit)
-> 
-> - It will also all merge cleanly with the timer tree in 
->   linux-next, etc.
-> 
-> I'd suggest to do it in about a week, to make sure any after 
-> effects have trickled down and to make sure the topic has become 
-> append-only. You can ping Thomas and me about testing/review 
-> status then, whenever you want to do the pull.
 
-Thanks Ingo. I'll wait for Stephen to rebase his patches on
-top of your change and the test results and will let you know.
+One usage of vm_normal_page() is:
+
+    struct page *page = vm_normal_page(gate_vma, start, *pte);
+
+where gate_vma is returned by get_gate_vma() which can be NULL.
+So let vm_normal_page return NULL when vma is NULL.
+
+Signed-off-by: WANG Cong <wangcong@zeuux.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+
+---
+diff --git a/mm/memory.c b/mm/memory.c
+index baa999e..e428aa6 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -493,6 +493,9 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
+ {
+ 	unsigned long pfn = pte_pfn(pte);
+ 
++	if (!vma)
++		return NULL;
++
+ 	if (HAVE_PTE_SPECIAL) {
+ 		if (likely(!pte_special(pte)))
+ 			goto check_pfn;
+
+
