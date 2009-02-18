@@ -1,108 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbZBRHNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbZBRHPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754477AbZBRHNJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 02:13:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbZBRHMy
+	id S1754038AbZBRHPh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 02:15:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbZBRHP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 02:12:54 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47182 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752791AbZBRHMx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 02:12:53 -0500
-Message-ID: <499BB4EB.6020602@jp.fujitsu.com>
-Date: Wed, 18 Feb 2009 16:12:43 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Wed, 18 Feb 2009 02:15:28 -0500
+Received: from ozlabs.org ([203.10.76.45]:57398 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751957AbZBRHP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 02:15:28 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] cpumask: avoid cast-away-const for deprecated cpu_*_map.
+Date: Wed, 18 Feb 2009 17:45:20 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Mike Travis <travis@sgi.com>,
+       linux-kernel@vger.kernel.org,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pciehp:  Handle interrupts that happen during initialization.
-References: <m1pri623g9.fsf@fess.ebiederm.org>	<49815BF6.7060402@jp.fujitsu.com>	<200902131129.09523.jbarnes@virtuousgeek.org>	<m11vu1wtk6.fsf@fess.ebiederm.org> <49991D3A.7090001@jp.fujitsu.com> <m1mycktw5t.fsf@fess.ebiederm.org>
-In-Reply-To: <m1mycktw5t.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset=ISO-2022-JP
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902181745.21595.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> writes:
-> 
->> Eric W. Biederman wrote:
->>> Jesse Barnes <jbarnes@virtuousgeek.org> writes:
->>>
->>>> Any update here, Eric?  Sounds like you're using hotplug in real environments
->>>> with complex topologies (based on your earlier messages), so we're interested
->>>> in what you're seeing here...
->>> Yes.
->>>
->>> Currently I have a test system that is a subset of what I'm worried
->>> about and will shortly have the real hardware, so my immediate goal is
->>> to get things working well enough so my internal users won't get
->>> blocked by bugs.  Currently I only have the pcie hotplug and pcie
->>> hotplug surprise case.  My basic topology is 16 hotplug slots into
->>> which I will be plugging in pci express switches with a couple of
->>> additional hotplug slots.  As for the firmware, I will have it reserving
->>> bus numbers and mmio space on each of the first 16 slots and the rest
->>> is going to be up to the linux kernel.  This is an embedded design
->>> so no ACPI is appears more pain than it is worth to implement.
->>>
->> Very interesting. Can I ask you some questions?
->>
->> - On hot-insertion of pci express switches with a additional hotplug
->>   slots, who initialize HwInit registers (for example, physical slot
->>   number field in the Slot Capabilities register)? OS, firmware,
->>   hardware or others?
-> 
-> It happens before the linux kernel gets to see it.  Call it firmware.
-> 
->> - Bus numbers and MMIO space that needs to be reserved is depending
->>   on platform design. How do you tell kernel (or hotplug drivers) how
->>   many resources need to be reserved, in your current design?
-> 
-> So far it looks like I can get away without telling the kernel
-> anything, and just perform reservations at the layer of the
-> firmware on the primary board, and have the kernel see those
-> reservations when it boots up, and just subdivide them.
-> 
-> I have some thoughts on how to do things better but I'm not at a point
-> where it makes a difference right now.
-> 
+Impact: fix potential (non-x86) SMP boot failure with some gcc versions
 
-In the current pciehp implementation, minimum resources enough to
-enable devices under the bridge are assigned when P2P bridge is
-hot-added. My concern is that enough resources are NOT assigned to
-the bridge if an additional slot is empty. As a result, hot-add
-adapter card on the additional slot won't work because of resource
-shortage.
+The deprecated cpu_*_map are currently #defined to the new cpu_*_mask,
+except without the const.  Some versions of gcc seem to dislike this,
+and I suspect this will break boot for some archs with the "wrong" gcc
+version.
 
->>> I need to revisit the pciehp driver but my first pass through it
->>> looked like every corner case appeared to get something wrong. So I
->>> have written myself a little 430 line replaces that handles the case
->>> that I currently care about.  Part of what I was seeing before is that
->>> we don't clear pending events in the pciehp driver before we enable
->>> interrupts.  So if booting the system has left some pending and you
->>> have CONFIG_DEBUG_SHIRQ enabled you get a nice oops because p_slot has
->>> not been initialized and so the interrupts can't be handled.
->>>
->> I've made a fix (c4635eb06af700820d658a163f06aff12e17cfb2) for a similar
->> problem several months ago. With this fix, pciehp had been changed to
->> initialize p_slot before installing interrupt service routine. So I still
->> don't understand what is happening. Could you please tell me the details
->> about "p_slot has not been initialized..."?
-> 
-> kobject_name is not initialized, and slot_name(p_slot) calls
-> hoptlug_slot_name which calls pci_slot_name which kobj_name. 
-> It looks like this problem was introduced in commit 
-> e1acb24f059defdaa0264e925f19cc21b0a3e592
+So play it safe and use real vars until we kill them all (replacements
+are init_*_map(), set_cpu_*() and cpu_*_mask).
 
-Thank your for the information. I understood what is happening.
-This needs to be fixed. But, as I mentioned before, I think
-software notification mechanism should be initialized before
-sysfs entries are created. I'll consider alternative fix.
+PowerPC and Alpha have reported warnings, and James Bottomley
+encountered worse: gcc was simply not changing cpu_possible_map,
+causing boot failure (fixed by using init_cpu_possible()).
 
-Thanks,
-Kenji Kaneshige
+See also:
+Alpha gcc 4.2 warning fix:
+	ee0c468bb151aad23281660152d2894f1e214238
+Voyager bug report:
+	lkml: [PATCH] voyager: fix cpu bootmaps
+	Message-Id: <1233340317.3248.39.camel@localhost.localdomain>
+	(Merged without comments in 92ab78315c638515d0e81b0c70b2082f713582d9)
 
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linuxppc-dev@ozlabs.org
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: James.Bottomley@HansenPartnership.com
+Cc: Mike Travis <travis@sgi.com>
+---
+ include/linux/cpumask.h |   14 +++++++++-----
+ kernel/cpu.c            |   10 ++++++++++
+ 2 files changed, 19 insertions(+), 5 deletions(-)
+
+diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
+--- a/include/linux/cpumask.h
++++ b/include/linux/cpumask.h
+@@ -487,11 +487,15 @@ extern const struct cpumask *const cpu_p
+ extern const struct cpumask *const cpu_present_mask;
+ extern const struct cpumask *const cpu_active_mask;
+ 
+-/* These strip const, as traditionally they weren't const. */
+-#define cpu_possible_map	(*(cpumask_t *)cpu_possible_mask)
+-#define cpu_online_map		(*(cpumask_t *)cpu_online_mask)
+-#define cpu_present_map		(*(cpumask_t *)cpu_present_mask)
+-#define cpu_active_map		(*(cpumask_t *)cpu_active_mask)
++/* Deprecated: use cpu_*_mask and set_cpu_*(). */
++#define cpu_possible_map	(*_cpu_possible_mask_nonconst)
++#define cpu_online_map		(*_cpu_online_mask_nonconst)
++#define cpu_present_map		(*_cpu_present_mask_nonconst)
++#define cpu_active_map		(*_cpu_active_mask_nonconst)
++extern struct cpumask *_cpu_possible_mask_nonconst;
++extern struct cpumask *_cpu_online_mask_nonconst;
++extern struct cpumask *_cpu_present_mask_nonconst;
++extern struct cpumask *_cpu_active_mask_nonconst;
+ 
+ #if NR_CPUS > 1
+ #define num_online_cpus()	cpumask_weight(cpu_online_mask)
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -565,3 +565,13 @@ void init_cpu_online(const struct cpumas
+ {
+ 	cpumask_copy(to_cpumask(cpu_online_bits), src);
+ }
++
++/* Deprecated accessors. */
++struct cpumask *_cpu_possible_mask_nonconst = to_cpumask(cpu_possible_bits);
++EXPORT_SYMBOL(_cpu_possible_mask_nonconst);
++struct cpumask *_cpu_online_mask_nonconst = to_cpumask(cpu_online_bits);
++EXPORT_SYMBOL(_cpu_online_mask_nonconst);
++struct cpumask *_cpu_present_mask_nonconst = to_cpumask(cpu_present_bits);
++EXPORT_SYMBOL(_cpu_present_mask_nonconst);
++struct cpumask *_cpu_active_mask_nonconst = to_cpumask(cpu_active_bits);
++EXPORT_SYMBOL(_cpu_active_mask_nonconst);
