@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbZBREkw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbZBREmG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754131AbZBREkw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 23:40:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbZBREkm
+	id S1754493AbZBREmG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 23:42:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbZBRElu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 23:40:42 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34692 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751394AbZBREkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 23:40:41 -0500
-Message-ID: <499B9129.50104@kernel.org>
-Date: Tue, 17 Feb 2009 20:40:09 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: david@lang.hm, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       DL-MPTFusionLinux@lsi.com, linux-pci@vger.kernel.org
-Subject: [PATCH] pci: enable MSI on 8132
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>  <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm>  <20090217230050.GG16841@parisc-linux.org>  <alpine.DEB.1.10.0902171506500.26625@asgard.lang.hm> <86802c440902171511s1abcc0eao560df4b8fcea0e7c@mail.gmail.com> <alpine.DEB.1.10.0902171514120.26625@asgard.lang.hm> <499B46B2.5040601@kernel.org> <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm> <499B6BF7.9090300@kernel.org> <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm> <499B724A.2040408@kernel.org> <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm> <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm> <499B774C.5010705@kernel.org> <alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm>
-In-Reply-To: <alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 17 Feb 2009 23:41:50 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:37453 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751394AbZBRElt (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 23:41:49 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: David Miller <davem@davemloft.net>
+Cc: arvidjaar@mail.ru, rjw@sisk.pl, netdev@vger.kernel.org,
+       bonding-devel@lists.sourceforge.net, jamagallon@ono.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29 regression? Bonding tied to IPV6 in 29-rc5
+In-Reply-To: Your message of "Tue, 17 Feb 2009 14:29:46 PST."
+             <20090217.142946.232071526.davem@davemloft.net>
+From: Valdis.Kletnieks@vt.edu
+References: <alpine.LFD.2.00.0902131413120.3179@localhost.localdomain> <20090217095232.5da06b9f@werewolf.home> <200902172001.41804.arvidjaar@mail.ru>
+            <20090217.142946.232071526.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1234932076_24816P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Tue, 17 Feb 2009 23:41:16 -0500
+Message-ID: <25143.1234932076@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1234932076_24816P
+Content-Type: text/plain; charset=us-ascii
 
-Impact: workaround BIOS that doesn't enable that bit
+On Tue, 17 Feb 2009 14:29:46 PST, David Miller said:
+> Don't configure ipv6 into your kernel, really.
+> 
+> There is no other way to handle this.  If we want to support
+> IPV6 layer things in the bonding driver, it is going to
+> call helper functions in the ipv6 module and therefore must
+> be able to load it and use functions in it.
 
-David reported that LSI sas doesn't work with MSI.
-it turns out that BIOS doesn't enable HT MSI
-8132 does support HT MSI.
-add quirk to enable it
+What does a poor corporate user do if they're running a distro kernel that
+was built with CONFIG_IPV6, but local security policy says "Disable IPv6
+because we don't do it yet, or because it breaks mission-critical software
+package XYZ?"  There's a *lot* of people who implement that by the "block
+the ipv6 module from loading" trick.  And building a kernel that doesn't
+include IPv6 may not be feasible due to vendor certification issues...
 
-Reported-by: David Lang <david@lang.hm>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Heck, *I*'m almost in that boat - probably need to use bonded ethernet on some
+servers because we can't get 10GigE, but the software used in the project the
+servers were bought for blows chunks if it gets a whiff of an IPv6 address.
+Ended up spending 3 weeks doing a massive kludgery of one sort in DNS for the
+rest of the world, and equally massive lying in /etc/hosts for the hosts...
+(Don't ask - it was long and ugly, and just disabling the module would have
+saved me about 2.95 weeks of work, so I know where those people are coming
+from...)
 
----
- drivers/pci/quirks.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/drivers/pci/quirks.c
-===================================================================
---- linux-2.6.orig/drivers/pci/quirks.c
-+++ linux-2.6/drivers/pci/quirks.c
-@@ -1981,7 +1981,6 @@ static void __devinit quirk_msi_ht_cap(s
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_HT2000_PCIE,
- 			quirk_msi_ht_cap);
- 
--
- /* The nVidia CK804 chipset may have 2 HT MSI mappings.
-  * MSI are supported if the MSI capability set in any of these mappings.
-  */
-@@ -2032,6 +2031,9 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_S
- 			 PCI_DEVICE_ID_SERVERWORKS_HT1000_PXB,
- 			 ht_enable_msi_mapping);
- 
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_8132_BRIDGE,
-+			 ht_enable_msi_mapping);
-+
- /* The P5N32-SLI Premium motherboard from Asus has a problem with msi
-  * for the MCP55 NIC. It is not yet determined whether the msi problem
-  * also affects other devices. As for now, turn off msi for this device.
+--==_Exmh_1234932076_24816P
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJm5FscC3lWbTT17ARAmFnAJ46BE3kV9h1kZLcYLhqIrEphKp0RwCgj80g
+PgM/6vuh1jZa4w9AY/UWO2k=
+=RzbE
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1234932076_24816P--
