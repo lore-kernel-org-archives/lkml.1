@@ -1,94 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753491AbZBRJUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753782AbZBRJVK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753491AbZBRJUh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 04:20:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752968AbZBRJTt
+	id S1753782AbZBRJVK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 04:21:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbZBRJTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 04:19:49 -0500
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:7483 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752830AbZBRJTp (ORCPT
+	Wed, 18 Feb 2009 04:19:52 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:51672 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752848AbZBRJTq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 04:19:45 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhUDAPtem0l5LClxgWdsb2JhbACUTgEBFiK+ZoQTBg
-X-IronPort-AV: E=Sophos;i="4.38,228,1233495000"; 
-   d="scan'208";a="293560843"
-Date: Wed, 18 Feb 2009 20:19:36 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Carsten Aulbert <carsten.aulbert@aei.mpg.de>
-Cc: "xfs@oss.sgi.com" <xfs@oss.sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: xfs problems (possibly after upgrading from linux kernel
-	2.6.27.10 to .14)
-Message-ID: <20090218091935.GD8830@disturbed>
-Mail-Followup-To: Carsten Aulbert <carsten.aulbert@aei.mpg.de>,
-	"xfs@oss.sgi.com" <xfs@oss.sgi.com>, linux-kernel@vger.kernel.org
-References: <499ACE6C.4060304@aei.mpg.de>
+	Wed, 18 Feb 2009 04:19:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=hT0kO5NTpdA1gqFuTRaQsaVsYrUOl70eWf2N3ObwnN7lSsSdrwDvCbPBpLRuNNoTE9
+         oApms3tEa8/N/JeSa7p4zlHkmQoTFt/VNyrlEGrjTUDhPHJXGgQL6lT8pS+k0SngD7/r
+         26WjIlhsm+VupQc0PFQa7wzHm35uciqMvZ3Ns=
+Message-ID: <499BD2AE.2020205@gmail.com>
+Date: Wed, 18 Feb 2009 10:19:42 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090208 SUSE/3.0b1-7.1 Thunderbird/3.0b2pre
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <499ACE6C.4060304@aei.mpg.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-kernel@vger.kernel.org
+CC: mm-commits@vger.kernel.org, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       tglx@linutronix.de, x86@kernel.org, oleg@redhat.com
+Subject: Re: mmotm 2009-02-17-12-33 uploaded
+References: <200902172050.n1HKorvc028933@imap1.linux-foundation.org> <499B465D.9080502@gmail.com>
+In-Reply-To: <499B465D.9080502@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 03:49:16PM +0100, Carsten Aulbert wrote:
-> Hi all,
-> 
-> within the past few days we hit many XFS internal errors like these. Are these
-> errors known (and possibly already fixed)? I checked the commits till 
-> 2.6.27.17 and there does not seem anything related to this.
+On 18.2.2009 00:21, Jiri Slaby wrote:
+> On 17.2.2009 21:33, akpm@linux-foundation.org wrote:
+>> The mm-of-the-moment snapshot 2009-02-17-12-33 has been uploaded to
 
-.....
+This one:
+kthreads-move-sched-realeted-initialization-from-kthreadd-context.patch
 
-> Feb 16 20:34:49 n0035 kernel: [275873.335916] Filesystem "sda6": XFS internal error xfs_trans_cancel at line 1164 of file fs/xfs/xfs_
+> Hi,
+>
+> I'm getting the page fault below everytime during bootup. This is how
+> __task_rq_lock looks like:
+> for (;;) {
+> struct rq *rq;
+> printk("CPU=%u %p %p %p %s\n", task_cpu(p), p,
+> task_thread_info(p)->task,
+> task_thread_info(p), p->comm);
+> rq = task_rq(p);
+> spin_lock(&rq->lock);
+> if (likely(rq == task_rq(p)))
+> return rq;
+> spin_unlock(&rq->lock);
+> }
+>
+> CPU=2303197184 ffff880012497d90 b8005f57df1d8948 ffffffff80262d0a
+> migration/0
+> BUG: unable to handle kernel paging request at 00000003cabbb780
+> IP: [<ffffffff802399eb>] __sched_setscheduler+0x17b/0x4a0
+> PGD 0
+> Oops: 0000 [#1] SMP
+> last sysfs file:
+> CPU 0
+> Modules linked in:
+> Pid: 1, comm: swapper Not tainted 2.6.29-rc5-mm1_64 #578
+> RIP: 0010:[<ffffffff802399eb>] [<ffffffff802399eb>]
+> __sched_setscheduler+0x17b/0x4a0
+> RSP: 0018:ffff880012497cc0 EFLAGS: 00000086
+> RAX: 0000000089480000 RBX: ffffffff80262d0a RCX: 00000000ffffffff
+> RDX: 000000000000d7d7 RSI: 0000000000000046 RDI: ffffffff80835334
+> RBP: ffff880012497d30 R08: 0000000000000000 R09: 0000000000000000
+> R10: 0000000000000001 R11: 0000000000000000 R12: 0000000000010180
+> R13: 0000000000000000 R14: ffff880012497d90 R15: 0000000000010180
+> FS: 0000000000000000(0000) GS:ffff880001007000(0000) knlGS:0000000000000000
+> CS: 0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: 00000003cabbb780 CR3: 0000000000201000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 0000000000000000 DR7: 0000000000000000
+> Process swapper (pid: 1, threadinfo ffff880012496000, task
+> ffff880012478000)
+> Stack:
+> 0000000000000000 ffff880012497dc0 ffff880012498270 ffffffff12478000
+> 0000000000000000 ffffffff80262d0a ffff8800124980f0 0000000000000046
+> 0000000000000246 ffff880012497d50 ffffffff806f1065 0000000000000000
+> Call Trace:
+> [<ffffffff80262d0a>] ? tick_check_broadcast_device+0x3a/0x70
+> [<ffffffff80239d1b>] sched_setscheduler_nocheck+0xb/0x10
+> [<ffffffff80256ad7>] kthread_create+0xe7/0x120
+> [<ffffffff8023b820>] ? migration_thread+0x0/0x230
+> [<ffffffff80262d0a>] ? tick_check_broadcast_device+0x3a/0x70
+> [<ffffffff80262109>] ? tick_notify+0x369/0x410
+> [<ffffffff807d9598>] ? migration_init+0x0/0x5c
+> [<ffffffff805de278>] migration_call+0x376/0x4ed
+> [<ffffffff807d9598>] ? migration_init+0x0/0x5c
+> [<ffffffff807d95be>] migration_init+0x26/0x5c
+> [<ffffffff807d9598>] ? migration_init+0x0/0x5c
+> [<ffffffff8020904c>] do_one_initcall+0x3c/0x170
+> [<ffffffff807d31c4>] ? native_smp_prepare_cpus+0x1c0/0x311
+> [<ffffffff807ca559>] kernel_init+0x76/0x1bc
+> [<ffffffff8020d8da>] child_rip+0xa/0x20
+> [<ffffffff807ca4e3>] ? kernel_init+0x0/0x1bc
+> [<ffffffff8020d8d0>] ? child_rip+0x0/0x20
+> Code: 69 3a 00 49 8b 5e 08 4c 8b 45 08 48 8b 0b ba db 08 00 00 48 c7 c6
+> e0 4a 6e 80 48 c7 c7 ce 99 6e 80 31 c0 e8 0b 69 3a 00 8b 43 18 <4c> 03
+> 24 c5 80 b7 7b 80 4c 89 e7 e8 e5 97 3a 00 49 8b 5e 08 31
+> RIP [<ffffffff802399eb>] __sched_setscheduler+0x17b/0x4a0
+> RSP <ffff880012497cc0>
+> CR2: 00000003cabbb780
+> ---[ end trace 4eaa2a86a8e2da22 ]---
 
-A transaction shutdown on create. That implies some kind of ENOSPC
-issue.
-
-> Do you need more information or can I send these nodes into a re-install?
-
-More information. Can you get a machine into a state where you can
-trigger this condition reproducably by doing:
-
-	mount filesystem
-	touch /mnt/filesystem/some_new_file
-
-If you can get it to that state, and you can provide an xfs_metadump
-image of the filesystem when in that state, I can track down the
-problem and fix it.
-
-> Feb 16 22:01:28 n0260 kernel: [1129250.851451] Filesystem "sda6": xfs_iflush: Bad inode 1176564060 magic number 0x36b5, ptr 0xffff8801a7c06c00
-
-However, this implies some kind of memory corruption is occurring.
-That is reading the inode out of the buffer before flushing the
-in-memory state to disk. This implies someone has scribbled over
-page cache pages.
-
-
-> Feb 17 05:57:44 n0463 kernel: [1156816.912129] Filesystem "sda6": XFS internal error xfs_btree_check_sblock at line 307 of file fs/xfs/xfs_btree.c.  Caller 0xffffffff802dd15b
-
-And that is another buffer that has been scribbled over.
-Something is corrupting the page cache, I think. Whether the
-original shutdown is caused by the some corruption, i don't
-know.
-
-> plus a few more nodes showing the same characteristics 
-
-Hmmmm. Did this show up in 2.6.27.10? Or did it start occurring only
-after you upgraded from .10 to .14?
-
-Cheers,
-
-Dave.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
--- 
-Dave Chinner
-david@fromorbit.com
