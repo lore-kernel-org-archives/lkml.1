@@ -1,96 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbZBRAwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087AbZBRAxL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755872AbZBRAwq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 19:52:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbZBRAwf
+	id S1754087AbZBRAxL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 19:53:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755875AbZBRAws
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 19:52:35 -0500
-Received: from mga10.intel.com ([192.55.52.92]:10583 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754090AbZBRAwe (ORCPT
+	Tue, 17 Feb 2009 19:52:48 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:33501 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754137AbZBRAwq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 19:52:34 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,225,1233561600"; 
-   d="scan'208";a="431800186"
-Date: Tue, 17 Feb 2009 16:55:52 -0800
-From: mark gross <mgross@linux.intel.com>
-To: Brian Swetland <swetland@google.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>,
-       Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Uli Luckas <u.luckas@road.de>, Igor Stoppa <igor.stoppa@nokia.com>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: [RFD] Automatic suspend
-Message-ID: <20090218005552.GD26292@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com> <13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com> <20090216145948.6fea81c3@infradead.org> <200902170019.40599.rjw@sisk.pl> <20090216232329.GA15678@srcf.ucam.org> <20090217142001.GB12378@bulgaria.corp.google.com> <20090217064630.688bf639@infradead.org> <20090217152811.GA12686@bulgaria.corp.google.com>
+	Tue, 17 Feb 2009 19:52:46 -0500
+Message-ID: <499B5BCA.8000905@zytor.com>
+Date: Tue, 17 Feb 2009 16:52:26 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090217152811.GA12686@bulgaria.corp.google.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jan Engelhardt <jengelh@medozas.de>, Alain Knaff <alain@knaff.lu>,
+       the arch/x86 maintainers <x86@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: tip: bzip2/lzma now in tip:x86/setup-lzma
+References: <200901042146.n04LkHgP005837@hitchhiker.hitchhiker.org.lu.hitchhiker.org.lu> <4961415C.1050708@zytor.com> <49614243.70102@knaff.lu> <496142E4.8040308@zytor.com> <49614491.7020903@knaff.lu> <49614D1F.8020900@zytor.com> <alpine.LSU.2.00.0902172202230.5620@fbirervta.pbzchgretzou.qr> <499B267E.2090509@zytor.com> <20090217220825.GA24337@elte.hu> <20090217233708.GA10756@elte.hu>
+In-Reply-To: <20090217233708.GA10756@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 07:28:11AM -0800, Brian Swetland wrote:
-> [Arjan van de Ven <arjan@infradead.org>]
-> > On Tue, 17 Feb 2009 06:20:01 -0800
-> > Brian Swetland <swetland@google.com> wrote:
-> > 
-> > > Of course that still doesn't address userspace.  Aggressively going to
-> > > suspend lets us compensate for userspace programs that do somewhat
-> > > silly things (I agree that it would be best if they didn't but they
-> > > do and getting *everyone* to write their userspace code to avoid
-> > > spinning or avoid waking up on short-duration timers to poll is a
-> > > losing battle).
-> > 
-> > actually with powertop... on the open source side things are actually
-> > won. It took all of 6 months...
-> > I don't see that as a valid excuse. In fact, if this kind of solution
-> > makes real userspace scheduled timers to be missed then I consider it a
-> > serious functionality misfeature.
+Ingo Molnar wrote:
 > 
-> While you can't expect the kernel to solve all the problems of
-> userspace, here's the broad situation one could end up in
-> (note this specific sequence is generic and not based on any one
-> specific product experience):
+> still fails:
 > 
-> - carrier deploys a device 
-> - carrier agrees to allow installation of arbitrary third party apps
->   without some horrible certification program requiring app authors
->   to jump through hoops, wait ages for approval, etc
-> - users rejoice and install all kinds of apps
-> - some apps are poorly written and impact battery life
-> - users complain to carrier about battery life
+> [    3.196037] initcall inet_init+0x0/0x1e9 returned 0 after 101777 usecs           
+> [    3.202886] calling  af_unix_init+0x0/0x55 @ 1                                   
+> [    3.207461] NET: Registered protocol family 1                                    
+> [    3.211950] initcall af_unix_init+0x0/0x55 returned 0 after 4394 usecs           
+> [    3.218624] calling  populate_rootfs+0x0/0xd2 @ 1                                
+> [    3.223460] Kernel panic - not syncing: compression method gzip not configured   
+> 
+> config attached.
+> 
 
-Carrier pushes ISV for fix app, and updates that don't suck are
-deployed.
+Okay, I think I've tracked down the problem.
 
-Where is the problem?
+The issue is that usr/Makefile doesn't correctly filter compression 
+methods which we don't support.  This particular case will happen when 
+you're building with Ingo's attached configuration *and no bzip2 tool 
+installed on the system*.
 
---mgross
+Basically, the algorithm used in usr/Makefile is simply wrong.
 
-> 
-> You will end up with some crappy apps that do really dumb things.
-> However, even if they're badly written users may still install and use
-> these apps because hey, they do something the user likes.
-> 
-> >From the Android standpoint, we're trying to balance protecting the
-> system from poorly designed apps and somehow letting the user know "hey
-> app X is chewing up a lot of power" (work in progress on this).
-> 
-> While I'd love for every app developer to actively tune their apps for a
-> good mobile experience, I am skeptical that this is going to happen.
-> 
-> Brian
+The claim is:
+
++# Find out "preferred" ramdisk compressor. Order of preference is
++#  1. bzip2 efficient, and likely to be present
++#  2. gzip former default
++#  3. lzma
++#  4. none
++
++# None of the above
++suffix_y                   =
++
++# Lzma, but no gzip nor bzip2
++suffix_$(CONFIG_RD_LZMA)   = .lzma
++
++# Gzip, but no bzip2
++suffix_$(CONFIG_RD_GZIP)   = .gz
++
++# Bzip2
++suffix_$(CONFIG_RD_BZIP2)  = .bz2
+
+This doesn't end up make any sense.  The sanest thing to do is to 
+compress with all the compressors that are configured into the kernel, 
+and then use the smallest image of the ones that can be produced, 
+*including the uncompressed image*.  Including the uncompressed image 
+will guarantee that we always have a working option.
+
+	-hpa
