@@ -1,53 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbZBRCX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755074AbZBRCZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755423AbZBRCX7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 21:23:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbZBRCXv
+	id S1755074AbZBRCZr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 21:25:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbZBRCZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 21:23:51 -0500
-Received: from kroah.org ([198.145.64.141]:54348 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751777AbZBRCXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 21:23:51 -0500
-Date: Tue, 17 Feb 2009 18:21:17 -0800
-From: Greg KH <greg@kroah.com>
-To: Richard Kennedy <richard@rsk.demon.co.uk>,
-       Karl Relton <karllinuxtest.relton@ntlworld.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       wlan-devel <linux-wlan-devel@lists.linux-wlan.com>
-Subject: Re: [PATCH] staging/wlan-ng: block ioctls until card fully
-	initialised
-Message-ID: <20090218022117.GB32325@kroah.com>
-References: <1234213202.6875.70.camel@dellpc> <20090209211700.GA10742@kroah.com> <1234478293.17792.1.camel@dellpc> <1234873158.2891.29.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1234478293.17792.1.camel@dellpc> <1234873158.2891.29.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 17 Feb 2009 21:25:37 -0500
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:41769 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751170AbZBRCZg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 21:25:36 -0500
+Message-Id: <6.0.0.20.2.20090218102926.06b314c0@172.19.0.2>
+X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
+Date: Wed, 18 Feb 2009 11:22:29 +0900
+To: Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Subject: Re: [PATCH] NFS: Pagecache usage optimization on nfs
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <1234880322.8412.124.camel@heimdal.trondhjem.org>
+References: <6.0.0.20.2.20090217132810.05709598@172.19.0.2>
+ <200902172343.13838.nickpiggin@yahoo.com.au>
+ <1234880322.8412.124.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 12:19:18PM +0000, Richard Kennedy wrote:
-> Add a mutex to block ioctls before the card is fully initialised and
-> only allow one ioctl at a time.
-> This stops udev trying to load the firmware before to card is fully up.
-> 
-> patch ported from wlan-ng-devel
-> 
-> Karl Relton <karllinuxtest.relton@ntlworld.com> spotted that this was
-> missing from the staging version,
-> http://lists.linux-wlan.com/pipermail/linux-wlan-devel/2009-February/003890.html 
 
-Karl sent me a patch a few days before you that also added this
-functionality.
+At 23:18 09/02/17, Trond Myklebust wrote:
+>On Tue, 2009-02-17 at 23:43 +1100, Nick Piggin wrote:
+>> On Tuesday 17 February 2009 15:55:12 Hisashi Hifumi wrote:
+>> > Hi, Trond.
+>> >
+>> > I wrote "is_partially_uptodate" aops for nfs client named
+>> > nfs_is_partially_uptodate(). This aops checks that nfs_page is attached to
+>> > a page and read IO to a page is within the range between wb_pgbase and
+>> > wb_pgbase + wb_bytes of the nfs_page. If this aops succeed, we do not have
+>> > to issue actual read IO to NFS server even if a page is not uptodate
+>> > because the portion we want to read are uptodate. So with this patch random
+>> > read/write mixed workloads or random read after random write workloads can
+>> > be optimized and we can get performance improvement.
+>> >
+>> > I did benchmark test using sysbench.
+>> >
+>> > sysbench --num-threads=16 --max-requests=100000 --test=fileio
+>> > --file-block-size=2K --file-total-size=200M --file-test-mode=rndrw
+>> > --file-fsync-freq=0
+>> > --file-rw-ratio=0.5 run
+>> >
+>> > The result was:
+>> >
+>> > -2.6.29-rc4
+>> >
+>> > Operations performed:  33356 Read, 66682 Write, 128 Other = 100166 Total
+>> > Read 65.148Mb  Written 130.24Mb  Total transferred 195.39Mb  (3.1093Mb/sec)
+>> >  1591.97 Requests/sec executed
+>> >
+>> > Test execution summary:
+>> >     total time:                          62.8391s
+>> >     total number of events:              100038
+>> >     total time taken by event execution: 841.7603
+>> >     per-request statistics:
+>> >          min:                            0.0000s
+>> >          avg:                            0.0084s
+>> >          max:                            16.4564s
+>> >          approx.  95 percentile:         0.0446s
+>> >
+>> > Threads fairness:
+>> >     events (avg/stddev):           6252.3750/306.48
+>> >     execution time (avg/stddev):   52.6100/0.38
+>> >
+>> >
+>> > -2.6.29-rc4 + patch
+>> >
+>> > Operations performed:  33346 Read, 66662 Write, 128 Other = 100136 Total
+>> > Read 65.129Mb  Written 130.2Mb  Total transferred 195.33Mb  (5.0113Mb/sec)
+>> >  2565.81 Requests/sec executed
+>> >
+>> > Test execution summary:
+>> >     total time:                          38.9772s
+>> >     total number of events:              100008
+>> >     total time taken by event execution: 339.6821
+>> >     per-request statistics:
+>> >          min:                            0.0000s
+>> >          avg:                            0.0034s
+>> >          max:                            1.6768s
+>> >          approx.  95 percentile:         0.0200s
+>> >
+>> > Threads fairness:
+>> >     events (avg/stddev):           6250.5000/302.04
+>> >     execution time (avg/stddev):   21.2301/0.45
+>> >
+>> >
+>> > I/O performance was significantly improved by following patch.
+>> 
+>> OK, but again this is not something too sane to do is it (ask for 2K IO
+>> size on 4K page system)? What are the comparison results with 4K IO
+>> size? I guess it will help some cases, but it's probably hard to find
+>> realistic workloads that see such an improvement.
 
-Unfortunatly, both of your patches don't apply to the latest version of
-the wlan-ng driver as it has had a lot of work done on it recently.
+2K IO size on 4K page system workload might not be realistic, but
+on architectures that has large page size like powerpc or ia64 , I think
+this patch has significant effect(4K or 8K IO size on 16K page size).
+ 
+>
+>The other thing that worries me about it is that the scheme relies
+>entirely on using the page dirtying mechanism to track updated parts of
+>a page. You will lose that information as soon as the page cache is
+>flushed to disk.
 
-Could one of you grab the linux-next tree and make a patch up against
-the version in it so that I can apply this?
+Can we reserve updated parts of a page even after dirty page is flushed
+to HDD? If so we can get better performance number. 
 
-thanks,
+>IOW: I would expect those numbers to change greatly if you increase the
+>file size to the point where the VM starts evicting the pages.
 
-greg k-h
+Yes you are right. I think when the file size goes beyond memory size,
+performance number would decrease. 
+
+>
+>There are plenty of ways in which one can tune the performance of NFS.
+>It all depends on the application. For instance, our lack of tracking of
+>holes means that we tend to perform very poorly when dealing with reads
+>of sparse files such as in the above test. Perhaps that might be
+>considered as an alternative idea?
+>
+
