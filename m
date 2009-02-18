@@ -1,128 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753251AbZBRIFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754423AbZBRIGL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753251AbZBRIFu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 03:05:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZBRIFm
+	id S1754423AbZBRIGL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 03:06:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbZBRIFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 03:05:42 -0500
-Received: from mail.gmx.net ([213.165.64.20]:56360 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751535AbZBRIFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 03:05:41 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18mtUM62Q4meUDOK5v69AIfQKeNjYK43YKW4da30u
-	LZFoJSOlL5XnGP
-Subject: Re: CFQ is worse than other IO schedulers in some cases
-From: Mike Galbraith <efault@gmx.de>
-To: Shan Wei <shanwei@cn.fujitsu.com>
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org
-In-Reply-To: <499BA413.2010705@cn.fujitsu.com>
-References: <499BA413.2010705@cn.fujitsu.com>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 18 Feb 2009 09:05:36 +0100
-Message-Id: <1234944336.6141.8.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 8bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.67
+	Wed, 18 Feb 2009 03:05:52 -0500
+Received: from byss.tchmachines.com ([208.76.80.75]:49950 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753232AbZBRIFu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 03:05:50 -0500
+Date: Wed, 18 Feb 2009 00:05:46 -0800
+From: Josh Hunt <josh@scalex86.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       kiran@scalex86.org, mingo@elte.hu
+Subject: Re: [PATCH] Add vmlinux to kernel rpm - updated description
+Message-ID: <20090218080546.GA8115@localhost.localdomain>
+References: <20090212051057.GC12732@localhost.localdomain> <20090215080136.GA26481@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090215080136.GA26481@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-18 at 14:00 +0800, Shan Wei wrote:
+On Sun, Feb 15, 2009 at 09:01:36AM +0100, Sam Ravnborg wrote:
+> On Wed, Feb 11, 2009 at 09:10:57PM -0800, Josh Hunt wrote:
+> > Resending with updated description:
+> > 
+> > We are building an automated system to test kernels weekly and need to
+> > provide an rpm to our QA dept.  We would like to use the ability to create
+> > kernel rpms already in the kernel's Makefile, but need the vmlinux file
+> > included in the rpm for later debugging.  This patch adds a compressed vmlinux to
+> > the kernel rpm when doing a make rpm-pkg or binrpm-pkg and upon install
+> > places the vmlinux file in /boot.
+> > 
+> > Signed-off-by: Josh Hunt <josh@scalex86.org>
+> 
+> Applied, but...
+> 
+> > 
+> > Index: linux-2.6.28/scripts/package/mkspec
+> > ===================================================================
+> > --- linux-2.6.28.orig/scripts/package/mkspec    2008-12-24
+> > 15:26:37.000000000 -0800
+> > +++ linux-2.6.28/scripts/package/mkspec    2009-01-21
+> > 16:53:03.000000000 -0800
+> > @@ -86,6 +86,14 @@ echo "%endif"
+> >  echo 'cp System.map $RPM_BUILD_ROOT'"/boot/System.map-$KERNELRELEASE"
+> > 
+> >  echo 'cp .config $RPM_BUILD_ROOT'"/boot/config-$KERNELRELEASE"
+> > +
+> > +echo "%ifnarch ppc64"
+> > +echo 'cp vmlinux vmlinux.orig'
+> why is this relevant for all architectures except ppc64?
+> This is not addressed neither in a comment nor in the changelog.
 
-> In sysbench(version:sysbench-0.4.10), I confirmed followings.
->   - CFQ's performance is worse than other IO schedulers when only multiple
->     threads test.
->     (There is no difference under single thread test.)
->   - It is worse than other IO scheduler when
->     I used read mode. (No regression in write mode).
->   - There is no difference among other IO schedulers. (e.g noop deadline)
-> 
-> 
-> The Test Result(sysbench):
->    UNIT:Mb/sec
->     __________________________________________________
->     |   IO       |      thread  number               |  
->     | scheduler  |-----------------------------------|
->     |            |  1   |  3    |  5   |   7  |   9  |
->     +------------|------|-------|------|------|------|
->     |cfq         | 77.8 |  32.4 | 43.3 | 55.8 | 58.5 | 
->     |noop        | 78.2 |  79.0 | 78.2 | 77.2 | 77.0 |
->     |anticipatory| 78.2 |  78.6 | 78.4 | 77.8 | 78.1 |
->     |deadline    | 76.9 |  78.4 | 77.0 | 78.4 | 77.9 |
->     +------------------------------------------------+
-﻿
-My Q6600 box agrees that cfq produces less throughput doing this test,
-but throughput here is ~flat. Disk is external SATA ST3500820AS.
-    _________________________________________________
-    |   IO       |     thread  number               |  
-    | scheduler  |----------------------------------|
-    |            |  1   |  3   |  5   |  7   |  9   |
-    +------------|------|------|------|------|------|
-    |cfq         | 84.4 | 89.1 | 91.3 | 88.8 | 88.8 |
-    |noop        |102.9 | 99.3 | 99.4 | 99.7 | 98.7 | 
-    |anticipatory|100.5 |100.1 | 99.8 | 99.7 | 99.6 | 
-    |deadline    | 97.9 | 98.7 | 99.5 | 99.5 | 99.3 | 
-    +-----------------------------------------------+
+I was under the impression that the ppc64 vmlinuz file could be
+unzipped and used for debugging and so adding it to /boot would be
+redundant.  Please let me know if this is not the case and I will
+submit an updated patch.
 
-> Steps to reproduce(sysbench):
-> 
->   (1)#echo cfq > /sys/block/sda/queue/scheduler 
-> 
->   (2)#sysbench --test=fileio --num-threads=1 --file-total-size=10G --file-test-mode=seqrd prepare
-> 
->   (3)#sysbench --test=fileio --num-threads=1 --file-total-size=10G --file-test-mode=seqrd run
->       [snip]
->       Operations performed:  655360 Read, 0 Write, 0 Other = 655360 Total
->       Read 10Gb  Written 0b  Total transferred 10Gb  (77.835Mb/sec)
->       4981.44 Requests/sec executed                   ~~~~~~~~~~~
->   (4)#sysbench --test=fileio --num-threads=1 --file-total-size=10G --file-test-mode=seqrd cleanup
-> 
->   (5)#sysbench --test=fileio --num-threads=5 --file-total-size=10G --file-test-mode=seqrd prepare
->   (6)#sysbench --test=fileio --num-threads=5 --file-total-size=10G --file-test-mode=seqrd run
->       [snip]
->       Operations performed:  655360 Read, 0 Write, 0 Other = 655360 Total
->       Read 10Gb  Written 0b  Total transferred 10Gb  (43.396Mb/sec)
->       2777.35 Requests/sec executed                   ~~~~~~~~~~~~
->   (7)#sysbench --test=fileio --num-threads=5 --file-total-size=10G --file-test-mode=seqrd cleanup
-> 
-> when doing step 2 or 5, sysbench creats 128 files, and 80M each one. 
-> when doing step 4 or 7, sysbench deletes the files. 
-> when doing step 3 or 6, thread reads these files continuously and 
-> reads file-block-size(default:16Kbyte) at once, just like :
-> 
->        t_0   t_0   t_0   t_0   t_0   t_0   t_0
->         ^     ^     ^     ^     ^     ^     ^
->      ---|-----|-----|-----|-----|-----|-----|--------
-> file | 16k | 16k | 16k | 16k | 16k | 16k | 16k | ... 
->      ------------------------------------------------ 
->                   (num-threads=1)
-> 
-> (t_0 stand for the first thread) 
-> 
->        t_0   t_1   t_2   t_3   t_4   t_0   t_1
->         ^     ^     ^     ^     ^     ^     ^
->      ---|-----|-----|-----|-----|-----|-----|--------
-> file | 16k | 16k | 16k | 16k | 16k | 16k | 16k | ... 
->      ------------------------------------------------ 
->                   (num-threads=5)
-> 
-> (the executed threads are decide by the thread scheduler)
-> 
-> 
-> The Hardware Infos:
-> Arch    :x86_64
-> CPU     :4cpu; GenuineIntel 3325.087 MHz
-> MEMORY  :4044128kB
-> 
-> ---- 
-> Shan Wei
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+Thanks
+Josh 
