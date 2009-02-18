@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757786AbZBRVks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758292AbZBRVk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757786AbZBRVks (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:40:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756733AbZBRVfl
+	id S1758292AbZBRVk2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:40:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756704AbZBRVfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:35:41 -0500
-Received: from kroah.org ([198.145.64.141]:56200 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756685AbZBRVfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 18 Feb 2009 16:35:40 -0500
-Date: Wed, 18 Feb 2009 13:32:40 -0800
+Received: from kroah.org ([198.145.64.141]:56188 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756313AbZBRVfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:35:39 -0500
+Date: Wed, 18 Feb 2009 13:32:38 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Tomas Winkler <tomas.winkler@intel.com>,
-       Marcel Holtmann <marcel@holtmann.org>
-Subject: [patch 14/39] Bluetooth: Fix TX error path in btsdio driver
-Message-ID: <20090218213240.GO19814@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Roel Kluin <roel.kluin@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 13/39] 3c505: do not set pcb->data.raw beyond its size
+Message-ID: <20090218213238.GN19814@kroah.com>
 References: <20090218212144.965748151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="bluetooth-fix-tx-error-path-in-btsdio-driver.patch"
+Content-Disposition: inline; filename="3c505-do-not-set-pcb-data.raw-beyond-its-size.patch"
 In-Reply-To: <20090218213021.GA19814@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,29 +40,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Tomas Winkler <tomas.winkler@intel.com>
+From: Roel Kluin <roel.kluin@gmail.com>
 
-commit 7644d63d1348ec044ccd8f775fefe5eb7cbcac69 upstream.
+commit 501aa061bd68169a5b54c123641f8dfa9ad31545 upstream.
 
-This patch fixes accumulating of the header in case packet was requeued
-in the error path.
+Ensure that we do not set pcb->data.raw beyond its size, print an error message
+and return false if we attempt to. A timout message was printed one too early.
 
-Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
-Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/bluetooth/btsdio.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/3c505.c |   26 ++++++++++++++++----------
+ 1 file changed, 16 insertions(+), 10 deletions(-)
 
---- a/drivers/bluetooth/btsdio.c
-+++ b/drivers/bluetooth/btsdio.c
-@@ -91,6 +91,7 @@ static int btsdio_tx_packet(struct btsdi
- 
- 	err = sdio_writesb(data->func, REG_TDAT, skb->data, skb->len);
- 	if (err < 0) {
-+		skb_pull(skb, 4);
- 		sdio_writeb(data->func, 0x01, REG_PC_WRT, NULL);
- 		return err;
+--- a/drivers/net/3c505.c
++++ b/drivers/net/3c505.c
+@@ -493,21 +493,27 @@ static bool receive_pcb(struct net_devic
  	}
+ 	/* read the data */
+ 	spin_lock_irqsave(&adapter->lock, flags);
+-	i = 0;
+-	do {
+-		j = 0;
+-		while (((stat = get_status(dev->base_addr)) & ACRF) == 0 && j++ < 20000);
+-		pcb->data.raw[i++] = inb_command(dev->base_addr);
+-		if (i > MAX_PCB_DATA)
+-			INVALID_PCB_MSG(i);
+-	} while ((stat & ASF_PCB_MASK) != ASF_PCB_END && j < 20000);
++	for (i = 0; i < MAX_PCB_DATA; i++) {
++		for (j = 0; j < 20000; j++) {
++			stat = get_status(dev->base_addr);
++			if (stat & ACRF)
++				break;
++		}
++		pcb->data.raw[i] = inb_command(dev->base_addr);
++		if ((stat & ASF_PCB_MASK) == ASF_PCB_END || j >= 20000)
++			break;
++	}
+ 	spin_unlock_irqrestore(&adapter->lock, flags);
++	if (i >= MAX_PCB_DATA) {
++		INVALID_PCB_MSG(i);
++		return false;
++	}
+ 	if (j >= 20000) {
+ 		TIMEOUT_MSG(__LINE__);
+ 		return false;
+ 	}
+-	/* woops, the last "data" byte was really the length! */
+-	total_length = pcb->data.raw[--i];
++	/* the last "data" byte was really the length! */
++	total_length = pcb->data.raw[i];
+ 
+ 	/* safety check total length vs data length */
+ 	if (total_length != (pcb->length + 2)) {
 
