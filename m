@@ -1,88 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752924AbZBRJbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752947AbZBRJfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752924AbZBRJbR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 04:31:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbZBRJbA
+	id S1752947AbZBRJfi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 04:35:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751788AbZBRJf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 04:31:00 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55477 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750859AbZBRJa7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 04:30:59 -0500
-Date: Wed, 18 Feb 2009 10:30:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>
-Subject: Re: [PATCH 0/6] [git pull] updates for tip/tracing/ftrace
-Message-ID: <20090218093026.GA12152@elte.hu>
-References: <20090217182048.233060814@goodmis.org> <20090218000952.GD12714@elte.hu> <20090218084041.GA27540@elte.hu> <20090218085719.GA31049@elte.hu>
+	Wed, 18 Feb 2009 04:35:28 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:51609 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750859AbZBRJf1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 04:35:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=J6vKNLz5T7YHiRr1mMk1exgu1hUmzoQlysLYYoccKKdKcIdgZlHR/F5poVqv0CBuhv
+         j3kTPZ1A2Nmtd48xJTYWVp3LQNv0J77vi5zmSgSy6HEjRjLiwiLZ3gYBJjWuqJhXhnPn
+         Sbq2zMFtvqG2rvUlHrn0BjmCMvhmlGx7DjhLM=
+Message-ID: <499BD65B.2080307@gmail.com>
+Date: Wed, 18 Feb 2009 10:35:23 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090208 SUSE/3.0b1-7.1 Thunderbird/3.0b2pre
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090218085719.GA31049@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: linux-kernel@vger.kernel.org
+CC: mm-commits@vger.kernel.org, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       tglx@linutronix.de, x86@kernel.org, oleg@redhat.com
+Subject: Re: mmotm 2009-02-17-12-33 uploaded
+References: <200902172050.n1HKorvc028933@imap1.linux-foundation.org> <499B465D.9080502@gmail.com> <499BD2AE.2020205@gmail.com>
+In-Reply-To: <499BD2AE.2020205@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 18.2.2009 10:19, Jiri Slaby wrote:
+> On 18.2.2009 00:21, Jiri Slaby wrote:
+>> On 17.2.2009 21:33, akpm@linux-foundation.org wrote:
+>>> The mm-of-the-moment snapshot 2009-02-17-12-33 has been uploaded to
+>
+> This one:
+> kthreads-move-sched-realeted-initialization-from-kthreadd-context.patch
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+This hunk fixes the problem for me. I have no idea if it is correct though.
 
-> it's one of these recent commits:
-> 
->  fa7c7f6: tracing/core: remove unused parameter in tracing_fill_pipe_page()
->  6eaaa5d: tracing/core: use appropriate waiting on trace_pipe
->  35ebf1c: ftrace: show unlimited when traceon or traceoff has no counter
->  73d8b8b: tracing: fix typing mistake in hint message and comments
->  d2ef7c2: tracing: fix the return value of trace selftest
->  af51309: tracing: use the more proper parameter
->  b6887d7: ftrace: rename _hook to _probe
->  6a24a24: ftrace: clean up coding style
-> 
-> Have not bisected it any further, excluded them from 
-> tip:master for the time being.
+diff --git a/kernel/kthread.c b/kernel/kthread.c
+index c1c3763..caed471 100644
+--- a/kernel/kthread.c
++++ b/kernel/kthread.c
+@@ -73,6 +73,7 @@ static int kthread(void *_create)
 
-actually - it's one of these:
-
-37bd824: Merge branches 'tracing/ftrace' and 'tracing/urgent' into tracing/core
-5b058bc: tracing/function-graph-tracer: trace the idle tasks
-73d3fd9: ftrace: fix !CONFIG_DYNAMIC_FTRACE ftrace_swapper_pid definition
-97d0bb8: ftrace: fix !CONFIG_FTRACE [un_]register_ftrace_command() prototypes
-f492d3f8: Merge branch 'tip/tracing/ftrace' of git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace into tracing/ftrace
-c4e2b43: Merge branches 'tracing/hw-branch-tracing' and 'tracing/power-tracer' into tracing/core
-e110e3d: ftrace: add pretty print function for traceon and traceoff hooks
-809dcf2: ftrace: add pretty print to selected fuction traces
-8fc0c70: ftrace: show selected functions in set_ftrace_filter
-23b4ff3: ftrace: add traceon traceoff commands to enable/disable the buffers
-988ae9d: ring-buffer: add tracing_is_on to test if ring buffer is enabled
-59df055: ftrace: trace different functions with a different tracer
-e6ea44e: ftrace: consolidate mutexes
-52baf11: ftrace: convert ftrace_lock from a spinlock to mutex
-f618077: ftrace: add command interface for function selection
-e68746a: ftrace: enable filtering only when a function is filtered on
-64e7c44: ftrace: add module command function filter selection
-9f4801e: ftrace: break up ftrace_match_records into smaller components
-7f24b31: ftrace: rename ftrace_match to ftrace_match_records
-265c831: ftrace: add do_for_each_ftrace_rec and while_for_each_ftrace_rec
-0c75a3e: ftrace: state that all functions are enabled in set_ftrace_filter
-
-i specifically reverted this one:
-
-5b058bc: tracing/function-graph-tracer: trace the idle tasks
-
-but that wasnt enough, so it's one of the other ones.
-
-	Ingo
+         /* OK, tell user we're spawned, wait for stop or wakeup */
+         __set_current_state(TASK_UNINTERRUPTIBLE);
++       create->result = current;
+         complete(&create->done);
+         schedule();
