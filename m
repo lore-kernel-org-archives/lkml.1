@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757325AbZBRBbc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756392AbZBRBbN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757325AbZBRBbc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 20:31:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757246AbZBRBbD
+	id S1756392AbZBRBbN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 20:31:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754676AbZBRB3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 20:31:03 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:50801 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1757243AbZBRBbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 20:31:01 -0500
-Message-ID: <499B64DA.5070403@cn.fujitsu.com>
-Date: Wed, 18 Feb 2009 09:31:06 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 17 Feb 2009 20:29:42 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:47591 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756877AbZBRB3l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 20:29:41 -0500
+Date: Tue, 17 Feb 2009 20:29:38 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: linux-kernel@vger.kernel.org
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 6/6] ftrace: show unlimited when traceon or traceoff has
+ no counter
+In-Reply-To: <20090217182126.214630484@goodmis.org>
+Message-ID: <alpine.DEB.1.10.0902172028540.14430@gandalf.stny.rr.com>
+References: <20090217182048.233060814@goodmis.org> <20090217182126.214630484@goodmis.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: [PATCH] cgroups: update documentation about css_set hash table
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The css_set hash table was introduced in 2.6.26, so update the documentation
-accordingly.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- Documentation/cgroups/cgroups.txt |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+On Tue, 17 Feb 2009, Steven Rostedt wrote:
 
-diff --git a/Documentation/cgroups/cgroups.txt b/Documentation/cgroups/cgroups.txt
-index d9e5d6f..93feb84 100644
---- a/Documentation/cgroups/cgroups.txt
-+++ b/Documentation/cgroups/cgroups.txt
-@@ -252,10 +252,8 @@ cgroup file system directories.
- When a task is moved from one cgroup to another, it gets a new
- css_set pointer - if there's an already existing css_set with the
- desired collection of cgroups then that group is reused, else a new
--css_set is allocated. Note that the current implementation uses a
--linear search to locate an appropriate existing css_set, so isn't
--very efficient. A future version will use a hash table for better
--performance.
-+css_set is allocated. The appropriate existing css_set is located by
-+looking into a hash table.
- 
- To allow access from a cgroup to the css_sets (and hence tasks)
- that comprise it, a set of cg_cgroup_link objects form a lattice;
--- 
-1.5.4.rc3
+> From: Steven Rostedt <srostedt@redhat.com>
+> 
+> Impact: clean up
+> 
+> The traceon and traceoff function probes are confusing to developers
+> to what happens when a counter is not specified. This should help
+> clear things up.
+> 
+>  # echo "*:traceoff" > set_ftrace_filter
+
+Silly cut and paste error. That should have been:
+
+  # echo "do_fork:traceoff" > set_ftrace_filter
+
+Oh well.
+
+-- Steve
+
+>  # cat /debug/tracing/set_ftrace_filter
+> 
+>   #### all functions enabled ####
+>   do_fork:traceoff:unlimited
+> 
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
