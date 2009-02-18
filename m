@@ -1,42 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754418AbZBRCIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237AbZBRCOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754418AbZBRCIQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 21:08:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbZBRCIA
+	id S1754237AbZBRCOv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 21:14:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbZBRCOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 21:08:00 -0500
-Received: from kroah.org ([198.145.64.141]:54894 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752267AbZBRCIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 21:08:00 -0500
-Date: Tue, 17 Feb 2009 17:44:11 -0800
-From: Greg KH <greg@kroah.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Roel Kluin <roel.kluin@gmail.com>, Greg KH <gregkh@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] staging: &&/|| typo
-Message-ID: <20090218014411.GA30552@kroah.com>
-References: <49986CCF.4010005@gmail.com> <adamycn7aqx.fsf@cisco.com>
+	Tue, 17 Feb 2009 21:14:42 -0500
+Received: from hera.kernel.org ([140.211.167.34]:42238 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751249AbZBRCOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 21:14:41 -0500
+Message-ID: <499B6EEB.9040704@kernel.org>
+Date: Tue, 17 Feb 2009 18:14:03 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <adamycn7aqx.fsf@cisco.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: david@lang.hm
+CC: Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       DL-MPTFusionLinux@lsi.com
+Subject: Re: mpt fusion broken sometime since 2.6.24
+References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>  <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm>  <20090217230050.GG16841@parisc-linux.org>  <alpine.DEB.1.10.0902171506500.26625@asgard.lang.hm> <86802c440902171511s1abcc0eao560df4b8fcea0e7c@mail.gmail.com> <alpine.DEB.1.10.0902171514120.26625@asgard.lang.hm> <499B46B2.5040601@kernel.org> <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm> <499B6BF7.9090300@kernel.org> <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm>
+In-Reply-To: <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 15, 2009 at 11:36:54AM -0800, Roland Dreier wrote:
->  > -	if(fifo_size != 0x400 || fifo_size != 0x2000)
->  > +	if(fifo_size != 0x400 && fifo_size != 0x2000)
+david@lang.hm wrote:
+> On Tue, 17 Feb 2009, Yinghai Lu wrote:
 > 
-> What does the presence of this bug say about the probability that this
-> code has ever been used for anything real?
+>> david@lang.hm wrote:
+>>> On Tue, 17 Feb 2009, Yinghai Lu wrote:
+>>>
+>>>> david@lang.hm wrote:
+>>>>> On Tue, 17 Feb 2009, Yinghai Lu wrote:
+>>>>>
+>>>>>> Subject: Re: mpt fusion broken sometime since 2.6.24
+>>>>>>
+>>>>>> On Tue, Feb 17, 2009 at 3:07 PM,  <david@lang.hm> wrote:
+>>>>>>> On Tue, 17 Feb 2009, Matthew Wilcox wrote:
+>>>>>>>
+>>>>>>>> On Tue, Feb 17, 2009 at 01:44:55PM -0800, david@lang.hm wrote:
+>>>>>>>>>
+>>>>>>>>> I got a picture of the failed boot at
+>>>>>>>>> http://linux.lang.hm/linux/IMG00052.jpg
+>>>>>>>>
+>>>>>>>> The PCI-MSI line is probably indicative.  Can you try booting with:
+>>>>>>>>
+>>>>>>>> mptbase.mpt_msi_enable_sas=0
+>>>>>>>>
+>>>>>>>> and also send us an lspci -v so we can update the blacklist?
+>>>>>>>
+>>>>>>> is that disabling SAS for this system? if so, that's the wrong thing
+>>>>>>> to do
+>>>>>>> (the drives are SAS)
+>>>>>>>
+>>>>>> it only disable MSI with that mptsas.
+>>>>>> and mptsas will use ioapic routing.
+>>>>>>
+>>>>>> can you post whole bootlog?
+>>>>>
+>>>>> unfortunantly it's booting from CD and the only drives in the
+>>>>> system are
+>>>>> the ones that are not being accessed.
+>>>>
+>>>> i mean with kernel before 2.6.24..
+>>>
+>>> Ok, attached.
+>>>
+>>
+>> so your lsi 1068 is under 8132... need to double check if that chip
+>> really support MSI.
+> 
+> anything I can do in the 2.6.24 kernel? or the 2.8.28.6 kernel?
+> 
+for 2.6.24, it disable msi by default.
 
-With the comedi drivers, I really don't know, they have not had that
-much wide exposure before, despite being around for a very long time.
+for 2.6.28 please have
+mptbase.mpt_msi_enable=0
+in your boot command line.
 
-thanks,
-
-greg k-h
+YH
