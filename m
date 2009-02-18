@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbZBRMdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbZBRMhE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754290AbZBRMdo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 07:33:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbZBRMd2
+	id S1754013AbZBRMhE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 07:37:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbZBRMgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 07:33:28 -0500
-Received: from stinky.trash.net ([213.144.137.162]:51319 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754000AbZBRMd0 (ORCPT
+	Wed, 18 Feb 2009 07:36:54 -0500
+Received: from rv-out-0506.google.com ([209.85.198.235]:54229 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751953AbZBRMgy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 07:33:26 -0500
-Message-ID: <499C0014.6090308@trash.net>
-Date: Wed, 18 Feb 2009 13:33:24 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 18 Feb 2009 07:36:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=LsAKPxvEtuDdL+blFsU7DvsJ23Kf3yLzMxZG0CybNeDvhTBYVPoKEK+prMQXr3uEey
+         3N3dLIfKWnU5FfKb/MYI8N5m1k/H20PyO87VIPtFqy5rQu8klMrKqqISygWQWR4II8Kn
+         EftKy7uRzvcM5/vA4xFWObNckQ+Lu8n49bhnE=
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: David Miller <davem@davemloft.net>, shemminger@vyatta.com,
-       rick.jones2@hp.com, dada1@cosmosbay.com, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, tglx@linutronix.de,
-       gandalf@wlug.westbo.se, linux-kernel@vger.kernel.org
-Subject: Re: [RFT 2/4] Add mod_timer_noact
-References: <20090218051906.174295181@vyatta.com> <20090218052747.437271195@vyatta.com> <20090218092041.GC3294@elte.hu> <20090218.013007.117003889.davem@davemloft.net> <20090218110144.GA4100@elte.hu>
-In-Reply-To: <20090218110144.GA4100@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+In-Reply-To: <1234960267.4637.62.camel@laptop>
+References: <20090218212730.dde6942b.minchan.kim@barrios-desktop>
+	 <1234960267.4637.62.camel@laptop>
+Date: Wed, 18 Feb 2009 21:36:52 +0900
+Message-ID: <28c262360902180436i47f69578h2b6bce69cd2b4df@mail.gmail.com>
+Subject: Re: [PATCH v2] perfcounters: clean up rotate_percpu
+From: MinChan Kim <minchan.kim@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> In other words, the changelog is useless and even borderline 
-> deceptive. Not a good sign if you are trying to get a patch 
-> accepted to the kernel.
-> 
-> Furthermore, no performance figures were posted along with this 
-> modification - it only stated that these are "performance 
-> improvements". Especially in cases where a change slows down the 
-> common case the showing of a very substantial performance 
-> benefit is a must-have, before a patch is considered for 
-> upstream merging.
+On Wed, Feb 18, 2009 at 9:31 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Wed, 2009-02-18 at 21:27 +0900, MinChan Kim wrote:
+>> Ingo implemented rotate function at 235c7fc7c500e4fd1700c4ad01b5612bcdc1b449.
+>> I think he want to implement rotate_percpu but he don't implement it yet.
+>>
+>> If we need not it immediately,
+>> It would be better to remove it until we will need it again.
+>
+> It seems to me, a more constructive patch would be to implement it for
+> him.
 
-I think this is mainly a misunderstanding, Stephen posted these
-patches as RFT so Rick and Eric could do benchmarks, they were
-not intended for merging at this time.
+If it is his intention, I don't care about this patch commit. :)
 
-> In fact, the submission incorrectly stated:
-> 
-> | This patch set is against Patrick's netfilter next tree since
-> | it is where it should end up.
-> |      
-> | git.kernel.org:/pub/scm/linux/kernel/git/kaber/nf-next-2.6.git
-> 
-> This is wrong, the "netfilter next tree" is not where the "Add 
-> mod_timer_noact" change should end up, and you should ask your 
-> contributors to submit changes to other subsystems to their 
-> respective maintainer trees - the timer tree in this case.
-
-Absolutely, I wouldn't have taken it, and Dave wouldn't have taken
-it from me, so no cause for alarm :)
-
-
+-- 
+Kinds regards,
+MinChan Kim
