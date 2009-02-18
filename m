@@ -1,100 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756553AbZBRV3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbZBRVdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756553AbZBRV3V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:29:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbZBRV3F
+	id S1756277AbZBRVdT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:33:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbZBRVdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:29:05 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:47865 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752020AbZBRV3E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:29:04 -0500
-Date: Wed, 18 Feb 2009 13:29:01 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: John Dykstra <john.dykstra1@gmail.com>
-Cc: Brian Haley <brian.haley@hp.com>, jamagallon@ono.com,
-       Valdis.Kletnieks@vt.edu, YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       bonding-devel@lists.sourceforge.net, rjw@sisk.pl,
-       Vlad Yasevich <vladislav.yasevich@hp.com>,
-       Chuck Lever <chuck.lever@oracle.com>, Theodore Tso <tytso@mit.edu>,
-       arvidjaar@mail.ru, David Miller <davem@davemloft.net>
-Subject: Re: [Bonding-devel] 2.6.29 regression? Bonding tied to IPV6 in
- 29-rc5
-Message-ID: <20090218132901.1b76e859@extreme>
-In-Reply-To: <1234992067.7692.38.camel@Maple>
-References: <200902172001.41804.arvidjaar@mail.ru>
-	<20090217.142946.232071526.davem@davemloft.net>
-	<25143.1234932076@turing-police.cc.vt.edu>
-	<20090217.212919.259912220.davem@davemloft.net>
-	<20090218135537.GF3600@mini-me.lan>
-	<06F54D7E-EE07-49C9-AD8F-B46BD6B02ABA@oracle.com>
-	<499C5486.5020807@hp.com>
-	<499C681A.6000008@hp.com>
-	<1234992067.7692.38.camel@Maple>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
+	Wed, 18 Feb 2009 16:33:07 -0500
+Received: from wf-out-1314.google.com ([209.85.200.170]:18817 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752611AbZBRVdE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:33:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=qxLcnyIu2pOjdgvAbYQwvgAC3od068DjYSRG0lFwycFJwmsErUGX0hPj7u0stlUvPP
+         kjZs9YE2jnpOR9t4NVJtTWPZ8AwUbyER40evivJDFq5zZuMZ8TueXRgWO+OD6n02goaC
+         zKixGzG90jR/TWVAb7NzR8Qpn2OWba8x0rW8k=
+Subject: [RFC PATCH] kernel: add -D__CHECK_ENDIAN__ by default
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Al Viro <viro@ZenIV.linux.org.uk>
+Content-Type: text/plain
+Date: Wed, 18 Feb 2009 13:33:01 -0800
+Message-Id: <1234992781.31073.192.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Feb 2009 21:21:07 +0000
-John Dykstra <john.dykstra1@gmail.com> wrote:
+The noise level with endian checking is getting to the point where
+having this enabled by default wouldn't be too bad.  If this were to
+go in for the 2.6.30 devel cycle it may motivate the last sections that
+are still particularly noisy (sound/, drivers/scsi/ come to mind)
 
-> On Wed, 2009-02-18 at 14:57 -0500, Brian Haley wrote: 
-> > Vlad Yasevich wrote:
-> > > Having worked in other environments where ipv6 has to be explicitly
-> > > enabled per interface, I've thought that this level of control was
-> > > always missing from linux.  
-> > 
-> > There does seem to be a sysctl for it, just doesn't seem to work.
-> 
-> While this sysctl is definitely useful, I don't think it meets the needs
-> of those users and distributions that are currently blacklisting the
-> ipv6 module.  Even if you disable IPv6 on all interfaces, apps will
-> still be able to create AF_INET6 sockets, and thus some apps will break
-> or do inappropriate things because there isn't real IPv6 connectivity.
-> 
-> I've tried to put together an RFC patch that turned off all
-> externally-visible IPv6 behavior that could break something, but I keep
-> running into distasteful choices.
-> 
-> The current default behavior must be preserved--if you drop this patch
-> into an existing distribution, the IPv6 stack must come up the way it
-> always has.  Thus the knob (let's call it ip6_disable) must default
-> false.
-> 
-> It seems desirable to make this a per-net-namespace knob.  But that
-> means each new net will be initialized before the distribution has a
-> chance to disable the IPv6 part.  This will lead to neighbor solicits
-> going out for link-local addresses, which some people can't accept.
-> 
-> The only alternative I can think of is to make it a module parameter,
-> which would leverage people's current habit to disable IPv6 via the
-> module configuration files, but doesn't fit well into a virtualized
-> world.
-> 
-> Exactly what to disable is unclear too.  Turning off neighbor and router
-> solicits, responding to same, etc.--almost certainly.  Refusing to
-> create AF_INET6 sockets--definitely.  Erroring on ioctl() and netlink
-> API calls related to IPv6--probably.  Hiding /proc entries for IPv6--I
-> don't know.  
-> 
-> Ideally, once ip6_disable was set true, every API, /proc and /sys
-> entries, etc. would look just like the ipv6 module was not loaded.  But
-> to do this, while still initializing most of the IPv6 code (so that
-> those hooks from other modules won't do unexpected things) is very
-> invasive.
-> 
-> So it seems to me that the only practical solution is to live with
-> blacklisting module ipv6 until the apps are fixed and sending IPv6
-> packets isn't considered a crime.
-> 
->   --  John
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-There are also ipv6 purists who would like to see the same mechanism
-exist to force ipv6 only (no ipv4). So any long term solution should
-support both.
+diff --git a/Makefile b/Makefile
+index 96628d0..4d4e400 100644
+--- a/Makefile
++++ b/Makefile
+@@ -326,7 +326,7 @@ PERL		= perl
+ CHECK		= sparse
+ 
+ CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
+-		  -Wbitwise -Wno-return-void $(CF)
++		  -D__CHECK_ENDIAN__ -Wbitwise -Wno-return-void $(CF)
+ MODFLAGS	= -DMODULE
+ CFLAGS_MODULE   = $(MODFLAGS)
+ AFLAGS_MODULE   = $(MODFLAGS)
+-- 
+1.6.2.rc1.175.g96b8a
+
+
+
