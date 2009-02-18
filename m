@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760742AbZBRWmy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760796AbZBRWnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760742AbZBRWmy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 17:42:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756747AbZBRWck
+	id S1760796AbZBRWnT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 17:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbZBRWcm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 17:32:40 -0500
-Received: from kroah.org ([198.145.64.141]:35062 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 17:32:42 -0500
+Received: from kroah.org ([198.145.64.141]:35069 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757121AbZBRWcU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 17:32:20 -0500
-Date: Wed, 18 Feb 2009 14:29:49 -0800
+	id S1757284AbZBRWcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 17:32:21 -0500
+Date: Wed, 18 Feb 2009 14:29:51 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,19 +24,18 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
        "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [patch 29/36] ext4: mark the blocks/inode bitmap beyond end of
-	group as used
-Message-ID: <20090218222949.GD10668@kroah.com>
+Subject: [patch 30/36] ext4: Dont allow new groups to be added during block
+	allocation
+Message-ID: <20090218222951.GE10668@kroah.com>
 References: <20090218222447.432108614@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext4-mark-the-blocks-inode-bitmap-beyond-end-of-group-as-used.patch"
+Content-Disposition: inline; filename="ext4-don-t-allow-new-groups-to-be-added-during-block-allocation.patch"
 In-Reply-To: <20090218222841.GA10668@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-
 
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
@@ -44,67 +43,99 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-(cherry picked from commit 648f5879f5892dddd3ba71cd0d285599f40f2512)
+(cherry picked from commit 8556e8f3b6c4c11601ce1e9ea8090a6d8bd5daae)
 
-We need to mark the block/inode bitmap beyond the end of the group
-with '1'.
+After we mark the blocks in the buddy cache as allocated,
+we need to ensure that we don't reinit the buddy cache until
+the block bitmap is updated.  This commit achieves this by holding
+the group_info alloc_semaphore till ext4_mb_release_context
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/ialloc.c  |    2 +-
- fs/ext4/mballoc.c |    4 ++--
- fs/ext4/resize.c  |    6 ++----
- 3 files changed, 5 insertions(+), 7 deletions(-)
+ fs/ext4/mballoc.c |   18 ++++++++++++++----
+ fs/ext4/mballoc.h |    5 +++++
+ 2 files changed, 19 insertions(+), 4 deletions(-)
 
---- a/fs/ext4/ialloc.c
-+++ b/fs/ext4/ialloc.c
-@@ -84,7 +84,7 @@ unsigned ext4_init_inode_bitmap(struct s
- 	}
- 
- 	memset(bh->b_data, 0, (EXT4_INODES_PER_GROUP(sb) + 7) / 8);
--	mark_bitmap_end(EXT4_INODES_PER_GROUP(sb), EXT4_BLOCKS_PER_GROUP(sb),
-+	mark_bitmap_end(EXT4_INODES_PER_GROUP(sb), sb->s_blocksize * 8,
- 			bh->b_data);
- 
- 	return EXT4_INODES_PER_GROUP(sb);
 --- a/fs/ext4/mballoc.c
 +++ b/fs/ext4/mballoc.c
-@@ -3148,8 +3148,8 @@ ext4_mb_mark_diskspace_used(struct ext4_
+@@ -1054,7 +1054,8 @@ static void ext4_mb_release_desc(struct 
+ 	if (e4b->bd_buddy_page)
+ 		page_cache_release(e4b->bd_buddy_page);
+ 	/* Done with the buddy cache */
+-	up_read(e4b->alloc_semp);
++	if (e4b->alloc_semp)
++		up_read(e4b->alloc_semp);
+ }
+ 
+ 
+@@ -1374,7 +1375,9 @@ static void ext4_mb_use_best_found(struc
+ 	get_page(ac->ac_bitmap_page);
+ 	ac->ac_buddy_page = e4b->bd_buddy_page;
+ 	get_page(ac->ac_buddy_page);
+-
++	/* on allocation we use ac to track the held semaphore */
++	ac->alloc_semp =  e4b->alloc_semp;
++	e4b->alloc_semp = NULL;
+ 	/* store last allocated for subsequent stream allocation */
+ 	if ((ac->ac_flags & EXT4_MB_HINT_DATA)) {
+ 		spin_lock(&sbi->s_md_lock);
+@@ -3148,7 +3151,7 @@ ext4_mb_mark_diskspace_used(struct ext4_
  	    in_range(block + len - 1, ext4_inode_table(sb, gdp),
  		     EXT4_SB(sb)->s_itb_per_group)) {
  		ext4_error(sb, __func__,
--			   "Allocating block in system zone - block = %llu",
--			   block);
-+			   "Allocating block %llu in system zone of %d group\n",
-+			   block, ac->ac_b_ex.fe_group);
+-			   "Allocating block %llu in system zone of %d group\n",
++			   "Allocating block %llu in system zone of %lu group\n",
+ 			   block, ac->ac_b_ex.fe_group);
  		/* File system mounted not to panic on error
  		 * Fix the bitmap and repeat the block allocation
- 		 * We leak some of the blocks here.
---- a/fs/ext4/resize.c
-+++ b/fs/ext4/resize.c
-@@ -284,11 +284,9 @@ static int setup_new_group_blocks(struct
- 	if ((err = extend_or_restart_transaction(handle, 2, bh)))
- 		goto exit_bh;
+@@ -4399,6 +4402,7 @@ ext4_mb_initialize_context(struct ext4_a
+ 	ac->ac_pa = NULL;
+ 	ac->ac_bitmap_page = NULL;
+ 	ac->ac_buddy_page = NULL;
++	ac->alloc_semp = NULL;
+ 	ac->ac_lg = NULL;
  
--	mark_bitmap_end(input->blocks_count, EXT4_BLOCKS_PER_GROUP(sb),
--			bh->b_data);
-+	mark_bitmap_end(input->blocks_count, sb->s_blocksize * 8, bh->b_data);
- 	ext4_journal_dirty_metadata(handle, bh);
- 	brelse(bh);
--
- 	/* Mark unused entries in inode bitmap used */
- 	ext4_debug("clear inode bitmap %#04llx (+%llu)\n",
- 		   input->inode_bitmap, input->inode_bitmap - start);
-@@ -297,7 +295,7 @@ static int setup_new_group_blocks(struct
- 		goto exit_journal;
+ 	/* we have to define context: we'll we work with a file or
+@@ -4579,6 +4583,8 @@ static int ext4_mb_release_context(struc
+ 		}
+ 		ext4_mb_put_pa(ac, ac->ac_sb, pa);
  	}
- 
--	mark_bitmap_end(EXT4_INODES_PER_GROUP(sb), EXT4_BLOCKS_PER_GROUP(sb),
-+	mark_bitmap_end(EXT4_INODES_PER_GROUP(sb), sb->s_blocksize * 8,
- 			bh->b_data);
- 	ext4_journal_dirty_metadata(handle, bh);
- exit_bh:
++	if (ac->alloc_semp)
++		up_read(ac->alloc_semp);
+ 	if (ac->ac_bitmap_page)
+ 		page_cache_release(ac->ac_bitmap_page);
+ 	if (ac->ac_buddy_page)
+@@ -4682,10 +4688,14 @@ repeat:
+ 				ac->ac_o_ex.fe_len < ac->ac_b_ex.fe_len)
+ 			ext4_mb_new_preallocation(ac);
+ 	}
+-
+ 	if (likely(ac->ac_status == AC_STATUS_FOUND)) {
+ 		*errp = ext4_mb_mark_diskspace_used(ac, handle);
+ 		if (*errp ==  -EAGAIN) {
++			/*
++			 * drop the reference that we took
++			 * in ext4_mb_use_best_found
++			 */
++			ext4_mb_release_context(ac);
+ 			ac->ac_b_ex.fe_group = 0;
+ 			ac->ac_b_ex.fe_start = 0;
+ 			ac->ac_b_ex.fe_len = 0;
+--- a/fs/ext4/mballoc.h
++++ b/fs/ext4/mballoc.h
+@@ -213,6 +213,11 @@ struct ext4_allocation_context {
+ 	__u8 ac_op;		/* operation, for history only */
+ 	struct page *ac_bitmap_page;
+ 	struct page *ac_buddy_page;
++	/*
++	 * pointer to the held semaphore upon successful
++	 * block allocation
++	 */
++	struct rw_semaphore *alloc_semp;
+ 	struct ext4_prealloc_space *ac_pa;
+ 	struct ext4_locality_group *ac_lg;
+ };
 
