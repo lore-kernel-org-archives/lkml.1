@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752724AbZBRJBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752466AbZBRJPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752724AbZBRJBS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 04:01:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZBRJBH
+	id S1752466AbZBRJPm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 04:15:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbZBRJPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 04:01:07 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:55946 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751034AbZBRJBG (ORCPT
+	Wed, 18 Feb 2009 04:15:25 -0500
+Received: from mail-ew0-f31.google.com ([209.85.219.31]:52110 "EHLO
+	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751504AbZBRJPY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 04:01:06 -0500
-Subject: Re: [patch] SLQB slab allocator (try 2)
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>
-In-Reply-To: <1234946582.2604.423.camel@ymzhang>
-References: <20090123154653.GA14517@wotan.suse.de>
-	 <200902041748.41801.nickpiggin@yahoo.com.au>
-	 <20090204152709.GA4799@csn.ul.ie>
-	 <200902051459.30064.nickpiggin@yahoo.com.au>
-	 <20090216184200.GA31264@csn.ul.ie> <4999BBE6.2080003@cs.helsinki.fi>
-	 <alpine.DEB.1.10.0902171120040.27813@qirst.com>
-	 <1234890096.11511.6.camel@penberg-laptop>
-	 <alpine.DEB.1.10.0902171204070.15929@qirst.com>
-	 <1234919143.2604.417.camel@ymzhang>
-	 <1234943296.24030.2.camel@penberg-laptop>
-	 <1234946582.2604.423.camel@ymzhang>
-Date: Wed, 18 Feb 2009 11:01:04 +0200
-Message-Id: <1234947664.24030.39.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Wed, 18 Feb 2009 04:15:24 -0500
+MIME-Version: 1.0
+In-Reply-To: <200902181528.29697.rusty@rustcorp.com.au>
+References: <1234722028-8110-1-git-send-email-andr345@gmail.com>
+	 <cc43514a0902170242m5af7e511ne00f424f06a5da22@mail.gmail.com>
+	 <ac3eb2510902170353ia62a630nbe5cf059ca7d616e@mail.gmail.com>
+	 <200902181528.29697.rusty@rustcorp.com.au>
+Date: Wed, 18 Feb 2009 10:15:21 +0100
+Message-ID: <ac3eb2510902180115o4690a335n129e4df695540de0@mail.gmail.com>
+Subject: Re: [RFC PATCH 0/6] module, kbuild: Faster boot with custom kernel.
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andreas Robinson <andr345@gmail.com>, sam@ravnborg.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-18 at 16:43 +0800, Zhang, Yanmin wrote:
-> > > Code: be 3f 06 00 00 48 c7 c7 c7 96 80 80 e8 b8 e2 f9 ff e8 c5 c2
-> 45 00 9c 5b fa 65 8b 04 25 24 00 00 00 48 98 49 8b 94 c4 e8  
-> > > RIP  [<ffffffff8028fae3>] kmem_cache_alloc+0x43/0x97
-> > >  RSP <ffff88022f865e20>
-> > > CR2: 0000000000000000
-> > > ---[ end trace a7919e7f17c0a725 ]---
-> > > swapper used greatest stack depth: 5376 bytes left
-> > > Kernel panic - not syncing: Attempted to kill init!
-> > 
-> > Aah, we need to fix up some more PAGE_SHIFTs in the code.
-> The new patch fixes hang issue. netperf UDP-U-4k (start CPU_NUM clients) result is pretty good.
+On Wed, Feb 18, 2009 at 05:58, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> On Tuesday 17 February 2009 22:23:25 Kay Sievers wrote:
+>> Monolithic versus modular kernels usually
+>> make about 2+ seconds difference on a recent laptop.
+>
+> Thanks for the fact injection.  How about a megamodule then?
 
-Do you have your patch on top of it as well? Btw, can I add a Tested-by
-tag from you to the patch?
+Sounds interesting. The ability to load multiple modules with a single
+call may help, if such a call could be handled faster than individual
+calls. Modprobe's modules added by dependencies of the requested
+module, or modprobe -a could probably use such a facility.
 
-			Pekka
+Or do you think, the time the kernel needs to be locked can be
+minimized somehow, so we get more parallelism and less serialization?
 
+The current load_module() wraps ~400 lines of pretty heavy code in
+stop_machine(), if we could possibly make that window smaller, so that
+multiple instances could prepare some of the work in parallel, and
+only a fraction of the current work would need to be serialized?
+
+If that could be improved for the common distro case of running ~90
+modprobe calls on bootup, many of them running in parallel, linking
+~100 modules in, all in a time-frame of ~2-3 seconds -- that maybe
+would attack the real "problem"?
+
+Thanks,
+Kay
