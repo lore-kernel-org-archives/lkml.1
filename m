@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755574AbZBRRUI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755627AbZBRRVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755574AbZBRRUI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 12:20:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbZBRRT4
+	id S1755627AbZBRRVn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 12:21:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZBRRVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 12:19:56 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47441 "EHLO mx2.mail.elte.hu"
+	Wed, 18 Feb 2009 12:21:34 -0500
+Received: from cmpxchg.org ([85.214.51.133]:56590 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754026AbZBRRTz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 12:19:55 -0500
-Date: Wed, 18 Feb 2009 18:19:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Fenghua Yu <fenghua.yu@intel.com>, David Woodhouse <dwmw2@infradead.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       'iommu@lists.linux-foundation.org', LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Suspend and Resume Support for Intel IOMMU
-Message-ID: <20090218171935.GA14625@elte.hu>
-References: <20090218165633.GA20167@linux-os.sc.intel.com> <alpine.LFD.2.00.0902180910160.21686@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752752AbZBRRVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 12:21:34 -0500
+Date: Wed, 18 Feb 2009 18:23:37 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
+       Andrew Morton <akpm@osdl.org>, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [Patch] mm: fix null pointer dereference in vm_normal_page()
+Message-ID: <20090218172337.GA1767@cmpxchg.org>
+References: <20090218125649.GU7272@hack.private>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0902180910160.21686@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090218125649.GU7272@hack.private>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Wed, 18 Feb 2009, Fenghua Yu wrote:
-> >
-> > +static int vtd_enabled;
-> ..
-> > +static int iommu_resume(struct sys_device *dev)
-> > +{
-> ..
-> > +	if (!vtd_enabled)
-> > +		return 0;
+On Wed, Feb 18, 2009 at 08:56:49PM +0800, Américo Wang wrote:
 > 
-> Hmm. Why do this?
+> One usage of vm_normal_page() is:
 > 
-> Wouldn't it be much more logical to only register the 
-> iommu_sysdev if the thing is enabled, rather than having an 
-> odd flag that gets tested at runtime?
+>     struct page *page = vm_normal_page(gate_vma, start, *pte);
+> 
+> where gate_vma is returned by get_gate_vma() which can be NULL.
+> So let vm_normal_page return NULL when vma is NULL.
 
-The sysdev_class_register() could be done straight in 
-intel_iommu_init(), because that gets called by pci_iommu_init() 
-which is an fs_initcall() - so all the sysdev facilities should 
-be up and running already.
+I assume you refer to __get_user_pages()...?
 
-	Ingo
+This function checks whether the address is in the gate area and only
+iff so requests the VMA representing it.
+
+If you really did see an oops that is worked-around by your patch,
+then the in_gate_area()/get_gate_vma() in question are broken.
+
+> Signed-off-by: WANG Cong <wangcong@zeuux.org>
+> Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+
+  Nacked-by: Johannes Weiner <hannes@cmpxchg.org>
+
+> ---
+> diff --git a/mm/memory.c b/mm/memory.c
+> index baa999e..e428aa6 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -493,6 +493,9 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
+>  {
+>  	unsigned long pfn = pte_pfn(pte);
+>  
+> +	if (!vma)
+> +		return NULL;
+> +
+>  	if (HAVE_PTE_SPECIAL) {
+>  		if (likely(!pte_special(pte)))
+>  			goto check_pfn;
+> 
+> 
