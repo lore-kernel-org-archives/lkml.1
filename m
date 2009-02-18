@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760369AbZBRWlZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760200AbZBRWkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760369AbZBRWlZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 17:41:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755478AbZBRWcb
+	id S1760200AbZBRWkl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 17:40:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757960AbZBRWcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 17:32:31 -0500
-Received: from kroah.org ([198.145.64.141]:34987 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 17:32:25 -0500
+Received: from kroah.org ([198.145.64.141]:34960 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752793AbZBRWcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 17:32:15 -0500
-Date: Wed, 18 Feb 2009 14:29:41 -0800
+	id S1753128AbZBRWcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 17:32:13 -0500
+Date: Wed, 18 Feb 2009 14:29:38 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,13 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
        "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [patch 24/36] ext4: dont use blocks freed but not yet committed in
-	buddy cache init
-Message-ID: <20090218222941.GY10668@kroah.com>
+Subject: [patch 22/36] ext4: cleanup mballoc header files
+Message-ID: <20090218222938.GW10668@kroah.com>
 References: <20090218222447.432108614@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext4-don-t-use-blocks-freed-but-not-yet-committed-in-buddy-cache-init.patch"
+Content-Disposition: inline; filename="ext4-cleanup-mballoc-header-files.patch"
 In-Reply-To: <20090218222841.GA10668@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -44,182 +43,122 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-(cherry picked from commit 7a2fcbf7f85737735fd44eb34b62315bccf6d6e4)
+(cherry picked from commit c3a326a657562dab81acf05aee106dc1fe345eb4)
 
-When we generate buddy cache (especially during resize) we need to
-make sure we don't use the blocks freed but not yet comitted.  This
-makes sure we have the right value of free blocks count in the group
-info and also in the bitmap.  This also ensures the ordered mode
-consistency
+Move some of the forward declaration of the static functions
+to mballoc.c where they are used. This enables us to include
+mballoc.h in other .c files. Also correct the buddy cache
+documentation.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/mballoc.c |   82 +++++++++++++++++++++++++++++++++++++++---------------
- 1 file changed, 60 insertions(+), 22 deletions(-)
+ fs/ext4/mballoc.c |   22 ++++++++++++++++++----
+ fs/ext4/mballoc.h |   20 +-------------------
+ 2 files changed, 19 insertions(+), 23 deletions(-)
 
 --- a/fs/ext4/mballoc.c
 +++ b/fs/ext4/mballoc.c
-@@ -335,6 +335,8 @@ static struct kmem_cache *ext4_ac_cachep
- static struct kmem_cache *ext4_free_ext_cachep;
- static void ext4_mb_generate_from_pa(struct super_block *sb, void *bitmap,
- 					ext4_group_t group);
-+static void ext4_mb_generate_from_freelist(struct super_block *sb, void *bitmap,
-+						ext4_group_t group);
- static int ext4_mb_init_per_dev_proc(struct super_block *sb);
- static int ext4_mb_destroy_per_dev_proc(struct super_block *sb);
- static void ext4_mb_free_committed_blocks(struct super_block *);
-@@ -858,7 +860,9 @@ static int ext4_mb_init_cache(struct pag
- 			/*
- 			 * incore got set to the group block bitmap below
- 			 */
-+			ext4_lock_group(sb, group);
- 			ext4_mb_generate_buddy(sb, data, incore, group);
-+			ext4_unlock_group(sb, group);
- 			incore = NULL;
- 		} else {
- 			/* this is block of bitmap */
-@@ -872,6 +876,7 @@ static int ext4_mb_init_cache(struct pag
+@@ -100,7 +100,7 @@
+  * inode as:
+  *
+  *  {                        page                        }
+- *  [ group 0 buddy][ group 0 bitmap] [group 1][ group 1]...
++ *  [ group 0 bitmap][ group 0 buddy] [group 1][ group 1]...
+  *
+  *
+  * one block each for bitmap and buddy information.  So for each group we
+@@ -330,6 +330,15 @@
+  *        object
+  *
+  */
++static struct kmem_cache *ext4_pspace_cachep;
++static struct kmem_cache *ext4_ac_cachep;
++static void ext4_mb_generate_from_pa(struct super_block *sb, void *bitmap,
++					ext4_group_t group);
++static int ext4_mb_init_per_dev_proc(struct super_block *sb);
++static int ext4_mb_destroy_per_dev_proc(struct super_block *sb);
++static void ext4_mb_free_committed_blocks(struct super_block *);
++static void ext4_mb_poll_new_transaction(struct super_block *sb,
++					 handle_t *handle);
  
- 			/* mark all preallocated blks used in in-core bitmap */
- 			ext4_mb_generate_from_pa(sb, data, group);
-+			ext4_mb_generate_from_freelist(sb, data, group);
- 			ext4_unlock_group(sb, group);
- 
- 			/* set incore so that the buddy information can be
-@@ -3579,6 +3584,32 @@ ext4_mb_use_preallocated(struct ext4_all
- }
- 
- /*
-+ * the function goes through all block freed in the group
-+ * but not yet committed and marks them used in in-core bitmap.
-+ * buddy must be generated from this bitmap
-+ * Need to be called with ext4 group lock (ext4_lock_group)
-+ */
-+static void ext4_mb_generate_from_freelist(struct super_block *sb, void *bitmap,
-+						ext4_group_t group)
-+{
-+	struct rb_node *n;
-+	struct ext4_group_info *grp;
-+	struct ext4_free_data *entry;
-+
-+	grp = ext4_get_group_info(sb, group);
-+	n = rb_first(&(grp->bb_free_root));
-+
-+	while (n) {
-+		entry = rb_entry(n, struct ext4_free_data, node);
-+		mb_set_bits(sb_bgl_lock(EXT4_SB(sb), group),
-+				bitmap, entry->start_blk,
-+				entry->count);
-+		n = rb_next(n);
-+	}
-+	return;
-+}
-+
-+/*
-  * the function goes through all preallocation in this group and marks them
-  * used in in-core bitmap. buddy must be generated from this bitmap
-  * Need to be called with ext4 group lock (ext4_lock_group)
-@@ -4709,27 +4740,22 @@ static int can_merge(struct ext4_free_da
- 
- static noinline_for_stack int
- ext4_mb_free_metadata(handle_t *handle, struct ext4_buddy *e4b,
--			  ext4_group_t group, ext4_grpblk_t block, int count)
-+			struct ext4_free_data *new_entry)
+ static inline void *mb_correct_addr_and_bit(int *bit, void *addr)
  {
-+	ext4_grpblk_t block;
-+	struct ext4_free_data *entry;
- 	struct ext4_group_info *db = e4b->bd_info;
- 	struct super_block *sb = e4b->bd_sb;
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
--	struct ext4_free_data *entry, *new_entry;
- 	struct rb_node **n = &db->bb_free_root.rb_node, *node;
- 	struct rb_node *parent = NULL, *new_node;
+@@ -718,7 +727,7 @@ static void ext4_mb_generate_buddy(struc
+  * stored in the inode as
+  *
+  * {                        page                        }
+- * [ group 0 buddy][ group 0 bitmap] [group 1][ group 1]...
++ * [ group 0 bitmap][ group 0 buddy] [group 1][ group 1]...
+  *
+  *
+  * one block each for bitmap and buddy information.
+@@ -1320,8 +1329,13 @@ static void ext4_mb_use_best_found(struc
+ 	ac->ac_tail = ret & 0xffff;
+ 	ac->ac_buddy = ret >> 16;
  
+-	/* XXXXXXX: SUCH A HORRIBLE **CK */
+-	/*FIXME!! Why ? */
++	/*
++	 * take the page reference. We want the page to be pinned
++	 * so that we don't get a ext4_mb_init_cache_call for this
++	 * group until we update the bitmap. That would mean we
++	 * double allocate blocks. The reference is dropped
++	 * in ext4_mb_release_context
++	 */
+ 	ac->ac_bitmap_page = e4b->bd_bitmap_page;
+ 	get_page(ac->ac_bitmap_page);
+ 	ac->ac_buddy_page = e4b->bd_buddy_page;
+--- a/fs/ext4/mballoc.h
++++ b/fs/ext4/mballoc.h
+@@ -97,9 +97,6 @@
+  */
+ #define MB_DEFAULT_GROUP_PREALLOC	512
+ 
+-static struct kmem_cache *ext4_pspace_cachep;
+-static struct kmem_cache *ext4_ac_cachep;
 -
- 	BUG_ON(e4b->bd_bitmap_page == NULL);
- 	BUG_ON(e4b->bd_buddy_page == NULL);
+ #ifdef EXT4_BB_MAX_BLOCKS
+ #undef EXT4_BB_MAX_BLOCKS
+ #endif
+@@ -254,8 +251,6 @@ static inline void ext4_mb_store_history
+ {
+ 	return;
+ }
+-#else
+-static void ext4_mb_store_history(struct ext4_allocation_context *ac);
+ #endif
  
--	new_entry  = kmem_cache_alloc(ext4_free_ext_cachep, GFP_NOFS);
--	new_entry->start_blk = block;
--	new_entry->group  = group;
--	new_entry->count = count;
--	new_entry->t_tid = handle->h_transaction->t_tid;
- 	new_node = &new_entry->node;
-+	block = new_entry->start_blk;
+ #define in_range(b, first, len)	((b) >= (first) && (b) <= (first) + (len) - 1)
+@@ -263,19 +258,6 @@ static void ext4_mb_store_history(struct
+ static struct proc_dir_entry *proc_root_ext4;
+ struct buffer_head *read_block_bitmap(struct super_block *, ext4_group_t);
  
--	ext4_lock_group(sb, group);
- 	if (!*n) {
- 		/* first free block exent. We need to
- 		   protect buddy cache from being freed,
-@@ -4788,7 +4814,6 @@ ext4_mb_free_metadata(handle_t *handle, 
- 	spin_lock(&sbi->s_md_lock);
- 	list_add(&new_entry->list, &sbi->s_active_transaction);
- 	spin_unlock(&sbi->s_md_lock);
--	ext4_unlock_group(sb, group);
- 	return 0;
+-static void ext4_mb_generate_from_pa(struct super_block *sb, void *bitmap,
+-					ext4_group_t group);
+-static void ext4_mb_poll_new_transaction(struct super_block *, handle_t *);
+-static void ext4_mb_free_committed_blocks(struct super_block *);
+-static void ext4_mb_return_to_preallocation(struct inode *inode,
+-					struct ext4_buddy *e4b, sector_t block,
+-					int count);
+-static void ext4_mb_put_pa(struct ext4_allocation_context *,
+-			struct super_block *, struct ext4_prealloc_space *pa);
+-static int ext4_mb_init_per_dev_proc(struct super_block *sb);
+-static int ext4_mb_destroy_per_dev_proc(struct super_block *sb);
+-
+-
+ static inline void ext4_lock_group(struct super_block *sb, ext4_group_t group)
+ {
+ 	struct ext4_group_info *grinfo = ext4_get_group_info(sb, group);
+@@ -300,7 +282,7 @@ static inline int ext4_is_group_locked(s
+ 						&(grinfo->bb_state));
  }
  
-@@ -4895,15 +4920,6 @@ do_more:
- 			BUG_ON(!mb_test_bit(bit + i, bitmap_bh->b_data));
- 	}
- #endif
--	mb_clear_bits(sb_bgl_lock(sbi, block_group), bitmap_bh->b_data,
--			bit, count);
--
--	/* We dirtied the bitmap block */
--	BUFFER_TRACE(bitmap_bh, "dirtied bitmap block");
--	err = ext4_journal_dirty_metadata(handle, bitmap_bh);
--	if (err)
--		goto error_return;
--
- 	if (ac) {
- 		ac->ac_b_ex.fe_group = block_group;
- 		ac->ac_b_ex.fe_start = bit;
-@@ -4915,11 +4931,29 @@ do_more:
- 	if (err)
- 		goto error_return;
- 	if (metadata) {
--		/* blocks being freed are metadata. these blocks shouldn't
--		 * be used until this transaction is committed */
--		ext4_mb_free_metadata(handle, &e4b, block_group, bit, count);
-+		struct ext4_free_data *new_entry;
-+		/*
-+		 * blocks being freed are metadata. these blocks shouldn't
-+		 * be used until this transaction is committed
-+		 */
-+		new_entry  = kmem_cache_alloc(ext4_free_ext_cachep, GFP_NOFS);
-+		new_entry->start_blk = bit;
-+		new_entry->group  = block_group;
-+		new_entry->count = count;
-+		new_entry->t_tid = handle->h_transaction->t_tid;
-+		ext4_lock_group(sb, block_group);
-+		mb_clear_bits(sb_bgl_lock(sbi, block_group), bitmap_bh->b_data,
-+				bit, count);
-+		ext4_mb_free_metadata(handle, &e4b, new_entry);
-+		ext4_unlock_group(sb, block_group);
- 	} else {
- 		ext4_lock_group(sb, block_group);
-+		/* need to update group_info->bb_free and bitmap
-+		 * with group lock held. generate_buddy look at
-+		 * them with group lock_held
-+		 */
-+		mb_clear_bits(sb_bgl_lock(sbi, block_group), bitmap_bh->b_data,
-+				bit, count);
- 		mb_free_blocks(inode, &e4b, bit, count);
- 		ext4_mb_return_to_preallocation(inode, &e4b, block, count);
- 		ext4_unlock_group(sb, block_group);
-@@ -4942,6 +4976,10 @@ do_more:
- 
- 	*freed += count;
- 
-+	/* We dirtied the bitmap block */
-+	BUFFER_TRACE(bitmap_bh, "dirtied bitmap block");
-+	err = ext4_journal_dirty_metadata(handle, bitmap_bh);
-+
- 	/* And the group descriptor block */
- 	BUFFER_TRACE(gd_bh, "dirtied group descriptor block");
- 	ret = ext4_journal_dirty_metadata(handle, gd_bh);
+-static ext4_fsblk_t ext4_grp_offs_to_block(struct super_block *sb,
++static inline ext4_fsblk_t ext4_grp_offs_to_block(struct super_block *sb,
+ 					struct ext4_free_extent *fex)
+ {
+ 	ext4_fsblk_t block;
 
