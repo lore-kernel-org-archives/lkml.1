@@ -1,58 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753387AbZBREZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753777AbZBREhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753387AbZBREZj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 23:25:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbZBREZa
+	id S1753777AbZBREhs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 23:37:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZBREhh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 23:25:30 -0500
-Received: from ozlabs.org ([203.10.76.45]:60937 "EHLO ozlabs.org"
+	Tue, 17 Feb 2009 23:37:37 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48916 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751420AbZBREZ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 23:25:29 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: #tj-percpu has been rebased
-Date: Wed, 18 Feb 2009 14:55:10 +1030
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
-Cc: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, cpw@sgi.com
-References: <49833350.1020809@kernel.org> <200902170952.21063.rusty@rustcorp.com.au> <4999F693.5000105@zytor.com>
-In-Reply-To: <4999F693.5000105@zytor.com>
+	id S1751394AbZBREhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 23:37:36 -0500
+Message-ID: <499B9064.4060504@kernel.org>
+Date: Tue, 17 Feb 2009 20:36:52 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: david@lang.hm
+CC: Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       DL-MPTFusionLinux@lsi.com
+Subject: Re: mpt fusion broken sometime since 2.6.24
+References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>  <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm>  <20090217230050.GG16841@parisc-linux.org>  <alpine.DEB.1.10.0902171506500.26625@asgard.lang.hm> <86802c440902171511s1abcc0eao560df4b8fcea0e7c@mail.gmail.com> <alpine.DEB.1.10.0902171514120.26625@asgard.lang.hm> <499B46B2.5040601@kernel.org> <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm> <499B6BF7.9090300@kernel.org> <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm> <499B724A.2040408@kernel.org> <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm> <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm> <499B774C.5010705@kernel.org> <alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm> <499B807B.2050509@kernel.org> <alpine.DEB.1.10.0902171935110.26625@asgard.lang.hm> <499B84CE.7090707@kernel.org> <alpine.DEB.1.10.0902172013230.26625@asgard.lang.hm>
+In-Reply-To: <alpine.DEB.1.10.0902172013230.26625@asgard.lang.hm>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902181455.11572.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 17 February 2009 09:58:19 H. Peter Anvin wrote:
-> Rusty Russell wrote:
-> >>
-> >> All in all I think a dedicated virtual zone per CPU as opposed to
-> >> interleaving them seems to make more sense.  Even with 4096 CPUs and
-> >> reserving, say, 256 MB per CPU it's not that much address space in the
-> >> context of a 47-bit kernel space.  On 32 bits I don't think anything but
-> >> the most trivial amount of percpu space is going to fly no matter what.
-> > 
-> > It's the TLB cost which I really don't want to pay; num_possible_cpus()
-> > 4096 non-NUMA is a little silly (currently impossible).
-> > 
-> > I'm happy to limit per-cpu allocations to pagesize, then you only need to
-> > find num_possible_cpus() contig pages, and if you can't, you fall back to
-> > vmalloc.
-> > 
+david@lang.hm wrote:
+> On Tue, 17 Feb 2009, Yinghai Lu wrote:
 > 
-> num_possible_cpus() can be very large though, so in many cases the
-> likelihood of finding that many pages approach zero.  Furthermore,
-> num_possible_cpus() may be quite a bit larger than the actual number of
-> CPUs in the system.
+>> please try two patches at the same time on 2.6.29-rc5.
+>> don't apply other patch.
+> 
+> I did a git checkout -f HEAD then applied these two patches and the
+> result works.
+> 
 
-Sure, so we end up at vmalloc.  No worse, but simpler and much better if we
-*can* do it.
+good. MSI does work on your system now.
 
-Rusty.
+mptsas 0000:82:03.0: PCI INT A -> GSI 75 (level, low) -> IRQ 75
+
+mptbase: ioc0: Initiating bringup
+
+ioc0: LSISAS1068 B1: Capabilities={Initiator}
+
+mptsas 0000:82:03.0: irq 92 for MSI/MSI-X
+
+mptbase: ioc0: PCI-MSI enabled
+
+scsi8 : ioc0: LSISAS1068 B1, FwRev=01120000h, Ports=1, MaxQ=511, IRQ=92
+
+scsi 8:0:0:0: Direct-Access     SEAGATE  ST3146855SS      RS02 PQ: 0 ANSI: 5
+
+scsi 8:0:0:0: Attached scsi generic sg1 type 0
+
+scsi 8:0:1:0: Direct-Access     SEAGATE  ST3146855SS      RS02 PQ: 0 ANSI: 5
+
+scsi 8:0:1:0: Attached scsi generic sg2 type 0
+
+scsi 8:1:0:0: Direct-Access     LSILOGIC Logical Volume   3000 PQ: 0 ANSI: 2
+
+sd 8:1:0:0: [sda] 285155328 512-byte hardware sectors: (145 GB/135 GiB)
+
+sd 8:1:0:0: [sda] Write Protect is off
+
+sd 8:1:0:0: [sda] Mode Sense: 03 00 00 08
+
+sd 8:1:0:0: [sda] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+
+sd 8:1:0:0: [sda] 285155328 512-byte hardware sectors: (145 GB/135 GiB)
+
+sd 8:1:0:0: [sda] Write Protect is off
+
+sd 8:1:0:0: [sda] Mode Sense: 03 00 00 08
+
+sd 8:1:0:0: [sda] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+
+ sda: sda1 sda2 sda3 sda4
+
+sd 8:1:0:0: [sda] Attached SCSI disk
+
+sd 8:1:0:0: Attached scsi generic sg3 type 0
+
+YH
+
+
+
+
