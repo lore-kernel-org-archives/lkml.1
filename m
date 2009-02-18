@@ -1,147 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754357AbZBRHt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753712AbZBRH5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754357AbZBRHt2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 02:49:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751098AbZBRHtT
+	id S1753712AbZBRH5n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 02:57:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbZBRH5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 02:49:19 -0500
-Received: from crmm.lgl.lu ([158.64.72.228]:47505 "EHLO lll.lu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751237AbZBRHtS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 02:49:18 -0500
-Message-ID: <499BBD62.5090506@knaff.lu>
-Date: Wed, 18 Feb 2009 08:48:50 +0100
-From: Alain Knaff <alain@knaff.lu>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Ingo Molnar <mingo@elte.hu>, Jan Engelhardt <jengelh@medozas.de>,
-       the arch/x86 maintainers <x86@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: tip: bzip2/lzma now in tip:x86/setup-lzma
-References: <200901042146.n04LkHgP005837@hitchhiker.hitchhiker.org.lu.hitchhiker.org.lu> <4961415C.1050708@zytor.com> <49614243.70102@knaff.lu> <496142E4.8040308@zytor.com> <49614491.7020903@knaff.lu> <49614D1F.8020900@zytor.com> <alpine.LSU.2.00.0902172202230.5620@fbirervta.pbzchgretzou.qr> <499B267E.2090509@zytor.com> <20090217220825.GA24337@elte.hu> <20090217233708.GA10756@elte.hu> <499B5BCA.8000905@zytor.com>
-In-Reply-To: <499B5BCA.8000905@zytor.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Feb 2009 02:57:35 -0500
+Received: from ti-out-0910.google.com ([209.85.142.190]:20729 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751618AbZBRH5e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 02:57:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=mNwdqcKJZthpk+2/FnYXTLqNSVwFSxdtaJLEw+GOu+mHtL/fF6wDy2fgjCwkQtokya
+         d/q6WaB1xh19QjM6Vv+jfG1CmUgjKtNuGJ39nBpLj1bmlV3P1jDiiGwybxYKyS/cmDGW
+         9rxGDJC8QclZesgrq5hRl7w7t+PeiqQZcwjiQ=
+From: Cheng Renquan <crquan@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>, Roman Zippel <zippel@linux-m68k.org>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Cheng Renquan <chengrq@uit.com.cn>
+Subject: [PATCH] [KBUILD] add symbol value to help find the real depend
+Date: Wed, 18 Feb 2009 15:57:31 +0800
+Message-Id: <1234943851-10155-1-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Ingo Molnar wrote:
->> still fails:
->>
->> [    3.196037] initcall inet_init+0x0/0x1e9 returned 0 after 101777 usecs           
->> [    3.202886] calling  af_unix_init+0x0/0x55 @ 1                                   
->> [    3.207461] NET: Registered protocol family 1                                    
->> [    3.211950] initcall af_unix_init+0x0/0x55 returned 0 after 4394 usecs           
->> [    3.218624] calling  populate_rootfs+0x0/0xd2 @ 1                                
->> [    3.223460] Kernel panic - not syncing: compression method gzip not configured   
->>
->> config attached.
->>
-> 
-> Okay, I think I've tracked down the problem.
-> 
-> The issue is that usr/Makefile doesn't correctly filter compression 
-> methods which we don't support.  This particular case will happen when 
-> you're building with Ingo's attached configuration *and no bzip2 tool 
-> installed on the system*.
+From: Cheng Renquan <chengrq@uit.com.cn>
 
-Weird. When I tried to reproduce this, I got the following error
-instead, already during compilation:
+kbuild-menuconfig-display-depend-value.patch
 
-  GEN     usr/initramfs_data.cpio.bz2
-/home/alain/Projects/Udpcast/Kernels/linux.trees.git/scripts/gen_initramfs_list.sh:
-line 295: bzip2: command not found
-make[2]: *** [usr/initramfs_data.cpio.bz2] Error 127
-make[1]: *** [usr] Error 2
-make: *** [sub-make] Error 2
+  ©°©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤ RF switch subsystem support ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©´   
+  ©¦ CONFIG_RFKILL:                                                        ©¦   
+  ©¦                                                                       ©¦   
+  ©¦ Say Y here if you want to have control over RF switches               ©¦   
+  ©¦ found on many WiFi and Bluetooth cards.                               ©¦   
+  ©¦                                                                       ©¦   
+  ©¦ To compile this driver as a module, choose M here: the                ©¦   
+  ©¦ module will be called rfkill.                                         ©¦   
+  ©¦                                                                       ©¦   
+  ©¦ Symbol: RFKILL [=m]                                                   ©¦   
+  ©¦ Prompt: RF switch subsystem support                                   ©¦   
+  ©¦   Defined at net/rfkill/Kconfig:4                                     ©¦   
+  ©¦   Depends on: NET [=y]                                                ©¦   
+  ©¦   Location:                                                           ©¦   
+  ©¦     -> Networking support (NET [=y])                                  ©¦   
+  ©¦   Selected by: IWLCORE [=n] && NETDEVICES [=y] && !S390 [=S390] && PC ©¦   
+  ©¦                                                                       ©¦   
+  ©À©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤( 99%)©¤©¤©È   
+  ©¦                               < Exit >                                ©¦   
+  ©¸©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¼   
 
+Signed-off-by: Cheng Renquan <chengrq@uit.com.cn>
 
-hmmm, but on a second glance, there seems to be indeed an issue. When
-compiling it a _second time_, compilation will "succeed" but produce a
-bad kernel because the first attempt left an empty
-usr/initramfs_data.cpio.bz2 .
+---
 
-I'll look into it this evening, probably a case of "bad" failure
-recovery in the Makefile.
-
-> Basically, the algorithm used in usr/Makefile is simply wrong.
-
-Wow, those are mightily strong words...
-
-> The claim is:
-> 
-> +# Find out "preferred" ramdisk compressor. Order of preference is
-> +#  1. bzip2 efficient, and likely to be present
-> +#  2. gzip former default
-> +#  3. lzma
-> +#  4. none
-> +
-> +# None of the above
-> +suffix_y                   =
-> +
-> +# Lzma, but no gzip nor bzip2
-> +suffix_$(CONFIG_RD_LZMA)   = .lzma
-> +
-> +# Gzip, but no bzip2
-> +suffix_$(CONFIG_RD_GZIP)   = .gz
-> +
-> +# Bzip2
-> +suffix_$(CONFIG_RD_BZIP2)  = .bz2
-> 
-> This doesn't end up make any sense.
-
-Huh? Can't we just stay polite here...
-
->  The sanest thing to do is to 
-> compress with all the compressors that are configured into the kernel, 
-> and then use the smallest image of the ones that can be produced, 
-> *including the uncompressed image*.
-
-... so, if I understood correctly, that would mean compressing the
-kernel 4 times, and keeping the smallest?
-Given the relatively low speed of compression, I feel that such a
-feature would really annoy people who compile their kernel often (such
-as kernel or module developers). Indeed, when only changing a single
-file, kernel compression is the most time-consuming part of recompilation.
-
->  Including the uncompressed image 
-> will guarantee that we always have a working option.
-
-Indeed, Ingo's example had the following config:
-# CONFIG_RD_GZIP is not set
-CONFIG_RD_BZIP2=y
-CONFIG_RD_LZMA=y
-
-So, in his case an uncompressed builtin ramdisk would indeed: be the
-only solution because
- 1. gzip is not configured
- 2. bzip2 is not present on build system as per hypothesis
- 3. lzma being more "exotic" than bzip2 would probably be absent too.
-
-> 	-hpa
-
-Maybe another solution would be to make the choice of builtin ramdisk
-compression user-selectable, and default to no compression at all.
-
-Indeed, in the default case, the builtin ramdisk is so small (950 bytes
-uncompressed), that it probably wouldn't really matter anyways.
-
-The only case where it matters is for developers of embedded systems who
-want to replace the builtin ramdisk with a fully populated one, because
-their boot loader does not support loading a "normal" initrd.
-
-These people are (hopefully) knowledgeable enough to pick an appropriate
-compressor (but there's still the issue of notifying them about the
-change, obviously).
-
-Btw, what *is* the standard work flow of supplying your own built-in
-initramfs? Do such developers usually supply a directory tree, or do
-they already cpio it before supplying it to the kernel? Or do they even
-compress it themselves?
-
-Regards,
-
-Alain
+Index: linux-2.6.29-rc5-lio/scripts/kconfig/expr.c
+===================================================================
+--- linux-2.6.29-rc5-lio.orig/scripts/kconfig/expr.c
++++ linux-2.6.29-rc5-lio/scripts/kconfig/expr.c
+@@ -1098,6 +1098,8 @@ void expr_fprint(struct expr *e, FILE *o
+ static void expr_print_gstr_helper(void *data, struct symbol *sym, const char *str)
+ {
+ 	str_append((struct gstr*)data, str);
++	if (sym)
++		str_printf((struct gstr*)data, " [=%s]", sym_get_string_value(sym));
+ }
+ 
+ void expr_gstr_print(struct expr *e, struct gstr *gs)
