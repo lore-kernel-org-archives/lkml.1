@@ -1,82 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbZBRRJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754963AbZBRRLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755442AbZBRRJh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 12:09:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbZBRRJ2
+	id S1754963AbZBRRLS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 12:11:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbZBRRLE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 12:09:28 -0500
-Received: from smtp106.prem.mail.sp1.yahoo.com ([98.136.44.61]:35969 "HELO
-	smtp106.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751566AbZBRRJ1 (ORCPT
+	Wed, 18 Feb 2009 12:11:04 -0500
+Received: from mail-gx0-f222.google.com ([209.85.217.222]:42081 "EHLO
+	mail-gx0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751877AbZBRRLB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 12:09:27 -0500
-X-YMail-OSG: 2KsRb6sVM1nSVWHWMuEGkKFoy9UwLqS70kM4d2sqlleOMu_CYrmfVSp0wdx7P.RV8p1C6empVVBkBEDlpIVTfzdamRxQpAwmSg_euHF3jgNCZFaFzOaiq1TE40k7CuvctulrPx.CqJ2YwXhOUAX4BgOTEOl6bZ_FXoVDUIDuH2tCzhmBoZwa5LiKrym6Yq5uX_TBSNQA2HgFgHWhOYKO7cRMzowtCY0l0Zd4WYwhhLH3z5FOmMycYiaWVWg-
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <499C40C1.20106@schaufler-ca.com>
-Date: Wed, 18 Feb 2009 09:09:21 -0800
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Wed, 18 Feb 2009 12:11:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=WXGGjXBlqT/Bdpg1VMvsXoSu2socvhDLHn924fh2AEMe/LwA7Hld4QIdEokXTp7VqX
+         lb0LyOtMQJ5sfqxTbAVC4E9ilCsjFKJ7HDAvmizN1hu16XJ1J+S1Cr96t4xaMIkyC+0D
+         eVrUE9UFovjsWlXV8keYt02FO5tjYDFtEQmjc=
 MIME-Version: 1.0
-To: etienne <etienne.basset@numericable.fr>
-CC: Paul Moore <paul.moore@hp.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org,
-       Casey Schaufler <casey@schaufler-ca.com>
-Subject: Re: [PATCH] SMACK netfilter smacklabel socket match
-References: <fa.O38YY4pVfLlMFJNBI3mhgn+qOcQ@ifi.uio.no> <200902171852.21061.paul.moore@hp.com> <499BB76C.1030109@numericable.fr> <200902181005.24952.paul.moore@hp.com>
-In-Reply-To: <200902181005.24952.paul.moore@hp.com>
+In-Reply-To: <20090218224541.fe6e0355.sfr@canb.auug.org.au>
+References: <20090218191640.0b023029.sfr@canb.auug.org.au>
+	 <499BE300.5090405@in.ibm.com>
+	 <20090218224541.fe6e0355.sfr@canb.auug.org.au>
+Date: Wed, 18 Feb 2009 12:10:59 -0500
+Message-ID: <8bd0f97a0902180910wafd35ceo47aeb9f3cc6733f3@mail.gmail.com>
+Subject: Re: [s390] next Feb 18: defconfig build break
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: "Sachin P. Sant" <sachinp@in.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-s390@vger.kernel.org,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Moore wrote:
-> On Wednesday 18 February 2009 02:23:24 am etienne wrote:
->   
->> ... anyway, I think the cleanest way would be to, well, sort smk_netlbladdr
->> by mask on insertion (perf doesn't matter  here) and this way
->> smack_host_label can stop the loop on first match. Plus, it would give a
->> nicer /smack/netlabel ouptut :)
->>     
+On Wed, Feb 18, 2009 at 06:45, Stephen Rothwell wrote:
+> On Wed, 18 Feb 2009 15:59:20 +0530 "Sachin P. Sant" wrote:
+>> Next Feb 18 defconfig build on s390 fails with following error.
+>>
+>>   CC      arch/s390/lib/string.o
+>> In file included from include/linux/bitmap.h:8,
+>>                  from include/linux/cpumask.h:142,
+>>                  from include/linux/smp.h:12,
+>>                  from /usr/local/autobench/var/tmp/build/linux/arch/s390/include/asm/spinlock.h:14,
+>>                  from include/linux/spinlock.h:88,
+>>                  from include/linux/seqlock.h:29,
+>>                  from include/linux/time.h:8,
+>>                  from include/linux/stat.h:60,
+>>                  from include/linux/module.h:10,
+>>                  from arch/s390/lib/string.c:13:
+>> include/linux/string.h: In function 'strstarts':
+>> include/linux/string.h:124: error: implicit declaration of function 'strlen'
+>> include/linux/string.h:124: warning: incompatible implicit declaration of built-in function 'strlen'
+>> make[1]: *** [arch/s390/lib/string.o] Error 1
+>> make: *** [arch/s390/lib] Error 2
 >
-> Agreed.
->   
+> That would be a side effect of commit 43a47c6ca0e0b5479ae316e188a28b7e625d41e5 ("misc:strstarts") from the rr tree.  Rusty cc'd.
 
-Yes, it would make it nicer. You'll need to do a better job
-on the list management than I've been doing. It's probably well
-past time to introduce the Standard list management scheme to
-Smack, and you'll need to do so if you want to do insertions
-and/or deletions.
-
->> so, how should we handle it? apply the patches (with whitespaces damages
->> corrected ;) )  now (as it corrects a bug) an elaborate the cleaner way
->> later?
->>     
->
-> Well, since you have some time and willingness to do things "the right way" I 
-> would recommend dropping these patches (which are really just band-aids) and 
-> working on the right solution to stored the addresses/masks in a sorted list 
-> with the mask already applied.
->
-> FWIW, the NetLabel code (net/netlabel) has to do very similar things with 
-> sorted address lists so I built an address list construct which builds on the 
-> list.h ideas and operates in a similar way.  You may find it helpful.
->
->   
->> I think this should go to stable too?
->>     
->
-> I would worry about getting the patches developed, tested and in an acceptable 
-> form first, then we can worry about where they should be applied ;)
->
->   
-
-I would be delighted to see these changes. When you have preliminary
-versions I would be eager to see them and give them a try in the
-Smack test laboratory.
-
-Etienne, thank you very much for the work you've done so far. Paul,
-thank you for your recommendations.
-
-
+breaks all Blackfin ports as well:
+In file included from include/linux/bitmap.h:9,
+                 from include/linux/nodemask.h:90,
+                 from include/linux/mmzone.h:17,
+                 from include/linux/gfp.h:5,
+                 from include/linux/kmod.h:23,
+                 from include/linux/module.h:14,
+                 from arch/blackfin/lib/strncmp.c:14:
+include/linux/string.h: In function 'strstarts':
+include/linux/string.h:124: error: implicit declaration of function 'strncmp'
+make[1]: *** [arch/blackfin/lib/strncmp.o] Error 1
+make: *** [arch/blackfin/lib] Error 2
+-mike
