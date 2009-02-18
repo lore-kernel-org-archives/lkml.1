@@ -1,126 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754467AbZBRSjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756107AbZBRSlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754467AbZBRSjW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 13:39:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755987AbZBRSi5
+	id S1756107AbZBRSlA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 13:41:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbZBRSkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 13:38:57 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:28089 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755540AbZBRSi4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 13:38:56 -0500
-Date: Wed, 18 Feb 2009 10:39:32 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: gregkh@suse.de, Evgeniy Polyakov <zbr@ioremap.net>
-Subject: [PATCH] staging/pohmelfs: fix quota build error and printk formats
-Message-Id: <20090218103932.6a7880f9.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.499C55B3.0260:SCFSTAT928724,ss=1,fgs=0
+	Wed, 18 Feb 2009 13:40:49 -0500
+Received: from mail.lang.hm ([64.81.33.126]:39206 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752722AbZBRSks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 13:40:48 -0500
+Date: Wed, 18 Feb 2009 10:40:29 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <matthew@wil.cx>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       DL-MPTFusionLinux@lsi.com, linux-pci@vger.kernel.org
+Subject: Re: [PATCH] pci: enable MSI on 8132
+In-Reply-To: <1234982285.3225.42.camel@localhost.localdomain>
+Message-ID: <alpine.DEB.1.10.0902181039240.26625@asgard.lang.hm>
+References: <499B46B2.5040601@kernel.org>  <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm>  <499B6BF7.9090300@kernel.org>  <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm>  <499B724A.2040408@kernel.org>  <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm>
+  <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>  <499B774C.5010705@kernel.org>  <alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm>  <499B9129.50104@kernel.org> <20090218122137.GJ16841@parisc-linux.org>  <alpine.DEB.1.10.0902180426420.25606@asgard.lang.hm>
+  <20090218100448.7f7c5b86.akpm@linux-foundation.org> <1234982285.3225.42.camel@localhost.localdomain>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Wed, 18 Feb 2009, James Bottomley wrote:
 
-Fix pohmelfs for disk quota changes and printk format warnings:
+> On Wed, 2009-02-18 at 10:04 -0800, Andrew Morton wrote:
+>> On Wed, 18 Feb 2009 04:27:28 -0800 (PST) david@lang.hm wrote:
+>>
+>>> On Wed, 18 Feb 2009, Matthew Wilcox wrote:
+>>>
+>>>> On Tue, Feb 17, 2009 at 08:40:09PM -0800, Yinghai Lu wrote:
+>>>>>
+>>>>> Impact: workaround BIOS that doesn't enable that bit
+>>>>>
+>>>>> David reported that LSI sas doesn't work with MSI.
+>>>>> it turns out that BIOS doesn't enable HT MSI
+>>>>> 8132 does support HT MSI.
+>>>>> add quirk to enable it
+>>>>>
+>>>>> Reported-by: David Lang <david@lang.hm>
+>>>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>>>
+>>>> Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
+>>>>
+>>>> Jesse, I think this should go into Linus' tree sooner rather than later.
+>>>
+>>> please forward to -stable as well. this is a regression since the card
+>>> works with older kernels.
+>>>
+>>
+>> Which kernel version introduced the regression?
+>
+> Technically, it's not a regression.  The MSI problem has always been
+> there, it was just exposed when the SAS card switched to using MSI by
+> default.  It's fixed by the bridge quirk  ... of course it's unclear how
+> many more bridges with problems there are.
+>
+>> Do we not need mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch as
+>> well, to fix this regression?
+>
+> No ... it's a separate issue.  MSI was enabled for fusion SAS in 2.6.26;
+> the problem msi patch which the above corrects actually has the effect
+> of disabling MSI for fusion and went into 2.6.29-rc2, which isn't a
+> kernel that's been tested here.
 
-drivers/staging/pohmelfs/inode.c:917: warning: format '%u' expects type 'unsigned int', but argument 4 has type 'size_t'
-drivers/staging/pohmelfs/inode.c:982: error: implicit declaration of function 'DQUOT_TRANSFER'
-drivers/staging/pohmelfs/inode.c:1036: warning: format '%u' expects type 'unsigned int', but argument 7 has type 'size_t'
+actually, some of the failed tests were using the 2.6.29-rc5+ git tree 
+pulled last evening. so that should have included any fixes that went into 
+-rc2
 
-drivers/staging/pohmelfs/trans.c:164: warning: format '%u' expects type 'unsigned int', but argument 5 has type '__kernel_size_t'
-drivers/staging/pohmelfs/trans.c:170: warning: format '%u' expects type 'unsigned int', but argument 7 has type '__kernel_size_t'
-drivers/staging/pohmelfs/trans.c:517: warning: format '%u' expects type 'unsigned int', but argument 6 has type '__kernel_size_t'
-drivers/staging/pohmelfs/trans.c:600: warning: format '%u' expects type 'unsigned int', but argument 6 has type '__kernel_size_t'
-drivers/staging/pohmelfs/trans.c:610: warning: format '%u' expects type 'unsigned int', but argument 7 has type '__kernel_size_t'
+David Lang
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Evgeniy Polyakov <zbr@ioremap.net>
----
- drivers/staging/pohmelfs/inode.c |    6 +++---
- drivers/staging/pohmelfs/trans.c |   10 +++++-----
- 2 files changed, 8 insertions(+), 8 deletions(-)
-
---- linux-next-20090218.orig/drivers/staging/pohmelfs/inode.c
-+++ linux-next-20090218/drivers/staging/pohmelfs/inode.c
-@@ -914,7 +914,7 @@ ssize_t pohmelfs_write(struct file *file
- 	kiocb.ki_pos = pos;
- 	kiocb.ki_left = len;
- 
--	dprintk("%s: len: %u, pos: %llu.\n", __func__, len, pos);
-+	dprintk("%s: len: %zu, pos: %llu.\n", __func__, len, pos);
- 
- 	mutex_lock(&inode->i_mutex);
- 	ret = pohmelfs_data_lock(pi, pos, len, POHMELFS_WRITE_LOCK);
-@@ -979,7 +979,7 @@ int pohmelfs_setattr_raw(struct inode *i
- 
- 	if ((attr->ia_valid & ATTR_UID && attr->ia_uid != inode->i_uid) ||
- 	    (attr->ia_valid & ATTR_GID && attr->ia_gid != inode->i_gid)) {
--		err = DQUOT_TRANSFER(inode, attr) ? -EDQUOT : 0;
-+		err = vfs_dq_transfer(inode, attr) ? -EDQUOT : 0;
- 		if (err)
- 			goto err_out_exit;
- 	}
-@@ -1033,7 +1033,7 @@ static int pohmelfs_send_xattr_req(struc
- 	struct netfs_cmd *cmd;
- 	void *data;
- 
--	dprintk("%s: id: %llu, start: %llu, name: '%s', attrsize: %u, cmd: %d.\n",
-+	dprintk("%s: id: %llu, start: %llu, name: '%s', attrsize: %zu, cmd: %d.\n",
- 			__func__, id, start, name, attrsize, command);
- 
- 	path_len = pohmelfs_path_length(pi);
---- linux-next-20090218.orig/drivers/staging/pohmelfs/trans.c
-+++ linux-next-20090218/drivers/staging/pohmelfs/trans.c
-@@ -160,14 +160,14 @@ int netfs_trans_send(struct netfs_trans 
- 
- 	err = kernel_sendmsg(st->socket, &msg, (struct kvec *)msg.msg_iov, 1, t->iovec.iov_len);
- 	if (err <= 0) {
--		printk("%s: failed to send contig transaction: t: %p, gen: %u, size: %u, err: %d.\n",
-+		printk("%s: failed to send contig transaction: t: %p, gen: %u, size: %zu, err: %d.\n",
- 				__func__, t, t->gen, t->iovec.iov_len, err);
- 		if (err == 0)
- 			err = -ECONNRESET;
- 		goto err_out_unlock_return;
- 	}
- 
--	dprintk("%s: sent %s transaction: t: %p, gen: %u, size: %u, page_num: %u.\n",
-+	dprintk("%s: sent %s transaction: t: %p, gen: %u, size: %zu, page_num: %u.\n",
- 			__func__, (t->page_num)?"partial":"full",
- 			t, t->gen, t->iovec.iov_len, t->page_num);
- 
-@@ -514,7 +514,7 @@ int netfs_trans_finish(struct netfs_tran
- 		cmd->csize = psb->crypto_attached_size;
- 	}
- 
--	dprintk("%s: t: %u, size: %u, iov_len: %u, attached_size: %u, attached_pages: %u.\n",
-+	dprintk("%s: t: %u, size: %u, iov_len: %zu, attached_size: %u, attached_pages: %u.\n",
- 			__func__, t->gen, cmd->size, t->iovec.iov_len, t->attached_size, t->attached_pages);
- 	err = pohmelfs_trans_crypt(t, psb);
- 	if (err) {
-@@ -597,7 +597,7 @@ void *netfs_trans_add(struct netfs_trans
- 	}
- 
- 	if (io->iov_len + size > t->total_size) {
--		dprintk("%s: too big size t: %p, gen: %u, iov_len: %u, size: %u, total: %u.\n",
-+		dprintk("%s: too big size t: %p, gen: %u, iov_len: %zu, size: %u, total: %u.\n",
- 				__func__, t, t->gen, io->iov_len, size, t->total_size);
- 		ptr = ERR_PTR(-E2BIG);
- 		goto out;
-@@ -607,7 +607,7 @@ void *netfs_trans_add(struct netfs_trans
- 	io->iov_len += size;
- 
- out:
--	dprintk("%s: t: %p, gen: %u, size: %u, total: %u.\n",
-+	dprintk("%s: t: %p, gen: %u, size: %u, total: %zu.\n",
- 		__func__, t, t->gen, size, io->iov_len);
- 	return ptr;
- }
+>> I sent mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch to the
+>> maintainers a week ago and it was ignored, along with everything else.
+>> If this happens again I shall merge it under my own cognisance, along
+>> with everything else.
+>
+> Yes, they've been a bit unresponsive.   I'm not unhappy with the current
+> situation, since MSI is globally disabled for fusion at the moment (so
+> we shouldn't get any more MSI problem reports), so I'm happy to wait and
+> see what they want to do.
+>
+> James
+>
+>
+>
