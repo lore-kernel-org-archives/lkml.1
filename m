@@ -1,85 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbZBRQZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbZBRQeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754859AbZBRQZn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 11:25:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbZBRQZa
+	id S1754236AbZBRQeX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 11:34:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbZBRQeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 11:25:30 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:50928 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751458AbZBRQZ3 (ORCPT
+	Wed, 18 Feb 2009 11:34:13 -0500
+Received: from yw-out-2324.google.com ([74.125.46.31]:12365 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752841AbZBRQeM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 11:25:29 -0500
-Cc: David Miller <davem@davemloft.net>, Valdis.Kletnieks@vt.edu,
-       arvidjaar@mail.ru, rjw@sisk.pl, netdev@vger.kernel.org,
-       bonding-devel@lists.sourceforge.net, jamagallon@ono.com,
-       linux-kernel@vger.kernel.org
-Message-Id: <06F54D7E-EE07-49C9-AD8F-B46BD6B02ABA@oracle.com>
-From: Chuck Lever <chuck.lever@oracle.com>
-To: Theodore Tso <tytso@mit.edu>
-In-Reply-To: <20090218135537.GF3600@mini-me.lan>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Wed, 18 Feb 2009 11:34:12 -0500
+MIME-Version: 1.0
+In-Reply-To: <ac3eb2510902180753l5dc94e5dje9154eaea9d2db29@mail.gmail.com>
+References: <20090218151132.476.81706.stgit@localhost.localdomain>
+	 <20090218152913.GA26448@suse.de>
+	 <ac3eb2510902180745v2886ae31s2d7faeb2faedab6e@mail.gmail.com>
+	 <fa686aa40902180748i2d621de1j1da7600e8cc3165f@mail.gmail.com>
+	 <ac3eb2510902180753l5dc94e5dje9154eaea9d2db29@mail.gmail.com>
+Date: Wed, 18 Feb 2009 09:34:09 -0700
+Message-ID: <fa686aa40902180834r2b9b8de0tcdc31c850f6323a6@mail.gmail.com>
+Subject: Re: [PATCH] Export device_add_attributes() so drivers can use it.
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: 2.6.29 regression? Bonding tied to IPV6 in 29-rc5
-Date: Wed, 18 Feb 2009 11:24:45 -0500
-References: <200902172001.41804.arvidjaar@mail.ru> <20090217.142946.232071526.davem@davemloft.net> <25143.1234932076@turing-police.cc.vt.edu> <20090217.212919.259912220.davem@davemloft.net> <20090218135537.GF3600@mini-me.lan>
-X-Mailer: Apple Mail (2.930.3)
-X-Source-IP: acsmt707.oracle.com [141.146.40.85]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A09020B.499C3653.0090:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 18, 2009, at Feb 18, 2009, 8:55 AM, Theodore Tso wrote:
-> On Tue, Feb 17, 2009 at 09:29:19PM -0800, David Miller wrote:
->> Next, if it's just an issue of IPV6 traffic, install a packet
->> scheduler rule that rejects all packets with ethernet proto
->> ETH_P_IPV6
+On Wed, Feb 18, 2009 at 8:53 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> On Wed, Feb 18, 2009 at 16:48, Grant Likely <grant.likely@secretlab.ca> wrote:
+>> On Wed, Feb 18, 2009 at 8:45 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+>>> On Wed, Feb 18, 2009 at 16:29, Greg KH <gregkh@suse.de> wrote:
+>>>> On Wed, Feb 18, 2009 at 08:11:34AM -0700, Grant Likely wrote:
+>>>>> From: Grant Likely <grant.likely@secretlab.ca>
+>>>>>
+>>>>> I find myself using the pattern of device_add_attributes() and
+>>>>> device_remove_attributes() frequently in my drivers.  Rather than
+>>>>> reinventing the wheel every time, I'm floating this patch to export
+>>>>> the symbols to see how it is received.  If this looks okay then I'll
+>>>>> rework my drivers and post additional patches to use these functions.
+>>>>
+>>>> No objection from me, as long as the symbols are EXPORT_SYMBOL_GPL(),
+>>>> like the rest of the driver core.  Is that ok with you?
+>>>
+>>> These functions used outside the core create attributes after the
+>>> uevent is sent, and userspace will not see these files at event time.
+>>> This is in most cases a pretty broken behavior. Is that the expected
+>>> behavior in your drivers?
 >>
->> If openning up ipv6 sockets is problematic, that can be blocked
->> using the security layer, which your super-duper distro kernel
->> is guarenteed to have enabled. :-)
+>> ??? I don't follow what you mean.
 >>
->> I'm sure there is someone who has legacy problems with ipv4
->> and that can't be disabled, and somehow people cope.  Amazing.
-
-Here's another "me too".
-
-Kernel RPC support also has this problem.  We hit it just a couple of  
-weeks ago now that we have IPv6 enabled NFS in prototype.  If PF_INET6  
-listener creation fails (eg. because ipv6.ko is blacklisted), our  
-workaround right now is to retry the listener socket creation with  
-PF_INET.  There are plenty of somewhat rare corner cases that make  
-this less than ideal.
-
-> The reality is that there are far more people who have legacy problems
-> with ipv6 than ipv4 (which has been around and in active use for about
-> 3 decades, after all), whereas ipv6 has been around and largely
-> ignored for about a decade.  :-/
+>> I'm using these functions to allow the driver to add device attribs;
+>> primarily for debugging knobs and controls.  Userspace will see the
+>> files after the driver is bound to the device.  The uevent doesn't
+>> really come into play.
 >
-> I'll admit that I ran into some wierd sh*t problems with some open
-> source software or another failing mysteriously when IPv6 was enabled,
-> and I dealt with it by simply disabling IPv6 (yeah, I blocked the
-> module).  I was in a hurry, and it just didn't work, and I had better
-> thing to do than to spend time trying to debug why the presense of an
-> IPv6 enabled interface caused programs to misbehave in random ways.
->
-> I think I can pretty much guarantee that distro users will be
-> clamoring for a quick and easy way to block ipv6, and it's in our
-> interest to document the recomended way to block it that doesn't cause
-> weird problems with bonding, etc.
+> Sure, they do. Many things expect all files which are visible at the
+> device to be readable also at event time. That's the whole way udev
+> and device property matching works. There are only a few exceptions
+> where creating files at a device later, after it is registered with
+> the core, is not a bug.
 
-A better solution would be to design kernel and user space networking  
-to handle this use case, instead of providing a workaround.  From the  
-variety of comments I've heard, this use case is pretty common.
+Let me make sure I understand you...
 
-Considering the government mandates requiring IPv6 support (and the  
-advertisements by Linux vendors claiming IPv6 support), IPv6 needs to  
-become a first-class citizen in Linux in fairly short order.  It still  
-feels a little piecemeal to me to be called "production ready."
+Is it a bug for a device driver to call
+device_create_file()/device_remove_file() at probe time?  For example,
+if I have a data capture device which is probed via the platform bus,
+is it okay for the .probe() function for the driver to use
+device_create_file() to add a 'rate_statistics' file which dumps out
+some data rate statistics in ASCII form?
 
---
-Chuck Lever
-chuck[dot]lever[at]oracle[dot]com
+I was under the impression that
+device_create_file()/device_remove_file() were okay to use at probe
+time.  device_add_attributes()/device_remove_attributes() are only
+wrappers around device_create_file()/device_remove_file() with error
+checking and unwinding when things go wrong.
+
+Am I incorrect here?
+
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
