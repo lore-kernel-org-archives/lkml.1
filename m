@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758846AbZBRW4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759827AbZBRW4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758846AbZBRW4f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 17:56:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZBRW4V
+	id S1759827AbZBRW4u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 17:56:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758711AbZBRW4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 17:56:21 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:52063 "EHLO mail.vyatta.com"
+	Wed, 18 Feb 2009 17:56:31 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37321 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752609AbZBRW4T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 17:56:19 -0500
-Date: Wed, 18 Feb 2009 14:56:16 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: David Miller <davem@davemloft.net>
-Cc: peterz@infradead.org, mingo@elte.hu, kaber@trash.net, rick.jones2@hp.com,
-       dada1@cosmosbay.com, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, tglx@linutronix.de,
-       gandalf@wlug.westbo.se, linux-kernel@vger.kernel.org
-Subject: Re: [RFT 2/4] Add mod_timer_noact
-Message-ID: <20090218145616.619a60c3@extreme>
-In-Reply-To: <20090218.144741.226638312.davem@davemloft.net>
-References: <20090218215140.GA3505@elte.hu>
-	<20090218.140455.142445208.davem@davemloft.net>
-	<1234996947.4799.29.camel@laptop>
-	<20090218.144741.226638312.davem@davemloft.net>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1758642AbZBRW4a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 17:56:30 -0500
+Date: Wed, 18 Feb 2009 23:55:34 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>,
+       Alok N Kataria <akataria@vmware.com>, Avi Kivity <avi@redhat.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 0/9] Make lazy mmu update mode pre-empt safe
+Message-ID: <20090218225534.GA24717@elte.hu>
+References: <cover.1234988621.git.jeremy.fitzhardinge@citrix.com> <cover.1234988621.git.jeremy.fitzhardinge@citrix.com> <499C9116.7000702@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <499C9116.7000702@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Feb 2009 14:47:41 -0800 (PST)
-David Miller <davem@davemloft.net> wrote:
 
-> From: Peter Zijlstra <peterz@infradead.org>
-> Date: Wed, 18 Feb 2009 23:42:27 +0100
-> 
-> > Can we please leave it at this, the technical issue seems to be delt
-> > with. You and Ingo seems to have a gift to rub each other the wrong way,
-> > it would be grand if you could both try to be a little forgiving and
-> > just focus on the code/technical issues which makes Linux to what it is,
-> > technically excellent ;-)
-> 
-> Like it or not, open source development is as much about people
-> and their personalitites as it is about technical issues.
-> 
-> So every timeone someone says to concentrate on the technical
-> issues and get past the personalities, they really are missing
-> the point, and at best are being naive.
-> 
-> The Linux kernel has been shaped by overtly emotional discourse and
-> personal interaction as it has been by any technical achievement.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-Everyone, please read and internalize what Matt had to say.
-He is right, the community needs to learn how to review:
-   
-http://mdzlog.wordpress.com/2008/12/24/constructive-criticism/
+> [ Clearly some aspect of this mailbomb tool is eluding me. ]
+
+Are you using "git format-patch" and "git send-email" ? Then 
+perhaps the --compose option to git-send-email is what you are 
+after?
+
+	Ingo
