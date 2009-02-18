@@ -1,76 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754626AbZBRCES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754418AbZBRCIQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754626AbZBRCES (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 21:04:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660AbZBRCEA
+	id S1754418AbZBRCIQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 21:08:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbZBRCIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 21:04:00 -0500
-Received: from mail.lang.hm ([64.81.33.126]:49261 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751518AbZBRCEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 21:04:00 -0500
-Date: Tue, 17 Feb 2009 18:03:50 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Yinghai Lu <yinghai@kernel.org>
-cc: Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       DL-MPTFusionLinux@lsi.com
-Subject: Re: mpt fusion broken sometime since 2.6.24
-In-Reply-To: <499B6BF7.9090300@kernel.org>
-Message-ID: <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm>
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>  <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm>  <20090217230050.GG16841@parisc-linux.org>  <alpine.DEB.1.10.0902171506500.26625@asgard.lang.hm> <86802c440902171511s1abcc0eao560df4b8fcea0e7c@mail.gmail.com>
- <alpine.DEB.1.10.0902171514120.26625@asgard.lang.hm> <499B46B2.5040601@kernel.org> <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm> <499B6BF7.9090300@kernel.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 17 Feb 2009 21:08:00 -0500
+Received: from kroah.org ([198.145.64.141]:54894 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752267AbZBRCIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 21:08:00 -0500
+Date: Tue, 17 Feb 2009 17:44:11 -0800
+From: Greg KH <greg@kroah.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Roel Kluin <roel.kluin@gmail.com>, Greg KH <gregkh@suse.de>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] staging: &&/|| typo
+Message-ID: <20090218014411.GA30552@kroah.com>
+References: <49986CCF.4010005@gmail.com> <adamycn7aqx.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <adamycn7aqx.fsf@cisco.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Feb 2009, Yinghai Lu wrote:
+On Sun, Feb 15, 2009 at 11:36:54AM -0800, Roland Dreier wrote:
+>  > -	if(fifo_size != 0x400 || fifo_size != 0x2000)
+>  > +	if(fifo_size != 0x400 && fifo_size != 0x2000)
+> 
+> What does the presence of this bug say about the probability that this
+> code has ever been used for anything real?
 
-> david@lang.hm wrote:
->> On Tue, 17 Feb 2009, Yinghai Lu wrote:
->>
->>> david@lang.hm wrote:
->>>> On Tue, 17 Feb 2009, Yinghai Lu wrote:
->>>>
->>>>> Subject: Re: mpt fusion broken sometime since 2.6.24
->>>>>
->>>>> On Tue, Feb 17, 2009 at 3:07 PM,  <david@lang.hm> wrote:
->>>>>> On Tue, 17 Feb 2009, Matthew Wilcox wrote:
->>>>>>
->>>>>>> On Tue, Feb 17, 2009 at 01:44:55PM -0800, david@lang.hm wrote:
->>>>>>>>
->>>>>>>> I got a picture of the failed boot at
->>>>>>>> http://linux.lang.hm/linux/IMG00052.jpg
->>>>>>>
->>>>>>> The PCI-MSI line is probably indicative.  Can you try booting with:
->>>>>>>
->>>>>>> mptbase.mpt_msi_enable_sas=0
->>>>>>>
->>>>>>> and also send us an lspci -v so we can update the blacklist?
->>>>>>
->>>>>> is that disabling SAS for this system? if so, that's the wrong thing
->>>>>> to do
->>>>>> (the drives are SAS)
->>>>>>
->>>>> it only disable MSI with that mptsas.
->>>>> and mptsas will use ioapic routing.
->>>>>
->>>>> can you post whole bootlog?
->>>>
->>>> unfortunantly it's booting from CD and the only drives in the system are
->>>> the ones that are not being accessed.
->>>
->>> i mean with kernel before 2.6.24..
->>
->> Ok, attached.
->>
->
-> so your lsi 1068 is under 8132... need to double check if that chip really support MSI.
+With the comedi drivers, I really don't know, they have not had that
+much wide exposure before, despite being around for a very long time.
 
-anything I can do in the 2.6.24 kernel? or the 2.8.28.6 kernel?
+thanks,
 
-David Lang
+greg k-h
