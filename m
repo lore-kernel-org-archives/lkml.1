@@ -1,190 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754582AbZBRQii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbZBRQix@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754582AbZBRQii (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 11:38:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbZBRQi3
+	id S1755232AbZBRQix (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 11:38:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754573AbZBRQii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 11:38:29 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:44173 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751458AbZBRQi3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 11:38:29 -0500
-From: krh@bitplanet.net
-To: eric@anholt.net
-Cc: Wang Chen <wangchen@cn.fujitsu.com>, dri-devel@lists.sf.net,
-       linux-kernel@vger.kernel.org,
-       =?utf-8?q?Kristian=20H=C3=B8gsberg?= <krh@redhat.com>
-Subject: [PATCH] drm: Take mmap_sem up front to avoid lock order violations.
-Date: Wed, 18 Feb 2009 11:38:33 -0500
-Message-Id: <1234975113-4941-1-git-send-email-krh@bitplanet.net>
-In-Reply-To: <499BC08C.5000603@cn.fujitsu.com>
-References: <499BC08C.5000603@cn.fujitsu.com>
+	Wed, 18 Feb 2009 11:38:38 -0500
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:59533 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754270AbZBRQih (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 11:38:37 -0500
+Date: Wed, 18 Feb 2009 08:38:35 -0800
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+       Jan-Bernd Themann <THEMANN@de.ibm.com>, netdev@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [RFC v1] virtio: add virtio-over-PCI driver
+Message-ID: <20090218163835.GA29728@ovro.caltech.edu>
+References: <20090217222425.GA18801@ovro.caltech.edu> <200902181713.03820.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200902181713.03820.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Wed, 18 Feb 2009 08:38:36 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kristian Høgsberg <krh@redhat.com>
+On Wed, Feb 18, 2009 at 05:13:03PM +1030, Rusty Russell wrote:
+> On Wednesday 18 February 2009 08:54:25 Ira Snyder wrote:
+> > This adds support to Linux for using virtio between two computers linked by
+> > a PCI interface. This allows the use of virtio_net to create a familiar,
+> > fast interface for communication. It should be possible to use other virtio
+> > devices in the future, but this has not been tested.
+> 
+> Hi Ira,
+> 
+>   It's only first glance, but this looks sane.  Two things on first note:
+> don't restrict yourself to 32 feature bits (only PCI does this, and they're
+> going to have to hack when we reach feature 32).
+> 
 
-A number of GEM operations (and legacy drm ones) want to copy data to
-or from userspace while holding the struct_mutex lock.  However, the
-fault handler calls us with the mmap_sem held and thus enforces the
-opposite locking order.  This patch downs the mmap_sem up front for
-those operations that access userspace data under the struct_mutex
-lock to ensure the locking order is consistent.
+There isn't any problem adding more feature bits. Do you think 128 bits
+is enough?
 
-Signed-off-by: Kristian Høgsberg <krh@redhat.com>
----
+>   Secondly:
+> > +You will notice that the algorithm has no way of handling chains that are
+> > +not exactly the same on the host and guest system. Without setting any of
+> > +the fancier virtio_net features, this is the case.
+> 
+> Hmm, I think we can do slightly better than this.
+> 
 
-Here's a different and simpler attempt to fix the locking order
-problem.  We can just down_read() the mmap_sem pre-emptively up-front,
-and the locking order is respected.  It's simpler than the
-mutex_trylock() game, avoids introducing a new mutex.
+I think so too :) I just wasn't able to come up with an algorithm to
+make it work. And I wanted input from more experienced people.
 
-(forgot to add lkml, resending)
+> How about prepending a 4 byte length on the host buffers?  Allows host to
+> specify length (for host->guest), and guest writes it to allow truncated
+> buffers on guest->host.
+> 
+> That won't allow you to transfer *more* than one buffersize to the host, but
+> you could use a different method (perhaps the 4 bytes indicates the *total*
+> length?).
+> 
 
-cheers,
-Kristian
+I don't understand how this will help.
 
- drivers/gpu/drm/i915/i915_dma.c |    6 +++++-
- drivers/gpu/drm/i915/i915_gem.c |   20 +++++++++++++-------
- 2 files changed, 18 insertions(+), 8 deletions(-)
+I looked at virtio_net's implemention with VIRTIO_NET_F_MRG_RXBUF, which
+seems like it could really help performance. The problems with that are:
+1) virtio_net doesn't write the merged header's num_buffers field
+2) virtio_net doesn't actually split packets in xmit
 
-diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
-index 81f1cff..d8b58d9 100644
---- a/drivers/gpu/drm/i915/i915_dma.c
-+++ b/drivers/gpu/drm/i915/i915_dma.c
-@@ -642,9 +642,11 @@ static int i915_batchbuffer(struct drm_device *dev, void *data,
- 						       sizeof(struct drm_clip_rect)))
- 		return -EFAULT;
- 
-+	down_read(&current->mm->mmap_sem);
- 	mutex_lock(&dev->struct_mutex);
- 	ret = i915_dispatch_batchbuffer(dev, batch);
- 	mutex_unlock(&dev->struct_mutex);
-+	up_read(&current->mm->mmap_sem);
- 
- 	if (sarea_priv)
- 		sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
-@@ -674,14 +676,16 @@ static int i915_cmdbuffer(struct drm_device *dev, void *data,
- 		return -EFAULT;
- 	}
- 
-+	down_read(&current->mm->mmap_sem);
- 	mutex_lock(&dev->struct_mutex);
- 	ret = i915_dispatch_cmdbuffer(dev, cmdbuf);
- 	mutex_unlock(&dev->struct_mutex);
-+	up_read(&current->mm->mmap_sem);
-+
- 	if (ret) {
- 		DRM_ERROR("i915_dispatch_cmdbuffer failed\n");
- 		return ret;
- 	}
--
- 	if (sarea_priv)
- 		sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
- 	return 0;
-diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
-index d9cd42f..3dd8b6e 100644
---- a/drivers/gpu/drm/i915/i915_gem.c
-+++ b/drivers/gpu/drm/i915/i915_gem.c
-@@ -171,6 +171,7 @@ i915_gem_pread_ioctl(struct drm_device *dev, void *data,
- 		return -EINVAL;
- 	}
- 
-+	down_read(&current->mm->mmap_sem);
- 	mutex_lock(&dev->struct_mutex);
- 
- 	ret = i915_gem_object_set_cpu_read_domain_range(obj, args->offset,
-@@ -196,6 +197,7 @@ i915_gem_pread_ioctl(struct drm_device *dev, void *data,
- 
- 	drm_gem_object_unreference(obj);
- 	mutex_unlock(&dev->struct_mutex);
-+	up_read(&current->mm->mmap_sem);
- 
- 	return 0;
- }
-@@ -264,7 +266,7 @@ i915_gem_gtt_pwrite(struct drm_device *dev, struct drm_gem_object *obj,
- 	if (!access_ok(VERIFY_READ, user_data, remain))
- 		return -EFAULT;
- 
--
-+	down_read(&current->mm->mmap_sem);
- 	mutex_lock(&dev->struct_mutex);
- 	ret = i915_gem_object_pin(obj, 0);
- 	if (ret) {
-@@ -315,6 +317,7 @@ i915_gem_gtt_pwrite(struct drm_device *dev, struct drm_gem_object *obj,
- fail:
- 	i915_gem_object_unpin(obj);
- 	mutex_unlock(&dev->struct_mutex);
-+	up_read(&current->mm->mmap_sem);
- 
- 	return ret;
- }
-@@ -328,6 +331,7 @@ i915_gem_shmem_pwrite(struct drm_device *dev, struct drm_gem_object *obj,
- 	loff_t offset;
- 	ssize_t written;
- 
-+	down_read(&current->mm->mmap_sem);
- 	mutex_lock(&dev->struct_mutex);
- 
- 	ret = i915_gem_object_set_to_cpu_domain(obj, 1);
-@@ -350,6 +354,7 @@ i915_gem_shmem_pwrite(struct drm_device *dev, struct drm_gem_object *obj,
- 	}
- 
- 	mutex_unlock(&dev->struct_mutex);
-+	up_read(&current->mm->mmap_sem);
- 
- 	return 0;
- }
-@@ -2473,22 +2478,21 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
- 		goto pre_mutex_err;
- 	}
- 
-+	down_read(&current->mm->mmap_sem);
- 	mutex_lock(&dev->struct_mutex);
- 
- 	i915_verify_inactive(dev, __FILE__, __LINE__);
- 
- 	if (dev_priv->mm.wedged) {
- 		DRM_ERROR("Execbuf while wedged\n");
--		mutex_unlock(&dev->struct_mutex);
- 		ret = -EIO;
--		goto pre_mutex_err;
-+		goto mutex_err;
- 	}
- 
- 	if (dev_priv->mm.suspended) {
- 		DRM_ERROR("Execbuf while VT-switched.\n");
--		mutex_unlock(&dev->struct_mutex);
- 		ret = -EBUSY;
--		goto pre_mutex_err;
-+		goto mutex_err;
- 	}
- 
- 	/* Look up object handles */
-@@ -2641,8 +2645,6 @@ err:
- 	for (i = 0; i < args->buffer_count; i++)
- 		drm_gem_object_unreference(object_list[i]);
- 
--	mutex_unlock(&dev->struct_mutex);
--
- 	if (!ret) {
- 		/* Copy the new buffer offsets back to the user's exec list. */
- 		ret = copy_to_user((struct drm_i915_relocation_entry __user *)
-@@ -2655,6 +2657,10 @@ err:
- 				  args->buffer_count, ret);
- 	}
- 
-+mutex_err:
-+	mutex_unlock(&dev->struct_mutex);
-+	up_read(&current->mm->mmap_sem);
-+
- pre_mutex_err:
- 	drm_free(object_list, sizeof(*object_list) * args->buffer_count,
- 		 DRM_MEM_DRIVER);
--- 
-1.6.1.3
+The problem with 1 is that one instance of virtio_net cannot talk to
+another, if they're using that feature. The sender never sets the field,
+so the receiver doesn't know how many buffers to expect.
 
+I'm using two instances of virtio_net to talk to each other, rather than
+a special userspace implementation like lguest and kvm use. Is this a
+good approach?
+
+The problem with 2 is that xmit may add the following to the
+descriptors: (the network stack doesn't have to split the packet)
+
+idx address  len flags next
+0   XXXXXXX   12     N    1
+1   XXXXXXX 8000     -    2
+
+With VIRTIO_NET_F_MRG_RXBUF, the other side's recv ring will look like
+the following:
+
+idx address  len flags next
+0   YYYYYYY 4096     -    1
+1   YYYYYYY 4096     -    2
+2   YYYYYYY 4096     -    3
+....
+
+So how do we pair up buffers to do DMA? Do I munge the header from
+virtio_net to set the num_headers field, and split the 8000 bytes of
+data into two parts? (Giving 12 bytes in desc 0, 4096 bytes in desc 1,
+and 3904 bytes in desc 2)
+
+
+The current implementation only handles something like the following,
+which would be an ARP:
+
+xmit descriptors:
+idx address  len flags next
+0   XXXXXXX   10     N    1
+1   XXXXXXX   42     -    2
+
+
+recv descriptors:
+idx address  len flags next
+0   YYYYYYY   10     N    1
+1   YYYYYYY 1518     -    2
+....
+
+Then the algorithm is simple, no munging necessary. All chains are the
+same length (2 entries) and the length of each buffer is suffient to
+handle the data. The network stack splits the packets into <= 1518 byte
+chunks for us (as long as MTU isn't changed).
+
+> Do 4-byte DMA's suck for some reason?
+> 
+
+I don't think it would hurt much. Some of the fancier features might
+offset any overhead that is added.
+
+
+Thanks, I appreciate the feedback.
+Ira
