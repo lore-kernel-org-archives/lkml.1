@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204AbZBRPse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbZBRPva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754204AbZBRPse (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 10:48:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbZBRPs0
+	id S1754180AbZBRPva (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 10:51:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbZBRPvV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 10:48:26 -0500
-Received: from el-out-1112.google.com ([209.85.162.181]:27454 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750740AbZBRPs0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 10:48:26 -0500
+	Wed, 18 Feb 2009 10:51:21 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56445 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750740AbZBRPvU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 10:51:20 -0500
+Date: Wed, 18 Feb 2009 16:51:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] perfcounters: allow sysadmin to restrict non-root
+	counting of kernel events
+Message-ID: <20090218155111.GB23989@elte.hu>
+References: <18843.57965.710475.395466@cargo.ozlabs.ibm.com> <1234958840.4637.61.camel@laptop>
 MIME-Version: 1.0
-In-Reply-To: <ac3eb2510902180745v2886ae31s2d7faeb2faedab6e@mail.gmail.com>
-References: <20090218151132.476.81706.stgit@localhost.localdomain>
-	 <20090218152913.GA26448@suse.de>
-	 <ac3eb2510902180745v2886ae31s2d7faeb2faedab6e@mail.gmail.com>
-Date: Wed, 18 Feb 2009 08:48:24 -0700
-Message-ID: <fa686aa40902180748i2d621de1j1da7600e8cc3165f@mail.gmail.com>
-Subject: Re: [PATCH] Export device_add_attributes() so drivers can use it.
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1234958840.4637.61.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 18, 2009 at 8:45 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> On Wed, Feb 18, 2009 at 16:29, Greg KH <gregkh@suse.de> wrote:
->> On Wed, Feb 18, 2009 at 08:11:34AM -0700, Grant Likely wrote:
->>> From: Grant Likely <grant.likely@secretlab.ca>
->>>
->>> I find myself using the pattern of device_add_attributes() and
->>> device_remove_attributes() frequently in my drivers.  Rather than
->>> reinventing the wheel every time, I'm floating this patch to export
->>> the symbols to see how it is received.  If this looks okay then I'll
->>> rework my drivers and post additional patches to use these functions.
->>
->> No objection from me, as long as the symbols are EXPORT_SYMBOL_GPL(),
->> like the rest of the driver core.  Is that ok with you?
->
-> These functions used outside the core create attributes after the
-> uevent is sent, and userspace will not see these files at event time.
-> This is in most cases a pretty broken behavior. Is that the expected
-> behavior in your drivers?
 
-??? I don't follow what you mean.
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-I'm using these functions to allow the driver to add device attribs;
-primarily for debugging knobs and controls.  Userspace will see the
-files after the driver is bound to the device.  The uevent doesn't
-really come into play.
+> On Wed, 2009-02-18 at 21:26 +1100, Paul Mackerras wrote:
+> > Impact: security feature
+> > 
+> > This allows the sysadmin to prevent non-root users from counting
+> > hardware events that occur in kernel or hypervisor mode via a sysfs file:
+> > 
+> > 	/sys/devices/system/cpu/perf_counters/restrict_kernel_events
+> > 
+> > This defaults to off (0), allowing users to count kernel and hypervisor
+> > events, but if the sysadmin writes 1 to that file, any new counters
+> > created by non-root users will automatically be set to ignore kernel
+> > and hypervisor events.
+> > 
+> > This could be useful if there is a concern that allowing non-root users
+> > to count kernel or hypervisor events might leak sensitive information.
+> 
+> I would expect it the other way around, don't allow users 
+> access to kernel/hv events unless explicitly granted.
 
-g.
+i think it's useful to make userspace developers aware of the 
+kernel overhead they are causing - while still allowing policy 
+settings to override that default.
 
+Maybe the name of the control should be switched around, to 
+allow_kernel_events? [with the same functional end result though 
+- i.e. default-enabled]
 
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+	Ingo
