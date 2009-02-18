@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754423AbZBRIGL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbZBRIJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754423AbZBRIGL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 03:06:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbZBRIFw
+	id S1753982AbZBRIJk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 03:09:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZBRIJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 03:05:52 -0500
-Received: from byss.tchmachines.com ([208.76.80.75]:49950 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753232AbZBRIFu (ORCPT
+	Wed, 18 Feb 2009 03:09:32 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:40451 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751340AbZBRIJb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 03:05:50 -0500
-Date: Wed, 18 Feb 2009 00:05:46 -0800
-From: Josh Hunt <josh@scalex86.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-       kiran@scalex86.org, mingo@elte.hu
-Subject: Re: [PATCH] Add vmlinux to kernel rpm - updated description
-Message-ID: <20090218080546.GA8115@localhost.localdomain>
-References: <20090212051057.GC12732@localhost.localdomain> <20090215080136.GA26481@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090215080136.GA26481@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
+	Wed, 18 Feb 2009 03:09:31 -0500
+Subject: Re: [patch] SLQB slab allocator (try 2)
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>, Mel Gorman <mel@csn.ul.ie>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+In-Reply-To: <20090218093858.8990.A69D9226@jp.fujitsu.com>
+References: <84144f020902171143i5844ef83h20cb4bee4f65c904@mail.gmail.com>
+	 <alpine.DEB.1.10.0902171504090.24395@qirst.com>
+	 <20090218093858.8990.A69D9226@jp.fujitsu.com>
+Date: Wed, 18 Feb 2009 10:09:29 +0200
+Message-Id: <1234944569.24030.20.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 15, 2009 at 09:01:36AM +0100, Sam Ravnborg wrote:
-> On Wed, Feb 11, 2009 at 09:10:57PM -0800, Josh Hunt wrote:
-> > Resending with updated description:
-> > 
-> > We are building an automated system to test kernels weekly and need to
-> > provide an rpm to our QA dept.  We would like to use the ability to create
-> > kernel rpms already in the kernel's Makefile, but need the vmlinux file
-> > included in the rpm for later debugging.  This patch adds a compressed vmlinux to
-> > the kernel rpm when doing a make rpm-pkg or binrpm-pkg and upon install
-> > places the vmlinux file in /boot.
-> > 
-> > Signed-off-by: Josh Hunt <josh@scalex86.org>
-> 
-> Applied, but...
-> 
-> > 
-> > Index: linux-2.6.28/scripts/package/mkspec
-> > ===================================================================
-> > --- linux-2.6.28.orig/scripts/package/mkspec    2008-12-24
-> > 15:26:37.000000000 -0800
-> > +++ linux-2.6.28/scripts/package/mkspec    2009-01-21
-> > 16:53:03.000000000 -0800
-> > @@ -86,6 +86,14 @@ echo "%endif"
-> >  echo 'cp System.map $RPM_BUILD_ROOT'"/boot/System.map-$KERNELRELEASE"
-> > 
-> >  echo 'cp .config $RPM_BUILD_ROOT'"/boot/config-$KERNELRELEASE"
-> > +
-> > +echo "%ifnarch ppc64"
-> > +echo 'cp vmlinux vmlinux.orig'
-> why is this relevant for all architectures except ppc64?
-> This is not addressed neither in a comment nor in the changelog.
+Hi!
 
-I was under the impression that the ppc64 vmlinuz file could be
-unzipped and used for debugging and so adding it to /boot would be
-redundant.  Please let me know if this is not the case and I will
-submit an updated patch.
+On Wed, 2009-02-18 at 09:48 +0900, KOSAKI Motohiro wrote:
+> I think 2 * PAGE_SIZE is best and the patch description is needed change.
+> it's because almost architecture use two pages for stack and current page
+> allocator don't have delayed consolidation mechanism for order-1 page.
 
-Thanks
-Josh 
+Do you mean alloc_thread_info()? Not all architectures use kmalloc() to
+implement it so I'm not sure if that's relevant for this patch.
+
+On Wed, 2009-02-18 at 09:48 +0900, KOSAKI Motohiro wrote:
+> In addition, if pekka patch (SLAB_LIMIT = 8K) run on ia64, 16K allocation 
+> always fallback to page allocator and using 64K (4 times memory consumption!).
+
+Yes, correct, but SLUB does that already by passing all allocations over
+4K to the page allocator.
+
+I'm not totally against 2 * PAGE_SIZE but I just worry that as SLUB
+performance will be bound to architecture page size, we will see skewed
+results in performance tests without realizing it. That's why I'm in
+favor of a fixed size that's unified across architectures.
+
+			Pekka
+
