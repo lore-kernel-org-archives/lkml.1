@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761841AbZBRWrx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762102AbZBRWtd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761841AbZBRWrx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 17:47:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757544AbZBRWdH
+	id S1762102AbZBRWtd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 17:49:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759533AbZBRWmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 17:33:07 -0500
-Received: from kroah.org ([198.145.64.141]:34888 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757887AbZBRWcH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 17:32:07 -0500
-Date: Wed, 18 Feb 2009 14:29:26 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [patch 16/36] ext4: avoid ext4_error when mounting a fs with a
-	single bg
-Message-ID: <20090218222926.GQ10668@kroah.com>
-References: <20090218222447.432108614@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext4-avoid-ext4_error-when-mounting-a-fs-with-a-single-bg.patch"
-In-Reply-To: <20090218222841.GA10668@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 18 Feb 2009 17:42:45 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:53516 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754612AbZBRWmn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 17:42:43 -0500
+Subject: Re: [RFT 2/4] Add mod_timer_noact
+From: Peter Zijlstra <peterz@infradead.org>
+To: David Miller <davem@davemloft.net>
+Cc: mingo@elte.hu, shemminger@vyatta.com, kaber@trash.net, rick.jones2@hp.com,
+       dada1@cosmosbay.com, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, tglx@linutronix.de,
+       gandalf@wlug.westbo.se, linux-kernel@vger.kernel.org
+In-Reply-To: <20090218.140455.142445208.davem@davemloft.net>
+References: <20090218110144.GA4100@elte.hu>
+	 <20090218.133959.193699273.davem@davemloft.net>
+	 <20090218215140.GA3505@elte.hu>
+	 <20090218.140455.142445208.davem@davemloft.net>
+Content-Type: text/plain
+Date: Wed, 18 Feb 2009 23:42:27 +0100
+Message-Id: <1234996947.4799.29.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.91 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-02-18 at 14:04 -0800, David Miller wrote:
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
+> And as others have pointed out you also failed to recognize
+> the context of the patch posting.  It was part of a sequence
+> of patches for people to test some experimental netfilter
+> performance optimizations.  "RFT" was prefixed to every patch
+> subject line, if any more indication was necessary.
 
-------------------
+Be that as it may, its a maintainer seeing a patch against his
+subsystem, reviewing it (albeit early -- we should all want to get
+around to reviewing that early) and asking for some clarification.
 
-From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+The fact is, Steve's changelog was very unclear to people not intimately
+familiar with the problem space. Asking some clarification just isn't
+weird in any way.
 
-(cherry picked from commit 565a9617b2151e21b22700e97a8b04e70e103153)
+> Yet you object that the patches are against the networking
+> and netfilter trees.
+> 
+> Again, your reactions were knee-jerk, by every definition of the
+> term.
+> 
+> I know how you work Ingo, you want to be fast and efficient.
+> But often, your "fast and efficient" is "careless", and this
+> wastes everyone elses time and in the final analysis makes
+> you "slow".
 
-Remove some completely unneeded code which which caused an ext4_error
-to be generated when mounting a file system with only a single block
-group.
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- fs/ext4/super.c |    4 ----
- 1 file changed, 4 deletions(-)
-
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -1493,7 +1493,6 @@ static int ext4_fill_flex_info(struct su
- 	ext4_group_t flex_group_count;
- 	ext4_group_t flex_group;
- 	int groups_per_flex = 0;
--	__u64 block_bitmap = 0;
- 	int i;
- 
- 	if (!sbi->s_es->s_log_groups_per_flex) {
-@@ -1516,9 +1515,6 @@ static int ext4_fill_flex_info(struct su
- 		goto failed;
- 	}
- 
--	gdp = ext4_get_group_desc(sb, 1, &bh);
--	block_bitmap = ext4_block_bitmap(sb, gdp) - 1;
--
- 	for (i = 0; i < sbi->s_groups_count; i++) {
- 		gdp = ext4_get_group_desc(sb, i, &bh);
- 
+Can we please leave it at this, the technical issue seems to be delt
+with. You and Ingo seems to have a gift to rub each other the wrong way,
+it would be grand if you could both try to be a little forgiving and
+just focus on the code/technical issues which makes Linux to what it is,
+technically excellent ;-)
 
