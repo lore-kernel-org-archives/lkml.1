@@ -1,95 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756107AbZBRSlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756580AbZBRSlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756107AbZBRSlA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 13:41:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbZBRSkt
+	id S1756580AbZBRSlv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 13:41:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbZBRSlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 13:40:49 -0500
-Received: from mail.lang.hm ([64.81.33.126]:39206 "EHLO bifrost.lang.hm"
+	Wed, 18 Feb 2009 13:41:42 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:47510 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752722AbZBRSks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 13:40:48 -0500
-Date: Wed, 18 Feb 2009 10:40:29 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <matthew@wil.cx>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       DL-MPTFusionLinux@lsi.com, linux-pci@vger.kernel.org
-Subject: Re: [PATCH] pci: enable MSI on 8132
-In-Reply-To: <1234982285.3225.42.camel@localhost.localdomain>
-Message-ID: <alpine.DEB.1.10.0902181039240.26625@asgard.lang.hm>
-References: <499B46B2.5040601@kernel.org>  <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm>  <499B6BF7.9090300@kernel.org>  <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm>  <499B724A.2040408@kernel.org>  <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm>
-  <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>  <499B774C.5010705@kernel.org>  <alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm>  <499B9129.50104@kernel.org> <20090218122137.GJ16841@parisc-linux.org>  <alpine.DEB.1.10.0902180426420.25606@asgard.lang.hm>
-  <20090218100448.7f7c5b86.akpm@linux-foundation.org> <1234982285.3225.42.camel@localhost.localdomain>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1753301AbZBRSlm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 13:41:42 -0500
+Date: Wed, 18 Feb 2009 10:39:45 -0800
+From: Greg KH <gregkh@suse.de>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Grant Likely <grant.likely@secretlab.ca>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Export device_add_attributes() so drivers can use it.
+Message-ID: <20090218183945.GA31797@suse.de>
+References: <20090218151132.476.81706.stgit@localhost.localdomain> <20090218152913.GA26448@suse.de> <ac3eb2510902180745v2886ae31s2d7faeb2faedab6e@mail.gmail.com> <fa686aa40902180748i2d621de1j1da7600e8cc3165f@mail.gmail.com> <ac3eb2510902180753l5dc94e5dje9154eaea9d2db29@mail.gmail.com> <fa686aa40902180834r2b9b8de0tcdc31c850f6323a6@mail.gmail.com> <ac3eb2510902180849o6d86bbfev337e1bc203d6543e@mail.gmail.com> <fa686aa40902180951q64c71581y3811062256685df7@mail.gmail.com> <ac3eb2510902181032h3f9ed994s212dd8b42ddca82@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ac3eb2510902181032h3f9ed994s212dd8b42ddca82@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Feb 2009, James Bottomley wrote:
+On Wed, Feb 18, 2009 at 07:32:19PM +0100, Kay Sievers wrote:
+> On Wed, Feb 18, 2009 at 18:51, Grant Likely <grant.likely@secretlab.ca> wrote:
+> > On Wed, Feb 18, 2009 at 9:49 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> >> On Wed, Feb 18, 2009 at 17:34, Grant Likely <grant.likely@secretlab.ca> wrote:
+> >>> On Wed, Feb 18, 2009 at 8:53 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> >>>> On Wed, Feb 18, 2009 at 16:48, Grant Likely <grant.likely@secretlab.ca> wrote:
+> >>>>> On Wed, Feb 18, 2009 at 8:45 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> >>>>>> On Wed, Feb 18, 2009 at 16:29, Greg KH <gregkh@suse.de> wrote:
+> >>>>>>> On Wed, Feb 18, 2009 at 08:11:34AM -0700, Grant Likely wrote:
+> >>>>>>>> From: Grant Likely <grant.likely@secretlab.ca>
+> >>>>>>>>
+> >>>>>>>> I find myself using the pattern of device_add_attributes() and
+> >>>>>>>> device_remove_attributes() frequently in my drivers.  Rather than
+> >>>>>>>> reinventing the wheel every time, I'm floating this patch to export
+> >>>>>>>> the symbols to see how it is received.  If this looks okay then I'll
+> >>>>>>>> rework my drivers and post additional patches to use these functions.
+> >>>>>>>
+> >>>>>>> No objection from me, as long as the symbols are EXPORT_SYMBOL_GPL(),
+> >>>>>>> like the rest of the driver core.  Is that ok with you?
+> >>>>>>
+> >>>>>> These functions used outside the core create attributes after the
+> >>>>>> uevent is sent, and userspace will not see these files at event time.
+> >>>>>> This is in most cases a pretty broken behavior. Is that the expected
+> >>>>>> behavior in your drivers?
+> >>>>>
+> >>>>> ??? I don't follow what you mean.
+> >>>>>
+> >>>>> I'm using these functions to allow the driver to add device attribs;
+> >>>>> primarily for debugging knobs and controls.  Userspace will see the
+> >>>>> files after the driver is bound to the device.  The uevent doesn't
+> >>>>> really come into play.
+> >>>>
+> >>>> Sure, they do. Many things expect all files which are visible at the
+> >>>> device to be readable also at event time. That's the whole way udev
+> >>>> and device property matching works. There are only a few exceptions
+> >>>> where creating files at a device later, after it is registered with
+> >>>> the core, is not a bug.
+> >>>
+> >>> Let me make sure I understand you...
+> >>>
+> >>> Is it a bug for a device driver to call
+> >>> device_create_file()/device_remove_file() at probe time?  For example,
+> >>> if I have a data capture device which is probed via the platform bus,
+> >>> is it okay for the .probe() function for the driver to use
+> >>> device_create_file() to add a 'rate_statistics' file which dumps out
+> >>> some data rate statistics in ASCII form?
+> >>>
+> >>> I was under the impression that
+> >>> device_create_file()/device_remove_file() were okay to use at probe
+> >>> time.  device_add_attributes()/device_remove_attributes() are only
+> >>> wrappers around device_create_file()/device_remove_file() with error
+> >>> checking and unwinding when things go wrong.
+> >>>
+> >>> Am I incorrect here?
+> >>
+> >> You are probing an existing "struct device", and then create
+> >> attributes at this device when the probe succeeds?
+> >
+> > Yes
+> >
+> >> If yes, why don't
+> >> you create a new child "struct device" with your functionality and add
+> >> the attributes there?
+> >
+> > Mostly because I have no need another full struct device, and none of
+> > the files that I'm adding have any bearing on udev.  They are debug
+> > and statistical files for an embedded system that are used by the
+> > developer.  I don't want application code depending on them and I'm
+> > not interested in having them advertised.
+> 
+> That's what debugfs is for.
 
-> On Wed, 2009-02-18 at 10:04 -0800, Andrew Morton wrote:
->> On Wed, 18 Feb 2009 04:27:28 -0800 (PST) david@lang.hm wrote:
->>
->>> On Wed, 18 Feb 2009, Matthew Wilcox wrote:
->>>
->>>> On Tue, Feb 17, 2009 at 08:40:09PM -0800, Yinghai Lu wrote:
->>>>>
->>>>> Impact: workaround BIOS that doesn't enable that bit
->>>>>
->>>>> David reported that LSI sas doesn't work with MSI.
->>>>> it turns out that BIOS doesn't enable HT MSI
->>>>> 8132 does support HT MSI.
->>>>> add quirk to enable it
->>>>>
->>>>> Reported-by: David Lang <david@lang.hm>
->>>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->>>>
->>>> Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
->>>>
->>>> Jesse, I think this should go into Linus' tree sooner rather than later.
->>>
->>> please forward to -stable as well. this is a regression since the card
->>> works with older kernels.
->>>
->>
->> Which kernel version introduced the regression?
->
-> Technically, it's not a regression.  The MSI problem has always been
-> there, it was just exposed when the SAS card switched to using MSI by
-> default.  It's fixed by the bridge quirk  ... of course it's unclear how
-> many more bridges with problems there are.
->
->> Do we not need mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch as
->> well, to fix this regression?
->
-> No ... it's a separate issue.  MSI was enabled for fusion SAS in 2.6.26;
-> the problem msi patch which the above corrects actually has the effect
-> of disabling MSI for fusion and went into 2.6.29-rc2, which isn't a
-> kernel that's been tested here.
+Kay is right, use debugfs for stuff like this.  Not sysfs.
 
-actually, some of the failed tests were using the 2.6.29-rc5+ git tree 
-pulled last evening. so that should have included any fixes that went into 
--rc2
+So sorry, I'm not going to apply the patch, and you should change your
+code to not open-code this as well.
 
-David Lang
+thanks,
 
->> I sent mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch to the
->> maintainers a week ago and it was ignored, along with everything else.
->> If this happens again I shall merge it under my own cognisance, along
->> with everything else.
->
-> Yes, they've been a bit unresponsive.   I'm not unhappy with the current
-> situation, since MSI is globally disabled for fusion at the moment (so
-> we shouldn't get any more MSI problem reports), so I'm happy to wait and
-> see what they want to do.
->
-> James
->
->
->
+greg k-h
