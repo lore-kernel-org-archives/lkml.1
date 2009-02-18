@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753387AbZBRMPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753852AbZBRMQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753387AbZBRMPp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 07:15:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751331AbZBRMPh
+	id S1753852AbZBRMQb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 07:16:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbZBRMQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 07:15:37 -0500
-Received: from ozlabs.org ([203.10.76.45]:38867 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750856AbZBRMPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 07:15:36 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: mmotm 2009-02-17-12-33 uploaded
-Date: Wed, 18 Feb 2009 22:45:26 +1030
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
-Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       tglx@linutronix.de, x86@kernel.org, oleg@redhat.com
-References: <200902172050.n1HKorvc028933@imap1.linux-foundation.org> <499BD65B.2080307@gmail.com> <20090218015356.4454f758.akpm@linux-foundation.org>
-In-Reply-To: <20090218015356.4454f758.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 18 Feb 2009 07:16:22 -0500
+Received: from 93-97-173-237.zone5.bethere.co.uk ([93.97.173.237]:55145 "EHLO
+	tim.rpsys.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750856AbZBRMQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 07:16:22 -0500
+Subject: Re: [PATCH] leds: introduce lp5521 led driver
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Felipe Balbi <felipe.balbi@nokia.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1234794951-17171-1-git-send-email-felipe.balbi@nokia.com>
+References: <1234794951-17171-1-git-send-email-felipe.balbi@nokia.com>
+Content-Type: text/plain
+Date: Wed, 18 Feb 2009 12:18:13 +0000
+Message-Id: <1234959493.5332.23.camel@dax.rpnet.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902182245.27525.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 18 February 2009 20:23:56 Andrew Morton wrote:
-> Someone else has been mucking with kthread.c in linux-next, and a
-> couple of days ago that mucking got dropped from linux-next.  Perhaps
-> this churn broke Oleg's patch.
+On Mon, 2009-02-16 at 16:35 +0200, Felipe Balbi wrote:
+> diff --git a/drivers/leds/leds-lp5521.c b/drivers/leds/leds-lp5521.c
+> new file mode 100644
+> index 0000000..455da20
+> --- /dev/null
+> +++ b/drivers/leds/leds-lp5521.c
+> +
+> +#include <linux/module.h>
+> +#include <linux/init.h>
+> +#include <linux/i2c.h>
+> +#include <linux/leds.h>
+> +#include <linux/mutex.h>
+> +#include <linux/workqueue.h>
+> +#include <linux/i2c/lp5521.h>
 
-Err, yes.
-
-Oleg and I had an accidentally-offlist chat about these patches.
-
-Last we decided, a more ambitious approach was desired.  Patches RSN.
-
-I've taken kthreads-move-sched-realeted-initialization-from-kthreadd-context.patch
-though, thanks!
+Testing shows the above header is missing so I'll have to drop this
+until that header is added.
 
 Cheers,
-Rusty.
+
+Richard
+
+-- 
+Richard Purdie
+Intel Open Source Technology Centre
+
