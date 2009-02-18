@@ -1,71 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbZBRXQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756909AbZBRXWC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756684AbZBRXQg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 18:16:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbZBRXQ1
+	id S1756909AbZBRXWC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 18:22:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbZBRXVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 18:16:27 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56293 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752755AbZBRXQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 18:16:26 -0500
-Date: Thu, 19 Feb 2009 00:15:45 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, mpm@selenic.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       viro@zeniv.linux.org.uk, hpa@zytor.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org
-Subject: Re: What can OpenVZ do?
-Message-ID: <20090218231545.GA17524@elte.hu>
-References: <20090212141014.2cd3d54d.akpm@linux-foundation.org> <20090213105302.GC4608@elte.hu> <1234817490.30155.287.camel@nimitz> <20090217222319.GA10546@elte.hu> <1234909849.4816.9.camel@nimitz> <20090218003217.GB25856@elte.hu> <1234917639.4816.12.camel@nimitz> <20090218051123.GA9367@x200.localdomain> <20090218181644.GD19995@elte.hu> <1234992447.26788.12.camel@nimitz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1234992447.26788.12.camel@nimitz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 18 Feb 2009 18:21:53 -0500
+Received: from casper.infradead.org ([85.118.1.10]:43202 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753241AbZBRXVw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 18:21:52 -0500
+Subject: Re: [PATCH] new irq tracer
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Jason Baron <jbaron@redhat.com>, mingo@elte.hu, rostedt@goodmis.org,
+       linux-kernel@vger.kernel.org, acme@ghostprotocols.net,
+       fweisbec@gmail.com, compudj@krystal.dyndns.org
+In-Reply-To: <20090218222316.GH24507@redhat.com>
+References: <20090218195328.GA3112@redhat.com>
+	 <1234991725.4799.1.camel@laptop> <20090218213545.GB3112@redhat.com>
+	 <1234993580.4799.11.camel@laptop> <20090218220201.GG24507@redhat.com>
+	 <1234995035.4799.14.camel@laptop>  <20090218222316.GH24507@redhat.com>
+Content-Type: text/plain
+Date: Thu, 19 Feb 2009 00:21:38 +0100
+Message-Id: <1234999298.4799.42.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.91 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Dave Hansen <dave@linux.vnet.ibm.com> wrote:
-
-> On Wed, 2009-02-18 at 19:16 +0100, Ingo Molnar wrote:
-> > Nothing motivates more than app designers complaining about the 
-> > one-way flag.
+On Wed, 2009-02-18 at 17:23 -0500, Frank Ch. Eigler wrote:
+> Hi -
+> 
+> On Wed, Feb 18, 2009 at 11:10:35PM +0100, Peter Zijlstra wrote:
+> > > > I really am having a difficult time seeing the use in such narrow
+> > > > tracers.
+> > > 
+> > > Part of the problem may come from defining "tracers" as something
+> > > limited to ftrace engines.  Once such tracepoints are in the kernel,
+> > > more powerful analytical tools may be attached to them.
 > > 
-> > Furthermore, it's _far_ easier to make a one-way flag SMP-safe. 
-> > We just set it and that's it. When we unset it, what do we about 
-> > SMP races with other threads in the same MM installing another 
-> > non-linear vma, etc.
+> > ftrace graph tracer is by far the most powerful thing I've seen [...]
 > 
-> After looking at this for file descriptors, I have to really 
-> agree with Ingo on this one, at least as far as the flag is 
-> concerned.  I want to propose one teeny change, though: I 
-> think the flag should be per-resource.
-> 
-> We should have one flag in mm_struct, one in files_struct, 
-> etc...  The task_is_checkpointable() function can just query 
-> task->mm, task->files, etc...  This gives us nice behavior at 
-> clone() *and* fork that just works.
-> 
-> I'll do this for files_struct and see how it comes out so you 
-> can take a peek.
+> Be that as it may, what you suggested required separate correlation of
+> data with /proc/interrupts contents.
 
-Yeah, per resource it should be. That's per task in the normal 
-case - except for threaded workloads where it's shared by 
-threads.
+That was to illustrate that the proposed tracer doesn't add much value.
+Its almost 200 lines of code that needs maintenance to provide
+information that's mostly already available, seems like the wrong
+tradeoff to me.
 
-	Ingo
+> > What is limiting are these puny little tracers that have no real value.
+> 
+> Which limited resource would even puny tracers exhaust?
+
+Usability and maintenance. But loss of the bigger picture is the main
+complaint.
+
+> > A much better purpose for these tracepoints would be augmenting data in
+> > existing tracers like the graph/function/sched tracer.
+> 
+> Be more specific.  How would you augment those tracers with e.g.
+> individual irq numbers, their disposition status (HANDLED etc.).
+
+With a mixture of creativity and code ;-)
+
+Perhaps by creating a way to provide argument and return values to the
+function call data, and registering tracepoints to obtain these.
+
