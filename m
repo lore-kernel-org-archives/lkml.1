@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755627AbZBRRVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755285AbZBRRYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755627AbZBRRVn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 12:21:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZBRRVe
+	id S1755285AbZBRRYv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 12:24:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbZBRRYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 12:21:34 -0500
-Received: from cmpxchg.org ([85.214.51.133]:56590 "EHLO cmpxchg.org"
+	Wed, 18 Feb 2009 12:24:42 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54109 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752752AbZBRRVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 12:21:34 -0500
-Date: Wed, 18 Feb 2009 18:23:37 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
-       Andrew Morton <akpm@osdl.org>, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [Patch] mm: fix null pointer dereference in vm_normal_page()
-Message-ID: <20090218172337.GA1767@cmpxchg.org>
-References: <20090218125649.GU7272@hack.private>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	id S1751697AbZBRRYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 12:24:41 -0500
+Date: Wed, 18 Feb 2009 18:23:49 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, Nick Piggin <npiggin@suse.de>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: Q: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove
+	single ipi fallback for smp_call_function_many())
+Message-ID: <20090218172349.GA14798@elte.hu>
+References: <20090217214518.GA13189@redhat.com> <20090217223910.GM6761@linux.vnet.ibm.com> <20090218135212.GB23125@wotan.suse.de> <alpine.LFD.2.00.0902180744520.21686@localhost.localdomain> <20090218162116.GC29863@elte.hu> <alpine.LFD.2.00.0902180828430.21686@localhost.localdomain> <20090218165808.GA9120@elte.hu> <20090218170517.GA9769@elte.hu> <20090218171048.GA12299@elte.hu> <alpine.LFD.2.00.0902180915430.21686@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090218125649.GU7272@hack.private>
+In-Reply-To: <alpine.LFD.2.00.0902180915430.21686@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 18, 2009 at 08:56:49PM +0800, Am�rico Wang wrote:
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> On Wed, 18 Feb 2009, Ingo Molnar wrote:
+> > 
+> > ok, it's documented:
+> > 
+> >    Intel® 64 and IA-32 Architectures
+> >    Software Developer’s Manual
+> >                            Volume 3A:
+> >        System Programming Guide, Part 1
+> > 
+> >  9.5.3        MSR Access in x2APIC Mode
 > 
-> One usage of vm_normal_page() is:
+> Well, mine says
 > 
->     struct page *page = vm_normal_page(gate_vma, start, *pte);
+> 	9.5.3 Error Handling
 > 
-> where gate_vma is returned by get_gate_vma() which can be NULL.
-> So let vm_normal_page return NULL when vma is NULL.
+> so I guess I need to download a newer version. After all, mine 
+> is "ancient" in being a year old (the February-2008 version) 
+> and not covering x2APIC at all.
 
-I assume you refer to __get_user_pages()...?
+Mine is 253668.pdf, that's the freshest available:
 
-This function checks whether the address is in the gate area and only
-iff so requests the VMA representing it.
+  http://download.intel.com/design/processor/manuals/253668.pdf
 
-If you really did see an oops that is worked-around by your patch,
-then the in_gate_area()/get_gate_vma() in question are broken.
-
-> Signed-off-by: WANG Cong <wangcong@zeuux.org>
-> Cc: Nick Piggin <nickpiggin@yahoo.com.au>
-
-  Nacked-by: Johannes Weiner <hannes@cmpxchg.org>
-
-> ---
-> diff --git a/mm/memory.c b/mm/memory.c
-> index baa999e..e428aa6 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -493,6 +493,9 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
->  {
->  	unsigned long pfn = pte_pfn(pte);
->  
-> +	if (!vma)
-> +		return NULL;
-> +
->  	if (HAVE_PTE_SPECIAL) {
->  		if (likely(!pte_special(pte)))
->  			goto check_pfn;
-> 
-> 
+	Ingo
