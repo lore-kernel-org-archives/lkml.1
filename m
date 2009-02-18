@@ -1,136 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755776AbZBRRsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755892AbZBRRsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755776AbZBRRsb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 12:48:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbZBRRsH
+	id S1755892AbZBRRsp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 12:48:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755505AbZBRRsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 12:48:07 -0500
-Received: from sd-green-bigip-145.dreamhost.com ([208.97.132.145]:35993 "EHLO
-	spunkymail-a10.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754029AbZBRRsF (ORCPT
+	Wed, 18 Feb 2009 12:48:15 -0500
+Received: from outbound-mail-103.bluehost.com ([69.89.22.13]:59569 "HELO
+	outbound-mail-103.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754535AbZBRRsI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 12:48:05 -0500
-Message-ID: <499C49CD.3000709@hiramoto.org>
-Date: Wed, 18 Feb 2009 18:47:57 +0100
-From: Karl Hiramoto <karl@hiramoto.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090102)
+	Wed, 18 Feb 2009 12:48:08 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=BwD+9Jo54vZzXYmyUp1MpsBXplN4lrVykNREWzExlpsjQpCcD30fWBFGkOmDduvzj+i2uOgMfMRa0HSYOHNEdG4aTPo6C1od1KnoHIGzrujhJs3eyZ7q6ljWqt66UTyx;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFD] Automatic suspend
+Date: Wed, 18 Feb 2009 09:48:04 -0800
+User-Agent: KMail/1.9.10
+Cc: Brian Swetland <swetland@google.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arve =?iso-8859-15?q?Hj=F8nnev=E5g?= <arve@android.com>,
+       Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>, Len Brown <lenb@kernel.org>
+References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com> <20090217152811.GA12686@bulgaria.corp.google.com> <1234924840.14060.342.camel@pasglop>
+In-Reply-To: <1234924840.14060.342.camel@pasglop>
 MIME-Version: 1.0
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: netdev@vger.kernel.org, netfilter@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: problem with IPoA (CLIP),  NAT, and VLANS
-References: <20090217231255.GA3389@ami.dom.local>
-In-Reply-To: <20090217231255.GA3389@ami.dom.local>
-Content-Type: multipart/mixed;
- boundary="------------060407070905020601030105"
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902180948.06039.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060407070905020601030105
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-Jarek Poplawski wrote:
-> Karl Hiramoto wrote, On 02/17/2009 01:53 PM:
+On Tuesday, February 17, 2009 6:40 pm Benjamin Herrenschmidt wrote:
+> > You will end up with some crappy apps that do really dumb things.
+> > However, even if they're badly written users may still install and use
+> > these apps because hey, they do something the user likes.
+> >
+> > >From the Android standpoint, we're trying to balance protecting the
+> >
+> > system from poorly designed apps and somehow letting the user know "hey
+> > app X is chewing up a lot of power" (work in progress on this).
+> >
+> > While I'd love for every app developer to actively tune their apps for a
+> > good mobile experience, I am skeptical that this is going to happen.
 >
->   
->> Jarek Poplawski wrote:
->>     
->>> On Tue, Feb 17, 2009 at 12:49:07PM +0100, Karl Hiramoto wrote:
->>> ...
->>>   
->>>       
->>>> A side note:  so far the original patch i sent works in all cases i have
->>>> tested, but fails with tcpdump.   I suspect its because the skb gets cloned.
->>>>     
->>>>         
->>> If there is something readable from this tcpdump, it should be helpful
->>> to see a packet for working and non-working case during such ping
->>> (with -nXX option).
->>> Jarek P.
->>>   
->>>       
->> Note:  I have the patches i sent applied,  plus the  "skb->mac_header -=
->> VLAN_HLEN;"   patch from Jarek on 2.6.28.4
->>
->> Doing a tcpdump simultaneously  on the atm and eth0.1 on the linux router.
->>     
->
-> Nice job. Since tcpdump sees corrupted data, and we don't know if it's
-> before or after hitting the driver I'd suggest to try full skb_copy()
-> yet. So could you try if with your patch + the patch below tcpdump
-> still breaks these things?
->
-> BTW, I wonder what IXP400 config options do you use (especially
-> CONFIG_IXP400_ETH_SKB_RECYCLE)?
->
-> Jarek P.
+> One idea I've been toying around was to have powertune as some kind of
+> background thingy, and have it pop an icon in the notification area when
+> some app seems to behave badly (of course, defining "badly" is hard but
+> heh...). IE. actively inform the user "this application is sucking the
+> life out of your battery".
 
-Thanks for the replies.  Jarek, the last debugging patch you sent did
-not work.  It did give me a good hint though.  The attached patch in for
-AF_PACKET   receive in the when tcpdump is active and which calls
-skb_clone() did fix my issue.
+I think "powernag" would be a better name, and it would probably work pretty 
+well.  Users would be notified that certain apps should probably be shut down 
+while they're on battery, and nag the authors to fix it.
 
-
-CONFIG_IXP400_ETH_SKB_RECYCLE does not exist in the code i have..  From
-what i downloaded from intel,  i stripped out all the stuff that is not
-having to do with ATM.  The functionalities of ixp4xx_qmgr ixp4xx_npe
-and ixp4xx_eth  are now in the mainline kernel.    Ideally it would be
-nice to get what this library does with the atm hardware into the
-mainline, however the code in it's current state would not meet kernel
-standards, and is quite a mess.
-
-
-But yes,  the skb->data is   recycled  in a memory pool,   and i think i
-noticed a few times packets that were corrupt, were really pointing to
-old recycled packets.   I haven't confirmed this yet though.
-
-
-I did eliminate the first  patch i sent 
-http://lkml.org/lkml/2009/2/16/163    to  __vlan_put_tag()
-
-And now only use the patch Jarek sent:  http://lkml.org/lkml/2009/2/17/104
-
-Now i don't have any problems with the vlan tags after changing my atm
-driver to do skb_reserve() like:
-
-skb = dev_alloc_skb(size + NET_SKB_PAD);
-
-skb_reserve(skb, NET_SKB_PAD);
-
-
-So something with my driver causes skb_clone() to corrupt the packet
-but  calling skb_copy() instead  keeps everything working.   There are
-definitely other cases where skb_clone() is called so really have to fix
-this in the atm_dev, but not really sure at the moment where to look next.
-
-
-Thanks.
---
-Karl
-
-
-
---------------060407070905020601030105
-Content-Type: text/plain;
- name="tcpdump-fix-hack.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="tcpdump-fix-hack.patch"
-
-diff -Naurp linux-2.6.28.4.a/net/packet/af_packet.c linux-2.6.28.4.b/net/packet/af_packet.c
---- linux-2.6.28.4.a/net/packet/af_packet.c	2009-02-06 22:47:45.000000000 +0100
-+++ linux-2.6.28.4.b/net/packet/af_packet.c	2009-02-18 16:10:08.000000000 +0100
-@@ -524,7 +524,7 @@ static int packet_rcv(struct sk_buff *sk
- 		goto drop_n_acct;
- 
- 	if (skb_shared(skb)) {
--		struct sk_buff *nskb = skb_clone(skb, GFP_ATOMIC);
-+		struct sk_buff *nskb = skb_copy(skb, GFP_ATOMIC);
- 		if (nskb == NULL)
- 			goto drop_n_acct;
- 
-
---------------060407070905020601030105--
+-- 
+Jesse Barnes, Intel Open Source Technology Center
