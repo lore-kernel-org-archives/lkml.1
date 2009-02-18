@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759869AbZBRVpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759590AbZBRVpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759869AbZBRVpt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:45:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757306AbZBRVgO
+	id S1759590AbZBRVpA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:45:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbZBRVgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:36:14 -0500
-Received: from kroah.org ([198.145.64.141]:56388 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 16:36:10 -0500
+Received: from kroah.org ([198.145.64.141]:56372 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757287AbZBRVgB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:36:01 -0500
-Date: Wed, 18 Feb 2009 13:33:20 -0800
+	id S1757270AbZBRVf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:35:58 -0500
+Date: Wed, 18 Feb 2009 13:33:14 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org
-Subject: [patch 35/39] ext4: only use i_size_high for regular files
-Message-ID: <20090218213320.GJ19814@kroah.com>
+       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [patch 32/39] ext4: Init the complete page while building buddy
+	cache
+Message-ID: <20090218213314.GG19814@kroah.com>
 References: <20090218212144.965748151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext4-only-use-i_size_high-for-regular-files.patch"
+Content-Disposition: inline; filename="ext4-init-the-complete-page-while-building-buddy-cache.patch"
 In-Reply-To: <20090218213021.GA19814@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,62 +42,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: "Theodore Ts'o" <tytso@mit.edu>
+From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-(cherry picked from commit 06a279d636734da32bb62dd2f7b0ade666f65d7c)
+(cherry picked from commit 29eaf024980e07cc01f31ae4ea5d68c917f4b7da)
 
-Directories are not allowed to be bigger than 2GB, so don't use
-i_size_high for anything other than regular files.  E2fsck should
-complain about these inodes, but the simplest thing to do for the
-kernel is to only use i_size_high for regular files.
+We need to init the complete page during buddy cache init
+by setting the contents to '1'.  Otherwise we can see the
+following errors after doing an online resize of the
+filesystem:
 
-This prevents an intentially corrupted filesystem from causing the
-kernel to burn a huge amount of CPU and issuing error messages such
-as:
+EXT4-fs error (device sdb1): ext4_mb_mark_diskspace_used:
+	Allocating block 1040385 in system zone of 127 group
 
-EXT4-fs warning (device loop0): ext4_block_to_path: block 135090028 > max
-
-Thanks to David Maciejak from Fortinet's FortiGuard Global Security
-Research Team for reporting this issue.
-
-http://bugzilla.kernel.org/show_bug.cgi?id=12375
-
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/ext4.h  |    7 +++++--
- fs/ext4/inode.c |    4 ++--
- 2 files changed, 7 insertions(+), 4 deletions(-)
+ fs/ext4/mballoc.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/fs/ext4/ext4.h
-+++ b/fs/ext4/ext4.h
-@@ -1188,8 +1188,11 @@ static inline void ext4_r_blocks_count_s
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -846,6 +846,8 @@ static int ext4_mb_init_cache(struct pag
  
- static inline loff_t ext4_isize(struct ext4_inode *raw_inode)
- {
--	return ((loff_t)le32_to_cpu(raw_inode->i_size_high) << 32) |
--		le32_to_cpu(raw_inode->i_size_lo);
-+	if (S_ISREG(le16_to_cpu(raw_inode->i_mode)))
-+		return ((loff_t)le32_to_cpu(raw_inode->i_size_high) << 32) |
-+			le32_to_cpu(raw_inode->i_size_lo);
-+	else
-+		return (loff_t) le32_to_cpu(raw_inode->i_size_lo);
- }
- 
- static inline void ext4_isize_set(struct ext4_inode *raw_inode, loff_t i_size)
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -351,9 +351,9 @@ static int ext4_block_to_path(struct ino
- 		final = ptrs;
- 	} else {
- 		ext4_warning(inode->i_sb, "ext4_block_to_path",
--				"block %lu > max",
-+				"block %lu > max in inode %lu",
- 				i_block + direct_blocks +
--				indirect_blocks + double_blocks);
-+				indirect_blocks + double_blocks, inode->i_ino);
- 	}
- 	if (boundary)
- 		*boundary = final - 1 - (i_block & (ptrs - 1));
+ 	err = 0;
+ 	first_block = page->index * blocks_per_page;
++	/* init the page  */
++	memset(page_address(page), 0xff, PAGE_CACHE_SIZE);
+ 	for (i = 0; i < blocks_per_page; i++) {
+ 		int group;
+ 		struct ext4_group_info *grinfo;
+@@ -872,7 +874,6 @@ static int ext4_mb_init_cache(struct pag
+ 			BUG_ON(incore == NULL);
+ 			mb_debug("put buddy for group %u in page %lu/%x\n",
+ 				group, page->index, i * blocksize);
+-			memset(data, 0xff, blocksize);
+ 			grinfo = ext4_get_group_info(sb, group);
+ 			grinfo->bb_fragments = 0;
+ 			memset(grinfo->bb_counters, 0,
 
