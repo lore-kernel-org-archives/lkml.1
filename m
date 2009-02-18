@@ -1,328 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbZBRTmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754334AbZBRTrj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756042AbZBRTmc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 14:42:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbZBRTmK
+	id S1754334AbZBRTrj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 14:47:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbZBRTra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 14:42:10 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:36779 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752826AbZBRTmI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 14:42:08 -0500
-Date: Wed, 18 Feb 2009 11:42:33 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, Casey Schaufler <casey@schaufler-ca.com>,
-       James Morris <jmorris@namei.org>,
-       Qinghuang Feng <qhfeng.kernel@gmail.com>
-Subject: [PATCH] smack: fix lots of kernel-doc notation
-Message-Id: <20090218114233.2b5c662d.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt700.oracle.com [141.146.40.70]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010201.499C6479.01DF:SCFSTAT928724,ss=1,fgs=0
+	Wed, 18 Feb 2009 14:47:30 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:33659 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751756AbZBRTra (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 14:47:30 -0500
+Date: Wed, 18 Feb 2009 11:47:27 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] generic-ipi: remove kmalloc()
+Message-ID: <20090218194727.GB7011@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090217215904.059250145@chello.nl> <20090217220053.500765201@chello.nl> <20090218002823.GA25408@linux.vnet.ibm.com> <20090218161515.GA24895@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090218161515.GA24895@redhat.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Wed, Feb 18, 2009 at 05:15:15PM +0100, Oleg Nesterov wrote:
+> On 02/17, Paul E. McKenney wrote:
+> >
+> > On Tue, Feb 17, 2009 at 10:59:06PM +0100, Peter Zijlstra wrote:
+> > > +static void csd_lock(struct call_single_data *data)
+> > >  {
+> > > -	/* Wait for response */
+> > > -	do {
+> > > -		if (!(data->flags & CSD_FLAG_WAIT))
+> > > -			break;
+> > > +	while (data->flags & CSD_FLAG_LOCK)
+> > >  		cpu_relax();
+> > > -	} while (1);
+> > > +	data->flags = CSD_FLAG_LOCK;
+> >
+> > We do need an smp_mb() here, otherwise, the call from
+> > smp_call_function_single() could be reordered by either CPU or compiler
+> > as follows:
+> >
+> > 	data->func = func;
+> > 	data->info = info;
+> > 	csd_lock(data);
+> >
+> > This might come as a bit of a surprise to the other CPU still trying to
+> > use the old values for data->func and data->info.
+> 
+> Could you explain a bit more here?
+> 
+> The compiler can't re-order this code due to cpu_relax(). Cpu can
+> re-order, but this doesn't matter because both the sender and ipi
+> handler take call_single_queue->lock.
+> 
+> And, giwen that csd_unlock() does mb() before csd_unlock(), how
+> it is possible that other CPU (ipi handler) still uses the old
+> values in *data after we see !CSD_FLAG_LOCK ?
 
-Fix/add kernel-doc notation and fix typos in security/smack/.
+Good point on cpu_relax(), which appears to be at least a compiler
+barrier on all architectures.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Casey Schaufler <casey@schaufler-ca.com>
-cc: James Morris <jmorris@namei.org>
-cc: Qinghuang Feng <qhfeng.kernel@gmail.com>
----
- security/smack/smack_access.c |    4 +--
- security/smack/smack_lsm.c    |   52 +++++++++++++++++++-----------------------
- security/smack/smackfs.c      |   15 ++++++------
- 3 files changed, 34 insertions(+), 37 deletions(-)
+I must confess to being in the habit of assuming reordering unless I
+can prove that such reordering cannot happen.  I am running tests of
+this code snippet on POWER, but do not have access to ARM, which some
+say has more tendency to ignore control-flow dependencies than does Power.
 
---- lnx2629-rc5-docsrc.orig/security/smack/smack_access.c
-+++ lnx2629-rc5-docsrc/security/smack/smack_access.c
-@@ -162,8 +162,8 @@ int smk_access(char *subject_label, char
- 
- /**
-  * smk_curacc - determine if current has a specific access to an object
-- * @object_label: a pointer to the object's Smack label
-- * @request: the access requested, in "MAY" format
-+ * @obj_label: a pointer to the object's Smack label
-+ * @mode: the access requested, in "MAY" format
-  *
-  * This function checks the current subject label/object label pair
-  * in the access rule list and returns 0 if the access is permitted,
---- lnx2629-rc5-docsrc.orig/security/smack/smackfs.c
-+++ lnx2629-rc5-docsrc/security/smack/smackfs.c
-@@ -245,7 +245,7 @@ out:
- 
- /**
-  * smk_write_load - write() for /smack/load
-- * @filp: file pointer, not actually used
-+ * @file: file pointer, not actually used
-  * @buf: where to get the data from
-  * @count: bytes sent
-  * @ppos: where to start - must be 0
-@@ -402,6 +402,7 @@ static void smk_cipso_doi(void)
- 
- /**
-  * smk_unlbl_ambient - initialize the unlabeled domain
-+ * @oldambient: previous domain string
-  */
- static void smk_unlbl_ambient(char *oldambient)
- {
-@@ -513,7 +514,7 @@ static int smk_open_cipso(struct inode *
- 
- /**
-  * smk_write_cipso - write() for /smack/cipso
-- * @filp: file pointer, not actually used
-+ * @file: file pointer, not actually used
-  * @buf: where to get the data from
-  * @count: bytes sent
-  * @ppos: where to start
-@@ -703,7 +704,7 @@ static int smk_open_netlbladdr(struct in
- 
- /**
-  * smk_write_netlbladdr - write() for /smack/netlabel
-- * @filp: file pointer, not actually used
-+ * @file: file pointer, not actually used
-  * @buf: where to get the data from
-  * @count: bytes sent
-  * @ppos: where to start
-@@ -850,7 +851,7 @@ static ssize_t smk_read_doi(struct file 
- 
- /**
-  * smk_write_doi - write() for /smack/doi
-- * @filp: file pointer, not actually used
-+ * @file: file pointer, not actually used
-  * @buf: where to get the data from
-  * @count: bytes sent
-  * @ppos: where to start
-@@ -915,7 +916,7 @@ static ssize_t smk_read_direct(struct fi
- 
- /**
-  * smk_write_direct - write() for /smack/direct
-- * @filp: file pointer, not actually used
-+ * @file: file pointer, not actually used
-  * @buf: where to get the data from
-  * @count: bytes sent
-  * @ppos: where to start
-@@ -990,7 +991,7 @@ static ssize_t smk_read_ambient(struct f
- 
- /**
-  * smk_write_ambient - write() for /smack/ambient
-- * @filp: file pointer, not actually used
-+ * @file: file pointer, not actually used
-  * @buf: where to get the data from
-  * @count: bytes sent
-  * @ppos: where to start
-@@ -1065,7 +1066,7 @@ static ssize_t smk_read_onlycap(struct f
- 
- /**
-  * smk_write_onlycap - write() for /smack/onlycap
-- * @filp: file pointer, not actually used
-+ * @file: file pointer, not actually used
-  * @buf: where to get the data from
-  * @count: bytes sent
-  * @ppos: where to start
---- lnx2629-rc5-docsrc.orig/security/smack/smack_lsm.c
-+++ lnx2629-rc5-docsrc/security/smack/smack_lsm.c
-@@ -91,6 +91,7 @@ struct inode_smack *new_inode_smack(char
- /**
-  * smack_ptrace_may_access - Smack approval on PTRACE_ATTACH
-  * @ctp: child task pointer
-+ * @mode: ptrace attachment mode
-  *
-  * Returns 0 if access is OK, an error code otherwise
-  *
-@@ -203,9 +204,8 @@ static void smack_sb_free_security(struc
- 
- /**
-  * smack_sb_copy_data - copy mount options data for processing
-- * @type: file system type
-  * @orig: where to start
-- * @smackopts
-+ * @smackopts: mount options string
-  *
-  * Returns 0 on success or -ENOMEM on error.
-  *
-@@ -331,7 +331,7 @@ static int smack_sb_statfs(struct dentry
- /**
-  * smack_sb_mount - Smack check for mounting
-  * @dev_name: unused
-- * @nd: mount point
-+ * @path: mount point
-  * @type: unused
-  * @flags: unused
-  * @data: unused
-@@ -370,7 +370,7 @@ static int smack_sb_umount(struct vfsmou
- 
- /**
-  * smack_inode_alloc_security - allocate an inode blob
-- * @inode - the inode in need of a blob
-+ * @inode: the inode in need of a blob
-  *
-  * Returns 0 if it gets a blob, -ENOMEM otherwise
-  */
-@@ -384,7 +384,7 @@ static int smack_inode_alloc_security(st
- 
- /**
-  * smack_inode_free_security - free an inode blob
-- * @inode - the inode with a blob
-+ * @inode: the inode with a blob
-  *
-  * Clears the blob pointer in inode
-  */
-@@ -538,7 +538,6 @@ static int smack_inode_rename(struct ino
-  * smack_inode_permission - Smack version of permission()
-  * @inode: the inode in question
-  * @mask: the access requested
-- * @nd: unused
-  *
-  * This is the important Smack hook.
-  *
-@@ -701,8 +700,7 @@ static int smack_inode_removexattr(struc
-  * @inode: the object
-  * @name: attribute name
-  * @buffer: where to put the result
-- * @size: size of the buffer
-- * @err: unused
-+ * @alloc: unused
-  *
-  * Returns the size of the attribute or an error code
-  */
-@@ -864,7 +862,7 @@ static int smack_file_ioctl(struct file 
- /**
-  * smack_file_lock - Smack check on file locking
-  * @file: the object
-- * @cmd unused
-+ * @cmd: unused
-  *
-  * Returns 0 if current has write access, error code otherwise
-  */
-@@ -1003,8 +1001,8 @@ static int smack_cred_prepare(struct cre
- 	return 0;
- }
- 
--/*
-- * commit new credentials
-+/**
-+ * smack_cred_commit - commit new credentials
-  * @new: the new credentials
-  * @old: the original credentials
-  */
-@@ -1014,8 +1012,8 @@ static void smack_cred_commit(struct cre
- 
- /**
-  * smack_kernel_act_as - Set the subjective context in a set of credentials
-- * @new points to the set of credentials to be modified.
-- * @secid specifies the security ID to be set
-+ * @new: points to the set of credentials to be modified.
-+ * @secid: specifies the security ID to be set
-  *
-  * Set the security data for a kernel service.
-  */
-@@ -1032,8 +1030,8 @@ static int smack_kernel_act_as(struct cr
- 
- /**
-  * smack_kernel_create_files_as - Set the file creation label in a set of creds
-- * @new points to the set of credentials to be modified
-- * @inode points to the inode to use as a reference
-+ * @new: points to the set of credentials to be modified
-+ * @inode: points to the inode to use as a reference
-  *
-  * Set the file creation context in a set of credentials to the same
-  * as the objective context of the specified inode
-@@ -1242,7 +1240,7 @@ static int smack_task_wait(struct task_s
- /**
-  * smack_task_to_inode - copy task smack into the inode blob
-  * @p: task to copy from
-- * inode: inode to copy to
-+ * @inode: inode to copy to
-  *
-  * Sets the smack pointer in the inode security blob
-  */
-@@ -1260,7 +1258,7 @@ static void smack_task_to_inode(struct t
-  * smack_sk_alloc_security - Allocate a socket blob
-  * @sk: the socket
-  * @family: unused
-- * @priority: memory allocation priority
-+ * @gfp_flags: memory allocation flags
-  *
-  * Assign Smack pointers to current
-  *
-@@ -2001,7 +1999,7 @@ static int smack_ipc_permission(struct k
- 
- /**
-  * smack_ipc_getsecid - Extract smack security id
-- * @ipcp: the object permissions
-+ * @ipp: the object permissions
-  * @secid: where result will be saved
-  */
- static void smack_ipc_getsecid(struct kern_ipc_perm *ipp, u32 *secid)
-@@ -2278,7 +2276,7 @@ static int smack_unix_may_send(struct so
- /**
-  * smack_socket_sendmsg - Smack check based on destination host
-  * @sock: the socket
-- * @msghdr: the message
-+ * @msg: the message
-  * @size: the size of the message
-  *
-  * Return 0 if the current subject can write to the destination
-@@ -2319,8 +2317,7 @@ static int smack_socket_sendmsg(struct s
- 
- 
- /**
-- * smack_from_secattr - Convert a netlabel attr.mls.lvl/attr.mls.cat
-- * 	pair to smack
-+ * smack_from_secattr - Convert a netlabel attr.mls.lvl/attr.mls.cat pair to smack
-  * @sap: netlabel secattr
-  * @sip: where to put the result
-  *
-@@ -2441,7 +2438,7 @@ static int smack_socket_sock_rcv_skb(str
-  * @sock: the socket
-  * @optval: user's destination
-  * @optlen: size thereof
-- * @len: max thereoe
-+ * @len: max thereof
-  *
-  * returns zero on success, an error code otherwise
-  */
-@@ -2776,7 +2773,7 @@ static void smack_audit_rule_free(void *
- 
- #endif /* CONFIG_AUDIT */
- 
--/*
-+/**
-  * smack_secid_to_secctx - return the smack label for a secid
-  * @secid: incoming integer
-  * @secdata: destination
-@@ -2793,7 +2790,7 @@ static int smack_secid_to_secctx(u32 sec
- 	return 0;
- }
- 
--/*
-+/**
-  * smack_secctx_to_secid - return the secid for a smack label
-  * @secdata: smack label
-  * @seclen: how long result is
-@@ -2807,11 +2804,10 @@ static int smack_secctx_to_secid(const c
- 	return 0;
- }
- 
--/*
-+/**
-  * smack_release_secctx - don't do anything.
-- * @key_ref: unused
-- * @context: unused
-- * @perm: unused
-+ * @secdata: unused
-+ * @seclen: unused
-  *
-  * Exists to make sure nothing gets done, and properly
-  */
+I will let people know what comes of the tests.
+
+> > Note that this smb_mb() is required even if cpu_relax() contains a
+> > memory barrier, as it is possible to execute csd_lock_wait() without
+> > executing the cpu_relax(), if you get there at just the right time.
+> 
+> Can't understand... Nobody can do csd_wait() on this per-cpu entry,
+> but I guess you meant something else.
+> 
+> > OK...  What prevents the following sequence of events?
+> >
+> > o	CPU 0 calls smp_call_function_many(), targeting numerous CPUs,
+> > 	including CPU 2.  CPU 0 therefore enqueues this on the global
+> > 	call_function.queue.  "wait" is not specified, so CPU 0 returns
+> > 	immediately after sending the IPIs.
+> >
+> > 	It decrements the ->refs field, but, finding the result
+> > 	non-zero, refrains from removing the element that CPU 0
+> > 	enqueued, and also refrains from invoking csd_unlock().
+> >
+> > o	CPU 3 also receives the IPI, and also calls the needed function.
+> > 	Now, only CPU 1 need receive the IPI for the element to be
+> > 	removed.
+> 
+> so we have a single entry E0 on list,
+> 
+> > o	CPU 3 calls smp_call_function_many(), targeting numerous CPUs,
+> > 	but -not- including CPU 2.  CPU 3 therefore also this on the
+> > 	global call_function.queue and sends the IPIs, but no IPI for
+> > 	CPU 2.	Your choice as to whether CPU 3 waits or not.
+> 
+> now we have E3 -> E0
+> 
+> > o	CPU 2 receives CPU 3's IPI, but CPU 0's element is first on the
+> > 	list.  CPU 2 fetches the pointer (via list_for_each_entry_rcu()),
+> > 	and then...
+> 
+> it actually sees E3, not E0
+> 
+> > o	CPU 1 finally re-enables irqs and receives the IPIs!!!  It
+> > 	finds CPU 0's element on the queue, calls the function,
+> > 	decrements the ->refs field, and finds that it is zero.
+> > 	So, CPU 1 invokes list_del_rcu() to remove the element
+> > 	(OK so far, as list_del_rcu() doesn't overwrite the next
+> > 	pointer), then invokes csd_unlock() to release the element.
+> >
+> > o	CPU 0 then invokes another smp_call_function_many(), also
+> > 	multiple CPUs, but -not- to CPU 2.  It requeues the element
+> > 	that was just csd_unlock()ed above, carrying CPU 2 with it.
+> > 	It IPIs CPUs 1 and 3, but not CPU 2.
+> 
+> and inserts the element E0 at the head of the list again,
+> 
+> >
+> > o	CPU 2 continues, and falls off the bottom of the list.
+> 
+> afaics, it doesn't.
+> 
+> Every time smp_call_function_many() reuses the element, it sets its
+> ->next pointer to the head of the list. If we race with another CPU
+> which fetches this pointer, this CPU has to re-scan the whole list,
+> but since we always modify/read data under data->lock this should
+> be safe, that CPU must notice (!cpumask_test_cpu(cpu, data->cpumask).
+> 
+> No?
+
+You are quite correct.  I guess I should have gone home early instead of
+reviewing Peter's patch...  :-/
+
+							Thanx, Paul
