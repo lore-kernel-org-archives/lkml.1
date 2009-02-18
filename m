@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754152AbZBRHCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbZBRHLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754152AbZBRHCT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 02:02:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbZBRHCJ
+	id S1753976AbZBRHLc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 02:11:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbZBRHLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 02:02:09 -0500
-Received: from mga02.intel.com ([134.134.136.20]:40162 "EHLO mga02.intel.com"
+	Wed, 18 Feb 2009 02:11:23 -0500
+Received: from ozlabs.org ([203.10.76.45]:55126 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751973AbZBRHCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 02:02:08 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,227,1233561600"; 
-   d="scan'208";a="387701239"
-Date: Wed, 18 Feb 2009 01:01:35 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: Greg KH <greg@kroah.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v9 6/7] PCI: document SR-IOV sysfs entries
-Message-ID: <20090217170135.GA2520@yzhao-otc.sh.intel.com>
-References: <1234790920-1810-1-git-send-email-yu.zhao@intel.com> <1234790920-1810-7-git-send-email-yu.zhao@intel.com> <20090217125021.GA2403@yzhao-otc.sh.intel.com> <20090218034910.GA10990@kroah.com> <20090217144303.GA2452@yzhao-otc.sh.intel.com> <20090218062116.GA20081@kroah.com>
+	id S1752042AbZBRHLX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 02:11:23 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: #tj-percpu has been rebased
+Date: Wed, 18 Feb 2009 17:41:13 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, cpw@sgi.com
+References: <49833350.1020809@kernel.org> <200902181455.11572.rusty@rustcorp.com.au> <499BAD54.3050108@zytor.com>
+In-Reply-To: <499BAD54.3050108@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090218062116.GA20081@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200902181741.13736.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 18, 2009 at 02:21:16PM +0800, Greg KH wrote:
-> On Tue, Feb 17, 2009 at 10:43:03PM +0800, Yu Zhao wrote:
-> > On Wed, Feb 18, 2009 at 11:49:10AM +0800, Greg KH wrote:
-> > > On Tue, Feb 17, 2009 at 08:50:21PM +0800, Yu Zhao wrote:
-> > > > I'd like to create a subdirectory under PCI device sysfs directory and
-> > > > put some symbol links into that directory (only symbol links). Should I
-> > > > use `device' or `kobject'? Currently I use `device' and get two extra
-> > > > file/directory (uevent and power) which look like useless for my case
-> > > > because this subdirectory doesn't reflect a real device.
-> > > 
-> > > Neither, just use an attribute group, no new struct device should be
-> > > needed at all.
+On Wednesday 18 February 2009 17:10:20 H. Peter Anvin wrote:
+> Rusty Russell wrote:
+> >>>
+> >> num_possible_cpus() can be very large though, so in many cases the
+> >> likelihood of finding that many pages approach zero.  Furthermore,
+> >> num_possible_cpus() may be quite a bit larger than the actual number of
+> >> CPUs in the system.
 > > 
-> > Yes, I was thinking using an attribute group, however, it looks like we
-> > can't put symbol link into a group. Maybe I'm wrong, shed some light,
-> > please?
+> > Sure, so we end up at vmalloc.  No worse, but simpler and much better if we
+> > *can* do it.
 > 
-> Why would you want a symbolic link in an attribute group?
+> If the likelihood is near zero, then you're wasting opportunities to do
+> it better.  If we have compact per-cpu virtual areas then we can use
+> large pages if we know we'll have large percpu areas.
 
-Sorry I didn't make myself clear. I'd like to create a subdirectory (its
-parent is controlled by a `struct device') to only hold symbol links. Can
-I use an `attribute group' of the parent `struct device' for this, or a
-child `struct device', or a bare `struct kobject'?
+You're right; we'd need that defrag wonderness people keep speculating about.
 
-Regards,
-Yu
+What finally convinced me is that the per-cpu chunks have to be at least the
+size of the .data.percpu section (24k here).  7*num_possible_cpus() is even
+worse.
+
+Thanks,
+Rusty.
