@@ -1,53 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754557AbZBRAiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344AbZBRAir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754557AbZBRAiV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 19:38:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660AbZBRAiM
+	id S1753344AbZBRAir (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 19:38:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660AbZBRAih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 19:38:12 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56681 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751592AbZBRAiL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 19:38:11 -0500
-Date: Wed, 18 Feb 2009 01:38:01 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Damien Wyart <damien.wyart@free.fr>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12650] Strange load average and ksoftirqd behavior with
-	2.6.29-rc2-git1
-Message-ID: <20090218003801.GD25856@elte.hu>
-References: <87ljs6pmao.fsf@free.fr> <20090216132151.GA17996@elte.hu> <20090216160613.GA6785@linux.vnet.ibm.com> <20090216185616.GB6785@linux.vnet.ibm.com> <20090216200923.GA28938@elte.hu> <20090216223944.GF6785@linux.vnet.ibm.com> <20090217043422.GA5836@nowhere> <20090217151046.GB6761@linux.vnet.ibm.com> <20090217223741.GC5194@nowhere> <20090217224826.GO6761@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090217224826.GO6761@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 17 Feb 2009 19:38:37 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52278 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751542AbZBRAig (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 19:38:36 -0500
+Date: Tue, 17 Feb 2009 16:38:20 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Edward Shishkin <edward.shishkin@gmail.com>
+Cc: peterz@infradead.org, npiggin@suse.de, rmh3093@gmail.com,
+       randy.dunlap@oracle.com, linux-kernel@vger.kernel.org,
+       reiserfs-devel@vger.kernel.org
+Subject: Re: [patch 2/4] vfs: add set_page_dirty_notag
+Message-Id: <20090217163820.48a2ce68.akpm@linux-foundation.org>
+In-Reply-To: <499B55A8.50103@gmail.com>
+References: <18837.24581.181196.569183@edward.zelnet.ru>
+	<1234530519.6519.46.camel@twins>
+	<49957C43.7050701@gmail.com>
+	<1234534150.6519.101.camel@twins>
+	<18838.49922.215481.399653@edward.zelnet.ru>
+	<1234645893.4695.8.camel@laptop>
+	<18841.60432.329341.514726@edward.zelnet.ru>
+	<20090217143506.f6899342.akpm@linux-foundation.org>
+	<499B55A8.50103@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 18 Feb 2009 03:26:16 +0300
+Edward Shishkin <edward.shishkin@gmail.com> wrote:
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> Andrew Morton wrote:
+> > On Tue, 17 Feb 2009 01:43:28 +0300
+> > Edward Shishkin <edward.shishkin@gmail.com> wrote:
+> >
+> >   
+> >> + */
+> >> +int set_page_dirty_notag(struct page *page)
+> >> +{
+> >> +	struct address_space *mapping = page->mapping;
+> >> +
+> >> +	if (!TestSetPageDirty(page)) {
+> >> +		WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
+> >> +		if (mapping_cap_account_dirty(mapping)) {
+> >> +		        /*
+> >> +			 * The accounting functions rely on
+> >> +			 * being atomic wrt interrupts.
+> >> +			 */
+> >> +		        unsigned long flags;
+> >> +			local_irq_save(flags);
+> >> +			__inc_zone_page_state(page, NR_FILE_DIRTY);
+> >> +			__inc_bdi_stat(mapping->backing_dev_info,
+> >> +				       BDI_RECLAIMABLE);
+> >> +			task_dirty_inc(current);
+> >> +			task_io_account_write(PAGE_CACHE_SIZE);
+> >> +			local_irq_restore(flags);
+> >> +		}
+> >> +		__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+> >> +		return 1;
+> >> +	}
+> >> +	return 0;
+> >> +}
+> >>     
+> >
+> > I'll maintain this in -mm, alongside the resier4 patches which need it.
+> >
+> > Of course, this rather obviates the purpose - if someone changes, say,
+> > __set_page_dirty_nobuffers() then they won't similarly update
+> > set_page_dirty_notag().  Oh well.
+> >
+> > This problem would fix itself if those two functions were to
+> > substantially share code.
+> 
+> It will fix the problem only partially:
+> there is one more friend __set_page_dirty() in buffer.c
 
-> No, it was my confusion -- I later realized that your data 
-> above meant that the force-quiescent-state code path was not 
-> being heavily exercised. So no need for this trace!
+But all three functions do the same thing?
 
-Do you have any theory for why RCU was activated every 100-200 
-microseconds, resulting in 20% ksoftirqd CPU use - and why the 
-problem went away with classic-rcu?
+			if (mapping_cap_account_dirty(mapping)) {
+				__inc_zone_page_state(page, NR_FILE_DIRTY);
+				__inc_bdi_stat(mapping->backing_dev_info,
+						BDI_RECLAIMABLE);
+				task_dirty_inc(current);
+				task_io_account_write(PAGE_CACHE_SIZE);
+			}
 
-	Ingo
+?
+
+> Maybe it makes sense to add comments with warnings
+> in all such places, or create a header file with a static inline
+> function update_page_accounting() ?
+
+Could just uninline the helper function I guess - if you look, those
+four statements already involve doing a heck of a lot of stuff.
+
+Try it, see how it looks?
+
