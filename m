@@ -1,47 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757377AbZBRBm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754291AbZBRCCY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757377AbZBRBm6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 20:42:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756797AbZBRBlb
+	id S1754291AbZBRCCY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 21:02:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbZBRCCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 20:41:31 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47224
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756230AbZBRBl1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 20:41:27 -0500
-Date: Tue, 17 Feb 2009 17:41:12 -0800 (PST)
-Message-Id: <20090217.174112.80573704.davem@davemloft.net>
-To: hannes@hanneseder.net
-Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 30/43] drivers/net/tokenring: fix sparse warning:
- symbol shadows an earlier one
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090214214426.24377.61106.stgit@vmbox.hanneseder.net>
-References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
-	<20090214214426.24377.61106.stgit@vmbox.hanneseder.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 17 Feb 2009 21:02:13 -0500
+Received: from hera.kernel.org ([140.211.167.34]:50621 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751454AbZBRCCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 21:02:12 -0500
+Message-ID: <499B6BF7.9090300@kernel.org>
+Date: Tue, 17 Feb 2009 18:01:27 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: david@lang.hm
+CC: Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       DL-MPTFusionLinux@lsi.com
+Subject: Re: mpt fusion broken sometime since 2.6.24
+References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>  <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm>  <20090217230050.GG16841@parisc-linux.org>  <alpine.DEB.1.10.0902171506500.26625@asgard.lang.hm> <86802c440902171511s1abcc0eao560df4b8fcea0e7c@mail.gmail.com> <alpine.DEB.1.10.0902171514120.26625@asgard.lang.hm> <499B46B2.5040601@kernel.org> <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm>
+In-Reply-To: <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hannes Eder <hannes@hanneseder.net>
-Date: Sat, 14 Feb 2009 22:44:44 +0100
-
-> Impact: Remove redundant variables.
+david@lang.hm wrote:
+> On Tue, 17 Feb 2009, Yinghai Lu wrote:
 > 
-> Fix this sparse warnings:
->   drivers/net/tokenring/lanstreamer.c:619:21: warning: symbol 'i' shadows an earlier one
->   drivers/net/tokenring/lanstreamer.c:589:13: originally declared here
->   drivers/net/tokenring/madgemc.c:695:34: warning: symbol 'tp' shadows an earlier one
->   drivers/net/tokenring/madgemc.c:689:26: originally declared here
->   drivers/net/tokenring/olympic.c:702:21: warning: symbol 'i' shadows an earlier one
->   drivers/net/tokenring/olympic.c:440:13: originally declared here
+>> david@lang.hm wrote:
+>>> On Tue, 17 Feb 2009, Yinghai Lu wrote:
+>>>
+>>>> Subject: Re: mpt fusion broken sometime since 2.6.24
+>>>>
+>>>> On Tue, Feb 17, 2009 at 3:07 PM,  <david@lang.hm> wrote:
+>>>>> On Tue, 17 Feb 2009, Matthew Wilcox wrote:
+>>>>>
+>>>>>> On Tue, Feb 17, 2009 at 01:44:55PM -0800, david@lang.hm wrote:
+>>>>>>>
+>>>>>>> I got a picture of the failed boot at
+>>>>>>> http://linux.lang.hm/linux/IMG00052.jpg
+>>>>>>
+>>>>>> The PCI-MSI line is probably indicative.  Can you try booting with:
+>>>>>>
+>>>>>> mptbase.mpt_msi_enable_sas=0
+>>>>>>
+>>>>>> and also send us an lspci -v so we can update the blacklist?
+>>>>>
+>>>>> is that disabling SAS for this system? if so, that's the wrong thing
+>>>>> to do
+>>>>> (the drives are SAS)
+>>>>>
+>>>> it only disable MSI with that mptsas.
+>>>> and mptsas will use ioapic routing.
+>>>>
+>>>> can you post whole bootlog?
+>>>
+>>> unfortunantly it's booting from CD and the only drives in the system are
+>>> the ones that are not being accessed.
+>>
+>> i mean with kernel before 2.6.24..
 > 
-> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+> Ok, attached.
+> 
 
-Applied.
+so your lsi 1068 is under 8132... need to double check if that chip really support MSI.
+
+YH
