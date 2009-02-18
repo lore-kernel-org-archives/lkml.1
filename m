@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753303AbZBRNw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754095AbZBRNxE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753303AbZBRNw2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 08:52:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbZBRNwS
+	id S1754095AbZBRNxE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 08:53:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbZBRNwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 08:52:18 -0500
-Received: from ns2.suse.de ([195.135.220.15]:36757 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750953AbZBRNwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 08:52:17 -0500
-Date: Wed, 18 Feb 2009 14:52:12 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: Q: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove single ipi fallback for smp_call_function_many())
-Message-ID: <20090218135212.GB23125@wotan.suse.de>
-References: <1234823097.30178.406.camel@laptop> <20090216231946.GA12009@redhat.com> <1234862974.4744.31.camel@laptop> <20090217101130.GA8660@wotan.suse.de> <1234866453.4744.58.camel@laptop> <20090217112657.GE26402@wotan.suse.de> <20090217192810.GA4980@redhat.com> <20090217213256.GJ6761@linux.vnet.ibm.com> <20090217214518.GA13189@redhat.com> <20090217223910.GM6761@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090217223910.GM6761@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.9i
+	Wed, 18 Feb 2009 08:52:53 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:57438 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751396AbZBRNwx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 08:52:53 -0500
+Date: Wed, 18 Feb 2009 15:52:51 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Dan Carpenter <error27@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sx.c: fix dbl statement if - add missing braces
+Message-ID: <Pine.LNX.4.64.0902181547110.31742@wrl-59.cs.helsinki.fi>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-183142574-1234965171=:31742"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 02:39:10PM -0800, Paul E. McKenney wrote:
-> On Tue, Feb 17, 2009 at 10:45:18PM +0100, Oleg Nesterov wrote:
-> > > If all of the above is executed by the same task, tripping the BUG_ON()
-> > > means either a compiler or CPU bug.
-> > 
-> > I think you misunderstood...
-> > 
-> > smp_send_xxx() sends the ipi to another CPU, and smp_xxx_interrupt() is
-> > the handler.
-> 
-> You are right, I did miss that completely.  :-/
-> 
-> I have seen hardware in which the IPI could beat the cache invalidation
-> from the sending CPU to the interrupted CPU, and in which one or both of
-> the CPUs would have to execute special cache-flush/invalidation/whatever
-> instructions for the interrupted CPU to have a consistent view of the
-> data (in your example, "COND").
-> 
-> But we had a little chat with the hardware designers, and in subsequent
-> hardware, the IPI interacted with the cache-coherence protocol so as to
-> prevent the above bug from firing.  However, this was x86-based hardware,
-> which orders writes.  Weakly ordered systems would likely need a memory
-> barrier somewhere, whether as shown above or buried in the smp_send_xxx()
-> primitive.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I agree with you both that we *should* make arch interrupt code
-do the ordering, but given the subtle lockups on some architectures
-in this new code, I didn't want to make it significantly weaker...
+---696208474-183142574-1234965171=:31742
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-Though perhaps it appears that I have, if I have removed an smp_mb
-that x86 was relying on to emit an mfence to serialise the apic.
+
+Caused by 736d54533aed (sx.c: fix missed unlock_kernel()
+on error path in sx_fw_ioctl()). You guys keep breaking
+things this way in every single kernel release in at least
+couple of places... :-(
+
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+Cc: Dan Carpenter <error27@gmail.com>
+---
+ drivers/char/sx.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/char/sx.c b/drivers/char/sx.c
+index f146e90..d7c4165 100644
+--- a/drivers/char/sx.c
++++ b/drivers/char/sx.c
+@@ -1746,9 +1746,10 @@ static long sx_fw_ioctl(struct file *filp, unsigned int cmd,
+ 		sx_dprintk(SX_DEBUG_FIRMWARE, "returning type= %ld\n", rc);
+ 		break;
+ 	case SXIO_DO_RAMTEST:
+-		if (sx_initialized)	/* Already initialized: better not ramtest the board.  */
++		if (sx_initialized) {	/* Already initialized: better not ramtest the board.  */
+ 			rc = -EPERM;
+ 			break;
++		}
+ 		if (IS_SX_BOARD(board)) {
+ 			rc = do_memtest(board, 0, 0x7000);
+ 			if (!rc)
+-- 
+1.5.2.2
+
+---696208474-183142574-1234965171=:31742--
