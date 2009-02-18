@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbZBRNYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbZBRNZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754098AbZBRNYp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 08:24:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbZBRNYU
+	id S1754300AbZBRNZA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 08:25:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbZBRNYb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 08:24:20 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:60540 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752411AbZBRNYT (ORCPT
+	Wed, 18 Feb 2009 08:24:31 -0500
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:6673 "EHLO
+	VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753396AbZBRNYa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 08:24:19 -0500
-Date: Wed, 18 Feb 2009 14:28:35 +0100
-From: Heinz Diehl <htd@fancy-poultry.org>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.28.[5,6] _GTF unexpected object type 0x1
-Message-ID: <20090218132835.GA7253@fancy-poultry.org>
+	Wed, 18 Feb 2009 08:24:30 -0500
+X-BigFish: VPS3(zzzzzzz32i43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KF9J74-04-E9O-01
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Avi Kivity <avi@redhat.com>
+CC: Marcelo Tosatti <mtosatti@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 3/3] kvm mmu: alloc shadow pages with __GFP_ZERO
+Date: Wed, 18 Feb 2009 14:09:00 +0100
+Message-ID: <1234962540-7131-4-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.5.6.4
+In-Reply-To: <1234962540-7131-1-git-send-email-joerg.roedel@amd.com>
+References: <1234962540-7131-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 18 Feb 2009 13:09:00.0226 (UTC) FILETIME=[10747A20:01C991CA]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: private site
-User-Agent: Mutt/1.5.19+cvs20090214 (GNU/Linux)
-X-Provags-ID: V01U2FsdGVkX1/OuP4bvGpQ+16yLBIM6kos3aMj4ZfSxKFM0RU
- vMr69XPQnAUcmf++V+xd8/Q0GNZNLhAmRRLr1K4+q44pHjgupG
- AV9pGgtvjNBKbLXL0Z1CXw03XXKo5Xj6vu1Fb1jS68=
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Not using __GFP_ZERO when allocating shadow pages triggers the
+assertion in the kvm_mmu_alloc_page() when MMU debugging is enabled.
 
-did switch to 2.6.28.6 from 2.6.25 today on my Lenovo 3000 N200 Laptop,
-and noticed this error while booting (which wasn't there with 2.6.25):
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kvm/mmu.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-[....]
-<6>ata3: SATA max UDMA/133 abar m2048@0xfc504000 port 0xfc504200 irq 507
-<6>ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-<4>ACPI Warning (nspredef-0852): \_SB_.PCI0.SATA.PRT0._GTF: Return type mismatch - found Integer, expected Buffer [20080926]
-<4>ata1.00: _GTF unexpected object type 0x1
-<6>ata1.00: ATA-7: WDC WD1600BEVS-08RST2, 08.01G08, max UDMA/133
-<6>ata1.00: 312581808 sectors, multi 16: LBA48 NCQ (depth 31/32)
-<4>ata1.00: _GTF unexpected object type 0x1
-<6>ata1.00: configured for UDMA/133
-[....]
-
-So far, all seems to work properly, but I haven't used the machine any
-longer yet. 
-
-Is this a serial issue which I have to worry about, and what can I do to avoid it?
-
-
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index c90b4b2..d93ecec 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -301,7 +301,7 @@ static int mmu_topup_memory_cache_page(struct kvm_mmu_memory_cache *cache,
+ 	if (cache->nobjs >= min)
+ 		return 0;
+ 	while (cache->nobjs < ARRAY_SIZE(cache->objects)) {
+-		page = alloc_page(GFP_KERNEL);
++		page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+ 		if (!page)
+ 			return -ENOMEM;
+ 		set_page_private(page, 0);
+-- 
+1.5.6.4
 
 
