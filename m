@@ -1,145 +1,272 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754646AbZBRMIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754397AbZBRMJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754646AbZBRMIS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 07:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbZBRMFs
+	id S1754397AbZBRMJU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 07:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbZBRMGz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 07:05:48 -0500
-Received: from hera.kernel.org ([140.211.167.34]:50763 "EHLO hera.kernel.org"
+	Wed, 18 Feb 2009 07:06:55 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:47933 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753638AbZBRMFo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 07:05:44 -0500
-From: Tejun Heo <tj@kernel.org>
-To: rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
-       cpw@sgi.com, mingo@elte.hu
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 07/10] vmalloc: implement vm_area_register_early()
-Date: Wed, 18 Feb 2009 21:04:33 +0900
-Message-Id: <1234958676-27618-8-git-send-email-tj@kernel.org>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1234958676-27618-1-git-send-email-tj@kernel.org>
-References: <1234958676-27618-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 18 Feb 2009 12:05:05 +0000 (UTC)
+	id S1754248AbZBRMGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 07:06:53 -0500
+Date: Wed, 18 Feb 2009 14:00:51 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: yinghai@kernel.org, mingo@elte.hu
+Subject: [PATCH] decouple x2apic from irq remapping
+Message-ID: <20090218120051.GF26845@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: allow multiple early vm areas
+Hi,
 
-There are places where kernel VM area needs to be allocated before
-vmalloc is initialized.  This is done by allocating static vm_struct,
-initializing several fields and linking it to vmlist and later vmalloc
-initialization picking up these from vmlist.  This is currently done
-manually and if there's more than one such areas, there's no defined
-way to arbitrate who gets which address.
+Currently x2apic is used only if interrupt remapping can be enabled,
+but if all apic ids are smaller then 255 there is no reason to
+enable interrupt remapping at all. Although there is not real HW that has
+x2apic but does not have IR the decoupling is useful since we want to
+emulate x2apic interface in KVM (it is more vitalization friendly), but
+we don't want to emulate IR just for that.
 
-This patch implements vm_area_register_early(), which takes vm_area
-struct with flags and size initialized, assigns address to it and puts
-it on the vmlist.  This way, multiple early vm areas can determine
-which addresses they should use.  The only current user - alpha mm
-init - is converted to use it.
+According to Intel docs BIOS should pass control to OS in x2apic mode 
+if there are apics with id > 255 and in xapic otherwise, so the proposed
+patch requires IR configuration only if BIOS switched apic to x2apic
+mode.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
----
- arch/alpha/mm/init.c    |   20 +++++++++++++-------
- include/linux/vmalloc.h |    1 +
- mm/vmalloc.c            |   24 ++++++++++++++++++++++++
- 3 files changed, 38 insertions(+), 7 deletions(-)
+The patch is against tip:x86/apic.
 
-diff --git a/arch/alpha/mm/init.c b/arch/alpha/mm/init.c
-index 5d7a16e..df6df02 100644
---- a/arch/alpha/mm/init.c
-+++ b/arch/alpha/mm/init.c
-@@ -189,9 +189,21 @@ callback_init(void * kernel_end)
- 
- 	if (alpha_using_srm) {
- 		static struct vm_struct console_remap_vm;
--		unsigned long vaddr = VMALLOC_START;
-+		unsigned long nr_pages = 0;
-+		unsigned long vaddr;
- 		unsigned long i, j;
- 
-+		/* calculate needed size */
-+		for (i = 0; i < crb->map_entries; ++i)
-+			nr_pages += crb->map[i].count;
-+
-+		/* register the vm area */
-+		console_remap_vm.flags = VM_ALLOC;
-+		console_remap_vm.size = nr_pages << PAGE_SHIFT;
-+		vm_area_register_early(&console_remap_vm);
-+
-+		vaddr = (unsigned long)consle_remap_vm.addr;
-+
- 		/* Set up the third level PTEs and update the virtual
- 		   addresses of the CRB entries.  */
- 		for (i = 0; i < crb->map_entries; ++i) {
-@@ -213,12 +225,6 @@ callback_init(void * kernel_end)
- 				vaddr += PAGE_SIZE;
- 			}
- 		}
--
--		/* Let vmalloc know that we've allocated some space.  */
--		console_remap_vm.flags = VM_ALLOC;
--		console_remap_vm.addr = (void *) VMALLOC_START;
--		console_remap_vm.size = vaddr - VMALLOC_START;
--		vmlist = &console_remap_vm;
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+diff --git a/arch/x86/kernel/apic.c b/arch/x86/kernel/apic.c
+index af494ba..2f048f8 100644
+--- a/arch/x86/kernel/apic.c
++++ b/arch/x86/kernel/apic.c
+@@ -1293,10 +1293,33 @@ void enable_x2apic(void)
  	}
- 
- 	callback_init_done = 1;
-diff --git a/include/linux/vmalloc.h b/include/linux/vmalloc.h
-index 506e762..bbc0513 100644
---- a/include/linux/vmalloc.h
-+++ b/include/linux/vmalloc.h
-@@ -106,5 +106,6 @@ extern long vwrite(char *buf, char *addr, unsigned long count);
-  */
- extern rwlock_t vmlist_lock;
- extern struct vm_struct *vmlist;
-+extern __init void vm_area_register_early(struct vm_struct *vm);
- 
- #endif /* _LINUX_VMALLOC_H */
-diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index c37924a..d206261 100644
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -24,6 +24,7 @@
- #include <linux/radix-tree.h>
- #include <linux/rcupdate.h>
- #include <linux/bootmem.h>
-+#include <linux/pfn.h>
- 
- #include <asm/atomic.h>
- #include <asm/uaccess.h>
-@@ -982,6 +983,29 @@ void *vm_map_ram(struct page **pages, unsigned int count, int node, pgprot_t pro
  }
- EXPORT_SYMBOL(vm_map_ram);
  
-+/**
-+ * vm_area_register_early - register vmap area early during boot
-+ * @vm: vm_struct to register
-+ * @size: size of area to register
-+ *
-+ * This function is used to register kernel vm area before
-+ * vmalloc_init() is called.  @vm->size and @vm->flags should contain
-+ * proper values on entry and other fields should be zero.  On return,
-+ * vm->addr contains the allocated address.
-+ *
-+ * DO NOT USE THIS FUNCTION UNLESS YOU KNOW WHAT YOU'RE DOING.
-+ */
-+void __init vm_area_register_early(struct vm_struct *vm)
-+{
-+	static size_t vm_init_off __initdata;
+-void __init enable_IR_x2apic(void)
++static int __init enable_IR(void)
+ {
+-#ifdef CONFIG_INTR_REMAP
+ 	int ret;
 +
-+	vm->addr = (void *)VMALLOC_START + vm_init_off;
-+	vm_init_off = PFN_ALIGN(vm_init_off + vm->size);
++	ret = dmar_table_init();
++	if (ret) {
++		pr_info("dmar_table_init() failed with %d:\n", ret);
++		return ret;
++	}
 +
-+	vm->next = vmlist;
-+	vmlist = vm;
++	ret = save_mask_IO_APIC_setup();
++	if (ret) {
++		pr_info("Saving IO-APIC state failed: %d\n", ret);
++		return ret;
++	}
++
++	ret = enable_intr_remapping(1);
++	if (ret)
++		return ret;
++
++	reinit_intr_remapped_IO_APIC(x2apic_preenabled);
++
++	return 0;
 +}
 +
- void __init vmalloc_init(void)
++void __init enable_IR_x2apic(void)
++{
+ 	unsigned long flags;
+ 
+ 	if (!cpu_has_x2apic)
+@@ -1317,72 +1340,33 @@ void __init enable_IR_x2apic(void)
+ 		return;
+ 	}
+ 
+-	ret = dmar_table_init();
+-	if (ret) {
+-		pr_info("dmar_table_init() failed with %d:\n", ret);
+-
+-		if (x2apic_preenabled)
+-			panic("x2apic enabled by bios. But IR enabling failed");
+-		else
+-			pr_info("Not enabling x2apic,Intr-remapping\n");
+-		return;
+-	}
+-
+ 	local_irq_save(flags);
+ 	mask_8259A();
+ 
+-	ret = save_mask_IO_APIC_setup();
+-	if (ret) {
+-		pr_info("Saving IO-APIC state failed: %d\n", ret);
+-		goto end;
+-	}
+-
+-	ret = enable_intr_remapping(1);
+-
+-	if (ret && x2apic_preenabled) {
++	if (x2apic_preenabled) {
++#ifdef CONFIG_INTR_REMAP
++		if (enable_IR()) {
++			local_irq_restore(flags);
++			panic("x2apic enabled by bios. But IR enabling failed");
++		}
++#else
+ 		local_irq_restore(flags);
+-		panic("x2apic enabled by bios. But IR enabling failed");
++		panic("x2apic enabled prior OS handover,"
++				" enable CONFIG_INTR_REMAP");
++#endif
++		pr_info("Enabled interrupt remapping for x2apic\n");
+ 	}
+ 
+-	if (ret)
+-		goto end_restore;
+-
+ 	if (!x2apic) {
+ 		x2apic = 1;
+ 		enable_x2apic();
+ 	}
+ 
+-end_restore:
+-	if (ret)
+-		/*
+-		 * IR enabling failed
+-		 */
+-		restore_IO_APIC_setup();
+-	else
+-		reinit_intr_remapped_IO_APIC(x2apic_preenabled);
+-
+-end:
+ 	unmask_8259A();
+ 	local_irq_restore(flags);
+ 
+-	if (!ret) {
+-		if (!x2apic_preenabled)
+-			pr_info("Enabled x2apic and interrupt-remapping\n");
+-		else
+-			pr_info("Enabled Interrupt-remapping\n");
+-	} else
+-		pr_err("Failed to enable Interrupt-remapping and x2apic\n");
+-#else
+-	if (!cpu_has_x2apic)
+-		return;
+-
+-	if (x2apic_preenabled)
+-		panic("x2apic enabled prior OS handover,"
+-		      " enable CONFIG_INTR_REMAP");
+-
+-	pr_info("Enable CONFIG_INTR_REMAP for enabling intr-remapping "
+-		" and x2apic\n");
+-#endif
++	if (!x2apic_preenabled)
++		pr_info("Enabled x2apic\n");
+ 
+ 	return;
+ }
+diff --git a/arch/x86/kernel/genapic_64.c b/arch/x86/kernel/genapic_64.c
+index ef78863..0fd3bed 100644
+--- a/arch/x86/kernel/genapic_64.c
++++ b/arch/x86/kernel/genapic_64.c
+@@ -49,13 +49,6 @@ static struct genapic *apic_probe[] __initdata = {
+  */
+ void __init default_setup_apic_routing(void)
  {
- 	struct vmap_area *va;
--- 
-1.6.0.2
-
+-#ifdef CONFIG_X86_X2APIC
+-	if (apic == &apic_x2apic_phys || apic == &apic_x2apic_cluster) {
+-		if (!intr_remapping_enabled)
+-			apic = &apic_flat;
+-	}
+-#endif
+-
+ 	if (apic == &apic_flat) {
+ 		if (max_physical_apicid >= 8)
+ 			apic = &apic_physflat;
+diff --git a/arch/x86/kernel/genx2apic_cluster.c b/arch/x86/kernel/genx2apic_cluster.c
+index dd6e8d6..b1d4e4e 100644
+--- a/arch/x86/kernel/genx2apic_cluster.c
++++ b/arch/x86/kernel/genx2apic_cluster.c
+@@ -24,7 +24,10 @@ static int x2apic_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+ 
+ static const struct cpumask *x2apic_target_cpus(void)
+ {
+-	return cpumask_of(0);
++	if (intr_remapping_enabled)
++		return cpumask_of(0);
++	else
++		return cpu_online_mask;
+ }
+ 
+ /*
+@@ -116,37 +119,46 @@ static int x2apic_apic_id_registered(void)
+ 
+ static unsigned int x2apic_cpu_mask_to_apicid(const struct cpumask *cpumask)
+ {
+-	/*
+-	 * We're using fixed IRQ delivery, can only return one logical APIC ID.
+-	 * May as well be the first.
+-	 */
+-	int cpu = cpumask_first(cpumask);
+-
+-	if ((unsigned)cpu < nr_cpu_ids)
+-		return per_cpu(x86_cpu_to_logical_apicid, cpu);
+-	else
+-		return BAD_APICID;
++	if (intr_remapping_enabled) {
++		/*
++		 * We're using fixed IRQ delivery, can only return one
++		 * logical APIC ID. May as well be the first.
++		 */
++		int cpu = cpumask_first(cpumask);
++
++		if ((unsigned)cpu < nr_cpu_ids)
++			return per_cpu(x86_cpu_to_logical_apicid, cpu);
++		else
++			return BAD_APICID;
++	} else
++		return cpumask_bits(cpumask)[0] & APIC_ALL_CPUS;
+ }
+ 
+ static unsigned int
+ x2apic_cpu_mask_to_apicid_and(const struct cpumask *cpumask,
+ 			      const struct cpumask *andmask)
+ {
+-	int cpu;
++	if (intr_remapping_enabled) {
++		int cpu;
+ 
+-	/*
+-	 * We're using fixed IRQ delivery, can only return one logical APIC ID.
+-	 * May as well be the first.
+-	 */
+-	for_each_cpu_and(cpu, cpumask, andmask) {
+-		if (cpumask_test_cpu(cpu, cpu_online_mask))
+-			break;
+-	}
++		/*
++		 * We're using fixed IRQ delivery, can only return one
++		 * logical APIC ID. May as well be the first.
++		 */
++		for_each_cpu_and(cpu, cpumask, andmask) {
++			if (cpumask_test_cpu(cpu, cpu_online_mask))
++				break;
++		}
+ 
+-	if (cpu < nr_cpu_ids)
+-		return per_cpu(x86_cpu_to_logical_apicid, cpu);
++		if (cpu < nr_cpu_ids)
++			return per_cpu(x86_cpu_to_logical_apicid, cpu);
+ 
+-	return BAD_APICID;
++		return BAD_APICID;
++	} else {
++		unsigned long mask1 = cpumask_bits(cpumask)[0] & APIC_ALL_CPUS;
++		unsigned long mask2 = cpumask_bits(andmask)[0] & APIC_ALL_CPUS;
++		return mask1 & mask2;
++	}
+ }
+ 
+ static unsigned int x2apic_cluster_phys_get_apic_id(unsigned long x)
+--
+			Gleb.
