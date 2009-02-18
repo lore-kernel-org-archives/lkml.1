@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753544AbZBRNqq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753892AbZBRNsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753544AbZBRNqq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 08:46:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbZBRNqg
+	id S1753892AbZBRNsS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 08:48:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbZBRNr7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 08:46:36 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:32896 "EHLO mx2.redhat.com"
+	Wed, 18 Feb 2009 08:47:59 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44316 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751777AbZBRNqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 08:46:36 -0500
-Message-ID: <499C1158.7020401@redhat.com>
-Date: Wed, 18 Feb 2009 13:47:04 +0000
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1752015AbZBRNr6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 08:47:58 -0500
+Date: Wed, 18 Feb 2009 14:47:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Patrick McHardy <kaber@trash.net>
+Cc: Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       David Miller <davem@davemloft.net>, Rick Jones <rick.jones2@hp.com>,
+       Eric Dumazet <dada1@cosmosbay.com>, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, tglx@linutronix.de,
+       Martin Josefsson <gandalf@wlug.westbo.se>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] timers: add mod_timer_pending()
+Message-ID: <20090218134738.GD1300@elte.hu>
+References: <20090218051906.174295181@vyatta.com> <20090218052747.437271195@vyatta.com> <20090218092041.GC3294@elte.hu> <499BDDFE.5010101@trash.net> <20090218120508.GB4100@elte.hu> <499C000A.4040205@trash.net> <20090218125049.GA28791@elte.hu> <499C0519.2050204@trash.net>
 MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-CC: Marcelo Tosatti <mtosatti@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] kvm mmu: alloc shadow pages with __GFP_ZERO
-References: <1234962540-7131-1-git-send-email-joerg.roedel@amd.com> <1234962540-7131-4-git-send-email-joerg.roedel@amd.com>
-In-Reply-To: <1234962540-7131-4-git-send-email-joerg.roedel@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <499C0519.2050204@trash.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
-> Not using __GFP_ZERO when allocating shadow pages triggers the
-> assertion in the kvm_mmu_alloc_page() when MMU debugging is enabled.
+
+* Patrick McHardy <kaber@trash.net> wrote:
+
+> Ingo Molnar wrote:
+>> To accelerate matters i've committed the new API patch into a new 
+>> standalone topic branch: tip:timers/new-apis.
+>>
+>> Unless there are objections or test failures, you (or Stephen or  
+>> David) can then git-pull it into the networking tree via the Git  
+>> coordinates below - and you'll get this single commit in a surgical 
+>> manner - no other timer changes are included.
+>>
+>> Doing so has the advantage of:
+>>
+>> - You not having to wait a kernel cycle for the API to go
+>>   upstream.
+>>
+>> - You can also push it upstream without waiting for the timer   tree. 
+>> (the timer tree and the networking tree will share the   exact same 
+>> commit)
+>>
+>> - It will also all merge cleanly with the timer tree in   linux-next, 
+>> etc.
+>>
+>> I'd suggest to do it in about a week, to make sure any after effects 
+>> have trickled down and to make sure the topic has become append-only. 
+>> You can ping Thomas and me about testing/review status then, whenever 
+>> you want to do the pull.
 >
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> ---
->  arch/x86/kvm/mmu.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-> index c90b4b2..d93ecec 100644
-> --- a/arch/x86/kvm/mmu.c
-> +++ b/arch/x86/kvm/mmu.c
-> @@ -301,7 +301,7 @@ static int mmu_topup_memory_cache_page(struct kvm_mmu_memory_cache *cache,
->  	if (cache->nobjs >= min)
->  		return 0;
->  	while (cache->nobjs < ARRAY_SIZE(cache->objects)) {
-> -		page = alloc_page(GFP_KERNEL);
-> +		page = alloc_page(GFP_KERNEL | __GFP_ZERO);
->  		if (!page)
->  			return -ENOMEM;
->  		set_page_private(page, 0);
->   
+> Thanks Ingo. I'll wait for Stephen to rebase his patches on 
+> top of your change and the test results and will let you know.
 
-What is the warning?
+Stress-testing here in the last ~2 hours on eight x86 test-boxes 
+showed no problems so far.
 
-Adding __GFP_ZERO here will cause us to clear the page twice, which is 
-wasteful.
-
-
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
-
+	Ingo
