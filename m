@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbZBRGoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753935AbZBRGtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754477AbZBRGoY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 01:44:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbZBRGoP
+	id S1753935AbZBRGtS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 01:49:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbZBRGtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 01:44:15 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:47078 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752336AbZBRGoO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 01:44:14 -0500
-Message-ID: <499BAD54.3050108@zytor.com>
-Date: Tue, 17 Feb 2009 22:40:20 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 18 Feb 2009 01:49:07 -0500
+Received: from kroah.org ([198.145.64.141]:47861 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751754AbZBRGtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 01:49:06 -0500
+Date: Tue, 17 Feb 2009 22:21:16 -0800
+From: Greg KH <greg@kroah.com>
+To: Yu Zhao <yu.zhao@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v9 6/7] PCI: document SR-IOV sysfs entries
+Message-ID: <20090218062116.GA20081@kroah.com>
+References: <1234790920-1810-1-git-send-email-yu.zhao@intel.com> <1234790920-1810-7-git-send-email-yu.zhao@intel.com> <20090217125021.GA2403@yzhao-otc.sh.intel.com> <20090218034910.GA10990@kroah.com> <20090217144303.GA2452@yzhao-otc.sh.intel.com>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, cpw@sgi.com
-Subject: Re: #tj-percpu has been rebased
-References: <49833350.1020809@kernel.org> <200902170952.21063.rusty@rustcorp.com.au> <4999F693.5000105@zytor.com> <200902181455.11572.rusty@rustcorp.com.au>
-In-Reply-To: <200902181455.11572.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090217144303.GA2452@yzhao-otc.sh.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
->>>
->> num_possible_cpus() can be very large though, so in many cases the
->> likelihood of finding that many pages approach zero.  Furthermore,
->> num_possible_cpus() may be quite a bit larger than the actual number of
->> CPUs in the system.
+On Tue, Feb 17, 2009 at 10:43:03PM +0800, Yu Zhao wrote:
+> On Wed, Feb 18, 2009 at 11:49:10AM +0800, Greg KH wrote:
+> > On Tue, Feb 17, 2009 at 08:50:21PM +0800, Yu Zhao wrote:
+> > > Hi Greg,
+> > > 
+> > > The `struct device' is preferred over the `struct kobject' in all cases
+> > > that create subdirectory in sysfs, is this true?
+> > 
+> > If you have a parent directory being controlled by a struct device, yes.
 > 
-> Sure, so we end up at vmalloc.  No worse, but simpler and much better if we
-> *can* do it.
+> Thanks! Do we need to document this somewhere?
+
+Probably, patches gladly accepted for documentation fixes/updates :)
+
+> > > I'd like to create a subdirectory under PCI device sysfs directory and
+> > > put some symbol links into that directory (only symbol links). Should I
+> > > use `device' or `kobject'? Currently I use `device' and get two extra
+> > > file/directory (uevent and power) which look like useless for my case
+> > > because this subdirectory doesn't reflect a real device.
+> > 
+> > Neither, just use an attribute group, no new struct device should be
+> > needed at all.
 > 
+> Yes, I was thinking using an attribute group, however, it looks like we
+> can't put symbol link into a group. Maybe I'm wrong, shed some light,
+> please?
 
-If the likelihood is near zero, then you're wasting opportunities to do
-it better.  If we have compact per-cpu virtual areas then we can use
-large pages if we know we'll have large percpu areas.
+Why would you want a symbolic link in an attribute group?
 
-	-hpa
+confused,
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+greg k-h
