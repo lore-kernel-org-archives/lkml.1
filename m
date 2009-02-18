@@ -1,156 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbZBRPM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754357AbZBRPQ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754785AbZBRPM5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 10:12:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbZBRPMV
+	id S1754357AbZBRPQ2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 10:16:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbZBRPQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 10:12:21 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:55713 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752700AbZBRPMU (ORCPT
+	Wed, 18 Feb 2009 10:16:18 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:58857 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752203AbZBRPQS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 10:12:20 -0500
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Matthew Garrett <mjg@redhat.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>
-Subject: [PATCH 3/3] [RESEND] binfmt_misc.c: Allow arguments in interpreter string
-Date: Wed, 18 Feb 2009 17:16:02 +0200
-Message-Id: <1234970162-10694-3-git-send-email-kirill@shutemov.name>
-X-Mailer: git-send-email 1.6.1.3.GIT
-In-Reply-To: <1234970162-10694-2-git-send-email-kirill@shutemov.name>
-References: <1234970162-10694-1-git-send-email-kirill@shutemov.name>
- <1234970162-10694-2-git-send-email-kirill@shutemov.name>
+	Wed, 18 Feb 2009 10:16:18 -0500
+Date: Wed, 18 Feb 2009 15:15:29 +0000
+From: Matthew Garrett <mjg@redhat.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Brian Swetland <swetland@google.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>,
+       Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFD] Automatic suspend
+Message-ID: <20090218151529.GB15195@srcf.ucam.org>
+References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com> <13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com> <20090216145948.6fea81c3@infradead.org> <200902170019.40599.rjw@sisk.pl> <20090216232329.GA15678@srcf.ucam.org> <20090217142001.GB12378@bulgaria.corp.google.com> <20090217064630.688bf639@infradead.org> <20090217145141.GA26158@srcf.ucam.org> <20090217065622.3e0a9956@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090217065622.3e0a9956@infradead.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use parse_shell_args() to parse interpreter string. It allows to pass
-arguments to interpreter.
+On Tue, Feb 17, 2009 at 06:56:22AM -0800, Arjan van de Ven wrote:
 
-Now we can drop dummy wrappers around interpreters.
+> so use range timers / timer slack for those apps that you do not trust.
+> That is not a big deal, and solves the issue of timer wakeups...
 
-Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
----
- fs/binfmt_misc.c |   46 +++++++++++++++++++++++++++++-----------------
- 1 files changed, 29 insertions(+), 17 deletions(-)
+So have userspace say something like "The screen is turned off now, 
+change the timer precision on all untrusted userland to sub 10 seconds"? 
+That would work.
 
-diff --git a/fs/binfmt_misc.c b/fs/binfmt_misc.c
-index c4e8353..fadb29d 100644
---- a/fs/binfmt_misc.c
-+++ b/fs/binfmt_misc.c
-@@ -14,6 +14,7 @@
-  *  1997-06-30 minor cleanup
-  *  1997-08-09 removed extension stripping, locking cleanup
-  *  2001-02-28 AV: rewritten into something that resembles C. Original didn't.
-+ *  2009-02-03 Allow arguments in interpreter string
-  */
- 
- #include <linux/module.h>
-@@ -50,7 +51,7 @@ typedef struct {
- 	int size;			/* size of magic/mask */
- 	char *magic;			/* magic or filename extension */
- 	char *mask;			/* mask, NULL for exact match */
--	char *interpreter;		/* filename of interpreter */
-+	char *command;			/* command to interprete the file */
- 	char *name;
- 	struct dentry *dentry;
- } Node;
-@@ -107,8 +108,8 @@ static int load_misc_binary(struct linux_binprm *bprm, struct pt_regs *regs)
- {
- 	Node *fmt;
- 	struct file * interp_file = NULL;
--	char iname[BINPRM_BUF_SIZE];
--	char *iname_addr = iname;
-+	char out[BINPRM_BUF_SIZE];
-+	int argc = 0;
- 	int retval;
- 	int fd_binary = -1;
- 
-@@ -120,13 +121,14 @@ static int load_misc_binary(struct linux_binprm *bprm, struct pt_regs *regs)
- 	if (bprm->recursion_depth > BINPRM_MAX_RECURSION)
- 		goto _ret;
- 
--	/* to keep locking time low, we copy the interpreter string */
-+	/* to keep locking time low, we copy the command string */
- 	read_lock(&entries_lock);
- 	fmt = check_file(bprm);
- 	if (fmt)
--		strlcpy(iname, fmt->interpreter, BINPRM_BUF_SIZE);
-+		argc = parse_shell_args(fmt->command, out, BINPRM_BUF_SIZE);
- 	read_unlock(&entries_lock);
--	if (!fmt)
-+
-+	if (!argc)
- 		goto _ret;
- 
- 	if (!(fmt->flags & MISC_FMT_PRESERVE_ARGV0)) {
-@@ -170,15 +172,25 @@ static int load_misc_binary(struct linux_binprm *bprm, struct pt_regs *regs)
- 		goto _error;
- 	bprm->argc++;
- 
--	/* add the interp as argv[0] */
--	retval = copy_strings_kernel (1, &iname_addr, bprm);
--	if (retval < 0)
--		goto _error;
--	bprm->argc ++;
-+	{
-+		char *argv[argc];
-+		char *out_p = out;
-+		int i;
-+
-+		for(i=0; i < argc; i++) {
-+			argv[i] = out_p;
-+			out_p += strlen(out_p) + 1;
-+		}
-+
-+		retval = copy_strings_kernel(argc, argv, bprm);
-+		if (retval)
-+			return retval;
-+		bprm->argc += argc;
-+	}
- 
--	bprm->interp = iname;	/* for binfmt_script */
-+	bprm->interp = out;	/* for binfmt_script */
- 
--	interp_file = open_exec (iname);
-+	interp_file = open_exec (out);
- 	retval = PTR_ERR (interp_file);
- 	if (IS_ERR (interp_file))
- 		goto _error;
-@@ -287,7 +299,7 @@ static char * check_special_flags (char * sfs, Node * e)
- }
- /*
-  * This registers a new binary format, it recognises the syntax
-- * ':name:type:offset:magic:mask:interpreter:flags'
-+ * ':name:type:offset:magic:mask:command:flags'
-  * where the ':' is the IFS, that can be chosen with the first char
-  */
- static Node *create_entry(const char __user *buffer, size_t count)
-@@ -379,12 +391,12 @@ static Node *create_entry(const char __user *buffer, size_t count)
- 			goto Einval;
- 		*p++ = '\0';
- 	}
--	e->interpreter = p;
-+	e->command = p;
- 	p = strchr(p, del);
- 	if (!p)
- 		goto Einval;
- 	*p++ = '\0';
--	if (!e->interpreter[0])
-+	if (!e->command[0])
- 		goto Einval;
- 
- 
-@@ -448,7 +460,7 @@ static void entry_status(Node *e, char *page)
- 		return;
- 	}
- 
--	sprintf(page, "%s\ninterpreter %s\n", status, e->interpreter);
-+	sprintf(page, "%s\ninterpreter %s\n", status, e->command);
- 	dp = page + strlen(page);
- 
- 	/* print the special flags */
 -- 
-1.6.1.3.GIT
-
+Matthew Garrett | mjg59@srcf.ucam.org
