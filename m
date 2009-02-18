@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754416AbZBRAlz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755272AbZBRAmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754416AbZBRAlz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 19:41:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbZBRAlp
+	id S1755272AbZBRAmk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 19:42:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbZBRAmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 19:41:45 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:59028 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753175AbZBRAlo (ORCPT
+	Tue, 17 Feb 2009 19:42:31 -0500
+Received: from mga10.intel.com ([192.55.52.92]:2657 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751660AbZBRAma (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 19:41:44 -0500
-To: John Ogness <dazukocode@ogness.net>
-Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       malware-list@lists.printk.net, eparis@redhat.com, hch@infradead.org,
-       alan@lxorguk.ukuu.org.uk
-References: <8663jrgwo4.fsf@johno.fn.ogness.net>
-	<861vufgwlt.fsf@johno.fn.ogness.net>
-	<86wsc7fhzc.fsf_-_@johno.fn.ogness.net>
-	<86skmvfhx6.fsf_-_@johno.fn.ogness.net>
-	<m1k57vcsr1.fsf@fess.ebiederm.org>
-	<86fxidfnnh.fsf@johno.fn.ogness.net>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 17 Feb 2009 16:41:58 -0800
-In-Reply-To: <86fxidfnnh.fsf@johno.fn.ogness.net> (John Ogness's message of "Tue\, 17 Feb 2009 09\:55\:30 +0100")
-Message-ID: <m1iqn8tw2x.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 17 Feb 2009 19:42:30 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,225,1233561600"; 
+   d="scan'208";a="666380177"
+Date: Tue, 17 Feb 2009 16:45:47 -0800
+From: mark gross <mgross@linux.intel.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Arjan van de Ven <arjan@infradead.org>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>,
+       Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Uli Luckas <u.luckas@road.de>, Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFD] Automatic suspend
+Message-ID: <20090218004547.GB26292@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com> <13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com> <20090216145948.6fea81c3@infradead.org> <200902170019.40599.rjw@sisk.pl> <20090216232329.GA15678@srcf.ucam.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: dazukocode@ogness.net, alan@lxorguk.ukuu.org.uk, hch@infradead.org, eparis@redhat.com, malware-list@lists.printk.net, viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;John Ogness <dazukocode@ogness.net>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCHv2 3/5] VFS: DazukoFS, stackable-fs, file access control
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <20090216232329.GA15678@srcf.ucam.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Ogness <dazukocode@ogness.net> writes:
-
-> On 2009-02-12, ebiederm@xmission.com (Eric W. Biederman) wrote:
->>> Patch 3: Creates /dev/dazukofs.ctrl to allow for groups to be added,
->>>          listed, and deleted. Also, /dev/dazukofs.[0-9] devices are
->>>          created to support multiple groups.
->>
->> Great another global namespace for process groups.  What is your
->> plan for making this work in a container?
+On Mon, Feb 16, 2009 at 11:23:30PM +0000, Matthew Garrett wrote:
+> On Tue, Feb 17, 2009 at 12:19:38AM +0100, Rafael J. Wysocki wrote:
+> 
+> > This, again, seems to be a bit x86-centric. :-)  The Android people are telling
+> > us that on the hardware they deal with it does make sense to put the entire
+> > system to sleep even for relatively short periods of time, since the latencies
+> > involved are not too bad.
+> 
+> Arve said that the power state was equivalent in idle and suspend, but 
+> that they preferred suspend because it stopped any periodic timers. I'd 
+> be more interested in making sure that unnecessary timers aren't running 
+> than focusing on automatically entering system-wide suspend - Nokia have 
+> been managing this since 2005 with good results.
 >
-> It is good that you mention it. This is something that I totally
-> missed. I am not yet certain what kind of a role DazukoFS should have
-> within containers.  I need to learn the container API's and see what
-> kinds of options are available. The next patchset (which it seems
-> won't be coming too quickly now) will address this in some form.
 
-Per filesystem would be fine.
+I think they where talking timers as hardware devices pulling electrons,
+not SW timers triggering wake ups.  I guess the timer hardware could be
+running, and pulling power, even when not programmed to trigger any
+event or IRQ.
 
-Eric
+--mgross
