@@ -1,74 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbZBRKxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753579AbZBRKxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753398AbZBRKxB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 05:53:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbZBRKww
+	id S1753579AbZBRKxw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 05:53:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbZBRKxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 05:52:52 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:43518 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750853AbZBRKwv (ORCPT
+	Wed, 18 Feb 2009 05:53:43 -0500
+Received: from cluster-g.mailcontrol.com ([208.87.233.190]:45355 "EHLO
+	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750853AbZBRKxn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 05:52:51 -0500
-Subject: Re: [PATCH 2/3] generic-ipi: remove kmalloc()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@redhat.com>
-In-Reply-To: <200902181601.06738.rusty@rustcorp.com.au>
-References: <20090217215904.059250145@chello.nl>
-	 <20090217220053.500765201@chello.nl>
-	 <200902181601.06738.rusty@rustcorp.com.au>
-Content-Type: text/plain
-Date: Wed, 18 Feb 2009 11:52:29 +0100
-Message-Id: <1234954349.4637.59.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.90 
+	Wed, 18 Feb 2009 05:53:43 -0500
+Message-ID: <499BE83D.6040406@csr.com>
+Date: Wed, 18 Feb 2009 10:51:41 +0000
+From: David Vrabel <david.vrabel@csr.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Johannes Weiner <hannes@cmpxchg.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Chas Williams <chas@cmf.nrl.navy.mil>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [patch 5/7] usb: use kzfree()
+References: <20090217182615.897042724@cmpxchg.org> <20090217184136.097882343@cmpxchg.org>
+In-Reply-To: <20090217184136.097882343@cmpxchg.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 18 Feb 2009 10:51:41.0702 (UTC) FILETIME=[E1E97A60:01C991B6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-18 at 16:01 +1030, Rusty Russell wrote:
-> On Wednesday 18 February 2009 08:29:06 Peter Zijlstra wrote:
-> > Remove the use of kmalloc() from the smp_call_function_*() calls.
-> 
-> This patch is actually quite nice.  Not sure it's correct, but it's neat :)
+This is in the WUSB code so:
 
-:-)
+Acked-by: David Vrabel <david.vrabel@csr.com>
 
-> One minor quibble:
-> 
-> > +			data = &per_cpu(csd_data, me);
-> 
-> "data = &__get_cpu_var(csd_data);" is slightly preferred.  A few less cycles.
-
-Thanks, next version will include the below.
-
-Index: linux-2.6/kernel/smp.c
-===================================================================
---- linux-2.6.orig/kernel/smp.c
-+++ linux-2.6/kernel/smp.c
-@@ -325,7 +325,7 @@ int smp_call_function_single(int cpu, vo
- 			 * will make sure the callee is done with the
- 			 * data before a new caller will use it.
- 			 */
--			data = &per_cpu(csd_data, me);
-+			data = &__get_cpu_var(csd_data);
- 			csd_lock(data);
- 		} else {
- 			data = &d;
-@@ -413,7 +413,7 @@ void smp_call_function_many(const struct
- 		return;
- 	}
- 
--	data = &per_cpu(cfd_data, me);
-+	data = &__get_cpu_var(cfd_data);
- 	csd_lock(&data->csd);
- 
- 	spin_lock_irqsave(&data->lock, flags);
-
-
+David
+-- 
+David Vrabel, Senior Software Engineer, Drivers
+CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
+Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
