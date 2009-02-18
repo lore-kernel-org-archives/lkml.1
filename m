@@ -1,51 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752864AbZBRWeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758575AbZBRWeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752864AbZBRWeE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 17:34:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbZBRWbS
+	id S1758575AbZBRWeZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 17:34:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757271AbZBRWbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 17:31:18 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:53056 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757393AbZBRWbR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 17:31:17 -0500
-Date: Wed, 18 Feb 2009 14:31:53 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>
-Subject: [PATCH] docsrc: use config instead of menuconfig
-Message-Id: <20090218143153.475f4660.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt702.oracle.com [141.146.40.80]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.499C8C27.0325:SCFSTAT928724,ss=1,fgs=0
+	Wed, 18 Feb 2009 17:31:52 -0500
+Received: from kroah.org ([198.145.64.141]:34655 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757772AbZBRWbv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 17:31:51 -0500
+Date: Wed, 18 Feb 2009 14:28:41 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/36] 2.6.27.19-stable review
+Message-ID: <20090218222841.GA10668@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+This is the start of the stable review cycle for the 2.6.27.19 release.
+There are 36 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-BUILD_DOCSRC should be controlled by "config" instead of "menuconfig".
-I have no idea how I managed to use "menuconfig" here.
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- lib/Kconfig.debug |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Responses should be made by Friday, Febuary 20, 2009, 21:00:00 UTC.
+Anything received after that time might be too late.
 
---- lnx2629-rc5-docsrc.orig/lib/Kconfig.debug
-+++ lnx2629-rc5-docsrc/lib/Kconfig.debug
-@@ -838,7 +838,7 @@ config FIREWIRE_OHCI_REMOTE_DMA
- 
- 	  If unsure, say N.
- 
--menuconfig BUILD_DOCSRC
-+config BUILD_DOCSRC
- 	bool "Build targets in Documentation/ tree"
- 	depends on HEADERS_CHECK
- 	help
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.19-rc1.gz
+and the diffstat can be found below.
+
+
+thanks,
+
+greg k-h
+
+
+ Makefile                    |    2 +-
+ arch/powerpc/kernel/align.c |    7 +-
+ arch/x86/mm/pageattr.c      |   14 +
+ drivers/ata/pata_via.c      |    4 +-
+ drivers/ata/sata_nv.c       |   14 +-
+ drivers/bluetooth/btsdio.c  |    3 +-
+ drivers/net/3c505.c         |   26 ++-
+ drivers/pci/intel-iommu.c   |   13 +-
+ drivers/scsi/libiscsi.c     |    1 +
+ fs/ext2/super.c             |    9 +-
+ fs/ext4/balloc.c            |  156 +++++++++++-
+ fs/ext4/ext4.h              |   41 +++-
+ fs/ext4/ext4_sb.h           |    4 +-
+ fs/ext4/hash.c              |   77 +++++-
+ fs/ext4/ialloc.c            |  166 ++++++++-----
+ fs/ext4/inode.c             |   59 ++++-
+ fs/ext4/mballoc.c           |  595 ++++++++++++++++++++++++++++++++-----------
+ fs/ext4/mballoc.h           |   51 ++--
+ fs/ext4/namei.c             |   28 ++-
+ fs/ext4/resize.c            |   61 +----
+ fs/ext4/super.c             |   46 +++-
+ fs/jbd2/commit.c            |   27 ++-
+ include/linux/jbd2.h        |    4 +-
+ include/linux/pci_ids.h     |    1 +
+ include/linux/pid.h         |   18 ++
+ ipc/mqueue.c                |    3 +-
+ 26 files changed, 1068 insertions(+), 362 deletions(-)
