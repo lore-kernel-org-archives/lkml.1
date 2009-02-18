@@ -1,69 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbZBRTft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754091AbZBRTlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756105AbZBRTft (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 14:35:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756338AbZBRTfL
+	id S1754091AbZBRTlT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 14:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbZBRTlK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 14:35:11 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:62973 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754911AbZBRTfH (ORCPT
+	Wed, 18 Feb 2009 14:41:10 -0500
+Received: from outbound-mail-132.bluehost.com ([67.222.39.22]:43003 "HELO
+	outbound-mail-132.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751379AbZBRTlJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 14:35:07 -0500
-Message-ID: <499C62FF.1090805@ru.mvista.com>
-Date: Wed, 18 Feb 2009 22:35:27 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Wed, 18 Feb 2009 14:41:09 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=t7RAldcYEx4xcKY/o0hBCIwI/Uh4p++yHreeS1AIOXT5LWc73MRdr6IJN/HHC5AlnizLEn4niEzSJxKj4uZMBNlvTbBBa8D/pa5+zA8SxEgK+OgUUY40eiwh2ohBIWK8;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Subject: Re: ACPI hotplug panic with current git head
+Date: Wed, 18 Feb 2009 11:41:06 -0800
+User-Agent: KMail/1.9.10
+Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <1231604250.3642.33.camel@localhost.localdomain> <200902181059.26779.jbarnes@virtuousgeek.org> <1234984088.3225.44.camel@localhost.localdomain>
+In-Reply-To: <1234984088.3225.44.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Borislav Petkov <petkovbb@gmail.com>
-Subject: Re: [PATCH] ide-cd: document capacity hack
-References: <200902182018.52195.bzolnier@gmail.com>
-In-Reply-To: <200902182018.52195.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902181141.06997.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Wednesday, February 18, 2009 11:08 am James Bottomley wrote:
+> On Wed, 2009-02-18 at 10:59 -0800, Jesse Barnes wrote:
+> > On Monday, February 16, 2009 9:10 pm Kenji Kaneshige wrote:
+> > > Jesse Barnes wrote:
+> > > > On Wednesday, January 28, 2009 3:47 am Kenji Kaneshige wrote:
+> > > >> I made several patches to fix the wrong assumption described
+> > > >> above. It is very difficult for me to check all the code that
+> > > >> refers pci_bus->self. So I checked include/linux/pci-acpi.h and
+> > > >> the code under drivers/pci/ only. And I made patches for the code
+> > > >> like below:
+> > > >>
+> > > >>  - The code that clearly chooses host bridge operation or
+> > > >>    PCI-to-PCI bridge operation based on pci_bus->self.
+> > > >>
+> > > >>  - The code that might cause endless loop if pci_bus->self is
+> > > >>    not NULL on the PCI root bus.
+> > > >
+> > > > Kenji-san, can you re-send these to my private mail so I can apply
+> > > > them? (Outlook/Exchange can't let plain text through without
+> > > > molesting it for some reason.)
+> > > >
+> > > > Thanks,
+> > >
+> > > Sure. Resending the following patches. I made those patches against
+> > > 2.6.29-rc2. I've confirmed they can be applied to 2.6.29-rc5.
+> > >
+> > >  - [PATCH 1/8] PCI/ACPI: fix wrong assumption in
+> > > acpi_pci_get_bridge_handle - [PATCH 2/8] PCI/ACPI: fix wrong assumption
+> > > in
+> > > acpi_find_root_bridge_handle - [PATCH 3/8] PCI hotplug: fix wrong
+> > > assumption in acpi_get_hp_params_from_firmware - [PATCH 4/8] PCI
+> > > hotplug: fix wrong assumption in acpi_get_hp_hw_control_from_firmware -
+> > > [PATCH 5/8] PCI: fix wrong assumption in pci_find_upstream_pcie_bridge
+> > > - [PATCH 6/8] PCI: fix wrong assumption in pci_read_bridge_bases
+> > >  - [PATCH 7/8] PCI: fix wrong assumption in pci_get_interrupt_pin
+> > >  - [PATCH 8/8] PCI: fix wrong assumption in pci_common_swizzle
+> >
+> > James have you tested this set?  I didn't see your tested-by in the
+> > changelogs...  Just want to make sure if I'm going to send these to Linus
+> > for 2.6.29.
+>
+> Um ... no.  I have enough trouble picking up my own patches from email.
+> Is there a git tree of this?  I can pull that in to the box in question
+> if so.
 
-Bartlomiej Zolnierkiewicz wrote:
+Just pushed the set to the hotplug-test branch of my PCI repo:
+git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6 hotplug-test
 
-> Just copy the comment from drivers/scsi/sr.c::sr_done()
-> (from which the capacity hack has been originated).
 
-> Cc: Borislav Petkov <petkovbb@gmail.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
-> Index: b/drivers/ide/ide-cd.c
-> ===================================================================
-> --- a/drivers/ide/ide-cd.c
-> +++ b/drivers/ide/ide-cd.c
-> @@ -189,6 +189,14 @@ static void cdrom_analyze_sense_data(ide
->  			bio_sectors = max(bio_sectors(failed_command->bio), 4U);
->  			sector &= ~(bio_sectors - 1);
->  
-> +			/*
-> +			 * The SCSI specification allows for the value
-> +			 * returned by READ CAPACITY to be up to 75 2K
-> +			 * sectors past the last readable block.
-
-    Oh horror... :-)
-
-> +			 * Therefore, if we hit a medium error within the
-> +			 * last 75 2K sectors, we decrease the saved size
-> +			 * value.
-> +			 */
->  			if (sector < get_capacity(info->disk) &&
->  			    drive->probed_capacity - sector < 4 * 75)
->  				set_capacity(info->disk, sector);
-
-    Would be nice if the CHS capacity workround was finally documented too? ;-)
-
-MBR, Sergei
+-- 
+Jesse Barnes, Intel Open Source Technology Center
