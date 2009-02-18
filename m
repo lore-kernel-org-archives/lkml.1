@@ -1,105 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760784AbZBRVtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760914AbZBRVuG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760784AbZBRVtR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:49:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756896AbZBRVgi
+	id S1760914AbZBRVuG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:50:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757410AbZBRVgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:36:38 -0500
-Received: from kroah.org ([198.145.64.141]:56388 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755930AbZBRVgE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:36:04 -0500
-Date: Wed, 18 Feb 2009 13:33:21 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org
-Subject: [patch 36/39] ext4: Add sanity check to make_indexed_dir
-Message-ID: <20090218213321.GK19814@kroah.com>
-References: <20090218212144.965748151@mini.kroah.org>
+	Wed, 18 Feb 2009 16:36:50 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55348 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757404AbZBRVgt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:36:49 -0500
+Date: Wed, 18 Feb 2009 16:35:45 -0500
+From: Jason Baron <jbaron@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       acme@ghostprotocols.net, fweisbec@gmail.com, fche@redhat.com,
+       compudj@krystal.dyndns.org
+Subject: Re: [PATCH] new irq tracer
+Message-ID: <20090218213545.GB3112@redhat.com>
+References: <20090218195328.GA3112@redhat.com> <1234991725.4799.1.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext4-add-sanity-check-to-make_indexed_dir.patch"
-In-Reply-To: <20090218213021.GA19814@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Disposition: inline
+In-Reply-To: <1234991725.4799.1.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.28-stable review patch.  If anyone has any objections, please let us know.
+On Wed, Feb 18, 2009 at 10:15:25PM +0100, Peter Zijlstra wrote:
+> On Wed, 2009-02-18 at 14:53 -0500, Jason Baron wrote:
+> > hi,
+> > 
+> > Using a copule of tracepoints i've implemented an 'irq tracer' which has
+> > the following column format:
+> > 
+> > [time][irq][action][handled][cpu][length]
+> > 
+> > for example on my system:
+> > 
+> > [ 1038.927248381]     28     eth0      1        3     0.000002745
+> > [ 1038.927544688]     28     eth0      1        3     0.000002520
+> > [ 1038.927593609]     28     eth0      1        3     0.000002509
+> > [ 1038.974087675]     29     ahci      1        1     0.000013135
+> > [ 1038.974288475]     29     ahci      1        1     0.000005542
+> > [ 1038.974414324]     29     ahci      1        1     0.000007953
+> > 
+> > I think this patch is useful in understanding irq system behavior, and
+> > for tracking down irq driver handlers that are firing too often or
+> > spending too much time handling an irq. This approach could be extended
+> > to the timer irq and for softirqs...
+> 
+> The function graph tracer can already do this, it has a special section
+> to recognize irq entry function, and already measures time spend.
+> 
+> I guess with Steve's new triggers (probes or whatever they ended up
+> being called) you could limit it to just IRQ entry points.
+> 
 
-------------------
+i did look at the graph tracer first. While it does measure irq related
+functions, it does not give this level of detail concerning which irq #,
+which irq handler is involved, and whether or not the irq was handled
+successfully or not. So I believe this tracepoints add a level of detail
+that the graph tracer does not have. Furthermore, this patch requires 2
+tracepoints, not instrumentation for all kernel functions.
 
-From: "Theodore Ts'o" <tytso@mit.edu>
+thanks,
 
-(cherry picked from commit e6b8bc09ba2075cd91fbffefcd2778b1a00bd76f)
+-Jason
 
-Make sure the rec_len field in the '..' entry is sane, lest we overrun
-the directory block and cause a kernel oops on a purposefully
-corrupted filesystem.
 
-Thanks to Sami Liedes for reporting this bug.
-
-http://bugzilla.kernel.org/show_bug.cgi?id=12430
-
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- fs/ext4/namei.c |   21 +++++++++++++++------
- 1 file changed, 15 insertions(+), 6 deletions(-)
-
---- a/fs/ext4/namei.c
-+++ b/fs/ext4/namei.c
-@@ -1372,7 +1372,7 @@ static int make_indexed_dir(handle_t *ha
- 	struct fake_dirent *fde;
- 
- 	blocksize =  dir->i_sb->s_blocksize;
--	dxtrace(printk(KERN_DEBUG "Creating index\n"));
-+	dxtrace(printk(KERN_DEBUG "Creating index: inode %lu\n", dir->i_ino));
- 	retval = ext4_journal_get_write_access(handle, bh);
- 	if (retval) {
- 		ext4_std_error(dir->i_sb, retval);
-@@ -1381,6 +1381,20 @@ static int make_indexed_dir(handle_t *ha
- 	}
- 	root = (struct dx_root *) bh->b_data;
- 
-+	/* The 0th block becomes the root, move the dirents out */
-+	fde = &root->dotdot;
-+	de = (struct ext4_dir_entry_2 *)((char *)fde +
-+		ext4_rec_len_from_disk(fde->rec_len));
-+	if ((char *) de >= (((char *) root) + blocksize)) {
-+		ext4_error(dir->i_sb, __func__,
-+			   "invalid rec_len for '..' in inode %lu",
-+			   dir->i_ino);
-+		brelse(bh);
-+		return -EIO;
-+	}
-+	len = ((char *) root) + blocksize - (char *) de;
-+
-+	/* Allocate new block for the 0th block's dirents */
- 	bh2 = ext4_append(handle, dir, &block, &retval);
- 	if (!(bh2)) {
- 		brelse(bh);
-@@ -1389,11 +1403,6 @@ static int make_indexed_dir(handle_t *ha
- 	EXT4_I(dir)->i_flags |= EXT4_INDEX_FL;
- 	data1 = bh2->b_data;
- 
--	/* The 0th block becomes the root, move the dirents out */
--	fde = &root->dotdot;
--	de = (struct ext4_dir_entry_2 *)((char *)fde +
--		ext4_rec_len_from_disk(fde->rec_len));
--	len = ((char *) root) + blocksize - (char *) de;
- 	memcpy (data1, de, len);
- 	de = (struct ext4_dir_entry_2 *) data1;
- 	top = data1 + len;
 
