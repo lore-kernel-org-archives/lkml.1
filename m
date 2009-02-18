@@ -1,87 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbZBRQeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752959AbZBRQen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754236AbZBRQeX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 11:34:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbZBRQeN
+	id S1752959AbZBRQen (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 11:34:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbZBRQeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 11:34:13 -0500
-Received: from yw-out-2324.google.com ([74.125.46.31]:12365 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752841AbZBRQeM (ORCPT
+	Wed, 18 Feb 2009 11:34:31 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57832 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754522AbZBRQea (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 11:34:12 -0500
+	Wed, 18 Feb 2009 11:34:30 -0500
+Date: Wed, 18 Feb 2009 08:33:19 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, Nick Piggin <npiggin@suse.de>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: Q: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove single
+ ipi fallback for smp_call_function_many())
+In-Reply-To: <20090218162116.GC29863@elte.hu>
+Message-ID: <alpine.LFD.2.00.0902180828430.21686@localhost.localdomain>
+References: <1234862974.4744.31.camel@laptop> <20090217101130.GA8660@wotan.suse.de> <1234866453.4744.58.camel@laptop> <20090217112657.GE26402@wotan.suse.de> <20090217192810.GA4980@redhat.com> <20090217213256.GJ6761@linux.vnet.ibm.com> <20090217214518.GA13189@redhat.com>
+ <20090217223910.GM6761@linux.vnet.ibm.com> <20090218135212.GB23125@wotan.suse.de> <alpine.LFD.2.00.0902180744520.21686@localhost.localdomain> <20090218162116.GC29863@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <ac3eb2510902180753l5dc94e5dje9154eaea9d2db29@mail.gmail.com>
-References: <20090218151132.476.81706.stgit@localhost.localdomain>
-	 <20090218152913.GA26448@suse.de>
-	 <ac3eb2510902180745v2886ae31s2d7faeb2faedab6e@mail.gmail.com>
-	 <fa686aa40902180748i2d621de1j1da7600e8cc3165f@mail.gmail.com>
-	 <ac3eb2510902180753l5dc94e5dje9154eaea9d2db29@mail.gmail.com>
-Date: Wed, 18 Feb 2009 09:34:09 -0700
-Message-ID: <fa686aa40902180834r2b9b8de0tcdc31c850f6323a6@mail.gmail.com>
-Subject: Re: [PATCH] Export device_add_attributes() so drivers can use it.
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 18, 2009 at 8:53 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> On Wed, Feb 18, 2009 at 16:48, Grant Likely <grant.likely@secretlab.ca> wrote:
->> On Wed, Feb 18, 2009 at 8:45 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
->>> On Wed, Feb 18, 2009 at 16:29, Greg KH <gregkh@suse.de> wrote:
->>>> On Wed, Feb 18, 2009 at 08:11:34AM -0700, Grant Likely wrote:
->>>>> From: Grant Likely <grant.likely@secretlab.ca>
->>>>>
->>>>> I find myself using the pattern of device_add_attributes() and
->>>>> device_remove_attributes() frequently in my drivers.  Rather than
->>>>> reinventing the wheel every time, I'm floating this patch to export
->>>>> the symbols to see how it is received.  If this looks okay then I'll
->>>>> rework my drivers and post additional patches to use these functions.
->>>>
->>>> No objection from me, as long as the symbols are EXPORT_SYMBOL_GPL(),
->>>> like the rest of the driver core.  Is that ok with you?
->>>
->>> These functions used outside the core create attributes after the
->>> uevent is sent, and userspace will not see these files at event time.
->>> This is in most cases a pretty broken behavior. Is that the expected
->>> behavior in your drivers?
->>
->> ??? I don't follow what you mean.
->>
->> I'm using these functions to allow the driver to add device attribs;
->> primarily for debugging knobs and controls.  Userspace will see the
->> files after the driver is bound to the device.  The uevent doesn't
->> really come into play.
->
-> Sure, they do. Many things expect all files which are visible at the
-> device to be readable also at event time. That's the whole way udev
-> and device property matching works. There are only a few exceptions
-> where creating files at a device later, after it is registered with
-> the core, is not a bug.
 
-Let me make sure I understand you...
 
-Is it a bug for a device driver to call
-device_create_file()/device_remove_file() at probe time?  For example,
-if I have a data capture device which is probed via the platform bus,
-is it okay for the .probe() function for the driver to use
-device_create_file() to add a 'rate_statistics' file which dumps out
-some data rate statistics in ASCII form?
+On Wed, 18 Feb 2009, Ingo Molnar wrote:
+> 
+> But ... WRMSR should already be serializing - it is documented 
+> as a serializing instruction.
 
-I was under the impression that
-device_create_file()/device_remove_file() were okay to use at probe
-time.  device_add_attributes()/device_remove_attributes() are only
-wrappers around device_create_file()/device_remove_file() with error
-checking and unwinding when things go wrong.
+Hmm. I was thinking about this some more, and I think I've come up with an 
+explanation.
 
-Am I incorrect here?
+"wrmsr" probably serializes _after_ doing the write. After all, it's 
+historically used for changing internal CPU state, so you want to do the 
+write, and then wait until the effects of the write are "stable" in the 
+core.
 
-g.
+That would explain how x2apic can use both a serializing instruction 
+(wrmsr) and still effectively cause the IPI to happen out of sequence: the 
+IPI can reach the destination CPU before the source CPU has flushed its 
+store buffers, because the IPI is actually sent before serializing the 
+core.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+But I would very strongly put this in the "x2apic code bug" column. If 
+this is a true issue (and your TLB patch does imply it is), then we should 
+just make sure that the x2apic IPI calls always do a 'sfence' before they 
+happen - regardless of whether they are for TLB flushes or for generic 
+kernel cross-calls, or for anything else.
+
+			Linus
