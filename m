@@ -1,96 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756285AbZBRSiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756523AbZBRSjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756285AbZBRSiZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 13:38:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbZBRSiO
+	id S1756523AbZBRSjB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 13:39:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753103AbZBRSiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 13:38:14 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:52892 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751388AbZBRSiM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 13:38:12 -0500
-Subject: Re: [PATCH] pci: enable MSI on 8132
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: david@lang.hm, Matthew Wilcox <matthew@wil.cx>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       DL-MPTFusionLinux@lsi.com, linux-pci@vger.kernel.org
-In-Reply-To: <20090218100448.7f7c5b86.akpm@linux-foundation.org>
-References: <499B46B2.5040601@kernel.org>
-	 <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm>
-	 <499B6BF7.9090300@kernel.org>
-	 <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm>
-	 <499B724A.2040408@kernel.org>
-	 <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm>
-	 <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>
-	 <499B774C.5010705@kernel.org>
-	 <alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm>
-	 <499B9129.50104@kernel.org> <20090218122137.GJ16841@parisc-linux.org>
-	 <alpine.DEB.1.10.0902180426420.25606@asgard.lang.hm>
-	 <20090218100448.7f7c5b86.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 18 Feb 2009 18:38:04 +0000
-Message-Id: <1234982285.3225.42.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Feb 2009 13:38:50 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41824 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752951AbZBRSit (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 13:38:49 -0500
+Date: Wed, 18 Feb 2009 15:38:08 -0300
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] kvm mmu: remove redundant check in mmu_set_spte
+Message-ID: <20090218183808.GE25719@amt.cnet>
+References: <1234962540-7131-1-git-send-email-joerg.roedel@amd.com> <1234962540-7131-3-git-send-email-joerg.roedel@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1234962540-7131-3-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-18 at 10:04 -0800, Andrew Morton wrote:
-> On Wed, 18 Feb 2009 04:27:28 -0800 (PST) david@lang.hm wrote:
-> 
-> > On Wed, 18 Feb 2009, Matthew Wilcox wrote:
-> > 
-> > > On Tue, Feb 17, 2009 at 08:40:09PM -0800, Yinghai Lu wrote:
-> > >>
-> > >> Impact: workaround BIOS that doesn't enable that bit
-> > >>
-> > >> David reported that LSI sas doesn't work with MSI.
-> > >> it turns out that BIOS doesn't enable HT MSI
-> > >> 8132 does support HT MSI.
-> > >> add quirk to enable it
-> > >>
-> > >> Reported-by: David Lang <david@lang.hm>
-> > >> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> > >
-> > > Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
-> > >
-> > > Jesse, I think this should go into Linus' tree sooner rather than later.
-> > 
-> > please forward to -stable as well. this is a regression since the card 
-> > works with older kernels.
-> > 
-> 
-> Which kernel version introduced the regression?
 
-Technically, it's not a regression.  The MSI problem has always been
-there, it was just exposed when the SAS card switched to using MSI by
-default.  It's fixed by the bridge quirk  ... of course it's unclear how
-many more bridges with problems there are.
+The following code flow is unnecessary:
 
-> Do we not need mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch as
-> well, to fix this regression?
+	if (largepage)
+		was_rmapped = is_large_pte(*shadow_pte);
+	 else
+	 	was_rmapped = 1;
 
-No ... it's a separate issue.  MSI was enabled for fusion SAS in 2.6.26;
-the problem msi patch which the above corrects actually has the effect
-of disabling MSI for fusion and went into 2.6.29-rc2, which isn't a
-kernel that's been tested here.
+The is_large_pte() function will always evaluate to one here because the
+(largepage && !is_large_pte) case is already handled in the first
+if-clause. So we can remove this check and set was_rmapped to one always
+here.
 
-> I sent mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch to the
-> maintainers a week ago and it was ignored, along with everything else. 
-> If this happens again I shall merge it under my own cognisance, along
-> with everything else.
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+Acked-by: Marcelo Tosatti <mtosatti@redhat.com>
 
-Yes, they've been a bit unresponsive.   I'm not unhappy with the current
-situation, since MSI is globally disabled for fusion at the moment (so
-we shouldn't get any more MSI problem reports), so I'm happy to wait and
-see what they want to do.
+---
+ arch/x86/kvm/mmu.c |    8 ++------
+ 1 files changed, 2 insertions(+), 6 deletions(-)
 
-James
-
-
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index ef060ec..c90b4b2 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -1791,12 +1791,8 @@ static void mmu_set_spte(struct kvm_vcpu *vcpu, u64 *shadow_pte,
+ 			pgprintk("hfn old %lx new %lx\n",
+ 				 spte_to_pfn(*shadow_pte), pfn);
+ 			rmap_remove(vcpu->kvm, shadow_pte);
+-		} else {
+-			if (largepage)
+-				was_rmapped = is_large_pte(*shadow_pte);
+-			else
+-				was_rmapped = 1;
+-		}
++		} else
++			was_rmapped = 1;
+ 	}
+ 	if (set_spte(vcpu, shadow_pte, pte_access, user_fault, write_fault,
+ 		      dirty, largepage, global, gfn, pfn, speculative, true)) {
