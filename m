@@ -1,177 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755598AbZBRSOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbZBRSOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755598AbZBRSOd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 13:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbZBRSOX
+	id S1756034AbZBRSOs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 13:14:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755825AbZBRSOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 13:14:23 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:52539 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752589AbZBRSOW (ORCPT
+	Wed, 18 Feb 2009 13:14:38 -0500
+Received: from anchor-post-1.mail.demon.net ([195.173.77.132]:38763 "EHLO
+	anchor-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753165AbZBRSOh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 13:14:22 -0500
-Message-ID: <499C4FF4.6000006@vlnb.net>
-Date: Wed, 18 Feb 2009 21:14:12 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
-MIME-Version: 1.0
-To: Wu Fengguang <wfg@linux.intel.com>
-CC: Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
-       "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>,
-       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
-Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
-References: <492BE47B.3010802@vlnb.net> <20081125114908.GA16545@localhost> <492BE97A.3050606@vlnb.net> <492BEAE8.9050809@vlnb.net> <20081125121534.GA16778@localhost> <492EDCFB.7080302@vlnb.net> <20081128004830.GA8874@localhost> <49946BE6.1040005@vlnb.net> <20090213015721.GA5565@localhost> <4995D339.5050502@vlnb.net> <20090216023402.GA6199@localhost> <499B09FB.1070909@vlnb.net>
-In-Reply-To: <499B09FB.1070909@vlnb.net>
-Content-Type: multipart/mixed;
- boundary="------------060900030507000008050304"
-X-Provags-ID: V01U2FsdGVkX182GoynG5lfNO2nMhc6ShsV/grlfTA8DKvDs00
- LKlsCeK1KFx8dYcmkHC5sTIhD+k88PSiCfuqwhGbdIo0P+wcaU
- n/XtCkfB8MyAo9gvGllLQ==
+	Wed, 18 Feb 2009 13:14:37 -0500
+Subject: Re: [PATCH] staging/wlan-ng: block ioctls until card fully
+ initialised
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: Greg KH <greg@kroah.com>
+Cc: Karl Relton <karllinuxtest.relton@ntlworld.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       wlan-devel <linux-wlan-devel@lists.linux-wlan.com>
+In-Reply-To: <20090218022117.GB32325@kroah.com>
+References: <1234213202.6875.70.camel@dellpc>
+	 <20090209211700.GA10742@kroah.com> <1234478293.17792.1.camel@dellpc>
+	 <1234873158.2891.29.camel@localhost.localdomain>
+	 <20090218022117.GB32325@kroah.com>
+Content-Type: text/plain
+Date: Wed, 18 Feb 2009 18:14:34 +0000
+Message-Id: <1234980874.2877.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060900030507000008050304
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Vladislav Bolkhovitin, on 02/17/2009 10:03 PM wrote:
-> Wu Fengguang, on 02/16/2009 05:34 AM wrote:
->> On Fri, Feb 13, 2009 at 11:08:25PM +0300, Vladislav Bolkhovitin wrote:
->>> Wu Fengguang, on 02/13/2009 04:57 AM wrote:
->>>> On Thu, Feb 12, 2009 at 09:35:18PM +0300, Vladislav Bolkhovitin wrote:
->>>>> Sorry for such a huge delay. There were many other activities I had 
->>>>> to  do before + I had to be sure I didn't miss anything.
->>>>>
->>>>> We didn't use NFS, we used SCST (http://scst.sourceforge.net) with   
->>>>> iSCSI-SCST target driver. It has similar to NFS architecture, where N 
->>>>>  threads (N=5 in this case) handle IO from remote initiators 
->>>>> (clients)  coming from wire using iSCSI protocol. In addition, SCST 
->>>>> has patch  called export_alloc_io_context (see   
->>>>> http://lkml.org/lkml/2008/12/10/282), which allows for the IO threads 
->>>>>  queue IO using single IO context, so we can see if context RA can   
->>>>> replace grouping IO threads in single IO context.
->>>>>
->>>>> Unfortunately, the results are negative. We find neither any 
->>>>> advantages  of context RA over current RA implementation, nor 
->>>>> possibility for  context RA to replace grouping IO threads in single 
->>>>> IO context.
->>>>>
->>>>> Setup on the target (server) was the following. 2 SATA drives grouped 
->>>>> in  md RAID-0 with average local read throughput ~120MB/s ("dd 
->>>>> if=/dev/zero  of=/dev/md0 bs=1M count=20000" outputs "20971520000 
->>>>> bytes (21 GB)  copied, 177,742 s, 118 MB/s"). The md device was 
->>>>> partitioned on 3  partitions. The first partition was 10% of space in 
->>>>> the beginning of the  device, the last partition was 10% of space in 
->>>>> the end of the device,  the middle one was the rest in the middle of 
->>>>> the space them. Then the  first and the last partitions were exported 
->>>>> to the initiator (client).  They were /dev/sdb and /dev/sdc on it 
->>>>> correspondingly.
->>>> Vladislav, Thank you for the benchmarks! I'm very interested in
->>>> optimizing your workload and figuring out what happens underneath.
->>>>
->>>> Are the client and server two standalone boxes connected by GBE?
->>> Yes, they directly connected using GbE.
->>>
->>>> When you set readahead sizes in the benchmarks, you are setting them
->>>> in the server side? I.e. "linux-4dtq" is the SCST server?
->>> Yes, it's the server. On the client all the parameters were left default.
->>>
->>>> What's the
->>>> client side readahead size?
->>> Default, i.e. 128K
->>>
->>>> It would help a lot to debug readahead if you can provide the
->>>> server side readahead stats and trace log for the worst case.
->>>> This will automatically answer the above questions as well as disclose
->>>> the micro-behavior of readahead:
->>>>
->>>>         mount -t debugfs none /sys/kernel/debug
->>>>
->>>>         echo > /sys/kernel/debug/readahead/stats # reset counters
->>>>         # do benchmark
->>>>         cat /sys/kernel/debug/readahead/stats
->>>>
->>>>         echo 1 > /sys/kernel/debug/readahead/trace_enable
->>>>         # do micro-benchmark, i.e. run the same benchmark for a short time
->>>>         echo 0 > /sys/kernel/debug/readahead/trace_enable
->>>>         dmesg
->>>>
->>>> The above readahead trace should help find out how the client side
->>>> sequential reads convert into server side random reads, and how we can
->>>> prevent that.
->>> We will do it as soon as we have a free window on that system.
->> Thank you. For NFS, the client side read/readahead requests will be
->> split into units of rsize which will be served by a pool of nfsd
->> concurrently and possibly out of order. Does SCST have the same
->> process? If so, what's the rsize value for your SCST benchmarks?
+On Tue, 2009-02-17 at 18:21 -0800, Greg KH wrote:
+> On Tue, Feb 17, 2009 at 12:19:18PM +0000, Richard Kennedy wrote:
+> > Add a mutex to block ioctls before the card is fully initialised and
+> > only allow one ioctl at a time.
+> > This stops udev trying to load the firmware before to card is fully up.
+> > 
+> > patch ported from wlan-ng-devel
+> > 
+> > Karl Relton <karllinuxtest.relton@ntlworld.com> spotted that this was
+> > missing from the staging version,
+> > http://lists.linux-wlan.com/pipermail/linux-wlan-devel/2009-February/003890.html 
 > 
-> No, there is no such splitting in SCST. Client sees raw SCSI disks from 
-> server and what client sends is directly and in full size sent by the 
-> server to its backstorage using regular buffered read() 
-> (fd->f_op->aio_read() followed by 
-> wait_on_retry_sync_kiocb()/wait_on_sync_kiocb() to be precise).
-
-Update. We ran the same tests with deadline I/O scheduler and had 
-roughly the same results as with CFQ, see attachment.
-
-> Thanks,
-> Vlad
+> Karl sent me a patch a few days before you that also added this
+> functionality.
 > 
+> Unfortunatly, both of your patches don't apply to the latest version of
+> the wlan-ng driver as it has had a lot of work done on it recently.
 > 
+> Could one of you grab the linux-next tree and make a patch up against
+> the version in it so that I can apply this?
+> 
+> thanks,
+> 
+> greg k-h
+Sorry about that, I'd forgotten that wlan-ng was included in linux-next.
+
+I've updated the patch and am just testing it & will post it shortly.
+
+BTW thanks to Moritz Muehlenhoff for the clean-ups. 
+
+regards 
+Richard
 
 
---------------060900030507000008050304
-Content-Type: text/plain;
- name="2.6.27.12-except_export+readahead-4M-deadline.txt"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="2.6.27.12-except_export+readahead-4M-deadline.txt"
 
-bGludXgtNGR0cTp+ICMgdW5hbWUgLXINCjIuNi4yNy4xMi1leGNlcHRfZXhwb3J0K3JlYWRh
-aGVhZA0KLXNjaGVkdWxlciA9IGRlYWRsaW5lDQotIFJBID0gNE0NCg0KDQpsaW51eC00ZHRx
-On4gIyBmcmVlDQogICAgICAgICAgICAgdG90YWwgICAgICAgdXNlZCAgICAgICBmcmVlICAg
-ICBzaGFyZWQgICAgYnVmZmVycyAgICAgY2FjaGVkDQpNZW06ICAgICAgICA1MDgxNjggICAg
-IDExMTI4OCAgICAgMzk2ODgwICAgICAgICAgIDAgICAgICAgNDQ3NiAgICAgIDYyNjQ4DQot
-LysgYnVmZmVycy9jYWNoZTogICAgICA0NDE2NCAgICAgNDY0MDA0DQpTd2FwOiAgICAgICAg
-ICAgIDAgICAgICAgICAgMCAgICAgICAgICAwDQoNCg0KbGludXgtNGR0cTp+ICMgZWNobyBk
-ZWFkbGluZSA+IC9zeXMvYmxvY2svc2RiL3F1ZXVlL3NjaGVkdWxlcg0KbGludXgtNGR0cTp+
-ICMgZWNobyBkZWFkbGluZSA+IC9zeXMvYmxvY2svc2RhL3F1ZXVlL3NjaGVkdWxlcg0KbGlu
-dXgtNGR0cTp+ICMgY2F0IC9zeXMvYmxvY2svc2RiL3F1ZXVlL3NjaGVkdWxlcg0Kbm9vcCBh
-bnRpY2lwYXRvcnkgW2RlYWRsaW5lXSBjZnENCmxpbnV4LTRkdHE6fiAjIGNhdCAvc3lzL2Js
-b2NrL3NkYS9xdWV1ZS9zY2hlZHVsZXINCm5vb3AgYW50aWNpcGF0b3J5IFtkZWFkbGluZV0g
-Y2ZxDQoNCmxpbnV4LTRkdHE6fiAjIGVjaG8gMSA+IC9zeXMvYmxvY2svc2RhL3F1ZXVlL2Nv
-bnRleHRfcmVhZGFoZWFkDQpsaW51eC00ZHRxOn4gIyBlY2hvIDEgPiAvc3lzL2Jsb2NrL3Nk
-Yi9xdWV1ZS9jb250ZXh0X3JlYWRhaGVhZA0KbGludXgtNGR0cTp+ICMgY2F0IC9zeXMvYmxv
-Y2svc2RiL3F1ZXVlL2NvbnRleHRfcmVhZGFoZWFkDQoxDQpsaW51eC00ZHRxOn4gIyBjYXQg
-L3N5cy9ibG9jay9zZGEvcXVldWUvY29udGV4dF9yZWFkYWhlYWQNCjENCg0KbGludXgtNGR0
-cTp+ICMgYmxvY2tkZXYgLS1zZXRyYSA0MDk2IC9kZXYvc2RhDQpsaW51eC00ZHRxOn4gIyBi
-bG9ja2RldiAtLXNldHJhIDQwOTYgL2Rldi9zZGINCmxpbnV4LTRkdHE6fiAjIGJsb2NrZGV2
-IC0tZ2V0cmEgL2Rldi9zZGINCjQwOTYNCmxpbnV4LTRkdHE6fiAjIGJsb2NrZGV2IC0tZ2V0
-cmEgL2Rldi9zZGENCjQwOTYNCg0KbGludXgtNGR0cTp+ICMgbWRhZG0gLS1hc3NlbWJsZSAv
-ZGV2L21kMCAvZGV2L3NkW2FiXQ0KbWRhZG06IC9kZXYvbWQvMCBoYXMgYmVlbiBzdGFydGVk
-IHdpdGggMiBkcml2ZXMuDQpsaW51eC00ZHRxOn4gIyB2Z2NoYW5nZSAtYSB5DQogIDMgbG9n
-aWNhbCB2b2x1bWUocykgaW4gdm9sdW1lIGdyb3VwICJyYWlkIiBub3cgYWN0aXZlDQpsaW51
-eC00ZHRxOn4gIyBsdnMNCiAgTFYgICBWRyAgIEF0dHIgICBMU2l6ZSAgIE9yaWdpbiBTbmFw
-JSAgTW92ZSBMb2cgQ29weSUgIENvbnZlcnQNCiAgMXN0ICByYWlkIC13aS1hLSAgNDYuMDBH
-DQogIDJuZCAgcmFpZCAtd2ktYS0gMzc0LjAwRw0KICAzcmQgIHJhaWQgLXdpLWEtICA0Ni4w
-MEcNCg0Kc2NzdDogVXNpbmcgc2VjdXJpdHkgZ3JvdXAgIkRlZmF1bHQiIGZvciBpbml0aWF0
-b3IgImlxbi4xOTk2LTA0LmRlLnN1c2U6MDE6YWFkYWI4YmM0YmU1Ig0KaXNjc2ktc2NzdDoJ
-CU5lZ290aWF0ZWQgcGFyYW1ldGVyczogSW5pdGlhbFIyVCBObywgSW1tZWRpYXRlRGF0YSBZ
-ZXMsIE1heENvbm5lY3Rpb25zIDEsIE1heFJlY3ZEYXRhU2VnbWVudExlbmd0aCAyNjIxNDQs
-IE1heFhtaXREYXRhU2VnbWVudExlbmd0aCAxMzEwNzIsDQppc2NzaS1zY3N0OiAgICAgTWF4
-QnVyc3RMZW5ndGggMTA0ODU3NiwgRmlyc3RCdXJzdExlbmd0aCAyNjIxNDQsIERlZmF1bHRU
-aW1lMldhaXQgMiwgRGVmYXVsdFRpbWUyUmV0YWluIDAsDQppc2NzaS1zY3N0OiAgICAgTWF4
-T3V0c3RhbmRpbmdSMlQgMSwgRGF0YVBEVUluT3JkZXIgWWVzLCBEYXRhU2VxdWVuY2VJbk9y
-ZGVyIFllcywgRXJyb3JSZWNvdmVyeUxldmVsIDAsDQppc2NzaS1zY3N0OiAgICAgSGVhZGVy
-RGlnZXN0IE5vbmUsIERhdGFEaWdlc3QgTm9uZSwgT0ZNYXJrZXIgTm8sIElGTWFya2VyIE5v
-LCBPRk1hcmtJbnQgMjA0OCwgSUZNYXJrSW50IDIwNDgNCg0KMSkgZGQgaWY9L2Rldi9zZGIg
-b2Y9L2Rldi9udWxsIGJzPTY0SyBjb3VudD04MDAwMA0KYSkgNTQsMSBNQi9zDQpiKSA1NSw2
-IE1CL3MNCmMpIDU0LDMgTUIvcw0KDQoyKSBkZCBpZj0vZGV2L3NkYyBvZj0vZGV2L251bGwg
-YnM9NjRLIGNvdW50PTgwMDAwDQphKSA3MSwzIE1CL3MNCmIpIDczLDggTUIvcw0KYykgNzIs
-NyBNQi9zDQoNCjMpUnVuIGF0IHRoZSBzYW1lIHRpbWU6CQ0Kd2hpbGUgdHJ1ZTsgZG8gZGQg
-aWY9L2Rldi9zZGMgIG9mPS9kZXYvbnVsbCBicz02NEs7IGRvbmUJDQpkZCBpZj0vZGV2L3Nk
-YiBvZj0vZGV2L251bGwgYnM9NjRLIGNvdW50PTgwMDAwDQphKSA0LDMgTUIvcw0KYikgNS4w
-IE1CL3MgDQpjKSA1LjIgTUIvcw==
---------------060900030507000008050304--
