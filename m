@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753915AbZBRWjG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759992AbZBRWj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753915AbZBRWjG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 17:39:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757317AbZBRWcO
+	id S1759992AbZBRWj3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 17:39:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757919AbZBRWcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 17:32:14 -0500
-Received: from kroah.org ([198.145.64.141]:34842 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 17:32:16 -0500
+Received: from kroah.org ([198.145.64.141]:34876 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757286AbZBRWcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 17:32:04 -0500
-Date: Wed, 18 Feb 2009 14:29:23 -0800
+	id S1757872AbZBRWcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 17:32:06 -0500
+Date: Wed, 18 Feb 2009 14:29:25 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,71 +22,114 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org
-Subject: [patch 14/36] ext4: tone down ext4_da_writepages warnings
-Message-ID: <20090218222923.GO10668@kroah.com>
+       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [patch 15/36] ext4: Fix the delalloc writepages to allocate blocks
+	at the right offset.
+Message-ID: <20090218222925.GP10668@kroah.com>
 References: <20090218222447.432108614@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext4-tone-down-ext4_da_writepages-warnings.patch"
+Content-Disposition: inline; filename="ext4-fix-the-delalloc-writepages-to-allocate-blocks-at-the-right-offset.patch"
 In-Reply-To: <20090218222841.GA10668@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: "Theodore Ts'o" <tytso@mit.edu>
+From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-(cherry picked from commit 2a21e37e48b94388f2cc8c0392f104f5443d4bb8)
+(cherry picked from commit 791b7f08954869d7b8ff438f3dac3cfb39778297)
 
-If the filesystem has errors, ext4_da_writepages() will return a *lot*
-of errors, including lots and lots of stack dumps.  While it's true
-that we are dropping user data on the floor, which is unfortunate, the
-stack dumps aren't helpful, and they tend to obscure the true original
-root cause of the problem.  So in the case where the filesystem has
-aborted, return an EROFS right away.
+When iterating through the pages which have mapped buffer_heads, we
+failed to update the b_state value. This results in allocating blocks
+at logical offset 0.
 
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/inode.c |   16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
+ fs/ext4/inode.c |   39 ++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 34 insertions(+), 5 deletions(-)
 
 --- a/fs/ext4/inode.c
 +++ b/fs/ext4/inode.c
-@@ -2298,6 +2298,20 @@ static int ext4_da_writepages(struct add
- 	 */
- 	if (!mapping->nrpages || !mapping_tagged(mapping, PAGECACHE_TAG_DIRTY))
- 		return 0;
-+
+@@ -1648,18 +1648,25 @@ struct mpage_da_data {
+  */
+ static int mpage_da_submit_io(struct mpage_da_data *mpd)
+ {
+-	struct address_space *mapping = mpd->inode->i_mapping;
+-	int ret = 0, err, nr_pages, i;
+-	unsigned long index, end;
++	long pages_skipped;
+ 	struct pagevec pvec;
++	unsigned long index, end;
++	int ret = 0, err, nr_pages, i;
++	struct inode *inode = mpd->inode;
++	struct address_space *mapping = inode->i_mapping;
+ 
+ 	BUG_ON(mpd->next_page <= mpd->first_page);
+-	pagevec_init(&pvec, 0);
 +	/*
-+	 * If the filesystem has aborted, it is read-only, so return
-+	 * right away instead of dumping stack traces later on that
-+	 * will obscure the real source of the problem.  We test
-+	 * EXT4_MOUNT_ABORT instead of sb->s_flag's MS_RDONLY because
-+	 * the latter could be true if the filesystem is mounted
-+	 * read-only, and in that case, ext4_da_writepages should
-+	 * *never* be called, so if that ever happens, we would want
-+	 * the stack trace.
++	 * We need to start from the first_page to the next_page - 1
++	 * to make sure we also write the mapped dirty buffer_heads.
++	 * If we look at mpd->lbh.b_blocknr we would only be looking
++	 * at the currently mapped buffer_heads.
 +	 */
-+	if (unlikely(sbi->s_mount_opt & EXT4_MOUNT_ABORT))
-+		return -EROFS;
+ 	index = mpd->first_page;
+ 	end = mpd->next_page - 1;
+ 
++	pagevec_init(&pvec, 0);
+ 	while (index <= end) {
+-		/* XXX: optimize tail */
+ 		nr_pages = pagevec_lookup(&pvec, mapping, index, PAGEVEC_SIZE);
+ 		if (nr_pages == 0)
+ 			break;
+@@ -1671,6 +1678,10 @@ static int mpage_da_submit_io(struct mpa
+ 				break;
+ 			index++;
+ 
++			BUG_ON(!PageLocked(page));
++			BUG_ON(PageWriteback(page));
 +
- 	/*
- 	 * Make sure nr_to_write is >= sbi->s_mb_stream_request
- 	 * This make sure small files blocks are allocated in
-@@ -2336,7 +2350,7 @@ restart_loop:
- 		handle = ext4_journal_start(inode, needed_blocks);
- 		if (IS_ERR(handle)) {
- 			ret = PTR_ERR(handle);
--			printk(KERN_EMERG "%s: jbd2_start: "
-+			printk(KERN_CRIT "%s: jbd2_start: "
- 			       "%ld pages, ino %lu; err %d\n", __func__,
- 				wbc->nr_to_write, inode->i_ino, ret);
- 			dump_stack();
++			pages_skipped = mpd->wbc->pages_skipped;
+ 			err = mapping->a_ops->writepage(page, mpd->wbc);
+ 			if (!err)
+ 				mpd->pages_written++;
+@@ -1991,11 +2002,29 @@ static int __mpage_da_writepage(struct p
+ 		bh = head;
+ 		do {
+ 			BUG_ON(buffer_locked(bh));
++			/*
++			 * We need to try to allocate
++			 * unmapped blocks in the same page.
++			 * Otherwise we won't make progress
++			 * with the page in ext4_da_writepage
++			 */
+ 			if (buffer_dirty(bh) &&
+ 				(!buffer_mapped(bh) || buffer_delay(bh))) {
+ 				mpage_add_bh_to_extent(mpd, logical, bh);
+ 				if (mpd->io_done)
+ 					return MPAGE_DA_EXTENT_TAIL;
++			} else if (buffer_dirty(bh) && (buffer_mapped(bh))) {
++				/*
++				 * mapped dirty buffer. We need to update
++				 * the b_state because we look at
++				 * b_state in mpage_da_map_blocks. We don't
++				 * update b_size because if we find an
++				 * unmapped buffer_head later we need to
++				 * use the b_state flag of that buffer_head.
++				 */
++				if (mpd->lbh.b_size == 0)
++					mpd->lbh.b_state =
++						bh->b_state & BH_FLAGS;
+ 			}
+ 			logical++;
+ 		} while ((bh = bh->b_this_page) != head);
 
