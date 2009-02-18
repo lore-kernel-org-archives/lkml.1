@@ -1,114 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751542AbZBRAkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbZBRAkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751542AbZBRAkR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 19:40:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbZBRAj7
+	id S1755383AbZBRAkz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 19:40:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753155AbZBRAkp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 19:39:59 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:58857 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752449AbZBRAj6 (ORCPT
+	Tue, 17 Feb 2009 19:40:45 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:40907 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752923AbZBRAko (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 19:39:58 -0500
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <m1pri623g9.fsf@fess.ebiederm.org>
-	<49815BF6.7060402@jp.fujitsu.com>
-	<200902131129.09523.jbarnes@virtuousgeek.org>
-	<m11vu1wtk6.fsf@fess.ebiederm.org> <49991D3A.7090001@jp.fujitsu.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 17 Feb 2009 16:40:14 -0800
-In-Reply-To: <49991D3A.7090001@jp.fujitsu.com> (Kenji Kaneshige's message of "Mon\, 16 Feb 2009 17\:00\:58 +0900")
-Message-ID: <m1mycktw5t.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: kaneshige.kenji@jp.fujitsu.com, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] pciehp:  Handle interrupts that happen during initialization.
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+	Tue, 17 Feb 2009 19:40:44 -0500
+Subject: Re: What can OpenVZ do?
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       viro@zeniv.linux.org.uk, mpm@selenic.com, tglx@linutronix.de,
+       torvalds@linux-foundation.org, xemul@openvz.org,
+       Nathan Lynch <nathanl@austin.ibm.com>
+In-Reply-To: <20090218003217.GB25856@elte.hu>
+References: <20090211141434.dfa1d079.akpm@linux-foundation.org>
+	 <1234462282.30155.171.camel@nimitz> <1234467035.3243.538.camel@calx>
+	 <20090212114207.e1c2de82.akpm@linux-foundation.org>
+	 <1234475483.30155.194.camel@nimitz>
+	 <20090212141014.2cd3d54d.akpm@linux-foundation.org>
+	 <20090213105302.GC4608@elte.hu> <1234817490.30155.287.camel@nimitz>
+	 <20090217222319.GA10546@elte.hu> <1234909849.4816.9.camel@nimitz>
+	 <20090218003217.GB25856@elte.hu>
+Content-Type: text/plain
+Date: Tue, 17 Feb 2009 16:40:39 -0800
+Message-Id: <1234917639.4816.12.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> writes:
+On Wed, 2009-02-18 at 01:32 +0100, Ingo Molnar wrote:
+> > > Uncheckpointable should be a one-way flag anyway. We want this 
+> > > to become usable, so uncheckpointable functionality should be as 
+> > > painful as possible, to make sure it's getting fixed ...
+> > 
+> > Again, as these patches stand, we don't support checkpointing 
+> > when non-simple files are opened.  Basically, if a 
+> > open()/lseek() pair won't get you back where you were, we 
+> > don't deal with them.
+> > 
+> > init does non-checkpointable things.  If the flag is a one-way 
+> > trip, we'll never be able to checkpoint because we'll always 
+> > inherit init's ! checkpointable flag.
+> > 
+> > To fix this, we could start working on making sure we can 
+> > checkpoint init, but that's practically worthless.
+> 
+> i mean, it should be per process (per app) one-way flag of 
+> course. If the app does something unsupported, it gets 
+> non-checkpointable and that's it.
 
-> Eric W. Biederman wrote:
->> Jesse Barnes <jbarnes@virtuousgeek.org> writes:
->> 
->>> Any update here, Eric?  Sounds like you're using hotplug in real environments
->>> with complex topologies (based on your earlier messages), so we're interested
->>> in what you're seeing here...
->> 
->> Yes.
->> 
->> Currently I have a test system that is a subset of what I'm worried
->> about and will shortly have the real hardware, so my immediate goal is
->> to get things working well enough so my internal users won't get
->> blocked by bugs.  Currently I only have the pcie hotplug and pcie
->> hotplug surprise case.  My basic topology is 16 hotplug slots into
->> which I will be plugging in pci express switches with a couple of
->> additional hotplug slots.  As for the firmware, I will have it reserving
->> bus numbers and mmio space on each of the first 16 slots and the rest
->> is going to be up to the linux kernel.  This is an embedded design
->> so no ACPI is appears more pain than it is worth to implement.
->> 
->
-> Very interesting. Can I ask you some questions?
->
-> - On hot-insertion of pci express switches with a additional hotplug
->   slots, who initialize HwInit registers (for example, physical slot
->   number field in the Slot Capabilities register)? OS, firmware,
->   hardware or others?
+OK, we can definitely do that.  Do you think it is OK to run through a
+set of checks at exec() time to check if the app currently has any
+unsupported things going on?  If we don't directly inherit the parent's
+status, then we need to have *some* time when we check it.
 
-It happens before the linux kernel gets to see it.  Call it firmware.
+-- Dave
 
-> - Bus numbers and MMIO space that needs to be reserved is depending
->   on platform design. How do you tell kernel (or hotplug drivers) how
->   many resources need to be reserved, in your current design?
-
-So far it looks like I can get away without telling the kernel
-anything, and just perform reservations at the layer of the
-firmware on the primary board, and have the kernel see those
-reservations when it boots up, and just subdivide them.
-
-I have some thoughts on how to do things better but I'm not at a point
-where it makes a difference right now.
-
-
->> I need to revisit the pciehp driver but my first pass through it
->> looked like every corner case appeared to get something wrong. So I
->> have written myself a little 430 line replaces that handles the case
->> that I currently care about.  Part of what I was seeing before is that
->> we don't clear pending events in the pciehp driver before we enable
->> interrupts.  So if booting the system has left some pending and you
->> have CONFIG_DEBUG_SHIRQ enabled you get a nice oops because p_slot has
->> not been initialized and so the interrupts can't be handled.
->> 
->
-> I've made a fix (c4635eb06af700820d658a163f06aff12e17cfb2) for a similar
-> problem several months ago. With this fix, pciehp had been changed to
-> initialize p_slot before installing interrupt service routine. So I still
-> don't understand what is happening. Could you please tell me the details
-> about "p_slot has not been initialized..."?
-
-kobject_name is not initialized, and slot_name(p_slot) calls
-hoptlug_slot_name which calls pci_slot_name which kobj_name. 
-It looks like this problem was introduced in commit 
-e1acb24f059defdaa0264e925f19cc21b0a3e592
-
-Eric
