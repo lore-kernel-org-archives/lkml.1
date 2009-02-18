@@ -1,79 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756778AbZBRTUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756536AbZBRTVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756778AbZBRTUi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 14:20:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754405AbZBRTU0
+	id S1756536AbZBRTVr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 14:21:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754523AbZBRTVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 14:20:26 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45518 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751994AbZBRTUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 14:20:25 -0500
-Date: Wed, 18 Feb 2009 20:20:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Anderson <andmike@linux.vnet.ibm.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: scsi: aic7xxx hang since v2.6.28-rc1 ...
-Message-ID: <20090218192007.GE8889@elte.hu>
-References: <20090215115823.GB19464@elte.hu> <Pine.LNX.4.44L0.0902171507370.18399-100000@iolanthe.rowland.org> <20090218155817.GC23989@elte.hu> <20090218191643.GA16347@linux.vnet.ibm.com>
+	Wed, 18 Feb 2009 14:21:32 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:40666 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750740AbZBRTVb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 14:21:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=INoa1XzqAavjlAZvA5py8RqbE4QnEmvcdQ6BJ8Glth4N8EGtILpTyWKnaeA7yI1nyB
+         KazjLUGsLAzu9T56ihd3uCgocx1uW9owDfCsF/xylKpnySuoy0j8adwe2W2t+AReliqf
+         E3kLphEdRtnUM+4xhOKqbaiWsL5JhD0EK+PGE=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH] ide-cd: document capacity hack
+Date: Wed, 18 Feb 2009 20:18:51 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-next-20090218; KDE/4.2.0; i686; ; )
+Cc: linux-kernel@vger.kernel.org, Borislav Petkov <petkovbb@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090218191643.GA16347@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200902182018.52195.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] ide-cd: document capacity hack
 
-* Mike Anderson <andmike@linux.vnet.ibm.com> wrote:
+Just copy the comment from drivers/scsi/sr.c::sr_done()
+(from which the capacity hack has been originated).
 
-> Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > * Alan Stern <stern@rowland.harvard.edu> wrote:
-> > 
-> > > I have no idea if this will make any difference for the 
-> > > problem you're seeing, but it has been submitted and it's 
-> > > worth trying out.  If the problem still occurs, I'll write a 
-> > > diagnostic patch to add log messages giving the destiny of 
-> > > each request in scsi_io_completion().
-> > 
-> > OK, i've undone the reverts and have applied your fix - it will 
-> > take a few hours to see whether the hang still occurs.
-> 
-> I know already started your testing, but..
+Cc: Borislav Petkov <petkovbb@gmail.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/ide-cd.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-and that particular box already survived 20 test iterations in 
-the past few hours - while it would hang after 5-10 iterations 
-before. So i think Alan's fix is making a difference. I'll be 
-able to tell for sure tomorrow morning.
-
-> I find it informative to set my scsi logging to the value 
-> below to display non-zero IO status on commands. The overhead 
-> impact is low for good completions.
-> 
-> sysctl -w dev.scsi.logging_level=4100
-> 
-> Note: This does not provide the exact policy that 
-> scsi_io_completion will take on the IO, but it provides the 
-> input to scsi_io_completion which should help.
-
-will do that next time around i have a bug like this. (or if 
-this bug triggers again)
-
-OTOH, the hang took quite a bit of IO to occur. Sometimes the 
-box would be able to build a new kernel and reboot into it, 
-without the hang.
-
-	Ingo
+Index: b/drivers/ide/ide-cd.c
+===================================================================
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -189,6 +189,14 @@ static void cdrom_analyze_sense_data(ide
+ 			bio_sectors = max(bio_sectors(failed_command->bio), 4U);
+ 			sector &= ~(bio_sectors - 1);
+ 
++			/*
++			 * The SCSI specification allows for the value
++			 * returned by READ CAPACITY to be up to 75 2K
++			 * sectors past the last readable block.
++			 * Therefore, if we hit a medium error within the
++			 * last 75 2K sectors, we decrease the saved size
++			 * value.
++			 */
+ 			if (sector < get_capacity(info->disk) &&
+ 			    drive->probed_capacity - sector < 4 * 75)
+ 				set_capacity(info->disk, sector);
