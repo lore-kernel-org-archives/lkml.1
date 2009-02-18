@@ -1,52 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753587AbZBRDCD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764AbZBRDNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753587AbZBRDCD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 22:02:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbZBRDBx
+	id S1753764AbZBRDNU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 22:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbZBRDNE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 22:01:53 -0500
-Received: from mga02.intel.com ([134.134.136.20]:21704 "EHLO mga02.intel.com"
+	Tue, 17 Feb 2009 22:13:04 -0500
+Received: from mail.lang.hm ([64.81.33.126]:48566 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752333AbZBRDBx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 22:01:53 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,225,1233561600"; 
-   d="scan'208";a="490821133"
-Date: Tue, 17 Feb 2009 21:01:19 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: "greg@kroah.com" <greg@kroah.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v9 6/7] PCI: document SR-IOV sysfs entries
-Message-ID: <20090217130119.GA2427@yzhao-otc.sh.intel.com>
-References: <1234790920-1810-1-git-send-email-yu.zhao@intel.com> <1234790920-1810-7-git-send-email-yu.zhao@intel.com> <20090217125021.GA2403@yzhao-otc.sh.intel.com>
+	id S1751539AbZBRDND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 22:13:03 -0500
+Date: Tue, 17 Feb 2009 19:12:47 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Yinghai Lu <yinghai@kernel.org>
+cc: Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       DL-MPTFusionLinux@lsi.com
+Subject: Re: mpt fusion broken sometime since 2.6.24
+In-Reply-To: <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>
+Message-ID: <alpine.DEB.1.10.0902171905540.26625@asgard.lang.hm>
+References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>  <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm>  <20090217230050.GG16841@parisc-linux.org>  <alpine.DEB.1.10.0902171506500.26625@asgard.lang.hm> <86802c440902171511s1abcc0eao560df4b8fcea0e7c@mail.gmail.com>
+ <alpine.DEB.1.10.0902171514120.26625@asgard.lang.hm> <499B46B2.5040601@kernel.org> <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm> <499B6BF7.9090300@kernel.org> <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm> <499B724A.2040408@kernel.org>
+ <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm> <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090217125021.GA2403@yzhao-otc.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 08:50:21PM +0800, Yu Zhao wrote:
-> Hi Greg,
-> 
-> The `struct device' is preferred over the `struct kobject' in all cases
-> that create subdirectory in sysfs, is this true?
-> 
-> I'd like to create a subdirectory under PCI device sysfs directory and
-> put some symbol links into that directory (only symbol links). Should I
-> use `device' or `kobject'? Currently I use `device' and get two extra
-> file/directory (uevent and power) which look like useless for my case
-> because this subdirectory doesn't reflect a real device.
-> 
-> I checked some code and found they use kobject_init_and_add(). Should
+On Tue, 17 Feb 2009, david@lang.hm wrote:
 
-Oh, sorry. I meant to say kobject_create_and_add() here.
+> On Tue, 17 Feb 2009, david@lang.hm wrote:
+>
+>>> do you have chance to try current tip/master
+>>> http://people.redhat.com/mingo/tip.git/readme.txt
+>>> or 2.6.29-rcX
+>>> plus following patch?
+>> 
+>> I will see about trying this.
+>
+> does the fact that I am compiling a monolithic kernel (no modules) make any 
+> difference related to the patch below?
 
-> I use it instead, or keep using the `device'?
-> 
-> Please advise.
-> 
-> Regards,
-> Yu
+this patch on the (current as a few min ago) linus git tree doesn't work, 
+trying adding the other patch now.
+
+David Lang
+
+> David Lang
+>
+>>> or can you check if there is update fw for your LSI card?
+>> 
+>> this is more work, I'll look into that as well.
+>> 
+>> David Lang
+>> 
+>>> [PATCH] mpt: fix enable lsi sas to use msi as default
+>>> 
+>>> Impact: fix bug
+>>> 
+>>> the third param in module_param(,,) is perm instead of default value.
+>>> we still need to assign default at first.
+>>> 
+>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>> 
+>>> ---
+>>> drivers/message/fusion/mptbase.c |    4 ++--
+>>> 1 file changed, 2 insertions(+), 2 deletions(-)
+>>> 
+>>> Index: linux-2.6/drivers/message/fusion/mptbase.c
+>>> ===================================================================
+>>> --- linux-2.6.orig/drivers/message/fusion/mptbase.c
+>>> +++ linux-2.6/drivers/message/fusion/mptbase.c
+>>> @@ -90,8 +90,8 @@ module_param(mpt_msi_enable_fc, int, 0);
+>>> MODULE_PARM_DESC(mpt_msi_enable_fc, " Enable MSI Support for FC \
+>>> 		controllers (default=0)");
+>>> 
+>>> -static int mpt_msi_enable_sas;
+>>> -module_param(mpt_msi_enable_sas, int, 1);
+>>> +static int mpt_msi_enable_sas = 1;
+>>> +module_param(mpt_msi_enable_sas, int, 0);
+>>> MODULE_PARM_DESC(mpt_msi_enable_sas, " Enable MSI Support for SAS \
+>>> 		controllers (default=1)");
+>>> 
+>>> 
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
