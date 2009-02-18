@@ -1,61 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbZBRIJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbZBRIN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753982AbZBRIJk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 03:09:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZBRIJc
+	id S1753913AbZBRIN4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 03:13:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbZBRINs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 03:09:32 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:40451 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751340AbZBRIJb (ORCPT
+	Wed, 18 Feb 2009 03:13:48 -0500
+Received: from ti-out-0910.google.com ([209.85.142.185]:13750 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750828AbZBRINr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 03:09:31 -0500
-Subject: Re: [patch] SLQB slab allocator (try 2)
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Mel Gorman <mel@csn.ul.ie>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-In-Reply-To: <20090218093858.8990.A69D9226@jp.fujitsu.com>
-References: <84144f020902171143i5844ef83h20cb4bee4f65c904@mail.gmail.com>
-	 <alpine.DEB.1.10.0902171504090.24395@qirst.com>
-	 <20090218093858.8990.A69D9226@jp.fujitsu.com>
-Date: Wed, 18 Feb 2009 10:09:29 +0200
-Message-Id: <1234944569.24030.20.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 18 Feb 2009 03:13:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=ndrOgKgVZRW1kNZGW1mq6gVeaFPqZrlerAnTMb3FGZRhPVPLt19UgCOd86SFk+yt3q
+         VfyJOtNoecMmRlSkjfxwRtQUuc4sUMcjsoXHrLSbhH9r+VJdnKGwOrJtbpXl/s1RutGQ
+         AVTVr6itfvhF5N7uqE7lG5H0wFHb21l49F1jY=
+From: Cheng Renquan <crquan@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>, Roman Zippel <zippel@linux-m68k.org>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Cheng Renquan <chengrq@uit.com.cn>
+Subject: [PATCH] [KBUILD] add symbol value to help find the real depend
+Date: Wed, 18 Feb 2009 16:13:45 +0800
+Message-Id: <1234944825-10299-1-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+From: Cheng Renquan <chengrq@uit.com.cn>
 
-On Wed, 2009-02-18 at 09:48 +0900, KOSAKI Motohiro wrote:
-> I think 2 * PAGE_SIZE is best and the patch description is needed change.
-> it's because almost architecture use two pages for stack and current page
-> allocator don't have delayed consolidation mechanism for order-1 page.
+kbuild-menuconfig-display-depend-value.patch
 
-Do you mean alloc_thread_info()? Not all architectures use kmalloc() to
-implement it so I'm not sure if that's relevant for this patch.
+Sometimes when configuring need to disable some unused item, but the item is
+selected by many other items, it's hard to find the real dependency which
+selected it, This patch add every symbol's value accompanied to make it
+possible to find the real dependency easily.
 
-On Wed, 2009-02-18 at 09:48 +0900, KOSAKI Motohiro wrote:
-> In addition, if pekka patch (SLAB_LIMIT = 8K) run on ia64, 16K allocation 
-> always fallback to page allocator and using 64K (4 times memory consumption!).
+An example is CONFIG_RFKILL,
 
-Yes, correct, but SLUB does that already by passing all allocations over
-4K to the page allocator.
+  ---------------------- RF switch subsystem support ----------------------
+  | CONFIG_RFKILL:                                                        |
+  |                                                                       |
+  | Say Y here if you want to have control over RF switches               |
+  | found on many WiFi and Bluetooth cards.                               |
+  |                                                                       |
+  | To compile this driver as a module, choose M here: the                |
+  | module will be called rfkill.                                         |
+  |                                                                       |
+  | Symbol: RFKILL [=m]                                                   |
+  | Prompt: RF switch subsystem support                                   |
+  |   Defined at net/rfkill/Kconfig:4                                     |
+  |   Depends on: NET [=y]                                                |
+  |   Location:                                                           |
+  |     -> Networking support (NET [=y])                                  |
+  |   Selected by: IWLCORE [=n] && NETDEVICES [=y] && !S390 [=S390] && PC |
+  |                                                                       |
+  ----------------------------------------------------------------( 99%)---
 
-I'm not totally against 2 * PAGE_SIZE but I just worry that as SLUB
-performance will be bound to architecture page size, we will see skewed
-results in performance tests without realizing it. That's why I'm in
-favor of a fixed size that's unified across architectures.
+Signed-off-by: Cheng Renquan <chengrq@uit.com.cn>
 
-			Pekka
+---
 
+Index: linux-2.6.29-rc5-lio/scripts/kconfig/expr.c
+===================================================================
+--- linux-2.6.29-rc5-lio.orig/scripts/kconfig/expr.c
++++ linux-2.6.29-rc5-lio/scripts/kconfig/expr.c
+@@ -1098,6 +1098,9 @@ void expr_fprint(struct expr *e, FILE *o
+ static void expr_print_gstr_helper(void *data, struct symbol *sym, const char *str)
+ {
+ 	str_append((struct gstr*)data, str);
++	if (sym)
++		str_printf((struct gstr *)data, " [=%s]",
++				sym_get_string_value(sym));
+ }
+ 
+ void expr_gstr_print(struct expr *e, struct gstr *gs)
