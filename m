@@ -1,69 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbZBRXb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbZBRXeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756820AbZBRXb0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 18:31:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZBRXbS
+	id S1756719AbZBRXeY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 18:34:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751685AbZBRXeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 18:31:18 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:58384 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751685AbZBRXbR (ORCPT
+	Wed, 18 Feb 2009 18:34:15 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:54182 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751456AbZBRXeO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 18:31:17 -0500
-Date: Wed, 18 Feb 2009 18:31:15 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFD] Automatic suspend
-In-Reply-To: <200902190004.18878.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0902181826500.23001-100000@iolanthe.rowland.org>
+	Wed, 18 Feb 2009 18:34:14 -0500
+Date: Wed, 18 Feb 2009 18:34:02 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Jason Baron <jbaron@redhat.com>, mingo@elte.hu, rostedt@goodmis.org,
+       linux-kernel@vger.kernel.org, acme@ghostprotocols.net,
+       fweisbec@gmail.com, fche@redhat.com, compudj@krystal.dyndns.org
+Subject: Re: [PATCH] new irq tracer
+Message-ID: <20090218233402.GF17272@bombadil.infradead.org>
+References: <20090218195328.GA3112@redhat.com> <1234991725.4799.1.camel@laptop> <20090218213545.GB3112@redhat.com> <1234993580.4799.11.camel@laptop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1234993580.4799.11.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Feb 2009, Rafael J. Wysocki wrote:
-
-> > If some devices are autosuspended after a local inactivity timeout, I
-> > don't want to wait for those devices to autosuspend if I know the code
-> > that needed to run is done. This could cause delays in the normal
-> > case,
+On Wed, Feb 18, 2009 at 10:46:20PM +0100, Peter Zijlstra wrote:
+> Much of the other data is already available, /proc/interrupts will
+> happily tell you the source of your interrupt storm. The irq-off latency
+> tracer will tell you if stuff takes too much time, the graph tracer can
+> tell you what is taking how much time.
 > 
-> Isn't it a matter of adjusting the inactivity timeouts in a suitable way?
 
-It's not that simple.  A single device driver has a very local view, 
-not suitable for deciding whether the entire system should go to sleep.
+How so? It will only tell you which irq line you need to be looking at,
+not which handlers device is spewing the IRQs...
 
-So for example, a disk driver might think it's appropriate to spin down 
-the disk after 10 seconds of inactivity.  But an overall system monitor 
-might realize that nothing is going on right now and want to put the 
-system to sleep immediately, without waiting the 10 seconds for the 
-disk to autosuspend.
+Perhaps I'm missing something obvious, but that's what I've used a
+similar instrument for.
 
-> > and it could prevent suspend if a background process (not using
-> > wakelocks) is accessing a disk more frequently than its idle timeout.
-> 
-> Well, actually, shouldn't it prevent suspend from happening?  Arguably, it just
-> means that the disk is continuously being accessed with respect to the inactive
-> timeout granularity.
-
-That's true, but it shows the problem of making the autosleep decision
-based on disk activity.  An auto-sleep should not have to wait for
-every device (or some suitable subset) to become idle for some minimum
-time; it should be able to kick in at short notice.
-
-Alan Stern
-
+regards, Kyle
