@@ -1,49 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756807AbZBRVDM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756859AbZBRVD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756807AbZBRVDM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:03:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbZBRVC6
+	id S1756859AbZBRVD6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:03:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbZBRVDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:02:58 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39831 "EHLO
-	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753012AbZBRVC5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:02:57 -0500
-Date: Wed, 18 Feb 2009 21:34:48 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
-       pierre-marc.fournier@polymtl.ca
-Subject: Re: Moving Userspace RCU (urcu) from GPL to LGPL license
-Message-ID: <20090218213448.3b467c88@the-village.bc.nu>
-In-Reply-To: <20090218180232.GA21389@Krystal>
-References: <20090218180232.GA21389@Krystal>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 18 Feb 2009 16:03:49 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43911 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753176AbZBRVDs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:03:48 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andy Neitzke <neitzke@post.harvard.edu>
+Subject: Re: unable to shut down cleanly with 2.6.29-rc (can't remove snd-hda-codec-analog)
+Date: Wed, 18 Feb 2009 22:03:39 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.de>
+References: <200902181525.31331.neitzke@physics.harvard.edu>
+In-Reply-To: <200902181525.31331.neitzke@physics.harvard.edu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902182203.40337.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Feb 2009 13:02:32 -0500
-Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
-> only thing is that we cannot put GPL code into a LGPL library.
+(CCing Takashi).
 
-You'll need a patent grant from IBM for non GPL use for that not just an
-LGPL library
- 
-> The other point is that I use a few low-level primitives from the Linux
-> kernel header (e.g. atomic increment for x86, barrier macros). Those are
-> simple one-liners, but, still, I wonder about the licensing
-> implications. I could simply "rewrite" them, but that would be a shame
-
-Ask the author - certainly the original basic atomic ops Linus gave
-specific permission to the mozilla folks to use under other licences.
-
-Alan
+On Wednesday 18 February 2009, Andy Neitzke wrote:
+> Hi,
+> 
+> With 2.6.29-rc kernels I am unable to shutdown my laptop (Thinkpad X60t) 
+> cleanly.  The shutdown gets stuck when it tries to unload the modules related 
+> to ALSA; specifically module "snd-hda-codec-analog" is the 
+> troublemaker.  "lsmod" indicates this module is "Used by 1" but doesn't give 
+> any clue about who is using it.
+> 
+> I had no problem with 2.6.28.  Bisection identifies the bad commit as 
+> 1289e9e8b42f973f2ab39e5f4f2239ff826c27e9, 
+> "ALSA: hda - Modularize HD-audio driver".  Indeed before this commit the 
+> offending module did not exist.
+> 
+> Some basic info below (taken before trying to shut down):
+> 
+> andy@chirality ~ $ lsmod
+> Module                  Size  Used by
+> i915                  148472  2 
+> coretemp                6640  0 
+> snd_seq_oss            29840  0 
+> snd_seq_midi_event      6624  1 snd_seq_oss
+> snd_seq                49712  4 snd_seq_oss,snd_seq_midi_event
+> snd_seq_device          6708  2 snd_seq_oss,snd_seq
+> snd_pcm_oss            37984  0 
+> snd_mixer_oss          14672  1 snd_pcm_oss
+> ntfs                   84976  1 
+> ricoh_mmc               4144  0 
+> snd_hda_codec_analog    76064  1 
+> arc4                    1968  2 
+> ecb                     3024  2 
+> cryptomgr              86672  0 
+> aead                    6704  1 cryptomgr
+> crypto_blkcipher       11428  2 ecb,cryptomgr
+> crypto_hash            10144  1 cryptomgr
+> crypto_algapi          15408  6 
+> arc4,ecb,cryptomgr,aead,crypto_blkcipher,crypto_hash
+> snd_hda_intel          26600  0 
+> snd_hda_codec          56928  2 snd_hda_codec_analog,snd_hda_intel
+> snd_pcm                72984  3 snd_pcm_oss,snd_hda_intel,snd_hda_codec
+> ath9k                 235776  0 
+> snd_timer              20496  2 snd_seq,snd_pcm
+> firewire_ohci          23236  0 
+> snd                    56424  10 
+> snd_seq_oss,snd_seq,snd_seq_device,snd_pcm_oss,snd_mixer_oss,snd_hda_codec_analog,snd_hda_intel,snd_hda_codec,snd_pcm,snd_timer
+> yenta_socket           24764  0 
+> mac80211              149768  1 ath9k
+> firewire_core          37972  1 firewire_ohci
+> rsrc_nonstatic          9840  1 yenta_socket
+> snd_page_alloc          8832  2 snd_hda_intel,snd_pcm
+> e1000e                112032  0 
+> psmouse                41596  0 
+> pcmcia_core            33252  2 yenta_socket,rsrc_nonstatic
+> video                  20628  0 
+> sdhci_pci               7856  0 
+> cfg80211               37808  1 mac80211
+> i2c_i801                9420  0 
+> rtc_cmos               10952  0 
+> intelfb                34936  0 
+> crc_itu_t               2000  1 firewire_core
+> sdhci                  15988  1 sdhci_pci
+> rtc_core               16356  1 rtc_cmos
+> rtc_lib                 2720  1 rtc_core
+> output                  3040  1 video
+> thinkpad_acpi          59028  0 
+> rfkill                 10628  4 ath9k,thinkpad_acpi
+> backlight               4728  2 video,thinkpad_acpi
+> led_class               4280  3 ath9k,sdhci,thinkpad_acpi
+> evdev                  10448  10 
+> nvram                   7260  1 thinkpad_acpi
+> 
+> andy@chirality ~ $ lspci
+> 00:00.0 Host bridge: Intel Corporation Mobile 945GM/PM/GMS, 943/940GML and 
+> 945GT Express Memory Controller Hub (rev 03)
+> 00:02.0 VGA compatible controller: Intel Corporation Mobile 945GM/GMS, 
+> 943/940GML Express Integrated Graphics Controller (rev 03)
+> 00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS, 943/940GML 
+> Express Integrated Graphics Controller (rev 03)
+> 00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High Definition 
+> Audio Controller (rev 02)
+> 00:1c.0 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 1 
+> (rev 02)
+> 00:1c.1 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 2 
+> (rev 02)
+> 00:1c.2 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 3 
+> (rev 02)
+> 00:1c.3 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express Port 4 
+> (rev 02)
+> 00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI 
+> Controller #1 (rev 02)
+> 00:1d.1 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI 
+> Controller #2 (rev 02)
+> 00:1d.2 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI 
+> Controller #3 (rev 02)
+> 00:1d.3 USB Controller: Intel Corporation 82801G (ICH7 Family) USB UHCI 
+> Controller #4 (rev 02)
+> 00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2 EHCI 
+> Controller (rev 02)
+> 00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev e2)
+> 00:1f.0 ISA bridge: Intel Corporation 82801GBM (ICH7-M) LPC Interface Bridge 
+> (rev 02)
+> 00:1f.1 IDE interface: Intel Corporation 82801G (ICH7 Family) IDE Controller 
+> (rev 02)
+> 00:1f.2 SATA controller: Intel Corporation 82801GBM/GHM (ICH7 Family) SATA 
+> AHCI Controller (rev 02)
+> 00:1f.3 SMBus: Intel Corporation 82801G (ICH7 Family) SMBus Controller (rev 
+> 02)
+> 02:00.0 Ethernet controller: Intel Corporation 82573L Gigabit Ethernet 
+> Controller
+> 03:00.0 Network controller: Atheros Communications, Inc. AR5418 802.11a/b/g/n 
+> Wireless PCI Express Adapter (rev 01)
+> 15:00.0 CardBus bridge: Ricoh Co Ltd RL5c476 II (rev b4)
+> 15:00.1 FireWire (IEEE 1394): Ricoh Co Ltd R5C552 IEEE 1394 Controller (rev 
+> 09)
+> 15:00.2 SD Host controller: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host 
+> Adapter (rev 18)
+> 
+> 
+> -Andy
