@@ -1,79 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087AbZBRAxL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755476AbZBRAyP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754087AbZBRAxL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 19:53:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755875AbZBRAws
+	id S1755476AbZBRAyP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 19:54:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbZBRAx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 19:52:48 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:33501 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754137AbZBRAwq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 19:52:46 -0500
-Message-ID: <499B5BCA.8000905@zytor.com>
-Date: Tue, 17 Feb 2009 16:52:26 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 17 Feb 2009 19:53:59 -0500
+Received: from bu3sch.de ([62.75.166.246]:45689 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751118AbZBRAx6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 19:53:58 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] bcm47xx: Fix GPIO API return codes
+Date: Wed, 18 Feb 2009 01:52:16 +0100
+User-Agent: KMail/1.9.9
+Cc: openwrt-devel@lists.openwrt.org, linux-kernel@vger.kernel.org
+References: <200902142127.19521.mb@bu3sch.de> <20090217162918.d88bc543.akpm@linux-foundation.org>
+In-Reply-To: <20090217162918.d88bc543.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jan Engelhardt <jengelh@medozas.de>, Alain Knaff <alain@knaff.lu>,
-       the arch/x86 maintainers <x86@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: tip: bzip2/lzma now in tip:x86/setup-lzma
-References: <200901042146.n04LkHgP005837@hitchhiker.hitchhiker.org.lu.hitchhiker.org.lu> <4961415C.1050708@zytor.com> <49614243.70102@knaff.lu> <496142E4.8040308@zytor.com> <49614491.7020903@knaff.lu> <49614D1F.8020900@zytor.com> <alpine.LSU.2.00.0902172202230.5620@fbirervta.pbzchgretzou.qr> <499B267E.2090509@zytor.com> <20090217220825.GA24337@elte.hu> <20090217233708.GA10756@elte.hu>
-In-Reply-To: <20090217233708.GA10756@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Disposition: inline
+Message-Id: <200902180152.16346.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
+On Wednesday 18 February 2009 01:29:18 Andrew Morton wrote:
+> On Sat, 14 Feb 2009 21:27:19 +0100
+> Michael Buesch <mb@bu3sch.de> wrote:
 > 
-> still fails:
+> > The GPIO API is supposed to return 0 or a negative error code,
+> > but the SSB GPIO functions return the bitmask of the GPIO register.
+> > Fix this by ignoring the bitmask and always returning 0. The SSB GPIO functions can't fail.
+> > 
+> > Signed-off-by: Michael Buesch <mb@bu3sch.de>
+> > 
+> > ---
+> > 
+> > Index: linux-2.6/arch/mips/include/asm/mach-bcm47xx/gpio.h
+> > ===================================================================
+> > --- linux-2.6.orig/arch/mips/include/asm/mach-bcm47xx/gpio.h	2009-01-01 19:27:06.000000000 +0100
+> > +++ linux-2.6/arch/mips/include/asm/mach-bcm47xx/gpio.h	2009-02-14 21:26:14.000000000 +0100
+> > @@ -31,24 +31,28 @@ static inline void gpio_set_value(unsign
+> >  
+> >  static inline int gpio_direction_input(unsigned gpio)
+> >  {
+> > -	return ssb_gpio_outen(&ssb_bcm47xx, 1 << gpio, 0);
+> > +	ssb_gpio_outen(&ssb_bcm47xx, 1 << gpio, 0);
+> > +	return 0;
+> >  }
+> >  
+> >  static inline int gpio_direction_output(unsigned gpio, int value)
+> >  {
+> > -	return ssb_gpio_outen(&ssb_bcm47xx, 1 << gpio, 1 << gpio);
+> > +	ssb_gpio_outen(&ssb_bcm47xx, 1 << gpio, 1 << gpio);
+> > +	return 0;
+> >  }
+> >  
+> > -static int gpio_intmask(unsigned gpio, int value)
+> > +static inline int gpio_intmask(unsigned gpio, int value)
+> >  {
+> > -	return ssb_gpio_intmask(&ssb_bcm47xx, 1 << gpio,
+> > -				value ? 1 << gpio : 0);
+> > +	ssb_gpio_intmask(&ssb_bcm47xx, 1 << gpio,
+> > +			 value ? 1 << gpio : 0);
+> > +	return 0;
+> >  }
+> >  
+> > -static int gpio_polarity(unsigned gpio, int value)
+> > +static inline int gpio_polarity(unsigned gpio, int value)
+> >  {
+> > -	return ssb_gpio_polarity(&ssb_bcm47xx, 1 << gpio,
+> > -				 value ? 1 << gpio : 0);
+> > +	ssb_gpio_polarity(&ssb_bcm47xx, 1 << gpio,
+> > +			  value ? 1 << gpio : 0);
+> > +	return 0;
+> >  }
 > 
-> [    3.196037] initcall inet_init+0x0/0x1e9 returned 0 after 101777 usecs           
-> [    3.202886] calling  af_unix_init+0x0/0x55 @ 1                                   
-> [    3.207461] NET: Registered protocol family 1                                    
-> [    3.211950] initcall af_unix_init+0x0/0x55 returned 0 after 4394 usecs           
-> [    3.218624] calling  populate_rootfs+0x0/0xd2 @ 1                                
-> [    3.223460] Kernel panic - not syncing: compression method gzip not configured   
+> What are the consequences of the bug which you fixed?  User-visible
+> runtime failures?  Something else?
 > 
-> config attached.
-> 
+> Please always include this information in the changelogs - without it I
+> cannot make which-kernel-needs-this decisions.
 
-Okay, I think I've tracked down the problem.
+Well, it fixes all users of the API that don't ignore the return value.
+"Fixes" means "turns them from completely not working at all into - working properly".
+This is the case for gpio-spi, for example. gpio-spi doesn't work on bcm47xx without
+this fix. gpio-spi is in 2.6.29.
+I didn't search for other API-users that might be broken.
 
-The issue is that usr/Makefile doesn't correctly filter compression 
-methods which we don't support.  This particular case will happen when 
-you're building with Ingo's attached configuration *and no bzip2 tool 
-installed on the system*.
+So I'd like to see this going to Linus as soon as possible.
 
-Basically, the algorithm used in usr/Makefile is simply wrong.
-
-The claim is:
-
-+# Find out "preferred" ramdisk compressor. Order of preference is
-+#  1. bzip2 efficient, and likely to be present
-+#  2. gzip former default
-+#  3. lzma
-+#  4. none
-+
-+# None of the above
-+suffix_y                   =
-+
-+# Lzma, but no gzip nor bzip2
-+suffix_$(CONFIG_RD_LZMA)   = .lzma
-+
-+# Gzip, but no bzip2
-+suffix_$(CONFIG_RD_GZIP)   = .gz
-+
-+# Bzip2
-+suffix_$(CONFIG_RD_BZIP2)  = .bz2
-
-This doesn't end up make any sense.  The sanest thing to do is to 
-compress with all the compressors that are configured into the kernel, 
-and then use the smallest image of the ones that can be produced, 
-*including the uncompressed image*.  Including the uncompressed image 
-will guarantee that we always have a working option.
-
-	-hpa
+-- 
+Greetings, Michael.
