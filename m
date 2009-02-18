@@ -1,86 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbZBRClI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbZBRCni@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754910AbZBRClI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 21:41:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbZBRCkw
+	id S1754254AbZBRCni (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 21:43:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbZBRCn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 21:40:52 -0500
-Received: from mail.lang.hm ([64.81.33.126]:37095 "EHLO bifrost.lang.hm"
+	Tue, 17 Feb 2009 21:43:29 -0500
+Received: from gate.crashing.org ([63.228.1.57]:40319 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753318AbZBRCkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 21:40:51 -0500
-Date: Tue, 17 Feb 2009 18:40:35 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Yinghai Lu <yinghai@kernel.org>
-cc: Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       DL-MPTFusionLinux@lsi.com
-Subject: Re: mpt fusion broken sometime since 2.6.24
-In-Reply-To: <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm>
-Message-ID: <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>  <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm>  <20090217230050.GG16841@parisc-linux.org>  <alpine.DEB.1.10.0902171506500.26625@asgard.lang.hm> <86802c440902171511s1abcc0eao560df4b8fcea0e7c@mail.gmail.com>
- <alpine.DEB.1.10.0902171514120.26625@asgard.lang.hm> <499B46B2.5040601@kernel.org> <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm> <499B6BF7.9090300@kernel.org> <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm> <499B724A.2040408@kernel.org>
- <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S1751170AbZBRCn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 21:43:28 -0500
+Subject: Re: [RFD] Automatic suspend
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Brian Swetland <swetland@google.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>,
+       Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>, Len Brown <lenb@kernel.org>
+In-Reply-To: <20090217152811.GA12686@bulgaria.corp.google.com>
+References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
+	 <13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com>
+	 <20090216145948.6fea81c3@infradead.org> <200902170019.40599.rjw@sisk.pl>
+	 <20090216232329.GA15678@srcf.ucam.org>
+	 <20090217142001.GB12378@bulgaria.corp.google.com>
+	 <20090217064630.688bf639@infradead.org>
+	 <20090217152811.GA12686@bulgaria.corp.google.com>
+Content-Type: text/plain
+Date: Wed, 18 Feb 2009 13:40:40 +1100
+Message-Id: <1234924840.14060.342.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Feb 2009, david@lang.hm wrote:
 
->> do you have chance to try current tip/master
->> http://people.redhat.com/mingo/tip.git/readme.txt
->> or 2.6.29-rcX
->> plus following patch?
->
-> I will see about trying this.
+> You will end up with some crappy apps that do really dumb things.
+> However, even if they're badly written users may still install and use
+> these apps because hey, they do something the user likes.
+> 
+> >From the Android standpoint, we're trying to balance protecting the
+> system from poorly designed apps and somehow letting the user know "hey
+> app X is chewing up a lot of power" (work in progress on this).
+> 
+> While I'd love for every app developer to actively tune their apps for a
+> good mobile experience, I am skeptical that this is going to happen.
 
-does the fact that I am compiling a monolithic kernel (no modules) make 
-any difference related to the patch below?
+One idea I've been toying around was to have powertune as some kind of
+background thingy, and have it pop an icon in the notification area when
+some app seems to behave badly (of course, defining "badly" is hard but
+heh...). IE. actively inform the user "this application is sucking the
+life out of your battery".
 
-David Lang
+Cheers,
+Ben.
 
->> or can you check if there is update fw for your LSI card?
->
-> this is more work, I'll look into that as well.
->
-> David Lang
->
->> [PATCH] mpt: fix enable lsi sas to use msi as default
->> 
->> Impact: fix bug
->> 
->> the third param in module_param(,,) is perm instead of default value.
->> we still need to assign default at first.
->> 
->> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->> 
->> ---
->> drivers/message/fusion/mptbase.c |    4 ++--
->> 1 file changed, 2 insertions(+), 2 deletions(-)
->> 
->> Index: linux-2.6/drivers/message/fusion/mptbase.c
->> ===================================================================
->> --- linux-2.6.orig/drivers/message/fusion/mptbase.c
->> +++ linux-2.6/drivers/message/fusion/mptbase.c
->> @@ -90,8 +90,8 @@ module_param(mpt_msi_enable_fc, int, 0);
->> MODULE_PARM_DESC(mpt_msi_enable_fc, " Enable MSI Support for FC \
->> 		controllers (default=0)");
->> 
->> -static int mpt_msi_enable_sas;
->> -module_param(mpt_msi_enable_sas, int, 1);
->> +static int mpt_msi_enable_sas = 1;
->> +module_param(mpt_msi_enable_sas, int, 0);
->> MODULE_PARM_DESC(mpt_msi_enable_sas, " Enable MSI Support for SAS \
->> 		controllers (default=1)");
->> 
->> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+
