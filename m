@@ -1,80 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403AbZBRJWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752924AbZBRJbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753403AbZBRJWn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 04:22:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbZBRJW0
+	id S1752924AbZBRJbR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 04:31:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbZBRJbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 04:22:26 -0500
-Received: from mga09.intel.com ([134.134.136.24]:5919 "EHLO mga09.intel.com"
+	Wed, 18 Feb 2009 04:31:00 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55477 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751826AbZBRJWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 04:22:25 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,228,1233561600"; 
-   d="scan'208";a="490892698"
-Date: Wed, 18 Feb 2009 03:21:55 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: Greg KH <greg@kroah.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v9 6/7] PCI: document SR-IOV sysfs entries
-Message-ID: <20090217192155.GA2612@yzhao-otc.sh.intel.com>
-References: <1234790920-1810-1-git-send-email-yu.zhao@intel.com> <1234790920-1810-7-git-send-email-yu.zhao@intel.com> <20090217125021.GA2403@yzhao-otc.sh.intel.com> <20090218034910.GA10990@kroah.com> <20090217144303.GA2452@yzhao-otc.sh.intel.com> <20090218062116.GA20081@kroah.com> <20090217170135.GA2520@yzhao-otc.sh.intel.com> <20090218071916.GA15114@kroah.com>
+	id S1750859AbZBRJa7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 04:30:59 -0500
+Date: Wed, 18 Feb 2009 10:30:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>
+Subject: Re: [PATCH 0/6] [git pull] updates for tip/tracing/ftrace
+Message-ID: <20090218093026.GA12152@elte.hu>
+References: <20090217182048.233060814@goodmis.org> <20090218000952.GD12714@elte.hu> <20090218084041.GA27540@elte.hu> <20090218085719.GA31049@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090218071916.GA15114@kroah.com>
+In-Reply-To: <20090218085719.GA31049@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 18, 2009 at 03:19:16PM +0800, Greg KH wrote:
-> On Wed, Feb 18, 2009 at 01:01:35AM +0800, Yu Zhao wrote:
-> > On Wed, Feb 18, 2009 at 02:21:16PM +0800, Greg KH wrote:
-> > > On Tue, Feb 17, 2009 at 10:43:03PM +0800, Yu Zhao wrote:
-> > > > On Wed, Feb 18, 2009 at 11:49:10AM +0800, Greg KH wrote:
-> > > > > On Tue, Feb 17, 2009 at 08:50:21PM +0800, Yu Zhao wrote:
-> > > > > > I'd like to create a subdirectory under PCI device sysfs directory and
-> > > > > > put some symbol links into that directory (only symbol links). Should I
-> > > > > > use `device' or `kobject'? Currently I use `device' and get two extra
-> > > > > > file/directory (uevent and power) which look like useless for my case
-> > > > > > because this subdirectory doesn't reflect a real device.
-> > > > > 
-> > > > > Neither, just use an attribute group, no new struct device should be
-> > > > > needed at all.
-> > > > 
-> > > > Yes, I was thinking using an attribute group, however, it looks like we
-> > > > can't put symbol link into a group. Maybe I'm wrong, shed some light,
-> > > > please?
-> > > 
-> > > Why would you want a symbolic link in an attribute group?
-> > 
-> > Sorry I didn't make myself clear. I'd like to create a subdirectory (its
-> > parent is controlled by a `struct device') to only hold symbol links.
-> 
-> Ick.  What would those links be to?  And what are they for?
-> 
-> > Can I use an `attribute group' of the parent `struct device' for this,
-> > or a child `struct device', or a bare `struct kobject'?
-> 
-> You can't use an attribute group for symlinks.
-> You should use a struct device, but be careful, you are going to be
-> creating uevents that I don't think you really want to.
 
-Thank you for the clarification.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
+> it's one of these recent commits:
 > 
-> Care to describe what you are trying to do first?
+>  fa7c7f6: tracing/core: remove unused parameter in tracing_fill_pipe_page()
+>  6eaaa5d: tracing/core: use appropriate waiting on trace_pipe
+>  35ebf1c: ftrace: show unlimited when traceon or traceoff has no counter
+>  73d8b8b: tracing: fix typing mistake in hint message and comments
+>  d2ef7c2: tracing: fix the return value of trace selftest
+>  af51309: tracing: use the more proper parameter
+>  b6887d7: ftrace: rename _hook to _probe
+>  6a24a24: ftrace: clean up coding style
+> 
+> Have not bisected it any further, excluded them from 
+> tip:master for the time being.
 
-I'd like to link child PCI devices to their parent PCI device's
-subdirectory.  These child PCI devices are PCI functions that are on
-the same level as their parent in the PCI hierarchy, so current PCI code
-won't create symbol links for them in their parent directory as what it
-does for PCI bridge. For example, device 01:00.0 is the parent and 01:00.1
-is the child, I'd like to put a symbol link into
-/sys/bus/pci/device/0000:01:00.0/child/ which points to
-/sys/bus/pci/device/0000:01:00.1.  This can let user space application
-know the relationship between this two devices.
+actually - it's one of these:
 
-Regards,
-Yu
+37bd824: Merge branches 'tracing/ftrace' and 'tracing/urgent' into tracing/core
+5b058bc: tracing/function-graph-tracer: trace the idle tasks
+73d3fd9: ftrace: fix !CONFIG_DYNAMIC_FTRACE ftrace_swapper_pid definition
+97d0bb8: ftrace: fix !CONFIG_FTRACE [un_]register_ftrace_command() prototypes
+f492d3f8: Merge branch 'tip/tracing/ftrace' of git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace into tracing/ftrace
+c4e2b43: Merge branches 'tracing/hw-branch-tracing' and 'tracing/power-tracer' into tracing/core
+e110e3d: ftrace: add pretty print function for traceon and traceoff hooks
+809dcf2: ftrace: add pretty print to selected fuction traces
+8fc0c70: ftrace: show selected functions in set_ftrace_filter
+23b4ff3: ftrace: add traceon traceoff commands to enable/disable the buffers
+988ae9d: ring-buffer: add tracing_is_on to test if ring buffer is enabled
+59df055: ftrace: trace different functions with a different tracer
+e6ea44e: ftrace: consolidate mutexes
+52baf11: ftrace: convert ftrace_lock from a spinlock to mutex
+f618077: ftrace: add command interface for function selection
+e68746a: ftrace: enable filtering only when a function is filtered on
+64e7c44: ftrace: add module command function filter selection
+9f4801e: ftrace: break up ftrace_match_records into smaller components
+7f24b31: ftrace: rename ftrace_match to ftrace_match_records
+265c831: ftrace: add do_for_each_ftrace_rec and while_for_each_ftrace_rec
+0c75a3e: ftrace: state that all functions are enabled in set_ftrace_filter
+
+i specifically reverted this one:
+
+5b058bc: tracing/function-graph-tracer: trace the idle tasks
+
+but that wasnt enough, so it's one of the other ones.
+
+	Ingo
