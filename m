@@ -1,94 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756441AbZBRT5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755657AbZBRUBN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756441AbZBRT5f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 14:57:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbZBRT5V
+	id S1755657AbZBRUBN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 15:01:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbZBRUA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 14:57:21 -0500
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:33157 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754147AbZBRT5U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 14:57:20 -0500
-Message-ID: <499C681A.6000008@hp.com>
-Date: Wed, 18 Feb 2009 14:57:14 -0500
-From: Brian Haley <brian.haley@hp.com>
-Organization: Open Source and Linux Organization
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>,
-       YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
-CC: Vlad Yasevich <vladislav.yasevich@hp.com>,
-       Chuck Lever <chuck.lever@oracle.com>, Theodore Tso <tytso@mit.edu>,
-       Valdis.Kletnieks@vt.edu, arvidjaar@mail.ru, rjw@sisk.pl,
-       netdev@vger.kernel.org, bonding-devel@lists.sourceforge.net,
-       jamagallon@ono.com, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29 regression? Bonding tied to IPV6 in 29-rc5
-References: <200902172001.41804.arvidjaar@mail.ru> <20090217.142946.232071526.davem@davemloft.net> <25143.1234932076@turing-police.cc.vt.edu> <20090217.212919.259912220.davem@davemloft.net> <20090218135537.GF3600@mini-me.lan> <06F54D7E-EE07-49C9-AD8F-B46BD6B02ABA@oracle.com> <499C5486.5020807@hp.com>
-In-Reply-To: <499C5486.5020807@hp.com>
-Content-Type: multipart/mixed;
- boundary="------------020600060606060306030002"
+	Wed, 18 Feb 2009 15:00:58 -0500
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:42207 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752446AbZBRUA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 15:00:58 -0500
+Date: Wed, 18 Feb 2009 21:00:55 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Rabin Vincent <rabin@rab.in>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] mmc_test: fix basic read test
+Message-ID: <20090218210055.6dc3401e@mjolnir.ossman.eu>
+In-Reply-To: <20090213172526.GA1807@debian>
+References: <20090213172526.GA1807@debian>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.3; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020600060606060306030002
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Fri, 13 Feb 2009 22:55:26 +0530
+Rabin Vincent <rabin@rab.in> wrote:
 
-Vlad Yasevich wrote:
-> Having worked in other environments where ipv6 has to be explicitly
-> enabled per interface, I've thought that this level of control was
-> always missing from linux.  Being able to configure only the interface
-> that users want seems like a good thing to have.
-> Would a module parameter that disables ipv6 or at least addrconf be
-> enough of a solution?
+> Due to a typo in the Basic Read test, it's currently identical to the
+> Basic Write test.  Fix this.
+> 
+> Signed-off-by: Rabin Vincent <rabin@rab.in>
+> ---
 
-There does seem to be a sysctl for it, just doesn't seem to work. 
-Possible patch below.
+Ooops. Queued. :)
 
-This actually brings up the issue that the "all" ipv6 sysctl, for 
-example net.ipv6.conf.all.disable_ipv6, doesn't actually do anything (at 
-least it didn't seem to for me).  Maybe it's time to fix that too to be 
-like IPv4, things like IN_DEV_RPFILTER() and friends aren't looking so 
-bad...
+-- 
+     -- Pierre Ossman
 
-I tested this patch on lo and a few Ethernet devices and saw no IPv6 
-addresses.  Don't know if EPERM is the right errno since we don't know 
-if the user set this or DAD failed.
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
 
-
-The disable_ipv6 knob was meant to be used for the kernel to disable 
-IPv6 on an interface when DAD failed for the link-local address based on 
-the MAC, but we should also be able to administratively disable it on an 
-interface, or the entire system.  This patch fixes the per-interface 
-problem.
-
-Signed-off-by: Brian Haley <brian.haley@hp.com>
-
---------------020600060606060306030002
-Content-Type: text/x-diff;
- name="noipv6.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="noipv6.patch"
-
-diff --git a/net/ipv6/addrconf.c b/net/ipv6/addrconf.c
-index 03e2a1a..9bc761f 100644
---- a/net/ipv6/addrconf.c
-+++ b/net/ipv6/addrconf.c
-@@ -603,6 +603,11 @@ ipv6_add_addr(struct inet6_dev *idev, const struct in6_addr *addr, int pfxlen,
- 		goto out2;
- 	}
- 
-+	if (idev->cnf.disable_ipv6) {
-+		err = -EPERM;
-+		goto out2;
-+	}
-+
- 	write_lock(&addrconf_hash_lock);
- 
- 	/* Ignore adding duplicate addresses on an interface */
-
---------------020600060606060306030002--
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
