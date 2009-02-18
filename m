@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbZBRPaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754270AbZBRPf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754119AbZBRPaY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 10:30:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbZBRPaJ
+	id S1754270AbZBRPf0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 10:35:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbZBRPfO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 10:30:09 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:55996 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752759AbZBRPaG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 10:30:06 -0500
-Date: Wed, 18 Feb 2009 15:29:56 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] [RESEND] binfmt_script: rewrite using parse_shell_args()
-Message-ID: <20090218152956.GA15633@srcf.ucam.org>
-References: <1234970162-10694-1-git-send-email-kirill@shutemov.name> <1234970162-10694-2-git-send-email-kirill@shutemov.name> <20090218151616.GC15195@srcf.ucam.org> <20090218152252.GB5270@epbyminw8406h.minsk.epam.com>
+	Wed, 18 Feb 2009 10:35:14 -0500
+Received: from kroah.org ([198.145.64.141]:37495 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752203AbZBRPfN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 10:35:13 -0500
+Date: Wed, 18 Feb 2009 07:13:56 -0800
+From: Greg KH <greg@kroah.com>
+To: Yu Zhao <yu.zhao@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v9 6/7] PCI: document SR-IOV sysfs entries
+Message-ID: <20090218151356.GB26373@kroah.com>
+References: <1234790920-1810-1-git-send-email-yu.zhao@intel.com> <1234790920-1810-7-git-send-email-yu.zhao@intel.com> <20090217125021.GA2403@yzhao-otc.sh.intel.com> <20090218034910.GA10990@kroah.com> <20090217144303.GA2452@yzhao-otc.sh.intel.com> <20090218062116.GA20081@kroah.com> <20090217170135.GA2520@yzhao-otc.sh.intel.com> <20090218071916.GA15114@kroah.com> <20090217192155.GA2612@yzhao-otc.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090218152252.GB5270@epbyminw8406h.minsk.epam.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20090217192155.GA2612@yzhao-otc.sh.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 18, 2009 at 05:22:52PM +0200, Kirill A. Shutemov wrote:
-> On Wed, Feb 18, 2009 at 03:16:16PM +0000, Matthew Garrett wrote:
-> > On Wed, Feb 18, 2009 at 05:16:01PM +0200, Kirill A. Shutemov wrote:
-> > > parse_shell_args() allows to use more than one argument in shebang.
-> > 
-> > As mentioned before, this breaks userspace ABI.
+On Wed, Feb 18, 2009 at 03:21:55AM +0800, Yu Zhao wrote:
+> > Care to describe what you are trying to do first?
 > 
-> Do you have real world example of breakage?
+> I'd like to link child PCI devices to their parent PCI device's
+> subdirectory.  These child PCI devices are PCI functions that are on
+> the same level as their parent in the PCI hierarchy, so current PCI code
+> won't create symbol links for them in their parent directory as what it
+> does for PCI bridge. For example, device 01:00.0 is the parent and 01:00.1
+> is the child, I'd like to put a symbol link into
+> /sys/bus/pci/device/0000:01:00.0/child/ which points to
+> /sys/bus/pci/device/0000:01:00.1.  This can let user space application
+> know the relationship between this two devices.
 
-Have you checked every script on every Linux system?
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+If .1 is really the child of .0, then make it so in the sysfs tree in
+the first place with the topology of the devices.  That way you don't
+need any special "child" directory, as that would be different from all
+other device types in the system.
+
+thanks,
+
+greg k-h
