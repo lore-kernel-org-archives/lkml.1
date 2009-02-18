@@ -1,59 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbZBRBBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755642AbZBRBCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755500AbZBRBBU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 20:01:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbZBRBBM
+	id S1755642AbZBRBCb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 20:02:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbZBRBCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 20:01:12 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35128 "EHLO mx3.mail.elte.hu"
+	Tue, 17 Feb 2009 20:02:22 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:53321 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751473AbZBRBBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 20:01:11 -0500
-Date: Wed, 18 Feb 2009 02:00:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/7] tracing/function-graph-tracer: make arch generic
-	push pop functions
-Message-ID: <20090218010039.GL25856@elte.hu>
-References: <20090213052358.524970112@goodmis.org> <20090213053004.787392572@goodmis.org> <alpine.DEB.1.10.0902162346190.30397@gandalf.stny.rr.com>
+	id S1751868AbZBRBCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 20:02:21 -0500
+Date: Tue, 17 Feb 2009 17:02:20 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Damien Wyart <damien.wyart@free.fr>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #12650] Strange load average and ksoftirqd behavior with
+	2.6.29-rc2-git1
+Message-ID: <20090218010220.GW6761@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090216132151.GA17996@elte.hu> <20090216160613.GA6785@linux.vnet.ibm.com> <20090216185616.GB6785@linux.vnet.ibm.com> <20090216200923.GA28938@elte.hu> <20090216223944.GF6785@linux.vnet.ibm.com> <20090217043422.GA5836@nowhere> <20090217151046.GB6761@linux.vnet.ibm.com> <20090217223741.GC5194@nowhere> <20090217224826.GO6761@linux.vnet.ibm.com> <20090218003801.GD25856@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0902162346190.30397@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090218003801.GD25856@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> Ingo,
+On Wed, Feb 18, 2009 at 01:38:01AM +0100, Ingo Molnar wrote:
 > 
-> This patch is to make function graph arch generic. But since 
-> the PowerPC changes depend on it, we want to push it through 
-> the PowerPC tree. But since it touches x86 code, can you give 
-> an Acked-by to it?
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > No, it was my confusion -- I later realized that your data 
+> > above meant that the force-quiescent-state code path was not 
+> > being heavily exercised. So no need for this trace!
+> 
+> Do you have any theory for why RCU was activated every 100-200 
+> microseconds, resulting in 20% ksoftirqd CPU use - and why the 
+> problem went away with classic-rcu?
 
-hm, but it's all ftrace bits. Could this go through the tracing 
-tree? That's how it's generally done for most cross-arch 
-subsystems. By having it in a separate tree we risk conflicts 
-and various logistics problems. It's not like the PPC tree is 
-modifying its ftrace.c file all that frequently, right?
+RCU was activated every 100-200 microseconds because the x86 32-bit
+idle loop would call rcu_pending() and rcu_check_callbacks() in a tight
+loop under some conditions.  This was happening to both classic and
+tree RCU, but classic RCU has a more exact rcu_pending() check, and so
+classic RCU's rcu_pending() always returns false, so that classic RCU's
+rcu_check_callbacks() was never invoked, so that the raise_softirq()
+is never called, so that control never passed to ksoftirqd, so that
+things like "uptime" could not see the activity.
 
-	Ingo
+But the activity was occurring with classic RCU nevertheless.
+
+</useful information>
+
+<aside>
+
+Interestingly enough, this is actually a symptom of a theoretical bug
+in classic RCU (noted by Manfred Spraul some months ago).  Classic RCU
+assumes that interrupts from dynticks idle mode don't run long enough
+to run through a full grace period (which, in absence of truly broken
+driver code, they do not).  Therefore, classic RCU removes all dynticks
+idle CPUs from considation at the beginning of each grace period, so
+that classic RCU's rcu_pending() doesn't have to concern itself with
+other dyntick-idle CPUs.
+
+When rcu_pending() is invoked once per jiffy, the additional checking
+that tree RCU must do is in the noise, but not so when called repeatedly
+from the idle loop.
+
+</aside>
+
+							Thanx, Paul
