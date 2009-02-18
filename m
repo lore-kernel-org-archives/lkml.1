@@ -1,30 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753329AbZBRMva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbZBRMyF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753329AbZBRMva (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 07:51:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbZBRMvQ
+	id S1753416AbZBRMyF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 07:54:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbZBRMxz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 07:51:16 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37522 "EHLO mx3.mail.elte.hu"
+	Wed, 18 Feb 2009 07:53:55 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38282 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751658AbZBRMvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 07:51:15 -0500
-Date: Wed, 18 Feb 2009 13:50:49 +0100
+	id S1751741AbZBRMxy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 07:53:54 -0500
+Date: Wed, 18 Feb 2009 13:53:34 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Patrick McHardy <kaber@trash.net>
-Cc: Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       David Miller <davem@davemloft.net>, Rick Jones <rick.jones2@hp.com>,
-       Eric Dumazet <dada1@cosmosbay.com>, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, tglx@linutronix.de,
-       Martin Josefsson <gandalf@wlug.westbo.se>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] timers: add mod_timer_pending()
-Message-ID: <20090218125049.GA28791@elte.hu>
-References: <20090218051906.174295181@vyatta.com> <20090218052747.437271195@vyatta.com> <20090218092041.GC3294@elte.hu> <499BDDFE.5010101@trash.net> <20090218120508.GB4100@elte.hu> <499C000A.4040205@trash.net>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Geoff Levand <geoffrey.levand@am.sony.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/7] tracing/function-graph-tracer: make arch generic
+	push pop functions
+Message-ID: <20090218125334.GA1300@elte.hu>
+References: <20090213052358.524970112@goodmis.org> <20090213053004.787392572@goodmis.org> <alpine.DEB.1.10.0902162346190.30397@gandalf.stny.rr.com> <20090218010039.GL25856@elte.hu> <alpine.DEB.1.10.0902172243550.1360@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <499C000A.4040205@trash.net>
+In-Reply-To: <alpine.DEB.1.10.0902172243550.1360@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,95 +41,40 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Patrick McHardy <kaber@trash.net> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> Ingo Molnar wrote:
->> * Patrick McHardy <kaber@trash.net> wrote:
->>
->>> We need to avoid having a timer that was deleted by one CPU
->>> getting re-added by another, but want to avoid taking the
->>> conntrack lock for every timer update. The timer-internal
->>> locking is enough for this as long as we have a mod_timer
->>> variant that forwards a timer, but doesn't activate it in
->>> case it isn't active already.
->>
->> that makes sense - but the implementation is still somewhat ugly. How 
->> about the one below instead? Not tested.
->
-> This seems to fulfill our needs. I also like the mod_timer_pending()
-> name better than mod_timer_noact().
->
->> One open question is this construct in mod_timer():
->>
->> +	/*
->> +	 * This is a common optimization triggered by the
->> +	 * networking code - if the timer is re-modified
->> +	 * to be the same thing then just return:
->> +	 */
->> +	if (timer->expires == expires && timer_pending(timer))
->> +		return 1;
->>
->> We've had this for ages, but it seems rather SMP-unsafe.  
->> timer_pending(), if used in an unserialized fashion, can be any random 
->> value in theory - there's no internal serialization here anywhere.
->>
->> We could end up with incorrectly not re-activating a timer in  
->> mod_timer() for example - have such things never been observed in 
->> practice?
->
-> Yes, it seems racy if done for timers that might get 
-> activated. For forwarding only without activation it seems OK, 
-> in that case the timer_pending check doesn't seem necessary at 
-> all.
+> On Wed, 18 Feb 2009, Ingo Molnar wrote:
+> 
+> > 
+> > * Steven Rostedt <rostedt@goodmis.org> wrote:
+> > 
+> > > Ingo,
+> > > 
+> > > This patch is to make function graph arch generic. But since 
+> > > the PowerPC changes depend on it, we want to push it through 
+> > > the PowerPC tree. But since it touches x86 code, can you give 
+> > > an Acked-by to it?
+> > 
+> > hm, but it's all ftrace bits. Could this go through the tracing 
+> > tree? That's how it's generally done for most cross-arch 
+> > subsystems. By having it in a separate tree we risk conflicts 
+> > and various logistics problems. It's not like the PPC tree is 
+> > modifying its ftrace.c file all that frequently, right?
+> 
+> Ingo,
+> 
+> How about this. We could incorporate some of the power of git. 
+> I could make a separate branch based off of Linus's 2.6.29-rc5 
+> announcement, and apply just this patch (the ftrace generic 
+> and x86 change). If you give me your Acked-by, I'll add that 
+> too.
+> 
+> This way, both you and Ben could pull from this branch to get 
+> the one change. When it goes upstream, because it has the same 
+> SHA1, git could easily resolve it.
 
-ok.
-
-To accelerate matters i've committed the new API patch into a 
-new standalone topic branch: tip:timers/new-apis.
-
-Unless there are objections or test failures, you (or Stephen or 
-David) can then git-pull it into the networking tree via the Git 
-coordinates below - and you'll get this single commit in a 
-surgical manner - no other timer changes are included.
-
-Doing so has the advantage of:
-
-- You not having to wait a kernel cycle for the API to go
-  upstream.
-
-- You can also push it upstream without waiting for the timer 
-  tree. (the timer tree and the networking tree will share the 
-  exact same commit)
-
-- It will also all merge cleanly with the timer tree in 
-  linux-next, etc.
-
-I'd suggest to do it in about a week, to make sure any after 
-effects have trickled down and to make sure the topic has become 
-append-only. You can ping Thomas and me about testing/review 
-status then, whenever you want to do the pull.
+Sure, that's fine too - if the separate tree is semantically 
+meaningful. If it pulls in too many ftrace prerequisites i doubt 
+it's appropriate for the PPC tree.
 
 	Ingo
-
-------------->
-
-You can pull the latest timers/new-apis git tree from:
-
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers/new-apis
-
- Thanks,
-
-	Ingo
-
------------------->
-Ingo Molnar (1):
-      timers: add mod_timer_pending()
-
-
- arch/powerpc/platforms/cell/spufs/sched.c  |    2 +-
- drivers/infiniband/hw/ipath/ipath_driver.c |    6 +-
- include/linux/timer.h                      |   22 +-----
- kernel/relay.c                             |    2 +-
- kernel/timer.c                             |  110 ++++++++++++++++++---------
- 5 files changed, 80 insertions(+), 62 deletions(-)
-
