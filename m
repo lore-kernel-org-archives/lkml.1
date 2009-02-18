@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758882AbZBRVmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757231AbZBRVms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758882AbZBRVmc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:42:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757224AbZBRVfx
+	id S1757231AbZBRVms (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:42:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757234AbZBRVfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:35:53 -0500
-Received: from kroah.org ([198.145.64.141]:56250 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 16:35:55 -0500
+Received: from kroah.org ([198.145.64.141]:56267 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756896AbZBRVfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:35:45 -0500
-Date: Wed, 18 Feb 2009 13:32:49 -0800
+	id S1757050AbZBRVfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:35:47 -0500
+Date: Wed, 18 Feb 2009 13:32:53 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Li Zefan <lizf@cn.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>, linux-ext4@vger.kernel.org,
-       Miao Xie <miaox@cn.fujitsu.com>
-Subject: [patch 19/39] ext4: Widen type of ext4_sb_info.s_mb_maxs[]
-Message-ID: <20090218213249.GT19814@kroah.com>
+       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [patch 21/39] ext4: Dont overwrite allocation_context ac_status
+Message-ID: <20090218213253.GV19814@kroah.com>
 References: <20090218212144.965748151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext4-widen-type-of-ext4_sb_info.s_mb_maxs.patch"
+Content-Disposition: inline; filename="ext4-don-t-overwrite-allocation_context-ac_status.patch"
 In-Reply-To: <20090218213021.GA19814@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,52 +41,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
+From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-(cherry picked from commit ff7ef329b268b603ea4a2303241ef1c3829fd574)
+(cherry picked from commit 032115fcef837a00336ddf7bda584e89789ea498)
 
-I chased the cause of following ext4 oops report which is tested on
-ia64 box.
+We can call ext4_mb_check_limits even after successfully allocating
+the requested blocks.  In that case, make sure we don't overwrite
+ac_status if it already has the status AC_STATUS_FOUND.  This fixes
+the lockdep warning:
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12018
+=============================================
+[ INFO: possible recursive locking detected ]
+2.6.28-rc6-autokern1 #1
+---------------------------------------------
+fsstress/11948 is trying to acquire lock:
+ (&meta_group_info[i]->alloc_sem){----}, at: [<c04d9a49>] ext4_mb_load_buddy+0x9f/0x278
+.....
 
-The cause is the size of s_mb_maxs array that is defined as "unsigned
-short" in ext4_sb_info structure.  If the file system's block size is
-8k or greater, an unsigned short is not wide enough to contain the
-value fs->blocksize << 3.
+stack backtrace:
+.....
+ [<c04db974>] ext4_mb_regular_allocator+0xbb5/0xd44
+.....
 
-Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+but task is already holding lock:
+ (&meta_group_info[i]->alloc_sem){----}, at: [<c04d9a49>] ext4_mb_load_buddy+0x9f/0x278
+
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Miao Xie <miaox@cn.fujitsu.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- fs/ext4/ext4_sb.h |    3 ++-
  fs/ext4/mballoc.c |    2 ++
- 2 files changed, 4 insertions(+), 1 deletion(-)
+ 1 file changed, 2 insertions(+)
 
---- a/fs/ext4/ext4_sb.h
-+++ b/fs/ext4/ext4_sb.h
-@@ -102,7 +102,8 @@ struct ext4_sb_info {
- 	spinlock_t s_reserve_lock;
- 	spinlock_t s_md_lock;
- 	tid_t s_last_transaction;
--	unsigned short *s_mb_offsets, *s_mb_maxs;
-+	unsigned short *s_mb_offsets;
-+	unsigned int *s_mb_maxs;
- 
- 	/* tunables */
- 	unsigned long s_stripe;
 --- a/fs/ext4/mballoc.c
 +++ b/fs/ext4/mballoc.c
-@@ -2493,6 +2493,8 @@ int ext4_mb_init(struct super_block *sb,
- 	if (sbi->s_mb_offsets == NULL) {
- 		return -ENOMEM;
- 	}
-+
-+	i = (sb->s_blocksize_bits + 2) * sizeof(unsigned int);
- 	sbi->s_mb_maxs = kmalloc(i, GFP_KERNEL);
- 	if (sbi->s_mb_maxs == NULL) {
- 		kfree(sbi->s_mb_maxs);
+@@ -1326,6 +1326,8 @@ static void ext4_mb_check_limits(struct 
+ 	struct ext4_free_extent ex;
+ 	int max;
+ 
++	if (ac->ac_status == AC_STATUS_FOUND)
++		return;
+ 	/*
+ 	 * We don't want to scan for a whole year
+ 	 */
 
