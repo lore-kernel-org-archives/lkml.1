@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbZBRPDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbZBRPGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753956AbZBRPDl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 10:03:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbZBRPDd
+	id S1753967AbZBRPGR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 10:06:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbZBRPGD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 10:03:33 -0500
-Received: from smtp-out002.kontent.com ([81.88.40.216]:47927 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751558AbZBRPDc convert rfc822-to-8bit (ORCPT
+	Wed, 18 Feb 2009 10:06:03 -0500
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:42443 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751400AbZBRPGA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 10:03:32 -0500
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [RFD] Automatic suspend
-Date: Wed, 18 Feb 2009 16:05:15 +0100
-User-Agent: KMail/1.9.10
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arve =?utf-8?q?Hj=C3=B8nnev=C3=A5g?= <arve@android.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-References: <Pine.LNX.4.44L0.0902162144010.24097-100000@netrider.rowland.org> <200902180953.51171.oliver@neukum.org> <20090218065158.5efa8536@infradead.org>
-In-Reply-To: <20090218065158.5efa8536@infradead.org>
+	Wed, 18 Feb 2009 10:06:00 -0500
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: etienne <etienne.basset@numericable.fr>
+Subject: Re: [PATCH] SMACK netfilter smacklabel socket match
+Date: Wed, 18 Feb 2009 10:05:24 -0500
+User-Agent: KMail/1.11.0 (Linux/2.6.27-gentoo-r8; KDE/4.2.0; i686; ; )
+Cc: Casey Schaufler <casey@schaufler-ca.com>,
+       "Linux-Kernel" <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org
+References: <fa.O38YY4pVfLlMFJNBI3mhgn+qOcQ@ifi.uio.no> <200902171852.21061.paul.moore@hp.com> <499BB76C.1030109@numericable.fr>
+In-Reply-To: <499BB76C.1030109@numericable.fr>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200902181605.18363.oliver@neukum.org>
+Message-Id: <200902181005.24952.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Wednesday 18 February 2009 15:51:58 schrieb Arjan van de Ven:
-> On Wed, 18 Feb 2009 09:53:48 +0100
-> Oliver Neukum <oliver@neukum.org> wrote:
-> 
-> > Am Wednesday 18 February 2009 00:26:53 schrieb Rafael J. Wysocki:
-> > > > Another possibility is to set up independent runtime PM for the
-> > > > transport and the device.  This means allowing the possibility
-> > > > that the transport is suspended while its child (the device) is
-> > > > not.  This is a little simpler (there's only one idle-timeout per
-> > > > device, since the link is treated as an independent device), but
-> > > > it violates the principle of never suspending a parent while
-> > > > there is an active child.
-> > > 
-> > > Well, I think the first approach would be better.
-> > 
-> > I am afraid it wouldn't be. How do you deal with shared transports?
-> > 
-> 
-> realistically, something like this you need to design like this
-> Step 1) Assume the hardware is smart and can do this for you on the fly,
->         but it might need guidance.
->         (For many busses there are platforms that do this)
-> Step 2) For hardware that is not smart, emulate the smartness in the
->         driver, with help of the subsystem. These two together have
->         the right knowledge to make such decisions.
+On Wednesday 18 February 2009 02:23:24 am etienne wrote:
+> ... anyway, I think the cleanest way would be to, well, sort smk_netlbladdr
+> by mask on insertion (perf doesn't matter  here) and this way
+> smack_host_label can stop the loop on first match. Plus, it would give a
+> nicer /smack/netlabel ouptut :)
 
-But the transport and the driver may be in different subsystems, e.g.
-usb storage.
+Agreed.
 
-	Regards
-		Oliver
+> so, how should we handle it? apply the patches (with whitespaces damages
+> corrected ;) )  now (as it corrects a bug) an elaborate the cleaner way
+> later?
 
+Well, since you have some time and willingness to do things "the right way" I 
+would recommend dropping these patches (which are really just band-aids) and 
+working on the right solution to stored the addresses/masks in a sorted list 
+with the mask already applied.
+
+FWIW, the NetLabel code (net/netlabel) has to do very similar things with 
+sorted address lists so I built an address list construct which builds on the 
+list.h ideas and operates in a similar way.  You may find it helpful.
+
+> I think this should go to stable too?
+
+I would worry about getting the patches developed, tested and in an acceptable 
+form first, then we can worry about where they should be applied ;)
+
+-- 
+paul moore
+linux @ hp
 
