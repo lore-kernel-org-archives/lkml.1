@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759495AbZBRWhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758614AbZBRWiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759495AbZBRWhr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 17:37:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757864AbZBRWcD
+	id S1758614AbZBRWiG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 17:38:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757038AbZBRWcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 17:32:03 -0500
-Received: from kroah.org ([198.145.64.141]:34793 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 17:32:04 -0500
+Received: from kroah.org ([198.145.64.141]:34806 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757857AbZBRWb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 17:31:59 -0500
-Date: Wed, 18 Feb 2009 14:29:13 -0800
+	id S1757831AbZBRWcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 17:32:00 -0500
+Date: Wed, 18 Feb 2009 14:29:15 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Sergio Luis <sergio@larces.uece.br>,
-       "David S. Miller" <davem@davemloft.net>,
-       Tomas Winkler <tomas.winkler@intel.com>
-Subject: [patch 09/36] btsdio: free sk_buff with kfree_skb
-Message-ID: <20090218222913.GJ10668@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Carsten Otte <cotte@de.ibm.com>,
+       Nick Piggin <npiggin@suse.de>, Jared Hulbert <jaredeh@gmail.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [patch 10/36] ext2/xip: refuse to change xip flag during remount
+	with busy inodes
+Message-ID: <20090218222915.GK10668@kroah.com>
 References: <20090218222447.432108614@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="btsdio-free-sk_buff-with-kfree_skb.patch"
+Content-Disposition: inline; filename="ext2-xip-refuse-to-change-xip-flag-during-remount-with-busy-inodes.patch"
 In-Reply-To: <20090218222841.GA10668@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,30 +43,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Sergio Luis <sergio@larces.uece.br>
+From: Carsten Otte <cotte@de.ibm.com>
 
-commit cbfd24a75f98fe731547d3bc995f3a1f1fed6b20 upstream.
+commit 0e4a9b59282914fe057ab17027f55123964bc2e2 upstream.
 
-free sk_buff with kfree_skb, instead of kree
+For a reason that I was unable to understand in three months of debugging,
+mount ext2 -o remount stopped working properly when remounting from
+regular operation to xip, or the other way around.  According to a git
+bisect search, the problem was introduced with the VM_MIXEDMAP/PTE_SPECIAL
+rework in the vm:
 
-Signed-off-by: Sergio Luis <sergio@larces.uece.br>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Cc: Tomas Winkler <tomas.winkler@intel.com>
+commit 70688e4dd1647f0ceb502bbd5964fa344c5eb411
+Author: Nick Piggin <npiggin@suse.de>
+Date:   Mon Apr 28 02:13:02 2008 -0700
+
+    xip: support non-struct page backed memory
+
+In the failing scenario, the filesystem is mounted read only via root=
+kernel parameter on s390x.  During remount (in rc.sysinit), the inodes of
+the bash binary and its libraries are busy and cannot be invalidated (the
+bash which is running rc.sysinit resides on subject filesystem).
+Afterwards, another bash process (running ifup-eth) recurses into a
+subshell, runs dup_mm (via fork).  Some of the mappings in this bash
+process were created from inodes that could not be invalidated during
+remount.
+
+Both parent and child process crash some time later due to inconsistencies
+in their address spaces.  The issue seems to be timing sensitive, various
+attempts to recreate it have failed.
+
+This patch refuses to change the xip flag during remount in case some
+inodes cannot be invalidated.  This patch keeps users from running into
+that issue.
+
+[akpm@linux-foundation.org: cleanup]
+Signed-off-by: Carsten Otte <cotte@de.ibm.com>
+Cc: Nick Piggin <npiggin@suse.de>
+Cc: Jared Hulbert <jaredeh@gmail.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/bluetooth/btsdio.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/ext2/super.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
---- a/drivers/bluetooth/btsdio.c
-+++ b/drivers/bluetooth/btsdio.c
-@@ -153,7 +153,7 @@ static int btsdio_rx_packet(struct btsdi
- 
- 	err = sdio_readsb(data->func, skb->data, REG_RDAT, len - 4);
- 	if (err < 0) {
--		kfree(skb);
-+		kfree_skb(skb);
- 		return err;
- 	}
- 
+--- a/fs/ext2/super.c
++++ b/fs/ext2/super.c
+@@ -1177,9 +1177,12 @@ static int ext2_remount (struct super_bl
+ 	es = sbi->s_es;
+ 	if (((sbi->s_mount_opt & EXT2_MOUNT_XIP) !=
+ 	    (old_mount_opt & EXT2_MOUNT_XIP)) &&
+-	    invalidate_inodes(sb))
+-		ext2_warning(sb, __func__, "busy inodes while remounting "\
+-			     "xip remain in cache (no functional problem)");
++	    invalidate_inodes(sb)) {
++		ext2_warning(sb, __func__, "refusing change of xip flag "
++			     "with busy inodes while remounting");
++		sbi->s_mount_opt &= ~EXT2_MOUNT_XIP;
++		sbi->s_mount_opt |= old_mount_opt & EXT2_MOUNT_XIP;
++	}
+ 	if ((*flags & MS_RDONLY) == (sb->s_flags & MS_RDONLY))
+ 		return 0;
+ 	if (*flags & MS_RDONLY) {
 
