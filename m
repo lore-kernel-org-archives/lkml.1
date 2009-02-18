@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756761AbZBRVNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756761AbZBRVPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756761AbZBRVNQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:13:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbZBRVNA
+	id S1756761AbZBRVPp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:15:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZBRVPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:13:00 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:47871 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752804AbZBRVM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:12:59 -0500
-Date: Wed, 18 Feb 2009 22:09:40 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: hpa@zytor.com, mingo@redhat.com, shemminger@vyatta.com, kaber@trash.net,
-       davem@davemloft.net, akpm@linux-foundation.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Q: timer_stats_account_xtimer() should reset ->start_site?
-Message-ID: <20090218210940.GA8094@redhat.com>
-References: <tip-74019224ac34b044b44a31dd89a54e3477db4896@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <tip-74019224ac34b044b44a31dd89a54e3477db4896@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 18 Feb 2009 16:15:37 -0500
+Received: from casper.infradead.org ([85.118.1.10]:37639 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752287AbZBRVPg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:15:36 -0500
+Subject: Re: [PATCH] new irq tracer
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jason Baron <jbaron@redhat.com>
+Cc: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       acme@ghostprotocols.net, fweisbec@gmail.com, fche@redhat.com,
+       compudj@krystal.dyndns.org
+In-Reply-To: <20090218195328.GA3112@redhat.com>
+References: <20090218195328.GA3112@redhat.com>
+Content-Type: text/plain
+Date: Wed, 18 Feb 2009 22:15:25 +0100
+Message-Id: <1234991725.4799.1.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.91 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/18, Ingo Molnar wrote:
->
-> +__mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
->  {
->  	struct tvec_base *base, *new_base;
->  	unsigned long flags;
-> -	int ret = 0;
-> +	int ret;
-> +
-> +	ret = 0;
->
->  	timer_stats_timer_set_start_info(timer);
->  	BUG_ON(!timer->function);
-> @@ -603,6 +606,9 @@ int __mod_timer(struct timer_list *timer, unsigned long expires)
->  	if (timer_pending(timer)) {
->  		detach_timer(timer, 0);
->  		ret = 1;
-> +	} else {
-> +		if (pending_only)
-> +			goto out_unlock;
+On Wed, 2009-02-18 at 14:53 -0500, Jason Baron wrote:
+> hi,
+> 
+> Using a copule of tracepoints i've implemented an 'irq tracer' which has
+> the following column format:
+> 
+> [time][irq][action][handled][cpu][length]
+> 
+> for example on my system:
+> 
+> [ 1038.927248381]     28     eth0      1        3     0.000002745
+> [ 1038.927544688]     28     eth0      1        3     0.000002520
+> [ 1038.927593609]     28     eth0      1        3     0.000002509
+> [ 1038.974087675]     29     ahci      1        1     0.000013135
+> [ 1038.974288475]     29     ahci      1        1     0.000005542
+> [ 1038.974414324]     29     ahci      1        1     0.000007953
+> 
+> I think this patch is useful in understanding irq system behavior, and
+> for tracking down irq driver handlers that are firing too often or
+> spending too much time handling an irq. This approach could be extended
+> to the timer irq and for softirqs...
 
-At first glance, I thought this is not exactly right wrt timer stats when
-__mod_timer(pending_only => true) fails.
+The function graph tracer can already do this, it has a special section
+to recognize irq entry function, and already measures time spend.
 
-But it turns out, I just can't understand the behaviour of /proc/timer_stats.
+I guess with Steve's new triggers (probes or whatever they ended up
+being called) you could limit it to just IRQ entry points.
 
-The first task which does __mod_timer() fills ->start_site/etc, this info
-is cleared by del_timer(). This looks correct.
 
-But when __run_hrtimer/__run_timers report this timer to /proc/timer_stats
-we don't clear this info. If the timer expires, and then another task uses
-the same timer, timer_stats will report the same ->start_site/pid twice.
-
-Is it correct? Perhaps timer_stats_account_timer() should reset start_site?
-
-Or we can kill the "if (timer->start_site)" in _set_start_info().
-
-Or I missed something. Hmm... and del_timer_sync() doesn't clear start_site.
-
-Confused, please help.
-
-Oleg.
 
