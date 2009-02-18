@@ -1,68 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757115AbZBRVGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757185AbZBRVG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757115AbZBRVGX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:06:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbZBRVFw
+	id S1757185AbZBRVG4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:06:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbZBRVGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:05:52 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37020 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751615AbZBRVFv (ORCPT
+	Wed, 18 Feb 2009 16:06:41 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:48203 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751382AbZBRVGk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:05:51 -0500
-Date: Wed, 18 Feb 2009 13:04:26 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
-       openwrt-devel@lists.openwrt.org
-Subject: Re: [PATCH] spi-gpio: Sanitize MISO bitvalue
-Message-Id: <20090218130426.a12e6bfa.akpm@linux-foundation.org>
-In-Reply-To: <200902151630.41426.mb@bu3sch.de>
-References: <200902151630.41426.mb@bu3sch.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Feb 2009 16:06:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Kk08N3SmLUmL4pM1L7jktUayWHo7mTg3A6ziddFoI46ClSi/FO5izWazMPXcaklyS+
+         BStthxZPH+XT5swLzfp0/IYuXwxLx/4+QgOGruDPI0R+rClhkhuVHsoP+mKbpWK7MAiY
+         3F7L2nYk38coC/jnqBDoiUbLaou6f9VKZFKTY=
+Date: Wed, 18 Feb 2009 22:05:07 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Karl Hiramoto <karl@hiramoto.org>
+Cc: netdev@vger.kernel.org, netfilter@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: problem with IPoA (CLIP),  NAT, and VLANS
+Message-ID: <20090218210507.GA2698@ami.dom.local>
+References: <20090217231255.GA3389@ami.dom.local> <499C49CD.3000709@hiramoto.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <499C49CD.3000709@hiramoto.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 15 Feb 2009 16:30:41 +0100
-Michael Buesch <mb@bu3sch.de> wrote:
+On Wed, Feb 18, 2009 at 06:47:57PM +0100, Karl Hiramoto wrote:
+...
+> Thanks for the replies.  Jarek, the last debugging patch you sent did
+> not work.  It did give me a good hint though.  The attached patch in for
+> AF_PACKET   receive in the when tcpdump is active and which calls
+> skb_clone() did fix my issue.
 
-> gpio_get_value() returns 0 or nonzero, but getmiso() expects 0 or 1.
-> Sanitize the value to a 0/1 boolean.
-> 
-> Signed-off-by: Michael Buesch <mb@bu3sch.de>
-> 
-> ---
-> 
-> Well, we could also change the bitbang helpers in linux/spi/spi_bitbang.h
-> or change the way the gpio_get_value API is defined, but I personally think
-> this patch is pretty good as is.
-> In any case, it fixes a real bug on platforms like the bcm47xx which
-> return 0 or nonzero for gpio_get_value.
-> 
-> Index: linux-2.6/drivers/spi/spi_gpio.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/spi/spi_gpio.c	2009-02-14 21:37:14.000000000 +0100
-> +++ linux-2.6/drivers/spi/spi_gpio.c	2009-02-15 16:27:16.000000000 +0100
-> @@ -114,7 +114,7 @@ static inline void setmosi(const struct 
->  
->  static inline int getmiso(const struct spi_device *spi)
->  {
-> -	return gpio_get_value(SPI_MISO_GPIO);
-> +	return !!gpio_get_value(SPI_MISO_GPIO);
->  }
->  
->  #undef pdata
-> 
+Yes, good point!
 
-Seems somewhat pointless, really.  It's a very common C idiom to treat
-any non-zero value as true, and the above just adds a couple more
-instructions which we didn't need to execute.
+> CONFIG_IXP400_ETH_SKB_RECYCLE does not exist in the code i have..  From
+> what i downloaded from intel,  i stripped out all the stuff that is not
+> having to do with ATM.  The functionalities of ixp4xx_qmgr ixp4xx_npe
+> and ixp4xx_eth  are now in the mainline kernel.    Ideally it would be
+> nice to get what this library does with the atm hardware into the
+> mainline, however the code in it's current state would not meet kernel
+> standards, and is quite a mess.
+> 
+> 
+> But yes,  the skb->data is   recycled  in a memory pool,   and i think i
+> noticed a few times packets that were corrupt, were really pointing to
+> old recycled packets.   I haven't confirmed this yet though.
+> 
+> 
+> I did eliminate the first  patch i sent 
+> http://lkml.org/lkml/2009/2/16/163    to  __vlan_put_tag()
+> 
+> And now only use the patch Jarek sent:  http://lkml.org/lkml/2009/2/17/104
 
-If this function is speed-critical (which is what David's comment
-implies) then perhaps this should be "fixed" by tightening up the
-(presently apparently undocumented) interface?  And then speeding up
-all the other getmiso() implementations?
+Yes, this patch looks like formally needed, but I guess currently it
+isn't used by any path: otherwise we would know about it earlier.
+
+> 
+> Now i don't have any problems with the vlan tags after changing my atm
+> driver to do skb_reserve() like:
+> 
+> skb = dev_alloc_skb(size + NET_SKB_PAD);
+> 
+> skb_reserve(skb, NET_SKB_PAD);
+> 
+> 
+> So something with my driver causes skb_clone() to corrupt the packet
+> but  calling skb_copy() instead  keeps everything working.   There are
+> definitely other cases where skb_clone() is called so really have to fix
+> this in the atm_dev, but not really sure at the moment where to look next.
+
+Alas I've been mostly interested in verifying your first suspicion of
+skb_cow_head() bug, and not so much in this driver ;-) IMHO after your
+current findings the driver definitely looks like the main sinner. I'm
+glad you found these hacks to make it workable, but I hope you realize
+your data could be still corrupted in more or less visible way.
+
+I looked only a bit into ixp400_eth.c without tracking libraries and
+there are some rather strange things I didn't found in other drivers
+like skb->truesize use. It looks like both skb and skb->header could
+be used together for this recycling without respect for clones. If
+so, this could still break in many places e.g.: if it affected you in
+__vlan_put_tag() it seems this dev_queue_xmit_nit() could hit you too,
+depending on your config or even size of packets. So I guess, knowing
+this all, you should better try to hack this driver more yet.
+
+Cheers,
+Jarek P.
