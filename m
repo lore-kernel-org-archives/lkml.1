@@ -1,93 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbZBRVwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbZBRVzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759337AbZBRVwR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:52:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbZBRVv4
+	id S1757884AbZBRVzZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:55:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbZBRVzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:51:56 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39150 "EHLO mx3.mail.elte.hu"
+	Wed, 18 Feb 2009 16:55:10 -0500
+Received: from bu3sch.de ([62.75.166.246]:38443 "EHLO vs166246.vserver.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755335AbZBRVvz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:51:55 -0500
-Date: Wed, 18 Feb 2009 22:51:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: shemminger@vyatta.com, kaber@trash.net, rick.jones2@hp.com,
-       dada1@cosmosbay.com, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, tglx@linutronix.de,
-       gandalf@wlug.westbo.se, linux-kernel@vger.kernel.org
-Subject: Re: [RFT 2/4] Add mod_timer_noact
-Message-ID: <20090218215140.GA3505@elte.hu>
-References: <20090218092041.GC3294@elte.hu> <20090218.013007.117003889.davem@davemloft.net> <20090218110144.GA4100@elte.hu> <20090218.133959.193699273.davem@davemloft.net>
+	id S1750953AbZBRVzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:55:09 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] spi-gpio: Sanitize MISO bitvalue
+Date: Wed, 18 Feb 2009 22:52:42 +0100
+User-Agent: KMail/1.9.9
+Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+       openwrt-devel@lists.openwrt.org
+References: <200902151630.41426.mb@bu3sch.de> <20090218130426.a12e6bfa.akpm@linux-foundation.org>
+In-Reply-To: <20090218130426.a12e6bfa.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090218.133959.193699273.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200902182252.42519.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* David Miller <davem@davemloft.net> wrote:
-
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Wed, 18 Feb 2009 12:01:44 +0100
+On Wednesday 18 February 2009 22:04:26 Andrew Morton wrote:
+> On Sun, 15 Feb 2009 16:30:41 +0100
+> Michael Buesch <mb@bu3sch.de> wrote:
 > 
-> > * David Miller <davem@davemloft.net> wrote:
+> > gpio_get_value() returns 0 or nonzero, but getmiso() expects 0 or 1.
+> > Sanitize the value to a 0/1 boolean.
 > > 
-> > | Introduce mod_timer_noact() which for example is to replace 
-> > | the calls to del_timer()/add_timer() in 
-> > | __nf_ct_refresh_acct(). It works like mod_timer() but doesn't 
-> > | activate or modify the timeout of an inactive timer which is 
-> > | the behaviour we want in order to be able to use timers as a 
-> > | means of synchronization in nf_conntrack.
+> > Signed-off-by: Michael Buesch <mb@bu3sch.de>
 > > 
-> > It does not mention the overhead to the regular timer interfaces 
-> > at all, nor does it explain the reasons for this change 
-> > adequately.
+> > ---
+> > 
+> > Well, we could also change the bitbang helpers in linux/spi/spi_bitbang.h
+> > or change the way the gpio_get_value API is defined, but I personally think
+> > this patch is pretty good as is.
+> > In any case, it fixes a real bug on platforms like the bcm47xx which
+> > return 0 or nonzero for gpio_get_value.
+> > 
+> > Index: linux-2.6/drivers/spi/spi_gpio.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/spi/spi_gpio.c	2009-02-14 21:37:14.000000000 +0100
+> > +++ linux-2.6/drivers/spi/spi_gpio.c	2009-02-15 16:27:16.000000000 +0100
+> > @@ -114,7 +114,7 @@ static inline void setmosi(const struct 
+> >  
+> >  static inline int getmiso(const struct spi_device *spi)
+> >  {
+> > -	return gpio_get_value(SPI_MISO_GPIO);
+> > +	return !!gpio_get_value(SPI_MISO_GPIO);
+> >  }
+> >  
+> >  #undef pdata
+> > 
 > 
-> You (conveniently) skipped this part of his commit message, so
-> I guess this is the part you didn't read very carefully:
-> 
-> 	A later patch will modify __nf_ct_refresh_acct() to use
-> 	mod_timer_noact() which will then save one spin_lock_irqsave()
-> 	/ spin_lock_irqrestore() pair per conntrack timer update. This
-> 	will also get rid of the race we currently have without adding
-> 	more locking in nf_conntrack.
-> 
-> The whole point is to avoid two spin_lock_irqsave() sequences, thus
-> taking the timer locks twice.
-> 
-> So Ingo, when you say in response:
-> 
-> 	Why don't you use?
-> 
-> 		if (del_timer())
-> 			add_timer();
-> 
-> you really look foolish and, in fact, disrespectful to Stephen.
-> 
-> This was my objection to your email, it proved that you didn't
-> really read his changelog message.  He explained perfectly well
-> what the final goal was of his changes.
-> 
-> And you have this knee-jerk reaction quite often.
+> Seems somewhat pointless, really.  It's a very common C idiom to treat
+> any non-zero value as true, and the above just adds a couple more
+> instructions which we didn't need to execute.
 
-You accusing me of knee-jerk reaction is the joke of the century 
-;-)
+No you must look at the user of getmiso().
+It does something like this:
 
-Anyway, it's all handled, you just need to read the rest of the 
-thread.
+	for (bitnr = 0; bitnr < x; bitnr++) {
+		foo = getmiso() << bitnr;
+		...
+	}
 
-Thanks,
+> If this function is speed-critical (which is what David's comment
+> implies) then perhaps this should be "fixed" by tightening up the
+> (presently apparently undocumented) interface?  And then speeding up
+> all the other getmiso() implementations?
 
-	Ingo
+He was talking about gpio_get_value() and my (silly) suggestion to change
+it to return 0 or 1. I knew that he would reject that, because we already talked
+about this in the past. So changing getmiso() _is_ the way to go. It is the cheapest
+way to do this, in fact. Doing it _inside_ of getmiso() would mean that it could
+possibly be redundant, if upper layers already did it.
+
+David suggested documenting the fact that getmiso() expects 0/1.
+He can easily do that in yet another patch if he likes this.
+
+My patch is just supposed to fix a real-world bug, which isn't in a released kernel, yet.
+So if we hurry up, we can still get it into .29.
+
+The documentation change can still go in later.
+
+-- 
+Greetings, Michael.
