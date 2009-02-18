@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756127AbZBRS3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755986AbZBRSbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756127AbZBRS3Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 13:29:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbZBRS3P
+	id S1755986AbZBRSbQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 13:31:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754240AbZBRSa7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 13:29:15 -0500
-Received: from smtp7.tech.numericable.fr ([82.216.111.43]:48536 "EHLO
-	smtp7.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751706AbZBRS3O (ORCPT
+	Wed, 18 Feb 2009 13:30:59 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46395 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754194AbZBRSa5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 13:29:14 -0500
-Message-ID: <499C5377.8050408@numericable.fr>
-Date: Wed, 18 Feb 2009 19:29:11 +0100
-From: etienne <etienne.basset@numericable.fr>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Paul Moore <paul.moore@hp.com>, Casey Schaufler <casey@schaufler-ca.com>
-CC: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH] SMACK netfilter smacklabel socket match
-References: <fa.O38YY4pVfLlMFJNBI3mhgn+qOcQ@ifi.uio.no> <200902171852.21061.paul.moore@hp.com> <499BB76C.1030109@numericable.fr> <200902181005.24952.paul.moore@hp.com>
-In-Reply-To: <200902181005.24952.paul.moore@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 18 Feb 2009 13:30:57 -0500
+Date: Wed, 18 Feb 2009 10:21:12 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       Trivial patch monkey <trivial@kernel.org>
+Subject: Re: Update my contacts in maintainers
+Message-Id: <20090218102112.27e4d7c8.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LNX.1.10.0902181413380.18874@jikos.suse.cz>
+References: <20090216225058.GF1370@ucw.cz>
+	<alpine.LNX.1.10.0902181413380.18874@jikos.suse.cz>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hello,
+On Wed, 18 Feb 2009 14:16:15 +0100 (CET) Jiri Kosina <jkosina@suse.cz> wrote:
 
-Paul Moore wrote:
-..
-> Well, since you have some time and willingness to do things "the right way" I 
-> would recommend dropping these patches (which are really just band-aids) and 
-> working on the right solution to stored the addresses/masks in a sorted list 
-> with the mask already applied.
+> On Mon, 16 Feb 2009, Pavel Machek wrote:
 > 
-OK, I'm about to send a new patch; but while testing my patches and reading code, I noticed another bug : 
-
-In smackfs.c:smk_write_netlbladdr
-the netmask mask.s_addr is not handled correctly, the netmask should be :
-1- computed in u32
-2- converted to be32 !!
-with current code, a "pseudo u32 mask" is applied to a be32 ipaddr; it occurs to works for "common netmasks" (multiple of 8), not for "intermediate" mask (/15, /25)
-
-
-> FWIW, the NetLabel code (net/netlabel) has to do very similar things with 
-> sorted address lists so I built an address list construct which builds on the 
-> list.h ideas and operates in a similar way.  You may find it helpful.
+> > My @suse.cz address will stop working some day, so put working
+> > one into MAINTAINERS/CREDITS. It would be cool to get this to
+> > 2.6.29... it should not really break anything.
 > 
-OK, I tested some code in userspace and when i was confident enough coded it to kernel
-
->> I think this should go to stable too?
+> I wasn't planning to flush current trivial queue before 2.6.29 is 
+> released, but I agree that this should go in.
 > 
-> I would worry about getting the patches developed, tested and in an acceptable 
-> form first, then we can worry about where they should be applied ;)
-> 
+> Andrew, will you take it?
 
-OK :)
+Yep.  I push MAINTAINERS and documentation patches real fast.  I don't
+even compile-test them ;)
+
+> (don't see it in mmotm-2009-02-18-02-15, that's 
+> why I am asking).
+
+I'm a few days backlogged at present, sorry.   Probably because of the rain - I
+really should move the computer indoors.
