@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbZBRBcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbZBRBir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757458AbZBRBcV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 20:32:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754998AbZBRBb7
+	id S1754747AbZBRBir (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 20:38:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbZBRBie
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 20:31:59 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:22911 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753496AbZBRBb6 (ORCPT
+	Tue, 17 Feb 2009 20:38:34 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47191
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751660AbZBRBid (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 20:31:58 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=igPLlmfgF4nvUiQNRzTkN6yKfWDrCctXEBn70JHeYt2ztx3+Hs1ky+kn2oj5L5fE3
-	jPW4evY0RFpvGq+h1hUYQ==
-MIME-Version: 1.0
-In-Reply-To: <499B64DA.5070403@cn.fujitsu.com>
-References: <499B64DA.5070403@cn.fujitsu.com>
-Date: Tue, 17 Feb 2009 17:31:52 -0800
-Message-ID: <6599ad830902171731m5bc41046r710255661defcf9f@mail.gmail.com>
-Subject: Re: [PATCH] cgroups: update documentation about css_set hash table
-From: Paul Menage <menage@google.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 17 Feb 2009 20:38:33 -0500
+Date: Tue, 17 Feb 2009 17:38:18 -0800 (PST)
+Message-Id: <20090217.173818.220194179.davem@davemloft.net>
+To: hannes@hanneseder.net
+Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 20/43] drivers/net/hamradio: fix sparse warning:
+ context imbalance
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090214213329.24377.28382.stgit@vmbox.hanneseder.net>
+References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
+	<20090214213329.24377.28382.stgit@vmbox.hanneseder.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 5:31 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> The css_set hash table was introduced in 2.6.26, so update the documentation
-> accordingly.
->
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+From: Hannes Eder <hannes@hanneseder.net>
+Date: Sat, 14 Feb 2009 22:34:52 +0100
 
-Acked-by: Paul Menage <menage@google.com>
+> Impact: Attribute functions with __acquires(...) resp. __releases(...).
+> 
+> Fix this sparse warnings:
+>   drivers/net/hamradio/bpqether.c:387:13: warning: context imbalance in 'bpq_seq_start' - wrong count at exit
+>   drivers/net/hamradio/bpqether.c:419:13: warning: context imbalance in 'bpq_seq_stop' - unexpected unlock
+> 
+> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 
-> ---
->  Documentation/cgroups/cgroups.txt |    6 ++----
->  1 files changed, 2 insertions(+), 4 deletions(-)
->
-> diff --git a/Documentation/cgroups/cgroups.txt b/Documentation/cgroups/cgroups.txt
-> index d9e5d6f..93feb84 100644
-> --- a/Documentation/cgroups/cgroups.txt
-> +++ b/Documentation/cgroups/cgroups.txt
-> @@ -252,10 +252,8 @@ cgroup file system directories.
->  When a task is moved from one cgroup to another, it gets a new
->  css_set pointer - if there's an already existing css_set with the
->  desired collection of cgroups then that group is reused, else a new
-> -css_set is allocated. Note that the current implementation uses a
-> -linear search to locate an appropriate existing css_set, so isn't
-> -very efficient. A future version will use a hash table for better
-> -performance.
-> +css_set is allocated. The appropriate existing css_set is located by
-> +looking into a hash table.
->
->  To allow access from a cgroup to the css_sets (and hence tasks)
->  that comprise it, a set of cg_cgroup_link objects form a lattice;
-> --
-> 1.5.4.rc3
->
+Applied.
