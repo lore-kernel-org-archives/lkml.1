@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761033AbZBRWoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761176AbZBRWok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761033AbZBRWoU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 17:44:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757326AbZBRWcr
+	id S1761176AbZBRWok (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 17:44:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757985AbZBRWcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 17:32:47 -0500
-Received: from kroah.org ([198.145.64.141]:35111 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 17:32:50 -0500
+Received: from kroah.org ([198.145.64.141]:35123 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757954AbZBRWcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 17:32:24 -0500
-Date: Wed, 18 Feb 2009 14:29:57 -0800
+	id S1757962AbZBRWcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 17:32:25 -0500
+Date: Wed, 18 Feb 2009 14:29:58 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,12 +23,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org
-Subject: [patch 33/36] ext4: only use i_size_high for regular files
-Message-ID: <20090218222957.GH10668@kroah.com>
+Subject: [patch 34/36] ext4: Add sanity check to make_indexed_dir
+Message-ID: <20090218222958.GI10668@kroah.com>
 References: <20090218222447.432108614@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext4-only-use-i_size_high-for-regular-files.patch"
+Content-Disposition: inline; filename="ext4-add-sanity-check-to-make_indexed_dir.patch"
 In-Reply-To: <20090218222841.GA10668@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,60 +41,65 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: "Theodore Ts'o" <tytso@mit.edu>
 
-(cherry picked from commit 06a279d636734da32bb62dd2f7b0ade666f65d7c)
+(cherry picked from commit e6b8bc09ba2075cd91fbffefcd2778b1a00bd76f)
 
-Directories are not allowed to be bigger than 2GB, so don't use
-i_size_high for anything other than regular files.  E2fsck should
-complain about these inodes, but the simplest thing to do for the
-kernel is to only use i_size_high for regular files.
+Make sure the rec_len field in the '..' entry is sane, lest we overrun
+the directory block and cause a kernel oops on a purposefully
+corrupted filesystem.
 
-This prevents an intentially corrupted filesystem from causing the
-kernel to burn a huge amount of CPU and issuing error messages such
-as:
+Thanks to Sami Liedes for reporting this bug.
 
-EXT4-fs warning (device loop0): ext4_block_to_path: block 135090028 > max
-
-Thanks to David Maciejak from Fortinet's FortiGuard Global Security
-Research Team for reporting this issue.
-
-http://bugzilla.kernel.org/show_bug.cgi?id=12375
+http://bugzilla.kernel.org/show_bug.cgi?id=12430
 
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/ext4.h  |    7 +++++--
- fs/ext4/inode.c |    4 ++--
- 2 files changed, 7 insertions(+), 4 deletions(-)
+ fs/ext4/namei.c |   21 +++++++++++++++------
+ 1 file changed, 15 insertions(+), 6 deletions(-)
 
---- a/fs/ext4/ext4.h
-+++ b/fs/ext4/ext4.h
-@@ -1174,8 +1174,11 @@ static inline void ext4_r_blocks_count_s
+--- a/fs/ext4/namei.c
++++ b/fs/ext4/namei.c
+@@ -1382,7 +1382,7 @@ static int make_indexed_dir(handle_t *ha
+ 	struct fake_dirent *fde;
  
- static inline loff_t ext4_isize(struct ext4_inode *raw_inode)
- {
--	return ((loff_t)le32_to_cpu(raw_inode->i_size_high) << 32) |
--		le32_to_cpu(raw_inode->i_size_lo);
-+	if (S_ISREG(le16_to_cpu(raw_inode->i_mode)))
-+		return ((loff_t)le32_to_cpu(raw_inode->i_size_high) << 32) |
-+			le32_to_cpu(raw_inode->i_size_lo);
-+	else
-+		return (loff_t) le32_to_cpu(raw_inode->i_size_lo);
- }
- 
- static inline void ext4_isize_set(struct ext4_inode *raw_inode, loff_t i_size)
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -351,9 +351,9 @@ static int ext4_block_to_path(struct ino
- 		final = ptrs;
- 	} else {
- 		ext4_warning(inode->i_sb, "ext4_block_to_path",
--				"block %lu > max",
-+				"block %lu > max in inode %lu",
- 				i_block + direct_blocks +
--				indirect_blocks + double_blocks);
-+				indirect_blocks + double_blocks, inode->i_ino);
+ 	blocksize =  dir->i_sb->s_blocksize;
+-	dxtrace(printk("Creating index\n"));
++	dxtrace(printk(KERN_DEBUG "Creating index: inode %lu\n", dir->i_ino));
+ 	retval = ext4_journal_get_write_access(handle, bh);
+ 	if (retval) {
+ 		ext4_std_error(dir->i_sb, retval);
+@@ -1391,6 +1391,20 @@ static int make_indexed_dir(handle_t *ha
  	}
- 	if (boundary)
- 		*boundary = final - 1 - (i_block & (ptrs - 1));
+ 	root = (struct dx_root *) bh->b_data;
+ 
++	/* The 0th block becomes the root, move the dirents out */
++	fde = &root->dotdot;
++	de = (struct ext4_dir_entry_2 *)((char *)fde +
++		ext4_rec_len_from_disk(fde->rec_len));
++	if ((char *) de >= (((char *) root) + blocksize)) {
++		ext4_error(dir->i_sb, __func__,
++			   "invalid rec_len for '..' in inode %lu",
++			   dir->i_ino);
++		brelse(bh);
++		return -EIO;
++	}
++	len = ((char *) root) + blocksize - (char *) de;
++
++	/* Allocate new block for the 0th block's dirents */
+ 	bh2 = ext4_append (handle, dir, &block, &retval);
+ 	if (!(bh2)) {
+ 		brelse(bh);
+@@ -1399,11 +1413,6 @@ static int make_indexed_dir(handle_t *ha
+ 	EXT4_I(dir)->i_flags |= EXT4_INDEX_FL;
+ 	data1 = bh2->b_data;
+ 
+-	/* The 0th block becomes the root, move the dirents out */
+-	fde = &root->dotdot;
+-	de = (struct ext4_dir_entry_2 *)((char *)fde +
+-		ext4_rec_len_from_disk(fde->rec_len));
+-	len = ((char *) root) + blocksize - (char *) de;
+ 	memcpy (data1, de, len);
+ 	de = (struct ext4_dir_entry_2 *) data1;
+ 	top = data1 + len;
 
