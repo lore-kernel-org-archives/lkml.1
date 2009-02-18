@@ -1,66 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757021AbZBRVTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756924AbZBRVVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757021AbZBRVTU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:19:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZBRVTE
+	id S1756924AbZBRVVk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:21:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZBRVV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:19:04 -0500
-Received: from mail.anarazel.de ([217.115.131.40]:36108 "EHLO smtp.anarazel.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752020AbZBRVTB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:19:01 -0500
-Message-ID: <499C7B41.1090800@anarazel.de>
-Date: Wed, 18 Feb 2009 22:18:57 +0100
-From: Andres Freund <andres@anarazel.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20081210 Shredder/3.0b1
-MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Alex Buell <alex.buell@munted.org.uk>,
-       adilger@sun.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, Jonathan Bastien-Filiatrault <joe@x2a.org>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: EXT4 ENOSPC Bug
-References: <20090216162028.3032666a@lithium.local.net> <200811291418.24672.andres@anarazel.de> <200812100108.04163.andres@anarazel.de> <49994FEF.2020908@anarazel.de> <20090216150156.GD22619@mini-me.lan> <499985C7.8010302@anarazel.de> <20090216190001.GB11788@mini-me.lan> <499AF598.7080400@anarazel.de>
-In-Reply-To: <499AF598.7080400@anarazel.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 18 Feb 2009 16:21:29 -0500
+Received: from mu-out-0910.google.com ([209.85.134.185]:33180 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752226AbZBRVV2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:21:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=R5mC6zM1NSCEGiMioVIaSQqGiwMHrVb1akZY0+nsWFm81p8zVwXlO21tzDd9nmEPF5
+         4yLuxcBmsd3OYB9k8ppuVZcYK+RvOXYEjRDOiSiDgaVjr5C1xuYgFUeeUbpj84Ea7/hd
+         SPinR31LV4NEMCBKYK6ubOd7lATUp9fmmkO+o=
+Subject: Re: 2.6.29 regression? Bonding tied to IPV6 in 29-rc5
+From: John Dykstra <john.dykstra1@gmail.com>
+To: Brian Haley <brian.haley@hp.com>
+Cc: David Miller <davem@davemloft.net>,
+       YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>,
+       Vlad Yasevich <vladislav.yasevich@hp.com>,
+       Chuck Lever <chuck.lever@oracle.com>, Theodore Tso <tytso@mit.edu>,
+       Valdis.Kletnieks@vt.edu, arvidjaar@mail.ru, rjw@sisk.pl,
+       netdev@vger.kernel.org, bonding-devel@lists.sourceforge.net,
+       jamagallon@ono.com, linux-kernel@vger.kernel.org
+In-Reply-To: <499C681A.6000008@hp.com>
+References: <200902172001.41804.arvidjaar@mail.ru>
+	 <20090217.142946.232071526.davem@davemloft.net>
+	 <25143.1234932076@turing-police.cc.vt.edu>
+	 <20090217.212919.259912220.davem@davemloft.net>
+	 <20090218135537.GF3600@mini-me.lan>
+	 <06F54D7E-EE07-49C9-AD8F-B46BD6B02ABA@oracle.com> <499C5486.5020807@hp.com>
+	 <499C681A.6000008@hp.com>
+Content-Type: text/plain
+Date: Wed, 18 Feb 2009 21:21:07 +0000
+Message-Id: <1234992067.7692.38.camel@Maple>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+On Wed, 2009-02-18 at 14:57 -0500, Brian Haley wrote: 
+> Vlad Yasevich wrote:
+> > Having worked in other environments where ipv6 has to be explicitly
+> > enabled per interface, I've thought that this level of control was
+> > always missing from linux.  
+> 
+> There does seem to be a sysctl for it, just doesn't seem to work.
 
-On 02/17/2009 06:36 PM, Andres Freund wrote:
-> On 02/16/2009 08:00 PM, Theodore Tso wrote:
->> On Mon, Feb 16, 2009 at 04:27:03PM +0100, Andres Freund wrote:
->>> So, yes, seems to be an inode allocation problem.
->> I'm pretty sure the ENOSPC problem which you both found is an inode
->> allocation problem. Some of you seem to have an easier time
->> reproducing it than others; could you try this patch, and periodically
->> scan your system logs for the message "ext4: find_group_flex failed,
->> fallback succeeded"? If the problem goes away for you, and you find
->> the occasional aforemention message in your system log, that will
->> confirm what I suspect, which is the bug is in fs/ext4/inode.c's
->> find_group_flex() function. (If I'm wrong, the fallback code will
->> activate only when the filesystem is genuinely out of inodes, which
->> should be very rare.)
->> More comments are in the patch header. My current long-term plan for
->> dealing with this is to enhance find_group_orlov() to and
->> find_group_other() to understand about flex_bg's.
-> Ok. I am now running with the patch enabled on two machines - but as the
-> issue occured only 2 times in nearly 2 months on two machines...
-Didn't take that long:
-On one of the machines I got several thousand of:
+While this sysctl is definitely useful, I don't think it meets the needs
+of those users and distributions that are currently blacklisting the
+ipv6 module.  Even if you disable IPv6 on all interfaces, apps will
+still be able to create AF_INET6 sockets, and thus some apps will break
+or do inappropriate things because there isn't real IPv6 connectivity.
 
-[10379.575904] ext4: find_group_flex failed, fallback succeeded dir 416319
-[10379.576002] ext4: find_group_flex failed, fallback succeeded dir 416319
-[10379.579981] ext4: find_group_flex failed, fallback succeeded dir 416319
-[10379.580097] ext4: find_group_flex failed, fallback succeeded dir 416319
-(with different directories)
+I've tried to put together an RFC patch that turned off all
+externally-visible IPv6 behavior that could break something, but I keep
+running into distasteful choices.
 
-No userspace visible behaviour.
+The current default behavior must be preserved--if you drop this patch
+into an existing distribution, the IPv6 stack must come up the way it
+always has.  Thus the knob (let's call it ip6_disable) must default
+false.
 
-So it seems you were right. It seems sensible to put that patch without 
-printk in the kernel until the issue is fully solved...
+It seems desirable to make this a per-net-namespace knob.  But that
+means each new net will be initialized before the distribution has a
+chance to disable the IPv6 part.  This will lead to neighbor solicits
+going out for link-local addresses, which some people can't accept.
 
+The only alternative I can think of is to make it a module parameter,
+which would leverage people's current habit to disable IPv6 via the
+module configuration files, but doesn't fit well into a virtualized
+world.
 
-Andres
+Exactly what to disable is unclear too.  Turning off neighbor and router
+solicits, responding to same, etc.--almost certainly.  Refusing to
+create AF_INET6 sockets--definitely.  Erroring on ioctl() and netlink
+API calls related to IPv6--probably.  Hiding /proc entries for IPv6--I
+don't know.  
+
+Ideally, once ip6_disable was set true, every API, /proc and /sys
+entries, etc. would look just like the ipv6 module was not loaded.  But
+to do this, while still initializing most of the IPv6 code (so that
+those hooks from other modules won't do unexpected things) is very
+invasive.
+
+So it seems to me that the only practical solution is to live with
+blacklisting module ipv6 until the apps are fixed and sending IPv6
+packets isn't considered a crime.
+
+  --  John
+
