@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbZBRTHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755780AbZBRTIH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755540AbZBRTHA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 14:07:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbZBRTGv
+	id S1755780AbZBRTIH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 14:08:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbZBRTHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 14:06:51 -0500
-Received: from smtp101.prem.mail.sp1.yahoo.com ([98.136.44.56]:34768 "HELO
-	smtp101.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750740AbZBRTGv (ORCPT
+	Wed, 18 Feb 2009 14:07:55 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:37190 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752799AbZBRTHy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 14:06:51 -0500
-X-YMail-OSG: k__VtqAVM1n3AexehTqlNzfo3DIeVmDq2lMHXzw36yaqDabAme1qlHYjyIHzIwq.5knEkwXBqOS3IWjpurc.e_49zC2AL9qEIrehDJDyzyFl.4SDwwQ_O7m6owNij8rLbpDxDIvl4RWiNSQuduPhrZuGt2NBEB.HHiJXJ8OKiaJELB0cksWaMcIuqHJqNIy75wlGN.Ldk52kYT3y1AcErX8-
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <499C5C44.4020902@schaufler-ca.com>
-Date: Wed, 18 Feb 2009 11:06:44 -0800
-From: Casey Schaufler <casey@schaufler-ca.com>
+	Wed, 18 Feb 2009 14:07:54 -0500
+Message-ID: <499C5C88.7080808@ct.jp.nec.com>
+Date: Wed, 18 Feb 2009 11:07:52 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-To: etienne <etienne.basset@numericable.fr>
-CC: Paul Moore <paul.moore@hp.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org,
-       Casey Schaufler <casey@schaufler-ca.com>
-Subject: Re: [PATCH] SMACK netfilter smacklabel socket match
-References: <fa.O38YY4pVfLlMFJNBI3mhgn+qOcQ@ifi.uio.no> <200902171852.21061.paul.moore@hp.com> <499BB76C.1030109@numericable.fr> <200902181005.24952.paul.moore@hp.com> <499C5377.8050408@numericable.fr>
-In-Reply-To: <499C5377.8050408@numericable.fr>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: syscalls.h: remove asmlinkage from declaration of sys_rt_sigreturn()
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-etienne wrote:
-> hello,
->
-> Paul Moore wrote:
-> ..
->   
->> Well, since you have some time and willingness to do things "the right way" I 
->> would recommend dropping these patches (which are really just band-aids) and 
->> working on the right solution to stored the addresses/masks in a sorted list 
->> with the mask already applied.
->>
->>     
-> OK, I'm about to send a new patch; but while testing my patches and reading code, I noticed another bug : 
->
-> In smackfs.c:smk_write_netlbladdr
-> the netmask mask.s_addr is not handled correctly, the netmask should be :
-> 1- computed in u32
-> 2- converted to be32 !!
-> with current code, a "pseudo u32 mask" is applied to a be32 ipaddr; it occurs to works for "common netmasks" (multiple of 8), not for "intermediate" mask (/15, /25)
->   
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Well, that's embarrassing. I am really looking forward to your
-fixes!
+Impact: cleanup
 
+asmlinkage for sys_rt_sigreturn() no longer exists in arch/x86/kernel/signal.c.
 
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ arch/x86/include/asm/syscalls.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/include/asm/syscalls.h b/arch/x86/include/asm/syscalls.h
+index 258ef73..7043408 100644
+--- a/arch/x86/include/asm/syscalls.h
++++ b/arch/x86/include/asm/syscalls.h
+@@ -82,7 +82,7 @@ asmlinkage long sys_iopl(unsigned int, struct pt_regs *);
+ /* kernel/signal_64.c */
+ asmlinkage long sys_sigaltstack(const stack_t __user *, stack_t __user *,
+ 				struct pt_regs *);
+-asmlinkage long sys_rt_sigreturn(struct pt_regs *);
++long sys_rt_sigreturn(struct pt_regs *);
+ 
+ /* kernel/sys_x86_64.c */
+ asmlinkage long sys_mmap(unsigned long, unsigned long, unsigned long,
+-- 
+1.6.1.2
 
