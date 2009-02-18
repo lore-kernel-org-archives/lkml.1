@@ -1,82 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756463AbZBRTPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756338AbZBRTQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756463AbZBRTPv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 14:15:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbZBRTPk
+	id S1756338AbZBRTQm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 14:16:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbZBRTQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 14:15:40 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33507 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753301AbZBRTPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 14:15:40 -0500
-Date: Wed, 18 Feb 2009 20:15:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH v2] module: fix build for CONFIG_SYSFS=n
-Message-ID: <20090218191529.GC8889@elte.hu>
-References: <20090218191640.0b023029.sfr@canb.auug.org.au> <499C4D35.9000104@oracle.com> <20090218180932.GC19995@elte.hu> <499C54E8.7060004@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <499C54E8.7060004@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 18 Feb 2009 14:16:29 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39299 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753931AbZBRTQ1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 14:16:27 -0500
+Date: Wed, 18 Feb 2009 11:15:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: david@lang.hm, matthew@wil.cx, yinghai@kernel.org,
+       jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, DL-MPTFusionLinux@lsi.com,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH] pci: enable MSI on 8132
+Message-Id: <20090218111510.b720aacb.akpm@linux-foundation.org>
+In-Reply-To: <1234982285.3225.42.camel@localhost.localdomain>
+References: <499B46B2.5040601@kernel.org>
+	<alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm>
+	<499B6BF7.9090300@kernel.org>
+	<alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm>
+	<499B724A.2040408@kernel.org>
+	<alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm>
+	<alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>
+	<499B774C.5010705@kernel.org>
+	<alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm>
+	<499B9129.50104@kernel.org>
+	<20090218122137.GJ16841@parisc-linux.org>
+	<alpine.DEB.1.10.0902180426420.25606@asgard.lang.hm>
+	<20090218100448.7f7c5b86.akpm@linux-foundation.org>
+	<1234982285.3225.42.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 18 Feb 2009 18:38:04 +0000
+James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-* Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> On Wed, 2009-02-18 at 10:04 -0800, Andrew Morton wrote:
+> > On Wed, 18 Feb 2009 04:27:28 -0800 (PST) david@lang.hm wrote:
+> > 
+> > > On Wed, 18 Feb 2009, Matthew Wilcox wrote:
+> > > 
+> > > > On Tue, Feb 17, 2009 at 08:40:09PM -0800, Yinghai Lu wrote:
+> > > >>
+> > > >> Impact: workaround BIOS that doesn't enable that bit
+> > > >>
+> > > >> David reported that LSI sas doesn't work with MSI.
+> > > >> it turns out that BIOS doesn't enable HT MSI
+> > > >> 8132 does support HT MSI.
+> > > >> add quirk to enable it
+> > > >>
+> > > >> Reported-by: David Lang <david@lang.hm>
+> > > >> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> > > >
+> > > > Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
+> > > >
+> > > > Jesse, I think this should go into Linus' tree sooner rather than later.
+> > > 
+> > > please forward to -stable as well. this is a regression since the card 
+> > > works with older kernels.
+> > > 
+> > 
+> > Which kernel version introduced the regression?
+> 
+> Technically, it's not a regression.  The MSI problem has always been
+> there, it was just exposed when the SAS card switched to using MSI by
+> default.  It's fixed by the bridge quirk  ... of course it's unclear how
+> many more bridges with problems there are.
+> 
+> > Do we not need mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch as
+> > well, to fix this regression?
+> 
+> No ... it's a separate issue.  MSI was enabled for fusion SAS in 2.6.26;
+> the problem msi patch which the above corrects actually has the effect
+> of disabling MSI for fusion and went into 2.6.29-rc2, which isn't a
+> kernel that's been tested here.
 
-> > Is destroy_params() dependent on SYSFS? If yes then it would be 
-> 
-> Yes.
-> 
-> > far cleaner if there was a NOP destroy_params() inline for the 
-> > !SYSFS case.
-> 
-> 
-> 
-> 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Fix this build error when CONFIG_SYSFS=n:
-> 
-> kernel/built-in.o: In function `free_module':
-> module.c:(.text+0x4f8a2): undefined reference to `destroy_params'
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> cc: Rusty Russell <rusty@rustcorp.com.au>
-> ---
->  kernel/params.c |    6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> --- linux-next-20090218.orig/kernel/params.c
-> +++ linux-next-20090218/kernel/params.c
-> @@ -761,6 +761,12 @@ static int __init param_sysfs_init(void)
->  }
->  subsys_initcall(param_sysfs_init);
->  
-> +#else	/* !CONFIG_SYSFS */
-> +
-> +inline void destroy_params(const struct kernel_param *params, unsigned num)
-> +{
-> +}
-> +
->  #endif /* CONFIG_SYSFS */
+<scratches head>
 
-thanks!
+So it should be the case that _either_ of
+mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch and
+pci-enable-msi-on-8132.patch would fix David's machine?
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
-
-	Ingo
