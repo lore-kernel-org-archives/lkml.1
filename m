@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758122AbZBRWCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758251AbZBRWFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758122AbZBRWCz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 17:02:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbZBRWCq
+	id S1758251AbZBRWFa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 17:05:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZBRWFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 17:02:46 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:50101 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751697AbZBRWCq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 17:02:46 -0500
-Date: Wed, 18 Feb 2009 17:02:01 -0500
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Jason Baron <jbaron@redhat.com>, mingo@elte.hu, rostedt@goodmis.org,
-       linux-kernel@vger.kernel.org, acme@ghostprotocols.net,
-       fweisbec@gmail.com, compudj@krystal.dyndns.org
-Subject: Re: [PATCH] new irq tracer
-Message-ID: <20090218220201.GG24507@redhat.com>
-References: <20090218195328.GA3112@redhat.com> <1234991725.4799.1.camel@laptop> <20090218213545.GB3112@redhat.com> <1234993580.4799.11.camel@laptop>
+	Wed, 18 Feb 2009 17:05:13 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50973
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752230AbZBRWFK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 17:05:10 -0500
+Date: Wed, 18 Feb 2009 14:04:55 -0800 (PST)
+Message-Id: <20090218.140455.142445208.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: shemminger@vyatta.com, kaber@trash.net, rick.jones2@hp.com,
+       dada1@cosmosbay.com, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, tglx@linutronix.de,
+       gandalf@wlug.westbo.se, linux-kernel@vger.kernel.org
+Subject: Re: [RFT 2/4] Add mod_timer_noact
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090218215140.GA3505@elte.hu>
+References: <20090218110144.GA4100@elte.hu>
+	<20090218.133959.193699273.davem@davemloft.net>
+	<20090218215140.GA3505@elte.hu>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1234993580.4799.11.camel@laptop>
-User-Agent: Mutt/1.4.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
+From: Ingo Molnar <mingo@elte.hu>
+Date: Wed, 18 Feb 2009 22:51:40 +0100
 
-On Wed, Feb 18, 2009 at 10:46:20PM +0100, Peter Zijlstra wrote:
-> [...]
-> How useful is that return value?
+> Anyway, it's all handled, you just need to read the rest of the 
+> thread.
 
-"somewhat"?
+I did read the entire thread before replying, my objection
+to your original posting still standed.
 
-> Much of the other data is already available, /proc/interrupts will
-> happily tell you the source of your interrupt storm. The irq-off
-> latency tracer will tell you if stuff takes too much time, the graph
-> tracer can tell you what is taking how much time.
+And as others have pointed out you also failed to recognize
+the context of the patch posting.  It was part of a sequence
+of patches for people to test some experimental netfilter
+performance optimizations.  "RFT" was prefixed to every patch
+subject line, if any more indication was necessary.
 
-Doesn't it seem like this is too much work to have answer a simple if
-particular question?
+Yet you object that the patches are against the networking
+and netfilter trees.
 
-> I really am having a difficult time seeing the use in such narrow
-> tracers.
+Again, your reactions were knee-jerk, by every definition of the
+term.
 
-Part of the problem may come from defining "tracers" as something
-limited to ftrace engines.  Once such tracepoints are in the kernel,
-more powerful analytical tools may be attached to them.
-
-
-- FChE
+I know how you work Ingo, you want to be fast and efficient.
+But often, your "fast and efficient" is "careless", and this
+wastes everyone elses time and in the final analysis makes
+you "slow".
