@@ -1,57 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753531AbZBRJ4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbZBRJ5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753531AbZBRJ4q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 04:56:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbZBRJ4g
+	id S1753882AbZBRJ5m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 04:57:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbZBRJ5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 04:56:36 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:20758 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751145AbZBRJ4f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 04:56:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=JdgKvu7iffCSu4pAmWm+4dOT9d39G/ZJvMZL5Bo+qCrONQiSR8/MGRI7YkDHdlQQeS
-         SxH/M/CY3BJ1+9+5H9N67+B0Q1b4aifHSRGXBVQnoPwkHNyl/qHG3aFPrM+KOC20KsOT
-         AVCT8BHaC4bAtIP/NYzOoMsouQvexRpgZVY5g=
-MIME-Version: 1.0
-In-Reply-To: <4995F27E.3070401@redhat.com>
-References: <a4423d670902060935y59e540beta417144935416560@mail.gmail.com>
-	 <498C7671.1050309@redhat.com>
-	 <a4423d670902061004i424817e1vd699a61e335f010a@mail.gmail.com>
-	 <498C9876.3060208@redhat.com>
-	 <a4423d670902090401k716d054eo25640aa2207beca7@mail.gmail.com>
-	 <4995F27E.3070401@redhat.com>
-Date: Wed, 18 Feb 2009 12:56:33 +0300
-Message-ID: <a4423d670902180156yd293319na51f91c6651e076c@mail.gmail.com>
-Subject: Re: next-20090206: deadlock on ext4
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Feb 2009 04:57:33 -0500
+Received: from cmpxchg.org ([85.214.51.133]:49866 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752217AbZBRJ5c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 04:57:32 -0500
+Date: Wed, 18 Feb 2009 10:59:31 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Patrick Ohly <patrick.ohly@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] documentation: update CodingStyle tips for Emacs users
+Message-ID: <20090218095931.GA2054@cmpxchg.org>
+References: <87tzf5tu3z.fsf@skyscraper.fehenstaub.lan> <1234948770.23768.25.camel@ecld0pohly>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1234948770.23768.25.camel@ecld0pohly>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/2/14 Eric Sandeen <sandeen@redhat.com>:
-> Alexander Beregalov wrote:
->
->> I have reproduced it with 2.6.29-rc4.
->> Loop file was on XFS.
->> I can not reproduce it on ext4 on raw device.
->> Let me know if I can do anything else to help resolving it.
->>
-> Can you try this patch from Aneesh?  Works for me...
->
+On Wed, Feb 18, 2009 at 10:19:30AM +0100, Patrick Ohly wrote:
+> On Fri, 2008-07-04 at 19:52 +0200, Johannes Weiner wrote:
+> > Describe a setup that integrates better with Emacs' cc-mode and also
+> > fixes up the alignment of continuation lines to really only use tabs.
+> [...]
+> > +(defun c-lineup-arglist-tabs-only (ignored)
+> > +  "Line up argument lists by tabs, not spaces"
+> > +  (let* ((anchor (c-langelem-pos c-syntactic-element))
+> > +	 (column (c-langelem-2nd-pos c-syntactic-element))
+> > +	 (offset (- (1+ column) anchor))
+> > +	 (steps (floor offset c-basic-offset)))
+> > +    (* (max steps 1)
+> > +       c-basic-offset)))
+> >+
+> >+(add-hook 'c-mode-hook
+> > +          (lambda ()
+> > +            (let ((filename (buffer-file-name)))
+> > +              ;; Enable kernel mode for the appropriate files
+> > +              (when (and file
+> > +                         (string-match "/usr/src/linux" filename))
+> > +                (setq indent-tabs-mode t)
+> > +                (c-set-style "linux")
+> > +                (c-set-offset 'arglist-cont-nonempty
+> > +                              '(c-lineup-gcc-asm-reg
+> > +                                c-lineup-arglist-tabs-only))))))
+> 
+> When starting writing kernel source code last year (the hardware time
+> stamping patch) I used this macro to format it. I very much liked the
+> possibility to only switch on Linux style when editing Linux code
+> (because I work on a variety of code bases with different formatting).
+> 
+> But the macro above did not produce the result expected by some patch
+> reviewers (John Stultz, Dave Miller). I had to redo the formatting
+> manually.
+> 
+> The sticky point is continuation after splitting a long parameter list -
+> in other words, exactly what the "arglist-cont-nonempty" setting above
+> changes. The macro formats it so that the continuation is aligned at the
+> tab that is closest to the initial argument in the previous line:
+> 
+> int a_very_long_function_name(int arg1, char *arg2,
+> 			double arg3);
+> 
+> The expected style was tab plus spaces to align with the first argument:
+> 
+> int a_very_long_function_name(int arg1, char *arg2,
+> 			        double arg3);
+> 
+> Is this a bug in the macro? I'm using emacs 22.1.1, in case that
+> matters. Or are there different opinions in the Linux developer
+> community about the right formatting?
 
-Yes, it works, I can not reproduce the bug on
-2.6.29-rc5-00122-g5955c7a which contains 2acf2c261b82
-"ext4: Implement range_cyclic in ext4_da_writepages instead of
-write_cache_pages"
+Unfortunately, this seems to depend on the maintainer.  Both styles
+are used all over the kernel but Documentation/CodingStyle and
+scripts/checkpatch.pl prefer what the above emacs configuration does.
 
-Thanks
+I doubt that people do tab tab tab space space space space space by
+hand, so I strongly suspect that the tab-only zealots don't use emacs
+which does this adjustment automatically.
+
+You should probably add linux-davem to the above or something.  Or
+name the coding style after the text-editor the target maintainer
+uses :-)
+
+	Hannes
