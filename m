@@ -1,59 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbZBRSb7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756310AbZBRScc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756212AbZBRSb7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 13:31:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754240AbZBRSbs
+	id S1756310AbZBRScc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 13:32:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbZBRScX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 13:31:48 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33725 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754194AbZBRSbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 13:31:48 -0500
-Date: Wed, 18 Feb 2009 19:31:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: davej@codemonkey.org.uk, linux-kernel@vger.kernel.org,
-       cpufreq@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: Change link order of x86 cpufreq modules
-Message-ID: <20090218183137.GD26802@elte.hu>
-References: <20090218182822.GA19902@srcf.ucam.org>
+	Wed, 18 Feb 2009 13:32:23 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:59921 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754164AbZBRScW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 13:32:22 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090218182822.GA19902@srcf.ucam.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <fa686aa40902180951q64c71581y3811062256685df7@mail.gmail.com>
+References: <20090218151132.476.81706.stgit@localhost.localdomain>
+	 <20090218152913.GA26448@suse.de>
+	 <ac3eb2510902180745v2886ae31s2d7faeb2faedab6e@mail.gmail.com>
+	 <fa686aa40902180748i2d621de1j1da7600e8cc3165f@mail.gmail.com>
+	 <ac3eb2510902180753l5dc94e5dje9154eaea9d2db29@mail.gmail.com>
+	 <fa686aa40902180834r2b9b8de0tcdc31c850f6323a6@mail.gmail.com>
+	 <ac3eb2510902180849o6d86bbfev337e1bc203d6543e@mail.gmail.com>
+	 <fa686aa40902180951q64c71581y3811062256685df7@mail.gmail.com>
+Date: Wed, 18 Feb 2009 19:32:19 +0100
+Message-ID: <ac3eb2510902181032h3f9ed994s212dd8b42ddca82@mail.gmail.com>
+Subject: Re: [PATCH] Export device_add_attributes() so drivers can use it.
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Feb 18, 2009 at 18:51, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On Wed, Feb 18, 2009 at 9:49 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+>> On Wed, Feb 18, 2009 at 17:34, Grant Likely <grant.likely@secretlab.ca> wrote:
+>>> On Wed, Feb 18, 2009 at 8:53 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+>>>> On Wed, Feb 18, 2009 at 16:48, Grant Likely <grant.likely@secretlab.ca> wrote:
+>>>>> On Wed, Feb 18, 2009 at 8:45 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+>>>>>> On Wed, Feb 18, 2009 at 16:29, Greg KH <gregkh@suse.de> wrote:
+>>>>>>> On Wed, Feb 18, 2009 at 08:11:34AM -0700, Grant Likely wrote:
+>>>>>>>> From: Grant Likely <grant.likely@secretlab.ca>
+>>>>>>>>
+>>>>>>>> I find myself using the pattern of device_add_attributes() and
+>>>>>>>> device_remove_attributes() frequently in my drivers.  Rather than
+>>>>>>>> reinventing the wheel every time, I'm floating this patch to export
+>>>>>>>> the symbols to see how it is received.  If this looks okay then I'll
+>>>>>>>> rework my drivers and post additional patches to use these functions.
+>>>>>>>
+>>>>>>> No objection from me, as long as the symbols are EXPORT_SYMBOL_GPL(),
+>>>>>>> like the rest of the driver core.  Is that ok with you?
+>>>>>>
+>>>>>> These functions used outside the core create attributes after the
+>>>>>> uevent is sent, and userspace will not see these files at event time.
+>>>>>> This is in most cases a pretty broken behavior. Is that the expected
+>>>>>> behavior in your drivers?
+>>>>>
+>>>>> ??? I don't follow what you mean.
+>>>>>
+>>>>> I'm using these functions to allow the driver to add device attribs;
+>>>>> primarily for debugging knobs and controls.  Userspace will see the
+>>>>> files after the driver is bound to the device.  The uevent doesn't
+>>>>> really come into play.
+>>>>
+>>>> Sure, they do. Many things expect all files which are visible at the
+>>>> device to be readable also at event time. That's the whole way udev
+>>>> and device property matching works. There are only a few exceptions
+>>>> where creating files at a device later, after it is registered with
+>>>> the core, is not a bug.
+>>>
+>>> Let me make sure I understand you...
+>>>
+>>> Is it a bug for a device driver to call
+>>> device_create_file()/device_remove_file() at probe time?  For example,
+>>> if I have a data capture device which is probed via the platform bus,
+>>> is it okay for the .probe() function for the driver to use
+>>> device_create_file() to add a 'rate_statistics' file which dumps out
+>>> some data rate statistics in ASCII form?
+>>>
+>>> I was under the impression that
+>>> device_create_file()/device_remove_file() were okay to use at probe
+>>> time.  device_add_attributes()/device_remove_attributes() are only
+>>> wrappers around device_create_file()/device_remove_file() with error
+>>> checking and unwinding when things go wrong.
+>>>
+>>> Am I incorrect here?
+>>
+>> You are probing an existing "struct device", and then create
+>> attributes at this device when the probe succeeds?
+>
+> Yes
+>
+>> If yes, why don't
+>> you create a new child "struct device" with your functionality and add
+>> the attributes there?
+>
+> Mostly because I have no need another full struct device, and none of
+> the files that I'm adding have any bearing on udev.  They are debug
+> and statistical files for an embedded system that are used by the
+> developer.  I don't want application code depending on them and I'm
+> not interested in having them advertised.
 
-* Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+That's what debugfs is for.
 
-> Change the link order of the cpufreq modules to ensure that they're 
-> probed in the preferred order when statically linked in.
->     
-> Signed-off-by: Matthew Garrett <mjg@redhat.com>
-> 
-> diff --git a/arch/x86/kernel/cpu/cpufreq/Makefile b/arch/x86/kernel/cpu/cpufreq/Makefile
-> index 560f776..509296d 100644
-> --- a/arch/x86/kernel/cpu/cpufreq/Makefile
-> +++ b/arch/x86/kernel/cpu/cpufreq/Makefile
-> @@ -1,6 +1,11 @@
-> +# Link order matters. K8 is preferred to ACPI because of firmware bugs in early
-> +# K8 systems. ACPI is preferred to all other hardware-specific drivers.
-> +# speedstep-* is preferred over p4-clockmod.
+>> That would be the way the core and userspace expect device probes to
+>> look like, if there are no special reasons that prevent this model
+>> from working, which should be properly documented, so nobody just
+>> copies that code without the need for such hacks.
+>
+> Proverbial cat and bag aside, I already see numerous examples of the
+> model I'm using in the drivers directory.  If this is a bad use case
+> then, yes, it really needs to be documented.  I see nothing that shows
+> me that it is bad practice, either in the code comments or in
+> Documentation (The only files which mention device_create_file() are
+> sysfs.txt and device.txt).
 
-Nice fix! Where does this information come from? Distro module 
-ordering magic? It's rather non-trivial.
+A huge fraction of the code using the platform bus can be marked
+entirely as "bad use case" be it staticall allocated objects, or
+messing around with internal in bad ways to "optimize" stuff for no
+good reason.
 
-(small style nit: the first line in the Makefile is overlong.)
+> Nor do I see anything that shows it is
+> dangerous for a driver to add sysfs files at probe time to an existing
+> struct device.
 
-	Ingo
+It's not about "danger" its about bad code, which is a different kind
+of "danger". :)
+
+Kay
