@@ -1,54 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbZBRRIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbZBRRJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755324AbZBRRIY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 12:08:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbZBRRIO
+	id S1755442AbZBRRJh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 12:09:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbZBRRJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 12:08:14 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:42163 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751700AbZBRRIN convert rfc822-to-8bit (ORCPT
+	Wed, 18 Feb 2009 12:09:28 -0500
+Received: from smtp106.prem.mail.sp1.yahoo.com ([98.136.44.61]:35969 "HELO
+	smtp106.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751566AbZBRRJ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 12:08:13 -0500
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFD] Automatic suspend
-Date: Wed, 18 Feb 2009 18:10:01 +0100
-User-Agent: KMail/1.9.10
-Cc: Arjan van de Ven <arjan@infradead.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-References: <Pine.LNX.4.44L0.0902181135400.3186-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0902181135400.3186-100000@iolanthe.rowland.org>
+	Wed, 18 Feb 2009 12:09:27 -0500
+X-YMail-OSG: 2KsRb6sVM1nSVWHWMuEGkKFoy9UwLqS70kM4d2sqlleOMu_CYrmfVSp0wdx7P.RV8p1C6empVVBkBEDlpIVTfzdamRxQpAwmSg_euHF3jgNCZFaFzOaiq1TE40k7CuvctulrPx.CqJ2YwXhOUAX4BgOTEOl6bZ_FXoVDUIDuH2tCzhmBoZwa5LiKrym6Yq5uX_TBSNQA2HgFgHWhOYKO7cRMzowtCY0l0Zd4WYwhhLH3z5FOmMycYiaWVWg-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <499C40C1.20106@schaufler-ca.com>
+Date: Wed, 18 Feb 2009 09:09:21 -0800
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200902181810.03679.oliver@neukum.org>
+To: etienne <etienne.basset@numericable.fr>
+CC: Paul Moore <paul.moore@hp.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       Casey Schaufler <casey@schaufler-ca.com>
+Subject: Re: [PATCH] SMACK netfilter smacklabel socket match
+References: <fa.O38YY4pVfLlMFJNBI3mhgn+qOcQ@ifi.uio.no> <200902171852.21061.paul.moore@hp.com> <499BB76C.1030109@numericable.fr> <200902181005.24952.paul.moore@hp.com>
+In-Reply-To: <200902181005.24952.paul.moore@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Wednesday 18 February 2009 17:39:21 schrieb Alan Stern:
-> In essence what you're saying is that we won't be able to do
-> link-suspend for HID until something like HID transport classes (or
-> something simpler, devoted specifically to runtime PM) is implemented.  
-> And likewise for other subsystems.  I can't argue with this conclusion.
+Paul Moore wrote:
+> On Wednesday 18 February 2009 02:23:24 am etienne wrote:
+>   
+>> ... anyway, I think the cleanest way would be to, well, sort smk_netlbladdr
+>> by mask on insertion (perf doesn't matter  here) and this way
+>> smack_host_label can stop the loop on first match. Plus, it would give a
+>> nicer /smack/netlabel ouptut :)
+>>     
+>
+> Agreed.
+>   
 
-I'd say, if it has sensible operations, it is a device and should be in the
-tree as such.
+Yes, it would make it nicer. You'll need to do a better job
+on the list management than I've been doing. It's probably well
+past time to introduce the Standard list management scheme to
+Smack, and you'll need to do so if you want to do insertions
+and/or deletions.
 
-	Regards
-		Oliver
+>> so, how should we handle it? apply the patches (with whitespaces damages
+>> corrected ;) )  now (as it corrects a bug) an elaborate the cleaner way
+>> later?
+>>     
+>
+> Well, since you have some time and willingness to do things "the right way" I 
+> would recommend dropping these patches (which are really just band-aids) and 
+> working on the right solution to stored the addresses/masks in a sorted list 
+> with the mask already applied.
+>
+> FWIW, the NetLabel code (net/netlabel) has to do very similar things with 
+> sorted address lists so I built an address list construct which builds on the 
+> list.h ideas and operates in a similar way.  You may find it helpful.
+>
+>   
+>> I think this should go to stable too?
+>>     
+>
+> I would worry about getting the patches developed, tested and in an acceptable 
+> form first, then we can worry about where they should be applied ;)
+>
+>   
+
+I would be delighted to see these changes. When you have preliminary
+versions I would be eager to see them and give them a try in the
+Smack test laboratory.
+
+Etienne, thank you very much for the work you've done so far. Paul,
+thank you for your recommendations.
+
 
