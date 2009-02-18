@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbZBRMyF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753822AbZBRMzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753416AbZBRMyF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 07:54:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbZBRMxz
+	id S1753822AbZBRMzL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 07:55:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbZBRMyz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 07:53:55 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38282 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751741AbZBRMxy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 07:53:54 -0500
-Date: Wed, 18 Feb 2009 13:53:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/7] tracing/function-graph-tracer: make arch generic
-	push pop functions
-Message-ID: <20090218125334.GA1300@elte.hu>
-References: <20090213052358.524970112@goodmis.org> <20090213053004.787392572@goodmis.org> <alpine.DEB.1.10.0902162346190.30397@gandalf.stny.rr.com> <20090218010039.GL25856@elte.hu> <alpine.DEB.1.10.0902172243550.1360@gandalf.stny.rr.com>
+	Wed, 18 Feb 2009 07:54:55 -0500
+Received: from stinky.trash.net ([213.144.137.162]:51797 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751635AbZBRMyy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 07:54:54 -0500
+Message-ID: <499C0519.2050204@trash.net>
+Date: Wed, 18 Feb 2009 13:54:49 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0902172243550.1360@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       David Miller <davem@davemloft.net>, Rick Jones <rick.jones2@hp.com>,
+       Eric Dumazet <dada1@cosmosbay.com>, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, tglx@linutronix.de,
+       Martin Josefsson <gandalf@wlug.westbo.se>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] timers: add mod_timer_pending()
+References: <20090218051906.174295181@vyatta.com> <20090218052747.437271195@vyatta.com> <20090218092041.GC3294@elte.hu> <499BDDFE.5010101@trash.net> <20090218120508.GB4100@elte.hu> <499C000A.4040205@trash.net> <20090218125049.GA28791@elte.hu>
+In-Reply-To: <20090218125049.GA28791@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> On Wed, 18 Feb 2009, Ingo Molnar wrote:
+Ingo Molnar wrote:
+> To accelerate matters i've committed the new API patch into a 
+> new standalone topic branch: tip:timers/new-apis.
 > 
-> > 
-> > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > 
-> > > Ingo,
-> > > 
-> > > This patch is to make function graph arch generic. But since 
-> > > the PowerPC changes depend on it, we want to push it through 
-> > > the PowerPC tree. But since it touches x86 code, can you give 
-> > > an Acked-by to it?
-> > 
-> > hm, but it's all ftrace bits. Could this go through the tracing 
-> > tree? That's how it's generally done for most cross-arch 
-> > subsystems. By having it in a separate tree we risk conflicts 
-> > and various logistics problems. It's not like the PPC tree is 
-> > modifying its ftrace.c file all that frequently, right?
+> Unless there are objections or test failures, you (or Stephen or 
+> David) can then git-pull it into the networking tree via the Git 
+> coordinates below - and you'll get this single commit in a 
+> surgical manner - no other timer changes are included.
 > 
-> Ingo,
+> Doing so has the advantage of:
 > 
-> How about this. We could incorporate some of the power of git. 
-> I could make a separate branch based off of Linus's 2.6.29-rc5 
-> announcement, and apply just this patch (the ftrace generic 
-> and x86 change). If you give me your Acked-by, I'll add that 
-> too.
+> - You not having to wait a kernel cycle for the API to go
+>   upstream.
 > 
-> This way, both you and Ben could pull from this branch to get 
-> the one change. When it goes upstream, because it has the same 
-> SHA1, git could easily resolve it.
+> - You can also push it upstream without waiting for the timer 
+>   tree. (the timer tree and the networking tree will share the 
+>   exact same commit)
+> 
+> - It will also all merge cleanly with the timer tree in 
+>   linux-next, etc.
+> 
+> I'd suggest to do it in about a week, to make sure any after 
+> effects have trickled down and to make sure the topic has become 
+> append-only. You can ping Thomas and me about testing/review 
+> status then, whenever you want to do the pull.
 
-Sure, that's fine too - if the separate tree is semantically 
-meaningful. If it pulls in too many ftrace prerequisites i doubt 
-it's appropriate for the PPC tree.
-
-	Ingo
+Thanks Ingo. I'll wait for Stephen to rebase his patches on
+top of your change and the test results and will let you know.
