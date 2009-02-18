@@ -1,99 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764AbZBRDNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbZBRDNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753764AbZBRDNU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 22:13:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbZBRDNE
+	id S1754047AbZBRDNi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 22:13:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbZBRDN1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 22:13:04 -0500
-Received: from mail.lang.hm ([64.81.33.126]:48566 "EHLO bifrost.lang.hm"
+	Tue, 17 Feb 2009 22:13:27 -0500
+Received: from gate.crashing.org ([63.228.1.57]:36787 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751539AbZBRDND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 22:13:03 -0500
-Date: Tue, 17 Feb 2009 19:12:47 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Yinghai Lu <yinghai@kernel.org>
-cc: Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       DL-MPTFusionLinux@lsi.com
-Subject: Re: mpt fusion broken sometime since 2.6.24
-In-Reply-To: <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>
-Message-ID: <alpine.DEB.1.10.0902171905540.26625@asgard.lang.hm>
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>  <alpine.DEB.1.10.0902171343280.26625@asgard.lang.hm>  <20090217230050.GG16841@parisc-linux.org>  <alpine.DEB.1.10.0902171506500.26625@asgard.lang.hm> <86802c440902171511s1abcc0eao560df4b8fcea0e7c@mail.gmail.com>
- <alpine.DEB.1.10.0902171514120.26625@asgard.lang.hm> <499B46B2.5040601@kernel.org> <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm> <499B6BF7.9090300@kernel.org> <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm> <499B724A.2040408@kernel.org>
- <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm> <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S1754249AbZBRDN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 22:13:26 -0500
+Subject: Re: [PATCH 1/7] tracing/function-graph-tracer: make arch generic
+ push pop functions
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Geoff Levand <geoffrey.levand@am.sony.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>
+In-Reply-To: <alpine.DEB.1.10.0902172022130.14430@gandalf.stny.rr.com>
+References: <20090213052358.524970112@goodmis.org>
+	 <20090213053004.787392572@goodmis.org>
+	 <alpine.DEB.1.10.0902162346190.30397@gandalf.stny.rr.com>
+	 <20090218010039.GL25856@elte.hu>
+	 <alpine.DEB.1.10.0902172022130.14430@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Wed, 18 Feb 2009 14:12:19 +1100
+Message-Id: <1234926739.14060.403.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Feb 2009, david@lang.hm wrote:
+On Tue, 2009-02-17 at 20:24 -0500, Steven Rostedt wrote:
+> > hm, but it's all ftrace bits. Could this go through the tracing 
+> > tree? That's how it's generally done for most cross-arch 
+> > subsystems. By having it in a separate tree we risk conflicts 
+> > and various logistics problems. It's not like the PPC tree is 
+> > modifying its ftrace.c file all that frequently, right?
+> 
+> Really doesn't matter to me which tree it goes. I figure tip would be fine 
+> in compile testing, but I doubt it would get much actual machine testing.
+> 
+> How fast do you get changes to next? Perhaps you could take it and push it 
+> out to next, where Ben could quickly get it back in for testing? Or at 
+> least do that with this patch, and then Ben could apply the others on top.
 
-> On Tue, 17 Feb 2009, david@lang.hm wrote:
->
->>> do you have chance to try current tip/master
->>> http://people.redhat.com/mingo/tip.git/readme.txt
->>> or 2.6.29-rcX
->>> plus following patch?
->> 
->> I will see about trying this.
->
-> does the fact that I am compiling a monolithic kernel (no modules) make any 
-> difference related to the patch below?
+Well, it did already conflict with a patch from Kumar that change the
+opcodes, which I could fix easily in my tree but would have been harder
+to deal with in the tracing tree...
 
-this patch on the (current as a few min ago) linus git tree doesn't work, 
-trying adding the other patch now.
+Also, my next tree will not pull somebody else next tree, as it's a
+never-rebase-will-merge tree though I have a test branch i can play with
+(in which your patches currently are).
 
-David Lang
+In any case, I don't care -that- much who the patches go via, it's
+easier for me to fix them up when conflicts occur in powerpc land and
+they will probably get more testing via my tree but it's no big deal.
+ 
+Cheers,
+Ben.
 
-> David Lang
->
->>> or can you check if there is update fw for your LSI card?
->> 
->> this is more work, I'll look into that as well.
->> 
->> David Lang
->> 
->>> [PATCH] mpt: fix enable lsi sas to use msi as default
->>> 
->>> Impact: fix bug
->>> 
->>> the third param in module_param(,,) is perm instead of default value.
->>> we still need to assign default at first.
->>> 
->>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->>> 
->>> ---
->>> drivers/message/fusion/mptbase.c |    4 ++--
->>> 1 file changed, 2 insertions(+), 2 deletions(-)
->>> 
->>> Index: linux-2.6/drivers/message/fusion/mptbase.c
->>> ===================================================================
->>> --- linux-2.6.orig/drivers/message/fusion/mptbase.c
->>> +++ linux-2.6/drivers/message/fusion/mptbase.c
->>> @@ -90,8 +90,8 @@ module_param(mpt_msi_enable_fc, int, 0);
->>> MODULE_PARM_DESC(mpt_msi_enable_fc, " Enable MSI Support for FC \
->>> 		controllers (default=0)");
->>> 
->>> -static int mpt_msi_enable_sas;
->>> -module_param(mpt_msi_enable_sas, int, 1);
->>> +static int mpt_msi_enable_sas = 1;
->>> +module_param(mpt_msi_enable_sas, int, 0);
->>> MODULE_PARM_DESC(mpt_msi_enable_sas, " Enable MSI Support for SAS \
->>> 		controllers (default=1)");
->>> 
->>> 
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+
