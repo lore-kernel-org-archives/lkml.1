@@ -1,297 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757264AbZBRVQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757007AbZBRVRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757264AbZBRVQj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:16:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbZBRVQQ
+	id S1757007AbZBRVRW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:17:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbZBRVRB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:16:16 -0500
-Received: from smtp6.tech.numericable.fr ([82.216.111.42]:47627 "EHLO
-	smtp6.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751893AbZBRVQO (ORCPT
+	Wed, 18 Feb 2009 16:17:01 -0500
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:46925 "EHLO
+	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752906AbZBRVRA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:16:14 -0500
-Message-ID: <499C7A98.7000907@numericable.fr>
-Date: Wed, 18 Feb 2009 22:16:08 +0100
-From: etienne <etienne.basset@numericable.fr>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 18 Feb 2009 16:17:00 -0500
+Message-ID: <499C7AC8.4080609@cfl.rr.com>
+Date: Wed, 18 Feb 2009 16:16:56 -0500
+From: Mark Hounschell <dmarkh@cfl.rr.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Casey Schaufler <casey@schaufler-ca.com>
-CC: Paul Moore <paul.moore@hp.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org
-Subject: [PATCH] SMACK netlabel fixes
-References: <fa.O38YY4pVfLlMFJNBI3mhgn+qOcQ@ifi.uio.no> <200902171852.21061.paul.moore@hp.com> <499BB76C.1030109@numericable.fr> <200902181005.24952.paul.moore@hp.com> <499C5377.8050408@numericable.fr> <499C5C44.4020902@schaufler-ca.com>
-In-Reply-To: <499C5C44.4020902@schaufler-ca.com>
+To: Borislav Petkov <borislav.petkov@amd.com>
+CC: Mark Hounschell <markh@compro.net>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       john stultz <johnstul@us.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: PROBLEM: Can't boot a (HZ = 1000) kernel using an AMD	Phenom-II
+ processor
+References: <498B1FA9.2050203@cfl.rr.com> <20090206135248.GB23459@aftab> <498C44FA.1010106@compro.net> <498C7980.2060309@compro.net> <498CB798.7050308@cfl.rr.com> <20090209141841.GA31643@aftab> <49904BED.7090208@cfl.rr.com> <499C0913.9050905@compro.net> <20090218141843.GB13304@aftab> <499C3DED.1090807@cfl.rr.com> <20090218174243.GD13304@aftab>
+In-Reply-To: <20090218174243.GD13304@aftab>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Borislav Petkov wrote:
+> Hi,
+> 
+>> BIOS EBDA/lowmem at: 0009f000/0009f000
+>> Initializing cgroup subsys cpuset
+>> Linux version 2.6.28.3-1000Hz (root@harley) (gcc version 4.3.1 20080507
+>> (prerelease) [gcc-4_3-branch revision 135036] (SUSE Linux) ) #4 SMP PREEMPT Wed Feb9
+>> KERNEL supported cpus:
+>>   Intel GenuineIntel
+>>   AMD AuthenticAMD
+>>   NSC Geode by NSC
+>>   Cyrix CyrixInstead
+>>   Centaur CentaurHauls
+>>   Transmeta GenuineTMx86
+>>   Transmeta TransmetaCPU
+>>   UMC UMC UMC UMC
+>> BIOS-provided physical RAM map:
+>>  BIOS-e820: 0000000000000000 - 000000000009f400 (usable)
+>>  BIOS-e820: 000000000009f400 - 00000000000a0000 (reserved)
+>>  BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+>>  BIOS-e820: 0000000000100000 - 00000000bffe0000 (usable)
+>>  BIOS-e820: 00000000bffe0000 - 00000000bffe3000 (ACPI NVS)
+>>  BIOS-e820: 00000000bffe3000 - 00000000bfff0000 (ACPI data)
+>>  BIOS-e820: 00000000bfff0000 - 00000000c0000000 (reserved)
+>>  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
+>>  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
+>>  BIOS-e820: 0000000100000000 - 0000000140000000 (usable)
+>> DMI 2.5 present.
+>> Phoenix BIOS detected: BIOS may corrupt low RAM, working it around.
+>> last_pfn = 0xbffe0 max_arch_pfn = 0x100000
+>> x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+>> RAMDISK: 374d0000 - 37feff67
+>> Allocated new RAMDISK: 004a7000 - 00fc6f67
+>> Move RAMDISK from 00000000374d0000 - 0000000037feff66 to 004a7000 - 00fc6f66
+>> ACPI: RSDP 000F7FB0, 0024 (r2 RX780 )
+>> ACPI: XSDT BFFE3080, 004C (r1 RX780  AWRDACPI 42302E31 AWRD        0)
+>> ACPI: FACP BFFE8C80, 00F4 (r3 RX780  AWRDACPI 42302E31 AWRD        0)
+>> FADT: X_PM1a_EVT_BLK.bit_width (8) does not match PM1_EVT_LEN (4)
+>> ACPI: DSDT BFFE3200, 5A71 (r1 RX780  AWRDACPI     1000 MSFT  100000E)
+>> ACPI: FACS BFFE0000, 0040
+>> ACPI: SSDT BFFE8E40, 088C (r1 PTLTD  POWERNOW        1  LTP        1)
+>> ACPI: HPET BFFE9700, 0038 (r1 RX780  AWRDACPI 42302E31 AWRD       98)
+>> ACPI: MCFG BFFE9740, 003C (r1 RX780  AWRDACPI 42302E31 AWRD        0)
+>> ACPI: APIC BFFE8D80, 0084 (r1 RX780  AWRDACPI 42302E31 AWRD        0)
+>> 2183MB HIGHMEM available.
+>> 887MB LOWMEM available.
+>>   mapped low ram: 0 - 377fe000
+>>   low ram: 00000000 - 377fe000
+>>   bootmap 00012000 - 00018f00
+>> (9 early reservations) ==> bootmem [0000000000 - 00377fe000]
+>>   #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
+>>   #1 [0000001000 - 0000002000]    EX TRAMPOLINE ==> [0000001000 - 0000002000]
+>>   #2 [0000006000 - 0000007000]       TRAMPOLINE ==> [0000006000 - 0000007000]
+>>   #3 [0000100000 - 00004a3c54]    TEXT DATA BSS ==> [0000100000 - 00004a3c54]
+>>   #4 [00004a4000 - 00004a7000]    INIT_PG_TABLE ==> [00004a4000 - 00004a7000]
+>>   #5 [000009f000 - 0000100000]    BIOS reserved ==> [000009f000 - 0000100000]
+>>   #6 [0000010000 - 0000012000]          PGTABLE ==> [0000010000 - 0000012000]
+>>   #7 [00004a7000 - 0000fc6f67]      NEW RAMDISK ==> [00004a7000 - 0000fc6f67]
+>>   #8 [0000012000 - 0000019000]          BOOTMAP ==> [0000012000 - 0000019000]
+>> Scan SMP from c0000000 for 1024 bytes.
+>> Scan SMP from c009fc00 for 1024 bytes.
+>> Scan SMP from c00f0000 for 65536 bytes.
+>> found SMP MP-table at [c00f3f00] 000f3f00
+>> Zone PFN ranges:
+>>   DMA      0x00000010 -> 0x00001000
+>>   Normal   0x00001000 -> 0x000377fe
+>>   HighMem  0x000377fe -> 0x000bffe0
+>> Movable zone start PFN for each node
+>> early_node_map[2] active PFN ranges
+>>     0: 0x00000010 -> 0x0000009f
+>>     0: 0x00000100 -> 0x000bffe0
+>> ACPI: PM-Timer IO Port: 0x4008
+>> ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+>> ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
+>> ACPI: LAPIC (acpi_id[0x02] lapic_id[0x02] enabled)
+>> ACPI: LAPIC (acpi_id[0x03] lapic_id[0x03] enabled)
+>> ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
+>> ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
+>> ACPI: LAPIC_NMI (acpi_id[0x02] high edge lint[0x1])
+>> ACPI: LAPIC_NMI (acpi_id[0x03] high edge lint[0x1])
+>> ACPI: IOAPIC (id[0x04] address[0xfec00000] gsi_base[0])
+>> IOAPIC[0]: apic_id 4, version 33, address 0xfec00000, GSI 0-23
+>> ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+>> ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 low level)
+>> Enabling APIC mode:  Flat.  Using 1 I/O APICs
+>> ACPI: HPET id: 0x10b9a201 base: 0xfed00000
+>> Using ACPI (MADT) for SMP configuration information
+>> SMP: Allowing 4 CPUs, 0 hotplug CPUs
+>> mapped APIC to ffffb000 (fee00000)
+>> mapped IOAPIC to ffffa000 (fec00000)
+>> Allocating PCI resources starting at c2000000 (gap: c0000000:20000000)
+>> PERCPU: Allocating 36864 bytes of per cpu data
+>> Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 780143
+>> Kernel command line: root=/dev/disk/by-id/ata-ST3320620AS_6QF4HDV5-part5
+>> hwprobe=-modules.pata apm=off selinux=0 noresume splash=silent apic=debug console=g
+>> Enabling fast FPU save and restore... done.
+>> Enabling unmasked SIMD FPU exception support... done.
+>> Initializing CPU#0
+>> Preemptible RCU implementation.
+>> PID hash table entries: 4096 (order: 12, 16384 bytes)
+>> Fast TSC calibration using PIT
+>> Detected 3000.297 MHz processor.
+>> Console: colour VGA+ 80x25
+>> console [ttyS0] enabled
+>> Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
+>> Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
+>> Memory: 3103456k/3145600k available (1835k kernel code, 40784k reserved, 1099k
+>> data, 276k init, 2236296k highmem)
+>> virtual kernel memory layout:
+>>     fixmap  : 0xffe19000 - 0xfffff000   (1944 kB)
+>>     pkmap   : 0xff800000 - 0xffc00000   (4096 kB)
+>>     vmalloc : 0xf7ffe000 - 0xff7fe000   ( 120 MB)
+>>     lowmem  : 0xc0000000 - 0xf77fe000   ( 887 MB)
+>>       .init : 0xc03e3000 - 0xc0428000   ( 276 kB)
+>>       .data : 0xc02caf97 - 0xc03ddc4c   (1099 kB)
+>>       .text : 0xc0100000 - 0xc02caf97   (1835 kB)
+>> Checking if this processor honours the WP bit even in supervisor mode...Ok.
+>> SLUB: Genslabs=12, HWalign=64, Order=0-3, MinObjects=0, CPUs=4, Nodes=1
+>> HPET0 prog. values: now 20642, delta 14318, cfg: 0x15c,
+>> HPET: 4 timers in total, 0 timers will be used for per-cpu timer
+>> Calibrating delay loop (skipped), value calculated using timer frequency..
+>> 6000.59 BogoMIPS (lpj=3000297)
+>> Security Framework initialized
+>> Mount-cache hash table entries: 512
+>> CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+>> CPU: L2 Cache: 512K (64 bytes/line)
+>> CPU: Physical Processor ID: 0
+>> CPU: Processor Core ID: 0
+>> using C1E aware idle routine
+>> Checking 'hlt' instruction...
+> 
+> now if you retry the same thing, does the machine hang with the exact
+> same output/at the exact same place in the boot process or it differs
+> each time?
+> 
 
-the following patch (against 2.6.29rc5) fixes a few issues in the smack/netlabel area :
-1) smack_host_label disregard a "0.0.0.0/0 @" rule (or other label), preventing 'tagged' tasks to access Internet (many systems drop packets with IP options)
-2) netmasks were not handled correctly, they were stored in a way _not equivalent_  to conversion to be32 (it was equivalent for /0, /8, /16, /24, /32 masks but not other masks)
-3) smack_netlbladdr prefixes (IP/mask) were not consistent (mask&IP was not done), so there could have been different list entries for the same IP prefix; if those entries had different labels, well ... 
-4) they were not sorted 
+Yes, now it does. I've done it about 5 times. Same...
 
-1) 2) 3) are bugs, 4) is a more cosmetic issue.
-The patch :
--creates a new helper smk_netlbladdr_insert to insert a smk_netlbladdr, sorted by netmask length
--use the new sorted nature of  smack_netlbladdrs list to simplify smack_host_label : 
- the first match _will_ be the more specific
--corrects endianness issues in smk_write_netlbladdr &  netlbladdr_seq_show
-
-The patch are "tested" so that they no crash the system; cat /smack/netlabel is now sorted and always consistent.
-Some basics ping tests to '@' and other label combination seems ok 
-See   an extract of my tests bellow the patch 
-
-regards,
-Etienne
-
-Signed-off-by: <etienne.basset@numericable.fr>
----
- security/smack/smack_lsm.c |   38 ++++++----------------------
- security/smack/smackfs.c   |   60 +++++++++++++++++++++++++++++++++----------
- 2 files changed, 54 insertions(+), 44 deletions(-)
-
-diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
-index 0278bc0..427595e 100644
---- a/security/smack/smack_lsm.c
-+++ b/security/smack/smack_lsm.c
-@@ -1498,10 +1498,7 @@ static int smack_socket_post_create(struct socket *sock, int family,
-  * looks for host based access restrictions
-  *
-  * This version will only be appropriate for really small
-- * sets of single label hosts. Because of the masking
-- * it cannot shortcut out on the first match. There are
-- * numerious ways to address the problem, but none of them
-- * have been applied here.
-+ * sets of single label hosts.
-  *
-  * Returns the label of the far end or NULL if it's not special.
-  */
-@@ -1512,41 +1509,22 @@ static char *smack_host_label(struct sockaddr_in *sip)
- 	struct in_addr *siap = &sip->sin_addr;
- 	struct in_addr *liap;
- 	struct in_addr *miap;
--	struct in_addr bestmask;
- 
- 	if (siap->s_addr == 0)
- 		return NULL;
- 
--	bestmask.s_addr = 0;
--
- 	for (snp = smack_netlbladdrs; snp != NULL; snp = snp->smk_next) {
- 		liap = &snp->smk_host.sin_addr;
- 		miap = &snp->smk_mask;
- 		/*
--		 * If the addresses match after applying the list entry mask
--		 * the entry matches the address. If it doesn't move along to
--		 * the next entry.
--		 */
--		if ((liap->s_addr & miap->s_addr) !=
--		    (siap->s_addr & miap->s_addr))
--			continue;
--		/*
--		 * If the list entry mask identifies a single address
--		 * it can't get any more specific.
--		 */
--		if (miap->s_addr == 0xffffffff)
--			return snp->smk_label;
--		/*
--		 * If the list entry mask is less specific than the best
--		 * already found this entry is uninteresting.
-+		 * we break after finding the first match because
-+		 * the list is sorted from longest to shortest mask
-+		 * so we have found the most specific match
- 		 */
--		if ((miap->s_addr | bestmask.s_addr) == bestmask.s_addr)
--			continue;
--		/*
--		 * This is better than any entry found so far.
--		 */
--		bestmask.s_addr = miap->s_addr;
--		bestlabel = snp->smk_label;
-+		if (liap->s_addr  == (siap->s_addr & miap->s_addr)) {
-+			bestlabel = snp->smk_label;
-+			break;
-+		}
- 	}
- 
- 	return bestlabel;
-diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
-index 8e42800..4d4332b 100644
---- a/security/smack/smackfs.c
-+++ b/security/smack/smackfs.c
-@@ -650,10 +650,6 @@ static void *netlbladdr_seq_next(struct seq_file *s, void *v, loff_t *pos)
- 
- 	return skp;
- }
--/*
--#define BEMASK	0x80000000
--*/
--#define BEMASK	0x00000001
- #define BEBITS	(sizeof(__be32) * 8)
- 
- /*
-@@ -663,12 +659,10 @@ static int netlbladdr_seq_show(struct seq_file *s, void *v)
- {
- 	struct smk_netlbladdr *skp = (struct smk_netlbladdr *) v;
- 	unsigned char *hp = (char *) &skp->smk_host.sin_addr.s_addr;
--	__be32 bebits;
- 	int maskn = 0;
-+	u32 temp_mask = be32_to_cpu(skp->smk_mask.s_addr);
- 
--	for (bebits = BEMASK; bebits != 0; maskn++, bebits <<= 1)
--		if ((skp->smk_mask.s_addr & bebits) == 0)
--			break;
-+	for ( ; temp_mask; temp_mask <<= 1, maskn++);
- 
- 	seq_printf(s, "%u.%u.%u.%u/%d %s\n",
- 		hp[0], hp[1], hp[2], hp[3], maskn, skp->smk_label);
-@@ -702,6 +696,40 @@ static int smk_open_netlbladdr(struct inode *inode, struct file *file)
- }
- 
- /**
-+ * smk_netlbladdr_insert
-+ * @new : netlabel to insert
-+ *
-+ * This helper insert netlabel in the smack_netlbladdrs list
-+ * sorted by netmask length (longest to smallest)
-+ */
-+static void smk_netlbladdr_insert(struct smk_netlbladdr *new)
-+{
-+	struct smk_netlbladdr *m;
-+	if (smack_netlbladdrs == NULL) {
-+		smack_netlbladdrs = new;
-+		return;
-+	}
-+	/** the comparison '>' is a bit hacky, but works */
-+	if (new->smk_mask.s_addr > smack_netlbladdrs->smk_mask.s_addr) {
-+		new->smk_next = smack_netlbladdrs;
-+		smack_netlbladdrs = new;
-+		return;
-+	}
-+	for (m = smack_netlbladdrs; m != NULL; m = m->smk_next) {
-+		if (m->smk_next == NULL) {
-+			m->smk_next = new;
-+			return;
-+		}
-+		if (new->smk_mask.s_addr > m->smk_next->smk_mask.s_addr) {
-+			new->smk_next = m->smk_next;
-+			m->smk_next = new;
-+			return;
-+		}
-+	}
-+}
-+
-+
-+/**
-  * smk_write_netlbladdr - write() for /smack/netlabel
-  * @filp: file pointer, not actually used
-  * @buf: where to get the data from
-@@ -724,8 +752,9 @@ static ssize_t smk_write_netlbladdr(struct file *file, const char __user *buf,
- 	struct netlbl_audit audit_info;
- 	struct in_addr mask;
- 	unsigned int m;
--	__be32 bebits = BEMASK;
-+	u32 mask_bits = (1<<31);
- 	__be32 nsa;
-+	u32 temp_mask;
- 
- 	/*
- 	 * Must have privilege.
-@@ -761,10 +790,13 @@ static ssize_t smk_write_netlbladdr(struct file *file, const char __user *buf,
- 	if (sp == NULL)
- 		return -EINVAL;
- 
--	for (mask.s_addr = 0; m > 0; m--) {
--		mask.s_addr |= bebits;
--		bebits <<= 1;
-+	for (temp_mask = 0; m > 0; m--) {
-+		temp_mask |= mask_bits;
-+		mask_bits >>= 1;
- 	}
-+	mask.s_addr = cpu_to_be32(temp_mask);
-+
-+	newname.sin_addr.s_addr &= mask.s_addr;
- 	/*
- 	 * Only allow one writer at a time. Writes should be
- 	 * quite rare and small in any case.
-@@ -772,6 +804,7 @@ static ssize_t smk_write_netlbladdr(struct file *file, const char __user *buf,
- 	mutex_lock(&smk_netlbladdr_lock);
- 
- 	nsa = newname.sin_addr.s_addr;
-+	/* try to find if the prefix is already in the list */
- 	for (skp = smack_netlbladdrs; skp != NULL; skp = skp->smk_next)
- 		if (skp->smk_host.sin_addr.s_addr == nsa &&
- 		    skp->smk_mask.s_addr == mask.s_addr)
-@@ -787,9 +820,8 @@ static ssize_t smk_write_netlbladdr(struct file *file, const char __user *buf,
- 			rc = 0;
- 			skp->smk_host.sin_addr.s_addr = newname.sin_addr.s_addr;
- 			skp->smk_mask.s_addr = mask.s_addr;
--			skp->smk_next = smack_netlbladdrs;
- 			skp->smk_label = sp;
--			smack_netlbladdrs = skp;
-+			smk_netlbladdr_insert(skp);
- 		}
- 	} else {
- 		rc = netlbl_cfg_unlbl_static_del(&init_net, NULL,
-
-
-=============================================================
-TESTS
-=============================================================
-
-root@etienne-desktop:/home/etienne/linux-2.6# cat /smack/netlabel
-212.180.1.0/26 toto
-212.180.1.0/25 @
-217.146.186.0/24 _
-212.180.0.0/23 tit
-212.180.0.0/15 @
-
-root@etienne-desktop:/home/etienne/linux-2.6# cat /proc/self/attr/current
-_root@etienne-desktop:/home/etienne/linux-2.6#
-root@etienne-desktop:/home/etienne/linux-2.6# ping 212.180.1.65 -c 1
-PING 212.180.1.65 (212.180.1.65) 56(84) bytes of data.
-64 bytes from 212.180.1.65: icmp_seq=1 ttl=56 time=7.04 ms
-
---- 212.180.1.65 ping statistics ---
-1 packets transmitted, 1 received, 0% packet loss, time 0ms
-rtt min/avg/max/mdev = 7.040/7.040/7.040/0.000 ms
-root@etienne-desktop:/home/etienne/linux-2.6# ping 212.180.1.1 -c 1
-Do you want to ping broadcast? Then -b
-root@etienne-desktop:/home/etienne/linux-2.6# echo toto > /proc/self/attr/current
-root@etienne-desktop:/home/etienne/linux-2.6# ping 212.180.1.1 -c 1
-PING 212.180.1.1 (212.180.1.1) 56(84) bytes of data.
-64 bytes from 212.180.1.1: icmp_seq=1 ttl=248 time=13.6 ms
-
---- 212.180.1.1 ping statistics ---
-1 packets transmitted, 1 received, 0% packet loss, time 0ms
-rtt min/avg/max/mdev = 13.632/13.632/13.632/0.000 ms
-root@etienne-desktop:/home/etienne/linux-2.6# ping 212.180.1.65 -c 1
-PING 212.180.1.65 (212.180.1.65) 56(84) bytes of data.
-64 bytes from 212.180.1.65: icmp_seq=1 ttl=56 time=9.87 ms
-
---- 212.180.1.65 ping statistics ---
-1 packets transmitted, 1 received, 0% packet loss, time 0ms
-rtt min/avg/max/mdev = 9.876/9.876/9.876/0.000 ms
-root@etienne-desktop:/home/etienne/linux-2.6# ping 212.180.0.1 -c 1
-Do you want to ping broadcast? Then -b
-root@etienne-desktop:/home/etienne/linux-2.6# echo titi > /proc/self/attr/current
-root@etienne-desktop:/home/etienne/linux-2.6# ping 212.180.0.1 -c 1
-Do you want to ping broadcast? Then -b
-root@etienne-desktop:/home/etienne/linux-2.6# echo tit > /proc/self/attr/current
-root@etienne-desktop:/home/etienne/linux-2.6# ping 212.180.0.1 -c 1
-PING 212.180.0.1 (212.180.0.1) 56(84) bytes of data.
-^C
---- 212.180.0.1 ping statistics ---
-1 packets transmitted, 0 received, 100% packet loss, time 0ms
-
-
-
-
-  
-
+Mark
