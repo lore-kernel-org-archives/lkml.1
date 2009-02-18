@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758292AbZBRVk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbZBRVlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758292AbZBRVk2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:40:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756704AbZBRVfk
+	id S1757386AbZBRVlI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:41:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756834AbZBRVfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:35:40 -0500
-Received: from kroah.org ([198.145.64.141]:56188 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 16:35:43 -0500
+Received: from kroah.org ([198.145.64.141]:56210 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756313AbZBRVfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:35:39 -0500
-Date: Wed, 18 Feb 2009 13:32:38 -0800
+	id S1756758AbZBRVfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:35:41 -0500
+Date: Wed, 18 Feb 2009 13:32:42 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Roel Kluin <roel.kluin@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 13/39] 3c505: do not set pcb->data.raw beyond its size
-Message-ID: <20090218213238.GN19814@kroah.com>
+       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org
+Subject: [patch 15/39] ext4: Add support for non-native signed/unsigned
+	htree hash algorithms
+Message-ID: <20090218213242.GP19814@kroah.com>
 References: <20090218212144.965748151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="3c505-do-not-set-pcb-data.raw-beyond-its-size.patch"
+Content-Disposition: inline; filename="ext4-add-support-for-non-native-signed-unsigned-htree-hash-algorithms.patch"
 In-Reply-To: <20090218213021.GA19814@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,59 +40,231 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Roel Kluin <roel.kluin@gmail.com>
+From: "Theodore Ts'o" <tytso@mit.edu>
 
-commit 501aa061bd68169a5b54c123641f8dfa9ad31545 upstream.
+(cherry picked from commit f99b25897a86fcfff9140396a97261ae65fed872)
 
-Ensure that we do not set pcb->data.raw beyond its size, print an error message
-and return false if we attempt to. A timout message was printed one too early.
+The original ext3 hash algorithms assumed that variables of type char
+were signed, as God and K&R intended.  Unfortunately, this assumption
+is not true on some architectures.  Userspace support for marking
+filesystems with non-native signed/unsigned chars was added two years
+ago, but the kernel-side support was never added (until now).
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/3c505.c |   26 ++++++++++++++++----------
- 1 file changed, 16 insertions(+), 10 deletions(-)
+ fs/ext4/ext4.h    |    3 ++
+ fs/ext4/ext4_sb.h |    1 
+ fs/ext4/hash.c    |   77 ++++++++++++++++++++++++++++++++++++++++++++++--------
+ fs/ext4/namei.c   |    7 ++++
+ fs/ext4/super.c   |   12 ++++++++
+ 5 files changed, 90 insertions(+), 10 deletions(-)
 
---- a/drivers/net/3c505.c
-+++ b/drivers/net/3c505.c
-@@ -493,21 +493,27 @@ static bool receive_pcb(struct net_devic
- 	}
- 	/* read the data */
- 	spin_lock_irqsave(&adapter->lock, flags);
--	i = 0;
--	do {
--		j = 0;
--		while (((stat = get_status(dev->base_addr)) & ACRF) == 0 && j++ < 20000);
--		pcb->data.raw[i++] = inb_command(dev->base_addr);
--		if (i > MAX_PCB_DATA)
--			INVALID_PCB_MSG(i);
--	} while ((stat & ASF_PCB_MASK) != ASF_PCB_END && j < 20000);
-+	for (i = 0; i < MAX_PCB_DATA; i++) {
-+		for (j = 0; j < 20000; j++) {
-+			stat = get_status(dev->base_addr);
-+			if (stat & ACRF)
-+				break;
-+		}
-+		pcb->data.raw[i] = inb_command(dev->base_addr);
-+		if ((stat & ASF_PCB_MASK) == ASF_PCB_END || j >= 20000)
-+			break;
-+	}
- 	spin_unlock_irqrestore(&adapter->lock, flags);
-+	if (i >= MAX_PCB_DATA) {
-+		INVALID_PCB_MSG(i);
-+		return false;
-+	}
- 	if (j >= 20000) {
- 		TIMEOUT_MSG(__LINE__);
- 		return false;
- 	}
--	/* woops, the last "data" byte was really the length! */
--	total_length = pcb->data.raw[--i];
-+	/* the last "data" byte was really the length! */
-+	total_length = pcb->data.raw[i];
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -891,6 +891,9 @@ static inline __le16 ext4_rec_len_to_dis
+ #define DX_HASH_LEGACY		0
+ #define DX_HASH_HALF_MD4	1
+ #define DX_HASH_TEA		2
++#define DX_HASH_LEGACY_UNSIGNED	3
++#define DX_HASH_HALF_MD4_UNSIGNED	4
++#define DX_HASH_TEA_UNSIGNED		5
  
- 	/* safety check total length vs data length */
- 	if (total_length != (pcb->length + 2)) {
+ #ifdef __KERNEL__
+ 
+--- a/fs/ext4/ext4_sb.h
++++ b/fs/ext4/ext4_sb.h
+@@ -57,6 +57,7 @@ struct ext4_sb_info {
+ 	u32 s_next_generation;
+ 	u32 s_hash_seed[4];
+ 	int s_def_hash_version;
++	int s_hash_unsigned;	/* 3 if hash should be signed, 0 if not */
+ 	struct percpu_counter s_freeblocks_counter;
+ 	struct percpu_counter s_freeinodes_counter;
+ 	struct percpu_counter s_dirs_counter;
+--- a/fs/ext4/hash.c
++++ b/fs/ext4/hash.c
+@@ -35,23 +35,71 @@ static void TEA_transform(__u32 buf[4], 
+ 
+ 
+ /* The old legacy hash */
+-static __u32 dx_hack_hash(const char *name, int len)
++static __u32 dx_hack_hash_unsigned(const char *name, int len)
+ {
+-	__u32 hash0 = 0x12a3fe2d, hash1 = 0x37abe8f9;
++	__u32 hash, hash0 = 0x12a3fe2d, hash1 = 0x37abe8f9;
++	const unsigned char *ucp = (const unsigned char *) name;
++
++	while (len--) {
++		hash = hash1 + (hash0 ^ (((int) *ucp++) * 7152373));
++
++		if (hash & 0x80000000)
++			hash -= 0x7fffffff;
++		hash1 = hash0;
++		hash0 = hash;
++	}
++	return hash0 << 1;
++}
++
++static __u32 dx_hack_hash_signed(const char *name, int len)
++{
++	__u32 hash, hash0 = 0x12a3fe2d, hash1 = 0x37abe8f9;
++	const signed char *scp = (const signed char *) name;
++
+ 	while (len--) {
+-		__u32 hash = hash1 + (hash0 ^ (*name++ * 7152373));
++		hash = hash1 + (hash0 ^ (((int) *scp++) * 7152373));
+ 
+-		if (hash & 0x80000000) hash -= 0x7fffffff;
++		if (hash & 0x80000000)
++			hash -= 0x7fffffff;
+ 		hash1 = hash0;
+ 		hash0 = hash;
+ 	}
+-	return (hash0 << 1);
++	return hash0 << 1;
++}
++
++static void str2hashbuf_signed(const char *msg, int len, __u32 *buf, int num)
++{
++	__u32	pad, val;
++	int	i;
++	const signed char *scp = (const signed char *) msg;
++
++	pad = (__u32)len | ((__u32)len << 8);
++	pad |= pad << 16;
++
++	val = pad;
++	if (len > num*4)
++		len = num * 4;
++	for (i = 0; i < len; i++) {
++		if ((i % 4) == 0)
++			val = pad;
++		val = ((int) scp[i]) + (val << 8);
++		if ((i % 4) == 3) {
++			*buf++ = val;
++			val = pad;
++			num--;
++		}
++	}
++	if (--num >= 0)
++		*buf++ = val;
++	while (--num >= 0)
++		*buf++ = pad;
+ }
+ 
+-static void str2hashbuf(const char *msg, int len, __u32 *buf, int num)
++static void str2hashbuf_unsigned(const char *msg, int len, __u32 *buf, int num)
+ {
+ 	__u32	pad, val;
+ 	int	i;
++	const unsigned char *ucp = (const unsigned char *) msg;
+ 
+ 	pad = (__u32)len | ((__u32)len << 8);
+ 	pad |= pad << 16;
+@@ -62,7 +110,7 @@ static void str2hashbuf(const char *msg,
+ 	for (i = 0; i < len; i++) {
+ 		if ((i % 4) == 0)
+ 			val = pad;
+-		val = msg[i] + (val << 8);
++		val = ((int) ucp[i]) + (val << 8);
+ 		if ((i % 4) == 3) {
+ 			*buf++ = val;
+ 			val = pad;
+@@ -95,6 +143,8 @@ int ext4fs_dirhash(const char *name, int
+ 	const char	*p;
+ 	int		i;
+ 	__u32		in[8], buf[4];
++	void		(*str2hashbuf)(const char *, int, __u32 *, int) =
++				str2hashbuf_signed;
+ 
+ 	/* Initialize the default seed for the hash checksum functions */
+ 	buf[0] = 0x67452301;
+@@ -113,13 +163,18 @@ int ext4fs_dirhash(const char *name, int
+ 	}
+ 
+ 	switch (hinfo->hash_version) {
++	case DX_HASH_LEGACY_UNSIGNED:
++		hash = dx_hack_hash_unsigned(name, len);
++		break;
+ 	case DX_HASH_LEGACY:
+-		hash = dx_hack_hash(name, len);
++		hash = dx_hack_hash_signed(name, len);
+ 		break;
++	case DX_HASH_HALF_MD4_UNSIGNED:
++		str2hashbuf = str2hashbuf_unsigned;
+ 	case DX_HASH_HALF_MD4:
+ 		p = name;
+ 		while (len > 0) {
+-			str2hashbuf(p, len, in, 8);
++			(*str2hashbuf)(p, len, in, 8);
+ 			half_md4_transform(buf, in);
+ 			len -= 32;
+ 			p += 32;
+@@ -127,10 +182,12 @@ int ext4fs_dirhash(const char *name, int
+ 		minor_hash = buf[2];
+ 		hash = buf[1];
+ 		break;
++	case DX_HASH_TEA_UNSIGNED:
++		str2hashbuf = str2hashbuf_unsigned;
+ 	case DX_HASH_TEA:
+ 		p = name;
+ 		while (len > 0) {
+-			str2hashbuf(p, len, in, 4);
++			(*str2hashbuf)(p, len, in, 4);
+ 			TEA_transform(buf, in);
+ 			len -= 16;
+ 			p += 16;
+--- a/fs/ext4/namei.c
++++ b/fs/ext4/namei.c
+@@ -372,6 +372,8 @@ dx_probe(const struct qstr *d_name, stru
+ 		goto fail;
+ 	}
+ 	hinfo->hash_version = root->info.hash_version;
++	if (hinfo->hash_version <= DX_HASH_TEA)
++		hinfo->hash_version += EXT4_SB(dir->i_sb)->s_hash_unsigned;
+ 	hinfo->seed = EXT4_SB(dir->i_sb)->s_hash_seed;
+ 	if (d_name)
+ 		ext4fs_dirhash(d_name->name, d_name->len, hinfo);
+@@ -641,6 +643,9 @@ int ext4_htree_fill_tree(struct file *di
+ 	dir = dir_file->f_path.dentry->d_inode;
+ 	if (!(EXT4_I(dir)->i_flags & EXT4_INDEX_FL)) {
+ 		hinfo.hash_version = EXT4_SB(dir->i_sb)->s_def_hash_version;
++		if (hinfo.hash_version <= DX_HASH_TEA)
++			hinfo.hash_version +=
++				EXT4_SB(dir->i_sb)->s_hash_unsigned;
+ 		hinfo.seed = EXT4_SB(dir->i_sb)->s_hash_seed;
+ 		count = htree_dirblock_to_tree(dir_file, dir, 0, &hinfo,
+ 					       start_hash, start_minor_hash);
+@@ -1408,6 +1413,8 @@ static int make_indexed_dir(handle_t *ha
+ 
+ 	/* Initialize as for dx_probe */
+ 	hinfo.hash_version = root->info.hash_version;
++	if (hinfo.hash_version <= DX_HASH_TEA)
++		hinfo.hash_version += EXT4_SB(dir->i_sb)->s_hash_unsigned;
+ 	hinfo.seed = EXT4_SB(dir->i_sb)->s_hash_seed;
+ 	ext4fs_dirhash(name, namelen, &hinfo);
+ 	frame = frames;
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -2118,6 +2118,18 @@ static int ext4_fill_super(struct super_
+ 	for (i = 0; i < 4; i++)
+ 		sbi->s_hash_seed[i] = le32_to_cpu(es->s_hash_seed[i]);
+ 	sbi->s_def_hash_version = es->s_def_hash_version;
++	i = le32_to_cpu(es->s_flags);
++	if (i & EXT2_FLAGS_UNSIGNED_HASH)
++		sbi->s_hash_unsigned = 3;
++	else if ((i & EXT2_FLAGS_SIGNED_HASH) == 0) {
++#ifdef __CHAR_UNSIGNED__
++		es->s_flags |= cpu_to_le32(EXT2_FLAGS_UNSIGNED_HASH);
++		sbi->s_hash_unsigned = 3;
++#else
++		es->s_flags |= cpu_to_le32(EXT2_FLAGS_SIGNED_HASH);
++#endif
++		sb->s_dirt = 1;
++	}
+ 
+ 	if (sbi->s_blocks_per_group > blocksize * 8) {
+ 		printk(KERN_ERR
 
