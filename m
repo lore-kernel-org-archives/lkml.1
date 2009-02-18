@@ -1,83 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbZBRQYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbZBRQZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755205AbZBRQYA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 11:24:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbZBRQXu
+	id S1754859AbZBRQZn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 11:25:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbZBRQZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 11:23:50 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50354 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753005AbZBRQXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 11:23:49 -0500
-Date: Wed, 18 Feb 2009 17:23:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Oleg Nesterov <oleg@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>
-Subject: Re: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove single
-	ipi fallback for smp_call_function_many())
-Message-ID: <20090218162321.GA32743@elte.hu>
-References: <20090216220214.GA10093@redhat.com> <1234823097.30178.406.camel@laptop> <20090216231946.GA12009@redhat.com> <1234862974.4744.31.camel@laptop> <20090217101130.GA8660@wotan.suse.de> <1234866453.4744.58.camel@laptop> <20090217112657.GE26402@wotan.suse.de> <1234923702.29823.7.camel@vayu> <20090218135945.GC23125@wotan.suse.de> <alpine.LFD.2.00.0902180812500.21686@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0902180812500.21686@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 18 Feb 2009 11:25:30 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:50928 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751458AbZBRQZ3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 11:25:29 -0500
+Cc: David Miller <davem@davemloft.net>, Valdis.Kletnieks@vt.edu,
+       arvidjaar@mail.ru, rjw@sisk.pl, netdev@vger.kernel.org,
+       bonding-devel@lists.sourceforge.net, jamagallon@ono.com,
+       linux-kernel@vger.kernel.org
+Message-Id: <06F54D7E-EE07-49C9-AD8F-B46BD6B02ABA@oracle.com>
+From: Chuck Lever <chuck.lever@oracle.com>
+To: Theodore Tso <tytso@mit.edu>
+In-Reply-To: <20090218135537.GF3600@mini-me.lan>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: 2.6.29 regression? Bonding tied to IPV6 in 29-rc5
+Date: Wed, 18 Feb 2009 11:24:45 -0500
+References: <200902172001.41804.arvidjaar@mail.ru> <20090217.142946.232071526.davem@davemloft.net> <25143.1234932076@turing-police.cc.vt.edu> <20090217.212919.259912220.davem@davemloft.net> <20090218135537.GF3600@mini-me.lan>
+X-Mailer: Apple Mail (2.930.3)
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A09020B.499C3653.0090:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Feb 18, 2009, at Feb 18, 2009, 8:55 AM, Theodore Tso wrote:
+> On Tue, Feb 17, 2009 at 09:29:19PM -0800, David Miller wrote:
+>> Next, if it's just an issue of IPV6 traffic, install a packet
+>> scheduler rule that rejects all packets with ethernet proto
+>> ETH_P_IPV6
+>>
+>> If openning up ipv6 sockets is problematic, that can be blocked
+>> using the security layer, which your super-duper distro kernel
+>> is guarenteed to have enabled. :-)
+>>
+>> I'm sure there is someone who has legacy problems with ipv4
+>> and that can't be disabled, and somehow people cope.  Amazing.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Here's another "me too".
 
-> On Wed, 18 Feb 2009, Nick Piggin wrote:
-> > > 
-> > > x2apic register reads/writes don't have serializing semantics, as
-> > > opposed to uncached xapic accesses, which are inherently serializing.
-> > > 
-> > > With this patch, we need to fix the corresponding x2apic IPI operations.
-> > > I will take a look at it.
-> > 
-> > You're saying the problem is in generic_exec_single because I've
-> > removed the smp_mb that inadvertently also serialises memory with
-> > the x2apic on x86?
-> 
-> I think Suresh is wrong on this.
-> 
-> The x2apic is using "wrmsr" to write events, and that's a 
-> serializing instruction.
-> 
-> I really don't know of any way to get unordered information 
-> out of a x86 core, except for playing games with WC memory, 
-> and WC memory would not be appropriate for something like an 
-> interrupt controller.
-> 
-> Of course, it's possible that Intel made the x2apic MSR's 
-> magic, and that they don't serialize, but that's very much 
-> against some very explicit Intel documentation. wrmsr is one 
-> of the (few) instructions that is mentioned all ove the 
-> documentation as being serializing.
+Kernel RPC support also has this problem.  We hit it just a couple of  
+weeks ago now that we have IPv6 enabled NFS in prototype.  If PF_INET6  
+listener creation fails (eg. because ipv6.ko is blacklisted), our  
+workaround right now is to retry the listener socket creation with  
+PF_INET.  There are plenty of somewhat rare corner cases that make  
+this less than ideal.
 
-heh, i just went through all those codepaths to figure out the 
-SMP ordering semantics. I didnt find anything but the MSR write, 
-so maybe the MSR writes did get weakened on certain CPUs.
+> The reality is that there are far more people who have legacy problems
+> with ipv6 than ipv4 (which has been around and in active use for about
+> 3 decades, after all), whereas ipv6 has been around and largely
+> ignored for about a decade.  :-/
+>
+> I'll admit that I ran into some wierd sh*t problems with some open
+> source software or another failing mysteriously when IPv6 was enabled,
+> and I dealt with it by simply disabling IPv6 (yeah, I blocked the
+> module).  I was in a hurry, and it just didn't work, and I had better
+> thing to do than to spend time trying to debug why the presense of an
+> IPv6 enabled interface caused programs to misbehave in random ways.
+>
+> I think I can pretty much guarantee that distro users will be
+> clamoring for a quick and easy way to block ipv6, and it's in our
+> interest to document the recomended way to block it that doesn't cause
+> weird problems with bonding, etc.
 
-Serializing is a serious performance penalty - and it would not 
-be totally out of question to optimize xAPIC MSR accesses. If 
-that's the case it's not quite nice to not document it though.
+A better solution would be to design kernel and user space networking  
+to handle this use case, instead of providing a workaround.  From the  
+variety of comments I've heard, this use case is pretty common.
 
-	Ingo
+Considering the government mandates requiring IPv6 support (and the  
+advertisements by Linux vendors claiming IPv6 support), IPv6 needs to  
+become a first-class citizen in Linux in fairly short order.  It still  
+feels a little piecemeal to me to be called "production ready."
+
+--
+Chuck Lever
+chuck[dot]lever[at]oracle[dot]com
