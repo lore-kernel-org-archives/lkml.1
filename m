@@ -1,64 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbZBRRF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755354AbZBRRHE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755321AbZBRRF7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 12:05:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbZBRRFr
+	id S1755354AbZBRRHE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 12:07:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbZBRRGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 12:05:47 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44070 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753122AbZBRRFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 12:05:46 -0500
-Date: Wed, 18 Feb 2009 18:05:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>, Nick Piggin <npiggin@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: Q: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove
-	single ipi fallback for smp_call_function_many())
-Message-ID: <20090218170517.GA9769@elte.hu>
-References: <20090217112657.GE26402@wotan.suse.de> <20090217192810.GA4980@redhat.com> <20090217213256.GJ6761@linux.vnet.ibm.com> <20090217214518.GA13189@redhat.com> <20090217223910.GM6761@linux.vnet.ibm.com> <20090218135212.GB23125@wotan.suse.de> <alpine.LFD.2.00.0902180744520.21686@localhost.localdomain> <20090218162116.GC29863@elte.hu> <alpine.LFD.2.00.0902180828430.21686@localhost.localdomain> <20090218165808.GA9120@elte.hu>
+	Wed, 18 Feb 2009 12:06:54 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:52853 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752102AbZBRRGx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 12:06:53 -0500
+Date: Wed, 18 Feb 2009 12:06:50 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>
+Subject: Re: [PATCH 0/6] [git pull] updates for tip/tracing/ftrace
+In-Reply-To: <20090218093026.GA12152@elte.hu>
+Message-ID: <alpine.DEB.1.10.0902181203470.11411@gandalf.stny.rr.com>
+References: <20090217182048.233060814@goodmis.org> <20090218000952.GD12714@elte.hu> <20090218084041.GA27540@elte.hu> <20090218085719.GA31049@elte.hu> <20090218093026.GA12152@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090218165808.GA9120@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-an off-list comment pointed out this piece of information as 
-well:
+[ Note, I upgrade my email server which caused a bit of havoc, I'm 
+ just getting emails back from yesterday ]
 
-  http://www.sandpile.org/ia32/coherent.htm
 
-  A WRMSR to one of the x2APIC MSRs (0000_0800h...0000_0BFFh) is 
-  not guaranteed to be serializing.
+On Wed, 18 Feb 2009, Ingo Molnar wrote:
 
-So i suspect we should just enclose it in smp_mb() pairs to make 
-sure it's a full barrier in both directions?
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > it's one of these recent commits:
+> > 
+> >  fa7c7f6: tracing/core: remove unused parameter in tracing_fill_pipe_page()
+> >  6eaaa5d: tracing/core: use appropriate waiting on trace_pipe
+> >  35ebf1c: ftrace: show unlimited when traceon or traceoff has no counter
+> >  73d8b8b: tracing: fix typing mistake in hint message and comments
+> >  d2ef7c2: tracing: fix the return value of trace selftest
+> >  af51309: tracing: use the more proper parameter
+> >  b6887d7: ftrace: rename _hook to _probe
+> >  6a24a24: ftrace: clean up coding style
+> > 
+> > Have not bisected it any further, excluded them from 
+> > tip:master for the time being.
+> 
+> actually - it's one of these:
+> 
+> 37bd824: Merge branches 'tracing/ftrace' and 'tracing/urgent' into tracing/core
+> 5b058bc: tracing/function-graph-tracer: trace the idle tasks
+> 73d3fd9: ftrace: fix !CONFIG_DYNAMIC_FTRACE ftrace_swapper_pid definition
+> 97d0bb8: ftrace: fix !CONFIG_FTRACE [un_]register_ftrace_command() prototypes
+> f492d3f8: Merge branch 'tip/tracing/ftrace' of git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace into tracing/ftrace
+> c4e2b43: Merge branches 'tracing/hw-branch-tracing' and 'tracing/power-tracer' into tracing/core
+> e110e3d: ftrace: add pretty print function for traceon and traceoff hooks
+> 809dcf2: ftrace: add pretty print to selected fuction traces
+> 8fc0c70: ftrace: show selected functions in set_ftrace_filter
+> 23b4ff3: ftrace: add traceon traceoff commands to enable/disable the buffers
+> 988ae9d: ring-buffer: add tracing_is_on to test if ring buffer is enabled
+> 59df055: ftrace: trace different functions with a different tracer
+> e6ea44e: ftrace: consolidate mutexes
 
-Although since it's an explicitly async mechanism with no 
-ordering expectations whatsoever, just doing an smp_mb() before 
-it should be enough, to make sure the IPI can never arrive to 
-another CPU/core faster than the event-horizon/visibility of 
-preceding operations.
+The above consolidate mutexs would be a prime suspect for a hard lockup.
+It may very well be that. When I finally receive your config, I'll give it 
+a test. I saw you post the config by looking a web archive, but my email 
+server is still in the processes of retrieving all my email from the last 
+day or so.
 
-	Ingo
+-- Steve
