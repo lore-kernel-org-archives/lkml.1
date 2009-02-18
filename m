@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754963AbZBRRLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbZBRRLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754963AbZBRRLS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 12:11:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbZBRRLE
+	id S1753941AbZBRRLj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 12:11:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755236AbZBRRLY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 12:11:04 -0500
-Received: from mail-gx0-f222.google.com ([209.85.217.222]:42081 "EHLO
-	mail-gx0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751877AbZBRRLB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 12:11:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=WXGGjXBlqT/Bdpg1VMvsXoSu2socvhDLHn924fh2AEMe/LwA7Hld4QIdEokXTp7VqX
-         lb0LyOtMQJ5sfqxTbAVC4E9ilCsjFKJ7HDAvmizN1hu16XJ1J+S1Cr96t4xaMIkyC+0D
-         eVrUE9UFovjsWlXV8keYt02FO5tjYDFtEQmjc=
+	Wed, 18 Feb 2009 12:11:24 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56380 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752815AbZBRRLX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 12:11:23 -0500
+Date: Wed, 18 Feb 2009 18:10:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, Nick Piggin <npiggin@suse.de>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: Q: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove
+	single ipi fallback for smp_call_function_many())
+Message-ID: <20090218171048.GA12299@elte.hu>
+References: <20090217192810.GA4980@redhat.com> <20090217213256.GJ6761@linux.vnet.ibm.com> <20090217214518.GA13189@redhat.com> <20090217223910.GM6761@linux.vnet.ibm.com> <20090218135212.GB23125@wotan.suse.de> <alpine.LFD.2.00.0902180744520.21686@localhost.localdomain> <20090218162116.GC29863@elte.hu> <alpine.LFD.2.00.0902180828430.21686@localhost.localdomain> <20090218165808.GA9120@elte.hu> <20090218170517.GA9769@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <20090218224541.fe6e0355.sfr@canb.auug.org.au>
-References: <20090218191640.0b023029.sfr@canb.auug.org.au>
-	 <499BE300.5090405@in.ibm.com>
-	 <20090218224541.fe6e0355.sfr@canb.auug.org.au>
-Date: Wed, 18 Feb 2009 12:10:59 -0500
-Message-ID: <8bd0f97a0902180910wafd35ceo47aeb9f3cc6733f3@mail.gmail.com>
-Subject: Re: [s390] next Feb 18: defconfig build break
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: "Sachin P. Sant" <sachinp@in.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-s390@vger.kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090218170517.GA9769@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 18, 2009 at 06:45, Stephen Rothwell wrote:
-> On Wed, 18 Feb 2009 15:59:20 +0530 "Sachin P. Sant" wrote:
->> Next Feb 18 defconfig build on s390 fails with following error.
->>
->>   CC      arch/s390/lib/string.o
->> In file included from include/linux/bitmap.h:8,
->>                  from include/linux/cpumask.h:142,
->>                  from include/linux/smp.h:12,
->>                  from /usr/local/autobench/var/tmp/build/linux/arch/s390/include/asm/spinlock.h:14,
->>                  from include/linux/spinlock.h:88,
->>                  from include/linux/seqlock.h:29,
->>                  from include/linux/time.h:8,
->>                  from include/linux/stat.h:60,
->>                  from include/linux/module.h:10,
->>                  from arch/s390/lib/string.c:13:
->> include/linux/string.h: In function 'strstarts':
->> include/linux/string.h:124: error: implicit declaration of function 'strlen'
->> include/linux/string.h:124: warning: incompatible implicit declaration of built-in function 'strlen'
->> make[1]: *** [arch/s390/lib/string.o] Error 1
->> make: *** [arch/s390/lib] Error 2
->
-> That would be a side effect of commit 43a47c6ca0e0b5479ae316e188a28b7e625d41e5 ("misc:strstarts") from the rr tree.  Rusty cc'd.
 
-breaks all Blackfin ports as well:
-In file included from include/linux/bitmap.h:9,
-                 from include/linux/nodemask.h:90,
-                 from include/linux/mmzone.h:17,
-                 from include/linux/gfp.h:5,
-                 from include/linux/kmod.h:23,
-                 from include/linux/module.h:14,
-                 from arch/blackfin/lib/strncmp.c:14:
-include/linux/string.h: In function 'strstarts':
-include/linux/string.h:124: error: implicit declaration of function 'strncmp'
-make[1]: *** [arch/blackfin/lib/strncmp.o] Error 1
-make: *** [arch/blackfin/lib] Error 2
--mike
+ok, it's documented:
+
+   Intel® 64 and IA-32 Architectures
+   Software Developer’s Manual
+                           Volume 3A:
+       System Programming Guide, Part 1
+
+ 9.5.3        MSR Access in x2APIC Mode
+
+ To allow for efficient access to the APIC registers in x2APIC 
+ mode, the serializing semantics of WRMSR are relaxed when 
+ writing to the APIC registers. Thus, system software should not 
+ use “WRMSR to APIC registers in x2APIC mode” as a serializing 
+ instruction. Read and write accesses to the APIC registers will 
+ occur in program order. A WRMSR to an APIC register may 
+ complete before all preceding stores are globally visible; 
+ software can prevent this by inserting a serializing 
+ instruction or MFENCE before the WRMSR.
+
+	Ingo
