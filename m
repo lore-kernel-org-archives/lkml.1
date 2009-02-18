@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760027AbZBRVqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757305AbZBRVqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760027AbZBRVqb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:46:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757337AbZBRVgT
+	id S1757305AbZBRVqO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:46:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756828AbZBRVgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:36:19 -0500
-Received: from kroah.org ([198.145.64.141]:56359 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 16:36:16 -0500
+Received: from kroah.org ([198.145.64.141]:56388 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757252AbZBRVf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:35:57 -0500
-Date: Wed, 18 Feb 2009 13:33:11 -0800
+	id S1757272AbZBRVf7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:35:59 -0500
+Date: Wed, 18 Feb 2009 13:33:16 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,13 +24,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
        "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [patch 30/39] ext4: mark the blocks/inode bitmap beyond end of
-	group as used
-Message-ID: <20090218213311.GE19814@kroah.com>
+Subject: [patch 33/39] ext4: Fix s_dirty_blocks_counter if block allocation
+	failed with nodelalloc
+Message-ID: <20090218213316.GH19814@kroah.com>
 References: <20090218212144.965748151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext4-mark-the-blocks-inode-bitmap-beyond-end-of-group-as-used.patch"
+Content-Disposition: inline; filename="ext4-fix-s_dirty_blocks_counter-if-block-allocation-failed-with-nodelalloc.patch"
 In-Reply-To: <20090218213021.GA19814@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -44,67 +44,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-(cherry picked from commit 648f5879f5892dddd3ba71cd0d285599f40f2512)
+(cherry picked from commit 0087d9fb3f29f59e8d42c8b058376d80e5adde4c)
 
-We need to mark the block/inode bitmap beyond the end of the group
-with '1'.
+With nodelalloc option we need to update the dirty block counter on
+block allocation failure. This is needed because we increment the
+dirty block counter early in the block allocation phase. Without
+the patch s_dirty_blocks_counter goes wrong so that filesystem's
+free blocks decreases incorrectly.
 
+Tested-by: Akira Fujita <a-fujita@rs.jp.nec.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/ialloc.c  |    2 +-
- fs/ext4/mballoc.c |    4 ++--
- fs/ext4/resize.c  |    6 ++----
- 3 files changed, 5 insertions(+), 7 deletions(-)
+ fs/ext4/mballoc.c |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
---- a/fs/ext4/ialloc.c
-+++ b/fs/ext4/ialloc.c
-@@ -84,7 +84,7 @@ unsigned ext4_init_inode_bitmap(struct s
- 	}
- 
- 	memset(bh->b_data, 0, (EXT4_INODES_PER_GROUP(sb) + 7) / 8);
--	mark_bitmap_end(EXT4_INODES_PER_GROUP(sb), EXT4_BLOCKS_PER_GROUP(sb),
-+	mark_bitmap_end(EXT4_INODES_PER_GROUP(sb), sb->s_blocksize * 8,
- 			bh->b_data);
- 
- 	return EXT4_INODES_PER_GROUP(sb);
 --- a/fs/ext4/mballoc.c
 +++ b/fs/ext4/mballoc.c
-@@ -3036,8 +3036,8 @@ ext4_mb_mark_diskspace_used(struct ext4_
- 	    in_range(block + len - 1, ext4_inode_table(sb, gdp),
- 		     EXT4_SB(sb)->s_itb_per_group)) {
- 		ext4_error(sb, __func__,
--			   "Allocating block in system zone - block = %llu",
--			   block);
-+			   "Allocating block %llu in system zone of %d group\n",
-+			   block, ac->ac_b_ex.fe_group);
- 		/* File system mounted not to panic on error
- 		 * Fix the bitmap and repeat the block allocation
- 		 * We leak some of the blocks here.
---- a/fs/ext4/resize.c
-+++ b/fs/ext4/resize.c
-@@ -284,11 +284,9 @@ static int setup_new_group_blocks(struct
- 	if ((err = extend_or_restart_transaction(handle, 2, bh)))
- 		goto exit_bh;
- 
--	mark_bitmap_end(input->blocks_count, EXT4_BLOCKS_PER_GROUP(sb),
--			bh->b_data);
-+	mark_bitmap_end(input->blocks_count, sb->s_blocksize * 8, bh->b_data);
- 	ext4_journal_dirty_metadata(handle, bh);
- 	brelse(bh);
--
- 	/* Mark unused entries in inode bitmap used */
- 	ext4_debug("clear inode bitmap %#04llx (+%llu)\n",
- 		   input->inode_bitmap, input->inode_bitmap - start);
-@@ -297,7 +295,7 @@ static int setup_new_group_blocks(struct
- 		goto exit_journal;
+@@ -4538,7 +4538,7 @@ ext4_fsblk_t ext4_mb_new_blocks(handle_t
  	}
+ 	if (ar->len == 0) {
+ 		*errp = -EDQUOT;
+-		return 0;
++		goto out3;
+ 	}
+ 	inquota = ar->len;
  
--	mark_bitmap_end(EXT4_INODES_PER_GROUP(sb), EXT4_BLOCKS_PER_GROUP(sb),
-+	mark_bitmap_end(EXT4_INODES_PER_GROUP(sb), sb->s_blocksize * 8,
- 			bh->b_data);
- 	ext4_journal_dirty_metadata(handle, bh);
- exit_bh:
+@@ -4611,6 +4611,13 @@ out2:
+ out1:
+ 	if (ar->len < inquota)
+ 		DQUOT_FREE_BLOCK(ar->inode, inquota - ar->len);
++out3:
++	if (!ar->len) {
++		if (!EXT4_I(ar->inode)->i_delalloc_reserved_flag)
++			/* release all the reserved blocks if non delalloc */
++			percpu_counter_sub(&sbi->s_dirtyblocks_counter,
++						reserv_blks);
++	}
+ 
+ 	return block;
+ }
 
