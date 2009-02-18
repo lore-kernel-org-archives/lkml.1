@@ -1,46 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753696AbZBRIpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753226AbZBRIrH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753696AbZBRIpy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 03:45:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbZBRIpm
+	id S1753226AbZBRIrH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 03:47:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZBRIqy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 03:45:42 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:42749 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753064AbZBRIpl (ORCPT
+	Wed, 18 Feb 2009 03:46:54 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:38842 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751112AbZBRIqx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 03:45:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=cT2r4BifTC/tbp8MbYY1QdKV4a3BvvvVENJ5keOaLQ0iAoJxQ+PcvAgzhy8ozjNXGS
-         PQ/7LAsJn3xK9+jqQSzAdvtj7ywPBneGH1NwmHvyIGdiq+fGGxiBPACu7BeB2yywPljC
-         70B5spyO9Vj+VfNn0qTKkEhV/wkJ3sGMs3gCY=
-Message-ID: <499BCAB1.6060002@gmail.com>
-Date: Wed, 18 Feb 2009 09:45:37 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090208 SUSE/3.0b1-7.1 Thunderbird/3.0b2pre
+	Wed, 18 Feb 2009 03:46:53 -0500
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <m1pri623g9.fsf@fess.ebiederm.org>
+	<49815BF6.7060402@jp.fujitsu.com>
+	<200902131129.09523.jbarnes@virtuousgeek.org>
+	<m11vu1wtk6.fsf@fess.ebiederm.org> <49991D3A.7090001@jp.fujitsu.com>
+	<m1mycktw5t.fsf@fess.ebiederm.org> <499BB4EB.6020602@jp.fujitsu.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 18 Feb 2009 00:47:10 -0800
+In-Reply-To: <499BB4EB.6020602@jp.fujitsu.com> (Kenji Kaneshige's message of "Wed\, 18 Feb 2009 16\:12\:43 +0900")
+Message-ID: <m1hc2s5dyp.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, hpa@zytor.com,
-       tglx@linutronix.de, x86@kernel.org
-Subject: Re: mmotm 2009-02-17-12-33 uploaded
-References: <200902172050.n1HKorvc028933@imap1.linux-foundation.org>	<499B465D.9080502@gmail.com> <20090217153136.a407c776.akpm@linux-foundation.org>
-In-Reply-To: <20090217153136.a407c776.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Rcpt-To: kaneshige.kenji@jp.fujitsu.com, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  2.0 XMPhish11 BODY: Confirm email account/addy
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
+	*      [score: 0.0143]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] pciehp:  Handle interrupts that happen during initialization.
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18.2.2009 00:31, Andrew Morton wrote:
-> On Wed, 18 Feb 2009 00:21:01 +0100
-> Jiri Slaby<jirislaby@gmail.com>  wrote:
->
->> I'm getting the page fault below everytime during bootup.
->
-> It'd be useful to know if bare linux-next does the same thing, please.
+Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> writes:
 
-Not present at d6b658c (which is one from the mmotm), so this is pure 
--mm thing. Something between 2009-02-14-00-49 and this one.
+> In the current pciehp implementation, minimum resources enough to
+> enable devices under the bridge are assigned when P2P bridge is
+> hot-added. My concern is that enough resources are NOT assigned to
+> the bridge if an additional slot is empty. As a result, hot-add
+> adapter card on the additional slot won't work because of resource
+> shortage.
+
+It is a good concern.  Right now I know I won't need a bus number
+but you are quite right the mmio and iospace may be a problem.
+
+My preliminary test case doesn't cover that so I will look and
+confirm it is a problem I need to address.
+
+>> kobject_name is not initialized, and slot_name(p_slot) calls
+>> hoptlug_slot_name which calls pci_slot_name which kobj_name. 
+>> It looks like this problem was introduced in commit 
+>> e1acb24f059defdaa0264e925f19cc21b0a3e592
+>
+> Thank your for the information. I understood what is happening.
+> This needs to be fixed. But, as I mentioned before, I think
+> software notification mechanism should be initialized before
+> sysfs entries are created. I'll consider alternative fix.
+
+Reasonable.  I haven't had the need nor gotten brave enough to
+support those sysfs entries in my minimal driver.
+
+Eric
