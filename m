@@ -1,120 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbZBRT1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbZBRTar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756713AbZBRT1U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 14:27:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbZBRT1G
+	id S1756043AbZBRTar (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 14:30:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbZBRTah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 14:27:06 -0500
-Received: from hera.kernel.org ([140.211.167.34]:38512 "EHLO hera.kernel.org"
+	Wed, 18 Feb 2009 14:30:37 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56060 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751773AbZBRT1D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 14:27:03 -0500
-Message-ID: <499C60AC.9050008@kernel.org>
-Date: Wed, 18 Feb 2009 11:25:32 -0800
+	id S1752708AbZBRTag (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 14:30:36 -0500
+Message-ID: <499C619F.6050807@kernel.org>
+Date: Wed, 18 Feb 2009 11:29:35 -0800
 From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
-       Matthew Wilcox <matthew@wil.cx>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       DL-MPTFusionLinux@lsi.com, linux-pci@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>, david@lang.hm,
+       matthew@wil.cx, jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, DL-MPTFusionLinux@lsi.com,
+       linux-pci@vger.kernel.org
 Subject: Re: [PATCH] pci: enable MSI on 8132
-References: <499B46B2.5040601@kernel.org>	 <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm>	 <499B6BF7.9090300@kernel.org>	 <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm>	 <499B724A.2040408@kernel.org>	 <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm>	 <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>	 <499B774C.5010705@kernel.org>	 <alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm>	 <499B9129.50104@kernel.org> <20090218122137.GJ16841@parisc-linux.org>	 <alpine.DEB.1.10.0902180426420.25606@asgard.lang.hm>	 <20090218100448.7f7c5b86.akpm@linux-foundation.org>	 <1234982285.3225.42.camel@localhost.localdomain>	 <499C5CAD.1070404@kernel.org> <1234984495.3225.48.camel@localhost.localdomain>
-In-Reply-To: <1234984495.3225.48.camel@localhost.localdomain>
+References: <499B46B2.5040601@kernel.org>	<alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm>	<499B6BF7.9090300@kernel.org>	<alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm>	<499B724A.2040408@kernel.org>	<alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm>	<alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>	<499B774C.5010705@kernel.org>	<alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm>	<499B9129.50104@kernel.org>	<20090218122137.GJ16841@parisc-linux.org>	<alpine.DEB.1.10.0902180426420.25606@asgard.lang.hm>	<20090218100448.7f7c5b86.akpm@linux-foundation.org>	<1234982285.3225.42.camel@localhost.localdomain> <20090218111510.b720aacb.akpm@linux-foundation.org>
+In-Reply-To: <20090218111510.b720aacb.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Wed, 2009-02-18 at 11:08 -0800, Yinghai Lu wrote:
->> James Bottomley wrote:
->>> On Wed, 2009-02-18 at 10:04 -0800, Andrew Morton wrote:
+Andrew Morton wrote:
+> On Wed, 18 Feb 2009 18:38:04 +0000
+> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> 
+>> On Wed, 2009-02-18 at 10:04 -0800, Andrew Morton wrote:
+>>> On Wed, 18 Feb 2009 04:27:28 -0800 (PST) david@lang.hm wrote:
 >>>
->>>> Do we not need mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch as
->>>> well, to fix this regression?
->>> No ... it's a separate issue.  MSI was enabled for fusion SAS in 2.6.26;
->>> the problem msi patch which the above corrects actually has the effect
->>> of disabling MSI for fusion and went into 2.6.29-rc2, which isn't a
->>> kernel that's been tested here.
->>>
->> so for 2.6.26, 27, 28 need pci-enable-msi-on-8132.patch
+>>>> On Wed, 18 Feb 2009, Matthew Wilcox wrote:
+>>>>
+>>>>> On Tue, Feb 17, 2009 at 08:40:09PM -0800, Yinghai Lu wrote:
+>>>>>> Impact: workaround BIOS that doesn't enable that bit
+>>>>>>
+>>>>>> David reported that LSI sas doesn't work with MSI.
+>>>>>> it turns out that BIOS doesn't enable HT MSI
+>>>>>> 8132 does support HT MSI.
+>>>>>> add quirk to enable it
+>>>>>>
+>>>>>> Reported-by: David Lang <david@lang.hm>
+>>>>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>>>> Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
+>>>>>
+>>>>> Jesse, I think this should go into Linus' tree sooner rather than later.
+>>>> please forward to -stable as well. this is a regression since the card 
+>>>> works with older kernels.
+>>>>
+>>> Which kernel version introduced the regression?
+>> Technically, it's not a regression.  The MSI problem has always been
+>> there, it was just exposed when the SAS card switched to using MSI by
+>> default.  It's fixed by the bridge quirk  ... of course it's unclear how
+>> many more bridges with problems there are.
+>>
+>>> Do we not need mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch as
+>>> well, to fix this regression?
+>> No ... it's a separate issue.  MSI was enabled for fusion SAS in 2.6.26;
+>> the problem msi patch which the above corrects actually has the effect
+>> of disabling MSI for fusion and went into 2.6.29-rc2, which isn't a
+>> kernel that's been tested here.
 > 
-> I'm a bit lost with the names, but if that's the PCI quirk fix, then yes
-
-yes
-
+> <scratches head>
 > 
->> 2.6.29 need pci-enable-msi-on-8132.patch and mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch
-> 
-> Like I said, I'm happy to have MSI completely disabled until LSI wants
-> to comment, so no ... only the PCI quirk fix.  The true fix is to have
-> the drivers participate in dynamic testing of MSI IRQ routing, but I've
-> somewhat lost sight of that.
+> So it should be the case that _either_ of
+> mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch and
+> pci-enable-msi-on-8132.patch would fix David's machine?
 
-[PATCH] mpt: fix enable lsi sas to use msi as default
+On David's machine:
+for kernel after 2.6.29-rc2, it should work, because that typo actually disable the MSI
+for kernel from 2.6.26 to 2.6.28, MSI is enabled for MPT sas, so it need pci-enable-msi-on-8132.patch.
 
-Impact: fix bug
-
-the third param in module_param(,,) is perm instead of default value.
-we still need to assign default at first.
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- drivers/message/fusion/mptbase.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/drivers/message/fusion/mptbase.c
-===================================================================
---- linux-2.6.orig/drivers/message/fusion/mptbase.c
-+++ linux-2.6/drivers/message/fusion/mptbase.c
-@@ -90,8 +90,8 @@ module_param(mpt_msi_enable_fc, int, 0);
- MODULE_PARM_DESC(mpt_msi_enable_fc, " Enable MSI Support for FC \
- 		controllers (default=0)");
- 
--static int mpt_msi_enable_sas;
--module_param(mpt_msi_enable_sas, int, 1);
-+static int mpt_msi_enable_sas = 1;
-+module_param(mpt_msi_enable_sas, int, 0);
- MODULE_PARM_DESC(mpt_msi_enable_sas, " Enable MSI Support for SAS \
- 		controllers (default=1)");
- 
-or you want
-
-[PATCH] mpt: fix disable lsi sas to use msi as default
-
-Impact: fix bug
-
-the third param in module_param(,,) is perm instead of default value.
-we still need to assign default at first.
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- drivers/message/fusion/mptbase.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/drivers/message/fusion/mptbase.c
-===================================================================
---- linux-2.6.orig/drivers/message/fusion/mptbase.c
-+++ linux-2.6/drivers/message/fusion/mptbase.c
-@@ -91,9 +91,9 @@ MODULE_PARM_DESC(mpt_msi_enable_fc, " En
- 		controllers (default=0)");
- 
- static int mpt_msi_enable_sas;
--module_param(mpt_msi_enable_sas, int, 1);
-+module_param(mpt_msi_enable_sas, int, 0);
- MODULE_PARM_DESC(mpt_msi_enable_sas, " Enable MSI Support for SAS \
--		controllers (default=1)");
-+		controllers (default=0)");
- 
- 
- static int mpt_channel_mapping;
-
-anyway we need to fix the typo.
+for 2.6.29, we need to fix that typo anyway. LIS guys seems to like to enable MSI in that case...
 
 YH
