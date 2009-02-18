@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760914AbZBRVuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757394AbZBRVue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760914AbZBRVuG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:50:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757410AbZBRVgu
+	id S1757394AbZBRVue (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:50:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757703AbZBRVkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:36:50 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55348 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757404AbZBRVgt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:36:49 -0500
-Date: Wed, 18 Feb 2009 16:35:45 -0500
-From: Jason Baron <jbaron@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       acme@ghostprotocols.net, fweisbec@gmail.com, fche@redhat.com,
-       compudj@krystal.dyndns.org
-Subject: Re: [PATCH] new irq tracer
-Message-ID: <20090218213545.GB3112@redhat.com>
-References: <20090218195328.GA3112@redhat.com> <1234991725.4799.1.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1234991725.4799.1.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 18 Feb 2009 16:40:18 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60617
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757605AbZBRVkP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:40:15 -0500
+Date: Wed, 18 Feb 2009 13:39:59 -0800 (PST)
+Message-Id: <20090218.133959.193699273.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: shemminger@vyatta.com, kaber@trash.net, rick.jones2@hp.com,
+       dada1@cosmosbay.com, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, tglx@linutronix.de,
+       gandalf@wlug.westbo.se, linux-kernel@vger.kernel.org
+Subject: Re: [RFT 2/4] Add mod_timer_noact
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090218110144.GA4100@elte.hu>
+References: <20090218092041.GC3294@elte.hu>
+	<20090218.013007.117003889.davem@davemloft.net>
+	<20090218110144.GA4100@elte.hu>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 18, 2009 at 10:15:25PM +0100, Peter Zijlstra wrote:
-> On Wed, 2009-02-18 at 14:53 -0500, Jason Baron wrote:
-> > hi,
-> > 
-> > Using a copule of tracepoints i've implemented an 'irq tracer' which has
-> > the following column format:
-> > 
-> > [time][irq][action][handled][cpu][length]
-> > 
-> > for example on my system:
-> > 
-> > [ 1038.927248381]     28     eth0      1        3     0.000002745
-> > [ 1038.927544688]     28     eth0      1        3     0.000002520
-> > [ 1038.927593609]     28     eth0      1        3     0.000002509
-> > [ 1038.974087675]     29     ahci      1        1     0.000013135
-> > [ 1038.974288475]     29     ahci      1        1     0.000005542
-> > [ 1038.974414324]     29     ahci      1        1     0.000007953
-> > 
-> > I think this patch is useful in understanding irq system behavior, and
-> > for tracking down irq driver handlers that are firing too often or
-> > spending too much time handling an irq. This approach could be extended
-> > to the timer irq and for softirqs...
+From: Ingo Molnar <mingo@elte.hu>
+Date: Wed, 18 Feb 2009 12:01:44 +0100
+
+> * David Miller <davem@davemloft.net> wrote:
 > 
-> The function graph tracer can already do this, it has a special section
-> to recognize irq entry function, and already measures time spend.
+> | Introduce mod_timer_noact() which for example is to replace 
+> | the calls to del_timer()/add_timer() in 
+> | __nf_ct_refresh_acct(). It works like mod_timer() but doesn't 
+> | activate or modify the timeout of an inactive timer which is 
+> | the behaviour we want in order to be able to use timers as a 
+> | means of synchronization in nf_conntrack.
 > 
-> I guess with Steve's new triggers (probes or whatever they ended up
-> being called) you could limit it to just IRQ entry points.
-> 
+> It does not mention the overhead to the regular timer interfaces 
+> at all, nor does it explain the reasons for this change 
+> adequately.
 
-i did look at the graph tracer first. While it does measure irq related
-functions, it does not give this level of detail concerning which irq #,
-which irq handler is involved, and whether or not the irq was handled
-successfully or not. So I believe this tracepoints add a level of detail
-that the graph tracer does not have. Furthermore, this patch requires 2
-tracepoints, not instrumentation for all kernel functions.
+You (conveniently) skipped this part of his commit message, so
+I guess this is the part you didn't read very carefully:
 
-thanks,
+	A later patch will modify __nf_ct_refresh_acct() to use
+	mod_timer_noact() which will then save one spin_lock_irqsave()
+	/ spin_lock_irqrestore() pair per conntrack timer update. This
+	will also get rid of the race we currently have without adding
+	more locking in nf_conntrack.
 
--Jason
+The whole point is to avoid two spin_lock_irqsave() sequences, thus
+taking the timer locks twice.
 
+So Ingo, when you say in response:
 
+	Why don't you use?
 
+		if (del_timer())
+			add_timer();
+
+you really look foolish and, in fact, disrespectful to Stephen.
+
+This was my objection to your email, it proved that you didn't
+really read his changelog message.  He explained perfectly well
+what the final goal was of his changes.
+
+And you have this knee-jerk reaction quite often.
