@@ -1,38 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbZBRE6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753233AbZBRFFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754286AbZBRE6o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 23:58:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbZBRE6g
+	id S1753233AbZBRFFR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 00:05:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750826AbZBRFFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 23:58:36 -0500
-Received: from ozlabs.org ([203.10.76.45]:48159 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752940AbZBRE6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 23:58:35 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [RFC PATCH 0/6] module, kbuild: Faster boot with custom kernel.
-Date: Wed, 18 Feb 2009 15:28:29 +1030
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
-Cc: Andreas Robinson <andr345@gmail.com>, sam@ravnborg.org,
-       linux-kernel@vger.kernel.org
-References: <1234722028-8110-1-git-send-email-andr345@gmail.com> <cc43514a0902170242m5af7e511ne00f424f06a5da22@mail.gmail.com> <ac3eb2510902170353ia62a630nbe5cf059ca7d616e@mail.gmail.com>
-In-Reply-To: <ac3eb2510902170353ia62a630nbe5cf059ca7d616e@mail.gmail.com>
+	Wed, 18 Feb 2009 00:05:03 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:6803 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750720AbZBRFFA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 00:05:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=e8jxKVkYueXBb9bwdlt9dIpYHuzIZLmXQDVoyr0vuDca0/ab+n1hhM/U7vacPpUf0/
+         mbTJUHupzTiEwy51spkH61ba3l/ipFAVF3+Wp0Vi8F+cvlgLbmVK7XY79+S6RR+UYCsD
+         /qok2LJimZ8LWKCavw4WNsebNyfihWw3qQPnI=
+Date: Wed, 18 Feb 2009 08:11:23 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
+       hpa@zytor.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       viro@zeniv.linux.org.uk, mpm@selenic.com, tglx@linutronix.de,
+       torvalds@linux-foundation.org, xemul@openvz.org,
+       Nathan Lynch <nathanl@austin.ibm.com>
+Subject: Re: What can OpenVZ do?
+Message-ID: <20090218051123.GA9367@x200.localdomain>
+References: <1234467035.3243.538.camel@calx> <20090212114207.e1c2de82.akpm@linux-foundation.org> <1234475483.30155.194.camel@nimitz> <20090212141014.2cd3d54d.akpm@linux-foundation.org> <20090213105302.GC4608@elte.hu> <1234817490.30155.287.camel@nimitz> <20090217222319.GA10546@elte.hu> <1234909849.4816.9.camel@nimitz> <20090218003217.GB25856@elte.hu> <1234917639.4816.12.camel@nimitz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902181528.29697.rusty@rustcorp.com.au>
+In-Reply-To: <1234917639.4816.12.camel@nimitz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 17 February 2009 22:23:25 Kay Sievers wrote:
-> Monolithic versus modular kernels usually
-> make about 2+ seconds difference on a recent laptop.
+On Tue, Feb 17, 2009 at 04:40:39PM -0800, Dave Hansen wrote:
+> On Wed, 2009-02-18 at 01:32 +0100, Ingo Molnar wrote:
+> > > > Uncheckpointable should be a one-way flag anyway. We want this 
+> > > > to become usable, so uncheckpointable functionality should be as 
+> > > > painful as possible, to make sure it's getting fixed ...
+> > > 
+> > > Again, as these patches stand, we don't support checkpointing 
+> > > when non-simple files are opened.  Basically, if a 
+> > > open()/lseek() pair won't get you back where you were, we 
+> > > don't deal with them.
+> > > 
+> > > init does non-checkpointable things.  If the flag is a one-way 
+> > > trip, we'll never be able to checkpoint because we'll always 
+> > > inherit init's ! checkpointable flag.
+> > > 
+> > > To fix this, we could start working on making sure we can 
+> > > checkpoint init, but that's practically worthless.
+> > 
+> > i mean, it should be per process (per app) one-way flag of 
+> > course. If the app does something unsupported, it gets 
+> > non-checkpointable and that's it.
+> 
+> OK, we can definitely do that.  Do you think it is OK to run through a
+> set of checks at exec() time to check if the app currently has any
+> unsupported things going on?  If we don't directly inherit the parent's
+> status, then we need to have *some* time when we check it.
 
-Thanks for the fact injection.  How about a megamodule then?
+Uncheckpointable is not one-way.
 
-Cheers,
-Rusty.
+Imagine remap_file_pages(2) is unsupported. Now app uses
+remap_file_pages(2), then unmaps interesting VMA. Now app is
+checkpointable again.
+
+As for overloading LSM, I think, it would be horrible.
+Most hooks are useless, there are config options expanding LSM hooks,
+and CPT and LSM are just totally orthogonal.
+
+Instead, just (no offence) get big enough coverage -- run modern and
+past distros, run servers packaged with them, and if you can checkpoint
+all of this, you're mostly fine.
