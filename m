@@ -1,388 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbZBRUIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754415AbZBRUPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755979AbZBRUIV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 15:08:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbZBRUIN
+	id S1754415AbZBRUPn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 15:15:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbZBRUPc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 15:08:13 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:45489 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751413AbZBRUIM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 15:08:12 -0500
-Date: Wed, 18 Feb 2009 15:08:09 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Jason Baron <jbaron@redhat.com>
-cc: mingo@elte.hu, linux-kernel@vger.kernel.org, acme@ghostprotocols.net,
-       fweisbec@gmail.com, fche@redhat.com, peterz@infradead.org,
-       compudj@krystal.dyndns.org
-Subject: Re: [PATCH] new irq tracer
-In-Reply-To: <20090218195328.GA3112@redhat.com>
-Message-ID: <alpine.DEB.1.10.0902181503490.11411@gandalf.stny.rr.com>
-References: <20090218195328.GA3112@redhat.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 18 Feb 2009 15:15:32 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:49205 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751756AbZBRUPb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 15:15:31 -0500
+Message-ID: <499C6BC9.6010706@garzik.org>
+Date: Wed, 18 Feb 2009 15:12:57 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Yinghai Lu <yinghai@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       david@lang.hm, Matthew Wilcox <matthew@wil.cx>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       DL-MPTFusionLinux@lsi.com, linux-pci@vger.kernel.org
+Subject: Re: [PATCH] pci: enable MSI on 8132
+References: <499B46B2.5040601@kernel.org>	 <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm>	 <499B6BF7.9090300@kernel.org>	 <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm>	 <499B724A.2040408@kernel.org>	 <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm>	 <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>	 <499B774C.5010705@kernel.org>	 <alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm>	 <499B9129.50104@kernel.org> <20090218122137.GJ16841@parisc-linux.org>	 <alpine.DEB.1.10.0902180426420.25606@asgard.lang.hm>	 <20090218100448.7f7c5b86.akpm@linux-foundation.org>	 <1234982285.3225.42.camel@localhost.localdomain>	 <499C5CAD.1070404@kernel.org> <1234984495.3225.48.camel@localhost.localdomain>
+In-Reply-To: <1234984495.3225.48.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+James Bottomley wrote:
+> Like I said, I'm happy to have MSI completely disabled until LSI wants
+> to comment, so no ... only the PCI quirk fix.  The true fix is to have
+> the drivers participate in dynamic testing of MSI IRQ routing, but I've
+> somewhat lost sight of that.
 
-On Wed, 18 Feb 2009, Jason Baron wrote:
-> hi,
-> 
-> Using a copule of tracepoints i've implemented an 'irq tracer' which has
-> the following column format:
-> 
-> [time][irq][action][handled][cpu][length]
-> 
-> for example on my system:
-> 
-> [ 1038.927248381]     28     eth0      1        3     0.000002745
-> [ 1038.927544688]     28     eth0      1        3     0.000002520
-> [ 1038.927593609]     28     eth0      1        3     0.000002509
-> [ 1038.974087675]     29     ahci      1        1     0.000013135
-> [ 1038.974288475]     29     ahci      1        1     0.000005542
-> [ 1038.974414324]     29     ahci      1        1     0.000007953
-> 
-> I think this patch is useful in understanding irq system behavior, and
-> for tracking down irq driver handlers that are firing too often or
-> spending too much time handling an irq. This approach could be extended
-> to the timer irq and for softirqs...
-> 
-> thanks,
-> 
-> -Jason
-> 
-> Signed-off-by: Jason Baron <jbaron@redhat.com>
-> 
-> 
-> ---
-> 
->  include/trace/irq.h      |   24 +++++++
->  kernel/irq/handle.c      |    6 ++
->  kernel/trace/Kconfig     |    7 ++
->  kernel/trace/Makefile    |    1 
->  kernel/trace/trace.h     |    8 ++
->  kernel/trace/trace_irq.c |  151 ++++++++++++++++++++++++++++++++++++++++++++++
->  6 files changed, 197 insertions(+), 0 deletions(-)
->  create mode 100644 include/trace/irq.h
->  create mode 100644 kernel/trace/trace_irq.c
-> 
-> 
-> diff --git a/include/trace/irq.h b/include/trace/irq.h
-> new file mode 100644
-> index 0000000..e4669c2
-> --- /dev/null
-> +++ b/include/trace/irq.h
-> @@ -0,0 +1,24 @@
-> +#ifndef _TRACE_IRQ_H
-> +#define _TRACE_IRQ_H
-> +
-> +#include <linux/interrupt.h>
-> +#include <linux/tracepoint.h>
-> +
-> +struct irq_trace {
-> +	int retval;
-> +	int irq;
-> +	const char *name;
-> +	int cpu;
+That's not really a fix at all, just additional, unneeded overhead for 
+99% of users.  We don't need our drivers bloated with self-check code 
+for all the components in our various computer chips...
 
-You can get rid of "cpu" and probably even name.
+	Jeff
 
-> +	int handled;
-> +	struct timespec duration;
-> +	struct timespec start_time;
-> +};
-> +
-> +DECLARE_TRACE(irq_entry,
-> +	TPPROTO(unsigned int id),
-> +	TPARGS(id));
-> +DECLARE_TRACE(irq_exit,
-> +	TPPROTO(unsigned int id, irqreturn_t retval),
-> +	TPARGS(id, retval));
-> +
-> +#endif /* _TRACE_IRQ_H */
-> diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-> index fdff380..34053b5 100644
-> --- a/kernel/irq/handle.c
-> +++ b/kernel/irq/handle.c
-> @@ -18,6 +18,7 @@
->  #include <linux/rculist.h>
->  #include <linux/hash.h>
->  #include <linux/bootmem.h>
-> +#include <trace/irq.h>
->  
->  #include "internals.h"
->  
-> @@ -338,6 +339,9 @@ irqreturn_t no_action(int cpl, void *dev_id)
->  	return IRQ_NONE;
->  }
->  
-> +DEFINE_TRACE(irq_entry);
-> +DEFINE_TRACE(irq_exit);
-> +
->  /**
->   * handle_IRQ_event - irq action chain handler
->   * @irq:	the interrupt number
-> @@ -354,7 +358,9 @@ irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
->  		local_irq_enable_in_hardirq();
->  
->  	do {
-> +		trace_irq_entry(irq);
->  		ret = action->handler(irq, action->dev_id);
-> +		trace_irq_exit(irq, ret);
->  		if (ret == IRQ_HANDLED)
->  			status |= action->flags;
->  		retval |= ret;
-> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-> index 620f9cd..f62165c 100644
-> --- a/kernel/trace/Kconfig
-> +++ b/kernel/trace/Kconfig
-> @@ -239,6 +239,13 @@ config POWER_TRACER
->  	  power management decisions, specifically the C-state and P-state
->  	  behavior.
->  
-> +config IRQ_TRACER
-> +	bool "Trace irq latencies"
-> +	depends on DEBUG_KERNEL
-> +	depends on X86
-> +	select TRACING
-> +	help
-> +	  This tracer helps developers anaylze irq latencies.
->  
->  config STACK_TRACER
->  	bool "Trace max stack"
-> diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-> index 627090b..58b9f7e 100644
-> --- a/kernel/trace/Makefile
-> +++ b/kernel/trace/Makefile
-> @@ -38,5 +38,6 @@ obj-$(CONFIG_POWER_TRACER) += trace_power.o
->  obj-$(CONFIG_KMEMTRACE) += kmemtrace.o
->  obj-$(CONFIG_WORKQUEUE_TRACER) += trace_workqueue.o
->  obj-$(CONFIG_BLK_DEV_IO_TRACE)	+= blktrace.o
-> +obj-$(CONFIG_IRQ_TRACER) += trace_irq.o
->  
->  libftrace-y := ftrace.o
-> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-> index dbff020..6a34aaa 100644
-> --- a/kernel/trace/trace.h
-> +++ b/kernel/trace/trace.h
-> @@ -11,6 +11,7 @@
->  #include <trace/boot.h>
->  #include <trace/kmemtrace.h>
->  #include <trace/power.h>
-> +#include <trace/irq.h>
->  
->  enum trace_type {
->  	__TRACE_FIRST_TYPE = 0,
-> @@ -33,6 +34,7 @@ enum trace_type {
->  	TRACE_KMEM_ALLOC,
->  	TRACE_KMEM_FREE,
->  	TRACE_POWER,
-> +	TRACE_IRQ,
->  	TRACE_BLK,
->  
->  	__TRACE_LAST_TYPE,
-> @@ -173,6 +175,11 @@ struct trace_power {
->  	struct power_trace	state_data;
->  };
->  
-> +struct trace_irq {
-> +	struct trace_entry	ent;
-> +	struct irq_trace	irq_data;
-> +};
-> +
->  struct kmemtrace_alloc_entry {
->  	struct trace_entry	ent;
->  	enum kmemtrace_type_id type_id;
-> @@ -298,6 +305,7 @@ extern void __ftrace_bad_type(void);
->  			  TRACE_GRAPH_RET);		\
->  		IF_ASSIGN(var, ent, struct hw_branch_entry, TRACE_HW_BRANCHES);\
->   		IF_ASSIGN(var, ent, struct trace_power, TRACE_POWER); \
-> +		IF_ASSIGN(var, ent, struct trace_irq, TRACE_IRQ);	\
->  		IF_ASSIGN(var, ent, struct kmemtrace_alloc_entry,	\
->  			  TRACE_KMEM_ALLOC);	\
->  		IF_ASSIGN(var, ent, struct kmemtrace_free_entry,	\
-> diff --git a/kernel/trace/trace_irq.c b/kernel/trace/trace_irq.c
-> new file mode 100644
-> index 0000000..1808316
-> --- /dev/null
-> +++ b/kernel/trace/trace_irq.c
-> @@ -0,0 +1,151 @@
-> +/*
-> + * Copyright (C) 2009 Red Hat, Inc., Jason Baron <jbaron@redhat.com>
-> + */
-> +
-> +#include <linux/init.h>
-> +#include <linux/debugfs.h>
-> +#include <trace/irq.h>
-> +#include <linux/kallsyms.h>
-> +#include <linux/module.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/ktime.h>
-> +
-> +#include "trace.h"
-> +#include "trace_output.h"
-> +
-> +static struct trace_array *irq_trace;
-> +static int __read_mostly trace_irq_enabled;
-> +static ktime_t start_times[NR_IRQS];
-> +
-> +static void probe_irq_entry(unsigned int irq)
-> +{
-> +	if (!trace_irq_enabled)
-> +		return;
-> +	start_times[irq] = ktime_get();
-> +}
-> +
-> +static void probe_irq_exit(unsigned int irq, irqreturn_t retval)
-> +{
-> +	struct ring_buffer_event *event;
-> +	struct trace_irq *entry;
-> +	struct trace_array *tr = irq_trace;
-> +	struct irq_desc *desc;
-> +	ktime_t end_time;
-> +
-> +	if (!trace_irq_enabled)
-> +		return;
-> +	end_time = ktime_get();
-> +	desc = irq_to_desc(irq);
-> +	event = trace_buffer_lock_reserve(tr, TRACE_IRQ,
-> +					  sizeof(*entry), 0, 0);
-> +	if (!event)
-> +		goto out;
-> +	entry	= ring_buffer_event_data(event);
-> +	entry->irq_data.retval = retval;
-> +	entry->irq_data.name = desc->action->name;
 
-Can't you get the name information at output time?
 
-> +	entry->irq_data.irq = irq;
-> +	entry->irq_data.cpu = raw_smp_processor_id();
-
-The CPU is held via which ring buffer is used. This information is passed 
-to the tracer via iter->cpu.
-
-> +	if (retval == IRQ_HANDLED)
-> +		entry->irq_data.handled = 1;
-> +	else
-> +		entry->irq_data.handled = 0;
-
-What about:
-
-	entry->irq_data.handled = retval == IRQ_HANDLED;
-
-> +	entry->irq_data.duration =
-> +		ktime_to_timespec(ktime_sub(end_time, start_times[irq]));
-> +	entry->irq_data.start_time = ktime_to_timespec(start_times[irq]);
-> +	trace_buffer_unlock_commit(tr, event, 0, 0);
-> + out:
-> +	preempt_enable();
-
-Where's the matching preempt_disable()? And since we are being called from
-an interrupt handler, I doubt it is even needed.
-
-> +}
-> +
-> +static int tracing_irq_register(void)
-> +{
-> +	int ret;
-> +
-> +	ret = register_trace_irq_entry(probe_irq_entry);
-> +	if (ret) {
-> +		pr_info("irq trace: irq entry tracepoint failed to register\n");
-> +		return ret;
-> +	}
-> +	ret = register_trace_irq_exit(probe_irq_exit);
-> +	if (ret) {
-> +		pr_info("irq trace: irq exit tracepoint failed to register\n");
-> +		goto fail_exit;
-> +	}
-> +	return ret;
-> +fail_exit:
-> +	unregister_trace_irq_entry(probe_irq_entry);
-> +	return ret;
-> +}
-> +
-> +static void start_irq_trace(struct trace_array *tr)
-> +{
-> +	trace_irq_enabled = 1;
-> +	tracing_irq_register();
-> +}
-> +
-> +static void stop_irq_trace(struct trace_array *tr)
-> +{
-> +	trace_irq_enabled = 0;
-> +	unregister_trace_irq_entry(probe_irq_entry);
-> +	unregister_trace_irq_exit(probe_irq_exit);
-> +}
-> +
-> +
-> +static int irq_trace_init(struct trace_array *tr)
-> +{
-> +	int cpu;
-> +	irq_trace = tr;
-> +
-> +	trace_irq_enabled = 1;
-> +	tracing_irq_register();
-> +	for_each_cpu(cpu, cpu_possible_mask)
-> +		tracing_reset(tr, cpu);
-> +	return 0;
-> +}
-> +
-> +static enum print_line_t irq_print_line(struct trace_iterator *iter)
-> +{
-> +	int ret = 0;
-> +	struct trace_entry *entry = iter->ent;
-> +	struct trace_irq *field;
-> +	struct irq_trace *it;
-> +	struct trace_seq *s = &iter->seq;
-> +
-> +	trace_assign_type(field, entry);
-> +	it = &field->irq_data;
-> +	if (entry->type == TRACE_IRQ) {
-> +		ret = trace_seq_printf(s, "[%5ld.%09ld]     %d     %s      %d        %d     %ld.%09ld\n",
-> +					it->start_time.tv_sec,
-> +					it->start_time.tv_nsec,
-> +					it->irq, it->name, it->handled, it->cpu,
-
-iter->cpu is the same as it->cpu.
-
--- Steve
-
-> +					it->duration.tv_sec,
-> +					it->duration.tv_nsec);
-> +		if (!ret)
-> +			return TRACE_TYPE_PARTIAL_LINE;
-> +		return TRACE_TYPE_HANDLED;
-> +	}
-> +	return TRACE_TYPE_UNHANDLED;
-> +}
-> +
-> +static void irq_print_headers(struct seq_file *s)
-> +{
-> +	seq_printf(s, "      [time]         [irq] [action] [handled] [cpu] [length]\n");
-> +	seq_printf(s, "         |             |      |        |        |       |   \n\n");
-> +}
-> +
-> +static struct tracer irq_tracer __read_mostly =
-> +{
-> +	.name		= "irq",
-> +	.init		= irq_trace_init,
-> +	.start		= start_irq_trace,
-> +	.stop		= stop_irq_trace,
-> +	.reset		= stop_irq_trace,
-> +	.print_header	= irq_print_headers,
-> +	.print_line	= irq_print_line,
-> +};
-> +
-> +static int init_irq_trace(void)
-> +{
-> +	return register_tracer(&irq_tracer);
-> +}
-> +device_initcall(init_irq_trace);
-> 
-> 
-> 
