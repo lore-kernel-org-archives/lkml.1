@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759992AbZBRWj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760071AbZBRWjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759992AbZBRWj3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 17:39:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757919AbZBRWcQ
+	id S1760071AbZBRWjs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 17:39:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206AbZBRWcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 17:32:16 -0500
-Received: from kroah.org ([198.145.64.141]:34876 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 17:32:22 -0500
+Received: from kroah.org ([198.145.64.141]:34919 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757872AbZBRWcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 17:32:06 -0500
-Date: Wed, 18 Feb 2009 14:29:25 -0800
+	id S1756996AbZBRWcK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 17:32:10 -0500
+Date: Wed, 18 Feb 2009 14:29:32 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,13 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
        "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [patch 15/36] ext4: Fix the delalloc writepages to allocate blocks
-	at the right offset.
-Message-ID: <20090218222925.GP10668@kroah.com>
+Subject: [patch 19/36] ext4: Dont overwrite allocation_context ac_status
+Message-ID: <20090218222932.GT10668@kroah.com>
 References: <20090218222447.432108614@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext4-fix-the-delalloc-writepages-to-allocate-blocks-at-the-right-offset.patch"
+Content-Disposition: inline; filename="ext4-don-t-overwrite-allocation_context-ac_status.patch"
 In-Reply-To: <20090218222841.GA10668@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -44,92 +43,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-(cherry picked from commit 791b7f08954869d7b8ff438f3dac3cfb39778297)
+(cherry picked from commit 032115fcef837a00336ddf7bda584e89789ea498)
 
-When iterating through the pages which have mapped buffer_heads, we
-failed to update the b_state value. This results in allocating blocks
-at logical offset 0.
+We can call ext4_mb_check_limits even after successfully allocating
+the requested blocks.  In that case, make sure we don't overwrite
+ac_status if it already has the status AC_STATUS_FOUND.  This fixes
+the lockdep warning:
+
+=============================================
+[ INFO: possible recursive locking detected ]
+2.6.28-rc6-autokern1 #1
+---------------------------------------------
+fsstress/11948 is trying to acquire lock:
+ (&meta_group_info[i]->alloc_sem){----}, at: [<c04d9a49>] ext4_mb_load_buddy+0x9f/0x278
+.....
+
+stack backtrace:
+.....
+ [<c04db974>] ext4_mb_regular_allocator+0xbb5/0xd44
+.....
+
+but task is already holding lock:
+ (&meta_group_info[i]->alloc_sem){----}, at: [<c04d9a49>] ext4_mb_load_buddy+0x9f/0x278
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/inode.c |   39 ++++++++++++++++++++++++++++++++++-----
- 1 file changed, 34 insertions(+), 5 deletions(-)
+ fs/ext4/mballoc.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -1648,18 +1648,25 @@ struct mpage_da_data {
-  */
- static int mpage_da_submit_io(struct mpage_da_data *mpd)
- {
--	struct address_space *mapping = mpd->inode->i_mapping;
--	int ret = 0, err, nr_pages, i;
--	unsigned long index, end;
-+	long pages_skipped;
- 	struct pagevec pvec;
-+	unsigned long index, end;
-+	int ret = 0, err, nr_pages, i;
-+	struct inode *inode = mpd->inode;
-+	struct address_space *mapping = inode->i_mapping;
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -1326,6 +1326,8 @@ static void ext4_mb_check_limits(struct 
+ 	struct ext4_free_extent ex;
+ 	int max;
  
- 	BUG_ON(mpd->next_page <= mpd->first_page);
--	pagevec_init(&pvec, 0);
-+	/*
-+	 * We need to start from the first_page to the next_page - 1
-+	 * to make sure we also write the mapped dirty buffer_heads.
-+	 * If we look at mpd->lbh.b_blocknr we would only be looking
-+	 * at the currently mapped buffer_heads.
-+	 */
- 	index = mpd->first_page;
- 	end = mpd->next_page - 1;
- 
-+	pagevec_init(&pvec, 0);
- 	while (index <= end) {
--		/* XXX: optimize tail */
- 		nr_pages = pagevec_lookup(&pvec, mapping, index, PAGEVEC_SIZE);
- 		if (nr_pages == 0)
- 			break;
-@@ -1671,6 +1678,10 @@ static int mpage_da_submit_io(struct mpa
- 				break;
- 			index++;
- 
-+			BUG_ON(!PageLocked(page));
-+			BUG_ON(PageWriteback(page));
-+
-+			pages_skipped = mpd->wbc->pages_skipped;
- 			err = mapping->a_ops->writepage(page, mpd->wbc);
- 			if (!err)
- 				mpd->pages_written++;
-@@ -1991,11 +2002,29 @@ static int __mpage_da_writepage(struct p
- 		bh = head;
- 		do {
- 			BUG_ON(buffer_locked(bh));
-+			/*
-+			 * We need to try to allocate
-+			 * unmapped blocks in the same page.
-+			 * Otherwise we won't make progress
-+			 * with the page in ext4_da_writepage
-+			 */
- 			if (buffer_dirty(bh) &&
- 				(!buffer_mapped(bh) || buffer_delay(bh))) {
- 				mpage_add_bh_to_extent(mpd, logical, bh);
- 				if (mpd->io_done)
- 					return MPAGE_DA_EXTENT_TAIL;
-+			} else if (buffer_dirty(bh) && (buffer_mapped(bh))) {
-+				/*
-+				 * mapped dirty buffer. We need to update
-+				 * the b_state because we look at
-+				 * b_state in mpage_da_map_blocks. We don't
-+				 * update b_size because if we find an
-+				 * unmapped buffer_head later we need to
-+				 * use the b_state flag of that buffer_head.
-+				 */
-+				if (mpd->lbh.b_size == 0)
-+					mpd->lbh.b_state =
-+						bh->b_state & BH_FLAGS;
- 			}
- 			logical++;
- 		} while ((bh = bh->b_this_page) != head);
++	if (ac->ac_status == AC_STATUS_FOUND)
++		return;
+ 	/*
+ 	 * We don't want to scan for a whole year
+ 	 */
 
