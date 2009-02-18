@@ -1,229 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754475AbZBRMHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754563AbZBRMHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754475AbZBRMHi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 07:07:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbZBRMFn
+	id S1754563AbZBRMHy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 07:07:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753630AbZBRMFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 07:05:43 -0500
-Received: from hera.kernel.org ([140.211.167.34]:50741 "EHLO hera.kernel.org"
+	Wed, 18 Feb 2009 07:05:45 -0500
+Received: from hera.kernel.org ([140.211.167.34]:50746 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753531AbZBRMFi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 07:05:38 -0500
+	id S1753535AbZBRMFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 07:05:39 -0500
 From: Tejun Heo <tj@kernel.org>
 To: rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
        linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
        cpw@sgi.com, mingo@elte.hu
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 10/10] x86: convert to the new dynamic percpu allocator
-Date: Wed, 18 Feb 2009 21:04:36 +0900
-Message-Id: <1234958676-27618-11-git-send-email-tj@kernel.org>
+Cc: mingo@redhat.com, lenb@kernel.org, cpufreq@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>
+Subject: [PATCH 04/10] alloc_percpu: change percpu_ptr to per_cpu_ptr
+Date: Wed, 18 Feb 2009 21:04:30 +0900
+Message-Id: <1234958676-27618-5-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1234958676-27618-1-git-send-email-tj@kernel.org>
 References: <1234958676-27618-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 18 Feb 2009 12:05:06 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 18 Feb 2009 12:04:59 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: use new dynamic allocator, unified access to static/dynamic
-        percpu memory
+From: Rusty Russell <rusty@rustcorp.com.au>
 
-Convert to the new dynamic percpu allocator.
+Impact: cleanup
 
-* implement populate_extra_pte() for both 32 and 64
-* update setup_per_cpu_areas() to use pcpu_setup_static()
-* define __addr_to_pcpu_ptr() and __pcpu_ptr_to_addr()
-* define config HAVE_DYNAMIC_PER_CPU_AREA
+There are two allocated per-cpu accessor macros with almost identical
+spelling.  The original and far more popular is per_cpu_ptr (44
+files), so change over the other 4 files.
 
+tj: kill percpu_ptr() and update UP too
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Cc: mingo@redhat.com
+Cc: lenb@kernel.org
+Cc: cpufreq@vger.kernel.org
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- arch/x86/Kconfig               |    3 ++
- arch/x86/include/asm/percpu.h  |    8 +++++
- arch/x86/include/asm/pgtable.h |    1 +
- arch/x86/kernel/setup_percpu.c |   62 +++++++++++++++++++++++++--------------
- arch/x86/mm/init_32.c          |   10 ++++++
- arch/x86/mm/init_64.c          |   19 ++++++++++++
- 6 files changed, 81 insertions(+), 22 deletions(-)
+ arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    2 +-
+ drivers/acpi/processor_perflib.c           |    4 ++--
+ include/linux/percpu.h                     |   23 +++++++++++------------
+ kernel/sched.c                             |    6 +++---
+ kernel/stop_machine.c                      |    2 +-
+ 5 files changed, 18 insertions(+), 19 deletions(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index f760a22..d3f6ead 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -135,6 +135,9 @@ config ARCH_HAS_CACHE_LINE_SIZE
- config HAVE_SETUP_PER_CPU_AREA
- 	def_bool y
+diff --git a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+index 4b1c319..22590cf 100644
+--- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
++++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+@@ -601,7 +601,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	if (!data)
+ 		return -ENOMEM;
  
-+config HAVE_DYNAMIC_PER_CPU_AREA
-+	def_bool y
-+
- config HAVE_CPUMASK_OF_CPU_MAP
- 	def_bool X86_64_SMP
+-	data->acpi_data = percpu_ptr(acpi_perf_data, cpu);
++	data->acpi_data = per_cpu_ptr(acpi_perf_data, cpu);
+ 	per_cpu(drv_data, cpu) = data;
  
-diff --git a/arch/x86/include/asm/percpu.h b/arch/x86/include/asm/percpu.h
-index aee103b..8f1d2fb 100644
---- a/arch/x86/include/asm/percpu.h
-+++ b/arch/x86/include/asm/percpu.h
-@@ -43,6 +43,14 @@
- #else /* ...!ASSEMBLY */
+ 	if (cpu_has(c, X86_FEATURE_CONSTANT_TSC))
+diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+index 9cc769b..68fd3d2 100644
+--- a/drivers/acpi/processor_perflib.c
++++ b/drivers/acpi/processor_perflib.c
+@@ -516,12 +516,12 @@ int acpi_processor_preregister_performance(
+ 			continue;
+ 		}
  
- #include <linux/stringify.h>
-+#include <asm/sections.h>
-+
-+#define __addr_to_pcpu_ptr(addr)					\
-+	(void *)((unsigned long)(addr) - (unsigned long)pcpu_base_addr	\
-+		 + (unsigned long)__per_cpu_start)
-+#define __pcpu_ptr_to_addr(ptr)						\
-+	(void *)((unsigned long)(ptr) + (unsigned long)pcpu_base_addr	\
-+		 - (unsigned long)__per_cpu_start)
+-		if (!performance || !percpu_ptr(performance, i)) {
++		if (!performance || !per_cpu_ptr(performance, i)) {
+ 			retval = -EINVAL;
+ 			continue;
+ 		}
  
- #ifdef CONFIG_SMP
- #define __percpu_arg(x)		"%%"__stringify(__percpu_seg)":%P" #x
-diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
-index 6f7c102..dd91c25 100644
---- a/arch/x86/include/asm/pgtable.h
-+++ b/arch/x86/include/asm/pgtable.h
-@@ -402,6 +402,7 @@ int phys_mem_access_prot_allowed(struct file *file, unsigned long pfn,
+-		pr->performance = percpu_ptr(performance, i);
++		pr->performance = per_cpu_ptr(performance, i);
+ 		cpumask_set_cpu(i, pr->performance->shared_cpu_map);
+ 		if (acpi_processor_get_psd(pr)) {
+ 			retval = -EINVAL;
+diff --git a/include/linux/percpu.h b/include/linux/percpu.h
+index 3577ffd..c80cfe1 100644
+--- a/include/linux/percpu.h
++++ b/include/linux/percpu.h
+@@ -81,23 +81,13 @@ struct percpu_data {
+ };
  
- /* Install a pte for a particular vaddr in kernel space. */
- void set_pte_vaddr(unsigned long vaddr, pte_t pte);
-+void populate_extra_pte(unsigned long vaddr);
+ #define __percpu_disguise(pdata) (struct percpu_data *)~(unsigned long)(pdata)
+-/* 
+- * Use this to get to a cpu's version of the per-cpu object dynamically
+- * allocated. Non-atomic access to the current CPU's version should
+- * probably be combined with get_cpu()/put_cpu().
+- */ 
+-#define percpu_ptr(ptr, cpu)                              \
+-({                                                        \
+-        struct percpu_data *__p = __percpu_disguise(ptr); \
+-        (__typeof__(ptr))__p->ptrs[(cpu)];	          \
+-})
  
- #ifdef CONFIG_X86_32
- extern void native_pagetable_setup_start(pgd_t *base);
-diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
-index d992e6c..2dce435 100644
---- a/arch/x86/kernel/setup_percpu.c
-+++ b/arch/x86/kernel/setup_percpu.c
-@@ -61,38 +61,56 @@ static inline void setup_percpu_segment(int cpu)
-  */
- void __init setup_per_cpu_areas(void)
+ extern void *__percpu_alloc_mask(size_t size, gfp_t gfp, cpumask_t *mask);
+ extern void percpu_free(void *__pdata);
+ 
+ #else /* CONFIG_SMP */
+ 
+-#define percpu_ptr(ptr, cpu) ({ (void)(cpu); (ptr); })
++#define per_cpu_ptr(ptr, cpu) ({ (void)(cpu); (ptr); })
+ 
+ static __always_inline void *__percpu_alloc_mask(size_t size, gfp_t gfp, cpumask_t *mask)
  {
--	ssize_t size;
--	char *ptr;
--	int cpu;
--
--	/* Copy section for each CPU (we discard the original) */
--	size = roundup(PERCPU_ENOUGH_ROOM, PAGE_SIZE);
-+	ssize_t size = __per_cpu_end - __per_cpu_start;
-+	unsigned int nr_cpu_pages = DIV_ROUND_UP(size, PAGE_SIZE);
-+	static struct page **pages;
-+	size_t pages_size;
-+	unsigned int cpu, i, j;
-+	unsigned long delta;
-+	size_t pcpu_unit_size;
+@@ -122,6 +112,15 @@ static inline void percpu_free(void *__pdata)
+ 						  cpu_possible_map)
+ #define alloc_percpu(type)	(type *)__alloc_percpu(sizeof(type))
+ #define free_percpu(ptr)	percpu_free((ptr))
+-#define per_cpu_ptr(ptr, cpu)	percpu_ptr((ptr), (cpu))
++/*
++ * Use this to get to a cpu's version of the per-cpu object dynamically
++ * allocated. Non-atomic access to the current CPU's version should
++ * probably be combined with get_cpu()/put_cpu().
++ */
++#define per_cpu_ptr(ptr, cpu)						\
++({									\
++        struct percpu_data *__p = __percpu_disguise(ptr);		\
++        (__typeof__(ptr))__p->ptrs[(cpu)];				\
++})
  
- 	pr_info("NR_CPUS:%d nr_cpumask_bits:%d nr_cpu_ids:%d nr_node_ids:%d\n",
- 		NR_CPUS, nr_cpumask_bits, nr_cpu_ids, nr_node_ids);
-+	pr_info("PERCPU: Allocating %zd bytes for static per cpu data\n", size);
+ #endif /* __LINUX_PERCPU_H */
+diff --git a/kernel/sched.c b/kernel/sched.c
+index fc17fd9..9d30ac9 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -9472,7 +9472,7 @@ cpuacct_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp)
  
--	pr_info("PERCPU: Allocating %zd bytes of per cpu data\n", size);
-+	pages_size = nr_cpu_pages * num_possible_cpus() * sizeof(pages[0]);
-+	pages = alloc_bootmem(pages_size);
- 
-+	j = 0;
- 	for_each_possible_cpu(cpu) {
-+		void *ptr;
-+
-+		for (i = 0; i < nr_cpu_pages; i++) {
- #ifndef CONFIG_NEED_MULTIPLE_NODES
--		ptr = alloc_bootmem_pages(size);
-+			ptr = alloc_bootmem_pages(PAGE_SIZE);
- #else
--		int node = early_cpu_to_node(cpu);
--		if (!node_online(node) || !NODE_DATA(node)) {
--			ptr = alloc_bootmem_pages(size);
--			pr_info("cpu %d has no node %d or node-local memory\n",
--				cpu, node);
--			pr_debug("per cpu data for cpu%d at %016lx\n",
--				 cpu, __pa(ptr));
--		} else {
--			ptr = alloc_bootmem_pages_node(NODE_DATA(node), size);
--			pr_debug("per cpu data for cpu%d on node%d at %016lx\n",
--				cpu, node, __pa(ptr));
--		}
-+			int node = early_cpu_to_node(cpu);
-+
-+			if (!node_online(node) || !NODE_DATA(node)) {
-+				ptr = alloc_bootmem_pages(PAGE_SIZE);
-+				pr_info("cpu %d has no node %d or node-local "
-+					"memory\n", cpu, node);
-+				pr_debug("per cpu data for cpu%d at %016lx\n",
-+					 cpu, __pa(ptr));
-+			} else {
-+				ptr = alloc_bootmem_pages_node(NODE_DATA(node),
-+							       PAGE_SIZE);
-+				pr_debug("per cpu data for cpu%d on node%d "
-+					 "at %016lx\n", cpu, node, __pa(ptr));
-+			}
- #endif
-+			memcpy(ptr, __per_cpu_load + i * PAGE_SIZE, PAGE_SIZE);
-+			pages[j++] = virt_to_page(ptr);
-+		}
-+	}
-+
-+	pcpu_unit_size = pcpu_setup_static(populate_extra_pte, pages, size);
- 
--		memcpy(ptr, __per_cpu_load, __per_cpu_end - __per_cpu_start);
--		per_cpu_offset(cpu) = ptr - __per_cpu_start;
-+	free_bootmem(__pa(pages), pages_size);
-+
-+	delta = (unsigned long)pcpu_base_addr - (unsigned long)__per_cpu_start;
-+	for_each_possible_cpu(cpu) {
-+		per_cpu_offset(cpu) = delta + cpu * pcpu_unit_size;
- 		per_cpu(this_cpu_off, cpu) = per_cpu_offset(cpu);
- 		per_cpu(cpu_number, cpu) = cpu;
- 		setup_percpu_segment(cpu);
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 00263bf..8b1a0ef 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -137,6 +137,16 @@ static pte_t * __init one_page_table_init(pmd_t *pmd)
- 	return pte_offset_kernel(pmd, 0);
- }
- 
-+void __init populate_extra_pte(unsigned long vaddr)
-+{
-+	int pgd_idx = pgd_index(vaddr);
-+	int pmd_idx = pmd_index(vaddr);
-+	pmd_t *pmd;
-+
-+	pmd = one_md_table_init(swapper_pg_dir + pgd_idx);
-+	one_page_table_init(pmd + pmd_idx);
-+}
-+
- static pte_t *__init page_table_kmap_check(pte_t *pte, pmd_t *pmd,
- 					   unsigned long vaddr, pte_t *lastpte)
+ static u64 cpuacct_cpuusage_read(struct cpuacct *ca, int cpu)
  {
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index e6d36b4..7f91e2c 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -223,6 +223,25 @@ set_pte_vaddr(unsigned long vaddr, pte_t pteval)
- 	set_pte_vaddr_pud(pud_page, vaddr, pteval);
- }
+-	u64 *cpuusage = percpu_ptr(ca->cpuusage, cpu);
++	u64 *cpuusage = per_cpu_ptr(ca->cpuusage, cpu);
+ 	u64 data;
  
-+void __init populate_extra_pte(unsigned long vaddr)
-+{
-+	pgd_t *pgd;
-+	pud_t *pud;
-+
-+	pgd = pgd_offset_k(vaddr);
-+	if (pgd_none(*pgd)) {
-+		pud = (pud_t *)spp_getpage();
-+		pgd_populate(&init_mm, pgd, pud);
-+		if (pud != pud_offset(pgd, 0)) {
-+			printk(KERN_ERR "PAGETABLE BUG #00! %p <-> %p\n",
-+			       pud, pud_offset(pgd, 0));
-+			return;
-+		}
-+	}
-+
-+	set_pte_vaddr_pud((pud_t *)pgd_page_vaddr(*pgd), vaddr, __pte(0));
-+}
-+
- /*
-  * Create large page table mappings for a range of physical addresses.
-  */
+ #ifndef CONFIG_64BIT
+@@ -9491,7 +9491,7 @@ static u64 cpuacct_cpuusage_read(struct cpuacct *ca, int cpu)
+ 
+ static void cpuacct_cpuusage_write(struct cpuacct *ca, int cpu, u64 val)
+ {
+-	u64 *cpuusage = percpu_ptr(ca->cpuusage, cpu);
++	u64 *cpuusage = per_cpu_ptr(ca->cpuusage, cpu);
+ 
+ #ifndef CONFIG_64BIT
+ 	/*
+@@ -9587,7 +9587,7 @@ static void cpuacct_charge(struct task_struct *tsk, u64 cputime)
+ 	ca = task_ca(tsk);
+ 
+ 	for (; ca; ca = ca->parent) {
+-		u64 *cpuusage = percpu_ptr(ca->cpuusage, cpu);
++		u64 *cpuusage = per_cpu_ptr(ca->cpuusage, cpu);
+ 		*cpuusage += cputime;
+ 	}
+ }
+diff --git a/kernel/stop_machine.c b/kernel/stop_machine.c
+index 0cd415e..74541ca 100644
+--- a/kernel/stop_machine.c
++++ b/kernel/stop_machine.c
+@@ -170,7 +170,7 @@ int __stop_machine(int (*fn)(void *), void *data, const struct cpumask *cpus)
+ 	 * doesn't hit this CPU until we're ready. */
+ 	get_cpu();
+ 	for_each_online_cpu(i) {
+-		sm_work = percpu_ptr(stop_machine_work, i);
++		sm_work = per_cpu_ptr(stop_machine_work, i);
+ 		INIT_WORK(sm_work, stop_cpu);
+ 		queue_work_on(i, stop_machine_wq, sm_work);
+ 	}
 -- 
 1.6.0.2
 
