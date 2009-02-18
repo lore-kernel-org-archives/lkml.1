@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757394AbZBRVue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760995AbZBRVuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757394AbZBRVue (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:50:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757703AbZBRVkS
+	id S1760995AbZBRVuv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:50:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757489AbZBRVoj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:40:18 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60617
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757605AbZBRVkP (ORCPT
+	Wed, 18 Feb 2009 16:44:39 -0500
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:55570 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759474AbZBRVoh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:40:15 -0500
-Date: Wed, 18 Feb 2009 13:39:59 -0800 (PST)
-Message-Id: <20090218.133959.193699273.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: shemminger@vyatta.com, kaber@trash.net, rick.jones2@hp.com,
-       dada1@cosmosbay.com, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, tglx@linutronix.de,
-       gandalf@wlug.westbo.se, linux-kernel@vger.kernel.org
-Subject: Re: [RFT 2/4] Add mod_timer_noact
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090218110144.GA4100@elte.hu>
-References: <20090218092041.GC3294@elte.hu>
-	<20090218.013007.117003889.davem@davemloft.net>
-	<20090218110144.GA4100@elte.hu>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 18 Feb 2009 16:44:37 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq0EAHcPnElMQWt2/2dsb2JhbACBbtNNhBMG
+Date: Wed, 18 Feb 2009 16:44:26 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
+       pierre-marc.fournier@polymtl.ca
+Subject: Re: Moving Userspace RCU (urcu) from GPL to LGPL license
+Message-ID: <20090218214426.GA30245@Krystal>
+References: <20090218180232.GA21389@Krystal> <20090218213448.3b467c88@the-village.bc.nu>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090218213448.3b467c88@the-village.bc.nu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:43:51 up 48 days, 21:42,  6 users,  load average: 0.18, 0.33,
+	0.26
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed, 18 Feb 2009 12:01:44 +0100
-
-> * David Miller <davem@davemloft.net> wrote:
+* Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
+> On Wed, 18 Feb 2009 13:02:32 -0500
+> Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
+> > only thing is that we cannot put GPL code into a LGPL library.
 > 
-> | Introduce mod_timer_noact() which for example is to replace 
-> | the calls to del_timer()/add_timer() in 
-> | __nf_ct_refresh_acct(). It works like mod_timer() but doesn't 
-> | activate or modify the timeout of an inactive timer which is 
-> | the behaviour we want in order to be able to use timers as a 
-> | means of synchronization in nf_conntrack.
+> You'll need a patent grant from IBM for non GPL use for that not just an
+> LGPL library
+>  
+> > The other point is that I use a few low-level primitives from the Linux
+> > kernel header (e.g. atomic increment for x86, barrier macros). Those are
+> > simple one-liners, but, still, I wonder about the licensing
+> > implications. I could simply "rewrite" them, but that would be a shame
 > 
-> It does not mention the overhead to the regular timer interfaces 
-> at all, nor does it explain the reasons for this change 
-> adequately.
+> Ask the author - certainly the original basic atomic ops Linus gave
+> specific permission to the mozilla folks to use under other licences.
+> 
+> Alan
+> 
 
-You (conveniently) skipped this part of his commit message, so
-I guess this is the part you didn't read very carefully:
+Thanks Alan for this precious information. I'll discuss with IBM about
+possible alternatives.
 
-	A later patch will modify __nf_ct_refresh_acct() to use
-	mod_timer_noact() which will then save one spin_lock_irqsave()
-	/ spin_lock_irqrestore() pair per conntrack timer update. This
-	will also get rid of the race we currently have without adding
-	more locking in nf_conntrack.
+Mathieu
 
-The whole point is to avoid two spin_lock_irqsave() sequences, thus
-taking the timer locks twice.
 
-So Ingo, when you say in response:
-
-	Why don't you use?
-
-		if (del_timer())
-			add_timer();
-
-you really look foolish and, in fact, disrespectful to Stephen.
-
-This was my objection to your email, it proved that you didn't
-really read his changelog message.  He explained perfectly well
-what the final goal was of his changes.
-
-And you have this knee-jerk reaction quite often.
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
