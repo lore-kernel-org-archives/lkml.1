@@ -1,70 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbZBRT5G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756441AbZBRT5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755345AbZBRT5G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 14:57:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbZBRT4y
+	id S1756441AbZBRT5f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 14:57:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbZBRT5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 14:56:54 -0500
-Received: from outbound-mail-30.bluehost.com ([69.89.17.212]:55587 "HELO
-	outbound-mail-30.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752446AbZBRT4y (ORCPT
+	Wed, 18 Feb 2009 14:57:21 -0500
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:33157 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754147AbZBRT5U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 14:56:54 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=PuUZNwuYD0/PTNrElm6aa4MzwPMmw0S0/ZJwun6ptrBvIezj3YCzeF13mL5JX8wPRx18te24tjsDw46yr3BbRzW0sDVfTJhL8peLa88O2/wm6fBpyjjL16vONdN+t+mt;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH] alpha: pci sysfs resources
-Date: Wed, 18 Feb 2009 11:56:50 -0800
-User-Agent: KMail/1.9.10
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Richard Henderson <rth@twiddle.net>,
-       Jay Estabrook <jay.estabrook@hp.com>, linux-kernel@vger.kernel.org
-References: <20090217104653.GA25856@jurassic.park.msu.ru>
-In-Reply-To: <20090217104653.GA25856@jurassic.park.msu.ru>
+	Wed, 18 Feb 2009 14:57:20 -0500
+Message-ID: <499C681A.6000008@hp.com>
+Date: Wed, 18 Feb 2009 14:57:14 -0500
+From: Brian Haley <brian.haley@hp.com>
+Organization: Open Source and Linux Organization
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902181156.50547.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+To: David Miller <davem@davemloft.net>,
+       YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
+CC: Vlad Yasevich <vladislav.yasevich@hp.com>,
+       Chuck Lever <chuck.lever@oracle.com>, Theodore Tso <tytso@mit.edu>,
+       Valdis.Kletnieks@vt.edu, arvidjaar@mail.ru, rjw@sisk.pl,
+       netdev@vger.kernel.org, bonding-devel@lists.sourceforge.net,
+       jamagallon@ono.com, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29 regression? Bonding tied to IPV6 in 29-rc5
+References: <200902172001.41804.arvidjaar@mail.ru> <20090217.142946.232071526.davem@davemloft.net> <25143.1234932076@turing-police.cc.vt.edu> <20090217.212919.259912220.davem@davemloft.net> <20090218135537.GF3600@mini-me.lan> <06F54D7E-EE07-49C9-AD8F-B46BD6B02ABA@oracle.com> <499C5486.5020807@hp.com>
+In-Reply-To: <499C5486.5020807@hp.com>
+Content-Type: multipart/mixed;
+ boundary="------------020600060606060306030002"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, February 17, 2009 2:46 am Ivan Kokshaysky wrote:
-> This closes http://bugzilla.kernel.org/show_bug.cgi?id=10893
-> which is a showstopper for X development on alpha.
->
-> The generic HAVE_PCI_MMAP code (drivers/pci-sysfs.c) is not
-> very useful since we have to deal with three different types
-> of MMIO address spaces: sparse and dense mappings for old
-> ev4/ev5 machines and "normal" 1:1 MMIO space (bwx) for ev56 and
-> later.
-> Also "write combine" mappings are meaningless on alpha - roughly
-> speaking, alpha does write combining, IO reordering and other
-> optimizations by default, unless user splits IO accesses
-> with memory barriers.
->
-> I think the cleanest way to deal with resource files on alpha
-> is to convert the default no-op pci_create_resource_files() and
-> pci_remove_resource_files() for !HAVE_PCI_MMAP case into __weak
-> functions and override them with alpha specific ones.
->
-> Another alpha hook is needed for "legacy_" resource files
-> to handle sparse addressing (pci_adjust_legacy_attr).
->
-> With the "standard" resourceN files on ev56/ev6 libpciaccess
-> works "out of the box". Handling of resourceN_sparse/resourceN_dense
-> files on older machines obviously requires some userland work.
->
-> Sparse/dense stuff has been tested on sx164 (pca56/pyxis, normally
-> uses bwx IO) with the kernel hacked into "cia compatible" mode.
+This is a multi-part message in MIME format.
+--------------020600060606060306030002
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Excellent, thanks Ivan.  I've applied this one to my linux-next branch.  
-Should make userspace stuff on the ev56/6 machines that much easier.
+Vlad Yasevich wrote:
+> Having worked in other environments where ipv6 has to be explicitly
+> enabled per interface, I've thought that this level of control was
+> always missing from linux.  Being able to configure only the interface
+> that users want seems like a good thing to have.
+> Would a module parameter that disables ipv6 or at least addrconf be
+> enough of a solution?
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+There does seem to be a sysctl for it, just doesn't seem to work. 
+Possible patch below.
+
+This actually brings up the issue that the "all" ipv6 sysctl, for 
+example net.ipv6.conf.all.disable_ipv6, doesn't actually do anything (at 
+least it didn't seem to for me).  Maybe it's time to fix that too to be 
+like IPv4, things like IN_DEV_RPFILTER() and friends aren't looking so 
+bad...
+
+I tested this patch on lo and a few Ethernet devices and saw no IPv6 
+addresses.  Don't know if EPERM is the right errno since we don't know 
+if the user set this or DAD failed.
+
+
+The disable_ipv6 knob was meant to be used for the kernel to disable 
+IPv6 on an interface when DAD failed for the link-local address based on 
+the MAC, but we should also be able to administratively disable it on an 
+interface, or the entire system.  This patch fixes the per-interface 
+problem.
+
+Signed-off-by: Brian Haley <brian.haley@hp.com>
+
+--------------020600060606060306030002
+Content-Type: text/x-diff;
+ name="noipv6.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="noipv6.patch"
+
+diff --git a/net/ipv6/addrconf.c b/net/ipv6/addrconf.c
+index 03e2a1a..9bc761f 100644
+--- a/net/ipv6/addrconf.c
++++ b/net/ipv6/addrconf.c
+@@ -603,6 +603,11 @@ ipv6_add_addr(struct inet6_dev *idev, const struct in6_addr *addr, int pfxlen,
+ 		goto out2;
+ 	}
+ 
++	if (idev->cnf.disable_ipv6) {
++		err = -EPERM;
++		goto out2;
++	}
++
+ 	write_lock(&addrconf_hash_lock);
+ 
+ 	/* Ignore adding duplicate addresses on an interface */
+
+--------------020600060606060306030002--
