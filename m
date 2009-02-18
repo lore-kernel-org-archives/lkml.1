@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbZBRVF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757115AbZBRVGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756862AbZBRVF7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:05:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbZBRVFv
+	id S1757115AbZBRVGX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:06:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbZBRVFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:05:51 -0500
-Received: from hpsmtp-eml17.KPNXCHANGE.COM ([213.75.38.117]:14220 "EHLO
-	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751382AbZBRVFu (ORCPT
+	Wed, 18 Feb 2009 16:05:52 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37020 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751615AbZBRVFv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:05:50 -0500
-From: Frans Pop <elendil@planet.nl>
-To: jplatte@naasa.net
-Subject: Re: cpuinfo shows wrong MHz value
-Date: Wed, 18 Feb 2009 22:05:46 +0100
-User-Agent: KMail/1.9.9
-Cc: Kasper Sandberg <lkml@metanurb.dk>, linux-kernel@vger.kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-References: <200902142217.51655.jplatte@naasa.net> <200902151741.30303.elendil@planet.nl> <200902182054.38840.jplatte@naasa.net>
-In-Reply-To: <200902182054.38840.jplatte@naasa.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Wed, 18 Feb 2009 16:05:51 -0500
+Date: Wed, 18 Feb 2009 13:04:26 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+       openwrt-devel@lists.openwrt.org
+Subject: Re: [PATCH] spi-gpio: Sanitize MISO bitvalue
+Message-Id: <20090218130426.a12e6bfa.akpm@linux-foundation.org>
+In-Reply-To: <200902151630.41426.mb@bu3sch.de>
+References: <200902151630.41426.mb@bu3sch.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902182205.47737.elendil@planet.nl>
-X-OriginalArrivalTime: 18 Feb 2009 21:05:48.0247 (UTC) FILETIME=[AC2A0E70:01C9920C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 18 February 2009, Joerg Platte wrote:
-> The last kernel that was working correct was 2.6.24 (here the output
-> from 2.6.24.6):
+On Sun, 15 Feb 2009 16:30:41 +0100
+Michael Buesch <mb@bu3sch.de> wrote:
 
-Right. I suspect then that the following commit may be the cause of the
-regression:
-commit ed9cbcd40004904dbe61ccc16d6106a7de38c998
-Author: Zhao Yakui <yakui.zhao@intel.com>
-Date:   Tue Nov 20 14:20:21 2007 -0500
-    Revert "speedstep-lib.c: fix frequency multiplier for Pentium4 models 0&1"
+> gpio_get_value() returns 0 or nonzero, but getmiso() expects 0 or 1.
+> Sanitize the value to a 0/1 boolean.
+> 
+> Signed-off-by: Michael Buesch <mb@bu3sch.de>
+> 
+> ---
+> 
+> Well, we could also change the bitbang helpers in linux/spi/spi_bitbang.h
+> or change the way the gpio_get_value API is defined, but I personally think
+> this patch is pretty good as is.
+> In any case, it fixes a real bug on platforms like the bcm47xx which
+> return 0 or nonzero for gpio_get_value.
+> 
+> Index: linux-2.6/drivers/spi/spi_gpio.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/spi/spi_gpio.c	2009-02-14 21:37:14.000000000 +0100
+> +++ linux-2.6/drivers/spi/spi_gpio.c	2009-02-15 16:27:16.000000000 +0100
+> @@ -114,7 +114,7 @@ static inline void setmosi(const struct 
+>  
+>  static inline int getmiso(const struct spi_device *spi)
+>  {
+> -	return gpio_get_value(SPI_MISO_GPIO);
+> +	return !!gpio_get_value(SPI_MISO_GPIO);
+>  }
+>  
+>  #undef pdata
+> 
 
-That would exactly explain the factor 8 of the error.
+Seems somewhat pointless, really.  It's a very common C idiom to treat
+any non-zero value as true, and the above just adds a couple more
+instructions which we didn't need to execute.
 
-Do you have a line like the following in your debug output?
-    P4 - FSB %u kHz; Multiplier %u; Speed %u kHz\n
-If so, what does it say for .24 and .28?
-
-Can you please provide the output of 'x86info -a' (as root) after loading
-the cpuid module?
+If this function is speed-critical (which is what David's comment
+implies) then perhaps this should be "fixed" by tightening up the
+(presently apparently undocumented) interface?  And then speeding up
+all the other getmiso() implementations?
