@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758070AbZBRVjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758219AbZBRVj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758070AbZBRVjW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:39:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbZBRVfh
+	id S1758219AbZBRVj5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:39:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756324AbZBRVfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:35:37 -0500
-Received: from kroah.org ([198.145.64.141]:56153 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 16:35:39 -0500
+Received: from kroah.org ([198.145.64.141]:56176 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754745AbZBRVfg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:35:36 -0500
-Date: Wed, 18 Feb 2009 13:32:32 -0800
+	id S1755189AbZBRVfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:35:38 -0500
+Date: Wed, 18 Feb 2009 13:32:36 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 10/39] x86, vm86: fix preemption bug
-Message-ID: <20090218213232.GK19814@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Carsten Otte <cotte@de.ibm.com>,
+       Nick Piggin <npiggin@suse.de>, Jared Hulbert <jaredeh@gmail.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [patch 12/39] ext2/xip: refuse to change xip flag during remount
+	with busy inodes
+Message-ID: <20090218213236.GM19814@kroah.com>
 References: <20090218212144.965748151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-vm86-fix-preemption-bug.patch"
+Content-Disposition: inline; filename="ext2-xip-refuse-to-change-xip-flag-during-remount-with-busy-inodes.patch"
 In-Reply-To: <20090218213021.GA19814@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,63 +43,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Thomas Gleixner <tglx@linutronix.de>
+From: Carsten Otte <cotte@de.ibm.com>
 
-commit be716615fe596ee117292dc615e95f707fb67fd1 upstream.
+commit 0e4a9b59282914fe057ab17027f55123964bc2e2 upstream.
 
-Commit 3d2a71a596bd9c761c8487a2178e95f8a61da083 ("x86, traps: converge
-do_debug handlers") changed the preemption disable logic of do_debug()
-so vm86_handle_trap() is called with preemption disabled resulting in:
+For a reason that I was unable to understand in three months of debugging,
+mount ext2 -o remount stopped working properly when remounting from
+regular operation to xip, or the other way around.  According to a git
+bisect search, the problem was introduced with the VM_MIXEDMAP/PTE_SPECIAL
+rework in the vm:
 
- BUG: sleeping function called from invalid context at include/linux/kernel.h:155
- in_atomic(): 1, irqs_disabled(): 0, pid: 3005, name: dosemu.bin
- Pid: 3005, comm: dosemu.bin Tainted: G        W  2.6.29-rc1 #51
- Call Trace:
-  [<c050d669>] copy_to_user+0x33/0x108
-  [<c04181f4>] save_v86_state+0x65/0x149
-  [<c0418531>] handle_vm86_trap+0x20/0x8f
-  [<c064e345>] do_debug+0x15b/0x1a4
-  [<c064df1f>] debug_stack_correct+0x27/0x2c
-  [<c040365b>] sysenter_do_call+0x12/0x2f
- BUG: scheduling while atomic: dosemu.bin/3005/0x10000001
+commit 70688e4dd1647f0ceb502bbd5964fa344c5eb411
+Author: Nick Piggin <npiggin@suse.de>
+Date:   Mon Apr 28 02:13:02 2008 -0700
 
-Restore the original calling convention and reenable preemption before
-calling handle_vm86_trap().
+    xip: support non-struct page backed memory
 
-Reported-by: Michal Suchanek <hramrach@centrum.cz>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+In the failing scenario, the filesystem is mounted read only via root=
+kernel parameter on s390x.  During remount (in rc.sysinit), the inodes of
+the bash binary and its libraries are busy and cannot be invalidated (the
+bash which is running rc.sysinit resides on subject filesystem).
+Afterwards, another bash process (running ifup-eth) recurses into a
+subshell, runs dup_mm (via fork).  Some of the mappings in this bash
+process were created from inodes that could not be invalidated during
+remount.
+
+Both parent and child process crash some time later due to inconsistencies
+in their address spaces.  The issue seems to be timing sensitive, various
+attempts to recreate it have failed.
+
+This patch refuses to change the xip flag during remount in case some
+inodes cannot be invalidated.  This patch keeps users from running into
+that issue.
+
+[akpm@linux-foundation.org: cleanup]
+Signed-off-by: Carsten Otte <cotte@de.ibm.com>
+Cc: Nick Piggin <npiggin@suse.de>
+Cc: Jared Hulbert <jaredeh@gmail.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/traps.c |   10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ fs/ext2/super.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
---- a/arch/x86/kernel/traps.c
-+++ b/arch/x86/kernel/traps.c
-@@ -104,6 +104,12 @@ static inline void preempt_conditional_s
- 		local_irq_enable();
- }
- 
-+static inline void conditional_cli(struct pt_regs *regs)
-+{
-+	if (regs->flags & X86_EFLAGS_IF)
-+		local_irq_disable();
-+}
-+
- static inline void preempt_conditional_cli(struct pt_regs *regs)
- {
- 	if (regs->flags & X86_EFLAGS_IF)
-@@ -629,8 +635,10 @@ clear_dr7:
- 
- #ifdef CONFIG_X86_32
- debug_vm86:
-+	/* reenable preemption: handle_vm86_trap() might sleep */
-+	dec_preempt_count();
- 	handle_vm86_trap((struct kernel_vm86_regs *) regs, error_code, 1);
--	preempt_conditional_cli(regs);
-+	conditional_cli(regs);
- 	return;
- #endif
- 
+--- a/fs/ext2/super.c
++++ b/fs/ext2/super.c
+@@ -1177,9 +1177,12 @@ static int ext2_remount (struct super_bl
+ 	es = sbi->s_es;
+ 	if (((sbi->s_mount_opt & EXT2_MOUNT_XIP) !=
+ 	    (old_mount_opt & EXT2_MOUNT_XIP)) &&
+-	    invalidate_inodes(sb))
+-		ext2_warning(sb, __func__, "busy inodes while remounting "\
+-			     "xip remain in cache (no functional problem)");
++	    invalidate_inodes(sb)) {
++		ext2_warning(sb, __func__, "refusing change of xip flag "
++			     "with busy inodes while remounting");
++		sbi->s_mount_opt &= ~EXT2_MOUNT_XIP;
++		sbi->s_mount_opt |= old_mount_opt & EXT2_MOUNT_XIP;
++	}
+ 	if ((*flags & MS_RDONLY) == (sb->s_flags & MS_RDONLY))
+ 		return 0;
+ 	if (*flags & MS_RDONLY) {
 
