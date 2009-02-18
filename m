@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760405AbZBRVru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758003AbZBRVsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760405AbZBRVru (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:47:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757374AbZBRVga
+	id S1758003AbZBRVsR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:48:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757384AbZBRVgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:36:30 -0500
-Received: from kroah.org ([198.145.64.141]:56473 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 16:36:32 -0500
+Received: from kroah.org ([198.145.64.141]:56453 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754259AbZBRVgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754270AbZBRVgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 18 Feb 2009 16:36:05 -0500
-Date: Wed, 18 Feb 2009 13:33:28 -0800
+Date: Wed, 18 Feb 2009 13:33:26 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alexey Dobriyan <adobriyan@gmail.com>
-Subject: [patch 39/39] Fix longstanding "error: storage size of
-	__mod_dmi_device_table isnt known"
-Message-ID: <20090218213328.GN19814@kroah.com>
+       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org
+Subject: [patch 38/39] ext4: Initialize the new group descriptor when
+	resizing the filesystem
+Message-ID: <20090218213326.GM19814@kroah.com>
 References: <20090218212144.965748151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-longstanding-error-storage-size-of-__mod_dmi_device_table-isn-t-known.patch"
+Content-Disposition: inline; filename="ext4-initialize-the-new-group-descriptor-when-resizing-the-filesystem.patch"
 In-Reply-To: <20090218213021.GA19814@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,35 +40,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alexey Dobriyan <adobriyan@gmail.com>
+From: "Theodore Ts'o" <tytso@mit.edu>
+(cherry picked from commit fdff73f094e7220602cc3f8959c7230517976412)
 
-commit 40413dcb7b273bda681dca38e6ff0bbb3728ef11 upstream.
+Make sure all of the fields of the group descriptor are properly
+initialized.  Previously, we allowed bg_flags field to be contain
+random garbage, which could trigger non-deterministic behavior,
+including a kernel OOPS.
 
-gcc 3.4.6 doesn't like MODULE_DEVICE_TABLE(dmi, x) expansion enough to
-error out.  Shut it up in a most simple way.
+http://bugzilla.kernel.org/show_bug.cgi?id=12433
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/mod_devicetable.h |    7 +++++++
- 1 file changed, 7 insertions(+)
+ fs/ext4/resize.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/include/linux/mod_devicetable.h
-+++ b/include/linux/mod_devicetable.h
-@@ -443,6 +443,13 @@ struct dmi_system_id {
- 	struct dmi_strmatch matches[4];
- 	void *driver_data;
- };
-+/*
-+ * struct dmi_device_id appears during expansion of
-+ * "MODULE_DEVICE_TABLE(dmi, x)". Compiler doesn't look inside it
-+ * but this is enough for gcc 3.4.6 to error out:
-+ *	error: storage size of '__mod_dmi_device_table' isn't known
-+ */
-+#define dmi_device_id dmi_system_id
- #endif
+--- a/fs/ext4/resize.c
++++ b/fs/ext4/resize.c
+@@ -860,11 +860,13 @@ int ext4_group_add(struct super_block *s
+ 	gdp = (struct ext4_group_desc *)((char *)primary->b_data +
+ 					 gdb_off * EXT4_DESC_SIZE(sb));
  
- #define DMI_MATCH(a, b)	{ a, b }
++	memset(gdp, 0, EXT4_DESC_SIZE(sb));
+ 	ext4_block_bitmap_set(sb, gdp, input->block_bitmap); /* LV FIXME */
+ 	ext4_inode_bitmap_set(sb, gdp, input->inode_bitmap); /* LV FIXME */
+ 	ext4_inode_table_set(sb, gdp, input->inode_table); /* LV FIXME */
+ 	gdp->bg_free_blocks_count = cpu_to_le16(input->free_blocks_count);
+ 	gdp->bg_free_inodes_count = cpu_to_le16(EXT4_INODES_PER_GROUP(sb));
++	gdp->bg_flags = cpu_to_le16(EXT4_BG_INODE_ZEROED);
+ 	gdp->bg_checksum = ext4_group_desc_csum(sbi, input->group, gdp);
+ 
+ 	/*
 
