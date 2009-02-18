@@ -1,107 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344AbZBRAir@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbZBRAjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753344AbZBRAir (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 19:38:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660AbZBRAih
+	id S1755498AbZBRAjB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 19:39:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755368AbZBRAit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 19:38:37 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52278 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751542AbZBRAig (ORCPT
+	Tue, 17 Feb 2009 19:38:49 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:47878 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755364AbZBRAis (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 19:38:36 -0500
-Date: Tue, 17 Feb 2009 16:38:20 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Edward Shishkin <edward.shishkin@gmail.com>
-Cc: peterz@infradead.org, npiggin@suse.de, rmh3093@gmail.com,
-       randy.dunlap@oracle.com, linux-kernel@vger.kernel.org,
-       reiserfs-devel@vger.kernel.org
-Subject: Re: [patch 2/4] vfs: add set_page_dirty_notag
-Message-Id: <20090217163820.48a2ce68.akpm@linux-foundation.org>
-In-Reply-To: <499B55A8.50103@gmail.com>
-References: <18837.24581.181196.569183@edward.zelnet.ru>
-	<1234530519.6519.46.camel@twins>
-	<49957C43.7050701@gmail.com>
-	<1234534150.6519.101.camel@twins>
-	<18838.49922.215481.399653@edward.zelnet.ru>
-	<1234645893.4695.8.camel@laptop>
-	<18841.60432.329341.514726@edward.zelnet.ru>
-	<20090217143506.f6899342.akpm@linux-foundation.org>
-	<499B55A8.50103@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 17 Feb 2009 19:38:48 -0500
+Date: Wed, 18 Feb 2009 01:40:39 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Miller <davem@davemloft.net>, jeremy@goop.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       gitster@pobox.com, caglar@pardus.org.tr
+Subject: Re: [PATCH] Add *.rej to .gitignore
+Message-ID: <20090218004039.GA30812@uranus.ravnborg.org>
+References: <499B1729.5040802@goop.org> <20090217.143824.121552155.davem@davemloft.net> <20090218000506.GB12714@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090218000506.GB12714@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Feb 2009 03:26:16 +0300
-Edward Shishkin <edward.shishkin@gmail.com> wrote:
-
-> Andrew Morton wrote:
-> > On Tue, 17 Feb 2009 01:43:28 +0300
-> > Edward Shishkin <edward.shishkin@gmail.com> wrote:
-> >
-> >   
-> >> + */
-> >> +int set_page_dirty_notag(struct page *page)
-> >> +{
-> >> +	struct address_space *mapping = page->mapping;
-> >> +
-> >> +	if (!TestSetPageDirty(page)) {
-> >> +		WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
-> >> +		if (mapping_cap_account_dirty(mapping)) {
-> >> +		        /*
-> >> +			 * The accounting functions rely on
-> >> +			 * being atomic wrt interrupts.
-> >> +			 */
-> >> +		        unsigned long flags;
-> >> +			local_irq_save(flags);
-> >> +			__inc_zone_page_state(page, NR_FILE_DIRTY);
-> >> +			__inc_bdi_stat(mapping->backing_dev_info,
-> >> +				       BDI_RECLAIMABLE);
-> >> +			task_dirty_inc(current);
-> >> +			task_io_account_write(PAGE_CACHE_SIZE);
-> >> +			local_irq_restore(flags);
-> >> +		}
-> >> +		__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
-> >> +		return 1;
-> >> +	}
-> >> +	return 0;
-> >> +}
-> >>     
-> >
-> > I'll maintain this in -mm, alongside the resier4 patches which need it.
-> >
-> > Of course, this rather obviates the purpose - if someone changes, say,
-> > __set_page_dirty_nobuffers() then they won't similarly update
-> > set_page_dirty_notag().  Oh well.
-> >
-> > This problem would fix itself if those two functions were to
-> > substantially share code.
+> > From: Jeremy Fitzhardinge <jeremy@goop.org>
+> > Date: Tue, 17 Feb 2009 11:59:37 -0800
+> > 
+> > > *.rej files really are unwanted.  If there are any .rej files, they can be found by
+> > > some other means (perhaps git itself could warn when committing with *.rej files present,
+> > > or add some distinct notion of "ignored files" vs "never commit" files).
+> > > 
+> > > (This effectively reverts 1f5d3a6b6532e25a5cdf1f311956b2b03d343a48)
+> > > 
+> > > Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> > 
+> > I don't know about this.
+> > 
+> > I really want to know if there are reject files there if I am 
+> > checking to see if my tree is clean.
+> > 
+> > This has caught many patch application errors for myself 
+> > personally in the past, so I really don't want git to start 
+> > silently ignoring those things.
+> > 
+> > People should delete reject file explicitly, as they are 
+> > evidence of a patch that would not apply cleanly.  If you 
+> > abort trying to add the patch, fine, but cleaning up the 
+> > reject files is part of that operation.
 > 
-> It will fix the problem only partially:
-> there is one more friend __set_page_dirty() in buffer.c
+> Well, it depends on the workflow. You are making the assumption 
+> that everyone is using your workflow, and you are judging them 
+> based on that false assumption.
+> 
+> In my workflow i never miss .rej files because i use tools that 
+> _do not allow_ rejects to occur - only if i intentionally force 
+> them. So i cannot "miss" any .rej files - i generate them very 
+> consciously so all my attention is on them already.
+So in your advanced usage it does not matter what git does
+with .rej files.
+And it hepls people using git in a more naive way.
 
-But all three functions do the same thing?
+This is an easy judgement - lets do what benefit the most.
 
-			if (mapping_cap_account_dirty(mapping)) {
-				__inc_zone_page_state(page, NR_FILE_DIRTY);
-				__inc_bdi_stat(mapping->backing_dev_info,
-						BDI_RECLAIMABLE);
-				task_dirty_inc(current);
-				task_io_account_write(PAGE_CACHE_SIZE);
-			}
-
-?
-
-> Maybe it makes sense to add comments with warnings
-> in all such places, or create a header file with a static inline
-> function update_page_accounting() ?
-
-Could just uninline the helper function I guess - if you look, those
-four statements already involve doing a heck of a lot of stuff.
-
-Try it, see how it looks?
-
+	Sam
