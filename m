@@ -1,92 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762232AbZBRWuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759044AbZBRWvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762232AbZBRWuL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 17:50:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760888AbZBRWnl
+	id S1759044AbZBRWvm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 17:51:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759238AbZBRWsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 17:43:41 -0500
-Received: from ozlabs.org ([203.10.76.45]:35486 "EHLO ozlabs.org"
+	Wed, 18 Feb 2009 17:48:22 -0500
+Received: from THUNK.ORG ([69.25.196.29]:52140 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760881AbZBRWnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 17:43:39 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Subject: Re: [s390] next Feb 18: defconfig build break
-Date: Thu, 19 Feb 2009 09:13:26 +1030
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       "Sachin P. Sant" <sachinp@in.ibm.com>, linux-s390@vger.kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
-References: <20090218191640.0b023029.sfr@canb.auug.org.au> <20090218224541.fe6e0355.sfr@canb.auug.org.au> <8bd0f97a0902180910wafd35ceo47aeb9f3cc6733f3@mail.gmail.com>
-In-Reply-To: <8bd0f97a0902180910wafd35ceo47aeb9f3cc6733f3@mail.gmail.com>
+	id S1758751AbZBRWsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 17:48:21 -0500
+Date: Wed, 18 Feb 2009 17:25:17 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Tim Gardner <tim.gardner@canonical.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Ubuntu Jaunty ext3 --> ext4 upgrade issue
+Message-ID: <20090218222517.GT3600@mini-me.lan>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Tim Gardner <tim.gardner@canonical.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <499C4F1E.8050901@canonical.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902190913.27653.rusty@rustcorp.com.au>
+In-Reply-To: <499C4F1E.8050901@canonical.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 February 2009 03:40:59 Mike Frysinger wrote:
-> On Wed, Feb 18, 2009 at 06:45, Stephen Rothwell wrote:
-> > That would be a side effect of commit 43a47c6ca0e0b5479ae316e188a28b7e625d41e5 ("misc:strstarts") from the rr tree.  Rusty cc'd.
-> 
-> breaks all Blackfin ports as well:
+On Wed, Feb 18, 2009 at 11:10:38AM -0700, Tim Gardner wrote:
+> I've encountered a situation where the patches that you've proposed for
+> stable updates might be causing some issues. This user ivoks appears to
+> have an upgrade issue. I assume he's enabled ext4 on an existing ext3
+> file system. Hopefully I can get more details. Have you seen anything
+> like this?
 
-My first reaction was WTF?  My second was, how did our string code become
-such a catastrophe?
+No, this is the first I've heard of it. 
 
-Sorry, I had no idea what a mess I was wading into.
+> <ivoks> i'm getting 'Invalid or unsupported executable format' from grub
+> on all jaunty's generic kernels since (including) 2.6.28-7
 
-Here's the s390 fix:
+So grub is complaining that it can't boot from a partition after
+upgrading to the new kernel with the for-stable patches?  Um, that's
+interesting.  So the obvious thing to check is to do an md5 checksum
+of the kernel in /boot to make sure it didn't get corrupted somehow.
+The other thing to check would be to ask the user to run e2fsck to
+rule out filesystem corruption.
 
-Subject: s390: allow usage of string functions in linux/string.h
+OTOH, if this was just a simple install and upgrade, presumably the
+new kernel would have been installed while the previous kernel was
+booted.
 
-In introducing a trivial "strstarts()" function in linux/string.h, we
-hit the following error on s390:
+I do my testing by using a ext3 /boot partition (since my
+crash-and-burn netbook is running Ubuntu Jaunty).  So I wouldn't have
+noticed anything, but this seems very odd.
 
-In file included from include/linux/bitmap.h:8,
-                 from include/linux/cpumask.h:142,
-                 from include/linux/smp.h:12,
-                 from /home/rusty/devel/kernel/patches/linux-2.6/arch/s390/include/asm/spinlock.h:14,
-                 from include/linux/spinlock.h:88,
-                 from include/linux/seqlock.h:29,
-                 from include/linux/time.h:8,
-                 from include/linux/stat.h:60,
-                 from include/linux/module.h:10,
-                 from arch/s390/lib/string.c:13:
-include/linux/string.h: In function 'strstarts':
-include/linux/string.h:124: error: implicit declaration of function 'strlen'
-include/linux/string.h:124: warning: incompatible implicit declaration of built-in function 'strlen'
+More information would be useful; is there a Launchpad bug open on this yet?
 
-Because when including asm/string.h from arch/s390/lib/string.c we
-don't declare the string ops we are about to define, and
-linux/string.h barfs.
+Or we can work this out on LKML or the linux-ext4 mailing list if the
+reporter is willing to be cc'ed on the thread....
 
-The fix is to declare them in this IN_ARCH_STRING_C case, but in
-general I wonder if there's a neater fix.
-
-Reported-by: linux-next
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
-diff --git a/arch/s390/include/asm/string.h b/arch/s390/include/asm/string.h
---- a/arch/s390/include/asm/string.h
-+++ b/arch/s390/include/asm/string.h
-@@ -135,7 +135,13 @@ static inline size_t strnlen(const char 
- 		: "+a" (end), "+a" (tmp) : "d" (r0)  : "cc");
- 	return end - s;
- }
--
-+#else /* IN_ARCH_STRING_C */
-+void *memchr(const void * s, int c, size_t n);
-+void *memscan(void *s, int c, size_t n);
-+char *strcat(char *dst, const char *src);
-+char *strcpy(char *dst, const char *src);
-+size_t strlen(const char *s);
-+size_t strnlen(const char * s, size_t n);
- #endif /* !IN_ARCH_STRING_C */
- 
- #endif /* __KERNEL__ */
+     		       	  	     	   - Ted
