@@ -1,90 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753228AbZBRJUI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753491AbZBRJUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753228AbZBRJUI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 04:20:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbZBRJTm
+	id S1753491AbZBRJUh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 04:20:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752968AbZBRJTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 04:19:42 -0500
-Received: from mga01.intel.com ([192.55.52.88]:55482 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752630AbZBRJTi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 04:19:38 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,228,1233561600"; 
-   d="scan'208";a="666474149"
-Subject: Re: [PATCH -mm] documentation: update CodingStyle tips for Emacs
-	users
-From: Patrick Ohly <patrick.ohly@intel.com>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <87tzf5tu3z.fsf@skyscraper.fehenstaub.lan>
-References: <87tzf5tu3z.fsf@skyscraper.fehenstaub.lan>
-Content-Type: text/plain
-Date: Wed, 18 Feb 2009 10:19:30 +0100
-Message-Id: <1234948770.23768.25.camel@ecld0pohly>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Feb 2009 04:19:49 -0500
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:7483 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752830AbZBRJTp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 04:19:45 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhUDAPtem0l5LClxgWdsb2JhbACUTgEBFiK+ZoQTBg
+X-IronPort-AV: E=Sophos;i="4.38,228,1233495000"; 
+   d="scan'208";a="293560843"
+Date: Wed, 18 Feb 2009 20:19:36 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Carsten Aulbert <carsten.aulbert@aei.mpg.de>
+Cc: "xfs@oss.sgi.com" <xfs@oss.sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: xfs problems (possibly after upgrading from linux kernel
+	2.6.27.10 to .14)
+Message-ID: <20090218091935.GD8830@disturbed>
+Mail-Followup-To: Carsten Aulbert <carsten.aulbert@aei.mpg.de>,
+	"xfs@oss.sgi.com" <xfs@oss.sgi.com>, linux-kernel@vger.kernel.org
+References: <499ACE6C.4060304@aei.mpg.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <499ACE6C.4060304@aei.mpg.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-07-04 at 19:52 +0200, Johannes Weiner wrote:
-> Describe a setup that integrates better with Emacs' cc-mode and also
-> fixes up the alignment of continuation lines to really only use tabs.
-[...]
-> +(defun c-lineup-arglist-tabs-only (ignored)
-> +  "Line up argument lists by tabs, not spaces"
-> +  (let* ((anchor (c-langelem-pos c-syntactic-element))
-> +	 (column (c-langelem-2nd-pos c-syntactic-element))
-> +	 (offset (- (1+ column) anchor))
-> +	 (steps (floor offset c-basic-offset)))
-> +    (* (max steps 1)
-> +       c-basic-offset)))
->+
->+(add-hook 'c-mode-hook
-> +          (lambda ()
-> +            (let ((filename (buffer-file-name)))
-> +              ;; Enable kernel mode for the appropriate files
-> +              (when (and file
-> +                         (string-match "/usr/src/linux" filename))
-> +                (setq indent-tabs-mode t)
-> +                (c-set-style "linux")
-> +                (c-set-offset 'arglist-cont-nonempty
-> +                              '(c-lineup-gcc-asm-reg
-> +                                c-lineup-arglist-tabs-only))))))
+On Tue, Feb 17, 2009 at 03:49:16PM +0100, Carsten Aulbert wrote:
+> Hi all,
+> 
+> within the past few days we hit many XFS internal errors like these. Are these
+> errors known (and possibly already fixed)? I checked the commits till 
+> 2.6.27.17 and there does not seem anything related to this.
 
-When starting writing kernel source code last year (the hardware time
-stamping patch) I used this macro to format it. I very much liked the
-possibility to only switch on Linux style when editing Linux code
-(because I work on a variety of code bases with different formatting).
+.....
 
-But the macro above did not produce the result expected by some patch
-reviewers (John Stultz, Dave Miller). I had to redo the formatting
-manually.
+> Feb 16 20:34:49 n0035 kernel: [275873.335916] Filesystem "sda6": XFS internal error xfs_trans_cancel at line 1164 of file fs/xfs/xfs_
 
-The sticky point is continuation after splitting a long parameter list -
-in other words, exactly what the "arglist-cont-nonempty" setting above
-changes. The macro formats it so that the continuation is aligned at the
-tab that is closest to the initial argument in the previous line:
+A transaction shutdown on create. That implies some kind of ENOSPC
+issue.
 
-int a_very_long_function_name(int arg1, char *arg2,
-			double arg3);
+> Do you need more information or can I send these nodes into a re-install?
 
-The expected style was tab plus spaces to align with the first argument:
+More information. Can you get a machine into a state where you can
+trigger this condition reproducably by doing:
 
-int a_very_long_function_name(int arg1, char *arg2,
-			      double arg3);
+	mount filesystem
+	touch /mnt/filesystem/some_new_file
 
-Is this a bug in the macro? I'm using emacs 22.1.1, in case that
-matters. Or are there different opinions in the Linux developer
-community about the right formatting?
+If you can get it to that state, and you can provide an xfs_metadump
+image of the filesystem when in that state, I can track down the
+problem and fix it.
+
+> Feb 16 22:01:28 n0260 kernel: [1129250.851451] Filesystem "sda6": xfs_iflush: Bad inode 1176564060 magic number 0x36b5, ptr 0xffff8801a7c06c00
+
+However, this implies some kind of memory corruption is occurring.
+That is reading the inode out of the buffer before flushing the
+in-memory state to disk. This implies someone has scribbled over
+page cache pages.
+
+
+> Feb 17 05:57:44 n0463 kernel: [1156816.912129] Filesystem "sda6": XFS internal error xfs_btree_check_sblock at line 307 of file fs/xfs/xfs_btree.c.  Caller 0xffffffff802dd15b
+
+And that is another buffer that has been scribbled over.
+Something is corrupting the page cache, I think. Whether the
+original shutdown is caused by the some corruption, i don't
+know.
+
+> plus a few more nodes showing the same characteristics 
+
+Hmmmm. Did this show up in 2.6.27.10? Or did it start occurring only
+after you upgraded from .10 to .14?
+
+Cheers,
+
+Dave.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
 -- 
-Best Regards, Patrick Ohly
-
-The content of this message is my personal opinion only and although
-I am an employee of Intel, the statements I make here in no way
-represent Intel's position on the issue, nor am I authorized to speak
-on behalf of Intel on this matter.
-
+Dave Chinner
+david@fromorbit.com
