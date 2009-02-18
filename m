@@ -1,84 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762248AbZBRWw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762681AbZBRWwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762248AbZBRWw3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 17:52:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761867AbZBRWud
+	id S1762681AbZBRWwq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 17:52:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762587AbZBRWwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 17:50:33 -0500
-Received: from smtp4.ono.com ([62.42.230.177]:52584 "EHLO resmaa15.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758599AbZBRWub convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 17:50:31 -0500
-Date: Wed, 18 Feb 2009 23:50:22 +0100
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Intel driver vs MTRRs conflict
-Message-ID: <20090218235022.1b5aba55@one.home>
-In-Reply-To: <499B64DC.2060600@zytor.com>
-References: <20090218002046.55c17814@werewolf.home>
- <499B64DC.2060600@zytor.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.4; i586-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 18 Feb 2009 17:52:12 -0500
+Received: from gw.goop.org ([64.81.55.164]:33988 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760908AbZBRWwK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 17:52:10 -0500
+Message-ID: <499C9116.7000702@goop.org>
+Date: Wed, 18 Feb 2009 14:52:06 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: the arch/x86 maintainers <x86@kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Rusty Russell <rusty@rustcorp.com.au>, Zachary Amsden <zach@vmware.com>,
+       Alok N Kataria <akataria@vmware.com>, Avi Kivity <avi@redhat.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 0/9] Make lazy mmu update mode pre-empt safe
+References: <cover.1234988621.git.jeremy.fitzhardinge@citrix.com> <cover.1234988621.git.jeremy.fitzhardinge@citrix.com>
+In-Reply-To: <cover.1234988621.git.jeremy.fitzhardinge@citrix.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Feb 2009 17:31:08 -0800, "H. Peter Anvin" <hpa@zytor.com> wrote:
+[ Clearly some aspect of this mailbomb tool is eluding me. ]
 
-> J.A. Magallón wrote:
-> > 
-> > As I said, everything works. And even fast for the kind of machine, it's an
-> > Aspire One and gears gives 740 fps, and video playback is pretty smooth.
-> > But perhaps it would be faster if X could get that mtrr it claims ?
-> > 
->
+Hi,
 
-Sorry for the delay...
- 
-> Which CPU?
-> 
+This series changes the paravirt-ops lazy update modes in the following 
+ways:
 
-Atom N270, 1.60GHz, hyperthreaded. 512Kb cache
+ 1. Make paravirt_get_lazy_mode() always return PARAVIRT_LAZY_NONE in
+    interrupt context.  This has the effect of making all mmu and cpu
+    state updates synchronous in interrupt routines, without the need
+    to add explicit flushing.
 
-I have realized that I boot with video=intelfb:mtrr,ywrap.
-Could this be interferring ?
+ 2. De-generalize lazy cpu mode to a specific context-switch operation.
+    Rather than dealing with fully general enter/leave lazy cpu update
+    mode, make it specifically about start/end context switch, since that
+    was the only use anyway.  That means the implementations know that
+    they're in the middle of a context switch.
 
-Things in syslog I think are relevant:
+ 3. On starting a context switch, if the task is in lazy mmu update mode,
+    record that fact in thread_info->flags TIF_LAZY_MMU_UPDATE, and
+    disable lazy updates (flushing anything pending).  On ending a context
+    switch, if the new task has TIF_LAZY_MMU_UPDATE set, then reenter
+    lazy mmu update mode.
 
-Feb 17 23:45:47 one klogd: x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-Feb 17 23:45:47 one klogd: original variable MTRRs
-Feb 17 23:45:47 one klogd: reg 0, base: 4194176KB, range: 128KB, type WP
-Feb 17 23:45:47 one klogd: reg 1, base: 4194048KB, range: 128KB, type UC
-Feb 17 23:45:47 one klogd: reg 2, base: 0GB, range: 256MB, type WB
-Feb 17 23:45:47 one klogd: reg 3, base: 256MB, range: 256MB, type WB
-Feb 17 23:45:47 one klogd: reg 4, base: 504MB, range: 8MB, type UC
-Feb 17 23:45:47 one klogd: reg 5, base: 502MB, range: 2MB, type UC
-Feb 17 23:45:47 one klogd: reg 6, base: 501MB, range: 1MB, type UC
-Feb 17 23:45:47 one klogd: reg 7, base: 0GB, range: 128KB, type UC
-Feb 17 23:45:47 one klogd: total RAM coverred: 501M
-Feb 17 23:45:47 one klogd: Found optimal setting for mtrr clean up
-Feb 17 23:45:47 one klogd:  gran_size: 64K ^Ichunk_size: 16M ^Inum_reg: 4  ^Ilose cover RAM: 0G
-Feb 17 23:45:47 one klogd: New variable MTRRs
-Feb 17 23:45:47 one klogd: reg 0, base: 0GB, range: 512MB, type WB
-Feb 17 23:45:47 one klogd: reg 1, base: 501MB, range: 1MB, type UC
-Feb 17 23:45:47 one klogd: reg 2, base: 502MB, range: 2MB, type UC
-Feb 17 23:45:47 one klogd: reg 3, base: 504MB, range: 8MB, type UC
-Feb 17 23:45:47 one klogd: x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-Feb 17 23:45:47 one klogd: kernel direct mapping tables up to 1f500000 @ 7000-c000
-...
-Feb 17 23:45:47 one klogd: vesafb: framebuffer at 0x20000000, mapped to 0xdfd80000, using 1875k, total 7872k
-Feb 17 23:45:47 one klogd: vesafb: mode is 800x600x16, linelength=1600, pages=7
-Feb 17 23:45:47 one klogd: vesafb: scrolling: redraw
-Feb 17 23:45:47 one klogd: vesafb: Truecolor: size=0:5:6:5, shift=0:11:5:0
-Feb 17 23:45:47 one klogd: Console: switching to colour frame buffer device 100x37
-Feb 17 23:45:47 one klogd: fb0: VESA VGA frame buffer device
+ 4. Remove all the preempt_disable/enable pairs and assertion that
+    preemption must be disabled for lazy mmu updates.
 
+This has the net effect of 1) making lazy mmu updates more robust, and
+2) not requiring any changes to the current rules of how init_mm can
+be updated.
 
--- 
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2009.1 (Cooker) for x86_64
-Linux 2.6.27.5-desktop-1mnb (gcc 4.3.2 (GCC) #1 Sun Nov
+Thanks,
+    J
