@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756855AbZBRVfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757577AbZBRVhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756855AbZBRVfn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:35:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbZBRVf2
+	id S1757577AbZBRVhk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:37:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbZBRVfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:35:28 -0500
-Received: from kroah.org ([198.145.64.141]:56020 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 16:35:33 -0500
+Received: from kroah.org ([198.145.64.141]:56103 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752052AbZBRVf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:35:27 -0500
-Date: Wed, 18 Feb 2009 13:32:12 -0800
+	id S1754093AbZBRVfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:35:31 -0500
+Date: Wed, 18 Feb 2009 13:32:21 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,18 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>,
-       Bastian Blank <bastian@waldi.eu.org>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Nadia Derbey <Nadia.Derbey@bull.net>, Serge Hallyn <serue@us.ibm.com>
-Subject: [patch 01/39] pid: implement ns_of_pid
-Message-ID: <20090218213212.GB19814@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Tejun Heo <tj@kernel.org>,
+       Robert Hancock <hancockr@shaw.ca>, Jeff Garzik <jgarzik@redhat.com>
+Subject: [patch 05/39] sata_nv: give up hardreset on nf2
+Message-ID: <20090218213221.GF19814@kroah.com>
 References: <20090218212144.965748151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pid-implement-ns_of_pid.patch"
+Content-Disposition: inline; filename="sata_nv-give-up-hardreset-on-nf2.patch"
 In-Reply-To: <20090218213021.GA19814@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -44,65 +40,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Eric W. Biederman <ebiederm@xmission.com>
+From: Tejun Heo <tj@kernel.org>
 
-commit f9fb860f67b9542cd78d1558dec7058092b57d8e upstream.
+commit 7dac745b8e367c99175b8f0d014d996f0e5ed9e5 upstream.
 
-A current problem with the pid namespace is that it is easy to do pid
-related work after exit_task_namespaces which drops the nsproxy pointer.
+Kernel bz#12176 reports that nf2 hardreset simply doesn't work.  Give
+up.  Argh...
 
-However if we are doing pid namespace related work we are always operating
-on some struct pid which retains the pid_namespace pointer of the pid
-namespace it was allocated in.
-
-So provide ns_of_pid which allows us to find the pid namespace a pid was
-allocated in.
-
-Using this we have the needed infrastructure to do pid namespace related
-work at anytime we have a struct pid, removing the chance of accidentally
-having a NULL pointer dereference when accessing current->nsproxy.
-
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Oleg Nesterov <oleg@redhat.com>
-Cc: Roland McGrath <roland@redhat.com>
-Cc: Bastian Blank <bastian@waldi.eu.org>
-Cc: Pavel Emelyanov <xemul@openvz.org>
-Cc: Nadia Derbey <Nadia.Derbey@bull.net>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Robert Hancock <hancockr@shaw.ca>
+Reported-by: Saro <saro_v@hotmail.it>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/pid.h |   18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ drivers/ata/sata_nv.c |   14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
---- a/include/linux/pid.h
-+++ b/include/linux/pid.h
-@@ -123,6 +123,24 @@ extern struct pid *alloc_pid(struct pid_
- extern void free_pid(struct pid *pid);
+--- a/drivers/ata/sata_nv.c
++++ b/drivers/ata/sata_nv.c
+@@ -421,19 +421,21 @@ static struct ata_port_operations nv_gen
+ 	.hardreset		= ATA_OP_NULL,
+ };
  
- /*
-+ * ns_of_pid() returns the pid namespace in which the specified pid was
-+ * allocated.
+-/* OSDL bz3352 reports that nf2/3 controllers can't determine device
+- * signature reliably.  Also, the following thread reports detection
+- * failure on cold boot with the standard debouncing timing.
++/* nf2 is ripe with hardreset related problems.
 + *
-+ * NOTE:
-+ * 	ns_of_pid() is expected to be called for a process (task) that has
-+ * 	an attached 'struct pid' (see attach_pid(), detach_pid()) i.e @pid
-+ * 	is expected to be non-NULL. If @pid is NULL, caller should handle
-+ * 	the resulting NULL pid-ns.
-+ */
-+static inline struct pid_namespace *ns_of_pid(struct pid *pid)
-+{
-+	struct pid_namespace *ns = NULL;
-+	if (pid)
-+		ns = pid->numbers[pid->level].ns;
-+	return ns;
-+}
-+
-+/*
-  * the helpers to get the pid's id seen from different namespaces
++ * kernel bz#3352 reports nf2/3 controllers can't determine device
++ * signature reliably.  The following thread reports detection failure
++ * on cold boot with the standard debouncing timing.
   *
-  * pid_nr()    : global id, i.e. the id seen from the init namespace;
+  * http://thread.gmane.org/gmane.linux.ide/34098
+  *
+- * Debounce with hotplug timing and request follow-up SRST.
++ * And bz#12176 reports that hardreset simply doesn't work on nf2.
++ * Give up on it and just don't do hardreset.
+  */
+ static struct ata_port_operations nv_nf2_ops = {
+-	.inherits		= &nv_common_ops,
++	.inherits		= &nv_generic_ops,
+ 	.freeze			= nv_nf2_freeze,
+ 	.thaw			= nv_nf2_thaw,
+-	.hardreset		= nv_noclassify_hardreset,
+ };
+ 
+ /* For initial probing after boot and hot plugging, hardreset mostly
 
