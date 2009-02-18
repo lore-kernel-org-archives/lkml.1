@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759369AbZBRWgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758504AbZBRWhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759369AbZBRWgw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 17:36:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757835AbZBRWb7
+	id S1758504AbZBRWhY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 17:37:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756951AbZBRWcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 17:31:59 -0500
-Received: from kroah.org ([198.145.64.141]:34768 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 17:32:00 -0500
+Received: from kroah.org ([198.145.64.141]:34788 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757825AbZBRWb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 17:31:57 -0500
-Date: Wed, 18 Feb 2009 14:29:09 -0800
+	id S1757831AbZBRWb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 17:31:59 -0500
+Date: Wed, 18 Feb 2009 14:29:11 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Zlatko Calusic <zlatko.calusic@iskon.hr>
-Subject: [patch 07/36] Add support for VT6415 PCIE PATA IDE Host Controller
-Message-ID: <20090218222909.GH10668@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Tomas Winkler <tomas.winkler@intel.com>,
+       Marcel Holtmann <marcel@holtmann.org>
+Subject: [patch 08/36] Bluetooth: Fix TX error path in btsdio driver
+Message-ID: <20090218222911.GI10668@kroah.com>
 References: <20090218222447.432108614@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="add-support-for-vt6415-pcie-pata-ide-host-controller.patch"
+Content-Disposition: inline; filename="bluetooth-fix-tx-error-path-in-btsdio-driver.patch"
 In-Reply-To: <20090218222841.GA10668@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,47 +40,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Zlatko Calusic <zlatko.calusic@iskon.hr>
+From: Tomas Winkler <tomas.winkler@intel.com>
 
-commit 5955c7a2cfb6a35429adea5dc480002b15ca8cfc upstream.
+commit 7644d63d1348ec044ccd8f775fefe5eb7cbcac69 upstream.
 
-Signed-off-by: Zlatko Calusic <zlatko.calusic@iskon.hr>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+This patch fixes accumulating of the header in case packet was requeued
+in the error path.
+
+Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/pata_via.c  |    4 +++-
- include/linux/pci_ids.h |    1 +
- 2 files changed, 4 insertions(+), 1 deletion(-)
+ drivers/bluetooth/btsdio.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/ata/pata_via.c
-+++ b/drivers/ata/pata_via.c
-@@ -111,7 +111,8 @@ static const struct via_isa_bridge {
- 	{ "vt8237s",	PCI_DEVICE_ID_VIA_8237S,    0x00, 0x2f, VIA_UDMA_133 | VIA_BAD_AST },
- 	{ "vt8251",	PCI_DEVICE_ID_VIA_8251,     0x00, 0x2f, VIA_UDMA_133 | VIA_BAD_AST },
- 	{ "cx700",	PCI_DEVICE_ID_VIA_CX700,    0x00, 0x2f, VIA_UDMA_133 | VIA_BAD_AST | VIA_SATA_PATA },
--	{ "vt6410",	PCI_DEVICE_ID_VIA_6410,     0x00, 0x2f, VIA_UDMA_133 | VIA_BAD_AST | VIA_NO_ENABLES},
-+	{ "vt6410",	PCI_DEVICE_ID_VIA_6410,     0x00, 0x2f, VIA_UDMA_133 | VIA_BAD_AST | VIA_NO_ENABLES },
-+	{ "vt6415",	PCI_DEVICE_ID_VIA_6415,     0x00, 0x2f, VIA_UDMA_133 | VIA_BAD_AST | VIA_NO_ENABLES },
- 	{ "vt8237a",	PCI_DEVICE_ID_VIA_8237A,    0x00, 0x2f, VIA_UDMA_133 | VIA_BAD_AST },
- 	{ "vt8237",	PCI_DEVICE_ID_VIA_8237,     0x00, 0x2f, VIA_UDMA_133 | VIA_BAD_AST },
- 	{ "vt8235",	PCI_DEVICE_ID_VIA_8235,     0x00, 0x2f, VIA_UDMA_133 | VIA_BAD_AST },
-@@ -594,6 +595,7 @@ static int via_reinit_one(struct pci_dev
- #endif
+--- a/drivers/bluetooth/btsdio.c
++++ b/drivers/bluetooth/btsdio.c
+@@ -91,6 +91,7 @@ static int btsdio_tx_packet(struct btsdi
  
- static const struct pci_device_id via[] = {
-+	{ PCI_VDEVICE(VIA, 0x0415), },
- 	{ PCI_VDEVICE(VIA, 0x0571), },
- 	{ PCI_VDEVICE(VIA, 0x0581), },
- 	{ PCI_VDEVICE(VIA, 0x1571), },
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -1301,6 +1301,7 @@
- #define PCI_DEVICE_ID_VIA_VT3351	0x0351
- #define PCI_DEVICE_ID_VIA_VT3364	0x0364
- #define PCI_DEVICE_ID_VIA_8371_0	0x0391
-+#define PCI_DEVICE_ID_VIA_6415		0x0415
- #define PCI_DEVICE_ID_VIA_8501_0	0x0501
- #define PCI_DEVICE_ID_VIA_82C561	0x0561
- #define PCI_DEVICE_ID_VIA_82C586_1	0x0571
+ 	err = sdio_writesb(data->func, REG_TDAT, skb->data, skb->len);
+ 	if (err < 0) {
++		skb_pull(skb, 4);
+ 		sdio_writeb(data->func, 0x01, REG_PC_WRT, NULL);
+ 		return err;
+ 	}
 
