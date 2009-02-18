@@ -1,60 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbZBRPz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbZBRP6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754831AbZBRPz4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 10:55:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbZBRPxj
+	id S1754677AbZBRP6m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 10:58:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbZBRP6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 10:53:39 -0500
-Received: from smtp-out002.kontent.com ([81.88.40.216]:33064 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753303AbZBRPxc (ORCPT
+	Wed, 18 Feb 2009 10:58:34 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:43743 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751479AbZBRP6d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 10:53:32 -0500
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFD] Automatic suspend
-Date: Wed, 18 Feb 2009 16:55:11 +0100
-User-Agent: KMail/1.9.10
-Cc: Arjan van de Ven <arjan@infradead.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-References: <Pine.LNX.4.44L0.0902181009410.3186-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0902181009410.3186-100000@iolanthe.rowland.org>
+	Wed, 18 Feb 2009 10:58:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=kqnV2qW+3IgawhS8dESLWWd3yhtkW749WYjyxMOx5X6JHUDAQwnCnvPLTgtvPzT6Yz
+         HOWf/zt/hPe/QAkuAFy9qLBLMIEgmuDH8EJaJTGHLvs+v7hx+SftSHSD11tzP2S7+9RW
+         7a3hFpdkU0sPs0pKtMmvKp9nXU+GjC+VgXxds=
+Date: Wed, 18 Feb 2009 16:58:28 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 2/2] tracing/function-graph-tracer: provide
+	documentation for the function graph tracer
+Message-ID: <20090218155827.GA5765@nowhere>
+References: <499ba227.077e420a.56d6.ffffc38b@mx.google.com> <20090218140150.GA31620@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902181655.13876.oliver@neukum.org>
+In-Reply-To: <20090218140150.GA31620@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Wednesday 18 February 2009 16:10:48 schrieb Alan Stern:
-> On Wed, 18 Feb 2009, Oliver Neukum wrote:
+On Wed, Feb 18, 2009 at 03:01:50PM +0100, Ingo Molnar wrote:
 > 
-> > But the transport and the driver may be in different subsystems, e.g.
-> > usb storage.
+> btw., a minor trace-output observation. We currently have this 
+> default output:
 > 
-> We would have to add a part of usb-storage into the SCSI subsystem, by 
-> creating a USB transport class.  Perhaps this class could be shared 
-> with Firewire/IEEE1394.
+> # tracer: function_graph
+> #
+> # CPU  DURATION                  FUNCTION CALLS
+> # |     |   |                     |   |   |   |
+> 
+>  0)               |  sys_open() {
+>  0)               |    do_sys_open() {
+>  0)               |      getname() {
+>  0)               |        kmem_cache_alloc() {
+>  0)   1.382 us    |          __might_sleep();
+>  0)   2.478 us    |        }
+> 
+> Wouldnt this tweaked version look even nicer:
+> 
+> #
+> # [ tracer: function_graph ]
+> #
+>  CPU)  <duration>   |  <function-name>
+>  ..............................................
+>    0)               |  sys_open() {
+>    0)               |    do_sys_open() {
+>    0)               |      getname() {
+>    0)               |        kmem_cache_alloc() {
+>    0)   1.382 us    |          __might_sleep();
+>    0)   2.478 us    |        }
+> 
+> 
+> Changes:
+> 
+>  1) Added an empty '#' line to the head. Looks nicer because 
+>     the comment is now symmetric.
 
-That would be a specific solution. But the problem is generic. Take
-for example HID. Several drivers may share one transport, but the transport
-may be USB 2.0/3.0 or bluetooth.
+Right.
+ 
+>  2) Shifted of the CPU field two positions to the left. Better 
+>     for paste-ability and makes the 'CPU)' header fit as well.
 
-	Regards
-		Oliver
 
+Good.
+
+
+>  3) Changed the field description in the header portion to a 
+>     standard <field> notation.
+
+
+I guess it's more a matter of taste here.
+I like the uppercase titles because they draw a good separation between
+titles and traces.
+
+
+>  4) added the '....' line to create a table.
+
+
+Yeah, seems better.
+
+
+> Hm?
+> 
+> 	Ingo
 
