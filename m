@@ -1,83 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbZBRFzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754939AbZBRF4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754575AbZBRFzv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 00:55:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbZBRFzn
+	id S1754939AbZBRF4V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 00:56:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbZBRF4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 00:55:43 -0500
-Received: from casper.infradead.org ([85.118.1.10]:59396 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751148AbZBRFzm convert rfc822-to-8bit (ORCPT
+	Wed, 18 Feb 2009 00:56:03 -0500
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:26995 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751408AbZBRF4A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 00:55:42 -0500
-Date: Tue, 17 Feb 2009 21:55:32 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Arve =?UTF-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>
-Cc: "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Brian Swetland <swetland@google.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>, Len Brown <lenb@kernel.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [RFD] Automatic suspend
-Message-ID: <20090217215532.5ae533a6@infradead.org>
-In-Reply-To: <d6200be20902172111y16debabaq85b8f58520f4079a@mail.gmail.com>
-References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com>
-	<20090216145948.6fea81c3@infradead.org>
-	<200902170019.40599.rjw@sisk.pl>
-	<20090216232329.GA15678@srcf.ucam.org>
-	<20090217142001.GB12378@bulgaria.corp.google.com>
-	<20090217064630.688bf639@infradead.org>
-	<20090217145141.GA26158@srcf.ucam.org>
-	<20090217065622.3e0a9956@infradead.org>
-	<13B9B4C6EF24D648824FF11BE896716203771DD342@dlee02.ent.ti.com>
-	<20090217160421.12bc851f@infradead.org>
-	<d6200be20902172111y16debabaq85b8f58520f4079a@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 18 Feb 2009 00:56:00 -0500
+X-IronPort-AV: E=Sophos;i="4.38,227,1233532800"; 
+   d="scan'208";a="132876536"
+From: Roland Dreier <rdreier@cisco.com>
+To: David Miller <davem@davemloft.net>
+Cc: Valdis.Kletnieks@vt.edu, arvidjaar@mail.ru, rjw@sisk.pl,
+       netdev@vger.kernel.org, bonding-devel@lists.sourceforge.net,
+       jamagallon@ono.com, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29 regression? Bonding tied to IPV6 in 29-rc5
+References: <200902172001.41804.arvidjaar@mail.ru>
+	<20090217.142946.232071526.davem@davemloft.net>
+	<25143.1234932076@turing-police.cc.vt.edu>
+	<20090217.212919.259912220.davem@davemloft.net>
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 17 Feb 2009 21:55:58 -0800
+In-Reply-To: <20090217.212919.259912220.davem@davemloft.net> (David Miller's
+	message of "Tue, 17 Feb 2009 21:29:19 -0800 (PST)")
+Message-ID: <adar61w2sr5.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 18 Feb 2009 05:55:59.0198 (UTC) FILETIME=[928E37E0:01C9918D]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Feb 2009 21:11:31 -0800
-Arve Hjønnevåg <arve@android.com> wrote:
+ > Next, if it's just an issue of IPV6 traffic, install a packet
+ > scheduler rule that rejects all packets with ethernet proto
+ > ETH_P_IPV6
+ > 
+ > If openning up ipv6 sockets is problematic, that can be blocked
+ > using the security layer, which your super-duper distro kernel
+ > is guarenteed to have enabled. :-)
 
-> On Tue, Feb 17, 2009 at 4:04 PM, Arjan van de Ven
-> <arjan@infradead.org> wrote:
-> > On Tue, 17 Feb 2009 09:32:46 -0600
-> > "Woodruff, Richard" <r-woodruff2@ti.com> wrote:
-> >
-> >> > so use range timers / timer slack for those apps that you do not
-> >> > trust. That is not a big deal, and solves the issue of timer
-> >> > wakeups...
-> >>
-> >> I not so sure it is that straight forward in practice.  End systems
-> >> integrate a lot of 3rd party software who view performance 1st and
-> >> have no thought of power.
-> >
-> > you know that with the range timers/slack, you can control the
-> > "rounding" of the timer of the application, right?
-> > You can *directly* throttle the number of wakeups an application
-> > causes that way to a value you set.
-> 
-> I thought the point of range timers was to align multiple timers so
-> they wakeup at the same time, not to throttle individual timers.
+This reminds me of a related issue that some users have run into with
+IP-over-InfiniBand -- the IPoIB module also depends on ipv6 symbols if
+ipv6 is enabled, so when ipoib is loaded then ipv6 gets loaded.  And
+this causes a problem from some people in the IB case because assigning
+an ipv6 address to the ipoib interface actually consumes some network
+resources (the number of multicast groups that the network supports may
+be limited and having a solicited node multicast group for each node may
+use them all up).
 
-it works both ways.
+Anyway, this leads to the folowing question: is there a way to prevent a
+link-local ipv6 address from being configured automatically for the
+ipoib interface?
 
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Thanks,
+  Roland
