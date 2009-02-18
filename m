@@ -1,42 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753579AbZBRKxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753771AbZBRKzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753579AbZBRKxw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 05:53:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbZBRKxn
+	id S1753771AbZBRKzA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 05:55:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZBRKyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 05:53:43 -0500
-Received: from cluster-g.mailcontrol.com ([208.87.233.190]:45355 "EHLO
-	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750853AbZBRKxn (ORCPT
+	Wed, 18 Feb 2009 05:54:52 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:35519 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750853AbZBRKyv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 05:53:43 -0500
-Message-ID: <499BE83D.6040406@csr.com>
-Date: Wed, 18 Feb 2009 10:51:41 +0000
-From: David Vrabel <david.vrabel@csr.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Johannes Weiner <hannes@cmpxchg.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
+	Wed, 18 Feb 2009 05:54:51 -0500
+Subject: Re: [patch 1/7] slab: introduce kzfree()
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: David Vrabel <david.vrabel@csr.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Chas Williams <chas@cmf.nrl.navy.mil>,
        Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [patch 5/7] usb: use kzfree()
-References: <20090217182615.897042724@cmpxchg.org> <20090217184136.097882343@cmpxchg.org>
-In-Reply-To: <20090217184136.097882343@cmpxchg.org>
-Content-Type: text/plain; charset=ISO-8859-1
+       linux-kernel@vger.kernel.org, Matt Mackall <mpm@selenic.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>
+In-Reply-To: <499BE7F8.80901@csr.com>
+References: <20090217182615.897042724@cmpxchg.org>
+	 <20090217184135.747921027@cmpxchg.org>  <499BE7F8.80901@csr.com>
+Date: Wed, 18 Feb 2009 12:54:48 +0200
+Message-Id: <1234954488.24030.46.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Feb 2009 10:51:41.0702 (UTC) FILETIME=[E1E97A60:01C991B6]
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is in the WUSB code so:
+On Wed, 2009-02-18 at 10:50 +0000, David Vrabel wrote:
+> Johannes Weiner wrote:
+> > +void kzfree(const void *p)
+> 
+> Shouldn't this be void * since it writes to the memory?
 
-Acked-by: David Vrabel <david.vrabel@csr.com>
+No. kfree() writes to the memory as well to update freelists, poisoning
+and such so kzfree() is not at all different from it.
 
-David
--- 
-David Vrabel, Senior Software Engineer, Drivers
-CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
-Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
