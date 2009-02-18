@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757936AbZBRVif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758013AbZBRVix@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757936AbZBRVif (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:38:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbZBRVff
+	id S1758013AbZBRVix (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:38:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754824AbZBRVfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:35:35 -0500
-Received: from kroah.org ([198.145.64.141]:56129 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 16:35:36 -0500
+Received: from kroah.org ([198.145.64.141]:56138 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754243AbZBRVfe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:35:34 -0500
-Date: Wed, 18 Feb 2009 13:32:28 -0800
+	id S1754678AbZBRVff (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:35:35 -0500
+Date: Wed, 18 Feb 2009 13:32:30 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Marcelo Tosatti <mtosatti@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 08/39] x86/cpa: make sure cpa is safe to call in lazy mmu
-	mode
-Message-ID: <20090218213228.GI19814@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Mike Galbraith <efault@gmx.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 09/39] sched: SCHED_OTHER vs SCHED_IDLE isolation
+Message-ID: <20090218213230.GJ19814@kroah.com>
 References: <20090218212144.965748151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-cpa-make-sure-cpa-is-safe-to-call-in-lazy-mmu-mode.patch"
+Content-Disposition: inline; filename="sched-sched_other-vs-sched_idle-isolation.patch"
 In-Reply-To: <20090218213021.GA19814@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,58 +40,86 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-commit 4f06b0436b2ddbd3b67b10e77098a6862787b3eb upstream.
+commit 6bc912b71b6f33b041cfde93ca3f019cbaa852bc upstream.
 
-Impact: fix race leading to crash under KVM and Xen
+Stronger SCHED_IDLE isolation:
 
-The CPA code may be called while we're in lazy mmu update mode - for
-example, when using DEBUG_PAGE_ALLOC and doing a slab allocation
-in an interrupt handler which interrupted a lazy mmu update.  In this
-case, the in-memory pagetable state may be out of date due to pending
-queued updates.  We need to flush any pending updates before inspecting
-the page table.  Similarly, we must explicitly flush any modifications
-CPA may have made (which comes down to flushing queued operations when
-flushing the TLB).
+ - no SCHED_IDLE buddies
+ - never let SCHED_IDLE preempt on wakeup
+ - always preempt SCHED_IDLE on wakeup
+ - limit SLEEPER fairness for SCHED_IDLE.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Acked-by: Marcelo Tosatti <mtosatti@redhat.com>
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/mm/pageattr.c |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ kernel/sched_fair.c |   30 ++++++++++++++++++++++--------
+ 1 file changed, 22 insertions(+), 8 deletions(-)
 
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -576,6 +576,13 @@ static int __change_page_attr(struct cpa
- 	else
- 		address = *cpa->vaddr;
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -681,9 +681,13 @@ place_entity(struct cfs_rq *cfs_rq, stru
+ 			unsigned long thresh = sysctl_sched_latency;
  
-+	/*
-+	 * If we're called with lazy mmu updates enabled, the
-+	 * in-memory pte state may be stale.  Flush pending updates to
-+	 * bring them up to date.
-+	 */
-+	arch_flush_lazy_mmu_mode();
-+
- repeat:
- 	kpte = lookup_address(address, &level);
- 	if (!kpte)
-@@ -854,6 +861,13 @@ static int change_page_attr_set_clr(unsi
- 	} else
- 		cpa_flush_all(cache);
+ 			/*
+-			 * convert the sleeper threshold into virtual time
++			 * Convert the sleeper threshold into virtual time.
++			 * SCHED_IDLE is a special sub-class.  We care about
++			 * fairness only relative to other SCHED_IDLE tasks,
++			 * all of which have the same weight.
+ 			 */
+-			if (sched_feat(NORMALIZED_SLEEPER))
++			if (sched_feat(NORMALIZED_SLEEPER) &&
++					task_of(se)->policy != SCHED_IDLE)
+ 				thresh = calc_delta_fair(thresh, se);
  
-+	/*
-+	 * If we've been called with lazy mmu updates enabled, then
-+	 * make sure that everything gets flushed out before we
-+	 * return.
-+	 */
-+	arch_flush_lazy_mmu_mode();
-+
- out:
- 	return ret;
+ 			vruntime -= thresh;
+@@ -1328,14 +1332,18 @@ wakeup_preempt_entity(struct sched_entit
+ 
+ static void set_last_buddy(struct sched_entity *se)
+ {
+-	for_each_sched_entity(se)
+-		cfs_rq_of(se)->last = se;
++	if (likely(task_of(se)->policy != SCHED_IDLE)) {
++		for_each_sched_entity(se)
++			cfs_rq_of(se)->last = se;
++	}
  }
+ 
+ static void set_next_buddy(struct sched_entity *se)
+ {
+-	for_each_sched_entity(se)
+-		cfs_rq_of(se)->next = se;
++	if (likely(task_of(se)->policy != SCHED_IDLE)) {
++		for_each_sched_entity(se)
++			cfs_rq_of(se)->next = se;
++	}
+ }
+ 
+ /*
+@@ -1382,12 +1390,18 @@ static void check_preempt_wakeup(struct 
+ 		return;
+ 
+ 	/*
+-	 * Batch tasks do not preempt (their preemption is driven by
++	 * Batch and idle tasks do not preempt (their preemption is driven by
+ 	 * the tick):
+ 	 */
+-	if (unlikely(p->policy == SCHED_BATCH))
++	if (unlikely(p->policy != SCHED_NORMAL))
+ 		return;
+ 
++	/* Idle tasks are by definition preempted by everybody. */
++	if (unlikely(curr->policy == SCHED_IDLE)) {
++		resched_task(curr);
++		return;
++	}
++
+ 	if (!sched_feat(WAKEUP_PREEMPT))
+ 		return;
+ 
 
