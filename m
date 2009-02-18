@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759590AbZBRVpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760027AbZBRVqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759590AbZBRVpA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:45:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbZBRVgK
+	id S1760027AbZBRVqb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:46:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757337AbZBRVgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:36:10 -0500
-Received: from kroah.org ([198.145.64.141]:56372 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 16:36:19 -0500
+Received: from kroah.org ([198.145.64.141]:56359 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757270AbZBRVf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:35:58 -0500
-Date: Wed, 18 Feb 2009 13:33:14 -0800
+	id S1757252AbZBRVf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:35:57 -0500
+Date: Wed, 18 Feb 2009 13:33:11 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,13 +24,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
        "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [patch 32/39] ext4: Init the complete page while building buddy
-	cache
-Message-ID: <20090218213314.GG19814@kroah.com>
+Subject: [patch 30/39] ext4: mark the blocks/inode bitmap beyond end of
+	group as used
+Message-ID: <20090218213311.GE19814@kroah.com>
 References: <20090218212144.965748151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext4-init-the-complete-page-while-building-buddy-cache.patch"
+Content-Disposition: inline; filename="ext4-mark-the-blocks-inode-bitmap-beyond-end-of-group-as-used.patch"
 In-Reply-To: <20090218213021.GA19814@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -44,41 +44,67 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-(cherry picked from commit 29eaf024980e07cc01f31ae4ea5d68c917f4b7da)
+(cherry picked from commit 648f5879f5892dddd3ba71cd0d285599f40f2512)
 
-We need to init the complete page during buddy cache init
-by setting the contents to '1'.  Otherwise we can see the
-following errors after doing an online resize of the
-filesystem:
-
-EXT4-fs error (device sdb1): ext4_mb_mark_diskspace_used:
-	Allocating block 1040385 in system zone of 127 group
+We need to mark the block/inode bitmap beyond the end of the group
+with '1'.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/mballoc.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ fs/ext4/ialloc.c  |    2 +-
+ fs/ext4/mballoc.c |    4 ++--
+ fs/ext4/resize.c  |    6 ++----
+ 3 files changed, 5 insertions(+), 7 deletions(-)
 
+--- a/fs/ext4/ialloc.c
++++ b/fs/ext4/ialloc.c
+@@ -84,7 +84,7 @@ unsigned ext4_init_inode_bitmap(struct s
+ 	}
+ 
+ 	memset(bh->b_data, 0, (EXT4_INODES_PER_GROUP(sb) + 7) / 8);
+-	mark_bitmap_end(EXT4_INODES_PER_GROUP(sb), EXT4_BLOCKS_PER_GROUP(sb),
++	mark_bitmap_end(EXT4_INODES_PER_GROUP(sb), sb->s_blocksize * 8,
+ 			bh->b_data);
+ 
+ 	return EXT4_INODES_PER_GROUP(sb);
 --- a/fs/ext4/mballoc.c
 +++ b/fs/ext4/mballoc.c
-@@ -846,6 +846,8 @@ static int ext4_mb_init_cache(struct pag
+@@ -3036,8 +3036,8 @@ ext4_mb_mark_diskspace_used(struct ext4_
+ 	    in_range(block + len - 1, ext4_inode_table(sb, gdp),
+ 		     EXT4_SB(sb)->s_itb_per_group)) {
+ 		ext4_error(sb, __func__,
+-			   "Allocating block in system zone - block = %llu",
+-			   block);
++			   "Allocating block %llu in system zone of %d group\n",
++			   block, ac->ac_b_ex.fe_group);
+ 		/* File system mounted not to panic on error
+ 		 * Fix the bitmap and repeat the block allocation
+ 		 * We leak some of the blocks here.
+--- a/fs/ext4/resize.c
++++ b/fs/ext4/resize.c
+@@ -284,11 +284,9 @@ static int setup_new_group_blocks(struct
+ 	if ((err = extend_or_restart_transaction(handle, 2, bh)))
+ 		goto exit_bh;
  
- 	err = 0;
- 	first_block = page->index * blocks_per_page;
-+	/* init the page  */
-+	memset(page_address(page), 0xff, PAGE_CACHE_SIZE);
- 	for (i = 0; i < blocks_per_page; i++) {
- 		int group;
- 		struct ext4_group_info *grinfo;
-@@ -872,7 +874,6 @@ static int ext4_mb_init_cache(struct pag
- 			BUG_ON(incore == NULL);
- 			mb_debug("put buddy for group %u in page %lu/%x\n",
- 				group, page->index, i * blocksize);
--			memset(data, 0xff, blocksize);
- 			grinfo = ext4_get_group_info(sb, group);
- 			grinfo->bb_fragments = 0;
- 			memset(grinfo->bb_counters, 0,
+-	mark_bitmap_end(input->blocks_count, EXT4_BLOCKS_PER_GROUP(sb),
+-			bh->b_data);
++	mark_bitmap_end(input->blocks_count, sb->s_blocksize * 8, bh->b_data);
+ 	ext4_journal_dirty_metadata(handle, bh);
+ 	brelse(bh);
+-
+ 	/* Mark unused entries in inode bitmap used */
+ 	ext4_debug("clear inode bitmap %#04llx (+%llu)\n",
+ 		   input->inode_bitmap, input->inode_bitmap - start);
+@@ -297,7 +295,7 @@ static int setup_new_group_blocks(struct
+ 		goto exit_journal;
+ 	}
+ 
+-	mark_bitmap_end(EXT4_INODES_PER_GROUP(sb), EXT4_BLOCKS_PER_GROUP(sb),
++	mark_bitmap_end(EXT4_INODES_PER_GROUP(sb), sb->s_blocksize * 8,
+ 			bh->b_data);
+ 	ext4_journal_dirty_metadata(handle, bh);
+ exit_bh:
 
