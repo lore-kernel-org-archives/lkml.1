@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759412AbZBRVo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759502AbZBRVom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759412AbZBRVo0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:44:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757209AbZBRVfv
+	id S1759502AbZBRVom (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:44:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456AbZBRVgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:35:51 -0500
-Received: from kroah.org ([198.145.64.141]:56261 "EHLO coco.kroah.org"
+	Wed, 18 Feb 2009 16:36:06 -0500
+Received: from kroah.org ([198.145.64.141]:56353 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756920AbZBRVfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:35:46 -0500
-Date: Wed, 18 Feb 2009 13:32:51 -0800
+	id S1757050AbZBRVfz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:35:55 -0500
+Date: Wed, 18 Feb 2009 13:33:09 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,97 +22,219 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org
-Subject: [patch 20/39] jbd2: Add barrier not supported test to
-	journal_wait_on_commit_record
-Message-ID: <20090218213251.GU19814@kroah.com>
+       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [patch 29/39] ext4: Use new buffer_head flag to check uninit group
+	bitmaps initialization
+Message-ID: <20090218213309.GD19814@kroah.com>
 References: <20090218212144.965748151@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="jbd2-add-barrier-not-supported-test-to-journal_wait_on_commit_record.patch"
+Content-Disposition: inline; filename="ext4-use-new-buffer_head-flag-to-check-uninit-group-bitmaps-initialization.patch"
 In-Reply-To: <20090218213021.GA19814@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: "Theodore Ts'o" <tytso@mit.edu>
+From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-(cherry picked from commit fd98496f467b3d26d05ab1498f41718b5ef13de5)
+(cherry picked from commit 2ccb5fb9f113dae969d1ae9b6c10e80fa34f8cd3)
 
-Xen doesn't report that barriers are not supported until buffer I/O is
-reported as completed, instead of when the buffer I/O is submitted.
-Add a check and a fallback codepath to journal_wait_on_commit_record()
-to detect this case, so that attempts to mount ext4 filesystems on
-LVM/devicemapper devices on Xen guests don't blow up with an "Aborting
-journal on device XXX"; "Remounting filesystem read-only" error.
+For uninit block group, the on-disk bitmap is not initialized. That
+implies we cannot depend on the uptodate flag on the bitmap
+buffer_head to find bitmap validity.  Use a new buffer_head flag which
+would be set after we properly initialize the bitmap.  This also
+prevents (re-)initializing the uninit group bitmap every time we call
+ext4_read_block_bitmap().
 
-Thanks to Andreas Sundstrom for reporting this issue.
-
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/jbd2/commit.c |   27 +++++++++++++++++++++++++--
- 1 file changed, 25 insertions(+), 2 deletions(-)
+ fs/ext4/balloc.c  |   25 +++++++++++++++++++++++--
+ fs/ext4/ext4.h    |   19 +++++++++++++++++++
+ fs/ext4/ialloc.c  |   24 ++++++++++++++++++++++--
+ fs/ext4/mballoc.c |   24 ++++++++++++++++++++++--
+ 4 files changed, 86 insertions(+), 6 deletions(-)
 
---- a/fs/jbd2/commit.c
-+++ b/fs/jbd2/commit.c
-@@ -25,6 +25,7 @@
- #include <linux/crc32.h>
- #include <linux/writeback.h>
- #include <linux/backing-dev.h>
-+#include <linux/bio.h>
+--- a/fs/ext4/balloc.c
++++ b/fs/ext4/balloc.c
+@@ -320,20 +320,41 @@ ext4_read_block_bitmap(struct super_bloc
+ 			    block_group, bitmap_blk);
+ 		return NULL;
+ 	}
+-	if (buffer_uptodate(bh) &&
+-	    !(desc->bg_flags & cpu_to_le16(EXT4_BG_BLOCK_UNINIT)))
++
++	if (bitmap_uptodate(bh))
+ 		return bh;
+ 
+ 	lock_buffer(bh);
++	if (bitmap_uptodate(bh)) {
++		unlock_buffer(bh);
++		return bh;
++	}
+ 	spin_lock(sb_bgl_lock(EXT4_SB(sb), block_group));
+ 	if (desc->bg_flags & cpu_to_le16(EXT4_BG_BLOCK_UNINIT)) {
+ 		ext4_init_block_bitmap(sb, bh, block_group, desc);
++		set_bitmap_uptodate(bh);
+ 		set_buffer_uptodate(bh);
+ 		unlock_buffer(bh);
+ 		spin_unlock(sb_bgl_lock(EXT4_SB(sb), block_group));
+ 		return bh;
+ 	}
+ 	spin_unlock(sb_bgl_lock(EXT4_SB(sb), block_group));
++	if (buffer_uptodate(bh)) {
++		/*
++		 * if not uninit if bh is uptodate,
++		 * bitmap is also uptodate
++		 */
++		set_bitmap_uptodate(bh);
++		unlock_buffer(bh);
++		return bh;
++	}
++	/*
++	 * submit the buffer_head for read. We can
++	 * safely mark the bitmap as uptodate now.
++	 * We do it here so the bitmap uptodate bit
++	 * get set with buffer lock held.
++	 */
++	set_bitmap_uptodate(bh);
+ 	if (bh_submit_read(bh) < 0) {
+ 		put_bh(bh);
+ 		ext4_error(sb, __func__,
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -19,6 +19,7 @@
+ #include <linux/types.h>
+ #include <linux/blkdev.h>
+ #include <linux/magic.h>
++#include <linux/jbd2.h>
+ #include "ext4_i.h"
  
  /*
-  * Default IO end handler for temporary BJ_IO buffer_heads.
-@@ -168,12 +169,34 @@ static int journal_submit_commit_record(
-  * This function along with journal_submit_commit_record
-  * allows to write the commit record asynchronously.
-  */
--static int journal_wait_on_commit_record(struct buffer_head *bh)
-+static int journal_wait_on_commit_record(journal_t *journal,
-+					 struct buffer_head *bh)
- {
- 	int ret = 0;
- 
-+retry:
- 	clear_buffer_dirty(bh);
- 	wait_on_buffer(bh);
-+	if (buffer_eopnotsupp(bh) && (journal->j_flags & JBD2_BARRIER)) {
-+		printk(KERN_WARNING
-+		       "JBD2: wait_on_commit_record: sync failed on %s - "
-+		       "disabling barriers\n", journal->j_devname);
-+		spin_lock(&journal->j_state_lock);
-+		journal->j_flags &= ~JBD2_BARRIER;
-+		spin_unlock(&journal->j_state_lock);
+@@ -1286,6 +1287,24 @@ extern int ext4_get_blocks_wrap(handle_t
+ 			sector_t block, unsigned long max_blocks,
+ 			struct buffer_head *bh, int create,
+ 			int extend_disksize, int flag);
 +
-+		lock_buffer(bh);
-+		clear_buffer_dirty(bh);
-+		set_buffer_uptodate(bh);
-+		bh->b_end_io = journal_end_buffer_io_sync;
++/*
++ * Add new method to test wether block and inode bitmaps are properly
++ * initialized. With uninit_bg reading the block from disk is not enough
++ * to mark the bitmap uptodate. We need to also zero-out the bitmap
++ */
++#define BH_BITMAP_UPTODATE BH_JBDPrivateStart
 +
-+		ret = submit_bh(WRITE_SYNC, bh);
-+		if (ret) {
-+			unlock_buffer(bh);
-+			return ret;
-+		}
-+		goto retry;
-+	}
++static inline int bitmap_uptodate(struct buffer_head *bh)
++{
++	return (buffer_uptodate(bh) &&
++			test_bit(BH_BITMAP_UPTODATE, &(bh)->b_state));
++}
++static inline void set_bitmap_uptodate(struct buffer_head *bh)
++{
++	set_bit(BH_BITMAP_UPTODATE, &(bh)->b_state);
++}
++
+ #endif	/* __KERNEL__ */
  
- 	if (unlikely(!buffer_uptodate(bh)))
- 		ret = -EIO;
-@@ -799,7 +822,7 @@ wait_for_iobuf:
- 			__jbd2_journal_abort_hard(journal);
+ #endif	/* _EXT4_H */
+--- a/fs/ext4/ialloc.c
++++ b/fs/ext4/ialloc.c
+@@ -115,20 +115,40 @@ ext4_read_inode_bitmap(struct super_bloc
+ 			    block_group, bitmap_blk);
+ 		return NULL;
  	}
- 	if (!err && !is_journal_aborted(journal))
--		err = journal_wait_on_commit_record(cbh);
-+		err = journal_wait_on_commit_record(journal, cbh);
+-	if (buffer_uptodate(bh) &&
+-	    !(desc->bg_flags & cpu_to_le16(EXT4_BG_INODE_UNINIT)))
++	if (bitmap_uptodate(bh))
+ 		return bh;
  
- 	if (err)
- 		jbd2_journal_abort(journal, err);
+ 	lock_buffer(bh);
++	if (bitmap_uptodate(bh)) {
++		unlock_buffer(bh);
++		return bh;
++	}
+ 	spin_lock(sb_bgl_lock(EXT4_SB(sb), block_group));
+ 	if (desc->bg_flags & cpu_to_le16(EXT4_BG_INODE_UNINIT)) {
+ 		ext4_init_inode_bitmap(sb, bh, block_group, desc);
++		set_bitmap_uptodate(bh);
+ 		set_buffer_uptodate(bh);
+ 		unlock_buffer(bh);
+ 		spin_unlock(sb_bgl_lock(EXT4_SB(sb), block_group));
+ 		return bh;
+ 	}
+ 	spin_unlock(sb_bgl_lock(EXT4_SB(sb), block_group));
++	if (buffer_uptodate(bh)) {
++		/*
++		 * if not uninit if bh is uptodate,
++		 * bitmap is also uptodate
++		 */
++		set_bitmap_uptodate(bh);
++		unlock_buffer(bh);
++		return bh;
++	}
++	/*
++	 * submit the buffer_head for read. We can
++	 * safely mark the bitmap as uptodate now.
++	 * We do it here so the bitmap uptodate bit
++	 * get set with buffer lock held.
++	 */
++	set_bitmap_uptodate(bh);
+ 	if (bh_submit_read(bh) < 0) {
+ 		put_bh(bh);
+ 		ext4_error(sb, __func__,
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -794,22 +794,42 @@ static int ext4_mb_init_cache(struct pag
+ 		if (bh[i] == NULL)
+ 			goto out;
+ 
+-		if (buffer_uptodate(bh[i]) &&
+-		    !(desc->bg_flags & cpu_to_le16(EXT4_BG_BLOCK_UNINIT)))
++		if (bitmap_uptodate(bh[i]))
+ 			continue;
+ 
+ 		lock_buffer(bh[i]);
++		if (bitmap_uptodate(bh[i])) {
++			unlock_buffer(bh[i]);
++			continue;
++		}
+ 		spin_lock(sb_bgl_lock(EXT4_SB(sb), first_group + i));
+ 		if (desc->bg_flags & cpu_to_le16(EXT4_BG_BLOCK_UNINIT)) {
+ 			ext4_init_block_bitmap(sb, bh[i],
+ 						first_group + i, desc);
++			set_bitmap_uptodate(bh[i]);
+ 			set_buffer_uptodate(bh[i]);
+ 			unlock_buffer(bh[i]);
+ 			spin_unlock(sb_bgl_lock(EXT4_SB(sb), first_group + i));
+ 			continue;
+ 		}
+ 		spin_unlock(sb_bgl_lock(EXT4_SB(sb), first_group + i));
++		if (buffer_uptodate(bh[i])) {
++			/*
++			 * if not uninit if bh is uptodate,
++			 * bitmap is also uptodate
++			 */
++			set_bitmap_uptodate(bh[i]);
++			unlock_buffer(bh[i]);
++			continue;
++		}
+ 		get_bh(bh[i]);
++		/*
++		 * submit the buffer_head for read. We can
++		 * safely mark the bitmap as uptodate now.
++		 * We do it here so the bitmap uptodate bit
++		 * get set with buffer lock held.
++		 */
++		set_bitmap_uptodate(bh[i]);
+ 		bh[i]->b_end_io = end_buffer_read_sync;
+ 		submit_bh(READ, bh[i]);
+ 		mb_debug("read bitmap for group %lu\n", first_group + i);
 
