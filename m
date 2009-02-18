@@ -1,63 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbZBRV1n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756553AbZBRV3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755889AbZBRV1n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 16:27:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbZBRV1e
+	id S1756553AbZBRV3V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 16:29:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbZBRV3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 16:27:34 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:43184 "EHLO e8.ny.us.ibm.com"
+	Wed, 18 Feb 2009 16:29:05 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:47865 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751425AbZBRV1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 16:27:33 -0500
-Subject: Re: What can OpenVZ do?
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, mpm@selenic.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       viro@zeniv.linux.org.uk, hpa@zytor.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org
-In-Reply-To: <20090218181644.GD19995@elte.hu>
-References: <20090212114207.e1c2de82.akpm@linux-foundation.org>
-	 <1234475483.30155.194.camel@nimitz>
-	 <20090212141014.2cd3d54d.akpm@linux-foundation.org>
-	 <20090213105302.GC4608@elte.hu> <1234817490.30155.287.camel@nimitz>
-	 <20090217222319.GA10546@elte.hu> <1234909849.4816.9.camel@nimitz>
-	 <20090218003217.GB25856@elte.hu> <1234917639.4816.12.camel@nimitz>
-	 <20090218051123.GA9367@x200.localdomain>  <20090218181644.GD19995@elte.hu>
-Content-Type: text/plain
-Date: Wed, 18 Feb 2009 13:27:27 -0800
-Message-Id: <1234992447.26788.12.camel@nimitz>
+	id S1752020AbZBRV3E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 16:29:04 -0500
+Date: Wed, 18 Feb 2009 13:29:01 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: John Dykstra <john.dykstra1@gmail.com>
+Cc: Brian Haley <brian.haley@hp.com>, jamagallon@ono.com,
+       Valdis.Kletnieks@vt.edu, YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       bonding-devel@lists.sourceforge.net, rjw@sisk.pl,
+       Vlad Yasevich <vladislav.yasevich@hp.com>,
+       Chuck Lever <chuck.lever@oracle.com>, Theodore Tso <tytso@mit.edu>,
+       arvidjaar@mail.ru, David Miller <davem@davemloft.net>
+Subject: Re: [Bonding-devel] 2.6.29 regression? Bonding tied to IPV6 in
+ 29-rc5
+Message-ID: <20090218132901.1b76e859@extreme>
+In-Reply-To: <1234992067.7692.38.camel@Maple>
+References: <200902172001.41804.arvidjaar@mail.ru>
+	<20090217.142946.232071526.davem@davemloft.net>
+	<25143.1234932076@turing-police.cc.vt.edu>
+	<20090217.212919.259912220.davem@davemloft.net>
+	<20090218135537.GF3600@mini-me.lan>
+	<06F54D7E-EE07-49C9-AD8F-B46BD6B02ABA@oracle.com>
+	<499C5486.5020807@hp.com>
+	<499C681A.6000008@hp.com>
+	<1234992067.7692.38.camel@Maple>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-18 at 19:16 +0100, Ingo Molnar wrote:
-> Nothing motivates more than app designers complaining about the 
-> one-way flag.
+On Wed, 18 Feb 2009 21:21:07 +0000
+John Dykstra <john.dykstra1@gmail.com> wrote:
+
+> On Wed, 2009-02-18 at 14:57 -0500, Brian Haley wrote: 
+> > Vlad Yasevich wrote:
+> > > Having worked in other environments where ipv6 has to be explicitly
+> > > enabled per interface, I've thought that this level of control was
+> > > always missing from linux.  
+> > 
+> > There does seem to be a sysctl for it, just doesn't seem to work.
 > 
-> Furthermore, it's _far_ easier to make a one-way flag SMP-safe. 
-> We just set it and that's it. When we unset it, what do we about 
-> SMP races with other threads in the same MM installing another 
-> non-linear vma, etc.
+> While this sysctl is definitely useful, I don't think it meets the needs
+> of those users and distributions that are currently blacklisting the
+> ipv6 module.  Even if you disable IPv6 on all interfaces, apps will
+> still be able to create AF_INET6 sockets, and thus some apps will break
+> or do inappropriate things because there isn't real IPv6 connectivity.
+> 
+> I've tried to put together an RFC patch that turned off all
+> externally-visible IPv6 behavior that could break something, but I keep
+> running into distasteful choices.
+> 
+> The current default behavior must be preserved--if you drop this patch
+> into an existing distribution, the IPv6 stack must come up the way it
+> always has.  Thus the knob (let's call it ip6_disable) must default
+> false.
+> 
+> It seems desirable to make this a per-net-namespace knob.  But that
+> means each new net will be initialized before the distribution has a
+> chance to disable the IPv6 part.  This will lead to neighbor solicits
+> going out for link-local addresses, which some people can't accept.
+> 
+> The only alternative I can think of is to make it a module parameter,
+> which would leverage people's current habit to disable IPv6 via the
+> module configuration files, but doesn't fit well into a virtualized
+> world.
+> 
+> Exactly what to disable is unclear too.  Turning off neighbor and router
+> solicits, responding to same, etc.--almost certainly.  Refusing to
+> create AF_INET6 sockets--definitely.  Erroring on ioctl() and netlink
+> API calls related to IPv6--probably.  Hiding /proc entries for IPv6--I
+> don't know.  
+> 
+> Ideally, once ip6_disable was set true, every API, /proc and /sys
+> entries, etc. would look just like the ipv6 module was not loaded.  But
+> to do this, while still initializing most of the IPv6 code (so that
+> those hooks from other modules won't do unexpected things) is very
+> invasive.
+> 
+> So it seems to me that the only practical solution is to live with
+> blacklisting module ipv6 until the apps are fixed and sending IPv6
+> packets isn't considered a crime.
+> 
+>   --  John
 
-After looking at this for file descriptors, I have to really agree with
-Ingo on this one, at least as far as the flag is concerned.  I want to
-propose one teeny change, though:  I think the flag should be
-per-resource.
-
-We should have one flag in mm_struct, one in files_struct, etc...  The
-task_is_checkpointable() function can just query task->mm, task->files,
-etc...  This gives us nice behavior at clone() *and* fork that just
-works.
-
-I'll do this for files_struct and see how it comes out so you can take a
-peek.
-
--- Dave
-
+There are also ipv6 purists who would like to see the same mechanism
+exist to force ipv6 only (no ipv4). So any long term solution should
+support both.
