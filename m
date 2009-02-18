@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757178AbZBRBau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757325AbZBRBbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757178AbZBRBau (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Feb 2009 20:30:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756403AbZBRB2I
+	id S1757325AbZBRBbc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Feb 2009 20:31:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757246AbZBRBbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Feb 2009 20:28:08 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49810
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756230AbZBRB2F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Feb 2009 20:28:05 -0500
-Date: Tue, 17 Feb 2009 17:27:49 -0800 (PST)
-Message-Id: <20090217.172749.224722175.davem@davemloft.net>
-To: hannes@hanneseder.net
-Cc: netdev@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 19/43] drivers/net/hamradio: fix warning: format not a
- string literal and no ...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090214213243.24377.94508.stgit@vmbox.hanneseder.net>
-References: <20090214210940.23489.95001.stgit@vmbox.hanneseder.net>
-	<20090214213243.24377.94508.stgit@vmbox.hanneseder.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 17 Feb 2009 20:31:03 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:50801 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1757243AbZBRBbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Feb 2009 20:31:01 -0500
+Message-ID: <499B64DA.5070403@cn.fujitsu.com>
+Date: Wed, 18 Feb 2009 09:31:06 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: [PATCH] cgroups: update documentation about css_set hash table
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hannes Eder <hannes@hanneseder.net>
-Date: Sat, 14 Feb 2009 22:33:21 +0100
+The css_set hash table was introduced in 2.6.26, so update the documentation
+accordingly.
 
-> Impact: Use 'static const char[]' instead of 'static char[]' and while
-> being at it fix an issue in 'mkiss_init_driver', where in case of an
-> error the status code was not passed to printk.
-> 
-> Fix this warnings:
->   drivers/net/hamradio/6pack.c: In function 'sixpack_init_driver':
->   drivers/net/hamradio/6pack.c:802: warning: format not a string literal and no format arguments
->   drivers/net/hamradio/bpqether.c: In function 'bpq_init_driver':
->   drivers/net/hamradio/bpqether.c:609: warning: format not a string literal and no format arguments
->   drivers/net/hamradio/mkiss.c: In function 'mkiss_init_driver':
->   drivers/net/hamradio/mkiss.c:988: warning: format not a string literal and no format arguments
->   drivers/net/hamradio/mkiss.c:991: warning: format not a string literal and no format arguments
->   drivers/net/hamradio/scc.c: In function 'scc_init_driver':
->   drivers/net/hamradio/scc.c:2109: warning: format not a string literal and no format arguments
->   drivers/net/hamradio/yam.c: In function 'yam_init_driver':
->   drivers/net/hamradio/yam.c:1094: warning: format not a string literal and no format arguments
-> 
-> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ Documentation/cgroups/cgroups.txt |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-Applied.
+diff --git a/Documentation/cgroups/cgroups.txt b/Documentation/cgroups/cgroups.txt
+index d9e5d6f..93feb84 100644
+--- a/Documentation/cgroups/cgroups.txt
++++ b/Documentation/cgroups/cgroups.txt
+@@ -252,10 +252,8 @@ cgroup file system directories.
+ When a task is moved from one cgroup to another, it gets a new
+ css_set pointer - if there's an already existing css_set with the
+ desired collection of cgroups then that group is reused, else a new
+-css_set is allocated. Note that the current implementation uses a
+-linear search to locate an appropriate existing css_set, so isn't
+-very efficient. A future version will use a hash table for better
+-performance.
++css_set is allocated. The appropriate existing css_set is located by
++looking into a hash table.
+ 
+ To allow access from a cgroup to the css_sets (and hence tasks)
+ that comprise it, a set of cg_cgroup_link objects form a lattice;
+-- 
+1.5.4.rc3
