@@ -1,105 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757325AbZBSU0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757773AbZBSU1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757325AbZBSU0i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 15:26:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbZBSU0a
+	id S1757773AbZBSU1R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 15:27:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756618AbZBSU04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 15:26:30 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:47174 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751680AbZBSU03 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 15:26:29 -0500
-Date: Thu, 19 Feb 2009 12:26:11 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@osdl.org>, roland@redhat.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>, daniel@hozac.com,
-       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/7][v8] zap_pid_ns_process() should use force_sig()
-Message-ID: <20090219202611.GA10134@us.ibm.com>
-References: <20090219030207.GA18783@us.ibm.com> <20090219030704.GE18990@us.ibm.com> <20090219185954.GB374@redhat.com>
+	Thu, 19 Feb 2009 15:26:56 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36854 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753870AbZBSU04 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 15:26:56 -0500
+Date: Thu, 19 Feb 2009 21:26:47 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Petr Tesarik <ptesarik@suse.cz>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Definition of BUG on x86
+Message-ID: <20090219202647.GB784@elte.hu>
+References: <1235047082.15053.49.camel@nathan.suse.cz> <20090219124702.GC22044@elte.hu> <1235048535.15053.52.camel@nathan.suse.cz> <20090219144902.GA8650@elte.hu> <499D7B9D.7060001@goop.org> <20090219153544.GA31637@elte.hu> <1235059883.15053.68.camel@nathan.suse.cz> <20090219161649.GC9556@elte.hu> <499D8A0C.5030908@goop.org> <499DBBEF.2090508@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090219185954.GB374@redhat.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <499DBBEF.2090508@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov [oleg@redhat.com] wrote:
-| On 02/18, Sukadev Bhattiprolu wrote:
-| >
-| >  	read_lock(&tasklist_lock);
-| >  	nr = next_pidmap(pid_ns, 1);
-| >  	while (nr > 0) {
-| > -		kill_proc_info(SIGKILL, SEND_SIG_PRIV, nr);
-| > +		rcu_read_lock();
-| > +
-| > +		/*
-| > +		 * Use force_sig() since it clears SIGNAL_UNKILLABLE ensuring
-| > +		 * any nested-container's init processes don't ignore the
-| > +		 * signal
-| > +		 */
-| > +		task = pid_task(find_vpid(nr), PIDTYPE_PID);
-| > +		force_sig(SIGKILL, task);
-| 
-| Shouldn't we check task != NULL ?
 
-Yes. Here is the updated patch.
----
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Wed, 18 Feb 2009 15:12:30 -0800
-Subject: [PATCH 5/7][v8] zap_pid_ns_process() should use force_sig()
+> Jeremy Fitzhardinge wrote:
+>> Ingo Molnar wrote:
+>>> Well, the important question is thatGCC will optimize out whatever  
+>>> comes after the __builtin_trap(), right? To guarantee an assert we 
+>>> can do something like:
+>>>
+>>>      __builtin_trap();
+>>>     panic("should never get here");
+>>>
+>>> to guarantee a message. (But realistically GCC will at most generate 
+>>> a build error.)
+>>>   
+>>
+>> Ah, right, I remember the problem.  There's no guaranteed way of 
+>> getting the address of the ud2a instruction __builtin_trap generates to 
+>> put it into the bug table.
+>>
+>
+> Did we actually run into any instance where that failed?
+>
+> It's true that it's not guaranteed, but it seems highly 
+> unlikely that it would happen in real life.  We *could* do a 
+> forward search at that point, that should catch the vast 
+> majority of the failing cases, again, but once again there are 
+> no guarantees.
+>
+> I guess I should ask the gcc people...
 
-send_signal() assumes that signals with SEND_SIG_PRIV are generated from
-within the same namespace. So any nested container-init processes become
-immune to the SIGKILL generated by kill_proc_info() in zap_pid_ns_processes().
+The whole thing is borderline anyway (the win is small), and the 
+combination of relying on __builtin_trap() [which is documented 
+as a non-stable interface], and the reliance on basic block 
+non-ordering.
 
-Use force_sig() in zap_pid_ns_processes() instead - force_sig() clears the
-SIGNAL_UNKILLABLE flag ensuring the signal is processed by container-inits.
+Another complication is that this is _debug_ code - i.e. if 
+there's a rare bug here we'll only see it if a bug triggers 
+there - which is very rare in itself.
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- kernel/pid_namespace.c |   15 ++++++++++++++-
- 1 files changed, 14 insertions(+), 1 deletions(-)
+So i'm rather uneasy to rely on GCC to this level. They should 
+allow to pass __noreturn to asm()s - that's a far cleaner 
+approach.
 
-diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
-index fab8ea8..2d1001b 100644
---- a/kernel/pid_namespace.c
-+++ b/kernel/pid_namespace.c
-@@ -152,6 +152,7 @@ void zap_pid_ns_processes(struct pid_namespace *pid_ns)
- {
- 	int nr;
- 	int rc;
-+	struct task_struct *task;
- 
- 	/*
- 	 * The last thread in the cgroup-init thread group is terminating.
-@@ -169,7 +170,19 @@ void zap_pid_ns_processes(struct pid_namespace *pid_ns)
- 	read_lock(&tasklist_lock);
- 	nr = next_pidmap(pid_ns, 1);
- 	while (nr > 0) {
--		kill_proc_info(SIGKILL, SEND_SIG_PRIV, nr);
-+		rcu_read_lock();
-+
-+		/*
-+		 * Use force_sig() since it clears SIGNAL_UNKILLABLE ensuring
-+		 * any nested-container's init processes don't ignore the
-+		 * signal
-+		 */
-+		task = pid_task(find_vpid(nr), PIDTYPE_PID);
-+		if (task)
-+			force_sig(SIGKILL, task);
-+
-+		rcu_read_unlock();
-+
- 		nr = next_pidmap(pid_ns, nr);
- 	}
- 	read_unlock(&tasklist_lock);
--- 
-1.5.2.5
-
+	Ingo
