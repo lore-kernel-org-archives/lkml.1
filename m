@@ -1,204 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756857AbZBSPZI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758852AbZBSP0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756857AbZBSPZI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 10:25:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbZBSPYz
+	id S1758852AbZBSP0V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 10:26:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbZBSP0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 10:24:55 -0500
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:32573 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751254AbZBSPYy (ORCPT
+	Thu, 19 Feb 2009 10:26:11 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:46599 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751265AbZBSP0K convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 10:24:54 -0500
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett-Packard
-To: etienne <etienne.basset@numericable.fr>
-Subject: Re: [PATCH] SMACK netlabel fixes
-Date: Thu, 19 Feb 2009 10:24:50 -0500
-User-Agent: KMail/1.11.0 (Linux/2.6.27-gentoo-r8; KDE/4.2.0; i686; ; )
-Cc: Casey Schaufler <casey@schaufler-ca.com>,
-       "Linux-Kernel" <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org
-References: <fa.O38YY4pVfLlMFJNBI3mhgn+qOcQ@ifi.uio.no> <499C5C44.4020902@schaufler-ca.com> <499C7A98.7000907@numericable.fr>
-In-Reply-To: <499C7A98.7000907@numericable.fr>
+	Thu, 19 Feb 2009 10:26:10 -0500
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Shan Wei <shanwei@cn.fujitsu.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: CFQ is worse than other IO schedulers in some cases
+References: <499BA413.2010705@cn.fujitsu.com>
+	<20090218113704.GW30821@kernel.dk> <499D2654.4060903@cn.fujitsu.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Thu, 19 Feb 2009 10:26:02 -0500
+In-Reply-To: <499D2654.4060903@cn.fujitsu.com> (Shan Wei's message of "Thu, 19
+	Feb 2009 17:28:52 +0800")
+Message-ID: <x491vtu8n3p.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902191024.50198.paul.moore@hp.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 18 February 2009 04:16:08 pm etienne wrote:
-> diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
-> index 0278bc0..427595e 100644
-> --- a/security/smack/smack_lsm.c
-> +++ b/security/smack/smack_lsm.c
-> @@ -1498,10 +1498,7 @@ static int smack_socket_post_create(struct socket
-> *sock, int family, * looks for host based access restrictions
->   *
->   * This version will only be appropriate for really small
-> - * sets of single label hosts. Because of the masking
-> - * it cannot shortcut out on the first match. There are
-> - * numerious ways to address the problem, but none of them
-> - * have been applied here.
-> + * sets of single label hosts.
->   *
->   * Returns the label of the far end or NULL if it's not special.
->   */
-> @@ -1512,41 +1509,22 @@ static char *smack_host_label(struct sockaddr_in
-> *sip) struct in_addr *siap = &sip->sin_addr;
->  	struct in_addr *liap;
->  	struct in_addr *miap;
-> -	struct in_addr bestmask;
+Shan Wei <shanwei@cn.fujitsu.com> writes:
+
+> To Jeff:
 >
->  	if (siap->s_addr == 0)
->  		return NULL;
+>  The patch can be used on Fedora10. But, on fedora8, the CLONE_IO is not 
+> included in the sched.h. So compile fail.
 >
-> -	bestmask.s_addr = 0;
-> -
->  	for (snp = smack_netlbladdrs; snp != NULL; snp = snp->smk_next) {
->  		liap = &snp->smk_host.sin_addr;
->  		miap = &snp->smk_mask;
+> #make
+> /usr/local/etc/dumpdates\" -D_DUMP_VERSION=\"0.4b41\"     tape.c -o tape.o
+> tape.c: In function ‘fork_clone_io’:
+> tape.c:797: error: ‘CLONE_IO’ undeclared (first use in this function)
+> tape.c:797: error: (Each undeclared identifier is reported only once
+> tape.c:797: error: for each function it appears in.)
+> make[1]: *** [tape.o] Error 1
 
-Unless I'm mistaken the 'liap' and 'miap' variables are only used once inside 
-the for loop, why not remove them and simply reference 'snp' directly?
+Great, thanks for testing!  I'll fix that up.
 
->  		/*
-> -		 * If the addresses match after applying the list entry mask
-> -		 * the entry matches the address. If it doesn't move along to
-> -		 * the next entry.
-> -		 */
-> -		if ((liap->s_addr & miap->s_addr) !=
-> -		    (siap->s_addr & miap->s_addr))
-> -			continue;
-> -		/*
-> -		 * If the list entry mask identifies a single address
-> -		 * it can't get any more specific.
-> -		 */
-> -		if (miap->s_addr == 0xffffffff)
-> -			return snp->smk_label;
-> -		/*
-> -		 * If the list entry mask is less specific than the best
-> -		 * already found this entry is uninteresting.
-> +		 * we break after finding the first match because
-> +		 * the list is sorted from longest to shortest mask
-> +		 * so we have found the most specific match
->  		 */
-> -		if ((miap->s_addr | bestmask.s_addr) == bestmask.s_addr)
-> -			continue;
-> -		/*
-> -		 * This is better than any entry found so far.
-> -		 */
-> -		bestmask.s_addr = miap->s_addr;
-> -		bestlabel = snp->smk_label;
-> +		if (liap->s_addr  == (siap->s_addr & miap->s_addr)) {
-> +			bestlabel = snp->smk_label;
-> +			break;
-
-This is being a bit nit-picky, but why not get rid of 'bestlabel' completely 
-and instead of breaking here simply reutn 'snp->smk_label'?  If we ever reach 
-the end of the function (no match) just return NULL.
-
-> +		}
->  	}
->
->  	return bestlabel;
-
-...
-
-> @@ -663,12 +659,10 @@ static int netlbladdr_seq_show(struct seq_file *s,
-> void *v) {
->  	struct smk_netlbladdr *skp = (struct smk_netlbladdr *) v;
->  	unsigned char *hp = (char *) &skp->smk_host.sin_addr.s_addr;
-> -	__be32 bebits;
->  	int maskn = 0;
-> +	u32 temp_mask = be32_to_cpu(skp->smk_mask.s_addr);
->
-> -	for (bebits = BEMASK; bebits != 0; maskn++, bebits <<= 1)
-> -		if ((skp->smk_mask.s_addr & bebits) == 0)
-> -			break;
-> +	for ( ; temp_mask; temp_mask <<= 1, maskn++);
-
-More nit-picky stuff :)  Why not set 'maskn' to zero inside the for loop 
-construct instead of at the top of the function?  There is less chance for 
-error this way if someone else touches the code.
-
->  	seq_printf(s, "%u.%u.%u.%u/%d %s\n",
->  		hp[0], hp[1], hp[2], hp[3], maskn, skp->smk_label);
-
-...
-
-> @@ -702,6 +696,40 @@ static int smk_open_netlbladdr(struct inode *inode,
-> struct file *file) }
->
->  /**
-> + * smk_netlbladdr_insert
-> + * @new : netlabel to insert
-> + *
-> + * This helper insert netlabel in the smack_netlbladdrs list
-> + * sorted by netmask length (longest to smallest)
-> + */
-> +static void smk_netlbladdr_insert(struct smk_netlbladdr *new)
-> +{
-> +	struct smk_netlbladdr *m;
-
-An empty line here might be nice.
-
-> +	if (smack_netlbladdrs == NULL) {
-> +		smack_netlbladdrs = new;
-> +		return;
-> +	}
-
-I would prefer another one here, if that is okay with you.
-
-> +	/** the comparison '>' is a bit hacky, but works */
-
-Why start the comment with '/**', using a single '*' works just fine.
-
-> +	if (new->smk_mask.s_addr > smack_netlbladdrs->smk_mask.s_addr) {
-> +		new->smk_next = smack_netlbladdrs;
-> +		smack_netlbladdrs = new;
-> +		return;
-> +	}
-> +	for (m = smack_netlbladdrs; m != NULL; m = m->smk_next) {
-> +		if (m->smk_next == NULL) {
-> +			m->smk_next = new;
-> +			return;
-> +		}
-> +		if (new->smk_mask.s_addr > m->smk_next->smk_mask.s_addr) {
-> +			new->smk_next = m->smk_next;
-> +			m->smk_next = new;
-> +			return;
-> +		}
-> +	}
-
-As Casey mentioned earlier (and has been brough up in the past), you should 
-heavily consider using the list.h constructs, it would make life much easier 
-here and elsewhere.
-
-Bonus points if you convert the other Smack lists to using the list.h bits.
-
-> +}
-
-...
-
-> +/**
->   * smk_write_netlbladdr - write() for /smack/netlabel
->   * @filp: file pointer, not actually used
->   * @buf: where to get the data from
-> @@ -724,8 +752,9 @@ static ssize_t smk_write_netlbladdr(struct file *file,
-> const char __user *buf, struct netlbl_audit audit_info;
->  	struct in_addr mask;
->  	unsigned int m;
-> -	__be32 bebits = BEMASK;
-> +	u32 mask_bits = (1<<31);
-
-Why not just enter the value directly here?  It would be much clearer I think.
-
--- 
-paul moore
-linux @ hp
-
+Cheers,
+Jeff
