@@ -1,76 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756601AbZBSBiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756879AbZBSBmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756601AbZBSBiy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 20:38:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbZBSBio
+	id S1756879AbZBSBmW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 20:42:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbZBSBmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 20:38:44 -0500
-Received: from mga05.intel.com ([192.55.52.89]:30792 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751381AbZBSBio (ORCPT
+	Wed, 18 Feb 2009 20:42:14 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52349 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752046AbZBSBmM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 20:38:44 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,231,1233561600"; 
-   d="scan'208";a="432146257"
-Date: Thu, 19 Feb 2009 09:38:33 +0800
-From: Wu Fengguang <wfg@linux.intel.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
-       "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>,
-       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
-Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
-Message-ID: <20090219013833.GB5743@localhost>
-References: <20081125113048.GB16422@localhost> <492BE47B.3010802@vlnb.net> <20081125114908.GA16545@localhost> <492BE97A.3050606@vlnb.net> <492BEAE8.9050809@vlnb.net> <20081125121534.GA16778@localhost> <492EDCFB.7080302@vlnb.net> <20081128004830.GA8874@localhost> <49946BE6.1040005@vlnb.net> <499B0979.8050006@vlnb.net>
+	Wed, 18 Feb 2009 20:42:12 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Jason Baron <jbaron@redhat.com>
+Subject: Re: [PATCH] new irq tracer
+Cc: kosaki.motohiro@jp.fujitsu.com, mingo@elte.hu, rostedt@goodmis.org,
+       linux-kernel@vger.kernel.org, acme@ghostprotocols.net,
+       fweisbec@gmail.com, fche@redhat.com, peterz@infradead.org
+In-Reply-To: <20090218202617.GA26625@Krystal>
+References: <20090218195328.GA3112@redhat.com> <20090218202617.GA26625@Krystal>
+Message-Id: <20090219103628.9559.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <499B0979.8050006@vlnb.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Thu, 19 Feb 2009 10:42:08 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 10:01:13PM +0300, Vladislav Bolkhovitin wrote:
-> Vladislav Bolkhovitin, on 02/12/2009 09:35 PM wrote:
->> Additional interesting observation is how badly simultaneous read IO  
->> streams are handled, if they aren't grouped in the corresponding IO  
->> contexts. In test 3 the result was as low as 4(!)MB/s. Wu, Jens, do you 
->> have any explanation on this? Why the inner tracks have so big 
->> preference?
->
-> I realized, there is another explanation: access becomes about to be  
-> completely random. I checked and it is true. Here is a sample "iostat -x  
-> 3" output on the server:
+Hi Jason,
 
-Yes it's all about 64K sized reads. Is this the stripe size of md0?
+> * Jason Baron (jbaron@redhat.com) wrote:
+> > hi,
+> > 
+> > Using a copule of tracepoints i've implemented an 'irq tracer' which has
+> > the following column format:
+> > 
+> > [time][irq][action][handled][cpu][length]
+> > 
+> > for example on my system:
+> > 
+> > [ 1038.927248381]     28     eth0      1        3     0.000002745
+> > [ 1038.927544688]     28     eth0      1        3     0.000002520
+> > [ 1038.927593609]     28     eth0      1        3     0.000002509
+> > [ 1038.974087675]     29     ahci      1        1     0.000013135
+> > [ 1038.974288475]     29     ahci      1        1     0.000005542
+> > [ 1038.974414324]     29     ahci      1        1     0.000007953
+> > 
+> > I think this patch is useful in understanding irq system behavior, and
+> > for tracking down irq driver handlers that are firing too often or
+> > spending too much time handling an irq. This approach could be extended
+> > to the timer irq and for softirqs...
+> > 
+> > thanks,
 
-Thanks,
-Fengguang
 
-> avg-cpu:  %user   %nice %system %iowait  %steal   %idle
->            0.00    0.00    0.57   26.62    0.00   72.81
->
-> Device:         rrqm/s   wrqm/s     r/s     w/s   rsec/s   wsec/s  
-> avgrq-sz avgqu-sz   await  svctm  %util
-> sda             710.00     0.00   47.33    0.00  6058.67     0.00 128.00  
->    0.12    2.59   2.51  11.87
-> sdb             710.00     0.00   47.33    0.00  6058.67     0.00 128.00  
->    3.99   84.34  21.13 100.00
-> sdc               0.00     0.00    0.00    0.00     0.00     0.00 0.00    
->  0.00    0.00   0.00   0.00
-> sdc1              0.00     0.00    0.00    0.00     0.00     0.00 0.00    
->  0.00    0.00   0.00   0.00
-> sdc2              0.00     0.00    0.00    0.00     0.00     0.00 0.00    
->  0.00    0.00   0.00   0.00
-> md0               0.00     0.00 1514.67    0.00 12117.33     0.00 8.00    
->  0.00    0.00   0.00   0.00
-> dm-0              0.00     0.00  757.33    0.00  6058.67     0.00 8.00    
-> 32.87   43.41   1.32 100.00
-> dm-1              0.00     0.00    0.00    0.00     0.00     0.00 0.00    
->  0.00    0.00   0.00   0.00
-> dm-2              0.00     0.00  757.33    0.00  6058.67     0.00 8.00    
-> 32.79   43.33   1.32 100.00
->
-> Thanks,
-> Vlad
+
+> > @@ -354,7 +358,9 @@ irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
+> >  		local_irq_enable_in_hardirq();
+> >  
+> >  	do {
+> > +		trace_irq_entry(irq);
+> >  		ret = action->handler(irq, action->dev_id);
+> > +		trace_irq_exit(irq, ret);
+> >  		if (ret == IRQ_HANDLED)
+> >  			status |= action->flags;
+> >  		retval |= ret;
+
+May I ask why you select this line?
+
+IOW, I guess your probe point is interest to irq action and mathieu's 
+probe point is interest to interrupt itself.
+
+I guess you also want to observe shared irq problem, right?
+
+
