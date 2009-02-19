@@ -1,109 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754938AbZBSSlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756247AbZBSSmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754938AbZBSSlh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 13:41:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbZBSSl1
+	id S1756247AbZBSSmB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 13:42:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbZBSSlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 13:41:27 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:42640 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751531AbZBSSl0 (ORCPT
+	Thu, 19 Feb 2009 13:41:49 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:33381 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752285AbZBSSlt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 13:41:26 -0500
-Subject: Re: [SCSI][REGRESSION][BISECTED] Disk errors loop forever in 2.6.29
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
-       rjw@sisk.pl, Ingo Molnar <mingo@elte.hu>, linux-scsi@vger.kernel.org
-In-Reply-To: <404514.58700.qm@web110616.mail.gq1.yahoo.com>
-References: <Pine.LNX.4.44L0.0902191002160.3012-100000@iolanthe.rowland.org>
-	 <404514.58700.qm@web110616.mail.gq1.yahoo.com>
-Content-Type: text/plain
-Date: Thu, 19 Feb 2009 18:41:21 +0000
-Message-Id: <1235068881.12500.33.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Thu, 19 Feb 2009 13:41:49 -0500
+Message-ID: <499DA727.2060606@zytor.com>
+Date: Thu, 19 Feb 2009 10:38:31 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Petr Tesarik <ptesarik@suse.cz>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Definition of BUG on x86
+References: <1234975856.15053.16.camel@nathan.suse.cz>	 <499C4786.5010504@goop.org> <1235043648.15053.35.camel@nathan.suse.cz>
+In-Reply-To: <1235043648.15053.35.camel@nathan.suse.cz>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-19 at 08:52 -0800, Sitsofe Wheeler wrote:
-> > From: Alan Stern <stern@rowland.harvard.edu>
-> >
-> > On Thu, 19 Feb 2009, Sitsofe Wheeler wrote:
-> > 
-> > > Hi,
-> > > 
-> > > There appears to be a regression from 2.6.28 in how disk errors are
-> > > handled in 2.6.29rc5 - rather than trying and eventually giving up, it
-> > > appears to try (and report) forever. 
-> > 
-> > See this thread and patch:
-> > 
-> >     http://marc.info/?l=linux-kernel&m=123490148422684&w=2
+Petr Tesarik wrote:
 > 
-> The patch there (actually I downloaded it from http://patchwork.kernel.org/patch/7989/ )
-> did not make any diference. I fear my disk will soon have torn itself to bits but until then I
-> can trigger the error at will so I can test any patches that are suggested...
+> Ah, yes, you're right. If you want to make gcc aware of the fact that a
+> function never returns, it must recognize that there is no path to that
+> function's EXIT, otherwise it will emit a warning (which is pretty
+> annoying, indeed). Since we don't want to make a call/jmp to an external
+> noreturn function, so the no-return code must be directly visible to
+> gcc. Unfortunately, there is no way of telling gcc that an asm statement
+> does not return.
+> 
 
-Can you try this patch ... it was something I meant to get into 2.6.29
-but forgot about.  The key problem that you seem to be hitting is that
-the requeue evades the timeout check.  Moving the timeout check to block
-should fix that.
+At Transmeta, we had an internal hack to gcc that added
+__builtin_not_reached(); for this particular reason.  This would
+probably be the best way to handle this.
 
-James
+	-hpa
 
----
-
->From 5546538f37a1f4319ec4dbdb6f2e7261ce986e61 Mon Sep 17 00:00:00 2001
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-Date: Tue, 16 Dec 2008 17:00:44 -0500
-Subject: block: move SCSI timeout check into block
-
-We can eliminate the SCSI command timed out check entirely if the block
-layer does this for us.  The way to do this in block is to check how
-long the request has been outstanding if a requeue is requested and
-ending it if we've gone over retries * timeout.
-
-This will also eliminate many cases in SCSI where we evade the command
-timeout for various reasons (like initial success converted to requeue)
-
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
----
- block/blk-core.c |   10 +++++++++-
- 1 files changed, 9 insertions(+), 1 deletions(-)
-
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 29bcfac..3928ec8 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -937,6 +937,8 @@ EXPORT_SYMBOL(blk_start_queueing);
-  */
- void blk_requeue_request(struct request_queue *q, struct request *rq)
- {
-+	unsigned long wait_for = (rq->retries + 1) * rq->timeout;
-+
- 	blk_delete_timer(rq);
- 	blk_clear_rq_complete(rq);
- 	trace_block_rq_requeue(q, rq);
-@@ -944,7 +946,13 @@ void blk_requeue_request(struct request_queue *q, struct request *rq)
- 	if (blk_rq_tagged(rq))
- 		blk_queue_end_tag(q, rq);
- 
--	elv_requeue_request(q, rq);
-+	if (time_before(rq->start_time + wait_for, jiffies)) {
-+		printk(KERN_ERR "%s: timing out command, waited %lus\n",
-+		       rq->rq_disk ? rq->rq_disk->disk_name : "?",
-+		       wait_for/HZ);
-+		blk_end_request(rq, -EIO, blk_rq_bytes(rq));
-+	} else
-+		elv_requeue_request(q, rq);
- }
- EXPORT_SYMBOL(blk_requeue_request);
- 
 -- 
-1.5.6.6
-
-
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
