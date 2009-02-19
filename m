@@ -1,83 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbZBSX16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757187AbZBSXaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756628AbZBSX16 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 18:27:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753391AbZBSX1t
+	id S1757187AbZBSXaa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 18:30:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754429AbZBSXaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 18:27:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38789 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753325AbZBSX1s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 18:27:48 -0500
-Date: Thu, 19 Feb 2009 15:27:26 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-Cc: airlied@linux.ie, benh@kernel.crashing.org,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drm: Preserve SHMLBA bits in hash key for _DRM_SHM
- mappings.
-Message-Id: <20090219152726.9551fb7a.akpm@linux-foundation.org>
-In-Reply-To: <20090218.154102.122148224.davem@davemloft.net>
-References: <20090218.154102.122148224.davem@davemloft.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 19 Feb 2009 18:30:20 -0500
+Received: from mga03.intel.com ([143.182.124.21]:10945 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753645AbZBSXaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 18:30:20 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,237,1233561600"; 
+   d="scan'208";a="112486643"
+Subject: Re: [PATCH] x86: enable x2apic early at the first point
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       gleb@redhat.com
+In-Reply-To: <499DE05A.40804@kernel.org>
+References: <499DD40F.40102@kernel.org> <1235081612.14523.23.camel@vayu>
+	 <499DE05A.40804@kernel.org>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Thu, 19 Feb 2009 15:28:38 -0800
+Message-Id: <1235086118.14523.40.camel@vayu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Feb 2009 15:41:02 -0800 (PST)
-David Miller <davem@davemloft.net> wrote:
+On Thu, 2009-02-19 at 14:42 -0800, Yinghai Lu wrote:
+> Ingo want to decouple that x2apic and intr_remapping.
+> it seems it does work with x2apic without intr_remapping in one of setup.
 
-> 
-> Platforms such as sparc64 have D-cache aliasing issues.  We
-> cannot allow virtual mappings in different contexts to be such
-> that two cache lines can be loaded for the same backing data.
-> Updates to one cache line won't be seen by accesses to the other
-> cache line.
-> 
-> Code in sparc64 and other architectures solve this problem by
-> making sure that all userland mappings of MAP_SHARED objects have
-> the same virtual address base.  They implement this by keying
-> off of the page offset, and using that to choose a suitably
-> consistent virtual address for mmap() requests.
-> 
-> Making things even worse, getting this wrong on sparc64 can result
-> in hangs during DRM lock acquisition.  This is because, at least on
-> UltraSPARC-III, normal loads consult the D-cache but atomics such
-> as 'cas' (which is what cmpxchg() is implement using) only consult
-> the L2 cache.  So if a D-cache alias is inserted, the load can
-> see different data than the atomic, and we'll loop forever because
-> the atomic compare-and-exchange will never complete successfully.
-> 
-> So to make this all work properly, we need to make sure that the
-> hash address computed by drm_map_handle() preserves the SHMLBA
-> relevant bits, and that's what this patch does for _DRM_SHM mappings.
-> 
-> As a historical note, many years ago this bug didn't exist because we
-> used to just use the low 32-bits of the address as the hash and just
-> hope for the best.  This preserved the SHMLBA bits properly.  But when
-> the hashtab code was added to DRM, this was no longer the case.
-> 
-> ...
->  
->  #include <linux/vmalloc.h>
-> +#include <linux/log2.h>
-> +#include <asm/shmparam.h>
->  #include "drmP.h"
->  
+x2apic with out intr-remapping is not architectural. Even when we have <
+255 logical cpu's, logical x2apic id's will be greater than 16 bits even
+on a single/two socket systems and this will break interrupt delivery.
+Please look at the x2apic logical destination mode definition in the SDM
+(Section 9.7.2.3 and 9.7.2.4 in my copy of SDM Vol3a)
 
-The inclusion of asm/shmparam.h direct from a driver is a bit risky. 
-It assumes that asm/shmparam.h is compileable in isolation from the
-additional things which include/linux/shm.h includes.  In particular,
-asm/page.h.
+While it might work in certain configurations (for example, physical
+mode with < 8 bit apicids), it is not architectural and implementation
+dependent, which may break in future generations.
 
-eg:
+And also, logical x2apic mode has more advantages compared to physical
+mode (like using lowest priority delivery mode etc).
 
-arch/xtensa/include/asm/shmparam.h
-#define SHMLBA  ((PAGE_SIZE > DCACHE_WAY_SIZE)? PAGE_SIZE : DCACHE_WAY_SIZE)
+I will post couple of patches, which revert's Gleb's patch and another
+fix for the early boot failure issue, tomorrow.
+
+thanks,
+suresh
 
 
-But including linux/shm.h here seems a bit silly.   We'll see..
+
+
+
