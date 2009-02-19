@@ -1,51 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755998AbZBST5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756473AbZBST6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755998AbZBST5O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 14:57:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbZBST46
+	id S1756473AbZBST6u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 14:58:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbZBST6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 14:56:58 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:55767 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753565AbZBST46 (ORCPT
+	Thu, 19 Feb 2009 14:58:41 -0500
+Received: from rv-out-0506.google.com ([209.85.198.227]:13294 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753565AbZBST6k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 14:56:58 -0500
-Message-ID: <499DB8BA.3050708@zytor.com>
-Date: Thu, 19 Feb 2009 11:53:30 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Petr Tesarik <ptesarik@suse.cz>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: remove unneeded endless loop in BUG()
-References: <1235068713.15053.99.camel@nathan.suse.cz> <20090219185935.GA21820@elte.hu>
-In-Reply-To: <20090219185935.GA21820@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 19 Feb 2009 14:58:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=PuYre6PyAD3A21f9ef38U4KYCbyY+wdV+dJcBBo6U0OlmFe2U0wR/Vb0Ho5JbG7XAL
+         nIL/9SYwINOs1VnFmFLPctyd8mlMITsUbGP6JwbWDfpLea0zvXmpLLcnOApYsiCCPCK5
+         twEZKrYPxuuLdhvm4TTjNU/ajnrTrdvw6XkD0=
+Subject: [PATCH] sound: pcxhr.h replace signed one-bit bitfields
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 19 Feb 2009 11:58:37 -0800
+Message-Id: <1235073517.4377.5.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> 
-> the problem is that the DO_BUG() will generate the u2d 
-> instruction into a random place where GCC puts it. It certainly 
-> wont be in the place where the __bug_table logic above expects 
-> it.
-> 
-> The result will be cryptic crashes instead of a clean BUG 
-> message assert.
-> 
+The usage and comments make it clear values of 1/0 were intended
+rather than -1/0
 
-For that to happen, it would have to move the asm volatile relative to 
-the __builtin_trap(), which seems slightly unlikely -- are there any 
-cases at which this has been known to happen, or is that conjecture on 
-your part?
+Noticed by sparse:
+sound/pci/pcxhr/pcxhr.h:100:20: error: dubious one-bit signed bitfield
+sound/pci/pcxhr/pcxhr.h:101:22: error: dubious one-bit signed bitfield
+sound/pci/pcxhr/pcxhr.h:102:24: error: dubious one-bit signed bitfield
+sound/pci/pcxhr/pcxhr.h:103:21: error: dubious one-bit signed bitfield
+sound/pci/pcxhr/pcxhr.h:104:25: error: dubious one-bit signed bitfield
+sound/pci/pcxhr/pcxhr.h:105:20: error: dubious one-bit signed bitfield
 
-It would be more of a "right thing" to do this with a label on the 
-__builtin_trap(), but the problem with that labels have function scope 
-even if they occur inside a block.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ sound/pci/pcxhr/pcxhr.h |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-	-hpa
+diff --git a/sound/pci/pcxhr/pcxhr.h b/sound/pci/pcxhr/pcxhr.h
+index ac9c3b3..a661a18 100644
+--- a/sound/pci/pcxhr/pcxhr.h
++++ b/sound/pci/pcxhr/pcxhr.h
+@@ -97,12 +97,12 @@ struct pcxhr_mgr {
+ 	int capture_chips;
+ 	int fw_file_set;
+ 	int firmware_num;
+-	int is_hr_stereo:1;
+-	int board_has_aes1:1;	/* if 1 board has AES1 plug and SRC */
+-	int board_has_analog:1;	/* if 0 the board is digital only */
+-	int board_has_mic:1;	/* if 1 the board has microphone input */
+-	int board_aes_in_192k:1;/* if 1 the aes input plugs do support 192kHz */
+-	int mono_capture:1;	/* if 1 the board does mono capture */
++	unsigned int is_hr_stereo:1;
++	unsigned int board_has_aes1:1;	/* if 1 board has AES1 plug and SRC */
++	unsigned int board_has_analog:1;	/* if 0 the board is digital only */
++	unsigned int board_has_mic:1;	/* if 1 the board has microphone input */
++	unsigned int board_aes_in_192k:1;/* if 1 the aes input plugs do support 192kHz */
++	unsigned int mono_capture:1;	/* if 1 the board does mono capture */
+ 
+ 	struct snd_dma_buffer hostport;
+ 
+-- 
+1.6.2.rc1.175.g96b8a
+
+
 
