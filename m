@@ -1,44 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbZBSJkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757999AbZBSJlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757405AbZBSJkq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 04:40:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbZBSJkh
+	id S1757999AbZBSJlQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 04:41:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757602AbZBSJkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 04:40:37 -0500
-Received: from jurassic.park.msu.ru ([195.208.223.243]:33441 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753713AbZBSJkh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 04:40:37 -0500
-Date: Thu, 19 Feb 2009 12:40:42 +0300
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: hch@infradead.org, rth@twiddle.net, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] alpha: binfmt_aout fix
-Message-ID: <20090219094042.GA19049@jurassic.park.msu.ru>
-References: <20090217104956.GC25856@jurassic.park.msu.ru> <20090217110842.GA22272@infradead.org> <20090217114054.GA26176@jurassic.park.msu.ru> <20090218155231.8b8c8b9f.akpm@linux-foundation.org>
+	Thu, 19 Feb 2009 04:40:55 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:60258 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753546AbZBSJky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 04:40:54 -0500
+Message-ID: <499D2975.6000708@cn.fujitsu.com>
+Date: Thu, 19 Feb 2009 17:42:13 +0800
+From: Yang Hongyang <yanghy@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090218155231.8b8c8b9f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Borislav Petkov <petkovbb@googlemail.com>
+Subject: [PATCHv2 04/11]Replace all DMA_39BIT_MASK macro with DMA_BIT_MASK(39)
+References: <499CFDC8.1070600@cn.fujitsu.com> <499D0221.9090407@cn.fujitsu.com> <20090219081403.GA5400@elte.hu> <499D1ED9.4040005@cn.fujitsu.com> <499D2728.1080208@cn.fujitsu.com>
+In-Reply-To: <499D2728.1080208@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 18, 2009 at 03:52:31PM -0800, Andrew Morton wrote:
-> It would make sense to register the core, default handlers first and
-> to permit arch-specific handlers to then override (or to front-end) the
-> core handlers.
+Replace all DMA_39BIT_MASK macro with DMA_BIT_MASK(39)
 
-Yes, sounds good. I'll make a patch for 2.6.30.
+Signed-off-by: Yang Hongyang<yanghy@cn.fujitsu.com>
 
-> But that sounds a bit risky for 2.6.29.  Is this fix needed in 2.6.29? 
-> If so, perhaps we should merge version 1 as a temporary thing.  But if
-> so, please let's not do the temporary-thing-which-hangs-around-forever thing?
+---
+ drivers/net/forcedeth.c                |    4 ++--
+ drivers/net/netxen/netxen_nic_main.c   |    8 ++++----
+ drivers/scsi/aic7xxx/aic79xx_osm_pci.c |    4 ++--
+ 3 files changed, 8 insertions(+), 8 deletions(-)
 
-Just drop it. The bug is not so terribly critical (I don't think that a lot
-of people are using osf binaries these days).
+diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
+index 5b910cf..069d87d 100644
+--- a/drivers/net/forcedeth.c
++++ b/drivers/net/forcedeth.c
+@@ -5534,12 +5534,12 @@ static int __devinit nv_probe(struct pci_dev *pci_dev, const struct pci_device_i
+ 		np->desc_ver = DESC_VER_3;
+ 		np->txrxctl_bits = NVREG_TXRXCTL_DESC_3;
+ 		if (dma_64bit) {
+-			if (pci_set_dma_mask(pci_dev, DMA_39BIT_MASK))
++			if (pci_set_dma_mask(pci_dev, DMA_BIT_MASK(39)))
+ 				dev_printk(KERN_INFO, &pci_dev->dev,
+ 					"64-bit DMA failed, using 32-bit addressing\n");
+ 			else
+ 				dev->features |= NETIF_F_HIGHDMA;
+-			if (pci_set_consistent_dma_mask(pci_dev, DMA_39BIT_MASK)) {
++			if (pci_set_consistent_dma_mask(pci_dev, DMA_BIT_MASK(39))) {
+ 				dev_printk(KERN_INFO, &pci_dev->dev,
+ 					"64-bit DMA (consistent) failed, using 32-bit ring buffers\n");
+ 			}
+diff --git a/drivers/net/netxen/netxen_nic_main.c b/drivers/net/netxen/netxen_nic_main.c
+index 285e725..8bea4cb 100644
+--- a/drivers/net/netxen/netxen_nic_main.c
++++ b/drivers/net/netxen/netxen_nic_main.c
+@@ -177,11 +177,11 @@ static int nx_set_dma_mask(struct netxen_adapter *adapter, uint8_t revision_id)
+ #else
+ 	if (revision_id >= NX_P3_B0) {
+ 		/* should go to DMA_BIT_MASK(64) */
+-		adapter->dma_mask = DMA_39BIT_MASK;
+-		mask = DMA_39BIT_MASK;
++		adapter->dma_mask = DMA_BIT_MASK(39);
++		mask = DMA_BIT_MASK(39);
+ 	} else if (revision_id == NX_P3_A2) {
+-		adapter->dma_mask = DMA_39BIT_MASK;
+-		mask = DMA_39BIT_MASK;
++		adapter->dma_mask = DMA_BIT_MASK(39);
++		mask = DMA_BIT_MASK(39);
+ 	} else if (revision_id == NX_P2_C1) {
+ 		adapter->dma_mask = DMA_35BIT_MASK;
+ 		mask = DMA_35BIT_MASK;
+diff --git a/drivers/scsi/aic7xxx/aic79xx_osm_pci.c b/drivers/scsi/aic7xxx/aic79xx_osm_pci.c
+index 032e2b1..c583d89 100644
+--- a/drivers/scsi/aic7xxx/aic79xx_osm_pci.c
++++ b/drivers/scsi/aic7xxx/aic79xx_osm_pci.c
+@@ -194,11 +194,11 @@ ahd_linux_pci_dev_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (sizeof(dma_addr_t) > 4) {
+ 		const u64 required_mask = dma_get_required_mask(dev);
+ 
+-		if (required_mask > DMA_39BIT_MASK &&
++		if (required_mask > DMA_BIT_MASK(39) &&
+ 		    dma_set_mask(dev, DMA_BIT_MASK(64)) == 0)
+ 			ahd->flags |= AHD_64BIT_ADDRESSING;
+ 		else if (required_mask > DMA_32BIT_MASK &&
+-			 dma_set_mask(dev, DMA_39BIT_MASK) == 0)
++			 dma_set_mask(dev, DMA_BIT_MASK(39)) == 0)
+ 			ahd->flags |= AHD_39BIT_ADDRESSING;
+ 		else
+ 			dma_set_mask(dev, DMA_32BIT_MASK);
+-- 
+1.6.0.3
 
-Ivan.
+-- 
+Regards
+Yang Hongyang
