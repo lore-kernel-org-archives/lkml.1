@@ -1,118 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbZBSRlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbZBSRmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754724AbZBSRlu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 12:41:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbZBSRll
+	id S1756027AbZBSRmW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 12:42:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbZBSRmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 12:41:41 -0500
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:30377 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752093AbZBSRlk (ORCPT
+	Thu, 19 Feb 2009 12:42:11 -0500
+Received: from mail-gx0-f174.google.com ([209.85.217.174]:49601 "EHLO
+	mail-gx0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752713AbZBSRmK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 12:41:40 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=s7qvtWS6nfwbFgqSTDOm+IuqTBvDryR564v3ZG9GVKOtIOu6pe3xDbyEgPOlabzV7nkzWUPBRMKLC0xX+GdaFswZ/radbvZMGMQwHwPja51qlIaia3Y/MNfjlTV1wL0j5misxGPiNDtWqOdNqveLfNTLKlTyxdtI+1OjjhOXIpc=  ;
-X-YMail-OSG: 7PRed60VM1kBKRsMuByNvxqwzrhnxPeMjweq7yXj3iQnmPkuqT5t7pbc.I9otJhTBqLeiIXh9wmdRT3y1MsV0NjhqIbjGXW1u1gGENxAPAha_tUpcE5gJkZ4XBD_d0GIbiJ1RRd.wP1QVJhUpBXyy9aG0w--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH RFC] vm_unmap_aliases: allow callers to inhibit TLB flush
-Date: Fri, 20 Feb 2009 04:41:07 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       "the arch/x86 maintainers" <x86@kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-References: <49416494.6040009@goop.org> <200902192254.31735.nickpiggin@yahoo.com.au> <499D90AE.7060102@goop.org>
-In-Reply-To: <499D90AE.7060102@goop.org>
+	Thu, 19 Feb 2009 12:42:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=QTtHL16j2gNRNHLYseG4mb1hLvtdDbWJL6e1Y5h3VnuBPYiaankVJxUBs9pgGehkbq
+         BTU1Fq0kvV3XAaQ6EusQZyoN20L7PLQgIiJPM0ejKnxUPha6WzDYwmEf6wAARULUjLmj
+         zOeppjwM6HB04b/l+dCE42yMYPZCfNaolKEv0=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+In-Reply-To: <1235045654-29025-1-git-send-email-me@felipebalbi.com>
+References: <1235045654-29025-1-git-send-email-me@felipebalbi.com>
+Date: Thu, 19 Feb 2009 23:12:07 +0530
+Message-ID: <5d5443650902190942v5adf0a26l6d5d6600b759f2b1@mail.gmail.com>
+Subject: Re: [PATCH] input: keyboard: introduce lm8323 driver
+From: Trilok Soni <soni.trilok@gmail.com>
+To: Felipe Balbi <me@felipebalbi.com>
+Cc: linux-kernel@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Felipe Balbi <felipe.balbi@nokia.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902200441.08541.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 February 2009 04:02:38 Jeremy Fitzhardinge wrote:
-> Nick Piggin wrote:
-> > On Wednesday 18 February 2009 08:57:56 Jeremy Fitzhardinge wrote:
-> >> Nick Piggin wrote:
-> >>> I have patches to move the tlb flushing to an asynchronous process
-> >>> context... but all tweaks to that (including flushing at vmap) are just
-> >>> variations on the existing flushing scheme and don't solve your
-> >>> problem, so I don't think we really need to change that for the moment
-> >>> (my patches are mainly for latency improvement and to allow vunmap to
-> >>> be usable from interrupt context).
-> >>
-> >> Hi Nick,
-> >>
-> >> I'm very interested in being able to call vm_unmap_aliases() from
-> >> interrupt context.  Does the work you mention here encompass that?
-> >
-> > No, and it can't because we can't do the global kernel tlb flush
-> > from interrupt context.
-> >
-> > There is basically no point in doing the vm_unmap_aliases from
-> > interrupt context without doing the global TLB flush as well,
-> > because you still cannot reuse the virtual memory, you still have
-> > possible aliases to it, and you still need to schedule a TLB flush
-> > at some point anyway.
->
-> But that's only an issue when you actually do want to reuse the virtual
-> address space.  Couldn't you set a flag saying "tlb flush needed", so
-> when cpu X is about to use some of that address space, it flushes
-> first?  Avoids the need for synchronous cross-cpu tlb flushes.  It
-> assumes they're not currently using that address space, but I think that
-> would indicate a bug anyway.
+Hi Flipe,
 
-Then what is the point of the vm_unmap_aliases? If you are doing it
-for security it won't work because other CPUs might still be able
-to write through dangling TLBs. If you are not doing it for
-security then it does not need to be done at all.
+> diff --git a/drivers/input/keyboard/lm8323.c b/drivers/input/keyboard/lm8323.c
+> new file mode 100644
+> index 0000000..27da93c
+> --- /dev/null
+> +++ b/drivers/input/keyboard/lm8323.c
+> @@ -0,0 +1,913 @@
+> +/*
+> + * drivers/i2c/chips/lm8323.c
+> + *
+> + * Copyright (C) 2007 Nokia Corporation
 
-Unless it is something strange that Xen does with the page table
-structure and you just need to get rid of those?
+You might want to update this if you have updated some code before
+submitting to kernel list.
+
+> +
+> +       err = request_irq(client->irq, lm8323_irq,
+> +                         IRQF_TRIGGER_FALLING | IRQF_DISABLED |
+> +                         IRQF_SAMPLE_RANDOM, "lm8323", lm);
+
+No need to add IRQF_SAMPLE_RANDOM, it is done input subsystem. Please
+check input_report_event.
+
+> +
+> +       set_irq_wake(client->irq, 1);
+
+Shall we move to device_init_wakup + enable_irq_wake friends ?
+
+> +
+> +       lm->kp_enabled = 1;
+> +       err = device_create_file(&client->dev, &dev_attr_disable_kp);
+> +       if (err < 0)
+> +               goto fail7;
+> +
+> +       idev = input_allocate_device();
+> +       if (!idev) {
+> +               err = -ENOMEM;
+> +               goto fail8;
+> +       }
+> +
+> +       if (pdata->name)
+> +               idev->name = pdata->name;
+> +       else
+> +               idev->name = "LM8323 keypad";
+> +       snprintf(lm->phys, sizeof(lm->phys), "%s/input-kp", client->dev.bus_id);
+> +       idev->phys = lm->phys;
+> +
+> +       lm->keys_down = 0;
+> +       idev->evbit[0] = BIT(EV_KEY);
+> +       for (i = 0; i < LM8323_KEYMAP_SIZE; i++) {
+> +               if (pdata->keymap[i] > 0)
+> +                       set_bit(pdata->keymap[i], idev->keybit);
+
+No difference but better to use __set_bit, as atomicity is not required here.
+
+> +
+> +               lm->keymap[i] = pdata->keymap[i];
+> +       }
+> +
+> +       if (pdata->repeat)
+> +               set_bit(EV_REP, idev->evbit);
+
+Ditto.
+
+Also in lm8323_remove we need to set_irq_wake(..., 0) right?
+
+> +
+> diff --git a/include/linux/i2c/lm8323.h b/include/linux/i2c/lm8323.h
+> new file mode 100644
+> index 0000000..5eae5cc
+> --- /dev/null
+> +++ b/include/linux/i2c/lm8323.h
+> @@ -0,0 +1,35 @@
+> +/*
+> + * include/lm8323.h
+
+Path problem...better to remove it.
 
 
-> (Xen does something like this internally to either defer or avoid many
-> expensive tlb operations.)
->
-> >> For Xen dom0, when someone does something like dma_alloc_coherent, we
-> >> allocate the memory as normal, and then swizzle the underlying physical
-> >> pages to be machine physically contiguous (vs contiguous pseudo-physical
-> >> guest memory), and within the addressable range for the device.  In
-> >> order to do that, we need to make sure the pages are only mapped by the
-> >> linear mapping, and there are no other aliases.
-> >
-> > These are just stale aliases that will no longer be operated on
-> > unless there is a kernel bug -- so can you just live with them,
-> > or is it a security issue of memory access escaping its domain?
->
-> The underlying physical page is being exchanged, so the old page is
-> being returned to Xen's free page pool.  It will refuse to do the
-> exchange if the guest still has pagetable references to the page.
-
-But it refuses to do this because it is worried about dangling TLBs?
-Or some implementation detail that can't handle the page table
-entries?
 
 
-> > If it is really no other way around it, it would be possible to
-> > allow arch code to take advantage of this if it knows its TLB
-> > flush is interrupt safe.
->
-> It's almost safe.  I've got this patch in my tree to tie up the
-> flush_tlb_all loose end, though I won't claim its pretty.
-
-Hmm. Let's just try to establish that it is really required first.
-
-Or... what if we just allow a compile and/or boot time flag to direct
-that it does not want lazy vmap unmapping and it will just revert to
-synchronous unmapping? If Xen needs lots of flushing anyway it might
-not be a win anyway.
-
+---Trilok Soni
+http://triloksoni.wordpress.com
+http://www.linkedin.com/in/triloksoni
