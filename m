@@ -1,96 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbZBSOVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbZBSOYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756196AbZBSOVu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 09:21:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbZBSOVm
+	id S1756211AbZBSOYa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 09:24:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbZBSOYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 09:21:42 -0500
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:14629 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751844AbZBSOVl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 09:21:41 -0500
-Subject: Re: [PATCH] Add tracepoints to track pagecache transition
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Kazuto Miyoshi <miyoshi@linux.bs1.fc.nec.co.jp>, rostedt@goodmis.org,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <2f11576a0902190512y1ac60b11s4927533977dc01e7@mail.gmail.com>
-References: <1234863220.4744.34.camel@laptop>
-	 <499A99BC.2080700@bk.jp.nec.com>
-	 <20090217201651.576E.A69D9226@jp.fujitsu.com>
-	 <499CE2FE.90503@bk.jp.nec.com>
-	 <2f11576a0902190512y1ac60b11s4927533977dc01e7@mail.gmail.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Thu, 19 Feb 2009 09:21:31 -0500
-Message-Id: <1235053291.8424.14.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 19 Feb 2009 09:24:21 -0500
+Received: from mail.tpi.com ([70.99.223.143]:1931 "EHLO mail.tpi.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752726AbZBSOYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 09:24:21 -0500
+Message-ID: <499D6B8F.9080107@canonical.com>
+Date: Thu, 19 Feb 2009 07:24:15 -0700
+From: Tim Gardner <tim.gardner@canonical.com>
+Reply-To: tim.gardner@canonical.com
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Theodore Tso <tytso@mit.edu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Ubuntu Jaunty ext3 --> ext4 upgrade issue
+References: <499C4F1E.8050901@canonical.com> <20090218222517.GT3600@mini-me.lan>
+In-Reply-To: <20090218222517.GT3600@mini-me.lan>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-19 at 22:12 +0900, KOSAKI Motohiro wrote:
-> > Hi Kosaki-san,
-> >
-> > Thank you for your comment.
-> >
-> > KOSAKI Motohiro wrote:
-> >> Hi
-> >>
-> >>
-> >> In my 1st impression, this patch description is a bit strange.
-> >>
-> >>> The below patch adds instrumentation for pagecache.
-> >>>
-> >>> I thought it would be useful to trace pagecache behavior for problem
-> >>> analysis (performance bottlenecks, behavior differences between stable
-> >>> time and trouble time).
-> >>>
-> >>> By using those tracepoints, we can describe and visualize pagecache
-> >>> transition (file-by-file basis) in kernel and  pagecache
-> >>> consumes most of the memory in running system and pagecache hit rate
-> >>> and writeback behavior will influence system load and performance.
-> >>
-> >> Why do you think this tracepoint describe pagecache hit rate?
-> >> and, why describe writeback behavior?
-> >
-> > I mean, we can describe file-by-file basis pagecache usage by using
-> > these tracepoints and it is important for analyzing process I/O behavior.
+Theodore Tso wrote:
+> On Wed, Feb 18, 2009 at 11:10:38AM -0700, Tim Gardner wrote:
+>> I've encountered a situation where the patches that you've proposed for
+>> stable updates might be causing some issues. This user ivoks appears to
+>> have an upgrade issue. I assume he's enabled ext4 on an existing ext3
+>> file system. Hopefully I can get more details. Have you seen anything
+>> like this?
 > 
-> More confusing.
-> Your page cache tracepoint don't have any per-process information.
+> No, this is the first I've heard of it. 
 > 
+>> <ivoks> i'm getting 'Invalid or unsupported executable format' from grub
+>> on all jaunty's generic kernels since (including) 2.6.28-7
 > 
-> > Currently, we can understand the amount of pagecache from "Cached"
-> > in /proc/meminfo. So I'd like to understand which files are using pagecache.
+> So grub is complaining that it can't boot from a partition after
+> upgrading to the new kernel with the for-stable patches?  Um, that's
+> interesting.  So the obvious thing to check is to do an md5 checksum
+> of the kernel in /boot to make sure it didn't get corrupted somehow.
+> The other thing to check would be to ask the user to run e2fsck to
+> rule out filesystem corruption.
 > 
-> There is one meta question, Why do you think file-by-file pagecache
-> infomartion is valueable?
+> OTOH, if this was just a simple install and upgrade, presumably the
+> new kernel would have been installed while the previous kernel was
+> booted.
+> 
+> I do my testing by using a ext3 /boot partition (since my
+> crash-and-burn netbook is running Ubuntu Jaunty).  So I wouldn't have
+> noticed anything, but this seems very odd.
+> 
+> More information would be useful; is there a Launchpad bug open on this yet?
+> 
+> Or we can work this out on LKML or the linux-ext4 mailing list if the
+> reporter is willing to be cc'ed on the thread....
+> 
+>      		       	  	     	   - Ted
 > 
 
-One might take a look at Marcello Tosatti's old 'vmtrace' patch.  It
-contains it's own data store/transport via relayfs, but the trace points
-could be ported to the current kernel tracing infrastructure.
+Here is the initial report:
 
-Here's a starting point:   http://linux-mm.org/VmTrace
+https://bugs.launchpad.net/ubuntu/+source/linux/+bug/331558
 
-Quoting from that page:
+I'll produce a test kernel for the user that has _all_ of the proposed
+stable patches from your ext4/for-stable branch (including the jbd2 stuff).
 
->From the previous email to linux-mm:
->"The sequence of pages which a given process or workload accesses
->during its lifetime, a.k.a. "reference trace", is very important
->information. It has been used in the past for comparison of page
->replacement algorithms and other optimizations..."
-
-Lee
-
+rtg
+-- 
+Tim Gardner tim.gardner@canonical.com
