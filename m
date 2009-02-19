@@ -1,50 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753524AbZBSSMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbZBSSOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753524AbZBSSMj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 13:12:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbZBSSMT
+	id S1756237AbZBSSOg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 13:14:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752791AbZBSSO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 13:12:19 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:62029 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756410AbZBSSMS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 13:12:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=M8hOAES4Zl4wFg3bMWIUyllIAlX20km2S1zaWrvvf/3H9YjgtPTIlMCB4HmAb9EX3F
-         spGVOe4Da3CgZDJw/jiNKHmmq8xsHdocf9WMIwFeNYUrWUL6GkKgYr37ZU8/8/03w4vQ
-         tpDsStkdPwSDOWHkoPM6x+oxfReWG8iWM88ww=
-MIME-Version: 1.0
-In-Reply-To: <499D93F0.2090803@oracle.com>
-References: <20090220002832.cad00fcd.sfr@canb.auug.org.au>
-	 <499D93F0.2090803@oracle.com>
-Date: Thu, 19 Feb 2009 19:12:15 +0100
-Message-ID: <71cd59b00902191012k764bab32n85f54fc049e35035@mail.gmail.com>
-Subject: Re: [PATCH -next] eeepc: needs to depend on INPUT
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 19 Feb 2009 13:14:28 -0500
+Received: from waste.org ([66.93.16.53]:50426 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752042AbZBSSO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 13:14:27 -0500
+Subject: Re: [patch 1/7] slab: introduce kzfree()
+From: Matt Mackall <mpm@selenic.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       David Vrabel <david.vrabel@csr.com>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chas Williams <chas@cmf.nrl.navy.mil>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>
+In-Reply-To: <Pine.LNX.4.64.0902191616250.8594@blonde.anvils>
+References: <499BE7F8.80901@csr.com>
+	 <1234954488.24030.46.camel@penberg-laptop>
+	 <20090219101336.9556.A69D9226@jp.fujitsu.com>
+	 <1235034817.29813.6.camel@penberg-laptop>
+	 <Pine.LNX.4.64.0902191616250.8594@blonde.anvils>
+Content-Type: text/plain
+Date: Thu, 19 Feb 2009 12:02:36 -0600
+Message-Id: <1235066556.3166.26.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 19, 2009 at 6:16 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->
-> EEEPC_LAPTOP needs to depend on INPUT to fix build errors that
-> can happen when EEEPC_LAPTOP=y and INPUT=m:
+On Thu, 2009-02-19 at 16:34 +0000, Hugh Dickins wrote:
+> On Thu, 19 Feb 2009, Pekka Enberg wrote:
+> > On Wed, 2009-02-18 at 10:50 +0000, David Vrabel wrote:
+> > > > > Johannes Weiner wrote:
+> > > > > > +void kzfree(const void *p)
+> > > > > 
+> > > > > Shouldn't this be void * since it writes to the memory?
+> > > > 
+> > > > No. kfree() writes to the memory as well to update freelists, poisoning
+> > > > and such so kzfree() is not at all different from it.
+> > 
+> > On Thu, 2009-02-19 at 10:22 +0900, KOSAKI Motohiro wrote:
+> > > I don't think so. It's debetable thing.
+> > > 
+> > > poisonig is transparent feature from caller.
+> > > but the caller of kzfree() know to fill memory and it should know.
+> > 
+> > Debatable, sure, but doesn't seem like a big enough reason to make
+> > kzfree() differ from kfree().
+> 
+> There may be more important things for us to worry about,
+> but I do strongly agree with KOSAKI-san on this.
+> 
+> kzfree() already differs from kfree() by a "z": that "z" says please
+> zero the buffer pointed to; "const" says it won't modify the buffer
+> pointed to.  What sense does kzfree(const void *) make?  Why is
+> keeping the declarations the same apart from the "z" desirable?
+> 
+> By all means refuse to add kzfree(), but please don't add it with const.
+> 
+> I can see that the "const" in kfree(const void *) is debatable
+> [looks to see how userspace free() is defined: without a const],
+> I can see that it might be nice to have some "goesaway" attribute
+> for such pointers instead; but I don't see how you can argue for
+> kzalloc(const void *).
 
-There is already a patch sent to linux-acpi and Len Brown.
+This is what Linus said last time this came up:
 
-http://patchwork.kernel.org/patch/7354/
+http://lkml.org/lkml/2008/1/16/227
 
 -- 
-Corentin Chary
-http://xf.iksaif.net
+http://selenic.com : development and support for Mercurial and Linux
+
+
