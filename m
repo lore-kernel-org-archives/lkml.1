@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbZBSSLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbZBSSM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755307AbZBSSLy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 13:11:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbZBSSLq
+	id S1753506AbZBSSM0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 13:12:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbZBSSMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 13:11:46 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46669 "EHLO mx3.mail.elte.hu"
+	Thu, 19 Feb 2009 13:12:14 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42631 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752015AbZBSSLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 13:11:45 -0500
-Date: Thu, 19 Feb 2009 19:11:32 +0100
+	id S1752015AbZBSSMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 13:12:14 -0500
+Date: Thu, 19 Feb 2009 19:12:02 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Alok Kataria <akataria@vmware.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Zach Amsden <zach@vmware.com>
-Subject: Re: x86, vmi: TSC going backwards check in vmi clocksource
-Message-ID: <20090219181132.GA11477@elte.hu>
-References: <1234989235.7991.2.camel@alok-dev1> <20090219111822.GN2354@elte.hu> <1235066638.23293.7.camel@alok-dev1>
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: more untangling
+Message-ID: <20090219181202.GA12999@elte.hu>
+References: <4995CCB1.9070404@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1235066638.23293.7.camel@alok-dev1>
+In-Reply-To: <4995CCB1.9070404@goop.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,23 +35,29 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Alok Kataria <akataria@vmware.com> wrote:
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> On Thu, 2009-02-19 at 03:18 -0800, Ingo Molnar wrote:
-> > * Alok Kataria <akataria@vmware.com> wrote:
-> > 
-> > > From: Alok N Kataria <akataria@vmware.com>
-> > > 
-> > > Similar to the check for TSC going backwards in the TSC 
-> > > clocksource, we also need this check for VMI clocksource.
-> > 
-> > ok. Precisely what kind of bug/symptoms does this fix?
-> 
-> If the read CYCLES_REAL counter value is less than the cycle_last value,
-> it may result in time jumps.
-> I also saw some messages about  process being stuck for more than
-> 120sec, which was traced back to this.
+> I've done the asm _types.h and page->pgtable moves.  One 
+> hiccup is kernel/head_64.S uses pgd_index(), which is defined 
+> as an asm-compatible macro in pgtable.h.  Its a bit warty 
+> because it also needs pud_index(), which it defines locally 
+> (which is an inline in pgtable.h).  Need to think about that 
+> one...
+>
+>    J
+>
+> The following changes since commit beb6943d8df7ce9278282101af4e0f6f7b648451:
+>  Ingo Molnar (1):
+>        x86 headers: protect page_32.h via __ASSEMBLY__
+>
+> are available in the git repository at:
+>
+>  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git x86/untangle2
+>
+> Jeremy Fitzhardinge (2):
+>      x86: use _types.h headers in asm where available
+>      x86: move more pagetable-related definitions into pgtable*.h
 
-Applied to tip:x86/urgent, thanks Alok!
+Pulled into tip:x86/headers, thanks Jeremy!
 
 	Ingo
