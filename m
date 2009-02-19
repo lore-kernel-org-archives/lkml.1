@@ -1,178 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbZBSRCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752708AbZBSRCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756821AbZBSRCa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 12:02:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbZBSRCU
+	id S1752708AbZBSRCw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 12:02:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755804AbZBSRCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 12:02:20 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:54596 "EHLO mx2.redhat.com"
+	Thu, 19 Feb 2009 12:02:42 -0500
+Received: from gw.goop.org ([64.81.55.164]:54497 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752868AbZBSRCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 12:02:19 -0500
-Subject: Re: GFS2: Add blktrace support to glocks
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: cluster-devel@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-btrace@vger.kernel.org,
-       axboe@kernel.dk
-In-Reply-To: <1235062539.9571.771.camel@quoit>
-References: <1235062539.9571.771.camel@quoit>
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
-	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
-	Street, Windsor, Berkshire, SL4 ITE
-Date: Thu, 19 Feb 2009 16:59:18 +0000
-Message-Id: <1235062758.9571.774.camel@quoit>
-Mime-Version: 1.0
+	id S1755730AbZBSRCl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 12:02:41 -0500
+Message-ID: <499D90AE.7060102@goop.org>
+Date: Thu, 19 Feb 2009 09:02:38 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [PATCH RFC] vm_unmap_aliases: allow callers to inhibit TLB flush
+References: <49416494.6040009@goop.org> <200812301442.37654.nickpiggin@yahoo.com.au> <499B32E4.4080501@goop.org> <200902192254.31735.nickpiggin@yahoo.com.au>
+In-Reply-To: <200902192254.31735.nickpiggin@yahoo.com.au>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Nick Piggin wrote:
+> On Wednesday 18 February 2009 08:57:56 Jeremy Fitzhardinge wrote:
+>   
+>> Nick Piggin wrote:
+>>     
+>>> I have patches to move the tlb flushing to an asynchronous process
+>>> context... but all tweaks to that (including flushing at vmap) are just
+>>> variations on the existing flushing scheme and don't solve your problem,
+>>> so I don't think we really need to change that for the moment (my patches
+>>> are mainly for latency improvement and to allow vunmap to be usable from
+>>> interrupt context).
+>>>       
+>> Hi Nick,
+>>
+>> I'm very interested in being able to call vm_unmap_aliases() from
+>> interrupt context.  Does the work you mention here encompass that?
+>>     
+>
+> No, and it can't because we can't do the global kernel tlb flush
+> from interrupt context.
+>
+> There is basically no point in doing the vm_unmap_aliases from
+> interrupt context without doing the global TLB flush as well,
+> because you still cannot reuse the virtual memory, you still have
+> possible aliases to it, and you still need to schedule a TLB flush
+> at some point anyway.
+>   
+
+But that's only an issue when you actually do want to reuse the virtual 
+address space.  Couldn't you set a flag saying "tlb flush needed", so 
+when cpu X is about to use some of that address space, it flushes 
+first?  Avoids the need for synchronous cross-cpu tlb flushes.  It 
+assumes they're not currently using that address space, but I think that 
+would indicate a bug anyway.
+
+(Xen does something like this internally to either defer or avoid many 
+expensive tlb operations.)
+
+>> For Xen dom0, when someone does something like dma_alloc_coherent, we
+>> allocate the memory as normal, and then swizzle the underlying physical
+>> pages to be machine physically contiguous (vs contiguous pseudo-physical
+>> guest memory), and within the addressable range for the device.  In
+>> order to do that, we need to make sure the pages are only mapped by the
+>> linear mapping, and there are no other aliases.
+>>     
+>
+> These are just stale aliases that will no longer be operated on
+> unless there is a kernel bug -- so can you just live with them,
+> or is it a security issue of memory access escaping its domain?
+>   
+
+The underlying physical page is being exchanged, so the old page is 
+being returned to Xen's free page pool.  It will refuse to do the 
+exchange if the guest still has pagetable references to the page.
 
 
-This patch is against the head of the blktrace git tree. It adds support
-for the display of glock messages from blktrace.
+>> And since drivers are free to allocate dma memory at interrupt time,
+>> this needs to happen at interrupt time too.
+>>
+>> (The tlb flush issue that started this read should be a non-issue for
+>> Xen, at least, because all cross-cpu tlb flushes should happen via  a
+>> hypercall rather than kernel-initiated IPIs, so there's no possibility
+>> of deadlock.  Though I'll happily admit that taking advantage of the
+>> implementation properties of a particular implementation is not very
+>> pretty...)
+>>     
+>
+> If it is really no other way around it, it would be possible to
+> allow arch code to take advantage of this if it knows its TLB
+> flush is interrupt safe.
+>   
 
-Signed-off-by: Steven Whitehouse
+It's almost safe.  I've got this patch in my tree to tie up the 
+flush_tlb_all loose end, though I won't claim its pretty.
 
-diff --git a/blkparse.c b/blkparse.c
-index ef55697..57f89d6 100644
---- a/blkparse.c
-+++ b/blkparse.c
-@@ -570,6 +570,25 @@ static struct process_pid_map *add_ppm_hash(pid_t pid, const char *name)
- 	return ppm;
+>From 5812263a50a27c697a2287b41d4f005804b6b34a Mon Sep 17 00:00:00 2001
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Date: Tue, 17 Feb 2009 09:44:14 -0800
+Subject: [PATCH] x86: implement flush_tlb_all in terms of flush_tlb_others
+
+Modify flush_tlb_others to take a NULL mm, meaning "flush user
+and kernel tlbs", and implement flush_tlb_all in terms of that.
+
+The principle motivation for this is to make sure it goes via
+paravirt_ops, which allows for more efficient cross-cpu tlb
+flushes than a plain IPI.
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+
+diff --git a/arch/x86/mm/tlb.c b/arch/x86/mm/tlb.c
+index 14c5af4..2d112f9 100644
+--- a/arch/x86/mm/tlb.c
++++ b/arch/x86/mm/tlb.c
+@@ -148,7 +148,13 @@ void smp_invalidate_interrupt(struct pt_regs *regs)
+ 		 * BUG();
+ 		 */
+ 
+-	if (f->flush_mm == percpu_read(cpu_tlbstate.active_mm)) {
++	if (f->flush_mm == NULL) {
++		/* No mm - flush all kernel and user tlbs */
++		__flush_tlb_all();
++		if (percpu_read(cpu_tlbstate.state) == TLBSTATE_LAZY)
++			leave_mm(cpu);
++	} else if (f->flush_mm == percpu_read(cpu_tlbstate.active_mm)) {
++		/* Flushing a specific user mm */
+ 		if (percpu_read(cpu_tlbstate.state) == TLBSTATE_OK) {
+ 			if (f->flush_va == TLB_FLUSH_ALL)
+ 				local_flush_tlb();
+@@ -281,16 +287,15 @@ void flush_tlb_page(struct vm_area_struct *vma, unsigned long va)
+ 	preempt_enable();
  }
  
-+/* Matches the enum in linux/blktrace_api.h */
-+const char *glock_states[] = {
-+	"??",
-+	"IV",
-+	"NL",
-+	"CR",
-+	"CW",
-+	"PR",
-+	"PW",
-+	"EX"
-+};
-+
-+static const char *glstate2str(u8 state)
-+{
-+	if (state > (sizeof(glock_states)/sizeof(const char *)))
-+		return glock_states[0];
-+	return glock_states[state];
-+}
-+
- static void handle_notify(struct blk_io_trace *bit)
+-static void do_flush_tlb_all(void *info)
++void flush_tlb_all(void)
  {
- 	void	*payload = (caddr_t) bit + sizeof(*bit);
-@@ -614,6 +633,27 @@ static void handle_notify(struct blk_io_trace *bit)
- 		}
- 		break;
- 
-+	case BLK_TN_GLOCK:
-+		if (bit->pdu_len == sizeof(struct blk_io_trace_glock)) {
-+			struct blk_io_trace_glock *g = (struct blk_io_trace_glock *)payload;
-+			fprintf(ofp,
-+				"%3d,%-3d %2d %8lu %5d.%09lu %5u %2s %3s %u:%llu cur:%s",
-+				MAJOR(bit->device), MINOR(bit->device),
-+				bit->cpu, (unsigned long)bit->sequence,
-+				(int) SECONDS(bit->time),
-+				(unsigned long) NANO_SECONDS(bit->time),
-+				bit->pid, "m", "G", be32_to_cpu(g->type),
-+				(unsigned long long)bit->sector,
-+				glstate2str(g->cur_state));
-+			if (g->new_state)
-+				fprintf(ofp, ",new:%s", glstate2str(g->new_state));
-+			if (g->tgt_state)
-+				fprintf(ofp, ",tgt:%s", glstate2str(g->tgt_state));
-+			if (g->dmt_state)
-+				fprintf(ofp, ",dmt:%s", glstate2str(g->dmt_state));
-+			fprintf(ofp, " [%s]\n", find_process_name(bit->pid));
+-	unsigned long cpu = smp_processor_id();
++	preempt_disable();
 +
-+		}
- 	default:
- 		/* Ignore unknown notify events */
- 		;
-@@ -1605,7 +1645,7 @@ static void dump_trace(struct blk_io_trace *t, struct per_cpu_info *pci,
- 		       struct per_dev_info *pdi)
- {
- 	if (text_output) {
--		if (t->action == BLK_TN_MESSAGE)
-+		if (t->action == BLK_TN_MESSAGE || t->action == BLK_TN_GLOCK)
- 			handle_notify(t);
- 		else if (t->action & BLK_TC_ACT(BLK_TC_PC))
- 			dump_trace_pc(t, pdi, pci);
-@@ -2209,7 +2249,9 @@ static int read_events(int fd, int always_block, int *fdblock)
- 		/*
- 		 * not a real trace, so grab and handle it here
- 		 */
--		if (bit->action & BLK_TC_ACT(BLK_TC_NOTIFY) && bit->action != BLK_TN_MESSAGE) {
-+		if (bit->action & BLK_TC_ACT(BLK_TC_NOTIFY) &&
-+		    bit->action != BLK_TN_MESSAGE &&
-+		    bit->action != BLK_TN_GLOCK) {
- 			handle_notify(bit);
- 			output_binary(bit, sizeof(*bit) + bit->pdu_len);
- 			continue;
-@@ -2352,7 +2394,9 @@ static int ms_prime(struct ms_stream *msp)
- 		if (verify_trace(bit))
- 			goto err;
++	flush_tlb_others(cpu_online_mask, NULL, TLB_FLUSH_ALL);
  
--		if (bit->action & BLK_TC_ACT(BLK_TC_NOTIFY) && bit->action != BLK_TN_MESSAGE) {
-+		if (bit->action & BLK_TC_ACT(BLK_TC_NOTIFY) &&
-+		    bit->action != BLK_TN_MESSAGE &&
-+		    bit->action != BLK_TN_GLOCK) {
- 			handle_notify(bit);
- 			output_binary(bit, sizeof(*bit) + bit->pdu_len);
- 			bit_free(bit);
-diff --git a/blktrace_api.h b/blktrace_api.h
-index 7218845..82dbe1b 100644
---- a/blktrace_api.h
-+++ b/blktrace_api.h
-@@ -59,6 +59,7 @@ enum blktrace_notify {
- 	__BLK_TN_PROCESS = 0,		/* establish pid/name mapping */
- 	__BLK_TN_TIMESTAMP,		/* include system clock */
- 	__BLK_TN_MESSAGE,               /* Character string message */
-+	__BLK_TN_GLOCK,                 /* Glock data */
- };
+ 	__flush_tlb_all();
+ 	if (percpu_read(cpu_tlbstate.state) == TLBSTATE_LAZY)
+-		leave_mm(cpu);
+-}
++		leave_mm(smp_processor_id());
  
- /*
-@@ -85,6 +86,7 @@ enum blktrace_notify {
- #define BLK_TN_PROCESS		(__BLK_TN_PROCESS | BLK_TC_ACT(BLK_TC_NOTIFY))
- #define BLK_TN_TIMESTAMP	(__BLK_TN_TIMESTAMP | BLK_TC_ACT(BLK_TC_NOTIFY))
- #define BLK_TN_MESSAGE		(__BLK_TN_MESSAGE | BLK_TC_ACT(BLK_TC_NOTIFY))
-+#define BLK_TN_GLOCK            (__BLK_TN_GLOCK | BLK_TC_ACT(BLK_TC_NOTIFY))
+-void flush_tlb_all(void)
+-{
+-	on_each_cpu(do_flush_tlb_all, NULL, 1);
++	preempt_enable();
+ }
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index 7cadab1..dc83b47 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -1350,7 +1350,6 @@ static void xen_flush_tlb_others(const struct cpumask *cpus,
+ 	struct multicall_space mcs;
  
- #define BLK_IO_TRACE_MAGIC	0x65617400
- #define BLK_IO_TRACE_VERSION	0x07
-@@ -115,6 +117,29 @@ struct blk_io_trace_remap {
- 	__u64 sector;
- };
+ 	BUG_ON(cpumask_empty(cpus));
+-	BUG_ON(!mm);
  
-+/* Glock lock states, so we don't need to add any header deps */
-+enum {
-+	BLK_GLS_NONE = 1,       /* i.e. invalid */
-+	BLK_GLS_NULL,           /* Null lock (preserves LVB content) */
-+	BLK_GLS_CREAD,          /* Concurrent read */
-+	BLK_GLS_CWRITE,         /* Concurrent write */
-+	BLK_GLS_PREAD,          /* Protected read */
-+	BLK_GLS_PWRITE,         /* Protected write */
-+	BLK_GLS_EXCLUSIVE,      /* Exclusive */
-+};
-+
-+/*
-+ * Glock info
-+ */
-+struct blk_io_trace_glock {
-+	__u32 type;		/* Glock type, as per gl_name.ln_type */
-+	__u32 flags;		/* Unused at the moment */
-+	__u8 cur_state;		/* Current state */
-+	__u8 new_state;		/* New state */
-+	__u8 dmt_state;		/* Requested demote state */
-+	__u8 tgt_state;		/* Target state */
-+};
-+
- /*
-  * User setup structure passed with BLKSTARTTRACE
-  */
+ 	mcs = xen_mc_entry(sizeof(*args));
+ 	args = mcs.args;
 
 
+    J
