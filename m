@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbZBSLRf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbZBSLSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757447AbZBSLRf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 06:17:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbZBSLRX
+	id S1756576AbZBSLSh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 06:18:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbZBSLSZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 06:17:23 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:63374 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756913AbZBSLRV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 06:17:21 -0500
-From: Jorg Schummer <ext-jorg.2.schummer@nokia.com>
-To: drzeus-mmc@drzeus.cx
-Cc: linux-kernel@vger.kernel.org,
-       Jorg Schummer <ext-jorg.2.schummer@nokia.com>
-Subject: [PATCH][take 2] MMC: core/core.c: fixed: delayed_work was never cancelled
-Date: Thu, 19 Feb 2009 13:17:03 +0200
-Message-Id: <1235042223-25586-1-git-send-email-ext-jorg.2.schummer@nokia.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <20090218211945.669c3e95@mjolnir.ossman.eu>
-References: <20090218211945.669c3e95@mjolnir.ossman.eu>
-X-OriginalArrivalTime: 19 Feb 2009 11:17:04.0840 (UTC) FILETIME=[982FA480:01C99283]
-X-Nokia-AV: Clean
+	Thu, 19 Feb 2009 06:18:25 -0500
+Received: from ozlabs.org ([203.10.76.45]:36754 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751329AbZBSLSY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 06:18:24 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ira Snyder <iws@ovro.caltech.edu>
+Subject: Re: [RFC v1] virtio: add virtio-over-PCI driver
+Date: Thu, 19 Feb 2009 21:48:04 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+       "Jan-Bernd Themann" <THEMANN@de.ibm.com>, netdev@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+References: <20090217222425.GA18801@ovro.caltech.edu> <200902181713.03820.rusty@rustcorp.com.au> <20090218163835.GA29728@ovro.caltech.edu>
+In-Reply-To: <20090218163835.GA29728@ovro.caltech.edu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902192148.05651.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The delayed work item mmc_host.detect is now cancelled before flushing
-the work queue. This takes care of cases when delayed_work was scheduled
-for mmc_host.detect, but not yet placed in the work queue.
+On Thursday 19 February 2009 03:08:35 Ira Snyder wrote:
+> On Wed, Feb 18, 2009 at 05:13:03PM +1030, Rusty Russell wrote:
+> > don't restrict yourself to 32 feature bits (only PCI does this, and they're
+> > going to have to hack when we reach feature 32).
+> 
+> There isn't any problem adding more feature bits. Do you think 128 bits
+> is enough?
 
-Signed-off-by: Jorg Schummer <ext-jorg.2.schummer@nokia.com>
----
- drivers/mmc/core/core.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+Probably.  We have unlimited bits in lguest and s390, but 128 is reasonable
+for the forseeable future (if not, you end up using bit 128 to mean "look
+somewhere else for the rest of the bits).
 
-diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-index df6ce4a..b5899e3 100644
---- a/drivers/mmc/core/core.c
-+++ b/drivers/mmc/core/core.c
-@@ -815,6 +815,7 @@ void mmc_stop_host(struct mmc_host *host)
- 	spin_unlock_irqrestore(&host->lock, flags);
- #endif
- 
-+	cancel_delayed_work(&host->detect);
- 	mmc_flush_scheduled_work();
- 
- 	mmc_bus_get(host);
-@@ -842,6 +843,7 @@ void mmc_stop_host(struct mmc_host *host)
-  */
- int mmc_suspend_host(struct mmc_host *host, pm_message_t state)
- {
-+	cancel_delayed_work(&host->detect);
- 	mmc_flush_scheduled_work();
- 
- 	mmc_bus_get(host);
--- 
-1.5.4.3
+> > How about prepending a 4 byte length on the host buffers?  Allows host to
+> > specify length (for host->guest), and guest writes it to allow truncated
+> > buffers on guest->host.
+> > 
+> > That won't allow you to transfer *more* than one buffersize to the host, but
+> > you could use a different method (perhaps the 4 bytes indicates the *total*
+> > length?).
+> 
+> I don't understand how this will help.
+> 
+> I looked at virtio_net's implemention with VIRTIO_NET_F_MRG_RXBUF, which
+> seems like it could really help performance. The problems with that are:
+> 1) virtio_net doesn't write the merged header's num_buffers field
+> 2) virtio_net doesn't actually split packets in xmit
+...
+> I'm using two instances of virtio_net to talk to each other, rather than
+> a special userspace implementation like lguest and kvm use. Is this a
+> good approach?
 
+Well, virtio in general is guest-host asymmetric.  I originally explored
+symmetry, but it didn't seem to offer any concrete advantages, so we didn't
+require it.  You aren't actually directly connecting two guests, are you?
+So this is just a simplification for your implementation?
+
+You could always add a VIRTIO_NET_F_MRG_TXBUF which did what you want, but
+note that symmetry breaks down for other virtio uses, too: block definitely
+isn't symmetric of course, but I haven't audited the others.
+
+So I'd recommend asymmetry; hack your host to understand chained buffers.
+
+Cheers,
+Rusty.
