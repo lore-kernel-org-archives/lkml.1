@@ -1,50 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755947AbZBSSR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbZBSSU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755947AbZBSSR2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 13:17:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbZBSSRT
+	id S1755932AbZBSSU1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 13:20:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbZBSSUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 13:17:19 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:61467 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751881AbZBSSRS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 13:17:18 -0500
-Message-ID: <499DA235.6090700@oracle.com>
-Date: Thu, 19 Feb 2009 10:17:25 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 19 Feb 2009 13:20:05 -0500
+Received: from mx6.mail.ru ([94.100.176.86]:10066 "EHLO mx6.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751661AbZBSSUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 13:20:04 -0500
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: 2.6.29 regression? Bonding tied to IPV6 in 29-rc5
+Date: Thu, 19 Feb 2009 21:19:40 +0300
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-1avb; KDE/4.2.0; i686; ; )
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, netdev@vger.kernel.org,
+       bonding-devel@lists.sourceforge.net,
+       "J.A. =?iso-8859-1?q?Magall=F3n?=" <jamagallon@ono.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.00.0902131413120.3179@localhost.localdomain> <200902172001.41804.arvidjaar@mail.ru> <499DA1AB.7040903@oracle.com>
+In-Reply-To: <499DA1AB.7040903@oracle.com>
 MIME-Version: 1.0
-To: Corentin Chary <corentin.chary@gmail.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH -next] eeepc: needs to depend on INPUT
-References: <20090220002832.cad00fcd.sfr@canb.auug.org.au>	 <499D93F0.2090803@oracle.com> <71cd59b00902191012k764bab32n85f54fc049e35035@mail.gmail.com>
-In-Reply-To: <71cd59b00902191012k764bab32n85f54fc049e35035@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/signed;
+  boundary="nextPart2433081.I759VuEVDi";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt703.oracle.com [141.146.40.81]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.499DA201.00E9:SCFSTAT928724,ss=1,fgs=0
+Message-Id: <200902192119.52519.arvidjaar@mail.ru>
+X-Spam: Not detected
+X-Mras: Ok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corentin Chary wrote:
-> On Thu, Feb 19, 2009 at 6:16 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
->> From: Randy Dunlap <randy.dunlap@oracle.com>
->>
->> EEEPC_LAPTOP needs to depend on INPUT to fix build errors that
->> can happen when EEEPC_LAPTOP=y and INPUT=m:
-> 
-> There is already a patch sent to linux-acpi and Len Brown.
-> 
-> http://patchwork.kernel.org/patch/7354/
+--nextPart2433081.I759VuEVDi
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Today's linux-next doesn't build (doesn't have that patch).  :(
+On 19 of February 2009 21:15:07 Randy Dunlap wrote:
+> Andrey Borzenkov wrote:
+> > Forward to bonding and netdev
+> >
+> > On 17 of February 2009 11:52:32 J.A. Magall=F3n wrote:
+> >> Hi all...
+> >>
+> >> Don't know if this is specific for -rc5, I have jumped from 28.4
+> >> to 29-rc5. In this latest kernel, I can not install 'bonding'
+> >> module if 'ipv6' is disabled to load via modprobe.conf:
+> >>
+> >> install ipv6 /bin/true
+> >>
+> >> Trying bonding gives this dmesg:
+> >>
+> >> bonding: Unknown symbol ndisc_build_skb
+> >> bonding: Unknown symbol in6_dev_finish_destroy
+> >> bonding: Unknown symbol ndisc_send_skb
+> >> bonding: Unknown symbol unregister_inet6addr_notifier
+> >> bonding: Unknown symbol register_inet6addr_notifier
+> >>
+> >> Commenting the line in modprobe.conf makes things smooth again.
+> >> We can not disable ipv6 anymore ?
+> >
+> > If IPv6 is disable in kernel config bonding loads. But I think it
+> > is regression, it should be possible to disable IPv6 if not
+> > required.
+>
+> Just for clarification, is this a run-time (module load-time) error
+> but not a build error?
 
--- 
-~Randy
+Yes, this is run-time error. If IPV6 is disabled during kernel build,=20
+everything works; but the error was seen on distribution kernel which=20
+includes IPV6.
+
+--nextPart2433081.I759VuEVDi
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmdosAACgkQR6LMutpd94wPQgCgpwjsXscUiktzp3DHTi4i/MOg
+2EwAniS/xgbLTQ7lar1WGMno9LJIjOKE
+=HQsZ
+-----END PGP SIGNATURE-----
+
+--nextPart2433081.I759VuEVDi--
