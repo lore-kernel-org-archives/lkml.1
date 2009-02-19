@@ -1,95 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbZBSWW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756328AbZBSW03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756574AbZBSWW0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 17:22:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753694AbZBSWWR
+	id S1756328AbZBSW03 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 17:26:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbZBSW0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 17:22:17 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:51456 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753081AbZBSWWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 17:22:17 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFD] Automatic suspend
-Date: Thu, 19 Feb 2009 23:21:46 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-References: <Pine.LNX.4.44L0.0902191659020.7953-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0902191659020.7953-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 19 Feb 2009 17:26:21 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:53925 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753694AbZBSW0U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 17:26:20 -0500
+Subject: Re: [PATCH] drm: Fix lock order reversal between mmap_sem and
+ struct_mutex.
+From: Peter Zijlstra <peterz@infradead.org>
+To: Thomas Hellstrom <thomas@shipmail.org>
+Cc: Eric Anholt <eric@anholt.net>, Wang Chen <wangchen@cn.fujitsu.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <499DC8EC.3000806@shipmail.org>
+References: <1234918786-854-1-git-send-email-eric@anholt.net>
+	 <1234969734.4637.111.camel@laptop>  <499DC8EC.3000806@shipmail.org>
+Content-Type: text/plain
+Date: Thu, 19 Feb 2009 23:26:12 +0100
+Message-Id: <1235082372.4612.665.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.91 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902192321.47891.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 February 2009, Alan Stern wrote:
-> On Thu, 19 Feb 2009, Rafael J. Wysocki wrote:
+On Thu, 2009-02-19 at 22:02 +0100, Thomas Hellstrom wrote:
+>  
+> It looks to me like the driver preferred locking order is
 > 
-> > > > Again, the decision to trigger automatic suspend has to be based on some
-> > > > well defined criteria and the (in)activity of devices seems to be one of them.
-> > > 
-> > > I don't know what criteria the system monitor would use.
-> > 
-> > I don't know either and this is the whole point.  They need to be specified
-> > somehow and I'm not sure if "we suspend if no one is holding a wakelock" is the
-> > right approach.
+> object_mutex (which happens to be the device global struct_mutex)
+>   mmap_sem
+>      offset_mutex.
 > 
-> That isn't really a criterion; it's just a mechanism.  All it does is
-> push the problem back one level.  Now the question becomes: When is it
-> appropriate/necessary to hold a wakelock?
+> So if one could avoid using the struct_mutex for object bookkeeping (A 
+> separate lock) then
+> vm_open() and vm_close() would adhere to that locking order as well, 
+> simply by not taking the struct_mutex at all.
 > 
-> > > It might have to be platform-specific.  The Android people seem to have a
-> > > pretty good idea of what criteria will work for them.
-> > 
-> > I'd really like to know in what situations Androind is supposed to suspend
-> > automatically.
-> 
-> It might be better to ask in what situations Android is _not_ supposed
-> to sleep automatically.  In other words, in what situations is a
-> wakelock acquired?  Since the whole system is only a phone, this
-> question should have a reasonably well-defined answer.
-> 
-> > > Inactivity of devices isn't always a good criterion.  There might be a
-> > > background task which wakes up every few seconds to do something as
-> > > long as the system is awake, thereby keeping some device always active.  
-> > > The activity from this background task shouldn't prevent an auto-sleep.
-> > 
-> > In fact there are two problems here.  First, there may be a task preventing
-> > some devices from becoming inactive (like syslog).
-> 
-> Which means that device inactivity isn't always a good indicator for
-> auto-sleep.  (But then there can be different levels of activity: A
-> disk should always block auto-sleep while it is carrying out I/O, but
-> it might not block auto-sleep just because it is spinning.)
-> 
-> >  Second, there may be
-> > a task waiting for something important to happen, such that automatic suspend
-> > cannot be triggered while it's waiting.  In both cases, IMO, the kernel is not
-> > in a point to decide whether to suspend or not, because the user space knows
-> > better.
-> 
-> That's the whole point behind userspace wakelocks!  They provide a
-> mechanism for userspace to tell the kernel when (as far as userspace is
-> concerned) it is or is not okay to auto-sleep.
+> So only fault() remains, in which that locking order is reversed. 
+> Personally I think the trylock ->reschedule->retry method with proper 
+> commenting is a good solution. It will be the _only_ place where locking 
+> order is reversed and it is done in a deadlock-safe manner. Note that 
+> fault() doesn't really fail, but requests a retry from user-space with 
+> rescheduling to give the process holding the struct_mutex time to 
+> release it.
 
-Still, one can go further and observe that the user space can in fact start
-automatic suspend by itself whenever it knows it's appropriate ...
+It doesn't do the reschedule -- need_resched() will check if the current
+task was marked to be scheduled away, furthermore yield based locking
+sucks chunks.
 
-Thanks,
-Rafael
+What's so very difficult about pulling the copy_*_user() out from under
+the locks?
+
