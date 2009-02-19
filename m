@@ -1,56 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbZBSWxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbZBSWyM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757334AbZBSWxv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 17:53:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbZBSWxm
+	id S1755264AbZBSWyM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 17:54:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756914AbZBSWxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 17:53:42 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:59789 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752116AbZBSWxl convert rfc822-to-8bit (ORCPT
+	Thu, 19 Feb 2009 17:53:50 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42414 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756396AbZBSWxt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 17:53:41 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFD] Automatic suspend
-Date: Thu, 19 Feb 2009 23:58:08 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.27.7-9-default; KDE/4.1.3; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-References: <Pine.LNX.4.44L0.0902191659020.7953-100000@iolanthe.rowland.org> <200902192321.47891.rjw@sisk.pl>
-In-Reply-To: <200902192321.47891.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200902192358.13068.oliver@neukum.org>
+	Thu, 19 Feb 2009 17:53:49 -0500
+Date: Thu, 19 Feb 2009 14:53:05 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nicolas Pitre <nico@cam.org>
+Cc: drzeus-mmc@drzeus.cx, linux-kernel@vger.kernel.org, maen@marvell.com
+Subject: Re: [PATCH] SDIO driver for Marvell SoCs
+Message-Id: <20090219145305.01451253.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0902191625120.5511@xanadu.home>
+References: <alpine.LFD.2.00.0902172338110.32550@xanadu.home>
+	<20090219124418.dfc4dc9a.akpm@linux-foundation.org>
+	<alpine.LFD.2.00.0902191625120.5511@xanadu.home>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag 19 Februar 2009 23:21:46 schrieb Rafael J. Wysocki:
-> > That's the whole point behind userspace wakelocks!  They provide a
-> > mechanism for userspace to tell the kernel when (as far as userspace 
-is
-> > concerned) it is or is not okay to auto-sleep.
->
-> Still, one can go further and observe that the user space can in fact start
-> automatic suspend by itself whenever it knows it's appropriate ...
+On Thu, 19 Feb 2009 17:02:32 -0500 (EST)
+Nicolas Pitre <nico@cam.org> wrote:
 
-User space initiating this is a race condition.
+> On Thu, 19 Feb 2009, Andrew Morton wrote:
+> 
+> > On Tue, 17 Feb 2009 23:46:21 -0500 (EST)
+> > Nicolas Pitre <nico@cam.org> wrote:
+> > 
+> > > From: Maen Suleiman <maen@marvell.com>
+> > > 
+> > > This supports MMC/SD/SDIO currently found on the Kirkwood 88F6281 and
+> > > 88F6192 SoC controllers.
+> > > 
+> > > Signed-off-by: Nicolas Pitre <nico@marvell.com>
+> > 
+> > It would be nice to have Maen's signoff.
+> 
+> Sure, I can add it if this is Maen's wish.  Still, this single signoff 
+> was made in conformity with option B of the Developer's Certificate of 
+> Origin 1.1 as found in Documentation/SubmittingPatches.  It is actually 
+> my duty at Marvell to act as such.
 
-	Regards
-		Oliver
+No, it's not required.  But "nice".
 
+> > >
+> > > ...
+> > >
+> > > +#define mvsd_write(offs, val)	writel(val, iobase + (offs))
+> > > +#define mvsd_read(offs)		readl(iobase + (offs))
+> > 
+> > It's rather grotty to have a macro which secretly relies upon the
+> > presence of a particularly-named local variable.
+> 
+> My call.  Otherwise the code becomes bloated with repeated iobase noise 
+> everywhere, making many lines bust the 80 column limit imposed by the 
+> checkpatch.pl.  The alternative is to split those statement on multiple 
+> lines making things not prettier.  So, unless you want to help 
+> maintaining this driver, I prefer this grottiness to remains as is.
+
+For the record: you do not get to put bad code into Linux by telling
+the person who points out that bad code that he needs to maintain a
+fixed verion.  Just cut the sophomoric crap.
+
+I don't care much - we have plenty of grotty code down in drivers/
+
+> > > +
+> > > +		if (host->gpio_card_detect) {
+> > > +			free_irq(gpio_to_irq(host->gpio_card_detect), host);
+> > > +			gpio_free(host->gpio_card_detect);
+> > > +		}
+> > > +		mmc_remove_host(mmc);
+> > > +		free_irq(host->irq, host);
+> > > +		if (host->gpio_write_protect)
+> > > +			gpio_free(host->gpio_write_protect);
+> > > +		del_timer_sync(&host->timer);
+> > > +		mvsd_power_down(host);
+> > > +		iounmap(host->base);
+> > > +		release_resource(host->res);
+> > > +		mmc_free_host(mmc);
+> > 
+> > Perhaps this function and the error path ("out:") in the preceding
+> > function could share code.
+> 
+> Well, one is marked __init and the other __exit.  Having common code 
+> would mean this needs to be in a non discardable section which is a 
+> waste.
+
+OK.  
