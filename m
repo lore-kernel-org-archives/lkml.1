@@ -1,102 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758921AbZBSTFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756107AbZBSTLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758921AbZBSTFs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 14:05:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754188AbZBSTFg
+	id S1756107AbZBSTLq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 14:11:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbZBSTLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 14:05:36 -0500
-Received: from adsl134-239.ath.forthnet.gr ([79.103.101.239]:34579 "EHLO
-	vergina.dyndns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756504AbZBSTFf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 14:05:35 -0500
-Message-ID: <499DAD7C.4060404@asyr.hopto.org>
-Date: Thu, 19 Feb 2009 21:05:32 +0200
-From: Thanasis <thanasis@asyr.hopto.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090112)
+	Thu, 19 Feb 2009 14:11:35 -0500
+Received: from gw.goop.org ([64.81.55.164]:44670 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751853AbZBSTLf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 14:11:35 -0500
+Message-ID: <499DAEE4.8010507@goop.org>
+Date: Thu, 19 Feb 2009 11:11:32 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: gentoo-amd64@lists.gentoo.org
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [gentoo-amd64] Is /proc/cpuinfo showing the actual frequency
- ?
-References: <499D0D0E.9020608@asyr.hopto.org> <499D8783.2080704@j-schmitz.net>	 <499D8CFA.9080406@asyr.hopto.org> <499D8F02.3010905@j-schmitz.net> <58965d8a0902190946k3f0be02nd3f4eef4827cc08a@mail.gmail.com>
-In-Reply-To: <58965d8a0902190946k3f0be02nd3f4eef4827cc08a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-7
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [PATCH RFC] vm_unmap_aliases: allow callers to inhibit TLB flush
+References: <49416494.6040009@goop.org> <200902192254.31735.nickpiggin@yahoo.com.au> <499D90AE.7060102@goop.org> <200902200441.08541.nickpiggin@yahoo.com.au>
+In-Reply-To: <200902200441.08541.nickpiggin@yahoo.com.au>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on 02/19/2009 07:46 PM Paul Hartman wrote the following:
-> On Thu, Feb 19, 2009 at 10:55 AM, Justin <justin@j-schmitz.net> wrote:
->> Thanasis schrieb:
->>> on 02/19/2009 06:23 PM Justin wrote the following:
->>>> Thanasis schrieb:
->>>>
->>>>> # uname -a
->>>>> Linux wolfdale 2.6.28-gentoo-r2 #1 SMP PREEMPT Wed Feb 18 13:53:22 EET
->>>>> 2009 x86_64 Intel(R) Core(TM)2 Duo CPU E8400 @ 3.00GHz GenuineIntel
->>>>> GNU/Linux
->>>>>
->>>>> Overclocked the core 2 duo (E8400) from 3 to 4GHz using motherboard
->>>>> BIOS settings. In mswindblows I can see the overclocked frequency
->>>>> (when cpu is under load), in linux /proc/cpuinfo never shows beyond the
->>>>> stock 3GHz value.
->>>>>
->>>>> Q: Is /proc/cpuinfo showing the actual frequency?
->>>>>
->>>>>
->>>> Do you have frequency scaling active?
->>> Yes, but the /proc/cpuinfo I showed, was with the max frequency ever
->>> displayed (under load).
->>>
->> AFAIK the scaling will interfere with OC. Try to disable it and check
->> again.
+Nick Piggin wrote:
+> Then what is the point of the vm_unmap_aliases? If you are doing it
+> for security it won't work because other CPUs might still be able
+> to write through dangling TLBs. If you are not doing it for
+> security then it does not need to be done at all.
+>   
+
+Xen will make sure any danging tlb entries are flushed before handing 
+the page out to anyone else.
+
+> Unless it is something strange that Xen does with the page table
+> structure and you just need to get rid of those?
+>   
+
+Yeah.  A pte pointing at a page holds a reference on it, saying that it 
+belongs to the domain.  You can't return it to Xen until the refcount is 0.
+
+>> (Xen does something like this internally to either defer or avoid many
+>> expensive tlb operations.)
+>>
+>>     
+>>>> For Xen dom0, when someone does something like dma_alloc_coherent, we
+>>>> allocate the memory as normal, and then swizzle the underlying physical
+>>>> pages to be machine physically contiguous (vs contiguous pseudo-physical
+>>>> guest memory), and within the addressable range for the device.  In
+>>>> order to do that, we need to make sure the pages are only mapped by the
+>>>> linear mapping, and there are no other aliases.
+>>>>         
+>>> These are just stale aliases that will no longer be operated on
+>>> unless there is a kernel bug -- so can you just live with them,
+>>> or is it a security issue of memory access escaping its domain?
+>>>       
+>> The underlying physical page is being exchanged, so the old page is
+>> being returned to Xen's free page pool.  It will refuse to do the
+>> exchange if the guest still has pagetable references to the page.
+>>     
 >
-> I just did some googling and it seems that frequency scaling in linux
-> only works with the stock speed steps, not the OC'ed speed.
+> But it refuses to do this because it is worried about dangling TLBs?
+> Or some implementation detail that can't handle the page table
+> entries?
+>   
 
-I bet if I disable frequency scaling from BIOS, it will show 4GHz, because the 
-funny thing is that inside a fully VM (guest) it shows the "real" frequency  ;-) 
+Right.  The actual pte pointing at the page hold the reference.  We need 
+to drop all the references before doing the exchange.
 
-# cat cpuinfo
-processor    : 0
-vendor_id    : GenuineIntel
-cpu family    : 6
-model        : 23
-model name    : Intel(R) Core(TM)2 Duo CPU     E8400  @ 3.00GHz
-stepping    : 10
-cpu MHz        : 4050.236
-cache size    : 6144 KB
-fpu        : yes
-fpu_exception    : yes
-cpuid level    : 13
-wp        : yes
-flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat 
-clflush dts mmx fxsr sse sse2 ss syscall nx lm pni ds_cpl cx16 xtpr lahf_lm
-bogomips    : 8111.05
-clflush size    : 64
-cache_alignment    : 64
-address sizes    : 36 bits physical, 48 bits virtual
-power management:
+> Hmm. Let's just try to establish that it is really required first.
+>   
 
-processor    : 1
-vendor_id    : GenuineIntel
-cpu family    : 6
-model        : 23
-model name    : Intel(R) Core(TM)2 Duo CPU     E8400  @ 3.00GHz
-stepping    : 10
-cpu MHz        : 4050.236
-cache size    : 6144 KB
-fpu        : yes
-fpu_exception    : yes
-cpuid level    : 13
-wp        : yes
-flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat 
-clflush dts mmx fxsr sse sse2 ss syscall nx lm pni ds_cpl cx16 xtpr lahf_lm
-bogomips    : 8101.80
-clflush size    : 64
-cache_alignment    : 64
-address sizes    : 36 bits physical, 48 bits virtual
-power management:
+Well, its desireable anyway.  The using IPI for any kind of tlb flushing 
+is pretty pessimal under Xen (or any virtual environment); Xen has a 
+much better idea about which real cpus have stale tlb state for which vcpus.
 
+> Or... what if we just allow a compile and/or boot time flag to direct
+> that it does not want lazy vmap unmapping and it will just revert to
+> synchronous unmapping? If Xen needs lots of flushing anyway it might
+> not be a win anyway.
+>   
+
+That may be worth considering.
+
+    J
