@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757553AbZBSVLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbZBSVLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757553AbZBSVLS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 16:11:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbZBSVLA
+	id S1755849AbZBSVLc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 16:11:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756359AbZBSVLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 16:11:00 -0500
-Received: from mail.tpi.com ([70.99.223.143]:4734 "EHLO mail.tpi.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754196AbZBSVK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 16:10:59 -0500
-Message-ID: <499DCADB.5060008@canonical.com>
-Date: Thu, 19 Feb 2009 14:10:51 -0700
-From: Tim Gardner <tim.gardner@canonical.com>
-Reply-To: tim.gardner@canonical.com
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 19 Feb 2009 16:11:07 -0500
+Received: from web110612.mail.gq1.yahoo.com ([67.195.13.203]:46290 "HELO
+	web110612.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756074AbZBSVLF convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 16:11:05 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=42Z2QrAPDQCT1ktskQGIPKMF2HoWTXDqeSMZ5JtSZG83lkDz5/kXxzr7wHNW/NSyVUagnW8kRMOhjYftupDGJx/72vbtD1mQNv4rMggYwTONrGkIX1jzBH2Lcc9r+pp2OeV/4ihlZtOIDjlng2q7f59vWCeVI/B5TO1yGRYDTw0=;
+X-YMail-OSG: ItJSeUQVM1muFQhBK1cq5ZbN.Dczaa8UCzWjqcRBqlaVk3.wFW70DtDJtMlcOnzkrLEXuRcRZAdYfcFO0Ue0AAxtt1GAwrQZiWcJYSqSpMyWSFWrqRFprMNC28zEkpa.8pEg5OursKBkO.wRPnLKjJmOHIQK1F2J79ziEHEi8OR5Fb2xAfezD.atDV4rIaZLguokUoQtjBGJHBq25AMDqNgEolgUfNUEH5N00Yr3iA--
+X-Mailer: YahooMailRC/1155.45 YahooMailWebService/0.7.260.1
+Date: Thu, 19 Feb 2009 13:11:03 -0800 (PST)
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: Re: [SCSI][REGRESSION][BISECTED] Disk errors loop forever in 2.6.29
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       rjw@sisk.pl, Ingo Molnar <mingo@elte.hu>, linux-scsi@vger.kernel.org
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Ubuntu Jaunty ext3 --> ext4 upgrade issue
-References: <499C4F1E.8050901@canonical.com> <20090218222517.GT3600@mini-me.lan>
-In-Reply-To: <20090218222517.GT3600@mini-me.lan>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Message-ID: <56979.43325.qm@web110612.mail.gq1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Wed, Feb 18, 2009 at 11:10:38AM -0700, Tim Gardner wrote:
->> I've encountered a situation where the patches that you've proposed for
->> stable updates might be causing some issues. This user ivoks appears to
->> have an upgrade issue. I assume he's enabled ext4 on an existing ext3
->> file system. Hopefully I can get more details. Have you seen anything
->> like this?
-> 
-> No, this is the first I've heard of it. 
-> 
->> <ivoks> i'm getting 'Invalid or unsupported executable format' from grub
->> on all jaunty's generic kernels since (including) 2.6.28-7
-> 
-> So grub is complaining that it can't boot from a partition after
-> upgrading to the new kernel with the for-stable patches?  Um, that's
-> interesting.  So the obvious thing to check is to do an md5 checksum
-> of the kernel in /boot to make sure it didn't get corrupted somehow.
-> The other thing to check would be to ask the user to run e2fsck to
-> rule out filesystem corruption.
-> 
-> OTOH, if this was just a simple install and upgrade, presumably the
-> new kernel would have been installed while the previous kernel was
-> booted.
-> 
-> I do my testing by using a ext3 /boot partition (since my
-> crash-and-burn netbook is running Ubuntu Jaunty).  So I wouldn't have
-> noticed anything, but this seems very odd.
-> 
-> More information would be useful; is there a Launchpad bug open on this yet?
-> 
-> Or we can work this out on LKML or the linux-ext4 mailing list if the
-> reporter is willing to be cc'ed on the thread....
-> 
->      		       	  	     	   - Ted
-> 
+> From: James Bottomley <James.Bottomley@HansenPartnership.com>
+>
+> Can you try this patch ... it was something I meant to get into 2.6.29
+> but forgot about.  The key problem that you seem to be hitting is that
+> the requeue evades the timeout check.  Moving the timeout check to block
+> should fix that.
 
-False alarm. It turned out to be a grub issue, though I'm not sure how
-the user got to that point without having also upgraded grub.
+Even by itself this patch works although the behaviour is now different
+to that of 2.6.28.  Whereas in 2.6.28 it would timeout very quickly
+(after about 1 or 2 seconds) it now times out after 30 seconds
+(initially I hadn't realised that it would be so much longer). The
+other difference is that the failure becomes cached - trying to reread
+the same area using dd instantly fails from now on without any more disk
+IO/kernel error messages until echo 1 > /proc/sys/vm/drop_caches is
+issued. Before it would always go straight to the disk for the unread
+section and the kernel spew would be repeated before the failure.
 
-rtg
--- 
-Tim Gardner tim.gardner@canonical.com
+I guess if this is new intended behaviour then all is well - it's just
+different and slower/faster :)
+
+Tested-by: Sitsofe Wheeler <sitsofe@yahoo.com>
+
+
+
+      
