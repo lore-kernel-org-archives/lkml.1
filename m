@@ -1,36 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbZBSNtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756404AbZBSNuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757338AbZBSNtZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 08:49:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbZBSNrc
+	id S1756404AbZBSNuF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 08:50:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756668AbZBSNre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 08:47:32 -0500
-Received: from ti-out-0910.google.com ([209.85.142.184]:50627 "EHLO
+	Thu, 19 Feb 2009 08:47:34 -0500
+Received: from ti-out-0910.google.com ([209.85.142.191]:49874 "EHLO
 	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756263AbZBSNr1 (ORCPT
+	with ESMTP id S1756422AbZBSNr3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 08:47:27 -0500
+	Thu, 19 Feb 2009 08:47:29 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=pp8KuiKnPZxTcEeXcUpXbtU6SgiNnI1LnVuZIbBw6PyRf/5Db2vqxQlUpNPCEkpdvi
-         Dh53QmR+qUJWDr+FbaS+dVtarrd+qFkJi/Nr4hvjhRl+TsFGd7ogfvnfr3q2xVO2+1pj
-         /w8UyYrDTtE6QeajHH+qPatMZdUlXmKGQQyU8=
+        b=XTsO/pBVg7jE/k4g2rrdJMQ2NN/O8lrHrb4VDt3NKYXs2IgXjOIYvV2ZZ3bQpmADFe
+         0i9aTTnG8GfW/lW/eNrezcJgKwrT+4gLbG7Lnmp+vD1Cx6fH30msh7dT2zHs9WO7P4Dm
+         E4QCU3zs8yXVrycUOKepJiNBVnwnaKxU12fk4=
 From: Eric Miao <eric.y.miao@gmail.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
        Eric Miao <eric.miao@marvell.com>
-Subject: [PATCH] [ARM] pxa: add MFP support for pxa168
-Date: Thu, 19 Feb 2009 21:45:55 +0800
-Message-Id: <1235051161-8858-7-git-send-email-eric.y.miao@gmail.com>
+Subject: [PATCH] [ARM] pxa: allow reuse of serial driver for pxa168
+Date: Thu, 19 Feb 2009 21:45:57 +0800
+Message-Id: <1235051161-8858-9-git-send-email-eric.y.miao@gmail.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1235051161-8858-6-git-send-email-eric.y.miao@gmail.com>
+In-Reply-To: <1235051161-8858-8-git-send-email-eric.y.miao@gmail.com>
 References: <1235051161-8858-1-git-send-email-eric.y.miao@gmail.com>
  <1235051161-8858-2-git-send-email-eric.y.miao@gmail.com>
  <1235051161-8858-3-git-send-email-eric.y.miao@gmail.com>
  <1235051161-8858-4-git-send-email-eric.y.miao@gmail.com>
  <1235051161-8858-5-git-send-email-eric.y.miao@gmail.com>
  <1235051161-8858-6-git-send-email-eric.y.miao@gmail.com>
+ <1235051161-8858-7-git-send-email-eric.y.miao@gmail.com>
+ <1235051161-8858-8-git-send-email-eric.y.miao@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -39,357 +41,22 @@ From: Eric Miao <eric.miao@marvell.com>
 
 Signed-off-by: Eric Miao <eric.miao@marvell.com>
 ---
- arch/arm/mach-mmp/include/mach/mfp-pxa168.h |  258 +++++++++++++++++++++++++++
- arch/arm/mach-mmp/include/mach/mfp.h        |   37 ++++
- arch/arm/mach-mmp/pxa168.c                  |   15 ++
- 3 files changed, 310 insertions(+), 0 deletions(-)
- create mode 100644 arch/arm/mach-mmp/include/mach/mfp-pxa168.h
- create mode 100644 arch/arm/mach-mmp/include/mach/mfp.h
+ drivers/serial/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/mach-mmp/include/mach/mfp-pxa168.h b/arch/arm/mach-mmp/include/mach/mfp-pxa168.h
-new file mode 100644
-index 0000000..d0bdb6e
---- /dev/null
-+++ b/arch/arm/mach-mmp/include/mach/mfp-pxa168.h
-@@ -0,0 +1,258 @@
-+#ifndef __ASM_MACH_MFP_PXA168_H
-+#define __ASM_MACH_MFP_PXA168_H
-+
-+#include <mach/mfp.h>
-+
-+/* GPIO */
-+#define GPIO0_GPIO		MFP_CFG(GPIO0, AF5)
-+#define GPIO1_GPIO		MFP_CFG(GPIO1, AF5)
-+#define GPIO2_GPIO		MFP_CFG(GPIO2, AF5)
-+#define GPIO3_GPIO		MFP_CFG(GPIO3, AF5)
-+#define GPIO4_GPIO		MFP_CFG(GPIO4, AF5)
-+#define GPIO5_GPIO		MFP_CFG(GPIO5, AF5)
-+#define GPIO6_GPIO		MFP_CFG(GPIO6, AF5)
-+#define GPIO7_GPIO		MFP_CFG(GPIO7, AF5)
-+#define GPIO8_GPIO		MFP_CFG(GPIO8, AF5)
-+#define GPIO9_GPIO		MFP_CFG(GPIO9, AF5)
-+#define GPIO10_GPIO		MFP_CFG(GPIO10, AF5)
-+#define GPIO11_GPIO		MFP_CFG(GPIO11, AF5)
-+#define GPIO12_GPIO		MFP_CFG(GPIO12, AF5)
-+#define GPIO13_GPIO		MFP_CFG(GPIO13, AF5)
-+#define GPIO14_GPIO		MFP_CFG(GPIO14, AF5)
-+#define GPIO15_GPIO		MFP_CFG(GPIO15, AF5)
-+#define GPIO16_GPIO		MFP_CFG(GPIO16, AF0)
-+#define GPIO17_GPIO		MFP_CFG(GPIO17, AF5)
-+#define GPIO18_GPIO		MFP_CFG(GPIO18, AF0)
-+#define GPIO19_GPIO		MFP_CFG(GPIO19, AF5)
-+#define GPIO20_GPIO		MFP_CFG(GPIO20, AF0)
-+#define GPIO21_GPIO		MFP_CFG(GPIO21, AF5)
-+#define GPIO22_GPIO		MFP_CFG(GPIO22, AF5)
-+#define GPIO23_GPIO		MFP_CFG(GPIO23, AF5)
-+#define GPIO24_GPIO		MFP_CFG(GPIO24, AF5)
-+#define GPIO25_GPIO		MFP_CFG(GPIO25, AF5)
-+#define GPIO26_GPIO		MFP_CFG(GPIO26, AF0)
-+#define GPIO27_GPIO		MFP_CFG(GPIO27, AF5)
-+#define GPIO28_GPIO		MFP_CFG(GPIO28, AF5)
-+#define GPIO29_GPIO		MFP_CFG(GPIO29, AF5)
-+#define GPIO30_GPIO		MFP_CFG(GPIO30, AF5)
-+#define GPIO31_GPIO		MFP_CFG(GPIO31, AF5)
-+#define GPIO32_GPIO		MFP_CFG(GPIO32, AF5)
-+#define GPIO33_GPIO		MFP_CFG(GPIO33, AF5)
-+#define GPIO34_GPIO		MFP_CFG(GPIO34, AF0)
-+#define GPIO35_GPIO		MFP_CFG(GPIO35, AF0)
-+#define GPIO36_GPIO		MFP_CFG(GPIO36, AF0)
-+#define GPIO37_GPIO		MFP_CFG(GPIO37, AF0)
-+#define GPIO38_GPIO		MFP_CFG(GPIO38, AF0)
-+#define GPIO39_GPIO		MFP_CFG(GPIO39, AF0)
-+#define GPIO40_GPIO		MFP_CFG(GPIO40, AF0)
-+#define GPIO41_GPIO		MFP_CFG(GPIO41, AF0)
-+#define GPIO42_GPIO		MFP_CFG(GPIO42, AF0)
-+#define GPIO43_GPIO		MFP_CFG(GPIO43, AF0)
-+#define GPIO44_GPIO		MFP_CFG(GPIO44, AF0)
-+#define GPIO45_GPIO		MFP_CFG(GPIO45, AF0)
-+#define GPIO46_GPIO		MFP_CFG(GPIO46, AF0)
-+#define GPIO47_GPIO		MFP_CFG(GPIO47, AF0)
-+#define GPIO48_GPIO		MFP_CFG(GPIO48, AF0)
-+#define GPIO49_GPIO		MFP_CFG(GPIO49, AF0)
-+#define GPIO50_GPIO		MFP_CFG(GPIO50, AF0)
-+#define GPIO51_GPIO		MFP_CFG(GPIO51, AF0)
-+#define GPIO52_GPIO		MFP_CFG(GPIO52, AF0)
-+#define GPIO53_GPIO		MFP_CFG(GPIO53, AF0)
-+#define GPIO54_GPIO		MFP_CFG(GPIO54, AF0)
-+#define GPIO55_GPIO		MFP_CFG(GPIO55, AF0)
-+#define GPIO56_GPIO		MFP_CFG(GPIO56, AF0)
-+#define GPIO57_GPIO		MFP_CFG(GPIO57, AF0)
-+#define GPIO58_GPIO		MFP_CFG(GPIO58, AF0)
-+#define GPIO59_GPIO		MFP_CFG(GPIO59, AF0)
-+#define GPIO60_GPIO		MFP_CFG(GPIO60, AF0)
-+#define GPIO61_GPIO		MFP_CFG(GPIO61, AF0)
-+#define GPIO62_GPIO		MFP_CFG(GPIO62, AF0)
-+#define GPIO63_GPIO		MFP_CFG(GPIO63, AF0)
-+#define GPIO64_GPIO		MFP_CFG(GPIO64, AF0)
-+#define GPIO65_GPIO		MFP_CFG(GPIO65, AF0)
-+#define GPIO66_GPIO		MFP_CFG(GPIO66, AF0)
-+#define GPIO67_GPIO		MFP_CFG(GPIO67, AF0)
-+#define GPIO68_GPIO		MFP_CFG(GPIO68, AF0)
-+#define GPIO69_GPIO		MFP_CFG(GPIO69, AF0)
-+#define GPIO70_GPIO		MFP_CFG(GPIO70, AF0)
-+#define GPIO71_GPIO		MFP_CFG(GPIO71, AF0)
-+#define GPIO72_GPIO		MFP_CFG(GPIO72, AF0)
-+#define GPIO73_GPIO		MFP_CFG(GPIO73, AF0)
-+#define GPIO74_GPIO		MFP_CFG(GPIO74, AF0)
-+#define GPIO75_GPIO		MFP_CFG(GPIO75, AF0)
-+#define GPIO76_GPIO		MFP_CFG(GPIO76, AF0)
-+#define GPIO77_GPIO		MFP_CFG(GPIO77, AF0)
-+#define GPIO78_GPIO		MFP_CFG(GPIO78, AF0)
-+#define GPIO79_GPIO		MFP_CFG(GPIO79, AF0)
-+#define GPIO80_GPIO		MFP_CFG(GPIO80, AF0)
-+#define GPIO81_GPIO		MFP_CFG(GPIO81, AF0)
-+#define GPIO82_GPIO		MFP_CFG(GPIO82, AF0)
-+#define GPIO83_GPIO		MFP_CFG(GPIO83, AF0)
-+#define GPIO84_GPIO		MFP_CFG(GPIO84, AF0)
-+#define GPIO85_GPIO		MFP_CFG(GPIO85, AF0)
-+#define GPIO86_GPIO		MFP_CFG(GPIO86, AF0)
-+#define GPIO87_GPIO		MFP_CFG(GPIO87, AF0)
-+#define GPIO88_GPIO		MFP_CFG(GPIO88, AF0)
-+#define GPIO89_GPIO		MFP_CFG(GPIO89, AF0)
-+#define GPIO90_GPIO		MFP_CFG(GPIO90, AF0)
-+#define GPIO91_GPIO		MFP_CFG(GPIO91, AF0)
-+#define GPIO92_GPIO		MFP_CFG(GPIO92, AF0)
-+#define GPIO93_GPIO		MFP_CFG(GPIO93, AF0)
-+#define GPIO94_GPIO		MFP_CFG(GPIO94, AF0)
-+#define GPIO95_GPIO		MFP_CFG(GPIO95, AF0)
-+#define GPIO96_GPIO		MFP_CFG(GPIO96, AF0)
-+#define GPIO97_GPIO		MFP_CFG(GPIO97, AF0)
-+#define GPIO98_GPIO		MFP_CFG(GPIO98, AF0)
-+#define GPIO99_GPIO		MFP_CFG(GPIO99, AF0)
-+#define GPIO100_GPIO		MFP_CFG(GPIO100, AF0)
-+#define GPIO101_GPIO		MFP_CFG(GPIO101, AF0)
-+#define GPIO102_GPIO		MFP_CFG(GPIO102, AF0)
-+#define GPIO103_GPIO		MFP_CFG(GPIO103, AF0)
-+#define GPIO104_GPIO		MFP_CFG(GPIO104, AF0)
-+#define GPIO105_GPIO		MFP_CFG(GPIO105, AF0)
-+#define GPIO106_GPIO		MFP_CFG(GPIO106, AF0)
-+#define GPIO107_GPIO		MFP_CFG(GPIO107, AF0)
-+#define GPIO108_GPIO		MFP_CFG(GPIO108, AF0)
-+#define GPIO109_GPIO		MFP_CFG(GPIO109, AF0)
-+#define GPIO110_GPIO		MFP_CFG(GPIO110, AF0)
-+#define GPIO111_GPIO		MFP_CFG(GPIO111, AF0)
-+#define GPIO112_GPIO		MFP_CFG(GPIO112, AF0)
-+#define GPIO113_GPIO		MFP_CFG(GPIO113, AF0)
-+#define GPIO114_GPIO		MFP_CFG(GPIO114, AF0)
-+#define GPIO115_GPIO		MFP_CFG(GPIO115, AF0)
-+#define GPIO116_GPIO		MFP_CFG(GPIO116, AF0)
-+#define GPIO117_GPIO		MFP_CFG(GPIO117, AF0)
-+#define GPIO118_GPIO		MFP_CFG(GPIO118, AF0)
-+#define GPIO119_GPIO		MFP_CFG(GPIO119, AF0)
-+#define GPIO120_GPIO		MFP_CFG(GPIO120, AF0)
-+#define GPIO121_GPIO		MFP_CFG(GPIO121, AF0)
-+#define GPIO122_GPIO		MFP_CFG(GPIO122, AF0)
-+
-+/* DFI */
-+#define GPIO0_DFI_D15		MFP_CFG(GPIO0, AF0)
-+#define GPIO1_DFI_D14		MFP_CFG(GPIO1, AF0)
-+#define GPIO2_DFI_D13		MFP_CFG(GPIO2, AF0)
-+#define GPIO3_DFI_D12		MFP_CFG(GPIO3, AF0)
-+#define GPIO4_DFI_D11		MFP_CFG(GPIO4, AF0)
-+#define GPIO5_DFI_D10		MFP_CFG(GPIO5, AF0)
-+#define GPIO6_DFI_D9		MFP_CFG(GPIO6, AF0)
-+#define GPIO7_DFI_D8		MFP_CFG(GPIO7, AF0)
-+#define GPIO8_DFI_D7		MFP_CFG(GPIO8, AF0)
-+#define GPIO9_DFI_D6		MFP_CFG(GPIO9, AF0)
-+#define GPIO10_DFI_D5		MFP_CFG(GPIO10, AF0)
-+#define GPIO11_DFI_D4		MFP_CFG(GPIO11, AF0)
-+#define GPIO12_DFI_D3		MFP_CFG(GPIO12, AF0)
-+#define GPIO13_DFI_D2		MFP_CFG(GPIO13, AF0)
-+#define GPIO14_DFI_D1		MFP_CFG(GPIO14, AF0)
-+#define GPIO15_DFI_D0		MFP_CFG(GPIO15, AF0)
-+
-+#define GPIO30_DFI_ADDR0	MFP_CFG(GPIO30, AF0)
-+#define GPIO31_DFI_ADDR1	MFP_CFG(GPIO31, AF0)
-+#define GPIO32_DFI_ADDR2	MFP_CFG(GPIO32, AF0)
-+#define GPIO33_DFI_ADDR3	MFP_CFG(GPIO33, AF0)
-+
-+/* NAND */
-+#define GPIO16_ND_nCS0		MFP_CFG(GPIO16, AF1)
-+#define GPIO17_ND_nWE		MFP_CFG(GPIO17, AF0)
-+#define GPIO21_ND_ALE		MFP_CFG(GPIO21, AF0)
-+#define GPIO22_ND_CLE		MFP_CFG(GPIO22, AF0)
-+#define GPIO24_ND_nRE		MFP_CFG(GPIO24, AF0)
-+#define GPIO26_ND_RnB1		MFP_CFG(GPIO26, AF1)
-+#define GPIO27_ND_RnB2		MFP_CFG(GPIO27, AF1)
-+
-+/* Static Memory Controller */
-+#define GPIO18_SMC_nCS0		MFP_CFG(GPIO18, AF3)
-+#define GPIO18_SMC_nCS1		MFP_CFG(GPIO18, AF2)
-+#define GPIO16_SMC_nCS0		MFP_CFG(GPIO16, AF2)
-+#define GPIO16_SMC_nCS1		MFP_CFG(GPIO16, AF3)
-+#define GPIO19_SMC_nCS0		MFP_CFG(GPIO19, AF0)
-+#define GPIO20_SMC_nCS1		MFP_CFG(GPIO20, AF2)
-+#define GPIO23_SMC_nLUA		MFP_CFG(GPIO23, AF0)
-+#define GPIO25_SMC_nLLA		MFP_CFG(GPIO25, AF0)
-+#define GPIO27_SMC_IRQ		MFP_CFG(GPIO27, AF0)
-+#define GPIO28_SMC_RDY		MFP_CFG(GPIO28, AF0)
-+#define GPIO29_SMC_SCLK		MFP_CFG(GPIO29, AF0)
-+#define GPIO34_SMC_nCS1		MFP_CFG(GPIO34, AF2)
-+#define GPIO35_SMC_BE1		MFP_CFG(GPIO35, AF2)
-+#define GPIO36_SMC_BE2		MFP_CFG(GPIO36, AF2)
-+
-+/* Compact Flash */
-+#define GPIO19_CF_nCE1		MFP_CFG(GPIO19, AF3)
-+#define GPIO20_CF_nCE2		MFP_CFG(GPIO20, AF3)
-+#define GPIO23_CF_nALE		MFP_CFG(GPIO23, AF3)
-+#define GPIO25_CF_nRESET	MFP_CFG(GPIO25, AF3)
-+#define GPIO28_CF_RDY		MFP_CFG(GPIO28, AF3)
-+#define GPIO29_CF_STSCH		MFP_CFG(GPIO29, AF3)
-+#define GPIO30_CF_nREG		MFP_CFG(GPIO30, AF3)
-+#define GPIO31_CF_nIOIS16	MFP_CFG(GPIO31, AF3)
-+#define GPIO32_CF_nCD1		MFP_CFG(GPIO32, AF3)
-+#define GPIO33_CF_nCD2		MFP_CFG(GPIO33, AF3)
-+
-+/* UART1 */
-+#define GPIO107_UART1_TXD	MFP_CFG_DRV(GPIO107, AF1, FAST)
-+#define GPIO107_UART1_RXD	MFP_CFG_DRV(GPIO107, AF2, FAST)
-+#define GPIO108_UART1_RXD	MFP_CFG_DRV(GPIO108, AF1, FAST)
-+#define GPIO108_UART1_TXD	MFP_CFG_DRV(GPIO108, AF2, FAST)
-+#define GPIO109_UART1_CTS	MFP_CFG(GPIO109, AF1)
-+#define GPIO109_UART1_RTS	MFP_CFG(GPIO109, AF2)
-+#define GPIO110_UART1_RTS	MFP_CFG(GPIO110, AF1)
-+#define GPIO110_UART1_CTS	MFP_CFG(GPIO110, AF2)
-+#define GPIO111_UART1_RI	MFP_CFG(GPIO111, AF1)
-+#define GPIO111_UART1_DSR	MFP_CFG(GPIO111, AF2)
-+#define GPIO112_UART1_DTR	MFP_CFG(GPIO111, AF1)
-+#define GPIO112_UART1_DCD	MFP_CFG(GPIO112, AF2)
-+
-+/* MMC1 */
-+#define GPIO37_MMC1_DAT7	MFP_CFG(GPIO37, AF1)
-+#define GPIO38_MMC1_DAT6	MFP_CFG(GPIO38, AF1)
-+#define GPIO54_MMC1_DAT5	MFP_CFG(GPIO54, AF1)
-+#define GPIO48_MMC1_DAT4	MFP_CFG(GPIO48, AF1)
-+#define GPIO51_MMC1_DAT3	MFP_CFG(GPIO51, AF1)
-+#define GPIO52_MMC1_DAT2	MFP_CFG(GPIO52, AF1)
-+#define GPIO40_MMC1_DAT1	MFP_CFG(GPIO40, AF1)
-+#define GPIO41_MMC1_DAT0	MFP_CFG(GPIO41, AF1)
-+#define GPIO49_MMC1_CMD		MFP_CFG(GPIO49, AF1)
-+#define GPIO43_MMC1_CLK		MFP_CFG(GPIO43, AF1)
-+#define GPIO53_MMC1_CD		MFP_CFG(GPIO53, AF1)
-+#define GPIO46_MMC1_WP		MFP_CFG(GPIO46, AF1)
-+
-+/* LCD */
-+#define GPIO84_LCD_CS		MFP_CFG(GPIO84, AF1)
-+#define GPIO60_LCD_DD0		MFP_CFG(GPIO60, AF1)
-+#define GPIO61_LCD_DD1		MFP_CFG(GPIO61, AF1)
-+#define GPIO70_LCD_DD10		MFP_CFG(GPIO70, AF1)
-+#define GPIO71_LCD_DD11		MFP_CFG(GPIO71, AF1)
-+#define GPIO72_LCD_DD12		MFP_CFG(GPIO72, AF1)
-+#define GPIO73_LCD_DD13		MFP_CFG(GPIO73, AF1)
-+#define GPIO74_LCD_DD14		MFP_CFG(GPIO74, AF1)
-+#define GPIO75_LCD_DD15		MFP_CFG(GPIO75, AF1)
-+#define GPIO76_LCD_DD16		MFP_CFG(GPIO76, AF1)
-+#define GPIO77_LCD_DD17		MFP_CFG(GPIO77, AF1)
-+#define GPIO78_LCD_DD18		MFP_CFG(GPIO78, AF1)
-+#define GPIO79_LCD_DD19		MFP_CFG(GPIO79, AF1)
-+#define GPIO62_LCD_DD2		MFP_CFG(GPIO62, AF1)
-+#define GPIO80_LCD_DD20		MFP_CFG(GPIO80, AF1)
-+#define GPIO81_LCD_DD21		MFP_CFG(GPIO81, AF1)
-+#define GPIO82_LCD_DD22		MFP_CFG(GPIO82, AF1)
-+#define GPIO83_LCD_DD23		MFP_CFG(GPIO83, AF1)
-+#define GPIO63_LCD_DD3		MFP_CFG(GPIO63, AF1)
-+#define GPIO64_LCD_DD4		MFP_CFG(GPIO64, AF1)
-+#define GPIO65_LCD_DD5		MFP_CFG(GPIO65, AF1)
-+#define GPIO66_LCD_DD6		MFP_CFG(GPIO66, AF1)
-+#define GPIO67_LCD_DD7		MFP_CFG(GPIO67, AF1)
-+#define GPIO68_LCD_DD8		MFP_CFG(GPIO68, AF1)
-+#define GPIO69_LCD_DD9		MFP_CFG(GPIO69, AF1)
-+#define GPIO59_LCD_DENA_BIAS	MFP_CFG(GPIO59, AF1)
-+#define GPIO56_LCD_FCLK_RD	MFP_CFG(GPIO56, AF1)
-+#define GPIO57_LCD_LCLK_A0	MFP_CFG(GPIO57, AF1)
-+#define GPIO58_LCD_PCLK_WR	MFP_CFG(GPIO58, AF1)
-+#define GPIO85_LCD_VSYNC	MFP_CFG(GPIO85, AF1)
-+
-+/* I2S */
-+#define GPIO113_I2S_MCLK	MFP_CFG(GPIO113,AF6)
-+#define GPIO114_I2S_FRM		MFP_CFG(GPIO114,AF1)
-+#define GPIO115_I2S_BCLK	MFP_CFG(GPIO115,AF1)
-+#define GPIO116_I2S_RXD		MFP_CFG(GPIO116,AF2)
-+#define GPIO117_I2S_TXD		MFP_CFG(GPIO117,AF2)
-+
-+#endif /* __ASM_MACH_MFP_PXA168_H */
-diff --git a/arch/arm/mach-mmp/include/mach/mfp.h b/arch/arm/mach-mmp/include/mach/mfp.h
-new file mode 100644
-index 0000000..277ea4c
---- /dev/null
-+++ b/arch/arm/mach-mmp/include/mach/mfp.h
-@@ -0,0 +1,37 @@
-+#ifndef __ASM_MACH_MFP_H
-+#define __ASM_MACH_MFP_H
-+
-+#include <plat/mfp.h>
-+
-+/*
-+ * NOTE: the MFPR register bit definitions on PXA168 processor lines are a
-+ * bit different from those on PXA3xx.  Bit [7:10] are now reserved, which
-+ * were SLEEP_OE_N, SLEEP_DATA, SLEEP_SEL and the LSB of DRIVE bits.
-+ *
-+ * To cope with this difference and re-use the pxa3xx mfp code as much as
-+ * possible, we make the following compromise:
-+ *
-+ * 1. SLEEP_OE_N will always be programmed to '1' (by MFP_LPM_FLOAT)
-+ * 2. DRIVE strength definitions redefined to include the reserved bit10
-+ * 3. Override MFP_CFG() and MFP_CFG_DRV()
-+ * 4. Drop the use of MFP_CFG_LPM() and MFP_CFG_X()
-+ */
-+
-+#define MFP_DRIVE_VERY_SLOW	(0x0 << 13)
-+#define MFP_DRIVE_SLOW		(0x2 << 13)
-+#define MFP_DRIVE_MEDIUM	(0x4 << 13)
-+#define MFP_DRIVE_FAST		(0x8 << 13)
-+
-+#undef MFP_CFG
-+#undef MFP_CFG_DRV
-+#undef MFP_CFG_LPM
-+#undef MFP_CFG_X
-+#undef MFP_CFG_DEFAULT
-+
-+#define MFP_CFG(pin, af)		\
-+	(MFP_LPM_FLOAT | MFP_PIN(MFP_PIN_##pin) | MFP_##af | MFP_DRIVE_MEDIUM)
-+
-+#define MFP_CFG_DRV(pin, af, drv)	\
-+	(MFP_LPM_FLOAT | MFP_PIN(MFP_PIN_##pin) | MFP_##af | MFP_DRIVE_##drv)
-+
-+#endif /* __ASM_MACH_MFP_H */
-diff --git a/arch/arm/mach-mmp/pxa168.c b/arch/arm/mach-mmp/pxa168.c
-index db2356b..2c826ce 100644
---- a/arch/arm/mach-mmp/pxa168.c
-+++ b/arch/arm/mach-mmp/pxa168.c
-@@ -21,10 +21,23 @@
- #include <mach/irqs.h>
- #include <mach/gpio.h>
- #include <mach/dma.h>
-+#include <mach/mfp.h>
+diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
+index 7d7f576..9be11b0 100644
+--- a/drivers/serial/Kconfig
++++ b/drivers/serial/Kconfig
+@@ -628,7 +628,7 @@ config SERIAL_MPSC_CONSOLE
  
- #include "common.h"
- #include "clock.h"
- 
-+#define MFPR_VIRT_BASE	(APB_VIRT_BASE + 0x1e000)
-+
-+static struct mfp_addr_map pxa168_mfp_addr_map[] __initdata =
-+{
-+	MFP_ADDR_X(GPIO0,   GPIO36,  0x04c),
-+	MFP_ADDR_X(GPIO37,  GPIO55,  0x000),
-+	MFP_ADDR_X(GPIO56,  GPIO123, 0x0e0),
-+	MFP_ADDR_X(GPIO124, GPIO127, 0x0f4),
-+
-+	MFP_ADDR_END,
-+};
-+
- #define APMASK(i)	(GPIO_REGS_VIRT + BANK_OFF(i) + 0x09c)
- 
- static void __init pxa168_init_gpio(void)
-@@ -64,6 +77,8 @@ static struct clk_lookup pxa168_clkregs[] = {
- static int __init pxa168_init(void)
- {
- 	if (cpu_is_pxa168()) {
-+		mfp_init_base(MFPR_VIRT_BASE);
-+		mfp_init_addr(pxa168_mfp_addr_map);
- 		pxa_init_dma(IRQ_PXA168_DMA_INT0, 32);
- 		clks_register(ARRAY_AND_SIZE(pxa168_clkregs));
- 	}
+ config SERIAL_PXA
+ 	bool "PXA serial port support"
+-	depends on ARM && ARCH_PXA
++	depends on ARCH_PXA || ARCH_MMP
+ 	select SERIAL_CORE
+ 	help
+ 	  If you have a machine based on an Intel XScale PXA2xx CPU you
 -- 
 1.6.0.4
 
