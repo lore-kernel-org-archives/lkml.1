@@ -1,69 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755551AbZBSQNx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756324AbZBSQOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755551AbZBSQNx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 11:13:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbZBSQNo
+	id S1756324AbZBSQOx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 11:14:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbZBSQOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 11:13:44 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42758 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753073AbZBSQNn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 11:13:43 -0500
-Date: Thu, 19 Feb 2009 17:13:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
-       Cyrill Gorcunov <gorcunov@gmail.com>, Jan Beulich <jbeulich@novell.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC 0/6] x86 tip asm ENTRY,ENDPROC cleanup
-Message-ID: <20090219161329.GA9556@elte.hu>
-References: <20090213215017.959278111@gmail.com> <1234567411.13034.1300286953@webmail.messagingengine.com> <49961178.6040101@zytor.com> <1234611775.19975.1300340003@webmail.messagingengine.com> <49972355.3000707@zytor.com>
+	Thu, 19 Feb 2009 11:14:41 -0500
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:41389 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752198AbZBSQOk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 11:14:40 -0500
+Date: Thu, 19 Feb 2009 08:14:38 -0800
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: Zang Roy-R61911 <tie-fei.zang@freescale.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       netdev@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Arnd Bergmann <arnd@arndb.de>, Jan-Bernd Themann <THEMANN@de.ibm.com>
+Subject: Re: [RFC v1] virtio: add virtio-over-PCI driver
+Message-ID: <20090219161438.GA12795@ovro.caltech.edu>
+References: <20090217222425.GA18801@ovro.caltech.edu> <7DF0AF56456B8F4081E3C44CCCE311DE15199F@zch01exm23.fsl.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49972355.3000707@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <7DF0AF56456B8F4081E3C44CCCE311DE15199F@zch01exm23.fsl.freescale.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Thu, 19 Feb 2009 08:14:39 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* H. Peter Anvin <hpa@zytor.com> wrote:
-
-> Alexander van Heukelum wrote:
-> > 
-> > Hi Peter,
-> > 
-> > I see. But that would be new behaviour. I would propose to use
-> > completely separate macro's to handle frame-setup code generation,
-> > and keep ENTRY/GLOBAL/END/ENDPROC only for setting metadata and
-> > alignment. I think it's worth it to spell out code-generating
-> > macro's explicitly: there are not that many asm functions, and
-> > quite a few of them would need special handling. I think noone
-> > wants to see an ENDPROC_NOFRAMETEARDOWN ;).
-> > 
-> > The common-case example would look like this.
-> > 
-> > GLOBAL(c_callable_function)
-> >         ENTER
-> >         [asm-code]
-> >         LEAVE
-> >         ret
-> > ENDPROC(c_callable_function)
-> > 
+On Thu, Feb 19, 2009 at 02:10:08PM +0800, Zang Roy-R61911 wrote:
+>  
 > 
-> I guess I'm a bit concerned about people omitting them, but it's equally
-> concerning that people use the wrong macros, so yes, it's probably the
-> better thing in the long run.
+> > -----Original Message-----
+> > From: 
+> > linuxppc-dev-bounces+tie-fei.zang=freescale.com@ozlabs.org 
+> > [mailto:linuxppc-dev-bounces+tie-fei.zang=freescale.com@ozlabs
+> > .org] On Behalf Of Ira Snyder
+> > Sent: Wednesday, February 18, 2009 6:24 AM
+> > To: linux-kernel@vger.kernel.org
+> > Cc: linuxppc-dev@ozlabs.org; netdev@vger.kernel.org; Rusty 
+> > Russell; Arnd Bergmann; Jan-Bernd Themann
+> > Subject: [RFC v1] virtio: add virtio-over-PCI driver
+> snip
+> > diff --git a/drivers/virtio/Kconfig b/drivers/virtio/Kconfig
+> > index 3dd6294..efcf56b 100644
+> > --- a/drivers/virtio/Kconfig
+> > +++ b/drivers/virtio/Kconfig
+> > @@ -33,3 +33,25 @@ config VIRTIO_BALLOON
+> >  
+> >  	 If unsure, say M.
+> >  
+> > +config VIRTIO_OVER_PCI_HOST
+> > +	tristate "Virtio-over-PCI Host support (EXPERIMENTAL)"
+> > +	depends on PCI && EXPERIMENTAL
+> > +	select VIRTIO
+> > +	---help---
+> > +	  This driver provides the host support necessary for 
+> > using virtio
+> > +	  over the PCI bus with a Freescale MPC8349EMDS 
+> > evaluation board.
+> > +
+> > +	  If unsure, say N.
+> > +
+> > +config VIRTIO_OVER_PCI_FSL
+> > +	tristate "Virtio-over-PCI Guest support (EXPERIMENTAL)"
+> > +	depends on MPC834x_MDS && EXPERIMENTAL
+> > +	select VIRTIO
+> > +	select DMA_ENGINE
+> > +	select FSL_DMA
+> > +	---help---
+> > +	  This driver provides the guest support necessary for 
+> > using virtio
+> > +	  over the PCI bus.
+> > +
+> > +	  If unsure, say N.
+> > +
+> > diff --git a/drivers/virtio/Makefile b/drivers/virtio/Makefile
+> > index 6738c44..f31afaa 100644
+> > --- a/drivers/virtio/Makefile
+> > +++ b/drivers/virtio/Makefile
+> > @@ -2,3 +2,5 @@ obj-$(CONFIG_VIRTIO) += virtio.o
+> >  obj-$(CONFIG_VIRTIO_RING) += virtio_ring.o
+> >  obj-$(CONFIG_VIRTIO_PCI) += virtio_pci.o
+> >  obj-$(CONFIG_VIRTIO_BALLOON) += virtio_balloon.o
+> > +obj-$(CONFIG_VIRTIO_OVER_PCI_HOST) += vop_host.o
+> > +obj-$(CONFIG_VIRTIO_OVER_PCI_FSL) += vop_fsl.o
+> I suppose we  need to build the kernel twice. one for vop_host  (on host
+> with pci enabled) and the
+> other is for vop_fsl ( on agent with pci disabled). Is it possible to
+> build one image for both host and 
+> agent.  We do not scan the pci bus if the controller is configured to
+> agent.
+> 
 
-ok - i've applied Cyrill's patches to tip/x86/asm.
+You should be able to build a kernel with support for both host and
+guest operation, and then use the device tree to switch which driver you
+get. The host driver won't be used without a PCI bus, and the guest
+driver won't be used without the message unit.
 
-	Ingo
+> Also, is it possible to include mpc85xx architecture? They should be
+> same.
+> There is some code for 85xx in Fresscale BSP.
+> http://www.bitshrine.org/gpp/linux-fsl-2.6.23-MPC8568MDS_PCI_Agent_PCIe_
+> EP_Drvier.patch
+
+I looked at the cardnet driver before I implemented my PCINet driver. I
+hunch it would be rejected for the same reasons, but maybe not. Also, it
+makes no use of DMA, which is critical for good transfer speed. Using
+memcpy() in PCINet gives performance around 10 mbit/sec, which is
+terrible.
+
+I'm sure the driver isn't very hard to port to 85xx, I just don't have
+any 85xx boards to test with. The driver only directly interacts with
+the messaging unit, which is a pretty simple piece of hardware.
+
+Thanks,
+Ira
