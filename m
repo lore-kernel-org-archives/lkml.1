@@ -1,57 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756344AbZBSO2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbZBSOgD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756344AbZBSO2T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 09:28:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbZBSO2J
+	id S1755351AbZBSOgD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 09:36:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbZBSOfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 09:28:09 -0500
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:40101 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751189AbZBSO2I (ORCPT
+	Thu, 19 Feb 2009 09:35:52 -0500
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:59125 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750948AbZBSOfv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 09:28:08 -0500
-Date: Thu, 19 Feb 2009 09:19:57 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Johannes Weiner <hannes@cmpxchg.org>, Mel Gorman <mel@csn.ul.ie>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Subject: Re: [patch] SLQB slab allocator (try 2)
-In-Reply-To: <2f11576a0902190549p2d3c90e2md16726cbe2f5d019@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0902190915460.32273@qirst.com>
-References: <20090218093858.8990.A69D9226@jp.fujitsu.com>  <1234944569.24030.20.camel@penberg-laptop>  <20090219085229.954A.A69D9226@jp.fujitsu.com>  <1235034967.29813.10.camel@penberg-laptop>  <2f11576a0902190451w294aa2fan29b61fa3619f459b@mail.gmail.com> 
- <1235049334.29813.18.camel@penberg-laptop> <2f11576a0902190549p2d3c90e2md16726cbe2f5d019@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 19 Feb 2009 09:35:51 -0500
+Date: Thu, 19 Feb 2009 15:35:47 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-s390 <linux-s390@vger.kernel.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [GIT PULL] s390 updates for 2.6.29-rc5
+Message-ID: <20090219153547.29625b6a@de.ibm.com>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What could be changed in the patch is to set SLUB_MAX_SIZE depending on
-the page size of the underlying architecture.
+Hi Linus,
 
-#define SLUB_MAX_SIZE MAX(PAGE_SIZE, 8192)
+please pull from 'for-linus' branch of
 
-So on 4k architectures SLUB_MAX_SIZE is set to 8192 and on 16k or 64k
-arches its set to PAGE_SIZE.
+	git://git390.marist.edu/pub/scm/linux-2.6.git for-linus
 
-And then define
+to receive the following updates:
 
-#define SLUB_MAX_KMALLOC_ORDER get_order(SLUB_MAX_SIZE)
+Christian Borntraeger (1):
+      [S390] Fix timeval regression on s390
 
-which will be 1 on 4k arches and 0 on higher sized arches.
+Heiko Carstens (1):
+      [S390] fix "mem=" handling in case of standby memory
 
-Then also the kmalloc array would need to be dimensioned using
-SLUB_MAX_KMALLOC_ORDER.
+Peter Oberparleiter (1):
+      [S390] sclp: handle empty event buffers
 
+ arch/s390/include/asm/cputime.h |    2 +-
+ arch/s390/include/asm/setup.h   |    2 ++
+ arch/s390/kernel/setup.c        |    9 +++++++--
+ drivers/s390/char/sclp.c        |    5 ++++-
+ drivers/s390/char/sclp_cmd.c    |    5 +++++
+ 5 files changed, 19 insertions(+), 4 deletions(-)
 
-The definition of SLUB_NAX_KMALLOC_ORDER could be a bit challenging for
-the C compiler.
-
+diff --git a/arch/s390/include/asm/cputime.h b/arch/s390/include/asm/cputime.h
+index 5217264..95b0f7d 100644
+--- a/arch/s390/include/asm/cputime.h
++++ b/arch/s390/include/asm/cputime.h
+@@ -145,7 +145,7 @@ cputime_to_timeval(const cputime_t cputime, struct timeval *value)
+ 	value->tv_usec = rp.subreg.even / 4096;
+ 	value->tv_sec = rp.subreg.odd;
+ #else
+-	value->tv_usec = cputime % 4096000000ULL;
++	value->tv_usec = (cputime % 4096000000ULL) / 4096;
+ 	value->tv_sec = cputime / 4096000000ULL;
+ #endif
+ }
+diff --git a/arch/s390/include/asm/setup.h b/arch/s390/include/asm/setup.h
+index 2bd9fae..e8bd6ac 100644
+--- a/arch/s390/include/asm/setup.h
++++ b/arch/s390/include/asm/setup.h
+@@ -43,6 +43,8 @@ struct mem_chunk {
+ 
+ extern struct mem_chunk memory_chunk[];
+ extern unsigned long real_memory_size;
++extern int memory_end_set;
++extern unsigned long memory_end;
+ 
+ void detect_memory_layout(struct mem_chunk chunk[]);
+ 
+diff --git a/arch/s390/kernel/setup.c b/arch/s390/kernel/setup.c
+index d825f49..c5cfb61 100644
+--- a/arch/s390/kernel/setup.c
++++ b/arch/s390/kernel/setup.c
+@@ -82,7 +82,9 @@ char elf_platform[ELF_PLATFORM_SIZE];
+ 
+ struct mem_chunk __initdata memory_chunk[MEMORY_CHUNKS];
+ volatile int __cpu_logical_map[NR_CPUS]; /* logical cpu to cpu address */
+-static unsigned long __initdata memory_end;
++
++int __initdata memory_end_set;
++unsigned long __initdata memory_end;
+ 
+ /*
+  * This is set up by the setup-routine at boot-time
+@@ -281,6 +283,7 @@ void (*pm_power_off)(void) = machine_power_off;
+ static int __init early_parse_mem(char *p)
+ {
+ 	memory_end = memparse(p, &p);
++	memory_end_set = 1;
+ 	return 0;
+ }
+ early_param("mem", early_parse_mem);
+@@ -508,8 +511,10 @@ static void __init setup_memory_end(void)
+ 	int i;
+ 
+ #if defined(CONFIG_ZFCPDUMP) || defined(CONFIG_ZFCPDUMP_MODULE)
+-	if (ipl_info.type == IPL_TYPE_FCP_DUMP)
++	if (ipl_info.type == IPL_TYPE_FCP_DUMP) {
+ 		memory_end = ZFCPDUMP_HSA_SIZE;
++		memory_end_set = 1;
++	}
+ #endif
+ 	memory_size = 0;
+ 	memory_end &= PAGE_MASK;
+diff --git a/drivers/s390/char/sclp.c b/drivers/s390/char/sclp.c
+index 1fd8f21..4377e93 100644
+--- a/drivers/s390/char/sclp.c
++++ b/drivers/s390/char/sclp.c
+@@ -280,8 +280,11 @@ sclp_dispatch_evbufs(struct sccb_header *sccb)
+ 	rc = 0;
+ 	for (offset = sizeof(struct sccb_header); offset < sccb->length;
+ 	     offset += evbuf->length) {
+-		/* Search for event handler */
+ 		evbuf = (struct evbuf_header *) ((addr_t) sccb + offset);
++		/* Check for malformed hardware response */
++		if (evbuf->length == 0)
++			break;
++		/* Search for event handler */
+ 		reg = NULL;
+ 		list_for_each(l, &sclp_reg_list) {
+ 			reg = list_entry(l, struct sclp_register, list);
+diff --git a/drivers/s390/char/sclp_cmd.c b/drivers/s390/char/sclp_cmd.c
+index 5063904..77ab6e3 100644
+--- a/drivers/s390/char/sclp_cmd.c
++++ b/drivers/s390/char/sclp_cmd.c
+@@ -19,6 +19,7 @@
+ #include <linux/memory.h>
+ #include <asm/chpid.h>
+ #include <asm/sclp.h>
++#include <asm/setup.h>
+ 
+ #include "sclp.h"
+ 
+@@ -474,6 +475,10 @@ static void __init add_memory_merged(u16 rn)
+ 		goto skip_add;
+ 	if (start + size > VMEM_MAX_PHYS)
+ 		size = VMEM_MAX_PHYS - start;
++	if (memory_end_set && (start >= memory_end))
++		goto skip_add;
++	if (memory_end_set && (start + size > memory_end))
++		size = memory_end - start;
+ 	add_memory(0, start, size);
+ skip_add:
+ 	first_rn = rn;
