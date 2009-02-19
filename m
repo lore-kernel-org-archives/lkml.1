@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757566AbZBSQxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757902AbZBSQyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757566AbZBSQxn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 11:53:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbZBSQxb
+	id S1757902AbZBSQyo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 11:54:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbZBSQyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 11:53:31 -0500
-Received: from gate.crashing.org ([63.228.1.57]:43469 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752292AbZBSQxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 11:53:31 -0500
-Cc: "Ira Snyder" <iws@ovro.caltech.edu>, "Arnd Bergmann" <arnd@arndb.de>,
-       "Jan-Bernd Themann" <THEMANN@de.ibm.com>, <netdev@vger.kernel.org>,
-       "Rusty Russell" <rusty@rustcorp.com.au>, <linux-kernel@vger.kernel.org>,
-       <linuxppc-dev@ozlabs.org>
-Message-Id: <C04B22C6-BCE8-4D99-A160-22F8846C8209@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Zang Roy-R61911 <tie-fei.zang@freescale.com>
-In-Reply-To: <7DF0AF56456B8F4081E3C44CCCE311DE1519A3@zch01exm23.fsl.freescale.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [RFC v1] virtio: add virtio-over-PCI driver
-Date: Thu, 19 Feb 2009 10:51:43 -0600
-References: <20090217222425.GA18801@ovro.caltech.edu> <D999D051-E5A2-4915-893D-E3384EC312A4@kernel.crashing.org> <7DF0AF56456B8F4081E3C44CCCE311DE1519A3@zch01exm23.fsl.freescale.net>
-X-Mailer: Apple Mail (2.930.3)
+	Thu, 19 Feb 2009 11:54:35 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42061 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752738AbZBSQye (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 11:54:34 -0500
+Date: Thu, 19 Feb 2009 08:52:03 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH 2/4] generic-smp: remove kmalloc usage
+In-Reply-To: <200902191501.47564.rusty@rustcorp.com.au>
+Message-ID: <alpine.LFD.2.00.0902190848570.21686@localhost.localdomain>
+References: <20090216163847.431174825@chello.nl> <200902181520.17504.rusty@rustcorp.com.au> <20090218160535.GD23989@elte.hu> <200902191501.47564.rusty@rustcorp.com.au>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Feb 19, 2009, at 12:13 AM, Zang Roy-R61911 wrote:
 
->
->
->> -----Original Message-----
->> From:
->> linuxppc-dev-bounces+tie-fei.zang=freescale.com@ozlabs.org
->> [mailto:linuxppc-dev-bounces+tie-fei.zang=freescale.com@ozlabs
->> .org] On Behalf Of Kumar Gala
->> Sent: Thursday, February 19, 2009 0:47 AM
->> To: Ira Snyder
->> Cc: Arnd Bergmann; Jan-Bernd Themann; netdev@vger.kernel.org;
->> Rusty Russell; linux-kernel@vger.kernel.org; linuxppc-dev@ozlabs.org
->> Subject: Re: [RFC v1] virtio: add virtio-over-PCI driver
->>
->>
->> On Feb 17, 2009, at 4:24 PM, Ira Snyder wrote:
->>
->>>
->>> Documentation/virtio-over-PCI.txt     |   61 ++
->>> arch/powerpc/boot/dts/mpc834x_mds.dts |    7 +
->>
->> we'll have to review the .dts and expect a documentation update for
->> the node.  But that's pretty minor at this point.
->>
->>> drivers/virtio/Kconfig                |   22 +
->>> drivers/virtio/Makefile               |    2 +
->>> drivers/virtio/vop.h                  |  119 ++
->>> drivers/virtio/vop_fsl.c              | 1911
->> ++++++++++++++++++++++++
->>> +++++++++
->>
->> make this vop_fsl_mpc83xx.c or something along those lines.
-> why?
+On Thu, 19 Feb 2009, Rusty Russell wrote:
+> 
+> So if we care about the kmalloc, why didn't we see benchmarks when we
+> switched from the x86 smp_call_function_mask to the generic one?  Or did
+> I just miss them (there's nothing in the git commit).
 
-so we can deal with 85xx as well.  We just need to isolate the 83xx  
-specific bits (message usage)
+I don't think we care about kmalloc from a performance angle. Sure, it's 
+nice if we can make IPI's be really low cost, and we should aim for that, 
+but the reason the kmalloc() was added was never performance - nor is that 
+the reason we now try to remove it.
 
-- k
+The kmalloc() was added for correctness reasons, and we now try to remove 
+it to make the code look saner and simpler (and hopefully it gets faster 
+too, but I don't think that was ever a primary issue), since we ended up 
+having _three_ different cases for the whole insane memory allocation 
+(on-stack, per-cpu and kmalloc), and nobody sane really wants that.
+
+			Linus
