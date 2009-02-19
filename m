@@ -1,75 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbZBSLSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757777AbZBSLSx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756576AbZBSLSh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 06:18:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbZBSLSZ
+	id S1757777AbZBSLSx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 06:18:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756455AbZBSLSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 06:18:25 -0500
-Received: from ozlabs.org ([203.10.76.45]:36754 "EHLO ozlabs.org"
+	Thu, 19 Feb 2009 06:18:36 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33949 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751329AbZBSLSY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 06:18:24 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ira Snyder <iws@ovro.caltech.edu>
-Subject: Re: [RFC v1] virtio: add virtio-over-PCI driver
-Date: Thu, 19 Feb 2009 21:48:04 +1030
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
-       "Jan-Bernd Themann" <THEMANN@de.ibm.com>, netdev@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-References: <20090217222425.GA18801@ovro.caltech.edu> <200902181713.03820.rusty@rustcorp.com.au> <20090218163835.GA29728@ovro.caltech.edu>
-In-Reply-To: <20090218163835.GA29728@ovro.caltech.edu>
+	id S1756168AbZBSLSf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 06:18:35 -0500
+Date: Thu, 19 Feb 2009 12:18:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alok Kataria <akataria@vmware.com>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Zachary Amsden <zach@vmware.com>
+Subject: Re: x86, vmi: TSC going backwards check in vmi clocksource
+Message-ID: <20090219111822.GN2354@elte.hu>
+References: <1234989235.7991.2.camel@alok-dev1>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902192148.05651.rusty@rustcorp.com.au>
+In-Reply-To: <1234989235.7991.2.camel@alok-dev1>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 February 2009 03:08:35 Ira Snyder wrote:
-> On Wed, Feb 18, 2009 at 05:13:03PM +1030, Rusty Russell wrote:
-> > don't restrict yourself to 32 feature bits (only PCI does this, and they're
-> > going to have to hack when we reach feature 32).
+
+* Alok Kataria <akataria@vmware.com> wrote:
+
+> From: Alok N Kataria <akataria@vmware.com>
 > 
-> There isn't any problem adding more feature bits. Do you think 128 bits
-> is enough?
+> Similar to the check for TSC going backwards in the TSC 
+> clocksource, we also need this check for VMI clocksource.
 
-Probably.  We have unlimited bits in lguest and s390, but 128 is reasonable
-for the forseeable future (if not, you end up using bit 128 to mean "look
-somewhere else for the rest of the bits).
+ok. Precisely what kind of bug/symptoms does this fix?
 
-> > How about prepending a 4 byte length on the host buffers?  Allows host to
-> > specify length (for host->guest), and guest writes it to allow truncated
-> > buffers on guest->host.
-> > 
-> > That won't allow you to transfer *more* than one buffersize to the host, but
-> > you could use a different method (perhaps the 4 bytes indicates the *total*
-> > length?).
-> 
-> I don't understand how this will help.
-> 
-> I looked at virtio_net's implemention with VIRTIO_NET_F_MRG_RXBUF, which
-> seems like it could really help performance. The problems with that are:
-> 1) virtio_net doesn't write the merged header's num_buffers field
-> 2) virtio_net doesn't actually split packets in xmit
-...
-> I'm using two instances of virtio_net to talk to each other, rather than
-> a special userspace implementation like lguest and kvm use. Is this a
-> good approach?
-
-Well, virtio in general is guest-host asymmetric.  I originally explored
-symmetry, but it didn't seem to offer any concrete advantages, so we didn't
-require it.  You aren't actually directly connecting two guests, are you?
-So this is just a simplification for your implementation?
-
-You could always add a VIRTIO_NET_F_MRG_TXBUF which did what you want, but
-note that symmetry breaks down for other virtio uses, too: block definitely
-isn't symmetric of course, but I haven't audited the others.
-
-So I'd recommend asymmetry; hack your host to understand chained buffers.
-
-Cheers,
-Rusty.
+	Ingo
