@@ -1,137 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbZBSQuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756244AbZBSQwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755994AbZBSQuS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 11:50:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbZBSQt7
+	id S1756244AbZBSQwr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 11:52:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292AbZBSQwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 11:49:59 -0500
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:43222 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751659AbZBSQt6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 11:49:58 -0500
-Date: Thu, 19 Feb 2009 08:49:57 -0800
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
-       Jan-Bernd Themann <THEMANN@de.ibm.com>, netdev@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [RFC v1] virtio: add virtio-over-PCI driver
-Message-ID: <20090219164956.GB12795@ovro.caltech.edu>
-References: <20090217222425.GA18801@ovro.caltech.edu> <200902181713.03820.rusty@rustcorp.com.au> <20090218163835.GA29728@ovro.caltech.edu> <200902192148.05651.rusty@rustcorp.com.au>
+	Thu, 19 Feb 2009 11:52:38 -0500
+Received: from web110616.mail.gq1.yahoo.com ([67.195.13.207]:33018 "HELO
+	web110616.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752640AbZBSQwh convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 11:52:37 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:References:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=ss43wKdobCVJ9S0+iMPjETSK95yTUuzWp1tzwiOZSuYNktS5o1Cb9zpGCXYqIlPB4cei68D9kVR4A8VBJCwpHwa7hYtUfOfenNGHEieMAyWybpuWqMpR1/xrnOQ0vaMyCR3UgVa5ZbEIGXfkDrBmzoE322MfKTiyo8I5GCWldEs=;
+X-YMail-OSG: m.zOgtsVM1lIbW46KttFouZ1pjeGOhUUbwpn8wkbcqhwm2.MUKJJin9UoJTdYiR0LEMeqyrFI5lwLCOVzNEtFVwUa0CxaPejnWi8yFkyO4i4ifLqdi8uDVq0O1OFPDOFTN7UHXpQHfFbkzi7B5mBjpMdi9HzYS9lTPbRj84I4bW0sJHwBcAY7y2oFe0x_TpXwGx_iTZFwk_K4iB1y8hJWCRwPtS1ASyyCr50710-
+X-Mailer: YahooMailRC/1155.45 YahooMailWebService/0.7.260.1
+References: <Pine.LNX.4.44L0.0902191002160.3012-100000@iolanthe.rowland.org>
+Date: Thu, 19 Feb 2009 08:52:36 -0800 (PST)
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: Re: [SCSI][REGRESSION][BISECTED] Disk errors loop forever in 2.6.29
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-kernel@vger.kernel.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>, rjw@sisk.pl,
+       Ingo Molnar <mingo@elte.hu>, linux-scsi@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200902192148.05651.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Thu, 19 Feb 2009 08:49:58 -0800 (PST)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Message-ID: <404514.58700.qm@web110616.mail.gq1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 19, 2009 at 09:48:04PM +1030, Rusty Russell wrote:
-> On Thursday 19 February 2009 03:08:35 Ira Snyder wrote:
-> > On Wed, Feb 18, 2009 at 05:13:03PM +1030, Rusty Russell wrote:
-> > > don't restrict yourself to 32 feature bits (only PCI does this, and they're
-> > > going to have to hack when we reach feature 32).
+> From: Alan Stern <stern@rowland.harvard.edu>
+>
+> On Thu, 19 Feb 2009, Sitsofe Wheeler wrote:
+> 
+> > Hi,
 > > 
-> > There isn't any problem adding more feature bits. Do you think 128 bits
-> > is enough?
+> > There appears to be a regression from 2.6.28 in how disk errors are
+> > handled in 2.6.29rc5 - rather than trying and eventually giving up, it
+> > appears to try (and report) forever. 
 > 
-> Probably.  We have unlimited bits in lguest and s390, but 128 is reasonable
-> for the forseeable future (if not, you end up using bit 128 to mean "look
-> somewhere else for the rest of the bits).
+> See this thread and patch:
 > 
+>     http://marc.info/?l=linux-kernel&m=123490148422684&w=2
 
-Ok. There currently isn't an interface to access more than 32 bits
-anyway.
-
-> > > How about prepending a 4 byte length on the host buffers?  Allows host to
-> > > specify length (for host->guest), and guest writes it to allow truncated
-> > > buffers on guest->host.
-> > > 
-> > > That won't allow you to transfer *more* than one buffersize to the host, but
-> > > you could use a different method (perhaps the 4 bytes indicates the *total*
-> > > length?).
-> > 
-> > I don't understand how this will help.
-> > 
-> > I looked at virtio_net's implemention with VIRTIO_NET_F_MRG_RXBUF, which
-> > seems like it could really help performance. The problems with that are:
-> > 1) virtio_net doesn't write the merged header's num_buffers field
-> > 2) virtio_net doesn't actually split packets in xmit
-> ...
-> > I'm using two instances of virtio_net to talk to each other, rather than
-> > a special userspace implementation like lguest and kvm use. Is this a
-> > good approach?
-> 
-> Well, virtio in general is guest-host asymmetric.  I originally explored
-> symmetry, but it didn't seem to offer any concrete advantages, so we didn't
-> require it.  You aren't actually directly connecting two guests, are you?
-> So this is just a simplification for your implementation?
-> 
-
-I'm not connecting two guests directly. My eventual setup will have a
-single x86 computer (the host) and many guest systems. I don't care if
-the guests cannot communicate between each other, just that they can
-communicate with the host.
-
-I wanted to avoid the extra trip to userspace, so I just connected two
-instances of virtio_net together. This way you just recv packets in the
-kernel, rather than jumping to userspace and then using TAP/TUN to drive
-packets back into the kernel. Plus, I have no idea how I would do a
-userspace interface. I'd definitely need help.
-
-> You could always add a VIRTIO_NET_F_MRG_TXBUF which did what you want, but
-> note that symmetry breaks down for other virtio uses, too: block definitely
-> isn't symmetric of course, but I haven't audited the others.
-> 
-
-I have no need to use virtio_blk, so I pretty much ignored it. In fact, I
-didn't make any attempt to support RO and WO buffers in the same queue.
-Virtio_net only uses queues this way, and it was much easier for me to
-wrap my head around.
-
-I don't think that virtio_console is symmetric either, but I haven't
-really studied it. I was thinking about implementing a virtio_uart which
-would be symmetric. That would be plenty for my needs.
-
-> So I'd recommend asymmetry; hack your host to understand chained buffers.
-> 
-
-It's not that virtio_net doesn't understand chained buffers, it just
-doesn't write them. Grep for uses of the num_buffers field in
-virtio_net. It uses them in recv, it just doesn't write them in xmit.
-
-It assumes that add_buf() can accept something like:
-idx address  len flags next
-0   XXXXXXX   12     N    1
-1   XXXXXXX 8000     -    2
-
-That would mean it can shove an 8000 byte packet into the virtqueue. It
-doesn't have any way of knowing to split packets up into chunks, nor how
-many chunks are available. It assumes that the receiver can read from
-any address on the sender.
-
-I think that this is a perfectly reasonable assumption in a shared
-memory system, but it breaks down in my case. I cannot just tell the
-host "the packet data is at this address" because it cannot do DMA. I
-have to use the guest system to do DMA. The host has to have
-pre-allocated the recv memory so the DMA engine has somewhere to copy
-the data to.
-
-Maybe I'm explaining this poorly, but try to think about it this way:
-1) Unlike a virtual machine, both systems are NOT sharing memory
-2) Both systems have some limited access to each other's memory
-3) Both systems can write descriptors equally fast
-4) Copying payload data is extremely slow for the host
-5) Copying payload data is extremely fast for the guest
+The patch there (actually I downloaded it from http://patchwork.kernel.org/patch/7989/ )
+did not make any diference. I fear my disk will soon have torn itself to bits but until then I
+can trigger the error at will so I can test any patches that are suggested...
 
 
-It would be possible to just alter virtio_net's headers in-flight to set
-the number of buffers actually used. This would split the 8000 byte
-packet up into two chunks, 4096 byte and 3904 byte, then set num_buffers
-to 2. This would add some complexity, but I think it is probably
-reasonable.
 
-Ira
+      
