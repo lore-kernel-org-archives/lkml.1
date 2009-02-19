@@ -1,60 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757369AbZBSMgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758399AbZBSMhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757369AbZBSMgu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 07:36:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbZBSMgl
+	id S1758399AbZBSMhr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 07:37:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbZBSMhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 07:36:41 -0500
-Received: from smtp115.mail.mud.yahoo.com ([209.191.84.164]:31376 "HELO
-	smtp115.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752973AbZBSMgk (ORCPT
+	Thu, 19 Feb 2009 07:37:39 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:42086 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752948AbZBSMhi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 07:36:40 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=0N8JrvDKU7JDKF5Lmrengo0IlgctrdCXV6F6nytYT+U+0LNCRw9tQEcXlilU/Y9j1KhSklATE4fn3z+wk7xnrRUo1ggNNSdTscBn4nUEMi+m0PBaV+sW347ekJpA99iBSN6LAbCZ+siebGOGcU7UpDfEincbsjKSN1W8PSPYDW8=  ;
-X-YMail-OSG: C0VewPoVM1mujyUN8SGUCyJUrRKrHiSG1UihjkShbEaRqW2AUuZb701DgLA8AG9ljyYUqlKun.ML9c1x7Vp_WNqy7w9zHJqFEsVfwE8F9o6UG6U2M0Owyl.yCvJW3Hg23FS9USV0Cut9WKtN_AOce2YeYiqVZea8nDYzY5poAMLSwCe8yw0SvdcK.4Jy5g--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 09/10] percpu: implement new dynamic percpu allocator
-Date: Thu, 19 Feb 2009 23:36:01 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
-       cpw@sgi.com, mingo@elte.hu
-References: <1234958676-27618-1-git-send-email-tj@kernel.org> <1234958676-27618-10-git-send-email-tj@kernel.org>
-In-Reply-To: <1234958676-27618-10-git-send-email-tj@kernel.org>
+	Thu, 19 Feb 2009 07:37:38 -0500
+Date: Thu, 19 Feb 2009 13:37:36 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: BUG: MAX_STACK_TRACE_ENTRIES too low!
+Message-ID: <alpine.LRH.2.00.0902191334550.15109@vixen.sonytel.be>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902192336.02800.nickpiggin@yahoo.com.au>
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 18 February 2009 23:04:35 Tejun Heo wrote:
-> Impact: new scalable dynamic percpu allocator which allows dynamic
->         percpu areas to be accessed the same way as static ones
->
-> Implement scalable dynamic percpu allocator which can be used for both
-> static and dynamic percpu areas.  This will allow static and dynamic
-> areas to share faster direct access methods.  This feature is optional
-> and enabled only when CONFIG_HAVE_DYNAMIC_PER_CPU_AREA is defined by
-> arch.  Please read comment on top of mm/percpu.c for details.
+When running 2.6.29-rc5+ on PS3 (ppc64), I got the following BUG once during
+bootup:
 
-Seems pretty nice. Wishlist: would be cool to have per-cpu virtual
-memory mappings and do CPU-local percpu access via a single pointer.
-Of course there would need to be some machinery and maybe a new API
-to be more careful about accessing remote percpu data (that access
-could perhaps just be slower and go via the linear mapping).
+| Freeing unused kernel memory: 3436k freed
+| BUG: MAX_STACK_TRACE_ENTRIES too low!
+| turning off the locking correctness validator.
+| Call Trace:
+| [c000000006e1b640] [c00000000000f850] .show_stack+0x6c/0x16c (unreliable)
+| [c000000006e1b6f0] [c00000000007cf6c] .save_trace+0xe0/0x108
+| [c000000006e1b780] [c00000000007d058] .add_lock_to_list+0xc4/0x124
+| [c000000006e1b830] [c0000000000816d0] .__lock_acquire+0x13c4/0x17c8
+| [c000000006e1b930] [c000000000081b78] .lock_acquire+0xa4/0xec
+| [c000000006e1b9f0] [c0000000003be034] ._spin_lock+0x34/0x58
+| [c000000006e1ba80] [c0000000000d3e40] .kmem_cache_free+0x84/0x1a8
+| [c000000006e1bb30] [c0000000001f9abc] .idr_remove+0x214/0x248
+| [c000000006e1bbf0] [c00000000002867c] .destroy_context+0x34/0x64
+| [c000000006e1bc80] [c00000000005008c] .__mmdrop+0x4c/0x7c
+| [c000000006e1bd10] [c00000000004de90] .finish_task_switch+0xec/0x14c
+| [c000000006e1bdb0] [c00000000004e6fc] .schedule_tail+0x2c/0xa0
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+| [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
 
-It would probably be quite a bit slower to do remote percpu access,
-but some users never do this remote access in fastpath, and want
-really fast local access (eg slab allocators).
+(There are 65 call trace lines)
 
-I guess the hardest part would be doing the arch code.
+After that the system continued.
 
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
