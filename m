@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756247AbZBSSmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755702AbZBSSoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756247AbZBSSmB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 13:42:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbZBSSlt
+	id S1755702AbZBSSoS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 13:44:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbZBSSoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 13:41:49 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:33381 "EHLO
+	Thu, 19 Feb 2009 13:44:08 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:33390 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752285AbZBSSlt (ORCPT
+	with ESMTP id S1751661AbZBSSoH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 13:41:49 -0500
-Message-ID: <499DA727.2060606@zytor.com>
-Date: Thu, 19 Feb 2009 10:38:31 -0800
+	Thu, 19 Feb 2009 13:44:07 -0500
+Message-ID: <499DA7AB.8080000@zytor.com>
+Date: Thu, 19 Feb 2009 10:40:43 -0800
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
 To: Petr Tesarik <ptesarik@suse.cz>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Definition of BUG on x86
-References: <1234975856.15053.16.camel@nathan.suse.cz>	 <499C4786.5010504@goop.org> <1235043648.15053.35.camel@nathan.suse.cz>
-In-Reply-To: <1235043648.15053.35.camel@nathan.suse.cz>
+CC: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: remove unneeded endless loop in BUG()
+References: <1235068713.15053.99.camel@nathan.suse.cz>
+In-Reply-To: <1235068713.15053.99.camel@nathan.suse.cz>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,19 +28,15 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Petr Tesarik wrote:
+> Since __builtin_trap() will always generate an illegal instruction, we
+> can replace the explicit asm("ud2") with it.
 > 
-> Ah, yes, you're right. If you want to make gcc aware of the fact that a
-> function never returns, it must recognize that there is no path to that
-> function's EXIT, otherwise it will emit a warning (which is pretty
-> annoying, indeed). Since we don't want to make a call/jmp to an external
-> noreturn function, so the no-return code must be directly visible to
-> gcc. Unfortunately, there is no way of telling gcc that an asm statement
-> does not return.
+> This way gcc will understand that the function never returns, plus it
+> won't emit any extra instructions.
 > 
+> Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
 
-At Transmeta, we had an internal hack to gcc that added
-__builtin_not_reached(); for this particular reason.  This would
-probably be the best way to handle this.
+I like this.  Will apply shortly.
 
 	-hpa
 
