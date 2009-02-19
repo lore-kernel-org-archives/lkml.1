@@ -1,47 +1,288 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757735AbZBSTB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753017AbZBSTCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757735AbZBSTB7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 14:01:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206AbZBSTBa
+	id S1753017AbZBSTCs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 14:02:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755235AbZBSTBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 14:01:30 -0500
-Received: from mail-out.m-online.net ([212.18.0.10]:56754 "EHLO
+	Thu, 19 Feb 2009 14:01:34 -0500
+Received: from mail-out.m-online.net ([212.18.0.10]:35520 "EHLO
 	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752495AbZBSTB3 (ORCPT
+	with ESMTP id S1753579AbZBSTBa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 14:01:29 -0500
+	Thu, 19 Feb 2009 14:01:30 -0500
 X-Auth-Info: CYDFVI/hopltSqM31+KLFYezmq0zsSPdBADA7CEuuTY=
 From: Wolfgang Grandegger <wg@grandegger.com>
 To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 0/8] can: CAN network device driver interface and drivers
-Date: Thu, 19 Feb 2009 20:01:14 +0100
-Message-Id: <1235070082-7069-1-git-send-email-wg@grandegger.com>
+Cc: linux-kernel@vger.kernel.org, Wolfgang Grandegger <wg@grandegger.com>,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+Subject: [PATCH 1/8] can: Documentation for the CAN device driver interface
+Date: Thu, 19 Feb 2009 20:01:15 +0100
+Message-Id: <1235070082-7069-2-git-send-email-wg@grandegger.com>
 X-Mailer: git-send-email 1.5.6.6
+In-Reply-To: <1235070082-7069-1-git-send-email-wg@grandegger.com>
+References: <1235070082-7069-1-git-send-email-wg@grandegger.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the PF_CAN protocol family for the Controller Area Network is available
-in the kernel since version 2.6.25 but drivers for real CAN devices are
-still missing. This patch series adds a generic CAN network device
-driver interface and, as a start, a few drivers. It is the result of the
-ongoing discussion and development of the Socket-CAN project hosted at
-the BerliOS web-server (http://developer.berlios.de/projects/socketcan).
-The patch series consists of the following patches:
+This patch documents the CAN netowrk device drivers interface, removes
+obsolete documentation and adds some useful links to CAN resources.
 
-[PATCH 1/8] can: Documentation for the CAN device driver interface
-[PATCH 2/8] can: Update MAINTAINERS and CREDITS file
-[PATCH 3/8] can: CAN Network device driver and SYSFS interface
-[PATCH 4/8] can: Driver for the SJA1000 CAN controller
-[PATCH 5/8] can: SJA1000 generic platform bus driver
-[PATCH 6/8] can: SJA1000 driver for EMS PCI cards
-[PATCH 7/8] can: SJA1000 driver for Kvaser PCI cards
-[PATCH 8/8] can: Driver for the Freescale MSCAN controller
+Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+Signed-off-by: Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+---
+ Documentation/networking/can.txt |  214 ++++++++++++++++++++++++++++++-------
+ 1 files changed, 173 insertions(+), 41 deletions(-)
 
-Please consider these patches for inclusion.
-
-Thanks,
-
-Wolfgang.
+diff --git a/Documentation/networking/can.txt b/Documentation/networking/can.txt
+index 2035bc4..d2cc3de 100644
+--- a/Documentation/networking/can.txt
++++ b/Documentation/networking/can.txt
+@@ -36,10 +36,15 @@ This file contains
+     6.2 local loopback of sent frames
+     6.3 CAN controller hardware filters
+     6.4 The virtual CAN driver (vcan)
+-    6.5 currently supported CAN hardware
+-    6.6 todo
++    6.5 The CAN network device driver interface
++      6.5.1 SYSFS files to set and get devices properties
++      6.5.2 Setting the CAN bit-timing
++      6.5.3 Starting and stopping the CAN network device
++    6.6 supported CAN hardware
+ 
+-  7 Credits
++  7 Socket CAN resources
++
++  8 Credits
+ 
+ ============================================================================
+ 
+@@ -234,6 +239,8 @@ solution for a couple of reasons:
+   the user application using the common CAN filter mechanisms. Inside
+   this filter definition the (interested) type of errors may be
+   selected. The reception of error frames is disabled by default.
++  The format of the CAN error frame is briefly decribed in the Linux
++  header file "include/linux/can/error.h".
+ 
+ 4. How to use Socket CAN
+ ------------------------
+@@ -613,53 +620,178 @@ solution for a couple of reasons:
+   - Remove a (virtual CAN) network interface 'vcan42':
+        ip link del vcan42
+ 
+-  The tool 'vcan' from the SocketCAN SVN repository on BerliOS is obsolete.
+-
+-  Virtual CAN network device creation in older Kernels:
+-  In Linux Kernel versions < 2.6.24 the vcan driver creates 4 vcan
+-  netdevices at module load time by default. This value can be changed
+-  with the module parameter 'numdev'. E.g. 'modprobe vcan numdev=8'
+-
+-  6.5 currently supported CAN hardware
+-
+-  On the project website http://developer.berlios.de/projects/socketcan
+-  there are different drivers available:
+-
+-    vcan:    Virtual CAN interface driver (if no real hardware is available)
+-    sja1000: Philips SJA1000 CAN controller (recommended)
+-    i82527:  Intel i82527 CAN controller
+-    mscan:   Motorola/Freescale CAN controller (e.g. inside SOC MPC5200)
+-    ccan:    CCAN controller core (e.g. inside SOC h7202)
+-    slcan:   For a bunch of CAN adaptors that are attached via a
+-             serial line ASCII protocol (for serial / USB adaptors)
+-
+-  Additionally the different CAN adaptors (ISA/PCI/PCMCIA/USB/Parport)
+-  from PEAK Systemtechnik support the CAN netdevice driver model
+-  since Linux driver v6.0: http://www.peak-system.com/linux/index.htm
+-
+-  Please check the Mailing Lists on the berlios OSS project website.
+-
+-  6.6 todo
+-
+-  The configuration interface for CAN network drivers is still an open
+-  issue that has not been finalized in the socketcan project. Also the
+-  idea of having a library module (candev.ko) that holds functions
+-  that are needed by all CAN netdevices is not ready to ship.
+-  Your contribution is welcome.
+-
+-7. Credits
++  6.5 The CAN network device driver interface
++
++  The CAN network device driver interface provides a generic interface
++  to setup, configure and monitor CAN network devices. The user can then
++  configure CAN devices, like setting the bit-timing parameters, through
++  SYSFS files. They are described in the following chapter. Furthermore,
++  the interface uses a common data structure and exports a set of common
++  functions, which all real CAN network device drivers should use.
++  Please have a look to the SJA1000 or MSCAN driver to understand how to
++  use them. The name of the module is can-dev.ko.
++
++  6.5.1 SYSFS files to set and get devices properties
++
++  When the CAN device is registered, a set of SYSFS files is created in
++  "/sys/class/net/canX/". These files allow to set and get device
++  properties. Here is a list of the files and a brief explanation for
++  what they are good for:
++
++    can_state:
++	Returns the current state of the CAN controller: "active",
++	"stopped" or "sleeping" or the bus error states "bus-warn",
++	"bus-pass" or "bus-off". Please do not read it frequently.
++	State changes are also reported via CAN error frames and the
++	application should monitor and handle them instead (see also
++	chapter 3.4).
++
++    can_ctrlmode:
++	Allows to set various CAN controller modes like loop-back (0x1),
++	listen-only (0x2) or triple-sampling (0x4) by writing the
++	corresponding bit mask to this file. Please use the prefix "0x"
++	for hexadecimal values.
++
++    can_echo:
++	Allows to read and toggle the local loop-back functionality of
++	the device. See chapter 6.2 for further information.
++
++    can_restart:
++	Writing "1" to this file allows to manually trigger a restart of
++	the CAN controller in case of a bus-off condition. This file is
++	not readable.
++
++    can_restart_ms:
++	Allows to set and get the automatic restart delay time. If set to
++	a value greater than 0, a restart of the CAN controller will be
++	triggered automatically in case of a bus-off condition after the
++	specified delay time in milliseconds. By default it's off.
++
++    can_bittiming:
++	Sub-directory with files to set and get CAN bit-timing
++	parameters.
++
++    can_bittiming/bitrate
++    can_bittiming/sample_point:
++	If calculation of CAN bit-timing parameters is enabled in the
++	kernel (CONFIG_CAN_CALC_BITTIMING=y), the bit-timing can be
++	defined by writing the bit-rate in bits/sec to "bitrate".
++	Otherwise the file is read-only and returns the actual bit-rate.
++	Accordingly the sample-point in one-tenth of a percent can be
++	set or read. By default it's set to 0 using CIA-recommended
++	sample-points.
++
++    can_bittiming/tq
++    can_bittiming/prop_seg
++    can_bittiming/phase_seg1
++    can_bittiming/phase_seg2
++    can_bittiming/sjw:
++	These files allow to define the CAN bit-timing in a hardware
++	independent format as proposed by the Bosch CAN 2.0
++	specification.
++
++    can_bittiming/hw_clock
++    can_bittiming/hw_brp_inc
++    can_bittiming/hw_brp_max
++    can_bittiming/hw_brp_min
++    can_bittiming/hw_sjw_max
++    can_bittiming/hw_tseg1_max
++    can_bittiming/hw_tseg1_min
++    can_bittiming/hw_tseg2_max
++    can_bittiming/hw_tseg2_min:
++	These read-only files list the bit-timing constants for this
++	device. They are provided by the CAN controller driver and are
++	used to calculate and check CAN bit-timing parameters.
++	Furthermore, these values can be used for user-defined
++	(non-standard) bit-timing calculation algorithms in userspace.
++
++    can_statistics
++    can_statistics/arbitration_lost
++    can_statistics/bus_error
++    can_statistics/data_overrun
++    can_statistics/error_passive
++    can_statistics/error_warning
++    can_statistics/restarts
++    can_statistics/wakeup:
++	These read-only files list CAN specific statistics values.
++
++  6.5.2 Setting the CAN bit-timing
++
++  The CAN bit-timing parameters can always be specified in a hardware
++  independent format as proposed in the Bosch CAN 2.0 specification
++  using the SYSFS files "tq", "prop_seg", "phase_seg1", "phase_seg2"
++  and "sjw". The SYSFS files are described in the previous chapter.
++
++  If the kernel option CONFIG_CAN_CALC_BITTIMING is enabled, CIA
++  recommended CAN bit-timing parameters will be calculated for the bit-
++  rate written to the SYSFS file "bitrate" when the device gets started.
++  Note that this works fine for the most common CAN controllers with
++  standard bit-rates but may *fail* for exotic bit-rates or CAN source
++  clock frequencies. Disabling CONFIG_CAN_CALC_BITTIMING saves some
++  space and allows user space tools to solely determine and set the
++  bit-timing parameters. The CAN controller specific bit-timing
++  constants can be used for that purpose. They are available in the
++  SYSFS directory "can_bittiming" as well with the name prefix "hw_".
++
++  6.5.3 Starting and stopping the CAN network device
++
++  A CAN network device is started and stopped as usual with the command
++  "ifconfig canX up" and "ifconfig canX down". Be aware that you *must*
++  define proper bit-timing parameters for real CAN devices before you
++  can start it to avoid error-prone default settings:
++
++    # echo 125000 > /sys/class/net/can0/can_bittiming/bitrate
++    # ifconfig can0 up
++
++  A device may enter "bus-off" state if too much errors occurred on the
++  CAN bus. Then no more messages can be received or sent. The SYSFS file
++  "/sys/class/net/can0/can_state" then reports "bus-off". An automatic
++  bus-off recovery can be enabled by writing the desired restart delay
++  in milliseconds to "/sys/class/net/canX/can_restart_ms".
++  Alternatively, the application may realize the "bus-off" condition
++  by monitoring CAN error frames and do a restart when appropriate by
++  writing to the SYSFS file /sys/class/net/canX/can_restart. Note that
++  a restart will also create a CAN error frame (see also chapter 3.4).
++
++  6.6 Supported CAN hardware
++
++  Please check the "Kconfig" file in "drivers/net/can" to get an actual
++  list of the support CAN hardware. On the Socket CAN project website
++  (see chapter 7) there might be further drivers available, also for
++  older kernel versions.
++
++7. Socket CAN resources
++-----------------------
++
++  You can find further resources for Socket CAN like user space tools,
++  support for old kernel versions, more drivers, mailing lists, etc.
++  at the BerliOS OSS project website for Socket CAN:
++
++    http://developer.berlios.de/projects/socketcan
++
++  If you have questions, bug fixes, etc., don't hesitate to post them to
++  the Socketcan-Users mailing list. But please search the archives first.
++
++8. Credits
+ ----------
+ 
+-  Oliver Hartkopp (PF_CAN core, filters, drivers, bcm)
++  Oliver Hartkopp (PF_CAN core, filters, drivers, bcm, SJA1000 driver)
+   Urs Thuermann (PF_CAN core, kernel integration, socket interfaces, raw, vcan)
+   Jan Kizka (RT-SocketCAN core, Socket-API reconciliation)
+-  Wolfgang Grandegger (RT-SocketCAN core & drivers, Raw Socket-API reviews)
++  Wolfgang Grandegger (RT-SocketCAN core & drivers, Raw Socket-API reviews,
++                       CAN device driver interface, MSCAN driver)
+   Robert Schwebel (design reviews, PTXdist integration)
+   Marc Kleine-Budde (design reviews, Kernel 2.6 cleanups, drivers)
+   Benedikt Spranger (reviews)
+   Thomas Gleixner (LKML reviews, coding style, posting hints)
+-  Andrey Volkov (kernel subtree structure, ioctls, mscan driver)
++  Andrey Volkov (kernel subtree structure, ioctls, MSCAN driver)
+   Matthias Brukner (first SJA1000 CAN netdevice implementation Q2/2003)
+   Klaus Hitschler (PEAK driver integration)
+   Uwe Koppe (CAN netdevices with PF_PACKET approach)
+   Michael Schulze (driver layer loopback requirement, RT CAN drivers review)
++  Pavel Pisa (Bit-timing calculation)
++  Sascha Hauer (SJA1000 platform driver)
++  Sebastian Haas (SJA1000 EMS PCI driver)
++  Markus Plessing (SJA1000 EMS PCI driver)
++  Per Dalen (SJA1000 Kvaser PCI driver)
++  Sam Ravnborg (reviews, coding style, kbuild help)
+-- 
+1.5.6.6
 
