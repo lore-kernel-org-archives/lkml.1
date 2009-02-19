@@ -1,76 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758844AbZBSPez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757793AbZBSPgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758844AbZBSPez (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 10:34:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbZBSPeq
+	id S1757793AbZBSPgQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 10:36:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbZBSPgA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 10:34:46 -0500
-Received: from wa4ehsobe004.messaging.microsoft.com ([216.32.181.14]:23597
-	"EHLO WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753311AbZBSPep convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 10:34:45 -0500
-X-Greylist: delayed 904 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Feb 2009 10:34:45 EST
-X-BigFish: VPS-29(zz1432R98dR1805M936fK103dKzzzzz32i6bh6di62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-X-WSS-ID: 0KFBJWE-01-82L-01
-Date: Thu, 19 Feb 2009 16:19:30 +0100
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Mark Hounschell <dmarkh@cfl.rr.com>
-CC: Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Mark Hounschell <markh@compro.net>, john stultz <johnstul@us.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: PROBLEM: Can't boot a (HZ = 1000) kernel using an AMD
-	Phenom-II processor
-Message-ID: <20090219151930.GB7613@aftab>
-References: <20090209141841.GA31643@aftab> <49904BED.7090208@cfl.rr.com> <499C0913.9050905@compro.net> <20090218141843.GB13304@aftab> <499C3DED.1090807@cfl.rr.com> <20090218174243.GD13304@aftab> <499C7AC8.4080609@cfl.rr.com> <499D364C.3010704@cfl.rr.com> <20090219141131.GM4301@alberich.amd.com> <499D77D8.509@cfl.rr.com>
+	Thu, 19 Feb 2009 10:36:00 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47889 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751340AbZBSPgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 10:36:00 -0500
+Date: Thu, 19 Feb 2009 16:35:44 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Petr Tesarik <ptesarik@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Definition of BUG on x86
+Message-ID: <20090219153544.GA31637@elte.hu>
+References: <499C4786.5010504@goop.org> <1235043648.15053.35.camel@nathan.suse.cz> <20090219121027.GB1703@elte.hu> <1235045971.15053.42.camel@nathan.suse.cz> <20090219122211.GE1703@elte.hu> <1235047082.15053.49.camel@nathan.suse.cz> <20090219124702.GC22044@elte.hu> <1235048535.15053.52.camel@nathan.suse.cz> <20090219144902.GA8650@elte.hu> <499D7B9D.7060001@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <499D77D8.509@cfl.rr.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <499D7B9D.7060001@goop.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 19 Feb 2009 15:19:30.0478 (UTC) FILETIME=[760FDCE0:01C992A5]
-Content-Transfer-Encoding: 8BIT
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 19, 2009 at 10:16:40AM -0500, Mark Hounschell wrote:
-> Andreas Herrmann wrote:
-> > Hi Mark,
-> > 
-> > Can you please provide us output of lspci -vvxxx.
-> > (Please run this as root.)
-> > 
-> > Furthermore you can try booting your 1000HZ kernel
-> > with following kernel command lines:
-> > 
-> > (1) acpi_skip_timer_override apic=debug
-> > (2) nohpet apic=debug
-> > (3) acpi_skip_timer_override nohpet apic=debug
-> > 
-> > and send us all dmesg output.
-> > 
-> > 
-> > Thanks!
-> > 
-> > Andreas
-> > 
-> 
-> Should I leave the leave the immediate return I put in the check_hlt routine or
-> set it back to normal first?
 
-Yes, please. Remove all patches/changes you've applied.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
--- 
-Regards/Gruss,
-Boris.
+> Ingo Molnar wrote:
+>> * Petr Tesarik <ptesarik@suse.cz> wrote:
+>>
+>>   
+>>> Ingo Molnar pÃ­Å¡e v ÄŒt 19. 02. 2009 v 13:47 +0100:
+>>>     
+>>>> * Petr Tesarik <ptesarik@suse.cz> wrote:
+>>>>
+>>>>       
+>>>>> Ingo Molnar pÃ­Å¡e v ÄŒt 19. 02. 2009 v 13:22 +0100:
+>>>>>         
+>>>>>> * Petr Tesarik <ptesarik@suse.cz> wrote:
+>>>>>>
+>>>>>>           
+>>>>>>> Ingo Molnar pÃ­Å¡e v ÄŒt 19. 02. 2009 v 13:10 +0100:
+>>>>>>>             
+>>>>>>>> * Petr Tesarik <ptesarik@suse.cz> wrote:
+>>>>>>>>
+>>>>>>>>               
+>>>>>>>>> So, the only method I could invent was using gas macros. 
+>>>>>>>>> It works but is quite ugly, because it relies on the 
+>>>>>>>>> actual assembler instruction which is generated by the 
+>>>>>>>>> compiler. Now, AFAIK gcc has always translated "for(;;)" 
+>>>>>>>>> into a jump to self, and that with any conceivable 
+>>>>>>>>> compiler options, but I don't know anything about Intel 
+>>>>>>>>> cc.
+>>>>>>>>>                 +static inline __noreturn void 
+>>>>>>>>> discarded_jmp(void)
+>>>>>>>>> +{
+>>>>>>>>> +	asm volatile(".macro jmp target\n"
+>>>>>>>>> +		     "\t.purgem jmp\n"
+>>>>>>>>> +		     ".endm\n");
+>>>>>>>>> +	for (;;) ;
+>>>>>>>>> +}
+>>>>>>>>>                 
+>>>>>>>> hm, that's very fragile.
+>>>>>>>>
+>>>>>>>> Why not just:
+>>>>>>>>
+>>>>>>>>  static inline __noreturn void x86_u2d(void)
+>>>>>>>>  {
+>>>>>>>> 	asm volatile("u2d\n");
+>>>>>>>>  }
+>>>>>>>>
+>>>>>>>> If GCC emits a bogus warning about _that_, then it's a bug 
+>>>>>>>> in the compiler that should be fixed.
+>>>>>>>>               
+>>>>>>> I wouldn't call it a bug. The compiler has no idea about what 
+>>>>>>> the inline assembly actualy does. So it cannot recognize that 
+>>>>>>> the ud2 instruction does not return (which BTW might not even 
+>>>>>>> be the case, depending on the implementation of the Invalid  
+>>>>>>> Opcode exception).
+>>>>>>>             
+>>>>>> No, i'm not talking about the inline assembly.
+>>>>>>
+>>>>>> I'm talking about the x86_u2d() _inline function_, which has  
+>>>>>> the __noreturn attribute.
+>>>>>>
+>>>>>> Shouldnt that be enough to tell the compiler that it ... wont  
+>>>>>> return?
+>>>>>>           
+>>>>> Nope, that's not how it works.
+>>>>>
+>>>>> You _may_ specify a noreturn attribute to any function (and GCC 
+>>>>> will honour it AFAICS), but if GCC _thinks_ that the function 
+>>>>> does return, it will issue the above-mentioned warning:
+>>>>>
+>>>>> /usr/src/linux-2.6/arch/x86/include/asm/bug.h:10: warning: 'noreturn' function does return
+>>>>>
+>>>>> And that's what your function will do. :-(
+>>>>>
+>>>>> Yes, I also thinks that this behaviour is counter-intuitive.  
+>>>>> Besides, I haven't found a gcc switch to turn this warning off, 
+>>>>> which would be my next recommendation, since the GCC heuristics 
+>>>>> is broken, of course.
+>>>>>         
+>>>> so GCC should be fixed and improved here, on several levels.
+>>>>       
+>>> Agree.
+>>>
+>>> But it takes some time, even if we start pushing right now. What's 
+>>> your suggestion for the meantime? Keep the dummy jmp? And in case 
+>>> anybody is concerned about saving every byte in the text section, 
+>>> they can apply my dirty patch?
+>>>
+>>> Actually, this doesn't sound too bad.
+>>>     
+>>
+>> yeah. Please forward the problem to the appropriate GCC list in any 
+>> case.
+>>
+>>   
+>
+> I think the official answer for this case is to use __builtin_trap.  But:
+>
+> -- Built-in Function: void __builtin_trap (void)
+>     This function causes the program to exit abnormally.  GCC
+>     implements this function by using a target-dependent mechanism
+>     (such as intentionally executing an illegal instruction) or by
+>     calling `abort'.  ***The mechanism used may vary from release to
+>     release so you should not rely on any particular implementation.***
+>
+> which in principle is hard for us to make use of.  In practice I think  
+> it has always been ud2a on x86.
 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
+could we just do:
 
+	__builtin_trap();
+	for (;;);
+
+and _now_ GCC would optimize away the infinite loop? And if it 
+does something silly in a future release, we'd either get a 
+build error or we'd run into the infinite loop for sure.
+
+	Ingo
