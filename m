@@ -1,66 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756127AbZBSSjF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754938AbZBSSlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756127AbZBSSjF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 13:39:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbZBSSin
+	id S1754938AbZBSSlh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 13:41:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbZBSSl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 13:38:43 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43615 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753497AbZBSSim (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 13:38:42 -0500
-To: Ian Jackson <Ian.Jackson@eu.citrix.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "xen-devel\@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       Anders Kaseorg <andersk@MIT.EDU>
-Subject: Re: [Xen-devel] Re: [PATCH] IRQ handling race and spurious IIR read in serial/8250.c
-References: <1233800599.5398.0.camel@balanced-tree>
-	<18827.7191.646173.99255@mariner.uk.xensource.com>
-	<1233862446.5676.28.camel@balanced-tree>
-	<1233870772.5676.40.camel@balanced-tree>
-	<18833.40557.119090.48930@mariner.uk.xensource.com>
-	<alpine.DEB.2.00.0902101249181.20723@vinegar-pot.mit.edu>
-	<18834.63479.700909.321686@mariner.uk.xensource.com>
-	<18845.40059.190188.291643@mariner.uk.xensource.com>
-From: Markus Armbruster <armbru@redhat.com>
-Date: Thu, 19 Feb 2009 19:37:53 +0100
-In-Reply-To: <18845.40059.190188.291643@mariner.uk.xensource.com> (Ian Jackson's message of "Thu\, 19 Feb 2009 17\:52\:59 +0000")
-Message-ID: <87vdr6z30e.fsf@pike.pond.sub.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 19 Feb 2009 13:41:27 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:42640 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751531AbZBSSl0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 13:41:26 -0500
+Subject: Re: [SCSI][REGRESSION][BISECTED] Disk errors loop forever in 2.6.29
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       rjw@sisk.pl, Ingo Molnar <mingo@elte.hu>, linux-scsi@vger.kernel.org
+In-Reply-To: <404514.58700.qm@web110616.mail.gq1.yahoo.com>
+References: <Pine.LNX.4.44L0.0902191002160.3012-100000@iolanthe.rowland.org>
+	 <404514.58700.qm@web110616.mail.gq1.yahoo.com>
+Content-Type: text/plain
+Date: Thu, 19 Feb 2009 18:41:21 +0000
+Message-Id: <1235068881.12500.33.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Jackson <Ian.Jackson@eu.citrix.com> writes:
+On Thu, 2009-02-19 at 08:52 -0800, Sitsofe Wheeler wrote:
+> > From: Alan Stern <stern@rowland.harvard.edu>
+> >
+> > On Thu, 19 Feb 2009, Sitsofe Wheeler wrote:
+> > 
+> > > Hi,
+> > > 
+> > > There appears to be a regression from 2.6.28 in how disk errors are
+> > > handled in 2.6.29rc5 - rather than trying and eventually giving up, it
+> > > appears to try (and report) forever. 
+> > 
+> > See this thread and patch:
+> > 
+> >     http://marc.info/?l=linux-kernel&m=123490148422684&w=2
+> 
+> The patch there (actually I downloaded it from http://patchwork.kernel.org/patch/7989/ )
+> did not make any diference. I fear my disk will soon have torn itself to bits but until then I
+> can trigger the error at will so I can test any patches that are suggested...
 
-> I wrote:
->> In drivers/serial/8250.c in Linux there are two bugs:
->>  1. UART_BUG_TXEN can be spuriously set, due to an IRQ race
->>  2. The workaround then applied by the kernel is itself buggy
->
-> Markus Armbruster has also experienced this problem in a Xen
-> environment and has confirmed that my patch fixes it.
+Can you try this patch ... it was something I meant to get into 2.6.29
+but forgot about.  The key problem that you seem to be hitting is that
+the requeue evades the timeout check.  Moving the timeout check to block
+should fix that.
 
-Correct.
+James
 
-> I think at the very least this change:
->
->> Proposed initial band-aid fix (against 2.6.28.4):
->> 
->> Do not read IIR in serial8250_start_tx when UART_BUG_TXEN
->> 
->> Reading the IIR clears some oustanding interrupts so it is not safe.
->> Instead, simply transmit immediately if the buffer is empty without
->> regard to IIR.
->> 
->> Signed-off-by: Ian Jackson <ian.jackson@eu.citrix.com>
->
-> should be made right away.
->
-> Ian.
+---
 
-Patch makes sense to me.
+>From 5546538f37a1f4319ec4dbdb6f2e7261ce986e61 Mon Sep 17 00:00:00 2001
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Date: Tue, 16 Dec 2008 17:00:44 -0500
+Subject: block: move SCSI timeout check into block
 
-Acked-by: Markus Armbruster <armbru@redhat.com>
+We can eliminate the SCSI command timed out check entirely if the block
+layer does this for us.  The way to do this in block is to check how
+long the request has been outstanding if a requeue is requested and
+ending it if we've gone over retries * timeout.
+
+This will also eliminate many cases in SCSI where we evade the command
+timeout for various reasons (like initial success converted to requeue)
+
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
+ block/blk-core.c |   10 +++++++++-
+ 1 files changed, 9 insertions(+), 1 deletions(-)
+
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 29bcfac..3928ec8 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -937,6 +937,8 @@ EXPORT_SYMBOL(blk_start_queueing);
+  */
+ void blk_requeue_request(struct request_queue *q, struct request *rq)
+ {
++	unsigned long wait_for = (rq->retries + 1) * rq->timeout;
++
+ 	blk_delete_timer(rq);
+ 	blk_clear_rq_complete(rq);
+ 	trace_block_rq_requeue(q, rq);
+@@ -944,7 +946,13 @@ void blk_requeue_request(struct request_queue *q, struct request *rq)
+ 	if (blk_rq_tagged(rq))
+ 		blk_queue_end_tag(q, rq);
+ 
+-	elv_requeue_request(q, rq);
++	if (time_before(rq->start_time + wait_for, jiffies)) {
++		printk(KERN_ERR "%s: timing out command, waited %lus\n",
++		       rq->rq_disk ? rq->rq_disk->disk_name : "?",
++		       wait_for/HZ);
++		blk_end_request(rq, -EIO, blk_rq_bytes(rq));
++	} else
++		elv_requeue_request(q, rq);
+ }
+ EXPORT_SYMBOL(blk_requeue_request);
+ 
+-- 
+1.5.6.6
+
+
+
