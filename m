@@ -1,67 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbZBSVvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbZBSVvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759337AbZBSVvQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 16:51:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758060AbZBSVu6
+	id S1756882AbZBSVvq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 16:51:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757438AbZBSVvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 16:50:58 -0500
-Received: from gate.crashing.org ([63.228.1.57]:59371 "EHLO gate.crashing.org"
+	Thu, 19 Feb 2009 16:51:37 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47969 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757680AbZBSVu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 16:50:57 -0500
-Subject: Re: Q: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove
- single ipi fallback for smp_call_function_many())
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-In-Reply-To: <20090219150619.GB22611@elte.hu>
-References: <1234866453.4744.58.camel@laptop>
-	 <20090217112657.GE26402@wotan.suse.de> <20090217192810.GA4980@redhat.com>
-	 <20090217213256.GJ6761@linux.vnet.ibm.com>
-	 <20090217214518.GA13189@redhat.com>
-	 <20090217223910.GM6761@linux.vnet.ibm.com>
-	 <20090218135212.GB23125@wotan.suse.de>
-	 <alpine.LFD.2.00.0902180744520.21686@localhost.localdomain>
-	 <1235026040.8805.3.camel@pasglop> <20090219131107.GD1747@wotan.suse.de>
-	 <20090219150619.GB22611@elte.hu>
-Content-Type: text/plain
-Date: Fri, 20 Feb 2009 08:49:25 +1100
-Message-Id: <1235080165.8805.48.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	id S1756619AbZBSVvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 16:51:36 -0500
+Message-ID: <499DD40F.40102@kernel.org>
+Date: Thu, 19 Feb 2009 13:50:07 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: enable x2apic early at the first point
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-19 at 16:06 +0100, Ingo Molnar wrote:
-> > So your arch_send_call_function_single_ipi etc need to ensure 
-> > this, right?  Generic code obviously has no idea about how to 
-> > do it.
-> 
-> The thing is, the most widespread way to send IPIs (x86 
-> non-x2apic local APIC) does not need any barriers in the generic 
-> code or elsewhere, because the local APIC is mapped uncached so 
-> it's implicitly ordered.
-> 
-> So the right solution is to add barriers to those IPI 
-> implementations that need it. This means that the generic code 
-> should not have a barrier for IPI sending.
 
-I agree. In fact, our current code should be fine in any case because
-our writel() which will be used to generate the IPI has a sync in it
-anyway for other reasons.
+Impact: fix bug.
 
-Cheers,
-Ben.
+otherwise will get panic from early_acpi_boot_init()
+also make disable_x2apic global, so could use it it x2_apic_xxx.c
+and can get warning if preenabled system using nox2apic.
 
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
+---
+ arch/x86/kernel/apic/apic.c           |    3 +--
+ arch/x86/kernel/apic/x2apic_cluster.c |    5 ++++-
+ arch/x86/kernel/apic/x2apic_phys.c    |    5 ++++-
+ arch/x86/kernel/apic/x2apic_uv_x.c    |    4 +++-
+ drivers/pci/dmar.c                    |    3 ++-
+ 5 files changed, 14 insertions(+), 6 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/apic/x2apic_cluster.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/x2apic_cluster.c
++++ linux-2.6/arch/x86/kernel/apic/x2apic_cluster.c
+@@ -14,8 +14,11 @@ DEFINE_PER_CPU(u32, x86_cpu_to_logical_a
+ 
+ static int x2apic_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+ {
+-	if (cpu_has_x2apic)
++	if (cpu_has_x2apic && !disable_x2apic) {
++		x2apic = 1;
++		enable_x2apic();
+ 		return 1;
++	}
+ 
+ 	return 0;
+ }
+Index: linux-2.6/arch/x86/kernel/apic/x2apic_phys.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/x2apic_phys.c
++++ linux-2.6/arch/x86/kernel/apic/x2apic_phys.c
+@@ -21,8 +21,11 @@ early_param("x2apic_phys", set_x2apic_ph
+ 
+ static int x2apic_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+ {
+-	if (cpu_has_x2apic && x2apic_phys)
++	if (cpu_has_x2apic && !disable_x2apic && x2apic_phys) {
++		x2apic = 1;
++		enable_x2apic();
+ 		return 1;
++	}
+ 
+ 	return 0;
+ }
+Index: linux-2.6/arch/x86/kernel/apic/x2apic_uv_x.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/x2apic_uv_x.c
++++ linux-2.6/arch/x86/kernel/apic/x2apic_uv_x.c
+@@ -41,8 +41,10 @@ static int uv_acpi_madt_oem_check(char *
+ 			uv_system_type = UV_LEGACY_APIC;
+ 		else if (!strcmp(oem_table_id, "UVX"))
+ 			uv_system_type = UV_X2APIC;
+-		else if (!strcmp(oem_table_id, "UVH")) {
++		else if (!strcmp(oem_table_id, "UVH") && !disable_x2apic) {
+ 			uv_system_type = UV_NON_UNIQUE_APIC;
++			x2apic = 1;
++			enable_x2apic();
+ 			return 1;
+ 		}
+ 	}
+Index: linux-2.6/arch/x86/kernel/apic/apic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/apic.c
++++ linux-2.6/arch/x86/kernel/apic/apic.c
+@@ -116,11 +116,10 @@ __setup("apicpmtimer", setup_apicpmtimer
+ int x2apic;
+ /* x2apic enabled before OS handover */
+ static int x2apic_preenabled;
+-static int disable_x2apic;
++int disable_x2apic;
+ static __init int setup_nox2apic(char *str)
+ {
+ 	disable_x2apic = 1;
+-	setup_clear_cpu_cap(X86_FEATURE_X2APIC);
+ 	return 0;
+ }
+ early_param("nox2apic", setup_nox2apic);
+Index: linux-2.6/drivers/pci/dmar.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/dmar.c
++++ linux-2.6/drivers/pci/dmar.c
+@@ -472,7 +472,8 @@ void __init detect_intel_iommu(void)
+ 		 * is added, we will not need this any more.
+ 		 */
+ 		dmar = (struct acpi_table_dmar *) dmar_tbl;
+-		if (ret && cpu_has_x2apic && dmar->flags & 0x1)
++		if (ret && cpu_has_x2apic && !disable_x2apic &&
++			 dmar->flags & 0x1)
+ 			printk(KERN_INFO
+ 			       "Queued invalidation will be enabled to support "
+ 			       "x2apic and Intr-remapping.\n");
