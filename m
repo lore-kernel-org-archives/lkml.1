@@ -1,169 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757786AbZBSCF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbZBSCLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757786AbZBSCF4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 21:05:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbZBSCFq
+	id S1757340AbZBSCLm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 21:11:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbZBSCLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 21:05:46 -0500
-Received: from mga06.intel.com ([134.134.136.21]:48974 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751381AbZBSCFp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 21:05:45 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,231,1233561600"; 
-   d="scan'208";a="491237636"
-Date: Thu, 19 Feb 2009 10:05:42 +0800
-From: Wu Fengguang <wfg@linux.intel.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
-       "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>,
-       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
-Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
-Message-ID: <20090219020542.GC5743@localhost>
-References: <492BE47B.3010802@vlnb.net> <20081125114908.GA16545@localhost> <492BE97A.3050606@vlnb.net> <492BEAE8.9050809@vlnb.net> <20081125121534.GA16778@localhost> <492EDCFB.7080302@vlnb.net> <20081128004830.GA8874@localhost> <49946BE6.1040005@vlnb.net> <20090213015721.GA5565@localhost> <499B0994.8040000@vlnb.net>
+	Wed, 18 Feb 2009 21:11:33 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:63962 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751838AbZBSCLc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 21:11:32 -0500
+Message-ID: <499CBFDF.1070503@cn.fujitsu.com>
+Date: Thu, 19 Feb 2009 10:11:43 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <499B0994.8040000@vlnb.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Paul Menage <menage@google.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] cpuset: various documentation fixes and updates
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 17, 2009 at 10:01:40PM +0300, Vladislav Bolkhovitin wrote:
-> Wu Fengguang, on 02/13/2009 04:57 AM wrote:
->> On Thu, Feb 12, 2009 at 09:35:18PM +0300, Vladislav Bolkhovitin wrote:
->>> Sorry for such a huge delay. There were many other activities I had 
->>> to  do before + I had to be sure I didn't miss anything.
->>>
->>> We didn't use NFS, we used SCST (http://scst.sourceforge.net) with   
->>> iSCSI-SCST target driver. It has similar to NFS architecture, where N 
->>>  threads (N=5 in this case) handle IO from remote initiators 
->>> (clients)  coming from wire using iSCSI protocol. In addition, SCST 
->>> has patch  called export_alloc_io_context (see   
->>> http://lkml.org/lkml/2008/12/10/282), which allows for the IO threads 
->>>  queue IO using single IO context, so we can see if context RA can   
->>> replace grouping IO threads in single IO context.
->>>
->>> Unfortunately, the results are negative. We find neither any 
->>> advantages  of context RA over current RA implementation, nor 
->>> possibility for  context RA to replace grouping IO threads in single 
->>> IO context.
->>>
->>> Setup on the target (server) was the following. 2 SATA drives grouped 
->>> in  md RAID-0 with average local read throughput ~120MB/s ("dd 
->>> if=/dev/zero  of=/dev/md0 bs=1M count=20000" outputs "20971520000 
->>> bytes (21 GB)  copied, 177,742 s, 118 MB/s"). The md device was 
->>> partitioned on 3  partitions. The first partition was 10% of space in 
->>> the beginning of the  device, the last partition was 10% of space in 
->>> the end of the device,  the middle one was the rest in the middle of 
->>> the space them. Then the  first and the last partitions were exported 
->>> to the initiator (client).  They were /dev/sdb and /dev/sdc on it 
->>> correspondingly.
->>
->> Vladislav, Thank you for the benchmarks! I'm very interested in
->> optimizing your workload and figuring out what happens underneath.
->>
->> Are the client and server two standalone boxes connected by GBE?
->>
->> When you set readahead sizes in the benchmarks, you are setting them
->> in the server side? I.e. "linux-4dtq" is the SCST server? What's the
->> client side readahead size?
->>
->> It would help a lot to debug readahead if you can provide the
->> server side readahead stats and trace log for the worst case.
->> This will automatically answer the above questions as well as disclose
->> the micro-behavior of readahead:
->>
->>         mount -t debugfs none /sys/kernel/debug
->>
->>         echo > /sys/kernel/debug/readahead/stats # reset counters
->>         # do benchmark
->>         cat /sys/kernel/debug/readahead/stats
->>
->>         echo 1 > /sys/kernel/debug/readahead/trace_enable
->>         # do micro-benchmark, i.e. run the same benchmark for a short time
->>         echo 0 > /sys/kernel/debug/readahead/trace_enable
->>         dmesg
->>
->> The above readahead trace should help find out how the client side
->> sequential reads convert into server side random reads, and how we can
->> prevent that.
->
-> See attached. Could you comment the logs, please, so I will also be able  
-> to read them in the future?
+I noticed the old commit 8f5aa26c75b7722e80c0c5c5bb833d41865d7019
+("cpusets: update_cpumask documentation fix") is not a complete fix,
+resulting in inconsistent paragraphs. This patch fixes it and does
+other fixes and updates:
 
-Vladislav, thank you for the logs!
+- s/migrate_all_tasks()/migrate_live_tasks()/
+- describe more cpuset control files
+- s/cpumask_t/struct cpumask/
+- document cpu hotplug and change of 'sched_relax_domain_level' may cause
+  domain rebuild
+- document various ways to query or modify cpusets
+- the equivalent of "mount -t cpuset" is "mount -t cgroup -o cpuset,noprefix"
+- fix typos
 
-The printk format for the following lines is:
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ Documentation/cgroups/cpusets.txt |   65 +++++++++++++++++++++----------------
+ 1 files changed, 37 insertions(+), 28 deletions(-)
 
-+       printk(KERN_DEBUG "readahead-%s(pid=%d(%s), dev=%02x:%02x(%s), "
-+               "ino=%lu(%s), req=%lu+%lu, ra=%lu+%d-%d, async=%d) = %d\n",
-+               ra_pattern_names[pattern],
-+               current->pid, current->comm,
-+               MAJOR(mapping->host->i_sb->s_dev),
-+               MINOR(mapping->host->i_sb->s_dev),
-+               mapping->host->i_sb->s_id,
-+               mapping->host->i_ino,
-+               filp->f_path.dentry->d_name.name,
-+               offset, req_size,
-+               ra->start, ra->size, ra->async_size,
-+               async,
-+               actual);
-
-readahead-marker(pid=3838(vdiskd3_3), dev=00:02(bdev), ino=0(raid-1st), req=10596+1, ra=10628+32-32, async=1) = 32
-readahead-marker(pid=3837(vdiskd3_2), dev=00:02(bdev), ino=0(raid-1st), req=10628+1, ra=10660+32-32, async=1) = 32
-readahead-marker(pid=3835(vdiskd3_0), dev=00:02(bdev), ino=0(raid-1st), req=10660+1, ra=10692+32-32, async=1) = 32
-readahead-marker(pid=3839(vdiskd3_4), dev=00:02(bdev), ino=0(raid-1st), req=10692+1, ra=10724+32-32, async=1) = 32
-readahead-marker(pid=3837(vdiskd3_2), dev=00:02(bdev), ino=0(raid-1st), req=10724+1, ra=10756+32-32, async=1) = 32
-readahead-marker(pid=3838(vdiskd3_3), dev=00:02(bdev), ino=0(raid-1st), req=10756+1, ra=10788+32-32, async=1) = 32
-readahead-marker(pid=3839(vdiskd3_4), dev=00:02(bdev), ino=0(raid-1st), req=10788+1, ra=10820+32-32, async=1) = 32
-readahead-marker(pid=3835(vdiskd3_0), dev=00:02(bdev), ino=0(raid-1st), req=10820+1, ra=10852+32-32, async=1) = 32
-readahead-marker(pid=3838(vdiskd3_3), dev=00:02(bdev), ino=0(raid-1st), req=10852+1, ra=10884+32-32, async=1) = 32
-readahead-marker(pid=3837(vdiskd3_2), dev=00:02(bdev), ino=0(raid-1st), req=10884+1, ra=10916+32-32, async=1) = 32
-readahead-marker(pid=3839(vdiskd3_4), dev=00:02(bdev), ino=0(raid-1st), req=10916+1, ra=10948+32-32, async=1) = 32
-readahead-marker(pid=3836(vdiskd3_1), dev=00:02(bdev), ino=0(raid-1st), req=10948+1, ra=10980+32-32, async=1) = 32
-readahead-marker(pid=3837(vdiskd3_2), dev=00:02(bdev), ino=0(raid-1st), req=10980+1, ra=11012+32-32, async=1) = 32
-readahead-marker(pid=3838(vdiskd3_3), dev=00:02(bdev), ino=0(raid-1st), req=11012+1, ra=11044+32-32, async=1) = 32
-readahead-marker(pid=3836(vdiskd3_1), dev=00:02(bdev), ino=0(raid-1st), req=11044+1, ra=11076+32-32, async=1) = 32
-readahead-subsequent(pid=3836(vdiskd3_1), dev=00:02(bdev), ino=0(raid-1st), req=11076+1, ra=11108+32-32, async=1) = 32
-readahead-marker(pid=3835(vdiskd3_0), dev=00:02(bdev), ino=0(raid-1st), req=11108+1, ra=11140+32-32, async=1) = 32
-readahead-subsequent(pid=3835(vdiskd3_0), dev=00:02(bdev), ino=0(raid-1st), req=11140+1, ra=11172+32-32, async=1) = 32
-readahead-marker(pid=3839(vdiskd3_4), dev=00:02(bdev), ino=0(raid-1st), req=11172+1, ra=11204+32-32, async=1) = 32
-readahead-subsequent(pid=3839(vdiskd3_4), dev=00:02(bdev), ino=0(raid-1st), req=11204+1, ra=11236+32-32, async=1) = 32
-readahead-marker(pid=3837(vdiskd3_2), dev=00:02(bdev), ino=0(raid-1st), req=11236+1, ra=11268+32-32, async=1) = 32
-readahead-subsequent(pid=3837(vdiskd3_2), dev=00:02(bdev), ino=0(raid-1st), req=11268+1, ra=11300+32-32, async=1) = 32
-readahead-marker(pid=3835(vdiskd3_0), dev=00:02(bdev), ino=0(raid-1st), req=11300+1, ra=11332+32-32, async=1) = 32
-readahead-subsequent(pid=3835(vdiskd3_0), dev=00:02(bdev), ino=0(raid-1st), req=11332+1, ra=11364+32-32, async=1) = 32
-readahead-marker(pid=3839(vdiskd3_4), dev=00:02(bdev), ino=0(raid-1st), req=11364+1, ra=11396+32-32, async=1) = 32
-readahead-subsequent(pid=3839(vdiskd3_4), dev=00:02(bdev), ino=0(raid-1st), req=11396+1, ra=11428+32-32, async=1) = 32
-
-The above trace shows that the readahead logic is working pretty well,
-however the max readahead size(32 pages) is way too small. This can
-also be confirmed in the following table, where the average readahead
-request size/async_size and actual readahead I/O size are all 30.
-
-linux-4dtq:/ # cat /sys/kernel/debug/readahead/stats
-pattern         count sync_count  eof_count       size async_size     actual
-none                0          0          0          0          0          0
-initial0           71         71         41          4          3          2
-initial            23         23          0          4          3          4
-subsequent       3845          4         21         31         31         31
-marker           4222          0          1         31         31         31
-trail               0          0          0          0          0          0
-oversize            0          0          0          0          0          0
-reverse             0          0          0          0          0          0
-stride              0          0          0          0          0          0
-thrash              0          0          0          0          0          0
-mmap              135        135         15         32          0         17
-fadvise           180        180        180          0          0          1
-random             23         23          2          1          0          1
-all              8499        436        260         30         30         30
-                                                    ^^^^^^^^^^^^^^^^^^^^^^^^
-
-I suspect that your main performance problem comes from the small read/readahead size.
-If larger values are used, even the vanilla 2.6.27 kernel will perform well.
-
-Thanks,
-Fengguang
+diff --git a/Documentation/cgroups/cpusets.txt b/Documentation/cgroups/cpusets.txt
+index 5c86c25..3543706 100644
+--- a/Documentation/cgroups/cpusets.txt
++++ b/Documentation/cgroups/cpusets.txt
+@@ -142,7 +142,7 @@ into the rest of the kernel, none in performance critical paths:
+  - in fork and exit, to attach and detach a task from its cpuset.
+  - in sched_setaffinity, to mask the requested CPUs by what's
+    allowed in that tasks cpuset.
+- - in sched.c migrate_all_tasks(), to keep migrating tasks within
++ - in sched.c migrate_live_tasks(), to keep migrating tasks within
+    the CPUs allowed by their cpuset, if possible.
+  - in the mbind and set_mempolicy system calls, to mask the requested
+    Memory Nodes by what's allowed in that tasks cpuset.
+@@ -175,6 +175,10 @@ files describing that cpuset:
+  - mem_exclusive flag: is memory placement exclusive?
+  - mem_hardwall flag:  is memory allocation hardwalled
+  - memory_pressure: measure of how much paging pressure in cpuset
++ - memory_spread_page flag: if set, spread page cache evenly on allowed nodes
++ - memory_spread_slab flag: if set, spread slab cache evenly on allowed nodes
++ - sched_load_balance flag: if set, load balance within CPUs on that cpuset
++ - sched_relax_domain_level: the searching range when migrating tasks
+ 
+ In addition, the root cpuset only has the following file:
+  - memory_pressure_enabled flag: compute memory_pressure?
+@@ -252,7 +256,7 @@ is causing.
+ 
+ This is useful both on tightly managed systems running a wide mix of
+ submitted jobs, which may choose to terminate or re-prioritize jobs that
+-are trying to use more memory than allowed on the nodes assigned them,
++are trying to use more memory than allowed on the nodes assigned to them,
+ and with tightly coupled, long running, massively parallel scientific
+ computing jobs that will dramatically fail to meet required performance
+ goals if they start to use more memory than allowed to them.
+@@ -378,7 +382,7 @@ as cpusets and sched_setaffinity.
+ The algorithmic cost of load balancing and its impact on key shared
+ kernel data structures such as the task list increases more than
+ linearly with the number of CPUs being balanced.  So the scheduler
+-has support to  partition the systems CPUs into a number of sched
++has support to partition the systems CPUs into a number of sched
+ domains such that it only load balances within each sched domain.
+ Each sched domain covers some subset of the CPUs in the system;
+ no two sched domains overlap; some CPUs might not be in any sched
+@@ -485,17 +489,22 @@ of CPUs allowed to a cpuset having 'sched_load_balance' enabled.
+ The internal kernel cpuset to scheduler interface passes from the
+ cpuset code to the scheduler code a partition of the load balanced
+ CPUs in the system. This partition is a set of subsets (represented
+-as an array of cpumask_t) of CPUs, pairwise disjoint, that cover all
+-the CPUs that must be load balanced.
+-
+-Whenever the 'sched_load_balance' flag changes, or CPUs come or go
+-from a cpuset with this flag enabled, or a cpuset with this flag
+-enabled is removed, the cpuset code builds a new such partition and
+-passes it to the scheduler sched domain setup code, to have the sched
+-domains rebuilt as necessary.
++as an array of struct cpumask) of CPUs, pairwise disjoint, that cover
++all the CPUs that must be load balanced.
++
++The cpuset code builds a new such partition and passes it to the
++scheduler sched domain setup code, to have the sched domains rebuilt
++as necessary, whenever:
++ - the 'sched_load_balance' flag of a cpuset with non-empty CPUs changes,
++ - or CPUs come or go from a cpuset with this flag enabled,
++ - or 'sched_relax_domain_level' value of a cpuset with non-empty CPUs
++   and with this flag enabled changes,
++ - or a cpuset with non-empty CPUs and with this flag enabled is removed,
++ - or a cpu is offlined/onlined.
+ 
+ This partition exactly defines what sched domains the scheduler should
+-setup - one sched domain for each element (cpumask_t) in the partition.
++setup - one sched domain for each element (struct cpumask) in the
++partition.
+ 
+ The scheduler remembers the currently active sched domain partitions.
+ When the scheduler routine partition_sched_domains() is invoked from
+@@ -559,7 +568,7 @@ domain, the largest value among those is used.  Be careful, if one
+ requests 0 and others are -1 then 0 is used.
+ 
+ Note that modifying this file will have both good and bad effects,
+-and whether it is acceptable or not will be depend on your situation.
++and whether it is acceptable or not depends on your situation.
+ Don't modify this file if you are not sure.
+ 
+ If your situation is:
+@@ -600,19 +609,15 @@ to allocate a page of memory for that task.
+ 
+ If a cpuset has its 'cpus' modified, then each task in that cpuset
+ will have its allowed CPU placement changed immediately.  Similarly,
+-if a tasks pid is written to a cpusets 'tasks' file, in either its
+-current cpuset or another cpuset, then its allowed CPU placement is
+-changed immediately.  If such a task had been bound to some subset
+-of its cpuset using the sched_setaffinity() call, the task will be
+-allowed to run on any CPU allowed in its new cpuset, negating the
+-affect of the prior sched_setaffinity() call.
++if a tasks pid is written to another cpusets 'tasks' file, then its
++allowed CPU placement is changed immediately.  If such a task had been
++bound to some subset of its cpuset using the sched_setaffinity() call,
++the task will be allowed to run on any CPU allowed in its new cpuset,
++negating the affect of the prior sched_setaffinity() call.
+ 
+ In summary, the memory placement of a task whose cpuset is changed is
+ updated by the kernel, on the next allocation of a page for that task,
+-but the processor placement is not updated, until that tasks pid is
+-rewritten to the 'tasks' file of its cpuset.  This is done to avoid
+-impacting the scheduler code in the kernel with a check for changes
+-in a tasks processor placement.
++and the processor placement is updated immediately.
+ 
+ Normally, once a page is allocated (given a physical page
+ of main memory) then that page stays on whatever node it
+@@ -681,10 +686,14 @@ and then start a subshell 'sh' in that cpuset:
+   # The next line should display '/Charlie'
+   cat /proc/self/cpuset
+ 
+-In the future, a C library interface to cpusets will likely be
+-available.  For now, the only way to query or modify cpusets is
+-via the cpuset file system, using the various cd, mkdir, echo, cat,
+-rmdir commands from the shell, or their equivalent from C.
++There are ways to query or modify cpusets:
++ - via the cpuset file system directly, using the various cd, mkdir, echo,
++   cat, rmdir commands from the shell, or there equivalent from C.
++ - via the C library libcpuset.
++ - via the C library libcgroup.
++   (http://sourceforge.net/proects/libcg/)
++ - via the python application cset.
++   (http://developer.novell.com/wiki/index.php/Cpuset)
+ 
+ The sched_setaffinity calls can also be done at the shell prompt using
+ SGI's runon or Robert Love's taskset.  The mbind and set_mempolicy
+@@ -756,7 +765,7 @@ mount -t cpuset X /dev/cpuset
+ 
+ is equivalent to
+ 
+-mount -t cgroup -ocpuset X /dev/cpuset
++mount -t cgroup -ocpuset,noprefix X /dev/cpuset
+ echo "/sbin/cpuset_release_agent" > /dev/cpuset/release_agent
+ 
+ 2.2 Adding/removing cpus
+-- 
+1.5.4.rc3
