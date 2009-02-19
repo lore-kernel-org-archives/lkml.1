@@ -1,74 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759171AbZBSMwD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758860AbZBSM5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759171AbZBSMwD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 07:52:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754765AbZBSMvv
+	id S1758860AbZBSM5c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 07:57:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbZBSM5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 07:51:51 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:3995 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753487AbZBSMvu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 07:51:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=xjB59xoO8WB6mJH2QKTsR444/al8GFqnl9ex4ouHv+CzU6UjBSoQg2/P+rP3GdhWqr
-         BauhU1p6nWR4OwzD5V9NzJJUY9hov0EACiMUNYxbLSqZw2UXkmjtQB1PEzYmSejZ7qEi
-         Z6OtsLDNxeVPetoBhzJDQxawejhoUeUTE6jyg=
+	Thu, 19 Feb 2009 07:57:24 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:47847 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753202AbZBSM5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 07:57:22 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFD] Automatic suspend
+Date: Thu, 19 Feb 2009 13:56:51 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+References: <Pine.LNX.4.44L0.0902181826500.23001-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0902181826500.23001-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-In-Reply-To: <1235034967.29813.10.camel@penberg-laptop>
-References: <20090218093858.8990.A69D9226@jp.fujitsu.com>
-	 <1234944569.24030.20.camel@penberg-laptop>
-	 <20090219085229.954A.A69D9226@jp.fujitsu.com>
-	 <1235034967.29813.10.camel@penberg-laptop>
-Date: Thu, 19 Feb 2009 21:51:48 +0900
-X-Google-Sender-Auth: b84ce56d53cd63cb
-Message-ID: <2f11576a0902190451w294aa2fan29b61fa3619f459b@mail.gmail.com>
-Subject: Re: [patch] SLQB slab allocator (try 2)
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Mel Gorman <mel@csn.ul.ie>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902191356.53584.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/2/19 Pekka Enberg <penberg@cs.helsinki.fi>:
-> On Wed, 2009-02-18 at 09:48 +0900, KOSAKI Motohiro wrote:
->> > > In addition, if pekka patch (SLAB_LIMIT = 8K) run on ia64, 16K allocation
->> > > always fallback to page allocator and using 64K (4 times memory consumption!).
->> >
->> > Yes, correct, but SLUB does that already by passing all allocations over
->> > 4K to the page allocator.
->>
->> hmhm
->> OK. my mail was pointless.
->>
->> but why? In my understanding, slab framework mainly exist for efficient
->> sub-page allocation.
->> the fallbacking of 4K allocation in 64K page-sized architecture seems
->> inefficient.
->
-> I don't think any of the slab allocators are known for memory
-> efficiency. That said, the original patch description sums up the
-> rationale for page allocator pass-through:
->
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=aadb4bc4a1f9108c1d0fbd121827c936c2ed4217
->
-> Interesting enough, there seems to be some performance gain from it as
-> well as seen by Mel Gorman's recent slab allocator benchmarks.
+On Thursday 19 February 2009, Alan Stern wrote:
+> On Thu, 19 Feb 2009, Rafael J. Wysocki wrote:
+> 
+> > > If some devices are autosuspended after a local inactivity timeout, I
+> > > don't want to wait for those devices to autosuspend if I know the code
+> > > that needed to run is done. This could cause delays in the normal
+> > > case,
+> > 
+> > Isn't it a matter of adjusting the inactivity timeouts in a suitable way?
+> 
+> It's not that simple.  A single device driver has a very local view, 
+> not suitable for deciding whether the entire system should go to sleep.
+> 
+> So for example, a disk driver might think it's appropriate to spin down 
+> the disk after 10 seconds of inactivity.  But an overall system monitor 
+> might realize that nothing is going on right now and want to put the 
+> system to sleep immediately, without waiting the 10 seconds for the 
+> disk to autosuspend.
 
-Honestly, I'm bit confusing.
-above url's patch use PAGE_SIZE, but not 4K nor architecture independent value.
-Your 4K mean PAGE_SIZE?
+Now, the question is what criteria would the overall system monitor use to make
+such a decision.
+
+> > > and it could prevent suspend if a background process (not using
+> > > wakelocks) is accessing a disk more frequently than its idle timeout.
+> > 
+> > Well, actually, shouldn't it prevent suspend from happening?  Arguably, it just
+> > means that the disk is continuously being accessed with respect to the inactive
+> > timeout granularity.
+> 
+> That's true, but it shows the problem of making the autosleep decision
+> based on disk activity.  An auto-sleep should not have to wait for
+> every device (or some suitable subset) to become idle for some minimum
+> time; it should be able to kick in at short notice.
+
+Again, the decision to trigger automatic suspend has to be based on some
+well defined criteria and the (in)activity of devices seems to be one of them.
+
+Thanks,
+Rafael
