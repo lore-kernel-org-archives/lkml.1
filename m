@@ -1,64 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbZBSTl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbZBSTrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754990AbZBSTl6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 14:41:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbZBSTls
+	id S1754785AbZBSTrv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 14:47:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbZBSTrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 14:41:48 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:47839 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751626AbZBSTlr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 14:41:47 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <499DB5B7.8080802@s5r6.in-berlin.de>
-Date: Thu, 19 Feb 2009 20:40:39 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
-MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       linux1394-devel@lists.sourceforge.net,
-       Christian Dolzer <c.dolzer@digital-everywhere.com>,
-       Andreas Monitzer <andy@monitzer.com>, Manu Abraham <manu@linuxtv.org>,
-       Fabio De Lorenzo <delorenzo.fabio@gmail.com>,
-       Robert Berger <robert.berger@reliableembeddedsystems.com>,
-       Ben Backx <ben@bbackx.com>, Henrik Kurelid <henrik@kurelid.se>,
-       Rambaldi <Rambaldi@xs4all.nl>
-Subject: Re: [review patch 0/1] add firedtv driver for FireWire-attached DVB
- receivers
-References: <tkrat.265ed076d414bd49@s5r6.in-berlin.de>	<tkrat.63c8bdca2465364b@s5r6.in-berlin.de> <20090217102951.21dab08c@pedra.chehab.org>
-In-Reply-To: <20090217102951.21dab08c@pedra.chehab.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Feb 2009 14:47:41 -0500
+Received: from cmpxchg.org ([85.214.51.133]:55161 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752805AbZBSTrl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 14:47:41 -0500
+Date: Thu, 19 Feb 2009 20:48:51 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Matt Mackall <mpm@selenic.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       David Vrabel <david.vrabel@csr.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chas Williams <chas@cmf.nrl.navy.mil>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [patch 1/7] slab: introduce kzfree()
+Message-ID: <20090219194851.GA2608@cmpxchg.org>
+References: <499BE7F8.80901@csr.com> <1234954488.24030.46.camel@penberg-laptop> <20090219101336.9556.A69D9226@jp.fujitsu.com> <1235034817.29813.6.camel@penberg-laptop> <Pine.LNX.4.64.0902191616250.8594@blonde.anvils> <1235066556.3166.26.camel@calx> <Pine.LNX.4.64.0902191819060.28475@blonde.anvils>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0902191819060.28475@blonde.anvils>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab wrote:
-> The driver looks sane to my eyes. I found just one minor issue (see bellow).
-> Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-
-Thanks for checking.
-
->> +
->> +		/*
->> +		 * AV/C specs say that answers should be sent within 150 ms.
->> +		 * Time out after 200 ms.
->> +		 */
->> +		if (wait_event_timeout(fdtv->avc_wait,
->> +				       fdtv->avc_reply_received,
->> +				       HZ / 5) != 0) {
+On Thu, Feb 19, 2009 at 06:28:55PM +0000, Hugh Dickins wrote:
+> On Thu, 19 Feb 2009, Matt Mackall wrote:
+> > On Thu, 2009-02-19 at 16:34 +0000, Hugh Dickins wrote:
+> > > On Thu, 19 Feb 2009, Pekka Enberg wrote:
+> > > > On Thu, 2009-02-19 at 10:22 +0900, KOSAKI Motohiro wrote:
+> > > > > 
+> > > > > poisonig is transparent feature from caller.
+> > > > > but the caller of kzfree() know to fill memory and it should know.
+> > > > 
+> > > > Debatable, sure, but doesn't seem like a big enough reason to make
+> > > > kzfree() differ from kfree().
+> > > 
+> > > There may be more important things for us to worry about,
+> > > but I do strongly agree with KOSAKI-san on this.
+> > > 
+> > > kzfree() already differs from kfree() by a "z": that "z" says please
+> > > zero the buffer pointed to; "const" says it won't modify the buffer
+> > > pointed to.  What sense does kzfree(const void *) make?  Why is
+> > > keeping the declarations the same apart from the "z" desirable?
+> > > 
+> > > By all means refuse to add kzfree(), but please don't add it with const.
+> > > 
+> > > I can see that the "const" in kfree(const void *) is debatable
+> > > [looks to see how userspace free() is defined: without a const],
+> > > I can see that it might be nice to have some "goesaway" attribute
+> > > for such pointers instead; but I don't see how you can argue for
+> > > kzalloc(const void *).
+>     ^^^^^^^^^^^^^^^^^^^^^
+> (Of course I meant to say "kzfree(const void *)" there.)
 > 
-> Instead of using HZ, it would be better to use:
-> 	msecs_to_jiffies(200)
+> > 
+> > This is what Linus said last time this came up:
+> > 
+> > http://lkml.org/lkml/2008/1/16/227
+> 
+> Thanks for that, I remember it now.
+> 
+> Okay, that's some justification for kfree(const void *).
+> 
+> But I fail to see it as a justification for kzfree(const void *):
+> if someone has "const char *string = kmalloc(size)" and then
+> wants that string zeroed before it is freed, then I think it's
+> quite right to cast out the const when calling kzfree().
 
-OK, I switch this.
+You could argue that the pointer passed to kzfree() points to an
+abstract slab object and kzfree() uses this to find the memory of that
+object which it then zeroes.  The translation of course is a no-op as
+the object pointer and the memory pointer coincide.
 
-(Hmm, what if msecs_to_jiffies could be rolled out to a constant
-expression if called on a constant argument...?)
--- 
-Stefan Richter
--=====-==--= --=- =--==
-http://arcgraph.de/sr/
+It depends on how transparent you want to make kzfree() for the
+caller.  Is it 'zero out and then free the object' or is it 'free the
+object, but note that it contains security-sensitive data, so make
+sure that it never gets into the hands of somebody else'?
+
+No strong opinion from me, though, I can not say which one feels
+better.  I made it intuitively const, so I guess I would lean to the
+more opaque version of the function.
+
+> Hugh
+
+	Hannes
