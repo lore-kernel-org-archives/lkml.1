@@ -1,52 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbZBSACe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbZBSACr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757237AbZBSACe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 19:02:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbZBSACZ
+	id S1757511AbZBSACr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 19:02:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754447AbZBSAC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 19:02:25 -0500
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:39026 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752303AbZBSACY (ORCPT
+	Wed, 18 Feb 2009 19:02:29 -0500
+Received: from e39.co.us.ibm.com ([32.97.110.160]:44814 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754245AbZBSAC2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 19:02:24 -0500
-Subject: Re: [PATCH 3/9] x86/paravirt: remove lazy mode in interrupts
-From: Zachary Amsden <zach@vmware.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>, Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Alok Kataria <akataria@vmware.com>, Avi Kivity <avi@redhat.com>,
-       Marcelo Tosatti <mtosatti@redhat.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-In-Reply-To: <06944a6dbc4ea222760d39d3d0156e50102f8196.1234988621.git.jeremy.fitzhardinge@citrix.com>
-References: <cover.1234988621.git.jeremy.fitzhardinge@citrix.com>
-	 <06944a6dbc4ea222760d39d3d0156e50102f8196.1234988621.git.jeremy.fitzhardinge@citrix.com>
+	Wed, 18 Feb 2009 19:02:28 -0500
+Subject: [PATCH][RFC(again)] Apply NTP frequency/tick changes immediately.
+From: john stultz <johnstul@us.ibm.com>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Clark Williams <williams@redhat.com>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1234494121.7042.14.camel@localhost.localdomain>
+References: <1234494121.7042.14.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Wed, 18 Feb 2009 16:53:57 -0800
-Message-Id: <1235004837.6951.6.camel@bodhitayantram.eng.vmware.com>
+Date: Wed, 18 Feb 2009 16:02:22 -0800
+Message-Id: <1235001742.6946.18.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-18 at 14:30 -0800, Jeremy Fitzhardinge wrote:
-> From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+On Thu, 2009-02-12 at 19:02 -0800, john stultz wrote:
+> Hey Roman,
+> 	It was brought to my attention that since the GENERIC_TIME changes
+> landed, the adjtimex behavior changed for struct timex.tick and .freq
+> changes. When the tick or freq value is set, we adjust the
+> tick_length_base in ntp_update_frequency(). However, this new value
+> doesn't get applied to tick_length until the next second (via
+> second_overflow). 
 > 
-> Make paravirt_lazy_mode() always return PARAVIRT_LAZY_NONE
-> when in an interrupt.  This prevents interrupt code from
-> accidentally inheriting an outer lazy state, and instead
-> does everything synchronously.  Outer batched operations
-> are left deferred.
+> This means some applications that do quick time tweaking do not see the
+> requested change made as quickly as expected.
+> 
+> Looking at the code, it doesn't seem like it would be too hard to
+> immediately apply the change to the tick_length value, so its changed in
+> the following NTP_INTERVAL, which this patch does.
+> 
+> I've run a few tests with this change, and ntpd still functions fine. I
+> do however note that the drift value for my test system changed from
+> ~170ppm to ~18ppm, which I didn't quite expect, and needs some
+> additional research.
+> 
+> Anyway, I just wanted to see if you had any thoughts on this sort of
+> change.
 
-This looks like a good solution, but can you make paravirt_lazy_mode()
-inline?  It doesn't need to be a function call.
+Hey Roman, Just wanted to ping you again to see if you had any
+objections to this change.
 
-Zach
+I did find the cause of my test system's drift switching from 170ppm to
+18ppm, and it ends up its due to my bouncing between kernel versions.
+The 170ppm drift was established after running w/ a older 2.6.24 based
+kernel for awhile, and after the NTP_INTERVAL_LENGTH changes
+(10a398d04c4a1fc395840f4d040493375f562302) landed the ppm value was
+expected to change. Comparing the same kernel 2.6.29-rc4 with and
+without this patch, the ppm value did not change.
+
+Anyway, here it is again.
+
+thanks
+-john
+
+
+Apply NTP tick/frequency adjustments immediately instead of waiting for
+the next second to pass.
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+
+diff --git a/kernel/time/ntp.c b/kernel/time/ntp.c
+index f5f793d..9fd0d15 100644
+--- a/kernel/time/ntp.c
++++ b/kernel/time/ntp.c
+@@ -51,6 +51,7 @@ static long ntp_tick_adj;
+ 
+ static void ntp_update_frequency(void)
+ {
++	u64 old_tick_length_base = tick_length_base;
+ 	u64 second_length = (u64)(tick_usec * NSEC_PER_USEC * USER_HZ)
+ 				<< NTP_SCALE_SHIFT;
+ 	second_length += (s64)ntp_tick_adj << NTP_SCALE_SHIFT;
+@@ -60,6 +61,11 @@ static void ntp_update_frequency(void)
+ 
+ 	tick_nsec = div_u64(second_length, HZ) >> NTP_SCALE_SHIFT;
+ 	tick_length_base = div_u64(tick_length_base, NTP_INTERVAL_FREQ);
++	
++	/* Don't wait for the next second_overflow, apply
++	 * the change to the tick length immediately
++	 */
++	tick_length += tick_length_base - old_tick_length_base;
+ }
+ 
+ static void ntp_update_offset(long offset)
+
 
