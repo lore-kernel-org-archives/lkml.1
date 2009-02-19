@@ -1,193 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758258AbZBSRES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbZBSRIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758258AbZBSRES (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 12:04:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbZBSRED
+	id S1756767AbZBSRIn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 12:08:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZBSRIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 12:04:03 -0500
-Received: from rosi.naasa.net ([212.8.0.13]:43386 "EHLO rosi.naasa.net"
+	Thu, 19 Feb 2009 12:08:35 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60230 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753338AbZBSREB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 12:04:01 -0500
-From: Joerg Platte <jplatte@naasa.net>
-Reply-To: jplatte@naasa.net
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: cpuinfo shows wrong MHz value
-Date: Thu, 19 Feb 2009 18:03:54 +0100
-User-Agent: KMail/1.9.9
-Cc: Kasper Sandberg <lkml@metanurb.dk>, linux-kernel@vger.kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-References: <200902142217.51655.jplatte@naasa.net> <200902182054.38840.jplatte@naasa.net> <200902182205.47737.elendil@planet.nl>
-In-Reply-To: <200902182205.47737.elendil@planet.nl>
+	id S1752414AbZBSRIe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 12:08:34 -0500
+Date: Thu, 19 Feb 2009 18:08:18 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [git pull] tracing fixes
+Message-ID: <20090219170818.GA27350@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902191803.55347.jplatte@naasa.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 18. Februar 2009 schrieb Frans Pop:
+Linus,
 
-> commit ed9cbcd40004904dbe61ccc16d6106a7de38c998
-> Author: Zhao Yakui <yakui.zhao@intel.com>
-> Date:   Tue Nov 20 14:20:21 2007 -0500
->     Revert "speedstep-lib.c: fix frequency multiplier for Pentium4 models
-> 0&1"
->
-> That would exactly explain the factor 8 of the error.
+Please pull the latest tracing-fixes-for-linus git tree from:
 
-Yes, looks like thats the reason.
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tracing-fixes-for-linus
 
-> Do you have a line like the following in your debug output?
->     P4 - FSB %u kHz; Multiplier %u; Speed %u kHz\n
-> If so, what does it say for .24 and .28?
+ Thanks,
 
-There is no such message in the log.
+	Ingo
 
-> Can you please provide the output of 'x86info -a' (as root) after loading
-> the cpuid module?
+------------------>
+Frederic Weisbecker (1):
+      tracing/function-graph-tracer: trace the idle tasks
 
-Here it is:
-
-x86info v1.21.  Dave Jones 2001-2007
-Feedback to <davej@redhat.com>.
-
-Found 1 CPU
---------------------------------------------------------------------------
-eax in: 0x00000000, eax = 00000002 ebx = 756e6547 ecx = 6c65746e edx = 
-49656e69
-eax in: 0x00000001, eax = 00000f12 ebx = 00010808 ecx = 00000000 edx = 
-3febfbff
-eax in: 0x00000002, eax = 665b5001 ebx = 00000000 ecx = 00000000 edx = 
-007a7040
-
-eax in: 0x80000000, eax = 80000004 ebx = 00000000 ecx = 00000000 edx = 
-00000000
-eax in: 0x80000001, eax = 00000000 ebx = 00000000 ecx = 00000000 edx = 
-00000000
-eax in: 0x80000002, eax = 20202020 ebx = 20202020 ecx = 20202020 edx = 
-6e492020
-eax in: 0x80000003, eax = 286c6574 ebx = 50202952 ecx = 69746e65 edx = 
-52286d75
-eax in: 0x80000004, eax = 20342029 ebx = 20555043 ecx = 30362e31 edx = 
-007a4847
-
-Family: 15 Model: 1 Stepping: 2 Type: 0 Brand: 8
-CPU Model: Pentium 4 (Willamette) [D0] Original OEM
-Processor name string: Intel(R) Pentium(R) 4 CPU 1.60GHz
-
-Feature flags:
- fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 
-clflsh ds acpi mmx fxsr sse sse2 ss ht tm
-Extended feature flags:
+Steven Rostedt (3):
+      tracing: disable tracing while testing ring buffer
+      tracing: have function trace select kallsyms
+      tracing: limit the number of loops the ring buffer self test can make
 
 
-Pentium 4 specific MSRs:
-IA32_PLATFORM_ID=0008000000000000
-System bus in order queue depth=12
-MSR_EBC_FREQUENCY_ID=000000008201ff00
-IA32_BIOS_SIGN_ID=0000002e00000000
-Processor serial number is enabled
-Fast string enable is set
-x87 FPU Fopcode compatability mode is unset
-Thermal monitor enable is set
-Split lock disable is unset
-L3 cache disable is set
-Performance monitoring is available
-Suppress lock enable is unset
-Prefetch queue disable is unset
-FERR# Interrupt reporting enable is unset
-Branch trace storage unavailable is unset
-Precise Event Based Sampling Unavailable is unset
+ kernel/trace/Kconfig          |    2 ++
+ kernel/trace/ftrace.c         |    6 +++++-
+ kernel/trace/trace_selftest.c |   19 +++++++++++++++++++
+ 3 files changed, 26 insertions(+), 1 deletions(-)
 
-Cache info
- Instruction trace cache: 12K uOps, 8-way associative.
- L1 Data cache: 8KB, sectored, 4-way associative. 64 byte line size.
- L2 unified cache: 256KB, sectored, 8-way associative. 64 byte line size.
-TLB info
- Instruction TLB: 4K, 2MB or 4MB pages, fully associative, 64 entries.
- Data TLB: 4KB or 4MB pages, fully associative, 64 entries.
-
-Number of reporting banks : 4
-
-Number of extended MC registers : 12
-
-
-Bank: 0 (0x400)
-MC0CTL:    00000000 00000000 00000000 00000000
-           00000000 00000000 11111111 11111111
-MC0STATUS: 00000000 00000000 00000000 00000000
-           00000000 00000000 00000000 00000000
-MC0ADDR:   00000000 00000000 00000000 00000000
-           00000000 00000000 00000000 00000000
-
-Bank: 1 (0x404)
-MC1CTL:    00000000 00000000 00000000 00000000
-           00000000 00000011 10000000 00000000
-MC1STATUS: 00000000 00000000 00000000 00000000
-           00000000 00000000 00000000 00000000
-MC1ADDR:   00000000 00000000 00000000 00000000
-           00000000 00000000 00000000 00000000
-
-Bank: 2 (0x408)
-MC2CTL:    00000000 00000000 00000000 00000000
-           00000000 00000000 00000000 10000000
-MC2STATUS: 00000000 00000000 00000000 00000000
-           00000000 00000000 00000000 00000000
-MC2ADDR:   Couldn't read MSR 0x40a
-
-Bank: 3 (0x40c)
-MC3CTL:    00000000 00000000 00000000 00000000
-           00000000 00000000 00000000 01111110
-MC3STATUS: 00000000 00000000 00000000 00000000
-           00000000 00000000 00000000 00000000
-MC3ADDR:   00000000 00000000 00000000 00000000
-           00000000 00000000 00000000 00000000
-
-The physical package supports 1 logical processors
-
-Microcode version: 0x000000000000002e
-
-Connector type: Socket423 (PGA423 Socket)
-
-Datasheet: http://developer.intel.com/design/pentium4/datashts/24919805.pdf
-Errata: http://developer.intel.com/design/pentium4/specupdt/249199.htm
-
-MTRR registers:
-MTRRcap (0xfe): 0x0000000000000508
-MTRRphysBase0 (0x200): 0x0000000000000006
-MTRRphysMask0 (0x201): 0x0000000fc0000800
-MTRRphysBase1 (0x202): 0x0000000000000000
-MTRRphysMask1 (0x203): 0x0000000000000000
-MTRRphysBase2 (0x204): 0x0000000000000000
-MTRRphysMask2 (0x205): 0x0000000000000000
-MTRRphysBase3 (0x206): 0x0000000000000000
-MTRRphysMask3 (0x207): 0x0000000000000000
-MTRRphysBase4 (0x208): 0x0000000000000000
-MTRRphysMask4 (0x209): 0x0000000000000000
-MTRRphysBase5 (0x20a): 0x0000000000000000
-MTRRphysMask5 (0x20b): 0x0000000000000000
-MTRRphysBase6 (0x20c): 0x0000000000000000
-MTRRphysMask6 (0x20d): 0x0000000000000000
-MTRRphysBase7 (0x20e): 0x0000000000000000
-MTRRphysMask7 (0x20f): 0x0000000000000000
-MTRRfix64K_00000 (0x250): 0x0606060606060606
-MTRRfix16K_80000 (0x258): 0x0606060606060606
-MTRRfix16K_A0000 (0x259): 0x0000000000000000
-MTRRfix4K_C8000 (0x269): 0x0000000000000000
-MTRRfix4K_D0000 0x26a: 0x0000000000000000
-MTRRfix4K_D8000 0x26b: 0x0000000000000000
-MTRRfix4K_E0000 0x26c: 0x0505050505050505
-MTRRfix4K_E8000 0x26d: 0x0505050505050505
-MTRRfix4K_F0000 0x26e: 0x0505050505050505
-MTRRfix4K_F8000 0x26f: 0x0505050505050505
-MTRRdefType (0x2ff): 0x0000000000000c00
-
-
-1.60GHz processor (estimate).
-
-best regards and thank you for your help
-Jörg
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index 58a93fb..34e707e 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -52,6 +52,7 @@ config FUNCTION_TRACER
+ 	depends on HAVE_FUNCTION_TRACER
+ 	depends on DEBUG_KERNEL
+ 	select FRAME_POINTER
++	select KALLSYMS
+ 	select TRACING
+ 	select CONTEXT_SWITCH_TRACER
+ 	help
+@@ -238,6 +239,7 @@ config STACK_TRACER
+ 	depends on DEBUG_KERNEL
+ 	select FUNCTION_TRACER
+ 	select STACKTRACE
++	select KALLSYMS
+ 	help
+ 	  This special tracer records the maximum stack footprint of the
+ 	  kernel and displays it in debugfs/tracing/stack_trace.
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 9a236ff..fdf913d 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -2033,7 +2033,7 @@ free:
+ static int start_graph_tracing(void)
+ {
+ 	struct ftrace_ret_stack **ret_stack_list;
+-	int ret;
++	int ret, cpu;
+ 
+ 	ret_stack_list = kmalloc(FTRACE_RETSTACK_ALLOC_SIZE *
+ 				sizeof(struct ftrace_ret_stack *),
+@@ -2042,6 +2042,10 @@ static int start_graph_tracing(void)
+ 	if (!ret_stack_list)
+ 		return -ENOMEM;
+ 
++	/* The cpu_boot init_task->ret_stack will never be freed */
++	for_each_online_cpu(cpu)
++		ftrace_graph_init_task(idle_task(cpu));
++
+ 	do {
+ 		ret = alloc_retstack_tasklist(ret_stack_list);
+ 	} while (ret == -EAGAIN);
+diff --git a/kernel/trace/trace_selftest.c b/kernel/trace/trace_selftest.c
+index 88c8eb7..bc8e80a 100644
+--- a/kernel/trace/trace_selftest.c
++++ b/kernel/trace/trace_selftest.c
+@@ -23,10 +23,20 @@ static int trace_test_buffer_cpu(struct trace_array *tr, int cpu)
+ {
+ 	struct ring_buffer_event *event;
+ 	struct trace_entry *entry;
++	unsigned int loops = 0;
+ 
+ 	while ((event = ring_buffer_consume(tr->buffer, cpu, NULL))) {
+ 		entry = ring_buffer_event_data(event);
+ 
++		/*
++		 * The ring buffer is a size of trace_buf_size, if
++		 * we loop more than the size, there's something wrong
++		 * with the ring buffer.
++		 */
++		if (loops++ > trace_buf_size) {
++			printk(KERN_CONT ".. bad ring buffer ");
++			goto failed;
++		}
+ 		if (!trace_valid_entry(entry)) {
+ 			printk(KERN_CONT ".. invalid entry %d ",
+ 				entry->type);
+@@ -57,11 +67,20 @@ static int trace_test_buffer(struct trace_array *tr, unsigned long *count)
+ 
+ 	cnt = ring_buffer_entries(tr->buffer);
+ 
++	/*
++	 * The trace_test_buffer_cpu runs a while loop to consume all data.
++	 * If the calling tracer is broken, and is constantly filling
++	 * the buffer, this will run forever, and hard lock the box.
++	 * We disable the ring buffer while we do this test to prevent
++	 * a hard lock up.
++	 */
++	tracing_off();
+ 	for_each_possible_cpu(cpu) {
+ 		ret = trace_test_buffer_cpu(tr, cpu);
+ 		if (ret)
+ 			break;
+ 	}
++	tracing_on();
+ 	__raw_spin_unlock(&ftrace_max_lock);
+ 	local_irq_restore(flags);
+ 
