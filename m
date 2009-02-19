@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758905AbZBSVr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759323AbZBSVsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758905AbZBSVr7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 16:47:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756827AbZBSVru
+	id S1759323AbZBSVsj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 16:48:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757936AbZBSVsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 16:47:50 -0500
-Received: from gate.crashing.org ([63.228.1.57]:59323 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755971AbZBSVru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 16:47:50 -0500
-Subject: Re: [Bug #12667] Badness at kernel/time/timekeeping.c:98 in pmud
- (timekeeping_suspended)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Paul Collins <paul@burly.ondioline.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <200902191400.53528.rjw@sisk.pl>
-References: <AIghyjFgMFP.A.uZD._10jJB@chimera>
-	 <87r61uzv95.fsf@burly.wgtn.ondioline.org>
-	 <1235032710.8805.37.camel@pasglop>  <200902191400.53528.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Fri, 20 Feb 2009 08:47:20 +1100
-Message-Id: <1235080040.8805.47.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Feb 2009 16:48:16 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:44082 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759024AbZBSVsP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 16:48:15 -0500
+Date: Thu, 19 Feb 2009 16:48:14 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] [trivial] fix references to Documentation/x86/i386/boot.txt
+Message-ID: <20090219214814.GQ17272@bombadil.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <499DCF42.3030306@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-19 at 14:00 +0100, Rafael J. Wysocki wrote:
-> On Thursday 19 February 2009, Benjamin Herrenschmidt wrote:
-> > On Thu, 2009-02-19 at 21:27 +1300, Paul Collins wrote:
-> > > > Just for laughs I slapped together the following, which seems to do
-> > > the
-> > > > job, although not especially tidily.
-> > > 
-> > > And it doesn't even do the job.  Judging by this new trace, submitting
-> > > input events from the via-pmu resume function is still too early.
-> > > 
-> > What's up Thomas ? We can't call gettimeofday() from a sysdev
-> > suspend/resume ? That's a little bit too harsh no ?
-> 
-> Perhaps the ordering is wrong (ie. via-pmu resume happens bevore timekeeping
-> resume)?
+From: Kyle McMartin <kyle@redhat.com>
 
-In this case, maybe gtod should just return the frozen time (ie, last
-time at the time of suspend) rather than WARN ?
+The amazing dancing boot.txt file has jumped places again. :)
 
-Ben.
+Signed-off-by: Kyle McMartin <kyle@redhat.com>
 
+---
+Resending to x86@kernel.org, cheers.
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index b182626..37b6a73 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -114,7 +114,7 @@ In addition, the following text indicates that the option:
+ Parameters denoted with BOOT are actually interpreted by the boot
+ loader, and have no meaning to the kernel directly.
+ Do not modify the syntax of boot loader parameters without extreme
+-need or coordination with <Documentation/x86/i386/boot.txt>.
++need or coordination with <Documentation/x86/boot.txt>.
+ 
+ There are also arch-specific kernel-parameters not documented here.
+ See for example <Documentation/x86/x86_64/boot-options.txt>.
+@@ -2449,7 +2449,7 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			See Documentation/fb/modedb.txt.
+ 
+ 	vga=		[BOOT,X86-32] Select a particular video mode
+-			See Documentation/x86/i386/boot.txt and
++			See Documentation/x86/boot.txt and
+ 			Documentation/svga.txt.
+ 			Use vga=ask for menu.
+ 			This is actually a boot loader parameter; the value is
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
 
