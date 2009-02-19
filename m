@@ -1,88 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755395AbZBSLAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754769AbZBSLCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755395AbZBSLAq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 06:00:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbZBSLAh
+	id S1754769AbZBSLCT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 06:02:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbZBSLCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 06:00:37 -0500
-Received: from mail.technotrend.de ([212.185.20.147]:52815 "EHLO
-	mail.technotrend.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752891AbZBSLAh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 06:00:37 -0500
-X-Greylist: delayed 611 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Feb 2009 06:00:37 EST
-Date: Thu, 19 Feb 2009 11:50:13 +0100
-From: Martin Zwickel <martin.zwickel@technotrend.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [saa7146] v4l 32bit ioctl compat patch
-Message-ID: <20090219115013.75449e6b@dieter.augsburg>
-X-Mailer: Claws Mail 3.7.0cvs56 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-X-Operating-System: Linux Dieter 2.6.25.1 x86_64  Intel(R) Core(TM)2 Quad
- CPU Q6600 @ 2.40GHz
-Organization: Technotrend AG
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/l1y+Qarr4GK+TMixKm77F+j";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+	Thu, 19 Feb 2009 06:02:07 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50533 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752226AbZBSLCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 06:02:06 -0500
+Date: Thu, 19 Feb 2009 12:01:42 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Tejun Heo <tj@kernel.org>, rusty@rustcorp.com.au, tglx@linutronix.de,
+       x86@kernel.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
+       jeremy@goop.org, cpw@sgi.com
+Subject: Re: [PATCH 09/10] percpu: implement new dynamic percpu allocator
+Message-ID: <20090219110142.GH2354@elte.hu>
+References: <1234958676-27618-1-git-send-email-tj@kernel.org> <1234958676-27618-10-git-send-email-tj@kernel.org> <20090219021015.aac6ea43.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090219021015.aac6ea43.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/l1y+Qarr4GK+TMixKm77F+j
-Content-Type: multipart/mixed; boundary="MP_/zP13K/sF+l/gwSjLMxMXzMe"
 
---MP_/zP13K/sF+l/gwSjLMxMXzMe
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Hi all,
+> > + * To use this allocator, arch code should do the followings.
+> > + *
+> > + * - define CONFIG_HAVE_DYNAMIC_PER_CPU_AREA
+> > + *
+> > + * - define __addr_to_pcpu_ptr() and __pcpu_ptr_to_addr() to translate
+> > + *   regular address to percpu pointer and back
+> > + *
+> > + * - use pcpu_setup_static() during percpu area initialization to
+> > + *   setup kernel static percpu area
+> > + */
+> 
+> afacit nobody has answered your "is num_possible_cpus() ever a 
+> lot larger than num_online_cpus()" question.
+> 
+> It is fairly important.
 
-what do you think about such a patch to get 32bit ioctl compat working for
-saa7146 driver?
+yeah.
 
-Thanks and regards,
-Martin
+On x86 we limit num_possible_cpus() at boot time from NR_CPUS to 
+the BIOS-enumerated set of possible CPUs - i.e. the two will 
+always be either equal, or be very close to each other.
 
---=20
-MyExcuse:
-static from nylon underwear
+( there used to be broken early BIOSes that enumerated more CPUs 
+  than needed but it's very rare and because it also wastes BIOS 
+  RAM/ROM it's something they'll usually avoid even if they dont 
+  care about Linux. )
 
-Martin Zwickel <martin.zwickel@technotrend.de>
-Research & Development
+So this should be a pretty OK assumption.
 
---MP_/zP13K/sF+l/gwSjLMxMXzMe
-Content-Type: text/x-patch
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment; filename=dvb_ttpci_v4l_compat_ioctl32.patch
-
-diff -uprN -X linux-2.6.23.1-vanilla/Documentation/dontdiff -x probe.c -x v=
-dso.lds linux-2.6.23.1-vanilla/drivers/media/common/saa7146_fops.c linux-2.=
-6.23.1/drivers/media/common/saa7146_fops.c
---- linux-2.6.23.1-vanilla/drivers/media/common/saa7146_fops.c	2007-10-12 1=
-8:43:44.000000000 +0200
-+++ linux-2.6.23.1/drivers/media/common/saa7146_fops.c	2007-11-27 14:03:57.=
-000000000 +0100
-@@ -425,6 +425,7 @@ static const struct file_operations vide
- 	.poll		=3D fops_poll,
- 	.mmap		=3D fops_mmap,
- 	.ioctl		=3D fops_ioctl,
-+	.compat_ioctl	=3D v4l_compat_ioctl32,
- 	.llseek		=3D no_llseek,
- };
-=20
-
---MP_/zP13K/sF+l/gwSjLMxMXzMe--
-
---Sig_/l1y+Qarr4GK+TMixKm77F+j
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkmdOWsACgkQmjLYGS7fcG292QCghpWOBNWRtHz2oMDoM2SLEIUA
-CVUAnjdWyqgdq0ThJmRx7RdOvGX9dFC+
-=C8xs
------END PGP SIGNATURE-----
-
---Sig_/l1y+Qarr4GK+TMixKm77F+j--
+	Ingo
