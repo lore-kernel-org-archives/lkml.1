@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757183AbZBSGoL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757651AbZBSGot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757183AbZBSGoL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 01:44:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbZBSGny
+	id S1757651AbZBSGot (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 01:44:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbZBSGoj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 01:43:54 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:64029 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751896AbZBSGny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 01:43:54 -0500
-Message-ID: <499D0001.7090208@cn.fujitsu.com>
-Date: Thu, 19 Feb 2009 14:45:21 +0800
-From: Yang Hongyang <yanghy@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+	Thu, 19 Feb 2009 01:44:39 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:46439 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752660AbZBSGoi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 01:44:38 -0500
+Date: Thu, 19 Feb 2009 14:44:31 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+Subject: Re: [PATCH -v2 1/3] crypto: Use dedicated workqueue for crypto
+	subsystem
+Message-ID: <20090219064431.GA2011@gondor.apana.org.au>
+References: <1234246430.20270.73.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Borislav Petkov <petkovbb@googlemail.com>
-Subject: [PATCH 05/12]Replace all DMA_35BIT_MASK micro with DMA_BIT_MASK(35)
-References: <499CFDC8.1070600@cn.fujitsu.com>
-In-Reply-To: <499CFDC8.1070600@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1234246430.20270.73.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replace all DMA_35BIT_MASK micro with DMA_BIT_MASK(35)
+On Tue, Feb 10, 2009 at 02:13:50PM +0800, Huang Ying wrote:
+> Use dedicated workqueue for crypto subsystem
+> 
+> A dedicated workqueue named kcrypto_wq is created to be used by crypto
+> subsystem. The system shared keventd_wq is not suitable for
+> encryption/decryption, because of potential starvation problem.
+> 
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-Signed-off-by: Yang Hongyang<yanghy@cn.fujitsu.com>
-
----
- drivers/net/netxen/netxen_nic_main.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/netxen/netxen_nic_main.c b/drivers/net/netxen/netxen_nic_main.c
-index 8bea4cb..2d4e41b 100644
---- a/drivers/net/netxen/netxen_nic_main.c
-+++ b/drivers/net/netxen/netxen_nic_main.c
-@@ -183,8 +183,8 @@ static int nx_set_dma_mask(struct netxen_adapter *adapter, uint8_t revision_id)
- 		adapter->dma_mask = DMA_BIT_MASK(39);
- 		mask = DMA_BIT_MASK(39);
- 	} else if (revision_id == NX_P2_C1) {
--		adapter->dma_mask = DMA_35BIT_MASK;
--		mask = DMA_35BIT_MASK;
-+		adapter->dma_mask = DMA_BIT_MASK(35);
-+		mask = DMA_BIT_MASK(35);
- 	} else {
- 		adapter->dma_mask = DMA_32BIT_MASK;
- 		mask = DMA_32BIT_MASK;
+All applied.  Thanks a lot for doing this!
 -- 
-1.6.0.3
-
-
--- 
-Regards
-Yang Hongyang
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
