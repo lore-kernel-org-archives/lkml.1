@@ -1,125 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757477AbZBSTDM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759305AbZBSTDs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757477AbZBSTDM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 14:03:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757170AbZBSTBk
+	id S1759305AbZBSTDs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 14:03:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757656AbZBSTBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 14:01:40 -0500
-Received: from mail-out.m-online.net ([212.18.0.10]:54983 "EHLO
+	Thu, 19 Feb 2009 14:01:50 -0500
+Received: from mail-out.m-online.net ([212.18.0.9]:36420 "EHLO
 	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754128AbZBSTBb (ORCPT
+	with ESMTP id S1755749AbZBSTBg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 14:01:31 -0500
-X-Auth-Info: 0Z/8eVeRfuZ0kgZ70MnBo8xWkjHz7YdUz76a6RTDTK4=
+	Thu, 19 Feb 2009 14:01:36 -0500
+X-Auth-Info: yqrbCfAP0A3sm0zHVCvcHUzMbEOTe4wVuysSJfTBBMg=
 From: Wolfgang Grandegger <wg@grandegger.com>
 To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Wolfgang Grandegger <wg@grandegger.com>,
-       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
-Subject: [PATCH 3/8] can: CAN Network device driver and SYSFS interface
-Date: Thu, 19 Feb 2009 20:01:17 +0100
-Message-Id: <1235070082-7069-4-git-send-email-wg@grandegger.com>
+Cc: linux-kernel@vger.kernel.org, Wolfgang Grandegger <wg@grandegger.com>
+Subject: [PATCH 8/8] can: Driver for the Freescale MSCAN controller
+Date: Thu, 19 Feb 2009 20:01:22 +0100
+Message-Id: <1235070082-7069-9-git-send-email-wg@grandegger.com>
 X-Mailer: git-send-email 1.5.6.6
-In-Reply-To: <1235070082-7069-3-git-send-email-wg@grandegger.com>
+In-Reply-To: <1235070082-7069-8-git-send-email-wg@grandegger.com>
 References: <1235070082-7069-1-git-send-email-wg@grandegger.com>
  <1235070082-7069-2-git-send-email-wg@grandegger.com>
  <1235070082-7069-3-git-send-email-wg@grandegger.com>
+ <1235070082-7069-4-git-send-email-wg@grandegger.com>
+ <1235070082-7069-5-git-send-email-wg@grandegger.com>
+ <1235070082-7069-6-git-send-email-wg@grandegger.com>
+ <1235070082-7069-7-git-send-email-wg@grandegger.com>
+ <1235070082-7069-8-git-send-email-wg@grandegger.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The CAN network device driver interface provides a generic interface to
-setup, configure and monitor CAN network devices. It exports a set of
-common data structures and functions, which all real CAN network device
-drivers should use. Please have a look to the SJA1000 or MSCAN driver
-to understand how to use them. The name of the module is can-dev.ko.
-
-Furthermore adds a SYSFS interface to set and get CAN device properties.
-When the CAN device is registered, a set of SYSFS files is created in
-"/sys/class/net/canX/". These files allow to set and get device
-properties like bit-timing parameters, state, controller mode and CAN
-statistics.
-
-For further information please check "Documentation/networking/can.txt"
+This patch adds the generic Socket-CAN driver for the MSCAN controller
+available on some Freescale processor chips like the PowerPC MPC5200,
+MPC512x or the m86k MC68HC12. It also includes an OF platform driver
+for the MPC5200.
 
 Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
-Signed-off-by: Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
 ---
- drivers/net/can/Kconfig  |   23 ++
- drivers/net/can/Makefile |    5 +
- drivers/net/can/dev.c    |  528 ++++++++++++++++++++++++++++++++++++++++++++++
- drivers/net/can/sysfs.c  |  509 ++++++++++++++++++++++++++++++++++++++++++++
- drivers/net/can/sysfs.h  |   24 ++
- include/linux/can/dev.h  |  136 ++++++++++++
- 6 files changed, 1225 insertions(+), 0 deletions(-)
- create mode 100644 drivers/net/can/dev.c
- create mode 100644 drivers/net/can/sysfs.c
- create mode 100644 drivers/net/can/sysfs.h
- create mode 100644 include/linux/can/dev.h
+ drivers/net/can/Kconfig             |   20 +
+ drivers/net/can/Makefile            |    1 +
+ drivers/net/can/mscan/Makefile      |    9 +
+ drivers/net/can/mscan/mpc52xx_can.c |  293 +++++++++++++++
+ drivers/net/can/mscan/mscan.c       |  681 +++++++++++++++++++++++++++++++++++
+ drivers/net/can/mscan/mscan.h       |  237 ++++++++++++
+ 6 files changed, 1241 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/net/can/mscan/Makefile
+ create mode 100644 drivers/net/can/mscan/mpc52xx_can.c
+ create mode 100644 drivers/net/can/mscan/mscan.c
+ create mode 100644 drivers/net/can/mscan/mscan.h
 
 diff --git a/drivers/net/can/Kconfig b/drivers/net/can/Kconfig
-index 57def0d..d609895 100644
+index b1c4ae5..ac5ff41 100644
 --- a/drivers/net/can/Kconfig
 +++ b/drivers/net/can/Kconfig
-@@ -12,6 +12,29 @@ config CAN_VCAN
- 	  This driver can also be built as a module.  If so, the module
- 	  will be called vcan.
+@@ -70,6 +70,26 @@ config CAN_KVASER_PCI
+ 	  This driver is for the the PCIcanx and PCIcan cards (1, 2 or
+ 	  4 channel) from Kvaser (http://www.kvaser.com).
  
-+config CAN_DEV
-+	tristate "Platform CAN drivers with SYSFS support"
-+	depends on CAN && SYSFS
-+	default Y
++config CAN_MSCAN
++	depends on CAN_DEV && (PPC || M68K || M68KNOMMU)
++	tristate "Freescale MSCAN based chips"
 +	---help---
-+	  Enables the common framework for platform CAN drivers with SYSFS
-+	  support. This is the standard library for CAN drivers.
-+	  If unsure, say Y.
++	  The Motorola Scalable Controller Area Network (MSCAN) definition
++	  is based on the MSCAN12 definition which is the specific
++	  implementation of the Motorola Scalable CAN concept targeted for
++	  the Motorola MC68HC12 Microcontroller Family.
 +
-+config CAN_CALC_BITTIMING
-+	bool "CAN bit-timing calculation"
-+	depends on CAN_DEV
-+	default Y
++config CAN_MPC52XX
++	tristate "Freescale MPC5200 onboard CAN controller"
++	depends on CAN_MSCAN && PPC_MPC52xx
++	default N
 +	---help---
-+	  If enabled, CAN bit-timing parameters will be calculated for the
-+	  bit-rate specified via SYSFS file "bitrate" when the device gets
-+	  started. This works fine for the most common CAN controllers
-+	  with standard bit-rates but may fail for exotic bit-rates or CAN
-+	  source clock frequencies. Disabling saves some space, but then the
-+	  bit-timing parameters must be specified directly using the SYSFS
-+	  files "tq", "prop_seg", "phase_seg1", "phase_seg2" and "sjw".
-+	  If unsure, say Y.
++	  If you say yes here you get support for Freescale MPC5200
++	  onboard dualCAN controller.
++
++	  This driver can also be built as a module.  If so, the module
++	  will be called mpc52xx_can.
 +
  config CAN_DEBUG_DEVICES
  	bool "CAN devices debugging messages"
  	depends on CAN
 diff --git a/drivers/net/can/Makefile b/drivers/net/can/Makefile
-index c4bead7..557114b 100644
+index 728d83f..fc2010f 100644
 --- a/drivers/net/can/Makefile
 +++ b/drivers/net/can/Makefile
-@@ -3,3 +3,8 @@
- #
+@@ -8,5 +8,6 @@ obj-$(CONFIG_CAN_DEV)		+= can-dev.o
+ can-dev-y			:= dev.o sysfs.o
  
- obj-$(CONFIG_CAN_VCAN)		+= vcan.o
+ obj-$(CONFIG_CAN_SJA1000)	+= sja1000/
++obj-$(CONFIG_CAN_MSCAN)		+= mscan/
+ 
+ ccflags-$(CONFIG_CAN_DEBUG_DEVICES) := -DDEBUG
+diff --git a/drivers/net/can/mscan/Makefile b/drivers/net/can/mscan/Makefile
+new file mode 100644
+index 0000000..b90890f
+--- /dev/null
++++ b/drivers/net/can/mscan/Makefile
+@@ -0,0 +1,9 @@
++#
++#  Makefile for the MSCAN controller drivers.
++#
 +
-+obj-$(CONFIG_CAN_DEV)		+= can-dev.o
-+can-dev-y			:= dev.o sysfs.o
++obj-$(CONFIG_CAN_MPC52XX)	+= mscan-mpc52xx.o
++
++mscan-mpc52xx-y	:= mscan.o mpc52xx_can.o
 +
 +ccflags-$(CONFIG_CAN_DEBUG_DEVICES) := -DDEBUG
-diff --git a/drivers/net/can/dev.c b/drivers/net/can/dev.c
+diff --git a/drivers/net/can/mscan/mpc52xx_can.c b/drivers/net/can/mscan/mpc52xx_can.c
 new file mode 100644
-index 0000000..faa75d1
+index 0000000..8878a59
 --- /dev/null
-+++ b/drivers/net/can/dev.c
-@@ -0,0 +1,528 @@
++++ b/drivers/net/can/mscan/mpc52xx_can.c
+@@ -0,0 +1,293 @@
 +/*
-+ * Copyright (C) 2005 Marc Kleine-Budde, Pengutronix
-+ * Copyright (C) 2006 Andrey Volkov, Varma Electronics
-+ * Copyright (C) 2008 Wolfgang Grandegger <wg@grandegger.com>
++ * CAN bus driver for the Freescale MPC52xx embedded CPU.
++ *
++ * Copyright (C) 2004-2005 Andrey Volkov <avolkov@varma-el.com>,
++ *                         Varma Electronics Oy
++ * Copyright (C) 2008-2009 Wolfgang Grandegger <wg@grandegger.com>
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the version 2 of the GNU General Public License
 + * as published by the Free Software Foundation
 + *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
 + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 + * GNU General Public License for more details.
 + *
@@ -128,523 +134,976 @@ index 0000000..faa75d1
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 + */
 +
++#include <linux/kernel.h>
 +#include <linux/module.h>
++#include <linux/interrupt.h>
++#include <linux/platform_device.h>
 +#include <linux/netdevice.h>
-+#include <linux/if_arp.h>
 +#include <linux/can.h>
 +#include <linux/can/dev.h>
-+#include <net/rtnetlink.h>
++#include <linux/of_platform.h>
++#include <sysdev/fsl_soc.h>
++#include <linux/io.h>
++#include <asm/mpc52xx.h>
 +
-+#include "sysfs.h"
++#include "mscan.h"
 +
-+#define MOD_DESC "CAN device driver interface"
 +
-+MODULE_DESCRIPTION(MOD_DESC);
-+MODULE_LICENSE("GPL v2");
-+MODULE_AUTHOR("Wolfgang Grandegger <wg@grandegger.com>");
++#define DRV_NAME "mpc52xx_can"
 +
-+#ifdef CONFIG_CAN_CALC_BITTIMING
-+#define CAN_CALC_MAX_ERROR 50 /* in one-tenth of a percent */
++static struct of_device_id mpc52xx_cdm_ids[] __devinitdata = {
++	{ .compatible = "fsl,mpc5200-cdm", },
++	{ .compatible = "fsl,mpc5200b-cdm", },
++	{}
++};
 +
 +/*
-+ * Bit-timing calculation derived from:
++ * Get the frequency of the external oscillator clock connected
++ * to the SYS_XTAL_IN pin, or retrun 0 if it cannot be determined.
++ */
++static unsigned int  __devinit mpc52xx_can_xtal_freq(struct device_node *np)
++{
++	struct mpc52xx_cdm  __iomem *cdm;
++	struct device_node *np_cdm;
++	unsigned int freq;
++	u32 val;
++
++	freq = mpc52xx_find_ipb_freq(np);
++	if (!freq)
++		return 0;
++
++	/*
++	 * Detemine SYS_XTAL_IN frequency from the clock domain settings
++	 */
++	np_cdm = of_find_matching_node(NULL, mpc52xx_cdm_ids);
++	cdm = of_iomap(np_cdm, 0);
++	of_node_put(np_cdm);
++	if (!np_cdm) {
++		printk(KERN_ERR "%s() failed abnormally\n", __func__);
++		return 0;
++	}
++
++	if (in_8(&cdm->ipb_clk_sel) & 0x1)
++		freq *= 2;
++	val  = in_be32(&cdm->rstcfg);
++	if (val & (1 << 5))
++		freq *= 8;
++	else
++		freq *= 4;
++	if (val & (1 << 6))
++		freq /= 12;
++	else
++		freq /= 16;
++
++	iounmap(cdm);
++
++	return freq;
++}
++
++/*
++ * Get frequency of the MSCAN clock source
 + *
-+ * Code based on LinCAN sources and H8S2638 project
-+ * Copyright 2004-2006 Pavel Pisa - DCE FELK CVUT cz
-+ * Copyright 2005      Stanislav Marek
-+ * email: pisa@cmp.felk.cvut.cz
++ * Either the oscillator clock (SYS_XTAL_IN) or the IP bus clock (IP_CLK)
++ * can be selected. According to the MPC5200 user's manual, the oscillator
++ * clock is the better choice as it has less jitter but due to a hardware
++ * bug, it can not be selected for the old MPC5200 Rev. A chips.
 + */
-+static int can_update_spt(const struct can_bittiming_const *btc,
-+			  int sampl_pt, int tseg, int *tseg1, int *tseg2)
++
++static unsigned int  __devinit mpc52xx_can_clock_freq(struct device_node *np,
++						      int clock_src)
 +{
-+	*tseg2 = tseg + 1 - (sampl_pt * (tseg + 1)) / 1000;
-+	if (*tseg2 < btc->tseg2_min)
-+		*tseg2 = btc->tseg2_min;
-+	if (*tseg2 > btc->tseg2_max)
-+		*tseg2 = btc->tseg2_max;
-+	*tseg1 = tseg - *tseg2;
-+	if (*tseg1 > btc->tseg1_max) {
-+		*tseg1 = btc->tseg1_max;
-+		*tseg2 = tseg - *tseg1;
-+	}
-+	return 1000 * (tseg + 1 - *tseg2) / (tseg + 1);
++	unsigned int pvr;
++
++	pvr = mfspr(SPRN_PVR);
++
++	if (clock_src == MSCAN_CLKSRC_BUS || pvr == 0x80822011)
++		return mpc52xx_find_ipb_freq(np);
++
++	return mpc52xx_can_xtal_freq(np);
 +}
 +
-+static int can_calc_bittiming(struct net_device *dev)
++static int __devinit mpc52xx_can_probe(struct of_device *ofdev,
++				       const struct of_device_id *id)
 +{
-+	struct can_priv *priv = netdev_priv(dev);
-+	struct can_bittiming *bt = &priv->bittiming;
-+	const struct can_bittiming_const *btc = priv->bittiming_const;
-+	long rate, best_rate = 0;
-+	long best_error = 1000000000, error = 0;
-+	int best_tseg = 0, best_brp = 0, brp = 0;
-+	int tsegall, tseg = 0, tseg1 = 0, tseg2 = 0;
-+	int spt_error = 1000, spt = 0, sampl_pt;
-+	u64 v64;
-+
-+	if (!priv->bittiming_const)
-+		return -ENOTSUPP;
-+
-+	/* Use CIA recommended sample points */
-+	if (bt->sample_point) {
-+		sampl_pt = bt->sample_point;
-+	} else {
-+		if (bt->bitrate > 800000)
-+			sampl_pt = 750;
-+		else if (bt->bitrate > 500000)
-+			sampl_pt = 800;
-+		else
-+			sampl_pt = 875;
-+	}
-+
-+	/* tseg even = round down, odd = round up */
-+	for (tseg = (btc->tseg1_max + btc->tseg2_max) * 2 + 1;
-+	     tseg >= (btc->tseg1_min + btc->tseg2_min) * 2; tseg--) {
-+		tsegall = 1 + tseg / 2;
-+		/* Compute all possible tseg choices (tseg=tseg1+tseg2) */
-+		brp = bt->clock / (tsegall * bt->bitrate) + tseg % 2;
-+		/* chose brp step which is possible in system */
-+		brp = (brp / btc->brp_inc) * btc->brp_inc;
-+		if ((brp < btc->brp_min) || (brp > btc->brp_max))
-+			continue;
-+		rate = bt->clock / (brp * tsegall);
-+		error = bt->bitrate - rate;
-+		/* tseg brp biterror */
-+		if (error < 0)
-+			error = -error;
-+		if (error > best_error)
-+			continue;
-+		best_error = error;
-+		if (error == 0) {
-+			spt = can_update_spt(btc, sampl_pt, tseg / 2,
-+					     &tseg1, &tseg2);
-+			error = sampl_pt - spt;
-+			if (error < 0)
-+				error = -error;
-+			if (error > spt_error)
-+				continue;
-+			spt_error = error;
-+		}
-+		best_tseg = tseg / 2;
-+		best_brp = brp;
-+		best_rate = rate;
-+		if (error == 0)
-+			break;
-+	}
-+
-+	if (best_error) {
-+		/* Error in one-tenth of a percent */
-+		error = (best_error * 1000) / bt->bitrate;
-+		if (error > CAN_CALC_MAX_ERROR) {
-+			dev_err(ND2D(dev), "bitrate error %ld.%ld%% too high\n",
-+				error / 10, error % 10);
-+			return -EDOM;
-+		} else {
-+			dev_warn(ND2D(dev), "bitrate error %ld.%ld%%\n",
-+				 error / 10, error % 10);
-+		}
-+	}
-+
-+	spt = can_update_spt(btc, sampl_pt, best_tseg, &tseg1, &tseg2);
-+
-+	v64 = (u64)best_brp * 1000000000UL;
-+	do_div(v64, bt->clock);
-+	bt->tq = (u32)v64;
-+	bt->prop_seg = tseg1 / 2;
-+	bt->phase_seg1 = tseg1 - bt->prop_seg;
-+	bt->phase_seg2 = tseg2;
-+	bt->sjw = 1;
-+	bt->brp = best_brp;
-+
-+	return 0;
-+}
-+#else /* !CONFIG_CAN_CALC_BITTIMING */
-+static int can_calc_bittiming(struct net_device *dev)
-+{
-+	dev_err(ND2D(dev), "bit-timing calculation not available\n");
-+	return -EINVAL;
-+}
-+#endif /* CONFIG_CAN_CALC_BITTIMING */
-+
-+int can_sample_point(struct can_bittiming *bt)
-+{
-+	return ((bt->prop_seg + bt->phase_seg1 + 1) * 1000) /
-+		(bt->prop_seg + bt->phase_seg1 + bt->phase_seg2 + 1);
-+}
-+
-+static int can_fixup_bittiming(struct net_device *dev)
-+{
-+	struct can_priv *priv = netdev_priv(dev);
-+	struct can_bittiming *bt = &priv->bittiming;
-+	const struct can_bittiming_const *btc = priv->bittiming_const;
-+	int tseg1, alltseg;
-+	u32 bitrate;
-+	u64 brp64;
-+
-+	if (!priv->bittiming_const)
-+		return -ENOTSUPP;
-+
-+	tseg1 = bt->prop_seg + bt->phase_seg1;
-+	if (bt->sjw > btc->sjw_max ||
-+	    tseg1 < btc->tseg1_min || tseg1 > btc->tseg1_max ||
-+	    bt->phase_seg2 < btc->tseg2_min || bt->phase_seg2 > btc->tseg2_max)
-+		return -EINVAL;
-+
-+	brp64 = (u64)bt->clock * (u64)bt->tq;
-+	if (btc->brp_inc > 1)
-+		do_div(brp64, btc->brp_inc);
-+	brp64 += 500000000UL - 1;
-+	do_div(brp64, 1000000000UL); /* the practicable BRP */
-+	if (btc->brp_inc > 1)
-+		brp64 *= btc->brp_inc;
-+	bt->brp = (u32)brp64;
-+
-+	if (bt->brp < btc->brp_min || bt->brp > btc->brp_max)
-+		return -EINVAL;
-+
-+	alltseg = bt->prop_seg + bt->phase_seg1 + bt->phase_seg2 + 1;
-+	bitrate = bt->clock / (bt->brp * alltseg);
-+	bt->bitrate = bitrate;
-+
-+	return 0;
-+}
-+
-+/*
-+ * Set CAN bit-timing for the device
-+ *
-+ * This functions should be called in the open function of the device
-+ * driver to determine, check and set appropriate bit-timing parameters.
-+ */
-+int can_set_bittiming(struct net_device *dev)
-+{
-+	struct can_priv *priv = netdev_priv(dev);
-+	int err;
-+
-+	/* Check if bit-timing parameters have been pre-defined */
-+	if (!priv->bittiming.tq && !priv->bittiming.bitrate) {
-+		dev_err(ND2D(dev), "bit-timing not yet defined\n");
-+		return -EINVAL;
-+	}
-+
-+	/* Check if the CAN device has bit-timing parameters */
-+	if (priv->bittiming_const) {
-+
-+		/* Check if bit-timing parameters have already been set */
-+		if (priv->bittiming.tq && priv->bittiming.bitrate)
-+			return 0;
-+
-+		/* Non-expert mode? Check if the bitrate has been pre-defined */
-+		if (!priv->bittiming.tq)
-+			/* Determine bit-timing parameters */
-+			err = can_calc_bittiming(dev);
-+		else
-+			/* Check bit-timing params and calculate proper brp */
-+			err = can_fixup_bittiming(dev);
-+		if (err)
-+			return err;
-+	}
-+
-+	if (priv->do_set_bittiming) {
-+		/* Finally, set the bit-timing registers */
-+		err = priv->do_set_bittiming(dev);
-+		if (err)
-+			return err;
-+	}
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(can_set_bittiming);
-+
-+static void can_setup(struct net_device *dev)
-+{
-+	dev->type = ARPHRD_CAN;
-+	dev->mtu = sizeof(struct can_frame);
-+	dev->hard_header_len = 0;
-+	dev->addr_len = 0;
-+	dev->tx_queue_len = 10;
-+
-+	/* New-style flags. */
-+	dev->flags = IFF_NOARP;
-+	dev->features = NETIF_F_NO_CSUM;
-+}
-+
-+/*
-+ * Allocate and setup space for the CAN network device
-+ */
-+struct net_device *alloc_candev(int sizeof_priv)
-+{
++	struct device_node *np = ofdev->node;
 +	struct net_device *dev;
 +	struct can_priv *priv;
++	struct resource res;
++	void __iomem *base;
++	int err, irq, res_size, clock_src;
 +
-+	dev = alloc_netdev(sizeof_priv, "can%d", can_setup);
-+	if (!dev)
-+		return NULL;
++	err = of_address_to_resource(np, 0, &res);
++	if (err) {
++		dev_err(&ofdev->dev, "invalid address\n");
++		return err;
++	}
++
++	res_size = res.end - res.start + 1;
++
++	if (!request_mem_region(res.start, res_size, DRV_NAME)) {
++		dev_err(&ofdev->dev, "couldn't request %#x..%#x\n",
++			res.start, res.end);
++		return -EBUSY;
++	}
++
++	base = ioremap_nocache(res.start, res_size);
++	if (!base) {
++		dev_err(&ofdev->dev, "couldn't ioremap %#x..%#x\n",
++			res.start, res.end);
++		err = -ENOMEM;
++		goto exit_release_mem;
++	}
++
++	irq = irq_of_parse_and_map(np, 0);
++	if (irq == NO_IRQ) {
++		dev_err(&ofdev->dev, "no irq found\n");
++		err = -ENODEV;
++		goto exit_unmap_mem;
++	}
++
++	dev = alloc_mscandev();
++	if (!dev) {
++		err = -ENOMEM;
++		goto exit_dispose_irq;
++	}
++
++	dev->base_addr = (unsigned long)base;
++	dev->irq = irq;
 +
 +	priv = netdev_priv(dev);
 +
-+	priv->state = CAN_STATE_STOPPED;
-+	spin_lock_init(&priv->irq_lock);
++	/*
++	 * Either the oscillator clock (SYS_XTAL_IN) or the IP bus clock
++	 * (IP_CLK) can be selected as MSCAN clock source. According to
++	 * the MPC5200 user's manual, the oscillator clock is the better
++	 * choice as it has less jitter. For this reason, it is selected
++	 * by default.
++	 */
++	if (of_get_property(np, "clock-ipb", NULL))
++		clock_src = MSCAN_CLKSRC_BUS;
++	else
++		clock_src = MSCAN_CLKSRC_XTAL;
++	priv->bittiming.clock = mpc52xx_can_clock_freq(np, clock_src);
++	if (!priv->bittiming.clock) {
++		dev_err(&ofdev->dev, "couldn't get MSCAN clock frequency\n");
++		err = -ENODEV;
++		goto exit_free_mscan;
++	}
 +
-+	init_timer(&priv->timer);
-+	priv->timer.expires = 0;
++	SET_NETDEV_DEV(dev, &ofdev->dev);
++
++	err = register_mscandev(dev, clock_src);
++	if (err) {
++		dev_err(&ofdev->dev, "registering %s failed (err=%d)\n",
++			DRV_NAME, err);
++		goto exit_free_mscan;
++	}
++
++	dev_set_drvdata(&ofdev->dev, dev);
++
++	dev_info(&ofdev->dev, "MSCAN at 0x%lx, irq %d, clock %d Hz\n",
++		 dev->base_addr, dev->irq, priv->bittiming.clock);
++
++	return 0;
++
++exit_free_mscan:
++	free_candev(dev);
++exit_dispose_irq:
++	irq_dispose_mapping(irq);
++exit_unmap_mem:
++	iounmap(base);
++exit_release_mem:
++	release_mem_region(res.start, res_size);
++
++	return err;
++}
++
++static int __devexit mpc52xx_can_remove(struct of_device *ofdev)
++{
++	struct net_device *dev = dev_get_drvdata(&ofdev->dev);
++	struct device_node *np = ofdev->node;
++	struct resource res;
++
++	dev_set_drvdata(&ofdev->dev, NULL);
++
++	unregister_mscandev(dev);
++	iounmap((void __iomem *)dev->base_addr);
++	irq_dispose_mapping(dev->irq);
++	free_candev(dev);
++
++	of_address_to_resource(np, 0, &res);
++	release_mem_region(res.start, res.end - res.start + 1);
++
++	return 0;
++}
++
++static struct mscan_regs saved_regs;
++static int mpc52xx_can_suspend(struct of_device *ofdev, pm_message_t state)
++{
++	struct net_device *dev = dev_get_drvdata(&ofdev->dev);
++	struct mscan_regs *regs = (struct mscan_regs *)dev->base_addr;
++
++	_memcpy_fromio(&saved_regs, regs, sizeof(*regs));
++
++	return 0;
++}
++
++static int mpc52xx_can_resume(struct of_device *ofdev)
++{
++	struct net_device *dev = dev_get_drvdata(&ofdev->dev);
++	struct mscan_regs *regs = (struct mscan_regs *)dev->base_addr;
++
++	regs->canctl0 |= MSCAN_INITRQ;
++	while ((regs->canctl1 & MSCAN_INITAK) == 0)
++		udelay(10);
++
++	regs->canctl1 = saved_regs.canctl1;
++	regs->canbtr0 = saved_regs.canbtr0;
++	regs->canbtr1 = saved_regs.canbtr1;
++	regs->canidac = saved_regs.canidac;
++
++	/* restore masks, buffers etc. */
++	_memcpy_toio(&regs->canidar1_0, (void *)&saved_regs.canidar1_0,
++		     sizeof(*regs) - offsetof(struct mscan_regs, canidar1_0));
++
++	regs->canctl0 &= ~MSCAN_INITRQ;
++	regs->cantbsel = saved_regs.cantbsel;
++	regs->canrier = saved_regs.canrier;
++	regs->cantier = saved_regs.cantier;
++	regs->canctl0 = saved_regs.canctl0;
++
++	return 0;
++}
++
++static struct of_device_id __devinitdata mpc52xx_can_table[] = {
++	{.compatible = "fsl,mpc5200-mscan"},
++	{.compatible = "fsl,mpc5200b-mscan"},
++	{},
++};
++
++static struct of_platform_driver mpc52xx_can_driver = {
++	.owner = THIS_MODULE,
++	.name = "mpc52xx_can",
++	.probe = mpc52xx_can_probe,
++	.remove = __devexit_p(mpc52xx_can_remove),
++	.suspend = mpc52xx_can_suspend,
++	.resume = mpc52xx_can_resume,
++	.match_table = mpc52xx_can_table,
++};
++
++static int __init mpc52xx_can_init(void)
++{
++	return of_register_platform_driver(&mpc52xx_can_driver);
++}
++module_init(mpc52xx_can_init);
++
++static void __exit mpc52xx_can_exit(void)
++{
++	return of_unregister_platform_driver(&mpc52xx_can_driver);
++};
++module_exit(mpc52xx_can_exit);
++
++MODULE_AUTHOR("Wolfgang Grandegger <wg@grandegger.com>");
++MODULE_DESCRIPTION("Freescale MPC5200 CAN driver");
++MODULE_LICENSE("GPL v2");
+diff --git a/drivers/net/can/mscan/mscan.c b/drivers/net/can/mscan/mscan.c
+new file mode 100644
+index 0000000..bb136d0
+--- /dev/null
++++ b/drivers/net/can/mscan/mscan.c
+@@ -0,0 +1,681 @@
++/*
++ * CAN bus driver for the alone generic (as possible as) MSCAN controller.
++ *
++ * Copyright (C) 2005-2006 Andrey Volkov <avolkov@varma-el.com>,
++ *                         Varma Electronics Oy
++ * Copyright (C) 2008-2009 Wolfgang Grandegger <wg@grandegger.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the version 2 of the GNU General Public License
++ * as published by the Free Software Foundation
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/interrupt.h>
++#include <linux/delay.h>
++#include <linux/netdevice.h>
++#include <linux/if_arp.h>
++#include <linux/if_ether.h>
++#include <linux/list.h>
++#include <linux/can.h>
++#include <linux/can/dev.h>
++#include <linux/can/error.h>
++#include <linux/io.h>
++
++#include "mscan.h"
++
++#define MSCAN_NORMAL_MODE	0
++#define MSCAN_SLEEP_MODE	MSCAN_SLPRQ
++#define MSCAN_INIT_MODE		(MSCAN_INITRQ | MSCAN_SLPRQ)
++#define MSCAN_POWEROFF_MODE	(MSCAN_CSWAI | MSCAN_SLPRQ)
++#define MSCAN_SET_MODE_RETRIES	255
++
++#define BTR0_BRP_MASK		0x3f
++#define BTR0_SJW_SHIFT		6
++#define BTR0_SJW_MASK		(0x3 << BTR0_SJW_SHIFT)
++
++#define BTR1_TSEG1_MASK 	0xf
++#define BTR1_TSEG2_SHIFT	4
++#define BTR1_TSEG2_MASK 	(0x7 << BTR1_TSEG2_SHIFT)
++#define BTR1_SAM_SHIFT  	7
++
++#define BTR0_SET_BRP(brp)	(((brp) - 1) & BTR0_BRP_MASK)
++#define BTR0_SET_SJW(sjw)	((((sjw) - 1) << BTR0_SJW_SHIFT) & \
++				 BTR0_SJW_MASK)
++
++#define BTR1_SET_TSEG1(tseg1)	(((tseg1) - 1) &  BTR1_TSEG1_MASK)
++#define BTR1_SET_TSEG2(tseg2)	((((tseg2) - 1) << BTR1_TSEG2_SHIFT) & \
++				 BTR1_TSEG2_MASK)
++#define BTR1_SET_SAM(sam)	(((sam) & 1) << BTR1_SAM_SHIFT)
++
++static struct can_bittiming_const mscan_bittiming_const = {
++	.tseg1_min = 4,
++	.tseg1_max = 16,
++	.tseg2_min = 2,
++	.tseg2_max = 8,
++	.sjw_max = 4,
++	.brp_min = 1,
++	.brp_max = 64,
++	.brp_inc = 1,
++};
++
++struct mscan_state {
++	u8 mode;
++	u8 canrier;
++	u8 cantier;
++};
++
++#define TX_QUEUE_SIZE	3
++
++struct tx_queue_entry {
++	struct list_head list;
++	u8 mask;
++	u8 id;
++};
++
++struct mscan_priv {
++	struct can_priv can;
++	long open_time;
++	unsigned long flags;
++	u8 shadow_statflg;
++	u8 shadow_canrier;
++	u8 cur_pri;
++	u8 tx_active;
++
++	struct list_head tx_head;
++	struct tx_queue_entry tx_queue[TX_QUEUE_SIZE];
++	struct napi_struct napi;
++};
++
++#define F_RX_PROGRESS	0
++#define F_TX_PROGRESS	1
++#define F_TX_WAIT_ALL	2
++
++static enum can_state state_map[] = {
++	CAN_STATE_ACTIVE,
++	CAN_STATE_BUS_WARNING,
++	CAN_STATE_BUS_PASSIVE,
++	CAN_STATE_BUS_OFF
++};
++
++static int mscan_set_mode(struct net_device *dev, u8 mode)
++{
++	struct mscan_regs *regs = (struct mscan_regs *)dev->base_addr;
++	struct mscan_priv *priv = netdev_priv(dev);
++	int ret = 0;
++	int i;
++	u8 canctl1;
++
++	if (mode != MSCAN_NORMAL_MODE) {
++
++		if (priv->tx_active) {
++			/* Abort transfers before going to sleep */
++			out_8(&regs->cantier, 0);
++			out_8(&regs->cantarq, priv->tx_active);
++			out_8(&regs->cantier, priv->tx_active);
++		}
++
++		canctl1 = in_8(&regs->canctl1);
++		if ((mode & MSCAN_SLPRQ) && (canctl1 & MSCAN_SLPAK) == 0) {
++			out_8(&regs->canctl0,
++			      in_8(&regs->canctl0) | MSCAN_SLPRQ);
++			for (i = 0; i < MSCAN_SET_MODE_RETRIES; i++) {
++				if (in_8(&regs->canctl1) & MSCAN_SLPAK)
++					break;
++				udelay(100);
++			}
++			if (i >= MSCAN_SET_MODE_RETRIES)
++				ret = -ENODEV;
++		}
++		if (!ret)
++			priv->can.state = CAN_STATE_SLEEPING;
++
++		if (!ret && (mode & MSCAN_INITRQ)
++		    && (canctl1 & MSCAN_INITAK) == 0) {
++			out_8(&regs->canctl0,
++			      in_8(&regs->canctl0) | MSCAN_INITRQ);
++			for (i = 0; i < MSCAN_SET_MODE_RETRIES; i++) {
++				if (in_8(&regs->canctl1) & MSCAN_INITAK)
++					break;
++			}
++			if (i >= MSCAN_SET_MODE_RETRIES)
++				ret = -ENODEV;
++		}
++		if (!ret)
++			priv->can.state = CAN_STATE_STOPPED;
++
++		if (!ret && (mode & MSCAN_CSWAI))
++			out_8(&regs->canctl0,
++			      in_8(&regs->canctl0) | MSCAN_CSWAI);
++
++	} else {
++		canctl1 = in_8(&regs->canctl1);
++		if (canctl1 & (MSCAN_SLPAK | MSCAN_INITAK)) {
++			out_8(&regs->canctl0, in_8(&regs->canctl0) &
++			      ~(MSCAN_SLPRQ | MSCAN_INITRQ));
++			for (i = 0; i < MSCAN_SET_MODE_RETRIES; i++) {
++				canctl1 = in_8(&regs->canctl1);
++				if (!(canctl1 & (MSCAN_INITAK | MSCAN_SLPAK)))
++					break;
++			}
++			if (i >= MSCAN_SET_MODE_RETRIES)
++				ret = -ENODEV;
++			else
++				priv->can.state = CAN_STATE_ACTIVE;
++		}
++	}
++	return ret;
++}
++
++static int mscan_start(struct net_device *dev)
++{
++	struct mscan_priv *priv = netdev_priv(dev);
++	struct mscan_regs *regs = (struct mscan_regs *)dev->base_addr;
++	u8 canrflg;
++	int err;
++
++	out_8(&regs->canrier, 0);
++
++	INIT_LIST_HEAD(&priv->tx_head);
++	priv->cur_pri = 0;
++	priv->tx_active = 0;
++	priv->shadow_canrier = 0;
++	priv->flags = 0;
++
++	err = mscan_set_mode(dev, MSCAN_NORMAL_MODE);
++	if (err)
++		return err;
++
++	canrflg = in_8(&regs->canrflg);
++	priv->shadow_statflg = canrflg & MSCAN_STAT_MSK;
++	priv->can.state = state_map[max(MSCAN_STATE_RX(canrflg),
++				    MSCAN_STATE_TX(canrflg))];
++	out_8(&regs->cantier, 0);
++
++	/* Enable receive interrupts. */
++	out_8(&regs->canrier, MSCAN_OVRIE | MSCAN_RXFIE | MSCAN_CSCIE |
++	      MSCAN_RSTATE1 | MSCAN_RSTATE0 | MSCAN_TSTATE1 | MSCAN_TSTATE0);
++
++	return 0;
++}
++
++static int mscan_start_xmit(struct sk_buff *skb, struct net_device *dev)
++{
++	struct can_frame *frame = (struct can_frame *)skb->data;
++	struct mscan_regs *regs = (struct mscan_regs *)dev->base_addr;
++	struct mscan_priv *priv = netdev_priv(dev);
++	int i, rtr, buf_id;
++	u32 can_id;
++
++	if (frame->can_dlc > 8)
++		return -EINVAL;
++
++	out_8(&regs->cantier, 0);
++
++	i = ~priv->tx_active & MSCAN_TXE;
++	buf_id = ffs(i) - 1;
++	switch (hweight8(i)) {
++	case 0:
++		netif_stop_queue(dev);
++		dev_err(ND2D(dev), "BUG! Tx Ring full when queue awake!\n");
++		return NETDEV_TX_BUSY;
++	case 1:
++		/* if buf_id < 3, then current frame will be send out of order,
++		   since  buffer with lower id have higher priority (hell..) */
++		if (buf_id < 3)
++			priv->cur_pri++;
++		if (priv->cur_pri == 0xff)
++			set_bit(F_TX_WAIT_ALL, &priv->flags);
++		netif_stop_queue(dev);
++	case 2:
++		set_bit(F_TX_PROGRESS, &priv->flags);
++	}
++	out_8(&regs->cantbsel, i);
++
++	rtr = frame->can_id & CAN_RTR_FLAG;
++
++	if (frame->can_id & CAN_EFF_FLAG) {
++		can_id = (frame->can_id & CAN_EFF_MASK) << 1;
++		if (rtr)
++			can_id |= 1;
++		out_be16(&regs->tx.idr3_2, can_id);
++
++		can_id >>= 16;
++		can_id = (can_id & 0x7) | ((can_id << 2) & 0xffe0) | (3 << 3);
++	} else {
++		can_id = (frame->can_id & CAN_SFF_MASK) << 5;
++		if (rtr)
++			can_id |= 1 << 4;
++	}
++	out_be16(&regs->tx.idr1_0, can_id);
++
++	if (!rtr) {
++		void __iomem *data = &regs->tx.dsr1_0;
++		u16 *payload = (u16 *) frame->data;
++		/*Its safe to write into dsr[dlc+1] */
++		for (i = 0; i < (frame->can_dlc + 1) / 2; i++) {
++			out_be16(data, *payload++);
++			data += 2 + _MSCAN_RESERVED_DSR_SIZE;
++		}
++	}
++
++	out_8(&regs->tx.dlr, frame->can_dlc);
++	out_8(&regs->tx.tbpr, priv->cur_pri);
++
++	/* Start transmission. */
++	out_8(&regs->cantflg, 1 << buf_id);
++
++	if (!test_bit(F_TX_PROGRESS, &priv->flags))
++		dev->trans_start = jiffies;
++
++	list_add_tail(&priv->tx_queue[buf_id].list, &priv->tx_head);
++
++	can_put_echo_skb(skb, dev, buf_id);
++
++	/* Enable interrupt. */
++	priv->tx_active |= 1 << buf_id;
++	out_8(&regs->cantier, priv->tx_active);
++
++	return NETDEV_TX_OK;
++}
++
++static inline int check_set_state(struct net_device *dev, u8 canrflg)
++{
++	struct mscan_priv *priv = netdev_priv(dev);
++	enum can_state state;
++	int ret = 0;
++
++	if (!(canrflg & MSCAN_CSCIF) || priv->can.state > CAN_STATE_BUS_OFF)
++		return 0;
++
++	state = state_map[max(MSCAN_STATE_RX(canrflg),
++			      MSCAN_STATE_TX(canrflg))];
++	if (priv->can.state < state)
++		ret = 1;
++	if (state == CAN_STATE_BUS_OFF)
++		can_bus_off(dev);
++	priv->can.state = state;
++	return ret;
++}
++
++static int mscan_rx_poll(struct napi_struct *napi, int quota)
++{
++	struct mscan_priv *priv = container_of(napi, struct mscan_priv, napi);
++	struct net_device *dev = napi->dev;
++	struct mscan_regs *regs = (struct mscan_regs *)dev->base_addr;
++	struct net_device_stats *stats = &dev->stats;
++	int npackets = 0;
++	int ret = 1;
++	struct sk_buff *skb;
++	struct can_frame *frame;
++	u32 can_id;
++	u8 canrflg;
++	int i;
++
++	while (npackets < quota && ((canrflg = in_8(&regs->canrflg)) &
++				    (MSCAN_RXF | MSCAN_ERR_IF))) {
++
++		skb = dev_alloc_skb(sizeof(struct can_frame));
++		if (!skb) {
++			if (printk_ratelimit())
++				dev_notice(ND2D(dev), "packet dropped\n");
++			stats->rx_dropped++;
++			out_8(&regs->canrflg, canrflg);
++			continue;
++		}
++
++		frame = (struct can_frame *)skb_put(skb, sizeof(*frame));
++		memset(frame, 0, sizeof(*frame));
++
++		if (canrflg & MSCAN_RXF) {
++			can_id = in_be16(&regs->rx.idr1_0);
++			if (can_id & (1 << 3)) {
++				frame->can_id = CAN_EFF_FLAG;
++				can_id = ((can_id << 16) |
++					  in_be16(&regs->rx.idr3_2));
++				can_id = ((can_id & 0xffe00000) |
++					  ((can_id & 0x7ffff) << 2)) >> 2;
++			} else {
++				can_id >>= 4;
++				frame->can_id = 0;
++			}
++
++			frame->can_id |= can_id >> 1;
++			if (can_id & 1)
++				frame->can_id |= CAN_RTR_FLAG;
++			frame->can_dlc = in_8(&regs->rx.dlr) & 0xf;
++
++			if (!(frame->can_id & CAN_RTR_FLAG)) {
++				void __iomem *data = &regs->rx.dsr1_0;
++				u16 *payload = (u16 *) frame->data;
++				for (i = 0; i < (frame->can_dlc + 1) / 2; i++) {
++					*payload++ = in_be16(data);
++					data += 2 + _MSCAN_RESERVED_DSR_SIZE;
++				}
++			}
++
++			out_8(&regs->canrflg, MSCAN_RXF);
++			dev->last_rx = jiffies;
++			stats->rx_packets++;
++			stats->rx_bytes += frame->can_dlc;
++		} else if (canrflg & MSCAN_ERR_IF) {
++			dev_dbg(ND2D(dev), "error interrupt (canrflg=%#x)\n",
++				canrflg);
++			frame->can_id = CAN_ERR_FLAG;
++
++			if (canrflg & MSCAN_OVRIF) {
++				frame->can_id |= CAN_ERR_CRTL;
++				frame->data[1] = CAN_ERR_CRTL_RX_OVERFLOW;
++				stats->rx_over_errors++;
++			} else
++				frame->data[1] = 0;
++
++			if (check_set_state(dev, canrflg)) {
++				frame->can_id |= CAN_ERR_CRTL;
++				switch (priv->can.state) {
++				case CAN_STATE_BUS_WARNING:
++					if ((priv->shadow_statflg &
++					     MSCAN_RSTAT_MSK) <
++					    (canrflg & MSCAN_RSTAT_MSK))
++						frame->data[1] |=
++						    CAN_ERR_CRTL_RX_WARNING;
++
++					if ((priv->shadow_statflg &
++					     MSCAN_TSTAT_MSK) <
++					    (canrflg & MSCAN_TSTAT_MSK))
++						frame->data[1] |=
++							CAN_ERR_CRTL_TX_WARNING;
++					break;
++				case CAN_STATE_BUS_PASSIVE:
++					frame->data[1] |=
++					    CAN_ERR_CRTL_RX_PASSIVE;
++					break;
++				case CAN_STATE_BUS_OFF:
++					frame->can_id |= CAN_ERR_BUSOFF;
++					frame->can_id &= ~CAN_ERR_CRTL;
++					break;
++				default:
++					break;
++				}
++			}
++			priv->shadow_statflg = canrflg & MSCAN_STAT_MSK;
++			frame->can_dlc = CAN_ERR_DLC;
++			out_8(&regs->canrflg, MSCAN_ERR_IF);
++		}
++
++		npackets++;
++		skb->dev = dev;
++		skb->protocol = __constant_htons(ETH_P_CAN);
++		skb->ip_summed = CHECKSUM_UNNECESSARY;
++		netif_receive_skb(skb);
++	}
++
++	if (!(in_8(&regs->canrflg) & (MSCAN_RXF | MSCAN_ERR_IF))) {
++		napi_complete(&priv->napi);
++		clear_bit(F_RX_PROGRESS, &priv->flags);
++		if (priv->can.state < CAN_STATE_BUS_OFF)
++			out_8(&regs->canrier, priv->shadow_canrier);
++		ret = 0;
++	}
++	return ret;
++}
++
++static irqreturn_t mscan_isr(int irq, void *dev_id)
++{
++	struct net_device *dev = (struct net_device *)dev_id;
++	struct mscan_priv *priv = netdev_priv(dev);
++	struct mscan_regs *regs = (struct mscan_regs *)dev->base_addr;
++	struct net_device_stats *stats = &dev->stats;
++	u8 cantier, cantflg, canrflg;
++	irqreturn_t ret = IRQ_NONE;
++
++	cantier = in_8(&regs->cantier) & MSCAN_TXE;
++	cantflg = in_8(&regs->cantflg) & cantier;
++
++	if (cantier && cantflg) {
++
++		struct list_head *tmp, *pos;
++
++		list_for_each_safe(pos, tmp, &priv->tx_head) {
++			struct tx_queue_entry *entry =
++			    list_entry(pos, struct tx_queue_entry, list);
++			u8 mask = entry->mask;
++
++			if (!(cantflg & mask))
++				continue;
++
++			out_8(&regs->cantbsel, mask);
++			stats->tx_bytes += in_8(&regs->tx.dlr);
++			stats->tx_packets++;
++			can_get_echo_skb(dev, entry->id);
++			priv->tx_active &= ~mask;
++			list_del(pos);
++		}
++
++		if (list_empty(&priv->tx_head)) {
++			clear_bit(F_TX_WAIT_ALL, &priv->flags);
++			clear_bit(F_TX_PROGRESS, &priv->flags);
++			priv->cur_pri = 0;
++		} else
++			dev->trans_start = jiffies;
++
++		if (!test_bit(F_TX_WAIT_ALL, &priv->flags))
++			netif_wake_queue(dev);
++
++		out_8(&regs->cantier, priv->tx_active);
++		ret = IRQ_HANDLED;
++	}
++
++	canrflg = in_8(&regs->canrflg);
++	if ((canrflg & ~MSCAN_STAT_MSK) &&
++	    !test_and_set_bit(F_RX_PROGRESS, &priv->flags)) {
++		if (canrflg & ~MSCAN_STAT_MSK) {
++			priv->shadow_canrier = in_8(&regs->canrier);
++			out_8(&regs->canrier, 0);
++			napi_schedule(&priv->napi);
++			ret = IRQ_HANDLED;
++		} else
++			clear_bit(F_RX_PROGRESS, &priv->flags);
++	}
++	return ret;
++}
++
++static int mscan_do_set_mode(struct net_device *dev, enum can_mode mode)
++{
++
++	struct mscan_priv *priv = netdev_priv(dev);
++	int ret = 0;
++
++	if (!priv->open_time)
++		return -EINVAL;
++
++	switch (mode) {
++	case CAN_MODE_SLEEP:
++	case CAN_MODE_STOP:
++		netif_stop_queue(dev);
++		mscan_set_mode(dev,
++			       (mode ==
++				CAN_MODE_STOP) ? MSCAN_INIT_MODE :
++			       MSCAN_SLEEP_MODE);
++		break;
++	case CAN_MODE_START:
++		if (priv->can.state <= CAN_STATE_BUS_OFF)
++			mscan_set_mode(dev, MSCAN_INIT_MODE);
++		ret = mscan_start(dev);
++		if (ret)
++			break;
++		if (netif_queue_stopped(dev))
++			netif_wake_queue(dev);
++		break;
++
++	default:
++		ret = -EOPNOTSUPP;
++		break;
++	}
++	return ret;
++}
++
++static int mscan_do_set_bittiming(struct net_device *dev)
++{
++	struct mscan_regs *regs = (struct mscan_regs *)dev->base_addr;
++	struct mscan_priv *priv = netdev_priv(dev);
++	struct can_bittiming *bt = &priv->can.bittiming;
++	u8 btr0, btr1;
++
++	btr0 = BTR0_SET_BRP(bt->brp) | BTR0_SET_SJW(bt->sjw);
++	btr1 = (BTR1_SET_TSEG1(bt->prop_seg + bt->phase_seg1) |
++		BTR1_SET_TSEG2(bt->phase_seg2) |
++		BTR1_SET_SAM(priv->can.ctrlmode & CAN_CTRLMODE_3_SAMPLES));
++
++	dev_info(ND2D(dev), "setting BTR0=0x%02x BTR1=0x%02x\n", btr0, btr1);
++
++	out_8(&regs->canbtr0, btr0);
++	out_8(&regs->canbtr1, btr1);
++
++	return 0;
++}
++
++static int mscan_open(struct net_device *dev)
++{
++	int ret;
++	struct mscan_priv *priv = netdev_priv(dev);
++	struct mscan_regs *regs = (struct mscan_regs *)dev->base_addr;
++
++	/* determine and set bittime */
++	ret = can_set_bittiming(dev);
++	if (ret)
++		return ret;
++
++	napi_enable(&priv->napi);
++	ret = request_irq(dev->irq, mscan_isr, 0, dev->name, dev);
++
++	if (ret < 0) {
++		napi_disable(&priv->napi);
++		printk(KERN_ERR "%s - failed to attach interrupt\n",
++		       dev->name);
++		return ret;
++	}
++
++	priv->open_time = jiffies;
++
++	out_8(&regs->canctl1, in_8(&regs->canctl1) & ~MSCAN_LISTEN);
++
++	ret = mscan_start(dev);
++	if (ret)
++		return ret;
++
++	netif_start_queue(dev);
++
++	return 0;
++}
++
++static int mscan_close(struct net_device *dev)
++{
++	struct mscan_regs *regs = (struct mscan_regs *)dev->base_addr;
++	struct mscan_priv *priv = netdev_priv(dev);
++
++	napi_disable(&priv->napi);
++
++	out_8(&regs->cantier, 0);
++	out_8(&regs->canrier, 0);
++	free_irq(dev->irq, dev);
++	mscan_set_mode(dev, MSCAN_INIT_MODE);
++	can_close_cleanup(dev);
++	netif_stop_queue(dev);
++	priv->open_time = 0;
++
++	return 0;
++}
++
++static const struct net_device_ops mscan_netdev_ops = {
++       .ndo_open               = mscan_open,
++       .ndo_stop               = mscan_close,
++       .ndo_start_xmit         = mscan_start_xmit,
++};
++
++int register_mscandev(struct net_device *dev, int clock_src)
++{
++	struct mscan_regs *regs = (struct mscan_regs *)dev->base_addr;
++	u8 ctl1;
++
++	ctl1 = in_8(&regs->canctl1);
++	if (clock_src)
++		ctl1 |= MSCAN_CLKSRC;
++	else
++		ctl1 &= ~MSCAN_CLKSRC;
++
++	ctl1 |= MSCAN_CANE;
++	out_8(&regs->canctl1, ctl1);
++	udelay(100);
++
++	/* acceptance mask/acceptance code (accept everything) */
++	out_be16(&regs->canidar1_0, 0);
++	out_be16(&regs->canidar3_2, 0);
++	out_be16(&regs->canidar5_4, 0);
++	out_be16(&regs->canidar7_6, 0);
++
++	out_be16(&regs->canidmr1_0, 0xffff);
++	out_be16(&regs->canidmr3_2, 0xffff);
++	out_be16(&regs->canidmr5_4, 0xffff);
++	out_be16(&regs->canidmr7_6, 0xffff);
++	/* Two 32 bit Acceptance Filters */
++	out_8(&regs->canidac, MSCAN_AF_32BIT);
++
++	mscan_set_mode(dev, MSCAN_INIT_MODE);
++
++	return register_candev(dev);
++}
++EXPORT_SYMBOL_GPL(register_mscandev);
++
++void unregister_mscandev(struct net_device *dev)
++{
++	struct mscan_regs *regs = (struct mscan_regs *)dev->base_addr;
++	mscan_set_mode(dev, MSCAN_INIT_MODE);
++	out_8(&regs->canctl1, in_8(&regs->canctl1) & ~MSCAN_CANE);
++	unregister_candev(dev);
++}
++EXPORT_SYMBOL_GPL(unregister_mscandev);
++
++struct net_device *alloc_mscandev(void)
++{
++	struct net_device *dev;
++	struct mscan_priv *priv;
++	int i;
++
++	dev = alloc_candev(sizeof(struct mscan_priv));
++	if (!dev)
++		return NULL;
++	priv = netdev_priv(dev);
++
++	dev->netdev_ops = &mscan_netdev_ops;
++
++	dev->flags |= IFF_ECHO;	/* we support local echo */
++
++	netif_napi_add(dev, &priv->napi, mscan_rx_poll, 8);
++
++	priv->can.bittiming_const = &mscan_bittiming_const;
++	priv->can.do_set_bittiming = mscan_do_set_bittiming;
++	priv->can.do_set_mode = mscan_do_set_mode;
++
++	for (i = 0; i < TX_QUEUE_SIZE; i++) {
++		priv->tx_queue[i].id = i;
++		priv->tx_queue[i].mask = 1 << i;
++	}
 +
 +	return dev;
 +}
-+EXPORT_SYMBOL_GPL(alloc_candev);
++EXPORT_SYMBOL_GPL(alloc_mscandev);
 +
-+/*
-+ * Allocate space of the CAN network device
-+ */
-+void free_candev(struct net_device *dev)
-+{
-+	free_netdev(dev);
-+}
-+EXPORT_SYMBOL_GPL(free_candev);
-+
-+/*
-+ * Register the CAN network device
-+ */
-+int register_candev(struct net_device *dev)
-+{
-+	int err;
-+
-+	err = register_netdev(dev);
-+	if (err)
-+		return err;
-+
-+	can_create_sysfs(dev);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(register_candev);
-+
-+/*
-+ * Unregister the CAN network device
-+ */
-+void unregister_candev(struct net_device *dev)
-+{
-+	can_remove_sysfs(dev);
-+	unregister_netdev(dev);
-+}
-+EXPORT_SYMBOL_GPL(unregister_candev);
-+
-+/*
-+ * Local echo of CAN messages
-+ *
-+ * CAN network devices *should* support a local echo functionality
-+ * (see Documentation/networking/can.txt). To test the handling of CAN
-+ * interfaces that do not support the local echo both driver types are
-+ * implemented. In the case that the driver does not support the echo
-+ * the IFF_ECHO remains clear in dev->flags. This causes the PF_CAN core
-+ * to perform the echo as a fallback solution.
-+ */
-+
-+static void can_flush_echo_skb(struct net_device *dev)
-+{
-+	struct can_priv *priv = netdev_priv(dev);
-+	struct net_device_stats *stats = &dev->stats;
-+	int i;
-+
-+	for (i = 0; i < CAN_ECHO_SKB_MAX; i++) {
-+		if (priv->echo_skb[i]) {
-+			kfree_skb(priv->echo_skb[i]);
-+			priv->echo_skb[i] = NULL;
-+			stats->tx_dropped++;
-+			stats->tx_aborted_errors++;
-+		}
-+	}
-+}
-+
-+/*
-+ * Put the skb on the stack to be looped backed locally lateron
-+ *
-+ * The function is typically called in the start_xmit function
-+ * of the device driver.
-+ */
-+void can_put_echo_skb(struct sk_buff *skb, struct net_device *dev, int idx)
-+{
-+	struct can_priv *priv = netdev_priv(dev);
-+
-+	/* set flag whether this packet has to be looped back */
-+	if (!(dev->flags & IFF_ECHO) || skb->pkt_type != PACKET_LOOPBACK) {
-+		kfree_skb(skb);
-+		return;
-+	}
-+
-+	if (!priv->echo_skb[idx]) {
-+		struct sock *srcsk = skb->sk;
-+
-+		if (atomic_read(&skb->users) != 1) {
-+			struct sk_buff *old_skb = skb;
-+
-+			skb = skb_clone(old_skb, GFP_ATOMIC);
-+			kfree_skb(old_skb);
-+			if (!skb)
-+				return;
-+		} else
-+			skb_orphan(skb);
-+
-+		skb->sk = srcsk;
-+
-+		/* make settings for echo to reduce code in irq context */
-+		skb->protocol = htons(ETH_P_CAN);
-+		skb->pkt_type = PACKET_BROADCAST;
-+		skb->ip_summed = CHECKSUM_UNNECESSARY;
-+		skb->dev = dev;
-+
-+		/* save this skb for tx interrupt echo handling */
-+		priv->echo_skb[idx] = skb;
-+	} else {
-+		/* locking problem with netif_stop_queue() ?? */
-+		printk(KERN_ERR "%s: %s: BUG! echo_skb is occupied!\n",
-+		       dev->name, __func__);
-+		kfree_skb(skb);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(can_put_echo_skb);
-+
-+/*
-+ * Get the skb from the stack and loop it back locally
-+ *
-+ * The function is typically called when the TX done interrupt
-+ * is handled in the device driver.
-+ */
-+void can_get_echo_skb(struct net_device *dev, int idx)
-+{
-+	struct can_priv *priv = netdev_priv(dev);
-+
-+	if ((dev->flags & IFF_ECHO) && priv->echo_skb[idx]) {
-+		netif_rx(priv->echo_skb[idx]);
-+		priv->echo_skb[idx] = NULL;
-+	}
-+}
-+EXPORT_SYMBOL_GPL(can_get_echo_skb);
-+
-+/*
-+ * CAN device restart for bus-off recovery
-+ */
-+int can_restart_now(struct net_device *dev)
-+{
-+	struct can_priv *priv = netdev_priv(dev);
-+	struct net_device_stats *stats = &dev->stats;
-+	struct sk_buff *skb;
-+	struct can_frame *cf;
-+	int err;
-+
-+	if (netif_carrier_ok(dev))
-+		netif_carrier_off(dev);
-+
-+	/* Cancel restart in progress */
-+	if (priv->timer.expires) {
-+		del_timer(&priv->timer);
-+		priv->timer.expires = 0; /* mark inactive timer */
-+	}
-+
-+	can_flush_echo_skb(dev);
-+
-+	err = priv->do_set_mode(dev, CAN_MODE_START);
-+	if (err)
-+		return err;
-+
-+	netif_carrier_on(dev);
-+
-+	dev_dbg(ND2D(dev), "restarted\n");
-+	priv->can_stats.restarts++;
-+
-+	/* send restart message upstream */
-+	skb = dev_alloc_skb(sizeof(struct can_frame));
-+	if (skb == NULL)
-+		return -ENOMEM;
-+	skb->dev = dev;
-+	skb->protocol = htons(ETH_P_CAN);
-+	cf = (struct can_frame *)skb_put(skb, sizeof(struct can_frame));
-+	memset(cf, 0, sizeof(struct can_frame));
-+	cf->can_id = CAN_ERR_FLAG | CAN_ERR_RESTARTED;
-+	cf->can_dlc = CAN_ERR_DLC;
-+
-+	netif_rx(skb);
-+
-+	dev->last_rx = jiffies;
-+	stats->rx_packets++;
-+	stats->rx_bytes += cf->can_dlc;
-+
-+	return 0;
-+}
-+
-+static void can_restart_after(unsigned long data)
-+{
-+	struct net_device *dev = (struct net_device *)data;
-+	struct can_priv *priv = netdev_priv(dev);
-+
-+	priv->timer.expires = 0; /* mark inactive timer */
-+	can_restart_now(dev);
-+}
-+
-+/*
-+ * CAN bus-off
-+ *
-+ * This functions should be called when the device goes bus-off to
-+ * tell the netif layer that no more packets can be sent or received.
-+ * If enabled, a timer is started to trigger bus-off recovery.
-+ */
-+void can_bus_off(struct net_device *dev)
-+{
-+	struct can_priv *priv = netdev_priv(dev);
-+
-+	dev_dbg(ND2D(dev), "bus-off\n");
-+
-+	netif_carrier_off(dev);
-+
-+	if (priv->restart_ms > 0 && !priv->timer.expires) {
-+
-+		priv->timer.function = can_restart_after;
-+		priv->timer.data = (unsigned long)dev;
-+		priv->timer.expires =
-+			jiffies + (priv->restart_ms * HZ) / 1000;
-+		add_timer(&priv->timer);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(can_bus_off);
-+
-+/*
-+ * Cleanup function before the device gets closed.
-+ *
-+ * This functions should be called in the close function of the device
-+ * driver.
-+ */
-+void can_close_cleanup(struct net_device *dev)
-+{
-+	struct can_priv *priv = netdev_priv(dev);
-+
-+	if (priv->timer.expires) {
-+		del_timer(&priv->timer);
-+		priv->timer.expires = 0;
-+	}
-+
-+	can_flush_echo_skb(dev);
-+}
-+EXPORT_SYMBOL_GPL(can_close_cleanup);
-+
-+static __init int can_dev_init(void)
-+{
-+	printk(KERN_INFO MOD_DESC "\n");
-+
-+	return 0;
-+}
-+module_init(can_dev_init);
-+
-+static __exit void can_dev_exit(void)
-+{
-+}
-+module_exit(can_dev_exit);
-diff --git a/drivers/net/can/sysfs.c b/drivers/net/can/sysfs.c
++MODULE_AUTHOR("Andrey Volkov <avolkov@varma-el.com>");
++MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION("CAN port driver for a MSCAN based chips");
+diff --git a/drivers/net/can/mscan/mscan.h b/drivers/net/can/mscan/mscan.h
 new file mode 100644
-index 0000000..746f641
+index 0000000..81a2eb5
 --- /dev/null
-+++ b/drivers/net/can/sysfs.c
-@@ -0,0 +1,509 @@
++++ b/drivers/net/can/mscan/mscan.h
+@@ -0,0 +1,237 @@
 +/*
-+ * Copyright (C) 2007-2008 Wolfgang Grandegger <wg@grandegger.com>
++ * Definitions of consts/structs to drive the Freescale MSCAN.
++ *
++ * Copyright (C) 2005-2006 Andrey Volkov <avolkov@varma-el.com>,
++ *                         Varma Electronics Oy
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the version 2 of the GNU General Public License
@@ -660,670 +1119,223 @@ index 0000000..746f641
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 + */
 +
-+#include <linux/capability.h>
-+#include <linux/kernel.h>
-+#include <linux/netdevice.h>
-+#include <linux/if_arp.h>
-+#include <net/sock.h>
-+#include <linux/rtnetlink.h>
++#ifndef __MSCAN_H__
++#define __MSCAN_H__
 +
-+#include <linux/can.h>
-+#include <linux/can/dev.h>
++#include <linux/types.h>
 +
-+#include "sysfs.h"
++/* MSCAN control register 0 (CANCTL0) bits */
++#define MSCAN_RXFRM		0x80
++#define MSCAN_RXACT		0x40
++#define MSCAN_CSWAI		0x20
++#define MSCAN_SYNCH		0x10
++#define MSCAN_TIME		0x08
++#define MSCAN_WUPE		0x04
++#define MSCAN_SLPRQ		0x02
++#define MSCAN_INITRQ		0x01
 +
-+#ifdef CONFIG_SYSFS
++/* MSCAN control register 1 (CANCTL1) bits */
++#define MSCAN_CANE		0x80
++#define MSCAN_CLKSRC		0x40
++#define MSCAN_LOOPB		0x20
++#define MSCAN_LISTEN		0x10
++#define MSCAN_WUPM		0x04
++#define MSCAN_SLPAK		0x02
++#define MSCAN_INITAK		0x01
 +
-+/*
-+ * SYSFS access functions and attributes. Use same locking as
-+ * net/core/net-sysfs.c does.
++/* Use the MPC5200 MSCAN variant? */
++#ifdef CONFIG_PPC
++#define MSCAN_FOR_MPC5200
++#endif
++
++#ifdef MSCAN_FOR_MPC5200
++#define MSCAN_CLKSRC_BUS	0
++#define MSCAN_CLKSRC_XTAL	MSCAN_CLKSRC
++#else
++#define MSCAN_CLKSRC_BUS	MSCAN_CLKSRC
++#define MSCAN_CLKSRC_XTAL	0
++#endif
++
++/* MSCAN receiver flag register (CANRFLG) bits */
++#define MSCAN_WUPIF		0x80
++#define MSCAN_CSCIF		0x40
++#define MSCAN_RSTAT1		0x20
++#define MSCAN_RSTAT0		0x10
++#define MSCAN_TSTAT1		0x08
++#define MSCAN_TSTAT0		0x04
++#define MSCAN_OVRIF		0x02
++#define MSCAN_RXF		0x01
++#define MSCAN_ERR_IF 		(MSCAN_OVRIF | MSCAN_CSCIF)
++#define MSCAN_RSTAT_MSK		(MSCAN_RSTAT1 | MSCAN_RSTAT0)
++#define MSCAN_TSTAT_MSK		(MSCAN_TSTAT1 | MSCAN_TSTAT0)
++#define MSCAN_STAT_MSK		(MSCAN_RSTAT_MSK | MSCAN_TSTAT_MSK)
++
++#define MSCAN_STATE_BUS_OFF	(MSCAN_RSTAT1 | MSCAN_RSTAT0 | \
++				 MSCAN_TSTAT1 | MSCAN_TSTAT0)
++#define MSCAN_STATE_TX(canrflg)	(((canrflg)&MSCAN_TSTAT_MSK)>>2)
++#define MSCAN_STATE_RX(canrflg)	(((canrflg)&MSCAN_RSTAT_MSK)>>4)
++#define MSCAN_STATE_ACTIVE	0
++#define MSCAN_STATE_WARNING	1
++#define MSCAN_STATE_PASSIVE	2
++#define MSCAN_STATE_BUSOFF	3
++
++/* MSCAN receiver interrupt enable register (CANRIER) bits */
++#define MSCAN_WUPIE		0x80
++#define MSCAN_CSCIE		0x40
++#define MSCAN_RSTATE1		0x20
++#define MSCAN_RSTATE0		0x10
++#define MSCAN_TSTATE1		0x08
++#define MSCAN_TSTATE0		0x04
++#define MSCAN_OVRIE		0x02
++#define MSCAN_RXFIE		0x01
++
++/* MSCAN transmitter flag register (CANTFLG) bits */
++#define MSCAN_TXE2		0x04
++#define MSCAN_TXE1		0x02
++#define MSCAN_TXE0		0x01
++#define MSCAN_TXE		(MSCAN_TXE2 | MSCAN_TXE1 | MSCAN_TXE0)
++
++/* MSCAN transmitter interrupt enable register (CANTIER) bits */
++#define MSCAN_TXIE2		0x04
++#define MSCAN_TXIE1		0x02
++#define MSCAN_TXIE0		0x01
++#define MSCAN_TXIE		(MSCAN_TXIE2 | MSCAN_TXIE1 | MSCAN_TXIE0)
++
++/* MSCAN transmitter message abort request (CANTARQ) bits */
++#define MSCAN_ABTRQ2		0x04
++#define MSCAN_ABTRQ1		0x02
++#define MSCAN_ABTRQ0		0x01
++
++/* MSCAN transmitter message abort ack (CANTAAK) bits */
++#define MSCAN_ABTAK2		0x04
++#define MSCAN_ABTAK1		0x02
++#define MSCAN_ABTAK0		0x01
++
++/* MSCAN transmit buffer selection (CANTBSEL) bits */
++#define MSCAN_TX2		0x04
++#define MSCAN_TX1		0x02
++#define MSCAN_TX0		0x01
++
++/* MSCAN ID acceptance control register (CANIDAC) bits */
++#define MSCAN_IDAM1		0x20
++#define MSCAN_IDAM0		0x10
++#define MSCAN_IDHIT2		0x04
++#define MSCAN_IDHIT1		0x02
++#define MSCAN_IDHIT0		0x01
++
++#define MSCAN_AF_32BIT		0x00
++#define MSCAN_AF_16BIT		MSCAN_IDAM0
++#define MSCAN_AF_8BIT		MSCAN_IDAM1
++#define MSCAN_AF_CLOSED		(MSCAN_IDAM0|MSCAN_IDAM1)
++#define MSCAN_AF_MASK		(~(MSCAN_IDAM0|MSCAN_IDAM1))
++
++/* MSCAN Miscellaneous Register (CANMISC) bits */
++#define MSCAN_BOHOLD		0x01
++
++#ifdef MSCAN_FOR_MPC5200
++#define _MSCAN_RESERVED_(n, num) u8 _res##n[num]
++#define _MSCAN_RESERVED_DSR_SIZE	2
++#else
++#define _MSCAN_RESERVED_(n, num)
++#define _MSCAN_RESERVED_DSR_SIZE	0
++#endif
++
++/* Structure of the hardware registers */
++struct mscan_regs {
++	/* (see doco S12MSCANV3/D)		  MPC5200    MSCAN */
++	u8 canctl0;				/* + 0x00     0x00 */
++	u8 canctl1;				/* + 0x01     0x01 */
++	_MSCAN_RESERVED_(1, 2);			/* + 0x02          */
++	u8 canbtr0;				/* + 0x04     0x02 */
++	u8 canbtr1;				/* + 0x05     0x03 */
++	_MSCAN_RESERVED_(2, 2);			/* + 0x06          */
++	u8 canrflg;				/* + 0x08     0x04 */
++	u8 canrier;				/* + 0x09     0x05 */
++	_MSCAN_RESERVED_(3, 2);			/* + 0x0a          */
++	u8 cantflg;				/* + 0x0c     0x06 */
++	u8 cantier;				/* + 0x0d     0x07 */
++	_MSCAN_RESERVED_(4, 2);			/* + 0x0e          */
++	u8 cantarq;				/* + 0x10     0x08 */
++	u8 cantaak;				/* + 0x11     0x09 */
++	_MSCAN_RESERVED_(5, 2);			/* + 0x12          */
++	u8 cantbsel;				/* + 0x14     0x0a */
++	u8 canidac;				/* + 0x15     0x0b */
++	u8 reserved;				/* + 0x16     0x0c */
++	_MSCAN_RESERVED_(6, 5);			/* + 0x17          */
++#ifndef MSCAN_FOR_MPC5200
++	u8 canmisc;				/*            0x0d */
++#endif
++	u8 canrxerr;				/* + 0x1c     0x0e */
++	u8 cantxerr;				/* + 0x1d     0x0f */
++	_MSCAN_RESERVED_(7, 2);			/* + 0x1e          */
++	u16 canidar1_0;				/* + 0x20     0x10 */
++	_MSCAN_RESERVED_(8, 2);			/* + 0x22          */
++	u16 canidar3_2;				/* + 0x24     0x12 */
++	_MSCAN_RESERVED_(9, 2);			/* + 0x26          */
++	u16 canidmr1_0;				/* + 0x28     0x14 */
++	_MSCAN_RESERVED_(10, 2);		/* + 0x2a          */
++	u16 canidmr3_2;				/* + 0x2c     0x16 */
++	_MSCAN_RESERVED_(11, 2);		/* + 0x2e          */
++	u16 canidar5_4;				/* + 0x30     0x18 */
++	_MSCAN_RESERVED_(12, 2);		/* + 0x32          */
++	u16 canidar7_6;				/* + 0x34     0x1a */
++	_MSCAN_RESERVED_(13, 2);		/* + 0x36          */
++	u16 canidmr5_4;				/* + 0x38     0x1c */
++	_MSCAN_RESERVED_(14, 2);		/* + 0x3a          */
++	u16 canidmr7_6;				/* + 0x3c     0x1e */
++	_MSCAN_RESERVED_(15, 2);		/* + 0x3e          */
++	struct {
++		u16 idr1_0;			/* + 0x40     0x20 */
++		 _MSCAN_RESERVED_(16, 2);	/* + 0x42          */
++		u16 idr3_2;			/* + 0x44     0x22 */
++		 _MSCAN_RESERVED_(17, 2);	/* + 0x46          */
++		u16 dsr1_0;			/* + 0x48     0x24 */
++		 _MSCAN_RESERVED_(18, 2);	/* + 0x4a          */
++		u16 dsr3_2;			/* + 0x4c     0x26 */
++		 _MSCAN_RESERVED_(19, 2);	/* + 0x4e          */
++		u16 dsr5_4;			/* + 0x50     0x28 */
++		 _MSCAN_RESERVED_(20, 2);	/* + 0x52          */
++		u16 dsr7_6;			/* + 0x54     0x2a */
++		 _MSCAN_RESERVED_(21, 2);	/* + 0x56          */
++		u8 dlr;				/* + 0x58     0x2c */
++		 u8:8;				/* + 0x59     0x2d */
++		 _MSCAN_RESERVED_(22, 2);	/* + 0x5a          */
++		u16 time;			/* + 0x5c     0x2e */
++	} rx;
++	 _MSCAN_RESERVED_(23, 2);		/* + 0x5e          */
++	struct {
++		u16 idr1_0;			/* + 0x60     0x30 */
++		 _MSCAN_RESERVED_(24, 2);	/* + 0x62          */
++		u16 idr3_2;			/* + 0x64     0x32 */
++		 _MSCAN_RESERVED_(25, 2);	/* + 0x66          */
++		u16 dsr1_0;			/* + 0x68     0x34 */
++		 _MSCAN_RESERVED_(26, 2);	/* + 0x6a          */
++		u16 dsr3_2;			/* + 0x6c     0x36 */
++		 _MSCAN_RESERVED_(27, 2);	/* + 0x6e          */
++		u16 dsr5_4;			/* + 0x70     0x38 */
++		 _MSCAN_RESERVED_(28, 2);	/* + 0x72          */
++		u16 dsr7_6;			/* + 0x74     0x3a */
++		 _MSCAN_RESERVED_(29, 2);	/* + 0x76          */
++		u8 dlr;				/* + 0x78     0x3c */
++		u8 tbpr;			/* + 0x79     0x3d */
++		 _MSCAN_RESERVED_(30, 2);	/* + 0x7a          */
++		u16 time;			/* + 0x7c     0x3e */
++	} tx;
++	 _MSCAN_RESERVED_(31, 2);		/* + 0x7e          */
++} __attribute__ ((packed));
++
++#undef _MSCAN_RESERVED_
++#define MSCAN_REGION 	sizeof(struct mscan)
++
++struct net_device *alloc_mscandev(void);
++/* clock_src:
++ *	1 = The MSCAN clock source is the onchip Bus Clock.
++ *	0 = The MSCAN clock source is the chip Oscillator Clock.
 + */
-+static inline int dev_isalive(const struct net_device *dev)
-+{
-+	return dev->reg_state <= NETREG_REGISTERED;
-+}
++extern int register_mscandev(struct net_device *dev, int clock_src);
++extern void unregister_mscandev(struct net_device *dev);
 +
-+/* use same locking rules as GIF* ioctl's */
-+static ssize_t can_dev_show(struct device *d,
-+			    struct device_attribute *attr, char *buf,
-+			    ssize_t (*fmt)(struct net_device *, char *))
-+{
-+	struct net_device *dev = to_net_dev(d);
-+	ssize_t ret = -EINVAL;
-+
-+	read_lock(&dev_base_lock);
-+	if (dev_isalive(dev))
-+		ret = (*fmt)(dev, buf);
-+	read_unlock(&dev_base_lock);
-+
-+	return ret;
-+}
-+
-+/* generate a show function for simple field */
-+#define CAN_DEV_SHOW(field, fmt_string)					\
-+static ssize_t fmt_can_##field(struct net_device *dev, char *buf)	\
-+{									\
-+	struct can_priv *priv = netdev_priv(dev);			\
-+	return sprintf(buf, fmt_string, priv->field);			\
-+}									\
-+static ssize_t show_can_##field(struct device *d,			\
-+				struct device_attribute *attr,		\
-+				char *buf)				\
-+{									\
-+	return can_dev_show(d, attr, buf, fmt_can_##field);		\
-+}
-+
-+/* use same locking and permission rules as SIF* ioctl's */
-+static ssize_t can_dev_store(struct device *d, struct device_attribute *attr,
-+			     const char *buf, size_t len,
-+			     int (*set)(struct net_device *, unsigned long))
-+{
-+	struct net_device *dev = to_net_dev(d);
-+	unsigned long new;
-+	int ret = -EINVAL;
-+
-+	if (!capable(CAP_NET_ADMIN))
-+		return -EPERM;
-+
-+	ret = strict_strtoul(buf, 0, &new);
-+	if (ret)
-+		goto out;
-+
-+	rtnl_lock();
-+	if (dev_isalive(dev)) {
-+		ret = (*set)(dev, new);
-+		if (!ret)
-+			ret = len;
-+	}
-+	rtnl_unlock();
-+out:
-+	return ret;
-+}
-+
-+#define CAN_CREATE_FILE(_dev, _name)					\
-+	if (device_create_file(&_dev->dev, &dev_attr_##_name))		\
-+		dev_err(ND2D(_dev),					\
-+			"Couldn't create device file for ##_name\n")
-+
-+#define CAN_REMOVE_FILE(_dev, _name)					\
-+	device_remove_file(&_dev->dev, &dev_attr_##_name)		\
-+
-+CAN_DEV_SHOW(ctrlmode, "0x%x\n");
-+
-+static int change_can_ctrlmode(struct net_device *dev, unsigned long ctrlmode)
-+{
-+	struct can_priv *priv = netdev_priv(dev);
-+	int err = 0;
-+
-+	if (priv->state != CAN_STATE_STOPPED)
-+		return -EBUSY;
-+
-+	if (priv->do_set_ctrlmode)
-+		err = priv->do_set_ctrlmode(dev, ctrlmode);
-+
-+	if (!err)
-+		priv->ctrlmode = ctrlmode;
-+
-+	return err;
-+}
-+
-+static ssize_t store_can_ctrlmode(struct device *dev,
-+				  struct device_attribute *attr,
-+				  const char *buf, size_t len)
-+{
-+	return can_dev_store(dev, attr, buf, len, change_can_ctrlmode);
-+}
-+
-+static DEVICE_ATTR(can_ctrlmode, S_IRUGO | S_IWUSR,
-+		   show_can_ctrlmode, store_can_ctrlmode);
-+
-+static const char *can_state_names[] = {
-+	"active", "bus-warn", "bus-pass" , "bus-off",
-+	"stopped", "sleeping", "unkown"
-+};
-+
-+static ssize_t printf_can_state(struct net_device *dev, char *buf)
-+{
-+	struct can_priv *priv = netdev_priv(dev);
-+	enum can_state state;
-+	int err = 0;
-+
-+	if (priv->do_get_state) {
-+		err = priv->do_get_state(dev, &state);
-+		if (err)
-+			goto out;
-+		priv->state = state;
-+	} else
-+		state = priv->state;
-+
-+	if (state >= ARRAY_SIZE(can_state_names))
-+		state = ARRAY_SIZE(can_state_names) - 1;
-+	err = sprintf(buf, "%s\n", can_state_names[state]);
-+out:
-+	return err;
-+}
-+
-+static ssize_t show_can_state(struct device *d,
-+			      struct device_attribute *attr, char *buf)
-+{
-+	return can_dev_show(d, attr, buf, printf_can_state);
-+}
-+
-+static DEVICE_ATTR(can_state, S_IRUGO, show_can_state, NULL);
-+
-+CAN_DEV_SHOW(restart_ms, "%d\n");
-+
-+static int change_can_restart_ms(struct net_device *dev, unsigned long ms)
-+{
-+	struct can_priv *priv = netdev_priv(dev);
-+
-+	if (priv->restart_ms < 0)
-+		return -EOPNOTSUPP;
-+	priv->restart_ms = ms;
-+	return 0;
-+}
-+
-+static ssize_t store_can_restart_ms(struct device *dev,
-+				    struct device_attribute *attr,
-+				    const char *buf, size_t len)
-+{
-+	return can_dev_store(dev, attr, buf, len, change_can_restart_ms);
-+}
-+
-+static DEVICE_ATTR(can_restart_ms, S_IRUGO | S_IWUSR,
-+		   show_can_restart_ms, store_can_restart_ms);
-+
-+static ssize_t printf_can_echo(struct net_device *dev, char *buf)
-+{
-+	return sprintf(buf, "%d\n", dev->flags & IFF_ECHO ? 1 : 0);
-+}
-+
-+static ssize_t show_can_echo(struct device *d,
-+			  struct device_attribute *attr, char *buf)
-+{
-+	return can_dev_show(d, attr, buf, printf_can_echo);
-+}
-+
-+static int change_can_echo(struct net_device *dev, unsigned long on)
-+{
-+	if (on)
-+		dev->flags |= IFF_ECHO;
-+	else
-+		dev->flags &= ~IFF_ECHO;
-+	return 0;
-+}
-+
-+static ssize_t store_can_echo(struct device *dev,
-+			      struct device_attribute *attr,
-+			      const char *buf, size_t len)
-+{
-+	return can_dev_store(dev, attr, buf, len, change_can_echo);
-+}
-+
-+static DEVICE_ATTR(can_echo, S_IRUGO | S_IWUSR, show_can_echo, store_can_echo);
-+
-+static int change_can_restart(struct net_device *dev, unsigned long on)
-+{
-+	return can_restart_now(dev);
-+}
-+
-+static ssize_t store_can_restart(struct device *dev,
-+				 struct device_attribute *attr,
-+				 const char *buf, size_t len)
-+{
-+	return can_dev_store(dev, attr, buf, len, change_can_restart);
-+}
-+
-+static DEVICE_ATTR(can_restart, S_IWUSR, NULL, store_can_restart);
-+
-+/* Show a given attribute if the CAN bittiming group */
-+static ssize_t can_btc_show(const struct device *d,
-+			    struct device_attribute *attr, char *buf,
-+			    unsigned long offset)
-+{
-+	struct net_device *dev = to_net_dev(d);
-+	struct can_priv *priv = netdev_priv(dev);
-+	struct can_bittiming_const *btc = priv->bittiming_const;
-+	ssize_t ret = -EINVAL;
-+
-+	WARN_ON(offset >= sizeof(struct can_bittiming_const) ||
-+		offset % sizeof(u32) != 0);
-+
-+	read_lock(&dev_base_lock);
-+	if (dev_isalive(dev) && btc)
-+		ret = sprintf(buf, "%d\n",
-+			      *(u32 *)(((u8 *)btc) + offset));
-+
-+	read_unlock(&dev_base_lock);
-+	return ret;
-+}
-+
-+/* Generate a read-only bittiming const attribute */
-+#define CAN_BT_CONST_ENTRY(name)					\
-+static ssize_t show_##name(struct device *d,				\
-+			   struct device_attribute *attr, char *buf) 	\
-+{									\
-+	return can_btc_show(d, attr, buf,				\
-+			    offsetof(struct can_bittiming_const, name));\
-+}									\
-+static DEVICE_ATTR(hw_##name, S_IRUGO, show_##name, NULL)
-+
-+CAN_BT_CONST_ENTRY(tseg1_min);
-+CAN_BT_CONST_ENTRY(tseg1_max);
-+CAN_BT_CONST_ENTRY(tseg2_min);
-+CAN_BT_CONST_ENTRY(tseg2_max);
-+CAN_BT_CONST_ENTRY(sjw_max);
-+CAN_BT_CONST_ENTRY(brp_min);
-+CAN_BT_CONST_ENTRY(brp_max);
-+CAN_BT_CONST_ENTRY(brp_inc);
-+
-+static ssize_t can_bt_show(const struct device *d,
-+			   struct device_attribute *attr, char *buf,
-+			   unsigned long offset)
-+{
-+	struct net_device *dev = to_net_dev(d);
-+	struct can_priv *priv = netdev_priv(dev);
-+	struct can_bittiming *bt = &priv->bittiming;
-+	ssize_t ret = -EINVAL;
-+	u32 *ptr, val;
-+
-+	WARN_ON(offset >= sizeof(struct can_bittiming) ||
-+		offset % sizeof(u32) != 0);
-+
-+	read_lock(&dev_base_lock);
-+	if (dev_isalive(dev)) {
-+		ptr = (u32 *)(((u8 *)bt) + offset);
-+		if (ptr == &bt->sample_point &&
-+		    priv->state != CAN_STATE_STOPPED)
-+			val = can_sample_point(bt);
-+		else
-+			val = *ptr;
-+		ret = sprintf(buf, "%d\n", val);
-+	}
-+	read_unlock(&dev_base_lock);
-+	return ret;
-+}
-+
-+static ssize_t can_bt_store(const struct device *d,
-+			    struct device_attribute *attr,
-+			    const char *buf, size_t count,
-+			    unsigned long offset)
-+{
-+	struct net_device *dev = to_net_dev(d);
-+	struct can_priv *priv = netdev_priv(dev);
-+	struct can_bittiming *bt = &priv->bittiming;
-+	unsigned long new;
-+	ssize_t ret = -EINVAL;
-+	u32 *ptr;
-+
-+	if (priv->state != CAN_STATE_STOPPED)
-+		return -EBUSY;
-+
-+	WARN_ON(offset >= sizeof(struct can_bittiming) ||
-+		offset % sizeof(u32) != 0);
-+
-+	ret = strict_strtoul(buf, 0, &new);
-+	if (ret)
-+		goto out;
-+
-+	ptr = (u32 *)(((u8 *)bt) + offset);
-+	rtnl_lock();
-+	if (dev_isalive(dev)) {
-+		*ptr = (u32)new;
-+
-+		if ((ptr == &bt->bitrate) || (ptr == &bt->sample_point)) {
-+			bt->tq = 0;
-+			bt->brp = 0;
-+			bt->sjw = 0;
-+			bt->prop_seg = 0;
-+			bt->phase_seg1 = 0;
-+			bt->phase_seg2 = 0;
-+		} else {
-+			bt->bitrate = 0;
-+			bt->sample_point = 0;
-+		}
-+		ret = count;
-+	}
-+	rtnl_unlock();
-+out:
-+	return ret;
-+}
-+
-+#define CAN_BT_ENTRY_RO(name)						\
-+static ssize_t show_##name(struct device *d,				\
-+			   struct device_attribute *attr, char *buf) 	\
-+{									\
-+	return can_bt_show(d, attr, buf,				\
-+			   offsetof(struct can_bittiming, name));	\
-+}									\
-+static DEVICE_ATTR(hw_##name, S_IRUGO, show_##name, NULL)
-+
-+CAN_BT_ENTRY_RO(clock);
-+
-+#define CAN_BT_ENTRY(name)						\
-+static ssize_t show_##name(struct device *d,				\
-+			   struct device_attribute *attr, char *buf) 	\
-+{									\
-+	return can_bt_show(d, attr, buf,				\
-+			   offsetof(struct can_bittiming, name));	\
-+}									\
-+static ssize_t store_##name(struct device *d,				\
-+			    struct device_attribute *attr,		\
-+			    const char *buf, size_t count)		\
-+{									\
-+	return can_bt_store(d, attr, buf, count,			\
-+			    offsetof(struct can_bittiming, name));	\
-+}									\
-+static DEVICE_ATTR(name, S_IRUGO | S_IWUSR, show_##name, store_##name)
-+
-+CAN_BT_ENTRY(bitrate);
-+CAN_BT_ENTRY(sample_point);
-+CAN_BT_ENTRY(tq);
-+CAN_BT_ENTRY(prop_seg);
-+CAN_BT_ENTRY(phase_seg1);
-+CAN_BT_ENTRY(phase_seg2);
-+CAN_BT_ENTRY(sjw);
-+
-+static struct attribute *can_bittiming_attrs[] = {
-+	&dev_attr_hw_tseg1_min.attr,
-+	&dev_attr_hw_tseg1_max.attr,
-+	&dev_attr_hw_tseg2_max.attr,
-+	&dev_attr_hw_tseg2_min.attr,
-+	&dev_attr_hw_sjw_max.attr,
-+	&dev_attr_hw_brp_min.attr,
-+	&dev_attr_hw_brp_max.attr,
-+	&dev_attr_hw_brp_inc.attr,
-+	&dev_attr_hw_clock.attr,
-+	&dev_attr_bitrate.attr,
-+	&dev_attr_sample_point.attr,
-+	&dev_attr_tq.attr,
-+	&dev_attr_prop_seg.attr,
-+	&dev_attr_phase_seg1.attr,
-+	&dev_attr_phase_seg2.attr,
-+	&dev_attr_sjw.attr,
-+	NULL
-+};
-+
-+static struct attribute_group can_bittiming_group = {
-+	.name = "can_bittiming",
-+	.attrs = can_bittiming_attrs,
-+};
-+
-+/* Show a given attribute in the CAN statistics group */
-+static ssize_t can_stat_show(const struct device *d,
-+			     struct device_attribute *attr, char *buf,
-+			     unsigned long offset)
-+{
-+	struct net_device *dev = to_net_dev(d);
-+	struct can_priv *priv = netdev_priv(dev);
-+	struct can_device_stats *stats = &priv->can_stats;
-+	ssize_t ret = -EINVAL;
-+
-+	WARN_ON(offset >= sizeof(struct can_device_stats) ||
-+		offset % sizeof(unsigned long) != 0);
-+
-+	read_lock(&dev_base_lock);
-+	if (dev_isalive(dev))
-+		ret = sprintf(buf, "%ld\n",
-+			      *(unsigned long *)(((u8 *)stats) + offset));
-+
-+	read_unlock(&dev_base_lock);
-+	return ret;
-+}
-+
-+/* Generate a read-only CAN statistics attribute */
-+#define CAN_STAT_ENTRY(name)						\
-+static ssize_t show_##name(struct device *d,				\
-+			   struct device_attribute *attr, char *buf) 	\
-+{									\
-+	return can_stat_show(d, attr, buf,				\
-+			     offsetof(struct can_device_stats, name));	\
-+}									\
-+static DEVICE_ATTR(name, S_IRUGO, show_##name, NULL)
-+
-+CAN_STAT_ENTRY(error_warning);
-+CAN_STAT_ENTRY(error_passive);
-+CAN_STAT_ENTRY(bus_error);
-+CAN_STAT_ENTRY(arbitration_lost);
-+CAN_STAT_ENTRY(data_overrun);
-+CAN_STAT_ENTRY(wakeup);
-+CAN_STAT_ENTRY(restarts);
-+
-+static struct attribute *can_statistics_attrs[] = {
-+	&dev_attr_error_warning.attr,
-+	&dev_attr_error_passive.attr,
-+	&dev_attr_bus_error.attr,
-+	&dev_attr_arbitration_lost.attr,
-+	&dev_attr_data_overrun.attr,
-+	&dev_attr_wakeup.attr,
-+	&dev_attr_restarts.attr,
-+	NULL
-+};
-+
-+static struct attribute_group can_statistics_group = {
-+	.name = "can_statistics",
-+	.attrs = can_statistics_attrs,
-+};
-+
-+void can_create_sysfs(struct net_device *dev)
-+{
-+	struct can_priv *priv = netdev_priv(dev);
-+	int err;
-+
-+	CAN_CREATE_FILE(dev, can_ctrlmode);
-+	CAN_CREATE_FILE(dev, can_echo);
-+	CAN_CREATE_FILE(dev, can_restart);
-+	CAN_CREATE_FILE(dev, can_state);
-+	CAN_CREATE_FILE(dev, can_restart_ms);
-+
-+	err = sysfs_create_group(&(dev->dev.kobj),
-+				 &can_statistics_group);
-+	if (err) {
-+		printk(KERN_EMERG
-+		       "couldn't create sysfs group for CAN statistics\n");
-+	}
-+
-+	if (priv->bittiming_const) {
-+		err = sysfs_create_group(&(dev->dev.kobj),
-+					 &can_bittiming_group);
-+		if (err) {
-+			printk(KERN_EMERG "couldn't create sysfs "
-+			       "group for CAN bittiming\n");
-+		}
-+	}
-+}
-+
-+void can_remove_sysfs(struct net_device *dev)
-+{
-+	struct can_priv *priv = netdev_priv(dev);
-+
-+	CAN_REMOVE_FILE(dev, can_ctrlmode);
-+	CAN_REMOVE_FILE(dev, can_echo);
-+	CAN_REMOVE_FILE(dev, can_state);
-+	CAN_REMOVE_FILE(dev, can_restart);
-+	CAN_REMOVE_FILE(dev, can_restart_ms);
-+
-+	sysfs_remove_group(&(dev->dev.kobj), &can_statistics_group);
-+	if (priv->bittiming_const)
-+		sysfs_remove_group(&(dev->dev.kobj), &can_bittiming_group);
-+}
-+
-+#endif /* CONFIG_SYSFS */
-+
-+
-+
-diff --git a/drivers/net/can/sysfs.h b/drivers/net/can/sysfs.h
-new file mode 100644
-index 0000000..e21f2fa
---- /dev/null
-+++ b/drivers/net/can/sysfs.h
-@@ -0,0 +1,24 @@
-+/*
-+ * Copyright (C) 2007 Wolfgang Grandegger <wg@grandegger.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+
-+#ifndef CAN_SYSFS_H
-+#define CAN_SYSFS_H
-+
-+void can_create_sysfs(struct net_device *dev);
-+void can_remove_sysfs(struct net_device *dev);
-+
-+#endif /* CAN_SYSFS_H */
-diff --git a/include/linux/can/dev.h b/include/linux/can/dev.h
-new file mode 100644
-index 0000000..078ac03
---- /dev/null
-+++ b/include/linux/can/dev.h
-@@ -0,0 +1,136 @@
-+/*
-+ * linux/can/dev.h
-+ *
-+ * Definitions for the CAN network device driver interface
-+ *
-+ * Copyright (C) 2006 Andrey Volkov <avolkov@varma-el.com>
-+ *               Varma Electronics Oy
-+ *
-+ * Copyright (C) 2008 Wolfgang Grandegger <wg@grandegger.com>
-+ *
-+ * Send feedback to <socketcan-users@lists.berlios.de>
-+ */
-+
-+#ifndef CAN_DEV_H
-+#define CAN_DEV_H
-+
-+#include <linux/can/error.h>
-+
-+/*
-+ * CAN bitrate and bit-timing
-+ */
-+struct can_bittiming {
-+	u32 bitrate;
-+	u32 sample_point;
-+	u32 tq;
-+	u32 prop_seg;
-+	u32 phase_seg1;
-+	u32 phase_seg2;
-+	u32 sjw;
-+	u32 clock;
-+	u32 brp;
-+};
-+
-+struct can_bittiming_const {
-+	u32 tseg1_min;
-+	u32 tseg1_max;
-+	u32 tseg2_min;
-+	u32 tseg2_max;
-+	u32 sjw_max;
-+	u32 brp_min;
-+	u32 brp_max;
-+	u32 brp_inc;
-+};
-+
-+/*
-+ * CAN mode
-+ */
-+enum can_mode {
-+	CAN_MODE_STOP = 0,
-+	CAN_MODE_START,
-+	CAN_MODE_SLEEP
-+};
-+
-+/*
-+ * CAN controller mode
-+ */
-+#define CAN_CTRLMODE_LOOPBACK	0x1
-+#define CAN_CTRLMODE_LISTENONLY	0x2
-+#define CAN_CTRLMODE_3_SAMPLES	0x4 /* Triple sampling mode */
-+
-+/*
-+ * CAN operational and error states
-+ */
-+enum can_state {
-+	CAN_STATE_ACTIVE = 0,
-+	CAN_STATE_BUS_WARNING,
-+	CAN_STATE_BUS_PASSIVE,
-+	CAN_STATE_BUS_OFF,
-+	CAN_STATE_STOPPED,
-+	CAN_STATE_SLEEPING
-+};
-+
-+/*
-+ * CAN device statistics
-+ */
-+struct can_device_stats {
-+	unsigned long error_warning;
-+	unsigned long data_overrun;
-+	unsigned long wakeup;
-+	unsigned long bus_error;
-+	unsigned long error_passive;
-+	unsigned long arbitration_lost;
-+	unsigned long restarts;
-+	unsigned long bus_error_at_init;
-+};
-+
-+/*
-+ * CAN common private data
-+ */
-+#define CAN_ECHO_SKB_MAX  4
-+
-+struct can_priv {
-+	struct can_device_stats can_stats;
-+
-+	struct can_bittiming bittiming;
-+	struct can_bittiming_const *bittiming_const;
-+
-+	spinlock_t irq_lock;
-+
-+	enum can_state state;
-+	u32 ctrlmode;
-+
-+	int restart_ms;
-+	struct timer_list timer;
-+
-+	struct sk_buff *echo_skb[CAN_ECHO_SKB_MAX];
-+
-+	int (*do_set_bittiming)(struct net_device *dev);
-+	int (*do_get_state)(struct net_device *dev, enum can_state *state);
-+	int (*do_set_mode)(struct net_device *dev, enum can_mode mode);
-+	int (*do_set_ctrlmode)(struct net_device *dev, u32 ctrlmode);
-+	int (*do_get_ctrlmode)(struct net_device *dev, u32 *ctrlmode);
-+};
-+
-+#define ND2D(_ndev)	(_ndev->dev.parent)
-+
-+
-+struct net_device *alloc_candev(int sizeof_priv);
-+void free_candev(struct net_device *dev);
-+int register_candev(struct net_device *dev);
-+void unregister_candev(struct net_device *dev);
-+
-+int can_set_bittiming(struct net_device *dev);
-+
-+int can_restart_now(struct net_device *dev);
-+
-+void can_bus_off(struct net_device *dev);
-+
-+void can_close_cleanup(struct net_device *dev);
-+
-+void can_put_echo_skb(struct sk_buff *skb, struct net_device *dev, int idx);
-+void can_get_echo_skb(struct net_device *dev, int idx);
-+
-+int can_sample_point(struct can_bittiming *bt);
-+
-+#endif /* CAN_DEV_H */
++#endif /* __MSCAN_H__ */
 -- 
 1.5.6.6
 
