@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757604AbZBSAYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336AbZBSAaQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757604AbZBSAYk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 19:24:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbZBSAYb
+	id S1757336AbZBSAaQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 19:30:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbZBSA37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 19:24:31 -0500
-Received: from wf-out-1314.google.com ([209.85.200.170]:54145 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751678AbZBSAYa (ORCPT
+	Wed, 18 Feb 2009 19:29:59 -0500
+Received: from smtp126.sbc.mail.sp1.yahoo.com ([69.147.65.185]:46502 "HELO
+	smtp126.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751678AbZBSA37 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 19:24:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=d7dSvNeBgpAN/vnThttZHUFewJRdl6BKg2u0eRVWrkJZiQyxpnxv+8AigEp0key6pn
-         2gwgm9WcaG7Bp2dxxM+E6YSJkA2bSMtNr5oUd1yLnsSHaoYSruJaiDgi5TQnll63ONVk
-         hhCCXgtbdV/QGMId5uDuzp9m8YpiswzV+zDOo=
+	Wed, 18 Feb 2009 19:29:59 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=tUFd0/biIwP5Ah5/rv6DBrPMAOOFxz8FURjC7WGWmqAlkKcH9nlw62tzFDqzOiXFXJNaa2ypIjrGNTBh3NmNLPkGcugetZMhkfA3LaF18nyratk2x/Uab+RlJ7aNKPktCjhWu/Ogh8EURBrphkoCUD/lodv0CSlTINAePzpnvMA=  ;
+X-YMail-OSG: BMspLWIVM1km9B.aC3aF4t38F2sQNg2c0_9mSGKgB8CWWv8JZDHr6KSZ2qTPUekYqOYbD2jH5_PDPm78o7Fb2nTUx7ElhBIWeqRRoFYdO7k_hT7aZzb73jIuGKw7p3k0Gr3pH5UKJRGzxzvZrevend8fOxzV7e1SBYXF7Zsi0ie9IfEJRbJ7dykAW5sG
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] spi-gpio: Sanitize MISO bitvalue
+Date: Wed, 18 Feb 2009 16:29:56 -0800
+User-Agent: KMail/1.9.10
+Cc: Michael Buesch <mb@bu3sch.de>, linux-kernel@vger.kernel.org,
+       openwrt-devel@lists.openwrt.org
+References: <200902151630.41426.mb@bu3sch.de> <20090218130426.a12e6bfa.akpm@linux-foundation.org>
+In-Reply-To: <20090218130426.a12e6bfa.akpm@linux-foundation.org>
 MIME-Version: 1.0
-In-Reply-To: <1234972402-24298-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
-References: <1234972402-24298-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	 <1234972402-24298-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	 <1234972402-24298-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	 <1234972402-24298-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	 <1234972402-24298-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	 <1234972402-24298-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
-Date: Wed, 18 Feb 2009 16:24:29 -0800
-Message-ID: <6934efce0902181624q57f3423dm50cda218781e4399@mail.gmail.com>
-Subject: Re: [PATCH 5/5] squashfs: Make SquashFS 4 use the new pcomp crypto 
-	interface
-From: Jared Hulbert <jaredeh@gmail.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Phillip Lougher <phillip@lougher.demon.co.uk>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200902181629.57114.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Modify SquashFS 4 to use the new "pcomp" crypto interface for decompression,
-> instead of calling the underlying zlib library directly. This simplifies e.g.
-> the addition of support for hardware decompression and different decompression
-> algorithms.
+On Wednesday 18 February 2009, Andrew Morton wrote:
+> If this function is speed-critical (which is what David's comment
+> implies) then perhaps this should be "fixed" by tightening up the
+> (presently apparently undocumented) interface?  And then speeding up
+> all the other getmiso() implementations?
 
+All the per-bit GPIO functions can be speed-critical,
+which is why they use the zero/nonzero convention
+instead of demanding extra instructions to switch to
+the zero/one convention.
 
-Geert,
-
-When did this become an option?  I thought zlib in the crypto
-interface was not compatible with zlib.  Is that not the case anymore?
- Have you looked at AXFS enough to judge if this would be as easy a
-job as it looks to convert?
-
-
-How do you get from here to supporting alternate compressors?
+This particular function needs the zero/one convention;
+in that respect it's unusual.
