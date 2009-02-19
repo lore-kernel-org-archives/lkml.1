@@ -1,95 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756019AbZBSIzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755763AbZBSJEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756019AbZBSIzm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 03:55:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbZBSIza
+	id S1755763AbZBSJEh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 04:04:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbZBSJEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 03:55:30 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:61502 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753066AbZBSIza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 03:55:30 -0500
-Message-ID: <499D1ED9.4040005@cn.fujitsu.com>
-Date: Thu, 19 Feb 2009 16:56:57 +0800
-From: Yang Hongyang <yanghy@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+	Thu, 19 Feb 2009 04:04:16 -0500
+Received: from mx3.schottelius.org ([77.109.138.221]:42520 "EHLO
+	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753604AbZBSJEM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 04:04:12 -0500
+Date: Thu, 19 Feb 2009 10:01:43 +0100
+From: Nico Schottelius <nico-kernel@schottelius.org>
+To: Nico Schottelius <nico-linux-20090213@schottelius.org>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg@redhat.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       Nico Schottelius <nico-kernel@schottelius.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Eric Anholt <eric.anholt@intel.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: X200: Brightness broken since 2.6.29-rc4-58-g4c098bc
+Message-ID: <20090219090143.GA5828@denkbrett.schottelius.org>
+Mail-Followup-To: Nico Schottelius <nico-kernel@schottelius.org>,
+	Nico Schottelius <nico-linux-20090213@schottelius.org>,
+	Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Matthew Garrett <mjg@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-acpi@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>,
+	Matthew Garrett <mjg59@srcf.ucam.org>,
+	Eric Anholt <eric.anholt@intel.com>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <juADNmcceYF.A.mdD.Mr0lJB@chimera> <1234911925.9844.89.camel@gaiman> <20090217231313.GA2654@srcf.ucam.org> <200902171523.57612.jbarnes@virtuousgeek.org> <20090218093602.GA7722@denkbrett.schottelius.org> <20090213093354.GA10175@denkbrett.schottelius.org> <20090213094200.GC17774@elte.hu> <alpine.LFD.2.00.0902131302240.3671@localhost.localdomain> <20090216155434.GA5503@denkbrett.schottelius.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: [PATCH 11/12]Remove defines of DMA_XXBIT_MASK micro
-References: <499CFDC8.1070600@cn.fujitsu.com> <499D0221.9090407@cn.fujitsu.com> <20090219081403.GA5400@elte.hu>
-In-Reply-To: <20090219081403.GA5400@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="9amGYk9869ThD9tj"
+Content-Disposition: inline
+In-Reply-To: <20090218093602.GA7722@denkbrett.schottelius.org> <20090216155434.GA5503@denkbrett.schottelius.org>
+User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
+X-Unix-Info: http://unix.schottelius.org/
+X-Netzseite: http://nico.schottelius.org/
+X-System-Info: ikn (Linux 2.6.29-rc5-ikn-00168-gba95fd4 x86_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Yang Hongyang <yanghy@cn.fujitsu.com> wrote:
-> 
->> Remove defines of DMA_XXBIT_MASK micro
->>
->> Signed-off-by: Yang Hongyang<yanghy@cn.fujitsu.com>
->>
->> ---
->>  include/linux/dma-mapping.h |   20 +-------------------
->>  1 files changed, 1 insertions(+), 19 deletions(-)
->>
->> diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
->> index f238c7e..70f9c63 100644
->> --- a/include/linux/dma-mapping.h
->> +++ b/include/linux/dma-mapping.h
->> @@ -13,27 +13,9 @@ enum dma_data_direction {
->>  	DMA_NONE = 3,
->>  };
->>  
->> +/*use DMA_BIT_MASK(n) within your driver instead of DMA_xxBIT_MASK*/
->>  #define DMA_BIT_MASK(n)	(((n) == 64) ? ~0ULL : ((1ULL<<(n))-1))
->>  
->> -/*
->> - * NOTE: do not use the below macros in new code and do not add new definitions
->> - * here.
->> - *
->> - * Instead, just open-code DMA_BIT_MASK(n) within your driver
->> - */
->> -#define DMA_64BIT_MASK	DMA_BIT_MASK(64)
->> -#define DMA_48BIT_MASK	DMA_BIT_MASK(48)
->> -#define DMA_47BIT_MASK	DMA_BIT_MASK(47)
->> -#define DMA_40BIT_MASK	DMA_BIT_MASK(40)
->> -#define DMA_39BIT_MASK	DMA_BIT_MASK(39)
->> -#define DMA_35BIT_MASK	DMA_BIT_MASK(35)
->> -#define DMA_32BIT_MASK	DMA_BIT_MASK(32)
->> -#define DMA_31BIT_MASK	DMA_BIT_MASK(31)
->> -#define DMA_30BIT_MASK	DMA_BIT_MASK(30)
->> -#define DMA_29BIT_MASK	DMA_BIT_MASK(29)
->> -#define DMA_28BIT_MASK	DMA_BIT_MASK(28)
->> -#define DMA_24BIT_MASK	DMA_BIT_MASK(24)
-> 
-> Looks good beyond the s/micro/macro typo fix, but i'd suggest to 
-> keep these old defines for one more kernel cycle, then do a 
-> final removal of all remaining uses, in a single patch.
-> 
-> That way we'll save ourselves from quite a bit of unnecessary 
-> build breakages (as your patchset shows there's still a lot of 
-> users of the old macros), as these definitions get moved around, 
-> reintroduced, etc.
-> 
-> Conflict resolution becomes easier as well - if such a patch 
-> conflicts with some ongoing work then we can by avoid the 
-> conflict by just dropping that hunk and delaying that particular 
-> conversion to the 'final' stage.
-> 
-> 	Ingo
 
-That's a good idea,Seems it's nessary to keep these old
-defines.
-I will resend the patch with s/micro/macro typo fix and keep
-these old defines,Thanks Ingo!~
+--9amGYk9869ThD9tj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Issue persisting on 2.6.29-rc5-ikn-00168-gba95fd4
 
--- 
-Regards
-Yang Hongyang
+Nico
+
+--=20
+Think about Free and Open Source Software (FOSS).
+http://nico.schottelius.org/documentations/foss/the-term-foss/
+
+PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
+
+--9amGYk9869ThD9tj
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmdH/YACgkQuL75KpiFGIyylwCeIbzdr/n13AZGhdgUNIY3opDr
+oI4AoMSJ74A39koqs4WQKEOYrJvmo7+A
+=HXQ/
+-----END PGP SIGNATURE-----
+
+--9amGYk9869ThD9tj--
