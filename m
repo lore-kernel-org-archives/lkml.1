@@ -1,188 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758831AbZBSMUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758476AbZBSMVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758831AbZBSMUA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 07:20:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758343AbZBSMTr
+	id S1758476AbZBSMVc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 07:21:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbZBSMVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 07:19:47 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:39812 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758164AbZBSMTp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 07:19:45 -0500
-Date: Thu, 19 Feb 2009 12:19:32 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Paul Walmsley <paul@pwsan.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, r-woodruff2@ti.com,
-       Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH E 11/14] OMAP clock: track child clocks
-Message-ID: <20090219121932.GL6407@n2100.arm.linux.org.uk>
-References: <20090128192551.29333.82943.stgit@localhost.localdomain> <20090128192756.29333.41541.stgit@localhost.localdomain> <20090129151401.GC18233@n2100.arm.linux.org.uk> <20090129220608.GJ18233@n2100.arm.linux.org.uk> <20090209141156.GB16626@n2100.arm.linux.org.uk> <alpine.DEB.2.00.0902122345160.14667@utopia.booyaka.com> <20090214112325.GA17965@n2100.arm.linux.org.uk>
-Mime-Version: 1.0
+	Thu, 19 Feb 2009 07:21:21 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58038 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753578AbZBSMVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 07:21:20 -0500
+Date: Thu, 19 Feb 2009 13:20:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Oleg Nesterov <oleg@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>
+Subject: Re: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove single
+	ipi fallback for smp_call_function_many())
+Message-ID: <20090219122031.GC1703@elte.hu>
+References: <20090216231946.GA12009@redhat.com> <1234862974.4744.31.camel@laptop> <20090217101130.GA8660@wotan.suse.de> <1234866453.4744.58.camel@laptop> <20090217112657.GE26402@wotan.suse.de> <1234923702.29823.7.camel@vayu> <20090218135945.GC23125@wotan.suse.de> <1234982620.29823.22.camel@vayu> <20090218191757.GD8889@elte.hu> <1235001314.14523.2.camel@vayu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090214112325.GA17965@n2100.arm.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1235001314.14523.2.camel@vayu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 14, 2009 at 11:23:25AM +0000, Russell King - ARM Linux wrote:
-> On Fri, Feb 13, 2009 at 12:01:37AM -0700, Paul Walmsley wrote:
-> > (cc'ing Richard Woodruff)
-> > 
-> > Hello Russell,
-> > 
-> > On Mon, 9 Feb 2009, Russell King - ARM Linux wrote:
-> > 
-> > > On Thu, Jan 29, 2009 at 10:06:08PM +0000, Russell King - ARM Linux wrote:
-> > > > @@ -780,7 +780,7 @@ int omap2_clk_set_parent(struct clk *clk, struct clk *new_parent)
-> > > >  	if (clk->usecount > 0)
-> > > >  		_omap2_clk_enable(clk);
-> > > >  
-> > > > -	clk->parent = new_parent;
-> > > > +	clk_reparent(clk, new_parent);
-> > > 
-> > > While looking at the DPLL patches, I've realised that omap2_clk_set_parent()
-> > > is buggy, as are any other places which reparent the clock (thankfully
-> > > the only other place is in the initialisation code where it doesn't
-> > > matter.)
-> > > 
-> > > Consider what happens when a clock is enabled - we walk up the tree
-> > > enabling all parents.  If we then change the clock's parent, and
-> > > then disable the child, we will again walk up the tree, but since
-> > > we've reparented it, it will be a different clock tree.  The result
-> > > is that the ancestors clock usage counts, and therefore their enable
-> > > status, will end up getting screwed up.
-> > 
-> > Agreed.
-> > 
-> > > This brings up a question: what we currently do here is:
-> > > 
-> > > - disable the child
-> > > - program clksel
-> > > - enable the child
-> > > - change child->parent
-> > > 
-> > > If we add in the parent handling, there are two possibilities:
-> > > 
-> > > - disable the child
-> > > - enable the new parent tree
-> > > - program clksel
-> > > - change child->parent
-> > > - disable the old parent tree
-> > > - enable the child
-> > > 
-> > > OR
-> > > 
-> > > - disable the child and the old parent tree
-> > > - program clksel
-> > > - change child->parent
-> > > - enable the new parent tree and the child
-> > > 
-> > > (note those 'and's have implied ordering).
-> > > 
-> > > Is there anything which dictates one approach over the other?
-> > > Obviously the latter approach results in something smaller and
-> > > cleaner, but might not be technically correct.
-> > 
-> > I don't know of any hardware reason to prefer one approach over the other, 
-> > but Richard might know better.
-> 
-> I'll need an answer on this before I can commit the updated bypass clock
-> support patch.
 
-In the interests of moving things forward, and due to the total lack of
-response from TI, it's time to make a decision based upon what seems
-sensible so things can continue moving forward.
+* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
 
-Since there are no hardware issues we know about, we might as well take
-the simplest approach, which is the latter case.
+> On Wed, 2009-02-18 at 11:17 -0800, Ingo Molnar wrote: 
+> > * Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+> > 
+> > > > Indeed that could cause problems on some architectures which I
+> > > > had hoped to avoid. So the patch is probably better off to first
+> > > > add the smp_mb() to arch_send_call_function_xxx arch code, unless
+> > > > it is immediately obvious or confirmed by arch maintainer that
+> > > > such barrier is not required.
+> > > 
+> > > For x2apic specific operations we should add the smp_mb() sequence. But
+> > > we need to make sure that we don't end up doing it twice (once in
+> > > generic code and another in arch code) for all the ipi paths.
+> > 
+> > right now we do have an smp_mb() due to your fix in November.
+> > 
+> > So what should happen is to move that smp_mb() from the x86 
+> > generic IPI path to the x86 x2apic IPI path. (and turn it into 
+> > an smp_wmb() - that should be enough - we dont care about future 
+> > reads being done sooner than this point.)
+> 
+> Ingo, smp_wmb() won't help. x2apic register writes can still 
+> go ahead of the sfence. According to the SDM, we need a 
+> serializing instruction or mfence. Our internal experiments 
+> also proved this.
 
-> However, looking a little deeper, there's more issues in the reparenting
-> area.  I don't think this code has been tested at all...  In
-> _omap2_clksel_get_src_field, there is this:
-> 
-> 	for (clkr = clks->rates; clkr->div; clkr++) {
-> 		if (clkr->flags & (cpu_mask | DEFAULT_RATE))
-> 			break; /* Found the default rate for this platform */
-> 	}
-> 
-> which is bogus - it will find the first entry which is _either_ marked
-> as a default rate _or_ is supported by the SoC.  This means (for
-> instance) that:
-> 
-> static const struct clksel_rate core_l3_core_rates[] = {
->         { .div = 1, .val = 1, .flags = RATE_IN_24XX },
->         { .div = 2, .val = 2, .flags = RATE_IN_242X },
->         { .div = 4, .val = 4, .flags = RATE_IN_24XX | DEFAULT_RATE },
-> 
-> will give us divisor 1 rather than presumably the one we want, that being
-> divisor 4.  I think the test above should be:
-> 
-> 	for (clkr = clks->rates; clkr->div; clkr++) {
-> 		if (clkr->flags & cpu_mask &&
-> 		    clkr->flags & DEFAULT_RATE)
-> 			break; /* Found the default rate for this platform */
-> 	}
-> 
-> so we find an entry which is supported _and_ is the default for the SoC.
-> 
-> There's also a second issue - the comments before omap2_divisor_to_clksel()
-> indicate that this function returns 0xffffffff on error.  Unfortunately,
-> this is not so, it actually returns zero on error.  Moreover, we test
-> the result of the function against ~0, so we'll never deal with the error
-> case.  This really should be fixed so that we return the right value for
-> the error case.  (Further comments on this in a follow up.)
-> 
-> So, below is a patch which fixes both of these issues.
+ah, yes - i got confused about how an x2apic write can pass a 
+_store_ fence.
 
-No comments received, I'm going to assume everyone is happy with the
-patch below and it will be going to Linus today or this evening.
+The reason is that an MSR write is a register->register move 
+(not a memory write), so it it not part of the generic memory 
+ordering machinery. So a serializing instruction it has to be.
 
-> diff --git a/arch/arm/mach-omap2/clock.c b/arch/arm/mach-omap2/clock.c
-> index 5020cb1..f87501b 100644
-> --- a/arch/arm/mach-omap2/clock.c
-> +++ b/arch/arm/mach-omap2/clock.c
-> @@ -636,7 +636,7 @@ u32 omap2_clksel_to_divisor(struct clk *clk, u32 field_val)
->   *
->   * Given a struct clk of a rate-selectable clksel clock, and a clock divisor,
->   * find the corresponding register field value.  The return register value is
-> - * the value before left-shifting.  Returns 0xffffffff on error
-> + * the value before left-shifting.  Returns ~0 on error
->   */
->  u32 omap2_divisor_to_clksel(struct clk *clk, u32 div)
->  {
-> @@ -648,7 +648,7 @@ u32 omap2_divisor_to_clksel(struct clk *clk, u32 div)
->  
->  	clks = omap2_get_clksel_by_parent(clk, clk->parent);
->  	if (!clks)
-> -		return 0;
-> +		return ~0;
->  
->  	for (clkr = clks->rates; clkr->div; clkr++) {
->  		if ((clkr->flags & cpu_mask) && (clkr->div == div))
-> @@ -659,7 +659,7 @@ u32 omap2_divisor_to_clksel(struct clk *clk, u32 div)
->  		printk(KERN_ERR "clock: Could not find divisor %d for "
->  		       "clock %s parent %s\n", div, clk->name,
->  		       clk->parent->name);
-> -		return 0;
-> +		return ~0;
->  	}
->  
->  	return clkr->val;
-> @@ -747,7 +747,7 @@ static u32 _omap2_clksel_get_src_field(struct clk *src_clk, struct clk *clk,
->  		return 0;
->  
->  	for (clkr = clks->rates; clkr->div; clkr++) {
-> -		if (clkr->flags & (cpu_mask | DEFAULT_RATE))
-> +		if (clkr->flags & cpu_mask && clkr->flags & DEFAULT_RATE)
->  			break; /* Found the default rate for this platform */
->  	}
->  
+> Appended is the x86 portion of the patch: ---
 > 
-> -------------------------------------------------------------------
-> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+> From: Suresh Siddha <suresh.b.siddha@intel.com>
+> Subject: x86: move smp_mb() in x86 flush tlb path to x2apic specific IPI
+> paths
+
+Could you please refresh this patch to latest tip:master? The 
+APIC drivers moved to arch/x86/kernel/apic/.
+
+	Ingo
