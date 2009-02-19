@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757222AbZBSOA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755558AbZBSOMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757222AbZBSOA0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 09:00:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbZBSOAK
+	id S1755558AbZBSOMe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 09:12:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbZBSOMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 09:00:10 -0500
-Received: from mail122.emailantidote.com ([80.169.59.122]:51486 "EHLO
-	SC-MTA-03.mxsweep.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751846AbZBSOAI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 09:00:08 -0500
-X-Greylist: delayed 573 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Feb 2009 09:00:08 EST
-Message-ID: <499D639E.6090205@draigBrady.com>
-Date: Thu, 19 Feb 2009 13:50:22 +0000
-From: =?ISO-8859-1?Q?P=E1draig_Brady?= <P@draigBrady.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+	Thu, 19 Feb 2009 09:12:22 -0500
+Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:55926 "EHLO
+	TX2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752790AbZBSOMV convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 09:12:21 -0500
+X-BigFish: VPS-2(zz103dKzzzzz32i6bh)
+X-WSS-ID: 0KFBGRS-01-4YS-01
+Date: Thu, 19 Feb 2009 15:11:31 +0100
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Mark Hounschell <dmarkh@cfl.rr.com>
+CC: Borislav Petkov <borislav.petkov@amd.com>,
+       Mark Hounschell <markh@compro.net>, john stultz <johnstul@us.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: PROBLEM: Can't boot a (HZ = 1000) kernel using an AMD
+	Phenom-II processor
+Message-ID: <20090219141131.GM4301@alberich.amd.com>
+References: <498C7980.2060309@compro.net> <498CB798.7050308@cfl.rr.com> <20090209141841.GA31643@aftab> <49904BED.7090208@cfl.rr.com> <499C0913.9050905@compro.net> <20090218141843.GB13304@aftab> <499C3DED.1090807@cfl.rr.com> <20090218174243.GD13304@aftab> <499C7AC8.4080609@cfl.rr.com> <499D364C.3010704@cfl.rr.com>
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: General question (scheduler) with SSDs?
-References: <alpine.DEB.1.10.0902190837270.19552@p34.internal.lan>
-In-Reply-To: <alpine.DEB.1.10.0902190837270.19552@p34.internal.lan>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Feb 2009 13:50:26.0302 (UTC) FILETIME=[04AF51E0:01C99299]
-x-MXSweep-KeywordsCount: 0
-x-MXSweep-MetaScanResult: Clean
-x-MXSweep-MetaScanThreat: 
-x-MXSweep-VirusScanned: OK
-x-MXPurifier-SpamScore: 0
-x-MXPurifier-VirusScore: 0
-x-MXSweep-Threat: Clean
-X-MXUniqueID: fb03b1bb-b86c-4a87-be91-d1cc742ca87e
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <499D364C.3010704@cfl.rr.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 19 Feb 2009 14:11:51.0032 (UTC) FILETIME=[02718F80:01C9929C]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
-> Hello,
-> 
-> I was curious if anyone had done any benchmarks and/or has conclusive
-> information, what is the best Linux scheduler to use with SSDs?
-> 
-> Noop?
-> CFQ?
-> AS?
-> Deadline?
+Hi Mark,
 
-There was a thread started on that recently:
-http://lkml.org/lkml/2009/1/30/288
+Can you please provide us output of lspci -vvxxx.
+(Please run this as root.)
+
+Furthermore you can try booting your 1000HZ kernel
+with following kernel command lines:
+
+(1) acpi_skip_timer_override apic=debug
+(2) nohpet apic=debug
+(3) acpi_skip_timer_override nohpet apic=debug
+
+and send us all dmesg output.
+
+
+Thanks!
+
+Andreas
+
+-- 
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
+
