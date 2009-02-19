@@ -1,322 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758899AbZBSNzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757326AbZBSN6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758899AbZBSNzx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 08:55:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbZBSNzn
+	id S1757326AbZBSN6v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 08:58:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbZBSN6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 08:55:43 -0500
-Received: from exprod7og103.obsmtp.com ([64.18.2.159]:51588 "EHLO
-	exprod7og103.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751536AbZBSNzl convert rfc822-to-8bit (ORCPT
+	Thu, 19 Feb 2009 08:58:42 -0500
+Received: from rv-out-0506.google.com ([209.85.198.229]:49061 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751170AbZBSN6l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 08:55:41 -0500
-From: "Yang, Bo" <Bo.Yang@lsi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "James.Bottomley@HansenPartnership.com" 
-	<James.Bottomley@HansenPartnership.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Austria, Winston" <Winston.Austria@lsi.com>
-Date: Thu, 19 Feb 2009 05:55:16 -0800
-Subject: RE: [PATCH 2/9] scsi: megaraid_sas - Add poll wait support to
- megaraid sas driver - I
-Thread-Topic: [PATCH 2/9] scsi: megaraid_sas - Add poll wait support to
- megaraid sas driver - I
-Thread-Index: AcmSKBNpKWMZnql1RE6AG3ji/TVBbQAcS+dQ
-Message-ID: <4B6A08C587958942AA3002690DD4F8C33A11664E@cosmail02.lsi.com>
-In-Reply-To: <20090218162113.0333c6ed.akpm@linux-foundation.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 19 Feb 2009 08:58:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=UbF/D0RfI7ZhFlfZKKE5nRI3UbJ4poxApXnFOE4OIPncxFmn5TDXsKU1nTOu0ihSNZ
+         PzlNph8y0bAgi7CgYNIPcNjefIAht/d0UmSnr2iMxd7eZZAD/BMC9ysaNUhipaARs+Pd
+         7vtH36ugUjqZ9L39C6zKeExBpGdJkEb11oJnI=
 MIME-Version: 1.0
+In-Reply-To: <1235051161-8858-1-git-send-email-eric.y.miao@gmail.com>
+References: <1235051161-8858-1-git-send-email-eric.y.miao@gmail.com>
+Date: Thu, 19 Feb 2009 21:58:40 +0800
+Message-ID: <f17812d70902190558g12eddb02n9d1430fd44cdc4e@mail.gmail.com>
+Subject: Re: [PATCH 0/12] ARM: add base support for Marvell PXA168
+From: Eric Miao <eric.y.miao@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
+On Thu, Feb 19, 2009 at 9:45 PM, Eric Miao <eric.y.miao@gmail.com> wrote:
+>
+> This patch set adds base support for Marvell's PXA168 application
+> processor.
+>
+> Excerpt from Marvell's PXA168 Product Brief:
+>
+> """The Marvell(R) PXA168 processor is the first in a family of application
+> processors targeted at mass market opportunities in computing and consumer
+> devices. It balances high computing and multimedia performance with low
+> power consumption to support extended battery life, and includes a wealth
+> of integrated peripherals to reduce overall BOM cost ... """
+>
+> For more information, please see
+>
+>  http://www.marvell.com/featured/pxa168.jsp
+>
 
-Thanks for the review.  I will fix them.
+FYI, those who are interested in the git repository, please check:
 
-Bo Yang
+git://git.kernel.org/pub/scm/linux/kernel/git/ycmiao/pxa-linux-2.6.git pxa168
 
------Original Message-----
-From: Andrew Morton [mailto:akpm@linux-foundation.org] 
-Sent: Wednesday, February 18, 2009 7:21 PM
-To: Yang, Bo
-Cc: Yang, Bo; James.Bottomley@HansenPartnership.com; linux-scsi@vger.kernel.org; linux-kernel@vger.kernel.org; Austria, Winston
-Subject: Re: [PATCH 2/9] scsi: megaraid_sas - Add poll wait support to megaraid sas driver - I
-
-On Tue, 17 Feb 2009 08:25:07 -0700
-"Yang, Bo" <Bo.Yang@lsi.com> wrote:
-
-> Add Poll_wait mechanism to Gen-2 MegaRAID SAS Linux driver.  In the aen handler, driver needs to wakeup poll handler similar to the way it raises SIGIO.  Driver needs to reregister for AEN with the FW when it receives AEN.
-
-Please try to keep the text to less than 80 columns.
-
-
-> Signed-off-by Bo Yang<bo.yang@lsi.com>
-
-"Signed-off-by:"
-
-> ---
-> drivers/scsi/megaraid/megaraid_sas.c |  133 ++++++++++++++++++++++++++++++++++-
->  drivers/scsi/megaraid/megaraid_sas.h |   15 +++
->  2 files changed, 147 insertions(+), 1 deletion(-)
-
-Please use scripts/checkpatch.pl?  This patch adds a tremendous number
-of coding-style errors.  checkpatch detects other problems too.
-
-> diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
-> --- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-02-12 15:36:36.000000000 -0500
-> +++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-02-12 15:39:26.000000000 -0500
-> @@ -40,6 +40,7 @@
->  #include <linux/compat.h>
->  #include <linux/blkdev.h>
->  #include <linux/mutex.h>
-> +#include <linux/poll.h>
-> 
->  #include <scsi/scsi.h>
->  #include <scsi/scsi_cmnd.h>
-> @@ -89,6 +90,11 @@ static struct megasas_mgmt_info megasas_
->  static struct fasync_struct *megasas_async_queue;
->  static DEFINE_MUTEX(megasas_async_queue_mutex);
-> 
-> +static int megasas_poll_wait_aen;
-> +static DECLARE_WAIT_QUEUE_HEAD (megasas_poll_wait);
-
-Like the undesirable space here.
-
-> +extern void
-> +poll_wait(struct file *filp, wait_queue_head_t *q, poll_table *token);
-
-And that.
-
-What on earth are we doing declaring a core VFS function from within a
-scsi driver's .c file?
-
-There is a definition of poll_wait() in include/linux/poll.h.
-
->  static u32 megasas_dbg_lvl;
-> 
->  static void
-> @@ -1277,6 +1283,8 @@ megasas_bios_param(struct scsi_device *s
->         return 0;
->  }
-> 
-> +static void megasas_aen_polling(void *arg);
-> +
->  /**
->   * megasas_service_aen -       Processes an event notification
->   * @instance:                  Adapter soft state
-> @@ -1295,8 +1303,20 @@ megasas_service_aen(struct megasas_insta
->         /*
->          * Don't signal app if it is just an aborted previously registered aen
->          */
-> -       if (!cmd->abort_aen)
-> +       if ((!cmd->abort_aen) && (instance->unload == 0)) {
-> +               struct megasas_aen_event *ev;
-> +               ev = kzalloc(sizeof(*ev), GFP_ATOMIC);
-> +               if (!ev) {
-> +                       printk(KERN_ERR "%s: out of memory\n", __FUNCTION__);
-> +               } else {
-> +                       ev->instance = instance;
-> +                       INIT_WORK(&ev->hotplug_work, megasas_aen_polling);
-> +                       schedule_delayed_work(&ev->hotplug_work, 0);
-
-I see a schedule_delayed_work(), but no cancel_delayed_work().
-
-By what means does the driver ensure that there is no pending work
-after device close, device suspend, module removal, etc?
-
-> +               }
-> +               megasas_poll_wait_aen = 1;
-> +               wake_up(&megasas_poll_wait);
->                 kill_fasync(&megasas_async_queue, SIGIO, POLL_IN);
-> +       }
->         else
->                 cmd->abort_aen = 0;
-> 
-> @@ -2621,6 +2641,7 @@ megasas_probe_one(struct pci_dev *pdev,
-> 
->         megasas_dbg_lvl = 0;
->         instance->flag = 0;
-> +       instance->unload = 0;
->         instance->last_time = 0;
-> 
->         /*
-> @@ -2924,6 +2945,7 @@ static void __devexit megasas_detach_one
->         struct megasas_instance *instance;
-> 
->         instance = pci_get_drvdata(pdev);
-> +       instance->unload = 1;
->         host = instance->host;
-> 
->         if (poll_mode_io)
-> @@ -3027,6 +3049,21 @@ static int megasas_mgmt_fasync(int fd, s
->  }
-> 
->  /**
-> + * megasas_mgmt_poll -  char node "poll" entry point
-> + * */
-> +static unsigned int megasas_mgmt_poll(struct file *file, poll_table *wait)
-> +{
-> +       unsigned int mask = 0;
-> +       poll_wait(file, &megasas_poll_wait, wait);
-> +
-
-The blank line would typically go after end-of-locals and before
-start-of-code.
-
-> +       if (megasas_poll_wait_aen) {
-> +               mask |=   (POLLIN | POLLRDNORM);
-> +               megasas_poll_wait_aen = 0;
-> +       }
-> +       return mask;
-> +}
-> +
-> +/**
->   * megasas_mgmt_fw_ioctl -     Issues management ioctls to FW
->   * @instance:                  Adapter soft state
->   * @argp:                      User's ioctl packet
-> @@ -3348,6 +3385,7 @@ static const struct file_operations mega
->         .open = megasas_mgmt_open,
->         .fasync = megasas_mgmt_fasync,
->         .unlocked_ioctl = megasas_mgmt_ioctl,
-> +       .poll = megasas_mgmt_poll,
->  #ifdef CONFIG_COMPAT
->         .compat_ioctl = megasas_mgmt_compat_ioctl,
->  #endif
-> @@ -3462,6 +3500,99 @@ out:
->         return retval;
->  }
-> 
-> +
-> +static void
-> +megasas_aen_polling(struct work_struct *work)
-> +{
-> +       struct megasas_aen_event *ev =
-> +               container_of(work, struct megasas_aen_event, hotplug_work);
-
-Rather than playing 80-column party tricks, it's much more natural to do:
-
-	struct megasas_aen_event *ev;
-
-	...
-	ev = container_of(work, struct megasas_aen_event, hotplug_work);
-
-
-> +       struct megasas_instance *instance = ev->instance;
-> +       struct megasas_evt_log_info eli;
-> +       union megasas_evt_class_locale class_locale;
-> +       int doscan = 0;
-> +       u32 seq_num;
-> +       int error;
-> +
-> +       if (!instance) {
-> +               printk(KERN_ERR "%s: invalid instance!\n", __FUNCTION__);
-> +               kfree(ev);
-> +               return;
-> +       }
-> +
-> +       if (instance->evt_detail) {
-> +               printk(KERN_INFO "%s[%d]: event code 0x%04x\n", __FUNCTION__,
-> +                       instance->host->host_no, instance->evt_detail->code);
-> +
-> +               switch (instance->evt_detail->code) {
-> +
-> +               case MR_EVT_LD_CREATED:
-> +               case MR_EVT_PD_INSERTED:
-> +               case MR_EVT_LD_DELETED:
-> +               case MR_EVT_LD_OFFLINE:
-> +               case MR_EVT_CFG_CLEARED:
-> +               case MR_EVT_PD_REMOVED:
-> +               case MR_EVT_FOREIGN_CFG_IMPORTED:
-> +               case MR_EVT_LD_STATE_CHANGE:
-> +                       doscan = 1;
-> +                       break;
-> +               default:
-> +                       doscan = 0;
-> +                       break;
-> +               }
-> +       } else {
-> +               printk(KERN_ERR "%s[%d]: invalid evt_detail!\n",
-> +                       __FUNCTION__, instance->host->host_no);
-> +               kfree(ev);
-> +               return;
-> +       }
-> +
-> +       if (doscan) {
-> +               printk(KERN_INFO "%s[%d]: scanning ...\n",
-> +                       __FUNCTION__, instance->host->host_no);
-> +               scsi_scan_host(instance->host);
-> +               msleep(1000);
-
-This leaves a keventd thread unavailable for use by the rest of the
-kernel for an entire second.  It's a shared resource, and this is quite
-rude.
-
-It would be better to schedule another work one second hence.  And to
-remember to cancel it on the close/shutdown/suspend/rmmod/etc path, of
-course..
-
-> +       }
-> +
-> +       kfree(ev);
-> +       /**
-> +       * Get the latest sequence number from FW
-> +       **/
-
-The /** token is used to introduce kerneldoc comments.  This is not a
-kerneldoc comment and there is no point in avoiding standard coding
-style here.
-
-
-For single-line comments:
-
-	/* Get the latest sequence number from FW */
-
-For multi-line comments:
-
-	/*
-	 * Get the latest sequence number from FW
-	 * blah blah
-	 */
-
-
-> +       memset(&eli, 0, sizeof(eli));
-> +
-> +       if (megasas_get_seq_num(instance, &eli)) {
-> +               printk(KERN_ERR "%s[%d]: failed to get seq_num\n",
-> +                       __FUNCTION__, instance->host->host_no);
-> +               return;
-> +       }
-> +
-> +       seq_num = instance->evt_detail->seq_num + 1;
-> +
-> +       /**
-> +       * Register AEN with FW for latest sequence number plus 1
-> +       **/
-> +
-> +       class_locale.members.reserved = 0;
-> +       class_locale.members.locale = MR_EVT_LOCALE_ALL;
-> +       class_locale.members.class = MR_EVT_CLASS_DEBUG;
-> +
-> +       down(&instance->aen_mutex);
-> +
-> +       error = megasas_register_aen(instance, seq_num,
-> +                               class_locale.word);
-> +
-> +       up(&instance->aen_mutex);
-
-wot? 
-
-aen_mutex has type `struct mutex'.  down() and up() are used against
-`struct semaphore'.
-
-This code should have emitted compile warnings, and crashed at runtime.
-
-
+-- 
+Cheers
+- eric
