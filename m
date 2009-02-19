@@ -1,393 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbZBSXtx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757202AbZBSXxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756587AbZBSXtx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 18:49:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754734AbZBSXtg
+	id S1757202AbZBSXxS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 18:53:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753960AbZBSXxD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 18:49:36 -0500
-Received: from vena.lwn.net ([206.168.112.25]:38068 "EHLO vena.lwn.net"
+	Thu, 19 Feb 2009 18:53:03 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35907 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754662AbZBSXtf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 18:49:35 -0500
-Date: Thu, 19 Feb 2009 16:49:32 -0700
-From: Jonathan Corbet <corbet@lwn.net>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Wolfgang Grandegger <wg@grandegger.com>,
-       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
-Subject: Re: [PATCH 3/8] can: CAN Network device driver and SYSFS interface
-Message-ID: <20090219164932.63420915@bike.lwn.net>
-In-Reply-To: <1235070082-7069-4-git-send-email-wg@grandegger.com>
-References: <1235070082-7069-1-git-send-email-wg@grandegger.com>
-	<1235070082-7069-2-git-send-email-wg@grandegger.com>
-	<1235070082-7069-3-git-send-email-wg@grandegger.com>
-	<1235070082-7069-4-git-send-email-wg@grandegger.com>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.3; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	id S1753845AbZBSXxB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 18:53:01 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: ebiederm@xmission.com (Eric W. Biederman)
+X-Fcc: ~/Mail/linus
+Cc: Oleg Nesterov <oleg@redhat.com>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@osdl.org>, daniel@hozac.com,
+       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/7][v8] SI_USER: Masquerade si_pid when crossing pid ns boundary
+In-Reply-To: Eric W. Biederman's message of  Thursday, 19 February 2009 15:21:34 -0800 <m1fxiaxbb5.fsf@fess.ebiederm.org>
+References: <20090219030207.GA18783@us.ibm.com>
+	<20090219030743.GG18990@us.ibm.com>
+	<m1y6w21k6d.fsf@fess.ebiederm.org>
+	<20090219185159.GA374@redhat.com>
+	<m1fxiayss9.fsf@fess.ebiederm.org>
+	<20090219223137.GA10378@redhat.com>
+	<m1fxiaxbb5.fsf@fess.ebiederm.org>
+Emacs: it's like swatting a fly with a supernova.
+Message-Id: <20090219235159.6A542FC3BE@magilla.sf.frob.com>
+Date: Thu, 19 Feb 2009 15:51:59 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Feb 2009 20:01:17 +0100
-Wolfgang Grandegger <wg@grandegger.com> wrote:
+> Suppose I have 3 processes in a process group in three separate pid
+> namespaces.
+> 
+> Looking from the init pid namespace I have:
+>      pid pgrp ppid
+>       10 10    1
+>       11 10    10
+>       12 10    11
+> 
+> Looking from the pid namespace of pid 11 I have:
+>      pid pgrp ppid
+>       0  0     0
+>       1  0     0
+>       2  0     1
+> 
+> Looking from the pid namespace of pid 12 I have:
+>      pid pgrp ppid
+>       0  0     0
+>       0  0     0
+>       1  0     0
+> 
+> So if the process with pid 12 in the initial pid namespace
+> sends to process group 0.
 
-> +/*
-> + * Bit-timing calculation derived from:
-> + *
-> + * Code based on LinCAN sources and H8S2638 project
-> + * Copyright 2004-2006 Pavel Pisa - DCE FELK CVUT cz
-> + * Copyright 2005      Stanislav Marek
-> + * email: pisa@cmp.felk.cvut.cz
-> + */
-> +static int can_update_spt(const struct can_bittiming_const *btc,
-> +			  int sampl_pt, int tseg, int *tseg1, int *tseg2)
-> +{
-> +	*tseg2 = tseg + 1 - (sampl_pt * (tseg + 1)) / 1000;
-> +	if (*tseg2 < btc->tseg2_min)
-> +		*tseg2 = btc->tseg2_min;
-> +	if (*tseg2 > btc->tseg2_max)
-> +		*tseg2 = btc->tseg2_max;
-> +	*tseg1 = tseg - *tseg2;
-> +	if (*tseg1 > btc->tseg1_max) {
-> +		*tseg1 = btc->tseg1_max;
-> +		*tseg2 = tseg - *tseg1;
-> +	}
-> +	return 1000 * (tseg + 1 - *tseg2) / (tseg + 1);
-> +}
+There is no "process group 0".  0 means "the sender's pgrp".
 
-I can only assume that this calculation means something to somebody.  I
-guess there's no hope for those of use too lazy to go read the Bosch spec,
-where, I assume, this kind of stuff is described.
+One possibility is that perhaps what people really want the pid_ns to mean
+is that "the sender's pgrp" in the view of the sender does not include any
+processes outside its pid_ns scope.  That would be consistent with the
+behavior of kill (kill_something_info) on -1; it's described as "all
+processes", but in fact means "all processes within my pid_ns scope".
 
-> +static int can_calc_bittiming(struct net_device *dev)
+What I mean to describe there is changing kill_something_info, so that
+e.g. killpg() inside the NS would affect only the NS init itself but e.g.
+^Z (effectively an implicit killpg() that's always from the global NS)
+would also go to that init's "mother" pgrp in the outer NS.
 
-This function, too, is pretty well impenetrable.  I couldn't possibly try
-to tell you if it's even remotely correct.  Some comments might be nice.
+Another possibility is to decide that's just not worth having at all, and
+CLONE_NEWNS should just implicitly reset pgrp to self.  That is simple.
+But perhaps today someone has a script running a pid_ns-world whose init is
+gracefully killed by ^C of the whole script and we wouldn't want to break
+that if it is actually useful now.
 
-> +/*
-> + * Allocate and setup space for the CAN network device
-> + */
-> +struct net_device *alloc_candev(int sizeof_priv)
-> +{
-> +	struct net_device *dev;
-> +	struct can_priv *priv;
-> +
-> +	dev = alloc_netdev(sizeof_priv, "can%d", can_setup);
-> +	if (!dev)
-> +		return NULL;
-> +
-> +	priv = netdev_priv(dev);
-> +
-> +	priv->state = CAN_STATE_STOPPED;
-> +	spin_lock_init(&priv->irq_lock);
+> pid 10 should see si_pid 12.
+> pid 11 should see si_pid 2.
 
-This is the first mention I see of a lock in this file.  What are your
-locking rules?  There doesn't seem to be a lot of locking going on...  In
-particular, nothing in this file uses irq_lock.
+We indeed have this problem if we think it's useful to continue to have
+a concept of pgrp for the sub-init that can see outside its own NS.
 
-> +	init_timer(&priv->timer);
-> +	priv->timer.expires = 0;
-> +
-> +	return dev;
-> +}
-> +EXPORT_SYMBOL_GPL(alloc_candev);
+> Neither should see si_pid 0, as from_ancestor_ns will not be true.
 
-> +/*
-> + * Allocate space of the CAN network device
-> + */
-> +void free_candev(struct net_device *dev)
-> +{
-> +	free_netdev(dev);
-> +}
-> +EXPORT_SYMBOL_GPL(free_candev);
+Perhaps replace from_ancestor_ns with struct pid_namespace *sender_ns?
+(I don't know if there was already a can of worms with such an idea before.)
+Then si_pid could be translated as appropriate for each recipient.
+(Or perhaps just struct pid *sender and reset si_pid from that.)
 
-I do believe that function is *freeing* space...?  
 
-The allocation function initializes a timer, but here we do nothing to
-ensure that the timer is not running.  Is there a rule somewhere that I
-missed?
-
-> +/*
-> + * Local echo of CAN messages
-> + *
-> + * CAN network devices *should* support a local echo functionality
-> + * (see Documentation/networking/can.txt). To test the handling of CAN
-> + * interfaces that do not support the local echo both driver types are
-> + * implemented. In the case that the driver does not support the echo
-> + * the IFF_ECHO remains clear in dev->flags. This causes the PF_CAN core
-> + * to perform the echo as a fallback solution.
-> + */
-> +
-> +static void can_flush_echo_skb(struct net_device *dev)
-> +{
-> +	struct can_priv *priv = netdev_priv(dev);
-> +	struct net_device_stats *stats = &dev->stats;
-> +	int i;
-> +
-> +	for (i = 0; i < CAN_ECHO_SKB_MAX; i++) {
-> +		if (priv->echo_skb[i]) {
-> +			kfree_skb(priv->echo_skb[i]);
-> +			priv->echo_skb[i] = NULL;
-> +			stats->tx_dropped++;
-> +			stats->tx_aborted_errors++;
-> +		}
-> +	}
-> +}
-
-What lock is protecting priv->echo_skb?
-
-> +/*
-> + * Put the skb on the stack to be looped backed locally lateron
-> + *
-> + * The function is typically called in the start_xmit function
-> + * of the device driver.
-> + */
-> +void can_put_echo_skb(struct sk_buff *skb, struct net_device *dev, int idx)
-> +{
-> +	struct can_priv *priv = netdev_priv(dev);
-> +
-> +	/* set flag whether this packet has to be looped back */
-> +	if (!(dev->flags & IFF_ECHO) || skb->pkt_type != PACKET_LOOPBACK) {
-> +		kfree_skb(skb);
-> +		return;
-> +	}
-
-The comment says "set flag", but the code potentially frees the skb and aborts.
-
-[...]
-
-> +/*
-> + * CAN device restart for bus-off recovery
-> + */
-> +int can_restart_now(struct net_device *dev)
-> +{
-> +	struct can_priv *priv = netdev_priv(dev);
-> +	struct net_device_stats *stats = &dev->stats;
-> +	struct sk_buff *skb;
-> +	struct can_frame *cf;
-> +	int err;
-> +
-> +	if (netif_carrier_ok(dev))
-> +		netif_carrier_off(dev);
-> +
-> +	/* Cancel restart in progress */
-> +	if (priv->timer.expires) {
-> +		del_timer(&priv->timer);
-> +		priv->timer.expires = 0; /* mark inactive timer */
-> +	}
-
-Are you sure you don't want del_timer_sync() there?  What keeps you from
-racing with the timer?
-
-[...]
-
-> +/*
-> + * Cleanup function before the device gets closed.
-> + *
-> + * This functions should be called in the close function of the device
-> + * driver.
-> + */
-> +void can_close_cleanup(struct net_device *dev)
-> +{
-> +	struct can_priv *priv = netdev_priv(dev);
-> +
-> +	if (priv->timer.expires) {
-> +		del_timer(&priv->timer);
-> +		priv->timer.expires = 0;
-> +	}
-> +
-> +	can_flush_echo_skb(dev);
-> +}
-> +EXPORT_SYMBOL_GPL(can_close_cleanup);
-
-You definitely want del_timer_sync() here.  You could potentially return
-with the timer still running.
-
-> diff --git a/drivers/net/can/sysfs.c b/drivers/net/can/sysfs.c
-> new file mode 100644
-> index 0000000..746f641
-> --- /dev/null
-> +++ b/drivers/net/can/sysfs.c
-
-Most of this file looks like typical sysfs cruft.  Again, though, I wonder
-about your locking...
-
-> +/* use same locking rules as GIF* ioctl's */
-> +static ssize_t can_dev_show(struct device *d,
-> +			    struct device_attribute *attr, char *buf,
-> +			    ssize_t (*fmt)(struct net_device *, char *))
-> +{
-> +	struct net_device *dev = to_net_dev(d);
-> +	ssize_t ret = -EINVAL;
-> +
-> +	read_lock(&dev_base_lock);
-> +	if (dev_isalive(dev))
-> +		ret = (*fmt)(dev, buf);
-> +	read_unlock(&dev_base_lock);
-> +
-> +	return ret;
-> +}
-
-I'm not sure what the GIF* ioctl() locking rules are, but do they really
-give you properly-serialized access to your device?  dev_base_lock seems
-like an unlikely choice, somehow, but maybe I'm missing something.
-
-[...]
-
-> +/* use same locking and permission rules as SIF* ioctl's */
-> +static ssize_t can_dev_store(struct device *d, struct device_attribute *attr,
-> +			     const char *buf, size_t len,
-> +			     int (*set)(struct net_device *, unsigned long))
-> +{
-> +	struct net_device *dev = to_net_dev(d);
-> +	unsigned long new;
-> +	int ret = -EINVAL;
-> +
-> +	if (!capable(CAP_NET_ADMIN))
-> +		return -EPERM;
-> +
-> +	ret = strict_strtoul(buf, 0, &new);
-> +	if (ret)
-> +		goto out;
-> +
-> +	rtnl_lock();
-> +	if (dev_isalive(dev)) {
-> +		ret = (*set)(dev, new);
-> +		if (!ret)
-> +			ret = len;
-> +	}
-> +	rtnl_unlock();
-> +out:
-> +	return ret;
-> +}
-
-Here we're using a different (global) lock?  Me confused...
-
-[...]
-
-> diff --git a/drivers/net/can/sysfs.h b/drivers/net/can/sysfs.h
-> new file mode 100644
-> index 0000000..e21f2fa
-> --- /dev/null
-> +++ b/drivers/net/can/sysfs.h
-> @@ -0,0 +1,24 @@
-> +/*
-> + * Copyright (C) 2007 Wolfgang Grandegger <wg@grandegger.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the version 2 of the GNU General Public License
-> + * as published by the Free Software Foundation
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-> + */
-> +
-> +#ifndef CAN_SYSFS_H
-> +#define CAN_SYSFS_H
-> +
-> +void can_create_sysfs(struct net_device *dev);
-> +void can_remove_sysfs(struct net_device *dev);
-> +
-> +#endif /* CAN_SYSFS_H */
-> diff --git a/include/linux/can/dev.h b/include/linux/can/dev.h
-> new file mode 100644
-> index 0000000..078ac03
-> --- /dev/null
-> +++ b/include/linux/can/dev.h
-> @@ -0,0 +1,136 @@
-> +/*
-> + * linux/can/dev.h
-> + *
-> + * Definitions for the CAN network device driver interface
-> + *
-> + * Copyright (C) 2006 Andrey Volkov <avolkov@varma-el.com>
-> + *               Varma Electronics Oy
-> + *
-> + * Copyright (C) 2008 Wolfgang Grandegger <wg@grandegger.com>
-
-Nothing in 2009? :)
-
-> + *
-> + * Send feedback to <socketcan-users@lists.berlios.de>
-> + */
-> +
-> +#ifndef CAN_DEV_H
-> +#define CAN_DEV_H
-> +
-> +#include <linux/can/error.h>
-> +
-> +/*
-> + * CAN bitrate and bit-timing
-> + */
-> +struct can_bittiming {
-> +	u32 bitrate;
-> +	u32 sample_point;
-> +	u32 tq;
-> +	u32 prop_seg;
-> +	u32 phase_seg1;
-> +	u32 phase_seg2;
-> +	u32 sjw;
-> +	u32 clock;
-> +	u32 brp;
-> +};
-
-It sure would be nice (again) to know what all these parameters are.
-
-> +struct can_bittiming_const {
-> +	u32 tseg1_min;
-> +	u32 tseg1_max;
-> +	u32 tseg2_min;
-> +	u32 tseg2_max;
-> +	u32 sjw_max;
-> +	u32 brp_min;
-> +	u32 brp_max;
-> +	u32 brp_inc;
-> +};
-
-Ditto.
-
-[...]
-
-> +/*
-> + * CAN common private data
-> + */
-> +#define CAN_ECHO_SKB_MAX  4
-> +
-> +struct can_priv {
-> +	struct can_device_stats can_stats;
-> +
-> +	struct can_bittiming bittiming;
-> +	struct can_bittiming_const *bittiming_const;
-> +
-> +	spinlock_t irq_lock;
-
-...protecting what...?
-
-> +	enum can_state state;
-> +	u32 ctrlmode;
-> +
-> +	int restart_ms;
-> +	struct timer_list timer;
-> +
-> +	struct sk_buff *echo_skb[CAN_ECHO_SKB_MAX];
-> +
-> +	int (*do_set_bittiming)(struct net_device *dev);
-> +	int (*do_get_state)(struct net_device *dev, enum can_state *state);
-> +	int (*do_set_mode)(struct net_device *dev, enum can_mode mode);
-> +	int (*do_set_ctrlmode)(struct net_device *dev, u32 ctrlmode);
-> +	int (*do_get_ctrlmode)(struct net_device *dev, u32 *ctrlmode);
-> +};
-> +
-> +#define ND2D(_ndev)	(_ndev->dev.parent)
-
-Does this macro really improve the clarity of the code?
-
+Thanks,
+Roland
