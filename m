@@ -1,156 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbZBSAzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbZBSBLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755973AbZBSAzz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 19:55:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbZBSAzr
+	id S1754760AbZBSBLW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 20:11:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbZBSBLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 19:55:47 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48082 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752445AbZBSAzq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 19:55:46 -0500
-Message-ID: <499CADE9.5050906@kernel.org>
-Date: Thu, 19 Feb 2009 09:55:05 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 18 Feb 2009 20:11:11 -0500
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:11817 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751131AbZBSBLK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 20:11:10 -0500
+Message-ID: <499CB1AA.70801@hp.com>
+Date: Wed, 18 Feb 2009 20:11:06 -0500
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-To: rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
-       cpw@sgi.com, mingo@elte.hu
-CC: ink@jurassic.park.msu.ru
-Subject: Re: [PATCH 07/10] vmalloc: implement vm_area_register_early()
-References: <1234958676-27618-1-git-send-email-tj@kernel.org> <1234958676-27618-8-git-send-email-tj@kernel.org>
-In-Reply-To: <1234958676-27618-8-git-send-email-tj@kernel.org>
+To: David Miller <davem@davemloft.net>
+CC: chuck.lever@oracle.com, tytso@mit.edu, Valdis.Kletnieks@vt.edu,
+       arvidjaar@mail.ru, rjw@sisk.pl, netdev@vger.kernel.org,
+       bonding-devel@lists.sourceforge.net, jamagallon@ono.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29 regression? Bonding tied to IPV6 in 29-rc5
+References: <20090218135537.GF3600@mini-me.lan>	<06F54D7E-EE07-49C9-AD8F-B46BD6B02ABA@oracle.com>	<499C5486.5020807@hp.com> <20090218.141431.103832064.davem@davemloft.net>
+In-Reply-To: <20090218.141431.103832064.davem@davemloft.net>
 X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 19 Feb 2009 00:55:21 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cc'ing Ivan Kokshaysky.  Hello.
+David Miller wrote:
+> From: Vlad Yasevich <vladislav.yasevich@hp.com>
+> Date: Wed, 18 Feb 2009 13:33:42 -0500
+> 
+>> Would a module parameter that disables ipv6 or at least addrconf be
+>> enough of a solution?
+> 
+> We have it, it's just that (as others have stated) it doesn't
+> prevent IPV6 sockets from being openned by applications.
+> 
 
-Can you please verify the following patch which contains alpha related
-change is correct?  I forgot to cc you while posting the original
-patchset.
+Is that what people really want to block?
 
------------- original message follows --------------
-Impact: allow multiple early vm areas
+Or do they want to prevent the use of IPv6 in environments where
+IPv6 is not supported?  If it's this case, then simply not configuring
+any IPv6 addresses on the system interfaces will make it seem as if
+IPv6 is not there.
 
-There are places where kernel VM area needs to be allocated before
-vmalloc is initialized.  This is done by allocating static vm_struct,
-initializing several fields and linking it to vmlist and later vmalloc
-initialization picking up these from vmlist.  This is currently done
-manually and if there's more than one such areas, there's no defined
-way to arbitrate who gets which address.
+Without IPv6 addresses, AF_INET6 sockets are the same as AF_INET.
+I really see no reason to block them.  Any legacy apps that people
+might worry about don't use this type socket any way.
 
-This patch implements vm_area_register_early(), which takes vm_area
-struct with flags and size initialized, assigns address to it and puts
-it on the vmlist.  This way, multiple early vm areas can determine
-which addresses they should use.  The only current user - alpha mm
-init - is converted to use it.
+One doesn't even need to worry about processing IPv6 traffic,
+since the system would never join any IPv6 multicast groups and thus
+would never see 99% of the traffic.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
----
- arch/alpha/mm/init.c    |   20 +++++++++++++-------
- include/linux/vmalloc.h |    1 +
- mm/vmalloc.c            |   24 ++++++++++++++++++++++++
- 3 files changed, 38 insertions(+), 7 deletions(-)
-
-diff --git a/arch/alpha/mm/init.c b/arch/alpha/mm/init.c
-index 5d7a16e..df6df02 100644
---- a/arch/alpha/mm/init.c
-+++ b/arch/alpha/mm/init.c
-@@ -189,9 +189,21 @@ callback_init(void * kernel_end)
- 
- 	if (alpha_using_srm) {
- 		static struct vm_struct console_remap_vm;
--		unsigned long vaddr = VMALLOC_START;
-+		unsigned long nr_pages = 0;
-+		unsigned long vaddr;
- 		unsigned long i, j;
- 
-+		/* calculate needed size */
-+		for (i = 0; i < crb->map_entries; ++i)
-+			nr_pages += crb->map[i].count;
-+
-+		/* register the vm area */
-+		console_remap_vm.flags = VM_ALLOC;
-+		console_remap_vm.size = nr_pages << PAGE_SHIFT;
-+		vm_area_register_early(&console_remap_vm);
-+
-+		vaddr = (unsigned long)consle_remap_vm.addr;
-+
- 		/* Set up the third level PTEs and update the virtual
- 		   addresses of the CRB entries.  */
- 		for (i = 0; i < crb->map_entries; ++i) {
-@@ -213,12 +225,6 @@ callback_init(void * kernel_end)
- 				vaddr += PAGE_SIZE;
- 			}
- 		}
--
--		/* Let vmalloc know that we've allocated some space.  */
--		console_remap_vm.flags = VM_ALLOC;
--		console_remap_vm.addr = (void *) VMALLOC_START;
--		console_remap_vm.size = vaddr - VMALLOC_START;
--		vmlist = &console_remap_vm;
- 	}
- 
- 	callback_init_done = 1;
-diff --git a/include/linux/vmalloc.h b/include/linux/vmalloc.h
-index 506e762..bbc0513 100644
---- a/include/linux/vmalloc.h
-+++ b/include/linux/vmalloc.h
-@@ -106,5 +106,6 @@ extern long vwrite(char *buf, char *addr, unsigned long count);
-  */
- extern rwlock_t vmlist_lock;
- extern struct vm_struct *vmlist;
-+extern __init void vm_area_register_early(struct vm_struct *vm);
- 
- #endif /* _LINUX_VMALLOC_H */
-diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index c37924a..d206261 100644
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -24,6 +24,7 @@
- #include <linux/radix-tree.h>
- #include <linux/rcupdate.h>
- #include <linux/bootmem.h>
-+#include <linux/pfn.h>
- 
- #include <asm/atomic.h>
- #include <asm/uaccess.h>
-@@ -982,6 +983,29 @@ void *vm_map_ram(struct page **pages, unsigned int count, int node, pgprot_t pro
- }
- EXPORT_SYMBOL(vm_map_ram);
- 
-+/**
-+ * vm_area_register_early - register vmap area early during boot
-+ * @vm: vm_struct to register
-+ * @size: size of area to register
-+ *
-+ * This function is used to register kernel vm area before
-+ * vmalloc_init() is called.  @vm->size and @vm->flags should contain
-+ * proper values on entry and other fields should be zero.  On return,
-+ * vm->addr contains the allocated address.
-+ *
-+ * DO NOT USE THIS FUNCTION UNLESS YOU KNOW WHAT YOU'RE DOING.
-+ */
-+void __init vm_area_register_early(struct vm_struct *vm)
-+{
-+	static size_t vm_init_off __initdata;
-+
-+	vm->addr = (void *)VMALLOC_START + vm_init_off;
-+	vm_init_off = PFN_ALIGN(vm_init_off + vm->size);
-+
-+	vm->next = vmlist;
-+	vmlist = vm;
-+}
-+
- void __init vmalloc_init(void)
- {
- 	struct vmap_area *va;
-
--- 
-tejun
+-vlad
