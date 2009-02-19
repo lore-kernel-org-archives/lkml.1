@@ -1,123 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbZBSLk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757170AbZBSLlB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755524AbZBSLk3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 06:40:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbZBSLkT
+	id S1757170AbZBSLlB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 06:41:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbZBSLkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 06:40:19 -0500
-Received: from ozlabs.org ([203.10.76.45]:48870 "EHLO ozlabs.org"
+	Thu, 19 Feb 2009 06:40:51 -0500
+Received: from cantor.suse.de ([195.135.220.2]:46301 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751619AbZBSLkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 06:40:17 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Subject: Re: [s390] next Feb 18: defconfig build break
-Date: Thu, 19 Feb 2009 22:10:09 +1030
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       "Sachin P. Sant" <sachinp@in.ibm.com>, linux-s390@vger.kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
-References: <20090218191640.0b023029.sfr@canb.auug.org.au> <200902190929.42044.rusty@rustcorp.com.au> <8bd0f97a0902181755y5a5f6760s6e266c87906e6dca@mail.gmail.com>
-In-Reply-To: <8bd0f97a0902181755y5a5f6760s6e266c87906e6dca@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902192210.10368.rusty@rustcorp.com.au>
+	id S1751712AbZBSLku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 06:40:50 -0500
+Subject: Re: Definition of BUG on x86
+From: Petr Tesarik <ptesarik@suse.cz>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <499C4786.5010504@goop.org>
+References: <1234975856.15053.16.camel@nathan.suse.cz>
+	 <499C4786.5010504@goop.org>
+Content-Type: text/plain; charset="UTF-8"
+Organization: SUSE LINUX
+Date: Thu, 19 Feb 2009 12:40:48 +0100
+Message-Id: <1235043648.15053.35.camel@nathan.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 February 2009 12:25:13 Mike Frysinger wrote:
-> > +char *strncpy(char *dest, const char *src, size_t n);
-> >  #define strncpy __inline_strncpy
-> >  #include <asm/string.h>
-> >  #undef strncpy
+Jeremy Fitzhardinge píše v St 18. 02. 2009 v 09:38 -0800:
+> Petr Tesarik wrote:
+> > Hi Jeremy,
+> >
+> > while looking at the disassembly of a recent kernel, I noticed that
+> > BUG() without CONFIG_DEBUG_BUGVERBOSE now produces a sequence like this:
+> >
+> > 0xc02c2f11 <schedule+581>:      ud2a
+> > 0xc02c2f13 <schedule+583>:      jmp    0xc02c2f13 <schedule+583>
+> >
+> > I dug back into the git log and found out that this was last changed by
+> > you in commit 91768d6c2bad0d2766a166f13f2f57e197de3458.
+> >
+> > I might be missing something, but why do we need that extra endless loop
+> > there? Isn't ud2a simply a no-return? Especially given that there is no
+> > such for(;;) for the CONFIG_DEBUG_BUGVERBOSE case.
+> >
+> > Now, it's no big deal, but it seems to me that the second instruction is
+> > totally useless and merely occupies 2 bytes in the i-cache...
+> >
+> > Why not get rid of it like this?
+> >   
 > 
-> size_t is not a builtin type so there needs to be a linux/types.h
-> include right above these two prototypes.  then things build up fine
-> for me.
+> The trouble is that the compiler doesn't know that the asm never 
+> returns, and so it starts to complain about things that might happen 
+> after the BUG returns.  In other words, the loop is just there to shut 
+> the compiler up.  I agree that its unfortunate that it generates a real 
+> instruction, but I couldn't find a better alternative.
 
-OK, this time for sure!
+Ah, yes, you're right. If you want to make gcc aware of the fact that a
+function never returns, it must recognize that there is no path to that
+function's EXIT, otherwise it will emit a warning (which is pretty
+annoying, indeed). Since we don't want to make a call/jmp to an external
+noreturn function, so the no-return code must be directly visible to
+gcc. Unfortunately, there is no way of telling gcc that an asm statement
+does not return.
 
+Actually, it would be a good thing if you could attach a special
+__attribute__ to the asm to mark it that way. But it's not there, so gcc
+_must_ generate the code itself. :|
 
-blackfin: allow usage of string functions in linux/string.h
+I thought about putting the endless loop into a separate section which
+would get discarded by the linker. But that doesn't work either, because
+we need a .pushsection _and_ a .popsection afterwards, but there is no
+way of emitting that .popsection, because gcc discards everything and
+anything after the endless loop.
 
-In introducing a trivial "strstarts()" function in linux/string.h, we
-hit the following error on blackfin:
+To recap:
 
-file included from include/linux/bitmap.h:9,
-                 from include/linux/nodemask.h:90,
-                 from include/linux/mmzone.h:17,
-                 from include/linux/gfp.h:5,
-                 from include/linux/kmod.h:23,
-                 from include/linux/module.h:14,
-                 from arch/blackfin/lib/strncmp.c:14:
-include/linux/string.h: In function 'strstarts':
-include/linux/string.h:124: error: implicit declaration of function 'strncmp'
+ 1. gcc must emit the code for the endless loop
+ 2. we do not want to have the code in the resulting binary
+ 3. gcc will not let us insert anything after the loop
 
-Because when including asm/string.h from arch/blackfin/lib/strncmp.c,
-we don't declare the string op we are about to define, and
-linux/string.h barfs.
+So, the only method I could invent was using gas macros. It works but is
+quite ugly, because it relies on the actual assembler instruction which
+is generated by the compiler. Now, AFAIK gcc has always translated
+"for(;;)" into a jump to self, and that with any conceivable compiler
+options, but I don't know anything about Intel cc.
 
-The fix is to declare the function whose definition we steal via the
-#define trick.  I do this for all of them, so this won't bite us in
-future.
+Anyway, if you think the ugliness is acceptable, you may take my patch.
 
-Reported-by: linux-next
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- arch/blackfin/lib/strcmp.c  |    1 +
- arch/blackfin/lib/strcpy.c  |    1 +
- arch/blackfin/lib/strncmp.c |    1 +
- arch/blackfin/lib/strncpy.c |    1 +
- 4 files changed, 4 insertions(+)
+Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
 
-diff --git a/arch/blackfin/lib/strcmp.c b/arch/blackfin/lib/strcmp.c
---- a/arch/blackfin/lib/strcmp.c
-+++ b/arch/blackfin/lib/strcmp.c
-@@ -6,6 +6,7 @@
-  * Licensed under the GPL-2 or later.
-  */
+diff --git a/arch/x86/include/asm/bug.h b/arch/x86/include/asm/bug.h
+index d9cf1cd..004093a 100644
+--- a/arch/x86/include/asm/bug.h
++++ b/arch/x86/include/asm/bug.h
+@@ -4,6 +4,14 @@
+ #ifdef CONFIG_BUG
+ #define HAVE_ARCH_BUG
  
-+int strcmp(const char *dest, const char *src);
- #define strcmp __inline_strcmp
- #include <asm/string.h>
- #undef strcmp
-diff --git a/arch/blackfin/lib/strcpy.c b/arch/blackfin/lib/strcpy.c
---- a/arch/blackfin/lib/strcpy.c
-+++ b/arch/blackfin/lib/strcpy.c
-@@ -6,6 +6,7 @@
-  * Licensed under the GPL-2 or later.
-  */
++static inline __noreturn void discarded_jmp(void)
++{
++	asm volatile(".macro jmp target\n"
++		     "\t.purgem jmp\n"
++		     ".endm\n");
++	for (;;) ;
++}
++
+ #ifdef CONFIG_DEBUG_BUGVERBOSE
  
-+char *strcpy(char *dest, const char *src);
- #define strcpy __inline_strcpy
- #include <asm/string.h>
- #undef strcpy
-diff --git a/arch/blackfin/lib/strncmp.c b/arch/blackfin/lib/strncmp.c
---- a/arch/blackfin/lib/strncmp.c
-+++ b/arch/blackfin/lib/strncmp.c
-@@ -6,6 +6,8 @@
-  * Licensed under the GPL-2 or later.
-  */
+ #ifdef CONFIG_X86_32
+@@ -22,14 +30,14 @@ do {								\
+ 		     ".popsection"				\
+ 		     : : "i" (__FILE__), "i" (__LINE__),	\
+ 		     "i" (sizeof(struct bug_entry)));		\
+-	for (;;) ;						\
++	discarded_jmp();					\
+ } while (0)
  
-+#include <linux/types.h>
-+int strncmp(const char *cs, const char *ct, size_t count);
- #define strncmp __inline_strncmp
- #include <asm/string.h>
- #undef strncmp
-diff --git a/arch/blackfin/lib/strncpy.c b/arch/blackfin/lib/strncpy.c
---- a/arch/blackfin/lib/strncpy.c
-+++ b/arch/blackfin/lib/strncpy.c
-@@ -6,6 +6,8 @@
-  * Licensed under the GPL-2 or later.
-  */
+ #else
+ #define BUG()							\
+ do {								\
+ 	asm volatile("ud2");					\
+-	for (;;) ;						\
++	discarded_jmp();					\
+ } while (0)
+ #endif
  
-+#include <linux/types.h>
-+char *strncpy(char *dest, const char *src, size_t n);
- #define strncpy __inline_strncpy
- #include <asm/string.h>
- #undef strncpy
+
+
