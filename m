@@ -1,47 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756256AbZBSUbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757435AbZBSUcp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756256AbZBSUbl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 15:31:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753166AbZBSUbd
+	id S1757435AbZBSUcp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 15:32:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbZBSUch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 15:31:33 -0500
-Received: from web34402.mail.mud.yahoo.com ([66.163.178.151]:29136 "HELO
-	web34402.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751680AbZBSUbc convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 15:31:32 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Feb 2009 15:31:32 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.br;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=2pAeG4L0DMm/6IN1H5IiTTM3MRg458fBzhBV8pNdnNoYobuEQu1RZrIzQqL3+4kVxQowRzbAocqbZEGVoYDlF+sYuIBKp2nofP9bIdKlk9RRL+Z3WtMtDIe0b7sQlXL/b9eUAYfBbLiOCqNTJtmWS9/G7eccAB6Vv/WD719TZBA=;
-X-YMail-OSG: _NnWs0cVM1mCixII6bvz64reMIEsuRHKxEzXhZ9csmAqvljXSJSjPSYKMx0YbQ3oMAAJyobBSVEc82OSEBwn8K5c8BAnCo8drmCT08ga.Zw1HaNL15InSw4I3AYSJchAfyx9McbFDHbZgfr01jPtiIcKNKnOEf571o4gBAnu8DlmSYEJcdsQixtIQ7nvirVnCPhhzynczeiDsa1IXVOpXt5dKQODtA--
-X-Mailer: YahooMailWebService/0.7.260.1
-Date: Thu, 19 Feb 2009 12:24:51 -0800 (PST)
-From: Jose Luis Marchetti <joseluismarchetti@yahoo.com.br>
-Reply-To: joseluismarchetti@yahoo.com.br
-Subject: Is interrupt priority supported ?
-To: linux-kernel@vger.kernel.org
+	Thu, 19 Feb 2009 15:32:37 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60699 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751680AbZBSUcg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 15:32:36 -0500
+Date: Thu, 19 Feb 2009 21:32:21 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Petr Tesarik <ptesarik@suse.cz>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: remove unneeded endless loop in BUG()
+Message-ID: <20090219203221.GA10782@elte.hu>
+References: <1235068713.15053.99.camel@nathan.suse.cz> <20090219185935.GA21820@elte.hu> <499DC13C.2000401@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-ID: <657201.46675.qm@web34402.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <499DC13C.2000401@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I am experiencing serial (115K) data loss when I have concurrent heavy Ethernet traffic. I have added some basic trace into the UART driver and could confirm the Ethernet data interrupt, if with enough data and happening in the right place would cause the UART FIFO to fill.
-BTW this is happening on a embedded processor, not on the usual ( and fast ) PC.
-Then I tried to set the serial interrupt priority to be higher than the Ethernet interrupt priority, just because the UART I am using have just 4 bytes of FIFO while the Ethernet have thousands...
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
-But I am not able to find where this is done in Linux, is interrupt priority supported at all ?
+> Ingo Molnar wrote:
+>>
+>> the problem is that the DO_BUG() will generate the u2d instruction into 
+>> a random place where GCC puts it. It certainly wont be in the place 
+>> where the __bug_table logic above expects it.
+>>
+>> The result will be cryptic crashes instead of a clean BUG message 
+>> assert.
+>>
+>
+> I went and talked to H.J. Lu about this.
+>
+> He said __builtin_trap(); is functionally treated as an asm volatile,  
+> and that it is most likely impossible that gcc could do anything wrong  
+> here (he did specifically state that nothing can move across the asm  
+> volatile, and there are no data dependencies between the asm volatile  
+> and the __builtin_trap).
+>
+> He also agreed that the right way to do this is __builtin_not_reached(),  
+> and I promised to submit a feature request for this for a future version  
+> of gcc.
+>
+> Given that, I would suggest we back out the patch, and that when  
+> __builtin_not_reached(); is supported, we can simply do:
+>
+> #if __GNUC__ is recent enough
+> # define not_reached() __builtin_not_reached()
+> #else
+> # define not_reached() for(;;)
+> #endif
+>
+> OK?
 
-Thanks in advance for any comments,
+Yeah, sounds good!
 
-José Luís Marchetti
-
-
-      Veja quais são os assuntos do momento no Yahoo! +Buscados
-http://br.maisbuscados.yahoo.com
+	Ingo
