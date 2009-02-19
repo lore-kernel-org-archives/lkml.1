@@ -1,46 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbZBSQea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757686AbZBSQeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756001AbZBSQea (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 11:34:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbZBSQeV
+	id S1757686AbZBSQeq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 11:34:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756850AbZBSQee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 11:34:21 -0500
-Received: from gw.goop.org ([64.81.55.164]:47455 "EHLO mail.goop.org"
+	Thu, 19 Feb 2009 11:34:34 -0500
+Received: from mail.klingt.org ([86.59.21.178]:52143 "EHLO klingt.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753028AbZBSQeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 11:34:21 -0500
-Message-ID: <499D8A0C.5030908@goop.org>
-Date: Thu, 19 Feb 2009 08:34:20 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Petr Tesarik <ptesarik@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Definition of BUG on x86
-References: <20090219121027.GB1703@elte.hu> <1235045971.15053.42.camel@nathan.suse.cz> <20090219122211.GE1703@elte.hu> <1235047082.15053.49.camel@nathan.suse.cz> <20090219124702.GC22044@elte.hu> <1235048535.15053.52.camel@nathan.suse.cz> <20090219144902.GA8650@elte.hu> <499D7B9D.7060001@goop.org> <20090219153544.GA31637@elte.hu> <1235059883.15053.68.camel@nathan.suse.cz> <20090219161649.GC9556@elte.hu>
-In-Reply-To: <20090219161649.GC9556@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1756767AbZBSQee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 11:34:34 -0500
+Date: Thu, 19 Feb 2009 17:34:03 +0100
+From: Tim Blechmann <tim@klingt.org>
+To: oprofile-list@lists.sf.net, linux-kernel@vger.kernel.org
+Cc: Robert Richter <robert.richter@amd.com>, Andi Kleen <andi@firstfloor.org>
+Subject: [PATCH] oprofile: don't set counter width from cpuid on core2
+Message-ID: <20090219173403.49871cac@thinkpad>
+In-Reply-To: <20090216114010.GG25042@erda.amd.com>
+References: <20090216114010.GG25042@erda.amd.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.1.8 (klingt.org [127.0.0.1]); Thu, 19 Feb 2009 17:34:17 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id n1JGZBwM013219
 
-Ingo Molnar wrote:
-> Well, the important question is thatGCC will optimize out 
-> whatever comes after the __builtin_trap(), right? To guarantee 
-> an assert we can do something like:
->
->  	__builtin_trap();
-> 	panic("should never get here");
->
-> to guarantee a message. (But realistically GCC will at most 
-> generate a build error.)
->   
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Ah, right, I remember the problem.  There's no guaranteed way of getting 
-the address of the ud2a instruction __builtin_trap generates to put it 
-into the bug table.
+resetting the counter width of the performance counters on intel's
+core2, breaks the delivery of NMIs, when running in x86_64 mode.
 
-    J
+this should fix bug #12395:
+http://bugzilla.kernel.org/show_bug.cgi?id=12395
+
+Signed-off-by: Tim Blechmann <tim@klingt.org>
+- ---
+ arch/x86/oprofile/op_model_ppro.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
+index e9f80c7..ecba9f2 100644
+- --- a/arch/x86/oprofile/op_model_ppro.c
++++ b/arch/x86/oprofile/op_model_ppro.c
+@@ -78,10 +78,18 @@ static void ppro_setup_ctrs(struct op_msrs const * const msrs)
+ 	if (cpu_has_arch_perfmon) {
+ 		union cpuid10_eax eax;
+ 		eax.full = cpuid_eax(0xa);
++
++		/* For core2 (family 6, model 15), don't reset the counter width */
++		if (eax.split.version_id == 0 && current_cpu_data.x86 == 6 &&
++		      current_cpu_data.x86_model == 15)
++			goto clear_all_counters;
++
+ 		if (counter_width < eax.split.bit_width)
+ 			counter_width = eax.split.bit_width;
+ 	}
+ 
++clear_all_counters:
++
+ 	/* clear all counters */
+ 	for (i = 0 ; i < num_counters; ++i) {
+ 		if (unlikely(!CTRL_IS_RESERVED(msrs, i)))
+- -- 
+1.6.1.2
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmdifsACgkQdL+4qsZfVsu7uwCffznCNF7PKtaRw0Z28qy6PtO1
+DP8AnjkSBNLvKGdG8ac90ayoO2L7GRjW
+=xYgd
+-----END PGP SIGNATURE-----
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
