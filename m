@@ -1,93 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756107AbZBSTLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbZBSTMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756107AbZBSTLq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 14:11:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbZBSTLf
+	id S1757453AbZBSTMX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 14:12:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbZBSTMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 14:11:35 -0500
-Received: from gw.goop.org ([64.81.55.164]:44670 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751853AbZBSTLf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 14:11:35 -0500
-Message-ID: <499DAEE4.8010507@goop.org>
-Date: Thu, 19 Feb 2009 11:11:32 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [PATCH RFC] vm_unmap_aliases: allow callers to inhibit TLB flush
-References: <49416494.6040009@goop.org> <200902192254.31735.nickpiggin@yahoo.com.au> <499D90AE.7060102@goop.org> <200902200441.08541.nickpiggin@yahoo.com.au>
-In-Reply-To: <200902200441.08541.nickpiggin@yahoo.com.au>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 19 Feb 2009 14:12:06 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:60119 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752331AbZBSTME (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 14:12:04 -0500
+Subject: Re: Banning checkpoint (was: Re: What can OpenVZ do?)
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Nathan Lynch <nathanl@austin.ibm.com>,
+       linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
+       mpm@selenic.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       viro@zeniv.linux.org.uk, hpa@zytor.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org
+In-Reply-To: <20090219190637.GA4846@x200.localdomain>
+References: <20090213105302.GC4608@elte.hu>
+	 <1234817490.30155.287.camel@nimitz> <20090217222319.GA10546@elte.hu>
+	 <1234909849.4816.9.camel@nimitz> <20090218003217.GB25856@elte.hu>
+	 <1234917639.4816.12.camel@nimitz> <20090218051123.GA9367@x200.localdomain>
+	 <20090218181644.GD19995@elte.hu> <1234992447.26788.12.camel@nimitz>
+	 <20090218231545.GA17524@elte.hu>  <20090219190637.GA4846@x200.localdomain>
+Content-Type: text/plain
+Date: Thu, 19 Feb 2009 11:11:54 -0800
+Message-Id: <1235070714.26788.56.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> Then what is the point of the vm_unmap_aliases? If you are doing it
-> for security it won't work because other CPUs might still be able
-> to write through dangling TLBs. If you are not doing it for
-> security then it does not need to be done at all.
->   
+On Thu, 2009-02-19 at 22:06 +0300, Alexey Dobriyan wrote:
+> Inotify isn't supported yet? You do
+> 
+>         if (!list_empty(&inode->inotify_watches))
+>                 return -E;
+> 
+> without hooking into inotify syscalls.
+> 
+> ptrace(2) isn't supported -- look at struct task_struct::ptraced and
+> friends.
+> 
+> And so on.
+> 
+> System call (or whatever) does something with some piece of kernel
+> internals. We look at this "something" when walking data structures
+> and
+> abort if it's scary enough.
+> 
+> Please, show at least one counter-example.
 
-Xen will make sure any danging tlb entries are flushed before handing 
-the page out to anyone else.
+Alexey, I agree with you here.  I've been fighting myself internally
+about these two somewhat opposing approaches.  Of *course* we can
+determine the "checkpointability" at sys_checkpoint() time by checking
+all the various bits of state.
 
-> Unless it is something strange that Xen does with the page table
-> structure and you just need to get rid of those?
->   
+The problem that I think Ingo is trying to address here is that doing it
+then makes it hard to figure out _when_ you went wrong.  That's the
+single most critical piece of finding out how to go address it.
 
-Yeah.  A pte pointing at a page holds a reference on it, saying that it 
-belongs to the domain.  You can't return it to Xen until the refcount is 0.
+I see where you are coming from.  Ingo's suggestion has the *huge*
+downside that we've got to go muck with a lot of generic code and hook
+into all the things we don't support.
 
->> (Xen does something like this internally to either defer or avoid many
->> expensive tlb operations.)
->>
->>     
->>>> For Xen dom0, when someone does something like dma_alloc_coherent, we
->>>> allocate the memory as normal, and then swizzle the underlying physical
->>>> pages to be machine physically contiguous (vs contiguous pseudo-physical
->>>> guest memory), and within the addressable range for the device.  In
->>>> order to do that, we need to make sure the pages are only mapped by the
->>>> linear mapping, and there are no other aliases.
->>>>         
->>> These are just stale aliases that will no longer be operated on
->>> unless there is a kernel bug -- so can you just live with them,
->>> or is it a security issue of memory access escaping its domain?
->>>       
->> The underlying physical page is being exchanged, so the old page is
->> being returned to Xen's free page pool.  It will refuse to do the
->> exchange if the guest still has pagetable references to the page.
->>     
->
-> But it refuses to do this because it is worried about dangling TLBs?
-> Or some implementation detail that can't handle the page table
-> entries?
->   
+I think what I posted is a decent compromise.  It gets you those
+warnings at runtime and is a one-way trip for any given process.  But,
+it does detect in certain cases (fork() and unshare(FILES)) when it is
+safe to make the trip back to the "I'm checkpointable" state again.
 
-Right.  The actual pte pointing at the page hold the reference.  We need 
-to drop all the references before doing the exchange.
+-- Dave
 
-> Hmm. Let's just try to establish that it is really required first.
->   
-
-Well, its desireable anyway.  The using IPI for any kind of tlb flushing 
-is pretty pessimal under Xen (or any virtual environment); Xen has a 
-much better idea about which real cpus have stale tlb state for which vcpus.
-
-> Or... what if we just allow a compile and/or boot time flag to direct
-> that it does not want lazy vmap unmapping and it will just revert to
-> synchronous unmapping? If Xen needs lots of flushing anyway it might
-> not be a win anyway.
->   
-
-That may be worth considering.
-
-    J
