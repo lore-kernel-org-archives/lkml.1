@@ -1,51 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbZBSBWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754968AbZBSBbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755566AbZBSBWl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 20:22:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbZBSBWb
+	id S1754968AbZBSBbX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 20:31:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbZBSBbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 20:22:31 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51302 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751473AbZBSBWa (ORCPT
+	Wed, 18 Feb 2009 20:31:09 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36724
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752379AbZBSBbI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 20:22:30 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [patch 1/7] slab: introduce kzfree()
-Cc: kosaki.motohiro@jp.fujitsu.com, David Vrabel <david.vrabel@csr.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chas Williams <chas@cmf.nrl.navy.mil>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Matt Mackall <mpm@selenic.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>
-In-Reply-To: <1234954488.24030.46.camel@penberg-laptop>
-References: <499BE7F8.80901@csr.com> <1234954488.24030.46.camel@penberg-laptop>
-Message-Id: <20090219101336.9556.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Wed, 18 Feb 2009 20:31:08 -0500
+Date: Wed, 18 Feb 2009 17:30:52 -0800 (PST)
+Message-Id: <20090218.173052.261399179.davem@davemloft.net>
+To: jie.yang@atheros.com
+Cc: jcliburn@gmail.com, jirislaby@gmail.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] atl1c:Atheros L1C Gigabit Ethernet driver
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <12348515723015-git-send-email-jie.yang@atheros.com>
+References: <12348515723015-git-send-email-jie.yang@atheros.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Thu, 19 Feb 2009 10:22:24 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 2009-02-18 at 10:50 +0000, David Vrabel wrote:
-> > Johannes Weiner wrote:
-> > > +void kzfree(const void *p)
-> > 
-> > Shouldn't this be void * since it writes to the memory?
+From: <jie.yang@atheros.com>
+Date: Tue, 17 Feb 2009 14:19:32 +0800
+
+> Supporting AR8131, and AR8132.
 > 
-> No. kfree() writes to the memory as well to update freelists, poisoning
-> and such so kzfree() is not at all different from it.
+> Signed-off-by: Jie Yang <jie.yang@atheros.com>
 
-I don't think so. It's debetable thing.
-
-poisonig is transparent feature from caller.
-but the caller of kzfree() know to fill memory and it should know.
-
-
-
+Patch applied, thank you very much.
