@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756928AbZBSTZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755030AbZBSTeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756928AbZBSTZU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 14:25:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZBSTZG
+	id S1755030AbZBSTeU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 14:34:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbZBSTeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 14:25:06 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:40479 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753200AbZBSTZF (ORCPT
+	Thu, 19 Feb 2009 14:34:08 -0500
+Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:28824 "HELO
+	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752898AbZBSTeH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 14:25:05 -0500
-Subject: Re: [RFC][PATCH 1/5] create fs flag to mark c/r supported fs's
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: containers <containers@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Alexey Dobriyan <adobriyan@gmail.com>
-In-Reply-To: <20090219190009.GC28490@infradead.org>
-References: <20090219182007.B4B47C1F@kernel>
-	 <20090219190009.GC28490@infradead.org>
-Content-Type: text/plain
-Date: Thu, 19 Feb 2009 11:24:51 -0800
-Message-Id: <1235071491.26788.67.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 19 Feb 2009 14:34:07 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=u5lLGgMKZqqDJZ+4IJSw2MJNaQkhAs8LRoBcD+Gvuh9uXMiq9uV96TIxIp3SQmNIXwVKtn469NREcQ4buSFmRYogy2rT5LKiOmeufjVKR3LSZz0f8z1KmPRKkwfVm9yPop7tACkaDEZeNOhWEg7UiK4rIIdoMdn2GZ7alYzP6to=  ;
+X-YMail-OSG: UGLQ29sVM1m2DhjnjahItlOBPyQZnWEAntqpHvW8psNQA34qhZZmhD_0TwEpmjxTO0myJ.2beyRtxitc.cr9tsc6AYEOXLvh_grdyAWHhjtLm7ZYXqo3.y5d6IgoyjLudD8sUKrkueTzsM_jZsy3L7W_vLx2Gjk9.swohSPBOpaP_W9pNB852H36ag--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Michael Buesch <mb@bu3sch.de>
+Subject: Re: [PATCH] spi_bitbang: Add more lowlevel function documentation
+Date: Thu, 19 Feb 2009 11:34:05 -0800
+User-Agent: KMail/1.9.10
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <200902191206.17734.mb@bu3sch.de>
+In-Reply-To: <200902191206.17734.mb@bu3sch.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902191134.05173.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-19 at 14:00 -0500, Christoph Hellwig wrote:
-> On Thu, Feb 19, 2009 at 10:20:07AM -0800, Dave Hansen wrote:
-> > 
-> > There are plenty of filesystems that are not supported for
-> > c/r at this point.  Think of things like hugetlbfs which
-> > are externally visible or pipefs which are kernel-internal.
-> > 
-> > This provides a quick way to make the "normal" filesystems
-> > which are currently supported.  This is also safe if any
-> > new code gets added.  We assume that a fs is non-supported
-> > unless someone takes explicit action to the contrary.
-> > 
-> > I bet there are some more filesystems that are OK, but
-> > these probably cover 99% of the users for now.
+On Thursday 19 February 2009, Michael Buesch wrote:
+> This adds more documentation of the lowlevel API to avoid future bugs.
 > 
-> Given that a normal fs should be checkpointable you should
-> make those exposing internal state, not the other way around.
+> Signed-off-by: Michael Buesch <mb@bu3sch.de>
 
-In general I agree with you.  But, I think practicality gets in the way
-here.  Here's the cscope output from file_system_type and
-FS_REQUIRES_DEV (basically grepping the tree for them):
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 
-$ wc -l file_system_type FS_REQUIRES_DEV 
-  256 file_system_type
-   41 FS_REQUIRES_DEV
+... thanks.
 
-So, (very) roughly 1/6 of the filesystems are the "normal" block-based
-ones that we all know and love.  The rest are ones that I'd have to at
-the very least think about before saying that they're supported.
 
-I guess we could say that FS_REQUIRES_DEV by default implies
-FS_CHECKPOINTABLE:
+> ---
+> 
+> Index: linux-2.6/include/linux/spi/spi_bitbang.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/spi/spi_bitbang.h	2009-02-19 11:59:23.000000000 +0100
+> +++ linux-2.6/include/linux/spi/spi_bitbang.h	2009-02-19 12:04:09.000000000 +0100
+> @@ -83,6 +83,13 @@ extern int spi_bitbang_stop(struct spi_b
+>   *  int getmiso(struct spi_device *);
+>   *  void spidelay(unsigned);
+>   *
+> + * setsck()'s is_on parameter is a zero/nonzero boolean.
+> + *
+> + * setmosi()'s is_on parameter is a zero/nonzero boolean.
+> + *
+> + * getmiso() is required to return 0 or 1 only. Any other value is invalid
+> + * and will result in improper operation.
+> + *
+>   * A non-inlined routine would call bitbang_txrx_*() routines.  The
+>   * main loop could easily compile down to a handful of instructions,
+>   * especially if the delay is a NOP (to run at peak speed).
+> 
+> -- 
+> Greetings, Michael.
+> 
+> 
 
-#define __FS_REQUIRES_DEV 1
-#define FS_REQUIRES_DEV (__FS_REQUIRES_DEV|FS_CHECKPOINTABLE)
-
-I really don't mind doing it *that* much either way, but I'd sure like
-to go specifically tag ~40 filesystems rather than 200.  
-
--- Dave
 
