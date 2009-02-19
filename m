@@ -1,59 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759513AbZBSVwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759400AbZBSVxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759513AbZBSVwS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 16:52:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758852AbZBSVwA
+	id S1759400AbZBSVxU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 16:53:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757684AbZBSVxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 16:52:00 -0500
-Received: from gate.crashing.org ([63.228.1.57]:60025 "EHLO gate.crashing.org"
+	Thu, 19 Feb 2009 16:53:10 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:56784 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758831AbZBSVv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 16:51:59 -0500
-Subject: Re: [Bug #12667] Badness at kernel/time/timekeeping.c:98 in pmud
- (timekeeping_suspended)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Paul Collins <paul@burly.ondioline.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <alpine.LFD.2.00.0902192114150.3523@localhost.localdomain>
-References: <AIghyjFgMFP.A.uZD._10jJB@chimera>
-	 <sWhNs83kKPE.A.p4D.L20jJB@chimera>
-	 <878wognj00.fsf@burly.wgtn.ondioline.org> <200902142342.59186.rjw@sisk.pl>
-	 <87hc2u26m5.fsf@burly.wgtn.ondioline.org>
-	 <1234775410.26036.122.camel@pasglop>
-	 <87d4di1wwr.fsf@burly.wgtn.ondioline.org>
-	 <87r61uzv95.fsf@burly.wgtn.ondioline.org>
-	 <1235032710.8805.37.camel@pasglop>
-	 <alpine.LFD.2.00.0902192114150.3523@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 20 Feb 2009 08:51:43 +1100
-Message-Id: <1235080303.8805.50.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	id S1756761AbZBSVxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 16:53:09 -0500
+Message-ID: <499DD4BE.2000704@linux.vnet.ibm.com>
+Date: Thu, 19 Feb 2009 13:53:02 -0800
+From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       "David S. Miller" <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>
+Subject: Re: [announce] Performance Counters for Linux, v6
+References: <20090121185021.GA8852@elte.hu>
+In-Reply-To: <20090121185021.GA8852@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-19 at 21:17 +0100, Thomas Gleixner wrote:
+Ingo Molnar wrote:
+> We are pleased to announce version 6 of our performance counters subsystem 
+> implementation. The shortlog, diffstat and the combo patch can be found 
+> below. The combo patch against latest -git (2.6.29-rc2) can be also found 
+> at:
 > 
-> Well, harsh or not is not the question here. 
-> 
-> Fact is that you call gettimeofday() _before_ the timekeeping code has
-> resumed.
-> 
-> That's a simple ordering problem. timekeeping is in the sysdev class
-> as well and it's not the only sysdev which has explicit ordering
-> requirements.
+[snip]
 
-And how do I control that ordering ?
+Hi Ingo,
 
-I find that a bit fishy ... What about making gettimeofday() in the
-timekeeping code work, just return a frozen snapshot of the value on
-suspend instead ?
+As I was starting to put together a simple implementation of PAPI on top 
+of PCL for Power, I noticed that PCL does not seem to have any sort of 
+versioning and way of ascertaining the current capabilities of what is 
+in the kernel.
 
-Ben.
+This information is needed by tools and libraries built on top of PCL so 
+that they can know what is supported and if any bugs need to be worked 
+around.
 
+Have you thought about how to present this information to the user?  I 
+was thinking that since you already have 
+/sys/devices/system/cpu/perf_counter set up, maybe we could add some 
+more files in there.  Perhaps a "version" file (perfmon does this), and 
+maybe a "capabilities" file which contains a set of strings exhibiting 
+the supported features.  For example,
+
+arch-independent:
+MMAPPED_SAMPLE_BUFFER
+MMAPPED_SAMPLE_BUFFER_MAX_SIZE=0x20000
+CUSTOM_SAMPLING
+
+on powerpc arch:
+POWER6_IMC
+POWER6_THRESHOLD
+
+or on x86:
+NEHALEM_PEBS
+
+etc.
+
+Or it could be a bit mask whose bits are defined in an include file.
+
+Personally, I like the strings approach because it's more extensible, 
+and would not require modifying /usr/include files when you pick up a 
+new kernel.  Perhaps the arch-independent and arch-dependent 
+capabilities would be in two different files to make the implementation 
+easier.
+
+
+-- 
+Regards,
+
+- Corey
+
+Corey Ashford
+Software Engineer
+IBM Linux Technology Center, Linux Toolchain
+Beaverton, OR
+503-578-3507
+cjashfor@us.ibm.com
 
