@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753232AbZBSCTD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757753AbZBSC10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753232AbZBSCTD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 21:19:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbZBSCSu
+	id S1757753AbZBSC10 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 21:27:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753282AbZBSC1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 21:18:50 -0500
-Received: from mail.anarazel.de ([217.115.131.40]:48593 "EHLO smtp.anarazel.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751654AbZBSCSt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 21:18:49 -0500
-Message-ID: <499CC185.6050904@anarazel.de>
-Date: Thu, 19 Feb 2009 03:18:45 +0100
-From: Andres Freund <andres@anarazel.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20081210 Shredder/3.0b1
+	Wed, 18 Feb 2009 21:27:14 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:12162 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752621AbZBSC1N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 21:27:13 -0500
+Message-ID: <499CC309.3080305@chelsio.com>
+Date: Wed, 18 Feb 2009 18:25:13 -0800
+From: Divy Le Ray <divy@chelsio.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Alex Buell <alex.buell@munted.org.uk>,
-       adilger@sun.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, Jonathan Bastien-Filiatrault <joe@x2a.org>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: EXT4 ENOSPC Bug
-References: <20090216162028.3032666a@lithium.local.net> <200811291418.24672.andres@anarazel.de> <200812100108.04163.andres@anarazel.de> <49994FEF.2020908@anarazel.de> <20090216150156.GD22619@mini-me.lan> <499985C7.8010302@anarazel.de> <20090216190001.GB11788@mini-me.lan> <499AF598.7080400@anarazel.de> <499C7B41.1090800@anarazel.de> <20090218212957.GR3600@mini-me.lan>
-In-Reply-To: <20090218212957.GR3600@mini-me.lan>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: David Miller <davem@davemloft.net>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Subject: Re: [PATCH 2.6.30] cxgb3: Add support for PCI ID 0x35.
+References: <20090216044615.24884.9331.stgit@speedy5> <20090218.174835.12982157.davem@davemloft.net>
+In-Reply-To: <20090218.174835.12982157.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Feb 2009 02:25:56.0093 (UTC) FILETIME=[64EEC2D0:01C99239]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/18/2009 10:29 PM, Theodore Tso wrote:
-> Ok, that's good.  Good to know the workaround works.
-> Can you send me a dumpe2fs of the filesystem in question?  I'm curious
-> what was going on...
-Will do as soon as I am at the same place as the machine. I guess thats 
-only interesting to you privately (size and so on)?
+David Miller wrote:
+> From: Divy Le Ray <divy@chelsio.com>
+> Date: Sun, 15 Feb 2009 20:46:15 -0800
+>
+>   
+>> Add support for adapters with a PCI id equal to 0x35.
+>>
+>> Signed-off-by: Divy Le Ray <divy@chelsio.com>
+>>     
+>
+> Adding new IDs is something we can do in net-2.6, so I'm
+> going to add this patch there.
+>
+> Let me know if you don't want me to do that, or if there
+> is some dependency with net-next-2.6 that I'm not seeing.
+>   
 
-> Thanks for the report.  I'll push the workaround patch to Linus for
-> 2.6.29 to avoid this problem for now.  I recently sent to linux-ext4
-> for comment a patch to revamp the Orlov allocator for flex_bg and to
-> use that instead of find_group_flex(), but no way that's going into
-> 2.6.29 at this point....
-Would it be helpfull if I test that patch?
+Hi Dave,
 
-Andres
+Applying it against net-2.6 is all good.
+
+Cheers,
+Divy
