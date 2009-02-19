@@ -1,61 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758226AbZBSPIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757908AbZBSPJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758226AbZBSPIW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 10:08:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869AbZBSPIN
+	id S1757908AbZBSPJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 10:09:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869AbZBSPJO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 10:08:13 -0500
-Received: from ns1.suse.de ([195.135.220.2]:54259 "EHLO mx1.suse.de"
+	Thu, 19 Feb 2009 10:09:14 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33459 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752797AbZBSPIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 10:08:12 -0500
-Date: Thu, 19 Feb 2009 16:08:06 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Tobias Kaminsky <mail@finswimmer.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: No Scancodes for "Logitech NuLOOQ"
-In-Reply-To: <200902191216.24045.mail@finswimmer.de>
-Message-ID: <alpine.LRH.1.10.0902191606360.11868@twin.jikos.cz>
-References: <200902191216.24045.mail@finswimmer.de>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	id S1751333AbZBSPJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 10:09:11 -0500
+Date: Thu, 19 Feb 2009 16:08:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Yang Hongyang <yanghy@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Borislav Petkov <petkovbb@googlemail.com>
+Subject: Re: [PATCHv2 00/11]Get rid of all the old macro DMA_nBIT_MASK and
+	use DMA_BIT_MASK(n) instead
+Message-ID: <20090219150851.GC22611@elte.hu>
+References: <499CFDC8.1070600@cn.fujitsu.com> <499D0221.9090407@cn.fujitsu.com> <20090219081403.GA5400@elte.hu> <499D1ED9.4040005@cn.fujitsu.com> <499D2728.1080208@cn.fujitsu.com> <499D54F6.7000108@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <499D54F6.7000108@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Feb 2009, Tobias Kaminsky wrote:
 
-> 589827 (0x90003)
-> 589827 (0x90003)
-> 589825 (0x90001)
-> 589825 (0x90001)
-> 589825 (0x90001)
-> 589828 (0x90004)
-> 589825 (0x90001)
-> 589828 (0x90004)
-> 589826 (0x90002)
-> 589826 (0x90002)
-> 589829 (0x90005)
-> 589829 (0x90005) Button "II"
+* Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-Do these events come out of kernel correctly? I.e. what is the output of
+> Yang Hongyang wrote:
+> > v1->v2:fix s/micro/macro typo and keep the old defines
+> >             of DMA_nBIT_MASK
+> > ----------------------
+> > Replace all DMA_nBIT_MASK macro with the new DMA_BIT_MASK(n) macro
+> > 
+> > 01:Replace all DMA_64BIT_MASK macro with DMA_BIT_MASK(64)
+> > 02:Replace all DMA_48BIT_MASK macro with DMA_BIT_MASK(48)
+> > 03:Replace all DMA_40BIT_MASK macro with DMA_BIT_MASK(40)
+> > 04:Replace all DMA_39BIT_MASK macro with DMA_BIT_MASK(39)
+> > 05:Replace all DMA_35BIT_MASK macro with DMA_BIT_MASK(35)
+> > 06:Replace all DMA_32BIT_MASK macro with DMA_BIT_MASK(32)
+> > 07:Replace all DMA_31BIT_MASK macro with DMA_BIT_MASK(31)
+> > 08:Replace all DMA_30BIT_MASK macro with DMA_BIT_MASK(30)
+> > 09:Replace all DMA_28BIT_MASK macro with DMA_BIT_MASK(28)
+> > 10:Replace all DMA_24BIT_MASK macro with DMA_BIT_MASK(24)
+> > 11:Update the old macro DMA_nBIT_MASK related documentations
+> > 
+> 
+> Shouldn't you organize the patch series per subsystem, not per old
+> macro?  And then Cc the respective maintainers?
+> 
+> As it stands, the patches cannot be routed through the normal channels;
+> yet there is no fundamental reason to handle these patches differently
+> from normal patches.
 
-	evtest /dev/input/event3
+Traditionally such trivially correct convert-it-all patches 
+lived in -mm and were merged upstream in one go, near the end of 
+the merge window.
 
-when pressing these buttons?
+Sprinkling it into dozens of subsystem channels (some of which 
+are very unreliable) is neither good nor an economic use of our 
+resources.
 
-> But the NuLOOQ has a "navring" which you can turn left/right. This does 
-> not generates a scancode.
+Patches that can potentially cause trouble should go via the 
+usual channels.
 
-Could you please compile the kernel with CONFIG_HID_DEBUG enabled, 
-modprobe the 'hid' module with 'debug=2' parameter, move the "narving" in 
-both directions, and send me the output that appears in dmesg?
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
-
+	Ingo
