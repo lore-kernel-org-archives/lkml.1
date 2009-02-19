@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757686AbZBSQeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbZBSQiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757686AbZBSQeq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 11:34:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756850AbZBSQee
+	id S1753974AbZBSQiS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 11:38:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbZBSQiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 11:34:34 -0500
-Received: from mail.klingt.org ([86.59.21.178]:52143 "EHLO klingt.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756767AbZBSQee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 11:34:34 -0500
-Date: Thu, 19 Feb 2009 17:34:03 +0100
-From: Tim Blechmann <tim@klingt.org>
-To: oprofile-list@lists.sf.net, linux-kernel@vger.kernel.org
-Cc: Robert Richter <robert.richter@amd.com>, Andi Kleen <andi@firstfloor.org>
-Subject: [PATCH] oprofile: don't set counter width from cpuid on core2
-Message-ID: <20090219173403.49871cac@thinkpad>
-In-Reply-To: <20090216114010.GG25042@erda.amd.com>
-References: <20090216114010.GG25042@erda.amd.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.1.8 (klingt.org [127.0.0.1]); Thu, 19 Feb 2009 17:34:17 +0100 (CET)
+	Thu, 19 Feb 2009 11:38:06 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:37634 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751390AbZBSQiF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 11:38:05 -0500
+Date: Thu, 19 Feb 2009 16:34:41 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       David Vrabel <david.vrabel@csr.com>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chas Williams <chas@cmf.nrl.navy.mil>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Matt Mackall <mpm@selenic.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [patch 1/7] slab: introduce kzfree()
+In-Reply-To: <1235034817.29813.6.camel@penberg-laptop>
+Message-ID: <Pine.LNX.4.64.0902191616250.8594@blonde.anvils>
+References: <499BE7F8.80901@csr.com>  <1234954488.24030.46.camel@penberg-laptop>
+  <20090219101336.9556.A69D9226@jp.fujitsu.com> <1235034817.29813.6.camel@penberg-laptop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id n1JGZBwM013219
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Thu, 19 Feb 2009, Pekka Enberg wrote:
+> On Wed, 2009-02-18 at 10:50 +0000, David Vrabel wrote:
+> > > > Johannes Weiner wrote:
+> > > > > +void kzfree(const void *p)
+> > > > 
+> > > > Shouldn't this be void * since it writes to the memory?
+> > > 
+> > > No. kfree() writes to the memory as well to update freelists, poisoning
+> > > and such so kzfree() is not at all different from it.
+> 
+> On Thu, 2009-02-19 at 10:22 +0900, KOSAKI Motohiro wrote:
+> > I don't think so. It's debetable thing.
+> > 
+> > poisonig is transparent feature from caller.
+> > but the caller of kzfree() know to fill memory and it should know.
+> 
+> Debatable, sure, but doesn't seem like a big enough reason to make
+> kzfree() differ from kfree().
 
-resetting the counter width of the performance counters on intel's
-core2, breaks the delivery of NMIs, when running in x86_64 mode.
+There may be more important things for us to worry about,
+but I do strongly agree with KOSAKI-san on this.
 
-this should fix bug #12395:
-http://bugzilla.kernel.org/show_bug.cgi?id=12395
+kzfree() already differs from kfree() by a "z": that "z" says please
+zero the buffer pointed to; "const" says it won't modify the buffer
+pointed to.  What sense does kzfree(const void *) make?  Why is
+keeping the declarations the same apart from the "z" desirable?
 
-Signed-off-by: Tim Blechmann <tim@klingt.org>
-- ---
- arch/x86/oprofile/op_model_ppro.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+By all means refuse to add kzfree(), but please don't add it with const.
 
-diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
-index e9f80c7..ecba9f2 100644
-- --- a/arch/x86/oprofile/op_model_ppro.c
-+++ b/arch/x86/oprofile/op_model_ppro.c
-@@ -78,10 +78,18 @@ static void ppro_setup_ctrs(struct op_msrs const * const msrs)
- 	if (cpu_has_arch_perfmon) {
- 		union cpuid10_eax eax;
- 		eax.full = cpuid_eax(0xa);
-+
-+		/* For core2 (family 6, model 15), don't reset the counter width */
-+		if (eax.split.version_id == 0 && current_cpu_data.x86 == 6 &&
-+		      current_cpu_data.x86_model == 15)
-+			goto clear_all_counters;
-+
- 		if (counter_width < eax.split.bit_width)
- 			counter_width = eax.split.bit_width;
- 	}
- 
-+clear_all_counters:
-+
- 	/* clear all counters */
- 	for (i = 0 ; i < num_counters; ++i) {
- 		if (unlikely(!CTRL_IS_RESERVED(msrs, i)))
-- -- 
-1.6.1.2
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+I can see that the "const" in kfree(const void *) is debatable
+[looks to see how userspace free() is defined: without a const],
+I can see that it might be nice to have some "goesaway" attribute
+for such pointers instead; but I don't see how you can argue for
+kzalloc(const void *).
 
-iEYEARECAAYFAkmdifsACgkQdL+4qsZfVsu7uwCffznCNF7PKtaRw0Z28qy6PtO1
-DP8AnjkSBNLvKGdG8ac90ayoO2L7GRjW
-=xYgd
------END PGP SIGNATURE-----
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Hugh
