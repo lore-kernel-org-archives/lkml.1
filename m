@@ -1,58 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757320AbZBSNVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbZBSNXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757320AbZBSNVV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 08:21:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753788AbZBSNVL
+	id S1758206AbZBSNXx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 08:23:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbZBSNXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 08:21:11 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43553 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753299AbZBSNVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 08:21:10 -0500
-Date: Thu, 19 Feb 2009 10:20:25 -0300
-From: Marcelo Tosatti <mtosatti@redhat.com>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kvm mmu: fix another largepage memory leak
-Message-ID: <20090219132025.GA29085@amt.cnet>
-References: <1235042336-20101-1-git-send-email-joerg.roedel@amd.com>
+	Thu, 19 Feb 2009 08:23:45 -0500
+Received: from 137-67-76-76.skybeam.com ([76.76.67.137]:1354 "EHLO
+	mail.chez-thomas.org" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1753788AbZBSNXo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 08:23:44 -0500
+X-Greylist: delayed 452 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Feb 2009 08:23:44 EST
+Message-ID: <499D5B99.3000404@mlbassoc.com>
+Date: Thu, 19 Feb 2009 06:16:09 -0700
+From: Gary Thomas <gary@mlbassoc.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1235042336-20101-1-git-send-email-joerg.roedel@amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+CC: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: BUG: MAX_STACK_TRACE_ENTRIES too low!
+References: <alpine.LRH.2.00.0902191334550.15109@vixen.sonytel.be>
+In-Reply-To: <alpine.LRH.2.00.0902191334550.15109@vixen.sonytel.be>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, Feb 19, 2009 at 12:18:56PM +0100, Joerg Roedel wrote:
-> In the paging_fetch function rmap_remove is called after setting a large
-> pte to non-present. This causes rmap_remove to not drop the reference to
-> the large page. The result is a memory leak of that page.
+Geert Uytterhoeven wrote:
+> When running 2.6.29-rc5+ on PS3 (ppc64), I got the following BUG once during
+> bootup:
 > 
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> ---
->  arch/x86/kvm/paging_tmpl.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> | Freeing unused kernel memory: 3436k freed
+> | BUG: MAX_STACK_TRACE_ENTRIES too low!
+> | turning off the locking correctness validator.
+> | Call Trace:
+> | [c000000006e1b640] [c00000000000f850] .show_stack+0x6c/0x16c (unreliable)
+> | [c000000006e1b6f0] [c00000000007cf6c] .save_trace+0xe0/0x108
+> | [c000000006e1b780] [c00000000007d058] .add_lock_to_list+0xc4/0x124
+> | [c000000006e1b830] [c0000000000816d0] .__lock_acquire+0x13c4/0x17c8
+> | [c000000006e1b930] [c000000000081b78] .lock_acquire+0xa4/0xec
+> | [c000000006e1b9f0] [c0000000003be034] ._spin_lock+0x34/0x58
+> | [c000000006e1ba80] [c0000000000d3e40] .kmem_cache_free+0x84/0x1a8
+> | [c000000006e1bb30] [c0000000001f9abc] .idr_remove+0x214/0x248
+> | [c000000006e1bbf0] [c00000000002867c] .destroy_context+0x34/0x64
+> | [c000000006e1bc80] [c00000000005008c] .__mmdrop+0x4c/0x7c
+> | [c000000006e1bd10] [c00000000004de90] .finish_task_switch+0xec/0x14c
+> | [c000000006e1bdb0] [c00000000004e6fc] .schedule_tail+0x2c/0xa0
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
+> | [c000000006e1be30] [c000000000007738] .ret_from_fork+0x4/0xcc
 > 
-> diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
-> index 7314c09..0f11792 100644
-> --- a/arch/x86/kvm/paging_tmpl.h
-> +++ b/arch/x86/kvm/paging_tmpl.h
-> @@ -306,9 +306,9 @@ static u64 *FNAME(fetch)(struct kvm_vcpu *vcpu, gva_t addr,
->  			continue;
->  
->  		if (is_large_pte(*sptep)) {
-> +			rmap_remove(vcpu->kvm, sptep);
->  			set_shadow_pte(sptep, shadow_trap_nonpresent_pte);
->  			kvm_flush_remote_tlbs(vcpu->kvm);
-> -			rmap_remove(vcpu->kvm, sptep);
->  		}
->  
->  		if (level == PT_DIRECTORY_LEVEL
-> -- 
+> (There are 65 call trace lines)
+> 
+> After that the system continued.
 
-ACK
+It looks like the stack trace code got stuck in a loop (the last
+53 entries are identical) - increasing the limit won't change this,
+it would just keep more entries.
 
+-- 
+------------------------------------------------------------
+Gary Thomas                 |  Consulting for the
+MLB Associates              |    Embedded world
+------------------------------------------------------------
