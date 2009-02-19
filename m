@@ -1,50 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbZBSVsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759361AbZBSVtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757303AbZBSVsZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 16:48:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758197AbZBSVsL
+	id S1759361AbZBSVtT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 16:49:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757656AbZBSVtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 16:48:11 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:51229 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758142AbZBSVsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 16:48:08 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] pcie_portdriver: FIX: pcie_port_device_remove
-Date: Thu, 19 Feb 2009 22:47:45 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <m1ocx5ve8o.fsf@fess.ebiederm.org> <20090219120333.af992d9e.akpm@linux-foundation.org> <m163j61706.fsf@fess.ebiederm.org>
-In-Reply-To: <m163j61706.fsf@fess.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 19 Feb 2009 16:49:00 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:33494 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757453AbZBSVs7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 16:48:59 -0500
+Subject: Re: [SCSI][REGRESSION][BISECTED] Disk errors loop forever in 2.6.29
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       rjw@sisk.pl, Ingo Molnar <mingo@elte.hu>, linux-scsi@vger.kernel.org
+In-Reply-To: <56979.43325.qm@web110612.mail.gq1.yahoo.com>
+References: <56979.43325.qm@web110612.mail.gq1.yahoo.com>
+Content-Type: text/plain
+Date: Thu, 19 Feb 2009 21:48:54 +0000
+Message-Id: <1235080134.12500.45.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902192247.46370.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 February 2009, Eric W. Biederman wrote:
-> Andrew Morton <akpm@linux-foundation.org> writes:
-> 
+On Thu, 2009-02-19 at 13:11 -0800, Sitsofe Wheeler wrote:
+> > From: James Bottomley <James.Bottomley@HansenPartnership.com>
 > >
-> > There are large-scale and conflicting changes to this file in linux-next.
-> >
-> > If we want to jam this fix into 2.6.29 (and it looks like something we
-> > want) then this will trash the linux-next changes.  It will cause me
-> > grief, and will cause Stephen grief unless the pci tree is suitably
-> > changed, which will cause Jesse grief. Either way: grief.
+> > Can you try this patch ... it was something I meant to get into 2.6.29
+> > but forgot about.  The key problem that you seem to be hitting is that
+> > the requeue evades the timeout check.  Moving the timeout check to block
+> > should fix that.
 > 
-> Ugh.
-> 
-> I had better have a good hard look at linux-next.  I tried to ask earlier about
-> ongoing working but I didn't hear anything.
+> Even by itself this patch works although the behaviour is now different
+> to that of 2.6.28.  Whereas in 2.6.28 it would timeout very quickly
+> (after about 1 or 2 seconds) it now times out after 30 seconds
+> (initially I hadn't realised that it would be so much longer). The
+> other difference is that the failure becomes cached - trying to reread
+> the same area using dd instantly fails from now on without any more disk
+> IO/kernel error messages until echo 1 > /proc/sys/vm/drop_caches is
+> issued. Before it would always go straight to the disk for the unread
+> section and the kernel spew would be repeated before the failure.
 
-Yes, you did: http://marc.info/?l=linux-kernel&m=123342565225134&w=4
+Well, the block patch is more of a catch all:  without it apparently the
+scsi_io_completion() rewrite has several cases where it will apparently
+loop forever.
+
+Your specific behaviour change seems to be a bug in the way the rewrite
+is handling ABORTED_COMMAND.  Could you try the patch below (with or
+without the block patch, it shouldn't matter) and see if it gets you
+back to 2.6.28 behaviour?
 
 Thanks,
-Rafael
+
+James
+
+---
+
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index c034841..4b13e36 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -850,12 +850,11 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
+ 				action = ACTION_FAIL;
+ 			break;
+ 		case ABORTED_COMMAND:
++			action = ACTION_FAIL;
+ 			if (sshdr.asc == 0x10) { /* DIF */
+ 				description = "Target Data Integrity Failure";
+-				action = ACTION_FAIL;
+ 				error = -EILSEQ;
+-			} else
+-				action = ACTION_RETRY;
++			}
+ 			break;
+ 		case NOT_READY:
+ 			/* If the device is in the process of becoming
+
+
