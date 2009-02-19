@@ -1,130 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757170AbZBSLlB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754629AbZBSLlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757170AbZBSLlB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 06:41:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbZBSLkv
+	id S1754629AbZBSLlX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 06:41:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757316AbZBSLlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 06:40:51 -0500
-Received: from cantor.suse.de ([195.135.220.2]:46301 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751712AbZBSLku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 06:40:50 -0500
-Subject: Re: Definition of BUG on x86
-From: Petr Tesarik <ptesarik@suse.cz>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <499C4786.5010504@goop.org>
-References: <1234975856.15053.16.camel@nathan.suse.cz>
-	 <499C4786.5010504@goop.org>
-Content-Type: text/plain; charset="UTF-8"
-Organization: SUSE LINUX
-Date: Thu, 19 Feb 2009 12:40:48 +0100
-Message-Id: <1235043648.15053.35.camel@nathan.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 8bit
+	Thu, 19 Feb 2009 06:41:05 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:42894 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757265AbZBSLlE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 06:41:04 -0500
+MIME-Version: 1.0
+In-Reply-To: <200902192145.10616.rusty@rustcorp.com.au>
+References: <1234722028-8110-1-git-send-email-andr345@gmail.com>
+	 <200902182227.14686.rusty@rustcorp.com.au>
+	 <ac3eb2510902180557p3b65fad5i933eed9d3e3d0b3b@mail.gmail.com>
+	 <200902192145.10616.rusty@rustcorp.com.au>
+Date: Thu, 19 Feb 2009 12:41:02 +0100
+Message-ID: <ac3eb2510902190341y7eb4e938nf5f28ac094a68818@mail.gmail.com>
+Subject: Re: [RFC PATCH 0/6] module, kbuild: Faster boot with custom kernel.
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andreas Robinson <andr345@gmail.com>, sam@ravnborg.org,
+       linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge píše v St 18. 02. 2009 v 09:38 -0800:
-> Petr Tesarik wrote:
-> > Hi Jeremy,
-> >
-> > while looking at the disassembly of a recent kernel, I noticed that
-> > BUG() without CONFIG_DEBUG_BUGVERBOSE now produces a sequence like this:
-> >
-> > 0xc02c2f11 <schedule+581>:      ud2a
-> > 0xc02c2f13 <schedule+583>:      jmp    0xc02c2f13 <schedule+583>
-> >
-> > I dug back into the git log and found out that this was last changed by
-> > you in commit 91768d6c2bad0d2766a166f13f2f57e197de3458.
-> >
-> > I might be missing something, but why do we need that extra endless loop
-> > there? Isn't ud2a simply a no-return? Especially given that there is no
-> > such for(;;) for the CONFIG_DEBUG_BUGVERBOSE case.
-> >
-> > Now, it's no big deal, but it seems to me that the second instruction is
-> > totally useless and merely occupies 2 bytes in the i-cache...
-> >
-> > Why not get rid of it like this?
-> >   
-> 
-> The trouble is that the compiler doesn't know that the asm never 
-> returns, and so it starts to complain about things that might happen 
-> after the BUG returns.  In other words, the loop is just there to shut 
-> the compiler up.  I agree that its unfortunate that it generates a real 
-> instruction, but I couldn't find a better alternative.
+On Thu, Feb 19, 2009 at 12:15, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> On Thursday 19 February 2009 00:27:58 Kay Sievers wrote:
+>> some modules wait for 200-500 milliseconds to
+>> get the lock released, some larger modules spend 50 milliseconds in
+>> load_module(), many of them around 20 milliseconds.
+>
+> OK, this is an untested hack (don't try unloading modules, not sure symbol
+> resolution isn't racy now I've killed the lock).  Does it change the numbers?
 
-Ah, yes, you're right. If you want to make gcc aware of the fact that a
-function never returns, it must recognize that there is no path to that
-function's EXIT, otherwise it will emit a warning (which is pretty
-annoying, indeed). Since we don't want to make a call/jmp to an external
-noreturn function, so the no-return code must be directly visible to
-gcc. Unfortunately, there is no way of telling gcc that an asm statement
-does not return.
+That changes it dramatically. The numbers from the sycall until the
+linked-in module are now down to 15-25 milliseconds, and for a few
+large modules 50-100.
 
-Actually, it would be a good thing if you could attach a special
-__attribute__ to the asm to mark it that way. But it's not there, so gcc
-_must_ generate the code itself. :|
+(One crazy exception is ipv6, which takes 620 milliseconds to link, no
+idea what it needs to do.)
 
-I thought about putting the endless loop into a separate section which
-would get discarded by the linker. But that doesn't work either, because
-we need a .pushsection _and_ a .popsection afterwards, but there is no
-way of emitting that .popsection, because gcc discards everything and
-anything after the endless loop.
+I'll compare a few bootup times with and without the patch, and come
+back later today with the real numbers.
 
-To recap:
-
- 1. gcc must emit the code for the endless loop
- 2. we do not want to have the code in the resulting binary
- 3. gcc will not let us insert anything after the loop
-
-So, the only method I could invent was using gas macros. It works but is
-quite ugly, because it relies on the actual assembler instruction which
-is generated by the compiler. Now, AFAIK gcc has always translated
-"for(;;)" into a jump to self, and that with any conceivable compiler
-options, but I don't know anything about Intel cc.
-
-Anyway, if you think the ugliness is acceptable, you may take my patch.
-
-Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
-
-diff --git a/arch/x86/include/asm/bug.h b/arch/x86/include/asm/bug.h
-index d9cf1cd..004093a 100644
---- a/arch/x86/include/asm/bug.h
-+++ b/arch/x86/include/asm/bug.h
-@@ -4,6 +4,14 @@
- #ifdef CONFIG_BUG
- #define HAVE_ARCH_BUG
- 
-+static inline __noreturn void discarded_jmp(void)
-+{
-+	asm volatile(".macro jmp target\n"
-+		     "\t.purgem jmp\n"
-+		     ".endm\n");
-+	for (;;) ;
-+}
-+
- #ifdef CONFIG_DEBUG_BUGVERBOSE
- 
- #ifdef CONFIG_X86_32
-@@ -22,14 +30,14 @@ do {								\
- 		     ".popsection"				\
- 		     : : "i" (__FILE__), "i" (__LINE__),	\
- 		     "i" (sizeof(struct bug_entry)));		\
--	for (;;) ;						\
-+	discarded_jmp();					\
- } while (0)
- 
- #else
- #define BUG()							\
- do {								\
- 	asm volatile("ud2");					\
--	for (;;) ;						\
-+	discarded_jmp();					\
- } while (0)
- #endif
- 
-
-
+Thanks a lot,
+Kay
