@@ -1,52 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758852AbZBSP0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753471AbZBSP0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758852AbZBSP0V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 10:26:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbZBSP0L
+	id S1753471AbZBSP0r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 10:26:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbZBSP0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 10:26:11 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:46599 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751265AbZBSP0K convert rfc822-to-8bit (ORCPT
+	Thu, 19 Feb 2009 10:26:38 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:64338 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753977AbZBSP0h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 10:26:10 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Shan Wei <shanwei@cn.fujitsu.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: CFQ is worse than other IO schedulers in some cases
-References: <499BA413.2010705@cn.fujitsu.com>
-	<20090218113704.GW30821@kernel.dk> <499D2654.4060903@cn.fujitsu.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Thu, 19 Feb 2009 10:26:02 -0500
-In-Reply-To: <499D2654.4060903@cn.fujitsu.com> (Shan Wei's message of "Thu, 19
-	Feb 2009 17:28:52 +0800")
-Message-ID: <x491vtu8n3p.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 19 Feb 2009 10:26:37 -0500
+From: Jorg Schummer <ext-jorg.2.schummer@nokia.com>
+To: linux-kernel@vger.kernel.org
+Cc: drzeus-mmc@drzeus.cx, Jorg Schummer <ext-jorg.2.schummer@nokia.com>
+Subject: [PATCH RFT] MMC: core/core.c: mmc_rescan detects card change in one run
+Date: Thu, 19 Feb 2009 17:26:26 +0200
+Message-Id: <1235057186-31714-1-git-send-email-ext-jorg.2.schummer@nokia.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
+X-OriginalArrivalTime: 19 Feb 2009 15:26:28.0367 (UTC) FILETIME=[6F24A9F0:01C992A6]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shan Wei <shanwei@cn.fujitsu.com> writes:
+With this patch, mmc_rescan can detect the removal of an mmc card and
+the insertion of (possibly another) card in the same run. This means
+that a card change can be detected without having to call
+mmc_detect_change multiple times.
 
-> To Jeff:
->
->  The patch can be used on Fedora10. But, on fedora8, the CLONE_IO is not 
-> included in the sched.h. So compile fail.
->
-> #make
-> /usr/local/etc/dumpdates\" -D_DUMP_VERSION=\"0.4b41\"     tape.c -o tape.o
-> tape.c: In function ‘fork_clone_io’:
-> tape.c:797: error: ‘CLONE_IO’ undeclared (first use in this function)
-> tape.c:797: error: (Each undeclared identifier is reported only once
-> tape.c:797: error: for each function it appears in.)
-> make[1]: *** [tape.o] Error 1
+This change should generalise the core such that it can be easily used
+by hosts which provide a mechanism to detect only the presence of a card
+reader cover, which has to be taken off in order to insert a card. Other
+hosts ("card detect" or "MMC_CAP_NEEDS_POLL") each receive an event when
+a card is removed and when a card is inserted, so it is sufficient for
+them if mmc_rescan handles only one event at a time. "Cover detect"
+hosts, however, only receive events about the cover status. This means
+that between 2 subsequent events, both a card removal and a card
+insertion can occur. In this case, the current version of mmc_rescan
+would only detect the removal of the previous card but not the insertion
+of the new card.
 
-Great, thanks for testing!  I'll fix that up.
+This patch has been tested with the "cover detect" mechanism. If you
+can, please test it with "card detect" and/or "polling" card readers.
 
-Cheers,
-Jeff
+Signed-off-by: Jorg Schummer <ext-jorg.2.schummer@nokia.com>
+---
+ drivers/mmc/core/core.c |   22 +++++++++++++++++-----
+ 1 files changed, 17 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+index df6ce4a..cd2e29f 100644
+--- a/drivers/mmc/core/core.c
++++ b/drivers/mmc/core/core.c
+@@ -740,6 +740,22 @@ void mmc_rescan(struct work_struct *work)
+ 
+ 	mmc_bus_get(host);
+ 
++	/* if there is a card registered */
++	if (host->bus_ops != NULL) {
++
++		if (host->bus_ops->detect && !host->bus_dead) {
++
++			/* check whether the card is still present */
++			host->bus_ops->detect(host);
++
++			/* release the bus and update bus status in case
++			   the card was removed */
++			mmc_bus_put(host);
++			mmc_bus_get(host);
++		}
++	}
++
++	/* if there is no card registered */
+ 	if (host->bus_ops == NULL) {
+ 		/*
+ 		 * Only we can add a new handler, so it's safe to
+@@ -789,12 +805,8 @@ void mmc_rescan(struct work_struct *work)
+ 
+ 		mmc_release_host(host);
+ 		mmc_power_off(host);
+-	} else {
+-		if (host->bus_ops->detect && !host->bus_dead)
+-			host->bus_ops->detect(host);
+-
++	} else
+ 		mmc_bus_put(host);
+-	}
+ out:
+ 	if (host->caps & MMC_CAP_NEEDS_POLL)
+ 		mmc_schedule_delayed_work(&host->detect, HZ);
+-- 
+1.5.4.3
+
