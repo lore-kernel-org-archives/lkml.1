@@ -1,61 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759086AbZBSV6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759230AbZBSWAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759086AbZBSV6e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 16:58:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbZBSV6Y
+	id S1759230AbZBSWAA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 17:00:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756619AbZBSV7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 16:58:24 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:43478 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753233AbZBSV6Y (ORCPT
+	Thu, 19 Feb 2009 16:59:51 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:4469 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754339AbZBSV7v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 16:58:24 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:references:
-	mime-version:content-type:content-disposition:in-reply-to:organization:
-	user-agent:x-system-of-record;
-	b=WsYSdv9Yfd62RJInx4r+2gnNHK/36Bmsnu3eGjdK12nv9oBpLmI49e2MzqdIMF+nW
-	qO7jvd/tnzHmDmZlBdCWA==
-Date: Thu, 19 Feb 2009 13:56:31 -0800
-From: Brian Swetland <swetland@google.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFD] Automatic suspend
-Message-ID: <20090219215631.GA23925@bulgaria.corp.google.com>
-References: <Pine.LNX.4.44L0.0902190956570.3012-100000@iolanthe.rowland.org> <200902192215.18365.rjw@sisk.pl>
+	Thu, 19 Feb 2009 16:59:51 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200902192215.18365.rjw@sisk.pl>
-Organization: Google, Inc.
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-System-Of-Record: true
+In-Reply-To: <ac3eb2510902191248w26f1d1c0o95d68aaa3be097a1@mail.gmail.com>
+References: <1234722028-8110-1-git-send-email-andr345@gmail.com>
+	 <200902182227.14686.rusty@rustcorp.com.au>
+	 <ac3eb2510902180557p3b65fad5i933eed9d3e3d0b3b@mail.gmail.com>
+	 <200902192145.10616.rusty@rustcorp.com.au>
+	 <ac3eb2510902190341y7eb4e938nf5f28ac094a68818@mail.gmail.com>
+	 <ac3eb2510902191248w26f1d1c0o95d68aaa3be097a1@mail.gmail.com>
+Date: Thu, 19 Feb 2009 22:59:48 +0100
+Message-ID: <ac3eb2510902191359o3e32c424h830e78cd0ace446a@mail.gmail.com>
+Subject: Re: [RFC PATCH 0/6] module, kbuild: Faster boot with custom kernel.
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andreas Robinson <andr345@gmail.com>, sam@ravnborg.org,
+       linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-["Rafael J. Wysocki" <rjw@sisk.pl>]
-> 
-> > It might have to be platform-specific.  The Android people seem to have a
-> > pretty good idea of what criteria will work for them.
-> 
-> I'd really like to know in what situations Androind is supposed to suspend
-> automatically.
+On Thu, Feb 19, 2009 at 21:48, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> On Thu, Feb 19, 2009 at 12:41, Kay Sievers <kay.sievers@vrfy.org> wrote:
+>> On Thu, Feb 19, 2009 at 12:15, Rusty Russell <rusty@rustcorp.com.au> wrote:
+>>> On Thursday 19 February 2009 00:27:58 Kay Sievers wrote:
+>>>> some modules wait for 200-500 milliseconds to
+>>>> get the lock released, some larger modules spend 50 milliseconds in
+>>>> load_module(), many of them around 20 milliseconds.
+>>>
+>>> OK, this is an untested hack (don't try unloading modules, not sure symbol
+>>> resolution isn't racy now I've killed the lock).  Does it change the numbers?
+>>
+>> That changes it dramatically. The numbers from the sycall until the
+>> linked-in module are now down to 15-25 milliseconds, and for a few
+>> large modules 50-100.
+>>
+>> (One crazy exception is ipv6, which takes 620 milliseconds to link, no
+>> idea what it needs to do.)
+>
+> Sorry, this was caused by I/O wait from disk for that huge module, and
+> gets to reasonable numbers by putting all modules into RAM before
+> loading them.
+>
+>> I'll compare a few bootup times with and without the patch, and come
+>> back later today with the real numbers.
+>
+> The whole massive parallel modprobe happens during udev coldplug. I
+> tried a 2GHz Dual Core laptop, and a setup without initramfs here,
+> which loads ~40 modules. All the kernel modules are copied to a ramfs
+> mount before the coldplug is started.
+>
+> I measured the time from the first modprobe that happened in the
+> kernel to the loading of "dummy", which I manually trigger from the
+> udev boot script, and which gets called right after udev has settled
+> and handled all events.
+>
+> With the mutex it takes 1.8 seconds, without it, it takes 1.3 seconds.
+> If I comment out the creation of the stop_machine() threads, it gets
+> down to 1.1 seconds.
+>
+> With the mutex, I see code waiting for up to 180 milliseconds waiting
+> for the mutex, the average between 20-40 milliseconds.
+>
+> Without the mutex the largest time to link is 30 milliseconds, and
+> most of them are around 5-10 milliseconds.
+>
+> Without the mutex and the stop_machine() creation, the flow of tracing
+> output looks like real work and, depending on the actual module, they
+> spend time in various stages of linking, relocation and so on, there
+> are no long delays for any of the modules, like I see with the current
+> code.
+>
+> It would be great, if we can safely minimize the time spent in the mutex.
 
-Currently, whenever the display is off (after the user-selectable
-timeout), we aggressively enter suspend -- wakelocks are used to prevent
-suspend when a driver or userspace entity needs the CPU to actually be
-awake.
+Further testing revealed, if I only comment out the stop_machine()
+preparation, which is used in an error case, I get almost the same
+improvement, even with the original mutex in place. Without the mutex
+it's still a bit better, maybe it would be much better if we have more
+CPUs, but all the long delays are gone only with removing the
+stop_machine() preparation.
 
-Brian
+Thanks,
+Kay
