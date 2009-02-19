@@ -1,199 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756711AbZBSJTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbZBSJUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756711AbZBSJTj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 04:19:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbZBSJTY
+	id S1757447AbZBSJUO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 04:20:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbZBSJTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 04:19:24 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:53577 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752424AbZBSJTW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 04:19:22 -0500
-Subject: Re: [PATCH] drm: Take mmap_sem up front to avoid lock order
- violations.
-From: Peter Zijlstra <peterz@infradead.org>
-To: krh@bitplanet.net
-Cc: eric@anholt.net, Wang Chen <wangchen@cn.fujitsu.com>,
-       dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
-       Kristian =?ISO-8859-1?Q?H=F8gsberg?= <krh@redhat.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <1234975113-4941-1-git-send-email-krh@bitplanet.net>
-References: <499BC08C.5000603@cn.fujitsu.com>
-	 <1234975113-4941-1-git-send-email-krh@bitplanet.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 19 Feb 2009 10:19:05 +0100
-Message-Id: <1235035145.4612.38.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
-Content-Transfer-Encoding: 8bit
+	Thu, 19 Feb 2009 04:19:55 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39464 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754073AbZBSJTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 04:19:52 -0500
+Date: Thu, 19 Feb 2009 10:19:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 0/2] [git pull] tip updates for 2.6.29
+Message-ID: <20090219091943.GB2354@elte.hu>
+References: <20090219033531.360862326@goodmis.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090219033531.360862326@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-18 at 11:38 -0500, krh@bitplanet.net wrote:
-> From: Kristian Høgsberg <krh@redhat.com>
-> 
-> A number of GEM operations (and legacy drm ones) want to copy data to
-> or from userspace while holding the struct_mutex lock.  However, the
-> fault handler calls us with the mmap_sem held and thus enforces the
-> opposite locking order.  This patch downs the mmap_sem up front for
-> those operations that access userspace data under the struct_mutex
-> lock to ensure the locking order is consistent.
-> 
-> Signed-off-by: Kristian Høgsberg <krh@redhat.com>
-> ---
-> 
-> Here's a different and simpler attempt to fix the locking order
-> problem.  We can just down_read() the mmap_sem pre-emptively up-front,
-> and the locking order is respected.  It's simpler than the
-> mutex_trylock() game, avoids introducing a new mutex.
-> 
 
-Hell no!
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-for one, mmap_sem is not a recursive lock, so a pagefault will utterly
-fail with this in place.
-
-Secondly, holding mmap_sem for no good reason just sucks.
-
->  drivers/gpu/drm/i915/i915_dma.c |    6 +++++-
->  drivers/gpu/drm/i915/i915_gem.c |   20 +++++++++++++-------
->  2 files changed, 18 insertions(+), 8 deletions(-)
+> Ingo,
 > 
-> diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
-> index 81f1cff..d8b58d9 100644
-> --- a/drivers/gpu/drm/i915/i915_dma.c
-> +++ b/drivers/gpu/drm/i915/i915_dma.c
-> @@ -642,9 +642,11 @@ static int i915_batchbuffer(struct drm_device *dev, void *data,
->  						       sizeof(struct drm_clip_rect)))
->  		return -EFAULT;
->  
-> +	down_read(&current->mm->mmap_sem);
->  	mutex_lock(&dev->struct_mutex);
->  	ret = i915_dispatch_batchbuffer(dev, batch);
->  	mutex_unlock(&dev->struct_mutex);
-> +	up_read(&current->mm->mmap_sem);
->  
->  	if (sarea_priv)
->  		sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
-> @@ -674,14 +676,16 @@ static int i915_cmdbuffer(struct drm_device *dev, void *data,
->  		return -EFAULT;
->  	}
->  
-> +	down_read(&current->mm->mmap_sem);
->  	mutex_lock(&dev->struct_mutex);
->  	ret = i915_dispatch_cmdbuffer(dev, cmdbuf);
->  	mutex_unlock(&dev->struct_mutex);
-> +	up_read(&current->mm->mmap_sem);
-> +
->  	if (ret) {
->  		DRM_ERROR("i915_dispatch_cmdbuffer failed\n");
->  		return ret;
->  	}
-> -
->  	if (sarea_priv)
->  		sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
->  	return 0;
-> diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
-> index d9cd42f..3dd8b6e 100644
-> --- a/drivers/gpu/drm/i915/i915_gem.c
-> +++ b/drivers/gpu/drm/i915/i915_gem.c
-> @@ -171,6 +171,7 @@ i915_gem_pread_ioctl(struct drm_device *dev, void *data,
->  		return -EINVAL;
->  	}
->  
-> +	down_read(&current->mm->mmap_sem);
->  	mutex_lock(&dev->struct_mutex);
->  
->  	ret = i915_gem_object_set_cpu_read_domain_range(obj, args->offset,
-> @@ -196,6 +197,7 @@ i915_gem_pread_ioctl(struct drm_device *dev, void *data,
->  
->  	drm_gem_object_unreference(obj);
->  	mutex_unlock(&dev->struct_mutex);
-> +	up_read(&current->mm->mmap_sem);
->  
->  	return 0;
->  }
-> @@ -264,7 +266,7 @@ i915_gem_gtt_pwrite(struct drm_device *dev, struct drm_gem_object *obj,
->  	if (!access_ok(VERIFY_READ, user_data, remain))
->  		return -EFAULT;
->  
-> -
-> +	down_read(&current->mm->mmap_sem);
->  	mutex_lock(&dev->struct_mutex);
->  	ret = i915_gem_object_pin(obj, 0);
->  	if (ret) {
-> @@ -315,6 +317,7 @@ i915_gem_gtt_pwrite(struct drm_device *dev, struct drm_gem_object *obj,
->  fail:
->  	i915_gem_object_unpin(obj);
->  	mutex_unlock(&dev->struct_mutex);
-> +	up_read(&current->mm->mmap_sem);
->  
->  	return ret;
->  }
-> @@ -328,6 +331,7 @@ i915_gem_shmem_pwrite(struct drm_device *dev, struct drm_gem_object *obj,
->  	loff_t offset;
->  	ssize_t written;
->  
-> +	down_read(&current->mm->mmap_sem);
->  	mutex_lock(&dev->struct_mutex);
->  
->  	ret = i915_gem_object_set_to_cpu_domain(obj, 1);
-> @@ -350,6 +354,7 @@ i915_gem_shmem_pwrite(struct drm_device *dev, struct drm_gem_object *obj,
->  	}
->  
->  	mutex_unlock(&dev->struct_mutex);
-> +	up_read(&current->mm->mmap_sem);
->  
->  	return 0;
->  }
-> @@ -2473,22 +2478,21 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
->  		goto pre_mutex_err;
->  	}
->  
-> +	down_read(&current->mm->mmap_sem);
->  	mutex_lock(&dev->struct_mutex);
->  
->  	i915_verify_inactive(dev, __FILE__, __LINE__);
->  
->  	if (dev_priv->mm.wedged) {
->  		DRM_ERROR("Execbuf while wedged\n");
-> -		mutex_unlock(&dev->struct_mutex);
->  		ret = -EIO;
-> -		goto pre_mutex_err;
-> +		goto mutex_err;
->  	}
->  
->  	if (dev_priv->mm.suspended) {
->  		DRM_ERROR("Execbuf while VT-switched.\n");
-> -		mutex_unlock(&dev->struct_mutex);
->  		ret = -EBUSY;
-> -		goto pre_mutex_err;
-> +		goto mutex_err;
->  	}
->  
->  	/* Look up object handles */
-> @@ -2641,8 +2645,6 @@ err:
->  	for (i = 0; i < args->buffer_count; i++)
->  		drm_gem_object_unreference(object_list[i]);
->  
-> -	mutex_unlock(&dev->struct_mutex);
-> -
->  	if (!ret) {
->  		/* Copy the new buffer offsets back to the user's exec list. */
->  		ret = copy_to_user((struct drm_i915_relocation_entry __user *)
-> @@ -2655,6 +2657,10 @@ err:
->  				  args->buffer_count, ret);
->  	}
->  
-> +mutex_err:
-> +	mutex_unlock(&dev->struct_mutex);
-> +	up_read(&current->mm->mmap_sem);
-> +
->  pre_mutex_err:
->  	drm_free(object_list, sizeof(*object_list) * args->buffer_count,
->  		 DRM_MEM_DRIVER);
+> I found the cause of the hard lock up you were seeing. It is one
+> of those cases where a new patch does not create a bug, but unveils
+> one. The change that showed the bug was:
+> 
+> e68746a: ftrace: enable filtering only when a function is filtered on
+> 
+> The bug was there all along, but his change revealed it. There were
+> two bugs actually.
+> 
+> 1) The function tracer is useless without KALLSYMS. Without KALLSYMS
+>    you will only get hex values for your funtion traces.
+>    This also totally breaks the dynamic function tracer. It depends
+>    on having names to compare to select functions.
+> 
+> 2) In the self test, there is a while loop that consumes the buffer
+>   and will not end until the buffer is empty. If we still have a
+>   producer present, this becomes an infinite loop.
+> 
+> The above two bugs are needed for the lock up, as well as the
+> mentioned patch.  Without the patch, the function filter is activated
+> whenever we pass in a filter, even if we do not select any function.
+> The patch changes that to only activate the filter if we succeed in
+> selecting a function.
+> 
+> Back to the bugs.
+> 
+> Without KALLSYMS, we never select a function, but we still activate
+> the filter. This causes all functions to be disabled from tracing.
+> The dynamic ftrace self test fails because it never sees the selected
+> function get traced.
+> 
+> With the patch and without KALLSYMS selected, we now do not activate
+> the filter, because no function was selected (all compares of a given
+> name to a NULL pointer will fail).  Now all functions are still enabled
+> to be traced.
+> 
+> So, what happens?  The dynamic function tracer self test will call
+> the test routine while the tracer is still on. The self test will
+> start consuming all the cpu ring buffers to test them, and will not
+> end until they are all finished. But you also have RCU_TORTURE selected.
+> The RCU torture test will run, filling up the ring buffer on other
+> CPUS. The consumer will never catch up, and we run forever!
 
+Can this problem hit other types of consumers - the 
+/debug/tracing/ ones?
+
+> Both of these are true bugs that have been in ftrace for a long time.
+> I think they are candidates for getting in 29, even this late in
+> the game. You never know what other config combination can hit these
+> bugs.
+> 
+> The fixes are simple. One is to simply disable the ring buffer
+> while the consumer runs. This prevents any producer from keeping
+> the consumer from finishing. The other is to make the function
+> tracer select KALLSYMS.
+> 
+> And yes, this was a bitch to debug. This was all I did today :-(
+
+Looks quite subtle indeed.
+
+It might be a safer approach to switch the self-test to 
+excercise the actual /debug/tracing paths, instead of having its 
+own home-brewn access methods. That way we debug all those 
+facilities too - beyond having a self-test - and will avoid bugs 
+like this too perhaps.
+
+> Please pull the latest tip/tracing/urgent tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/urgent
+> 
+> 
+> Steven Rostedt (2):
+>       tracing: disable tracing while testing ring buffer
+>       tracing: have function trace select kallsyms
+> 
+> ----
+>  kernel/trace/Kconfig          |    2 ++
+>  kernel/trace/trace_selftest.c |    9 +++++++++
+>  2 files changed, 11 insertions(+), 0 deletions(-)
+
+Pulled into tip:tracing/urgent, thanks Steve!
+
+	Ingo
