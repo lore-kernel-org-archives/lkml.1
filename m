@@ -1,121 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbZBSCkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755102AbZBSDCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756600AbZBSCkk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 21:40:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbZBSCkc
+	id S1755102AbZBSDCq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 22:02:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbZBSDCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 21:40:32 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:59876 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752364AbZBSCkb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 21:40:31 -0500
-Date: Wed, 18 Feb 2009 18:40:30 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] generic-ipi: remove kmalloc()
-Message-ID: <20090219024030.GM7011@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090217215904.059250145@chello.nl> <20090217220053.500765201@chello.nl> <20090218002823.GA25408@linux.vnet.ibm.com> <20090218161515.GA24895@redhat.com> <20090218194727.GB7011@linux.vnet.ibm.com> <20090218201252.GA5895@redhat.com>
+	Wed, 18 Feb 2009 22:02:38 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:46771 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751953AbZBSDCh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 22:02:37 -0500
+Date: Wed, 18 Feb 2009 19:02:07 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, roland@redhat.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>, daniel@hozac.com,
+       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/7][v8] Container-init signal semantics
+Message-ID: <20090219030207.GA18783@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090218201252.GA5895@redhat.com>
+X-Operating-System: Linux 2.0.32 on an i486
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 18, 2009 at 09:12:52PM +0100, Oleg Nesterov wrote:
-> On 02/18, Paul E. McKenney wrote:
-> >
-> > On Wed, Feb 18, 2009 at 05:15:15PM +0100, Oleg Nesterov wrote:
-> >
-> > > On 02/17, Paul E. McKenney wrote:
-> > > >
-> > > > On Tue, Feb 17, 2009 at 10:59:06PM +0100, Peter Zijlstra wrote:
-> > > > > +static void csd_lock(struct call_single_data *data)
-> > > > >  {
-> > > > > -	/* Wait for response */
-> > > > > -	do {
-> > > > > -		if (!(data->flags & CSD_FLAG_WAIT))
-> > > > > -			break;
-> > > > > +	while (data->flags & CSD_FLAG_LOCK)
-> > > > >  		cpu_relax();
-> > > > > -	} while (1);
-> > > > > +	data->flags = CSD_FLAG_LOCK;
-> > > >
-> > > > We do need an smp_mb() here, otherwise, the call from
-> > > > smp_call_function_single() could be reordered by either CPU or compiler
-> > > > as follows:
-> > > >
-> > > > 	data->func = func;
-> > > > 	data->info = info;
-> > > > 	csd_lock(data);
-> > > >
-> > > > This might come as a bit of a surprise to the other CPU still trying to
-> > > > use the old values for data->func and data->info.
-> > >
-> > > Could you explain a bit more here?
-> > >
-> > > The compiler can't re-order this code due to cpu_relax(). Cpu can
-> > > re-order, but this doesn't matter because both the sender and ipi
-> > > handler take call_single_queue->lock.
-> > >
-> > > And, giwen that csd_unlock() does mb() before csd_unlock(), how
-> > > it is possible that other CPU (ipi handler) still uses the old
-> > > values in *data after we see !CSD_FLAG_LOCK ?
-> >
-> > Good point on cpu_relax(), which appears to be at least a compiler
-> > barrier on all architectures.
-> >
-> > I must confess to being in the habit of assuming reordering unless I
-> > can prove that such reordering cannot happen.
-> 
-> Yes, probably you are right...
-> 
-> But since almost nobody (except you ;) really understands this magic,
-> it would be nice to have a comment which explains exactly what is the
-> reason for mb(). Otherwise it is so hard to read the code, if you
-> don't understand mb(), then you probably missed something important.
 
-An hour-long stress test on both Power 5 and Power 6 failed to
-locate a problem, though that of course does not prove lack of a
-problem, particularly for CPUs that don't pay as much attention to
-control-dependency ordering as Power does.  :-/
+Patch 5/7 is new in this set and fixes a bug. Remaining patches are
+just a forward-port from previous version and I believe they address
+all comments I have received.
 
-The test may be found in CodeSamples/advsync/special/mbtest/mb_lhs_ws.c
-in git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/perfbook.git,
-if anyone wants to take a look.
+Oleg please sign-off/ack if you agree.
 
-In the meantime, I nominate the following comment at the end of
-csd_lock():
+---
 
-	/*
-	 * prevent CPU from reordering the above assignment to ->flags
-	 * with any subsequent assignments to other fields of the
-	 * specified call_single_data structure.
-	 */
+Container-init must behave like global-init to processes within the
+container and hence it must be immune to unhandled fatal signals from
+within the container (i.e SIG_DFL signals that terminate the process).
 
-	smp_mb(); /* See above block comment. */
+But the same container-init must behave like a normal process to 
+processes in ancestor namespaces and so if it receives the same fatal
+signal from a process in ancestor namespace, the signal must be
+processed.
 
-> > > Every time smp_call_function_many() reuses the element, it sets its
-> > > ->next pointer to the head of the list. If we race with another CPU
-> > > which fetches this pointer, this CPU has to re-scan the whole list,
-> > > but since we always modify/read data under data->lock this should
-> > > be safe, that CPU must notice (!cpumask_test_cpu(cpu, data->cpumask).
-> >
-> > You are quite correct.  I guess I should have gone home early instead of
-> > reviewing Peter's patch...  :-/
-> 
-> In that case I shouldn't even try to read this series ;) I was wrong so
-> many times...
+Implementing these semantics requires that send_signal() determine pid
+namespace of the sender but since signals can originate from workqueues/
+interrupt-handlers, determining pid namespace of sender may not always
+be possible or safe.
 
-I suppose that I should be happy to be wrong nine times if I find a subtle
-bug on the tenth attempt, but somehow it doesn't feel that way.  ;-)
+This patchset implements the design/simplified semantics suggested by
+Oleg Nesterov.  The simplified semantics for container-init are:
 
-							Thanx, Paul
+	- container-init must never be terminated by a signal from a
+	  descendant process.
+
+	- container-init must never be immune to SIGKILL from an ancestor
+	  namespace (so a process in parent namespace must always be able
+	  to terminate a descendant container).
+
+	- container-init may be immune to unhandled fatal signals (like
+	  SIGUSR1) even if they are from ancestor namespace. SIGKILL/SIGSTOP
+	  are the only reliable signals to a container-init from ancestor
+	  namespace.
+
+Patches in this set:
+
+	[PATCH 1/7] Remove 'handler' parameter to tracehook functions
+	[PATCH 2/7] Protect init from unwanted signals more
+	[PATCH 3/7] Add from_ancestor_ns parameter to send_signal()
+	[PATCH 4/7] Protect cinit from unblocked SIG_DFL signals
+	[PATCH 5/7] zap_pid_ns_process() should use force_sig()
+	[PATCH 6/7] Protect cinit from blocked fatal signals
+	[PATCH 7/7] SI_USER: Masquerade si_pid when crossing pid ns boundary
+
+Changelog[v8]:
+
+	- Bugfix (new patch, 5/7): Nested container-init not terminated when
+	  parent container-init exits and calls zap_pid_ns_processes().
+	- Dropped old patch 7/7 which showed SIG_DFL signals to init as
+	  "ignored" in /proc (we were undecided on whether its good or bad).
+
+Changelog[v7]:
+	- siginfo_from_user() and siginfo_from_ancestor_ns() are fairly simple
+	  and used only in send_signal(). Remove them and move the logic into
+	  send_signal() (Patch 4/7)
+
+	- Update /proc/pid/status to include SIG_DFL signals to init in the
+	  "ignored" set (and remove the TODO in Patch 0/7) (Patch 7/7)
+
+Changelog[v6]:
+
+	- Patches 3,4: Have kill_pid_info_as_uid() pass in 'from_ancestor_ns'
+	  parameter to __send_signal() and remove SI_ASYNCIO check in
+	  siginfo_from_user().
+	- Patches 4,6: Update changelog and simplify code
+
+Changelog[v5]:
+	- Patch 2/6: Remove SIG_IGN check in sig_task_ignored() and let
+	  sig_handler_ignored() check SIG_IGN.
+        - Patch 3/6. Put siginfo_from_ancestor_ns() back under CONFIG_PID_NS
+	  and remove warning in rt_sigqueueinfo().
+	- (Patch 5/6)Simplify check in get_signal_to_deliver()
+	- (Patch 6/6)Simplify masquerading pid
+	- LTP-20081219-intermediate showed no new errors on 2.6.28-rc5-mm2.
+
+Changelog[v4]:
+	- [Bugfix] Patch 3/7. Check ns == NULL in siginfo_from_ancestor_ns().
+	  Although http://lkml.org/lkml/2008/12/16/502 makes it less likely
+	  that ns == NULL, looks like an explicit check won't hurt ?
+	- Remove SIGNAL_UNKILLABLE_FROM_NS flag and simplify logic as
+	  suggested by Oleg Nesterov.
+	- Dropped patch that set SIGNAL_UNKILLABLE_FROM_NS and set
+	  SIGNAL_UNKILLABLE in patch 5/7 to be bisect-safe.
+	- Add a warning in rt_sigqueueinfo() if SI_ASYNCIO is used
+	  (patch 3/7)
+	- Added two patches (6/7 and 7/7) to masquerade si_pid for
+	  SI_USER and SI_TKILL
+
+
+Changelog[v3]:
+	Changes based on discussions of previous version:
+		http://lkml.org/lkml/2008/11/25/458
+
+	Major changes:
+
+	- Define SIGNAL_UNKILLABLE_FROM_NS and use in container-inits to
+	  skip fatal signals from same namespace but process SIGKILL/SIGSTOP
+	  from ancestor namespace.
+	- Use SI_FROMUSER() and si_code != SI_ASYNCIO to determine if
+	  it is safe to dereference pid-namespace of caller. Highly
+	  experimental :-)
+	- Masquerading si_pid when crossing namespace boundary: relevant
+	  patches merged in -mm and dropped from this set.
+
+	Minor changes:
+
+	- Remove 'handler' parameter to tracehook functions
+	- Update sig_ignored() to drop SIG_DFL signals to global init early
+	  (tried to address Roland's  and Oleg's comments)
+	- Use 'same_ns' flag to drop SIGKILL/SIGSTOP to cinit from same
+	  namespace
+
+
+Limitations/side-effects of current design
+
+	- Container-init is immune to suicide - kill(getpid(), SIGKILL) is
+	  ignored. Use exit() :-)
