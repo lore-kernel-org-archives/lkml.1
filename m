@@ -1,132 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758416AbZBSJwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758661AbZBSJwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758416AbZBSJwW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 04:52:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754626AbZBSJwI
+	id S1758661AbZBSJwt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 04:52:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758530AbZBSJwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 04:52:08 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:60138 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752406AbZBSJwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 04:52:07 -0500
-Message-ID: <499D2C16.9050901@cn.fujitsu.com>
-Date: Thu, 19 Feb 2009 17:53:26 +0800
-From: Yang Hongyang <yanghy@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Borislav Petkov <petkovbb@googlemail.com>
-Subject: [PATCHv2 11/11]Update the old macro DMA_nBIT_MASK related documentations
-References: <499CFDC8.1070600@cn.fujitsu.com> <499D0221.9090407@cn.fujitsu.com> <20090219081403.GA5400@elte.hu> <499D1ED9.4040005@cn.fujitsu.com> <499D2728.1080208@cn.fujitsu.com>
-In-Reply-To: <499D2728.1080208@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Feb 2009 04:52:37 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:45899 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758546AbZBSJwg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 04:52:36 -0500
+Date: Thu, 19 Feb 2009 09:51:50 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Mike Frysinger <vapier.adi@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "Sachin P. Sant" <sachinp@in.ibm.com>, linux-s390@vger.kernel.org,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
+Subject: Re: [s390] next Feb 18: defconfig build break
+Message-ID: <20090219095150.GA5808@flint.arm.linux.org.uk>
+References: <20090218191640.0b023029.sfr@canb.auug.org.au> <20090218224541.fe6e0355.sfr@canb.auug.org.au> <8bd0f97a0902180910wafd35ceo47aeb9f3cc6733f3@mail.gmail.com> <200902191045.25878.rusty@rustcorp.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200902191045.25878.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update the old macro DMA_nBIT_MASK related documentations
+On Thu, Feb 19, 2009 at 10:45:25AM +1030, Rusty Russell wrote:
+> Subject: arm: allow usage of string functions in linux/string.h
+> 
+> In introducing a trivial "strstarts()" function in linux/string.h, we
+> hit:
+> 
+> 	arch/arm/boot/compressed/misc.o: In function `strstarts':
+> 	misc.c:(.text+0x368): undefined reference to `strlen'
+> 	misc.c:(.text+0x378): undefined reference to `strncmp'
+> 
+> This is because of "CFLAGS_misc.o := -Dstatic=" in the Makefile.
+> "static inline strstarts(...)" becomes non-inline, and refers to the
+> other string ops.
+> 
+> The simplest workaround is to include asm/string.h.  This makes sense
+> anyway, since lib/string.c won't be linked against this so we can't
+> use those functions anyway.
+> 
+> Compile tested here.
+> 
+> Reported-by: linux-next
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-Signed-off-by: Yang Hongyang<yanghy@cn.fujitsu.com>
+Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
 
----
- Documentation/DMA-mapping.txt                      |   18 +++++++++---------
- .../sound/alsa/DocBook/writing-an-alsa-driver.tmpl |    8 ++++----
- 2 files changed, 13 insertions(+), 13 deletions(-)
-
-diff --git a/Documentation/DMA-mapping.txt b/Documentation/DMA-mapping.txt
-index b2a4d6d..01f24e9 100644
---- a/Documentation/DMA-mapping.txt
-+++ b/Documentation/DMA-mapping.txt
-@@ -136,7 +136,7 @@ exactly why.
- The standard 32-bit addressing PCI device would do something like
- this:
- 
--	if (pci_set_dma_mask(pdev, DMA_32BIT_MASK)) {
-+	if (pci_set_dma_mask(pdev, DMA_BIT_MASK(32))) {
- 		printk(KERN_WARNING
- 		       "mydev: No suitable DMA available.\n");
- 		goto ignore_this_device;
-@@ -155,9 +155,9 @@ all 64-bits when accessing streaming DMA:
- 
- 	int using_dac;
- 
--	if (!pci_set_dma_mask(pdev, DMA_64BIT_MASK)) {
-+	if (!pci_set_dma_mask(pdev, DMA_BIT_MASK(64))) {
- 		using_dac = 1;
--	} else if (!pci_set_dma_mask(pdev, DMA_32BIT_MASK)) {
-+	} else if (!pci_set_dma_mask(pdev, DMA_BIT_MASK(32))) {
- 		using_dac = 0;
- 	} else {
- 		printk(KERN_WARNING
-@@ -170,14 +170,14 @@ the case would look like this:
- 
- 	int using_dac, consistent_using_dac;
- 
--	if (!pci_set_dma_mask(pdev, DMA_64BIT_MASK)) {
-+	if (!pci_set_dma_mask(pdev, DMA_BIT_MASK(64))) {
- 		using_dac = 1;
- 	   	consistent_using_dac = 1;
--		pci_set_consistent_dma_mask(pdev, DMA_64BIT_MASK);
--	} else if (!pci_set_dma_mask(pdev, DMA_32BIT_MASK)) {
-+		pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(64));
-+	} else if (!pci_set_dma_mask(pdev, DMA_BIT_MASK(32))) {
- 		using_dac = 0;
- 		consistent_using_dac = 0;
--		pci_set_consistent_dma_mask(pdev, DMA_32BIT_MASK);
-+		pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(32));
- 	} else {
- 		printk(KERN_WARNING
- 		       "mydev: No suitable DMA available.\n");
-@@ -192,7 +192,7 @@ check the return value from pci_set_consistent_dma_mask().
- Finally, if your device can only drive the low 24-bits of
- address during PCI bus mastering you might do something like:
- 
--	if (pci_set_dma_mask(pdev, DMA_24BIT_MASK)) {
-+	if (pci_set_dma_mask(pdev, DMA_BIT_MASK(24))) {
- 		printk(KERN_WARNING
- 		       "mydev: 24-bit DMA addressing not available.\n");
- 		goto ignore_this_device;
-@@ -213,7 +213,7 @@ most specific mask.
- 
- Here is pseudo-code showing how this might be done:
- 
--	#define PLAYBACK_ADDRESS_BITS	DMA_32BIT_MASK
-+	#define PLAYBACK_ADDRESS_BITS	DMA_BIT_MASK(32)
- 	#define RECORD_ADDRESS_BITS	0x00ffffff
- 
- 	struct my_sound_card *card;
-diff --git a/Documentation/sound/alsa/DocBook/writing-an-alsa-driver.tmpl b/Documentation/sound/alsa/DocBook/writing-an-alsa-driver.tmpl
-index 87a7c07..282891c 100644
---- a/Documentation/sound/alsa/DocBook/writing-an-alsa-driver.tmpl
-+++ b/Documentation/sound/alsa/DocBook/writing-an-alsa-driver.tmpl
-@@ -1133,8 +1133,8 @@
-           if (err < 0)
-                   return err;
-           /* check PCI availability (28bit DMA) */
--          if (pci_set_dma_mask(pci, DMA_28BIT_MASK) < 0 ||
--              pci_set_consistent_dma_mask(pci, DMA_28BIT_MASK) < 0) {
-+          if (pci_set_dma_mask(pci, DMA_BIT_MASK(28)) < 0 ||
-+              pci_set_consistent_dma_mask(pci, DMA_BIT_MASK(28)) < 0) {
-                   printk(KERN_ERR "error to set 28bit mask DMA\n");
-                   pci_disable_device(pci);
-                   return -ENXIO;
-@@ -1248,8 +1248,8 @@
-   err = pci_enable_device(pci);
-   if (err < 0)
-           return err;
--  if (pci_set_dma_mask(pci, DMA_28BIT_MASK) < 0 ||
--      pci_set_consistent_dma_mask(pci, DMA_28BIT_MASK) < 0) {
-+  if (pci_set_dma_mask(pci, DMA_BIT_MASK(28)) < 0 ||
-+      pci_set_consistent_dma_mask(pci, DMA_BIT_MASK(28)) < 0) {
-           printk(KERN_ERR "error to set 28bit mask DMA\n");
-           pci_disable_device(pci);
-           return -ENXIO;
--- 
-1.6.0.3
+I guess this should go in with the change which caused the breakage.
 
 -- 
-Regards
-Yang Hongyang
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
