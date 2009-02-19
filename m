@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437AbZBSUXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756575AbZBSUZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755437AbZBSUXj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 15:23:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbZBSUX2
+	id S1756575AbZBSUZq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 15:25:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753923AbZBSUZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 15:23:28 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56738 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752365AbZBSUX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 15:23:28 -0500
-Date: Thu, 19 Feb 2009 21:23:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: scsi: aic7xxx hang since v2.6.28-rc1 ...
-Message-ID: <20090219202317.GA784@elte.hu>
-References: <20090218155817.GC23989@elte.hu> <Pine.LNX.4.44L0.0902191505050.7953-100000@iolanthe.rowland.org>
+	Thu, 19 Feb 2009 15:25:37 -0500
+Received: from mail-in-17.arcor-online.net ([151.189.21.57]:44613 "EHLO
+	mail-in-17.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753897AbZBSUZg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 15:25:36 -0500
+X-DKIM: Sendmail DKIM Filter v2.6.0 mail-in-02.arcor-online.net C59063FE374
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: [PATCH] Add *.rej to .gitignore
+To: Ingo Molnar <mingo@elte.hu>, jeremy@goop.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       sam@ravnborg.org, gitster@pobox.com, caglar@pardus.org.tr,
+       David Miller <davem@davemloft.net>
+Reply-To: 7eggert@gmx.de
+Date: Thu, 19 Feb 2009 21:25:28 +0100
+References: <c6Eh1-7Og-19@gated-at.bofh.it> <c6GLO-3xO-35@gated-at.bofh.it> <c6IaO-60k-5@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0902191505050.7953-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1LaFSb-0002J5-6Z@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar <mingo@elte.hu> wrote:
+> * David Miller <davem@davemloft.net> wrote:
+>> From: Jeremy Fitzhardinge <jeremy@goop.org>
 
-* Alan Stern <stern@rowland.harvard.edu> wrote:
+>> > *.rej files really are unwanted.  If there are any .rej files, they can be
+>> > found by some other means (perhaps git itself could warn when committing
+>> > with *.rej files present, or add some distinct notion of "ignored files" vs
+>> > "never commit" files).
+>> > 
+>> > (This effectively reverts 1f5d3a6b6532e25a5cdf1f311956b2b03d343a48)
+>> > 
+>> > Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+>> 
+>> I don't know about this.
+>> 
+>> I really want to know if there are reject files there if I am
+>> checking to see if my tree is clean.
+[...]
+> Well, it depends on the workflow. You are making the assumption
+> that everyone is using your workflow, and you are judging them
+> based on that false assumption.
 
-> On Wed, 18 Feb 2009, Ingo Molnar wrote:
-> 
-> > 
-> > * Alan Stern <stern@rowland.harvard.edu> wrote:
-> > 
-> > > I have no idea if this will make any difference for the 
-> > > problem you're seeing, but it has been submitted and it's 
-> > > worth trying out.  If the problem still occurs, I'll write a 
-> > > diagnostic patch to add log messages giving the destiny of 
-> > > each request in scsi_io_completion().
-> > 
-> > OK, i've undone the reverts and have applied your fix - it will 
-> > take a few hours to see whether the hang still occurs.
-> 
-> Any definitive results yet?
+If different users need different .gitignores, you need a per-user setting.
+Let there be ~/.git/gitignore.
 
-Yes, as i wrote before, the bug is fixed.
-
-> It turns out that the patch I posted earlier is not quite 
-> correct; the "__scsi_release_buffers(cmd, 0);" line in 
-> scsi_end_request() was added after the patch was first written 
-> and then got lost during rebasing.
-
-Yeah, rebasing is a really bad idea in general.
-
-> If this really does fix your problem and nobody has any other 
-> objections to it, I'll submit a revised version with the 
-> missing line added back in.
-
-Sure, no objections.
-
-	Ingo
