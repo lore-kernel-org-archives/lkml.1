@@ -1,86 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbZBSUst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758161AbZBSUtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757458AbZBSUst (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 15:48:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754183AbZBSUsl
+	id S1758161AbZBSUtV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 15:49:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757717AbZBSUtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 15:48:41 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:40317 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754182AbZBSUsk (ORCPT
+	Thu, 19 Feb 2009 15:49:06 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:40768 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754196AbZBSUtE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 15:48:40 -0500
+	Thu, 19 Feb 2009 15:49:04 -0500
+Date: Thu, 19 Feb 2009 21:49:02 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Jose Luis Marchetti <joseluismarchetti@yahoo.com.br>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Is interrupt priority supported ?
+Message-ID: <20090219204902.GA3990@rhlx01.hs-esslingen.de>
 MIME-Version: 1.0
-In-Reply-To: <ac3eb2510902190341y7eb4e938nf5f28ac094a68818@mail.gmail.com>
-References: <1234722028-8110-1-git-send-email-andr345@gmail.com>
-	 <200902182227.14686.rusty@rustcorp.com.au>
-	 <ac3eb2510902180557p3b65fad5i933eed9d3e3d0b3b@mail.gmail.com>
-	 <200902192145.10616.rusty@rustcorp.com.au>
-	 <ac3eb2510902190341y7eb4e938nf5f28ac094a68818@mail.gmail.com>
-Date: Thu, 19 Feb 2009 21:48:38 +0100
-Message-ID: <ac3eb2510902191248w26f1d1c0o95d68aaa3be097a1@mail.gmail.com>
-Subject: Re: [RFC PATCH 0/6] module, kbuild: Faster boot with custom kernel.
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andreas Robinson <andr345@gmail.com>, sam@ravnborg.org,
-       linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <657201.46675.qm@web34402.mail.mud.yahoo.com>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 19, 2009 at 12:41, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> On Thu, Feb 19, 2009 at 12:15, Rusty Russell <rusty@rustcorp.com.au> wrote:
->> On Thursday 19 February 2009 00:27:58 Kay Sievers wrote:
->>> some modules wait for 200-500 milliseconds to
->>> get the lock released, some larger modules spend 50 milliseconds in
->>> load_module(), many of them around 20 milliseconds.
->>
->> OK, this is an untested hack (don't try unloading modules, not sure symbol
->> resolution isn't racy now I've killed the lock).  Does it change the numbers?
->
-> That changes it dramatically. The numbers from the sycall until the
-> linked-in module are now down to 15-25 milliseconds, and for a few
-> large modules 50-100.
->
-> (One crazy exception is ipv6, which takes 620 milliseconds to link, no
-> idea what it needs to do.)
+Hi,
 
-Sorry, this was caused by I/O wait from disk for that huge module, and
-gets to reasonable numbers by putting all modules into RAM before
-loading them.
+it has been for a looong time (those things tend to almost get outdated already -
+witness the floppy controller misery):
 
-> I'll compare a few bootup times with and without the patch, and come
-> back later today with the real numbers.
+# apt-cache show hwtools
+Package: hwtools
+Status: install ok installed
+Priority: optional
+Section: utils
+Installed-Size: 312
+Maintainer: Pierre Ancelot <eternityos@free.fr>
+Architecture: i386
+Version: 0.8-5.1
+Depends: debconf, libc6 (>= 2.3.5-1)
+Suggests: sysutils, hdparm, scsitools, memtest86
+Conffiles:
+ /etc/init.d/hwtools 137e3fbdc26d90bec745a36d1ffd8661
+Description: collection of tools for low-level hardware management
+ This package is a collection of tools useful for hardware
+ troubleshooting and optimization (for ix86 machines):
+ .
+  irqtune: adjusts priority of interrupts (improves serial performance),
+  scanport: scans for hardware not already handled by Linux drivers,
+  memmxtest: a real mode memory test, with MMX support.  You may want
+  to look at package memtest86 as well.
+  qic-02 driver and configuration utilities. Adds the qic-02 tapes support
+ .
+ Be aware that these tools require some knowledge of what are they
+ doing to be used properly, otherwise they may cause damage to your system.
+ .
+ Some programs that were previously part of this package have been
+ moved to their own packages (hdparm, scsitools, memtest86)
 
-The whole massive parallel modprobe happens during udev coldplug. I
-tried a 2GHz Dual Core laptop, and a setup without initramfs here,
-which loads ~40 modules. All the kernel modules are copied to a ramfs
-mount before the coldplug is started.
 
-I measured the time from the first modprobe that happened in the
-kernel to the loading of "dummy", which I manually trigger from the
-udev boot script, and which gets called right after udev has settled
-and handled all events.
 
-With the mutex it takes 1.8 seconds, without it, it takes 1.3 seconds.
-If I comment out the creation of the stop_machine() threads, it gets
-down to 1.1 seconds.
 
-With the mutex, I see code waiting for up to 180 milliseconds waiting
-for the mutex, the average between 20-40 milliseconds.
 
-Without the mutex the largest time to link is 30 milliseconds, and
-most of them are around 5-10 milliseconds.
+I don't have any recent experience with irqtune myself, though, and I cannot
+authoritatively state that it actually works at the moment,
+but I'd be relatively surprised if it didn't.
 
-Without the mutex and the stop_machine() creation, the flow of tracing
-output looks like real work and, depending on the actual module, they
-spend time in various stages of linking, relocation and so on, there
-are no long delays for any of the modules, like I see with the current
-code.
+You might want to enable some unfortunately often still default-disabled
+hardware transceiver offloading of Ethernet frames, too, via ethtool -k or so,
+to possibly reduce latency.
 
-It would be great, if we can safely minimize the time spent in the mutex.
+Plus PCI latency timings, via setpci or so (but that probably won't
+matter).
 
-Thanks,
-Kay
+HTHHAND,
+
+Andreas Mohr
