@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755558AbZBSOMe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755340AbZBSOTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755558AbZBSOMe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 09:12:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbZBSOMW
+	id S1755340AbZBSOTp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 09:19:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZBSOTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 09:12:22 -0500
-Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:55926 "EHLO
-	TX2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752790AbZBSOMV convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 09:12:21 -0500
-X-BigFish: VPS-2(zz103dKzzzzz32i6bh)
-X-WSS-ID: 0KFBGRS-01-4YS-01
-Date: Thu, 19 Feb 2009 15:11:31 +0100
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Mark Hounschell <dmarkh@cfl.rr.com>
-CC: Borislav Petkov <borislav.petkov@amd.com>,
-       Mark Hounschell <markh@compro.net>, john stultz <johnstul@us.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: PROBLEM: Can't boot a (HZ = 1000) kernel using an AMD
-	Phenom-II processor
-Message-ID: <20090219141131.GM4301@alberich.amd.com>
-References: <498C7980.2060309@compro.net> <498CB798.7050308@cfl.rr.com> <20090209141841.GA31643@aftab> <49904BED.7090208@cfl.rr.com> <499C0913.9050905@compro.net> <20090218141843.GB13304@aftab> <499C3DED.1090807@cfl.rr.com> <20090218174243.GD13304@aftab> <499C7AC8.4080609@cfl.rr.com> <499D364C.3010704@cfl.rr.com>
+	Thu, 19 Feb 2009 09:19:35 -0500
+Received: from moutng.kundenserver.de ([212.227.126.177]:58952 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751844AbZBSOTe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 09:19:34 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] drm: Only use DRM_IOCTL_UPDATE_DRAW compat wrapper for compat X86.
+Date: Thu, 19 Feb 2009 15:19:01 +0100
+User-Agent: KMail/1.9.9
+Cc: airlied@linux.ie, benh@kernel.crashing.org,
+       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <20090218.013521.97380943.davem@davemloft.net>
+In-Reply-To: <20090218.013521.97380943.davem@davemloft.net>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <499D364C.3010704@cfl.rr.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 19 Feb 2009 14:11:51.0032 (UTC) FILETIME=[02718F80:01C9929C]
-Content-Transfer-Encoding: 8BIT
+Message-Id: <200902191519.03399.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+i5z8pxjdZT2UrFEgukVbSePkPItuKifIGcuL
+ gM8ADKUivOkHVfObDqJfh2bR9l90/5UNeKF5jy7XacL1bf48P4
+ Py4eG9UbjG0FhcX+z7N4w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark,
+On Wednesday 18 February 2009, David Miller wrote:
+> drm: Only use DRM_IOCTL_UPDATE_DRAW compat wrapper for compat X86.
+> 
+> Only X86 32-bit uses a different alignment for "unsigned long long"
+> than it's 64-bit counterpart.
+> 
+> Therefore this compat translation is only correct, and only needed,
+> when either CONFIG_X86 or CONFIG_IA64.
+> 
+> Signed-off-by: David S. Miller <davem@davemloft.net>
 
-Can you please provide us output of lspci -vvxxx.
-(Please run this as root.)
+The patch is correct AFAICT, but I'd like to point out that the
+problem could have been avoided (besides using a non-padded layout)
+by using a compat_u64 member in the struct definition instead of
+the packed attribute:
 
-Furthermore you can try booting your 1000HZ kernel
-with following kernel command lines:
+typedef struct drm_update_draw32 {
+	drm_drawable_t handle;
+	unsigned int type;
+	unsigned int num;
+	compat_u64 data;	/**< Pointer */
+} drm_update_draw32_t;
 
-(1) acpi_skip_timer_override apic=debug
-(2) nohpet apic=debug
-(3) acpi_skip_timer_override nohpet apic=debug
+I find that too often __attribute__((packed)) is used on whole
+structures where some other much more gentle solution can be
+applied. In fact, there are very few files (e.g.
+linux/unaligned/packed_struct.h) that look like they want all
+of the implied meanings (pack members, drop alignment on whole
+structure, access members as unaligned).
 
-and send us all dmesg output.
+A grep for "packed" in compat_ioctl definitions revealed the
+same bug as in drm_update_draw32 to be present in
+raw32_config_request, and I'm rather sure that there are more
+of these.
 
-
-Thanks!
-
-Andreas
-
--- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
-
+	Arnd <><
