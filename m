@@ -1,198 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754412AbZBSRiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbZBSRlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754412AbZBSRiU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 12:38:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbZBSRiG
+	id S1754724AbZBSRlu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 12:41:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbZBSRll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 12:38:06 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:27259 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751632AbZBSRiE (ORCPT
+	Thu, 19 Feb 2009 12:41:41 -0500
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:30377 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752093AbZBSRlk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 12:38:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=cHEi8wYH+H2mpDipKNMDkkhz7qVjDRXzkvMCwoAxI+p/hCk062nv1ufOMqBddsXVd4
-         FqVzU4vzL0Y4bsf7K6Dj7zxl6hRECWedwCMeP8JibChAkDTxKl/yRisae6vZsWllAMl+
-         J/SQM4PAe34oKKWeXHl3lw/+i0CbW0KXpMy7Q=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH] ide: remove ide_execute_pkt_cmd() (v2)
-Date: Thu, 19 Feb 2009 18:37:03 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-next-20090218; KDE/4.2.0; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Borislav Petkov <petkovbb@gmail.com>
+	Thu, 19 Feb 2009 12:41:40 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=s7qvtWS6nfwbFgqSTDOm+IuqTBvDryR564v3ZG9GVKOtIOu6pe3xDbyEgPOlabzV7nkzWUPBRMKLC0xX+GdaFswZ/radbvZMGMQwHwPja51qlIaia3Y/MNfjlTV1wL0j5misxGPiNDtWqOdNqveLfNTLKlTyxdtI+1OjjhOXIpc=  ;
+X-YMail-OSG: 7PRed60VM1kBKRsMuByNvxqwzrhnxPeMjweq7yXj3iQnmPkuqT5t7pbc.I9otJhTBqLeiIXh9wmdRT3y1MsV0NjhqIbjGXW1u1gGENxAPAha_tUpcE5gJkZ4XBD_d0GIbiJ1RRd.wP1QVJhUpBXyy9aG0w--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH RFC] vm_unmap_aliases: allow callers to inhibit TLB flush
+Date: Fri, 20 Feb 2009 04:41:07 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       "the arch/x86 maintainers" <x86@kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+References: <49416494.6040009@goop.org> <200902192254.31735.nickpiggin@yahoo.com.au> <499D90AE.7060102@goop.org>
+In-Reply-To: <499D90AE.7060102@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200902191837.04904.bzolnier@gmail.com>
+Message-Id: <200902200441.08541.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: remove ide_execute_pkt_cmd() (v2)
+On Friday 20 February 2009 04:02:38 Jeremy Fitzhardinge wrote:
+> Nick Piggin wrote:
+> > On Wednesday 18 February 2009 08:57:56 Jeremy Fitzhardinge wrote:
+> >> Nick Piggin wrote:
+> >>> I have patches to move the tlb flushing to an asynchronous process
+> >>> context... but all tweaks to that (including flushing at vmap) are just
+> >>> variations on the existing flushing scheme and don't solve your
+> >>> problem, so I don't think we really need to change that for the moment
+> >>> (my patches are mainly for latency improvement and to allow vunmap to
+> >>> be usable from interrupt context).
+> >>
+> >> Hi Nick,
+> >>
+> >> I'm very interested in being able to call vm_unmap_aliases() from
+> >> interrupt context.  Does the work you mention here encompass that?
+> >
+> > No, and it can't because we can't do the global kernel tlb flush
+> > from interrupt context.
+> >
+> > There is basically no point in doing the vm_unmap_aliases from
+> > interrupt context without doing the global TLB flush as well,
+> > because you still cannot reuse the virtual memory, you still have
+> > possible aliases to it, and you still need to schedule a TLB flush
+> > at some point anyway.
+>
+> But that's only an issue when you actually do want to reuse the virtual
+> address space.  Couldn't you set a flag saying "tlb flush needed", so
+> when cpu X is about to use some of that address space, it flushes
+> first?  Avoids the need for synchronous cross-cpu tlb flushes.  It
+> assumes they're not currently using that address space, but I think that
+> would indicate a bug anyway.
 
-* Pass command structure to ide_execute_command() and skip
-  __ide_set_handler() for ATAPI protocols on non-DRQ devices.
+Then what is the point of the vm_unmap_aliases? If you are doing it
+for security it won't work because other CPUs might still be able
+to write through dangling TLBs. If you are not doing it for
+security then it does not need to be done at all.
 
-* Convert ide_issue_pc() to always use ide_execute_command()
-  and remove no longer needed ide_execute_pkt_cmd().
+Unless it is something strange that Xen does with the page table
+structure and you just need to get rid of those?
 
-v2:
-* Fix for non-DRQ devices (based on report from Borislav).
 
-There should be no functional changes caused by this patch.
+> (Xen does something like this internally to either defer or avoid many
+> expensive tlb operations.)
+>
+> >> For Xen dom0, when someone does something like dma_alloc_coherent, we
+> >> allocate the memory as normal, and then swizzle the underlying physical
+> >> pages to be machine physically contiguous (vs contiguous pseudo-physical
+> >> guest memory), and within the addressable range for the device.  In
+> >> order to do that, we need to make sure the pages are only mapped by the
+> >> linear mapping, and there are no other aliases.
+> >
+> > These are just stale aliases that will no longer be operated on
+> > unless there is a kernel bug -- so can you just live with them,
+> > or is it a security issue of memory access escaping its domain?
+>
+> The underlying physical page is being exchanged, so the old page is
+> being returned to Xen's free page pool.  It will refuse to do the
+> exchange if the guest still has pagetable references to the page.
 
-Acked-by: Borislav Petkov <petkovbb@gmail.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
-replacement patch for the one in pata-2.6 tree
+But it refuses to do this because it is worried about dangling TLBs?
+Or some implementation detail that can't handle the page table
+entries?
 
- drivers/ide/ide-atapi.c    |   15 +++++++--------
- drivers/ide/ide-iops.c     |   25 ++++++++-----------------
- drivers/ide/ide-taskfile.c |    6 ++----
- include/linux/ide.h        |    5 ++---
- 4 files changed, 19 insertions(+), 32 deletions(-)
 
-Index: b/drivers/ide/ide-atapi.c
-===================================================================
---- a/drivers/ide/ide-atapi.c
-+++ b/drivers/ide/ide-atapi.c
-@@ -481,6 +481,7 @@ static void ide_init_packet_cmd(struct i
- 	cmd->protocol  = dma ? ATAPI_PROT_DMA : ATAPI_PROT_PIO;
- 	cmd->tf_flags |= IDE_TFLAG_OUT_LBAH | IDE_TFLAG_OUT_LBAM |
- 			 IDE_TFLAG_OUT_FEATURE | tf_flags;
-+	cmd->tf.command = ATA_CMD_PACKET;
- 	cmd->tf.feature = dma;		/* Use PIO/DMA */
- 	cmd->tf.lbam    = bcount & 0xff;
- 	cmd->tf.lbah    = (bcount >> 8) & 0xff;
-@@ -626,6 +627,7 @@ ide_startstop_t ide_issue_pc(ide_drive_t
- 	unsigned int timeout;
- 	u32 tf_flags;
- 	u16 bcount;
-+	u8 drq_int = !!(drive->atapi_flags & IDE_AFLAG_DRQ_INTERRUPT);
- 
- 	if (dev_is_idecd(drive)) {
- 		tf_flags = IDE_TFLAG_OUT_NSECT | IDE_TFLAG_OUT_LBAL;
-@@ -675,17 +677,14 @@ ide_startstop_t ide_issue_pc(ide_drive_t
- 
- 	(void)do_rw_taskfile(drive, cmd);
- 
--	/* Issue the packet command */
--	if (drive->atapi_flags & IDE_AFLAG_DRQ_INTERRUPT) {
-+	if (drq_int) {
- 		if (drive->dma)
- 			drive->waiting_for_dma = 0;
- 		hwif->expiry = expiry;
--		ide_execute_command(drive, ATA_CMD_PACKET, ide_transfer_pc,
--				    timeout);
--		return ide_started;
--	} else {
--		ide_execute_pkt_cmd(drive);
--		return ide_transfer_pc(drive);
- 	}
-+
-+	ide_execute_command(drive, cmd, ide_transfer_pc, timeout);
-+
-+	return drq_int ? ide_started : ide_transfer_pc(drive);
- }
- EXPORT_SYMBOL_GPL(ide_issue_pc);
-Index: b/drivers/ide/ide-iops.c
-===================================================================
---- a/drivers/ide/ide-iops.c
-+++ b/drivers/ide/ide-iops.c
-@@ -451,7 +451,7 @@ EXPORT_SYMBOL(ide_set_handler);
- /**
-  *	ide_execute_command	-	execute an IDE command
-  *	@drive: IDE drive to issue the command against
-- *	@command: command byte to write
-+ *	@cmd: command
-  *	@handler: handler for next phase
-  *	@timeout: timeout for command
-  *
-@@ -461,15 +461,18 @@ EXPORT_SYMBOL(ide_set_handler);
-  *	should go via this function or do equivalent locking.
-  */
- 
--void ide_execute_command(ide_drive_t *drive, u8 cmd, ide_handler_t *handler,
--			 unsigned timeout)
-+void ide_execute_command(ide_drive_t *drive, struct ide_cmd *cmd,
-+			 ide_handler_t *handler, unsigned timeout)
- {
- 	ide_hwif_t *hwif = drive->hwif;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&hwif->lock, flags);
--	__ide_set_handler(drive, handler, timeout);
--	hwif->tp_ops->exec_command(hwif, cmd);
-+	if ((cmd->protocol != ATAPI_PROT_DMA &&
-+	     cmd->protocol != ATAPI_PROT_PIO) ||
-+	    (drive->atapi_flags & IDE_AFLAG_DRQ_INTERRUPT))
-+		__ide_set_handler(drive, handler, timeout);
-+	hwif->tp_ops->exec_command(hwif, cmd->tf.command);
- 	/*
- 	 * Drive takes 400nS to respond, we must avoid the IRQ being
- 	 * serviced before that.
-@@ -480,18 +483,6 @@ void ide_execute_command(ide_drive_t *dr
- 	spin_unlock_irqrestore(&hwif->lock, flags);
- }
- 
--void ide_execute_pkt_cmd(ide_drive_t *drive)
--{
--	ide_hwif_t *hwif = drive->hwif;
--	unsigned long flags;
--
--	spin_lock_irqsave(&hwif->lock, flags);
--	hwif->tp_ops->exec_command(hwif, ATA_CMD_PACKET);
--	ndelay(400);
--	spin_unlock_irqrestore(&hwif->lock, flags);
--}
--EXPORT_SYMBOL_GPL(ide_execute_pkt_cmd);
--
- /*
-  * ide_wait_not_busy() waits for the currently selected device on the hwif
-  * to report a non-busy status, see comments in ide_probe_port().
-Index: b/drivers/ide/ide-taskfile.c
-===================================================================
---- a/drivers/ide/ide-taskfile.c
-+++ b/drivers/ide/ide-taskfile.c
-@@ -97,8 +97,7 @@ ide_startstop_t do_rw_taskfile(ide_drive
- 	case ATA_PROT_NODATA:
- 		if (handler == NULL)
- 			handler = task_no_data_intr;
--		ide_execute_command(drive, tf->command, handler,
--				    WAIT_WORSTCASE);
-+		ide_execute_command(drive, cmd, handler, WAIT_WORSTCASE);
- 		return ide_started;
- 	case ATA_PROT_DMA:
- 		if ((drive->dev_flags & IDE_DFLAG_USING_DMA) == 0 ||
-@@ -106,8 +105,7 @@ ide_startstop_t do_rw_taskfile(ide_drive
- 		    dma_ops->dma_setup(drive, cmd))
- 			return ide_stopped;
- 		hwif->expiry = dma_ops->dma_timer_expiry;
--		ide_execute_command(drive, tf->command, ide_dma_intr,
--				    2 * WAIT_CMD);
-+		ide_execute_command(drive, cmd, ide_dma_intr, 2 * WAIT_CMD);
- 		dma_ops->dma_start(drive);
- 	default:
- 		return ide_started;
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -1135,9 +1135,8 @@ void ide_kill_rq(ide_drive_t *, struct r
- void __ide_set_handler(ide_drive_t *, ide_handler_t *, unsigned int);
- void ide_set_handler(ide_drive_t *, ide_handler_t *, unsigned int);
- 
--void ide_execute_command(ide_drive_t *, u8, ide_handler_t *, unsigned int);
--
--void ide_execute_pkt_cmd(ide_drive_t *);
-+void ide_execute_command(ide_drive_t *, struct ide_cmd *, ide_handler_t *,
-+			 unsigned int);
- 
- void ide_pad_transfer(ide_drive_t *, int, int);
- 
+> > If it is really no other way around it, it would be possible to
+> > allow arch code to take advantage of this if it knows its TLB
+> > flush is interrupt safe.
+>
+> It's almost safe.  I've got this patch in my tree to tie up the
+> flush_tlb_all loose end, though I won't claim its pretty.
+
+Hmm. Let's just try to establish that it is really required first.
+
+Or... what if we just allow a compile and/or boot time flag to direct
+that it does not want lazy vmap unmapping and it will just revert to
+synchronous unmapping? If Xen needs lots of flushing anyway it might
+not be a win anyway.
+
