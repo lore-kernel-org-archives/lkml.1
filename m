@@ -1,59 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbZBSWJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755890AbZBSWKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755517AbZBSWJZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 17:09:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbZBSWJP
+	id S1755890AbZBSWKV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 17:10:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbZBSWKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 17:09:15 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:51381 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751535AbZBSWJP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 17:09:15 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Bug #12667] Badness at kernel/time/timekeeping.c:98 in pmud (timekeeping_suspended)
-Date: Thu, 19 Feb 2009 23:08:45 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Paul Collins <paul@burly.ondioline.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-References: <AIghyjFgMFP.A.uZD._10jJB@chimera> <200902191400.53528.rjw@sisk.pl> <1235080040.8805.47.camel@pasglop>
-In-Reply-To: <1235080040.8805.47.camel@pasglop>
+	Thu, 19 Feb 2009 17:10:08 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:29725 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752902AbZBSWKG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 17:10:06 -0500
+Message-ID: <499DD8E8.2040401@oracle.com>
+Date: Thu, 19 Feb 2009 14:10:48 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+To: Greg KH <greg@kroah.com>
+CC: lkml <linux-kernel@vger.kernel.org>, gregkh@suse.de,
+       Evgeniy Polyakov <zbr@ioremap.net>
+Subject: Re: [PATCH] staging/pohmelfs: fix quota build error and printk formats
+References: <20090218103932.6a7880f9.randy.dunlap@oracle.com> <20090219000044.GB5181@kroah.com>
+In-Reply-To: <20090219000044.GB5181@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902192308.46532.rjw@sisk.pl>
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.499DD8B3.0100:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 February 2009, Benjamin Herrenschmidt wrote:
-> On Thu, 2009-02-19 at 14:00 +0100, Rafael J. Wysocki wrote:
-> > On Thursday 19 February 2009, Benjamin Herrenschmidt wrote:
-> > > On Thu, 2009-02-19 at 21:27 +1300, Paul Collins wrote:
-> > > > > Just for laughs I slapped together the following, which seems to do
-> > > > the
-> > > > > job, although not especially tidily.
-> > > > 
-> > > > And it doesn't even do the job.  Judging by this new trace, submitting
-> > > > input events from the via-pmu resume function is still too early.
-> > > > 
-> > > What's up Thomas ? We can't call gettimeofday() from a sysdev
-> > > suspend/resume ? That's a little bit too harsh no ?
-> > 
-> > Perhaps the ordering is wrong (ie. via-pmu resume happens bevore timekeeping
-> > resume)?
+Greg KH wrote:
+> Randy, this patch is already in my tree, can you pull the next
+> linux-next to verify it?
 > 
-> In this case, maybe gtod should just return the frozen time (ie, last
-> time at the time of suspend) rather than WARN ?
 
-This might work, but there seem to be more problems like this (cpufreq vs
-timekeeping for example).
+Yes, that builds now.  Thanks.
 
-I think we need a more general approach.
+What's with this top-posting crap?
 
-Thanks,
-Rafael
+
+> 
+> On Wed, Feb 18, 2009 at 10:39:32AM -0800, Randy Dunlap wrote:
+>> From: Randy Dunlap <randy.dunlap@oracle.com>
+>>
+>> Fix pohmelfs for disk quota changes and printk format warnings:
+>>
+>> drivers/staging/pohmelfs/inode.c:917: warning: format '%u' expects type 'unsigned int', but argument 4 has type 'size_t'
+>> drivers/staging/pohmelfs/inode.c:982: error: implicit declaration of function 'DQUOT_TRANSFER'
+>> drivers/staging/pohmelfs/inode.c:1036: warning: format '%u' expects type 'unsigned int', but argument 7 has type 'size_t'
+>>
+>> drivers/staging/pohmelfs/trans.c:164: warning: format '%u' expects type 'unsigned int', but argument 5 has type '__kernel_size_t'
+>> drivers/staging/pohmelfs/trans.c:170: warning: format '%u' expects type 'unsigned int', but argument 7 has type '__kernel_size_t'
+>> drivers/staging/pohmelfs/trans.c:517: warning: format '%u' expects type 'unsigned int', but argument 6 has type '__kernel_size_t'
+>> drivers/staging/pohmelfs/trans.c:600: warning: format '%u' expects type 'unsigned int', but argument 6 has type '__kernel_size_t'
+>> drivers/staging/pohmelfs/trans.c:610: warning: format '%u' expects type 'unsigned int', but argument 7 has type '__kernel_size_t'
+>>
+>> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+>> cc: Evgeniy Polyakov <zbr@ioremap.net>
+>> ---
+>>  drivers/staging/pohmelfs/inode.c |    6 +++---
+>>  drivers/staging/pohmelfs/trans.c |   10 +++++-----
+>>  2 files changed, 8 insertions(+), 8 deletions(-)
+>>
+>> --- linux-next-20090218.orig/drivers/staging/pohmelfs/inode.c
+>> +++ linux-next-20090218/drivers/staging/pohmelfs/inode.c
+>> @@ -914,7 +914,7 @@ ssize_t pohmelfs_write(struct file *file
+>>  	kiocb.ki_pos = pos;
+>>  	kiocb.ki_left = len;
+>>  
+>> -	dprintk("%s: len: %u, pos: %llu.\n", __func__, len, pos);
+>> +	dprintk("%s: len: %zu, pos: %llu.\n", __func__, len, pos);
+>>  
+>>  	mutex_lock(&inode->i_mutex);
+>>  	ret = pohmelfs_data_lock(pi, pos, len, POHMELFS_WRITE_LOCK);
+>> @@ -979,7 +979,7 @@ int pohmelfs_setattr_raw(struct inode *i
+>>  
+>>  	if ((attr->ia_valid & ATTR_UID && attr->ia_uid != inode->i_uid) ||
+>>  	    (attr->ia_valid & ATTR_GID && attr->ia_gid != inode->i_gid)) {
+>> -		err = DQUOT_TRANSFER(inode, attr) ? -EDQUOT : 0;
+>> +		err = vfs_dq_transfer(inode, attr) ? -EDQUOT : 0;
+>>  		if (err)
+>>  			goto err_out_exit;
+>>  	}
+>> @@ -1033,7 +1033,7 @@ static int pohmelfs_send_xattr_req(struc
+>>  	struct netfs_cmd *cmd;
+>>  	void *data;
+>>  
+>> -	dprintk("%s: id: %llu, start: %llu, name: '%s', attrsize: %u, cmd: %d.\n",
+>> +	dprintk("%s: id: %llu, start: %llu, name: '%s', attrsize: %zu, cmd: %d.\n",
+>>  			__func__, id, start, name, attrsize, command);
+>>  
+>>  	path_len = pohmelfs_path_length(pi);
+>> --- linux-next-20090218.orig/drivers/staging/pohmelfs/trans.c
+>> +++ linux-next-20090218/drivers/staging/pohmelfs/trans.c
+>> @@ -160,14 +160,14 @@ int netfs_trans_send(struct netfs_trans 
+>>  
+>>  	err = kernel_sendmsg(st->socket, &msg, (struct kvec *)msg.msg_iov, 1, t->iovec.iov_len);
+>>  	if (err <= 0) {
+>> -		printk("%s: failed to send contig transaction: t: %p, gen: %u, size: %u, err: %d.\n",
+>> +		printk("%s: failed to send contig transaction: t: %p, gen: %u, size: %zu, err: %d.\n",
+>>  				__func__, t, t->gen, t->iovec.iov_len, err);
+>>  		if (err == 0)
+>>  			err = -ECONNRESET;
+>>  		goto err_out_unlock_return;
+>>  	}
+>>  
+>> -	dprintk("%s: sent %s transaction: t: %p, gen: %u, size: %u, page_num: %u.\n",
+>> +	dprintk("%s: sent %s transaction: t: %p, gen: %u, size: %zu, page_num: %u.\n",
+>>  			__func__, (t->page_num)?"partial":"full",
+>>  			t, t->gen, t->iovec.iov_len, t->page_num);
+>>  
+>> @@ -514,7 +514,7 @@ int netfs_trans_finish(struct netfs_tran
+>>  		cmd->csize = psb->crypto_attached_size;
+>>  	}
+>>  
+>> -	dprintk("%s: t: %u, size: %u, iov_len: %u, attached_size: %u, attached_pages: %u.\n",
+>> +	dprintk("%s: t: %u, size: %u, iov_len: %zu, attached_size: %u, attached_pages: %u.\n",
+>>  			__func__, t->gen, cmd->size, t->iovec.iov_len, t->attached_size, t->attached_pages);
+>>  	err = pohmelfs_trans_crypt(t, psb);
+>>  	if (err) {
+>> @@ -597,7 +597,7 @@ void *netfs_trans_add(struct netfs_trans
+>>  	}
+>>  
+>>  	if (io->iov_len + size > t->total_size) {
+>> -		dprintk("%s: too big size t: %p, gen: %u, iov_len: %u, size: %u, total: %u.\n",
+>> +		dprintk("%s: too big size t: %p, gen: %u, iov_len: %zu, size: %u, total: %u.\n",
+>>  				__func__, t, t->gen, io->iov_len, size, t->total_size);
+>>  		ptr = ERR_PTR(-E2BIG);
+>>  		goto out;
+>> @@ -607,7 +607,7 @@ void *netfs_trans_add(struct netfs_trans
+>>  	io->iov_len += size;
+>>  
+>>  out:
+>> -	dprintk("%s: t: %p, gen: %u, size: %u, total: %u.\n",
+>> +	dprintk("%s: t: %p, gen: %u, size: %u, total: %zu.\n",
+>>  		__func__, t, t->gen, size, io->iov_len);
+>>  	return ptr;
+>>  }
+
+
+-- 
+~Randy
