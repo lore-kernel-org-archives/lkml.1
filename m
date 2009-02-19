@@ -1,346 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbZBSEda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbZBSEhh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754659AbZBSEda (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 23:33:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbZBSEdV
+	id S1754591AbZBSEhh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 23:37:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbZBSEh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 23:33:21 -0500
-Received: from smtp101.prem.mail.sp1.yahoo.com ([98.136.44.56]:43954 "HELO
-	smtp101.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751585AbZBSEdU (ORCPT
+	Wed, 18 Feb 2009 23:37:28 -0500
+Received: from exprod7og105.obsmtp.com ([64.18.2.163]:60618 "EHLO
+	exprod7og105.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751851AbZBSEh1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 23:33:20 -0500
-X-YMail-OSG: hnd2a9EVM1n61BcYdTKYn4RAT1.3kSRN3K4Z4LzRFiL4300rfON15wWx2hekruTJcp4RywH3MUxSEvJN_sFK8FkjccEevbem.xkmsBe6iXor611D8A2iyDfpi_y712hUTqwztvZudOU0YJ.HWy667qJGXjCztaxQrUq.qwd6KYJR_zasM83nFK86sFpwVoXBJc186bcJ_31SDbZSw_3.mEM8XyNzuTFhTLnyMVBmVi7BAj282ZSIw6GumPksxWjQ9jRGF02YXSisQgZpO1f2iS7TXIA-
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <499CE10A.8050906@schaufler-ca.com>
-Date: Wed, 18 Feb 2009 20:33:14 -0800
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Wed, 18 Feb 2009 23:37:27 -0500
+X-Greylist: delayed 864 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Feb 2009 23:37:20 EST
+From: "Prakash, Sathya" <Sathya.Prakash@lsi.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "david@lang.hm" <david@lang.hm>, Matthew Wilcox <matthew@wil.cx>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       DL-MPT Fusion Linux <DL-MPTFusionLinux@lsi.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Date: Thu, 19 Feb 2009 09:51:42 +0530
+Subject: RE: [PATCH] pci: enable MSI on 8132
+Thread-Topic: [PATCH] pci: enable MSI on 8132
+Thread-Index: AcmR+BTPjL4MNQ/tRD6EtrF8GTDLvQAUOlmg
+Message-ID: <B73941C4DE6A3D4EA1AE128E9565E24423A0DA5240@inbmail01.lsi.com>
+References: <499B46B2.5040601@kernel.org>
+	 <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm>
+	 <499B6BF7.9090300@kernel.org>
+	 <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm>
+	 <499B724A.2040408@kernel.org>
+	 <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm>
+	 <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>
+	 <499B774C.5010705@kernel.org>
+	 <alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm>
+	 <499B9129.50104@kernel.org> <20090218122137.GJ16841@parisc-linux.org>
+	 <alpine.DEB.1.10.0902180426420.25606@asgard.lang.hm>
+	 <20090218100448.7f7c5b86.akpm@linux-foundation.org>
+ <1234982285.3225.42.camel@localhost.localdomain>
+In-Reply-To: <1234982285.3225.42.camel@localhost.localdomain>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>,
-       Qinghuang Feng <qhfeng.kernel@gmail.com>,
-       Casey Schaufler <casey@schaufler-ca.com>
-Subject: Re: [PATCH] smack: fix lots of kernel-doc notation
-References: <20090218114233.2b5c662d.randy.dunlap@oracle.com>
-In-Reply-To: <20090218114233.2b5c662d.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ 
+Apologies for late response on this thread.
+Considering the fact that the enabling MSI has issues with some unknown boards we will turn off the MSI for all the type of controllers (including the SAS) and will send the corrected patch soon (with proper module description). Till we find out a way to dynamically decide whether we can enable MSI without any issues, we don't want to set the module parameter to enable MSI by default for SAS controllers.
 
+Thanks
+Sathya
 
+-----Original Message-----
+From: James Bottomley [mailto:James.Bottomley@HansenPartnership.com] 
+Sent: Thursday, February 19, 2009 12:08 AM
+To: Andrew Morton
+Cc: david@lang.hm; Matthew Wilcox; Yinghai Lu; Jesse Barnes; linux-kernel; linux-scsi@vger.kernel.org; DL-MPT Fusion Linux; linux-pci@vger.kernel.org
+Subject: Re: [PATCH] pci: enable MSI on 8132
 
-Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->
-> Fix/add kernel-doc notation and fix typos in security/smack/.
->
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
->   
+On Wed, 2009-02-18 at 10:04 -0800, Andrew Morton wrote:
+> On Wed, 18 Feb 2009 04:27:28 -0800 (PST) david@lang.hm wrote:
+> 
+> > On Wed, 18 Feb 2009, Matthew Wilcox wrote:
+> > 
+> > > On Tue, Feb 17, 2009 at 08:40:09PM -0800, Yinghai Lu wrote:
+> > >>
+> > >> Impact: workaround BIOS that doesn't enable that bit
+> > >>
+> > >> David reported that LSI sas doesn't work with MSI.
+> > >> it turns out that BIOS doesn't enable HT MSI
+> > >> 8132 does support HT MSI.
+> > >> add quirk to enable it
+> > >>
+> > >> Reported-by: David Lang <david@lang.hm>
+> > >> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> > >
+> > > Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
+> > >
+> > > Jesse, I think this should go into Linus' tree sooner rather than later.
+> > 
+> > please forward to -stable as well. this is a regression since the 
+> > card works with older kernels.
+> > 
+> 
+> Which kernel version introduced the regression?
 
-Acked-by: Casey Schaufler <casey@schaufler-ca.com>
+Technically, it's not a regression.  The MSI problem has always been there, it was just exposed when the SAS card switched to using MSI by default.  It's fixed by the bridge quirk  ... of course it's unclear how many more bridges with problems there are.
 
-> cc: Casey Schaufler <casey@schaufler-ca.com>
-> cc: James Morris <jmorris@namei.org>
-> cc: Qinghuang Feng <qhfeng.kernel@gmail.com>
-> ---
->  security/smack/smack_access.c |    4 +--
->  security/smack/smack_lsm.c    |   52 +++++++++++++++++++-----------------------
->  security/smack/smackfs.c      |   15 ++++++------
->  3 files changed, 34 insertions(+), 37 deletions(-)
->
-> --- lnx2629-rc5-docsrc.orig/security/smack/smack_access.c
-> +++ lnx2629-rc5-docsrc/security/smack/smack_access.c
-> @@ -162,8 +162,8 @@ int smk_access(char *subject_label, char
->  
->  /**
->   * smk_curacc - determine if current has a specific access to an object
-> - * @object_label: a pointer to the object's Smack label
-> - * @request: the access requested, in "MAY" format
-> + * @obj_label: a pointer to the object's Smack label
-> + * @mode: the access requested, in "MAY" format
->   *
->   * This function checks the current subject label/object label pair
->   * in the access rule list and returns 0 if the access is permitted,
-> --- lnx2629-rc5-docsrc.orig/security/smack/smackfs.c
-> +++ lnx2629-rc5-docsrc/security/smack/smackfs.c
-> @@ -245,7 +245,7 @@ out:
->  
->  /**
->   * smk_write_load - write() for /smack/load
-> - * @filp: file pointer, not actually used
-> + * @file: file pointer, not actually used
->   * @buf: where to get the data from
->   * @count: bytes sent
->   * @ppos: where to start - must be 0
-> @@ -402,6 +402,7 @@ static void smk_cipso_doi(void)
->  
->  /**
->   * smk_unlbl_ambient - initialize the unlabeled domain
-> + * @oldambient: previous domain string
->   */
->  static void smk_unlbl_ambient(char *oldambient)
->  {
-> @@ -513,7 +514,7 @@ static int smk_open_cipso(struct inode *
->  
->  /**
->   * smk_write_cipso - write() for /smack/cipso
-> - * @filp: file pointer, not actually used
-> + * @file: file pointer, not actually used
->   * @buf: where to get the data from
->   * @count: bytes sent
->   * @ppos: where to start
-> @@ -703,7 +704,7 @@ static int smk_open_netlbladdr(struct in
->  
->  /**
->   * smk_write_netlbladdr - write() for /smack/netlabel
-> - * @filp: file pointer, not actually used
-> + * @file: file pointer, not actually used
->   * @buf: where to get the data from
->   * @count: bytes sent
->   * @ppos: where to start
-> @@ -850,7 +851,7 @@ static ssize_t smk_read_doi(struct file 
->  
->  /**
->   * smk_write_doi - write() for /smack/doi
-> - * @filp: file pointer, not actually used
-> + * @file: file pointer, not actually used
->   * @buf: where to get the data from
->   * @count: bytes sent
->   * @ppos: where to start
-> @@ -915,7 +916,7 @@ static ssize_t smk_read_direct(struct fi
->  
->  /**
->   * smk_write_direct - write() for /smack/direct
-> - * @filp: file pointer, not actually used
-> + * @file: file pointer, not actually used
->   * @buf: where to get the data from
->   * @count: bytes sent
->   * @ppos: where to start
-> @@ -990,7 +991,7 @@ static ssize_t smk_read_ambient(struct f
->  
->  /**
->   * smk_write_ambient - write() for /smack/ambient
-> - * @filp: file pointer, not actually used
-> + * @file: file pointer, not actually used
->   * @buf: where to get the data from
->   * @count: bytes sent
->   * @ppos: where to start
-> @@ -1065,7 +1066,7 @@ static ssize_t smk_read_onlycap(struct f
->  
->  /**
->   * smk_write_onlycap - write() for /smack/onlycap
-> - * @filp: file pointer, not actually used
-> + * @file: file pointer, not actually used
->   * @buf: where to get the data from
->   * @count: bytes sent
->   * @ppos: where to start
-> --- lnx2629-rc5-docsrc.orig/security/smack/smack_lsm.c
-> +++ lnx2629-rc5-docsrc/security/smack/smack_lsm.c
-> @@ -91,6 +91,7 @@ struct inode_smack *new_inode_smack(char
->  /**
->   * smack_ptrace_may_access - Smack approval on PTRACE_ATTACH
->   * @ctp: child task pointer
-> + * @mode: ptrace attachment mode
->   *
->   * Returns 0 if access is OK, an error code otherwise
->   *
-> @@ -203,9 +204,8 @@ static void smack_sb_free_security(struc
->  
->  /**
->   * smack_sb_copy_data - copy mount options data for processing
-> - * @type: file system type
->   * @orig: where to start
-> - * @smackopts
-> + * @smackopts: mount options string
->   *
->   * Returns 0 on success or -ENOMEM on error.
->   *
-> @@ -331,7 +331,7 @@ static int smack_sb_statfs(struct dentry
->  /**
->   * smack_sb_mount - Smack check for mounting
->   * @dev_name: unused
-> - * @nd: mount point
-> + * @path: mount point
->   * @type: unused
->   * @flags: unused
->   * @data: unused
-> @@ -370,7 +370,7 @@ static int smack_sb_umount(struct vfsmou
->  
->  /**
->   * smack_inode_alloc_security - allocate an inode blob
-> - * @inode - the inode in need of a blob
-> + * @inode: the inode in need of a blob
->   *
->   * Returns 0 if it gets a blob, -ENOMEM otherwise
->   */
-> @@ -384,7 +384,7 @@ static int smack_inode_alloc_security(st
->  
->  /**
->   * smack_inode_free_security - free an inode blob
-> - * @inode - the inode with a blob
-> + * @inode: the inode with a blob
->   *
->   * Clears the blob pointer in inode
->   */
-> @@ -538,7 +538,6 @@ static int smack_inode_rename(struct ino
->   * smack_inode_permission - Smack version of permission()
->   * @inode: the inode in question
->   * @mask: the access requested
-> - * @nd: unused
->   *
->   * This is the important Smack hook.
->   *
-> @@ -701,8 +700,7 @@ static int smack_inode_removexattr(struc
->   * @inode: the object
->   * @name: attribute name
->   * @buffer: where to put the result
-> - * @size: size of the buffer
-> - * @err: unused
-> + * @alloc: unused
->   *
->   * Returns the size of the attribute or an error code
->   */
-> @@ -864,7 +862,7 @@ static int smack_file_ioctl(struct file 
->  /**
->   * smack_file_lock - Smack check on file locking
->   * @file: the object
-> - * @cmd unused
-> + * @cmd: unused
->   *
->   * Returns 0 if current has write access, error code otherwise
->   */
-> @@ -1003,8 +1001,8 @@ static int smack_cred_prepare(struct cre
->  	return 0;
->  }
->  
-> -/*
-> - * commit new credentials
-> +/**
-> + * smack_cred_commit - commit new credentials
->   * @new: the new credentials
->   * @old: the original credentials
->   */
-> @@ -1014,8 +1012,8 @@ static void smack_cred_commit(struct cre
->  
->  /**
->   * smack_kernel_act_as - Set the subjective context in a set of credentials
-> - * @new points to the set of credentials to be modified.
-> - * @secid specifies the security ID to be set
-> + * @new: points to the set of credentials to be modified.
-> + * @secid: specifies the security ID to be set
->   *
->   * Set the security data for a kernel service.
->   */
-> @@ -1032,8 +1030,8 @@ static int smack_kernel_act_as(struct cr
->  
->  /**
->   * smack_kernel_create_files_as - Set the file creation label in a set of creds
-> - * @new points to the set of credentials to be modified
-> - * @inode points to the inode to use as a reference
-> + * @new: points to the set of credentials to be modified
-> + * @inode: points to the inode to use as a reference
->   *
->   * Set the file creation context in a set of credentials to the same
->   * as the objective context of the specified inode
-> @@ -1242,7 +1240,7 @@ static int smack_task_wait(struct task_s
->  /**
->   * smack_task_to_inode - copy task smack into the inode blob
->   * @p: task to copy from
-> - * inode: inode to copy to
-> + * @inode: inode to copy to
->   *
->   * Sets the smack pointer in the inode security blob
->   */
-> @@ -1260,7 +1258,7 @@ static void smack_task_to_inode(struct t
->   * smack_sk_alloc_security - Allocate a socket blob
->   * @sk: the socket
->   * @family: unused
-> - * @priority: memory allocation priority
-> + * @gfp_flags: memory allocation flags
->   *
->   * Assign Smack pointers to current
->   *
-> @@ -2001,7 +1999,7 @@ static int smack_ipc_permission(struct k
->  
->  /**
->   * smack_ipc_getsecid - Extract smack security id
-> - * @ipcp: the object permissions
-> + * @ipp: the object permissions
->   * @secid: where result will be saved
->   */
->  static void smack_ipc_getsecid(struct kern_ipc_perm *ipp, u32 *secid)
-> @@ -2278,7 +2276,7 @@ static int smack_unix_may_send(struct so
->  /**
->   * smack_socket_sendmsg - Smack check based on destination host
->   * @sock: the socket
-> - * @msghdr: the message
-> + * @msg: the message
->   * @size: the size of the message
->   *
->   * Return 0 if the current subject can write to the destination
-> @@ -2319,8 +2317,7 @@ static int smack_socket_sendmsg(struct s
->  
->  
->  /**
-> - * smack_from_secattr - Convert a netlabel attr.mls.lvl/attr.mls.cat
-> - * 	pair to smack
-> + * smack_from_secattr - Convert a netlabel attr.mls.lvl/attr.mls.cat pair to smack
->   * @sap: netlabel secattr
->   * @sip: where to put the result
->   *
-> @@ -2441,7 +2438,7 @@ static int smack_socket_sock_rcv_skb(str
->   * @sock: the socket
->   * @optval: user's destination
->   * @optlen: size thereof
-> - * @len: max thereoe
-> + * @len: max thereof
->   *
->   * returns zero on success, an error code otherwise
->   */
-> @@ -2776,7 +2773,7 @@ static void smack_audit_rule_free(void *
->  
->  #endif /* CONFIG_AUDIT */
->  
-> -/*
-> +/**
->   * smack_secid_to_secctx - return the smack label for a secid
->   * @secid: incoming integer
->   * @secdata: destination
-> @@ -2793,7 +2790,7 @@ static int smack_secid_to_secctx(u32 sec
->  	return 0;
->  }
->  
-> -/*
-> +/**
->   * smack_secctx_to_secid - return the secid for a smack label
->   * @secdata: smack label
->   * @seclen: how long result is
-> @@ -2807,11 +2804,10 @@ static int smack_secctx_to_secid(const c
->  	return 0;
->  }
->  
-> -/*
-> +/**
->   * smack_release_secctx - don't do anything.
-> - * @key_ref: unused
-> - * @context: unused
-> - * @perm: unused
-> + * @secdata: unused
-> + * @seclen: unused
->   *
->   * Exists to make sure nothing gets done, and properly
->   */
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
->
->   
+> Do we not need mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch as 
+> well, to fix this regression?
+
+No ... it's a separate issue.  MSI was enabled for fusion SAS in 2.6.26; the problem msi patch which the above corrects actually has the effect of disabling MSI for fusion and went into 2.6.29-rc2, which isn't a kernel that's been tested here.
+
+> I sent mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch to the 
+> maintainers a week ago and it was ignored, along with everything else.
+> If this happens again I shall merge it under my own cognisance, along 
+> with everything else.
+
+Yes, they've been a bit unresponsive.   I'm not unhappy with the current
+situation, since MSI is globally disabled for fusion at the moment (so we shouldn't get any more MSI problem reports), so I'm happy to wait and see what they want to do.
+
+James
+
 
