@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758004AbZBSB5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753142AbZBSB7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758004AbZBSB5U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 20:57:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbZBSB5M
+	id S1753142AbZBSB7Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 20:59:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbZBSB7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 20:57:12 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37092 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751954AbZBSB5L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 20:57:11 -0500
-Message-ID: <499CBC58.2060406@kernel.org>
-Date: Thu, 19 Feb 2009 10:56:40 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 18 Feb 2009 20:59:07 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:42560 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753780AbZBSB7G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Feb 2009 20:59:06 -0500
+Date: Wed, 18 Feb 2009 20:59:04 -0500
+From: Kyle McMartin <kyle@infradead.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] [trivial] fix references to Documentation/x86/i386/boot.txt
+Message-ID: <20090219015904.GH17272@bombadil.infradead.org>
 MIME-Version: 1.0
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86,4kstack: use percpu data for hardirq and softirq
- stack
-References: <499A3322.3030704@cn.fujitsu.com>
-In-Reply-To: <499A3322.3030704@cn.fujitsu.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 19 Feb 2009 01:56:56 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lai Jiangshan wrote:
-> Impact: economize memory for large NR_CPUS
-> 
-> percpu data is setup earlier than irq, we can use percpu data
-> to economize memory.
-> 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+From: Kyle McMartin <kyle@redhat.com>
 
-Merged into tj-percpu (which is generally merged into x86/core/percpu)
-with trivial subject change.
+The amazing dancing boot.txt file has jumped places again. :)
 
- git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
+Signed-off-by: Kyle McMartin <kyle@redhat.com>
 
-The commit ID is ff6274badd53e42d7aa326178156c265a9fa4cd8.
-
-Thanks.
-
--- 
-tejun
+---
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index b182626..37b6a73 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -114,7 +114,7 @@ In addition, the following text indicates that the option:
+ Parameters denoted with BOOT are actually interpreted by the boot
+ loader, and have no meaning to the kernel directly.
+ Do not modify the syntax of boot loader parameters without extreme
+-need or coordination with <Documentation/x86/i386/boot.txt>.
++need or coordination with <Documentation/x86/boot.txt>.
+ 
+ There are also arch-specific kernel-parameters not documented here.
+ See for example <Documentation/x86/x86_64/boot-options.txt>.
+@@ -2449,7 +2449,7 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			See Documentation/fb/modedb.txt.
+ 
+ 	vga=		[BOOT,X86-32] Select a particular video mode
+-			See Documentation/x86/i386/boot.txt and
++			See Documentation/x86/boot.txt and
+ 			Documentation/svga.txt.
+ 			Use vga=ask for menu.
+ 			This is actually a boot loader parameter; the value is
