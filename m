@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757753AbZBSC10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbZBSCad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757753AbZBSC10 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 21:27:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753282AbZBSC1O
+	id S1758242AbZBSCad (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 21:30:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753391AbZBSCaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 21:27:14 -0500
-Received: from stargate.chelsio.com ([12.22.49.110]:12162 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752621AbZBSC1N (ORCPT
+	Wed, 18 Feb 2009 21:30:24 -0500
+Received: from el-out-1112.google.com ([209.85.162.182]:62363 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753282AbZBSCaX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 21:27:13 -0500
-Message-ID: <499CC309.3080305@chelsio.com>
-Date: Wed, 18 Feb 2009 18:25:13 -0800
-From: Divy Le Ray <divy@chelsio.com>
+	Wed, 18 Feb 2009 21:30:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=HBoTH3YaUyfnfO53jCXEcnefgYW7Tz1QXVEQE+YYvANWmtCOaSVNrQvk0AEfYBB/mQ
+         FWZCSl0m6kMZFtyv3525YIA7kHMq1A/NejUYvVLUigC8XAiwNkPrqp//wBHxHjE48syY
+         nJn24+lgDxp7eGjiTyTMCzl39J+ogyWazVgl8=
+Message-ID: <499CC43C.3000406@gmail.com>
+Date: Wed, 18 Feb 2009 20:30:20 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Subject: Re: [PATCH 2.6.30] cxgb3: Add support for PCI ID 0x35.
-References: <20090216044615.24884.9331.stgit@speedy5> <20090218.174835.12982157.davem@davemloft.net>
-In-Reply-To: <20090218.174835.12982157.davem@davemloft.net>
+To: Scott Simpson <simpson100@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: How do you profile an executable that loads shared libraries?
+References: <79759ec90902181549t292d1adco55416c04366afdad@mail.gmail.com>
+In-Reply-To: <79759ec90902181549t292d1adco55416c04366afdad@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Feb 2009 02:25:56.0093 (UTC) FILETIME=[64EEC2D0:01C99239]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Divy Le Ray <divy@chelsio.com>
-> Date: Sun, 15 Feb 2009 20:46:15 -0800
->
->   
->> Add support for adapters with a PCI id equal to 0x35.
->>
->> Signed-off-by: Divy Le Ray <divy@chelsio.com>
->>     
->
-> Adding new IDs is something we can do in net-2.6, so I'm
-> going to add this patch there.
->
-> Let me know if you don't want me to do that, or if there
-> is some dependency with net-next-2.6 that I'm not seeing.
->   
+Scott Simpson wrote:
+> I have an executable that loads shared libraries. I compiled with "-g
+> -pg" and then I ran gprof on the gmon.out file. I don't see any of the
+> shared libraries that the program loaded in my gprof output. How do
+> you profile shared libraries?
+> 
+> Also, I saw on the ld.so man page the LD_PROFILE variable but I found
+> information on the net that says variable should not be used when
+> using -pg.
+> 
+> Can someone help me out? I can't find information *anywhere* on
+> profiling shared libraries using gprof or the LD_PROFILE variable.
+> 
+> Sorry to post here. I don't know where else to post.
 
-Hi Dave,
-
-Applying it against net-2.6 is all good.
-
-Cheers,
-Divy
+Can't really help you with gprof, but in most cases it's likely much 
+easier to use oprofile instead, then you don't have to recompile your app..
