@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755064AbZBSIOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbZBSISS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755064AbZBSIOn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 03:14:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbZBSIOe
+	id S1755339AbZBSISS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 03:18:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbZBSISG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 03:14:34 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38876 "EHLO mx3.mail.elte.hu"
+	Thu, 19 Feb 2009 03:18:06 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55418 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751911AbZBSIOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 03:14:33 -0500
-Date: Thu, 19 Feb 2009 09:14:03 +0100
+	id S1753459AbZBSISD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 03:18:03 -0500
+Date: Thu, 19 Feb 2009 09:17:28 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Yang Hongyang <yanghy@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: [PATCH 11/12]Remove defines of DMA_XXBIT_MASK micro
-Message-ID: <20090219081403.GA5400@elte.hu>
-References: <499CFDC8.1070600@cn.fujitsu.com> <499D0221.9090407@cn.fujitsu.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>
+Subject: Re: [PATCH 0/6] [git pull] updates for tip/tracing/ftrace
+Message-ID: <20090219081728.GA15452@elte.hu>
+References: <20090217182048.233060814@goodmis.org> <20090218000952.GD12714@elte.hu> <20090218084041.GA27540@elte.hu> <20090218163524.GA5858@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <499D0221.9090407@cn.fujitsu.com>
+In-Reply-To: <20090218163524.GA5858@nowhere>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,58 +39,33 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yang Hongyang <yanghy@cn.fujitsu.com> wrote:
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> Remove defines of DMA_XXBIT_MASK micro
+> > the function-graph-tracer started locking up since the last 
+> > batch of changes:
+> > 
+> >  Testing tracer sysprof: .. no entries found ..FAILED!
+> >  initcall 0xffffffff812e91d1 returned -1 after 101562 usecs
+> >  initcall 0xffffffff812e91d1 returned with error code -1 
+> >  calling  0xffffffff812e91e3 @ 1
+> >  Testing tracer function: PASSED
+> >  Testing dynamic ftrace: 
+> >  [hard lockup]
 > 
-> Signed-off-by: Yang Hongyang<yanghy@cn.fujitsu.com>
+> I've successfully reproduced it with your config.
+> Note that I didn't built the function graph tracer.
 > 
-> ---
->  include/linux/dma-mapping.h |   20 +-------------------
->  1 files changed, 1 insertions(+), 19 deletions(-)
+> I also tried to set ftrace=nop as a parameter to avoid the selftests and then
+> enabled the function tracer after the boot. And then I had no problem.
 > 
-> diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-> index f238c7e..70f9c63 100644
-> --- a/include/linux/dma-mapping.h
-> +++ b/include/linux/dma-mapping.h
-> @@ -13,27 +13,9 @@ enum dma_data_direction {
->  	DMA_NONE = 3,
->  };
->  
-> +/*use DMA_BIT_MASK(n) within your driver instead of DMA_xxBIT_MASK*/
->  #define DMA_BIT_MASK(n)	(((n) == 64) ? ~0ULL : ((1ULL<<(n))-1))
->  
-> -/*
-> - * NOTE: do not use the below macros in new code and do not add new definitions
-> - * here.
-> - *
-> - * Instead, just open-code DMA_BIT_MASK(n) within your driver
-> - */
-> -#define DMA_64BIT_MASK	DMA_BIT_MASK(64)
-> -#define DMA_48BIT_MASK	DMA_BIT_MASK(48)
-> -#define DMA_47BIT_MASK	DMA_BIT_MASK(47)
-> -#define DMA_40BIT_MASK	DMA_BIT_MASK(40)
-> -#define DMA_39BIT_MASK	DMA_BIT_MASK(39)
-> -#define DMA_35BIT_MASK	DMA_BIT_MASK(35)
-> -#define DMA_32BIT_MASK	DMA_BIT_MASK(32)
-> -#define DMA_31BIT_MASK	DMA_BIT_MASK(31)
-> -#define DMA_30BIT_MASK	DMA_BIT_MASK(30)
-> -#define DMA_29BIT_MASK	DMA_BIT_MASK(29)
-> -#define DMA_28BIT_MASK	DMA_BIT_MASK(28)
-> -#define DMA_24BIT_MASK	DMA_BIT_MASK(24)
+> Looks like it happens during dynamic ftrace initialization.
+> Perhaps a problem with the recent mutex conversion and kstopmachine, which
+> could result in a hardlockup in case of a deadlock.
+> 
+> But lockdep didn't say anything.
+> I'm reverting some of the last patches and will see.
 
-Looks good beyond the s/micro/macro typo fix, but i'd suggest to 
-keep these old defines for one more kernel cycle, then do a 
-final removal of all remaining uses, in a single patch.
-
-That way we'll save ourselves from quite a bit of unnecessary 
-build breakages (as your patchset shows there's still a lot of 
-users of the old macros), as these definitions get moved around, 
-reintroduced, etc.
-
-Conflict resolution becomes easier as well - if such a patch 
-conflicts with some ongoing work then we can by avoid the 
-conflict by just dropping that hunk and delaying that particular 
-conversion to the 'final' stage.
+Frederic, Steve, any progress on this bug? It's blocking all new 
+tracing patches.
 
 	Ingo
