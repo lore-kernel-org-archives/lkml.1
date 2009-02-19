@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbZBSHbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756248AbZBSHcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754116AbZBSHbX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 02:31:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbZBSHbG
+	id S1756248AbZBSHcW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 02:32:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbZBSHcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 02:31:06 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:54379 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752480AbZBSHbD (ORCPT
+	Thu, 19 Feb 2009 02:32:04 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54281
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752570AbZBSHcC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 02:31:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent;
-        b=DCGJ0tdFAmyvjxu/S/kGLF4hAo16XScP2y1GYRtPGhE/OcNjbNzBJAaSB6rFnDPnqu
-         k30FIhSJYHJZiSWWhm0gcx4nYQGsc3qQj7x1ujggUsThltY4IEOP6LdXPa9oATF0yUr6
-         6IB+P+6DyCEDh534XtE11ms07AyQiJYBNZSBk=
-Date: Thu, 19 Feb 2009 07:30:55 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Karl Hiramoto <karl@hiramoto.org>
-Cc: netdev@vger.kernel.org, netfilter@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: problem with IPoA (CLIP),  NAT, and VLANS
-Message-ID: <20090219073055.GA4564@ff.dom.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090218210507.GA2698@ami.dom.local>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 19 Feb 2009 02:32:02 -0500
+Date: Wed, 18 Feb 2009 23:31:45 -0800 (PST)
+Message-Id: <20090218.233145.66997963.davem@davemloft.net>
+To: jarkao2@gmail.com
+Cc: kaber@trash.net, karl@hiramoto.org, netdev@vger.kernel.org,
+       netfilter@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] Re: problem with IPoA (CLIP), NAT, and VLANS
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090217093908.GB5341@ff.dom.local>
+References: <20090216232016.GA4803@ami.dom.local>
+	<499A7D7D.1090607@trash.net>
+	<20090217093908.GB5341@ff.dom.local>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18-02-2009 22:05, Jarek Poplawski wrote:
-...
-> depending on your config or even size of packets. So I guess, knowing
-> this all, you should better try to hack this driver more yet.
+From: Jarek Poplawski <jarkao2@gmail.com>
+Date: Tue, 17 Feb 2009 09:39:08 +0000
 
-...And the first step could be trying skb_copy() in the driver's
-->hard_start_xmit() callback (of course, if you prefer data safety
-over perfomance).
+> vlan: Update skb->mac_header in __vlan_put_tag().
+> 
+> After moving mac addresses in __vlan_put_tag() skb->mac_header needs
+> to be updated.
+> 
+> Reported-by: Karl Hiramoto <karl@hiramoto.org>
+> Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
 
-Jarek P.
+Patch applied, this is correct even though it doesn't fix the bug.
+
+I'm pretty sure that packet corruption is a driver error of
+some kind rather than some kind of generic problem.
