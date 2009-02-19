@@ -1,86 +1,393 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758231AbZBSXaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbZBSXtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758231AbZBSXaq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 18:30:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbZBSXaX
+	id S1756587AbZBSXtx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 18:49:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754734AbZBSXtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 18:30:23 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:40154 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754875AbZBSXaV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 18:30:21 -0500
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <m1ocx5ve8o.fsf@fess.ebiederm.org>
-	<20090219120333.af992d9e.akpm@linux-foundation.org>
-	<m163j61706.fsf@fess.ebiederm.org> <200902192247.46370.rjw@sisk.pl>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 19 Feb 2009 15:30:39 -0800
-In-Reply-To: <200902192247.46370.rjw@sisk.pl> (Rafael J. Wysocki's message of "Thu\, 19 Feb 2009 22\:47\:45 +0100")
-Message-ID: <m13aeaxaw0.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org, akpm@linux-foundation.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: **;"Rafael J. Wysocki" <rjw@sisk.pl>
-X-Spam-Relay-Country: 
-X-Spam-Report: *  7.0 XM_URI_RBL URI's domain appears in surbl.xmission.com
-	*      [URIs: marc.info]
-	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0001]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] pcie_portdriver: FIX: pcie_port_device_remove
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+	Thu, 19 Feb 2009 18:49:36 -0500
+Received: from vena.lwn.net ([206.168.112.25]:38068 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754662AbZBSXtf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 18:49:35 -0500
+Date: Thu, 19 Feb 2009 16:49:32 -0700
+From: Jonathan Corbet <corbet@lwn.net>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Wolfgang Grandegger <wg@grandegger.com>,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+Subject: Re: [PATCH 3/8] can: CAN Network device driver and SYSFS interface
+Message-ID: <20090219164932.63420915@bike.lwn.net>
+In-Reply-To: <1235070082-7069-4-git-send-email-wg@grandegger.com>
+References: <1235070082-7069-1-git-send-email-wg@grandegger.com>
+	<1235070082-7069-2-git-send-email-wg@grandegger.com>
+	<1235070082-7069-3-git-send-email-wg@grandegger.com>
+	<1235070082-7069-4-git-send-email-wg@grandegger.com>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.3; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Thu, 19 Feb 2009 20:01:17 +0100
+Wolfgang Grandegger <wg@grandegger.com> wrote:
 
-> On Thursday 19 February 2009, Eric W. Biederman wrote:
->> Andrew Morton <akpm@linux-foundation.org> writes:
->> 
->> >
->> > There are large-scale and conflicting changes to this file in linux-next.
->> >
->> > If we want to jam this fix into 2.6.29 (and it looks like something we
->> > want) then this will trash the linux-next changes.  It will cause me
->> > grief, and will cause Stephen grief unless the pci tree is suitably
->> > changed, which will cause Jesse grief. Either way: grief.
->> 
->> Ugh.
->> 
->> I had better have a good hard look at linux-next.  I tried to ask earlier
-> about
->> ongoing working but I didn't hear anything.
->
-> Yes, you did: http://marc.info/?l=linux-kernel&m=123342565225134&w=4
+> +/*
+> + * Bit-timing calculation derived from:
+> + *
+> + * Code based on LinCAN sources and H8S2638 project
+> + * Copyright 2004-2006 Pavel Pisa - DCE FELK CVUT cz
+> + * Copyright 2005      Stanislav Marek
+> + * email: pisa@cmp.felk.cvut.cz
+> + */
+> +static int can_update_spt(const struct can_bittiming_const *btc,
+> +			  int sampl_pt, int tseg, int *tseg1, int *tseg2)
+> +{
+> +	*tseg2 = tseg + 1 - (sampl_pt * (tseg + 1)) / 1000;
+> +	if (*tseg2 < btc->tseg2_min)
+> +		*tseg2 = btc->tseg2_min;
+> +	if (*tseg2 > btc->tseg2_max)
+> +		*tseg2 = btc->tseg2_max;
+> +	*tseg1 = tseg - *tseg2;
+> +	if (*tseg1 > btc->tseg1_max) {
+> +		*tseg1 = btc->tseg1_max;
+> +		*tseg2 = tseg - *tseg1;
+> +	}
+> +	return 1000 * (tseg + 1 - *tseg2) / (tseg + 1);
+> +}
 
-My apologies.  I should have said I did not recognize anything that
-was likely to conflict from what I hear from what I heard.  I did
-hear that the pcie port driver was touched to properly handle msi-x and I
-foolishly thought that was already merged upstream.  Especially after
-I glanced at Jesse's tree and I did not see any recent pci patches.
-Which led me to foolishly assume everything had already been merged
-into Linus's tree.
+I can only assume that this calculation means something to somebody.  I
+guess there's no hope for those of use too lazy to go read the Bosch spec,
+where, I assume, this kind of stuff is described.
 
-Andrew with respect to 2.6.29 my patch while correct and useful has
-no immediate utility, as the pciehp driver will crash and burn horribly
-if you attempt to hotplug it.  So I should find the other pci port driver
-changes and rebase on top of them.  Assuming that patch is scheduled to
-merge for 2.6.30.
+> +static int can_calc_bittiming(struct net_device *dev)
 
-Eric
+This function, too, is pretty well impenetrable.  I couldn't possibly try
+to tell you if it's even remotely correct.  Some comments might be nice.
 
+> +/*
+> + * Allocate and setup space for the CAN network device
+> + */
+> +struct net_device *alloc_candev(int sizeof_priv)
+> +{
+> +	struct net_device *dev;
+> +	struct can_priv *priv;
+> +
+> +	dev = alloc_netdev(sizeof_priv, "can%d", can_setup);
+> +	if (!dev)
+> +		return NULL;
+> +
+> +	priv = netdev_priv(dev);
+> +
+> +	priv->state = CAN_STATE_STOPPED;
+> +	spin_lock_init(&priv->irq_lock);
+
+This is the first mention I see of a lock in this file.  What are your
+locking rules?  There doesn't seem to be a lot of locking going on...  In
+particular, nothing in this file uses irq_lock.
+
+> +	init_timer(&priv->timer);
+> +	priv->timer.expires = 0;
+> +
+> +	return dev;
+> +}
+> +EXPORT_SYMBOL_GPL(alloc_candev);
+
+> +/*
+> + * Allocate space of the CAN network device
+> + */
+> +void free_candev(struct net_device *dev)
+> +{
+> +	free_netdev(dev);
+> +}
+> +EXPORT_SYMBOL_GPL(free_candev);
+
+I do believe that function is *freeing* space...?  
+
+The allocation function initializes a timer, but here we do nothing to
+ensure that the timer is not running.  Is there a rule somewhere that I
+missed?
+
+> +/*
+> + * Local echo of CAN messages
+> + *
+> + * CAN network devices *should* support a local echo functionality
+> + * (see Documentation/networking/can.txt). To test the handling of CAN
+> + * interfaces that do not support the local echo both driver types are
+> + * implemented. In the case that the driver does not support the echo
+> + * the IFF_ECHO remains clear in dev->flags. This causes the PF_CAN core
+> + * to perform the echo as a fallback solution.
+> + */
+> +
+> +static void can_flush_echo_skb(struct net_device *dev)
+> +{
+> +	struct can_priv *priv = netdev_priv(dev);
+> +	struct net_device_stats *stats = &dev->stats;
+> +	int i;
+> +
+> +	for (i = 0; i < CAN_ECHO_SKB_MAX; i++) {
+> +		if (priv->echo_skb[i]) {
+> +			kfree_skb(priv->echo_skb[i]);
+> +			priv->echo_skb[i] = NULL;
+> +			stats->tx_dropped++;
+> +			stats->tx_aborted_errors++;
+> +		}
+> +	}
+> +}
+
+What lock is protecting priv->echo_skb?
+
+> +/*
+> + * Put the skb on the stack to be looped backed locally lateron
+> + *
+> + * The function is typically called in the start_xmit function
+> + * of the device driver.
+> + */
+> +void can_put_echo_skb(struct sk_buff *skb, struct net_device *dev, int idx)
+> +{
+> +	struct can_priv *priv = netdev_priv(dev);
+> +
+> +	/* set flag whether this packet has to be looped back */
+> +	if (!(dev->flags & IFF_ECHO) || skb->pkt_type != PACKET_LOOPBACK) {
+> +		kfree_skb(skb);
+> +		return;
+> +	}
+
+The comment says "set flag", but the code potentially frees the skb and aborts.
+
+[...]
+
+> +/*
+> + * CAN device restart for bus-off recovery
+> + */
+> +int can_restart_now(struct net_device *dev)
+> +{
+> +	struct can_priv *priv = netdev_priv(dev);
+> +	struct net_device_stats *stats = &dev->stats;
+> +	struct sk_buff *skb;
+> +	struct can_frame *cf;
+> +	int err;
+> +
+> +	if (netif_carrier_ok(dev))
+> +		netif_carrier_off(dev);
+> +
+> +	/* Cancel restart in progress */
+> +	if (priv->timer.expires) {
+> +		del_timer(&priv->timer);
+> +		priv->timer.expires = 0; /* mark inactive timer */
+> +	}
+
+Are you sure you don't want del_timer_sync() there?  What keeps you from
+racing with the timer?
+
+[...]
+
+> +/*
+> + * Cleanup function before the device gets closed.
+> + *
+> + * This functions should be called in the close function of the device
+> + * driver.
+> + */
+> +void can_close_cleanup(struct net_device *dev)
+> +{
+> +	struct can_priv *priv = netdev_priv(dev);
+> +
+> +	if (priv->timer.expires) {
+> +		del_timer(&priv->timer);
+> +		priv->timer.expires = 0;
+> +	}
+> +
+> +	can_flush_echo_skb(dev);
+> +}
+> +EXPORT_SYMBOL_GPL(can_close_cleanup);
+
+You definitely want del_timer_sync() here.  You could potentially return
+with the timer still running.
+
+> diff --git a/drivers/net/can/sysfs.c b/drivers/net/can/sysfs.c
+> new file mode 100644
+> index 0000000..746f641
+> --- /dev/null
+> +++ b/drivers/net/can/sysfs.c
+
+Most of this file looks like typical sysfs cruft.  Again, though, I wonder
+about your locking...
+
+> +/* use same locking rules as GIF* ioctl's */
+> +static ssize_t can_dev_show(struct device *d,
+> +			    struct device_attribute *attr, char *buf,
+> +			    ssize_t (*fmt)(struct net_device *, char *))
+> +{
+> +	struct net_device *dev = to_net_dev(d);
+> +	ssize_t ret = -EINVAL;
+> +
+> +	read_lock(&dev_base_lock);
+> +	if (dev_isalive(dev))
+> +		ret = (*fmt)(dev, buf);
+> +	read_unlock(&dev_base_lock);
+> +
+> +	return ret;
+> +}
+
+I'm not sure what the GIF* ioctl() locking rules are, but do they really
+give you properly-serialized access to your device?  dev_base_lock seems
+like an unlikely choice, somehow, but maybe I'm missing something.
+
+[...]
+
+> +/* use same locking and permission rules as SIF* ioctl's */
+> +static ssize_t can_dev_store(struct device *d, struct device_attribute *attr,
+> +			     const char *buf, size_t len,
+> +			     int (*set)(struct net_device *, unsigned long))
+> +{
+> +	struct net_device *dev = to_net_dev(d);
+> +	unsigned long new;
+> +	int ret = -EINVAL;
+> +
+> +	if (!capable(CAP_NET_ADMIN))
+> +		return -EPERM;
+> +
+> +	ret = strict_strtoul(buf, 0, &new);
+> +	if (ret)
+> +		goto out;
+> +
+> +	rtnl_lock();
+> +	if (dev_isalive(dev)) {
+> +		ret = (*set)(dev, new);
+> +		if (!ret)
+> +			ret = len;
+> +	}
+> +	rtnl_unlock();
+> +out:
+> +	return ret;
+> +}
+
+Here we're using a different (global) lock?  Me confused...
+
+[...]
+
+> diff --git a/drivers/net/can/sysfs.h b/drivers/net/can/sysfs.h
+> new file mode 100644
+> index 0000000..e21f2fa
+> --- /dev/null
+> +++ b/drivers/net/can/sysfs.h
+> @@ -0,0 +1,24 @@
+> +/*
+> + * Copyright (C) 2007 Wolfgang Grandegger <wg@grandegger.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the version 2 of the GNU General Public License
+> + * as published by the Free Software Foundation
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+> + */
+> +
+> +#ifndef CAN_SYSFS_H
+> +#define CAN_SYSFS_H
+> +
+> +void can_create_sysfs(struct net_device *dev);
+> +void can_remove_sysfs(struct net_device *dev);
+> +
+> +#endif /* CAN_SYSFS_H */
+> diff --git a/include/linux/can/dev.h b/include/linux/can/dev.h
+> new file mode 100644
+> index 0000000..078ac03
+> --- /dev/null
+> +++ b/include/linux/can/dev.h
+> @@ -0,0 +1,136 @@
+> +/*
+> + * linux/can/dev.h
+> + *
+> + * Definitions for the CAN network device driver interface
+> + *
+> + * Copyright (C) 2006 Andrey Volkov <avolkov@varma-el.com>
+> + *               Varma Electronics Oy
+> + *
+> + * Copyright (C) 2008 Wolfgang Grandegger <wg@grandegger.com>
+
+Nothing in 2009? :)
+
+> + *
+> + * Send feedback to <socketcan-users@lists.berlios.de>
+> + */
+> +
+> +#ifndef CAN_DEV_H
+> +#define CAN_DEV_H
+> +
+> +#include <linux/can/error.h>
+> +
+> +/*
+> + * CAN bitrate and bit-timing
+> + */
+> +struct can_bittiming {
+> +	u32 bitrate;
+> +	u32 sample_point;
+> +	u32 tq;
+> +	u32 prop_seg;
+> +	u32 phase_seg1;
+> +	u32 phase_seg2;
+> +	u32 sjw;
+> +	u32 clock;
+> +	u32 brp;
+> +};
+
+It sure would be nice (again) to know what all these parameters are.
+
+> +struct can_bittiming_const {
+> +	u32 tseg1_min;
+> +	u32 tseg1_max;
+> +	u32 tseg2_min;
+> +	u32 tseg2_max;
+> +	u32 sjw_max;
+> +	u32 brp_min;
+> +	u32 brp_max;
+> +	u32 brp_inc;
+> +};
+
+Ditto.
+
+[...]
+
+> +/*
+> + * CAN common private data
+> + */
+> +#define CAN_ECHO_SKB_MAX  4
+> +
+> +struct can_priv {
+> +	struct can_device_stats can_stats;
+> +
+> +	struct can_bittiming bittiming;
+> +	struct can_bittiming_const *bittiming_const;
+> +
+> +	spinlock_t irq_lock;
+
+...protecting what...?
+
+> +	enum can_state state;
+> +	u32 ctrlmode;
+> +
+> +	int restart_ms;
+> +	struct timer_list timer;
+> +
+> +	struct sk_buff *echo_skb[CAN_ECHO_SKB_MAX];
+> +
+> +	int (*do_set_bittiming)(struct net_device *dev);
+> +	int (*do_get_state)(struct net_device *dev, enum can_state *state);
+> +	int (*do_set_mode)(struct net_device *dev, enum can_mode mode);
+> +	int (*do_set_ctrlmode)(struct net_device *dev, u32 ctrlmode);
+> +	int (*do_get_ctrlmode)(struct net_device *dev, u32 *ctrlmode);
+> +};
+> +
+> +#define ND2D(_ndev)	(_ndev->dev.parent)
+
+Does this macro really improve the clarity of the code?
 
