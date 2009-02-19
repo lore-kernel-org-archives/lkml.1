@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759244AbZBSVub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbZBSVvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759244AbZBSVub (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 16:50:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757463AbZBSVuS
+	id S1759337AbZBSVvQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 16:51:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758060AbZBSVu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 16:50:18 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:55240 "EHLO e3.ny.us.ibm.com"
+	Thu, 19 Feb 2009 16:50:58 -0500
+Received: from gate.crashing.org ([63.228.1.57]:59371 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757412AbZBSVuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 16:50:16 -0500
-Subject: kvm-userspace build break (linux/types.h)
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: kvm-devel <kvm@vger.kernel.org>
-Cc: Jaswinder Singh Rajput <jaswinder@infradead.org>,
-       Avi Kivity <avi@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Organization: IBM Linux Technology Center
-Date: Thu, 19 Feb 2009 15:50:14 -0600
-Message-Id: <1235080214.16221.26.camel@slate.austin.ibm.com>
+	id S1757680AbZBSVu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 16:50:57 -0500
+Subject: Re: Q: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove
+ single ipi fallback for smp_call_function_many())
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Nick Piggin <npiggin@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+In-Reply-To: <20090219150619.GB22611@elte.hu>
+References: <1234866453.4744.58.camel@laptop>
+	 <20090217112657.GE26402@wotan.suse.de> <20090217192810.GA4980@redhat.com>
+	 <20090217213256.GJ6761@linux.vnet.ibm.com>
+	 <20090217214518.GA13189@redhat.com>
+	 <20090217223910.GM6761@linux.vnet.ibm.com>
+	 <20090218135212.GB23125@wotan.suse.de>
+	 <alpine.LFD.2.00.0902180744520.21686@localhost.localdomain>
+	 <1235026040.8805.3.camel@pasglop> <20090219131107.GD1747@wotan.suse.de>
+	 <20090219150619.GB22611@elte.hu>
+Content-Type: text/plain
+Date: Fri, 20 Feb 2009 08:49:25 +1100
+Message-Id: <1235080165.8805.48.camel@pasglop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A recent kernel merge breaks kvm-userspace build:
-        make[1]: Entering directory `/root/hollisb/kvm-userspace.git/libkvm'
-        gcc -m64 -D__x86_64__ -MMD -MF ./.libkvm.d -g -fomit-frame-pointer -Wall  -fno-stack-protector   -I /root/hollisb/kvm-userspace.git/kernel/include   -c -o libkvm.o libkvm.c
-        In file included from /usr/include/bits/fcntl.h:24,
-                         from /usr/include/fcntl.h:34,
-                         from libkvm.c:30:
-        /usr/include/sys/types.h:46: error: conflicting types for ‘loff_t’
-        /usr/include/linux/types.h:30: error: previous declaration of ‘loff_t’ was here
-        /usr/include/sys/types.h:62: error: conflicting types for ‘dev_t’
-        /usr/include/linux/types.h:13: error: previous declaration of ‘dev_t’ was here
-        [...]
+On Thu, 2009-02-19 at 16:06 +0100, Ingo Molnar wrote:
+> > So your arch_send_call_function_single_ipi etc need to ensure 
+> > this, right?  Generic code obviously has no idea about how to 
+> > do it.
+> 
+> The thing is, the most widespread way to send IPIs (x86 
+> non-x2apic local APIC) does not need any barriers in the generic 
+> code or elsewhere, because the local APIC is mapped uncached so 
+> it's implicitly ordered.
+> 
+> So the right solution is to add barriers to those IPI 
+> implementations that need it. This means that the generic code 
+> should not have a barrier for IPI sending.
 
-I built like so:
-        ./configure
-        make -C kernel LINUX=/path/to/kvm.git sync
-        make
+I agree. In fact, our current code should be fine in any case because
+our writel() which will be used to generate the IPI has a sync in it
+anyway for other reasons.
 
-The problem appears to be 00bfddaf7f68a6551319b536f052040c370756b0 and
-cef3767852a9b1a7ff4a8dfe0969e2d32eb728df, both from Jaswinder Singh
-Rajput <jaswinder@infradead.org>: 
-        -#include <asm/types.h>
-        +#include <linux/types.h>
+Cheers,
+Ben.
 
-With these changes, libkvm.c ends up
-including /usr/include/linux/types.h, instead of the
-intended ../kernel/include/linux/types.h.
-
-Avi, suggestions? More "make sync" hacks?
-
--- 
-Hollis Blanchard
-IBM Linux Technology Center
 
