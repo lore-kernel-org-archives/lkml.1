@@ -1,83 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758226AbZBSMTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758831AbZBSMUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758226AbZBSMTo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 07:19:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbZBSMTg
+	id S1758831AbZBSMUA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 07:20:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758343AbZBSMTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 07:19:36 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:46420 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753487AbZBSMTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 07:19:35 -0500
-Subject: Re: Definition of BUG on x86
-From: Petr Tesarik <ptesarik@suse.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090219121027.GB1703@elte.hu>
-References: <1234975856.15053.16.camel@nathan.suse.cz>
-	 <499C4786.5010504@goop.org> <1235043648.15053.35.camel@nathan.suse.cz>
-	 <20090219121027.GB1703@elte.hu>
-Content-Type: text/plain; charset="UTF-8"
-Organization: SUSE LINUX
-Date: Thu, 19 Feb 2009 13:19:31 +0100
-Message-Id: <1235045971.15053.42.camel@nathan.suse.cz>
+	Thu, 19 Feb 2009 07:19:47 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:39812 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758164AbZBSMTp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 07:19:45 -0500
+Date: Thu, 19 Feb 2009 12:19:32 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Paul Walmsley <paul@pwsan.com>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, r-woodruff2@ti.com,
+       Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH E 11/14] OMAP clock: track child clocks
+Message-ID: <20090219121932.GL6407@n2100.arm.linux.org.uk>
+References: <20090128192551.29333.82943.stgit@localhost.localdomain> <20090128192756.29333.41541.stgit@localhost.localdomain> <20090129151401.GC18233@n2100.arm.linux.org.uk> <20090129220608.GJ18233@n2100.arm.linux.org.uk> <20090209141156.GB16626@n2100.arm.linux.org.uk> <alpine.DEB.2.00.0902122345160.14667@utopia.booyaka.com> <20090214112325.GA17965@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090214112325.GA17965@n2100.arm.linux.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar píše v Čt 19. 02. 2009 v 13:10 +0100:
-> * Petr Tesarik <ptesarik@suse.cz> wrote:
+On Sat, Feb 14, 2009 at 11:23:25AM +0000, Russell King - ARM Linux wrote:
+> On Fri, Feb 13, 2009 at 12:01:37AM -0700, Paul Walmsley wrote:
+> > (cc'ing Richard Woodruff)
+> > 
+> > Hello Russell,
+> > 
+> > On Mon, 9 Feb 2009, Russell King - ARM Linux wrote:
+> > 
+> > > On Thu, Jan 29, 2009 at 10:06:08PM +0000, Russell King - ARM Linux wrote:
+> > > > @@ -780,7 +780,7 @@ int omap2_clk_set_parent(struct clk *clk, struct clk *new_parent)
+> > > >  	if (clk->usecount > 0)
+> > > >  		_omap2_clk_enable(clk);
+> > > >  
+> > > > -	clk->parent = new_parent;
+> > > > +	clk_reparent(clk, new_parent);
+> > > 
+> > > While looking at the DPLL patches, I've realised that omap2_clk_set_parent()
+> > > is buggy, as are any other places which reparent the clock (thankfully
+> > > the only other place is in the initialisation code where it doesn't
+> > > matter.)
+> > > 
+> > > Consider what happens when a clock is enabled - we walk up the tree
+> > > enabling all parents.  If we then change the clock's parent, and
+> > > then disable the child, we will again walk up the tree, but since
+> > > we've reparented it, it will be a different clock tree.  The result
+> > > is that the ancestors clock usage counts, and therefore their enable
+> > > status, will end up getting screwed up.
+> > 
+> > Agreed.
+> > 
+> > > This brings up a question: what we currently do here is:
+> > > 
+> > > - disable the child
+> > > - program clksel
+> > > - enable the child
+> > > - change child->parent
+> > > 
+> > > If we add in the parent handling, there are two possibilities:
+> > > 
+> > > - disable the child
+> > > - enable the new parent tree
+> > > - program clksel
+> > > - change child->parent
+> > > - disable the old parent tree
+> > > - enable the child
+> > > 
+> > > OR
+> > > 
+> > > - disable the child and the old parent tree
+> > > - program clksel
+> > > - change child->parent
+> > > - enable the new parent tree and the child
+> > > 
+> > > (note those 'and's have implied ordering).
+> > > 
+> > > Is there anything which dictates one approach over the other?
+> > > Obviously the latter approach results in something smaller and
+> > > cleaner, but might not be technically correct.
+> > 
+> > I don't know of any hardware reason to prefer one approach over the other, 
+> > but Richard might know better.
 > 
-> > So, the only method I could invent was using gas macros. It 
-> > works but is quite ugly, because it relies on the actual 
-> > assembler instruction which is generated by the compiler. Now, 
-> > AFAIK gcc has always translated "for(;;)" into a jump to self, 
-> > and that with any conceivable compiler options, but I don't 
-> > know anything about Intel cc.
+> I'll need an answer on this before I can commit the updated bypass clock
+> support patch.
+
+In the interests of moving things forward, and due to the total lack of
+response from TI, it's time to make a decision based upon what seems
+sensible so things can continue moving forward.
+
+Since there are no hardware issues we know about, we might as well take
+the simplest approach, which is the latter case.
+
+> However, looking a little deeper, there's more issues in the reparenting
+> area.  I don't think this code has been tested at all...  In
+> _omap2_clksel_get_src_field, there is this:
 > 
-> > +static inline __noreturn void discarded_jmp(void)
-> > +{
-> > +	asm volatile(".macro jmp target\n"
-> > +		     "\t.purgem jmp\n"
-> > +		     ".endm\n");
-> > +	for (;;) ;
-> > +}
+> 	for (clkr = clks->rates; clkr->div; clkr++) {
+> 		if (clkr->flags & (cpu_mask | DEFAULT_RATE))
+> 			break; /* Found the default rate for this platform */
+> 	}
 > 
-> hm, that's very fragile.
+> which is bogus - it will find the first entry which is _either_ marked
+> as a default rate _or_ is supported by the SoC.  This means (for
+> instance) that:
 > 
-> Why not just:
+> static const struct clksel_rate core_l3_core_rates[] = {
+>         { .div = 1, .val = 1, .flags = RATE_IN_24XX },
+>         { .div = 2, .val = 2, .flags = RATE_IN_242X },
+>         { .div = 4, .val = 4, .flags = RATE_IN_24XX | DEFAULT_RATE },
 > 
->  static inline __noreturn void x86_u2d(void)
+> will give us divisor 1 rather than presumably the one we want, that being
+> divisor 4.  I think the test above should be:
+> 
+> 	for (clkr = clks->rates; clkr->div; clkr++) {
+> 		if (clkr->flags & cpu_mask &&
+> 		    clkr->flags & DEFAULT_RATE)
+> 			break; /* Found the default rate for this platform */
+> 	}
+> 
+> so we find an entry which is supported _and_ is the default for the SoC.
+> 
+> There's also a second issue - the comments before omap2_divisor_to_clksel()
+> indicate that this function returns 0xffffffff on error.  Unfortunately,
+> this is not so, it actually returns zero on error.  Moreover, we test
+> the result of the function against ~0, so we'll never deal with the error
+> case.  This really should be fixed so that we return the right value for
+> the error case.  (Further comments on this in a follow up.)
+> 
+> So, below is a patch which fixes both of these issues.
+
+No comments received, I'm going to assume everyone is happy with the
+patch below and it will be going to Linus today or this evening.
+
+> diff --git a/arch/arm/mach-omap2/clock.c b/arch/arm/mach-omap2/clock.c
+> index 5020cb1..f87501b 100644
+> --- a/arch/arm/mach-omap2/clock.c
+> +++ b/arch/arm/mach-omap2/clock.c
+> @@ -636,7 +636,7 @@ u32 omap2_clksel_to_divisor(struct clk *clk, u32 field_val)
+>   *
+>   * Given a struct clk of a rate-selectable clksel clock, and a clock divisor,
+>   * find the corresponding register field value.  The return register value is
+> - * the value before left-shifting.  Returns 0xffffffff on error
+> + * the value before left-shifting.  Returns ~0 on error
+>   */
+>  u32 omap2_divisor_to_clksel(struct clk *clk, u32 div)
 >  {
-> 	asm volatile("u2d\n");
->  }
+> @@ -648,7 +648,7 @@ u32 omap2_divisor_to_clksel(struct clk *clk, u32 div)
+>  
+>  	clks = omap2_get_clksel_by_parent(clk, clk->parent);
+>  	if (!clks)
+> -		return 0;
+> +		return ~0;
+>  
+>  	for (clkr = clks->rates; clkr->div; clkr++) {
+>  		if ((clkr->flags & cpu_mask) && (clkr->div == div))
+> @@ -659,7 +659,7 @@ u32 omap2_divisor_to_clksel(struct clk *clk, u32 div)
+>  		printk(KERN_ERR "clock: Could not find divisor %d for "
+>  		       "clock %s parent %s\n", div, clk->name,
+>  		       clk->parent->name);
+> -		return 0;
+> +		return ~0;
+>  	}
+>  
+>  	return clkr->val;
+> @@ -747,7 +747,7 @@ static u32 _omap2_clksel_get_src_field(struct clk *src_clk, struct clk *clk,
+>  		return 0;
+>  
+>  	for (clkr = clks->rates; clkr->div; clkr++) {
+> -		if (clkr->flags & (cpu_mask | DEFAULT_RATE))
+> +		if (clkr->flags & cpu_mask && clkr->flags & DEFAULT_RATE)
+>  			break; /* Found the default rate for this platform */
+>  	}
+>  
 > 
-> If GCC emits a bogus warning about _that_, then it's a bug in 
-> the compiler that should be fixed.
-
-I wouldn't call it a bug. The compiler has no idea about what the inline
-assembly actualy does. So it cannot recognize that the ud2 instruction
-does not return (which BTW might not even be the case, depending on the
-implementation of the Invalid Opcode exception).
-
-So, yes, it would be very nice if we had a way of telling the compiler
-that a particular asm() statement is in fact a jump somewhere else. I
-don't care about the syntax, I could even imagine something like:
-
-  asm("some code" : : : "ip");  /* clobbers the instruction pointer */
-
-Alternatively, if we could turn that particular warning off, I'd go for
-it, but having a build spit warnings like:
-
-/usr/src/linux-2.6/arch/x86/include/asm/bug.h:10: warning: 'noreturn' function does return
-
-for each file that includes <asm/bug.h> in some way is _TOO_ annoying,
-sorry.
-
-Petr Tesarik
-
-
+> -------------------------------------------------------------------
+> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
