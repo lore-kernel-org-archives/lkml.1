@@ -1,177 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbZBSWCG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbZBSWDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755482AbZBSWCG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 17:02:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbZBSWBy
+	id S1754497AbZBSWDa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 17:03:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbZBSWDT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 17:01:54 -0500
-Received: from mga14.intel.com ([143.182.124.37]:49259 "EHLO mga14.intel.com"
+	Thu, 19 Feb 2009 17:03:19 -0500
+Received: from 8bytes.org ([88.198.83.132]:59495 "EHLO 8bytes.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752141AbZBSWBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 17:01:52 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,236,1233561600"; 
-   d="scan'208";a="112457539"
-Subject: Re: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove single
-	ipi fallback for smp_call_function_many())
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Oleg Nesterov <oleg@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>
-In-Reply-To: <20090219122031.GC1703@elte.hu>
-References: <20090216231946.GA12009@redhat.com>
-	 <1234862974.4744.31.camel@laptop> <20090217101130.GA8660@wotan.suse.de>
-	 <1234866453.4744.58.camel@laptop> <20090217112657.GE26402@wotan.suse.de>
-	 <1234923702.29823.7.camel@vayu> <20090218135945.GC23125@wotan.suse.de>
-	 <1234982620.29823.22.camel@vayu> <20090218191757.GD8889@elte.hu>
-	 <1235001314.14523.2.camel@vayu>  <20090219122031.GC1703@elte.hu>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Thu, 19 Feb 2009 14:00:24 -0800
-Message-Id: <1235080824.14523.19.camel@vayu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
-Content-Transfer-Encoding: 7bit
+	id S1754732AbZBSWDR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 17:03:17 -0500
+Date: Thu, 19 Feb 2009 23:03:15 +0100
+From: Joerg Roedel <joro@8bytes.org>
+To: Hollis Blanchard <hollisb@us.ibm.com>
+Cc: kvm-devel <kvm@vger.kernel.org>,
+       Jaswinder Singh Rajput <jaswinder@infradead.org>,
+       Avi Kivity <avi@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: kvm-userspace build break (linux/types.h)
+Message-ID: <20090219220315.GI2125@8bytes.org>
+References: <1235080214.16221.26.camel@slate.austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1235080214.16221.26.camel@slate.austin.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-19 at 04:20 -0800, Ingo Molnar wrote:
-> Could you please refresh this patch to latest tip:master? The 
-> APIC drivers moved to arch/x86/kernel/apic/.
+On Thu, Feb 19, 2009 at 03:50:14PM -0600, Hollis Blanchard wrote:
+> A recent kernel merge breaks kvm-userspace build:
+>         make[1]: Entering directory `/root/hollisb/kvm-userspace.git/libkvm'
+>         gcc -m64 -D__x86_64__ -MMD -MF ./.libkvm.d -g -fomit-frame-pointer -Wall  -fno-stack-protector   -I /root/hollisb/kvm-userspace.git/kernel/include   -c -o libkvm.o libkvm.c
+>         In file included from /usr/include/bits/fcntl.h:24,
+>                          from /usr/include/fcntl.h:34,
+>                          from libkvm.c:30:
+>         /usr/include/sys/types.h:46: error: conflicting types for ‘loff_t’
+>         /usr/include/linux/types.h:30: error: previous declaration of ‘loff_t’ was here
+>         /usr/include/sys/types.h:62: error: conflicting types for ‘dev_t’
+>         /usr/include/linux/types.h:13: error: previous declaration of ‘dev_t’ was here
+>         [...]
+> 
+> I built like so:
+>         ./configure
+>         make -C kernel LINUX=/path/to/kvm.git sync
+>         make
+> 
+> The problem appears to be 00bfddaf7f68a6551319b536f052040c370756b0 and
+> cef3767852a9b1a7ff4a8dfe0969e2d32eb728df, both from Jaswinder Singh
+> Rajput <jaswinder@infradead.org>: 
+>         -#include <asm/types.h>
+>         +#include <linux/types.h>
+> 
+> With these changes, libkvm.c ends up
+> including /usr/include/linux/types.h, instead of the
+> intended ../kernel/include/linux/types.h.
 
-Appended the refreshed patch. Thanks.
----
+I had the same problem some weeks ago. IIRC I fixed it with some include
+reordering in libkvm.h.
 
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: x86: move smp_mb() in flush tlb path to x2apic specific paths
-
-uncached MMIO accesses for xapic are inherently serializing and hence
-we don't need explicit barriers for xapic IPI paths.
-
-x2apic MSR writes/reads don't have serializing semantics and hence need
-a serializing instruction or mfence, to make all the previous memory
-stores globally visisble before the x2apic msr write for IPI.
-
-And hence move smp_mb() in x86 flush tlb path to x2apic specific paths.
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
-
-diff --git a/arch/x86/kernel/apic/x2apic_cluster.c b/arch/x86/kernel/apic/x2apic_cluster.c
-index 3f7df23..c54fffe 100644
---- a/arch/x86/kernel/apic/x2apic_cluster.c
-+++ b/arch/x86/kernel/apic/x2apic_cluster.c
-@@ -63,6 +63,13 @@ static void x2apic_send_IPI_mask(const struct cpumask *mask, int vector)
- 	unsigned long query_cpu;
- 	unsigned long flags;
- 
-+	/*
-+	 * Make previous memory operations globally visible before
-+	 * sending the IPI. We need a serializing instruction or mfence
-+	 * for this.
-+	 */
-+	smp_mb();
-+
- 	local_irq_save(flags);
- 	for_each_cpu(query_cpu, mask) {
- 		__x2apic_send_IPI_dest(
-@@ -79,6 +86,13 @@ static void
- 	unsigned long query_cpu;
- 	unsigned long flags;
- 
-+	/*
-+	 * Make previous memory operations globally visible before
-+	 * sending the IPI. We need a serializing instruction or mfence
-+	 * for this.
-+	 */
-+	smp_mb();
-+
- 	local_irq_save(flags);
- 	for_each_cpu(query_cpu, mask) {
- 		if (query_cpu == this_cpu)
-@@ -96,6 +110,13 @@ static void x2apic_send_IPI_allbutself(int vector)
- 	unsigned long query_cpu;
- 	unsigned long flags;
- 
-+	/*
-+	 * Make previous memory operations globally visible before
-+	 * sending the IPI. We need a serializing instruction or mfence
-+	 * for this.
-+	 */
-+	smp_mb();
-+
- 	local_irq_save(flags);
- 	for_each_online_cpu(query_cpu) {
- 		if (query_cpu == this_cpu)
-diff --git a/arch/x86/kernel/apic/x2apic_phys.c b/arch/x86/kernel/apic/x2apic_phys.c
-index d2d52eb..84cc2f3 100644
---- a/arch/x86/kernel/apic/x2apic_phys.c
-+++ b/arch/x86/kernel/apic/x2apic_phys.c
-@@ -58,6 +58,13 @@ static void x2apic_send_IPI_mask(const struct cpumask *mask, int vector)
- 	unsigned long query_cpu;
- 	unsigned long flags;
- 
-+	/*
-+	 * Make previous memory operations globally visible before
-+	 * sending the IPI. We need a serializing instruction or mfence
-+	 * for this.
-+	 */
-+	smp_mb();
-+
- 	local_irq_save(flags);
- 	for_each_cpu(query_cpu, mask) {
- 		__x2apic_send_IPI_dest(per_cpu(x86_cpu_to_apicid, query_cpu),
-@@ -73,6 +80,13 @@ static void
- 	unsigned long query_cpu;
- 	unsigned long flags;
- 
-+	/*
-+	 * Make previous memory operations globally visible before
-+	 * sending the IPI. We need a serializing instruction or mfence
-+	 * for this.
-+	 */
-+	smp_mb();
-+
- 	local_irq_save(flags);
- 	for_each_cpu(query_cpu, mask) {
- 		if (query_cpu != this_cpu)
-@@ -89,6 +103,13 @@ static void x2apic_send_IPI_allbutself(int vector)
- 	unsigned long query_cpu;
- 	unsigned long flags;
- 
-+	/*
-+	 * Make previous memory operations globally visible before
-+	 * sending the IPI. We need a serializing instruction or mfence
-+	 * for this.
-+	 */
-+	smp_mb();
-+
- 	local_irq_save(flags);
- 	for_each_online_cpu(query_cpu) {
- 		if (query_cpu == this_cpu)
-diff --git a/arch/x86/mm/tlb.c b/arch/x86/mm/tlb.c
-index a654d59..821e970 100644
---- a/arch/x86/mm/tlb.c
-+++ b/arch/x86/mm/tlb.c
-@@ -187,11 +187,6 @@ static void flush_tlb_others_ipi(const struct cpumask *cpumask,
- 		       cpumask, cpumask_of(smp_processor_id()));
- 
- 	/*
--	 * Make the above memory operations globally visible before
--	 * sending the IPI.
--	 */
--	smp_mb();
--	/*
- 	 * We have to send the IPI only to
- 	 * CPUs affected.
- 	 */
-
-
+Joerg
