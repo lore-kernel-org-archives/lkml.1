@@ -1,78 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbZBSSUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753539AbZBSSVG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757420AbZBSSUs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 13:20:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753687AbZBSSUO
+	id S1753539AbZBSSVG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 13:21:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754440AbZBSSUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 13:20:14 -0500
-Received: from e39.co.us.ibm.com ([32.97.110.160]:40645 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753558AbZBSSUM convert rfc822-to-8bit (ORCPT
+	Thu, 19 Feb 2009 13:20:19 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:52630 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753678AbZBSSUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 13:20:12 -0500
-From: Jay Vosburgh <fubar@us.ibm.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Andrey Borzenkov <arvidjaar@mail.ru>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       netdev@vger.kernel.org, bonding-devel@lists.sourceforge.net,
-       =?us-ascii?Q?=3D=3FISO-8859-1=3FQ=3F=3D22J=3D2EA=3D2E=5FMagall=3F=3D?=
-	 =?us-ascii?Q?_=3D=3FISO-8859-1=3FQ=3F=3DF3n=3D22=3F=3D?= 
-	<jamagallon@ono.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.29 regression? Bonding tied to IPV6 in 29-rc5
-In-reply-to: <499DA1AB.7040903@oracle.com>
-References: <alpine.LFD.2.00.0902131413120.3179@localhost.localdomain> <20090217095232.5da06b9f@werewolf.home> <200902172001.41804.arvidjaar@mail.ru> <499DA1AB.7040903@oracle.com>
-Comments: In-reply-to Randy Dunlap <randy.dunlap@oracle.com>
-   message dated "Thu, 19 Feb 2009 10:15:07 -0800."
-X-Mailer: MH-E 8.0.3; nmh 1.3-RC3; GNU Emacs 22.2.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Date: Thu, 19 Feb 2009 10:20:04 -0800
-Message-ID: <15059.1235067604@death.nxdomain.ibm.com>
+	Thu, 19 Feb 2009 13:20:14 -0500
+Subject: [RFC][PATCH 2/5] file c/r: expose functions to query fs support
+To: Ingo Molnar <mingo@elte.hu>
+Cc: containers <containers@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Oren Laadan <orenl@cs.columbia.edu>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+Date: Thu, 19 Feb 2009 10:20:08 -0800
+References: <20090219182007.B4B47C1F@kernel>
+In-Reply-To: <20090219182007.B4B47C1F@kernel>
+Message-Id: <20090219182008.8F45CD7E@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
->Andrey Borzenkov wrote:
->> Forward to bonding and netdev
->> 
->> On 17 of February 2009 11:52:32 J.A. Magallón wrote:
->>> Hi all...
->>>
->>> Don't know if this is specific for -rc5, I have jumped from 28.4 to
->>> 29-rc5. In this latest kernel, I can not install 'bonding' module if
->>> 'ipv6' is disabled to load via modprobe.conf:
->>>
->>> install ipv6 /bin/true
->>>
->>> Trying bonding gives this dmesg:
->>>
->>> bonding: Unknown symbol ndisc_build_skb
->>> bonding: Unknown symbol in6_dev_finish_destroy
->>> bonding: Unknown symbol ndisc_send_skb
->>> bonding: Unknown symbol unregister_inet6addr_notifier
->>> bonding: Unknown symbol register_inet6addr_notifier
->>>
->>> Commenting the line in modprobe.conf makes things smooth again.
->>> We can not disable ipv6 anymore ?
->>>
->> 
->> If IPv6 is disable in kernel config bonding loads. But I think it is 
->> regression, it should be possible to disable IPv6 if not required.
->
->Just for clarification, is this a run-time (module load-time) error
->but not a build error?
+This pair of functions will check to see whether a given
+'struct file' can be checkpointed.  If it can't be, the
+"explain" function can also give a description why.
 
-	Yes, module load error, but not a build error.
-
-	The build with CONFIG_IPV6 is fine, and bonding loads fine as
-long as ipv6 is loaded.  The issue arises when the ipv6 module is
-prevented from loading; in that case, bonding cannot load because it now
-requires functionality from ipv6.
-
-	-J
-
+Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
 ---
-	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
+
+ linux-2.6.git-dave/checkpoint/ckpt_file.c     |   30 ++++++++++++++++++++++++++
+ linux-2.6.git-dave/include/linux/checkpoint.h |   18 +++++++++++++++
+ 2 files changed, 48 insertions(+)
+
+diff -puN checkpoint/ckpt_file.c~cr-explain-unckpt-file checkpoint/ckpt_file.c
+--- linux-2.6.git/checkpoint/ckpt_file.c~cr-explain-unckpt-file	2009-02-19 10:17:24.000000000 -0800
++++ linux-2.6.git-dave/checkpoint/ckpt_file.c	2009-02-19 10:17:24.000000000 -0800
+@@ -72,6 +72,36 @@ int cr_scan_fds(struct files_struct *fil
+ 	return n;
+ }
+ 
++int cr_explain_file(struct file *file, char *explain, int left)
++{
++	struct inode *inode = file->f_dentry->d_inode;
++	struct file_system_type *fs_type = inode->i_sb->s_type;
++
++	if (!(fs_type->fs_flags & FS_CHECKPOINTABLE))
++		return snprintf(explain, left,
++				" (%s does not support checkpoint)",
++				fs_type->name);
++
++	if (special_file(inode->i_mode))
++		return snprintf(explain, left, " (special file)");
++
++	return 0;
++}
++
++int cr_file_supported(struct file *file)
++{
++	struct inode *inode = file->f_dentry->d_inode;
++	struct file_system_type *fs_type = inode->i_sb->s_type;
++
++	if (!(fs_type->fs_flags & FS_CHECKPOINTABLE))
++		return 0;
++
++	if (special_file(inode->i_mode))
++		return 0;
++
++	return 1;
++}
++
+ /* cr_write_fd_data - dump the state of a given file pointer */
+ static int cr_write_fd_data(struct cr_ctx *ctx, struct file *file, int parent)
+ {
+diff -puN include/linux/checkpoint.h~cr-explain-unckpt-file include/linux/checkpoint.h
+--- linux-2.6.git/include/linux/checkpoint.h~cr-explain-unckpt-file	2009-02-19 10:17:24.000000000 -0800
++++ linux-2.6.git-dave/include/linux/checkpoint.h	2009-02-19 10:17:24.000000000 -0800
+@@ -13,6 +13,8 @@
+ #include <linux/path.h>
+ #include <linux/fs.h>
+ 
++#ifdef CONFIG_CHECKPOINT_RESTART
++
+ #define CR_VERSION  2
+ 
+ struct cr_ctx {
+@@ -99,4 +101,20 @@ extern int cr_read_files(struct cr_ctx *
+ 
+ #define pr_fmt(fmt) "[%d:c/r:%s] " fmt, task_pid_vnr(current), __func__
+ 
++int cr_explain_file(struct file *file, char *explain, int left);
++int cr_file_supported(struct file *file);
++
++#else
++
++static inline int cr_explain_file(struct file *file, char *explain, int left)
++{
++	return 0;
++}
++
++int cr_file_supported(struct file *file)
++{
++	return 0;
++}
++
++#endif
+ #endif /* _CHECKPOINT_CKPT_H_ */
+_
