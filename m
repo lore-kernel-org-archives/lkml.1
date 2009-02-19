@@ -1,64 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757187AbZBSXaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758231AbZBSXaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757187AbZBSXaa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 18:30:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754429AbZBSXaU
+	id S1758231AbZBSXaq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 18:30:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbZBSXaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 18:30:20 -0500
-Received: from mga03.intel.com ([143.182.124.21]:10945 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753645AbZBSXaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 18:30:20 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,237,1233561600"; 
-   d="scan'208";a="112486643"
-Subject: Re: [PATCH] x86: enable x2apic early at the first point
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       gleb@redhat.com
-In-Reply-To: <499DE05A.40804@kernel.org>
-References: <499DD40F.40102@kernel.org> <1235081612.14523.23.camel@vayu>
-	 <499DE05A.40804@kernel.org>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Thu, 19 Feb 2009 15:28:38 -0800
-Message-Id: <1235086118.14523.40.camel@vayu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Feb 2009 18:30:23 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:40154 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754875AbZBSXaV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 18:30:21 -0500
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <m1ocx5ve8o.fsf@fess.ebiederm.org>
+	<20090219120333.af992d9e.akpm@linux-foundation.org>
+	<m163j61706.fsf@fess.ebiederm.org> <200902192247.46370.rjw@sisk.pl>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 19 Feb 2009 15:30:39 -0800
+In-Reply-To: <200902192247.46370.rjw@sisk.pl> (Rafael J. Wysocki's message of "Thu\, 19 Feb 2009 22\:47\:45 +0100")
+Message-ID: <m13aeaxaw0.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Rcpt-To: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org, akpm@linux-foundation.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: **;"Rafael J. Wysocki" <rjw@sisk.pl>
+X-Spam-Relay-Country: 
+X-Spam-Report: *  7.0 XM_URI_RBL URI's domain appears in surbl.xmission.com
+	*      [URIs: marc.info]
+	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0001]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] pcie_portdriver: FIX: pcie_port_device_remove
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-19 at 14:42 -0800, Yinghai Lu wrote:
-> Ingo want to decouple that x2apic and intr_remapping.
-> it seems it does work with x2apic without intr_remapping in one of setup.
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-x2apic with out intr-remapping is not architectural. Even when we have <
-255 logical cpu's, logical x2apic id's will be greater than 16 bits even
-on a single/two socket systems and this will break interrupt delivery.
-Please look at the x2apic logical destination mode definition in the SDM
-(Section 9.7.2.3 and 9.7.2.4 in my copy of SDM Vol3a)
+> On Thursday 19 February 2009, Eric W. Biederman wrote:
+>> Andrew Morton <akpm@linux-foundation.org> writes:
+>> 
+>> >
+>> > There are large-scale and conflicting changes to this file in linux-next.
+>> >
+>> > If we want to jam this fix into 2.6.29 (and it looks like something we
+>> > want) then this will trash the linux-next changes.  It will cause me
+>> > grief, and will cause Stephen grief unless the pci tree is suitably
+>> > changed, which will cause Jesse grief. Either way: grief.
+>> 
+>> Ugh.
+>> 
+>> I had better have a good hard look at linux-next.  I tried to ask earlier
+> about
+>> ongoing working but I didn't hear anything.
+>
+> Yes, you did: http://marc.info/?l=linux-kernel&m=123342565225134&w=4
 
-While it might work in certain configurations (for example, physical
-mode with < 8 bit apicids), it is not architectural and implementation
-dependent, which may break in future generations.
+My apologies.  I should have said I did not recognize anything that
+was likely to conflict from what I hear from what I heard.  I did
+hear that the pcie port driver was touched to properly handle msi-x and I
+foolishly thought that was already merged upstream.  Especially after
+I glanced at Jesse's tree and I did not see any recent pci patches.
+Which led me to foolishly assume everything had already been merged
+into Linus's tree.
 
-And also, logical x2apic mode has more advantages compared to physical
-mode (like using lowest priority delivery mode etc).
+Andrew with respect to 2.6.29 my patch while correct and useful has
+no immediate utility, as the pciehp driver will crash and burn horribly
+if you attempt to hotplug it.  So I should find the other pci port driver
+changes and rebase on top of them.  Assuming that patch is scheduled to
+merge for 2.6.30.
 
-I will post couple of patches, which revert's Gleb's patch and another
-fix for the early boot failure issue, tomorrow.
-
-thanks,
-suresh
-
-
-
+Eric
 
 
