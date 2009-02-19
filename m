@@ -1,52 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757902AbZBSQyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758162AbZBSQz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757902AbZBSQyo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 11:54:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbZBSQyf
+	id S1758162AbZBSQz3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 11:55:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbZBSQzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 11:54:35 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42061 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752738AbZBSQye (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 11:54:34 -0500
-Date: Thu, 19 Feb 2009 08:52:03 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH 2/4] generic-smp: remove kmalloc usage
-In-Reply-To: <200902191501.47564.rusty@rustcorp.com.au>
-Message-ID: <alpine.LFD.2.00.0902190848570.21686@localhost.localdomain>
-References: <20090216163847.431174825@chello.nl> <200902181520.17504.rusty@rustcorp.com.au> <20090218160535.GD23989@elte.hu> <200902191501.47564.rusty@rustcorp.com.au>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 19 Feb 2009 11:55:19 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:57154 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752289AbZBSQzS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 11:55:18 -0500
+Subject: Re: Definition of BUG on x86
+From: Petr Tesarik <ptesarik@suse.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090219161649.GC9556@elte.hu>
+References: <20090219121027.GB1703@elte.hu>
+	 <1235045971.15053.42.camel@nathan.suse.cz> <20090219122211.GE1703@elte.hu>
+	 <1235047082.15053.49.camel@nathan.suse.cz> <20090219124702.GC22044@elte.hu>
+	 <1235048535.15053.52.camel@nathan.suse.cz> <20090219144902.GA8650@elte.hu>
+	 <499D7B9D.7060001@goop.org> <20090219153544.GA31637@elte.hu>
+	 <1235059883.15053.68.camel@nathan.suse.cz>  <20090219161649.GC9556@elte.hu>
+Content-Type: text/plain; charset="UTF-8"
+Organization: SUSE LINUX
+Date: Thu, 19 Feb 2009 17:55:15 +0100
+Message-Id: <1235062515.15053.94.camel@nathan.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 19 Feb 2009, Rusty Russell wrote:
+Ingo Molnar píše v Čt 19. 02. 2009 v 17:16 +0100:
+> * Petr Tesarik <ptesarik@suse.cz> wrote:
 > 
-> So if we care about the kmalloc, why didn't we see benchmarks when we
-> switched from the x86 smp_call_function_mask to the generic one?  Or did
-> I just miss them (there's nothing in the git commit).
+> > Ingo Molnar píše v Čt 19. 02. 2009 v 16:35 +0100:
+> > >[...]
+> > > * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> > > 
+> > > > Ingo Molnar wrote:
+> > > >> * Petr Tesarik <ptesarik@suse.cz> wrote:
+> > > >>
+> > > >>   
+> > > >>> Ingo Molnar píše v Čt 19. 02. 2009 v 13:47 +0100:
+> > > >>>     
+> > > >>>> so GCC should be fixed and improved here, on several levels.
+> > > >>>>       
+> > > >>> Agree.
+> > > >>>
+> > > >>> But it takes some time, even if we start pushing right now. What's 
+> > > >>> your suggestion for the meantime? Keep the dummy jmp? And in case 
+> > > >>> anybody is concerned about saving every byte in the text section, 
+> > > >>> they can apply my dirty patch?
+> > > >>>
+> > > >>> Actually, this doesn't sound too bad.
+> > > >>>     
+> > > >>
+> > > >> yeah. Please forward the problem to the appropriate GCC list in any 
+> > > >> case.
+> > > >>
+> > > >>   
+> > > >
+> > > > I think the official answer for this case is to use __builtin_trap.  But:
+> > > >
+> > > > -- Built-in Function: void __builtin_trap (void)
+> > > >     This function causes the program to exit abnormally.  GCC
+> > > >     implements this function by using a target-dependent mechanism
+> > > >     (such as intentionally executing an illegal instruction) or by
+> > > >     calling `abort'.  ***The mechanism used may vary from release to
+> > > >     release so you should not rely on any particular implementation.***
+> > > >
+> > > > which in principle is hard for us to make use of.  In practice I think  
+> > > > it has always been ud2a on x86.
+> > > 
+> > > could we just do:
+> > > 
+> > > 	__builtin_trap();
+> > > 	for (;;);
+> > 
+> > I'm afraid that's not the point of the exercise. I'm trying to 
+> > trim BUG() to two bytes, while still making sure that the 
+> > Illegal Opcode exception is generated at the exact code point, 
+> > so we can track it down using the info in __bug_table. If 
+> > __builtin_trap() ever translates to anything else than ud2a in 
+> > the above code snippet, there will be no BUG reported. 
+> > Instead, the CPU that encountered the BUG() will burn CPU 
+> > cycles forever without any apparent reason.
+> 
+> Well, the important question is thatGCC will optimize out 
+> whatever comes after the __builtin_trap(), right? To guarantee 
+> an assert we can do something like:
+> 
+>  	__builtin_trap();
+> 	panic("should never get here");
 
-I don't think we care about kmalloc from a performance angle. Sure, it's 
-nice if we can make IPI's be really low cost, and we should aim for that, 
-but the reason the kmalloc() was added was never performance - nor is that 
-the reason we now try to remove it.
+Yes, perfect, then I vote for this:
 
-The kmalloc() was added for correctness reasons, and we now try to remove 
-it to make the code look saner and simpler (and hopefully it gets faster 
-too, but I don't think that was ever a primary issue), since we ended up 
-having _three_ different cases for the whole insane memory allocation 
-(on-stack, per-cpu and kmalloc), and nobody sane really wants that.
+	__builtin_trap();
+	printk("BUG: failure at %s:%d/%s()!\n", __FILE__, __LINE__, __func__);
+	panic("BUG!");
 
-			Linus
+(copied from include/asm-generic/bug.h)
+
+Then the worst thing GCC folks might invent would be using the ud2b
+opcode instead of ud2a, but I think the bug table is searched for every
+die() invocation nowadays, so it doesn't depend on seeing the
+0f 0b sequence at the point of the failure, does it?
+
+And even if GCC decides to insert one or more _valid_ instructions
+before the invalid one, we'll start getting reports with 
+"[verbose debug info unavailable]". If, instead, they start calling
+abort(), we'll get build errors.
+
+Last thing -- what about Intel cc?
+
+Petr Tesarik
+
