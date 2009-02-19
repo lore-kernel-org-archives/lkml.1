@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbZBSTAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758217AbZBSTAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754373AbZBSTAg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 14:00:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757529AbZBSTAN
+	id S1758217AbZBSTAv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 14:00:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756084AbZBSTAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 14:00:13 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:2224 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757460AbZBSTAK (ORCPT
+	Thu, 19 Feb 2009 14:00:20 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:60087 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754932AbZBSTAT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 14:00:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=DDxNsqhpvPCqiTdXfJZMZS0yfJrS4A+Bhi0jD1zKXPtmq570LP4f1YXEcTqBw0oaIY
-         duSXA8SCGwYX/JkOCWfzIwTwy2lw5bcA6MUUUjIK8XQtw7gvPy5aqxH0rlPDK7SdHqde
-         JmZsW284yJ4V2SyUFIE3vi0Zv1+T2ykZAC2nQ=
-Date: Thu, 19 Feb 2009 22:06:37 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, mpm@selenic.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       viro@zeniv.linux.org.uk, hpa@zytor.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org
-Subject: Banning checkpoint (was: Re: What can OpenVZ do?)
-Message-ID: <20090219190637.GA4846@x200.localdomain>
-References: <20090213105302.GC4608@elte.hu> <1234817490.30155.287.camel@nimitz> <20090217222319.GA10546@elte.hu> <1234909849.4816.9.camel@nimitz> <20090218003217.GB25856@elte.hu> <1234917639.4816.12.camel@nimitz> <20090218051123.GA9367@x200.localdomain> <20090218181644.GD19995@elte.hu> <1234992447.26788.12.camel@nimitz> <20090218231545.GA17524@elte.hu>
+	Thu, 19 Feb 2009 14:00:19 -0500
+Date: Thu, 19 Feb 2009 14:00:09 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       containers <containers@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Oren Laadan <orenl@cs.columbia.edu>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [RFC][PATCH 1/5] create fs flag to mark c/r supported fs's
+Message-ID: <20090219190009.GC28490@infradead.org>
+References: <20090219182007.B4B47C1F@kernel>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090218231545.GA17524@elte.hu>
+In-Reply-To: <20090219182007.B4B47C1F@kernel>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think that all these efforts to abort checkpoint "intelligently" by
-banning it early are completely misguided.
+On Thu, Feb 19, 2009 at 10:20:07AM -0800, Dave Hansen wrote:
+> 
+> There are plenty of filesystems that are not supported for
+> c/r at this point.  Think of things like hugetlbfs which
+> are externally visible or pipefs which are kernel-internal.
+> 
+> This provides a quick way to make the "normal" filesystems
+> which are currently supported.  This is also safe if any
+> new code gets added.  We assume that a fs is non-supported
+> unless someone takes explicit action to the contrary.
+> 
+> I bet there are some more filesystems that are OK, but
+> these probably cover 99% of the users for now.
 
-"Checkpointable" property isn't one-way ticket like "tainted" flag,
-so doing it like tainted var isn't right, atomic or not, SMP-safe or
-not.
+Given that a normal fs should be checkpointable you should
+make those exposing internal state, not the other way around.
 
-With filesystems, one has ->f_op field to compare against banned
-filesystems, one more flag isn't necessary.
-
-Inotify isn't supported yet? You do
-
-	if (!list_empty(&inode->inotify_watches))
-		return -E;
-
-without hooking into inotify syscalls.
-
-ptrace(2) isn't supported -- look at struct task_struct::ptraced and
-friends.
-
-And so on.
-
-System call (or whatever) does something with some piece of kernel
-internals. We look at this "something" when walking data structures and
-abort if it's scary enough.
-
-Please, show at least one counter-example.
