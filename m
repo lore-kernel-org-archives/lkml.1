@@ -1,67 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757178AbZBSUjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbZBSUoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757178AbZBSUjq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 15:39:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753823AbZBSUjh
+	id S1756049AbZBSUoS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 15:44:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753823AbZBSUoH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 15:39:37 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:39493 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753856AbZBSUjg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 15:39:36 -0500
-Date: Thu, 19 Feb 2009 20:36:48 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Matt Mackall <mpm@selenic.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       David Vrabel <david.vrabel@csr.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chas Williams <chas@cmf.nrl.navy.mil>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [patch 1/7] slab: introduce kzfree()
-In-Reply-To: <499DB6EC.3020904@cs.helsinki.fi>
-Message-ID: <Pine.LNX.4.64.0902192022210.8254@blonde.anvils>
-References: <499BE7F8.80901@csr.com>  <1234954488.24030.46.camel@penberg-laptop>
-  <20090219101336.9556.A69D9226@jp.fujitsu.com>  <1235034817.29813.6.camel@penberg-laptop>
-  <Pine.LNX.4.64.0902191616250.8594@blonde.anvils> <1235066556.3166.26.camel@calx>
- <Pine.LNX.4.64.0902191819060.28475@blonde.anvils> <499DB6EC.3020904@cs.helsinki.fi>
+	Thu, 19 Feb 2009 15:44:07 -0500
+Received: from matrixpower.ru ([195.178.208.66]:44243 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753856AbZBSUoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 15:44:07 -0500
+Date: Thu, 19 Feb 2009 23:43:55 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, gregkh@suse.de,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH] staging/pohmelfs: fix kconfig dependencies
+Message-ID: <20090219204355.GB29456@ioremap.net>
+References: <20090218130134.b453d1c3.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090218130134.b453d1c3.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Feb 2009, Pekka Enberg wrote:
-> Hugh Dickins wrote:
-> > 
-> > But I fail to see it as a justification for kzfree(const void *):
-> > if someone has "const char *string = kmalloc(size)" and then
-> > wants that string zeroed before it is freed, then I think it's
-> > quite right to cast out the const when calling kzfree().
+On Wed, Feb 18, 2009 at 01:01:34PM -0800, Randy Dunlap (randy.dunlap@oracle.com) wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> Quite frankly, I fail to see how kzfree() is fundamentally different from
-> kfree(). I don't see kzfree() as a memset() + kfree() but rather as a kfree()
-> "and make sure no one sees my data". So the zeroing happens _after_ you've
-> invalidated the pointer with kzfree() so there's no "zeroing of buffer going
-> on".
-
-Well, that would be one way of picturing it, yes.
-Imagine the "z" as for "zap" rather than "zero",
-and the mechanism as opaque as Hannes suggests.
-
-> So the way I see it, Linus' argument for having const for kfree() applies
-> to kzfree().
+> pohmelfs wants to use CONNECTOR, so it selects CONNECTOR,
+> but when CONFIG_NET is not enabled, connector.c will not build,
+> since select does not follow the dependency chain.
+> Selecting NET is not a good idea, since that would build lots
+> of code that someone seemingly didn't want to build/store
+> and kconfig shouldn't do that behind someone's back.
 > 
-> That said, if you guys think it's a merge blocker, by all means remove the
-> const. I just want few less open-coded ksize() users, that's all.
+> pohmelfs should depend on NET since it uses network interfaces.
 
-I wouldn't call it a merge blocker, no; though I still
-think it makes far more sense without the "const" there.
+Thank you Randy, I will queue it into the local tree also since Greg
+pulled it into staging already. I first thought to make the whole
+network filesystems config option to make depending on the network.
 
-Hugh
+-- 
+	Evgeniy Polyakov
