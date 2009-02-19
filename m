@@ -1,49 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbZBSMvG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759039AbZBSMvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758110AbZBSMvG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 07:51:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753930AbZBSMut
+	id S1759039AbZBSMvZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 07:51:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbZBSMuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 19 Feb 2009 07:50:52 -0500
+Received: from ns1.suse.de ([195.135.220.2]:48751 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753985AbZBSMut (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 19 Feb 2009 07:50:49 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:40654 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753202AbZBSMus (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 07:50:48 -0500
-Message-ID: <499D559F.9020806@s5r6.in-berlin.de>
-Date: Thu, 19 Feb 2009 13:50:39 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14
+Message-ID: <499D543B.6050703@suse.de>
+Date: Thu, 19 Feb 2009 13:44:43 +0100
+From: Frank Seidel <fseidel@suse.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Yang Hongyang <yanghy@cn.fujitsu.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: [PATCHv2 06/11]Replace all DMA_32BIT_MASK macro with DMA_BIT_MASK(32)
-References: <499CFDC8.1070600@cn.fujitsu.com> <499D0221.9090407@cn.fujitsu.com> <20090219081403.GA5400@elte.hu> <499D1ED9.4040005@cn.fujitsu.com> <499D2728.1080208@cn.fujitsu.com> <499D2A2B.5080202@cn.fujitsu.com>
-In-Reply-To: <499D2A2B.5080202@cn.fujitsu.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       rlove@rlove.org, protasnb@gmail.com,
+       Michael Ruoss <miruoss@student.ethz.ch>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Tim Gardner <tim.gardner@canonical.com>,
+       Frank Seidel <frank@f-seidel.de>, multinymous@gmail.com,
+       Frank Seidel <fseidel@suse.de>
+Subject: [PATCH] hwmon/hdaps: remove redundant sysfs invert
+References: <499569A9.5030202@suse.de>	<499807B4.1050606@suse.de>	<4998120C.3030808@suse.de> <20090215153735.25ee8b05@hyperion.delvare>
+In-Reply-To: <20090215153735.25ee8b05@hyperion.delvare>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yang Hongyang wrote:
-> --- a/drivers/ieee1394/pcilynx.c
-> +++ b/drivers/ieee1394/pcilynx.c
-> @@ -1171,7 +1171,7 @@ static int __devinit add_card(struct pci_dev *dev,
->  
->          error = -ENXIO;
->  
-> -        if (pci_set_dma_mask(dev, DMA_32BIT_MASK))
-> +        if (pci_set_dma_mask(dev, DMA_BIT_MASK(32)))
->                  FAIL("DMA address limits not supported for PCILynx hardware");
->          if (pci_enable_device(dev))
->                  FAIL("failed to enable PCILynx hardware");
+From: Frank Seidel <frank@f-seidel.de>
 
-this hunk
-Acked-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
--- 
-Stefan Richter
--=====-==--= --=- =--==
-http://arcgraph.de/sr/
+Get rid of sysfs attribute "invert" as its
+redundant to module parameter.
+
+Signed-off-by: Frank Seidel <frank@f-seidel.de>
+---
+ drivers/hwmon/hdaps.c |   24 ------------------------
+ 1 file changed, 24 deletions(-)
+
+--- a/drivers/hwmon/hdaps.c
++++ b/drivers/hwmon/hdaps.c
+@@ -428,28 +428,6 @@ static ssize_t hdaps_calibrate_store(str
+ 	return count;
+ }
+ 
+-static ssize_t hdaps_invert_show(struct device *dev,
+-				 struct device_attribute *attr, char *buf)
+-{
+-	return sprintf(buf, "%u\n", hdaps_invert);
+-}
+-
+-static ssize_t hdaps_invert_store(struct device *dev,
+-				  struct device_attribute *attr,
+-				  const char *buf, size_t count)
+-{
+-	int invert;
+-
+-	if (sscanf(buf, "%d", &invert) != 1 ||
+-	    invert < 0 || invert > HDAPS_BOTH_AXES)
+-		return -EINVAL;
+-
+-	hdaps_invert = invert;
+-	hdaps_calibrate();
+-
+-	return count;
+-}
+-
+ static DEVICE_ATTR(position, 0444, hdaps_position_show, NULL);
+ static DEVICE_ATTR(variance, 0444, hdaps_variance_show, NULL);
+ static DEVICE_ATTR(temp1, 0444, hdaps_temp1_show, NULL);
+@@ -457,7 +435,6 @@ static DEVICE_ATTR(temp2, 0444, hdaps_te
+ static DEVICE_ATTR(keyboard_activity, 0444, hdaps_keyboard_activity_show, NULL);
+ static DEVICE_ATTR(mouse_activity, 0444, hdaps_mouse_activity_show, NULL);
+ static DEVICE_ATTR(calibrate, 0644, hdaps_calibrate_show,hdaps_calibrate_store);
+-static DEVICE_ATTR(invert, 0644, hdaps_invert_show, hdaps_invert_store);
+ 
+ static struct attribute *hdaps_attributes[] = {
+ 	&dev_attr_position.attr,
+@@ -467,7 +444,6 @@ static struct attribute *hdaps_attribute
+ 	&dev_attr_keyboard_activity.attr,
+ 	&dev_attr_mouse_activity.attr,
+ 	&dev_attr_calibrate.attr,
+-	&dev_attr_invert.attr,
+ 	NULL,
+ };
+ 
