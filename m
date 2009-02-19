@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758217AbZBSTAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757735AbZBSTB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758217AbZBSTAv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 14:00:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756084AbZBSTAU
+	id S1757735AbZBSTB7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 14:01:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206AbZBSTBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 14:00:20 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:60087 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754932AbZBSTAT (ORCPT
+	Thu, 19 Feb 2009 14:01:30 -0500
+Received: from mail-out.m-online.net ([212.18.0.10]:56754 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752495AbZBSTB3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 14:00:19 -0500
-Date: Thu, 19 Feb 2009 14:00:09 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       containers <containers@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Oren Laadan <orenl@cs.columbia.edu>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [RFC][PATCH 1/5] create fs flag to mark c/r supported fs's
-Message-ID: <20090219190009.GC28490@infradead.org>
-References: <20090219182007.B4B47C1F@kernel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090219182007.B4B47C1F@kernel>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 19 Feb 2009 14:01:29 -0500
+X-Auth-Info: CYDFVI/hopltSqM31+KLFYezmq0zsSPdBADA7CEuuTY=
+From: Wolfgang Grandegger <wg@grandegger.com>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/8] can: CAN network device driver interface and drivers
+Date: Thu, 19 Feb 2009 20:01:14 +0100
+Message-Id: <1235070082-7069-1-git-send-email-wg@grandegger.com>
+X-Mailer: git-send-email 1.5.6.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 19, 2009 at 10:20:07AM -0800, Dave Hansen wrote:
-> 
-> There are plenty of filesystems that are not supported for
-> c/r at this point.  Think of things like hugetlbfs which
-> are externally visible or pipefs which are kernel-internal.
-> 
-> This provides a quick way to make the "normal" filesystems
-> which are currently supported.  This is also safe if any
-> new code gets added.  We assume that a fs is non-supported
-> unless someone takes explicit action to the contrary.
-> 
-> I bet there are some more filesystems that are OK, but
-> these probably cover 99% of the users for now.
+the PF_CAN protocol family for the Controller Area Network is available
+in the kernel since version 2.6.25 but drivers for real CAN devices are
+still missing. This patch series adds a generic CAN network device
+driver interface and, as a start, a few drivers. It is the result of the
+ongoing discussion and development of the Socket-CAN project hosted at
+the BerliOS web-server (http://developer.berlios.de/projects/socketcan).
+The patch series consists of the following patches:
 
-Given that a normal fs should be checkpointable you should
-make those exposing internal state, not the other way around.
+[PATCH 1/8] can: Documentation for the CAN device driver interface
+[PATCH 2/8] can: Update MAINTAINERS and CREDITS file
+[PATCH 3/8] can: CAN Network device driver and SYSFS interface
+[PATCH 4/8] can: Driver for the SJA1000 CAN controller
+[PATCH 5/8] can: SJA1000 generic platform bus driver
+[PATCH 6/8] can: SJA1000 driver for EMS PCI cards
+[PATCH 7/8] can: SJA1000 driver for Kvaser PCI cards
+[PATCH 8/8] can: Driver for the Freescale MSCAN controller
+
+Please consider these patches for inclusion.
+
+Thanks,
+
+Wolfgang.
 
