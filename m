@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbZBSQiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754872AbZBSQl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753974AbZBSQiS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 11:38:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbZBSQiG
+	id S1754872AbZBSQl1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 11:41:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbZBSQlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 11:38:06 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:37634 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751390AbZBSQiF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 11:38:05 -0500
-Date: Thu, 19 Feb 2009 16:34:41 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       David Vrabel <david.vrabel@csr.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chas Williams <chas@cmf.nrl.navy.mil>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Matt Mackall <mpm@selenic.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [patch 1/7] slab: introduce kzfree()
-In-Reply-To: <1235034817.29813.6.camel@penberg-laptop>
-Message-ID: <Pine.LNX.4.64.0902191616250.8594@blonde.anvils>
-References: <499BE7F8.80901@csr.com>  <1234954488.24030.46.camel@penberg-laptop>
-  <20090219101336.9556.A69D9226@jp.fujitsu.com> <1235034817.29813.6.camel@penberg-laptop>
+	Thu, 19 Feb 2009 11:41:18 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44635 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751566AbZBSQlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 11:41:17 -0500
+Date: Thu, 19 Feb 2009 17:41:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Petr Tesarik <ptesarik@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Definition of BUG on x86
+Message-ID: <20090219164104.GA20941@elte.hu>
+References: <20090219122211.GE1703@elte.hu> <1235047082.15053.49.camel@nathan.suse.cz> <20090219124702.GC22044@elte.hu> <1235048535.15053.52.camel@nathan.suse.cz> <20090219144902.GA8650@elte.hu> <499D7B9D.7060001@goop.org> <20090219153544.GA31637@elte.hu> <1235059883.15053.68.camel@nathan.suse.cz> <20090219161649.GC9556@elte.hu> <499D8A0C.5030908@goop.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <499D8A0C.5030908@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Feb 2009, Pekka Enberg wrote:
-> On Wed, 2009-02-18 at 10:50 +0000, David Vrabel wrote:
-> > > > Johannes Weiner wrote:
-> > > > > +void kzfree(const void *p)
-> > > > 
-> > > > Shouldn't this be void * since it writes to the memory?
-> > > 
-> > > No. kfree() writes to the memory as well to update freelists, poisoning
-> > > and such so kzfree() is not at all different from it.
-> 
-> On Thu, 2009-02-19 at 10:22 +0900, KOSAKI Motohiro wrote:
-> > I don't think so. It's debetable thing.
-> > 
-> > poisonig is transparent feature from caller.
-> > but the caller of kzfree() know to fill memory and it should know.
-> 
-> Debatable, sure, but doesn't seem like a big enough reason to make
-> kzfree() differ from kfree().
 
-There may be more important things for us to worry about,
-but I do strongly agree with KOSAKI-san on this.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-kzfree() already differs from kfree() by a "z": that "z" says please
-zero the buffer pointed to; "const" says it won't modify the buffer
-pointed to.  What sense does kzfree(const void *) make?  Why is
-keeping the declarations the same apart from the "z" desirable?
+> Ingo Molnar wrote:
+>> Well, the important question is thatGCC will optimize out whatever 
+>> comes after the __builtin_trap(), right? To guarantee an assert we can 
+>> do something like:
+>>
+>>  	__builtin_trap();
+>> 	panic("should never get here");
+>>
+>> to guarantee a message. (But realistically GCC will at most generate a 
+>> build error.)
+>
+> Ah, right, I remember the problem.  There's no guaranteed way 
+> of getting the address of the ud2a instruction __builtin_trap 
+> generates to put it into the bug table.
 
-By all means refuse to add kzfree(), but please don't add it with const.
+hm, indeed.
 
-I can see that the "const" in kfree(const void *) is debatable
-[looks to see how userspace free() is defined: without a const],
-I can see that it might be nice to have some "goesaway" attribute
-for such pointers instead; but I don't see how you can argue for
-kzalloc(const void *).
+So that 2 byte overhead will be there for now, until gcc (or 
+some other compiler) is improved.
 
-Hugh
+	Ingo
