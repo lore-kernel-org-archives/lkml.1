@@ -1,113 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbZBSEhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755099AbZBSEnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754591AbZBSEhh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Feb 2009 23:37:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbZBSEh2
+	id S1755099AbZBSEnk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Feb 2009 23:43:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbZBSEnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Feb 2009 23:37:28 -0500
-Received: from exprod7og105.obsmtp.com ([64.18.2.163]:60618 "EHLO
-	exprod7og105.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751851AbZBSEh1 convert rfc822-to-8bit (ORCPT
+	Wed, 18 Feb 2009 23:43:31 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:46294 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751788AbZBSEna (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Feb 2009 23:37:27 -0500
-X-Greylist: delayed 864 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Feb 2009 23:37:20 EST
-From: "Prakash, Sathya" <Sathya.Prakash@lsi.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "david@lang.hm" <david@lang.hm>, Matthew Wilcox <matthew@wil.cx>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       DL-MPT Fusion Linux <DL-MPTFusionLinux@lsi.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Date: Thu, 19 Feb 2009 09:51:42 +0530
-Subject: RE: [PATCH] pci: enable MSI on 8132
-Thread-Topic: [PATCH] pci: enable MSI on 8132
-Thread-Index: AcmR+BTPjL4MNQ/tRD6EtrF8GTDLvQAUOlmg
-Message-ID: <B73941C4DE6A3D4EA1AE128E9565E24423A0DA5240@inbmail01.lsi.com>
-References: <499B46B2.5040601@kernel.org>
-	 <alpine.DEB.1.10.0902171537260.26625@asgard.lang.hm>
-	 <499B6BF7.9090300@kernel.org>
-	 <alpine.DEB.1.10.0902171803040.26625@asgard.lang.hm>
-	 <499B724A.2040408@kernel.org>
-	 <alpine.DEB.1.10.0902171832560.26625@asgard.lang.hm>
-	 <alpine.DEB.1.10.0902171839420.26625@asgard.lang.hm>
-	 <499B774C.5010705@kernel.org>
-	 <alpine.DEB.1.10.0902171917420.26625@asgard.lang.hm>
-	 <499B9129.50104@kernel.org> <20090218122137.GJ16841@parisc-linux.org>
-	 <alpine.DEB.1.10.0902180426420.25606@asgard.lang.hm>
-	 <20090218100448.7f7c5b86.akpm@linux-foundation.org>
- <1234982285.3225.42.camel@localhost.localdomain>
-In-Reply-To: <1234982285.3225.42.camel@localhost.localdomain>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 18 Feb 2009 23:43:30 -0500
+Message-ID: <499CE2FE.90503@bk.jp.nec.com>
+Date: Thu, 19 Feb 2009 13:41:34 +0900
+From: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.0; ja; rv:1.8.1.9) Gecko/20071031 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
 MIME-Version: 1.0
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Kazuto Miyoshi <miyoshi@linux.bs1.fc.nec.co.jp>, rostedt@goodmis.org,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH] Add tracepoints to track pagecache transition
+References: <1234863220.4744.34.camel@laptop> <499A99BC.2080700@bk.jp.nec.com> <20090217201651.576E.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20090217201651.576E.A69D9226@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Kosaki-san,
+
+Thank you for your comment.
+
+KOSAKI Motohiro wrote:
+> Hi
+> 
+> 
+> In my 1st impression, this patch description is a bit strange.
+> 
+>> The below patch adds instrumentation for pagecache.
+>>
+>> I thought it would be useful to trace pagecache behavior for problem
+>> analysis (performance bottlenecks, behavior differences between stable
+>> time and trouble time).
+>>
+>> By using those tracepoints, we can describe and visualize pagecache
+>> transition (file-by-file basis) in kernel and  pagecache
+>> consumes most of the memory in running system and pagecache hit rate
+>> and writeback behavior will influence system load and performance.
+> 
+> Why do you think this tracepoint describe pagecache hit rate?
+> and, why describe writeback behavior?
+
+I mean, we can describe file-by-file basis pagecache usage by using 
+these tracepoints and it is important for analyzing process I/O behavior. 
+Currently, we can understand the amount of pagecache from "Cached"
+in /proc/meminfo. So I'd like to understand which files are using pagecache. 
+
+> 
+>> I attached an example which is visualization of pagecache status using
+>> SystemTap. 
+> 
+> it seems no attached. and SystemTap isn't used kernel developer at all.
+> I don't think it's enough explanation.
+> Can you make seekwatcher liked completed comsumer program?
+> (if you don't know seekwatcher, see http://oss.oracle.com/~mason/seekwatcher/)
+
+I understand a tracer using these tracepoints need to be implemented.
+What I want to do is counting pagecache per file. We can retrieve inode
+from mapping and count pagecache per inode in these tracepoints.
+
+>> That graph describes pagecache transition of File A and File B
+>> on a file-by-file basis with the situation where regular I/O to File A
+>> is delayed because of other I/O to File B. 
+> 
+> If you want to see I/O activity, you need to add tracepoint into block layer.
+
+I think tracking pagecache is useful for understanding process I/O activity,
+because whether process I/O completes by accessing memory or HDD is determined by
+accessed files on pagecache or not.
+
+> 
+>> We visually understand
+>> pagecache for File A is narrowed down due to I/O pressure from File B.
+> 
+> confused. Can we assume the number of anon pages/files pages ratio don't chage?
+> 
+> 
+>> Peter Zijlstra wrote:
+>>> On Tue, 2009-02-17 at 18:00 +0900, Atsushi Tsuji wrote:
+>>>
+>>>> The below patch adds instrumentation for pagecache.
+>>> And somehow you forgot to CC any of the mm people.. ;-)
+>> Hi Peter,
+>>
+>> Ah, sorry.
+>> Thank you for adding to CC list.
+>>
+>>>> +DECLARE_TRACE(filemap_add_to_page_cache,
+>>>> +	TPPROTO(struct address_space *mapping, pgoff_t offset),
+>>>> +	TPARGS(mapping, offset));
+>>>> +DECLARE_TRACE(filemap_remove_from_page_cache,
+>>>> +	TPPROTO(struct address_space *mapping),
+>>>> +	TPARGS(mapping));
+>>> This is rather asymmetric, why don't we care about the offset for the
+>>> removed page?
+>>>
+>> Indeed.
+>> I added the offset to the argument for the removed page and resend fixed patch.
+>>
+>> Signed-off-by: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+>> ---
+>> diff --git a/include/trace/filemap.h b/include/trace/filemap.h
+> 
+> please add diffstat.
+> 
+> 
+>> new file mode 100644
+>> index 0000000..a17dc92
+>> --- /dev/null
+>> +++ b/include/trace/filemap.h
+>> @@ -0,0 +1,13 @@
+>> +#ifndef _TRACE_FILEMAP_H
+>> +#define _TRACE_FILEMAP_H
+>> +
+>> +#include <linux/tracepoint.h>
+>> +
+>> +DECLARE_TRACE(filemap_add_to_page_cache,
+>> +	TPPROTO(struct address_space *mapping, pgoff_t offset),
+>> +	TPARGS(mapping, offset));
+>> +DECLARE_TRACE(filemap_remove_from_page_cache,
+>> +	TPPROTO(struct address_space *mapping, pgoff_t offset),
+>> +	TPARGS(mapping, offset));
+>> +
+>> +#endif
+>> diff --git a/mm/filemap.c b/mm/filemap.c
+>> index 23acefe..23f75d2 100644
+>> --- a/mm/filemap.c
+>> +++ b/mm/filemap.c
+>> @@ -34,6 +34,7 @@
+>>  #include <linux/hardirq.h> /* for BUG_ON(!in_atomic()) only */
+>>  #include <linux/memcontrol.h>
+>>  #include <linux/mm_inline.h> /* for page_is_file_cache() */
+>> +#include <trace/filemap.h>
+>>  #include "internal.h"
+>>  
+>>  /*
+>> @@ -43,6 +44,8 @@
+>>  
+>>  #include <asm/mman.h>
+>>  
+>> +DEFINE_TRACE(filemap_add_to_page_cache);
+>> +DEFINE_TRACE(filemap_remove_from_page_cache);
+>>  
+>>  /*
+>>   * Shared mappings implemented 30.11.1994. It's not fully working yet,
+>> @@ -120,6 +123,7 @@ void __remove_from_page_cache(struct page *page)
+>>  	page->mapping = NULL;
+>>  	mapping->nrpages--;
+>>  	__dec_zone_page_state(page, NR_FILE_PAGES);
+>> +	trace_filemap_remove_from_page_cache(mapping, page->index);
+> 
+> __remove_from_page_cache() is passed struct page.
+> Why don't you use struct page
+> 
+> and, this mean
+>   - the page have been removed from mapping.
+>   - vmstate have been decremented.
+>   - but, the page haven't been uncharged from memcg.
+> 
+> Why?
+> 
+> 
+>>  	BUG_ON(page_mapped(page));
+>>  	mem_cgroup_uncharge_cache_page(page);
+>>  
+>> @@ -475,6 +479,7 @@ int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
+>>  		if (likely(!error)) {
+>>  			mapping->nrpages++;
+>>  			__inc_zone_page_state(page, NR_FILE_PAGES);
+>> +			trace_filemap_add_to_page_cache(mapping, offset);
+> 
+> Why do you select this line?
+> In general, trace point calling under spin lock grabbing is a bit problematic.
  
-Apologies for late response on this thread.
-Considering the fact that the enabling MSI has issues with some unknown boards we will turn off the MSI for all the type of controllers (including the SAS) and will send the corrected patch soon (with proper module description). Till we find out a way to dynamically decide whether we can enable MSI without any issues, we don't want to set the module parameter to enable MSI by default for SAS controllers.
+I understand my patch is wrong. I will fix and send it later.
 
-Thanks
-Sathya
-
------Original Message-----
-From: James Bottomley [mailto:James.Bottomley@HansenPartnership.com] 
-Sent: Thursday, February 19, 2009 12:08 AM
-To: Andrew Morton
-Cc: david@lang.hm; Matthew Wilcox; Yinghai Lu; Jesse Barnes; linux-kernel; linux-scsi@vger.kernel.org; DL-MPT Fusion Linux; linux-pci@vger.kernel.org
-Subject: Re: [PATCH] pci: enable MSI on 8132
-
-On Wed, 2009-02-18 at 10:04 -0800, Andrew Morton wrote:
-> On Wed, 18 Feb 2009 04:27:28 -0800 (PST) david@lang.hm wrote:
 > 
-> > On Wed, 18 Feb 2009, Matthew Wilcox wrote:
-> > 
-> > > On Tue, Feb 17, 2009 at 08:40:09PM -0800, Yinghai Lu wrote:
-> > >>
-> > >> Impact: workaround BIOS that doesn't enable that bit
-> > >>
-> > >> David reported that LSI sas doesn't work with MSI.
-> > >> it turns out that BIOS doesn't enable HT MSI
-> > >> 8132 does support HT MSI.
-> > >> add quirk to enable it
-> > >>
-> > >> Reported-by: David Lang <david@lang.hm>
-> > >> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> > >
-> > > Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
-> > >
-> > > Jesse, I think this should go into Linus' tree sooner rather than later.
-> > 
-> > please forward to -stable as well. this is a regression since the 
-> > card works with older kernels.
-> > 
+>>  		} else {
+>>  			page->mapping = NULL;
+>>  			mem_cgroup_uncharge_cache_page(page);
+>>
 > 
-> Which kernel version introduced the regression?
+> And, both function is freqentlly called one.
+> I worry about performance issue. can you prove no degression?
 
-Technically, it's not a regression.  The MSI problem has always been there, it was just exposed when the SAS card switched to using MSI by default.  It's fixed by the bridge quirk  ... of course it's unclear how many more bridges with problems there are.
+I will try to probe that.
 
-> Do we not need mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch as 
-> well, to fix this regression?
-
-No ... it's a separate issue.  MSI was enabled for fusion SAS in 2.6.26; the problem msi patch which the above corrects actually has the effect of disabling MSI for fusion and went into 2.6.29-rc2, which isn't a kernel that's been tested here.
-
-> I sent mpt-fix-enable-lsi-sas-to-use-msi-as-default.patch to the 
-> maintainers a week ago and it was ignored, along with everything else.
-> If this happens again I shall merge it under my own cognisance, along 
-> with everything else.
-
-Yes, they've been a bit unresponsive.   I'm not unhappy with the current
-situation, since MSI is globally disabled for fusion at the moment (so we shouldn't get any more MSI problem reports), so I'm happy to wait and see what they want to do.
-
-James
-
+Thanks,
+-Atsushi
 
