@@ -1,126 +1,271 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756675AbZBSXV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757343AbZBSXWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756675AbZBSXV2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 18:21:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbZBSXVT
+	id S1757343AbZBSXWZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 18:22:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbZBSXWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 18:21:19 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:53180 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753645AbZBSXVS (ORCPT
+	Thu, 19 Feb 2009 18:22:16 -0500
+Received: from smtp2.tech.numericable.fr ([82.216.111.38]:36755 "EHLO
+	smtp2.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755139AbZBSXWP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 18:21:18 -0500
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@osdl.org>, roland@redhat.com, daniel@hozac.com,
-       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
-References: <20090219030207.GA18783@us.ibm.com>
-	<20090219030743.GG18990@us.ibm.com> <m1y6w21k6d.fsf@fess.ebiederm.org>
-	<20090219185159.GA374@redhat.com> <m1fxiayss9.fsf@fess.ebiederm.org>
-	<20090219223137.GA10378@redhat.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 19 Feb 2009 15:21:34 -0800
-In-Reply-To: <20090219223137.GA10378@redhat.com> (Oleg Nesterov's message of "Thu\, 19 Feb 2009 23\:31\:37 +0100")
-Message-ID: <m1fxiaxbb5.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 19 Feb 2009 18:22:15 -0500
+Message-ID: <499DE9A3.7070702@numericable.fr>
+Date: Fri, 20 Feb 2009 00:22:11 +0100
+From: etienne <etienne.basset@numericable.fr>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: oleg@redhat.com, linux-kernel@vger.kernel.org, containers@lists.osdl.org, daniel@hozac.com, roland@redhat.com, akpm@osdl.org, sukadev@linux.vnet.ibm.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Oleg Nesterov <oleg@redhat.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0083]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  1.5 XMReplyNow Urgent/immediate reply
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 7/7][v8] SI_USER: Masquerade si_pid when crossing pid ns boundary
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+To: Paul Moore <paul.moore@hp.com>
+CC: Casey Schaufler <casey@schaufler-ca.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org
+Subject: [PATCH] SMACK netlabel fixes v2
+References: <fa.O38YY4pVfLlMFJNBI3mhgn+qOcQ@ifi.uio.no> <499C5C44.4020902@schaufler-ca.com> <499C7A98.7000907@numericable.fr> <200902191024.50198.paul.moore@hp.com>
+In-Reply-To: <200902191024.50198.paul.moore@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@redhat.com> writes:
+Hi Paul,
 
-> On 02/19, Eric W. Biederman wrote:
->>
->> Oleg Nesterov <oleg@redhat.com> writes:
->> >
->> > SI_FROMUSER() == T, unless we have more (hopefully not) in-kernel
->> > users which send SI_FROMUSER() signals, .si_pid must be valid?
->>
->> So the argument is that while things such as force_sig_info(SIGSEGV)
->> don't have a si_pid we don't care because from_ancestor_ns  == 0.
->>
->> Interesting.  Then I don't know if we have any kernel senders
->> that cross the namespace boundaries.
->>
->> That said I still object to this code.
->>
->> sys_kill(-pgrp, SIGUSR1)
->>   kill_something_info(SIGUSR1, &info, 0)
->>     __kill_pgrp_info(SIGUSR1, &info task_pgrp(current))
->>       group_send_sig_info(SIGUSR1, &info, tsk)
->>         __group_send_sig_info(SIGUSR1, &info, tsk)
->>           send_signal(SIGUSR1, &info, tsk, 1)
->>             __send_signal(SIGUSR1, &info, tsk, 1)
->>
->>
->> Process groups and sessions can have processes in multiple pid
->> namespaces, which is very useful for not messing up your controlling
->> terminal.
->>
->> In which case sys_kill cannot possibly set the si_pid value correct
->> and from_ancestor_ns is not enough either.
->
-> (I know, I shouldn't reply today because I am already sleeping ;)
->
-> Why? send_signal() should calculate the correct value of
-> from_parent and pass it to __send_signal(). If it is true, then
-> we clear .si_pid in the copied siginfo (which was already queued).
-> We don't mangle the original siginfo.
->
-> This happens for each process we send the signal.
->
-> Or I misunderstood you?
+thanks for your comments, please find below an updated version of the patch, I hope it is fine with you and Casey.
+(i didnt remove the 'mask_bits = (1<<31)' of your last comment :
+=> i think it's much obvious that it represent binary 1000..00 than 0x80000000, but that may be just me :)
 
-Suppose I have 3 processes in a process group in three separate pid
-namespaces.
+I redid some basics tests, it seems i've not messed things too much :)
 
-Looking from the init pid namespace I have:
-     pid pgrp ppid
-      10 10    1
-      11 10    10
-      12 10    11
+For the moving to standard list, I guess I could try to do that; (even other smack list, yes want my bonus points! ;) )
+After a quick list.h grep i think i'll have to implement a 'sorted insert' anyway. 
+But please allow me to do that on top of my patch
 
-Looking from the pid namespace of pid 11 I have:
-     pid pgrp ppid
-      0  0     0
-      1  0     0
-      2  0     1
 
-Looking from the pid namespace of pid 12 I have:
-     pid pgrp ppid
-      0  0     0
-      0  0     0
-      1  0     0
+regards
+Etienne
 
-So if the process with pid 12 in the initial pid namespace
-sends to process group 0.
+--
 
-pid 10 should see si_pid 12.
-pid 11 should see si_pid 2.
+the following patch (against 2.6.29rc5) fixes a few issues in the smack/netlabel area :
+1) smack_host_label disregard a "0.0.0.0/0 @" rule (or other label), preventing 'tagged' tasks to access Internet (many systems drop packets with IP options)
+2) netmasks were not handled correctly, they were stored in a way _not equivalent_  to conversion to be32 (it was equivalent for /0, /8, /16, /24, /32 masks but not other masks)
+3) smack_netlbladdr prefixes (IP/mask) were not consistent (mask&IP was not done), so there could have been different list entries for the same IP prefix; if those entries had different labels, well ... 
+4) they were not sorted 
 
-Neither should see si_pid 0, as from_ancestor_ns will not
-be true.
+1) 2) 3) are bugs, 4) is a more cosmetic issue.
+The patch :
+-creates a new helper smk_netlbladdr_insert to insert a smk_netlbladdr, sorted by netmask length
+-use the new sorted nature of  smack_netlbladdrs list to simplify smack_host_label : 
+ the first match _will_ be the more specific
+-corrects endianness issues in smk_write_netlbladdr &  netlbladdr_seq_show
 
-Eric
+The patch are "tested" so that they no crash the system; cat /smack/netlabel is now sorted and always consistent.
+Some basics ping tests to '@' and other label combination seems ok 
+See   an extract of my tests bellow the patch 
+
+regards,
+Etienne
+
+Signed-off-by: <etienne.basset@numericable.fr>
+---
+
+
+security/smack/smack_lsm.c |   43 +++++------------------------
+ security/smack/smackfs.c   |   64 +++++++++++++++++++++++++++++++++----------
+ 2 files changed, 57 insertions(+), 50 deletions(-)
+
+diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
+index 0278bc0..e7ded13 100644
+--- a/security/smack/smack_lsm.c
++++ b/security/smack/smack_lsm.c
+@@ -1498,58 +1498,31 @@ static int smack_socket_post_create(struct socket *sock, int family,
+  * looks for host based access restrictions
+  *
+  * This version will only be appropriate for really small
+- * sets of single label hosts. Because of the masking
+- * it cannot shortcut out on the first match. There are
+- * numerious ways to address the problem, but none of them
+- * have been applied here.
++ * sets of single label hosts.
+  *
+  * Returns the label of the far end or NULL if it's not special.
+  */
+ static char *smack_host_label(struct sockaddr_in *sip)
+ {
+ 	struct smk_netlbladdr *snp;
+-	char *bestlabel = NULL;
+ 	struct in_addr *siap = &sip->sin_addr;
+-	struct in_addr *liap;
+-	struct in_addr *miap;
+-	struct in_addr bestmask;
+ 
+ 	if (siap->s_addr == 0)
+ 		return NULL;
+ 
+-	bestmask.s_addr = 0;
+-
+ 	for (snp = smack_netlbladdrs; snp != NULL; snp = snp->smk_next) {
+-		liap = &snp->smk_host.sin_addr;
+-		miap = &snp->smk_mask;
+-		/*
+-		 * If the addresses match after applying the list entry mask
+-		 * the entry matches the address. If it doesn't move along to
+-		 * the next entry.
+-		 */
+-		if ((liap->s_addr & miap->s_addr) !=
+-		    (siap->s_addr & miap->s_addr))
+-			continue;
+ 		/*
+-		 * If the list entry mask identifies a single address
+-		 * it can't get any more specific.
++		 * we break after finding the first match because
++		 * the list is sorted from longest to shortest mask
++		 * so we have found the most specific match
+ 		 */
+-		if (miap->s_addr == 0xffffffff)
++		if ((&snp->smk_host.sin_addr)->s_addr  ==
++			(siap->s_addr & (&snp->smk_mask)->s_addr)) {
+ 			return snp->smk_label;
+-		/*
+-		 * If the list entry mask is less specific than the best
+-		 * already found this entry is uninteresting.
+-		 */
+-		if ((miap->s_addr | bestmask.s_addr) == bestmask.s_addr)
+-			continue;
+-		/*
+-		 * This is better than any entry found so far.
+-		 */
+-		bestmask.s_addr = miap->s_addr;
+-		bestlabel = snp->smk_label;
++		}
+ 	}
+ 
+-	return bestlabel;
++	return NULL;
+ }
+ 
+ /**
+diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
+index 8e42800..51f0efc 100644
+--- a/security/smack/smackfs.c
++++ b/security/smack/smackfs.c
+@@ -650,10 +650,6 @@ static void *netlbladdr_seq_next(struct seq_file *s, void *v, loff_t *pos)
+ 
+ 	return skp;
+ }
+-/*
+-#define BEMASK	0x80000000
+-*/
+-#define BEMASK	0x00000001
+ #define BEBITS	(sizeof(__be32) * 8)
+ 
+ /*
+@@ -663,12 +659,10 @@ static int netlbladdr_seq_show(struct seq_file *s, void *v)
+ {
+ 	struct smk_netlbladdr *skp = (struct smk_netlbladdr *) v;
+ 	unsigned char *hp = (char *) &skp->smk_host.sin_addr.s_addr;
+-	__be32 bebits;
+-	int maskn = 0;
++	int maskn;
++	u32 temp_mask = be32_to_cpu(skp->smk_mask.s_addr);
+ 
+-	for (bebits = BEMASK; bebits != 0; maskn++, bebits <<= 1)
+-		if ((skp->smk_mask.s_addr & bebits) == 0)
+-			break;
++	for (maskn = 0; temp_mask; temp_mask <<= 1, maskn++);
+ 
+ 	seq_printf(s, "%u.%u.%u.%u/%d %s\n",
+ 		hp[0], hp[1], hp[2], hp[3], maskn, skp->smk_label);
+@@ -702,6 +696,42 @@ static int smk_open_netlbladdr(struct inode *inode, struct file *file)
+ }
+ 
+ /**
++ * smk_netlbladdr_insert
++ * @new : netlabel to insert
++ *
++ * This helper insert netlabel in the smack_netlbladdrs list
++ * sorted by netmask length (longest to smallest)
++ */
++static void smk_netlbladdr_insert(struct smk_netlbladdr *new)
++{
++	struct smk_netlbladdr *m;
++
++	if (smack_netlbladdrs == NULL) {
++		smack_netlbladdrs = new;
++		return;
++	}
++
++	/* the comparison '>' is a bit hacky, but works */
++	if (new->smk_mask.s_addr > smack_netlbladdrs->smk_mask.s_addr) {
++		new->smk_next = smack_netlbladdrs;
++		smack_netlbladdrs = new;
++		return;
++	}
++	for (m = smack_netlbladdrs; m != NULL; m = m->smk_next) {
++		if (m->smk_next == NULL) {
++			m->smk_next = new;
++			return;
++		}
++		if (new->smk_mask.s_addr > m->smk_next->smk_mask.s_addr) {
++			new->smk_next = m->smk_next;
++			m->smk_next = new;
++			return;
++		}
++	}
++}
++
++
++/**
+  * smk_write_netlbladdr - write() for /smack/netlabel
+  * @filp: file pointer, not actually used
+  * @buf: where to get the data from
+@@ -724,8 +754,9 @@ static ssize_t smk_write_netlbladdr(struct file *file, const char __user *buf,
+ 	struct netlbl_audit audit_info;
+ 	struct in_addr mask;
+ 	unsigned int m;
+-	__be32 bebits = BEMASK;
++	u32 mask_bits = (1<<31);
+ 	__be32 nsa;
++	u32 temp_mask;
+ 
+ 	/*
+ 	 * Must have privilege.
+@@ -761,10 +792,13 @@ static ssize_t smk_write_netlbladdr(struct file *file, const char __user *buf,
+ 	if (sp == NULL)
+ 		return -EINVAL;
+ 
+-	for (mask.s_addr = 0; m > 0; m--) {
+-		mask.s_addr |= bebits;
+-		bebits <<= 1;
++	for (temp_mask = 0; m > 0; m--) {
++		temp_mask |= mask_bits;
++		mask_bits >>= 1;
+ 	}
++	mask.s_addr = cpu_to_be32(temp_mask);
++
++	newname.sin_addr.s_addr &= mask.s_addr;
+ 	/*
+ 	 * Only allow one writer at a time. Writes should be
+ 	 * quite rare and small in any case.
+@@ -772,6 +806,7 @@ static ssize_t smk_write_netlbladdr(struct file *file, const char __user *buf,
+ 	mutex_lock(&smk_netlbladdr_lock);
+ 
+ 	nsa = newname.sin_addr.s_addr;
++	/* try to find if the prefix is already in the list */
+ 	for (skp = smack_netlbladdrs; skp != NULL; skp = skp->smk_next)
+ 		if (skp->smk_host.sin_addr.s_addr == nsa &&
+ 		    skp->smk_mask.s_addr == mask.s_addr)
+@@ -787,9 +822,8 @@ static ssize_t smk_write_netlbladdr(struct file *file, const char __user *buf,
+ 			rc = 0;
+ 			skp->smk_host.sin_addr.s_addr = newname.sin_addr.s_addr;
+ 			skp->smk_mask.s_addr = mask.s_addr;
+-			skp->smk_next = smack_netlbladdrs;
+ 			skp->smk_label = sp;
+-			smack_netlbladdrs = skp;
++			smk_netlbladdr_insert(skp);
+ 		}
+ 	} else {
+ 		rc = netlbl_cfg_unlbl_static_del(&init_net, NULL,
+
 
 
