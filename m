@@ -1,78 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbZBSTMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755754AbZBSTRx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757453AbZBSTMX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 14:12:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbZBSTMG
+	id S1755754AbZBSTRx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 14:17:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbZBSTRl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 14:12:06 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:60119 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752331AbZBSTME (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 14:12:04 -0500
-Subject: Re: Banning checkpoint (was: Re: What can OpenVZ do?)
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Nathan Lynch <nathanl@austin.ibm.com>,
-       linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
-       mpm@selenic.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       viro@zeniv.linux.org.uk, hpa@zytor.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, tglx@linutronix.de, xemul@openvz.org
-In-Reply-To: <20090219190637.GA4846@x200.localdomain>
-References: <20090213105302.GC4608@elte.hu>
-	 <1234817490.30155.287.camel@nimitz> <20090217222319.GA10546@elte.hu>
-	 <1234909849.4816.9.camel@nimitz> <20090218003217.GB25856@elte.hu>
-	 <1234917639.4816.12.camel@nimitz> <20090218051123.GA9367@x200.localdomain>
-	 <20090218181644.GD19995@elte.hu> <1234992447.26788.12.camel@nimitz>
-	 <20090218231545.GA17524@elte.hu>  <20090219190637.GA4846@x200.localdomain>
-Content-Type: text/plain
-Date: Thu, 19 Feb 2009 11:11:54 -0800
-Message-Id: <1235070714.26788.56.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 19 Feb 2009 14:17:41 -0500
+Received: from sargon.lncsa.com ([212.99.8.251]:55371 "EHLO sargon.lncsa.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753558AbZBSTRk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 14:17:40 -0500
+Message-ID: <499DB04A.20301@lncsa.com>
+Date: Thu, 19 Feb 2009 20:17:30 +0100
+From: Laurent CARON <lcaron@lncsa.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Strange skbuff.c bug
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-19 at 22:06 +0300, Alexey Dobriyan wrote:
-> Inotify isn't supported yet? You do
-> 
->         if (!list_empty(&inode->inotify_watches))
->                 return -E;
-> 
-> without hooking into inotify syscalls.
-> 
-> ptrace(2) isn't supported -- look at struct task_struct::ptraced and
-> friends.
-> 
-> And so on.
-> 
-> System call (or whatever) does something with some piece of kernel
-> internals. We look at this "something" when walking data structures
-> and
-> abort if it's scary enough.
-> 
-> Please, show at least one counter-example.
+Hi,
 
-Alexey, I agree with you here.  I've been fighting myself internally
-about these two somewhat opposing approaches.  Of *course* we can
-determine the "checkpointability" at sys_checkpoint() time by checking
-all the various bits of state.
+I'm experiencing a strange bug while using heartbeat while it is sending 
+ARPs:
 
-The problem that I think Ingo is trying to address here is that doing it
-then makes it hard to figure out _when_ you went wrong.  That's the
-single most critical piece of finding out how to go address it.
+Feb 19 20:14:30 lyon kernel: WARNING: at net/core/skbuff.c:150 
+skb_truesize_bug+0x2e/0x33()
+Feb 19 20:14:30 lyon kernel: SKB BUG: Invalid truesize (304) len=182, 
+sizeof(sk_buff)=176
+Feb 19 20:14:30 lyon kernel: Modules linked in: xt_TCPMSS ctr camellia 
+xcbc rmd160 dm_snapshot ipmi_poweroff ipmi_devintf ipmi_si 
+ipmi_msghandler iTCO_wdt
+Feb 19 20:14:30 lyon kernel: Pid: 9920, comm: send_arp Tainted: G 
+  W  2.6.28.6-sc4xx-ml150 #1
+Feb 19 20:14:30 lyon kernel: Call Trace:
+Feb 19 20:14:30 lyon kernel: [<c011f14c>] warn_slowpath+0x61/0x78
+Feb 19 20:14:30 lyon kernel: [<c011817e>] update_curr+0x5c/0x95
+Feb 19 20:14:30 lyon kernel: [<c052999d>] schedule+0x58c/0x5dc
+Feb 19 20:14:30 lyon kernel: [<c0529aca>] schedule_timeout+0x13/0x86
+Feb 19 20:14:30 lyon kernel: [<c01579fd>] slab_destroy+0x2b/0x40
+Feb 19 20:14:30 lyon kernel: [<c0157aca>] free_block+0xb8/0xf4
+Feb 19 20:14:30 lyon kernel: [<c0469256>] skb_truesize_bug+0x2e/0x33
+Feb 19 20:14:30 lyon kernel: [<c0465f24>] sock_rfree+0x1e/0x43
+Feb 19 20:14:30 lyon kernel: [<c04688cb>] skb_release_head_state+0x4d/0x9a
+Feb 19 20:14:30 lyon kernel: [<c0468ed4>] skb_release_all+0x8/0x10
+Feb 19 20:14:30 lyon kernel: [<c04687e5>] __kfree_skb+0x8/0x63
+Feb 19 20:14:30 lyon kernel: [<c0468871>] skb_queue_purge+0xa/0x17
+Feb 19 20:14:30 lyon kernel: [<c04e238c>] packet_release+0x137/0x153
+Feb 19 20:14:30 lyon kernel: [<c046429d>] sock_release+0x11/0x59
+Feb 19 20:14:30 lyon kernel: [<c0464657>] sock_close+0x19/0x1c
+Feb 19 20:14:30 lyon kernel: [<c015b2c3>] __fput+0xa6/0x14a
+Feb 19 20:14:30 lyon kernel: [<c01590dd>] filp_close+0x4d/0x53
+Feb 19 20:14:30 lyon kernel: [<c01205dd>] put_files_struct+0x5f/0xa7
+Feb 19 20:14:30 lyon kernel: [<c0121580>] do_exit+0x172/0x654
+Feb 19 20:14:30 lyon kernel: [<c011341b>] do_page_fault+0x239/0x546
+Feb 19 20:14:30 lyon kernel: [<c0121abc>] do_group_exit+0x5a/0x83
+Feb 19 20:14:30 lyon kernel: [<c0121af2>] sys_exit_group+0xd/0x10
+Feb 19 20:14:30 lyon kernel: [<c0102be5>] sysenter_do_call+0x12/0x25
+Feb 19 20:14:30 lyon kernel: ---[ end trace 173ef0824595f8e2 ]---
 
-I see where you are coming from.  Ingo's suggestion has the *huge*
-downside that we've got to go muck with a lot of generic code and hook
-into all the things we don't support.
 
-I think what I posted is a decent compromise.  It gets you those
-warnings at runtime and is a one-way trip for any given process.  But,
-it does detect in certain cases (fork() and unshare(FILES)) when it is
-safe to make the trip back to the "I'm checkpointable" state again.
+Do anyone have a clue about it ?
 
--- Dave
-
+Thanks
