@@ -1,74 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755340AbZBSOTp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbZBSOVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755340AbZBSOTp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 09:19:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZBSOTf
+	id S1756196AbZBSOVu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 09:21:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbZBSOVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 09:19:35 -0500
-Received: from moutng.kundenserver.de ([212.227.126.177]:58952 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751844AbZBSOTe (ORCPT
+	Thu, 19 Feb 2009 09:21:42 -0500
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:14629 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751844AbZBSOVl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 09:19:34 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] drm: Only use DRM_IOCTL_UPDATE_DRAW compat wrapper for compat X86.
-Date: Thu, 19 Feb 2009 15:19:01 +0100
-User-Agent: KMail/1.9.9
-Cc: airlied@linux.ie, benh@kernel.crashing.org,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <20090218.013521.97380943.davem@davemloft.net>
-In-Reply-To: <20090218.013521.97380943.davem@davemloft.net>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 19 Feb 2009 09:21:41 -0500
+Subject: Re: [PATCH] Add tracepoints to track pagecache transition
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Jason Baron <jbaron@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Kazuto Miyoshi <miyoshi@linux.bs1.fc.nec.co.jp>, rostedt@goodmis.org,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>
+In-Reply-To: <2f11576a0902190512y1ac60b11s4927533977dc01e7@mail.gmail.com>
+References: <1234863220.4744.34.camel@laptop>
+	 <499A99BC.2080700@bk.jp.nec.com>
+	 <20090217201651.576E.A69D9226@jp.fujitsu.com>
+	 <499CE2FE.90503@bk.jp.nec.com>
+	 <2f11576a0902190512y1ac60b11s4927533977dc01e7@mail.gmail.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Thu, 19 Feb 2009 09:21:31 -0500
+Message-Id: <1235053291.8424.14.camel@lts-notebook>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902191519.03399.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+i5z8pxjdZT2UrFEgukVbSePkPItuKifIGcuL
- gM8ADKUivOkHVfObDqJfh2bR9l90/5UNeKF5jy7XacL1bf48P4
- Py4eG9UbjG0FhcX+z7N4w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 18 February 2009, David Miller wrote:
-> drm: Only use DRM_IOCTL_UPDATE_DRAW compat wrapper for compat X86.
+On Thu, 2009-02-19 at 22:12 +0900, KOSAKI Motohiro wrote:
+> > Hi Kosaki-san,
+> >
+> > Thank you for your comment.
+> >
+> > KOSAKI Motohiro wrote:
+> >> Hi
+> >>
+> >>
+> >> In my 1st impression, this patch description is a bit strange.
+> >>
+> >>> The below patch adds instrumentation for pagecache.
+> >>>
+> >>> I thought it would be useful to trace pagecache behavior for problem
+> >>> analysis (performance bottlenecks, behavior differences between stable
+> >>> time and trouble time).
+> >>>
+> >>> By using those tracepoints, we can describe and visualize pagecache
+> >>> transition (file-by-file basis) in kernel and  pagecache
+> >>> consumes most of the memory in running system and pagecache hit rate
+> >>> and writeback behavior will influence system load and performance.
+> >>
+> >> Why do you think this tracepoint describe pagecache hit rate?
+> >> and, why describe writeback behavior?
+> >
+> > I mean, we can describe file-by-file basis pagecache usage by using
+> > these tracepoints and it is important for analyzing process I/O behavior.
 > 
-> Only X86 32-bit uses a different alignment for "unsigned long long"
-> than it's 64-bit counterpart.
+> More confusing.
+> Your page cache tracepoint don't have any per-process information.
 > 
-> Therefore this compat translation is only correct, and only needed,
-> when either CONFIG_X86 or CONFIG_IA64.
 > 
-> Signed-off-by: David S. Miller <davem@davemloft.net>
+> > Currently, we can understand the amount of pagecache from "Cached"
+> > in /proc/meminfo. So I'd like to understand which files are using pagecache.
+> 
+> There is one meta question, Why do you think file-by-file pagecache
+> infomartion is valueable?
+> 
 
-The patch is correct AFAICT, but I'd like to point out that the
-problem could have been avoided (besides using a non-padded layout)
-by using a compat_u64 member in the struct definition instead of
-the packed attribute:
+One might take a look at Marcello Tosatti's old 'vmtrace' patch.  It
+contains it's own data store/transport via relayfs, but the trace points
+could be ported to the current kernel tracing infrastructure.
 
-typedef struct drm_update_draw32 {
-	drm_drawable_t handle;
-	unsigned int type;
-	unsigned int num;
-	compat_u64 data;	/**< Pointer */
-} drm_update_draw32_t;
+Here's a starting point:   http://linux-mm.org/VmTrace
 
-I find that too often __attribute__((packed)) is used on whole
-structures where some other much more gentle solution can be
-applied. In fact, there are very few files (e.g.
-linux/unaligned/packed_struct.h) that look like they want all
-of the implied meanings (pack members, drop alignment on whole
-structure, access members as unaligned).
+Quoting from that page:
 
-A grep for "packed" in compat_ioctl definitions revealed the
-same bug as in drm_update_draw32 to be present in
-raw32_config_request, and I'm rather sure that there are more
-of these.
+>From the previous email to linux-mm:
+>"The sequence of pages which a given process or workload accesses
+>during its lifetime, a.k.a. "reference trace", is very important
+>information. It has been used in the past for comparison of page
+>replacement algorithms and other optimizations..."
 
-	Arnd <><
+Lee
+
