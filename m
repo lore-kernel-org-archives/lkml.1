@@ -1,63 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbZBSWDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756010AbZBSWDJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754497AbZBSWDa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 17:03:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbZBSWDT
+	id S1756010AbZBSWDJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 17:03:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbZBSWCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 17:03:19 -0500
-Received: from 8bytes.org ([88.198.83.132]:59495 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754732AbZBSWDR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 17:03:17 -0500
-Date: Thu, 19 Feb 2009 23:03:15 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: Hollis Blanchard <hollisb@us.ibm.com>
-Cc: kvm-devel <kvm@vger.kernel.org>,
-       Jaswinder Singh Rajput <jaswinder@infradead.org>,
-       Avi Kivity <avi@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: kvm-userspace build break (linux/types.h)
-Message-ID: <20090219220315.GI2125@8bytes.org>
-References: <1235080214.16221.26.camel@slate.austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1235080214.16221.26.camel@slate.austin.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 19 Feb 2009 17:02:55 -0500
+Received: from relais.videotron.ca ([24.201.245.36]:34072 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752116AbZBSWCy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 17:02:54 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 19 Feb 2009 17:02:32 -0500 (EST)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: drzeus-mmc@drzeus.cx, lkml <linux-kernel@vger.kernel.org>,
+       Maen Suleiman <maen@marvell.com>
+Subject: Re: [PATCH] SDIO driver for Marvell SoCs
+In-reply-to: <20090219124418.dfc4dc9a.akpm@linux-foundation.org>
+Message-id: <alpine.LFD.2.00.0902191625120.5511@xanadu.home>
+References: <alpine.LFD.2.00.0902172338110.32550@xanadu.home>
+ <20090219124418.dfc4dc9a.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 19, 2009 at 03:50:14PM -0600, Hollis Blanchard wrote:
-> A recent kernel merge breaks kvm-userspace build:
->         make[1]: Entering directory `/root/hollisb/kvm-userspace.git/libkvm'
->         gcc -m64 -D__x86_64__ -MMD -MF ./.libkvm.d -g -fomit-frame-pointer -Wall  -fno-stack-protector   -I /root/hollisb/kvm-userspace.git/kernel/include   -c -o libkvm.o libkvm.c
->         In file included from /usr/include/bits/fcntl.h:24,
->                          from /usr/include/fcntl.h:34,
->                          from libkvm.c:30:
->         /usr/include/sys/types.h:46: error: conflicting types for ‘loff_t’
->         /usr/include/linux/types.h:30: error: previous declaration of ‘loff_t’ was here
->         /usr/include/sys/types.h:62: error: conflicting types for ‘dev_t’
->         /usr/include/linux/types.h:13: error: previous declaration of ‘dev_t’ was here
->         [...]
-> 
-> I built like so:
->         ./configure
->         make -C kernel LINUX=/path/to/kvm.git sync
->         make
-> 
-> The problem appears to be 00bfddaf7f68a6551319b536f052040c370756b0 and
-> cef3767852a9b1a7ff4a8dfe0969e2d32eb728df, both from Jaswinder Singh
-> Rajput <jaswinder@infradead.org>: 
->         -#include <asm/types.h>
->         +#include <linux/types.h>
-> 
-> With these changes, libkvm.c ends up
-> including /usr/include/linux/types.h, instead of the
-> intended ../kernel/include/linux/types.h.
+On Thu, 19 Feb 2009, Andrew Morton wrote:
 
-I had the same problem some weeks ago. IIRC I fixed it with some include
-reordering in libkvm.h.
+> On Tue, 17 Feb 2009 23:46:21 -0500 (EST)
+> Nicolas Pitre <nico@cam.org> wrote:
+> 
+> > From: Maen Suleiman <maen@marvell.com>
+> > 
+> > This supports MMC/SD/SDIO currently found on the Kirkwood 88F6281 and
+> > 88F6192 SoC controllers.
+> > 
+> > Signed-off-by: Nicolas Pitre <nico@marvell.com>
+> 
+> It would be nice to have Maen's signoff.
 
-Joerg
+Sure, I can add it if this is Maen's wish.  Still, this single signoff 
+was made in conformity with option B of the Developer's Certificate of 
+Origin 1.1 as found in Documentation/SubmittingPatches.  It is actually 
+my duty at Marvell to act as such.
+
+> >
+> > ...
+> >
+> > +#define mvsd_write(offs, val)	writel(val, iobase + (offs))
+> > +#define mvsd_read(offs)		readl(iobase + (offs))
+> 
+> It's rather grotty to have a macro which secretly relies upon the
+> presence of a particularly-named local variable.
+
+My call.  Otherwise the code becomes bloated with repeated iobase noise 
+everywhere, making many lines bust the 80 column limit imposed by the 
+checkpatch.pl.  The alternative is to split those statement on multiple 
+lines making things not prettier.  So, unless you want to help 
+maintaining this driver, I prefer this grottiness to remains as is.
+
+> > +static int __init mvsd_probe(struct platform_device *pdev)
+> > +{
+> > +	struct mmc_host *mmc = NULL;
+> > +	struct mvsd_host *host = NULL;
+> > +	const struct mvsdio_platform_data *mvsd_data;
+> > +	struct resource *r;
+> > +	int ret, irq;
+> > +
+> > +	r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> > +	irq = platform_get_irq(pdev, 0);
+> > +	mvsd_data = pdev->dev.platform_data;
+> > +	if (!r || irq < 0 || !mvsd_data)
+> > +		return -ENXIO;
+> > +
+> > +	r = request_mem_region(r->start, SZ_1K, DRIVER_NAME);
+> > +	if (!r)
+> > +		return -EBUSY;
+> > +
+> > +	mmc = mmc_alloc_host(sizeof(struct mvsd_host), &pdev->dev);
+> > +	if (!mmc) {
+> > +		ret = -ENOMEM;
+> > +		goto out;
+> 
+> Resource `r' is leaked here.
+
+Good catch, thanks.
+
+> > +static int __exit mvsd_remove(struct platform_device *pdev)
+> > +{
+> > +	struct mmc_host *mmc = platform_get_drvdata(pdev);
+> > +
+> > +	if (mmc) {
+> > +		struct mvsd_host *host = mmc_priv(mmc);
+> > +
+> > +		if (host->gpio_card_detect) {
+> > +			free_irq(gpio_to_irq(host->gpio_card_detect), host);
+> > +			gpio_free(host->gpio_card_detect);
+> > +		}
+> > +		mmc_remove_host(mmc);
+> > +		free_irq(host->irq, host);
+> > +		if (host->gpio_write_protect)
+> > +			gpio_free(host->gpio_write_protect);
+> > +		del_timer_sync(&host->timer);
+> > +		mvsd_power_down(host);
+> > +		iounmap(host->base);
+> > +		release_resource(host->res);
+> > +		mmc_free_host(mmc);
+> 
+> Perhaps this function and the error path ("out:") in the preceding
+> function could share code.
+
+Well, one is marked __init and the other __exit.  Having common code 
+would mean this needs to be in a non discardable section which is a 
+waste.
+
+
+Nicolas
