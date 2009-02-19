@@ -1,62 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757407AbZBSUzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758456AbZBSU5r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757407AbZBSUzc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 15:55:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbZBSUzV
+	id S1758456AbZBSU5r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 15:57:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755506AbZBSU53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 15:55:21 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:44430 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753762AbZBSUzT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 15:55:19 -0500
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <m1ocx5ve8o.fsf@fess.ebiederm.org>
-	<20090219120333.af992d9e.akpm@linux-foundation.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 19 Feb 2009 12:55:37 -0800
-In-Reply-To: <20090219120333.af992d9e.akpm@linux-foundation.org> (Andrew Morton's message of "Thu\, 19 Feb 2009 12\:03\:33 -0800")
-Message-ID: <m163j61706.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 19 Feb 2009 15:57:29 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:46013 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755484AbZBSU53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 15:57:29 -0500
+Date: Thu, 19 Feb 2009 21:53:55 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@osdl.org>, roland@redhat.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>, daniel@hozac.com,
+       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7][v8] Container-init signal semantics
+Message-ID: <20090219205355.GC374@redhat.com>
+References: <20090219030207.GA18783@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0002]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] pcie_portdriver: FIX: pcie_port_device_remove
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <20090219030207.GA18783@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
-
+On 02/18, Sukadev Bhattiprolu wrote:
 >
-> There are large-scale and conflicting changes to this file in linux-next.
+> Patch 5/7 is new in this set and fixes a bug.
+
+To clarify, the current code is buggy, and the fix doesn't depend on
+any other patch, afaics.
+
+> Remaining patches are
+> just a forward-port from previous version and I believe they address
+> all comments I have received.
 >
-> If we want to jam this fix into 2.6.29 (and it looks like something we
-> want) then this will trash the linux-next changes.  It will cause me
-> grief, and will cause Stephen grief unless the pci tree is suitably
-> changed, which will cause Jesse grief. Either way: grief.
+> Oleg please sign-off/ack if you agree.
 
-Ugh.
-
-I had better have a good hard look at linux-next.  I tried to ask earlier about
-ongoing working but I didn't hear anything.
-
-Eric
+Reviewed-by: Oleg Nesterov <oleg@redhat.com>
 
