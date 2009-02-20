@@ -1,75 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbZBTQmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754459AbZBTQmf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758110AbZBTQmT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 11:42:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbZBTQkv
+	id S1754459AbZBTQmf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 11:42:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZBTQkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 11:40:51 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:40894 "EHLO
+	Fri, 20 Feb 2009 11:40:52 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:53855 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753078AbZBTQks (ORCPT
+	with ESMTP id S1752941AbZBTQks (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 20 Feb 2009 11:40:48 -0500
-Message-Id: <20090220164046.019184471@goodmis.org>
+Message-Id: <20090220164045.827841413@goodmis.org>
 References: <20090220163846.709775139@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 20 Feb 2009 11:38:49 -0500
+Date: Fri, 20 Feb 2009 11:38:48 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        Peter Zijlstra <peterz@infradead.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 3/5] ftrace: immediately stop code modification if failure is detected
-Content-Disposition: inline; filename=0003-ftrace-immediately-stop-code-modification-if-failur.patch
+Subject: [PATCH 2/5] ftrace, x86: make kernel text writable only for conversions
+Content-Disposition: inline; filename=0002-ftrace-x86-make-kernel-text-writable-only-for-conv.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Impact: fix to prevent NMI lockup
+Impact: keep kernel text read only
 
-If the page fault handler produces a WARN_ON in the modifying of
-text, and the system is setup to have a high frequency of NMIs,
-we can lock up the system on a failure to modify code.
+Because dynamic ftrace converts the calls to mcount into and out of
+nops at run time, we needed to always keep the kernel text writable.
 
-The modifying of code with NMIs allows all NMIs to modify the code
-if it is about to run. This prevents a modifier on one CPU from
-modifying code running in NMI context on another CPU. The modifying
-is done through stop_machine, so only NMIs must be considered.
+But this defeats the point of CONFIG_DEBUG_RODATA. This patch converts
+the kernel code to writable before ftrace modifies the text, and converts
+it back to read only afterward.
 
-But if the write causes the page fault handler to produce a warning,
-the print can slow it down enough that as soon as it is done
-it will take another NMI before going back to the process context.
-The new NMI will perform the write again causing another print and
-this will hang the box.
-
-This patch turns off the writing as soon as a failure is detected
-and does not wait for it to be turned off by the process context.
-This will keep NMIs from getting stuck in this back and forth
-of print outs.
+The conversion is done via stop_machine and no IPIs may be executed
+at that time. The kernel text is set to write just before calling
+stop_machine and set to read only again right afterward.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/x86/kernel/ftrace.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/ftrace.h |   10 ++++++++++
+ arch/x86/kernel/ftrace.c      |   20 ++++++++++++++++++++
+ arch/x86/mm/init_32.c         |   27 ++++++++++++++++++++++++---
+ arch/x86/mm/init_64.c         |   29 ++++++++++++++++++++++++-----
+ 4 files changed, 78 insertions(+), 8 deletions(-)
 
+diff --git a/arch/x86/include/asm/ftrace.h b/arch/x86/include/asm/ftrace.h
+index b55b4a7..5564cf3 100644
+--- a/arch/x86/include/asm/ftrace.h
++++ b/arch/x86/include/asm/ftrace.h
+@@ -80,4 +80,14 @@ extern void return_to_handler(void);
+ #endif /* __ASSEMBLY__ */
+ #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+ 
++#ifndef __ASSEMBLY__
++#ifdef CONFIG_DEBUG_RODATA
++void set_kernel_text_rw(void);
++void set_kernel_text_ro(void);
++#else
++static inline void set_kernel_text_rw(void) { }
++static inline void set_kernel_text_ro(void) { }
++#endif
++#endif /* __ASSEMBLY__ */
++
+ #endif /* _ASM_X86_FTRACE_H */
 diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-index aa0e559..c9ba2f9 100644
+index 231bdd3..aa0e559 100644
 --- a/arch/x86/kernel/ftrace.c
 +++ b/arch/x86/kernel/ftrace.c
-@@ -131,6 +131,10 @@ static void ftrace_mod_code(void)
- 	 */
- 	mod_code_status = probe_kernel_write(mod_code_ip, mod_code_newcode,
- 					     MCOUNT_INSN_SIZE);
-+
-+	/* if we fail, then kill any new writers */
-+	if (mod_code_status)
-+		mod_code_write = 0;
- }
+@@ -26,6 +26,26 @@
  
- void ftrace_nmi_enter(void)
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ 
++int ftrace_arch_modify_prepare(void)
++{
++	/* at boot up, we are still writable */
++	if (system_state != SYSTEM_RUNNING)
++		return 0;
++
++	set_kernel_text_rw();
++	return 0;
++}
++
++int ftrace_arch_modify_post_process(void)
++{
++	/* at boot up, we are still writable */
++	if (system_state != SYSTEM_RUNNING)
++		return 0;
++
++	set_kernel_text_ro();
++	return 0;
++}
++
+ union ftrace_code_union {
+ 	char code[MCOUNT_INSN_SIZE];
+ 	struct {
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index 2cef050..bcd7f00 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -1155,13 +1155,35 @@ static noinline int do_test_wp_bit(void)
+ const int rodata_test_data = 0xC3;
+ EXPORT_SYMBOL_GPL(rodata_test_data);
+ 
++/* used by ftrace */
++void set_kernel_text_rw(void)
++{
++	unsigned long start = PFN_ALIGN(_text);
++	unsigned long size = PFN_ALIGN(_etext) - start;
++
++	printk(KERN_INFO "Set kernel text: %lx - %lx for read write\n",
++	       start, start+size);
++
++	set_pages_rw(virt_to_page(start), size >> PAGE_SHIFT);
++}
++
++/* used by ftrace */
++void set_kernel_text_ro(void)
++{
++	unsigned long start = PFN_ALIGN(_text);
++	unsigned long size = PFN_ALIGN(_etext) - start;
++
++	printk(KERN_INFO "Set kernel text: %lx - %lx for read only\n",
++	       start, start+size);
++
++	set_pages_ro(virt_to_page(start), size >> PAGE_SHIFT);
++}
++
+ void mark_rodata_ro(void)
+ {
+ 	unsigned long start = PFN_ALIGN(_text);
+ 	unsigned long size = PFN_ALIGN(_etext) - start;
+ 
+-#ifndef CONFIG_DYNAMIC_FTRACE
+-	/* Dynamic tracing modifies the kernel text section */
+ 	set_pages_ro(virt_to_page(start), size >> PAGE_SHIFT);
+ 	printk(KERN_INFO "Write protecting the kernel text: %luk\n",
+ 		size >> 10);
+@@ -1174,7 +1196,6 @@ void mark_rodata_ro(void)
+ 	printk(KERN_INFO "Testing CPA: write protecting again\n");
+ 	set_pages_ro(virt_to_page(start), size>>PAGE_SHIFT);
+ #endif
+-#endif /* CONFIG_DYNAMIC_FTRACE */
+ 
+ 	start += size;
+ 	size = (unsigned long)__end_rodata - start;
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index e6d36b4..8c1b5ee 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -986,17 +986,36 @@ void free_initmem(void)
+ const int rodata_test_data = 0xC3;
+ EXPORT_SYMBOL_GPL(rodata_test_data);
+ 
++/* used by ftrace */
++void set_kernel_text_rw(void)
++{
++	unsigned long start = PFN_ALIGN(_stext);
++	unsigned long end = PFN_ALIGN(__start_rodata);
++
++	printk(KERN_INFO "Set kernel text: %lx - %lx for read write\n",
++	       start, end);
++
++	set_memory_rw(start, (end - start) >> PAGE_SHIFT);
++}
++
++/* used by ftrace */
++void set_kernel_text_ro(void)
++{
++	unsigned long start = PFN_ALIGN(_stext);
++	unsigned long end = PFN_ALIGN(__start_rodata);
++
++	printk(KERN_INFO "Set kernel text: %lx - %lx for read only\n",
++	       start, end);
++
++	set_memory_ro(start, (end - start) >> PAGE_SHIFT);
++}
++
+ void mark_rodata_ro(void)
+ {
+ 	unsigned long start = PFN_ALIGN(_stext), end = PFN_ALIGN(__end_rodata);
+ 	unsigned long rodata_start =
+ 		((unsigned long)__start_rodata + PAGE_SIZE - 1) & PAGE_MASK;
+ 
+-#ifdef CONFIG_DYNAMIC_FTRACE
+-	/* Dynamic tracing modifies the kernel text section */
+-	start = rodata_start;
+-#endif
+-
+ 	printk(KERN_INFO "Write protecting the kernel read-only data: %luk\n",
+ 	       (end - start) >> 10);
+ 	set_memory_ro(start, (end - start) >> PAGE_SHIFT);
 -- 
 1.5.6.5
 
