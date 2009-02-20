@@ -1,81 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758626AbZBTPok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758592AbZBTPqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758626AbZBTPok (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 10:44:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753742AbZBTPoa
+	id S1758592AbZBTPqc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 10:46:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbZBTPqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 10:44:30 -0500
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:34174 "EHLO e7.ny.us.ibm.com"
+	Fri, 20 Feb 2009 10:46:23 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:36361 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753390AbZBTPo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 10:44:29 -0500
-Subject: Re: kvm-userspace build break (linux/types.h)
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: kvm-devel <kvm@vger.kernel.org>, Avi Kivity <avi@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
-       Joerg Roedel <joro@8bytes.org>, xiantao.zhang@intel.com
-In-Reply-To: <1235106727.3826.13.camel@localhost.localdomain>
-References: <1235080214.16221.26.camel@slate.austin.ibm.com>
-	 <1235106727.3826.13.camel@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Organization: IBM Linux Technology Center
-Date: Fri, 20 Feb 2009 09:44:25 -0600
-Message-Id: <1235144665.3745.3.camel@slate.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
-Content-Transfer-Encoding: 8bit
+	id S1753397AbZBTPqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 10:46:22 -0500
+Date: Fri, 20 Feb 2009 07:46:19 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, stable@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: fix lazy vmap purging (use-after-free error)
+Message-ID: <20090220154619.GC6960@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090220134121.GA19575@damson.getinternet.no> <20090220135000.GA9616@elte.hu> <20090220140157.GA12799@elte.hu> <19f34abd0902200651k7e86aebay5398ef5ac0578561@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19f34abd0902200651k7e86aebay5398ef5ac0578561@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-02-20 at 10:42 +0530, Jaswinder Singh Rajput wrote:
-> On Thu, 2009-02-19 at 15:50 -0600, Hollis Blanchard wrote:
-> > A recent kernel merge breaks kvm-userspace build:
-> >         make[1]: Entering directory `/root/hollisb/kvm-userspace.git/libkvm'
-> >         gcc -m64 -D__x86_64__ -MMD -MF ./.libkvm.d -g -fomit-frame-pointer -Wall  -fno-stack-protector   -I /root/hollisb/kvm-userspace.git/kernel/include   -c -o libkvm.o libkvm.c
-> >         In file included from /usr/include/bits/fcntl.h:24,
-> >                          from /usr/include/fcntl.h:34,
-> >                          from libkvm.c:30:
-> >         /usr/include/sys/types.h:46: error: conflicting types for ‘loff_t’
-> >         /usr/include/linux/types.h:30: error: previous declaration of ‘loff_t’ was here
-> >         /usr/include/sys/types.h:62: error: conflicting types for ‘dev_t’
-> >         /usr/include/linux/types.h:13: error: previous declaration of ‘dev_t’ was here
-> >         [...]
-> > 
-> > I built like so:
-> >         ./configure
-> >         make -C kernel LINUX=/path/to/kvm.git sync
-> >         make
-> > 
-> > The problem appears to be 00bfddaf7f68a6551319b536f052040c370756b0 and
-> > cef3767852a9b1a7ff4a8dfe0969e2d32eb728df, both from Jaswinder Singh
-> > Rajput <jaswinder@infradead.org>: 
-> >         -#include <asm/types.h>
-> >         +#include <linux/types.h>
-> > 
-> > With these changes, libkvm.c ends up
-> > including /usr/include/linux/types.h, instead of the
-> > intended ../kernel/include/linux/types.h.
-> > 
-> > Avi, suggestions? More "make sync" hacks?
-> > 
+On Fri, Feb 20, 2009 at 03:51:28PM +0100, Vegard Nossum wrote:
+> 2009/2/20 Ingo Molnar <mingo@elte.hu>:
+> >
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> >> ah, indeed:
+> >>
+> >>         list_del_rcu(&va->list);
+> >>
+> >> i suspect it could be hit big time in a workload that opens
+> >> more than 512 files, as expand_files() uses a
+> >> vmalloc()+vfree() pair in that case.
+> >
+> > hm, perhaps it's not a problem after all. The freeing is done
+> > via rcu, and list_del_rcu() leaves the forward pointer intact.
 > 
-> Avi, Is this already fixed, Or it is in your Magic Box (patch queue ;-)
+> Well, it's not the particular line that you posted, in any case.
+> That's &va->list, but the traversed list is &va->purge_list.
+> 
+> I thought it would be the line:
+> 
+>         call_rcu(&va->rcu_head, rcu_free_va);
+> 
+> (which does kfree() in the callback) that was the problem.
+> 
+> > So how did it happen that the entry got kfree()d before the loop
+> > was done? We are in a spinlocked section so the CPU should not
+> > have entered rcu processing.
+> 
+> I added some printks to __free_vmap_area() and rcu_free_va(), and it
+> shows that the kfree() is being called immediately (inside the list
+> traversal). So the call_rcu() is happening immediately (or almost
+> immediately).
+> 
+> If I've understood correctly, the RCU processing can happen inside a
+> spinlock, as long as interrupts are enabled. (Won't the timer IRQ
+> trigger softirq processing, which triggers RCU callback processing,
+> for example?)
+> 
+> And interrupts are enabled when this happens: EFLAGS: 00000292
+> 
+> Please correct me if I am wrong!
 
-Sorry, my fault... it is already fixed in the master branch of Avi's
-tree.
+If you are using preemptable RCU, and if the read side accesses are not
+protected by rcu_read_lock(), this can happen.  At least for values of
+"immediately" in the millisecond range.
 
-> Hollis: Do you mind testing -tip tree, may be we already fixed your
-> problem, Ingo is having big Magic Box :)
-> http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=summary
+If you were using classic or hierarchical RCU, the fact that the
+call_rcu() is within a spinlock (as opposed to mutex) critical section
+should prevent the grace period from ending.
 
-Avi, would you pull kvm-userspace
-05acb1ae99a8b55c9745f2e566010213cf52a819 into maint/2.6.29 branch
-please?
+So, what flavor of RCU were you using?
 
--- 
-Hollis Blanchard
-IBM Linux Technology Center
-
+							Thanx, Paul
