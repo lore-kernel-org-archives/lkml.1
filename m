@@ -1,71 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757857AbZBTO4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758165AbZBTO55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757857AbZBTO4Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 09:56:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbZBTO4K
+	id S1758165AbZBTO55 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 09:57:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbZBTO5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 09:56:10 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:54594 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752167AbZBTO4I (ORCPT
+	Fri, 20 Feb 2009 09:57:48 -0500
+Received: from fk-out-0910.google.com ([209.85.128.186]:65322 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752198AbZBTO5r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 09:56:08 -0500
+	Fri, 20 Feb 2009 09:57:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=l+nyvTNnKadM9bhdnOdCkEO7Go0qFOT+XdJ+bXgZIcFgryz5znpXPcQABr+l7Bl+Dg
+         uCA8rGejjbCpqB9PCAiVa728vu7pnHpXa8FZ4ytNy8uINGc7Jr/RjfWHab+d4Nz4sWZH
+         a/gTpdO2IkmshRkH3ZEVNvXRJEqHp8F7piM4E=
 MIME-Version: 1.0
-In-Reply-To: <20090220142705.GA429@silver.sucs.org>
-References: <alpine.DEB.1.10.0902190837270.19552@p34.internal.lan>
-	 <20090220094356.GB26124@silver.sucs.org>
-	 <ac3eb2510902200316m387ecb45n86a2ea7c6196b01@mail.gmail.com>
-	 <20090220131209.GA21446@silver.sucs.org>
-	 <ac3eb2510902200523o619e64aas7bffac9aeca86814@mail.gmail.com>
-	 <20090220142705.GA429@silver.sucs.org>
-Date: Fri, 20 Feb 2009 15:56:06 +0100
-Message-ID: <ac3eb2510902200656l11275aber128848182553726d@mail.gmail.com>
-Subject: Re: General question (scheduler) with SSDs?
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-raid@vger.kernel.org
+In-Reply-To: <20090220140157.GA12799@elte.hu>
+References: <20090220134121.GA19575@damson.getinternet.no>
+	 <20090220135000.GA9616@elte.hu> <20090220140157.GA12799@elte.hu>
+Date: Fri, 20 Feb 2009 15:51:28 +0100
+Message-ID: <19f34abd0902200651k7e86aebay5398ef5ac0578561@mail.gmail.com>
+Subject: Re: [PATCH] mm: fix lazy vmap purging (use-after-free error)
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 20, 2009 at 15:27, Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
-> On Fri, Feb 20, 2009 at 02:23:38PM +0100, Kay Sievers wrote:
->> On Fri, Feb 20, 2009 at 14:12, Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
->> >
->> > I tried
->> > SUBSYSTEM=="block", ATTRS{model}=="ASUS-PHISON *", ATTR{queue/rotational}="0"
->> > but udevtest /sys/block/sda/ doesn't list it as firing (udev 117-8)...
->>
->> I does here:
->>   udev_rules_apply_to_event: ATTR '/sys/devices/ ...
->> /sdb/queue/rotational' writing '0'
->>
->>   $grep . /sys/class/block/*/queue/rotational
->>   /sys/class/block/sda/queue/rotational:1
->>   /sys/class/block/sdb/queue/rotational:0
->>
->> Maybe "udevtest" is not showing it for you, or udev 117 is too old and
->> does not work that way.
+2009/2/20 Ingo Molnar <mingo@elte.hu>:
 >
-> After you mentioned this I tried again and seemingly I was mistaken - it
-> does work as you described.
-
-Great.
-
-> I had to make a slight rule tweak to stop
-> it matching on partitions though:
+> * Ingo Molnar <mingo@elte.hu> wrote:
 >
-> SUBSYSTEM=="block", KERNEL=="[sh]d[a-z]", ATTRS{model}=="ASUS-PHISON *", ATTR{queue/rotational}="0"
+>> ah, indeed:
+>>
+>>         list_del_rcu(&va->list);
+>>
+>> i suspect it could be hit big time in a workload that opens
+>> more than 512 files, as expand_files() uses a
+>> vmalloc()+vfree() pair in that case.
+>
+> hm, perhaps it's not a problem after all. The freeing is done
+> via rcu, and list_del_rcu() leaves the forward pointer intact.
 
-Newer kernels have DEVTYPE in the envent environment, and:
-  ENV{DEVTYPE}=="disk"
-can be used, which is easier and more reliable.
+Well, it's not the particular line that you posted, in any case.
+That's &va->list, but the traversed list is &va->purge_list.
 
-Also the whitespace after "...PHISON *" does not need to be matched.
-If the match value does not end in whitespace itself, udev will match
-against the value with all trailing whitespace ignored.
+I thought it would be the line:
 
-Kay
+        call_rcu(&va->rcu_head, rcu_free_va);
+
+(which does kfree() in the callback) that was the problem.
+
+>
+> So how did it happen that the entry got kfree()d before the loop
+> was done? We are in a spinlocked section so the CPU should not
+> have entered rcu processing.
+
+I added some printks to __free_vmap_area() and rcu_free_va(), and it
+shows that the kfree() is being called immediately (inside the list
+traversal). So the call_rcu() is happening immediately (or almost
+immediately).
+
+If I've understood correctly, the RCU processing can happen inside a
+spinlock, as long as interrupts are enabled. (Won't the timer IRQ
+trigger softirq processing, which triggers RCU callback processing,
+for example?)
+
+And interrupts are enabled when this happens: EFLAGS: 00000292
+
+Please correct me if I am wrong!
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
