@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbZBTV66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755665AbZBTWAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755509AbZBTV66 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 16:58:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbZBTV6t
+	id S1755665AbZBTWAo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 17:00:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753911AbZBTWAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 16:58:49 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41833 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753718AbZBTV6s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 16:58:48 -0500
-Date: Fri, 20 Feb 2009 22:58:30 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Philippe Grenard <philippe.grenard@laposte.net>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, John Stoffel <john@stoffel.org>
-Subject: Re: PROBLEM: cannot get stable system since 2.6.28 kernel (amd64)
-Message-ID: <20090220215830.GB30665@elte.hu>
-References: <200902131944.56634.philippe.grenard@laposte.net> <200902161925.40256.philippe.grenard@laposte.net> <18842.16695.145336.851447@stoffel.org> <200902202108.55332.philippe.grenard@laposte.net>
+	Fri, 20 Feb 2009 17:00:36 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:46520 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753857AbZBTWAg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 17:00:36 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFD] Automatic suspend
+Date: Fri, 20 Feb 2009 23:05:05 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.27.7-9-default; KDE/4.1.3; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+References: <Pine.LNX.4.44L0.0902191659020.7953-100000@iolanthe.rowland.org> <200902192358.13068.oliver@neukum.org> <200902201146.59944.rjw@sisk.pl>
+In-Reply-To: <200902201146.59944.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200902202108.55332.philippe.grenard@laposte.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200902202305.09992.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Philippe Grenard <philippe.grenard@laposte.net> wrote:
-
-> dc1e35c6e95e8923cf1d3510438b63c600fee1e2 is first bad commit
-> commit dc1e35c6e95e8923cf1d3510438b63c600fee1e2
-> Author: Suresh Siddha <suresh.b.siddha@intel.com>
-> Date:   Tue Jul 29 10:29:19 2008 -0700
+Am Freitag 20 Februar 2009 11:46:55 schrieb Rafael J. Wysocki:
+> On Thursday 19 February 2009, Oliver Neukum wrote:
+> > Am Donnerstag 19 Februar 2009 23:21:46 schrieb Rafael J. Wysocki:
+> > > > That's the whole point behind userspace wakelocks!  They provide a
+> > > > mechanism for userspace to tell the kernel when (as far as userspace
+> >
+> > is
+> >
+> > > > concerned) it is or is not okay to auto-sleep.
+> > >
+> > > Still, one can go further and observe that the user space can in fact
+> > > start automatic suspend by itself whenever it knows it's appropriate
+> > > ...
+> >
+> > User space initiating this is a race condition.
 >
->     x86, xsave: enable xsave/xrstor on cpus with xsave support
-[...]
-> A bit of googling gave me this :
-> http://lkml.org/lkml/2009/1/19/161 
-> which exactly corresponds to my problem with 2.6.28 !
-> 
-> A "solution" proposed was to try to check the bios setting 
-> "cpuid value limit" and disable it if enabled. This did help 
-> me to boot 2.6.28 or previously failing kernel compiled during 
-> git-bisect, but gave me the "random freeze" any way....
+> Do you mean a race with the other user space processes or with the kernel?
 
-Note that the workaround for that BIOS bug is already in the 
-latest upstream kernel, i.e. in 2.6.29-rc5.
+With the set of runnable processes.There's always a window between
+evaluating the current set of runnable tasks and telling the kernel to sleep.
+IMO the most elegant solution would be a task attribute that would signal
+the kernel that a task should not count as keeping the system busy even
+if it is runnable and trigger the sleep in kernel space.
 
-Could you please try -rc5, whether it works out of box?
+	Regards
+		Oliver
 
-If you still see freezes, could you try the "nofxsr" boot 
-option? That will turn off the new FPU code both in the hw and 
-in the kernel.
-
-	Ingo
