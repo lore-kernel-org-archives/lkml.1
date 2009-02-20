@@ -1,54 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758321AbZBTA0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758033AbZBTAcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758321AbZBTA0X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 19:26:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755947AbZBTA0O
+	id S1758033AbZBTAcx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 19:32:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbZBTAco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 19:26:14 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:8345 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751536AbZBTA0O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 19:26:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
-         :subject:references:in-reply-to:content-type
-         :content-transfer-encoding;
-        b=AXwEKRKBV+7XvLlZL52J8LagS52MEPM7ER0PBffororZ1Jq/VshP+2HQBk7F2a3Msy
-         cWQjoha276rDDfdFcn9ickRPlOZp6oKqm6TchQXz5Fjs9MGsYRhA9fJ+Yp6O+OOZlmrQ
-         sizt/3i+dZO11pb26jm/L2UdEg8YejUahoSdY=
-Message-ID: <499DF89F.5030504@gmail.com>
-Date: Thu, 19 Feb 2009 18:26:07 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 19 Feb 2009 19:32:44 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:54377 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751170AbZBTAco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 19:32:44 -0500
+Date: Fri, 20 Feb 2009 01:28:51 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@osdl.org>, roland@redhat.com, daniel@hozac.com,
+       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/7][v8] SI_USER: Masquerade si_pid when crossing pid
+	ns boundary
+Message-ID: <20090220002851.GA15255@redhat.com>
+References: <20090219030207.GA18783@us.ibm.com> <20090219030743.GG18990@us.ibm.com> <m1y6w21k6d.fsf@fess.ebiederm.org> <20090219185159.GA374@redhat.com> <m1fxiayss9.fsf@fess.ebiederm.org> <20090219223137.GA10378@redhat.com> <m1fxiaxbb5.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: joseluismarchetti@yahoo.com.br
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Is interrupt priority supported ?
-References: <657201.46675.qm@web34402.mail.mud.yahoo.com>
-In-Reply-To: <657201.46675.qm@web34402.mail.mud.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1fxiaxbb5.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jose Luis Marchetti wrote:
-> Hi,
+On 02/19, Eric W. Biederman wrote:
+>
+> Oleg Nesterov <oleg@redhat.com> writes:
 > 
-> I am experiencing serial (115K) data loss when I have concurrent heavy Ethernet traffic. I have added some basic trace into the UART driver and could confirm the Ethernet data interrupt, if with enough data and happening in the right place would cause the UART FIFO to fill.
-> BTW this is happening on a embedded processor, not on the usual ( and fast ) PC.
-> Then I tried to set the serial interrupt priority to be higher than the Ethernet interrupt priority, just because the UART I am using have just 4 bytes of FIFO while the Ethernet have thousands...
-> 
-> But I am not able to find where this is done in Linux, is interrupt priority supported at all ?
-> 
-> Thanks in advance for any comments,
+> > On 02/19, Eric W. Biederman wrote:
+> >>
+> >> Oleg Nesterov <oleg@redhat.com> writes:
+> >> >
+> >> > SI_FROMUSER() == T, unless we have more (hopefully not) in-kernel
+> >> > users which send SI_FROMUSER() signals, .si_pid must be valid?
+> >>
+> >> So the argument is that while things such as force_sig_info(SIGSEGV)
+> >> don't have a si_pid we don't care because from_ancestor_ns  == 0.
+> >>
+> >> Interesting.  Then I don't know if we have any kernel senders
+> >> that cross the namespace boundaries.
+> >>
+> >> That said I still object to this code.
+> >>
+> >> sys_kill(-pgrp, SIGUSR1)
+> >>   kill_something_info(SIGUSR1, &info, 0)
+> >>     __kill_pgrp_info(SIGUSR1, &info task_pgrp(current))
+> >>       group_send_sig_info(SIGUSR1, &info, tsk)
+> >>         __group_send_sig_info(SIGUSR1, &info, tsk)
+> >>           send_signal(SIGUSR1, &info, tsk, 1)
+> >>             __send_signal(SIGUSR1, &info, tsk, 1)
+> >>
+> >>
+> >> Process groups and sessions can have processes in multiple pid
+> >> namespaces, which is very useful for not messing up your controlling
+> >> terminal.
+> >>
+> >> In which case sys_kill cannot possibly set the si_pid value correct
+> >> and from_ancestor_ns is not enough either.
+> >
+> > (I know, I shouldn't reply today because I am already sleeping ;)
+> >
+> > Why? send_signal() should calculate the correct value of
+> > from_parent and pass it to __send_signal(). If it is true, then
+> > we clear .si_pid in the copied siginfo (which was already queued).
+> > We don't mangle the original siginfo.
+> >
+> > This happens for each process we send the signal.
+> >
+> > Or I misunderstood you?
+>
+> Suppose I have 3 processes in a process group in three separate pid
+> namespaces.
+>
+> Looking from the init pid namespace I have:
+>      pid pgrp ppid
+>       10 10    1
+>       11 10    10
+>       12 10    11
+>
+> Looking from the pid namespace of pid 11 I have:
+>      pid pgrp ppid
+>       0  0     0
+>       1  0     0
+>       2  0     1
+>
+> Looking from the pid namespace of pid 12 I have:
+>      pid pgrp ppid
+>       0  0     0
+>       0  0     0
+>       1  0     0
+>
+> So if the process with pid 12 in the initial pid namespace
+> sends to process group 0.
 
-You didn't say what platform this was, it likely matters a fair bit.
+But this is the different problem, it is not that we clear si_pid while
+we shouldn't, just the .si_pid passed from kill_something_info() is not
+right.
 
-I don't know that changing interrupt priority is necessarily likely to 
-do much, though. If the network card driver is disabling interrupts 
-while handling packets and that's what's causing the problem, then it 
-won't help.
+Personally, I think we should not allow to send signals outside our
+namespace (except SIGCHLD on exit), this looks just wrong to me. And
+some time ago copy_process(CLONE_PID) did "setsid".
+
+Hmm... that was changed by your commit 5cd17569fd0eeca510735e63a6061291e3971bf6.
+And while I agree with this commit, I think that cinit should do sys_setsid()
+itself to detach itself from the parent namespace.
+
+
+Or. We can fix the case you described. We can move "si_pid = task_tgid_vnr()"
+from sys_kill/do_tkill/etc to send_signal(), it can calculate the correct
+.si_pid looking at sender/receiver namespaces.
+
+Oleg.
+
