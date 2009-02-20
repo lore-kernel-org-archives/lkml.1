@@ -1,278 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759244AbZBTRLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759461AbZBTRL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759244AbZBTRLW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 12:11:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758784AbZBTRKK
+	id S1759461AbZBTRL4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 12:11:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbZBTRKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 12:10:10 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:36537 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757902AbZBTRKH (ORCPT
+	Fri, 20 Feb 2009 12:10:22 -0500
+Received: from mail-fx0-f167.google.com ([209.85.220.167]:65258 "EHLO
+	mail-fx0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755811AbZBTRKU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 12:10:07 -0500
+	Fri, 20 Feb 2009 12:10:20 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=AnZAhWAKr19ZzZwnV7UtutnmmcWdJdFH6TQUFKZr6MAQ5h3Dc19gJcYgd9C8O4bYLY
-         FBYBbIExiciPqOaqGWkgoIfoh/Gr/0HM1f7JH2E6hqT+78Tt/MalhobGsKl6Z0g51723
-         PFUpAMbJ8cH7B7zSpcQSgTRp1NM9JVhKezBGQ=
+        b=uo+MpzHXpb0W2IeGHD6s+xSxPIrX6qk/0subutG2FysHXooGDvv+SAHiBPPsi6KQNc
+         Lyf2/c+KTthjZe7OVvbt+c9YmvMtpLcqV90foa/PFFB+K74N4DSA5Q6fVEm2MFHBOxjm
+         OogvyFqebLSguy7queiiM5rNwUqU6518D9npQ=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Fri, 20 Feb 2009 18:12:01 +0100
-Message-Id: <20090220171201.25429.29473.sendpatchset@localhost.localdomain>
+Date: Fri, 20 Feb 2009 18:12:15 +0100
+Message-Id: <20090220171215.25429.46593.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090220171139.25429.26702.sendpatchset@localhost.localdomain>
 References: <20090220171139.25429.26702.sendpatchset@localhost.localdomain>
-Subject: [PATCH 03/10] ide: destroy DMA mappings after ending DMA
+Subject: [PATCH 05/10] ns87415: use custom ->dma_{start,end} to handle ns87415_prepare_drive()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: destroy DMA mappings after ending DMA
+Subject: [PATCH] ns87415: use custom ->dma_{start,end} to handle ns87415_prepare_drive()
 
-Move ide_destroy_dmatable() call out from ->dma_end method to
-{ide_pc,cdrom_newpc,ide_dma}_intr(), ide_dma_timeout_retry()
-and sgiioc4_resetproc().
-
-This causes minor/safe behavior changes w.r.t.:
-* cmd64x.c::cmd64{8,x}_dma_end()
-* cs5536.c::cs5536_dma_end()
-* icside.c::icside_dma_end()
-* it821x.c::it821x_dma_end()
-* scc_pata.c::__scc_dma_end()
-* sl82c105.c::sl82c105_dma_end()
-* tx4939ide.c::tx4939ide_dma_end()
+Use custom ->dma_{start,end} methods to handle ns87415_prepare_drive()
+there instead of in ->dma_setup method.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/au1xxx-ide.c  |    2 --
- drivers/ide/cmd64x.c      |    2 --
- drivers/ide/icside.c      |    3 ---
- drivers/ide/ide-atapi.c   |    7 +++++--
- drivers/ide/ide-cd.c      |    1 +
- drivers/ide/ide-dma-sff.c |    2 --
- drivers/ide/ide-dma.c     |    3 +++
- drivers/ide/ns87415.c     |    2 --
- drivers/ide/pmac.c        |    2 --
- drivers/ide/sc1200.c      |    1 -
- drivers/ide/scc_pata.c    |    2 --
- drivers/ide/sgiioc4.c     |    2 +-
- drivers/ide/trm290.c      |    3 +--
- drivers/ide/tx4939ide.c   |    4 +---
- 14 files changed, 12 insertions(+), 24 deletions(-)
+ drivers/ide/ns87415.c |   24 +++++++++++-------------
+ 1 file changed, 11 insertions(+), 13 deletions(-)
 
-Index: b/drivers/ide/au1xxx-ide.c
-===================================================================
---- a/drivers/ide/au1xxx-ide.c
-+++ b/drivers/ide/au1xxx-ide.c
-@@ -280,8 +280,6 @@ static int auide_build_dmatable(ide_driv
- 
- static int auide_dma_end(ide_drive_t *drive)
- {
--	ide_destroy_dmatable(drive);
--
- 	return 0;
- }
- 
-Index: b/drivers/ide/cmd64x.c
-===================================================================
---- a/drivers/ide/cmd64x.c
-+++ b/drivers/ide/cmd64x.c
-@@ -327,8 +327,6 @@ static int cmd646_1_dma_end(ide_drive_t 
- 	outb(dma_cmd & ~1, hwif->dma_base + ATA_DMA_CMD);
- 	/* clear the INTR & ERROR bits */
- 	outb(dma_stat | 6, hwif->dma_base + ATA_DMA_STATUS);
--	/* and free any DMA resources */
--	ide_destroy_dmatable(drive);
- 	/* verify good DMA status */
- 	return (dma_stat & 7) != 4;
- }
-Index: b/drivers/ide/icside.c
-===================================================================
---- a/drivers/ide/icside.c
-+++ b/drivers/ide/icside.c
-@@ -291,9 +291,6 @@ static int icside_dma_end(ide_drive_t *d
- 
- 	disable_dma(ec->dma);
- 
--	/* Teardown mappings after DMA has completed. */
--	ide_destroy_dmatable(drive);
--
- 	return get_dma_residue(ec->dma) != 0;
- }
- 
-Index: b/drivers/ide/ide-atapi.c
-===================================================================
---- a/drivers/ide/ide-atapi.c
-+++ b/drivers/ide/ide-atapi.c
-@@ -322,8 +322,11 @@ static ide_startstop_t ide_pc_intr(ide_d
- 	stat = tp_ops->read_status(hwif);
- 
- 	if (pc->flags & PC_FLAG_DMA_IN_PROGRESS) {
--		if (hwif->dma_ops->dma_end(drive) ||
--		    (drive->media == ide_tape && (stat & ATA_ERR))) {
-+		int rc = hwif->dma_ops->dma_end(drive);
-+
-+		ide_destroy_dmatable(drive);
-+
-+		if (rc || (drive->media == ide_tape && (stat & ATA_ERR))) {
- 			if (drive->media == ide_floppy)
- 				printk(KERN_ERR "%s: DMA %s error\n",
- 					drive->name, rq_data_dir(pc->rq)
-Index: b/drivers/ide/ide-cd.c
-===================================================================
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -639,6 +639,7 @@ static ide_startstop_t cdrom_newpc_intr(
- 	if (dma) {
- 		drive->dma = 0;
- 		dma_error = hwif->dma_ops->dma_end(drive);
-+		ide_destroy_dmatable(drive);
- 		if (dma_error) {
- 			printk(KERN_ERR PFX "%s: DMA %s error\n", drive->name,
- 					write ? "write" : "read");
-Index: b/drivers/ide/ide-dma-sff.c
-===================================================================
---- a/drivers/ide/ide-dma-sff.c
-+++ b/drivers/ide/ide-dma-sff.c
-@@ -310,8 +310,6 @@ int ide_dma_end(ide_drive_t *drive)
- 	/* clear INTR & ERROR bits */
- 	ide_dma_sff_write_status(hwif, dma_stat | ATA_DMA_ERR | ATA_DMA_INTR);
- 
--	/* purge DMA mappings */
--	ide_destroy_dmatable(drive);
- 	wmb();
- 
- 	/* verify good DMA status */
-Index: b/drivers/ide/ide-dma.c
-===================================================================
---- a/drivers/ide/ide-dma.c
-+++ b/drivers/ide/ide-dma.c
-@@ -92,6 +92,7 @@ ide_startstop_t ide_dma_intr(ide_drive_t
- 	u8 stat = 0, dma_stat = 0;
- 
- 	dma_stat = hwif->dma_ops->dma_end(drive);
-+	ide_destroy_dmatable(drive);
- 	stat = hwif->tp_ops->read_status(hwif);
- 
- 	if (OK_STAT(stat, DRIVE_READY, drive->bad_wstat | ATA_DRQ)) {
-@@ -475,6 +476,7 @@ ide_startstop_t ide_dma_timeout_retry(id
- 	if (error < 0) {
- 		printk(KERN_WARNING "%s: DMA timeout error\n", drive->name);
- 		(void)dma_ops->dma_end(drive);
-+		ide_destroy_dmatable(drive);
- 		ret = ide_error(drive, "dma timeout error",
- 				hwif->tp_ops->read_status(hwif));
- 	} else {
-@@ -486,6 +488,7 @@ ide_startstop_t ide_dma_timeout_retry(id
- 			ide_dump_status(drive, "DMA timeout",
- 					hwif->tp_ops->read_status(hwif));
- 			(void)dma_ops->dma_end(drive);
-+			ide_destroy_dmatable(drive);
- 		}
- 	}
- 
 Index: b/drivers/ide/ns87415.c
 ===================================================================
 --- a/drivers/ide/ns87415.c
 +++ b/drivers/ide/ns87415.c
-@@ -210,8 +210,6 @@ static int ns87415_dma_end(ide_drive_t *
+@@ -196,6 +196,12 @@ static void ns87415_selectproc (ide_driv
+ 			      !!(drive->dev_flags & IDE_DFLAG_USING_DMA));
+ }
+ 
++static void ns87415_dma_start(ide_drive_t *drive)
++{
++	ns87415_prepare_drive(drive, 1);
++	ide_dma_start(drive);
++}
++
+ static int ns87415_dma_end(ide_drive_t *drive)
+ {
+ 	ide_hwif_t *hwif = drive->hwif;
+@@ -210,19 +216,11 @@ static int ns87415_dma_end(ide_drive_t *
  	/* from ERRATA: clear the INTR & ERROR bits */
  	dma_cmd = inb(hwif->dma_base + ATA_DMA_CMD);
  	outb(dma_cmd | 6, hwif->dma_base + ATA_DMA_CMD);
--	/* and free any DMA resources */
--	ide_destroy_dmatable(drive);
- 	/* verify good DMA status */
- 	return (dma_stat & 7) != 4;
- }
-Index: b/drivers/ide/pmac.c
-===================================================================
---- a/drivers/ide/pmac.c
-+++ b/drivers/ide/pmac.c
-@@ -1562,8 +1562,6 @@ pmac_ide_dma_end (ide_drive_t *drive)
- 	dstat = readl(&dma->status);
- 	writel(((RUN|WAKE|DEAD) << 16), &dma->control);
- 
--	ide_destroy_dmatable(drive);
--
- 	/* verify good dma status. we don't check for ACTIVE beeing 0. We should...
- 	 * in theory, but with ATAPI decices doing buffer underruns, that would
- 	 * cause us to disable DMA, which isn't what we want
-Index: b/drivers/ide/sc1200.c
-===================================================================
---- a/drivers/ide/sc1200.c
-+++ b/drivers/ide/sc1200.c
-@@ -184,7 +184,6 @@ static int sc1200_dma_end(ide_drive_t *d
- 	outb(inb(dma_base)&~1, dma_base);	/* !! DO THIS HERE !! stop DMA */
- 
- 	drive->waiting_for_dma = 0;
--	ide_destroy_dmatable(drive);		/* purge DMA mappings */
- 
- 	return (dma_stat & 7) != 4;		/* verify good DMA status */
- }
-Index: b/drivers/ide/scc_pata.c
-===================================================================
---- a/drivers/ide/scc_pata.c
-+++ b/drivers/ide/scc_pata.c
-@@ -365,8 +365,6 @@ static int __scc_dma_end(ide_drive_t *dr
- 	dma_stat = scc_dma_sff_read_status(hwif);
- 	/* clear the INTR & ERROR bits */
- 	scc_ide_outb(dma_stat | 6, hwif->dma_base + 4);
--	/* purge DMA mappings */
--	ide_destroy_dmatable(drive);
- 	/* verify good DMA status */
- 	wmb();
- 	return (dma_stat & 7) != 4 ? (0x10 | dma_stat) : 0;
-Index: b/drivers/ide/sgiioc4.c
-===================================================================
---- a/drivers/ide/sgiioc4.c
-+++ b/drivers/ide/sgiioc4.c
-@@ -259,7 +259,6 @@ static int sgiioc4_dma_end(ide_drive_t *
- 	}
- 
- 	drive->waiting_for_dma = 0;
--	ide_destroy_dmatable(drive);
- 
- 	return dma_stat;
- }
-@@ -284,6 +283,7 @@ static void
- sgiioc4_resetproc(ide_drive_t * drive)
- {
- 	sgiioc4_dma_end(drive);
-+	ide_destroy_dmatable(drive);
- 	sgiioc4_clearirq(drive);
- }
- 
-Index: b/drivers/ide/trm290.c
-===================================================================
---- a/drivers/ide/trm290.c
-+++ b/drivers/ide/trm290.c
-@@ -216,8 +216,7 @@ static int trm290_dma_end(ide_drive_t *d
- 	u16 status;
- 
- 	drive->waiting_for_dma = 0;
--	/* purge DMA mappings */
--	ide_destroy_dmatable(drive);
-+
- 	status = inw(drive->hwif->dma_base + 2);
- 
- 	return status != 0x00ff;
-Index: b/drivers/ide/tx4939ide.c
-===================================================================
---- a/drivers/ide/tx4939ide.c
-+++ b/drivers/ide/tx4939ide.c
-@@ -335,11 +335,9 @@ static int tx4939ide_dma_end(ide_drive_t
- 	/* read and clear the INTR & ERROR bits */
- 	dma_stat = tx4939ide_clear_dma_status(base);
- 
--	/* purge DMA mappings */
--	ide_destroy_dmatable(drive);
 -	/* verify good DMA status */
- 	wmb();
+-	return (dma_stat & 7) != 4;
+-}
  
+-static int ns87415_dma_setup(ide_drive_t *drive, struct ide_cmd *cmd)
+-{
+-	/* select DMA xfer */
+-	ns87415_prepare_drive(drive, 1);
+-	if (ide_dma_setup(drive, cmd) == 0)
+-		return 0;
+-	/* DMA failed: select PIO xfer */
+ 	ns87415_prepare_drive(drive, 0);
+-	return 1;
++
 +	/* verify good DMA status */
- 	if ((dma_stat & (ATA_DMA_INTR | ATA_DMA_ERR | ATA_DMA_ACTIVE)) == 0 &&
- 	    (ctl & (TX4939IDE_INT_XFEREND | TX4939IDE_INT_HOST)) ==
- 	    (TX4939IDE_INT_XFEREND | TX4939IDE_INT_HOST))
++	return (dma_stat & 7) != 4;
+ }
+ 
+ static void __devinit init_hwif_ns87415 (ide_hwif_t *hwif)
+@@ -298,8 +296,8 @@ static const struct ide_port_ops ns87415
+ 
+ static const struct ide_dma_ops ns87415_dma_ops = {
+ 	.dma_host_set		= ide_dma_host_set,
+-	.dma_setup		= ns87415_dma_setup,
+-	.dma_start		= ide_dma_start,
++	.dma_setup		= ide_dma_setup,
++	.dma_start		= ns87415_dma_start,
+ 	.dma_end		= ns87415_dma_end,
+ 	.dma_test_irq		= ide_dma_test_irq,
+ 	.dma_lost_irq		= ide_dma_lost_irq,
