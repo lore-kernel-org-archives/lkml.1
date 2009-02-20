@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757231AbZBTRy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbZBTRzP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757231AbZBTRy0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 12:54:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbZBTRyO
+	id S1755273AbZBTRzP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 12:55:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbZBTRy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 12:54:14 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:35462 "EHLO
+	Fri, 20 Feb 2009 12:54:57 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:64906 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752569AbZBTRyM (ORCPT
+	with ESMTP id S1752576AbZBTRy4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 12:54:12 -0500
-Date: Fri, 20 Feb 2009 12:54:11 -0500 (EST)
+	Fri, 20 Feb 2009 12:54:56 -0500
+Date: Fri, 20 Feb 2009 12:54:55 -0500 (EST)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
 To: Ingo Molnar <mingo@elte.hu>
@@ -18,11 +18,11 @@ cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        Peter Zijlstra <peterz@infradead.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 4/5] ftrace: break out modify loop immediately on detection
- of error
-In-Reply-To: <20090220173334.GJ24538@elte.hu>
-Message-ID: <alpine.DEB.2.00.0902201252400.13747@gandalf.stny.rr.com>
-References: <20090220163846.709775139@goodmis.org> <20090220164046.287797665@goodmis.org> <20090220173334.GJ24538@elte.hu>
+Subject: Re: [PATCH 5/5] ftrace, x86: do not depend on system state for kernel
+ text info
+In-Reply-To: <20090220173454.GK24538@elte.hu>
+Message-ID: <alpine.DEB.2.00.0902201254180.13747@gandalf.stny.rr.com>
+References: <20090220163846.709775139@goodmis.org> <20090220164046.528070886@goodmis.org> <20090220173454.GK24538@elte.hu>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -32,37 +32,13 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 On Fri, 20 Feb 2009, Ingo Molnar wrote:
+> 
+> Since i suspect you'll rebase anyway, i'd suggest to squash this 
+> patch into patch #2, with credit to Andrew added.
 
-> 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > --- a/kernel/trace/ftrace.c
-> > +++ b/kernel/trace/ftrace.c
-> > @@ -561,11 +561,15 @@ static void ftrace_replace_code(int enable)
-> >  				if ((system_state == SYSTEM_BOOTING) ||
-> >  				    !core_kernel_text(rec->ip)) {
-> >  					ftrace_free_rec(rec);
-> > -				} else
-> > +				} else {
-> >  					ftrace_bug(failed, rec->ip);
-> > +					goto out;
-> > +				}
-> >  			}
-> >  		}
-> >  	}
-> > + out:
-> > +	return;
-> 
-> wouldnt a simple 'break' suffice? Hm, nope, 
-> do_for_each_ftrace_rec() is a double loop.
-> 
-> Then perhaps a 'return' would perhaps be cleaner in this case. 
-> (even though it does make the flow a bit assymetric - the out 
-> label and the empty return looks a bit ugly.)
+Yeah, there's enough things to fix to warrant a rebase.
 
-I guess a return would work too. I did the out jump to annotate the escape 
-a bit more. Both are ugly IMHO. I'll switch it to return in the else 
-statement.
+Thanks,
 
 -- Steve
 
