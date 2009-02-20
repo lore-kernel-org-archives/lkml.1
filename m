@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbZBTDXE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbZBTDgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755092AbZBTDXE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 22:23:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbZBTDWx
+	id S1754682AbZBTDgY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 22:36:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbZBTDgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 22:22:53 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54563
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750740AbZBTDWw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 22:22:52 -0500
-Date: Thu, 19 Feb 2009 14:36:22 -0800 (PST)
-Message-Id: <20090219.143622.74141834.davem@davemloft.net>
-To: nickpiggin@yahoo.com.au
-Cc: tj@kernel.org, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
-       cpw@sgi.com, mingo@elte.hu
-Subject: Re: [PATCH 01/10] vmalloc: call flush_cache_vunmap() from
- unmap_kernel_range()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200902192306.28360.nickpiggin@yahoo.com.au>
-References: <1234958676-27618-1-git-send-email-tj@kernel.org>
-	<1234958676-27618-2-git-send-email-tj@kernel.org>
-	<200902192306.28360.nickpiggin@yahoo.com.au>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Feb 2009 22:36:14 -0500
+Received: from mx2.suse.de ([195.135.220.15]:45013 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752029AbZBTDgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 22:36:14 -0500
+Date: Thu, 19 Feb 2009 19:35:59 -0800
+From: Greg KH <gregkh@suse.de>
+To: Thomas Backlund <tmb@mandriva.org>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, David Woodhouse <David.Woodhouse@intel.com>
+Subject: Re: [patch 03/36] Fix Intel IOMMU write-buffer flushing
+Message-ID: <20090220033559.GA32562@suse.de>
+References: <20090218222447.432108614@mini.kroah.org> <20090218222901.GD10668@kroah.com> <499C9394.5030704@mandriva.org> <499DF274.8040702@mandriva.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <499DF274.8040702@mandriva.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-Date: Thu, 19 Feb 2009 23:06:27 +1100
+On Fri, Feb 20, 2009 at 01:59:48AM +0200, Thomas Backlund wrote:
+> Thomas Backlund skrev:
+>> This patch is broken compared to what's in:
+>> http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ca77fde8e62cecb2c0769052228d15b901367af8 
+>> attached patch fixes it
+>
+> As no-one responded yet...
 
-> On Wednesday 18 February 2009 23:04:27 Tejun Heo wrote:
-> > Impact: proper vcache flush on unmap_kernel_range()
-> >
-> > flush_cache_vunmap() should be called before pages are unmapped.  Add
-> > a call to it in unmap_kernel_range().
-> >
-> > Signed-off-by: Tejun Heo <tj@kernel.org>
-> 
-> Shouldn't this go as a fix to mainline and even .stable?
-> 
-> Otherwise:
-> Acked-by: Nick Piggin <npiggin@suse.de>
+Sorry for the delay, you're right, I messed this one up.  I'll merge
+your fix into the patch before doing the release tomorrow.
 
-Agreed, this is -stable material:
+Thanks for letting us know.
 
-Acked-by: David S. Miller <davem@davemloft.net>
+greg k-h
