@@ -1,103 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754700AbZBTPJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbZBTPPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754700AbZBTPJZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 10:09:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbZBTPJQ
+	id S1755264AbZBTPPt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 10:15:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752708AbZBTPPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 10:09:16 -0500
-Received: from svb-lan-93.maglan.ru ([62.64.8.93]:49862 "EHLO
-	zimbra.svb.sbrf.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752358AbZBTPJP (ORCPT
+	Fri, 20 Feb 2009 10:15:39 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:36868 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752440AbZBTPPi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 10:09:15 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -2.499
-Message-ID: <499EC717.3000502@sbmag.ru>
-Date: Sat, 21 Feb 2009 02:07:03 +1100
-From: zaharov <zaharov@sbmag.ru>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090112)
+	Fri, 20 Feb 2009 10:15:38 -0500
+Date: Fri, 20 Feb 2009 10:15:37 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Mike Lampard <mike@mtgambier.net>
+cc: USB list <linux-usb@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: long-term regression with some usb mass storage devices
+In-Reply-To: <200902201811.52801.mike@mtgambier.net>
+Message-ID: <Pine.LNX.4.44L0.0902201012150.3071-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: SMP Kernel
-References: <499EB742.4050208@sundmangroup.com> <499EBAC6.60804@sbmag.ru> <499EC317.6010506@sundmangroup.com>
-In-Reply-To: <499EC317.6010506@sundmangroup.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matias wrote:
-> Hi,
-> Ok, since the memory is shared between all the cores the Kernel can be
-> invoked by any core receiving an interrupt and thus executed by that
-> core?
->
-> If the above is right then how come that two separate CPUs can wake
-> up, schedule and context-switch completely in parallel?
-> Are there an independent scheduler per cpu?
->
-> Directly from the sched-design.txt
->
-> - 'perfect' SMP scalability. With the new scheduler there is no 'big'
->   runqueue_lock anymore - it's all per-CPU runqueues and locks - two
->   tasks on two separate CPUs can wake up, schedule and context-switch
->   completely in parallel, without any interlocking. All
->   scheduling-relevant data is structured for maximum scalability.
->
->
-> Thx // Matias
->
->
->
->
->
-> zaharov skrev:
->> Matias wrote:
->>  
->>> Hello,
->>> When an SMP enabled kernel is booted on a Dual Core x86 machine ( Core
->>> 0-1 ) I guess the Kernel is decompressed and started on core 0.
->>> At some point in time the kernel becomes SMP aware and can then
->>> distribute threads on Cores 0 and 1.
->>>
->>> Now, does the non-threaded part of the kernel with the scheduler
->>> continue to run solely on Core 0?
->>>
->>> Cheers // Matias
->>> -- 
->>> To unsubscribe from this list: send the line "unsubscribe
->>> linux-kernel" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>> Please read the FAQ at  http://www.tux.org/lkml/
->>>
->>>     
->> Kernel may run on any core .
->> When kernel end bootstrap and run init he execute hlt op.
->> After all live in kernel  interrupt driven.
->>
->> -- 
->> To unsubscribe from this list: send the line "unsubscribe
->> linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>   
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe
-> linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+On Fri, 20 Feb 2009, Mike Lampard wrote:
 
-Kernel use IPC primitives. All shared resources like lists, buffers,etc
-protect by spinlock,mutex,etc.
-Scheduler not run completely in parallel.
-Scheduler  run like this [lock_shred_resource -> shcedule ->
-unlock_shared_resource]
-I think this list not for discuss this. You need read any Operating
-system design book.
-IMHO
- 
+> On Fri, 20 Feb 2009 05:17:42 pm Mike Lampard wrote:
+> > Hi All,
+> >
+> > I recently plonked a dvd into my usb-attached Pioneer DVR-107d only to find
+> > that the current kernels no longer saw the drive as DVD capable.  In fact,
+> > the kernel no longer saw _any_ features of the drive: sr0: scsi3-mmc drive:
+> > 0x/0x caddy.  After much bisecting and even more blind luck I narrowed the
+> > problem down to this commit:
+> >
+> > commit bdb2b8cab4392ce41ddfbd6773a3da3334daf836
+> > Author: Alan Stern <stern@rowland.harvard.edu>
+> > Date:   Tue Jun 24 14:03:14 2008 -0400
+> >
+> >     [SCSI] erase invalid data returned by device
+> >
+> >     This patch (as1108) fixes a problem that can occur with certain USB
+> >     mass-storage devices: They return invalid data together with a residue
+> >     indicating that the data should be ignored.  Rather than leave the
+> >     invalid data in a transfer buffer, where it can get misinterpreted,
+> >     the patch clears the invalid portion of the buffer.
+> >
+> >     This solves a problem (wrong write-protect setting detected) reported
+> >     by Maciej Rutecki and Peter Teoh.
+
+If this affected your device then the device must not report residues 
+correctly.  If you provide the device's entry in /proc/bus/usb/devices, 
+I'll write a patch adding a blacklist entry for it.
+
+It would help if you could also provide a usbmon trace showing what 
+happens when you plug the drive in.  Instructions are in the kernel 
+source file Documentation/usb/usbmon.txt.
+
+Alan Stern
+
