@@ -1,110 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757151AbZBTQ6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbZBTQ7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757151AbZBTQ6z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 11:58:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbZBTQ6p
+	id S1754125AbZBTQ7R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 11:59:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757138AbZBTQ6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 11:58:45 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:51451 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753054AbZBTQ6o (ORCPT
+	Fri, 20 Feb 2009 11:58:55 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:5426 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756730AbZBTQ6x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 11:58:44 -0500
-Message-ID: <499EE162.4050008@oracle.com>
-Date: Fri, 20 Feb 2009 08:59:14 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 20 Feb 2009 11:58:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=f9hcFmbkeoSrnZiikVvQ2noWMyuG4SwcDAE87PLdeckiH41FyAEBESYgMdt+ZfcbQY
+         38YP67gyKRRzByFpGtlYAF/RPinA3IR+oocj7qhqDrYr9zyqRMkNC/VLwya+V4w9ce5i
+         +F29HDa+A6KlPztplasX/SAAzVK2sko40rMd8=
+Date: Fri, 20 Feb 2009 17:58:48 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Andy Whitcroft <apw@canonical.com>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tracing/function-graph-tracer: make set_graph_function
+	file support ftrace regex
+Message-ID: <20090220165847.GF5732@nowhere>
+References: <499dc97d.257d420a.0f93.1be5@mx.google.com>
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       linux-kernel@vger.kernel.org, zippel@linux-m68k.org,
-       linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] tracing/markers: make markers select tracepoints
-References: <499edf47.1818d00a.060b.2b8d@mx.google.com>
-In-Reply-To: <499edf47.1818d00a.060b.2b8d@mx.google.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt703.oracle.com [141.146.40.81]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.499EE12B.0184:SCFSTAT928724,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <499dc97d.257d420a.0f93.1be5@mx.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> Sometimes it happens that KConfig dependencies are not handled
-> like in the following scenario:
+On Thu, Feb 19, 2009 at 09:13:12PM +0100, Frederic Weisbecker wrote:
+> Impact: trace only functions matching a pattern
 > 
-> - config A
->    bool
+> The set_graph_function file let one to trace only one or several
+> chosen functions and follow all their code flow.
 > 
-> - config B
->    bool
->    depends on A
+> Currently, only a constant function name is allowed so this patch
+> allows the ftrace_regex functions:
 > 
-> -config C
->    bool
->    select B
+> _ matches all functions that end with "name":
+>   echo *name > set_graph_function
 > 
-> If one selects C, then it will select B without checking its dependency to A, if A
-> hasn't been selected elsewhere, it will result in a build crash.
-
-as documented in Documentation/kbuild/kconfig-language.txt (and yes, it is
-considered to be a shortcoming/problem by most people AFAIK):
-
-  Note:
-	select should be used with care. select will force
-	a symbol to a value without visiting the dependencies.
-	By abusing select you are able to select a symbol FOO even
-	if FOO depends on BAR that is not set.
-	In general use select only for non-visible symbols
-	(no prompts anywhere) and for symbols with no dependencies.
-	That will limit the usefulness but on the other hand avoid
-	the illegal configurations all over.
-	kconfig should one day warn about such things.
-
-> This is what happens on the following build error:
+> _ matches all functions that begin with "name":
+>   echo name* > set_graph_function
 > 
-> kernel/built-in.o: In function `marker_update_probe_range':
-> (.text+0x52f64): undefined reference to `tracepoint_probe_register_noupdate'
-> kernel/built-in.o: In function `marker_update_probe_range':
-> (.text+0x52f74): undefined reference to `tracepoint_probe_unregister_noupdate'
-> kernel/built-in.o: In function `marker_update_probe_range':
-> (.text+0x52fb9): undefined reference to `tracepoint_probe_unregister_noupdate'
-> kernel/built-in.o: In function `marker_update_probes':
-> marker.c:(.text+0x530ba): undefined reference to `tracepoint_probe_update_all'
+> _ matches all functions that contains "name":
+>   echo *name* > set_graph_function
 > 
-> CONFIG_KVM_TRACE will select CONFIG_MARKER, but the latter depends on CONFIG_TRACEPOINTS
-> which will not be selected.
+> Example:
 > 
-> A temporary fix is to make CONFIG_MARKER select CONFIG_TRACEPOINTS, though it doesn't
-> fix the source KConfig dependency handling problem.
+> echo mutex* > set_graph_function
 > 
-> Reported-by: Ingo Molnar <mingo@elte.hu>
-> Cc: Roman Zippel <zippel@linux-m68k.org>
+>  0)               |  mutex_lock_nested() {
+>  0)   0.563 us    |    __might_sleep();
+>  0)   2.072 us    |  }
+>  0)               |  mutex_unlock() {
+>  0)   1.036 us    |    __mutex_unlock_slowpath();
+>  0)   2.433 us    |  }
+>  0)               |  mutex_unlock() {
+>  0)   0.691 us    |    __mutex_unlock_slowpath();
+>  0)   1.787 us    |  }
+>  0)               |  mutex_lock_interruptible_nested() {
+>  0)   0.548 us    |    __might_sleep();
+>  0)   1.945 us    |  }
+> 
 > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 > ---
->  init/Kconfig |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+>  kernel/trace/ftrace.c |   56 +++++++++++++++++++++++++++++++++---------------
+>  1 files changed, 38 insertions(+), 18 deletions(-)
 > 
-> diff --git a/init/Kconfig b/init/Kconfig
-> index b6400a5..a93f957 100644
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -975,7 +975,7 @@ config TRACEPOINTS
+> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+> index 7dd5a2b..cf59f4c 100644
+> --- a/kernel/trace/ftrace.c
+> +++ b/kernel/trace/ftrace.c
+> @@ -1895,6 +1895,10 @@ static void *g_start(struct seq_file *m, loff_t *pos)
 >  
->  config MARKERS
->  	bool "Activate markers"
-> -	depends on TRACEPOINTS
-> +	select TRACEPOINTS
->  	help
->  	  Place an empty function call at each marker site. Can be
->  	  dynamically changed for a probe function.
+>  	mutex_lock(&graph_lock);
+>  
+> +	/* Nothing, tell g_show to print all functions are enabled */
+> +	if (!ftrace_graph_count && !*pos)
+> +		return (void *)1;
+> +
+>  	p = g_next(m, p, pos);
+>  
+>  	return p;
+> @@ -1913,6 +1917,11 @@ static int g_show(struct seq_file *m, void *v)
+>  	if (!ptr)
+>  		return 0;
+>  
+> +	if (ptr == (unsigned long *)1) {
+> +		seq_printf(m, "#### all functions enabled ####\n");
+> +		return 0;
+> +	}
+> +
+>  	kallsyms_lookup(*ptr, NULL, NULL, NULL, str);
+>  
+>  	seq_printf(m, "%s\n", str);
+> @@ -1966,38 +1975,51 @@ ftrace_graph_read(struct file *file, char __user *ubuf,
+>  }
+>  
+>  static int
+> -ftrace_set_func(unsigned long *array, int idx, char *buffer)
+> +ftrace_set_func(unsigned long *array, int *idx, char *buffer)
+>  {
+> -	char str[KSYM_SYMBOL_LEN];
+>  	struct dyn_ftrace *rec;
+>  	struct ftrace_page *pg;
+> +	int search_len;
+>  	int found = 0;
+> -	int j;
+> +	int type, not;
+> +	char *search;
+> +	bool exists;
+> +	int i;
+>  
+>  	if (ftrace_disabled)
+>  		return -ENODEV;
+>  
+> +	/* decode regex */
+> +	type = ftrace_setup_glob(buffer, strlen(buffer), &search, &not);
+> +	if (not)
+> +		return -EINVAL;
+> +
+> +	search_len = strlen(search);
+> +
+>  	mutex_lock(&ftrace_lock);
+>  	do_for_each_ftrace_rec(pg, rec) {
+>  
+> +		if (*idx >= FTRACE_GRAPH_MAX_FUNCS)
+> +			break;
+> +
+>  		if (rec->flags & (FTRACE_FL_FAILED | FTRACE_FL_FREE))
+>  			continue;
+>  
+> -		kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
+> -		if (strcmp(str, buffer) == 0) {
+> -			/* Return 1 if we add it to the array */
+> -			found = 1;
+> -			for (j = 0; j < idx; j++)
+> -				if (array[j] == rec->ip) {
+> -					found = 0;
+> +		if (ftrace_match_record(rec, search, search_len, type)) {
+> +			/* ensure it is not already in the array */
+> +			exists = false;
+> +			for (i = 0; i < *idx; i++)
+> +				if (array[i] == rec->ip) {
+> +					exists = true;
+>  					break;
+>  				}
+> -			if (found)
+> -				array[idx] = rec->ip;
+> -			goto out;
+> +			if (!exists) {
+> +				array[(*idx)++] = rec->ip;
+> +				found = 1;
+> +			}
+>  		}
+>  	} while_for_each_ftrace_rec();
+> - out:
+> +
+>  	mutex_unlock(&ftrace_lock);
+>  
+>  	return found ? 0 : -EINVAL;
+> @@ -2066,13 +2088,11 @@ ftrace_graph_write(struct file *file, const char __user *ubuf,
+>  	}
+>  	buffer[index] = 0;
+>  
+> -	/* we allow only one at a time */
+> -	ret = ftrace_set_func(array, ftrace_graph_count, buffer);
+> +	/* we allow only one expression at a time */
+> +	ret = ftrace_set_func(array, &ftrace_graph_count, buffer);
+>  	if (ret)
+>  		goto out;
+>  
+> -	ftrace_graph_count++;
+> -
+>  	file->f_pos += read;
+>  
+>  	ret = read;
+> -- 
+> 1.6.1
+> 
+> 
 
-but using "select" instead of "depends on" just causes the kind of problem
-that you described, whereas using "depends on" does follow dependency
-chains.
+BTW, I got something that looked like a false positive with checkpatch.pl on this patch:
 
--- 
-~Randy
+ERROR: return is not a function, parentheses are not required
+#56: FILE: kernel/trace/ftrace.c:1900:
++		return (void *)1;
+
+total: 1 errors, 0 warnings, 101 lines checked
+
+0001-tracing-function-graph-tracer-make-set_graph_functi.patch has style problems, please review.  If any of these 
+errors
+are false positives report them to the maintainer, see
+CHECKPATCH in MAINTAINERS.
+
+
+It is confusing a cast with a function call.
+
