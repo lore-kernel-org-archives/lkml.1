@@ -1,170 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbZBTULT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbZBTUYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755868AbZBTULT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 15:11:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbZBTULI
+	id S1754765AbZBTUYT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 15:24:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbZBTUYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 15:11:08 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:33958 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750965AbZBTULF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 15:11:05 -0500
-Date: Fri, 20 Feb 2009 12:11:04 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
-       bert.wesarg@googlemail.com
-Subject: Re: [ltt-dev] [PATCH URCU formal] Add liveness checks to
-	user-level RCU model.
-Message-ID: <20090220201104.GS6960@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090220181835.GA4092@Krystal> <20090220192824.GP6960@linux.vnet.ibm.com> <20090220194621.GA7349@Krystal> <20090220195345.GA7801@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090220195345.GA7801@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Fri, 20 Feb 2009 15:24:08 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50016 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752147AbZBTUYG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 15:24:06 -0500
+Date: Fri, 20 Feb 2009 12:22:42 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org, xfs@oss.sgi.com,
+       zohar@linux.vnet.ibm.com
+Subject: Re: next-20090220: XFS, IMA: BUG: sleeping function called from
+ invalid  context at mm/slub.c:1613
+Message-Id: <20090220122242.b36a778f.akpm@linux-foundation.org>
+In-Reply-To: <a4423d670902200300n1d1bfdeeg6daca4b32989c9d3@mail.gmail.com>
+References: <a4423d670902200300n1d1bfdeeg6daca4b32989c9d3@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 20, 2009 at 02:53:45PM -0500, Mathieu Desnoyers wrote:
-> * Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
-> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > On Fri, Feb 20, 2009 at 01:18:35PM -0500, Mathieu Desnoyers wrote:
-> > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > > Break all potentially infinite loops in both urcu_reader() and
-> > > > > urcu_updater(), ensure that urcu_reader() will process any memory barriers
-> > > > > that urcu_updater() might issue, and formulate a "never" claim that checks
-> > > > > to make sure that if either urcu_reader() or urcu_updater() completes,
-> > > > > then the other will eventually also complete.  Since urcu_reader()
-> > > > > now has a finite number of steps, it must eventually complete.
-> > > > > 
-> > > > > Also replace the code at the end of urcu_reader() that previously absorbed
-> > > > > late memory-barrier requests from urcu_updater with code in urcu_writer()
-> > > > > that checks to see if urcu_reader() has completed.
-> > > > > 
-> > > > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > > 
-> > > > Thanks Paul, I'll merge it. However, I am currently reworking our spin
-> > > > tree so we can execute the tests in batch (rather that all at once,
-> > > > which consumes more memory than necessary) and also I am doing a nice
-> > > > build script which lets us create our own LTL formulaes for
-> > > > verification. The never claims will be automatically generated and
-> > > > verified. I'll keep you posted.
-> > > 
-> > > Sounds interesting!  Not sure what you mean by "execute the tests
-> > > in batch", but look forward to seeing it.
-> > > 
-> > > On the LTL, the formula "<>[] (reader_done != 0 && updater_done != 0)"
-> > > didn't do what I want.  The model would kick out an error with the
-> > > reader sitting just before the "reader_done = 1" and the updater spinning
-> > > waiting for the reader to respond to its memory-barrier request.
-> > > 
-> > > So I fell back to the hand-coded formula in the never clause, which
-> > > translates to English as "if either the reader or the updater complete,
-> > > then both the reader and the updater eventually complete".  There might
-> > > be a way to tranlate that into LTL, but I didn't immediately see one.
-> > > 
-> > > This morning I tried the weak fairness constraints (the "-f" argument
-> > > to ./pan) and that did allow LTL to do what I want, as shown in the
-> > > following patch (applied on top of my earlier patch).
-> > > 
-> > > I must confess that LTL is at best an acquired taste for me.
-> > > "Let's see...  '<>[](!reader_done || !updater_done)'...
-> > > That means eventually we always must have neither the reader or the
-> > > updater being done.  Huh???  Oh, yeah, this is supposed to say what
-> > > -cannot- happen..."  At this point, I have an easier time with the
-> > > hand-coded "never" claims.  ;-)
-> > > 
-> > > But I am quite happy to leave further hacking on this model in
-> > > your capable hands.  The other item on my todo list was making the
-> > > urcu_mbmin.spin model accurately handle omission of additional memory
-> > > barriers.  Are you willing to take that on as well?
-> > > 
-> > 
-> > I'll first get the translation of asserts into LTL formulaes, and try to
-> > see what should be fixed in the model. I have noticed that we would need
-> > to do this :
-> > 
-> > urcu_gp_ctr = (urcu_gp_ctr + RCU_GP_CTR_BIT) % (RCU_GP_CTR_BIT + 1);
-> urcu_gp_ctr = urcu_gp_ctr ^ RCU_GP_CTR_BIT;
+On Fri, 20 Feb 2009 14:00:21 +0300
+Alexander Beregalov <a.beregalov@gmail.com> wrote:
+
+> Hi
 > 
-> is actually much nicer..
-
-Good point -- I was forgetting that Promela supports "^".
-
-							Thanx, Paul
-
-> MAthieu
-> > 
-> > Otherwise the overflow does not do what we expect (spin -f on the trail
-> > told me that it was overflowing to 1, which is not exactly what we want
-> > I guess). More to come on that side. When this will be settled, I'll dig
-> > further.
-> > 
-> > Mathieu
-> > 
-> > 
-> > > 							Thanx, Paul
-> > > 
-> > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > ---
-> > > 
-> > >  urcu.sh   |    4 ++--
-> > >  urcu.spin |   12 ------------
-> > >  2 files changed, 2 insertions(+), 14 deletions(-)
-> > > 
-> > > diff --git a/formal-model/urcu.sh b/formal-model/urcu.sh
-> > > index 5e525ec..3a6850c 100644
-> > > --- a/formal-model/urcu.sh
-> > > +++ b/formal-model/urcu.sh
-> > > @@ -20,6 +20,6 @@
-> > >  #
-> > >  # Authors: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > >  
-> > > -spin -a urcu.spin 
-> > > +spin -a -f '<>[](!reader_done || !updater_done)' urcu.spin
-> > >  cc -o pan pan.c
-> > > -./pan -a
-> > > +./pan -a -f
-> > > diff --git a/formal-model/urcu.spin b/formal-model/urcu.spin
-> > > index cf1f670..851eb50 100644
-> > > --- a/formal-model/urcu.spin
-> > > +++ b/formal-model/urcu.spin
-> > > @@ -280,15 +280,3 @@ init {
-> > >  		run urcu_updater();
-> > >  	}
-> > >  }
-> > > -
-> > > -/* Require that both reader and updater eventually get done. */
-> > > -
-> > > -never {
-> > > -	do
-> > > -	:: skip;
-> > > -	:: reader_done != 0 || updater_done != 0 -> break;
-> > > -	od;
-> > > -accept:	do
-> > > -	:: reader_done == 0 || updater_done == 0;
-> > > -	od;
-> > > -}
-> > > 
-> > 
-> > -- 
-> > Mathieu Desnoyers
-> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> > 
-> > _______________________________________________
-> > ltt-dev mailing list
-> > ltt-dev@lists.casi.polymtl.ca
-> > http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> > 
+> I have applied the following patch from Mimi Zohar
+> http://marc.info/?l=linux-next&m=123509665514552
 > 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> That is why it is dirty.
+> The kernel can not boot without it when IMA is enabled.
+> 
+> 
+> BUG: sleeping function called from invalid context at mm/slub.c:1613
+> in_atomic(): 1, irqs_disabled(): 0, pid: 1514, name: mkdir
+> 3 locks held by mkdir/1514:
+>  #0:  (&type->i_mutex_dir_key#2/1){+.+.+.}, at: [<ffffffff802d3460>]
+> lookup_create+0x30/0xd0
+>  #1:  (&(&ip->i_lock)->mr_lock/1){+.+.+.}, at: [<ffffffff803ca77f>]
+> xfs_ilock+0xdf/0x120
+>  #2:  (&pag->pag_ici_lock){++++.+}, at: [<ffffffff803caed6>]
+> xfs_iget+0x156/0x650
+> Pid: 1514, comm: mkdir Not tainted 2.6.29-rc5-next-20090220-dirty #1
+> Call Trace:
+>  [<ffffffff8026ad33>] ? __debug_show_held_locks+0x13/0x30
+>  [<ffffffff80234fe5>] __might_sleep+0x105/0x140
+>  [<ffffffff802c6191>] kmem_cache_alloc+0xd1/0x100
+>  [<ffffffff8045fb29>] ima_iint_insert+0x49/0xf0
+>  [<ffffffff8045fbed>] ima_inode_alloc+0x1d/0x30
+>  [<ffffffff802dfa5f>] inode_init_always+0xaf/0x250
+>  [<ffffffff803caf86>] xfs_iget+0x206/0x650
+>  [<ffffffff803eb8e8>] xfs_trans_iget+0x208/0x250
+>  [<ffffffff803ce571>] xfs_ialloc+0xc1/0x700
+>  [<ffffffff803ec6f9>] xfs_dir_ialloc+0xa9/0x340
+>  [<ffffffff8025e009>] ? down_write_nested+0x79/0x90
+>  [<ffffffff803ef0c1>] xfs_create+0x3e1/0x690
+>  [<ffffffff803fb813>] xfs_vn_mknod+0x63/0xf0
+>  [<ffffffff803fb8ae>] xfs_vn_mkdir+0xe/0x10
+>  [<ffffffff802d487c>] vfs_mkdir+0x8c/0xd0
+>  [<ffffffff802d6a56>] sys_mkdirat+0x106/0x120
+>  [<ffffffff8020bc0c>] ? sysret_check+0x27/0x62
+>  [<ffffffff8026c79d>] ? trace_hardirqs_on_caller+0x17d/0x1e0
+>  [<ffffffff802d6a83>] sys_mkdir+0x13/0x20
+>  [<ffffffff8020bbdb>] system_call_fastpath+0x16/0x1b
+> BUG: sleeping function called from invalid context at mm/slub.c:1613
+
+Please do not be tempted to switch ima_iint_insert() to use GFP_ATOMIC
+to "fix" this.
+
+Arguably, ima_iint_insert() should requite that the caller pass in the
+gfp_t rather than assuming that GFP_KERNEL can be used.  But that is
+not a suitable fix for this bug.
+
+We may need to make that change to ima_iint_insert() anyway, as there's
+a good chance that callers will require GFP_NOFS.
+
+
+But to fix this bug, xfs needs to stop calling inode_init_always()
+under read_lock().  Because inode_alloc_security() also can sleep (see
+new_inode_smack()).
+
+Also, ima_iint_insert() does a radix_tree_lookup() without holding
+ima_iint_lock, which appears to be a bug.
+
