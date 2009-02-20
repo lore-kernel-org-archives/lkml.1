@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756704AbZBTJoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbZBTJpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756704AbZBTJoZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 04:44:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbZBTJoB
+	id S1755941AbZBTJpU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 04:45:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbZBTJpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 04:44:01 -0500
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:52923 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756107AbZBTJn6 (ORCPT
+	Fri, 20 Feb 2009 04:45:04 -0500
+Received: from stinky.trash.net ([213.144.137.162]:44940 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753967AbZBTJpD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 04:43:58 -0500
-X-Greylist: delayed 744 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Feb 2009 04:43:58 EST
-Date: Fri, 20 Feb 2009 09:43:56 +0000
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: General question (scheduler) with SSDs?
-Message-ID: <20090220094356.GB26124@silver.sucs.org>
-References: <alpine.DEB.1.10.0902190837270.19552@p34.internal.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0902190837270.19552@p34.internal.lan>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 20 Feb 2009 04:45:03 -0500
+Message-ID: <499E7B9B.6030603@trash.net>
+Date: Fri, 20 Feb 2009 10:44:59 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Wolfgang Grandegger <wg@grandegger.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+Subject: Re: [PATCH 3/8] can: CAN Network device driver and SYSFS interface
+References: <1235070082-7069-1-git-send-email-wg@grandegger.com> <1235070082-7069-2-git-send-email-wg@grandegger.com> <1235070082-7069-3-git-send-email-wg@grandegger.com> <1235070082-7069-4-git-send-email-wg@grandegger.com>
+In-Reply-To: <1235070082-7069-4-git-send-email-wg@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Whoops, I didn't mean to send that previous half formed mail :) Sorry.
-
-On Thu, Feb 19, 2009 at 08:38:38AM -0500, Justin Piszcz wrote:
+Wolfgang Grandegger wrote:
+> The CAN network device driver interface provides a generic interface to
+> setup, configure and monitor CAN network devices. It exports a set of
+> common data structures and functions, which all real CAN network device
+> drivers should use. Please have a look to the SJA1000 or MSCAN driver
+> to understand how to use them. The name of the module is can-dev.ko.
 > 
-> I was curious if anyone had done any benchmarks and/or has conclusive 
-> information, what is the best Linux scheduler to use with SSDs?
-> 
-> Noop?
-> CFQ?
-> AS?
-> Deadline?
+> Furthermore adds a SYSFS interface to set and get CAN device properties.
+> When the CAN device is registered, a set of SYSFS files is created in
+> "/sys/class/net/canX/". These files allow to set and get device
+> properties like bit-timing parameters, state, controller mode and CAN
+> statistics.
 
-As mentioned in another mail there was a discussion on
-http://lkml.org/lkml/2009/1/31/28 and long thread talking about the
-introduction of the rotational flag here
-http://lkml.org/lkml/2009/1/5/340 . Cheapo SSDs or even USB keys are not
-auto detected as non-rotational devices by the kernel and after a bit of
-poking about I've come up with the following udev rules for my
-particular cases:
-
-SUBSYSTEM=="block", TEST=="/sys$devpath/queue/rotational", ATTRS{model}=="ASUS-PHISON *", RUN+="/bin/sh -c 'echo 0 > /sys$devpath/queue/rotational'"
-SUBSYSTEM=="block", TEST=="/sys$devpath/queue/rotational", ATTRS{idVendor}=="0951", ATTRS{idProduct}=="1606", RUN+="/bin/sh -c 'echo 0 > /sys$devpath/queue/rotational'"
-SUBSYSTEM=="block", TEST=="/sys$devpath/queue/rotational", ATTRS{manufacturer}=="SanDisk", ATTRS{product}=="Cruzer Micro", RUN+="/bin/sh -c 'echo 0 > /sys$devpath/queue/rotational'"
-
-Ever since the rotational option appeared I've been trying cfq but prior
-to that I was using noop or deadline. However it doesn't look like
-anyone has sat down and run the numbers to see what affect the
-ioscheulder/rotational flag is having on cheapo SSDs - all the
-suggestions are anecdotal. Could you run some benchmarks with these
-different options and report back the results?
-
--- 
-Sitsofe | http://sucs.org/~sits/
+Is sysfs really the best choice for this? It has the usual problems,
+you can't change multiple parameters at once atomically. Now, I don't
+know whether this is actually (and currently) a problem for CAN, but
+given that we already have a generic netlink interface for creating
+network interfaces that can easily support this, what are the reasons
+for adding a new interface instead of using the existing one?
