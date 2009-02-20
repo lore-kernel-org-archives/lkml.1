@@ -1,84 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757597AbZBTDBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758539AbZBTDB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757597AbZBTDBh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 22:01:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756697AbZBTDBX
+	id S1758539AbZBTDB4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 22:01:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757493AbZBTDBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 22:01:23 -0500
-Received: from mga02.intel.com ([134.134.136.20]:46296 "EHLO mga02.intel.com"
+	Thu, 19 Feb 2009 22:01:33 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45928 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756606AbZBTDBV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 22:01:21 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,238,1233561600"; 
-   d="scan'208";a="388317557"
-From: "Zhang, Xiantao" <xiantao.zhang@intel.com>
-To: Joerg Roedel <joro@8bytes.org>, Hollis Blanchard <hollisb@us.ibm.com>
-CC: kvm-devel <kvm@vger.kernel.org>,
-       Jaswinder Singh Rajput <jaswinder@infradead.org>,
-       Avi Kivity <avi@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Date: Fri, 20 Feb 2009 11:00:40 +0800
-Subject: RE: kvm-userspace build break (linux/types.h)
-Thread-Topic: kvm-userspace build break (linux/types.h)
-Thread-Index: AcmS3foBq0Epzr5pQ4eddIPvzj+7NwAKOwDQ
-Message-ID: <706158FABBBA044BAD4FE898A02E4BC22422B4C6@pdsmsx503.ccr.corp.intel.com>
-References: <1235080214.16221.26.camel@slate.austin.ibm.com>
- <20090219220315.GI2125@8bytes.org>
-In-Reply-To: <20090219220315.GI2125@8bytes.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1757424AbZBTDBc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 22:01:32 -0500
+Message-ID: <499E1D01.2040408@kernel.org>
+Date: Fri, 20 Feb 2009 12:01:21 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: tglx@linutronix.de, x86@kernel.org, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, jeremy@goop.org, cpw@sgi.com, mingo@elte.hu,
+       tony.luck@intel.com
+Subject: Re: [PATCH 09/10] percpu: implement new dynamic percpu allocator
+References: <1234958676-27618-1-git-send-email-tj@kernel.org> <1234958676-27618-10-git-send-email-tj@kernel.org> <200902192221.52835.rusty@rustcorp.com.au>
+In-Reply-To: <200902192221.52835.rusty@rustcorp.com.au>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 20 Feb 2009 03:01:06 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For x86 and ia64,  linux/types.h will be hacked to asm/types.h when syncing the source. 
-You may consult kernel/x86/hack-module.awk to get the answer.  
-Xiantao
+Hello, Rusty.
 
-Joerg Roedel wrote:
-> On Thu, Feb 19, 2009 at 03:50:14PM -0600, Hollis Blanchard wrote:
->> A recent kernel merge breaks kvm-userspace build:
->>         make[1]: Entering directory
->>         `/root/hollisb/kvm-userspace.git/libkvm' gcc -m64
->>         -D__x86_64__ -MMD -MF ./.libkvm.d -g -fomit-frame-pointer
->>                          -Wall  -fno-stack-protector   -I
->>                         
->>         /root/hollisb/kvm-userspace.git/kernel/include   -c -o
->>         libkvm.o libkvm.c In file included from
->>         /usr/include/bits/fcntl.h:24, from /usr/include/fcntl.h:34,
->>         from libkvm.c:30: /usr/include/sys/types.h:46: error:
->> conflicting types for 'loff_t' /usr/include/linux/types.h:30: error:
->> previous declaration of 'loff_t' was here
->> /usr/include/sys/types.h:62: error: conflicting types for 'dev_t'
->> /usr/include/linux/types.h:13: error: previous declaration of
->> 'dev_t' was here         [...]     
->> 
->> I built like so:
->>         ./configure
->>         make -C kernel LINUX=/path/to/kvm.git sync
->>         make
->> 
->> The problem appears to be 00bfddaf7f68a6551319b536f052040c370756b0
->> and 
->> cef3767852a9b1a7ff4a8dfe0969e2d32eb728df, both from Jaswinder Singh
->> Rajput <jaswinder@infradead.org>:
->>         -#include <asm/types.h>
->>         +#include <linux/types.h>
->> 
->> With these changes, libkvm.c ends up
->> including /usr/include/linux/types.h, instead of the
->> intended ../kernel/include/linux/types.h.
+Rusty Russell wrote:
+> On Wednesday 18 February 2009 22:34:35 Tejun Heo wrote:
+>> Impact: new scalable dynamic percpu allocator which allows dynamic
+>>         percpu areas to be accessed the same way as static ones
+>>
+>> Implement scalable dynamic percpu allocator which can be used for both
+>> static and dynamic percpu areas.  This will allow static and dynamic
+>> areas to share faster direct access methods.  This feature is optional
+>> and enabled only when CONFIG_HAVE_DYNAMIC_PER_CPU_AREA is defined by
+>> arch.  Please read comment on top of mm/percpu.c for details.
 > 
-> I had the same problem some weeks ago. IIRC I fixed it with some
-> include reordering in libkvm.h.
+> Hi Tejun,
 > 
-> Joerg
+>    One question.  Are you thinking that to be defined by every SMP arch
+> long-term?
 
+Yeap, definitely.
+
+> Because there are benefits in having &<percpuvar> == valid
+> percpuptr, such as passing them around as parameters.  If so, IA64
+> will want a dedicated per-cpu area for statics (tho it can probably
+> just map it somehow, but it has to be 64k).
+
+Hmmm...  Don't have much idea about ia64 and its magic 64k.  Can it
+somehow be used for the first chunk?
+
+>    It'd also be nice to use your generalised module_percpu allocator for the
+> !CONFIG_HAVE_DYNAMIC_PER_CPU_AREA case, but doesn't really matter if that's
+> temporary anyway.
+
+Yeap, once the conversion is complete, the old allocator will go away
+so there's no reason to put more work into it.
+
+>> +#define PCPU_UNIT_PAGES_SHIFT	((int)__pcpu_unit_pages_shift)
+>> +#define PCPU_UNIT_PAGES		((int)__pcpu_unit_pages)
+>> +#define PCPU_UNIT_SHIFT		((int)__pcpu_unit_shift)
+>> +#define PCPU_UNIT_SIZE		((int)__pcpu_unit_size)
+>> +#define PCPU_CHUNK_SIZE		((int)__pcpu_chunk_size)
+>> +#define PCPU_NR_SLOTS		((int)__pcpu_nr_slots)
+> 
+> These pseudo-constants seem like a really weird thing to do to me.
+
+I explained this in the reply to Andrew's comment.  It's
+non-really-constant-but-should-be-considered-so-by-users thing.  Is it
+too weird?  Even if I add comment explaning it?
+
+> And AFAICT you have the requirement that PCPU_UNIT_PAGES*PAGE_SIZE >=
+> sizeof(.data.percpu).  Should probably note that somewhere.
+
+__pcu_unit_pages_shift is adjusted automatically according to
+sizeof(.data.percpu), so it will adapt as necessary.  After the
+initial adjustment, it should be considered constant, so the above
+seemingly weird hack.
+
+>> +static DEFINE_MUTEX(pcpu_mutex);		/* one mutex to rule them all */
+>> +static struct list_head *pcpu_slot;		/* chunk list slots */
+>> +static struct rb_root pcpu_addr_root = RB_ROOT;	/* chunks by address */
+> 
+> rbtree might be overkill on first cut.  I'm bearing in mind that Christoph L
+> had a nice patch to use dynamic percpu allocation in the sl*b allocators;
+> which would mean this needs to only use get_free_page.
+
+Hmmm... the reverse mapping can be piggy backed on vmalloc by adding a
+private pointer to the vm_struct but rbtree isn't too difficult to use
+so I just did it directly.  Nick, what do you think about adding
+private field to vm_struct and providing a reverse map function?
+
+As for the sl*b allocation thing, can you please explain in more
+detail or point me to the patches / threads?
+
+Thanks.  :-)
+
+-- 
+tejun
