@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbZBTSiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754513AbZBTSmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756023AbZBTSiV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 13:38:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbZBTSiM
+	id S1754513AbZBTSmT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 13:42:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752082AbZBTSmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 13:38:12 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:51446 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752082AbZBTSiL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 13:38:11 -0500
-Message-ID: <499EF77E.8060901@zytor.com>
-Date: Fri, 20 Feb 2009 10:33:34 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 20 Feb 2009 13:42:10 -0500
+Received: from rosi.naasa.net ([212.8.0.13]:52743 "EHLO rosi.naasa.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750851AbZBTSmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 13:42:09 -0500
+From: Joerg Platte <jplatte@naasa.net>
+Reply-To: jplatte@naasa.net
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: cpuinfo shows wrong MHz value
+Date: Fri, 20 Feb 2009 19:42:00 +0100
+User-Agent: KMail/1.9.9
+Cc: Kasper Sandberg <lkml@metanurb.dk>, linux-kernel@vger.kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Matthias-Christian Ott <ott@mirix.org>,
+       cpufreq <cpufreq@www.linux.org.uk>
+References: <200902142217.51655.jplatte@naasa.net> <200902191803.55347.jplatte@naasa.net> <200902200352.51173.elendil@planet.nl>
+In-Reply-To: <200902200352.51173.elendil@planet.nl>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Huang Ying <ying.huang@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH] x86: use the right protections for split-up pagetables
-References: <20090220011316.379904625@goodmis.org> <alpine.LFD.2.00.0902191753240.21686@localhost.localdomain> <alpine.DEB.1.10.0902192107230.31658@gandalf.stny.rr.com> <alpine.LFD.2.00.0902191923300.21686@localhost.localdomain> <20090220072915.GB28085@elte.hu> <alpine.LFD.2.00.0902200728520.21686@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0902200728520.21686@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200902201942.01681.jplatte@naasa.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> The confusion? When it moves the 'ref_prot' bits from the upper level, it 
-> doesn't do the right thing for the PAT bit. That bit is special, and moves 
-> around depending on level. In the upper levels, it's bit#12, and in the 
-> final 4k pte level it's bit#7.
-> 
+Am Freitag, 20. Februar 2009 schrieb Frans Pop:
 
-... and in the second level of two-level page tables, it doesn't exist
-at all.
+> It looks as if http://bugzilla.kernel.org/10968 has a fix for this issue,
+> but that that patch never got included in the kernel.
 
-Worse, there are errata on some processors (not sure if there are any we
-currently don't blacklist) where the PATx bit logic basically gets fed
-random data.  Setting up the PAT so that the lower and upper half alias
-works around this.
+Yes, this patch fixes the issue and the patch still applies to kernel 
+2.6.28.6. Please push it into mainline.
 
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+regards and many thanks for providing this patch,
+Jörg
