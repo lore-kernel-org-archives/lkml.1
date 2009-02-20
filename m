@@ -1,198 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755551AbZBTLyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755967AbZBTMAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755551AbZBTLyo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 06:54:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbZBTLyf
+	id S1755967AbZBTMAb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 07:00:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753147AbZBTMAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 06:54:35 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:51962 "EHLO
-	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751975AbZBTLye (ORCPT
+	Fri, 20 Feb 2009 07:00:19 -0500
+Received: from wf-out-1314.google.com ([209.85.200.173]:39180 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751975AbZBTMAR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 06:54:34 -0500
-X-BigFish: VPS-32(zz1432R98dR148cM1805M936fKzzzzz32i6bh34h61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,5,
-X-WSS-ID: 0KFD52F-01-TRE-01
-Date: Fri, 20 Feb 2009 12:53:57 +0100
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Mark Hounschell <dmarkh@cfl.rr.com>
-CC: Borislav Petkov <borislav.petkov@amd.com>,
-       Mark Hounschell <markh@compro.net>, john stultz <johnstul@us.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: PROBLEM: Can't boot a (HZ = 1000) kernel using an AMD Phenom-II
-	processor
-Message-ID: <20090220115357.GE4834@alberich.amd.com>
-References: <499C0913.9050905@compro.net> <20090218141843.GB13304@aftab> <499C3DED.1090807@cfl.rr.com> <20090218174243.GD13304@aftab> <499C7AC8.4080609@cfl.rr.com> <499D364C.3010704@cfl.rr.com> <20090219141131.GM4301@alberich.amd.com> <499D77D8.509@cfl.rr
+	Fri, 20 Feb 2009 07:00:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=vWp/HxO5TMANvQsfFf/eCRYpKDRJodqKQJtBf+uEnwemgrzGIdlxSB/Z1gb0gfeH6x
+         DMkWi6ApV1ZMouXNKDD01WApfaDgXfypglOgt085LEnmMj4H2oOZGc6awTHZaec8Y+Kk
+         nM6xDQOA/WUXAX5wfkMDQSQw1U7OjUgqg07z8=
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="E/DnYTRukya0zdZ1"
-Content-Disposition: inline
-In-Reply-To: <499D80AB.3090408@cfl.rr.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 20 Feb 2009 11:54:17.0519 (UTC) FILETIME=[F5612BF0:01C99351]
+Date: Fri, 20 Feb 2009 21:00:16 +0900
+Message-ID: <4d34a0a70902200400s252f48ddvfd6e0d83e91fa291@mail.gmail.com>
+Subject: [PATCH] OMAP: HSMMC: Initialize hsmmc controller registers when 
+	resuming
+From: Kim Kyuwon <chammoru@gmail.com>
+To: linux-omap@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, drzeus-mmc@drzeus.cx,
+       dbrownell@users.sourceforge.net,
+       =?EUC-KR?B?seix1L/4?= <q1.kim@samsung.com>,
+       =?EUC-KR?B?udqw5rnO?= <kyungmin.park@samsung.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---E/DnYTRukya0zdZ1
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Most registers lose its state when the processor wakes up from sleep state.
+Thus registers should be initialized, when the processor wakes up. However the
+current hsmmc 'resume' function doesn't consider this issue and finally makes
+deadlock. So this patch fixes this problem.
 
-On Thu, Feb 19, 2009 at 10:54:19AM -0500, Mark Hounschell wrote:
-> Borislav Petkov wrote:
-> > On Thu, Feb 19, 2009 at 10:16:40AM -0500, Mark Hounschell wrote:
-> >> Andreas Herrmann wrote:
-> >>> Hi Mark,
-> >>>
-> >>> Can you please provide us output of lspci -vvxxx.
-> >>> (Please run this as root.)
-> >>>
->=20
-> Attached...
->=20
->=20
-> >>> Furthermore you can try booting your 1000HZ kernel
-> >>> with following kernel command lines:
-> >>>
+Signed-off-by: Kim Kyuwon <chammoru@gmail.com>
+---
+ drivers/mmc/host/omap_hsmmc.c |  155 +++++++++++++++++++++--------------------
+ 1 files changed, 79 insertions(+), 76 deletions(-)
 
-Thanks for trying this out.
-But nothing suspicious found. I.e. timer/hpet interrupt is enabled
-and its routing seems to be ok.
-
-Here's one more check that's worth trying: In one of your logs I've
-seen that HPET id reports 3 timers but later on 4 timers were detected
-for HPET.
-
-To check what's going on I'd like to see the HPET configuration in the
-course of booting your system.  Please apply attached patch and boot
-with hpet=3Ddebug -- both with 250HZ and with 1000HZ -- and provide dmesg
-output.
-
-
-Regards,
-
-Andreas
-
---=20
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. M=FCnchen, Germa=
-ny
- Research | Gesch=E4ftsf=FChrer: Jochen Polster, Thomas M. McCoy, Giulian=
-o Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis M=FCnchen
-  (OSRC)  | Registergericht M=FCnchen, HRB Nr. 43632
-
---E/DnYTRukya0zdZ1
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: attachment; filename="hpet-debug.diff"
-
-diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
-index 388254f..2a389d9 100644
---- a/arch/x86/kernel/hpet.c
-+++ b/arch/x86/kernel/hpet.c
-@@ -80,6 +80,7 @@ static inline void hpet_clear_mapping(void)
-  */
- static int boot_hpet_disable;
- int hpet_force_user;
-+static int hpet_debug;
- 
- static int __init hpet_setup(char *str)
- {
-@@ -88,6 +89,8 @@ static int __init hpet_setup(char *str)
- 			boot_hpet_disable = 1;
- 		if (!strncmp("force", str, 5))
- 			hpet_force_user = 1;
-+		if (!strncmp("debug", str, 5))
-+			hpet_debug = 1;
- 	}
- 	return 1;
+diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+index 56363c5..5a73fa6 100644
+--- a/drivers/mmc/host/omap_hsmmc.c
++++ b/drivers/mmc/host/omap_hsmmc.c
+@@ -55,6 +55,7 @@
+ #define VS30			(1 << 25)
+ #define SDVS18			(0x5 << 9)
+ #define SDVS30			(0x6 << 9)
++#define SDVS_MASK		0x00000E00
+ #define SDVSCLR			0xFFFFF1FF
+ #define SDVSDET			0x00000400
+ #define AUTOIDLE		0x1
+@@ -861,6 +862,34 @@ static int omap_hsmmc_get_ro(struct mmc_host *mmc)
+ 	return pdata->slots[0].get_ro(host->dev, 0);
  }
-@@ -119,6 +122,42 @@ int is_hpet_enabled(void)
- }
- EXPORT_SYMBOL_GPL(is_hpet_enabled);
- 
-+static void _hpet_print_config(const char *function, int line)
+
++static void omap_hsmmc_init(struct mmc_omap_host *host)
 +{
-+	u32 l, h;
-+	printk(KERN_DEBUG "hpet: %s(%d):\n", function, line);
-+	l = hpet_readl(HPET_ID); h = hpet_readl(HPET_PERIOD);
-+	printk(KERN_DEBUG "hpet: ID: %x, PERIOD: %x\n", l, h);
-+	l = hpet_readl(HPET_CFG); h = hpet_readl(HPET_STATUS);
-+	printk(KERN_DEBUG "hpet: CFG: %x, STATUS: %x\n", l, h);
-+	l = hpet_readl(HPET_COUNTER); h = hpet_readl(HPET_COUNTER+4);
-+	printk(KERN_DEBUG "hpet: COUNTER_l: %x, COUNTER_h: %x\n", l, h);
-+	l = hpet_readl(HPET_T0_CFG); h = hpet_readl(HPET_T0_CFG+4);
-+	printk(KERN_DEBUG "hpet: T0_CFG_l: %x, T0_CFG_h: %x\n", l, h);
-+	l = hpet_readl(HPET_T0_CMP); h = hpet_readl(HPET_T0_CMP+4);
-+	printk(KERN_DEBUG "hpet: T0_CMP_l: %x, T0_CMP_h: %x\n", l, h);
-+	l = hpet_readl(HPET_T0_ROUTE); h = hpet_readl(HPET_T0_ROUTE+4);
-+	printk(KERN_DEBUG "hpet: T0_ROUTE_l: %x, T0_ROUTE_h: %x\n", l, h);
-+	l = hpet_readl(HPET_T1_CFG); h = hpet_readl(HPET_T1_CFG+4);
-+	printk(KERN_DEBUG "hpet: T1_CFG_l: %x, T1_CFG_h: %x\n", l, h);
-+	l = hpet_readl(HPET_T1_CMP); h = hpet_readl(HPET_T1_CMP+4);
-+	printk(KERN_DEBUG "hpet: T1_CMP_l: %x, T1_CMP_h: %x\n", l, h);
-+	l = hpet_readl(HPET_T1_ROUTE); h = hpet_readl(HPET_T1_ROUTE+4);
-+	printk(KERN_DEBUG "hpet: T1_ROUTE_l: %x, T1_ROUTE_h: %x\n", l, h);
-+	l = hpet_readl(HPET_T2_CFG); h = hpet_readl(HPET_T2_CFG+4);
-+	printk(KERN_DEBUG "hpet: T2_CFG_l: %x, T2_CFG_h: %x\n", l, h);
-+	l = hpet_readl(HPET_T2_CMP); h = hpet_readl(HPET_T2_CMP+4);
-+	printk(KERN_DEBUG "hpet: T2_CMP_l: %x, T2_CMP_h: %x\n", l, h);
-+	l = hpet_readl(HPET_T2_ROUTE); h = hpet_readl(HPET_T2_ROUTE+4);
-+	printk(KERN_DEBUG "hpet: T2_ROUTE_l: %x, T2_ROUTE_h: %x\n", l, h);
-+}	
++	u32 hctl, capa, value;
 +
-+#define hpet_print_config()					\
-+do {								\
-+	if (hpet_debug)						\
-+		_hpet_print_config(__FUNCTION__, __LINE__);	\
-+} while (0)
++	/* Only MMC1 supports 3.0V */
++	if (host->id == OMAP_MMC1_DEVID) {
++		hctl = SDVS30;
++		capa = VS30 | VS18;
++	} else {
++		hctl = SDVS18;
++		capa = VS18;
++	}
 +
- /*
-  * When the hpet driver (/dev/hpet) is enabled, we need to reserve
-  * timer 0 and timer 1 in case of RTC emulation.
-@@ -264,6 +303,7 @@ static void hpet_set_mode(enum clock_event_mode mode,
- 
- 	switch (mode) {
- 	case CLOCK_EVT_MODE_PERIODIC:
-+		hpet_print_config();
- 		delta = ((uint64_t)(NSEC_PER_SEC/HZ)) * evt->mult;
- 		delta >>= evt->shift;
- 		now = hpet_readl(HPET_COUNTER);
-@@ -280,6 +320,8 @@ static void hpet_set_mode(enum clock_event_mode mode,
- 		hpet_writel(cmp, HPET_Tn_CMP(timer));
- 		udelay(1);
- 		hpet_writel((unsigned long) delta, HPET_Tn_CMP(timer));
-+		WARN_ON(cmp <= hpet_readl(HPET_COUNTER));
-+		hpet_print_config();
- 		break;
- 
- 	case CLOCK_EVT_MODE_ONESHOT:
-@@ -524,6 +566,7 @@ static void hpet_msi_capability_lookup(unsigned int start_timer)
- 
- 	num_timers = ((id & HPET_ID_NUMBER) >> HPET_ID_NUMBER_SHIFT);
- 	num_timers++; /* Value read out starts from 0 */
-+	hpet_print_config();
- 
- 	hpet_devs = kzalloc(sizeof(struct hpet_dev) * num_timers, GFP_KERNEL);
- 	if (!hpet_devs)
-@@ -791,6 +834,7 @@ int __init hpet_enable(void)
- 	 * information and the number of channels
- 	 */
- 	id = hpet_readl(HPET_ID);
-+	hpet_print_config();
- 
- #ifdef CONFIG_HPET_EMULATE_RTC
- 	/*
-@@ -843,6 +887,7 @@ static __init int hpet_late_init(void)
- 		return -ENODEV;
- 
- 	hpet_reserve_platform_timers(hpet_readl(HPET_ID));
-+	hpet_print_config();
- 
- 	for_each_online_cpu(cpu) {
- 		hpet_cpuhp_notify(NULL, CPU_ONLINE, (void *)(long)cpu);
++	value = OMAP_HSMMC_READ(host->base, HCTL) & ~SDVS_MASK;
++	OMAP_HSMMC_WRITE(host->base, HCTL, value | hctl);
++
++	value = OMAP_HSMMC_READ(host->base, CAPA);
++	OMAP_HSMMC_WRITE(host->base, CAPA, value | capa);
++
++	/* Set the controller to AUTO IDLE mode */
++	value = OMAP_HSMMC_READ(host->base, SYSCONFIG);
++	OMAP_HSMMC_WRITE(host->base, SYSCONFIG, value | AUTOIDLE);
++
++	/* Set SD bus power bit */
++	value = OMAP_HSMMC_READ(host->base, HCTL);
++	OMAP_HSMMC_WRITE(host->base, HCTL, value | SDBP);
++}
++
+ static struct mmc_host_ops mmc_omap_ops = {
+ 	.request = omap_mmc_request,
+ 	.set_ios = omap_mmc_set_ios,
+@@ -876,7 +905,6 @@ static int __init omap_mmc_probe(struct
+platform_device *pdev)
+ 	struct mmc_omap_host *host = NULL;
+ 	struct resource *res;
+ 	int ret = 0, irq;
+-	u32 hctl, capa;
 
---E/DnYTRukya0zdZ1--
+ 	if (pdata == NULL) {
+ 		dev_err(&pdev->dev, "Platform Data is missing\n");
+@@ -981,28 +1009,7 @@ static int __init omap_mmc_probe(struct
+platform_device *pdev)
+ 	if (pdata->slots[host->slot_id].wires >= 4)
+ 		mmc->caps |= MMC_CAP_4_BIT_DATA;
+
+-	/* Only MMC1 supports 3.0V */
+-	if (host->id == OMAP_MMC1_DEVID) {
+-		hctl = SDVS30;
+-		capa = VS30 | VS18;
+-	} else {
+-		hctl = SDVS18;
+-		capa = VS18;
+-	}
+-
+-	OMAP_HSMMC_WRITE(host->base, HCTL,
+-			OMAP_HSMMC_READ(host->base, HCTL) | hctl);
+-
+-	OMAP_HSMMC_WRITE(host->base, CAPA,
+-			OMAP_HSMMC_READ(host->base, CAPA) | capa);
+-
+-	/* Set the controller to AUTO IDLE mode */
+-	OMAP_HSMMC_WRITE(host->base, SYSCONFIG,
+-			OMAP_HSMMC_READ(host->base, SYSCONFIG) | AUTOIDLE);
+-
+-	/* Set SD bus power bit */
+-	OMAP_HSMMC_WRITE(host->base, HCTL,
+-			OMAP_HSMMC_READ(host->base, HCTL) | SDBP);
++	omap_hsmmc_init(host);
+
+ 	/* Request IRQ for MMC operations */
+ 	ret = request_irq(host->irq, mmc_omap_irq, IRQF_DISABLED,
+@@ -1127,41 +1134,38 @@ static int omap_mmc_suspend(struct
+platform_device *pdev, pm_message_t state)
+ 	if (host && host->suspended)
+ 		return 0;
+
+-	if (host) {
+-		ret = mmc_suspend_host(host->mmc, state);
+-		if (ret == 0) {
+-			host->suspended = 1;
+-
+-			OMAP_HSMMC_WRITE(host->base, ISE, 0);
+-			OMAP_HSMMC_WRITE(host->base, IE, 0);
++	ret = mmc_suspend_host(host->mmc, state);
++	if (ret == 0) {
++		host->suspended = 1;
+
+-			if (host->pdata->suspend) {
+-				ret = host->pdata->suspend(&pdev->dev,
+-								host->slot_id);
+-				if (ret)
+-					dev_dbg(mmc_dev(host->mmc),
+-						"Unable to handle MMC board"
+-						" level suspend\n");
+-			}
++		OMAP_HSMMC_WRITE(host->base, ISE, 0);
++		OMAP_HSMMC_WRITE(host->base, IE, 0);
+
+-			if (!(OMAP_HSMMC_READ(host->base, HCTL) & SDVSDET)) {
+-				OMAP_HSMMC_WRITE(host->base, HCTL,
+-					OMAP_HSMMC_READ(host->base, HCTL)
+-					& SDVSCLR);
+-				OMAP_HSMMC_WRITE(host->base, HCTL,
+-					OMAP_HSMMC_READ(host->base, HCTL)
+-					| SDVS30);
+-				OMAP_HSMMC_WRITE(host->base, HCTL,
+-					OMAP_HSMMC_READ(host->base, HCTL)
+-					| SDBP);
+-			}
++		if (host->pdata->suspend) {
++			ret = host->pdata->suspend(&pdev->dev, host->slot_id);
++			if (ret)
++				dev_dbg(mmc_dev(host->mmc),
++					"Unable to handle MMC board"
++					" level suspend\n");
++		}
+
+-			clk_disable(host->fclk);
+-			clk_disable(host->iclk);
+-			clk_disable(host->dbclk);
++		if (!(OMAP_HSMMC_READ(host->base, HCTL) & SDVSDET)) {
++			OMAP_HSMMC_WRITE(host->base, HCTL,
++				OMAP_HSMMC_READ(host->base, HCTL)
++				& SDVSCLR);
++			OMAP_HSMMC_WRITE(host->base, HCTL,
++				OMAP_HSMMC_READ(host->base, HCTL)
++				| SDVS30);
++			OMAP_HSMMC_WRITE(host->base, HCTL,
++				OMAP_HSMMC_READ(host->base, HCTL)
++				| SDBP);
+ 		}
+
++		clk_disable(host->fclk);
++		clk_disable(host->iclk);
++		clk_disable(host->dbclk);
+ 	}
++
+ 	return ret;
+ }
+
+@@ -1174,36 +1178,35 @@ static int omap_mmc_resume(struct platform_device *pdev)
+ 	if (host && !host->suspended)
+ 		return 0;
+
+-	if (host) {
++	ret = clk_enable(host->fclk);
++	if (ret)
++		goto clk_en_err;
+
+-		ret = clk_enable(host->fclk);
+-		if (ret)
+-			goto clk_en_err;
+-
+-		ret = clk_enable(host->iclk);
+-		if (ret) {
+-			clk_disable(host->fclk);
+-			clk_put(host->fclk);
+-			goto clk_en_err;
+-		}
++	ret = clk_enable(host->iclk);
++	if (ret) {
++		clk_disable(host->fclk);
++		clk_put(host->fclk);
++		goto clk_en_err;
++	}
+
+-		if (clk_enable(host->dbclk) != 0)
+-			dev_dbg(mmc_dev(host->mmc),
+-					"Enabling debounce clk failed\n");
++	if (clk_enable(host->dbclk) != 0)
++		dev_dbg(mmc_dev(host->mmc),
++				"Enabling debounce clk failed\n");
+
+-		if (host->pdata->resume) {
+-			ret = host->pdata->resume(&pdev->dev, host->slot_id);
+-			if (ret)
+-				dev_dbg(mmc_dev(host->mmc),
+-					"Unmask interrupt failed\n");
+-		}
++	omap_hsmmc_init(host);
+
+-		/* Notify the core to resume the host */
+-		ret = mmc_resume_host(host->mmc);
+-		if (ret == 0)
+-			host->suspended = 0;
++	if (host->pdata->resume) {
++		ret = host->pdata->resume(&pdev->dev, host->slot_id);
++		if (ret)
++			dev_dbg(mmc_dev(host->mmc),
++				"Unmask interrupt failed\n");
+ 	}
+
++	/* Notify the core to resume the host */
++	ret = mmc_resume_host(host->mmc);
++	if (ret == 0)
++		host->suspended = 0;
++
+ 	return ret;
+
+ clk_en_err:
+-- 
+1.5.2.5
+
+
+-- 
+Kim Kyuwon
