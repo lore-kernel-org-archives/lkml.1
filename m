@@ -1,69 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbZBTR34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759178AbZBTRa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755987AbZBTR34 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 12:29:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbZBTR3q
+	id S1759178AbZBTRa6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 12:30:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657AbZBTRat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 12:29:46 -0500
-Received: from zelda.netsplit.com ([87.194.19.211]:57042 "EHLO
-	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753384AbZBTR3p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 12:29:45 -0500
-Subject: Re: [PATCH] cpufreq: Change link order of x86 cpufreq modules
-From: Scott James Remnant <scott@canonical.com>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Ingo Molnar <mingo@elte.hu>, davej@codemonkey.org.uk,
-       linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
-In-Reply-To: <20090218183641.GA20203@srcf.ucam.org>
-References: <20090218182822.GA19902@srcf.ucam.org>
-	 <20090218183137.GD26802@elte.hu>  <20090218183641.GA20203@srcf.ucam.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-fcMsO8zNWKHrHMcjyeRu"
-Date: Fri, 20 Feb 2009 17:29:52 +0000
-Message-Id: <1235150992.6467.66.camel@quest>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Fri, 20 Feb 2009 12:30:49 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49680 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753292AbZBTRas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 12:30:48 -0500
+Date: Fri, 20 Feb 2009 18:30:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/5] ftrace, x86: make kernel text writable only for
+	conversions
+Message-ID: <20090220173035.GI24538@elte.hu>
+References: <20090220163846.709775139@goodmis.org> <20090220164045.827841413@goodmis.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090220164045.827841413@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-fcMsO8zNWKHrHMcjyeRu
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-On Wed, 2009-02-18 at 18:36 +0000, Matthew Garrett wrote:
+> diff --git a/arch/x86/include/asm/ftrace.h b/arch/x86/include/asm/ftrace.h
+> index b55b4a7..5564cf3 100644
+> --- a/arch/x86/include/asm/ftrace.h
+> +++ b/arch/x86/include/asm/ftrace.h
+> @@ -80,4 +80,14 @@ extern void return_to_handler(void);
+>  #endif /* __ASSEMBLY__ */
+>  #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+>  
+> +#ifndef __ASSEMBLY__
+> +#ifdef CONFIG_DEBUG_RODATA
+> +void set_kernel_text_rw(void);
+> +void set_kernel_text_ro(void);
+> +#else
+> +static inline void set_kernel_text_rw(void) { }
+> +static inline void set_kernel_text_ro(void) { }
+> +#endif
+> +#endif /* __ASSEMBLY__ */
 
-> On Wed, Feb 18, 2009 at 07:31:37PM +0100, Ingo Molnar wrote:
->=20
-> > Nice fix! Where does this information come from? Distro module=20
-> > ordering magic? It's rather non-trivial.
->=20
-> Pretty much. p4-clockmod is never the preferred option because it does=20
-> no voltage scaling. speedstep-centrino is now almost entirely=20
-> functionally replaced with acpi-cpufreq. The powernow-k8 issue was a=20
-> personal communication from davej.
->=20
-In fact, we've noticed severe regressions with p4-clockmod over simply
-having no scaling driver at all - and are not going to built it into our
-kernels.
+The proper place for this is where the other pagetable attribute 
+functions reside: arch/x86/include/asm/cacheflush.h.
 
-Scott
---=20
-Scott James Remnant
-scott@canonical.com
+> +/* used by ftrace */
+> +void set_kernel_text_rw(void)
+> +{
+> +	unsigned long start = PFN_ALIGN(_text);
+> +	unsigned long size = PFN_ALIGN(_etext) - start;
+> +
+> +	printk(KERN_INFO "Set kernel text: %lx - %lx for read write\n",
+> +	       start, start+size);
+> +
+> +	set_pages_rw(virt_to_page(start), size >> PAGE_SHIFT);
 
---=-fcMsO8zNWKHrHMcjyeRu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Wont this be executed by every suspend/resume cycle? I'm not 
+sure we want a KERN_INFO printout every time.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+> +/* used by ftrace */
+> +void set_kernel_text_rw(void)
 
-iEYEABECAAYFAkme6JAACgkQSnQiFMl4yK5zuQCgpMFmzGL4DJqlYQ0lgGXZg6H5
-P+EAn37gsFpDM8ZhgTLHIh2Oe4wB94Wf
-=eti4
------END PGP SIGNATURE-----
+i'd leave out the 'used by ftrace' bit - more uses might arise. 
+How does kprobes get around readonly pages, it uses these APIs 
+too, right?
 
---=-fcMsO8zNWKHrHMcjyeRu--
-
+	Ingo
