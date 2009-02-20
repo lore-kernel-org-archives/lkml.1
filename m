@@ -1,77 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755630AbZBTQFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754581AbZBTQH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755630AbZBTQFS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 11:05:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbZBTQE7
+	id S1754581AbZBTQH3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 11:07:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbZBTQHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 11:04:59 -0500
-Received: from mx0.towertech.it ([213.215.222.73]:34934 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754133AbZBTQE6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 11:04:58 -0500
-Date: Fri, 20 Feb 2009 17:04:54 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Cc: Geert.Uytterhoeven@sonycom.com, Kyle McMartin <kyle@mcmartin.ca>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Richard Zidlicky <rz@linux-m68k.org>, linux-parisc@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [rtc-linux] [PATCH/RFC 0/5] Generic RTC class driver
-Message-ID: <20090220170454.04382e9e@i1501.lan.towertech.it>
-In-Reply-To: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 20 Feb 2009 11:07:19 -0500
+Received: from an-out-0708.google.com ([209.85.132.250]:31058 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751754AbZBTQHS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 11:07:18 -0500
+MIME-Version: 1.0
+In-Reply-To: <200902201657.01145.rjw@sisk.pl>
+References: <200902192215.18365.rjw@sisk.pl> <200902201149.37921.rjw@sisk.pl>
+	 <d6200be20902200326g6caa211ai388d4aa9fc270a28@mail.gmail.com>
+	 <200902201657.01145.rjw@sisk.pl>
+Date: Fri, 20 Feb 2009 11:07:16 -0500
+Message-ID: <f73f7ab80902200807j743a37d7hc42283bc7b9dbe6f@mail.gmail.com>
+Subject: Re: [RFD] Automatic suspend
+From: Kyle Moffett <kyle@moffetthome.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: =?UTF-8?B?QXJ2ZSBIasO4bm5ldsOlZw==?= <arve@android.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Oliver Neukum <oliver@neukum.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Feb 2009 16:46:44 +0100
-Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+On Fri, Feb 20, 2009 at 10:56 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> * Introduce /sys/power/sleep that will work like /sys/power/state, but:
+>  - First, it will call ->acknowledge() for each driver (via bus types) to
+>    check if any of them wants to postpone the suspend (this will prevent tasks
+>    from being frozen unnecessarily if it is known in advance that the suspend
+>    should not happen at the moment).
+>  - Next, it will check the "I_do_not_want_automatic_suspend_to_occur" flag
+>    of each process and the suspend will be aborted if it is true for any of
+>    them (quite frankly, I think that should be integrated with the freezer,
+>    in particular the tasks that have TIF_FREEZE set shouldn't be able to set
+>    this flag and it should be checked in the freezer loop for every task with
+>    TIF_FREEZE unset).
+>  - Next, it will proceed with suspending just like /sys/power/state does (the
+>    drivers that missed the opportunity to abort the suspend by returning
+>    'false' from ->acknowledge() can still abort the suspend by failing their
+>    ->suspend() routines).
+>
+> Then, the decision making logic will be able to use /sys/power/sleep whenever
+> it wishes to and the kernel will be able to refuse to suspend if it's not
+> desirable at the moment.
 
-> Fortunately there already exists a generic RTC class driver: "rtc-parisc".
-> Despite it's name, it's platform-independent, as it's build on top of the RTC
-> abstraction used by "genrtc".
-> 
-> This patch series
->   - adds a missing module alias to rtc-parisc,
->   - renames rtc-parisc to rtc-generic,
->   - converts the architectures that currently have CONFIG_GEN_RTC enabled in
->     their defconfig (m68k, parisc, powerpc) to rtc-generic,
->   - removes the obsolete rtc-ppc driver,
->   - removes the old genrtc driver.
->   
-> Note that genrtc may be used on other archictectures as well: at least alpha
-> has the required infrastructure ([gs]et_rtc_time()). The Kconfig rules allow
-> genrtc to be enabled on several others (cris, h8300, mn10300, um, x86, xtensa).
-> 
-> Furthermore genrtc and rtc-generic are not 100% userspace compatible:
->   - /dev/rtc provided by genrtc uses a misc character device (10:135),
->   - /dev/rtc provided by rtc-generic uses a dynamic character device.
+Then, for a userspace process handling input events:
 
- Hello,
+1)  Unset "no-suspend flag"
+2)  Poll event device
+3)  When the poll returns true, set the "no-suspend flag"
+4)  Read the event device and process the event(s)
+5)  Go back to step 1
 
-   my opinion on this kind of stuff is that I want to avoid the layering
- of implementations under the rtc subsystem. I'd rather prefer that each
- rtc device had its own driver. 
- 
-  I've made error in the past, by accepting such kind of drivers, and
- would like to avoid that it happens again.
+The event driver would responsible for atomically preventing suspend
+from the moment a button is pressed until it is actually delivered to
+a userspace process.  Since at that time the userspace process will be
+preventing suspend, there will be no window in which we could go to
+sleep with pending events.
 
-  Regarding the user space, the assumption that a device has
- a fixed major:minor number should be dropped as well.
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+Cheers,
+Kyle Moffett
