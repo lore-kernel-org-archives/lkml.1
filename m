@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbZBTSce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755460AbZBTSgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756178AbZBTSce (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 13:32:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755180AbZBTScV
+	id S1755460AbZBTSgY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 13:36:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbZBTSgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 13:32:21 -0500
-Received: from threatwall.zlynx.org ([199.45.143.218]:50390 "EHLO zlynx.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755975AbZBTScU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 13:32:20 -0500
-X-Greylist: delayed 1124 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Feb 2009 13:32:19 EST
-Message-ID: <499EF28F.4080508@acm.org>
-Date: Fri, 20 Feb 2009 11:12:31 -0700
-From: Zan Lynx <zlynx@acm.org>
-User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Jan Kara <jack@suse.cz>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>
-Subject: Re: mmotm 2009-02-10-16-35 uploaded (reiser4-quota)
-References: <499305AD.4020900@oracle.com>	<20090211171324.GC13817@duck.suse.cz>	<20090212114737.C8EA.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090211185321.138bb93a.akpm@linux-foundation.org>
-In-Reply-To: <20090211185321.138bb93a.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Envelope-From: zlynx@acm.org
-X-Spam-Id: 20090220/1LaZrb-0006GU-Pi-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
+	Fri, 20 Feb 2009 13:36:16 -0500
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:49403 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753274AbZBTSgP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 13:36:15 -0500
+Subject: [PATCH] paravirt-ops maintainers update
+From: Zachary Amsden <zach@vmware.com>
+To: "jeremy@xensource.com" <jeremy@xensource.com>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Alok Kataria <alokkataria1@gmail.com>, mingo@elte.hu,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: multipart/mixed; boundary="=-WW1JLFM+kN2xCvfUNIaN"
+Date: Fri, 20 Feb 2009 11:27:46 -0800
+Message-Id: <1235158066.6951.127.camel@bodhitayantram.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 12 Feb 2009 11:49:20 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> 
->> Andrew, recently I've never seen any reiser4 activity in LKML.
->> I would suggest to remove it from -mm.
-> 
-> A handful of people use it, and the cost of carrying it is pretty low.
-> 
-> Hey, at least it handles ENOSPC without going BUG().
 
-I use it and love it and I think its code belongs in the kernel far more 
-than ext4 ever did when ext4 was first added.
+--=-WW1JLFM+kN2xCvfUNIaN
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-By the way, I have been waiting for a new -mm release. :-)
+Welcome to Alok Kataria, our new paravirt-ops maintainer.
 
-Are there going to be any more -mm releases or are we supposed to use 
-mmotm only now?
+--=-WW1JLFM+kN2xCvfUNIaN
+Content-Disposition: attachment; filename=maint.patch
+Content-Type: text/x-patch; name=maint.patch; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 
--- 
-Zan Lynx
-zlynx@acm.org
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 06e0391..59fd2d1 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3334,8 +3334,8 @@ P:	Jeremy Fitzhardinge
+ M:	jeremy@xensource.com
+ P:	Chris Wright
+ M:	chrisw@sous-sol.org
+-P:	Zachary Amsden
+-M:	zach@vmware.com
++P:	Alok Kataria
++M:	akataria@vmware.com
+ P:	Rusty Russell
+ M:	rusty@rustcorp.com.au
+ L:	virtualization@lists.osdl.org
 
-"Knowledge is Power.  Power Corrupts.  Study Hard.  Be Evil."
+--=-WW1JLFM+kN2xCvfUNIaN--
+
