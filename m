@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758188AbZBTKoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757644AbZBTKrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758188AbZBTKoz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 05:44:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755239AbZBTKof
+	id S1757644AbZBTKrc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 05:47:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbZBTKrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 05:44:35 -0500
-Received: from cytosin.uni-konstanz.de ([134.34.240.61]:45669 "EHLO
-	cytosin.uni-konstanz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757864AbZBTKoe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 05:44:34 -0500
-X-Greylist: delayed 623 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Feb 2009 05:44:34 EST
-X-IronPort-AV: E=Sophos;i="4.38,240,1233532800"; 
-   d="scan'208";a="127864644"
-Message-ID: <499E8721.4040005@uni-konstanz.de>
-Date: Fri, 20 Feb 2009 11:34:09 +0100
-From: Kay Diederichs <kay.diederichs@uni-konstanz.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090107)
+	Fri, 20 Feb 2009 05:47:23 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:54021 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751163AbZBTKrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 05:47:22 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oliver Neukum <oliver@neukum.org>
+Subject: Re: [RFD] Automatic suspend
+Date: Fri, 20 Feb 2009 11:46:55 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
+       "Woodruff, Richard" <r-woodruff2@ti.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
+       Igor Stoppa <igor.stoppa@nokia.com>,
+       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
+References: <Pine.LNX.4.44L0.0902191659020.7953-100000@iolanthe.rowland.org> <200902192321.47891.rjw@sisk.pl> <200902192358.13068.oliver@neukum.org>
+In-Reply-To: <200902192358.13068.oliver@neukum.org>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Status of ext4 tools
-References: <20090219234838.4c06c98b@werewolf.home> <20090220102200.GJ8921@charite.de>
-In-Reply-To: <20090220102200.GJ8921@charite.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902201146.59944.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ralf Hildebrandt schrieb:
-> * J.A. Magallón <jamagallon@ono.com>:
+On Thursday 19 February 2009, Oliver Neukum wrote:
+> Am Donnerstag 19 Februar 2009 23:21:46 schrieb Rafael J. Wysocki:
+> > > That's the whole point behind userspace wakelocks!  They provide a
+> > > mechanism for userspace to tell the kernel when (as far as userspace 
+> is
+> > > concerned) it is or is not okay to auto-sleep.
+> >
+> > Still, one can go further and observe that the user space can in fact start
+> > automatic suspend by itself whenever it knows it's appropriate ...
 > 
->> - I have seen that some distros refer to a package called 'e4fsprogs'.
->>   Does that thing exist ? Where ?
-> 
-> RedHat seems to have that, but here on Debian/Ubuntu that doesn't exist.
-> 
+> User space initiating this is a race condition.
 
-The release notes say
-"Please note that "e4fsprogs" simply contains renamed static binaries
-from the equivalent upstream e2fsprogs release; it is packaged this
-way for Red Hat Enterprise Linux 5 to ensure that the many changes
-included for ext4 do not destabilize the core e2fsprogs in RHEL5."
+Do you mean a race with the other user space processes or with the kernel?
 
-
-
-
+Rafael
