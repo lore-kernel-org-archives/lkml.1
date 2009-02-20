@@ -1,91 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757223AbZBTIcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757715AbZBTIdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757223AbZBTIcS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 03:32:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbZBTIcB
+	id S1757715AbZBTIdU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 03:33:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbZBTIdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 03:32:01 -0500
-Received: from pne-smtpout2-sn2.hy.skanova.net ([81.228.8.164]:63103 "EHLO
-	pne-smtpout2-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753011AbZBTIcB (ORCPT
+	Fri, 20 Feb 2009 03:33:11 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44264 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753579AbZBTIdK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 03:32:01 -0500
-Message-ID: <499E6A71.8060609@shipmail.org>
-Date: Fri, 20 Feb 2009 09:31:45 +0100
-From: Thomas Hellstrom <thomas@shipmail.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081231)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Eric Anholt <eric@anholt.net>, Wang Chen <wangchen@cn.fujitsu.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drm: Fix lock order reversal between mmap_sem and struct_mutex.
-References: <1234918786-854-1-git-send-email-eric@anholt.net>	 <1234969734.4637.111.camel@laptop>  <499DC8EC.3000806@shipmail.org> <1235082372.4612.665.camel@laptop>
-In-Reply-To: <1235082372.4612.665.camel@laptop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 20 Feb 2009 03:33:10 -0500
+Date: Fri, 20 Feb 2009 00:32:29 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
+       cpw@sgi.com, mingo@elte.hu
+Subject: Re: Subject: [PATCH 08/10 UPDATED] vmalloc: add
+ un/map_kernel_range_noflush()
+Message-Id: <20090220003229.c3f3abfe.akpm@linux-foundation.org>
+In-Reply-To: <499E589B.6060707@kernel.org>
+References: <1234958676-27618-1-git-send-email-tj@kernel.org>
+	<1234958676-27618-9-git-send-email-tj@kernel.org>
+	<499E589B.6060707@kernel.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Thu, 2009-02-19 at 22:02 +0100, Thomas Hellstrom wrote:
->   
->>  
->> It looks to me like the driver preferred locking order is
->>
->> object_mutex (which happens to be the device global struct_mutex)
->>   mmap_sem
->>      offset_mutex.
->>
->> So if one could avoid using the struct_mutex for object bookkeeping (A 
->> separate lock) then
->> vm_open() and vm_close() would adhere to that locking order as well, 
->> simply by not taking the struct_mutex at all.
->>
->> So only fault() remains, in which that locking order is reversed. 
->> Personally I think the trylock ->reschedule->retry method with proper 
->> commenting is a good solution. It will be the _only_ place where locking 
->> order is reversed and it is done in a deadlock-safe manner. Note that 
->> fault() doesn't really fail, but requests a retry from user-space with 
->> rescheduling to give the process holding the struct_mutex time to 
->> release it.
->>     
->
-> It doesn't do the reschedule -- need_resched() will check if the current
-> task was marked to be scheduled away, 
-Yes. my mistake. set_tsk_need_resched() would be the proper call. If I'm 
-correctly informed, that would kick in the scheduler _after_ the 
-mmap_sem() is released, just before returning to user-space.
-> furthermore yield based locking
-> sucks chunks.
->   
-Yes, but AFAICT in this situation it is the only way to reverse locking 
-order in a deadlock safe manner. If there is a lot of contention it will 
-eat cpu. Unfortunately since the struct_mutex is such a wide lock there 
-will probably be contention in some situations.
+On Fri, 20 Feb 2009 16:15:39 +0900 Tejun Heo <tj@kernel.org> wrote:
 
-BTW isn't this quite common in distributed resource management, when you 
-can't ensure that all requestors will request resources in the same order?
-Try to grab all resources you need for an operation. If you fail to get 
-one, release the resources you already have, sleep waiting for the 
-failing one to be available and then retry.
+> +/**
+> + * map_kernel_range_noflush - map kernel VM area with the specified pages
+> + * @addr: start of the VM area to map
+> + * @size: size of the VM area to map
+> + * @prot: page protection flags to use
+> + * @pages: pages to map
+> + *
+> + * Map PFN_UP(@size) pages at @addr.  The VM area @addr and @size
+> + * specify should have been allocated using get_vm_area() and its
+> + * friends.
+> + *
+> + * NOTE:
+> + * This function does NOT do any cache flushing.  The caller is
+> + * responsible for calling flush_cache_vmap() on to-be-mapped areas
+> + * before calling this function.
+> + *
+> + * RETURNS:
+> + * The number of pages mapped on success, -errno on failure.
+> + */
+> +int map_kernel_range_noflush(unsigned long addr, unsigned long size,
+> +			     pgprot_t prot, struct page **pages)
+> +{
+> +	return vmap_page_range_noflush(addr, addr + size, prot, pages);
+> +}
+> +
+> +/**
+> + * unmap_kernel_range_noflush - unmap kernel VM area
+> + * @addr: start of the VM area to unmap
+> + * @size: size of the VM area to unmap
+> + *
+> + * Unmap PFN_UP(@size) pages at @addr.  The VM area @addr and @size
+> + * specify should have been allocated using get_vm_area() and its
+> + * friends.
+> + *
+> + * NOTE:
+> + * This function does NOT do any cache flushing.  The caller is
+> + * responsible for calling flush_cache_vunmap() on to-be-mapped areas
+> + * before calling this function and flush_tlb_kernel_range() after.
+> + */
+> +void unmap_kernel_range_noflush(unsigned long addr, unsigned long size)
+> +{
+> +	vunmap_page_range(addr, addr + size);
+> +}
 
-In this case we fail be cause we _may_ have a deadlock. Since we cannot 
-release the mmap_sem and wait, we do the second best thing and tell the 
-kernel to reschedule when the mmap_sem is released.
+Should these be called
+vmap_kernel_range_noflush/vunmap_kernel_range_noflush?
 
-> What's so very difficult about pulling the copy_*_user() out from under
-> the locks?
->
->   
-Given Eric's comment this is a GEM performance-critical path, so even 
-from a CPU-usage perspecive, the trylock solution may be preferred.
-
- From a make-the-code-easy-to-understand perspective, I agree pulling 
-out copy_*_user() is a better solution.  It might even be that the 
-trylock solution doesn't kill the warnings from the lock dependency tracker.
-
-/Thomas
-
-
+<avoids pointing out the 2 gigapage limit>
