@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755971AbZBTKDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755610AbZBTKV7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755971AbZBTKDt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 05:03:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbZBTKDk
+	id S1755610AbZBTKV7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 05:21:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbZBTKVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 05:03:40 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48806 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752614AbZBTKDj (ORCPT
+	Fri, 20 Feb 2009 05:21:47 -0500
+Received: from smtp.flash.net.br ([201.46.240.48]:47595 "EHLO
+	smtp.gru.flash.tv.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751714AbZBTKVq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 05:03:39 -0500
-Date: Fri, 20 Feb 2009 19:02:23 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: menage@google.com, lizf@cn.fujitsu.com,
-       containers@lists.linux-foundation.org
-Subject: Question for remount
-Message-Id: <20090220190223.e8b4f6a8.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Feb 2009 05:21:46 -0500
+Date: Fri, 20 Feb 2009 07:21:39 -0300
+From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
+To: Greg KH <greg@kroah.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, rbrito@ime.usp.br
+Subject: Re: Stack trace with kernel 2.6.29-rc2
+Message-ID: <20090220102139.GA22225@ime.usp.br>
+References: <20090202192823.GA3181@ime.usp.br> <alpine.LRH.1.10.0902031345410.22097@twin.jikos.cz> <20090203173701.GA30687@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090203173701.GA30687@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi, Greg. Hi, Jiri. Hi, others.
 
-Followings are 3 stories of remount cgroup,
+Sorry for not replying earlier, but I had some personal problems (real
+life getting into the way).
 
-1. remount with devices.
+On Feb 03 2009, Greg KH wrote:
+> On Tue, Feb 03, 2009 at 01:46:06PM +0100, Jiri Kosina wrote:
+> > 
+> > On Mon, 2 Feb 2009, Rogério Brito wrote:
+> > > [64025.510204] ------------[ cut here ]------------
+> > > [64025.510211] WARNING: at drivers/usb/storage/transport.c:584 last_sector_hacks+0xfd/0x155 [usb_storage]()
+> > > [64025.510214] Hardware name:  
+> 
+> I think this message happened when it was plugged in, not removed.
 
- # mount -t cgroup none /cgroups -ocpuacct,release_agent=xxx
- # echo > /cgroups/release_agent #clear release agent by hand
- # mount -t cgroup none /cgroups -oremount,cpuacct
- # cat /cgroups/release_agent
-   => release_agent is ""
+Yes, exactly. That was exactly the case.
 
-2. remount without devices, mount command will read /proc/mounts and
-   copies option.
+> It's a known issue and will be addressed in the next -rc.
 
- # mount -t cgroup none /cgroups -ocpuacct,release_agent=xxx
- # echo > /cgroups/release_agent      #clear release agent by hand
- # mount /cgroups -oremount,cpuacct   #don't specify device
- # cat /cgroups/release_agent
-   => xxx
+I can confirm that the problem does not exist anymore with -rc5 (which
+is the one that I'm using right now).
 
-Hmm, release_agent is copied from /proc/mounts and release_agent revives.
-
-3. remount without devices, mount command will read /proc/mounts
- # mount -t cgroup none /cgroups -ocpuacct,release_agent=xxx
- # mount /cgroups -oremount,cpuacct,release_agent=xxx
- => error
- "release_agent=" will be found twice and this returns -INVAL
-
-maybe case "2" is not ideal, I think. (but it may not be bug.)
-
-My point is following.
-
-1. Documentation/cgroups/cgroup.txt says
-   #mount -oremount,cpuset,ns /dev/cgroup
-   But this should be
-   #mount -tcgroup none /dev/cgroup -oremount,cpuset,ns
-
-2. /proc/mounts information of release_agent should be updated....
-   when it's overwritten directly.
-
-3. If "2" is impossible, changing release_agent at remount should not be allowed.
-
-How do you think ?
 
 Thanks,
--Kame
 
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
