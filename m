@@ -1,59 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbZBTRg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760066AbZBTRiH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755382AbZBTRg5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 12:36:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759427AbZBTReu
+	id S1760066AbZBTRiH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 12:38:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759695AbZBTRhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 12:34:50 -0500
-Received: from mail-bw0-f161.google.com ([209.85.218.161]:50384 "EHLO
-	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756678AbZBTRes (ORCPT
+	Fri, 20 Feb 2009 12:37:35 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:37990 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756023AbZBTRhd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 12:34:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=c6azlyufI3D8LFWsv0HZZmMHccmuVY9jUByeHieqAM9G4lEtBLIiYV5sMqqxdpVmup
-         gGtg8usn6HfpYrwbuCXPa6yGmRE7uDZS7DC1aOdXOvrm+TiTRkXyyiYoSw8gsIkkk4mU
-         cbPVTrckWo2oYwXzrLFEgtUZ77w3F4ABU9MQg=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH] remove stale comment from <linux/hdreg.h>
-Date: Fri, 20 Feb 2009 18:36:02 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-next-20090219; KDE/4.2.0; i686; ; )
-Cc: linux-kernel@vger.kernel.org
+	Fri, 20 Feb 2009 12:37:33 -0500
+Date: Fri, 20 Feb 2009 12:37:31 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [git pull v2] x86 page fault checker
+In-Reply-To: <20090220155036.GA3225@elte.hu>
+Message-ID: <alpine.DEB.2.00.0902201232510.13747@gandalf.stny.rr.com>
+References: <alpine.DEB.2.00.0902201012220.29217@gandalf.stny.rr.com> <20090220155036.GA3225@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902201836.02841.bzolnier@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] remove stale comment from <linux/hdreg.h>
 
-HDIO_GET_IDENTITY returns 256 words currently.
 
-Noticed by Norman Diamond.
+Ingo,
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- include/linux/hdreg.h |    1 -
- 1 file changed, 1 deletion(-)
+I added your suggestion, and even tested it out. I cherry picked
+a branch to remove your split_large fix, added this output, and then
+added the changes that triggered the original bug. I got a very nasty 
+warning, but the kernel resumed fine.
 
-Index: b/include/linux/hdreg.h
-===================================================================
---- a/include/linux/hdreg.h
-+++ b/include/linux/hdreg.h
-@@ -511,7 +511,6 @@ struct hd_driveid {
- 	unsigned short	words69_70[2];	/* reserved words 69-70
- 					 * future command overlap and queuing
- 					 */
--	/* HDIO_GET_IDENTITY currently returns only words 0 through 70 */
- 	unsigned short	words71_74[4];	/* reserved words 71-74
- 					 * for IDENTIFY PACKET DEVICE command
- 					 */
+------------[ cut here ]------------
+WARNING: at arch/x86/mm/fault.c:495 do_page_fault+0x2aa/0x890()
+Hardware name: Precision WorkStation 470   
+PMD has incorrect permission bits
+[...]
+
+
+Thanks,
+
+-- Steve
+
+Please pull the latest tip/x86/urgent tree, which can be found at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/x86/urgent
+
+
+Steven Rostedt (1):
+      x86: check PMD in spurious_fault handler
+
+----
+ arch/x86/mm/fault.c |   13 ++++++++++++-
+ 1 files changed, 12 insertions(+), 1 deletions(-)
+---------------------------
+commit 3c3e5694add02e665bbbd0fecfbbdcc0b903097a
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Thu Feb 19 11:46:36 2009 -0500
+
+    x86: check PMD in spurious_fault handler
+    
+    Impact: fix to prevent hard lockup on bad PMD permissions
+    
+    If the PMD does not have the correct permissions for a page access,
+    but the PTE does, the spurious fault handler will mistake the fault
+    as a lazy TLB transaction. This will result in an infinite loop of:
+    
+     fault -> spurious_fault check (pass) -> return to code -> fault
+    
+    This patch adds a check and a warn on if the PTE passes the permissions
+    but the PMD does not.
+    
+    [ Updated: Ingo Molnar suggested using WARN_ONCE with some text ]
+    
+    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index c76ef1d..278d645 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -455,6 +455,7 @@ static int spurious_fault(unsigned long address,
+ 	pud_t *pud;
+ 	pmd_t *pmd;
+ 	pte_t *pte;
++	int ret;
+ 
+ 	/* Reserved-bit violation or user access to kernel space? */
+ 	if (error_code & (PF_USER | PF_RSVD))
+@@ -482,7 +483,17 @@ static int spurious_fault(unsigned long address,
+ 	if (!pte_present(*pte))
+ 		return 0;
+ 
+-	return spurious_fault_check(error_code, pte);
++	ret = spurious_fault_check(error_code, pte);
++	if (!ret)
++		return 0;
++
++	/*
++	 * Make sure we have permissions in PMD
++	 * If not, then there's a bug in the page tables.
++	 */
++	ret = spurious_fault_check(error_code, (pte_t *) pmd);
++	WARN_ONCE(!ret, "PMD has incorrect permission bits\n");
++	return ret;
+ }
+ 
+ /*
+
