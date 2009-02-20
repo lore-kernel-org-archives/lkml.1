@@ -1,41 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757680AbZBTImW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758296AbZBTIn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757680AbZBTImW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 03:42:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbZBTImN
+	id S1758296AbZBTIn5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 03:43:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbZBTInq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 03:42:13 -0500
-Received: from uhweb15152.united-hoster.com ([85.88.15.152]:48977 "EHLO
-	uhweb15152.united-hoster.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753251AbZBTImN (ORCPT
+	Fri, 20 Feb 2009 03:43:46 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32972
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754053AbZBTInp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 03:42:13 -0500
-Message-ID: <499E6B56.7000305@f-seidel.de>
-Date: Fri, 20 Feb 2009 09:35:34 +0100
-From: Frank Seidel <frank@f-seidel.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Frank Seidel <fseidel@suse.de>,
-       linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       rlove@rlove.org, protasnb@gmail.com,
-       Michael Ruoss <miruoss@student.ethz.ch>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Tim Gardner <tim.gardner@canonical.com>, multinymous@gmail.com
-Subject: Re: [PATCH] hwmon/hdaps: remove redundant sysfs invert
-References: <499569A9.5030202@suse.de>	<499807B4.1050606@suse.de>	<4998120C.3030808@suse.de>	<20090215153735.25ee8b05@hyperion.delvare>	<499D543B.6050703@suse.de>	<20090219182714.423757a9@hyperion.delvare>	<499DBA5B.10908@suse.de> <20090219213422.1d36c96c@hyperion.delvare>
-In-Reply-To: <20090219213422.1d36c96c@hyperion.delvare>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 20 Feb 2009 03:43:45 -0500
+Date: Fri, 20 Feb 2009 00:43:26 -0800 (PST)
+Message-Id: <20090220.004326.246398596.davem@davemloft.net>
+To: tklein@de.ibm.com
+Cc: jeff@garzik.org, raisch@de.ibm.com, hering2@de.ibm.com, themann@de.ibm.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] ehea: Fix memory hotplug handling
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200902191232.12152.tklein@de.ibm.com>
+References: <200902191232.12152.tklein@de.ibm.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare wrote:
-> Don't bother, I've reverted this specific part myself already.
+From: Thomas Klein <tklein@de.ibm.com>
+Date: Thu, 19 Feb 2009 12:32:11 +0100
 
-Oh, great :-) 
+> Added missing set_bit() to disable data transfer when a memchange
+> notification is handled
+>
+> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
 
-Thanks a lot,
-Frank
+Applied to net-next-2.6
 
+But this was a real pain because you never tell me what
+tree your changes are destined for.
+
+I assumed since you said "bug fix" you want this in
+net-2.6, but of course this patch doesn't apply there
+since the driver version is different in that tree.
+
+You can save me all of that trial-and-error wasted time
+if you simply say "net-next-2.6" or "net-2.6" either
+in the "[PATCH ...]" part of your subject or in the
+message body itself.
+
+Thanks.
