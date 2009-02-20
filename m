@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755159AbZBTSrL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754888AbZBTSud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755159AbZBTSrL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 13:47:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbZBTSq4
+	id S1754888AbZBTSud (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 13:50:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbZBTSuY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 13:46:56 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54061 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752665AbZBTSq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 13:46:56 -0500
-Date: Fri, 20 Feb 2009 19:46:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Zachary Amsden <zach@vmware.com>
-Cc: "jeremy@xensource.com" <jeremy@xensource.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Alok Kataria <alokkataria1@gmail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] paravirt-ops maintainers update
-Message-ID: <20090220184638.GA18553@elte.hu>
-References: <1235158066.6951.127.camel@bodhitayantram.eng.vmware.com>
+	Fri, 20 Feb 2009 13:50:24 -0500
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:25021 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752924AbZBTSuX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 13:50:23 -0500
+Message-ID: <499EFB1A.7070801@caviumnetworks.com>
+Date: Fri, 20 Feb 2009 10:48:58 -0800
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1235158066.6951.127.camel@bodhitayantram.eng.vmware.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Syscall wrappers breaks things.
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 20 Feb 2009 18:48:58.0770 (UTC) FILETIME=[E3C2C720:01C9938B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+In commit ee6a093222549ac0c72cfd296c69fa5e7d6daa34 the syscall wrappers 
+infrastructure was introduced.
 
-* Zachary Amsden <zach@vmware.com> wrote:
+A typical definition is something like this (from Ralf's patch):
 
-> Welcome to Alok Kataria, our new paravirt-ops maintainer.
+SYSCALL_DEFINE6(32_ipc, u32, call, long, first, long, second, long, third,
+	unsigned long, ptr, unsigned long, fifth)
+{
+.
+.
+.
 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 06e0391..59fd2d1 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -3334,8 +3334,8 @@ P:	Jeremy Fitzhardinge
->  M:	jeremy@xensource.com
->  P:	Chris Wright
->  M:	chrisw@sous-sol.org
-> -P:	Zachary Amsden
-> -M:	zach@vmware.com
-> +P:	Alok Kataria
-> +M:	akataria@vmware.com
->  P:	Rusty Russell
->  M:	rusty@rustcorp.com.au
->  L:	virtualization@lists.osdl.org
+This creates a symbol sys_32_ipc.  The old name of the symbol is 
+sys32_ipc (note the change in the number of '_').
 
-Applied to tip:x86/urgent. Welcome Alok!
+For the mips64 kernel the syscall table for o32 ABI executable contains:
 
-	Ingo
+.
+.
+.
+	PTR	sys32_ipc
+.
+.
+.
+
+This is now linked to the sys32_ipc function in kernel/sys_ni.c which 
+kindly returns ENOSYS.
+
+The long and short of the problem is that the is now a kernel wide 
+mismatch in function names between the names created by SYSCALL_DEFINE*, 
+the syscall tables and kernel/sys_ni.c.
+
+I am not sure what the best solution is, but something should probably 
+be done to un-break things.
+
+Thanks,
+David Daney
