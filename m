@@ -1,123 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbZBTT2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbZBTTfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755503AbZBTT2h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 14:28:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753542AbZBTT23
+	id S1755167AbZBTTfd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 14:35:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbZBTTfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 14:28:29 -0500
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:41415 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753366AbZBTT22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 14:28:28 -0500
-Date: Fri, 20 Feb 2009 11:28:24 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: ltt-dev@lists.casi.polymtl.ca, bert.wesarg@googlemail.com,
-       bob@watson.ibm.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH URCU formal] Add liveness checks to user-level RCU
-	model.
-Message-ID: <20090220192824.GP6960@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090220181835.GA4092@Krystal>
+	Fri, 20 Feb 2009 14:35:20 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:3924 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751176AbZBTTfS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 14:35:18 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090220181835.GA4092@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20090220192543.GA21644@silver.sucs.org>
+References: <alpine.DEB.1.10.0902190837270.19552@p34.internal.lan>
+	 <20090220094356.GB26124@silver.sucs.org>
+	 <ac3eb2510902200316m387ecb45n86a2ea7c6196b01@mail.gmail.com>
+	 <20090220131209.GA21446@silver.sucs.org>
+	 <ac3eb2510902200523o619e64aas7bffac9aeca86814@mail.gmail.com>
+	 <20090220142705.GA429@silver.sucs.org>
+	 <ac3eb2510902200656l11275aber128848182553726d@mail.gmail.com>
+	 <20090220192543.GA21644@silver.sucs.org>
+Date: Fri, 20 Feb 2009 20:35:15 +0100
+Message-ID: <ac3eb2510902201135x70abdce9n46c7c53a5c04edcd@mail.gmail.com>
+Subject: Re: General question (scheduler) with SSDs?
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-raid@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 20, 2009 at 01:18:35PM -0500, Mathieu Desnoyers wrote:
-> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > Break all potentially infinite loops in both urcu_reader() and
-> > urcu_updater(), ensure that urcu_reader() will process any memory barriers
-> > that urcu_updater() might issue, and formulate a "never" claim that checks
-> > to make sure that if either urcu_reader() or urcu_updater() completes,
-> > then the other will eventually also complete.  Since urcu_reader()
-> > now has a finite number of steps, it must eventually complete.
-> > 
-> > Also replace the code at the end of urcu_reader() that previously absorbed
-> > late memory-barrier requests from urcu_updater with code in urcu_writer()
-> > that checks to see if urcu_reader() has completed.
-> > 
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> 
-> Thanks Paul, I'll merge it. However, I am currently reworking our spin
-> tree so we can execute the tests in batch (rather that all at once,
-> which consumes more memory than necessary) and also I am doing a nice
-> build script which lets us create our own LTL formulaes for
-> verification. The never claims will be automatically generated and
-> verified. I'll keep you posted.
+On Fri, Feb 20, 2009 at 20:25, Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
+> On Fri, Feb 20, 2009 at 03:56:06PM +0100, Kay Sievers wrote:
+>> Also the whitespace after "...PHISON *" does not need to be matched.
+>> If the match value does not end in whitespace itself, udev will match
+>> against the value with all trailing whitespace ignored.
+>
+> Ah, I'm not matching against only whitespace:
+>
+> $ cat /sys/block/*/device/model
+> ASUS-PHISON OB S
+> ASUS-PHISON SSD
+>
+> (the first is the builtin faster SSD, the other is the slower removable
+> SSD).
 
-Sounds interesting!  Not sure what you mean by "execute the tests
-in batch", but look forward to seeing it.
+Ah, I see, then nothing to complain from my side anymore. :)
 
-On the LTL, the formula "<>[] (reader_done != 0 && updater_done != 0)"
-didn't do what I want.  The model would kick out an error with the
-reader sitting just before the "reader_done = 1" and the updater spinning
-waiting for the reader to respond to its memory-barrier request.
-
-So I fell back to the hand-coded formula in the never clause, which
-translates to English as "if either the reader or the updater complete,
-then both the reader and the updater eventually complete".  There might
-be a way to tranlate that into LTL, but I didn't immediately see one.
-
-This morning I tried the weak fairness constraints (the "-f" argument
-to ./pan) and that did allow LTL to do what I want, as shown in the
-following patch (applied on top of my earlier patch).
-
-I must confess that LTL is at best an acquired taste for me.
-"Let's see...  '<>[](!reader_done || !updater_done)'...
-That means eventually we always must have neither the reader or the
-updater being done.  Huh???  Oh, yeah, this is supposed to say what
--cannot- happen..."  At this point, I have an easier time with the
-hand-coded "never" claims.  ;-)
-
-But I am quite happy to leave further hacking on this model in
-your capable hands.  The other item on my todo list was making the
-urcu_mbmin.spin model accurately handle omission of additional memory
-barriers.  Are you willing to take that on as well?
-
-							Thanx, Paul
-
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
-
- urcu.sh   |    4 ++--
- urcu.spin |   12 ------------
- 2 files changed, 2 insertions(+), 14 deletions(-)
-
-diff --git a/formal-model/urcu.sh b/formal-model/urcu.sh
-index 5e525ec..3a6850c 100644
---- a/formal-model/urcu.sh
-+++ b/formal-model/urcu.sh
-@@ -20,6 +20,6 @@
- #
- # Authors: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
- 
--spin -a urcu.spin 
-+spin -a -f '<>[](!reader_done || !updater_done)' urcu.spin
- cc -o pan pan.c
--./pan -a
-+./pan -a -f
-diff --git a/formal-model/urcu.spin b/formal-model/urcu.spin
-index cf1f670..851eb50 100644
---- a/formal-model/urcu.spin
-+++ b/formal-model/urcu.spin
-@@ -280,15 +280,3 @@ init {
- 		run urcu_updater();
- 	}
- }
--
--/* Require that both reader and updater eventually get done. */
--
--never {
--	do
--	:: skip;
--	:: reader_done != 0 || updater_done != 0 -> break;
--	od;
--accept:	do
--	:: reader_done == 0 || updater_done == 0;
--	od;
--}
+Thanks,
+Kay
