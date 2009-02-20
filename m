@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbZBTJn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756704AbZBTJoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755954AbZBTJn4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 04:43:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978AbZBTJnt
+	id S1756704AbZBTJoZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 04:44:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbZBTJoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 04:43:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34646 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753915AbZBTJns (ORCPT
+	Fri, 20 Feb 2009 04:44:01 -0500
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:52923 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756107AbZBTJn6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 04:43:48 -0500
-Date: Fri, 20 Feb 2009 01:43:34 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-Cc: airlied@linux.ie, benh@kernel.crashing.org,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drm: Preserve SHMLBA bits in hash key for _DRM_SHM
- mappings.
-Message-Id: <20090220014334.c3d66c6b.akpm@linux-foundation.org>
-In-Reply-To: <20090220.005414.260531522.davem@davemloft.net>
-References: <20090218.154102.122148224.davem@davemloft.net>
-	<20090219152726.9551fb7a.akpm@linux-foundation.org>
-	<20090220.005414.260531522.davem@davemloft.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Fri, 20 Feb 2009 04:43:58 -0500
+X-Greylist: delayed 744 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Feb 2009 04:43:58 EST
+Date: Fri, 20 Feb 2009 09:43:56 +0000
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: General question (scheduler) with SSDs?
+Message-ID: <20090220094356.GB26124@silver.sucs.org>
+References: <alpine.DEB.1.10.0902190837270.19552@p34.internal.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0902190837270.19552@p34.internal.lan>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Feb 2009 00:54:14 -0800 (PST) David Miller <davem@davemloft.net> wrote:
+Whoops, I didn't mean to send that previous half formed mail :) Sorry.
 
-> From: Andrew Morton <akpm@linux-foundation.org>
-> Date: Thu, 19 Feb 2009 15:27:26 -0800
+On Thu, Feb 19, 2009 at 08:38:38AM -0500, Justin Piszcz wrote:
 > 
-> > eg:
-> > 
-> > arch/xtensa/include/asm/shmparam.h
-> > #define SHMLBA  ((PAGE_SIZE > DCACHE_WAY_SIZE)? PAGE_SIZE : DCACHE_WAY_SIZE)
-> > 
-> > 
-> > But including linux/shm.h here seems a bit silly.   We'll see..
+> I was curious if anyone had done any benchmarks and/or has conclusive 
+> information, what is the best Linux scheduler to use with SSDs?
 > 
-> If DRM even builds on XTENSA, let alone is usable there, I'll
-> buy you a lollipop.
+> Noop?
+> CFQ?
+> AS?
+> Deadline?
 
-heh, OK.  But the risk is there.
+As mentioned in another mail there was a discussion on
+http://lkml.org/lkml/2009/1/31/28 and long thread talking about the
+introduction of the rotational flag here
+http://lkml.org/lkml/2009/1/5/340 . Cheapo SSDs or even USB keys are not
+auto detected as non-rotational devices by the kernel and after a bit of
+poking about I've come up with the following udev rules for my
+particular cases:
 
-<tries to test sparc32 allmodconfig>
+SUBSYSTEM=="block", TEST=="/sys$devpath/queue/rotational", ATTRS{model}=="ASUS-PHISON *", RUN+="/bin/sh -c 'echo 0 > /sys$devpath/queue/rotational'"
+SUBSYSTEM=="block", TEST=="/sys$devpath/queue/rotational", ATTRS{idVendor}=="0951", ATTRS{idProduct}=="1606", RUN+="/bin/sh -c 'echo 0 > /sys$devpath/queue/rotational'"
+SUBSYSTEM=="block", TEST=="/sys$devpath/queue/rotational", ATTRS{manufacturer}=="SanDisk", ATTRS{product}=="Cruzer Micro", RUN+="/bin/sh -c 'echo 0 > /sys$devpath/queue/rotational'"
 
-scripts/mod/empty.c:1: error: -m64 is not supported by this configuration
-scripts/mod/empty.c:1: error: -mlong-double-64 not allowed with -m64
-scripts/mod/empty.c:1: error: -mcmodel= is not supported on 32 bit systems
+Ever since the rotational option appeared I've been trying cfq but prior
+to that I was using noop or deadline. However it doesn't look like
+anyone has sat down and run the numbers to see what affect the
+ioscheulder/rotational flag is having on cheapo SSDs - all the
+suggestions are anecdotal. Could you run some benchmarks with these
+different options and report back the results?
 
-<retires hurt>
-
+-- 
+Sitsofe | http://sucs.org/~sits/
