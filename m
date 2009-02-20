@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090AbZBTHLM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754546AbZBTHOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754090AbZBTHLM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 02:11:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbZBTHK5
+	id S1754546AbZBTHOz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 02:14:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbZBTHOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 02:10:57 -0500
-Received: from hosted06.westnet.com.au ([203.10.1.221]:48709 "EHLO
-	hosted06.westnet.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751770AbZBTHK4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 02:10:56 -0500
-X-Greylist: delayed 1388 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Feb 2009 02:10:56 EST
-From: Mike Lampard <mike@mtgambier.net>
-Reply-To: mike@mtgambier.net
-To: linux-kernel@vger.kernel.org
-Subject: long-term regression with some usb mass storage devices
-Date: Fri, 20 Feb 2009 17:17:42 +1030
-User-Agent: KMail/1.11.0 (Linux/2.6.28.3-desktop-1mnb; KDE/4.2.0; x86_64; ; )
+	Fri, 20 Feb 2009 02:14:47 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:10560 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752081AbZBTHOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 02:14:46 -0500
+Date: Fri, 20 Feb 2009 08:12:18 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: =?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>, ltp-list@lists.sourceforge.net
+Subject: Re: [PATCH] block: add documentation for register_blkdev()
+Message-ID: <20090220071217.GP29783@kernel.dk>
+References: <499E4804.3030703@freemail.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200902201717.43522.mike@mtgambier.net>
-X-PMX-Branch: TNG-Outgoing
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <499E4804.3030703@freemail.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+On Fri, Feb 20 2009, Németh Márton wrote:
+> From: Márton Németh <nm127@freemail.hu>
+> 
+> Add documentation for register_blkdev() function and for the parameters.
+> 
+> Signed-off-by: Márton Németh <nm127@freemail.hu>
+> Cc: Greg Kroah-Hartman <gregkh@suse.de>
 
-I recently plonked a dvd into my usb-attached Pioneer DVR-107d only to find 
-that the current kernels no longer saw the drive as DVD capable.  In fact, the 
-kernel no longer saw _any_ features of the drive: sr0: scsi3-mmc drive: 0x/0x 
-caddy.  After much bisecting and even more blind luck I narrowed the problem 
-down to this commit:
+Thanks Márton, applied.
 
-commit bdb2b8cab4392ce41ddfbd6773a3da3334daf836
-Author: Alan Stern <stern@rowland.harvard.edu>
-Date:   Tue Jun 24 14:03:14 2008 -0400
+> 
+> ---
+> --- linux-2.6.29-rc5/block/genhd.c.orig	2009-02-14 18:36:39.000000000 +0100
+> +++ linux-2.6.29-rc5/block/genhd.c	2009-02-20 06:53:56.000000000 +0100
+> @@ -256,6 +256,22 @@ void blkdev_show(struct seq_file *seqf,
+>  }
+>  #endif /* CONFIG_PROC_FS */
+> 
+> +/**
+> + * register_blkdev - register a new block device
+> + *
+> + * @major: the requested major device number [1..255]. If @major=0, try to
+> + *         allocate any unused major number.
+> + * @name: the name of the new block device as a zero terminated string
+> + *
+> + * The @name must be unique within the system.
+> + *
+> + * The return value depends on the @major input parameter.
+> + *  - if a major device number was requested in range [1..255] then the
+> + *    function returns zero on success, or a negative error code
+> + *  - if any unused major number was requested with @major=0 parameter
+> + *    then the return value is the allocated major number in range
+> + *    [1..255] or a negative error code otherwise
+> + */
+>  int register_blkdev(unsigned int major, const char *name)
+>  {
+>  	struct blk_major_name **n, *p;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-    [SCSI] erase invalid data returned by device
+-- 
+Jens Axboe
 
-    This patch (as1108) fixes a problem that can occur with certain USB
-    mass-storage devices: They return invalid data together with a residue
-    indicating that the data should be ignored.  Rather than leave the
-    invalid data in a transfer buffer, where it can get misinterpreted,
-    the patch clears the invalid portion of the buffer.
-
-    This solves a problem (wrong write-protect setting detected) reported
-    by Maciej Rutecki and Peter Teoh.
-
-Regards
-Mike
