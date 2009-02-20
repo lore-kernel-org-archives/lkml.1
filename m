@@ -1,114 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbZBTQtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757297AbZBTQuc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755236AbZBTQtv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 11:49:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbZBTQtn
+	id S1757297AbZBTQuc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 11:50:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZBTQuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 11:49:43 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:52460 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752941AbZBTQtm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 11:49:42 -0500
-Date: Fri, 20 Feb 2009 08:49:39 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+	Fri, 20 Feb 2009 11:50:21 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:50915 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753314AbZBTQuT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 11:50:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:from:to:cc:date:subject;
+        b=kQvQk1zHrTIzheUU33oOkiCBvKuzARBFJLtXGMMrewUC6fGuHi8Bx8QiuuMkdC9F/J
+         aKrv+5xRCYzRdeDmbaGdME6K5C3V8Sewc0iTu3Fr5vMfeqXOrl+iST+0aTp8WGFXadWl
+         iq47quxN6Ks/0OjNEhzZc/itXofoKmtMc2SUw=
+Message-ID: <499edf47.1818d00a.060b.2b8d@mx.google.com>
+From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>, stable@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: fix lazy vmap purging (use-after-free error)
-Message-ID: <20090220164939.GI6960@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090220134121.GA19575@damson.getinternet.no> <20090220135000.GA9616@elte.hu> <20090220140157.GA12799@elte.hu> <19f34abd0902200651k7e86aebay5398ef5ac0578561@mail.gmail.com> <20090220160157.GA11294@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090220160157.GA11294@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org
+Date: Fri, 20 Feb 2009 17:34:06 +0100
+Subject: [PATCH] tracing/markers: make markers select tracepoints
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 20, 2009 at 05:01:57PM +0100, Ingo Molnar wrote:
-> 
-> * Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> 
-> > 2009/2/20 Ingo Molnar <mingo@elte.hu>:
-> > >
-> > > * Ingo Molnar <mingo@elte.hu> wrote:
-> > >
-> > >> ah, indeed:
-> > >>
-> > >>         list_del_rcu(&va->list);
-> > >>
-> > >> i suspect it could be hit big time in a workload that opens
-> > >> more than 512 files, as expand_files() uses a
-> > >> vmalloc()+vfree() pair in that case.
-> > >
-> > > hm, perhaps it's not a problem after all. The freeing is done
-> > > via rcu, and list_del_rcu() leaves the forward pointer intact.
-> > 
-> > Well, it's not the particular line that you posted, in any case.
-> > That's &va->list, but the traversed list is &va->purge_list.
-> > 
-> > I thought it would be the line:
-> > 
-> >         call_rcu(&va->rcu_head, rcu_free_va);
-> > 
-> > (which does kfree() in the callback) that was the problem.
-> > 
-> > >
-> > > So how did it happen that the entry got kfree()d before the loop
-> > > was done? We are in a spinlocked section so the CPU should not
-> > > have entered rcu processing.
-> > 
-> > I added some printks to __free_vmap_area() and rcu_free_va(), and it
-> > shows that the kfree() is being called immediately (inside the list
-> > traversal). So the call_rcu() is happening immediately (or almost
-> > immediately).
-> > 
-> > If I've understood correctly, the RCU processing can happen inside a
-> > spinlock, as long as interrupts are enabled. (Won't the timer IRQ
-> > trigger softirq processing, which triggers RCU callback processing,
-> > for example?)
-> > 
-> > And interrupts are enabled when this happens: EFLAGS: 00000292
-> > 
-> > Please correct me if I am wrong!
-> 
-> The timer irq will do RCU garbage-collection - but only of 
-> entries where a grace period has passed.
-> 
-> Otherwise there would be no point in using RCU at all, if the 
-> kfree() can happen immediately. RCU is about delaying action, 
-> and doing it at a point in time when we sure are in a quiescent 
-> state. (we have done a context-switch or scheduled to idle)
+Sometimes it happens that KConfig dependencies are not handled
+like in the following scenario:
 
-Indeed, preemptable RCU grace periods extend for many milliseconds.
+- config A
+   bool
 
-So, Vegard, when you say "immediately", do you mean "within
-microseconds" or "faster than my human reflexes can react to"?
+- config B
+   bool
+   depends on A
 
-						Thanx, Paul
+-config C
+   bool
+   select B
 
-> The question is, is this piece of loop traversal code 
-> preemptible? I dont think it is since it's embedded in a 
-> spinlock:
-> 
->                 spin_lock(&vmap_area_lock);
-> -               list_for_each_entry(va, &valist, purge_list)
-> +               list_for_each_entry_safe(va, n_va, &valist, purge_list)
->                        	__free_vmap_area(va);
->                 spin_unlock(&vmap_area_lock);
-> 
-> [ on -rt this could be preemptible and this would be a real fix 
->   there. I just dont see how the kfree() can execute on 
->   mainline. Obviously it did, since you got the kmemcheck 
->   assert. ]
-> 
-> 	Ingo
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+If one selects C, then it will select B without checking its dependency to A, if A
+hasn't been selected elsewhere, it will result in a build crash.
+
+This is what happens on the following build error:
+
+kernel/built-in.o: In function `marker_update_probe_range':
+(.text+0x52f64): undefined reference to `tracepoint_probe_register_noupdate'
+kernel/built-in.o: In function `marker_update_probe_range':
+(.text+0x52f74): undefined reference to `tracepoint_probe_unregister_noupdate'
+kernel/built-in.o: In function `marker_update_probe_range':
+(.text+0x52fb9): undefined reference to `tracepoint_probe_unregister_noupdate'
+kernel/built-in.o: In function `marker_update_probes':
+marker.c:(.text+0x530ba): undefined reference to `tracepoint_probe_update_all'
+
+CONFIG_KVM_TRACE will select CONFIG_MARKER, but the latter depends on CONFIG_TRACEPOINTS
+which will not be selected.
+
+A temporary fix is to make CONFIG_MARKER select CONFIG_TRACEPOINTS, though it doesn't
+fix the source KConfig dependency handling problem.
+
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Cc: Roman Zippel <zippel@linux-m68k.org>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ init/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/init/Kconfig b/init/Kconfig
+index b6400a5..a93f957 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -975,7 +975,7 @@ config TRACEPOINTS
+ 
+ config MARKERS
+ 	bool "Activate markers"
+-	depends on TRACEPOINTS
++	select TRACEPOINTS
+ 	help
+ 	  Place an empty function call at each marker site. Can be
+ 	  dynamically changed for a probe function.
+-- 
+1.6.1
+
+
