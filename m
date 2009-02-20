@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbZBTVwI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbZBTVxM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754080AbZBTVwI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 16:52:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750951AbZBTVvz
+	id S1755330AbZBTVxM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 16:53:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753749AbZBTVw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 16:51:55 -0500
-Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:17105
-	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750765AbZBTVvy (ORCPT
+	Fri, 20 Feb 2009 16:52:58 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47321 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750951AbZBTVw5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 16:51:54 -0500
-X-BigFish: VPS-32(zz1432R98dR148cM1805M936fKzzzzz32i6bh62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-X-WSS-ID: 0KFDWQ1-01-H20-01
-Date: Fri, 20 Feb 2009 22:51:23 +0100
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Mark Hounschell <dmarkh@cfl.rr.com>,
-       Borislav Petkov <borislav.petkov@amd.com>,
-       Mark Hounschell <markh@compro.net>, john stultz <johnstul@us.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: PROBLEM: Can't boot a (HZ = 1000) kernel using an AMD
-	Phenom-II processor
-Message-ID: <20090220215123.GI4834@alberich.amd.com>
-References: <499C0913.9050905@compro.net> <20090218141843.GB13304@aftab> <499C3DED.1090807@cfl.rr.com> <20090218174243.GD13304@aftab> <499C7AC8.4080609@cfl.rr.com> <499D364C.3010704@cfl.rr.com> <20090219141131.GM4301@alberich.amd.com> <20090220115357.GE4834@alberich.amd.com> <20090220123402.GA26418@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20090220123402.GA26418@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 20 Feb 2009 21:51:44.0987 (UTC) FILETIME=[6C22B2B0:01C993A5]
+	Fri, 20 Feb 2009 16:52:57 -0500
+Date: Fri, 20 Feb 2009 13:52:53 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andrew Patterson <andrew.patterson@hp.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       andrew.patterson@hp.com
+Subject: Re: [PATCH] PCI: Enable PCIe AER only after checking firmware
+ support
+Message-Id: <20090220135253.ab057442.akpm@linux-foundation.org>
+In-Reply-To: <20090219171107.26521.7298.stgit@bob.kio>
+References: <20090219171107.26521.7298.stgit@bob.kio>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 20, 2009 at 01:34:02PM +0100, Ingo Molnar wrote:
-> 
-> * Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
-> 
-> > On Thu, Feb 19, 2009 at 10:54:19AM -0500, Mark Hounschell wrote:
-> > > Borislav Petkov wrote:
-> > > > On Thu, Feb 19, 2009 at 10:16:40AM -0500, Mark Hounschell wrote:
-> > > >> Andreas Herrmann wrote:
-> > > >>> Hi Mark,
-> > > >>>
-> > > >>> Can you please provide us output of lspci -vvxxx.
-> > > >>> (Please run this as root.)
-> > > >>>
-> > > 
-> > > Attached...
-> > > 
-> > > 
-> > > >>> Furthermore you can try booting your 1000HZ kernel
-> > > >>> with following kernel command lines:
-> > > >>>
-> > 
-> > Thanks for trying this out.
-> > But nothing suspicious found. I.e. timer/hpet interrupt is enabled
-> > and its routing seems to be ok.
-> > 
-> > Here's one more check that's worth trying: In one of your logs I've
-> > seen that HPET id reports 3 timers but later on 4 timers were detected
-> > for HPET.
-> > 
-> > To check what's going on I'd like to see the HPET 
-> > configuration in the course of booting your system.  Please 
-> > apply attached patch and boot with hpet=debug -- both with 
-> > 250HZ and with 1000HZ -- and provide dmesg output.
-> 
-> Mind sending this patch as a hpet=verbose feature patch which we 
-> could queue up for upstream merging? We have hpet problems 
-> frequently, so some built-in debug/verbosity trigger would be 
-> nice.
+On Thu, 19 Feb 2009 10:11:07 -0700
+Andrew Patterson <andrew.patterson@hp.com> wrote:
 
-Yup, work is in progress.
+> PCI: Enable PCIe AER only after checking firmware support
+> 
+> The PCIe port driver currently sets the PCIe AER error reporting bits for
+> any root or switch port without first checking to see if firmware will grant
+> control. This patch moves setting these bits to the AER service driver
+> aer_enable_port routine.  The bits are then set for the root port and any
+> downstream switch ports after the check for firmware support (aer_osc_setup)
+> is made. The patch also unsets the bits in a similar fashion when the AER
+> service driver is unloaded.
+> 
+> ...
+>
+> +/**
+> + * set_downstream_devices_error_reporting - enable/disable the error reporting
+> + * bits on the root port and its downstream ports.
 
-Andreas
+Alas, silly kerneldoc does not permit multi-line titles.  We're forced
+to do this:
 
+--- a/drivers/pci/pcie/aer/aerdrv_core.c~pci-enable-pcie-aer-only-after-checking-firmware-support-fix
++++ a/drivers/pci/pcie/aer/aerdrv_core.c
+@@ -125,8 +125,7 @@ static void set_device_error_reporting(s
+ }
+ 
+ /**
+- * set_downstream_devices_error_reporting - enable/disable the error reporting
+- * bits on the root port and its downstream ports.
++ * set_downstream_devices_error_reporting - enable/disable the error reporting bits on the root port and its downstream ports.
+  * @dev: pointer to root port's pci_dev data structure
+  * @enable: true = enable error reporting, false = disable error reporting.
+  */
+_
 
