@@ -1,53 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756651AbZBTXIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755885AbZBTXKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756651AbZBTXIV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 18:08:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbZBTXIJ
+	id S1755885AbZBTXKO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 18:10:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbZBTXKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 18:08:09 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:62992 "EHLO
-	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754028AbZBTXII convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 18:08:08 -0500
-X-BigFish: VPS-4(zz4015Mzzzzz32i6bh65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0KFE08T-01-JTM-01
-Date: Sat, 21 Feb 2009 00:07:29 +0100
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-CC: linux-kernel@vger.kernel.org, Mark Hounschell <markh@compro.net>,
-       Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 0/3] x86: dish of assorted hpet patches
-Message-ID: <20090220230729.GK4834@alberich.amd.com>
+	Fri, 20 Feb 2009 18:10:00 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48851 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752190AbZBTXJ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 18:09:59 -0500
+Message-ID: <499F383B.6060700@redhat.com>
+Date: Fri, 20 Feb 2009 18:09:47 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 20 Feb 2009 23:07:50.0553 (UTC) FILETIME=[0D6CC890:01C993B0]
-Content-Transfer-Encoding: 8BIT
+To: hpa@zytor.com, mingo@redhat.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, tglx@linutronix.de, mhiramat@redhat.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org
+CC: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/mm] x86, mm, kprobes: fault.c, simplify notify_page_fault()
+References: <tip-b18018126f422f5b706fd750373425e10e84b486@kernel.org>
+In-Reply-To: <tip-b18018126f422f5b706fd750373425e10e84b486@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> Author:     Ingo Molnar <mingo@elte.hu>
+> AuthorDate: Fri, 20 Feb 2009 22:42:57 +0100
+> Commit:     Ingo Molnar <mingo@elte.hu>
+> CommitDate: Sat, 21 Feb 2009 00:09:42 +0100
+> 
+> x86, mm, kprobes: fault.c, simplify notify_page_fault()
+> 
+> Impact: cleanup
+> 
+> Remove an #ifdef from notify_page_fault(). The function still
+> compiles to nothing in the !CONFIG_KPROBES case.
+> 
+> Introduce kprobes_built_in() and kprobe_fault_handler() helpers
+> to allow this - they returns 0 if !CONFIG_KPROBES.
+> 
+> No code changed:
+> 
+>    text	   data	    bss	    dec	    hex	filename
+>    4618	     32	     24	   4674	   1242	fault.o.before
+>    4618	     32	     24	   4674	   1242	fault.o.after
 
-- to print HPET registers during setup,
-- to fix a real issue with HZ_1000 kernels on an SB400 system
- (and to potentially fix a similar issue with SB600).
+It seems good for me. Thank you for cleanup!
 
-Tested on ICH7 and on AMD SB400, AMD SB600.
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
 
-
-Please apply.
-
-Thanks,
-Andreas
+> 
+> Cc: Masami Hiramatsu <mhiramat@redhat.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Linus Torvalds <torvalds@linux-foundation.org>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> 
+> ---
+>  arch/x86/mm/fault.c     |    6 +-----
+>  include/linux/kprobes.h |   22 +++++++++++++++++++---
+>  2 files changed, 20 insertions(+), 8 deletions(-)
+> 
+> diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+> index fe99af4..379beae 100644
+> --- a/arch/x86/mm/fault.c
+> +++ b/arch/x86/mm/fault.c
+> @@ -68,11 +68,10 @@ static inline int kmmio_fault(struct pt_regs *regs, unsigned long addr)
+>  
+>  static inline int notify_page_fault(struct pt_regs *regs)
+>  {
+> -#ifdef CONFIG_KPROBES
+>  	int ret = 0;
+>  
+>  	/* kprobe_running() needs smp_processor_id() */
+> -	if (!user_mode_vm(regs)) {
+> +	if (kprobes_built_in() && !user_mode_vm(regs)) {
+>  		preempt_disable();
+>  		if (kprobe_running() && kprobe_fault_handler(regs, 14))
+>  			ret = 1;
+> @@ -80,9 +79,6 @@ static inline int notify_page_fault(struct pt_regs *regs)
+>  	}
+>  
+>  	return ret;
+> -#else
+> -	return 0;
+> -#endif
+>  }
+>  
+>  /*
+> diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
+> index 32851ee..2ec6cc1 100644
+> --- a/include/linux/kprobes.h
+> +++ b/include/linux/kprobes.h
+> @@ -182,6 +182,14 @@ struct kprobe_blackpoint {
+>  DECLARE_PER_CPU(struct kprobe *, current_kprobe);
+>  DECLARE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
+>  
+> +/*
+> + * For #ifdef avoidance:
+> + */
+> +static inline int kprobes_built_in(void)
+> +{
+> +	return 1;
+> +}
+> +
+>  #ifdef CONFIG_KRETPROBES
+>  extern void arch_prepare_kretprobe(struct kretprobe_instance *ri,
+>  				   struct pt_regs *regs);
+> @@ -271,8 +279,16 @@ void unregister_kretprobes(struct kretprobe **rps, int num);
+>  void kprobe_flush_task(struct task_struct *tk);
+>  void recycle_rp_inst(struct kretprobe_instance *ri, struct hlist_head *head);
+>  
+> -#else /* CONFIG_KPROBES */
+> +#else /* !CONFIG_KPROBES: */
+>  
+> +static inline int kprobes_built_in(void)
+> +{
+> +	return 0;
+> +}
+> +static inline int kprobe_fault_handler(struct pt_regs *regs, int trapnr)
+> +{
+> +	return 0;
+> +}
+>  static inline struct kprobe *get_kprobe(void *addr)
+>  {
+>  	return NULL;
+> @@ -329,5 +345,5 @@ static inline void unregister_kretprobes(struct kretprobe **rps, int num)
+>  static inline void kprobe_flush_task(struct task_struct *tk)
+>  {
+>  }
+> -#endif				/* CONFIG_KPROBES */
+> -#endif				/* _LINUX_KPROBES_H */
+> +#endif /* CONFIG_KPROBES */
+> +#endif /* _LINUX_KPROBES_H */
 
 -- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
+Masami Hiramatsu
 
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
