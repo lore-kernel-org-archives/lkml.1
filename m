@@ -1,88 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576AbZBTVD2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535AbZBTVEH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754576AbZBTVD2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 16:03:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbZBTVDU
+	id S1755535AbZBTVEH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 16:04:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbZBTVDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 16:03:20 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:57363 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751170AbZBTVDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 16:03:19 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Kyle Moffett <kyle@moffetthome.net>
-Subject: Re: [RFD] Automatic suspend
-Date: Fri, 20 Feb 2009 22:02:46 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc5-tst; KDE/4.2.0; x86_64; ; )
-Cc: Arve =?utf-8?q?Hj=C3=B8nnev=C3=A5g?= <arve@android.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-References: <200902192215.18365.rjw@sisk.pl> <f73f7ab80902200807j743a37d7hc42283bc7b9dbe6f@mail.gmail.com> <200902202156.13480.rjw@sisk.pl>
-In-Reply-To: <200902202156.13480.rjw@sisk.pl>
+	Fri, 20 Feb 2009 16:03:54 -0500
+Received: from 205.158.150.226.ptr.us.xo.net ([205.158.150.226]:1611 "EHLO
+	mail.exegy.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752490AbZBTVDy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 16:03:54 -0500
+X-Greylist: delayed 911 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Feb 2009 16:03:53 EST
+Thread-Index: AcmTnJz5qgQmHMclRO6+wkJQtarkVA==
+X-Ninja-AntiSpoofing: spoofed
+Message-ID: <499F1729.9010700@exegy.com>
+Date: Fri, 20 Feb 2009 14:48:41 -0600
+From: "Mr. Berkley Shands" <bshands@exegy.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090107)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902202202.47718.rjw@sisk.pl>
+To: <linux-kernel@vger.kernel.org>
+Subject: AMD 8132 parity issue causes interrupt storms
+Content-Type: text/plain; charset=US-ASCII;
+	format=flowed
+Content-class: urn:content-classes:message
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.4325
+Importance: normal
+X-OriginalArrivalTime: 20 Feb 2009 20:48:41.0377 (UTC) FILETIME=[9CEDA110:01C9939C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 February 2009, Rafael J. Wysocki wrote:
-> On Friday 20 February 2009, Kyle Moffett wrote:
-> > On Fri, Feb 20, 2009 at 10:56 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > * Introduce /sys/power/sleep that will work like /sys/power/state, but:
-> > >  - First, it will call ->acknowledge() for each driver (via bus types) to
-> > >    check if any of them wants to postpone the suspend (this will prevent tasks
-> > >    from being frozen unnecessarily if it is known in advance that the suspend
-> > >    should not happen at the moment).
-> > >  - Next, it will check the "I_do_not_want_automatic_suspend_to_occur" flag
-> > >    of each process and the suspend will be aborted if it is true for any of
-> > >    them (quite frankly, I think that should be integrated with the freezer,
-> > >    in particular the tasks that have TIF_FREEZE set shouldn't be able to set
-> > >    this flag and it should be checked in the freezer loop for every task with
-> > >    TIF_FREEZE unset).
-> > >  - Next, it will proceed with suspending just like /sys/power/state does (the
-> > >    drivers that missed the opportunity to abort the suspend by returning
-> > >    'false' from ->acknowledge() can still abort the suspend by failing their
-> > >    ->suspend() routines).
-> > >
-> > > Then, the decision making logic will be able to use /sys/power/sleep whenever
-> > > it wishes to and the kernel will be able to refuse to suspend if it's not
-> > > desirable at the moment.
-> > 
-> > Then, for a userspace process handling input events:
-> > 
-> > 1)  Unset "no-suspend flag"
-> > 2)  Poll event device
-> > 3)  When the poll returns true, set the "no-suspend flag"
-> > 4)  Read the event device and process the event(s)
-> > 5)  Go back to step 1
-> > 
-> > The event driver would responsible for atomically preventing suspend
-> > from the moment a button is pressed until it is actually delivered to
-> > a userspace process.  Since at that time the userspace process will be
-> > preventing suspend, there will be no window in which we could go to
-> > sleep with pending events.
-> 
-> That's correct.
-> 
-> How would you like to prevent it from happening?
+It seems that the 8132 should be blacklisted :-)
 
-To clarify, we're talking about automatic suspend only.  The "old" suspend
-interface is going to stay so that one can force suspend (or hibernation) to
-happen.
+INT-A will be asserted forever if any channel sees a parity error.
+This can be blocked by several means;
 
-Thanks,
-Rafael
+1) setpci -s <bus address of 8132> 5.b=05   /* disable interrupts from 
+the bridge */
+This is the I don't see you method.
+
+Shouldn't the interrupt handler (is there one?) trap and clear this?
+Shouldn't the kernel at least report this error and reset those bits?
+
+All,
+
+OK, here's what I know so far.  The interrupt storm is coming from the 
+parity error detector in the 8132.  The parity error is reported in two 
+locations using sticky bits:
+
+0x1c bits 31 and 24
+   Here there seems to be some differentiation between which party 
+detected the parity error.  The 8132 spec is pretty vague here (see page 
+75) but it looks like the 8132 is detecting a parity error from the HBA 
+not the other way around.
+0x80 bit 0
+   Here it just states that someone asserted the PERR_L signal, no 
+distinction on who did it.
+
+All these bits are write-one-to-clear.  If 0x80 bit 0 is cleared, the 
+storm stops.  Clearly the OS does not know how to handle these 
+conditions and the error flag is left on while the interrupt is 
+continuously handled.
+
+One way to handle this is to set 0x48 bit 19 to 0.  This prevents the 
+8132 from interrupting when 0x80 bit 0 is set.
+
+A much better way to handle this is to have the interrupt handler 
+actually check the error bits on the 8132 when it is called.  This would 
+slow down the interrupt handler, but actually give us a much better 
+visibility into this problem (when, where and how often this happens).  
+The irritating thing here is that this is chipset dependent.  The 
+interrupt handler would have to know what PCI-X chipset it was talking 
+through to know how to handle this (way to go AMD).
+
+The really odd thing is that the parity error is reported through INTB 
+on the 8132.  The spec claims that fatal errors (the category they put 
+PERR in) go to INTB while hot plug conditions trigger INTA.  Masking off 
+fatal errors in the IOAPIC turns off the storm too.  I have no idea why 
+this is showing up on INTA.
+
+Berkley
+
+-- 
+
+// E. F. Berkley Shands, MSc//
+
+** Exegy Inc.**
+
+349 Marshall Road, Suite 100
+
+St. Louis , MO  63119
+
+Direct:  (314) 218-3600 X450
+
+Cell:  (314) 303-2546
+
+Office:  (314) 218-3600
+
+Fax:  (314) 218-3601
+
+ 
+
+The Usual Disclaimer follows...
+ 
+This e-mail and any documents accompanying it may contain legally privileged and/or confidential information belonging to Exegy, Inc. Such information may be protected from disclosure by law. The information is intended for use by only the addressee. If you are not the intended recipient, you are hereby notified that any disclosure or use of the information is strictly prohibited. If you have received this e-mail in error, please immediately contact the sender by e-mail or phone regarding instructions for return or destruction and do not use or disclose the content to others.
