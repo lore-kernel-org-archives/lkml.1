@@ -1,201 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759514AbZBTPsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758914AbZBTPvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759514AbZBTPsh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 10:48:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbZBTPrA
+	id S1758914AbZBTPvA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 10:51:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbZBTPuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 10:47:00 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:35456 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754600AbZBTPqz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 10:46:55 -0500
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Alessandro Zummo <a.zummo@towertech.it>
-Cc: rtc-linux@googlegroups.com, Kyle McMartin <kyle@mcmartin.ca>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Richard Zidlicky <rz@linux-m68k.org>, linux-parisc@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH/RFC 4/5] powerpc: Enable rtc-generic, and kill rtc-ppc
-Date: Fri, 20 Feb 2009 16:46:48 +0100
-Message-Id: <1235144809-32468-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1235144809-32468-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
-References: <1235144809-32468-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
- <1235144809-32468-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
- <1235144809-32468-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
- <1235144809-32468-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	Fri, 20 Feb 2009 10:50:52 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34262 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752552AbZBTPuv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 10:50:51 -0500
+Date: Fri, 20 Feb 2009 16:50:36 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] x86 page fault checker
+Message-ID: <20090220155036.GA3225@elte.hu>
+References: <alpine.DEB.2.00.0902201012220.29217@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0902201012220.29217@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create the "rtc-generic" platform device if ppc_md.get_rtc_time is set.
-Kill rtc-ppc, as rtc-generic offers the same functionality in a more generic
-way.
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- arch/powerpc/Kconfig       |    4 ++
- arch/powerpc/kernel/time.c |   22 ++++++++++++++
- drivers/rtc/Kconfig        |    8 -----
- drivers/rtc/Makefile       |    1 -
- drivers/rtc/rtc-ppc.c      |   69 --------------------------------------------
- 5 files changed, 26 insertions(+), 78 deletions(-)
- delete mode 100644 drivers/rtc/rtc-ppc.c
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 40b7981..82e47b0 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -85,6 +85,10 @@ config ARCH_HAS_ILOG2_U64
- 	bool
- 	default y if 64BIT
- 
-+config ARCH_HAS_GENERIC_RTC
-+	bool
-+	default y
-+
- config GENERIC_HWEIGHT
- 	bool
- 	default y
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index c956403..616c7d3 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -1127,3 +1127,25 @@ void div128_by_32(u64 dividend_high, u64 dividend_low,
- 	dr->result_low  = ((u64)y << 32) + z;
- 
- }
-+
-+static struct platform_device rtc_generic_dev = {
-+	.name = "rtc-generic",
-+	.id = -1,
-+};
-+
-+static int __init rtc_init(void)
-+{
-+	int ret;
-+
-+	if (!ppc_md.get_rtc_time)
-+		return -ENODEV;
-+
-+	ret = platform_device_register(&rtc_generic_dev);
-+	if (ret < 0)
-+		pr_err("Unable to register rtc device...\n");
-+
-+	/* not necessarily an error */
-+	return 0;
-+}
-+
-+module_init(rtc_init);
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index 3e58182..9964a72 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -685,14 +685,6 @@ config RTC_DRV_GENERIC
- 	  RTC abstraction. If you do not know what you are doing, you should
- 	  just say Y.
- 
--config RTC_DRV_PPC
--       tristate "PowerPC machine dependent RTC support"
--       depends on PPC
--       help
--	 The PowerPC kernel has machine-specific functions for accessing
--	 the RTC. This exposes that functionality through the generic RTC
--	 class.
--
- config RTC_DRV_PXA
-        tristate "PXA27x/PXA3xx"
-        depends on ARCH_PXA
-diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-index 9c18a01..bd209a5 100644
---- a/drivers/rtc/Makefile
-+++ b/drivers/rtc/Makefile
-@@ -56,7 +56,6 @@ obj-$(CONFIG_RTC_DRV_PCF8583)	+= rtc-pcf8583.o
- obj-$(CONFIG_RTC_DRV_PL030)	+= rtc-pl030.o
- obj-$(CONFIG_RTC_DRV_PL031)	+= rtc-pl031.o
- obj-$(CONFIG_RTC_DRV_GENERIC)	+= rtc-generic.o
--obj-$(CONFIG_RTC_DRV_PPC)	+= rtc-ppc.o
- obj-$(CONFIG_RTC_DRV_PXA)	+= rtc-pxa.o
- obj-$(CONFIG_RTC_DRV_R9701)	+= rtc-r9701.o
- obj-$(CONFIG_RTC_DRV_RS5C313)	+= rtc-rs5c313.o
-diff --git a/drivers/rtc/rtc-ppc.c b/drivers/rtc/rtc-ppc.c
-deleted file mode 100644
-index c8e97e2..0000000
---- a/drivers/rtc/rtc-ppc.c
-+++ /dev/null
-@@ -1,69 +0,0 @@
--/*
-- * RTC driver for ppc_md RTC functions
-- *
-- * © 2007 Red Hat, Inc.
-- *
-- * Author: David Woodhouse <dwmw2@infradead.org>
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-- */
--
--
--#include <linux/module.h>
--#include <linux/err.h>
--#include <linux/rtc.h>
--#include <linux/platform_device.h>
--#include <asm/machdep.h>
--
--static int ppc_rtc_read_time(struct device *dev, struct rtc_time *tm)
--{
--	ppc_md.get_rtc_time(tm);
--	return 0;
--}
--
--static int ppc_rtc_set_time(struct device *dev, struct rtc_time *tm)
--{
--	return ppc_md.set_rtc_time(tm);
--}
--
--static const struct rtc_class_ops ppc_rtc_ops = {
--	.set_time = ppc_rtc_set_time,
--	.read_time = ppc_rtc_read_time,
--};
--
--static struct rtc_device *rtc;
--static struct platform_device *ppc_rtc_pdev;
--
--static int __init ppc_rtc_init(void)
--{
--	if (!ppc_md.get_rtc_time || !ppc_md.set_rtc_time)
--		return -ENODEV;
--
--	ppc_rtc_pdev = platform_device_register_simple("ppc-rtc", 0, NULL, 0);
--	if (IS_ERR(ppc_rtc_pdev))
--		return PTR_ERR(ppc_rtc_pdev);
--
--	rtc = rtc_device_register("ppc_md", &ppc_rtc_pdev->dev,
--				  &ppc_rtc_ops, THIS_MODULE);
--	if (IS_ERR(rtc)) {
--		platform_device_unregister(ppc_rtc_pdev);
--		return PTR_ERR(rtc);
--	}
--
--	return 0;
--}
--
--static void __exit ppc_rtc_exit(void)
--{
--	rtc_device_unregister(rtc);
--	platform_device_unregister(ppc_rtc_pdev);
--}
--
--module_init(ppc_rtc_init);
--module_exit(ppc_rtc_exit);
--
--MODULE_LICENSE("GPL");
--MODULE_AUTHOR("David Woodhouse <dwmw2@infradead.org>");
--MODULE_DESCRIPTION("Generic RTC class driver for PowerPC");
--- 
-1.6.0.4
+> Ingo,
+> 
+> This is not an urgent fix, but I based it on your urgent 
+> branch. The patch keeps the page fault handler from entering 
+> an infinite loop if the PMD does not match the PTE, and the 
+> PTE has the correct permissions but the PMD does not.
+> 
+> With your latest change, this should not happen again. But if 
+> there's some other code out there that does have this bug, or 
+> if some future change creates it (never know with all the 
+> changes in virtualization) Perhaps it is still a good idea to 
+> have this check.
+> 
+> This is not a fast path, and it should not hurt to have this 
+> level of paranoia.
+> 
+> -- Steve
+> 
+> Please pull the latest tip/x86/urgent tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/x86/urgent
+> 
+> 
+> Steven Rostedt (1):
+>       x86: check PMD in spurious_fault handler
+> 
+> ----
+>  arch/x86/mm/fault.c |   13 ++++++++++++-
+>  1 files changed, 12 insertions(+), 1 deletions(-)
+> ---------------------------
+> commit 8ef2333f1bdcc4a43cb37b1b5d8febf8e3d8cdc7
+> Author: Steven Rostedt <srostedt@redhat.com>
+> Date:   Thu Feb 19 11:46:36 2009 -0500
+> 
+>     x86: check PMD in spurious_fault handler
+>     
+>     Impact: fix to prevent hard lockup on bad PMD permissions
+>     
+>     If the PMD does not have the correct permissions for a page access,
+>     but the PTE does, the spurious fault handler will mistake the fault
+>     as a lazy TLB transaction. This will result in an infinite loop of:
+>     
+>      fault -> spurious_fault check (pass) -> return to code -> fault
+>     
+>     This patch adds a check and a warn on if the PTE passes the permissions
+>     but the PMD does not.
+>     
+>     Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> 
+> diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+> index c76ef1d..7b579a6 100644
+> --- a/arch/x86/mm/fault.c
+> +++ b/arch/x86/mm/fault.c
+> @@ -455,6 +455,7 @@ static int spurious_fault(unsigned long address,
+>  	pud_t *pud;
+>  	pmd_t *pmd;
+>  	pte_t *pte;
+> +	int ret;
+>  
+>  	/* Reserved-bit violation or user access to kernel space? */
+>  	if (error_code & (PF_USER | PF_RSVD))
+> @@ -482,7 +483,17 @@ static int spurious_fault(unsigned long address,
+>  	if (!pte_present(*pte))
+>  		return 0;
+>  
+> -	return spurious_fault_check(error_code, pte);
+> +	ret = spurious_fault_check(error_code, pte);
+> +	if (!ret)
+> +		return 0;
+> +
+> +	/*
+> +	 * Make sure we have permissions in PMD
+> +	 * If not, then there's a bug in the page tables.
+> +	 */
+> +	ret = spurious_fault_check(error_code, (pte_t *) pmd);
+> +	WARN_ON(!ret);
+> +	return ret;
+>  }
 
+i guess we could do this - but i'd rather have it as a 
+WARN_ONCE(), with some text - so that if it ever triggers it's 
+one surgical message.
+
+	Ingo
