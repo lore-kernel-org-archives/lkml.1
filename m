@@ -1,51 +1,52 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759263AbZBTBjk (ORCPT <rfc822;ralf@linux-mips.org>);
-	Thu, 19 Feb 2009 20:39:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbZBTBj3
+	id S1755414AbZBTEh5 (ORCPT <rfc822;ralf@linux-mips.org>);
+	Thu, 19 Feb 2009 23:37:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbZBTEhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 20:39:29 -0500
-Received: from omr3.bezeqint.net ([192.115.104.13]:40651 "EHLO
-	omr3.bezeqint.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751716AbZBTBj2 convert rfc822-to-8bit (ORCPT
+	Thu, 19 Feb 2009 23:37:47 -0500
+Received: from n18c.bullet.sp1.yahoo.com ([69.147.64.129]:38004 "HELO
+	n18c.bullet.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751697AbZBTEhq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 20:39:28 -0500
-X-Mirapoint-IP-Reputation: reputation=good-1,
-	source=Fixed,
-	refid=n/a,
-	actions=tag
-From: Siemens News Center <111@bezeqint.net>
-Subject: **Lucky Winner**
-Reply-To: agt_bwilliams11@live.com
-X-Mailer: Mirapoint Webmail Direct 3.8.6-GA
+	Thu, 19 Feb 2009 23:37:46 -0500
+X-Greylist: delayed 342 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Feb 2009 23:37:46 EST
+Date: Fri, 20 Feb 2009 04:32:00 -0000
+From: "tschuqwfnrhw" <tschuqwfnrhw@yahoo.com.cn>
+To: dywc999@pchome.com.tw, a0826@etrealty.com.tw,
+	sp033188@yahoo.com.tw, dlvikes@cox.net, fanny_lam1@hotmail.com,
+	highlanddancermom@cox.net, givemeairconditioner@hotmail.com,
+	n8550032@gmail.com, pvlo_ccs@dld.go.th, yamylee@XXX.com,
+	morfanbi@hotmail.com, ymls2000@gmail.com, oxmnaj@hotmail.com,
+	gomyshop@yahoo.com.tw, km6574@yahoo.com.tw,
+	archives@email.syscom.com.tw, find520@hotmail.com,
+	ken331@ms29.url.com.tw, spvfzxso@dbates.com, qqww2233@hotmail.com,
+	abc7803487@yahoo.com.tw, nne@emmm.tw, eric2005117@xxx.com,
+	moshangmusic@yahoo.com, yoyo9090520@yahoo.com.tw,
+	luoyouming2005@163.com, heartbeatstore@hotmail.com,
+	terry770531@hotmail.com, gn018681442@hotmail.com,
+	from_daisylau@yahoo.com.hk, changheng@wufeng.tari.gov.tw,
+	jmcgowan@uiuc.edu, reh1333@yahoo.com.tw, susie7093@yahoo.com.tw,
+	phorain@sina.com.tw, fhs0508@ms33.hinet.net,
+	linux-kernel@vger.kernel.org, avance@nytimes.com,
+	yihuia0502@yahoo.com.tw, a660711a@yahoo.com.tw,
+	ieesaee@yahoo.com.tw
+Subject: =?big5?B?vsey36fWs3SwT77Qqmulda1uMTYwMKS4ISE=?=
+Message-ID: <gnlbo0+j3nf@eGroups.com>
+User-Agent: eGroups-EW/0.82
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-Id: <20090220033713.FQS12142@mas26.bezeqint.net>
-Date: Fri, 20 Feb 2009 03:37:13 +0200 (IST)
-X-Junkmail: UCE(51)
-X-Junkmail-Status: score=51/45, host=mr10.bezeqint.net
-X-Junkmail-SD-Raw: score=bulk(1),
-	refid=str=0001.0A0B0202.499DFFD6.00AC,ss=3,sh,fgs=0,
-	ip=192.115.104.156,
-	so=2008-09-22 23:22:13,
-	dmn=5.7.1/2008-09-02,
-	mode=single engine
-X-Junkmail-IWF: false
-To: undisclosed-recipients:;
+Content-Type: text/plain; charset="BIG5"
+Content-Transfer-Encoding: base64
+X-Mailer: Yahoo Groups Message Poster
+X-Yahoo-Post-IP: 218.169.96.136
+X-Yahoo-Newman-Property: groups-compose
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1759263AbZBTBjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755414AbZBTEh5@vger.kernel.org>
 
-Your email ID has been awarded £750,000,00 GBP in the  
-Siemens Promo, Reply us with your info: 
-(agt_bwilliams11@live.com)
+vsey37BPvtCqa691qrqtbqi6u/K2UbbcPwqye6ZisXqms6fzpa2lwaTGqrq/777cISEKptOlQqtL
+qXm1tLnvprOmbrNmISEKq0/D0rDqpd+kar7Hqrqudrjqv8um27/9u3MKq0/D0rDiq+GqQbDIvsnF
+qgqldb3mMTYwMKS4ISEKp7ml/rVMq0+vZKq6sdC+xwq41LLTuc+k5buhqfq90Kv2prkgCmh0dHA6
+Ly95YWhvby56ei50Yy9tZW1vcnkK
 
-Name:....................
-Country:.................   
-Sex:.....................
-Age: .....................   
-Addres:...................
 
-Regards
-Mrs Sarah Wood
