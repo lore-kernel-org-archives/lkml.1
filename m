@@ -1,91 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757301AbZBTOE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755537AbZBTOKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757301AbZBTOE2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 09:04:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbZBTOEU
+	id S1755537AbZBTOKf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 09:10:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbZBTOK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 09:04:20 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48848 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751214AbZBTOET (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 09:04:19 -0500
-Date: Fri, 20 Feb 2009 11:04:03 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>, Jason Baron <jbaron@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [rfd] function-graph augmentation
-Message-ID: <20090220140403.GC16897@ghostprotocols.net>
-References: <1235077304.4612.662.camel@laptop> <20090219212807.GA5084@nowhere> <20090220085627.GE24555@elte.hu> <20090220133011.GB16897@ghostprotocols.net>
+	Fri, 20 Feb 2009 09:10:27 -0500
+Received: from mail-bw0-f161.google.com ([209.85.218.161]:62606 "EHLO
+	mail-bw0-f161.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752042AbZBTOK0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 09:10:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ldE+KjgS6K2HjAxRFBFIUnyuPQZ1Ahf6+mvVJFQxjAh/4lFDGZQO+rW2+t8u9kqaMu
+         M8LWdZk83g9tBF2RkhBkuX2fNiwrdRvqpD/06Nxf5O7LMZCRRMkEfYMYiqrUXT9bjXNJ
+         bXt4Xy1iC0Setufm7kB50HZzbxx7uJoBuGkUc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090220133011.GB16897@ghostprotocols.net>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200902200044.48328.nickpiggin@yahoo.com.au>
+References: <m2hc2yulrw.fsf@gmail.com>
+	 <38b2ab8a0902190307p214a6928v2f66b8ad5e9564e6@mail.gmail.com>
+	 <200902200044.48328.nickpiggin@yahoo.com.au>
+Date: Fri, 20 Feb 2009 15:10:24 +0100
+Message-ID: <38b2ab8a0902200610i6c91725cjc91adca31042daa9@mail.gmail.com>
+Subject: Re: Question regarding concurrent accesses through block device and 
+	fs
+From: Francis Moreau <francis.moro@gmail.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, Feb 20, 2009 at 10:30:11AM -0300, Arnaldo Carvalho de Melo escreveu:
-> Em Fri, Feb 20, 2009 at 09:56:27AM +0100, Ingo Molnar escreveu:
-> > 2)
-> > 
-> > Another, entirely different, and i think complementary approach, 
-> > which exciting new possibilities would be to (also) 
-> > automatically pick up arguments from the stack, on function 
-> > entry.
-> > 
-> > If there's a (read-mostly, lockless-to-read and scalable) 
-> > function attributes hash, then we could encode the parameters 
-> > signature of functions (or at least, of certain functions) in 
-> > the attributes hash. Then the tracer will know how many 
-> > arguments to pick up from the stack.
-> > 
-> > This approach has the advantage that we could reconstruct the 
-> > parameters of _arbitrary_ functions, without having to touch 
-> > those functions. We already enumerate all functions during build 
-> > time, it would take some more dwarf2 magic to recover the 
-> > call/parameter signature. Oh, and at that time we could also 
-> > record the _return type_ - easing the return value.
-> > 
-> > Note that it does not take a full, bloated DEBUG_INFO build - we 
-> > can build a -g object to get the dwarf2 data and then strip out 
-> > the dwarf2 data.
-> > 
-> > Arnaldo, what do you think about this, how feasible would it be 
-> > to put dwarf2 magic into scripts/recordmcount.pl?
-> 
-> /me reading scripts/recordmcount.pl...
+Hello,
 
-So you want to:
+Thanks a lot for your explanations !
 
-1. build object with -g
-2. just after it is built, get what we want from the DWARF sections,
-   then strip it, stash what we collected
-3. what we want is:
-	- parameter names
-	- _where_ each parameter is (DWARF location expressions)
-	- type signature (CTF like stuff)
-4. allow users to ask for parameters (all? just some?) for certain functions
-   to be collected at function entry
-5. at function entry check if parameters should be collected, go over
-   each parameter DWARF location expression and collect the values,
-   encoding them into the ring buffer
-6. at cat /d/tracing/trace time pretty print the parameters collected,
-   i.e. name=value-formatting-according-to-its-type
+On Thu, Feb 19, 2009 at 2:44 PM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> On Thursday 19 February 2009 22:07:42 Francis Moreau wrote:
+>>
+>> First it looks like when accessing some blocks through a block device,
+>> the same mechanisms are used as when reading a file through a file
+>> system: the page cache is used.
+>
+> Yes. page cache of the block device is also sometimes called buffer cache,
+> for historical reasons.
 
-Ok, base types are easy, enums are easy, what about structs? forget
-about them and just print the pointer? i.e.:
+I didn't know this term before.
 
-	_spin_lock(.lock=0xabcdef)
+> This is done for only newly allocated on-disk blocks, (which is what
+> buffer_new means, not new in-memory buffers). And it is only there to
+> synchronize buffercache access by the filesystem for its metadata, rather
+> than trying to make /dev/bdev access coherent with file access.
 
-versus:
+Well I'm (still) confused by 2 things:
 
-	_spin_lock(.lock={.raw_lock={.slock=0}})
+  - the comments of unmap_underlying_metadata() doesn't sound that we're
+    dealing with meta data only:
 
-All members should be collected? Just some? User decides?
+    " ... we don't want any output from any buffer-cache aliases starting ... "
 
-- Arnaldo
+    note the word *any*. But I must admit that I don't understand the whole
+    comment.
+
+  - looking at unmap_underlying_metadata(), there's no code to deal with
+    meta data buffers. It gets the buffer and unmap it whatever the type of
+    data it contains.
+
+But at least the name of this function is now more clear.
+
+>
+> Basically what can happen is that a filesystem will have perhaps allocated
+> a block for an array of indirect pointers. The filesystem manages this
+> via the buffercache and writes a few pointers into it. Then suppose the file
+> is truncated and that block becomes unused so it can be freed by the
+> filesystem block allocator. And the filesystem may also call bforget to
+> prevent the now useless buffer from being written out in future.
+>
+
+ok, so now  the buffercache is discarded and its content is either discarded
+or is writing back.
+
+> Now suppose a new block required for *file* data, and the filesystem happens
+> to reallocate that block. So now we may still have that old buffercache and
+> buffer head around, but we also have this new pagecache and buffer head for
+> the file that points to the same block (buffer_new will be set on this new
+> buffer head, btw, to reflect that it is a newly allocated block).
+>
+
+ok
+
+> All fine so far.
+>
+> Now there is a potential problem because the old buffer can *still be under
+> writeback* dating back from when it was still good metadata and before
+> bforget was called. That's a problem because the new buffer is expecting
+> to be the owner and master of the block and its data.
+
+Now I don't see the problem.
+
+Even if the old meta data is under writeback process, the new buffer can still
+be used: since it's new there's no point to do IOs to read its content. If
+we need to write it to disk then the IOs will overwrite the old meta
+data, there's
+no risk that the old meta data overwrite the new data.
+
+What am I missing ?
+
+Thanks
+-- 
+Francis
