@@ -1,70 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753835AbZBTSGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754011AbZBTSNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753835AbZBTSGU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 13:06:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbZBTSGJ
+	id S1754011AbZBTSNR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 13:13:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbZBTSNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 13:06:09 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53246 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751453AbZBTSGI (ORCPT
+	Fri, 20 Feb 2009 13:13:00 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:3140 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752660AbZBTSM7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 13:06:08 -0500
-Date: Fri, 20 Feb 2009 19:05:53 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Arve Hj?nnev?g <arve@android.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       mark gross <mgross@linux.intel.com>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFD] Automatic suspend
-Message-ID: <20090220180553.GB1490@ucw.cz>
-References: <200902160010.16955.rjw@sisk.pl> <200902161748.09208.oliver@neukum.org> <20090216093108.078aac35@infradead.org> <200902170020.15509.oliver@neukum.org>
+	Fri, 20 Feb 2009 13:12:59 -0500
+Date: Fri, 20 Feb 2009 20:33:28 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
+Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Liu Dave <DaveLiu@freescale.com>, sdhci-devel@list.drzeus.cx,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH 10/13] sdhci: Add quirk for controllers that need small
+	delays for PIO
+Message-ID: <20090220173328.GJ7583@oksana.dev.rtsoft.ru>
+References: <20090220173228.GA5091@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1251
 Content-Disposition: inline
-In-Reply-To: <200902170020.15509.oliver@neukum.org>
+In-Reply-To: <20090220173228.GA5091@oksana.dev.rtsoft.ru>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-02-17 00:20:12, Oliver Neukum wrote:
-> Am Monday 16 February 2009 18:31:08 schrieb Arjan van de Ven:
-> > On Mon, 16 Feb 2009 17:48:06 +0100
-> > Oliver Neukum <oliver@neukum.org> wrote:
-> > 
-> > > > Userspace should just be the part that says "I'm interested in link
-> > > > notifications". The driver then just goes to the lowest power state
-> > > > for its device that still gives those notifications.
-> > > 
-> > > Should there be a channel through which drivers can tell user space
-> > > what the consequences in terms of reaching a sleep state are if a
-> > > service is requested?
-> > 
-> > Personally, I don't think so.
-> > Think about it: what would userspace do?
-> > Not ask for the functionality if it means no sleep state?
-> > Maybe it should just never ask for it then as a required functionality!
-> 
-> 1. You may have a human being using the information to make the tradeoff.
-> 2. User space may be able to select among several devices the one cheapest
-> to use
+Small udelay is needed to make eSDHC work in PIO mode. Without
+the delay reading causes endless interrupt storm, and writing
+corrupts data. The first guess would be that we must wait for
+some bit in some register, but I didn't find any reliable bits
+that change before and after the delay.
 
-Well, that sounds complex/fragile... and it is really exporting
-hardware impormation driver does not even neccessarily know.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/mmc/host/sdhci.c |    3 +++
+ drivers/mmc/host/sdhci.h |    2 ++
+ 2 files changed, 5 insertions(+), 0 deletions(-)
 
-If this is for user, perhaps it should be in documentation and/or
-hardware user manual?
-
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index f63db25..eff615d 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -391,6 +391,9 @@ static void sdhci_transfer_pio(struct sdhci_host *host)
+ 		mask = ~0;
+ 
+ 	while (sdhci_readl(host, SDHCI_PRESENT_STATE) & mask) {
++		if (host->quirks & SDHCI_QUIRK_PIO_NEEDS_DELAY)
++			udelay(100);
++
+ 		if (host->data->flags & MMC_DATA_READ)
+ 			sdhci_read_block_pio(host);
+ 		else
+diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
+index 63b436a..44c820a 100644
+--- a/drivers/mmc/host/sdhci.h
++++ b/drivers/mmc/host/sdhci.h
+@@ -227,6 +227,8 @@ struct sdhci_host {
+ #define SDHCI_QUIRK_32BIT_REGISTERS			(1<<18)
+ /* Controller has nonstandard clock management */
+ #define SDHCI_QUIRK_NONSTANDARD_CLOCK			(1<<19)
++/* Controller does not like fast PIO transfers */
++#define SDHCI_QUIRK_PIO_NEEDS_DELAY			(1<<20)
+ 
+ 	int			irq;		/* Device IRQ */
+ 	void __iomem *		ioaddr;		/* Mapped address */
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.5.6.5
+
