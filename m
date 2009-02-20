@@ -1,177 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755691AbZBTHpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbZBTHtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755691AbZBTHpp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 02:45:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbZBTHpf
+	id S1754632AbZBTHtz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 02:49:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753079AbZBTHtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 02:45:35 -0500
-Received: from byss.tchmachines.com ([208.76.80.75]:33213 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753107AbZBTHpe (ORCPT
+	Fri, 20 Feb 2009 02:49:45 -0500
+Received: from casper.infradead.org ([85.118.1.10]:53755 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752681AbZBTHto (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 02:45:34 -0500
-Date: Thu, 19 Feb 2009 23:45:31 -0800
-From: Josh Hunt <josh@scalex86.org>
-To: sam@ravnborg.org
-Cc: linux-kernel@vger.kernel.org, kiran@scalex86.org, mingo@elte.hu,
-       linux-kbuild@vger.kernel.org
-Subject: [PATCHv2] Fix 'make rpm' when CONFIG_LOCALVERSION_AUTO=y and using
-	SCM tree
-Message-ID: <20090220074531.GF8151@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
+	Fri, 20 Feb 2009 02:49:44 -0500
+Subject: Re: [Announce] 2.6.29-rc4-rt2
+From: Peter Zijlstra <peterz@infradead.org>
+To: Thomas Meyer <thomas@m3y3r.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Thomas Gleixner <tglx@tglx.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       "jens.axboe" <jens.axboe@oracle.com>, Tejun Heo <tj@kernel.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+In-Reply-To: <1235111568.3363.3.camel@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
+	 <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain>
+	 <1235111568.3363.3.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 20 Feb 2009 08:49:11 +0100
+Message-Id: <1235116151.4736.12.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.91 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Updated patch with Sam's fixes as per this discussion:
-http://lkml.org/lkml/2009/2/15/18
+On Fri, 2009-02-20 at 07:32 +0100, Thomas Meyer wrote:
+> Are you interested in these BUG reports?
 
-Running 'make rpm' fails when CONFIG_LOCALVERSION_AUTO=y and using a kernel
-source tree under SCM.  This is due to KERNELRELEASE being different when the
-initial make is run and when make is run from rpmbuild.
+Yes we are, thanks!
 
-mkspec creates kernel.spec using KERNELRELEASE:
+> Without CONFIG_HIGHPTE kernel boots and seems to work correct, but I'm
+> hitting these two BUGs:
 
-<mkspec>
-echo "%files"
-echo '%defattr (-, root, root)'
-echo "%dir /lib/modules"
-echo "/lib/modules/$KERNELRELEASE"
-echo "/lib/firmware"
-echo "/boot/*"
-echo ""
-</mkspec>
+They appear to be identical, so I'll consider them two instances of one
+bug :-)
 
-When CONFIG_LOCALVERSION_AUTO=y scripts/setlocalversion is called and grabs any
-additional version info from SCM.  Next, the srctree is tarred up and SCM
-information is excluded.
+> [   19.840100] BUG: sleeping function called from invalid context at arch/x86/mm/highmem_32.c:8
+> [   19.840105] in_atomic(): 0, irqs_disabled(): 1, pid: 718, name: IRQ-14
+> [   19.840110] Pid: 718, comm: IRQ-14 Tainted: G        W  2.6.29-rc4-rt2-tip #55
+> [   19.840113] Call Trace:
+> [   19.840123]  [<c0444cbd>] __might_sleep+0xda/0xf0
+> [   19.840128]  [<c043ee31>] kmap+0x50/0x77
+> [   19.840133]  [<c0663e35>] sg_miter_next+0xc1/0xdf
+> [   19.840137]  [<c0663ee8>] sg_copy_buffer+0x95/0xc5
+> [   19.840141]  [<c0663f35>] sg_copy_to_buffer+0x1d/0x33
+> [   19.840149]  [<c0774ab1>] atapi_qc_complete+0x25a/0x2c5
+> [   19.840153]  [<c076dece>] __ata_qc_complete+0xb4/0xcd
+> [   19.840157]  [<c076f844>] ata_qc_complete+0x1be/0x1d7
+> [   19.840162]  [<c077c812>] ata_hsm_qc_complete+0xa9/0xd3
+> [   19.840166]  [<c077ceb7>] ata_sff_hsm_move+0x67b/0x6da
+> [   19.840171]  [<c077d19b>] ata_sff_interrupt+0x15d/0x205
+> [   19.840176]  [<c049440a>] handle_IRQ_event+0x4b/0xce
+> [   19.840180]  [<c0494ac7>] do_irqd+0x141/0x271
+> [   19.840184]  [<c0494986>] ? do_irqd+0x0/0x271
+> [   19.840189]  [<c0467022>] kthread+0x4a/0x82
+> [   19.840192]  [<c0466fd8>] ? kthread+0x0/0x82
+> [   19.840197]  [<c0420b67>] kernel_thread_helper+0x7/0x10
 
-rpmbuild reruns make and in the process generates a new
-include/config/kernel.release and thus a new KERNELRELEASE.  However this time
-the SCM information is gone so KERNELRELEASE no longer has the additional
-version information.  When "make modules_install" runs, it uses the new
-KERNELRELEASE value to determine where to install the modules.  This conflicts
-with where the spec file assumes they are going because of the mis-matching
-KERNELRELEASE versions.
+sg_copy_buffer() seems to disable IRQs, however since on -rt everything
+is a irq-thread and kmap is preemptible, we don't appear to have that
+need.
 
-<snippet>
-+ INSTALL_MOD_PATH=/var/tmp/kernel-2.6.29rc4tip01479g5d85422-root
-+ make -j16 modules_install
-  INSTALL crypto/aead.ko
-  INSTALL crypto/cbc.ko
-  INSTALL crypto/chainiv.ko
-  INSTALL crypto/crc32c.ko
-  INSTALL crypto/crypto_algapi.ko
-  INSTALL crypto/crypto_blkcipher.ko
-  INSTALL crypto/crypto_hash.ko
-  INSTALL crypto/cryptomgr.ko
-  INSTALL crypto/ecb.ko
-  INSTALL crypto/eseqiv.ko
-  INSTALL crypto/krng.ko
-  INSTALL crypto/md5.ko
-  INSTALL crypto/pcbc.ko
-  INSTALL crypto/rng.ko
-  INSTALL drivers/block/cciss.ko
-  INSTALL drivers/hid/hid-dummy.ko
-  INSTALL drivers/scsi/iscsi_tcp.ko
-  INSTALL drivers/scsi/libiscsi.ko
-  INSTALL drivers/scsi/libiscsi_tcp.ko
-  INSTALL drivers/scsi/scsi_transport_iscsi.ko
-  INSTALL drivers/scsi/scsi_wait_scan.ko
-  INSTALL fs/lockd/lockd.ko
-  INSTALL fs/nfs/nfs.ko
-  INSTALL fs/nfsd/nfsd.ko
-  INSTALL lib/libcrc32c.ko
-  INSTALL net/sunrpc/sunrpc.ko
-  DEPMOD  2.6.29-rc4-tip
-+ cp arch/x86/boot/bzImage
-/var/tmp/kernel-2.6.29rc4tip01479g5d85422-root/boot/vmlinuz-2.6.29-rc4-tip-01479-g5d85422
-+ cp System.map
-/var/tmp/kernel-2.6.29rc4tip01479g5d85422-root/boot/System.map-2.6.29-rc4-tip-01479-g5d85422
-+ cp .config
-/var/tmp/kernel-2.6.29rc4tip01479g5d85422-root/boot/config-2.6.29-rc4-tip-01479-g5d85422
-+ cp vmlinux vmlinux.orig
-+ bzip2 -9 vmlinux
-+ mv vmlinux.bz2
-/var/tmp/kernel-2.6.29rc4tip01479g5d85422-root/boot/vmlinux-2.6.29-rc4-tip-01479-g5d85422.bz2
-+ mv vmlinux.orig vmlinux
-+ /usr/lib/rpm/brp-compress
-Processing files: kernel-2.6.29rc4tip01479g5d85422-2
-error: File not found:
-/var/tmp/kernel-2.6.29rc4tip01479g5d85422-root/lib/modules/2.6.29-rc4-tip-01479-g5d85422
-
-
-RPM build errors:
-    File not found:
-/var/tmp/kernel-2.6.29rc4tip01479g5d85422-root/lib/modules/2.6.29-rc4-tip-01479-g5d85422
-make[1]: *** [rpm] Error 1
-make: *** [rpm] Error 2
-</snippet>
-
-I have tested this patch on git -tip, Linus' git tree, and the kernel.org tar
-files, both with and without CONFIG_LOCALVERSION_AUTO=y.
-
-Signed-off-by: Josh Hunt <josh@scalex86.org>
+CC'd everybody who ever touched the file.
 
 ---
+ lib/scatterlist.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/Makefile
-===================================================================
---- linux-2.6.orig/Makefile     2009-02-16 17:07:10.000000000 -0800
-+++ linux-2.6/Makefile  2009-02-19 23:13:31.000000000 -0800
-@@ -903,12 +903,18 @@ localver = $(subst $(space),, $(string)
- # and if the SCM is know a tag from the SCM is appended.
- # The appended tag is determined by the SCM used.
- #
--# Currently, only git is supported.
--# Other SCMs can edit scripts/setlocalversion and add the appropriate
--# checks as needed.
-+# .scmversion is used when generating rpm packages so we do not loose
-+# the version information from the SCM when we do the build of the
-kernel
-+# from the copied source
- ifdef CONFIG_LOCALVERSION_AUTO
--       _localver-auto = $(shell $(CONFIG_SHELL) \
--                         $(srctree)/scripts/setlocalversion
-$(srctree))
-+
-+ifeq ($(wildcard .scmversion),)
-+        _localver-auto = $(shell $(CONFIG_SHELL) \
-+                         $(srctree)/scripts/setlocalversion
-$(srctree))
-+else
-+        _localver-auto = $(shell cat .scmversion 2> /dev/null)
-+endif
-+
-        localver-auto  = $(LOCALVERSION)$(_localver-auto)
- endif
+diff --git a/lib/scatterlist.c b/lib/scatterlist.c
+index b7b449d..4c6510d 100644
+--- a/lib/scatterlist.c
++++ b/lib/scatterlist.c
+@@ -426,7 +426,7 @@ static size_t sg_copy_buffer(struct scatterlist *sgl, unsigned int nents,
+ 
+ 	sg_miter_start(&miter, sgl, nents, SG_MITER_ATOMIC);
+ 
+-	local_irq_save(flags);
++	local_irq_save_nort(flags);
+ 
+ 	while (sg_miter_next(&miter) && offset < buflen) {
+ 		unsigned int len;
+@@ -445,7 +445,7 @@ static size_t sg_copy_buffer(struct scatterlist *sgl, unsigned int nents,
+ 
+ 	sg_miter_stop(&miter);
+ 
+-	local_irq_restore(flags);
++	local_irq_restore_nort(flags);
+ 	return offset;
+ }
+ 
 
-Index: linux-2.6/scripts/package/Makefile
-===================================================================
---- linux-2.6.orig/scripts/package/Makefile     2009-02-16
-17:07:10.000000000 -0800
-+++ linux-2.6/scripts/package/Makefile  2009-02-19 23:13:31.000000000
--0800
-@@ -35,9 +35,10 @@ $(objtree)/kernel.spec: $(MKSPEC) $(srct
- rpm-pkg rpm: $(objtree)/kernel.spec FORCE
-        $(MAKE) clean
-        $(PREV) ln -sf $(srctree) $(KERNELPATH)
-+       $(CONFIG_SHELL) $(srctree)/scripts/setlocalversion >
-$(objtree)/.scmversion
-        $(PREV) tar -cz $(RCS_TAR_IGNORE) -f $(KERNELPATH).tar.gz
-$(KERNELPATH)/.
-        $(PREV) rm $(KERNELPATH)
--
-+       rm -f $(objtree)/.scmversion
-        set -e; \
-        $(CONFIG_SHELL) $(srctree)/scripts/mkversion >
-$(objtree)/.tmp_version
-        set -e; \
+
