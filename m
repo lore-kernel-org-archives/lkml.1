@@ -1,51 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbZBTI2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757223AbZBTIcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757357AbZBTI2X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 03:28:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753960AbZBTI2P
+	id S1757223AbZBTIcS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 03:32:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbZBTIcB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 03:28:15 -0500
-Received: from cantor.suse.de ([195.135.220.2]:54600 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753798AbZBTI2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 03:28:14 -0500
-Subject: Re: [PATCH] x86: remove unneeded endless loop in BUG()
-From: Petr Tesarik <ptesarik@suse.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <499DC5A6.1080305@zytor.com>
-References: <1235068713.15053.99.camel@nathan.suse.cz>
-	 <20090219185935.GA21820@elte.hu> <499DB8BA.3050708@zytor.com>
-	 <499DC545.2030402@goop.org>  <499DC5A6.1080305@zytor.com>
-Content-Type: text/plain; charset="UTF-8"
-Organization: SUSE LINUX
-Date: Fri, 20 Feb 2009 09:28:08 +0100
-Message-Id: <1235118488.15053.102.camel@nathan.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 8bit
+	Fri, 20 Feb 2009 03:32:01 -0500
+Received: from pne-smtpout2-sn2.hy.skanova.net ([81.228.8.164]:63103 "EHLO
+	pne-smtpout2-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753011AbZBTIcB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 03:32:01 -0500
+Message-ID: <499E6A71.8060609@shipmail.org>
+Date: Fri, 20 Feb 2009 09:31:45 +0100
+From: Thomas Hellstrom <thomas@shipmail.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081231)
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Eric Anholt <eric@anholt.net>, Wang Chen <wangchen@cn.fujitsu.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drm: Fix lock order reversal between mmap_sem and struct_mutex.
+References: <1234918786-854-1-git-send-email-eric@anholt.net>	 <1234969734.4637.111.camel@laptop>  <499DC8EC.3000806@shipmail.org> <1235082372.4612.665.camel@laptop>
+In-Reply-To: <1235082372.4612.665.camel@laptop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin píše v Čt 19. 02. 2009 v 12:48 -0800:
-> Jeremy Fitzhardinge wrote:
-> > 
-> > There's no reason to expect an "asm volatile" to stay put; the 
-> > "volatile" has nothing to do with preventing code motion.  The only way 
-> > to make an asm stick in one place is with data dependencies, and I'm not 
-> > sure what the dependency for __builtin_trap might be.  I'm guessing its 
-> > a "memory" clobber, but that's pure guesswork.
-> > 
-> 
-> I looked through this with HJL; the bottom line is that although it 
-> probably would work, it's not worth it.
-> 
-> I submitted GCC bug 39252 to get __builtin_not_reached(); instead.
+Peter Zijlstra wrote:
+> On Thu, 2009-02-19 at 22:02 +0100, Thomas Hellstrom wrote:
+>   
+>>  
+>> It looks to me like the driver preferred locking order is
+>>
+>> object_mutex (which happens to be the device global struct_mutex)
+>>   mmap_sem
+>>      offset_mutex.
+>>
+>> So if one could avoid using the struct_mutex for object bookkeeping (A 
+>> separate lock) then
+>> vm_open() and vm_close() would adhere to that locking order as well, 
+>> simply by not taking the struct_mutex at all.
+>>
+>> So only fault() remains, in which that locking order is reversed. 
+>> Personally I think the trylock ->reschedule->retry method with proper 
+>> commenting is a good solution. It will be the _only_ place where locking 
+>> order is reversed and it is done in a deadlock-safe manner. Note that 
+>> fault() doesn't really fail, but requests a retry from user-space with 
+>> rescheduling to give the process holding the struct_mutex time to 
+>> release it.
+>>     
+>
+> It doesn't do the reschedule -- need_resched() will check if the current
+> task was marked to be scheduled away, 
+Yes. my mistake. set_tsk_need_resched() would be the proper call. If I'm 
+correctly informed, that would kick in the scheduler _after_ the 
+mmap_sem() is released, just before returning to user-space.
+> furthermore yield based locking
+> sucks chunks.
+>   
+Yes, but AFAICT in this situation it is the only way to reverse locking 
+order in a deadlock safe manner. If there is a lot of contention it will 
+eat cpu. Unfortunately since the struct_mutex is such a wide lock there 
+will probably be contention in some situations.
 
-Thank you! I like it this way, too.
+BTW isn't this quite common in distributed resource management, when you 
+can't ensure that all requestors will request resources in the same order?
+Try to grab all resources you need for an operation. If you fail to get 
+one, release the resources you already have, sleep waiting for the 
+failing one to be available and then retry.
 
-Petr Tesarik
+In this case we fail be cause we _may_ have a deadlock. Since we cannot 
+release the mmap_sem and wait, we do the second best thing and tell the 
+kernel to reschedule when the mmap_sem is released.
+
+> What's so very difficult about pulling the copy_*_user() out from under
+> the locks?
+>
+>   
+Given Eric's comment this is a GEM performance-critical path, so even 
+from a CPU-usage perspecive, the trylock solution may be preferred.
+
+ From a make-the-code-easy-to-understand perspective, I agree pulling 
+out copy_*_user() is a better solution.  It might even be that the 
+trylock solution doesn't kill the warnings from the lock dependency tracker.
+
+/Thomas
 
 
