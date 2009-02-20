@@ -1,96 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758026AbZBTR2q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbZBTR34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758026AbZBTR2q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 12:28:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbZBTR2h
+	id S1755987AbZBTR34 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 12:29:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbZBTR3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 12:28:37 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:65137 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752529AbZBTR2g (ORCPT
+	Fri, 20 Feb 2009 12:29:46 -0500
+Received: from zelda.netsplit.com ([87.194.19.211]:57042 "EHLO
+	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753384AbZBTR3p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 12:28:36 -0500
-Message-ID: <499EE865.40708@oracle.com>
-Date: Fri, 20 Feb 2009 09:29:09 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       zippel@linux-m68k.org, linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] tracing/markers: make markers select tracepoints
-References: <499edf47.1818d00a.060b.2b8d@mx.google.com> <499EE162.4050008@oracle.com> <20090220172241.GF24538@elte.hu>
-In-Reply-To: <20090220172241.GF24538@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt702.oracle.com [141.146.40.80]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A09020B.499EE82F.0160:SCFSTAT928724,ss=1,fgs=0
+	Fri, 20 Feb 2009 12:29:45 -0500
+Subject: Re: [PATCH] cpufreq: Change link order of x86 cpufreq modules
+From: Scott James Remnant <scott@canonical.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Ingo Molnar <mingo@elte.hu>, davej@codemonkey.org.uk,
+       linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+In-Reply-To: <20090218183641.GA20203@srcf.ucam.org>
+References: <20090218182822.GA19902@srcf.ucam.org>
+	 <20090218183137.GD26802@elte.hu>  <20090218183641.GA20203@srcf.ucam.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-fcMsO8zNWKHrHMcjyeRu"
+Date: Fri, 20 Feb 2009 17:29:52 +0000
+Message-Id: <1235150992.6467.66.camel@quest>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> 
->>> This is what happens on the following build error:
->>>
->>> kernel/built-in.o: In function `marker_update_probe_range':
->>> (.text+0x52f64): undefined reference to `tracepoint_probe_register_noupdate'
->>> kernel/built-in.o: In function `marker_update_probe_range':
->>> (.text+0x52f74): undefined reference to `tracepoint_probe_unregister_noupdate'
->>> kernel/built-in.o: In function `marker_update_probe_range':
->>> (.text+0x52fb9): undefined reference to `tracepoint_probe_unregister_noupdate'
->>> kernel/built-in.o: In function `marker_update_probes':
->>> marker.c:(.text+0x530ba): undefined reference to `tracepoint_probe_update_all'
->>>
->>> CONFIG_KVM_TRACE will select CONFIG_MARKER, but the latter 
->>> depends on CONFIG_TRACEPOINTS which will not be selected.
->>>
->>> A temporary fix is to make CONFIG_MARKER select 
->>> CONFIG_TRACEPOINTS, though it doesn't fix the source KConfig 
->>> dependency handling problem.
->>>
->>> Reported-by: Ingo Molnar <mingo@elte.hu>
->>> Cc: Roman Zippel <zippel@linux-m68k.org>
->>> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
->>> ---
->>>  init/Kconfig |    2 +-
->>>  1 files changed, 1 insertions(+), 1 deletions(-)
->>>
->>> diff --git a/init/Kconfig b/init/Kconfig
->>> index b6400a5..a93f957 100644
->>> --- a/init/Kconfig
->>> +++ b/init/Kconfig
->>> @@ -975,7 +975,7 @@ config TRACEPOINTS
->>>  
->>>  config MARKERS
->>>  	bool "Activate markers"
->>> -	depends on TRACEPOINTS
->>> +	select TRACEPOINTS
->>>  	help
->>>  	  Place an empty function call at each marker site. Can be
->>>  	  dynamically changed for a probe function.
->> but using "select" instead of "depends on" just causes the 
->> kind of problem that you described, whereas using "depends on" 
->> does follow dependency chains.
-> 
-> Well, as long as the secondary selects are 'expanded' along the 
-> line of dependencies, it should still be fine. With an 
 
-Agreed.
+--=-fcMsO8zNWKHrHMcjyeRu
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> increasing number of dependencies it quickly becomes ugly 
-> though. This might be one of the cases where it works.
+On Wed, 2009-02-18 at 18:36 +0000, Matthew Garrett wrote:
 
-Agreed.
+> On Wed, Feb 18, 2009 at 07:31:37PM +0100, Ingo Molnar wrote:
+>=20
+> > Nice fix! Where does this information come from? Distro module=20
+> > ordering magic? It's rather non-trivial.
+>=20
+> Pretty much. p4-clockmod is never the preferred option because it does=20
+> no voltage scaling. speedstep-centrino is now almost entirely=20
+> functionally replaced with acpi-cpufreq. The powernow-k8 issue was a=20
+> personal communication from davej.
+>=20
+In fact, we've noticed severe regressions with p4-clockmod over simply
+having no scaling driver at all - and are not going to built it into our
+kernels.
 
-> Eventually we should eliminate markers, their uses can either be 
-> converted to new-style tracepoints, or to ftrace_printk().
+Scott
+--=20
+Scott James Remnant
+scott@canonical.com
 
+--=-fcMsO8zNWKHrHMcjyeRu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-Thanks,
--- 
-~Randy
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkme6JAACgkQSnQiFMl4yK5zuQCgpMFmzGL4DJqlYQ0lgGXZg6H5
+P+EAn37gsFpDM8ZhgTLHIh2Oe4wB94Wf
+=eti4
+-----END PGP SIGNATURE-----
+
+--=-fcMsO8zNWKHrHMcjyeRu--
+
