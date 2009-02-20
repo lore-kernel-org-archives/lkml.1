@@ -1,68 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754389AbZBTVfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbZBTVnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754389AbZBTVfv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 16:35:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbZBTVfm
+	id S1754627AbZBTVnt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 16:43:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbZBTVnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 16:35:42 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:59959 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752862AbZBTVfl (ORCPT
+	Fri, 20 Feb 2009 16:43:41 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39257 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750951AbZBTVnl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 16:35:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fNqECjVA7LHCv6QOds7Ch2u5Z64jcwaXPyd2dEuyzvFUEFBJGflpcH6dCwbx30kpTE
-         zvzwaohggx/GeX2CZRgRhoj0eQi001FmSu6NjZNzuDqzvN8z+Zb85yLiuQgdEN+7u9Lz
-         6RcDnI51U11bFKA94dA+Nq7EinMYgHQKyN04M=
-MIME-Version: 1.0
-In-Reply-To: <499DA235.6090700@oracle.com>
-References: <20090220002832.cad00fcd.sfr@canb.auug.org.au>
-	 <499D93F0.2090803@oracle.com>
-	 <71cd59b00902191012k764bab32n85f54fc049e35035@mail.gmail.com>
-	 <499DA235.6090700@oracle.com>
-Date: Fri, 20 Feb 2009 22:35:40 +0100
-Message-ID: <71cd59b00902201335y3cc0acacod7257548a76ed6b9@mail.gmail.com>
-Subject: Re: [PATCH -next] eeepc: needs to depend on INPUT
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Len Brown <lenb@kernel.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 20 Feb 2009 16:43:41 -0500
+Date: Fri, 20 Feb 2009 13:42:37 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Felipe Balbi <me@felipebalbi.com>
+Cc: linux-kernel@vger.kernel.org, dmitry.torokhov@gmail.com,
+       felipe.balbi@nokia.com
+Subject: Re: [PATCH] input: keyboard: introduce lm8323 driver
+Message-Id: <20090220134237.50086106.akpm@linux-foundation.org>
+In-Reply-To: <1235045654-29025-1-git-send-email-me@felipebalbi.com>
+References: <1235045654-29025-1-git-send-email-me@felipebalbi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 19, 2009 at 7:17 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> Corentin Chary wrote:
->> On Thu, Feb 19, 2009 at 6:16 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
->>> From: Randy Dunlap <randy.dunlap@oracle.com>
->>>
->>> EEEPC_LAPTOP needs to depend on INPUT to fix build errors that
->>> can happen when EEEPC_LAPTOP=y and INPUT=m:
->>
->> There is already a patch sent to linux-acpi and Len Brown.
->>
->> http://patchwork.kernel.org/patch/7354/
+On Thu, 19 Feb 2009 14:14:14 +0200
+Felipe Balbi <me@felipebalbi.com> wrote:
+
+> From: Felipe Balbi <felipe.balbi@nokia.com>
+> 
+> lm8323 is the keypad driver used in n810 device. This
+> driver has been sitting in linux-omap for quite a long
+> time, it's about time to get comments from upstream and
+> get it merged.
+> 
+
+Please feed it through scripts/checkpatch.pl and review the resulting
+report?
+
+
+> +static ssize_t lm8323_pwm_store_time(struct device *dev,
+> +		struct device_attribute *attr, const char *buf, size_t len)
+> +{
+> +	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+> +	struct lm8323_pwm *pwm = cdev_to_pwm(led_cdev);
+> +	int ret;
+> +	int time;
+> +
+> +	ret = sscanf(buf, "%d", &time);
+> +	/* Numbers only, please. */
+> +	if (ret)
+> +		return -EINVAL;
+
+strict_strtoul() does a better job of this.
+
+> +	pwm->fade_time = time;
+> +
+> +	return strlen(buf);
+> +}
+> +static DEVICE_ATTR(time, 0644, lm8323_pwm_show_time, lm8323_pwm_store_time);
+> +
+> +static int init_pwm(struct lm8323_chip *lm, int id, struct device *dev,
+> +		    const char *name)
+> +{
+> +	struct lm8323_pwm *pwm = NULL;
+> +
+> +	BUG_ON(id > 3);
+> +
+> +	switch (id) {
+> +	case 1:
+> +		pwm = &lm->pwm1;
+> +		break;
+> +	case 2:
+> +		pwm = &lm->pwm2;
+> +		break;
+> +	case 3:
+> +		pwm = &lm->pwm3;
+> +		break;
+> +	}
+> +
+> +	pwm->id = id;
+> +	pwm->fade_time = 0;
+> +	pwm->brightness = 0;
+> +	pwm->desired_brightness = 0;
+> +	pwm->running = 0;
+> +	mutex_init(&pwm->lock);
+> +	if (name) {
+> +		pwm->cdev.name = name;
+> +		pwm->cdev.brightness_set = lm8323_pwm_set_brightness;
+> +		if (led_classdev_register(dev, &pwm->cdev) < 0) {
+
+I did't see a dependency on LEDS in the Kconfig entry.  Will it compile
+with LEDS=n?
+
+
+> +			dev_err(dev, "couldn't register PWM %d\n", id);
+> +			return -1;
+> +		}
+> +		if (device_create_file(pwm->cdev.dev,
+> +					     &dev_attr_time) < 0) {
+> +			dev_err(dev, "couldn't register time attribute\n");
+> +			led_classdev_unregister(&pwm->cdev);
+> +			return -1;
+> +		}
+> +		INIT_WORK(&pwm->work, lm8323_pwm_work);
+> +		pwm->enabled = 1;
+> +	} else {
+> +		pwm->enabled = 0;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static struct i2c_driver lm8323_i2c_driver;
+> +
+> +static ssize_t lm8323_show_disable(struct device *dev,
+> +				   struct device_attribute *attr, char *buf)
+> +{
+> +	struct lm8323_chip *lm = dev_get_drvdata(dev);
+> +
+> +	return sprintf(buf, "%u\n", !lm->kp_enabled);
+> +}
+> +
+> +static ssize_t lm8323_set_disable(struct device *dev,
+> +				  struct device_attribute *attr,
+> +				  const char *buf, size_t count)
+> +{
+> +	struct lm8323_chip *lm = dev_get_drvdata(dev);
+> +	int ret;
+> +	int i;
+> +
+> +	i = sscanf(buf, "%d", &ret);
+
+Again, strict_strto*() would be better.  It will disallow input of the
+form "42foo".
+
+> +	mutex_lock(&lm->lock);
+> +	lm->kp_enabled = !i;
+> +	mutex_unlock(&lm->lock);
+> +
+> +	return count;
+> +}
 >
-> Today's linux-next doesn't build (doesn't have that patch).  :(
+> ...
+>
+> +static struct i2c_driver lm8323_i2c_driver = {
+> +	.driver = {
+> +		.name	 = "lm8323",
+> +	},
+> +	.probe		= lm8323_probe,
+> +	.remove		= lm8323_remove,
+> +	.suspend	= lm8323_suspend,
+> +	.resume		= lm8323_resume,
+> +	.id_table	= lm8323_id,
+> +};
+
+Does this compile and run OK with CONFIG_PM=n?
+
+>
+> ...
 >
 
-Hi Len,
-Just a reminder for the patchs I send some days ago to fix this build
-error, and two regressions. In case you miss them.
-
-http://patchwork.kernel.org/patch/7354/
-http://patchwork.kernel.org/patch/7357/
-http://patchwork.kernel.org/patch/7356/
-
-Thanks
-
--- 
-Corentin Chary
-http://xf.iksaif.net
