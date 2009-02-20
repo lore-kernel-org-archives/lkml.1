@@ -1,40 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbZBTC42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbZBTC4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755131AbZBTC42 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 21:56:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbZBTC4T
+	id S1756074AbZBTC4s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 21:56:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbZBTC4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 21:56:19 -0500
-Received: from web33505.mail.mud.yahoo.com ([68.142.206.154]:32215 "HELO
-	web33505.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751123AbZBTC4S (ORCPT
+	Thu, 19 Feb 2009 21:56:37 -0500
+Received: from web33507.mail.mud.yahoo.com ([68.142.206.156]:40491 "HELO
+	web33507.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755430AbZBTC4g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 21:56:18 -0500
-X-Greylist: delayed 383 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Feb 2009 21:56:18 EST
+	Thu, 19 Feb 2009 21:56:36 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com;
   h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=wE8CAEuEUAEN5+w4G6d1lpIgJXdbymyYNVbwWcDCsIcY44xkMnJnH4kIhXV0gSuZyRl/m2rfMrvLtfxLH4Qjt61f3tJu4lqWdNvQtIIlq8WtDSxlTP5gfvh+o4PXdkJgeOQrSffpbvMQzAAq3o/DJQ4NECnwiWRyZnerQZCWQP4=;
-X-YMail-OSG: F0YiZyEVM1msl7q064I4fJyyBXdmPs_W.hTgjjQF2BE1I08FelduAgd_o7WkcoL9QM8arGu67TtclSywSdmy8Bd0grDyXkBOyNuihhdWE0.BoTsuvlib._tUc4nerPgCVwOCbuknpAJHERkrTZSHlUqeeXdKSQJfpd6DRi7cfxqUJFOsbGlvHUv2wBeDcRraLdRK8w1c9yaMzI0gKB124O.Q4n8j1IkhX79veEz.9UG6.w--
+  b=KmMAxReQ/G6ujE0zYl99EpSk7vpZxDHmToA4QzC9TKlgApr7x0HMMjjmNuQF24a0JW/OmPSh6loNE0j8fTLgWP0AuO43uKsEpV8e1fiJP9LmKuH0+YzKFGH1cuIS6eZ6EMvTImX9q2CC9LRfEjQdxw38dPAGsISDawBXhz4xZ4c=;
+X-YMail-OSG: wHNyU8AVM1noKIt24B2oFFlBRbx2xWK3FtMeUtPpGpC1VwqYvpjwK8c9HZI9tuP011VjXP4IU8OjwfrZBu9CASzDD5wvWc9u34g9x3XAcjs97IHHhLEWUn2JuopXXPE4cWAJaI6hZvAVb0cHHgOJDtm5fdEpvoGNlIJrNE6iKZj16h8W1eqelaaFh4sE
 X-Mailer: YahooMailWebService/0.7.260.1
-Date: Thu, 19 Feb 2009 18:56:17 -0800 (PST)
+Date: Thu, 19 Feb 2009 18:49:54 -0800 (PST)
 From: Nick Levinson <nick_levinson@yahoo.com>
-Subject: suggest make standard list of CR/LF prefs that apps can read for portability
+Subject: suggest shutdown process end with on-screen message
 To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <536945.50089.qm@web33505.mail.mud.yahoo.com>
+Message-ID: <274106.42702.qm@web33507.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Battling between Windows Notepad, Linux gedit, and OpenOffice.org conventions on how paragraphs are separated in text files using CR and LF characters, I'd like the ability to set a preference the same way I'd set one for currency or daylight savings time. A user wouldn't have to pick, but if a user does all applications could agree with it.
+During shutdown, the screen goes uniformly dark. It's easy to confuse it with already being off. Turning power off prematurely can crash Linux for the next startup. I don't know if it's premature once the screen has reached uniform darkness, and I'm not willing to take the chance of trying it out, since recovering from a crash can be a looooooooooong process.
 
-It would be up to each application designer to comply or not. Noncompliant apps should not break.
+Compare to old Win95a (and maybe new Win), which displays a message telling me it's now safe to turn the computer's power off.
 
-Among the options: whatever the application normally sets if I have no preference, CR alone, LF alone, CR+LF, and LF+CR. It might be nice if among the options was one to simply choose that in a well-known stable application, such as one of those above. Each user could have their own pref. And an app could override it.
+Suggestion: Create a configurable text message (no special font or artwork) that displays when the screen becomes uniformly dark and stays up till it's safe to power down. Let us decide what message we want, so we can edit it to be compatible with our hardware setup, such as "When this message goes away, you may turn the power off.", "Now in the final stages of shutting down. When this message disappears, implement Procedure 3J75.2 and call your CIO at home.", or simply "x" or whatever.
 
-Thanx.
+If no text can be displayed then, perhaps allow us to post a message just before text is impossible, and to have that message stay up for a configurable number of seconds, e.g., for 20 seconds, "When this message disappears in 20 seconds or less, wait another 15 seconds for the screen to go from dark to black before turning power off."
+
+Reboot should be treated separately. Perhaps a configurable message could announce "Rebooting under way." or "Keep power on; awaiting reboot within 1 minute."
+
+My current Linux laptop does not need its power turned off, but I unplug the power cable and might not have a functioning battery at that moment.
+
+This is not needed for lean distros. It is needed as Linux moves toward more friendliness for wider user bases.
+
+I'm running Linux Fedora Core 4 with kernel <2.6.11-1.1369_FC4>.
+
+Thanks.
 
 -- 
 Nick
