@@ -1,61 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbZBTS04@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbZBTS1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755365AbZBTS04 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 13:26:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbZBTS0r
+	id S1753451AbZBTS1T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 13:27:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755398AbZBTS06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 13:26:47 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:58857 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752799AbZBTS0q (ORCPT
+	Fri, 20 Feb 2009 13:26:58 -0500
+Received: from smtp3.tech.numericable.fr ([82.216.111.39]:51134 "EHLO
+	smtp3.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755345AbZBTS04 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 13:26:46 -0500
-Date: Fri, 20 Feb 2009 18:26:09 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Arjan van de Ven <arjan@infradead.org>,
-       "Woodruff, Richard" <r-woodruff2@ti.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Kyle Moffett <kyle@moffetthome.net>, Oliver Neukum <oliver@neukum.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Arve Hj?nnev?g <arve@android.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       mark gross <mgross@linux.intel.com>, Uli Luckas <u.luckas@road.de>,
-       Igor Stoppa <igor.stoppa@nokia.com>,
-       Brian Swetland <swetland@google.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFD] Automatic suspend
-Message-ID: <20090220182609.GA3289@srcf.ucam.org>
-References: <f73f7ab80902161208h12837d4ex1d28d55d031d5d71@mail.gmail.com> <13B9B4C6EF24D648824FF11BE896716203771DD01B@dlee02.ent.ti.com> <20090216145948.6fea81c3@infradead.org> <200902170019.40599.rjw@sisk.pl> <20090216232329.GA15678@srcf.ucam.org> <20090220182213.GA1681@ucw.cz>
+	Fri, 20 Feb 2009 13:26:56 -0500
+Message-ID: <499EF5ED.4080207@numericable.fr>
+Date: Fri, 20 Feb 2009 19:26:53 +0100
+From: etienne <etienne.basset@numericable.fr>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090220182213.GA1681@ucw.cz>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+To: Casey Schaufler <casey@schaufler-ca.com>
+CC: Paul Moore <paul.moore@hp.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       LSM <linux-security-module@vger.kernel.org>
+Subject: Re: [PATCH] SMACK netfilter smacklabel socket match
+References: <fa.O38YY4pVfLlMFJNBI3mhgn+qOcQ@ifi.uio.no> <200902171852.21061.paul.moore@hp.com> <499BB76C.1030109@numericable.fr> <200902181005.24952.paul.moore@hp.com> <499C40C1.20106@schaufler-ca.com> <499C62E4.1030600@numericable.fr> <499E3353.7020305@schaufler-ca.com>
+In-Reply-To: <499E3353.7020305@schaufler-ca.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 20, 2009 at 07:22:15PM +0100, Pavel Machek wrote:
->  On Mon 2009-02-16 23:23:30, Matthew Garrett wrote:
-> > On Tue, Feb 17, 2009 at 12:19:38AM +0100, Rafael J. Wysocki wrote:
-> > 
-> > > This, again, seems to be a bit x86-centric. :-)  The Android people are telling
-> > > us that on the hardware they deal with it does make sense to put the entire
-> > > system to sleep even for relatively short periods of time, since the latencies
-> > > involved are not too bad.
-> > 
-> > Arve said that the power state was equivalent in idle and suspend, but 
+Casey Schaufler wrote:
+> etienne wrote:
+>> ...
+>>> Etienne, thank you very much for the work you've done so far. Paul,
+>>> thank you for your recommendations.
+>>>     
+>> well, I'll try to explain my use case for SMACK, could you please tell me if this makes sense and if it is doable and sane with SMACK :
+>>
+>> I have single-user computer that, for simplicity sake, do only web browsing with firefox; 
+>> the attack vector i'm concerned with is malicious web pages, that could execute malicious code on my computer or worse erase some of my data; 
+>>
+>> so i express the following security policy in a tool-agnostic way :
+>> 1. firefox can access internet
+>>   
 > 
-> ...for Arve's hardware. Not all embedded systems are like that, and
-> OLPC / PCs are definitely not like that.
+> In Smack terms then you want the process label of your browser
+> process to have access to hosts on the internet in general. The
+> easy way to do this is for it to run with the ambient label
+> (cat /smack/ambient to see it) which will be the floor label "_"
+> unless you change it. Note that your browser will need to talk
+> to the X11 server as well, so processes with the label of the
+> browser will need write access to processes with the label of the
+> X11 server, and visa versa.
 
-And PCs have enough latency over suspend/resume that we can't do it 
-automatically in a non-intrusive manner anyway, so runtime pm is more 
-interesting there as well.
+OK
+> 
+>> 2. firefox can read/write it's configuration directory in my $HOME
+>>   
+[snip]
+> 
+> Do you need to use /tmp, or does firefox respect $TMPDIR?
+> You can set the label of /tmp to the star "*" label if worse
+> comes to worst.
+>
+i don't really know now, i label /tmp/ /var/tmp with *
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+ 
+>> pretty simple. So I expect the 'tool' to express this policy in very few line; (i had a look at selinux/refpolicy, and I'm ashamed I was too lazy to test/understand further).
+> 
+> Don't be ashamed. I wrote Smack because I was too lazy to figure
+> out SELinux policy.
+> 
+:-)
+
+> 
+> I have a newsmack program, but all that it does is what your "hack"
+> does.
+>
+OK then. If it's the only way
+ 
+>> Third issue : there seems to be  no way to log/audit access violations, have you plans to implement that?
+>>   
+> 
+> Hmm. Audit should be working.
+> 
+I see some "audit" hook in the  code, but i don't see a way to log _specific_ smack information ie  
+"smack_subject  smack_object  smack_access drop"       (+of course process name, pid, path, and any relevant info)
+
+like selinux would do in 'avc_audit' 
+
+ 
+regards
+Etienne
