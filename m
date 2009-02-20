@@ -1,116 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760066AbZBTRiH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbZBTRji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760066AbZBTRiH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 12:38:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759695AbZBTRhf
+	id S1757474AbZBTRji (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 12:39:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753654AbZBTRj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 12:37:35 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:37990 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756023AbZBTRhd (ORCPT
+	Fri, 20 Feb 2009 12:39:28 -0500
+Received: from zelda.netsplit.com ([87.194.19.211]:51790 "EHLO
+	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753026AbZBTRj1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 12:37:33 -0500
-Date: Fri, 20 Feb 2009 12:37:31 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [git pull v2] x86 page fault checker
-In-Reply-To: <20090220155036.GA3225@elte.hu>
-Message-ID: <alpine.DEB.2.00.0902201232510.13747@gandalf.stny.rr.com>
-References: <alpine.DEB.2.00.0902201012220.29217@gandalf.stny.rr.com> <20090220155036.GA3225@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 20 Feb 2009 12:39:27 -0500
+Subject: Re: [PATCH] cpufreq: Change link order of x86 cpufreq modules
+From: Scott James Remnant <scott@canonical.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Ingo Molnar <mingo@elte.hu>, davej@codemonkey.org.uk,
+       linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+In-Reply-To: <20090220173637.GA1985@srcf.ucam.org>
+References: <20090218182822.GA19902@srcf.ucam.org>
+	 <20090218183137.GD26802@elte.hu> <20090218183641.GA20203@srcf.ucam.org>
+	 <1235150992.6467.66.camel@quest>  <20090220173637.GA1985@srcf.ucam.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-TbZY73IiJO43jGx+K8Vw"
+Date: Fri, 20 Feb 2009 17:39:35 +0000
+Message-Id: <1235151575.6467.68.camel@quest>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--=-TbZY73IiJO43jGx+K8Vw
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Ingo,
+On Fri, 2009-02-20 at 17:36 +0000, Matthew Garrett wrote:
 
-I added your suggestion, and even tested it out. I cherry picked
-a branch to remove your split_large fix, added this output, and then
-added the changes that triggered the original bug. I got a very nasty 
-warning, but the kernel resumed fine.
+> On Fri, Feb 20, 2009 at 05:29:52PM +0000, Scott James Remnant wrote:
+>=20
+> > In fact, we've noticed severe regressions with p4-clockmod over simply
+> > having no scaling driver at all - and are not going to built it into ou=
+r
+> > kernels.
+>=20
+> It makes sense to have p4-clockmod from a thermal management=20
+> perspective. We should probably bump its transition latency to more than=20
+> 10ms to prevent ondemand binding to it.
+>=20
+If that's possible; that'd be good.
 
-------------[ cut here ]------------
-WARNING: at arch/x86/mm/fault.c:495 do_page_fault+0x2aa/0x890()
-Hardware name: Precision WorkStation 470   
-PMD has incorrect permission bits
-[...]
+The trouble with it is that it never seems to bring the CPU anywhere
+near maximum performance.
 
+Scott
+--=20
+Scott James Remnant
+scott@canonical.com
 
-Thanks,
+--=-TbZY73IiJO43jGx+K8Vw
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
--- Steve
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Please pull the latest tip/x86/urgent tree, which can be found at:
+iEYEABECAAYFAkme6tcACgkQSnQiFMl4yK5RmgCfZGNhQLhwJYJSBeOPRl7q6ioK
+UQ0An3kJdrdX9bRWHKFc5CMDovVHajKR
+=CxaL
+-----END PGP SIGNATURE-----
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/x86/urgent
-
-
-Steven Rostedt (1):
-      x86: check PMD in spurious_fault handler
-
-----
- arch/x86/mm/fault.c |   13 ++++++++++++-
- 1 files changed, 12 insertions(+), 1 deletions(-)
----------------------------
-commit 3c3e5694add02e665bbbd0fecfbbdcc0b903097a
-Author: Steven Rostedt <srostedt@redhat.com>
-Date:   Thu Feb 19 11:46:36 2009 -0500
-
-    x86: check PMD in spurious_fault handler
-    
-    Impact: fix to prevent hard lockup on bad PMD permissions
-    
-    If the PMD does not have the correct permissions for a page access,
-    but the PTE does, the spurious fault handler will mistake the fault
-    as a lazy TLB transaction. This will result in an infinite loop of:
-    
-     fault -> spurious_fault check (pass) -> return to code -> fault
-    
-    This patch adds a check and a warn on if the PTE passes the permissions
-    but the PMD does not.
-    
-    [ Updated: Ingo Molnar suggested using WARN_ONCE with some text ]
-    
-    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index c76ef1d..278d645 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -455,6 +455,7 @@ static int spurious_fault(unsigned long address,
- 	pud_t *pud;
- 	pmd_t *pmd;
- 	pte_t *pte;
-+	int ret;
- 
- 	/* Reserved-bit violation or user access to kernel space? */
- 	if (error_code & (PF_USER | PF_RSVD))
-@@ -482,7 +483,17 @@ static int spurious_fault(unsigned long address,
- 	if (!pte_present(*pte))
- 		return 0;
- 
--	return spurious_fault_check(error_code, pte);
-+	ret = spurious_fault_check(error_code, pte);
-+	if (!ret)
-+		return 0;
-+
-+	/*
-+	 * Make sure we have permissions in PMD
-+	 * If not, then there's a bug in the page tables.
-+	 */
-+	ret = spurious_fault_check(error_code, (pte_t *) pmd);
-+	WARN_ONCE(!ret, "PMD has incorrect permission bits\n");
-+	return ret;
- }
- 
- /*
+--=-TbZY73IiJO43jGx+K8Vw--
 
