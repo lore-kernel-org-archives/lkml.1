@@ -1,93 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbZBTXRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755476AbZBTXXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756230AbZBTXRV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 18:17:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbZBTXRN
+	id S1755476AbZBTXXs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 18:23:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbZBTXXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 18:17:13 -0500
-Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:7364 "EHLO
-	WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753100AbZBTXRM (ORCPT
+	Fri, 20 Feb 2009 18:23:39 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52239 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753830AbZBTXXi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 18:17:12 -0500
-X-BigFish: VPS5(z34a4jzzzzzz32i6bh43j65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0KFE0O0-01-K3F-01
-Date: Sat, 21 Feb 2009 00:16:35 +0100
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-CC: linux-kernel@vger.kernel.org, Mark Hounschell <markh@compro.net>,
-       Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 3/3] x86: hpet: stop HPET_COUNTER when programming periodic
-	mode
-Message-ID: <20090220231635.GK6298@alberich.amd.com>
-References: <20090220230729.GK4834@alberich.amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20090220230729.GK4834@alberich.amd.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 20 Feb 2009 23:16:56.0716 (UTC) FILETIME=[52F6A4C0:01C993B1]
+	Fri, 20 Feb 2009 18:23:38 -0500
+Date: Fri, 20 Feb 2009 15:23:05 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: torvalds@linux-foundation.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] SCSI fixes for 2.6.29-rc5
+Message-Id: <20090220152305.8a2e384f.akpm@linux-foundation.org>
+In-Reply-To: <1235170927.9025.42.camel@localhost.localdomain>
+References: <1235170927.9025.42.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 20 Feb 2009 17:02:07 -0600
+James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-Impact: fix system hang on some systems operating with HZ_1000
+> This is a bunch of assorted bug fixes (with several in the qlogic
+> drivers).
+> 
+> The patch is available at
+> 
+> master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+> 
+> The short changelog is:
+> 
+> Andrew Vasquez (3):
+>       qla2xxx: Update version number to 8.03.00-k3.
+>       qla2xxx: Mask out 'reserved' bits while processing FLT regions.
+>       qla2xxx: Properly acknowledge IDC notification messages.
+> 
+> Anirban Chakraborty (2):
+>       qla2xxx: Correct slab-error overwrite during vport creation and deletion.
+>       qla2xxx: Remove interrupt request bit check in the response processing pat
+> 
+> Brian King (3):
+>       ibmvfc: Increase cancel timeout
+>       ibmvfc: Fix rport relogin
+>       ibmvfc: Fix command timeout errors
+> 
+> James Smart (1):
+>       scsi_scan: add missing interim SDEV_DEL state if slave_alloc fails
+> 
+> Julia Lawall (1):
+>       lpfc: introduce missing kfree
+> 
+> Martin Peschke (1):
+>       sg: fix device number in blktrace data
+> 
+> Mike Christie (1):
+>       libiscsi: Fix scsi command timeout oops in iscsi_eh_timed_out
+> 
+> Robert Jennings (1):
+>       ibmvscsi: Correct DMA mapping leak
+> 
+> Shyam_Iyer@Dell.com (1):
+>       qla2xxx: fix Kernel Panic with Qlogic 2472 Card.
 
-On a system that stalled with HZ_1000, the first value written to
-T0_CMP (when the main counter was not stopped) did not trigger an
-interrupt. Instead after the main counter wrapped around (after
-several minutes) an interrupt was triggered and afterwards the
-periodic interrupt took effect.
+Did the mpt-fusion MSI problems get sorted out?  I think so...
 
-This can be fixed by implementing HPET spec recommendation for
-programming the periodic mode (i.e. stopping the main counter).
+I believe that "scsi: mpt: suppress debugobjects warning" is 2.6.29
+material.  Sent 11 Feb, no response.
 
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+Also I believe that "hptiop: add new PCI device ID" should be in 2.6.29
+(and earlier), below.  I can send this on if you like.
+
+
+From: HighPoint Linux Team <linux@highpoint-tech.com>
+
+Add a new PCI device ID.
+
+Signed-off-by: HighPoint Linux Team <linux@highpoint-tech.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: <stable@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- arch/x86/kernel/hpet.c |   13 +++----------
- 1 files changed, 3 insertions(+), 10 deletions(-)
 
-diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
-index 20acc6a..46be008 100644
---- a/arch/x86/kernel/hpet.c
-+++ b/arch/x86/kernel/hpet.c
-@@ -309,29 +309,22 @@ static int hpet_setup_msi_irq(unsigned int irq);
- static void hpet_set_mode(enum clock_event_mode mode,
- 			  struct clock_event_device *evt, int timer)
- {
--	unsigned long cfg, cmp, now;
-+	unsigned long cfg;
- 	uint64_t delta;
- 
- 	switch (mode) {
- 	case CLOCK_EVT_MODE_PERIODIC:
-+		hpet_stop_counter();
- 		delta = ((uint64_t)(NSEC_PER_SEC/HZ)) * evt->mult;
- 		delta >>= evt->shift;
--		now = hpet_readl(HPET_COUNTER);
--		cmp = now + (unsigned long) delta;
- 		cfg = hpet_readl(HPET_Tn_CFG(timer));
- 		/* Make sure we use edge triggered interrupts */
- 		cfg &= ~HPET_TN_LEVEL;
- 		cfg |= HPET_TN_ENABLE | HPET_TN_PERIODIC |
- 		       HPET_TN_SETVAL | HPET_TN_32BIT;
- 		hpet_writel(cfg, HPET_Tn_CFG(timer));
--		/*
--		 * The first write after writing TN_SETVAL to the
--		 * config register sets the counter value, the second
--		 * write sets the period.
--		 */
--		hpet_writel(cmp, HPET_Tn_CMP(timer));
--		udelay(1);
- 		hpet_writel((unsigned long) delta, HPET_Tn_CMP(timer));
-+		hpet_start_counter();
- 		hpet_print_config();
- 		break;
- 
--- 
-1.6.1.3
+ drivers/scsi/hptiop.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-
+diff -puN drivers/scsi/hptiop.c~hptiop-add-new-pci-device-id drivers/scsi/hptiop.c
+--- a/drivers/scsi/hptiop.c~hptiop-add-new-pci-device-id
++++ a/drivers/scsi/hptiop.c
+@@ -1251,6 +1251,7 @@ static struct pci_device_id hptiop_id_ta
+ 	{ PCI_VDEVICE(TTI, 0x3530), (kernel_ulong_t)&hptiop_itl_ops },
+ 	{ PCI_VDEVICE(TTI, 0x3560), (kernel_ulong_t)&hptiop_itl_ops },
+ 	{ PCI_VDEVICE(TTI, 0x4322), (kernel_ulong_t)&hptiop_itl_ops },
++	{ PCI_VDEVICE(TTI, 0x4321), (kernel_ulong_t)&hptiop_itl_ops },
+ 	{ PCI_VDEVICE(TTI, 0x4210), (kernel_ulong_t)&hptiop_itl_ops },
+ 	{ PCI_VDEVICE(TTI, 0x4211), (kernel_ulong_t)&hptiop_itl_ops },
+ 	{ PCI_VDEVICE(TTI, 0x4310), (kernel_ulong_t)&hptiop_itl_ops },
+_
 
