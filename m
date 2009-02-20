@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758256AbZBTAzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759076AbZBTA4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758256AbZBTAzg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 19:55:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbZBTAz1
+	id S1759076AbZBTA4S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 19:56:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758538AbZBTAzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 19:55:27 -0500
-Received: from yw-out-2324.google.com ([74.125.46.28]:65406 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751027AbZBTAz0 (ORCPT
+	Thu, 19 Feb 2009 19:55:39 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57547 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758407AbZBTAzi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 19:55:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
-         :subject:references:in-reply-to:content-type
-         :content-transfer-encoding;
-        b=VkQctVlpCldTEz8TOOrAEqj6/KWGxZSAFgIYcIf/1ZCU/bQnvjH/7Oxhs1GPoxczx8
-         8AtTYhTdRPOvxv1WR+5MTkP0ecKlM9PLQR+41gHZYMSfvYpLqTXLW67XynxSksiL5HeN
-         kFCFlj40EJZ7XGuu6FWWUoOdhnTojJzsAj4qM=
-Message-ID: <499DFF79.6090404@gmail.com>
-Date: Thu, 19 Feb 2009 18:55:21 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: joseluismarchetti@yahoo.com.br
-CC: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org
-Subject: Re: Is interrupt priority supported ?
-References: <20090219204902.GA3990@rhlx01.hs-esslingen.de> <164929.58875.qm@web34407.mail.mud.yahoo.com>
-In-Reply-To: <164929.58875.qm@web34407.mail.mud.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 19 Feb 2009 19:55:38 -0500
+Date: Thu, 19 Feb 2009 16:55:27 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: sonic zhang <sonic.adi@gmail.com>
+Cc: jason.wessel@windriver.com, linux-kernel@vger.kernel.org,
+       kgdb-bugreport@lists.sourceforge.net
+Subject: Re: [PATCH] [kgdb] Switch master cpu after gdb thread command for
+ SMP (v4)
+Message-Id: <20090219165527.2ad1a889.akpm@linux-foundation.org>
+In-Reply-To: <1234949874.17467.6.camel@eight.analog.com>
+References: <1234949874.17467.6.camel@eight.analog.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jose Luis Marchetti wrote:
->> it has been for a looong time (those things tend to almost
->> get outdated already -
->> witness the floppy controller misery):
+On Wed, 18 Feb 2009 17:37:54 +0800
+sonic zhang <sonic.adi@gmail.com> wrote:
+
+> This is the updated kgdb SMP patch, which is tested on blackfin bf561 dual core
+> system. A new bug is fixed, which causes debugging halt in SMP kernel if a
+> breakpoint is hit and cpu is switched in gdb before continue running kernel.
 > 
-> He he, I am from the same era..., I appreciate your answer, but I am afraid your suggestion is not exactly what I was expecting.
-> The tools you mention appears to act on the hardware level, not on Linux by itself, they apply only to x86 processors ( as you can see by the name ), and I am not running Linux in one of those processors.
-> Roughly, this is what I have seen in other OSs that support interrupt priority:
-> Imagine a table with interrupt IDs, in my example they are in decreased priority order:
-> interrupt priority table:
-> Serial,
-> Ethernet,
-> Keyboard,
-> etc...
-> Then, when one interrupt happen, lets say the Ethernet, the OS disable all lower priority interrupts ( keyboard in my example ), but allow the Serial interrupt nest into the Ethernet interrupt.
-> In my example the serial is the highest priority interrupt and no one could nest into it.
+>    In blackfin SMP architecture, different core has its own L1 SRAM and MMR
+>    memory, which code running on the other core can't access. In current kgdb
+>    impelemntation, cpus are represented by thread with minus prefix.
+> 
+> If user run thread command in gdb to switch to the thread of the other cpu,
+> kgdb should:
+> 1. send IPI signal to master cpu
+> 2. release the specific passive cpu waiting in IPI handler
+> 3. exit kgdb exception loop on master cpu and trap into kgdb wait in IPI handler
+> 4. trap the released passive cpu into kgdb exception in IPI handler
+> 
 
-It doesn't really work that way in Linux. Normally disabling interrupts 
-is all or nothing. Whether or not other devices can cause interrupts 
-during an interrupt handler execution by default is a bit 
-platform-dependent, I think (unless the driver requests IRQF_DISABLED 
-which requests that other interrupts should not run).
+x86_64 allmodconfig:
 
-Normally in Ethernet drivers these days only very minimal processing is 
-done during the interrupt handler, the rest is deferred to softirq 
-context which runs with interrupts enabled so other interrupts can 
-happen. That's not to say that all Ethernet drivers are so well-behaved, 
-however, especially if they haven't been updated to use NAPI. (In the 
-NAPI case, the driver disables further interrupts from the device until 
-the softirq is able to run and process the packets.) In your case it 
-seems likely that yours is not behaving so well, as one would expect the 
-interrupt handler to complete in less than the time  it takes one 
-character to arrive on the serial port..
+kernel/kgdb.c: In function 'kgdb_wait':
+kernel/kgdb.c:589: error: 'KGDB_THR_PROC_SWAP' undeclared (first use in this function)
+kernel/kgdb.c:589: error: (Each undeclared identifier is reported only once
+kernel/kgdb.c:589: error: for each function it appears in.)
+kernel/kgdb.c: In function 'gdb_cmd_query':
+kernel/kgdb.c:1087: error: 'KGDB_THR_PROC_SWAP' undeclared (first use in this function)
+kernel/kgdb.c: In function 'gdb_cmd_task':
+kernel/kgdb.c:1113: error: 'KGDB_THR_PROC_SWAP' undeclared (first use in this function)
+kernel/kgdb.c: In function 'gdb_cmd_thread':
+kernel/kgdb.c:1163: error: 'KGDB_THR_PROC_SWAP' undeclared (first use in this function)
+kernel/kgdb.c: In function 'gdb_serial_stub':
+kernel/kgdb.c:1275: error: 'KGDB_THR_PROC_SWAP' undeclared (first use in this function)
+kernel/kgdb.c: In function 'kgdb_handle_exception':
+kernel/kgdb.c:1575: error: 'KGDB_THR_PROC_SWAP' undeclared (first use in this function)
+kernel/kgdb.c: In function 'kgdb_nmicallback':
+kernel/kgdb.c:1606: warning: suggest parentheses around && within ||
+kernel/kgdb.c:1606: warning: suggest parentheses around && within ||
+kernel/kgdb.c:1606: warning: suggest parentheses around && within ||
