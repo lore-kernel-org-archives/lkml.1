@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757711AbZBTQvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756298AbZBTQy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757711AbZBTQvO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 11:51:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZBTQu5
+	id S1756298AbZBTQy3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 11:54:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbZBTQyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 11:50:57 -0500
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:19033 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753314AbZBTQu4 convert rfc822-to-8bit (ORCPT
+	Fri, 20 Feb 2009 11:54:20 -0500
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:38308
+	"EHLO VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753258AbZBTQyT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 11:50:56 -0500
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Jens Axboe <jens.axboe@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "coldwell@redhat.com" <coldwell@redhat.com>
-Date: Fri, 20 Feb 2009 16:50:09 +0000
-Subject: RE: [GIT PULL] block bits for 2.6.29-rc5
-Thread-Topic: [GIT PULL] block bits for 2.6.29-rc5
-Thread-Index: AcmTelsVFsEPWa7FQXS1Mgcato5jwQAAFAgw
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A77885CA670E6F8@GVW0547EXC.americas.hpqcorp.net>
-References: <20090218144105.GZ30821@kernel.dk>
- <20090219170715.47781cc2.akpm@linux-foundation.org>
- <20090220164055.GZ29783@kernel.dk>
-In-Reply-To: <20090220164055.GZ29783@kernel.dk>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Fri, 20 Feb 2009 11:54:19 -0500
+X-Greylist: delayed 903 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Feb 2009 11:54:19 EST
+X-BigFish: VPS-39(zz3b49K1432R98dR936eQ1805M1442J936fKzzzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KFDI90-01-30V-01
+Date: Fri, 20 Feb 2009 17:38:44 +0100
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Mark Hounschell <dmarkh@cfl.rr.com>
+CC: Borislav Petkov <borislav.petkov@amd.com>,
+       Mark Hounschell <markh@compro.net>, john stultz <johnstul@us.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: PROBLEM: Can't boot a (HZ = 1000) kernel using an AMD
+	Phenom-II processor
+Message-ID: <20090220163844.GG4834@alberich.amd.com>
+References: <499C0913.9050905@compro.net> <20090218141843.GB13304@aftab> <499C3DED.1090807@cfl.rr.com> <20090218174243.GD13304@aftab> <499C7AC8.4080609@cfl.rr.com> <499D364C.3010704@cfl.rr.com> <20090219141131.GM4301@alberich.amd.com> <20090220115357.GE4834@alberich.amd.com> <499ECF87.2070204@cfl.rr.com> <20090220160843.GF4834@alberich.amd.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20090220160843.GF4834@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 20 Feb 2009 16:39:05.0283 (UTC) FILETIME=[BE7B0930:01C99379]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
-
-> -----Original Message-----
-> From: Jens Axboe [mailto:jens.axboe@oracle.com] 
-> Sent: Friday, February 20, 2009 10:41 AM
-> To: Andrew Morton
-> Cc: torvalds@linux-foundation.org; 
-> linux-kernel@vger.kernel.org; Miller, Mike (OS Dev)
-> Subject: Re: [GIT PULL] block bits for 2.6.29-rc5
+On Fri, Feb 20, 2009 at 05:08:43PM +0100, Andreas Herrmann wrote:
+> On Fri, Feb 20, 2009 at 10:43:03AM -0500, Mark Hounschell wrote:
+> > Linux version 2.6.28.3-250Hz (root@harley) (gcc version 4.3.1
+> > 20080507 (prerelease) [gcc-4_3-branch revision 135036] (SUSE Linux)
+> > ) #7 SMP PREEMPT Fri Feb 2 0 09:01:54 EST 2009
 > 
-> On Thu, Feb 19 2009, Andrew Morton wrote:
-> > On Wed, 18 Feb 2009 15:41:06 +0100
-> > Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > @@ -3404,6 +3601,24 @@ static int __devinit 
-> cciss_init_one(struct pci_dev *pdev,
-> > >  	int dac, return_code;
-> > >  	InquiryData_struct *inq_buff = NULL;
-> > >  
-> > > +	if (reset_devices) {
-> > > +		/* Reset the controller with a PCI power-cycle */
-> > > +		if (cciss_hard_reset_controller(pdev) || 
-> cciss_reset_msi(pdev))
-> > > +			return -ENODEV;
-> > > +
-> > > +		/* Some devices (notably the HP Smart Array 5i 
-> Controller)
-> > > +		   need a little pause here */
-> > > +		schedule_timeout_uninterruptible(30*HZ);
-> > 
-> > little!
-> 
-> That does qualify as the understatement of the day :-)
-> 
-> > Perhaps we should do a printk("no, your machine is not dead") here.
-> 
-> Perhaps we should shrink it to something a little more 
-> tolerable and put it in the noop loop instead. 30 seconds is insane...
+> Here I doubt that's the right kernel -- at least it was not built today.
+> Can you please double check this.
 
-Some of these controllers do take a long time to recover from the reset because the firmware has to re-initialize. The firmware guys claim that's only a few seconds but that's not true.
+Oops, your kernel was built today.
+Have overlooked it as there was a newline between "2" and "0".
+Sorry for the noise.
 
-Granted, the 5i is old as dirt. Don't know how many are still out there running newer kernels. 
+But still wondering where's the debug output. I've applied the patch
+both to .29-rc5 and with some fuzziness to .28.4 and on my system the
+output is visible (e.g. with dmesg). Ah, ... of course you need to use
+"debug" kernel parameter as well.  Otherwise the KERN_DEBUG messages
+are not shown on the serial console.
 
--- mikem
+Please, can you retry using "hpet=debug debug apic=debug".
+Thanks.
+
+
+Andreas
+
+
