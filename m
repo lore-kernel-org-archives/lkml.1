@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759622AbZBTRmK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755379AbZBTRoC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759622AbZBTRmK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 12:42:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbZBTRlz
+	id S1755379AbZBTRoC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 12:44:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbZBTRnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 12:41:55 -0500
-Received: from testure.choralone.org ([194.9.77.134]:50082 "EHLO
-	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753008AbZBTRly (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 12:41:54 -0500
-Date: Fri, 20 Feb 2009 12:41:48 -0500
-From: Dave Jones <davej@codemonkey.org.uk>
-To: Scott James Remnant <scott@canonical.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: Change link order of x86 cpufreq modules
-Message-ID: <20090220174148.GB9995@codemonkey.org.uk>
-Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
-	Scott James Remnant <scott@canonical.com>,
-	Matthew Garrett <mjg59@srcf.ucam.org>, Ingo Molnar <mingo@elte.hu>,
-	linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
-References: <20090218182822.GA19902@srcf.ucam.org> <20090218183137.GD26802@elte.hu> <20090218183641.GA20203@srcf.ucam.org> <1235150992.6467.66.camel@quest> <20090220173637.GA1985@srcf.ucam.org> <1235151575.6467.68.camel@quest>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1235151575.6467.68.camel@quest>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 20 Feb 2009 12:43:52 -0500
+Received: from LUNGE.MIT.EDU ([18.54.1.69]:36813 "EHLO lunge.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752388AbZBTRnw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 12:43:52 -0500
+Date: Fri, 20 Feb 2009 12:43:43 -0500
+From: Andres Salomon <dilinger@queued.net>
+To: drzeus-sdhci@drzeus.cx
+Cc: sdhci-devel@list.drzeus.cx, linux-kernel@vger.kernel.org, cjb@laptop.org
+Subject: OLPC XO-1 sdhci regression
+Message-ID: <20090220124343.707b83b4@ephemeral>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 20, 2009 at 05:39:35PM +0000, Scott James Remnant wrote:
- > On Fri, 2009-02-20 at 17:36 +0000, Matthew Garrett wrote:
- > 
- > > On Fri, Feb 20, 2009 at 05:29:52PM +0000, Scott James Remnant wrote:
- > > 
- > > > In fact, we've noticed severe regressions with p4-clockmod over simply
- > > > having no scaling driver at all - and are not going to built it into our
- > > > kernels.
- > > 
- > > It makes sense to have p4-clockmod from a thermal management 
- > > perspective. We should probably bump its transition latency to more than 
- > > 10ms to prevent ondemand binding to it.
- > > 
- > If that's possible; that'd be good.
- > 
- > The trouble with it is that it never seems to bring the CPU anywhere
- > near maximum performance.
+Hi Pierre,
 
-This is one reason why in .30 the user interface for p4-clockmod is disabled.
-It'll only get throttled when ACPI goes into OMG I'M OVERHEATING mode,
-and ramp back up once it cools off.
+With the current Linus git tree, the sdhci driver fails to find the partition
+table on cards during bootup on OLPC XO-1 machines.  This makes booting off of
+SD impossible.  The errors go something like this:
 
-p4-clockmod and ondemand is a recipe for fail.
+ mmcblk0:
+mmc0: Timeout waiting for hardware interrupt.
+mmcblk0: error -110 sending stop command
+end_request: I/O error, dev mmcblk0, sector 0
+Buffer I/O error on device mmcblk0, logical block 0
+[repeat a bunch of times]
+  unable to read partition table
 
-	Dave
+No oopses or anything, the SD controller just fails to read the partition
+table off the card.
 
--- 
-http://www.codemonkey.org.uk
+I bisected a bit, and that led me to this commit:
+
+ commit e809517f6fa5803a5a1cd56026f0e2190fc13d5c
+ Author: Pierre Ossman <drzeus@drzeus.cx>
+ Date:   Fri Jul 25 01:09:08 2008 +0200
+
+     sdhci: let the controller wait for busy state to end
+    
+     The sdhci controllers can interrupt us when the busy state from the
+     card has ended, saving CPU cycles and power.
+    
+     Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+
+Reverting that commit allows the driver to read the partition table.
