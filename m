@@ -1,53 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbZBTTVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbZBTTZL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754678AbZBTTVv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 14:21:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbZBTTVn
+	id S1755092AbZBTTZL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 14:25:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbZBTTY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 14:21:43 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:53163 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752283AbZBTTVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 14:21:42 -0500
-Date: Fri, 20 Feb 2009 20:18:25 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Metzger, Markus T" <markus.t.metzger@intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] forget_original_parent: do not abuse
-	child->ptrace_entry
-Message-ID: <20090220191825.GB7564@redhat.com>
-References: <20090211211218.GA16850@redhat.com> <20090220022823.9127AFC2F7@magilla.sf.frob.com>
+	Fri, 20 Feb 2009 14:24:59 -0500
+Received: from indigo.cs.bgu.ac.il ([132.72.42.23]:41871 "EHLO
+	indigo.cs.bgu.ac.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752872AbZBTTY7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 14:24:59 -0500
+Date: Fri, 20 Feb 2009 21:24:54 +0200 (IST)
+Message-Id: <200902201924.n1KJOsRw027332@indigo.cs.bgu.ac.il>
+From: "eial@cs.bgu.ac.il" <eial@cs.bgu.ac.il>
+To: linux-kernel@vger.kernel.org
+Subject: kernel panic on 2.6.28
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090220022823.9127AFC2F7@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=utf-8
+Organization: CS Department
+X-Mailer: CS Webmail v3.10
+X-Priority: 3 (Normal)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/19, Roland McGrath wrote:
->
-> > - rename ptrace_dead to dead_childs.
->
-> s/dead_childs/dead_children/
 
-Yes, Andrew has already fixed this,
+hello, I'm having a kernel panic with kernel 2.6.28 upon shutdown right after unmounting remaining file system under gentoo.
+I've enabled kernel dump feature in the kernel but I can't seem to be able to locate the file, where can I find it?
 
-> > +/*
-> > +* Any that need to be release_task'd are put on the @dead list.
-> > + */
->
-> Missing leading space on the second comment lien.
+thanks
 
-ah. will send the trivial cleanup.
+Eial
 
-> Modulo those cosmetic things, ACK on this.
-
-Thanks.
-
-Oleg.
 
