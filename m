@@ -1,68 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758757AbZBTPli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758796AbZBTPmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758757AbZBTPli (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 10:41:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755455AbZBTPlW
+	id S1758796AbZBTPmX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 10:42:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbZBTPmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 10:41:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:32839 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755967AbZBTPlV (ORCPT
+	Fri, 20 Feb 2009 10:42:13 -0500
+Received: from hosted02.westnet.com.au ([203.10.1.213]:60182 "EHLO
+	hosted02.westnet.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753400AbZBTPmM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 10:41:21 -0500
-Date: Fri, 20 Feb 2009 07:40:33 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Steven Rostedt <rostedt@goodmis.org>, Huang Ying <ying.huang@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: use the right protections for split-up pagetables
-In-Reply-To: <20090220072915.GB28085@elte.hu>
-Message-ID: <alpine.LFD.2.00.0902200728520.21686@localhost.localdomain>
-References: <20090220011316.379904625@goodmis.org> <alpine.LFD.2.00.0902191753240.21686@localhost.localdomain> <alpine.DEB.1.10.0902192107230.31658@gandalf.stny.rr.com> <alpine.LFD.2.00.0902191923300.21686@localhost.localdomain>
- <20090220072915.GB28085@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 20 Feb 2009 10:42:12 -0500
+From: Mike Lampard <mike@mtgambier.net>
+Reply-To: mike@mtgambier.net
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: long-term regression with some usb mass storage devices
+Date: Sat, 21 Feb 2009 02:12:03 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.28.3-desktop-1mnb; KDE/4.2.0; x86_64; ; )
+Cc: USB list <linux-usb@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0902201012150.3071-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0902201012150.3071-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902210212.04737.mike@mtgambier.net>
+X-PMX-Branch: TNG-Outgoing
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 21 Feb 2009 01:45:37 am Alan Stern wrote:
+> On Fri, 20 Feb 2009, Mike Lampard wrote:
+> > On Fri, 20 Feb 2009 05:17:42 pm Mike Lampard wrote:
+> > > Hi All,
+> > >
+> > > I recently plonked a dvd into my usb-attached Pioneer DVR-107d only to
+> > > find that the current kernels no longer saw the drive as DVD capable. 
+> > > In fact, the kernel no longer saw _any_ features of the drive: sr0:
+> > > scsi3-mmc drive: 0x/0x caddy.  After much bisecting and even more blind
+> > > luck I narrowed the problem down to this commit:
+> > >
+> > > commit bdb2b8cab4392ce41ddfbd6773a3da3334daf836
+> > > Author: Alan Stern <stern@rowland.harvard.edu>
+> > > Date:   Tue Jun 24 14:03:14 2008 -0400
+> > >
+> > >     [SCSI] erase invalid data returned by device
+> > >
+> > >     This patch (as1108) fixes a problem that can occur with certain USB
+> > >     mass-storage devices: They return invalid data together with a
+> > > residue indicating that the data should be ignored.  Rather than leave
+> > > the invalid data in a transfer buffer, where it can get misinterpreted,
+> > > the patch clears the invalid portion of the buffer.
+> > >
+> > >     This solves a problem (wrong write-protect setting detected)
+> > > reported by Maciej Rutecki and Peter Teoh.
+>
+> If this affected your device then the device must not report residues
+> correctly.  If you provide the device's entry in /proc/bus/usb/devices,
+> I'll write a patch adding a blacklist entry for it.
 
+Many thanks.
 
-On Fri, 20 Feb 2009, Ingo Molnar wrote:
-> 
-> Agreed, split_large_page() was just plain confused here - there 
-> was no hidden reason for this logic. It makes no sense to bring 
-> any pte level protection information to the PMD level because a 
-> pmd entry covers a set of 512 ptes so there's no singular 
-> protection attribute that can be carried to it.
+> It would help if you could also provide a usbmon trace showing what
+> happens when you plug the drive in.  Instructions are in the kernel
+> source file Documentation/usb/usbmon.txt.
 
-Btw, I think split_large_page() is confused in another way too, although 
-I'm not entirely sure that it matters. I suspect that it doesn't, if I 
-read things correctly.
+/proc/bus/usb/devices: 
+T:  Bus=01 Lev=01 Prnt=01 Port=06 Cnt=01 Dev#=  3 Spd=480 MxCh= 0
+D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
+P:  Vendor=05e3 ProdID=0701 Rev= 0.02
+S:  Manufacturer=Genesyslogic
+S:  Product=USB Mass Storage Device
+C:* #Ifs= 1 Cfg#= 1 Atr=80 MxPwr= 96mA
+I:* If#= 0 Alt= 0 #EPs= 2 Cls=08(stor.) Sub=06 Prot=50 Driver=usb-storage
+E:  Ad=81(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
+E:  Ad=02(O) Atr=02(Bulk) MxPS= 512 Ivl=125us
 
-The confusion? When it moves the 'ref_prot' bits from the upper level, it 
-doesn't do the right thing for the PAT bit. That bit is special, and moves 
-around depending on level. In the upper levels, it's bit#12, and in the 
-final 4k pte level it's bit#7.
+I'll email the usbmod log directly, to save spamming the list with a 100kb 
+attachment.
 
-So _if_ the PAT bit ever matters, it looks like split_large_page() does 
-the wrong thing.
-
-Now, it looks like we avoid the PAT bit on purpose, and we only ever 
-encode four PAT values (ie we use only the PCD/PWT bits, and leave the PAT 
-bit clear - we don't need any more cases), _but_ we actually do end up 
-looking at the PAT bit anyway in cache_attr(). So it looks like at least 
-some of the code is _trying_ to handle the PAT bit, but I can pretty much 
-guarantee that at least split_large_page() is broken if it is ever set.
-
-			Linus
+Mike
