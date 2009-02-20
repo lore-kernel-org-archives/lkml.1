@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755297AbZBTTtE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbZBTTuc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755297AbZBTTtE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 14:49:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbZBTTsv
+	id S1755859AbZBTTuc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 14:50:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbZBTTuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 14:48:51 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:46390 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753082AbZBTTsu (ORCPT
+	Fri, 20 Feb 2009 14:50:23 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:54164 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751483AbZBTTuX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 14:48:50 -0500
-Subject: Re: [PATCH] bluetooth: move back hci_conn_del_sysfs to
- hci_conn_del avoid device destruct too early
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org,
-       linux-bluetooth@vger.kernel.org
-In-Reply-To: <499EA5F6.2060206@gmail.com>
-References: <499EA5F6.2060206@gmail.com>
-Content-Type: text/plain
-Date: Fri, 20 Feb 2009 20:48:59 +0100
-Message-Id: <1235159339.24255.3.camel@californication>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Feb 2009 14:50:23 -0500
+Message-Id: <20090220193239.561624242@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 20 Feb 2009 14:32:39 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 0/4] [git pull v2 @num@/@total@] updates for tip
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
 
-> The following commit introduce a regression:
-> 
-> 	commit 7d0db0a373195385a2e0b19d1f5e4b186fdcffac
-> 	Author: Marcel Holtmann <marcel@holtmann.org>
-> 	Date:   Mon Jul 14 20:13:51 2008 +0200
-> 
-> 		[Bluetooth] Use a more unique bus name for connections
-> 
-> I get panic as following (by netconsole):
+Ingo,
 
-can you please send a version against my bluetooth-testing.git tree.
+I incorporated your comments, and rebased against your tip/x86/urgent
+branch.
 
-Regards
+Updates are:
+ - rename ftrace_arch_modify_* to ftrace_arch_code_modify_*
+ - use pr_debug over KERN_INFO in set_kernel_text_*
+ - removed comment about ftrace on set_kernel_text_*
+ - use return instead of goto to break out of double loop
+ - merged akpm's suggestion into 2cd patch
 
-Marcel
+My last commit is:
+
+ 4377245aa93b65b6597e4b7bb460fb9abc48b56b
+ ftrace: break out modify loop immediately on detection of error
+
+Because I did recently rebase, you might want to confirm that
+the SHA1 matches and is not stale data.
+
+Please pull the latest tip/x86/ftrace tree, which can be found at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/x86/ftrace
 
 
+Steven Rostedt (4):
+      ftrace: allow archs to preform pre and post process for code modification
+      ftrace, x86: make kernel text writable only for conversions
+      ftrace: immediately stop code modification if failure is detected
+      ftrace: break out modify loop immediately on detection of error
+
+----
+ arch/x86/include/asm/cacheflush.h |    5 +++++
+ arch/x86/kernel/ftrace.c          |   17 +++++++++++++++++
+ arch/x86/mm/init_32.c             |   35 ++++++++++++++++++++++++++++++++---
+ arch/x86/mm/init_64.c             |   37 ++++++++++++++++++++++++++++++++-----
+ include/linux/ftrace.h            |    3 +++
+ kernel/trace/ftrace.c             |   33 ++++++++++++++++++++++++++++++++-
+ 6 files changed, 121 insertions(+), 9 deletions(-)
+
+-- 
