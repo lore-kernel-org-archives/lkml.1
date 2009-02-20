@@ -1,52 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbZBTDgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbZBTDho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754682AbZBTDgY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 22:36:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbZBTDgO
+	id S1755400AbZBTDho (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 22:37:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbZBTDhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 22:36:14 -0500
-Received: from mx2.suse.de ([195.135.220.15]:45013 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752029AbZBTDgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 22:36:14 -0500
-Date: Thu, 19 Feb 2009 19:35:59 -0800
-From: Greg KH <gregkh@suse.de>
-To: Thomas Backlund <tmb@mandriva.org>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, David Woodhouse <David.Woodhouse@intel.com>
-Subject: Re: [patch 03/36] Fix Intel IOMMU write-buffer flushing
-Message-ID: <20090220033559.GA32562@suse.de>
-References: <20090218222447.432108614@mini.kroah.org> <20090218222901.GD10668@kroah.com> <499C9394.5030704@mandriva.org> <499DF274.8040702@mandriva.org>
+	Thu, 19 Feb 2009 22:37:32 -0500
+Received: from az33egw02.freescale.net ([192.88.158.103]:58858 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752029AbZBTDha convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Feb 2009 22:37:30 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <499DF274.8040702@mandriva.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [RFC v1] virtio: add virtio-over-PCI driver
+Date: Fri, 20 Feb 2009 11:37:21 +0800
+Message-ID: <7DF0AF56456B8F4081E3C44CCCE311DE151B64@zch01exm23.fsl.freescale.net>
+In-Reply-To: <20090219161438.GA12795@ovro.caltech.edu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [RFC v1] virtio: add virtio-over-PCI driver
+Thread-Index: AcmSrTGLdGxrkjg0TtmMk9OnROKhAwAXgEfQ
+References: <20090217222425.GA18801@ovro.caltech.edu> <7DF0AF56456B8F4081E3C44CCCE311DE15199F@zch01exm23.fsl.freescale.net> <20090219161438.GA12795@ovro.caltech.edu>
+From: "Zang Roy-R61911" <tie-fei.zang@freescale.com>
+To: "Ira Snyder" <iws@ovro.caltech.edu>
+Cc: <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>,
+       <netdev@vger.kernel.org>, "Rusty Russell" <rusty@rustcorp.com.au>,
+       "Arnd Bergmann" <arnd@arndb.de>,
+       "Jan-Bernd Themann" <THEMANN@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 20, 2009 at 01:59:48AM +0200, Thomas Backlund wrote:
-> Thomas Backlund skrev:
->> This patch is broken compared to what's in:
->> http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ca77fde8e62cecb2c0769052228d15b901367af8 
->> attached patch fixes it
->
-> As no-one responded yet...
+ 
 
-Sorry for the delay, you're right, I messed this one up.  I'll merge
-your fix into the patch before doing the release tomorrow.
+> -----Original Message-----
+> From: Ira Snyder [mailto:iws@ovro.caltech.edu] 
+> Sent: Friday, February 20, 2009 0:15 AM
+> To: Zang Roy-R61911
+> Cc: linux-kernel@vger.kernel.org; linuxppc-dev@ozlabs.org; 
+> netdev@vger.kernel.org; Rusty Russell; Arnd Bergmann; 
+> Jan-Bernd Themann
+> Subject: Re: [RFC v1] virtio: add virtio-over-PCI driver
+> 
+> On Thu, Feb 19, 2009 at 02:10:08PM +0800, Zang Roy-R61911 wrote:
+> >  
+> > 
+> > > -----Original Message-----
+> > > From: 
+> > > linuxppc-dev-bounces+tie-fei.zang=freescale.com@ozlabs.org 
+> > > [mailto:linuxppc-dev-bounces+tie-fei.zang=freescale.com@ozlabs
+> > > .org] On Behalf Of Ira Snyder
+> > > Sent: Wednesday, February 18, 2009 6:24 AM
+> > > To: linux-kernel@vger.kernel.org
+> > > Cc: linuxppc-dev@ozlabs.org; netdev@vger.kernel.org; Rusty 
+> > > Russell; Arnd Bergmann; Jan-Bernd Themann
+> > > Subject: [RFC v1] virtio: add virtio-over-PCI driver
+> > snip
+> > > diff --git a/drivers/virtio/Kconfig b/drivers/virtio/Kconfig
+> > > index 3dd6294..efcf56b 100644
+> > > --- a/drivers/virtio/Kconfig
+> > > +++ b/drivers/virtio/Kconfig
+> > > @@ -33,3 +33,25 @@ config VIRTIO_BALLOON
+> > >  
+> > >  	 If unsure, say M.
+> > >  
+> > > +config VIRTIO_OVER_PCI_HOST
+> > > +	tristate "Virtio-over-PCI Host support (EXPERIMENTAL)"
+> > > +	depends on PCI && EXPERIMENTAL
+> > > +	select VIRTIO
+> > > +	---help---
+> > > +	  This driver provides the host support necessary for 
+> > > using virtio
+> > > +	  over the PCI bus with a Freescale MPC8349EMDS 
+> > > evaluation board.
+> > > +
+> > > +	  If unsure, say N.
+> > > +
+> > > +config VIRTIO_OVER_PCI_FSL
+> > > +	tristate "Virtio-over-PCI Guest support (EXPERIMENTAL)"
+> > > +	depends on MPC834x_MDS && EXPERIMENTAL
+> > > +	select VIRTIO
+> > > +	select DMA_ENGINE
+> > > +	select FSL_DMA
+> > > +	---help---
+> > > +	  This driver provides the guest support necessary for 
+> > > using virtio
+> > > +	  over the PCI bus.
+> > > +
+> > > +	  If unsure, say N.
+> > > +
+> > > diff --git a/drivers/virtio/Makefile b/drivers/virtio/Makefile
+> > > index 6738c44..f31afaa 100644
+> > > --- a/drivers/virtio/Makefile
+> > > +++ b/drivers/virtio/Makefile
+> > > @@ -2,3 +2,5 @@ obj-$(CONFIG_VIRTIO) += virtio.o
+> > >  obj-$(CONFIG_VIRTIO_RING) += virtio_ring.o
+> > >  obj-$(CONFIG_VIRTIO_PCI) += virtio_pci.o
+> > >  obj-$(CONFIG_VIRTIO_BALLOON) += virtio_balloon.o
+> > > +obj-$(CONFIG_VIRTIO_OVER_PCI_HOST) += vop_host.o
+> > > +obj-$(CONFIG_VIRTIO_OVER_PCI_FSL) += vop_fsl.o
+> > I suppose we  need to build the kernel twice. one for 
+> vop_host  (on host
+> > with pci enabled) and the
+> > other is for vop_fsl ( on agent with pci disabled). Is it 
+> possible to
+> > build one image for both host and 
+> > agent.  We do not scan the pci bus if the controller is 
+> configured to
+> > agent.
+> > 
+> 
+> You should be able to build a kernel with support for both host and
+> guest operation, and then use the device tree to switch which 
+> driver you
+> get. The host driver won't be used without a PCI bus, and the guest
+> driver won't be used without the message unit.
+Good.
+Is it necssary to commit a extra dts for the agent mode? or just
+document it?
 
-Thanks for letting us know.
+> 
+> > Also, is it possible to include mpc85xx architecture? They should be
+> > same.
+> > There is some code for 85xx in Fresscale BSP.
+> > 
+> http://www.bitshrine.org/gpp/linux-fsl-2.6.23-MPC8568MDS_PCI_A
+> gent_PCIe_
+> > EP_Drvier.patch
+> 
+> I looked at the cardnet driver before I implemented my PCINet 
+> driver. I
+> hunch it would be rejected for the same reasons, but maybe 
+> not. 
+That is also our concern :-(
 
-greg k-h
+>Also, it
+> makes no use of DMA, which is critical for good transfer speed. Using
+> memcpy() in PCINet gives performance around 10 mbit/sec, which is
+> terrible.
+I can see your improvement for performance.
+
+> 
+> I'm sure the driver isn't very hard to port to 85xx, I just don't have
+> any 85xx boards to test with. The driver only directly interacts with
+> the messaging unit, which is a pretty simple piece of hardware.
+No matter. It is OK to just support 83xx boards currently.
+85xx baords can be dealed with later.
+Finally, I hope this driver can support 83xx /85xx boards pci and pci
+express mode.
+Roy
