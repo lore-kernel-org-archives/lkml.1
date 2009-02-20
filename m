@@ -1,117 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbZBTCE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759309AbZBTCF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758205AbZBTCE4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 21:04:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbZBTCEr
+	id S1759309AbZBTCF6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 21:05:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbZBTCFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 21:04:47 -0500
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:34318 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751189AbZBTCEq (ORCPT
+	Thu, 19 Feb 2009 21:05:48 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:48128 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751189AbZBTCFs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 21:04:46 -0500
-Subject: Re: [PATCH] drm: Fix lock order reversal between mmap_sem and
-	struct_mutex.
-From: Eric Anholt <eric@anholt.net>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Hellstrom <thomas@shipmail.org>,
-       Wang Chen <wangchen@cn.fujitsu.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <1235082372.4612.665.camel@laptop>
-References: <1234918786-854-1-git-send-email-eric@anholt.net>
-	 <1234969734.4637.111.camel@laptop>  <499DC8EC.3000806@shipmail.org>
-	 <1235082372.4612.665.camel@laptop>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-l52nwWJWC8CxmkEchpME"
-Date: Thu, 19 Feb 2009 18:04:44 -0800
-Message-Id: <1235095484.2636.39.camel@gaiman>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 19 Feb 2009 21:05:48 -0500
+Date: Thu, 19 Feb 2009 21:05:46 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       peterz@infradead.org, fweisbec@gmail.com, torvalds@linux-foundation.org,
+       arjan@infradead.org, rusty@rustcorp.com.au,
+       mathieu.desnoyers@polymtl.ca, hpa@zytor.com, srostedt@redhat.com
+Subject: [PATCH][git pull] update to tip/tracing/ftrace
+In-Reply-To: <alpine.DEB.1.10.0902192041200.31658@gandalf.stny.rr.com>
+Message-ID: <alpine.DEB.1.10.0902192104410.31658@gandalf.stny.rr.com>
+References: <20090220011316.379904625@goodmis.org> <20090220011521.003556651@goodmis.org> <20090219173210.73318ebc.akpm@linux-foundation.org> <alpine.DEB.1.10.0902192041200.31658@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-l52nwWJWC8CxmkEchpME
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Ingo,
 
-On Thu, 2009-02-19 at 23:26 +0100, Peter Zijlstra wrote:
-> On Thu, 2009-02-19 at 22:02 +0100, Thomas Hellstrom wrote:
-> > =20
-> > It looks to me like the driver preferred locking order is
-> >=20
-> > object_mutex (which happens to be the device global struct_mutex)
-> >   mmap_sem
-> >      offset_mutex.
-> >=20
-> > So if one could avoid using the struct_mutex for object bookkeeping (A=20
-> > separate lock) then
-> > vm_open() and vm_close() would adhere to that locking order as well,=20
-> > simply by not taking the struct_mutex at all.
-> >=20
-> > So only fault() remains, in which that locking order is reversed.=20
-> > Personally I think the trylock ->reschedule->retry method with proper=20
-> > commenting is a good solution. It will be the _only_ place where lockin=
-g=20
-> > order is reversed and it is done in a deadlock-safe manner. Note that=20
-> > fault() doesn't really fail, but requests a retry from user-space with=20
-> > rescheduling to give the process holding the struct_mutex time to=20
-> > release it.
->=20
-> It doesn't do the reschedule -- need_resched() will check if the current
-> task was marked to be scheduled away, furthermore yield based locking
-> sucks chunks.
->=20
-> What's so very difficult about pulling the copy_*_user() out from under
-> the locks?
+Please pull the latest tip/tracing/ftrace tree, which can be found at:
 
-That we're expecting the data movement to occur while holding device
-state in place.  For example, we write data through the GTT most of the
-time so we:
-
-lock struct_mutex
-pin the object to the GTT
-flushing caches as needed
-copy_from_user
-unpin object
-unlock struct_mutex
-
-If I'm to pull the copy_from_user out, that means I have to:
-
-alloc temporary storage
-for each block of temp storage size:
-	copy_from_user
-	lock struct_mutex
-	pin the object to the GTT
-	flush caches as needed
-	memcpy
-	unpin object
-	unlock struct_mutex
-
-At this point of introducing our third copy of the user's data in our
-hottest path, we should probably ditch the pwrite path entirely and go
-to user mapping of the objects for performance.  Requiring user mapping
-(which has significant overhead) cuts the likelihood of moving from
-user-space object caching to kernel object caching in the future, which
-has the potential of saving steaming piles of memory.
-
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/ftrace
 
 
+Steven Rostedt (1):
+      ftrace, x86: do not depend on system state for kernel text info
 
---=-l52nwWJWC8CxmkEchpME
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+----
+ arch/x86/kernel/ftrace.c |    8 --------
+ arch/x86/mm/init_32.c    |   10 ++++++++++
+ arch/x86/mm/init_64.c    |   10 ++++++++++
+ 3 files changed, 20 insertions(+), 8 deletions(-)
+---------------------------
+commit 5d8ecb6568c598de6b6e678329e2ec0703a821f7
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Thu Feb 19 20:51:45 2009 -0500
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+    ftrace, x86: do not depend on system state for kernel text info
+    
+    Andrew Morton pointed out that using SYSTEM_STATE is a bad idea
+    since there is no guarantee to what its state will actually be.
+    
+    Instead, I moved the check into the set_kernel_text_* functions
+    themselves, and use a local variable to determine when it is
+    OK to change the kernel text RW permissions.
+    
+    Reported-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 
-iEYEABECAAYFAkmeD7wACgkQHUdvYGzw6veKIgCfbvbDn5ESR33RXhxxyfZdOGoW
-bV8An0FTOBdioZ+3FDUhWP9THWFf9Nte
-=sUZK
------END PGP SIGNATURE-----
+diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+index 26b64a8..4f4e82c 100644
+--- a/arch/x86/kernel/ftrace.c
++++ b/arch/x86/kernel/ftrace.c
+@@ -28,20 +28,12 @@
+ 
+ int ftrace_arch_modify_prepare(void)
+ {
+-	/* at boot up, we are still writable */
+-	if (system_state != SYSTEM_RUNNING)
+-		return 0;
+-
+ 	set_kernel_text_rw();
+ 	return 0;
+ }
+ 
+ int ftrace_arch_modify_post_process(void)
+ {
+-	/* at boot up, we are still writable */
+-	if (system_state != SYSTEM_RUNNING)
+-		return 0;
+-
+ 	set_kernel_text_ro();
+ 	return 0;
+ }
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index bcd7f00..9ca4c57 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -1155,12 +1155,17 @@ static noinline int do_test_wp_bit(void)
+ const int rodata_test_data = 0xC3;
+ EXPORT_SYMBOL_GPL(rodata_test_data);
+ 
++static int kernel_set_to_readonly;
++
+ /* used by ftrace */
+ void set_kernel_text_rw(void)
+ {
+ 	unsigned long start = PFN_ALIGN(_text);
+ 	unsigned long size = PFN_ALIGN(_etext) - start;
+ 
++	if (!kernel_set_to_readonly)
++		return;
++
+ 	printk(KERN_INFO "Set kernel text: %lx - %lx for read write\n",
+ 	       start, start+size);
+ 
+@@ -1173,6 +1178,9 @@ void set_kernel_text_ro(void)
+ 	unsigned long start = PFN_ALIGN(_text);
+ 	unsigned long size = PFN_ALIGN(_etext) - start;
+ 
++	if (!kernel_set_to_readonly)
++		return;
++
+ 	printk(KERN_INFO "Set kernel text: %lx - %lx for read only\n",
+ 	       start, start+size);
+ 
+@@ -1188,6 +1196,8 @@ void mark_rodata_ro(void)
+ 	printk(KERN_INFO "Write protecting the kernel text: %luk\n",
+ 		size >> 10);
+ 
++	kernel_set_to_readonly = 1;
++
+ #ifdef CONFIG_CPA_DEBUG
+ 	printk(KERN_INFO "Testing CPA: Reverting %lx-%lx\n",
+ 		start, start+size);
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 8c1b5ee..c204433 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -986,12 +986,17 @@ void free_initmem(void)
+ const int rodata_test_data = 0xC3;
+ EXPORT_SYMBOL_GPL(rodata_test_data);
+ 
++static int kernel_set_to_readonly;
++
+ /* used by ftrace */
+ void set_kernel_text_rw(void)
+ {
+ 	unsigned long start = PFN_ALIGN(_stext);
+ 	unsigned long end = PFN_ALIGN(__start_rodata);
+ 
++	if (!kernel_set_to_readonly)
++		return;
++
+ 	printk(KERN_INFO "Set kernel text: %lx - %lx for read write\n",
+ 	       start, end);
+ 
+@@ -1004,6 +1009,9 @@ void set_kernel_text_ro(void)
+ 	unsigned long start = PFN_ALIGN(_stext);
+ 	unsigned long end = PFN_ALIGN(__start_rodata);
+ 
++	if (!kernel_set_to_readonly)
++		return;
++
+ 	printk(KERN_INFO "Set kernel text: %lx - %lx for read only\n",
+ 	       start, end);
+ 
+@@ -1020,6 +1028,8 @@ void mark_rodata_ro(void)
+ 	       (end - start) >> 10);
+ 	set_memory_ro(start, (end - start) >> PAGE_SHIFT);
+ 
++	kernel_set_to_readonly = 1;
++
+ 	/*
+ 	 * The rodata section (but not the kernel text!) should also be
+ 	 * not-executable.
 
---=-l52nwWJWC8CxmkEchpME--
+
