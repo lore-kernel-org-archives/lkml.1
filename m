@@ -1,182 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbZBTI4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbZBTJMr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756175AbZBTI4v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Feb 2009 03:56:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbZBTI4n
+	id S1754766AbZBTJMr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Feb 2009 04:12:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbZBTJM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Feb 2009 03:56:43 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53901 "EHLO mx2.mail.elte.hu"
+	Fri, 20 Feb 2009 04:12:29 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55345 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753246AbZBTI4m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Feb 2009 03:56:42 -0500
-Date: Fri, 20 Feb 2009 09:56:27 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Jason Baron <jbaron@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [rfd] function-graph augmentation
-Message-ID: <20090220085627.GE24555@elte.hu>
-References: <1235077304.4612.662.camel@laptop> <20090219212807.GA5084@nowhere>
+	id S1753437AbZBTJM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Feb 2009 04:12:27 -0500
+Date: Fri, 20 Feb 2009 11:09:12 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, Yinghai Lu <yinghai@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: enable x2apic early at the first point
+Message-ID: <20090220090912.GA4632@redhat.com>
+References: <499DD40F.40102@kernel.org> <1235081612.14523.23.camel@vayu> <499DE05A.40804@kernel.org> <1235086118.14523.40.camel@vayu> <20090220083528.GB24555@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090219212807.GA5084@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090220083528.GB24555@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> On Thu, Feb 19, 2009 at 10:01:44PM +0100, Peter Zijlstra wrote:
-> > Hi,
+On Fri, Feb 20, 2009 at 09:35:28AM +0100, Ingo Molnar wrote:
+> 
+> * Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+> 
+> > On Thu, 2009-02-19 at 14:42 -0800, Yinghai Lu wrote:
+> > > Ingo want to decouple that x2apic and intr_remapping.
+> > > it seems it does work with x2apic without intr_remapping in one of setup.
 > > 
-> > I was thinking how best to augment the function graph tracer with
-> > various information. It seemed useful to add argument/return tracer
-> > entries which, when found after a function entry, or function exit entry
-> > would be rendered in the trace.
+> > x2apic with out intr-remapping is not architectural. Even when 
+> > we have < 255 logical cpu's, logical x2apic id's will be 
+> > greater than 16 bits even on a single/two socket systems and 
+> > this will break interrupt delivery. Please look at the x2apic 
+> > logical destination mode definition in the SDM (Section 
+> > 9.7.2.3 and 9.7.2.4 in my copy of SDM Vol3a)
+> >
+This is what Intel doc says:
+ It is likely that processor implementations may choose to support less
+ than 16 bits of the cluster ID or less than 16-bits of the Logical ID
+ in the Logical Destination Register.  However system software should be
+ agnostic to the number of bits implemented in the cluster ID and logical
+ ID sub-fields. The x2APIC hardware initialization will ensure that the
+ appropriately initialized logical x2APIC IDs are available to system
+ software and reads of non-implemented bits return zero.
+
+KVM will implement 0 bits of cluster ID and will want to use x2apic without
+implementing IR.
+
+> > While it might work in certain configurations (for example, 
+> > physical mode with < 8 bit apicids), it is not architectural 
+> > and implementation dependent, which may break in future 
+> > generations.
 > > 
-> > So supposing something like;
+It will not break in future generation of KVM though.
+
+> > And also, logical x2apic mode has more advantages compared to 
+> > physical mode (like using lowest priority delivery mode etc).
 > > 
-> >  3)               |  handle_mm_fault() {                                        
-> >  3)               |    count_vm_event() {                                       
-> >  3)   0.243 us    |      test_ti_thread_flag();                                 
-> >  3)   0.754 us    |    }                                                        
-> >  3)   0.249 us    |    pud_alloc();                                             
-> >  3)   0.251 us    |    pmd_alloc();                                             
-> >  3)               |    __do_fault() {                                           
-> >  3)               |      filemap_fault() {                                      
-> >  3)               |        find_lock_page() {                                   
-> >  3)               |          find_get_page() {                                  
-> >  3)   0.248 us    |            test_ti_thread_flag();                           
-> >  3)   0.844 us    |          }                                                  
-> >  3)   1.341 us    |        }                                                    
-> >  3)   1.837 us    |      }                                                      
-> >  3)   0.275 us    |      _spin_lock();                                          
-> >  3)   0.257 us    |      page_add_file_rmap();                                  
-> >  3)   0.233 us    |      native_set_pte_at();                                   
-> >  3)               |      _spin_unlock() {                                       
-> >  3)   0.248 us    |        test_ti_thread_flag();                               
-> >  3)   0.742 us    |      }                                                      
-> >  3)               |      unlock_page() {                                        
-> >  3)   0.243 us    |        page_waitqueue();                                    
-> >  3)   0.237 us    |        __wake_up_bit();                                     
-> >  3)   1.209 us    |      }                                                      
-> >  3)   6.274 us    |    }                                                        
-> >  3)   8.806 us    |  } 
-> > 
-> > Say we found:
-> > 
-> > trace_graph_entry -- handle_mm_fault()
-> > trace_func_arg -- address:0xffffffff
-> > trace_func_arg -- write_access:1
-> > 
-> > We'd render:
-> > 
-> >  3)               |  handle_mm_fault(.address=0xffffffff, .write_access=1) {
+> > I will post couple of patches, which revert's Gleb's patch and 
+> > another fix for the early boot failure issue, tomorrow.
 > 
-> 
-> Good solution, except that I wonder about preemption races.
-> Imagine the following scenario:
-> 
-> CPU#0
-> trace_graph_entry -> commit to ring_buffer CPU#0
-> 
-> //entering a the function
-> //task is scheduled out and reschduled later on CPU#1
-> 
-> CPU#1
-> trace_func_arg -> commit to ring_buffer CPU#1
-> 
-> Later on the graph output process:
-> 
-> print("func(")
-> search_for_args on buffer but don't find them because they are another
-> cpu ring_buffer.
-> 
-> Well I guess it should be rare, but it can happen.
-> Another race will be interrupts. And interrupt can fill a lot 
-> of entries between a trace entry and the parameters.
-> 
-> And yet another thing: the ring buffer does not allow yet to 
-> peek more than one entry further. But, I guess it doesn't 
-> require a lot of change.
-> 
-> The other solution would be to have a hashtable of functions 
-> for which we want to store the parameters where we can find 
-> the number of parameters to store, and their type. This way we 
-> could atomically submit those parameter entries and be more 
-> sure they will follow the current one.
+If you'll revert my patch it will not be possible to use x2apic in
+KVM (at least without KVM implementing interrupt remapping which is
+unneeded otherwise) and x2apic interface is much better for vitalization.
+Instead of reverting the patch it will be better to add check if x2apic
+can be used without intr-remmaping (all CPUs belong to cluster 0) or
+allow enabling of x2apic without IR if running as a guest.
 
-Hm, i dont really like this approach of doing it via the 
-ring-buffer - it's fundamentally fragile. There's two solutions 
-i can think of - one is to use the return stack and the other 
-one is to also use dwarf2 data.
-
-1)
-
-Regarding return values there's not a lot of problems (except 
-the bit size of the return value). No preemption and no IRQ 
-troubles either since it's all atomic and we augment the entry 
-that we emit - right?
-
-Regarding entry parameters augmentation, it should be solved 
-differently i believe.
-
-When say handle_mm_fault() is augmented, we already create a 
-function-return-stack entry for it. So when the tracepoint is 
-executed, it should not try to find things in the ring buffer 
-(which as you point out is racy and fragile:
-
- - preemption moves us to the wrong ringbuffer
- - IRQs can interact
- - it can take a long time to scan the ring-buffer
- - entries might be consumed already, etc., etc.
-
-but we could delay the injection of the function entry event, up 
-until we reach the tracepoint. We can do that by annotating 
-handle_mm_fault() with a trace_arguments attribute for example.
-
-In such a solution there's no 'distance' between the entry event 
-and the extra-parameters event, so it's all atomic and neither 
-preemption nor IRQs cause problems.
-
-2)
-
-Another, entirely different, and i think complementary approach, 
-which exciting new possibilities would be to (also) 
-automatically pick up arguments from the stack, on function 
-entry.
-
-If there's a (read-mostly, lockless-to-read and scalable) 
-function attributes hash, then we could encode the parameters 
-signature of functions (or at least, of certain functions) in 
-the attributes hash. Then the tracer will know how many 
-arguments to pick up from the stack.
-
-This approach has the advantage that we could reconstruct the 
-parameters of _arbitrary_ functions, without having to touch 
-those functions. We already enumerate all functions during build 
-time, it would take some more dwarf2 magic to recover the 
-call/parameter signature. Oh, and at that time we could also 
-record the _return type_ - easing the return value.
-
-Note that it does not take a full, bloated DEBUG_INFO build - we 
-can build a -g object to get the dwarf2 data and then strip out 
-the dwarf2 data.
-
-Arnaldo, what do you think about this, how feasible would it be 
-to put dwarf2 magic into scripts/recordmcount.pl?
-
-	Ingo
+--
+			Gleb.
