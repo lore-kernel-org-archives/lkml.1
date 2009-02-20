@@ -1,222 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758702AbZBTElW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbZBTEux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758702AbZBTElW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 23:41:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758255AbZBTEk4
+	id S1755941AbZBTEux (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 23:50:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbZBTEup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 23:40:56 -0500
-Received: from qmta07.westchester.pa.mail.comcast.net ([76.96.62.64]:39149
-	"EHLO QMTA07.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758173AbZBTEkx (ORCPT
+	Thu, 19 Feb 2009 23:50:45 -0500
+Received: from wf-out-1314.google.com ([209.85.200.168]:16526 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753256AbZBTEuo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 23:40:53 -0500
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: [net-next PATCH 5/5] igb: this patch addes the sr-iov enablement
-	option via num_vfs parameter
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, gospo@redhat.com,
-       Alexander Duyck <alexander.h.duyck@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>, Yu Zhao <yu.zhao@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Date: Thu, 19 Feb 2009 20:40:30 -0800
-Message-ID: <20090220044030.29650.14066.stgit@lost.foo-projects.org>
-In-Reply-To: <20090220043902.29650.35055.stgit@lost.foo-projects.org>
-References: <20090220043902.29650.35055.stgit@lost.foo-projects.org>
-User-Agent: StGIT/0.14.3
+	Thu, 19 Feb 2009 23:50:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Td+z/KO9XTweKB1QAArFYyaI7xCM0/mQAaLnpCWnMiD6bCLv0ge6oEWulNzVMpTyID
+         wJcoOZ/5mUY9dJu0/757ZYjDVL2nv62iHLXeXw6gHlF9R/kF+YC/PMIaIVbyy9z68AEi
+         KUE9xdqnP/rpSSBQ/dolqcLs2jXRDM7Bi14Kc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <20090219144713.192894dd.akpm@linux-foundation.org>
+References: <4d34a0a70902181905v20b0971ep80af49686b8b27dd@mail.gmail.com>
+	 <4d34a0a70902181923h75a34efx5ff9dc67d83830b7@mail.gmail.com>
+	 <20090219144713.192894dd.akpm@linux-foundation.org>
+Date: Fri, 20 Feb 2009 13:50:43 +0900
+Message-ID: <4d34a0a70902192050r461f7475k385d0b293386aa8@mail.gmail.com>
+Subject: Re: [PATCH] leds: Add BD2802GU LED driver
+From: Kim Kyuwon <chammoru@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, rpurdie@rpsys.net, kyungmin.park@samsung.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexander Duyck <alexander.h.duyck@intel.com>
+Hi,
 
-This code adds a module parameter called num_vfs which defines if the
-driver should attempt to use sr-iov and if so how many VFs should be
-enabled.
+>
+> Your email client has wordwrapped the patch and has replaced all tabs
+> with eight spaces.  Please fix that up when resending.
+> Documentation/email-clients.txt has some gmail tips.
+>
+> I had a go at cleaning it up, and found lots of code whcih was indented
+> with seven-spaces.  Perhaps this file was origininaly edited with
+> space-space-space-space indenting.  If so, please don't do that - use
+> hard tab characters.
+>
+> Anyway, I ended up with soemthing reasonable-looking which actually
+> compiles.  Please check the result.
+>
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-CC: Yu Zhao <yu.zhao@intel.com>
-CC: LKML <linux-kernel@vger.kernel.org>
----
+To make sure that this patch is well-formated, I sent this patch to myself
+first, and then forwarded it to the LKML. I think this 'forwarding' makes the
+problem worse. Sorry for the problem :)
 
- drivers/net/igb/igb_main.c |  125 ++++++++++++++++++++++++++++++++++++++++++--
- 1 files changed, 120 insertions(+), 5 deletions(-)
+And thank you for reviewing this driver and giving me valuable comments.
 
-diff --git a/drivers/net/igb/igb_main.c b/drivers/net/igb/igb_main.c
-index f48f6d4..91a29ea 100644
---- a/drivers/net/igb/igb_main.c
-+++ b/drivers/net/igb/igb_main.c
-@@ -146,12 +146,18 @@ static struct notifier_block dca_notifier = {
- 	.priority	= 0
- };
- #endif
--
- #ifdef CONFIG_NET_POLL_CONTROLLER
- /* for netdump / net console */
- static void igb_netpoll(struct net_device *);
- #endif
- 
-+#ifdef CONFIG_PCI_IOV
-+static ssize_t igb_set_num_vfs(struct device *, struct device_attribute *,
-+                               const char *, size_t);
-+static ssize_t igb_show_num_vfs(struct device *, struct device_attribute *,
-+                               char *);
-+DEVICE_ATTR(num_vfs, S_IRUGO | S_IWUSR, igb_show_num_vfs, igb_set_num_vfs);
-+#endif
- static pci_ers_result_t igb_io_error_detected(struct pci_dev *,
- 		     pci_channel_state_t);
- static pci_ers_result_t igb_io_slot_reset(struct pci_dev *);
-@@ -588,9 +594,6 @@ static int igb_request_msix(struct igb_adapter *adapter)
- 			goto out;
- 		ring->itr_register = E1000_EITR(0) + (vector << 2);
- 		ring->itr_val = adapter->itr;
--		/* overwrite the poll routine for MSIX, we've already done
--		 * netif_napi_add */
--		ring->napi.poll = &igb_clean_rx_ring_msix;
- 		vector++;
- 	}
- 
-@@ -1392,6 +1395,19 @@ static int __devinit igb_probe(struct pci_dev *pdev,
- 	if (err)
- 		goto err_register;
- 
-+#ifdef CONFIG_PCI_IOV
-+	/* since iov functionality isn't critical to base device function we
-+	 * can accept failure.  If it fails we don't allow iov to be enabled */
-+	if (hw->mac.type == e1000_82576) {
-+		err = pci_enable_sriov(pdev, 0);
-+		if (!err)
-+			err = device_create_file(&netdev->dev,
-+			                         &dev_attr_num_vfs);
-+		if (err)
-+			dev_err(&pdev->dev, "Failed to initialize IOV\n");
-+	}
-+
-+#endif
- #ifdef CONFIG_IGB_DCA
- 	if (dca_add_requester(&pdev->dev) == 0) {
- 		adapter->flags |= IGB_FLAG_DCA_ENABLED;
-@@ -1547,6 +1563,20 @@ static void __devexit igb_remove(struct pci_dev *pdev)
- 
- 	igb_free_queues(adapter);
- 
-+#ifdef CONFIG_PCI_IOV
-+	/* reclaim resources allocated to VFs */
-+	if (adapter->vf_data) {
-+		/* disable iov and allow time for transactions to clear */
-+		pci_disable_sriov(pdev);
-+		msleep(500);
-+
-+		kfree(adapter->vf_data);
-+		adapter->vf_data = NULL;
-+		wr32(E1000_IOVCTL, E1000_IOVCTL_REUSE_VFQ);
-+		msleep(100);
-+		dev_info(&pdev->dev, "IOV Disabled\n");
-+	}
-+#endif
- 	iounmap(hw->hw_addr);
- 	if (hw->flash_address)
- 		iounmap(hw->flash_address);
-@@ -5341,7 +5371,7 @@ static int igb_set_vf_mac(struct igb_adapter *adapter,
- 
- 	igb_rar_set(hw, mac_addr, rar_entry);
- 
--	memcpy(adapter->vf_data[vf].vf_mac_addresses, mac_addr, 6);
-+	memcpy(adapter->vf_data[vf].vf_mac_addresses, mac_addr, ETH_ALEN);
- 
- 	igb_set_rah_pool(hw, vf, rar_entry);
- 
-@@ -5366,4 +5396,89 @@ static void igb_vmm_control(struct igb_adapter *adapter)
- 	igb_vmdq_set_replication_pf(hw, true);
- }
- 
-+#ifdef CONFIG_PCI_IOV
-+static ssize_t igb_show_num_vfs(struct device *dev,
-+                                struct device_attribute *attr, char *buf)
-+{
-+	struct igb_adapter *adapter = netdev_priv(to_net_dev(dev));
-+
-+	return sprintf(buf, "%d\n", adapter->vfs_allocated_count);
-+}
-+
-+static ssize_t igb_set_num_vfs(struct device *dev,
-+                               struct device_attribute *attr,
-+                               const char *buf, size_t count)
-+{
-+	struct net_device *netdev = to_net_dev(dev);
-+	struct igb_adapter *adapter = netdev_priv(netdev);
-+	struct e1000_hw *hw = &adapter->hw;
-+	struct pci_dev *pdev = adapter->pdev;
-+	unsigned int num_vfs, i;
-+	unsigned char mac_addr[ETH_ALEN];
-+	int err;
-+
-+	sscanf(buf, "%u", &num_vfs);
-+
-+	if (num_vfs > 7)
-+		num_vfs = 7;
-+
-+	/* value unchanged do nothing */
-+	if (num_vfs == adapter->vfs_allocated_count)
-+		return count;
-+
-+	if (netdev->flags & IFF_UP)
-+		igb_close(netdev);
-+
-+	igb_reset_interrupt_capability(adapter);
-+	igb_free_queues(adapter);
-+	adapter->tx_ring = NULL;
-+	adapter->rx_ring = NULL;
-+	adapter->vfs_allocated_count = 0;
-+
-+	/* reclaim resources allocated to VFs since we are changing count */
-+	if (adapter->vf_data) {
-+		/* disable iov and allow time for transactions to clear */
-+		pci_disable_sriov(pdev);
-+		msleep(500);
-+
-+		kfree(adapter->vf_data);
-+		adapter->vf_data = NULL;
-+		wr32(E1000_IOVCTL, E1000_IOVCTL_REUSE_VFQ);
-+		msleep(100);
-+		dev_info(&pdev->dev, "IOV Disabled\n");
-+	}
-+
-+	if (num_vfs) {
-+		adapter->vf_data = kcalloc(num_vfs,
-+		                           sizeof(struct vf_data_storage),
-+		                           GFP_KERNEL);
-+		if (!adapter->vf_data) {
-+			dev_err(&pdev->dev, "Could not allocate VF private "
-+				"data - IOV enable failed\n");
-+		} else {
-+			err = pci_enable_sriov(pdev, num_vfs);
-+			if (!err) {
-+				adapter->vfs_allocated_count = num_vfs;
-+				dev_info(&pdev->dev, "%d vfs allocated\n", num_vfs);
-+				for (i = 0; i < adapter->vfs_allocated_count; i++) {
-+					random_ether_addr(mac_addr);
-+					igb_set_vf_mac(adapter, i, mac_addr);
-+				}
-+			} else {
-+				kfree(adapter->vf_data);
-+				adapter->vf_data = NULL;
-+			}
-+		}
-+	}
-+
-+	igb_set_interrupt_capability(adapter);
-+	igb_alloc_queues(adapter);
-+	igb_reset(adapter);
-+
-+	if (netdev->flags & IFF_UP)
-+		igb_open(netdev);
-+
-+	return count;
-+}
-+#endif /* CONFIG_PCI_IOV */
- /* igb_main.c */
+I will resend the patch as following Gmail tips in 'email-clients.txt'
+and yours.
 
+Regards,
+
+-- 
+Kim Kyuwon
