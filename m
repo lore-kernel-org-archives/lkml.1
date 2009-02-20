@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbZBTCxG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbZBTC42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754822AbZBTCxG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Feb 2009 21:53:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbZBTCwy
+	id S1755131AbZBTC42 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Feb 2009 21:56:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbZBTC4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Feb 2009 21:52:54 -0500
-Received: from hpsmtp-eml16.KPNXCHANGE.COM ([213.75.38.116]:29147 "EHLO
-	hpsmtp-eml16.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752029AbZBTCwy (ORCPT
+	Thu, 19 Feb 2009 21:56:19 -0500
+Received: from web33505.mail.mud.yahoo.com ([68.142.206.154]:32215 "HELO
+	web33505.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751123AbZBTC4S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Feb 2009 21:52:54 -0500
-From: Frans Pop <elendil@planet.nl>
-To: jplatte@naasa.net
-Subject: Re: cpuinfo shows wrong MHz value
-Date: Fri, 20 Feb 2009 03:52:50 +0100
-User-Agent: KMail/1.9.9
-Cc: Kasper Sandberg <lkml@metanurb.dk>, linux-kernel@vger.kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Matthias-Christian Ott <ott@mirix.org>,
-       cpufreq <cpufreq@www.linux.org.uk>
-References: <200902142217.51655.jplatte@naasa.net> <200902182205.47737.elendil@planet.nl> <200902191803.55347.jplatte@naasa.net>
-In-Reply-To: <200902191803.55347.jplatte@naasa.net>
+	Thu, 19 Feb 2009 21:56:18 -0500
+X-Greylist: delayed 383 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Feb 2009 21:56:18 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Message-ID;
+  b=wE8CAEuEUAEN5+w4G6d1lpIgJXdbymyYNVbwWcDCsIcY44xkMnJnH4kIhXV0gSuZyRl/m2rfMrvLtfxLH4Qjt61f3tJu4lqWdNvQtIIlq8WtDSxlTP5gfvh+o4PXdkJgeOQrSffpbvMQzAAq3o/DJQ4NECnwiWRyZnerQZCWQP4=;
+X-YMail-OSG: F0YiZyEVM1msl7q064I4fJyyBXdmPs_W.hTgjjQF2BE1I08FelduAgd_o7WkcoL9QM8arGu67TtclSywSdmy8Bd0grDyXkBOyNuihhdWE0.BoTsuvlib._tUc4nerPgCVwOCbuknpAJHERkrTZSHlUqeeXdKSQJfpd6DRi7cfxqUJFOsbGlvHUv2wBeDcRraLdRK8w1c9yaMzI0gKB124O.Q4n8j1IkhX79veEz.9UG6.w--
+X-Mailer: YahooMailWebService/0.7.260.1
+Date: Thu, 19 Feb 2009 18:56:17 -0800 (PST)
+From: Nick Levinson <nick_levinson@yahoo.com>
+Subject: suggest make standard list of CR/LF prefs that apps can read for portability
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902200352.51173.elendil@planet.nl>
-X-OriginalArrivalTime: 20 Feb 2009 02:52:52.0215 (UTC) FILETIME=[52A12870:01C99306]
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <536945.50089.qm@web33505.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 February 2009, Joerg Platte wrote:
-> Am Mittwoch, 18. Februar 2009 schrieb Frans Pop:
-> > commit ed9cbcd40004904dbe61ccc16d6106a7de38c998
-> > Author: Zhao Yakui <yakui.zhao@intel.com>
-> > Date:   Tue Nov 20 14:20:21 2007 -0500
-> >     Revert "speedstep-lib.c: fix frequency multiplier for Pentium4
-> > models 0&1"
-> >
-> > That would exactly explain the factor 8 of the error.
->
-> Yes, looks like thats the reason.
+Battling between Windows Notepad, Linux gedit, and OpenOffice.org conventions on how paragraphs are separated in text files using CR and LF characters, I'd like the ability to set a preference the same way I'd set one for currency or daylight savings time. A user wouldn't have to pick, but if a user does all applications could agree with it.
 
-It looks as if http://bugzilla.kernel.org/10968 has a fix for this issue, 
-but that that patch never got included in the kernel.
+It would be up to each application designer to comply or not. Noncompliant apps should not break.
 
-For start of current thread, see: 
-http://www.gossamer-threads.com/lists/linux/kernel/1034291?page=last
+Among the options: whatever the application normally sets if I have no preference, CR alone, LF alone, CR+LF, and LF+CR. It might be nice if among the options was one to simply choose that in a well-known stable application, such as one of those above. Each user could have their own pref. And an app could override it.
+
+Thanx.
+
+-- 
+Nick
+
+
+      
